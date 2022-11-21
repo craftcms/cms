@@ -1,0 +1,41 @@
+{% if not hasOuterContainer %}
+<div class="datetimewrapper">
+    {% endif %}
+
+    {% tag 'div' with containerAttributes.defaults({class: "datewrapper"}).all() %}
+        {% if not isMobile %}
+            {% set formatRefId = "#{id}-format" %}
+            {% set describedBy = [formatRefId, describedBy ?? null]|filter|join(' ') %}
+            <span id="{{ formatRefId }}" class="visually-hidden">
+                {{ craft.app.getFormattingLocale().getDateFormat('short', 'human') }}
+            </span>
+        {% endif %}
+        {{ component('input:text', attributes.defaults({
+            id: id,
+            type: type,
+            class: {
+                'empty-value': isMobile and not value
+            },
+            name: name,
+            autocomplete: false,
+            size: 10,
+            placeholder: ' ',
+            value: value ? value|date(isMobile ? 'Y-m-d' : 'short') : '',
+            'aria-label': isDateTime ? 'Date'|t('app') : false,
+        }).all()) }}
+
+        <div data-icon="date"></div>
+        {%- if name and outputTzParam -%}
+            {{- hiddenInput("#{name}[timezone]", craft.app.getTimeZone()) -}}
+        {%- endif -%}
+    {% endtag %}
+
+    {% if not hasOuterContainer %}</div>{% endif %}
+
+{%- if not isMobile -%}
+    {%- js -%}
+    $('#{{ id|namespaceInputId|e('js') }}').datepicker($.extend({
+            defaultDate: new Date({% if value %}{{ value.format('Y') }}, {{ value.format('n')-1 }}, {{ value.format('j') }}{% endif %})
+        }, Craft.datepickerOptions));
+    {%- endjs -%}
+{%- endif -%}

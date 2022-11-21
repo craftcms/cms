@@ -18,6 +18,7 @@ use craft\ui\ComponentAttributes;
 use craft\ui\ComponentMetadata;
 use craft\ui\components\Button;
 use craft\ui\components\InputCopyText;
+use craft\ui\components\InputDate;
 use craft\ui\components\InputHiddenText;
 use craft\ui\components\InputPasswordText;
 use craft\ui\components\InputText;
@@ -69,6 +70,7 @@ class Ui extends Component
             InputPasswordText::class,
             InputHiddenText::class,
             InputCopyText::class,
+            InputDate::class,
 
             // Test
             Test::class,
@@ -168,10 +170,14 @@ class Ui extends Component
         // Run `mount`
         $this->_mount($component, $data);
 
+        // Collect remaining props into attributes
+        $metadata = $this->metadataFor($name);
+        $attributesVar = $metadata->attributesVar;
+
         // Map props onto the component class
         // set data that wasn't set in mount on the component directly
         foreach ($data as $property => $value) {
-            if ($component->canSetProperty($property)) {
+            if ($property !== $attributesVar && $component->canSetProperty($property)) {
                 $component->{$property} = $value;
 
                 unset($data[$property]);
@@ -181,8 +187,6 @@ class Ui extends Component
         // Run `postMount`
         $data = $this->_postMount($component, $data);
 
-        // Collect remaining props into attributes
-        $attributesVar = $this->metadataFor($name)->attributesVar;
         $attributes = $data[$attributesVar] ?? [];
         unset($data[$attributesVar]);
 

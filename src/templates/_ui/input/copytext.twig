@@ -1,5 +1,8 @@
 <div class="copytext">
-    {{ component('input:text', {id: id, value: props.value, readonly: true}) }}
+    {{ component('input:text', attributes.defaults({
+        id: id,
+        readonly: true
+    }).all()) }}
 
     {{- tag('button', {
         type: 'button',
