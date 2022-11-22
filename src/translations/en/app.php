@@ -705,7 +705,6 @@ return [
     'Height unit' => 'Height unit',
     'Height' => 'Height',
     'Helper text to guide the author.' => 'Helper text to guide the author.',
-    'Hide nested sources' => 'Hide nested sources',
     'Hide sidebar' => 'Hide sidebar',
     'Hide' => 'Hide',
     'High' => 'High',
