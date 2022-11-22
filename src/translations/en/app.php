@@ -1808,6 +1808,7 @@ return [
     'address' => 'address',
     'addresses' => 'addresses',
     'and' => 'and',
+    'Announcements' => 'Announcements',
     'asset' => 'asset',
     'assets' => 'assets',
     'at {time}' => 'at {time}',

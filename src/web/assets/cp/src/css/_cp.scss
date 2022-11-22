@@ -639,11 +639,6 @@ li.breadcrumb-toggle-wrapper {
       }
     }
 
-    h2 {
-      position: relative;
-      margin: 0 0 3px;
-    }
-
     &.unread h2:after {
       content: '';
       display: block;
@@ -659,6 +654,16 @@ li.breadcrumb-toggle-wrapper {
     p {
       margin: 0;
     }
+  }
+
+  .announcement__header {
+    display: grid;
+  }
+
+  .announcement__heading {
+    position: relative;
+    margin: 0 0 3px;
+    order: 1;
   }
 }
 

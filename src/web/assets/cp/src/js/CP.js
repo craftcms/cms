@@ -259,17 +259,19 @@ Craft.CP = Garnish.Base.extend(
             Craft.announcements.forEach((a) => {
               contents +=
                 `<div class="announcement ${a.unread ? 'unread' : ''}" role="listitem">` +
+                '<div class="announcement__header">' +
+                `<h3 class="announcement__heading h2">${a.heading}</h3>` +
                 '<div class="announcement-label-container">' +
-                `<div class="announcement-icon">${a.icon}</div>` +
+                `<div class="announcement-icon" aria-hidden="true">${a.icon}</div>` +
                 `<div class="announcement-label">${a.label}</div>` +
                 '</div>' +
-                `<h2>${a.heading}</h2>` +
+                '</div>' +
                 `<p>${a.body}</p>` +
                 '</div>';
             });
             hud = new Garnish.HUD(
               $btn,
-              `<div id="announcements" role="list">${contents}</div>`,
+              `<h2 class="visually-hidden">${Craft.t('app', 'Announcements')}</h2><div id="announcements" role="list">${contents}</div>`,
               {
                 onShow: () => {
                   $btn.addClass('active');
