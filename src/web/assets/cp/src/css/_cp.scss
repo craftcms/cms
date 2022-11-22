@@ -607,7 +607,7 @@ li.breadcrumb-toggle-wrapper {
   &:active,
   &.active {
     svg {
-      @include svg-mask(var(--link-color));
+      @include svg-mask(var(--ui-control-active-color));
     }
   }
 }
