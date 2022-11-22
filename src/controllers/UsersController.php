@@ -2015,6 +2015,8 @@ JS,
         $fieldLayout->reservedFieldHandles = [
             'groups',
             'photo',
+            'firstName',
+            'lastName',
         ];
 
         if (!Craft::$app->getUsers()->saveLayout($fieldLayout)) {

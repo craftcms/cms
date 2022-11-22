@@ -9,6 +9,7 @@ namespace craft\web\assets\cp;
 
 use Craft;
 use craft\base\ElementInterface;
+use craft\base\FieldInterface;
 use craft\config\GeneralConfig;
 use craft\elements\User;
 use craft\helpers\Assets;
@@ -193,7 +194,6 @@ JS;
             'Handle',
             'Heading',
             'Height unit',
-            'Hide nested sources',
             'Hide sidebar',
             'Hide',
             'Incorrect password.',
@@ -443,6 +443,7 @@ JS;
             'editableCategoryGroups' => $upToDate ? $this->_editableCategoryGroups() : [],
             'edition' => Craft::$app->getEdition(),
             'elementTypeNames' => $elementTypeNames,
+            'fieldsWithoutContent' => array_map(fn(FieldInterface $field) => $field->handle, Craft::$app->getFields()->getFieldsWithoutContent(false)),
             'handleCasing' => $generalConfig->handleCasing,
             'httpProxy' => $this->_httpProxy($generalConfig),
             'isImagick' => Craft::$app->getImages()->getIsImagick(),

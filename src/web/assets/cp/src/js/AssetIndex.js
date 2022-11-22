@@ -1401,7 +1401,9 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
           this._prepareParentForChildren($parentFolder);
           var $subfolder = $(
             '<li>' +
-              `<a data-key="${$parentFolder.data('key')}/folder:${
+              `<a role="button" tabindex="0" data-source-item data-key="${$parentFolder.data(
+                'key'
+              )}/folder:${
                 data.folderUid
               }" data-default-sort="${$parentFolder.data('default-sort')}"` +
               (Garnish.hasAttr($parentFolder, 'data-has-thumbs')

@@ -23,7 +23,7 @@
     "rss": "https://github.com/craftcms/cms/releases.atom"
   },
   "require": {
-    "php": "^8.0.2",
+    "php": "^8.1",
     "ext-bcmath": "*",
     "ext-curl": "*",
     "ext-dom": "*",
@@ -58,7 +58,7 @@
     "twig/twig": "~3.4.3",
     "voku/stringy": "^6.4.0",
     "webonyx/graphql-php": "~14.11.5",
-    "yiisoft/yii2": "~2.0.46.0",
+    "yiisoft/yii2": "~2.0.47.0",
     "yiisoft/yii2-debug": "~2.1.19.0",
     "yiisoft/yii2-queue": "~2.3.2",
     "yiisoft/yii2-symfonymailer": "^2.0.0"
@@ -112,7 +112,7 @@
   "config": {
     "sort-packages": true,
     "platform": {
-      "php": "8.0.2"
+      "php": "8.1"
     },
     "allow-plugins": {
       "yiisoft/yii2-composer": true,

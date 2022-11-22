@@ -10,6 +10,7 @@ namespace craft\fields;
 use Craft;
 use craft\elements\conditions\ElementCondition;
 use craft\elements\db\EntryQuery;
+use craft\elements\ElementCollection;
 use craft\elements\Entry;
 use craft\gql\arguments\elements\Entry as EntryArguments;
 use craft\gql\interfaces\elements\Entry as EntryInterface;
@@ -57,7 +58,7 @@ class Entries extends BaseRelationField
      */
     public static function valueType(): string
     {
-        return EntryQuery::class;
+        return sprintf('%s|%s<%s>', EntryQuery::class, ElementCollection::class, Entry::class);
     }
 
     /**

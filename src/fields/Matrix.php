@@ -20,6 +20,7 @@ use craft\db\Table as DbTable;
 use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\db\MatrixBlockQuery;
+use craft\elements\ElementCollection;
 use craft\elements\MatrixBlock;
 use craft\events\BlockTypesEvent;
 use craft\fieldlayoutelements\CustomField;
@@ -97,7 +98,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
      */
     public static function valueType(): string
     {
-        return MatrixBlockQuery::class;
+        return sprintf('%s|%s<%s>', MatrixBlockQuery::class, ElementCollection::class, MatrixBlock::class);
     }
 
     /**

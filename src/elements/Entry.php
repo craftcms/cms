@@ -341,7 +341,7 @@ class Entry extends Element implements ExpirableElementInterface
 
         // Get the section we need to check permissions on
         if (preg_match('/^section:(\d+)$/', $source, $matches)) {
-            $section = Craft::$app->getSections()->getSectionById($matches[1]);
+            $section = Craft::$app->getSections()->getSectionById((int)$matches[1]);
         } elseif (preg_match('/^section:(.+)$/', $source, $matches)) {
             $section = Craft::$app->getSections()->getSectionByUid($matches[1]);
         } else {
@@ -424,6 +424,14 @@ class Entry extends Element implements ExpirableElementInterface
         $actions[] = Restore::class;
 
         return $actions;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    protected static function includeSetStatusAction(): bool
+    {
+        return true;
     }
 
     /**
