@@ -19,9 +19,11 @@ use craft\ui\ComponentMetadata;
 use craft\ui\components\Button;
 use craft\ui\components\InputCopyText;
 use craft\ui\components\InputDate;
+use craft\ui\components\InputDateTime;
 use craft\ui\components\InputHiddenText;
 use craft\ui\components\InputPasswordText;
 use craft\ui\components\InputText;
+use craft\ui\components\InputTime;
 use craft\ui\components\Test;
 use craft\ui\MountedComponent;
 use Exception;
@@ -71,6 +73,8 @@ class Ui extends Component
             InputHiddenText::class,
             InputCopyText::class,
             InputDate::class,
+            InputTime::class,
+            InputDateTime::class,
 
             // Test
             Test::class,

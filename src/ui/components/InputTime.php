@@ -9,14 +9,13 @@ namespace craft\ui\components;
 
 use Craft;
 use craft\base\BaseUiComponent;
-use craft\base\Component;
 use craft\helpers\DateTimeHelper;
 use craft\ui\attributes\AsTwigComponent;
 use craft\ui\ComponentAttributes;
 use DateTime;
 
-#[AsTwigComponent('input:date')]
-class InputDate extends BaseUiComponent
+#[AsTwigComponent('input:time')]
+class InputTime extends BaseUiComponent
 {
     /**
      * ID of the component
@@ -40,6 +39,13 @@ class InputDate extends BaseUiComponent
     public ?string $name = null;
 
     /**
+     * Is a mobile request
+     *
+     * @var bool|null
+     */
+    public ?bool $isMobile = null;
+
+    /**
      * Component already has an outer container (part of date and time field)
      *
      * @var bool
@@ -53,12 +59,7 @@ class InputDate extends BaseUiComponent
      */
     public bool $outputTzParam = true;
 
-    /**
-     * Is the current request a mobile request?
-     *
-     * @var bool|null
-     */
-    public ?bool $isMobile = null;
+    public bool $isDateTime = false;
 
     /**
      * Value of the field, normalized to a DateTime object
@@ -68,26 +69,47 @@ class InputDate extends BaseUiComponent
     public ?DateTime $value = null;
 
     /**
+     * @var string|null The minimum allowed time
+     */
+    public ?string $minTime = null;
+
+    /**
+     * @var string|null The maximum allowed time
+     */
+    public ?string $maxTime = null;
+
+    /**
+     * Disable time ranges
+     *
+     * @var bool|null
+     */
+    public ?bool $disableTimeRanges = null;
+
+    /**
+     * @var int The number of minutes that the timepicker options should increment by
+     */
+    public int $minuteIncrement = 30;
+
+
+    /**
+     * @var bool Force time to be rounded.
+     */
+    public bool $forceRoundTime = false;
+
+    /**
      * Attributes specifically for the container.
      *
      * @var ComponentAttributes|null
      */
     public ?ComponentAttributes $containerAttributes = null;
 
-    /**
-     * Is this a date and time field?
-     *
-     * @var bool
-     */
-    public bool $isDateTime = false;
-
     public function mount(bool $isMobile = null, mixed $value = null, string $id = null, string $name = null, array $containerAttributes = [])
     {
         $this->isMobile = $isMobile ?? Craft::$app->getRequest()->isMobileBrowser();
-        $this->type = $this->isMobile ? 'date' : 'text';
-        $this->id = ($id ?? 'date' . mt_rand()) . '-date';
+        $this->type = $this->isMobile ? 'time' : 'text';
+        $this->id = ($id ?? 'time' . mt_rand()) . '-time';
 
-        $this->name = $name ? $name . '[date]' : null;
+        $this->name = $name ? $name . '[time]' : null;
 
         $this->containerAttributes = new ComponentAttributes($containerAttributes);
 

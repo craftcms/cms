@@ -1,0 +1,58 @@
+{% do view.registerAssetBundle('craft\\web\\assets\\timepicker\\TimepickerAsset') -%}
+
+{% if not hasOuterContainer %}
+<div class="datetimewrapper">{% endif %}
+
+    {% tag 'div' with containerAttributes.defaults({class: "timewrapper"}).all() %}
+        {% if not isMobile %}
+            {% set formatRefId = "#{id}-format" %}
+            {% set describedBy = [formatRefId, describedBy ?? null]|filter|join(' ') %}
+            <span id="{{ formatRefId }}" class="visually-hidden">
+                {{ craft.app.getFormattingLocale().getTimeFormat('short', 'human') }}
+            </span>
+        {% endif %}
+        {{ component('input:text', attributes.defaults({
+            id: id,
+            type: type,
+            class: {
+                'empty-value': isMobile and not value
+            },
+            name: name,
+            autocomplete: false,
+            size: 10,
+            placeholder: ' ',
+            value: value ? value|time(isMobile ? 'H:i' : 'short') : '',
+            aria: {
+                label: isDateTime ? 'Time'|t('app') : false,
+            },
+        }).all()) }}
+
+        <div data-icon="time"></div>
+        {%- if name and outputTzParam -%}
+            {{- hiddenInput("#{name}[timezone]", craft.app.getTimeZone()) -}}
+        {%- endif -%}
+    {% endtag -%}
+
+    {% if not hasOuterContainer %}</div>{% endif %}
+
+{%- if not isMobile -%}
+    {% set options = {
+        minTime: minTime,
+        maxTime: maxTime,
+        disableTimeRanges: disableTimeRanges,
+        step: minuteIncrement,
+        forceRoundTime: forceRoundTime,
+    }|filter %}
+
+    {#- include JSON_FORCE_OBJECT in the json_encode options -#}
+    {%- set jsonOptions = constant('JSON_HEX_TAG') b-or constant('JSON_HEX_AMP') b-or constant('JSON_HEX_QUOT') b-or constant('JSON_FORCE_OBJECT') -%}
+
+    {%- js -%}
+    var $timePicker = $('#{{ id|namespaceInputId|e('js') }}');
+        $timePicker.timepicker($.extend({{ options|json_encode(jsonOptions)|raw }}, Craft.timepickerOptions));
+
+        {%- if value and value.format is defined -%}
+            $timePicker.timepicker('setTime', {{ value.format('G') }}*3600 + {{ value.format('i') }}*60 + {{ value.format('s') }});
+        {%- endif -%}
+    {%- endjs -%}
+{%- endif -%}
