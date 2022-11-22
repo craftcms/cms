@@ -601,7 +601,11 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
         this.modal.enableSelectBtn();
         this.modal.hideFooterSpinner();
       };
-      Craft.sendActionRequest('POST', 'elements/structured-input-html', {data})
+      Craft.sendActionRequest(
+        'POST',
+        'relational-fields/structured-input-html',
+        {data}
+      )
         .then((response) => {
           onResponse();
           var $newInput = $(response.data.html),
