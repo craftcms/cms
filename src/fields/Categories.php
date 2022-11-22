@@ -73,11 +73,6 @@ class Categories extends BaseRelationField
     /**
      * @inheritdoc
      */
-    public bool $relateAncestors = true;
-
-    /**
-     * @inheritdoc
-     */
     protected string $settingsTemplate = '_components/fieldtypes/elementfieldsettings';
 
     /**
@@ -92,6 +87,11 @@ class Categories extends BaseRelationField
     {
         // allow categories to limit selection if `relateAncestors` isn't checked
         $config['allowLimit'] = true;
+
+        // Default relateAncestors to true for existing Assets fields
+        if (isset($config['id']) && !isset($config['relateAncestors'])) {
+            $config['relateAncestors'] = true;
+        }
 
         parent::__construct($config);
     }
