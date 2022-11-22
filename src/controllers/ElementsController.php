@@ -1533,7 +1533,7 @@ JS, [
             }
         }
 
-        $html = $this->getView()->renderTemplate('_includes/forms/elementselect',
+        $html = $this->getView()->renderTemplate('_includes/forms/elementSelect.twig',
             [
                 'elements' => $elements,
                 'id' => $this->request->getParam('containerId'),
