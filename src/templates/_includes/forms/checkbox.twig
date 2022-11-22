@@ -12,14 +12,14 @@
     checked: (checked ?? false) and checked,
     autofocus: (autofocus ?? false) and not craft.app.request.isMobileBrowser(true),
     disabled: (disabled ?? false) ? true : false,
-    aria: {
+    aria: (aria ?? {})|merge({
         labelledby: labelledBy ?? false,
         describedby: describedBy ?? false,
-    },
-    data: {
+    }),
+    data: (data ?? {})|merge({
         target: toggle ?? false,
         'reverse-target': reverseToggle ?? false,
-    }
+    }),
 }|merge(inputAttributes ?? [], recursive=true) %}
 
 {% if block('attr') is defined %}
