@@ -1,6 +1,9 @@
 # Release Notes for Craft CMS 4.4 (WIP)
 
 ### Content Management
+- Entries and Categories fields now have “Maintain hierarchy” settings, which become available when a single structured source is selected. ([#11749](https://github.com/craftcms/cms/pull/11749))
+- Entries fields now have a “Branch Limit” setting, which becomes available when “Maintain hierarchy” is enabled, replacing “Min Relations” and “Max Relations”.
+- Categories fields now have “Min Relations” and “Max Relations” settings, which become available when “Maintain hierarchy” is disabled, replacing “Branch Limit”.
 - Added “Viewable” asset and entry condition rules. ([#12240](https://github.com/craftcms/cms/discussions/12240), [#12266](https://github.com/craftcms/cms/pull/12266))
 - Renamed the “Editable” asset and entry condition rules to “Savable”. ([#12266](https://github.com/craftcms/cms/pull/12266))
 - Assets, categories, and entries will now redirect to the last-selected source on their index pages when saved. ([#11996](https://github.com/craftcms/cms/discussions/11996))
@@ -9,7 +12,6 @@
 ### Administration
 - Conditional layout components are now identified using a condition icon within field layout designers. ([#12250](https://github.com/craftcms/cms/issues/12250))
 - All CLI commands now support an `--isolated` option, which ensures the command is run in isolation. ([#12337](https://github.com/craftcms/cms/discussions/12337), [#12350](https://github.com/craftcms/cms/pull/12350))
-- Entries and Categories fields now have a “Relate ancestors” setting which can be enabled when a single structured source is selected. ([#11749](https://github.com/craftcms/cms/pull/11749))
 
 ### Development
 - Added the `editable` and `savable` asset query params. ([#12266](https://github.com/craftcms/cms/pull/12266))
@@ -26,6 +28,8 @@
 - Added `craft\elements\conditions\entries\ViewableConditionRule`. ([#12266](https://github.com/craftcms/cms/pull/12266))
 - Added `craft\events\DefineInputOptionsEvent`. ([#12351](https://github.com/craftcms/cms/pull/12351))
 - Added `craft\fields\BaseOptionsField::EVENT_DEFINE_OPTIONS`. ([#12351](https://github.com/craftcms/cms/pull/12351))
+- Added `craft\fields\BaseRelationField::$branchLimit`.
+- Added `craft\fields\BaseRelationField::$maintainHierarchy`.
 - Renamed `craft\elements\conditions\assets\EditableConditionRule` to `SavableConditionRule`, while preserving the original class name with an alias. ([#12266](https://github.com/craftcms/cms/pull/12266))
 - Renamed `craft\elements\conditions\entries\EditableConditionRule` to `SavableConditionRule`, while preserving the original class name with an alias. ([#12266](https://github.com/craftcms/cms/pull/12266))
 - Added `Craft.ElementFieldSettings`.
