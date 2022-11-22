@@ -72,11 +72,6 @@ class Categories extends BaseRelationField
     /**
      * @inheritdoc
      */
-    protected string $settingsTemplate = '_components/fieldtypes/elementfieldsettings';
-
-    /**
-     * @inheritdoc
-     */
     protected bool $sortable = false;
 
     /**
