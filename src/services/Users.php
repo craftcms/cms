@@ -20,6 +20,7 @@ use craft\events\ConfigEvent;
 use craft\events\UserAssignGroupEvent;
 use craft\events\UserEvent;
 use craft\events\UserGroupsAssignEvent;
+use craft\events\UserSavePhotoEvent;
 use craft\helpers\Assets as AssetsHelper;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
@@ -152,6 +153,16 @@ class Users extends Component
      * @event UserAssignGroupEvent The event that is triggered after a user is assigned to the default user group.
      */
     public const EVENT_AFTER_ASSIGN_USER_TO_DEFAULT_GROUP = 'afterAssignUserToDefaultGroup';
+
+    /**
+     * @event UserSavePhotoEvent The event that is triggered before a user photo is saved.
+     */
+    public const EVENT_BEFORE_SAVE_USER_PHOTO = 'beforeSaveUserPhoto';
+
+    /**
+     * @event UserSavePhotoEvent The event that is triggered after a user photo is saved.
+     */
+    public const EVENT_AFTER_SAVE_USER_PHOTO = 'afterSaveUserPhoto';
 
     /**
      * Returns a user by an email address, creating one if none already exists.
@@ -514,6 +525,13 @@ class Users extends Component
 
         $assetsService = Craft::$app->getAssets();
 
+        if ($this->hasEventHandlers(self::EVENT_BEFORE_SAVE_USER_PHOTO)) {
+            $this->trigger(self::EVENT_BEFORE_SAVE_USER_PHOTO, new UserSavePhotoEvent([
+                'user' => $user,
+                'filename' => $filename,
+            ]));
+        }
+
         // If the photo exists, just replace the file.
         if ($user->photoId && ($photo = $user->getPhoto()) !== null) {
             $assetsService->replaceAssetFile($photo, $fileLocation, $filename);
@@ -535,6 +553,14 @@ class Users extends Component
 
             $user->setPhoto($photo);
             $elementsService->saveElement($user, false);
+        }
+
+        if ($this->hasEventHandlers(self::EVENT_AFTER_SAVE_USER_PHOTO)) {
+            $this->trigger(self::EVENT_AFTER_SAVE_USER_PHOTO, new UserSavePhotoEvent([
+                'photo' => $photo,
+                'filename' => $filename,
+                'user' => $user,
+            ]));
         }
     }
 
