@@ -258,7 +258,7 @@ Craft.CP = Garnish.Base.extend(
             let contents = '';
             Craft.announcements.forEach((a) => {
               contents +=
-                `<div class="announcement ${a.unread ? 'unread' : ''}">` +
+                `<div class="announcement ${a.unread ? 'unread' : ''}" role="listitem">` +
                 '<div class="announcement-label-container">' +
                 `<div class="announcement-icon">${a.icon}</div>` +
                 `<div class="announcement-label">${a.label}</div>` +
@@ -269,7 +269,7 @@ Craft.CP = Garnish.Base.extend(
             });
             hud = new Garnish.HUD(
               $btn,
-              `<div id="announcements">${contents}</div>`,
+              `<div id="announcements" role="list">${contents}</div>`,
               {
                 onShow: () => {
                   $btn.addClass('active');
