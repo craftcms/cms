@@ -43,7 +43,7 @@
         {{ forms.checkboxField({
             label: 'Maintain hierarchy'|t('app'),
             instructions: 'Whether the structure of the related {type} should be maintained.'|t('app', { type: pluralElementType }),
-            id: 'relate-ancestors',
+            id: 'maintain-hierarchy',
             name: 'maintainHierarchy',
             checked: field.maintainHierarchy
         }) }}

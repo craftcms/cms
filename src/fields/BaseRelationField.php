@@ -380,7 +380,7 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
         $view = Craft::$app->getView();
 
         $view->registerJs("new Craft.ElementFieldSettings(
-            '{$view->namespaceInputId('relate-ancestors')}',
+            '{$view->namespaceInputId('maintain-hierarchy')}',
 	        '{$view->namespaceInputId('sources-field')}',
 	        '{$view->namespaceInputId('branch-limit')}',
 	        '{$view->namespaceInputId('min-relations')}',
