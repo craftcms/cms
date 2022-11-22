@@ -62,7 +62,7 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
       }
 
       // No reason for this to be sortable if we're only allowing 1 selection
-      if (this.settings.limit == 1 || this.settings.relateAncestors) {
+      if (this.settings.limit == 1 || this.settings.maintainHierarchy) {
         this.settings.sortable = false;
       }
 
@@ -408,7 +408,7 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
     },
 
     removeElement: function ($element) {
-      if (this.settings.relateAncestors) {
+      if (this.settings.maintainHierarchy) {
         // Find any descendants this element might have
         const $allElements = $element.add(
           $element.parent().siblings('ul').find('.element')
@@ -490,7 +490,7 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
           condition: this.settings.condition,
           criteria: this.settings.criteria,
           multiSelect: this.settings.limit != 1,
-          hideOnSelect: !this.settings.relateAncestors,
+          hideOnSelect: !this.settings.maintainHierarchy,
           showSiteMenu: this.settings.showSiteMenu,
           disabledElementIds: this.getDisabledElementIds(),
           onSelect: this.onModalSelect.bind(this),
@@ -529,7 +529,7 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
     },
 
     onModalSelect: function (elements) {
-      if (this.settings.relateAncestors) {
+      if (this.settings.maintainHierarchy) {
         this.selectStructuredElements(elements);
       } else {
         if (this.settings.limit) {
@@ -777,7 +777,7 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
       disabledElementIds: null,
       viewMode: 'list',
       single: false,
-      relateAncestors: false,
+      maintainHierarchy: false,
       branchLimit: null,
       limit: null,
       showSiteMenu: false,

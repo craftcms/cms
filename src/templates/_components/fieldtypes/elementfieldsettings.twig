@@ -39,13 +39,13 @@
         {{ (selectionCondition ?? false) ? selectionCondition|raw }}
     {% endblock %}
 
-    {% block relateAncestors %}
+    {% block maintainHierarchy %}
         {{ forms.checkboxField({
-            label: 'Relate ancestors',
-            instructions: 'Whether structural ancestors of {type} should be added to the selection. Only one source allowed if checked.'|t('app', { type: pluralElementType }),
+            label: 'Maintain hierarchy'|t('app'),
+            instructions: 'Whether the structure of the related {type} should be maintained.'|t('app', { type: pluralElementType }),
             id: 'relate-ancestors',
-            name: 'relateAncestors',
-            checked: field.relateAncestors
+            name: 'maintainHierarchy',
+            checked: field.maintainHierarchy
         }) }}
     {% endblock %}
 

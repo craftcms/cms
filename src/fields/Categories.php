@@ -85,12 +85,12 @@ class Categories extends BaseRelationField
      */
     public function __construct(array $config = [])
     {
-        // allow categories to limit selection if `relateAncestors` isn't checked
+        // allow categories to limit selection if `maintainHierarchy` isn't checked
         $config['allowLimit'] = true;
 
-        // Default relateAncestors to true for existing Assets fields
-        if (isset($config['id']) && !isset($config['relateAncestors'])) {
-            $config['relateAncestors'] = true;
+        // Default maintainHierarchy to true for existing Assets fields
+        if (isset($config['id']) && !isset($config['maintainHierarchy'])) {
+            $config['maintainHierarchy'] = true;
         }
 
         parent::__construct($config);

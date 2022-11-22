@@ -8,13 +8,13 @@ Craft.ElementFieldSettings = Garnish.Base.extend({
   $minRelationsInput: null,
 
   init: function (
-    relateAncestorsId,
+    maintainHierarchyId,
     sourcesId,
     branchLimitId,
     minRelationsId,
     maxRelationsId
   ) {
-    this.$relatedAncestorsInput = $('#' + relateAncestorsId);
+    this.$relatedAncestorsInput = $('#' + maintainHierarchyId);
     this.$sourcesInput = $(`#${sourcesId}`);
     this.$branchLimitInput = $('#' + branchLimitId);
     this.$minRelationsInput = $('#' + minRelationsId);

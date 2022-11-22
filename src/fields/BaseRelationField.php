@@ -141,7 +141,7 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
      *
      * @since 4.4.0
      */
-    public bool $relateAncestors = false;
+    public bool $maintainHierarchy = false;
 
     /**
      * @var int|null Branch limit
@@ -265,7 +265,7 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
         }
 
         // if relating ancestors, then clear min/max limits, otherwise clear branch limit
-        if ($config['relateAncestors'] ?? false) {
+        if ($config['maintainHierarchy'] ?? false) {
             $config['maxRelations'] = null;
             $config['minRelations'] = null;
         } else {
@@ -288,14 +288,14 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
     }
 
     /**
-     * Ensure only one structured source is selected when relateAncestors is true.
+     * Ensure only one structured source is selected when maintainHierarchy is true.
      *
      * @param string $attribute
      * @since 4.4.0
      */
     public function validateSources(string $attribute): void
     {
-        if (!$this->relateAncestors) {
+        if (!$this->maintainHierarchy) {
             return;
         }
 
@@ -352,7 +352,7 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
         $attributes[] = 'validateRelatedElements';
         $attributes[] = 'viewMode';
         $attributes[] = 'allowSelfRelations';
-        $attributes[] = 'relateAncestors';
+        $attributes[] = 'maintainHierarchy';
         $attributes[] = 'branchLimit';
 
         return $attributes;
@@ -574,7 +574,7 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
                 }
             }
 
-            if ($this->relateAncestors) {
+            if ($this->maintainHierarchy) {
                 $structuresService = Craft::$app->getStructures();
 
                 /** @var ElementInterface[] $structureElements */
@@ -860,7 +860,7 @@ JS;
             }
         }
 
-        if ($this->relateAncestors) {
+        if ($this->maintainHierarchy) {
             $criteria['orderBy'] = ['structureelements.lft' => SORT_ASC];
         }
 
@@ -912,7 +912,7 @@ JS;
     {
         // Skip if nothing changed, or the element is just propagating and we're not localizing relations
         if (
-            ($element->isFieldDirty($this->handle) || $this->relateAncestors) &&
+            ($element->isFieldDirty($this->handle) || $this->maintainHierarchy) &&
             (!$element->propagating || $this->localizeRelations)
         ) {
             /** @var ElementQueryInterface|Collection $value */
@@ -930,7 +930,7 @@ JS;
                 $targetIds = $this->_all($value, $element)->ids();
             }
 
-            if ($this->relateAncestors) {
+            if ($this->maintainHierarchy) {
                 $structuresService = Craft::$app->getStructures();
 
                 /** @var ElementInterface $class */
@@ -1201,7 +1201,7 @@ JS;
             'criteria' => $selectionCriteria,
             'showSiteMenu' => ($this->targetSiteId || !$this->showSiteMenu) ? false : 'auto',
             'allowSelfRelations' => (bool)$this->allowSelfRelations,
-            'relateAncestors' => (bool)$this->relateAncestors,
+            'maintainHierarchy' => (bool)$this->maintainHierarchy,
             'branchLimit' => $this->branchLimit,
             'sourceElementId' => !empty($element->id) ? $element->id : null,
             'disabledElementIds' => $disabledElementIds,

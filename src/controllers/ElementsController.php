@@ -1540,7 +1540,7 @@ JS, [
                 'name' => $this->request->getParam('name'),
                 'selectionLabel' => $this->request->getParam('selectionLabel'),
                 'elementType' => $elementType,
-                'relateAncestors' => true,
+                'maintainHierarchy' => true,
             ]);
 
         return $this->asJson([
