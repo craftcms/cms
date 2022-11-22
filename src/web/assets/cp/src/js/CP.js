@@ -242,8 +242,15 @@ Craft.CP = Garnish.Base.extend(
       if (Craft.announcements.length) {
         let $btn = $('#announcements-btn').removeClass('hidden');
         const hasUnreads = Craft.announcements.some((a) => a.unread);
+        let $unreadMessage;
         if (hasUnreads) {
-          $btn.addClass('unread');
+          $unreadMessage = $('<span/>', {
+            class: 'visually-hidden',
+            html: Craft.t('app', 'Unread messages'),
+          })
+          $btn
+            .addClass('unread')
+            .append($unreadMessage);
         }
         let hud;
         this.addListener($btn, 'click', () => {
@@ -286,6 +293,7 @@ Craft.CP = Garnish.Base.extend(
 
             if (hasUnreads) {
               $btn.removeClass('unread');
+              $unreadMessage.remove();
               Craft.sendActionRequest(
                 'POST',
                 'users/mark-announcements-as-read',

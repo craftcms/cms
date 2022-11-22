@@ -1606,6 +1606,7 @@ return [
     'Unknown' => 'Unknown',
     'Unlimited video training' => 'Unlimited video training',
     'Unlock' => 'Unlock',
+    'Unread announcements' => 'Unread announcements',
     'Unsuspend' => 'Unsuspend',
     'Untitled entry' => 'Untitled entry',
     'Update YAML Files' => 'Update YAML Files',
