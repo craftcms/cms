@@ -62,7 +62,7 @@
     "vue-awesome-swiper": "^4.1.1",
     "vue-cleave": "^1.2.2",
     "vue-lodash": "^1.0.3",
-    "vue-router": "^3.5.4",
+    "vue-router": "^3.6.0",
     "vuex": "^3.6.2",
     "whatwg-fetch": "^0.11.1",
     "xregexp": "^3.2.0",
