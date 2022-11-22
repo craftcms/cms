@@ -1,7 +1,7 @@
 /** global: Craft */
 /** global: Garnish */
 Craft.ElementFieldSettings = Garnish.Base.extend({
-  $relatedAncestorsInput: null,
+  $maintainHierarchyInput: null,
   $sourcesInput: null,
   $branchLimitInput: null,
   $maxRelationsInput: null,
@@ -14,7 +14,7 @@ Craft.ElementFieldSettings = Garnish.Base.extend({
     minRelationsId,
     maxRelationsId
   ) {
-    this.$relatedAncestorsInput = $('#' + maintainHierarchyId);
+    this.$maintainHierarchyInput = $('#' + maintainHierarchyId);
     this.$sourcesInput = $(`#${sourcesId}`);
     this.$branchLimitInput = $('#' + branchLimitId);
     this.$minRelationsInput = $('#' + minRelationsId);
@@ -22,22 +22,26 @@ Craft.ElementFieldSettings = Garnish.Base.extend({
 
     this.updateLimitFields();
     this.addListener(
-      this.$relatedAncestorsInput,
+      this.$maintainHierarchyInput,
       'change',
       'updateLimitFields'
     );
 
     if (this.$sourcesInput.length) {
-      this.updateRelateAncestorsField();
+      this.updateMaintainHierarchyField();
       this.$sourcesInput.find('[type=checkbox]').each(
         function (index, checkbox) {
-          this.addListener($(checkbox), 'change', 'updateRelateAncestorsField');
+          this.addListener(
+            $(checkbox),
+            'change',
+            'updateMaintainHierarchyField'
+          );
         }.bind(this)
       );
     }
   },
   updateLimitFields: function () {
-    if (this.$relatedAncestorsInput.is(':checked')) {
+    if (this.$maintainHierarchyInput.is(':checked')) {
       this.$minRelationsInput.closest('.field').hide();
       this.$maxRelationsInput.closest('.field').hide();
       this.$branchLimitInput.closest('.field').show();
@@ -47,28 +51,25 @@ Craft.ElementFieldSettings = Garnish.Base.extend({
       this.$maxRelationsInput.closest('.field').show();
     }
   },
-  updateRelateAncestorsField: function () {
-    let checkedInputs = this.$sourcesInput.find('[type="checkbox"]:checked');
-    let disableInput = false;
+  updateMaintainHierarchyField: function () {
+    const $checkedInputs = this.$sourcesInput.find('[type="checkbox"]:checked');
+    const enableInput =
+      $checkedInputs.length === 1 && $checkedInputs.data('structure-id');
 
-    if (checkedInputs.length > 1) {
-      disableInput = true;
-    }
-
-    if (disableInput) {
-      this.$relatedAncestorsInput.prop('disabled', true);
-      this.$relatedAncestorsInput
-        .closest('.field')
-        .find('.instructions')
-        .addClass('disabled');
-      this.$relatedAncestorsInput.prop('checked', false);
-      this.$relatedAncestorsInput.trigger('change');
-    } else {
-      this.$relatedAncestorsInput.prop('disabled', false);
-      this.$relatedAncestorsInput
+    if (enableInput) {
+      this.$maintainHierarchyInput.prop('disabled', false);
+      this.$maintainHierarchyInput
         .closest('.field')
         .find('.instructions')
         .removeClass('disabled');
+    } else {
+      this.$maintainHierarchyInput.prop('disabled', true);
+      this.$maintainHierarchyInput
+        .closest('.field')
+        .find('.instructions')
+        .addClass('disabled');
+      this.$maintainHierarchyInput.prop('checked', false);
+      this.$maintainHierarchyInput.trigger('change');
     }
   },
 });
