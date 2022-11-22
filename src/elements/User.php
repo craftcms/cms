@@ -313,14 +313,6 @@ class User extends Element implements IdentityInterface
     /**
      * @inheritdoc
      */
-    protected static function includeSetStatusAction(): bool
-    {
-        return false;
-    }
-
-    /**
-     * @inheritdoc
-     */
     protected static function defineActions(string $source): array
     {
         $actions = [];
