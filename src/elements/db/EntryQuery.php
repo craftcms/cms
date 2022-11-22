@@ -1177,11 +1177,11 @@ class EntryQuery extends ElementQuery
                     ) {
                         $row['authorsIds'] = $entryAuthorsIds;
                         $distinctRows[$row['id']] = $row;
-                    // if "negative" search, check if row (entry) doesn't have the authors
-                    // we need to exclude, and no others
+                    // if "negative" search, check if row (entry) doesn't have
+                    // all the authors we need to exclude, and no others
                     } elseif (
                         $negativeSearch === true &&
-                        empty(array_intersect($_authorsIds, $entryAuthorsIds))
+                        !empty(array_diff($_authorsIds, $entryAuthorsIds))
                     ) {
                         $row['authorsIds'] = $entryAuthorsIds;
                         $distinctRows[$row['id']] = $row;

@@ -72,9 +72,9 @@ use yii\web\Response;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  *
- * @since 5.0.0
  * @property array|null $authorsIds the entry authors' IDs
  * @property array|null $authors the entry’s authors
+ * @since 5.0.0
  */
 class Entry extends Element implements ExpirableElementInterface
 {
@@ -579,28 +579,28 @@ class Entry extends Element implements ExpirableElementInterface
      */
     public static function eagerLoadingMap(array $sourceElements, string $handle): array|null|false
     {
-//        if ($handle === 'author') {
-//            /** @phpstan-ignore-next-line */
-//            $sourceElementsWithAuthors = array_filter($sourceElements, function(self $entry) {
-//                return $entry->getAuthorId() !== null;
-//            });
-//
-//            /** @phpstan-ignore-next-line */
-//            $map = array_map(function(self $entry) {
-//                return [
-//                    'source' => $entry->id,
-//                    'target' => $entry->getAuthorId(),
-//                ];
-//            }, $sourceElementsWithAuthors);
-//
-//            return [
-//                'elementType' => User::class,
-//                'map' => $map,
-//                'criteria' => [
-//                    'status' => null,
-//                ],
-//            ];
-//        }
+        if ($handle === 'author') {
+            /** @phpstan-ignore-next-line */
+            $sourceElementsWithAuthors = array_filter($sourceElements, function(self $entry) {
+                return $entry->getAuthorId() !== null;
+            });
+
+            /** @phpstan-ignore-next-line */
+            $map = array_map(function(self $entry) {
+                return [
+                    'source' => $entry->id,
+                    'target' => $entry->getAuthorId(),
+                ];
+            }, $sourceElementsWithAuthors);
+
+            return [
+                'elementType' => User::class,
+                'map' => $map,
+                'criteria' => [
+                    'status' => null,
+                ],
+            ];
+        }
 
         if ($handle === 'authors') {
             /** @phpstan-ignore-next-line */

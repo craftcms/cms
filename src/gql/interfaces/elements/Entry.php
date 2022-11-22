@@ -200,7 +200,7 @@ class Entry extends Structure
                 ],
                 'author' => [
                     'name' => 'author',
-                    'type' => User::getType(),
+                    'type' => Type::listOf(User::getType()),
                     'description' => 'The entry’s author.',
                     'complexity' => Gql::eagerLoadComplexity(),
                 ],
