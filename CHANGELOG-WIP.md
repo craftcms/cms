@@ -1,7 +1,7 @@
 # Release Notes for Craft CMS 4.4 (WIP)
 
 ### Content Management
-- Entries and Categories fields now have “Maintain hierarchy” settings, which become available when a single structured source is selected. ([#11749](https://github.com/craftcms/cms/pull/11749))
+- Entries and Categories fields now have “Maintain hierarchy” settings, which become available when a single structured source is selected. ([#8522](https://github.com/craftcms/cms/discussions/8522), [#8748](https://github.com/craftcms/cms/discussions/8748), [#11749](https://github.com/craftcms/cms/pull/11749))
 - Entries fields now have a “Branch Limit” setting, which becomes available when “Maintain hierarchy” is enabled, replacing “Min Relations” and “Max Relations”.
 - Categories fields now have “Min Relations” and “Max Relations” settings, which become available when “Maintain hierarchy” is disabled, replacing “Branch Limit”.
 - Added “Viewable” asset and entry condition rules. ([#12240](https://github.com/craftcms/cms/discussions/12240), [#12266](https://github.com/craftcms/cms/pull/12266))
