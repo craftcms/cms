@@ -506,9 +506,8 @@ class EntryQuery extends ElementQuery
      * | Value | Fetches entries…
      * | - | -
      * | `1` | with an author with an ID of 1.
-            * | `'not 1'` | not with an author with an ID of 1.
-     * | `[1, 2]` | with authors with an ID of 1 and 2.
-            * | `['not', 1, 2]` | not with authors with an ID of 1 or 2.
+     * | `[1, 2]` | with authors with ID of 1 and 2.
+     * | `['not', 1, 2]` | not with authors with an ID of 1 and 2.
      *
      * ---
      *
@@ -920,65 +919,7 @@ class EntryQuery extends ElementQuery
      */
     public function populate($rows): array
     {
-        // we are now getting multiple rows for one entry because of ->authorId([...]), ->authorsIds([...])
-        // and the ->innerJoin with entries_authors table
-        // todo: is there a better way to do this? tried with group_concat but throws mysql error
-        $distinctRows = [];
-        if (!empty($rows)) {
-            foreach ($rows as $row) {
-                // id this entryId has already been processed, carry on to the next one
-                if (isset($distinctRows[$row['id']])) {
-                    continue;
-                }
-                // get all authorIds for this entry
-                $entryAuthorsIds = array_column(
-                    (new Query())
-                        ->select(['authorId'])
-                        ->from(Table::ENTRIES_AUTHORS)
-                        ->where(['elementId' => $row['id']])
-                        ->orderBy('sortOrder ASC')
-                        ->all(),
-                    'authorId');
-
-                // if authors IDs were passed via authorsIds
-                // make sure we only return entries which have all and only
-                // the specified authors assigned to them
-                if (!empty($this->authorsIds)) {
-                    if (strtolower(trim($this->authorsIds[0])) === 'not') {
-                        $negativeSearch = true;
-                        $_authorsIds = array_slice($this->authorsIds, 1);
-                    } else {
-                        $negativeSearch = false;
-                        $_authorsIds = $this->authorsIds;
-                    }
-
-                    $test1 = array_intersect([1,7], [8,1,7]);
-                    $test2 = array_intersect([1,7], [7,1]);
-                    $test3 = array_intersect([1,7], [8]);
-                    $test4 = array_intersect([1,7], [8,7]);
-
-                    if (
-                        $negativeSearch === false &&
-                        count($_authorsIds) === count($entryAuthorsIds) &&
-                        empty(array_diff($_authorsIds, $entryAuthorsIds))
-                    ) {
-                        $row['authorsIds'] = $entryAuthorsIds;
-                        $distinctRows[$row['id']] = $row;
-                    } elseif (
-                        $negativeSearch === true &&
-                        empty(array_intersect($_authorsIds, $entryAuthorsIds))
-                    ) {
-                        $row['authorsIds'] = $entryAuthorsIds;
-                        $distinctRows[$row['id']] = $row;
-                    }
-                } else {
-                    $row['authorsIds'] = $entryAuthorsIds;
-                    $distinctRows[$row['id']] = $row;
-                }
-            }
-        }
-
-        return parent::populate($distinctRows);
+        return parent::populate($this->_processAuthors($rows));
     }
 
     /**
@@ -1183,5 +1124,75 @@ class EntryQuery extends ElementQuery
             }
         }
         return $tags;
+    }
+
+    /**
+     * We are getting multiple rows for one entry because of
+     * ->authorId([...]), ->authorsIds([...]) and the ->innerJoin with
+     * entries_authors table.
+     * We need to process each entry to make sure we get one element per entry.
+     *
+     * @param array $rows
+     * @return array
+     */
+    private function _processAuthors(array $rows): array
+    {
+        // we are now getting multiple rows for one entry because of ->authorId([...]), ->authorsIds([...])
+        // and the ->innerJoin with entries_authors table
+        // todo: is there a better way to do this? tried with group_concat but throws mysql error
+        $distinctRows = [];
+        if (!empty($rows)) {
+            foreach ($rows as $row) {
+                // if this entryId has already been processed, carry on to the next one
+                if (isset($distinctRows[$row['id']])) {
+                    continue;
+                }
+                // get all authorIds for this entry
+                $entryAuthorsIds = array_column(
+                    (new Query())
+                        ->select(['authorId'])
+                        ->from(Table::ENTRIES_AUTHORS)
+                        ->where(['elementId' => $row['id']])
+                        ->orderBy('sortOrder ASC')
+                        ->all(),
+                    'authorId');
+
+                // if authors IDs were passed via authorsIds
+                // make sure we only return entries which have all and only
+                // the specified authors assigned to them
+                if (!empty($this->authorsIds)) {
+                    if (strtolower(trim($this->authorsIds[0])) === 'not') {
+                        $negativeSearch = true;
+                        $_authorsIds = array_slice($this->authorsIds, 1);
+                    } else {
+                        $negativeSearch = false;
+                        $_authorsIds = $this->authorsIds;
+                    }
+
+                    // if "regular" search, check if row (entry) has only the authors we're after
+                    if (
+                        $negativeSearch === false &&
+                        count($_authorsIds) === count($entryAuthorsIds) &&
+                        empty(array_diff($_authorsIds, $entryAuthorsIds))
+                    ) {
+                        $row['authorsIds'] = $entryAuthorsIds;
+                        $distinctRows[$row['id']] = $row;
+                    // if "negative" search, check if row (entry) doesn't have the authors
+                    // we need to exclude, and no others
+                    } elseif (
+                        $negativeSearch === true &&
+                        empty(array_intersect($_authorsIds, $entryAuthorsIds))
+                    ) {
+                        $row['authorsIds'] = $entryAuthorsIds;
+                        $distinctRows[$row['id']] = $row;
+                    }
+                } else {
+                    $row['authorsIds'] = $entryAuthorsIds;
+                    $distinctRows[$row['id']] = $row;
+                }
+            }
+        }
+
+        return $distinctRows;
     }
 }
