@@ -36,7 +36,7 @@ class m221101_115859_create_entries_authors_table extends Migration
         // add data migration
         $entries = EntryRecord::find()
             ->select(['id', 'authorId'])
-            ->where('authorId IS NOT NULL')
+            ->where('[[authorId]] IS NOT NULL')
             ->orderBy('id ASC')
             ->all();
         $entriesAuthors = [];
