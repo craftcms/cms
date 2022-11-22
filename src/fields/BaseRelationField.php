@@ -379,13 +379,18 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
         $variables = $this->settingsTemplateVariables();
         $view = Craft::$app->getView();
 
-        $view->registerJs("new Craft.ElementFieldSettings(
-            '{$view->namespaceInputId('maintain-hierarchy')}',
-	        '{$view->namespaceInputId('sources-field')}',
-	        '{$view->namespaceInputId('branch-limit')}',
-	        '{$view->namespaceInputId('min-relations')}',
-	        '{$view->namespaceInputId('max-relations')}',
-        )");
+        $view->registerJsWithVars(fn($args) => <<<JS
+new Craft.ElementFieldSettings(...$args);
+JS, [
+                [
+                    $this->allowMultipleSources,
+                    $view->namespaceInputId('maintain-hierarchy-field'),
+                    $view->namespaceInputId($this->allowMultipleSources ? 'sources-field' : 'source-field'),
+                    $view->namespaceInputId('branch-limit-field'),
+                    $view->namespaceInputId('min-relations-field'),
+                    $view->namespaceInputId('max-relations-field'),
+                ],
+        ]);
 
         return $view->renderTemplate($this->settingsTemplate, $variables);
     }
@@ -999,10 +1004,8 @@ JS;
         $options = array_map(fn($s) => [
             'label' => $s['label'],
             'value' => $s['key'],
-            'inputAttributes' => [
-                'data' => [
-                    'structure-id' => $s['structureId'] ?? null,
-                ],
+            'data' => [
+                'structure-id' => $s['structureId'] ?? null,
             ],
         ], $this->availableSources());
         ArrayHelper::multisort($options, 'label', SORT_ASC, SORT_NATURAL | SORT_FLAG_CASE);

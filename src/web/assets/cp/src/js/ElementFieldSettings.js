@@ -1,24 +1,36 @@
 /** global: Craft */
 /** global: Garnish */
 Craft.ElementFieldSettings = Garnish.Base.extend({
+  allowMultipleSources: null,
+  $maintainHierarchyField: null,
   $maintainHierarchyInput: null,
-  $sourcesInput: null,
-  $branchLimitInput: null,
-  $maxRelationsInput: null,
-  $minRelationsInput: null,
+  $sourcesField: null,
+  $sourceSelect: null,
+  $branchLimitField: null,
+  $maxRelationsField: null,
+  $minRelationsField: null,
 
   init: function (
-    maintainHierarchyId,
-    sourcesId,
-    branchLimitId,
-    minRelationsId,
-    maxRelationsId
+    allowMultipleSources,
+    maintainHierarchyFieldId,
+    sourcesFieldId,
+    branchLimitFieldId,
+    minRelationsFieldId,
+    maxRelationsFieldId
   ) {
-    this.$maintainHierarchyInput = $('#' + maintainHierarchyId);
-    this.$sourcesInput = $(`#${sourcesId}`);
-    this.$branchLimitInput = $('#' + branchLimitId);
-    this.$minRelationsInput = $('#' + minRelationsId);
-    this.$maxRelationsInput = $('#' + maxRelationsId);
+    debugger;
+    this.allowMultipleSources = allowMultipleSources;
+    this.$maintainHierarchyField = $(`#${maintainHierarchyFieldId}`);
+    this.$maintainHierarchyInput = this.$maintainHierarchyField.find(
+      'input[type="checkbox"]'
+    );
+    this.$sourcesField = $(`#${sourcesFieldId}`);
+    if (!this.allowMultipleSources) {
+      this.$sourceSelect = this.$sourcesField.find('select');
+    }
+    this.$branchLimitField = $(`#${branchLimitFieldId}`);
+    this.$minRelationsField = $(`#${minRelationsFieldId}`);
+    this.$maxRelationsField = $(`#${maxRelationsFieldId}`);
 
     this.updateLimitFields();
     this.addListener(
@@ -27,9 +39,8 @@ Craft.ElementFieldSettings = Garnish.Base.extend({
       'updateLimitFields'
     );
 
-    if (this.$sourcesInput.length) {
-      this.updateMaintainHierarchyField();
-      this.$sourcesInput.find('[type=checkbox]').each(
+    if (this.allowMultipleSources) {
+      this.$sourcesField.find('[type=checkbox]').each(
         function (index, checkbox) {
           this.addListener(
             $(checkbox),
@@ -38,38 +49,51 @@ Craft.ElementFieldSettings = Garnish.Base.extend({
           );
         }.bind(this)
       );
-    }
-  },
-  updateLimitFields: function () {
-    if (this.$maintainHierarchyInput.is(':checked')) {
-      this.$minRelationsInput.closest('.field').hide();
-      this.$maxRelationsInput.closest('.field').hide();
-      this.$branchLimitInput.closest('.field').show();
     } else {
-      this.$branchLimitInput.closest('.field').hide();
-      this.$minRelationsInput.closest('.field').show();
-      this.$maxRelationsInput.closest('.field').show();
+      this.addListener(
+        this.$sourceSelect,
+        'change',
+        'updateMaintainHierarchyField'
+      );
     }
+    this.updateMaintainHierarchyField();
   },
-  updateMaintainHierarchyField: function () {
-    const $checkedInputs = this.$sourcesInput.find('[type="checkbox"]:checked');
-    const enableInput =
-      $checkedInputs.length === 1 && $checkedInputs.data('structure-id');
 
-    if (enableInput) {
-      this.$maintainHierarchyInput.prop('disabled', false);
-      this.$maintainHierarchyInput
-        .closest('.field')
-        .find('.instructions')
-        .removeClass('disabled');
+  updateLimitFields: function () {
+    if (
+      !this.$maintainHierarchyField.hasClass('hidden') &&
+      this.$maintainHierarchyInput.is(':checked')
+    ) {
+      this.$minRelationsField.addClass('hidden');
+      this.$maxRelationsField.addClass('hidden');
+      this.$branchLimitField.removeClass('hidden');
     } else {
-      this.$maintainHierarchyInput.prop('disabled', true);
-      this.$maintainHierarchyInput
-        .closest('.field')
-        .find('.instructions')
-        .addClass('disabled');
-      this.$maintainHierarchyInput.prop('checked', false);
-      this.$maintainHierarchyInput.trigger('change');
+      this.$branchLimitField.addClass('hidden');
+      this.$minRelationsField.removeClass('hidden');
+      this.$maxRelationsField.removeClass('hidden');
     }
+  },
+
+  updateMaintainHierarchyField: function () {
+    let showField;
+    if (this.allowMultipleSources) {
+      const $checkedInputs = this.$sourcesField.find(
+        '[type="checkbox"]:checked'
+      );
+      showField =
+        $checkedInputs.length === 1 && $checkedInputs.data('structure-id');
+    } else {
+      showField = this.$sourceSelect
+        .children('option:selected')
+        .data('structure-id');
+    }
+
+    if (showField) {
+      this.$maintainHierarchyField.removeClass('hidden');
+    } else {
+      this.$maintainHierarchyField.addClass('hidden');
+    }
+
+    this.updateLimitFields();
   },
 });
