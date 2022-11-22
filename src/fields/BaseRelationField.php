@@ -138,7 +138,6 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
 
     /**
      * @var bool Whether to automatically relate structural ancestors.
-     *
      * @since 4.4.0
      */
     public bool $maintainHierarchy = false;
