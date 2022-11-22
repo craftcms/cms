@@ -994,11 +994,13 @@ class EntryQuery extends ElementQuery
         // Enforce the viewPeerEntries permissions for non-Single sections
         foreach (Craft::$app->getSections()->getEditableSections() as $section) {
             if ($section->type != Section::TYPE_SINGLE && !$user->can("viewPeerEntries:$section->uid")) {
-                $this->subQuery->andWhere([
-                    'or',
-                    ['not', ['entries.sectionId' => $section->id]],
-                    ['entries.authorId' => $user->id],
-                ]);
+                $this->subQuery
+                    ->innerJoin(['entries_authors' => Table::ENTRIES_AUTHORS], '[[entries_authors.elementId]] = [[entries.id]]')
+                    ->andWhere([
+                        'or',
+                        ['not', ['entries.sectionId' => $section->id]],
+                        ['in', 'entries_authors.authorId', $user->id],
+                    ]);
             }
         }
     }

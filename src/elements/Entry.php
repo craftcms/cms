@@ -1432,7 +1432,7 @@ class Entry extends Element implements ExpirableElementInterface
 
         return (
             $section->type === Section::TYPE_SINGLE ||
-            $this->getAuthorId() === $user->id ||
+            in_array($user->id, $this->getAuthorsIds(), true) ||
             $user->can("viewPeerEntries:$section->uid")
         );
     }
@@ -1466,7 +1466,7 @@ class Entry extends Element implements ExpirableElementInterface
 
         return (
             $section->type === Section::TYPE_SINGLE ||
-            $this->getAuthorId() === $user->id ||
+            in_array($user->id, $this->getAuthorsIds(), true) ||
             $user->can("savePeerEntries:$section->uid")
         );
     }
@@ -1513,7 +1513,7 @@ class Entry extends Element implements ExpirableElementInterface
         }
 
         return (
-            $this->getAuthorId() === $user->id ||
+            in_array($user->id, $this->getAuthorsIds(), true) ||
             $user->can("deletePeerEntries:$section->uid")
         );
     }
