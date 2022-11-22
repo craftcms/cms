@@ -247,10 +247,8 @@ Craft.CP = Garnish.Base.extend(
           $unreadMessage = $('<span/>', {
             class: 'visually-hidden',
             html: Craft.t('app', 'Unread messages'),
-          })
-          $btn
-            .addClass('unread')
-            .append($unreadMessage);
+          });
+          $btn.addClass('unread').append($unreadMessage);
         }
         let hud;
         this.addListener($btn, 'click', () => {
@@ -258,7 +256,9 @@ Craft.CP = Garnish.Base.extend(
             let contents = '';
             Craft.announcements.forEach((a) => {
               contents +=
-                `<div class="announcement ${a.unread ? 'unread' : ''}" role="listitem">` +
+                `<div class="announcement ${
+                  a.unread ? 'unread' : ''
+                }" role="listitem">` +
                 '<div class="announcement__header">' +
                 `<h3 class="announcement__heading h2">${a.heading}</h3>` +
                 '<div class="announcement-label-container">' +
@@ -271,7 +271,10 @@ Craft.CP = Garnish.Base.extend(
             });
             hud = new Garnish.HUD(
               $btn,
-              `<h2 class="visually-hidden">${Craft.t('app', 'Announcements')}</h2><div id="announcements" role="list">${contents}</div>`,
+              `<h2 class="visually-hidden">${Craft.t(
+                'app',
+                'Announcements'
+              )}</h2><div id="announcements" role="list">${contents}</div>`,
               {
                 onShow: () => {
                   $btn.addClass('active');

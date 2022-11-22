@@ -639,7 +639,7 @@ li.breadcrumb-toggle-wrapper {
       }
     }
 
-    &.unread h2:after {
+    &.unread .announcement__heading:after {
       content: '';
       display: block;
       position: absolute;
