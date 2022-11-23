@@ -38,6 +38,7 @@ use craft\events\AuthorizationCheckEvent;
 use craft\events\BatchElementActionEvent;
 use craft\events\DeleteElementEvent;
 use craft\events\EagerLoadElementsEvent;
+use craft\events\ElementDeleteForSiteEvent;
 use craft\events\ElementEvent;
 use craft\events\ElementQueryEvent;
 use craft\events\InvalidateElementCachesEvent;
@@ -69,6 +70,7 @@ use yii\base\Exception;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidCallException;
 use yii\caching\TagDependency;
+use yii\web\BadRequestHttpException;
 
 /**
  * The Elements service provides APIs for managing elements.
@@ -412,6 +414,18 @@ class Elements extends Component
      * @since 4.3.0
      */
     public const EVENT_AUTHORIZE_DELETE_FOR_SITE = 'authorizeDeleteForSite';
+
+    /**
+     * @event ElementDeleteForSiteEvent The event that is triggered before deleting an element for a site.
+     * @since 4.4.0
+     */
+    public const EVENT_BEFORE_DELETE_FOR_SITE = 'beforeDeleteForSite';
+
+    /**
+     * @event ElementDeleteForSiteEvent The event that is triggered after deleting an element for a site.
+     * @since 4.4.0
+     */
+    public const EVENT_AFTER_DELETE_FOR_SITE = 'beforeDeleteForSite';
 
     /**
      * @var int[] Stores a mapping of source element IDs to their duplicated element IDs.
@@ -2011,6 +2025,67 @@ class Elements extends Component
         }
 
         return true;
+    }
+
+    /**
+     * Delete an element for a specific site
+     *
+     * @param ElementInterface $element Element to be deleted
+     * @param int $siteId Site ID to delete from
+     * @return void
+     * @throws BadRequestHttpException If the element is only available on the current site.
+     * @throws ElementNotFoundException
+     * @throws Exception
+     * @throws Throwable
+     * @throws \yii\db\Exception
+     * @since 4.4.0
+     */
+    public function deleteElementForSite(ElementInterface $element, int $siteId): void
+    {
+        // Fetch the element in any other site (preferably one the user has access to)
+        $editableSiteIds = Craft::$app->getSites()->getEditableSiteIds();
+
+        $otherSiteElement = $element::find()
+            ->id($element->id)
+            ->drafts($element->getIsDraft())
+            ->revisions($element->getIsRevision())
+            ->provisionalDrafts($element->isProvisionalDraft)
+            ->siteId(['not', $siteId])
+            ->preferSites($editableSiteIds)
+            ->unique()
+            ->status(null)
+            ->one();
+
+        if (!$otherSiteElement) {
+            throw new BadRequestHttpException('The element doesn’t belong to multiple sites.');
+        }
+
+        // Fire a 'beforeDeleteForSite' event
+        if ($this->hasEventHandlers(self::EVENT_BEFORE_DELETE_FOR_SITE)) {
+            $this->trigger(self::EVENT_BEFORE_DELETE_FOR_SITE, new ElementDeleteForSiteEvent([
+                'element' => $element,
+                'siteId' => $siteId,
+            ]));
+        }
+
+        // Delete the row in elements_sites
+        Db::delete(Table::ELEMENTS_SITES, [
+            'elementId' => $element->id,
+            'siteId' => $element->siteId,
+        ]);
+
+        // Resave the element
+        $otherSiteElement->setScenario(Element::SCENARIO_ESSENTIALS);
+        $otherSiteElement->resaving = true;
+        $this->saveElement($otherSiteElement, false, true, false);
+
+        // Fire an 'afterDeleteForSite' event
+        if ($this->hasEventHandlers(self::EVENT_AFTER_DELETE_FOR_SITE)) {
+            $this->trigger(self::EVENT_AFTER_DELETE_FOR_SITE, new ElementDeleteForSiteEvent([
+                'element' => $element,
+                'siteId' => $siteId,
+            ]));
+        }
     }
 
     /**
