@@ -525,15 +525,18 @@ class Users extends Component
 
         $assetsService = Craft::$app->getAssets();
 
+        $event = new UserSavePhotoEvent([
+            'user' => $user,
+            'photoId' => $user->photoId,
+            'filename' => $filename,
+        ]);
+
         if ($this->hasEventHandlers(self::EVENT_BEFORE_SAVE_USER_PHOTO)) {
-            $this->trigger(self::EVENT_BEFORE_SAVE_USER_PHOTO, new UserSavePhotoEvent([
-                'user' => $user,
-                'filename' => $filename,
-            ]));
+            $this->trigger(self::EVENT_BEFORE_SAVE_USER_PHOTO, $event);
         }
 
         // If the photo exists, just replace the file.
-        if ($user->photoId && ($photo = $user->getPhoto()) !== null) {
+        if ($event->photoId && ($photo = Craft::$app->getAssets()->getAssetById($event->photoId)) !== null) {
             $assetsService->replaceAssetFile($photo, $fileLocation, $filename);
         } else {
             $volume = $this->_userPhotoVolume();
@@ -558,6 +561,7 @@ class Users extends Component
         if ($this->hasEventHandlers(self::EVENT_AFTER_SAVE_USER_PHOTO)) {
             $this->trigger(self::EVENT_AFTER_SAVE_USER_PHOTO, new UserSavePhotoEvent([
                 'photo' => $photo,
+                'photoId' => $photo->id,
                 'filename' => $filename,
                 'user' => $user,
             ]));

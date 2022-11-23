@@ -26,4 +26,9 @@ class UserSavePhotoEvent extends UserEvent
      * @var Asset|null The asset model associated with the event.
      */
     public ?Asset $photo = null;
+
+    /**
+     * @var int|null ID of the asset being saved.
+     */
+    public ?int $photoId = null;
 }
