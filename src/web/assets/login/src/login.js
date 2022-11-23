@@ -11,6 +11,7 @@ import './login.scss';
     $forgotPasswordLink: null,
     $rememberPasswordLink: null,
     $submitBtn: null,
+    $submitBtnStatusContainer: null,
     $errors: null,
 
     forgotPassword: false,

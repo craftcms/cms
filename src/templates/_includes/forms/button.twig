@@ -1,4 +1,6 @@
 {% set spinner = spinner ?? false -%}
+{% set busyMessage = busyMessage ?? false %}
+{% set successMessage = successMessage ?? false %}
 {% set label = label ?? null %}
 {% set attributes = {
     type: type ?? 'button',
@@ -7,9 +9,16 @@
         'btn',
         not label ? 'btn-empty' : null,
     ]|filter),
+    data: {
+        'busy-message': busyMessage,
+        'success-message': successMessage,
+    }
 }|merge(attributes ?? {}) -%}
 
 {% apply spaceless %}
+    {% if spinner %}
+        <div role="status" class="visually-hidden"></div>
+    {% endif %}
     {% tag 'button' with attributes %}
         {{ label ? tag('div', {
             class: 'label',
@@ -17,7 +26,6 @@
         }) }}
         {% if spinner %}
             <div class="spinner spinner-absolute"></div>
-            <div role="status" class="visually-hidden"></div>
         {% endif %}
     {% endtag %}
 {% endapply -%}
