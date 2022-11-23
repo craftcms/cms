@@ -1380,6 +1380,13 @@ ul.icons {
     }
   }
 
+  &.wrap {
+    height: auto;
+    min-height: 34px;
+    white-space: initial;
+    text-align: left;
+  }
+
   &:not(.disabled):not(.loading):not(.dashed):not([aria-disabled]) {
     &:focus,
     &.focus,
@@ -2631,7 +2638,10 @@ $elementInnerSpacing: 5px;
 
     .label {
       display: block;
-      word-wrap: break-word;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      word-wrap: normal;
     }
   }
 
@@ -5167,7 +5177,7 @@ $min2ColWidth: 400px;
         -webkit-appearance: none;
 
         &:not(.flex) {
-          display: block !important;
+          display: table !important;
           box-sizing: border-box;
           width: calc(100% + 28px);
           @include alignleft;

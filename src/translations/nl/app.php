@@ -124,7 +124,7 @@ return [
     'Applying new propagation method to elements' => 'De nieuwe propagatiemethode wordt toegepast op elementen',
     'Applying new propagation method to {section} entries' => 'De nieuwe propagatiemethode wordt toegepast op inhoud van {section}',
     'Applying this change to existing blocks can take some time.' => 'Het toepassen van deze wijziging op bestaande blokken kan enige tijd duren.',
-    'Archived' => 'Archived',
+    'Archived' => 'Gearchiveerd',
     'Are you sure you want to close the editor? Any changes will be lost.' => 'Weet u zeker dat u de editor wilt sluiten? Eventuele wijzigingen zullen verloren gaan.',
     'Are you sure you want to close this screen? Any changes will be lost.' => 'Weet u zeker dat u dit scherm wilt sluiten? Eventuele wijzigingen gaan verloren.',
     'Are you sure you want to delete the logo?' => 'Weet u zeker dat u het logo wilt verwijderen?',

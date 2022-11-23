@@ -51,6 +51,8 @@ class CpScreenResponseFormatter extends Component implements ResponseFormatterIn
 
     private function _formatJson(\yii\web\Request $request, YiiResponse $response, CpScreenResponseBehavior $behavior): void
     {
+        $response->format = Response::FORMAT_JSON;
+
         $namespace = StringHelper::randomString(10);
         $view = Craft::$app->getView();
 
@@ -107,6 +109,8 @@ class CpScreenResponseFormatter extends Component implements ResponseFormatterIn
 
     private function _formatTemplate(YiiResponse $response, CpScreenResponseBehavior $behavior): void
     {
+        $response->format = Response::FORMAT_HTML;
+
         if ($behavior->prepareScreen) {
             call_user_func($behavior->prepareScreen, $response, 'main-form');
         }
