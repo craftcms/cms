@@ -981,9 +981,10 @@ JS, [
         $this->element = $element;
 
         $elementsService = Craft::$app->getElements();
+        $user = static::currentUser();
 
         // save as a new is now available to people who can create drafts
-        if (!$elementsService->canCreateDrafts($element)) {
+        if (!$elementsService->canCreateDrafts($element, $user)) {
             throw new ForbiddenHttpException('User not authorized to duplicate this element.');
         }
 
