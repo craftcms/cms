@@ -560,7 +560,6 @@ class Users extends Component
 
         if ($this->hasEventHandlers(self::EVENT_AFTER_SAVE_USER_PHOTO)) {
             $this->trigger(self::EVENT_AFTER_SAVE_USER_PHOTO, new UserSavePhotoEvent([
-                'photo' => $photo,
                 'photoId' => $photo->id,
                 'filename' => $filename,
                 'user' => $user,

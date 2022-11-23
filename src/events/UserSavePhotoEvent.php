@@ -7,8 +7,6 @@
 
 namespace craft\events;
 
-use craft\elements\Asset;
-
 /**
  * UserSavePhotoEvent class.
  *
@@ -21,11 +19,6 @@ class UserSavePhotoEvent extends UserEvent
      * @var string Filename of the file being saved.
      */
     public string $filename;
-
-    /**
-     * @var Asset|null The asset model associated with the event.
-     */
-    public ?Asset $photo = null;
 
     /**
      * @var int|null ID of the asset being saved.
