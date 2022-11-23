@@ -2071,7 +2071,7 @@ class Elements extends Component
         // Delete the row in elements_sites
         Db::delete(Table::ELEMENTS_SITES, [
             'elementId' => $element->id,
-            'siteId' => $element->siteId,
+            'siteId' => $siteId,
         ]);
 
         // Resave the element
