@@ -1888,6 +1888,7 @@ class ElementQuery extends Query implements ElementQueryInterface
      *
      * @return bool Whether the query should be prepared and returned to the query builder.
      * If false, the query will be cancelled and no results will be returned.
+     * @throws QueryAbortedException
      * @see prepare()
      * @see afterPrepare()
      */

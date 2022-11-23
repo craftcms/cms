@@ -586,8 +586,7 @@ class Category extends Element
      */
     public function getPostEditUrl(): ?string
     {
-        $group = $this->getGroup();
-        return UrlHelper::cpUrl("categories/$group->handle");
+        return UrlHelper::cpUrl('categories');
     }
 
     /**

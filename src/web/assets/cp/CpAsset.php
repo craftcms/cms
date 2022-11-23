@@ -308,6 +308,7 @@ JS;
             'This can be left blank if you just want an unlabeled separator.',
             'This field has been modified.',
             'This month',
+            'This tab is conditional',
             'This week',
             'This year',
             'Tip',

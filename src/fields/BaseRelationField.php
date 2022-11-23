@@ -137,6 +137,19 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
     public bool $showSiteMenu = false;
 
     /**
+     * @var bool Whether to automatically relate structural ancestors.
+     * @since 4.4.0
+     */
+    public bool $maintainHierarchy = false;
+
+    /**
+     * @var int|null Branch limit
+     *
+     * @since 4.4.0
+     */
+    public ?int $branchLimit = null;
+
+    /**
      * @var string|null The view mode
      */
     public ?string $viewMode = null;
@@ -250,6 +263,14 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
             $config['showSiteMenu'] = true;
         }
 
+        // if relating ancestors, then clear min/max limits, otherwise clear branch limit
+        if ($config['maintainHierarchy'] ?? false) {
+            $config['maxRelations'] = null;
+            $config['minRelations'] = null;
+        } else {
+            $config['branchLimit'] = null;
+        }
+
         parent::__construct($config);
     }
 
@@ -260,8 +281,56 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
     protected function defineRules(): array
     {
         $rules = parent::defineRules();
-        $rules[] = [['minRelations', 'maxRelations'], 'number', 'integerOnly' => true];
+        $rules[] = [['minRelations', 'maxRelations', 'branchLimit'], 'number', 'integerOnly' => true];
+        $rules[] = [['source', 'sources'], 'validateSources'];
         return $rules;
+    }
+
+    /**
+     * Ensure only one structured source is selected when maintainHierarchy is true.
+     *
+     * @param string $attribute
+     * @since 4.4.0
+     */
+    public function validateSources(string $attribute): void
+    {
+        if (!$this->maintainHierarchy) {
+            return;
+        }
+
+        $inputSources = $this->getInputSources();
+
+        if ($inputSources === null) {
+            $this->addError($attribute, Craft::t('app', 'A source is required when relating ancestors.'));
+            return;
+        }
+
+        if (is_string($inputSources)) {
+            $inputSources = [$inputSources];
+        }
+
+        $elementSources = ArrayHelper::whereIn(
+            Craft::$app->elementSources->getSources(static::elementType()),
+            'key',
+            $inputSources
+        );
+
+        if (count($elementSources) > 1) {
+            $this->addError($attribute, Craft::t('app', 'Only one source is allowed when relating ancestors.'));
+        }
+
+        foreach ($elementSources as $elementSource) {
+            if (!isset($elementSource['structureId'])) {
+                $this->addError(
+                    $attribute,
+                    Craft::t(
+                        'app',
+                        '{source} is not a structured source. Only structured sources may be used when relating ancestors.',
+                        ['source' => $elementSource['label']]
+                    )
+                );
+            }
+        }
     }
 
     /**
@@ -281,6 +350,9 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
         $attributes[] = 'targetSiteId';
         $attributes[] = 'validateRelatedElements';
         $attributes[] = 'viewMode';
+        $attributes[] = 'allowSelfRelations';
+        $attributes[] = 'maintainHierarchy';
+        $attributes[] = 'branchLimit';
 
         return $attributes;
     }
@@ -305,7 +377,22 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
     public function getSettingsHtml(): ?string
     {
         $variables = $this->settingsTemplateVariables();
-        return Craft::$app->getView()->renderTemplate($this->settingsTemplate, $variables);
+        $view = Craft::$app->getView();
+
+        $view->registerJsWithVars(fn($args) => <<<JS
+new Craft.ElementFieldSettings(...$args);
+JS, [
+                [
+                    $this->allowMultipleSources,
+                    $view->namespaceInputId('maintain-hierarchy-field'),
+                    $view->namespaceInputId($this->allowMultipleSources ? 'sources-field' : 'source-field'),
+                    $view->namespaceInputId('branch-limit-field'),
+                    $view->namespaceInputId('min-relations-field'),
+                    $view->namespaceInputId('max-relations-field'),
+                ],
+        ]);
+
+        return $view->renderTemplate($this->settingsTemplate, $variables);
     }
 
     /**
@@ -362,7 +449,7 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
      */
     public function validateRelatedElements(ElementInterface $element): void
     {
-        // Prevent circular relations from worrying about this entry
+        // Prevent circular relations from worrying about this element
         $sourceId = $element->getCanonicalId();
         $sourceValidates = self::$_relatedElementValidates[$sourceId][$element->siteId] ?? null;
         self::$_relatedElementValidates[$sourceId][$element->siteId] = true;
@@ -489,6 +576,25 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
                 if (isset($source['criteria'])) {
                     Craft::configure($query, $source['criteria']);
                 }
+            }
+
+            if ($this->maintainHierarchy) {
+                $structuresService = Craft::$app->getStructures();
+
+                /** @var ElementInterface[] $structureElements */
+                $structureElements = (clone($query))
+                    ->status(null)
+                    ->all();
+
+                // Fill in any gaps
+                $structuresService->fillGapsInElements($structureElements);
+
+                // Enforce the branch limit
+                if ($this->branchLimit) {
+                    $structuresService->applyBranchLimitToElements($structureElements, $this->branchLimit);
+                }
+
+                $query->id(ArrayHelper::getColumn($structureElements, 'id'));
             }
         } else {
             $query->id(false);
@@ -758,6 +864,10 @@ JS;
             }
         }
 
+        if ($this->maintainHierarchy) {
+            $criteria['orderBy'] = ['structureelements.lft' => SORT_ASC];
+        }
+
         return [
             'elementType' => static::elementType(),
             'map' => $map,
@@ -806,7 +916,7 @@ JS;
     {
         // Skip if nothing changed, or the element is just propagating and we're not localizing relations
         if (
-            $element->isFieldDirty($this->handle) &&
+            ($element->isFieldDirty($this->handle) || $this->maintainHierarchy) &&
             (!$element->propagating || $this->localizeRelations)
         ) {
             /** @var ElementQueryInterface|Collection $value */
@@ -822,6 +932,32 @@ JS;
                 $targetIds = $value->id ?: [];
             } else {
                 $targetIds = $this->_all($value, $element)->ids();
+            }
+
+            if ($this->maintainHierarchy) {
+                $structuresService = Craft::$app->getStructures();
+
+                /** @var ElementInterface $class */
+                $class = static::elementType();
+
+                /** @var ElementInterface[] $structureElements */
+                $structureElements = $class::find()
+                    ->id($targetIds)
+                    ->drafts(null)
+                    ->revisions(null)
+                    ->provisionalDrafts(null)
+                    ->status(null)
+                    ->all();
+
+                // Fill in any gaps
+                $structuresService->fillGapsInElements($structureElements);
+
+                // Enforce the branch limit
+                if ($this->branchLimit) {
+                    $structuresService->applyBranchLimitToElements($structureElements, $this->branchLimit);
+                }
+
+                $targetIds = ArrayHelper::getColumn($structureElements, 'id');
             }
 
             /** @var int|int[]|false|null $targetIds */
@@ -865,10 +1001,13 @@ JS;
      */
     public function getSourceOptions(): array
     {
-        $options = array_map(
-            fn($s) => ['label' => $s['label'], 'value' => $s['key']],
-            $this->availableSources()
-        );
+        $options = array_map(fn($s) => [
+            'label' => $s['label'],
+            'value' => $s['key'],
+            'data' => [
+                'structure-id' => $s['structureId'] ?? null,
+            ],
+        ], $this->availableSources());
         ArrayHelper::multisort($options, 'label', SORT_ASC, SORT_NATURAL | SORT_FLAG_CASE);
         return $options;
     }
@@ -1068,7 +1207,9 @@ JS;
             'condition' => $this->getSelectionCondition(),
             'criteria' => $selectionCriteria,
             'showSiteMenu' => ($this->targetSiteId || !$this->showSiteMenu) ? false : 'auto',
-            'allowSelfRelations' => $this->allowSelfRelations,
+            'allowSelfRelations' => (bool)$this->allowSelfRelations,
+            'maintainHierarchy' => (bool)$this->maintainHierarchy,
+            'branchLimit' => $this->branchLimit,
             'sourceElementId' => !empty($element->id) ? $element->id : null,
             'disabledElementIds' => $disabledElementIds,
             'limit' => $this->allowLimit ? $this->maxRelations : null,
