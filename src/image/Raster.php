@@ -249,8 +249,10 @@ class Raster extends Image
         if ($scaleIfSmaller || $this->getWidth() > $targetWidth || $this->getHeight() > $targetHeight) {
             $factor = max($this->getWidth() / $targetWidth, $this->getHeight() / $targetHeight);
             $this->resize(round($this->getWidth() / $factor), round($this->getHeight() / $factor));
-        } elseif ($this->_fill) {
-            $this->applyFill($targetWidth, $targetHeight, $position);
+
+            if ($this->_fill) {
+                $this->applyFill($targetWidth, $targetHeight, $position);
+            }
         }
 
         return $this;
