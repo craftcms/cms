@@ -1206,7 +1206,7 @@ Craft.ui = {
               externalIcon + '</a>'
             );
           } else {
-            listItem += '<a data-field-error-key="' + fieldHandle + '">';
+            listItem += '<a data-field-error-key="' + fieldHandle + '" href="#">';
             listItem += fieldErrors[i];
             listItem += '</a>';
           }
@@ -1245,7 +1245,10 @@ Craft.ui = {
 
       // start listening for clicks on summary errors
       errorsSummaryContainer.find('a').on('click', (ev) => {
-        this.anchorSummaryErrorToField(ev.target, $body, namespace);
+        if ($(ev.target).hasClass('cross-site-validate') == false) {
+          ev.preventDefault();
+          this.anchorSummaryErrorToField(ev.target, $body, namespace);
+        }
       });
     }
   },

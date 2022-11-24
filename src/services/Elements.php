@@ -3305,7 +3305,7 @@ class Elements extends Component
         ) {
             $queryParams = ArrayHelper::without(Craft::$app->getRequest()->getQueryParams(), 'site');
             $url = UrlHelper::url($siteElement->getCpEditUrl(), $queryParams + ['prevalidate' => 1]);
-            $message = " <a href=\"$url\">{$message}</a>";
+            $message = " <a href=\"$url\" class=\"cross-site-validate\">{$message}</a>";
         }
 
         $element->addError('global', $message);

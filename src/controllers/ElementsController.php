@@ -825,9 +825,11 @@ JS, [
                     if (preg_match('/^\s?\<a /', $error)) {
                         $errorItem .= $error;
                     } else {
-                        $errorItem .= Html::a(Craft::t('app', $error), null, [
-                            'data-field-error-key' => $key,
-                        ]);
+                        $errorItem .= Html::a(
+                            Craft::t('app', $error),
+                            '#',
+                            ['data-field-error-key' => $key],
+                        );
                     }
 
                     $errorItem .= Html::endTag('li');
