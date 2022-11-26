@@ -70,7 +70,6 @@ use yii\base\Exception;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidCallException;
 use yii\caching\TagDependency;
-use yii\web\BadRequestHttpException;
 
 /**
  * The Elements service provides APIs for managing elements.
@@ -2027,64 +2026,47 @@ class Elements extends Component
         return true;
     }
 
+    public function deleteElementForSite(ElementInterface $element, int $siteId)
+    {
+        $this->deleteElementsForSite([$element], $siteId);
+    }
+
     /**
      * Delete an element for a specific site
      *
-     * @param ElementInterface $element Element to be deleted
+     * @param array $elements
      * @param int $siteId Site ID to delete from
      * @return void
-     * @throws BadRequestHttpException If the element is only available on the current site.
-     * @throws ElementNotFoundException
-     * @throws Exception
-     * @throws Throwable
      * @throws \yii\db\Exception
      * @since 4.4.0
      */
-    public function deleteElementForSite(ElementInterface $element, int $siteId): void
+    public function deleteElementsForSite(array $elements, int $siteId): void
     {
-        // Fetch the element in any other site (preferably one the user has access to)
-        $editableSiteIds = Craft::$app->getSites()->getEditableSiteIds();
-
-        $otherSiteElement = $element::find()
-            ->id($element->id)
-            ->drafts($element->getIsDraft())
-            ->revisions($element->getIsRevision())
-            ->provisionalDrafts($element->isProvisionalDraft)
-            ->siteId(['not', $siteId])
-            ->preferSites($editableSiteIds)
-            ->unique()
-            ->status(null)
-            ->one();
-
-        if (!$otherSiteElement) {
-            throw new BadRequestHttpException('The element doesn’t belong to multiple sites.');
-        }
-
-        // Fire a 'beforeDeleteForSite' event
+        // Fire 'beforeDeleteForSite' events
         if ($this->hasEventHandlers(self::EVENT_BEFORE_DELETE_FOR_SITE)) {
-            $this->trigger(self::EVENT_BEFORE_DELETE_FOR_SITE, new ElementDeleteForSiteEvent([
-                'element' => $element,
-                'siteId' => $siteId,
-            ]));
+            foreach ($elements as $element) {
+                $this->trigger(self::EVENT_BEFORE_DELETE_FOR_SITE, new ElementDeleteForSiteEvent([
+                    'element' => $element,
+                    'siteId' => $siteId,
+                ]));
+            }
         }
 
+        $elementIds = ArrayHelper::getColumn($elements, 'id');
         // Delete the row in elements_sites
         Db::delete(Table::ELEMENTS_SITES, [
-            'elementId' => $element->id,
+            'elementId' => $elementIds,
             'siteId' => $siteId,
         ]);
 
-        // Resave the element
-        $otherSiteElement->setScenario(Element::SCENARIO_ESSENTIALS);
-        $otherSiteElement->resaving = true;
-        $this->saveElement($otherSiteElement, false, true, false);
-
-        // Fire an 'afterDeleteForSite' event
+        // Fire 'afterDeleteForSite' events
         if ($this->hasEventHandlers(self::EVENT_AFTER_DELETE_FOR_SITE)) {
-            $this->trigger(self::EVENT_AFTER_DELETE_FOR_SITE, new ElementDeleteForSiteEvent([
-                'element' => $element,
-                'siteId' => $siteId,
-            ]));
+            foreach ($elements as $element) {
+                $this->trigger(self::EVENT_AFTER_DELETE_FOR_SITE, new ElementDeleteForSiteEvent([
+                    'element' => $element,
+                    'siteId' => $siteId,
+                ]));
+            }
         }
     }
 

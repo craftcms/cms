@@ -11,9 +11,7 @@ use Craft;
 use craft\base\Element;
 use craft\base\ElementAction;
 use craft\base\ElementInterface;
-use craft\db\Table;
 use craft\elements\db\ElementQueryInterface;
-use craft\helpers\Db;
 
 /**
  * Delete represents a “Delete for site” element action.
@@ -112,10 +110,7 @@ JS, [static::class]);
 
         if (!empty($otherSiteElements)) {
             // Delete their rows in elements_sites
-            Db::delete(Table::ELEMENTS_SITES, [
-                'elementId' => $multiSiteElementIds,
-                'siteId' => $query->siteId,
-            ]);
+            $elementsService->deleteElementsForSite($otherSiteElements, $query->siteId);
 
             // Resave the elements
             foreach ($otherSiteElements as $element) {

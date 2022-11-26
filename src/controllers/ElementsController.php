@@ -1066,7 +1066,30 @@ JS, [
             throw new ForbiddenHttpException('User not authorized to delete the element for this site.');
         }
 
+        // Fetch the element in any other site (preferably one the user has access to)
+        $editableSiteIds = Craft::$app->getSites()->getEditableSiteIds();
+
+        $otherSiteElement = $element::find()
+            ->id($element->id)
+            ->drafts($element->getIsDraft())
+            ->revisions($element->getIsRevision())
+            ->provisionalDrafts($element->isProvisionalDraft)
+            ->siteId(['not', $element->siteId])
+            ->preferSites($editableSiteIds)
+            ->unique()
+            ->status(null)
+            ->one();
+
+        if (!$otherSiteElement) {
+            throw new BadRequestHttpException('The element doesn’t belong to multiple sites.');
+        }
+
         $elementsService->deleteElementForSite($element, $element->siteId);
+
+        // Resave the element
+        $otherSiteElement->setScenario(Element::SCENARIO_ESSENTIALS);
+        $otherSiteElement->resaving = true;
+        $elementsService->saveElement($otherSiteElement, false, true, false);
 
         return $this->_asSuccess(Craft::t('app', '{type} deleted for site.', [
             'type' => $element->getIsDraft() && !$element->isProvisionalDraft ? Craft::t('app', 'Draft') : $element::displayName(),
