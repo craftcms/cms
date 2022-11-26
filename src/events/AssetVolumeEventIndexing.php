@@ -6,5 +6,5 @@ use yii\base\Event;
 
 class AssetVolumeEventIndexing extends Event
 {
-	public array $assetVolumes = [];
+    public array $assetVolumes = [];
 }
