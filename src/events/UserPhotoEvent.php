@@ -8,18 +8,13 @@
 namespace craft\events;
 
 /**
- * UserSavePhotoEvent class.
+ * UserPhotoEvent class.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.4.0
  */
-class UserSavePhotoEvent extends UserEvent
+class UserPhotoEvent extends UserEvent
 {
-    /**
-     * @var string Filename of the file being saved.
-     */
-    public string $filename;
-
     /**
      * @var int|null ID of the asset being saved.
      */
