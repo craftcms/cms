@@ -23,7 +23,7 @@ use yii\base\Event;
  */
 class AssetIndexes extends Utility
 {
-    const EVENT_ON_ASSET_VOLUME_INDEXING = 'indexingAssetVolumeEvent';
+    public const EVENT_ON_ASSET_VOLUME_INDEXING = 'indexingAssetVolumeEvent';
 
     /**
      * @inheritdoc
