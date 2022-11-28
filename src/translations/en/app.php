@@ -1325,6 +1325,7 @@ return [
     'Sign in as user' => 'Sign in as user',
     'Sign in as {user}' => 'Sign in as {user}',
     'Sign in' => 'Sign in',
+    'Sign in unsuccessful' => 'Sign in unsuccessful',
     'Sign into Craft ID' => 'Sign into Craft ID',
     'Sign out from Craft ID' => 'Sign out from Craft ID',
     'Sign out now' => 'Sign out now',

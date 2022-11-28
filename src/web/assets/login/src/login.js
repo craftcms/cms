@@ -157,7 +157,7 @@ import './login.scss';
     },
 
     onSubmitResponse: function () {
-      this.$submitBtn.removeClass('loading');
+      this.$submitBtn.failureEvent();
     },
 
     showError: function (error) {

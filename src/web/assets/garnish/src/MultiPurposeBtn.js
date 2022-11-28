@@ -10,8 +10,10 @@ export default Base.extend(
     $btn: null,
     $liveRegion: null,
 
+    label: null,
     busyMessage: null,
     failureMessage: null,
+    successMessage: null,
 
     init: function (button, settings) {
       this.$btn = $(button);
@@ -22,8 +24,10 @@ export default Base.extend(
         this.$liveRegion = this.$btn.prev();
       }
 
-      this.busyMessage = this.$btn.dataset.busyMessage;
-      this.failureMessage = this.$btn.dataset.failureMessage;
+      this.label = this.$btn.find('.label').text();
+      this.busyMessage = this.$btn.data('busy-message');
+      this.failureMessage = this.$btn.data('failure-message');
+      this.successMessage = this.$btn.data('success-message');
     },
 
     busyEvent: function () {
@@ -35,17 +39,31 @@ export default Base.extend(
     },
 
     failureEvent: function () {
+      this.endBusyState();
+
       if (this.failureMessage) {
         this.$liveRegion.html(this.failureMessage);
       }
     },
+
+    successEvent: function () {
+      this.endBusyState();
+
+      if (this.successMessage) {
+        this.$liveRegion.html(this.successMessage);
+      }
+    },
+
+    endBusyState: function () {
+      this.$btn.removeClass(this.settings.busyClass);
+
+      setTimeout(() => {
+        this.$liveRegion.empty();
+      }, 2500);
+    },
   },
   {
     defaults: {
-      onShow: $.noop,
-      onHide: $.noop,
-      onFadeIn: $.noop,
-      onFadeOut: $.noop,
       busyClass: 'loading',
     },
   }

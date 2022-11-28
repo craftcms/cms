@@ -1,5 +1,6 @@
 {% set spinner = spinner ?? false -%}
 {% set busyMessage = busyMessage ?? false %}
+{% set failureMessage = failureMessage ?? false %}
 {% set successMessage = successMessage ?? false %}
 {% set label = label ?? null %}
 {% set attributes = {
@@ -11,6 +12,7 @@
     ]|filter),
     data: {
         'busy-message': busyMessage,
+        'failure-message': failureMessage,
         'success-message': successMessage,
     }
 }|merge(attributes ?? {}) -%}
