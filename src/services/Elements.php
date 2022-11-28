@@ -38,7 +38,6 @@ use craft\events\AuthorizationCheckEvent;
 use craft\events\BatchElementActionEvent;
 use craft\events\DeleteElementEvent;
 use craft\events\EagerLoadElementsEvent;
-use craft\events\ElementDeleteForSiteEvent;
 use craft\events\ElementEvent;
 use craft\events\ElementQueryEvent;
 use craft\events\InvalidateElementCachesEvent;
@@ -415,16 +414,20 @@ class Elements extends Component
     public const EVENT_AUTHORIZE_DELETE_FOR_SITE = 'authorizeDeleteForSite';
 
     /**
-     * @event ElementDeleteForSiteEvent The event that is triggered before deleting an element for a site.
+     * @event ElementEvent The event that is triggered before deleting an element for a single site.
+     * @see deleteElementForSite()
+     * @see deleteElementsForSite()
      * @since 4.4.0
      */
     public const EVENT_BEFORE_DELETE_FOR_SITE = 'beforeDeleteForSite';
 
     /**
-     * @event ElementDeleteForSiteEvent The event that is triggered after deleting an element for a site.
+     * @event ElementEvent The event that is triggered after deleting an element for a single site.
+     * @see deleteElementForSite()
+     * @see deleteElementsForSite()
      * @since 4.4.0
      */
-    public const EVENT_AFTER_DELETE_FOR_SITE = 'beforeDeleteForSite';
+    public const EVENT_AFTER_DELETE_FOR_SITE = 'afterDeleteForSite';
 
     /**
      * @var int[] Stores a mapping of source element IDs to their duplicated element IDs.
@@ -2026,46 +2029,97 @@ class Elements extends Component
         return true;
     }
 
-    public function deleteElementForSite(ElementInterface $element, int $siteId)
+    /**
+     * Deletes an element in the site it’s loaded in.
+     *
+     * @param ElementInterface $element
+     * @since 4.4.0
+     */
+    public function deleteElementForSite(ElementInterface $element): void
     {
-        $this->deleteElementsForSite([$element], $siteId);
+        $this->deleteElementsForSite([$element]);
     }
 
     /**
-     * Delete an element for a specific site
+     * Deletes elements in the site they are currently loaded in.
      *
-     * @param array $elements
-     * @param int $siteId Site ID to delete from
-     * @return void
-     * @throws \yii\db\Exception
+     * @param ElementInterface[] $elements
+     * @throws InvalidArgumentException if all elements don’t have the same type and site ID.
      * @since 4.4.0
      */
-    public function deleteElementsForSite(array $elements, int $siteId): void
+    public function deleteElementsForSite(array $elements): void
     {
-        // Fire 'beforeDeleteForSite' events
-        if ($this->hasEventHandlers(self::EVENT_BEFORE_DELETE_FOR_SITE)) {
-            foreach ($elements as $element) {
-                $this->trigger(self::EVENT_BEFORE_DELETE_FOR_SITE, new ElementDeleteForSiteEvent([
-                    'element' => $element,
-                    'siteId' => $siteId,
-                ]));
+        if (empty($elements)) {
+            return;
+        }
+
+        // Make sure each element has the same type and site ID
+        $firstElement = reset($elements);
+        $elementType = get_class($firstElement);
+
+        foreach ($elements as $element) {
+            if (get_class($element) !== $elementType || $element->siteId !== $firstElement->siteId) {
+                throw new InvalidArgumentException('All elements must have the same type and site ID.');
             }
         }
 
-        $elementIds = ArrayHelper::getColumn($elements, 'id');
-        // Delete the row in elements_sites
-        Db::delete(Table::ELEMENTS_SITES, [
-            'elementId' => $elementIds,
-            'siteId' => $siteId,
-        ]);
+        // Separate the multi-site elements from the single-site elements
+        $multiSiteElementIds = $firstElement::find()
+            ->id(array_map(fn(ElementInterface $element) => $element->id, $elements))
+            ->siteId(['not', $firstElement->siteId])
+            ->unique()
+            ->select(['elements.id'])
+            ->column();
 
-        // Fire 'afterDeleteForSite' events
-        if ($this->hasEventHandlers(self::EVENT_AFTER_DELETE_FOR_SITE)) {
-            foreach ($elements as $element) {
-                $this->trigger(self::EVENT_AFTER_DELETE_FOR_SITE, new ElementDeleteForSiteEvent([
-                    'element' => $element,
-                    'siteId' => $siteId,
-                ]));
+        $multiSiteElementIdsIdx = array_flip($multiSiteElementIds);
+        $multiSiteElements = [];
+        $singleSiteElements = [];
+
+        foreach ($elements as $element) {
+            if (isset($multiSiteElementIdsIdx[$element->id])) {
+                $multiSiteElements[] = $element;
+            } else {
+                $singleSiteElements[] = $element;
+            }
+        }
+
+        if (!empty($multiSiteElements)) {
+            // Fire 'beforeDeleteForSite' events
+            if ($this->hasEventHandlers(self::EVENT_BEFORE_DELETE_FOR_SITE)) {
+                foreach ($multiSiteElements as $element) {
+                    $this->trigger(self::EVENT_BEFORE_DELETE_FOR_SITE, new ElementEvent([
+                        'element' => $element,
+                    ]));
+                }
+            }
+
+            // Delete the rows in elements_sites
+            Db::delete(Table::ELEMENTS_SITES, [
+                'elementId' => $multiSiteElementIds,
+                'siteId' => $firstElement->siteId,
+            ]);
+
+            // Resave them
+            $this->resaveElements(
+                $firstElement::find()->id($multiSiteElementIds)->site('*')->unique(),
+                true,
+                updateSearchIndex: false
+            );
+
+            // Fire 'afterDeleteForSite' events
+            if ($this->hasEventHandlers(self::EVENT_AFTER_DELETE_FOR_SITE)) {
+                foreach ($multiSiteElements as $element) {
+                    $this->trigger(self::EVENT_AFTER_DELETE_FOR_SITE, new ElementEvent([
+                        'element' => $element,
+                    ]));
+                }
+            }
+        }
+
+        // Fully delete any single-site elements
+        if (!empty($singleSiteElements)) {
+            foreach ($singleSiteElements as $element) {
+                $this->deleteElement($element);
             }
         }
     }

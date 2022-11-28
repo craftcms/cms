@@ -100,40 +100,13 @@ JS, [static::class]);
         $elementsService = Craft::$app->getElements();
         $user = Craft::$app->getUser()->getIdentity();
 
-        // Fetch the elements in some other site than the selected one
-        $otherSiteElements = (clone $query)
-            ->siteId(['not', $query->siteId])
-            ->unique()
-            ->indexBy('id')
-            ->all();
-        $multiSiteElementIds = array_keys($otherSiteElements);
+        // Ignore any elements the user doesn’t have permission to delete
+        $elements = array_filter(
+            $query->all(),
+            fn(ElementInterface $element) => $elementsService->canDeleteForSite($element, $user),
+        );
 
-        if (!empty($otherSiteElements)) {
-            // Delete their rows in elements_sites
-            $elementsService->deleteElementsForSite($otherSiteElements, $query->siteId);
-
-            // Resave the elements
-            foreach ($otherSiteElements as $element) {
-                if (!$elementsService->canDelete($element, $user)) {
-                    continue;
-                }
-
-                $element->setScenario(Element::SCENARIO_ESSENTIALS);
-                $element->resaving = true;
-                $elementsService->saveElement($element, true, true, false);
-            }
-        }
-
-        // If any selected elements are *only* available in the selected site, fully delete them
-        $singleSiteElements = (clone $query)
-            ->andWhere(['not', ['elements.id' => $multiSiteElementIds]])
-            ->all();
-
-        foreach ($singleSiteElements as $element) {
-            if ($elementsService->canDelete($element, $user)) {
-                $elementsService->deleteElement($element);
-            }
-        }
+        $elementsService->deleteElementsForSite($elements);
 
         if (isset($this->successMessage)) {
             $this->setMessage($this->successMessage);
