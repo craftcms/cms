@@ -1239,6 +1239,10 @@ class Entry extends Element implements ExpirableElementInterface
             $authorsIds = null;
         }
 
+        if (is_string($authorsIds)) {
+            $authorsIds = explode(',', $authorsIds);
+        }
+
         if (is_int($authorsIds)) {
             $this->_authorsIds = [$authorsIds];
         }
@@ -1247,6 +1251,9 @@ class Entry extends Element implements ExpirableElementInterface
             $ids = array_map(function($authorId) {
                 if ($authorId == '') {
                     return null;
+                }
+                if (is_string($authorId)) {
+                    return (int)$authorId;
                 }
                 if ($authorId instanceof User) {
                     return $authorId->id;

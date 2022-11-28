@@ -1139,8 +1139,9 @@ class EntryQuery extends ElementQuery
      */
     private function _processAuthors(array $rows): array
     {
-        // we are now getting multiple rows for one entry because of ->authorId([...]), ->authorsIds([...])
-        // and the ->innerJoin with entries_authors table
+        // get authors info
+        // also, because of ->authorId([...]), ->authorsIds([...]) we are now
+        // getting multiple rows for one entry
         // todo: is there a better way to do this? tried with group_concat but throws mysql error
         $distinctRows = [];
         if (!empty($rows)) {
@@ -1161,7 +1162,7 @@ class EntryQuery extends ElementQuery
 
                 // if authors IDs were passed via authorsIds
                 // make sure we only return entries which have all and only
-                // the specified authors assigned to them
+                // the specified authors from the query
                 if (!empty($this->authorsIds)) {
                     if (strtolower(trim($this->authorsIds[0])) === 'not') {
                         $negativeSearch = true;
