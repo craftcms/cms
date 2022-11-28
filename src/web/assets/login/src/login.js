@@ -11,7 +11,6 @@ import './login.scss';
     $forgotPasswordLink: null,
     $rememberPasswordLink: null,
     $submitBtn: null,
-    $submitBtnStatusContainer: null,
     $errors: null,
 
     forgotPassword: false,
@@ -26,6 +25,8 @@ import './login.scss';
       this.$rememberPasswordLink = $('#remember-password');
       this.$submitBtn = $('#submit');
       this.$errors = $('#login-errors');
+
+      this.$submitBtn = new Garnish.MultiPurposeBtn(this.$submitBtn);
 
       new Craft.PasswordInput(this.$passwordInput, {
         onToggleInput: ($newPasswordInput) => {
@@ -108,7 +109,7 @@ import './login.scss';
         return;
       }
 
-      this.$submitBtn.addClass('loading');
+      this.$submitBtn.busyEvent();
 
       this.clearErrors();
 
