@@ -26,7 +26,7 @@ import './login.scss';
       this.$submitBtn = $('#submit');
       this.$errors = $('#login-errors');
 
-      this.$submitBtn = new Garnish.MultiPurposeBtn(this.$submitBtn);
+      this.$submitBtn = new Garnish.MultiFunctionBtn(this.$submitBtn);
 
       new Craft.PasswordInput(this.$passwordInput, {
         onToggleInput: ($newPasswordInput) => {

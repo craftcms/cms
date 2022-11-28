@@ -3,7 +3,7 @@ import Base from './Base.js';
 import $ from 'jquery';
 
 /**
- * Multi-Purpose Button
+ * Multi-Function Button
  */
 export default Base.extend(
   {
@@ -17,7 +17,7 @@ export default Base.extend(
     init: function (button, settings) {
       this.$btn = $(button);
 
-      this.setSettings(settings, Garnish.MultiPurposeBtn.defaults);
+      this.setSettings(settings, Garnish.MultiFunctionBtn.defaults);
 
       if (this.$btn.prev().attr('role') === 'status') {
         this.$liveRegion = this.$btn.prev();
@@ -55,6 +55,7 @@ export default Base.extend(
     endBusyState: function () {
       this.$btn.removeClass(this.settings.busyClass);
 
+      // Empty live region so a SR user navigating with virtual cursor doesn't find outdated message
       setTimeout(() => {
         this.$liveRegion.empty();
       }, 2500);

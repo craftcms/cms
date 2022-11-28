@@ -14,7 +14,7 @@ import HUD from './HUD.js';
 import MenuBtn from './MenuBtn.js';
 import MixedInput from './MixedInput.js';
 import Modal from './Modal.js';
-import MultiPurposeBtn from './MultiPurposeBtn.js';
+import MultiFunctionBtn from './MultiFunctionBtn.js';
 import NiceText from './NiceText.js';
 import Select from './Select.js';
 import SelectMenu from './SelectMenu.js';
@@ -884,7 +884,7 @@ Object.assign(Garnish, {
   MenuBtn,
   MixedInput,
   Modal,
-  MultiPurposeBtn,
+  MultiFunctionBtn,
   NiceText,
   Select,
   SelectMenu,
