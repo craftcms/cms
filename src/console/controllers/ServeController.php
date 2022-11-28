@@ -27,4 +27,9 @@ class ServeController extends BaseServeController
      * @var string path or [path alias](https://craftcms.com/docs/4.x/config/#aliases) of the directory to serve.
      */
     public $docroot = '@webroot';
+
+    /**
+     * @inheritdoc
+     */
+    public $router = '@craftcms/bootstrap/router.php';
 }
