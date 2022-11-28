@@ -31,7 +31,7 @@ class ServeController extends BaseServeController
     /**
      * @inheritdoc
      */
-    public $router = '@app/../bootstrap/router.php';
+    public $router = '@craftcms/bootstrap/router.php';
 
     /**
      * @inheritdoc
