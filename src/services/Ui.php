@@ -27,7 +27,9 @@ use craft\ui\components\InputTime;
 use craft\ui\components\Test;
 use craft\ui\MountedComponent;
 use Exception;
+use ReflectionClass;
 use Twig\Extension\EscaperExtension;
+use yii\base\InvalidConfigException;
 
 class Ui extends Component
 {
@@ -79,6 +81,11 @@ class Ui extends Component
             // Test
             Test::class,
         ];
+    }
+
+    public function getComponentTypesByName()
+    {
+        return $this->_componentsByName;
     }
 
     /**
@@ -147,6 +154,42 @@ class Ui extends Component
         $context[ComponentPreRenderEvent::EMBEDDED] = true;
 
         return $this->_preRender($this->_createComponent($name, $props), $context)->variables;
+    }
+
+    /**
+     * Return props data for a given component.
+     *
+     * @param string $name Component name
+     * @return array
+     * @throws InvalidConfigException
+     */
+    public function propsDataFor(string $name): array
+    {
+        $component = $this->getComponent($name);
+        $reflectionClass = new ReflectionClass($component);
+        $props = [];
+
+        foreach ($reflectionClass->getProperties(\ReflectionProperty::IS_PUBLIC) as $property) {
+            $props[] = [
+                'name' => $property->getName(),
+                'type' => $property->getType(),
+                'required' => !$property->getType()->allowsNull(),
+                'default' => $property->getDefaultValue(),
+                'description' => $this->unformattedActionHelp($property->getDocComment()),
+            ];
+        }
+
+        return $props;
+    }
+
+    protected function unformattedActionHelp(string $comment): string
+    {
+        $comment = strtr(trim(preg_replace('/^\s*\**( |\t)?/m', '', trim($comment, '/'))), "\r", '');
+        if (preg_match('/^\s*@\w+/m', $comment, $matches, PREG_OFFSET_CAPTURE)) {
+            $comment = trim(substr($comment, 0, $matches[0][1]));
+        }
+
+        return $comment;
     }
 
 

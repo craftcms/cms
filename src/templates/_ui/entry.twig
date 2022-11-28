@@ -1,0 +1,26 @@
+{% extends "_ui/index" %}
+{% set title = "UI Components" %}
+
+{% block content %}
+    <h1>{{ name }}</h1>
+
+    {{ component(name, {label: "Some label"}) }}
+
+    <hr>
+    <h2>Props</h2>
+    <table>
+        <tbody>
+        {% for prop in props %}
+            <tr>
+                <td>
+                    <strong>{{ prop.name }}</strong>
+                </td>
+                <td>
+                    <code>{{ prop.type }}</code>
+                </td>
+                <td>{{ prop.description }}</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+{% endblock %}

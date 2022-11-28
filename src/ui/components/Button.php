@@ -35,7 +35,7 @@ class Button extends BaseUiComponent
     public string $variant = 'default';
 
     /**
-     * State of the button. Should
+     * State of the button.
      *
      * @var string
      */

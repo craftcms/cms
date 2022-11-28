@@ -1,0 +1,14 @@
+{% extends "_layouts/cp" %}
+{% set title = "UI Components" %}
+
+{% block sidebar %}
+    <nav>
+        <ul>
+            {% for name, component in components %}
+                <li>
+                    <a href="{{ cpUrl('components/' ~ name) }}">{{ name }}</a>
+                </li>
+            {% endfor %}
+        </ul>
+    </nav>
+{% endblock %}
