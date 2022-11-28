@@ -31,7 +31,7 @@ class Component
      * @phpstan-param class-string<ComponentInterface>|null $instanceOf
      * @param bool $throwException Whether an exception should be thrown if an issue is encountered
      * @return bool
-     * @throws InvalidConfigException if $config doesn’t contain a `type` value, or the type isn’s compatible with|null $instanceOf.
+     * @throws InvalidConfigException if $config doesn’t contain a `type` value, or the type isn’t compatible with|null $instanceOf.
      * @throws MissingComponentException if the class specified by $config doesn’t exist, or belongs to an uninstalled plugin
      * @since 3.2.0
      */
@@ -90,7 +90,7 @@ class Component
      * @param string|null $instanceOf The class or interface that the component must be an instance of.
      * @phpstan-param class-string<T>|null $instanceOf
      * @return T The component
-     * @throws InvalidConfigException if $config doesn’t contain a `type` value, or the type isn’s compatible with|null $instanceOf.
+     * @throws InvalidConfigException if $config doesn’t contain a `type` value, or the type isn’t compatible with|null $instanceOf.
      * @throws MissingComponentException if the class specified by $config doesn’t exist, or belongs to an uninstalled plugin
      */
     public static function createComponent(string|array $config, ?string $instanceOf = null): ComponentInterface

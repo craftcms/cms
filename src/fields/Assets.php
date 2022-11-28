@@ -13,6 +13,7 @@ use craft\elements\Asset;
 use craft\elements\conditions\ElementCondition;
 use craft\elements\db\AssetQuery;
 use craft\elements\db\ElementQueryInterface;
+use craft\elements\ElementCollection;
 use craft\errors\FsObjectNotFoundException;
 use craft\errors\InvalidFsException;
 use craft\errors\InvalidSubpathException;
@@ -92,7 +93,7 @@ class Assets extends BaseRelationField
      */
     public static function valueType(): string
     {
-        return AssetQuery::class;
+        return sprintf('%s|%s<%s>', AssetQuery::class, ElementCollection::class, Asset::class);
     }
 
     /**

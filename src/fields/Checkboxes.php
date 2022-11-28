@@ -63,7 +63,7 @@ class Checkboxes extends BaseOptionsField
             'describedBy' => $this->describedBy,
             'name' => $this->handle,
             'values' => $this->encodeValue($value),
-            'options' => $this->translatedOptions(true),
+            'options' => $this->translatedOptions(true, $value, $element),
         ]);
     }
 
