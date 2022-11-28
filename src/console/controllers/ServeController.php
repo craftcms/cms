@@ -29,8 +29,7 @@ class ServeController extends BaseServeController
     public $docroot = '@webroot';
 
     /**
-     * @var string path or [path alias](guide:concept-aliases) to router script.
-     * See https://www.php.net/manual/en/features.commandline.webserver.php
+     * @inheritdoc
      */
     public $router = '@app/../bootstrap/router.php';
 
