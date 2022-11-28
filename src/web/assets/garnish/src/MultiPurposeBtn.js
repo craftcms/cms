@@ -10,7 +10,6 @@ export default Base.extend(
     $btn: null,
     $liveRegion: null,
 
-    label: null,
     busyMessage: null,
     failureMessage: null,
     successMessage: null,
@@ -24,7 +23,6 @@ export default Base.extend(
         this.$liveRegion = this.$btn.prev();
       }
 
-      this.label = this.$btn.find('.label').text();
       this.busyMessage = this.$btn.data('busy-message');
       this.failureMessage = this.$btn.data('failure-message');
       this.successMessage = this.$btn.data('success-message');
