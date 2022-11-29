@@ -1382,13 +1382,23 @@ class Asset extends Element
     /**
      * Returns the file’s MIME type, if it can be determined.
      *
+     * @param mixed|null $transform A transform handle or configuration that should be applied to the mime type
      * @return string|null
+     * @throws AssetTransformException if $transform is an invalid transform handle
      */
-    public function getMimeType()
+    public function getMimeType(mixed $transform = null): ?string
     {
-        // todo: maybe we should be passing this off to volume types
-        // so Local volumes can call FileHelper::getMimeType() (uses magic file instead of ext)
-        return FileHelper::getMimeTypeByExtension($this->filename);
+        $transform = $transform ?? $this->_transform;
+        $transform = Craft::$app->getAssetTransforms()->normalizeTransform($transform);
+
+        if (!$transform || !$transform->format) {
+            // todo: maybe we should be passing this off to volume fs
+            // so Local filesystems can call FileHelper::getMimeType() (uses magic file instead of ext)
+            return FileHelper::getMimeTypeByExtension($this->filename);
+        }
+
+        // Prepend with '.' to let pathinfo() work
+        return FileHelper::getMimeTypeByExtension('.' . $transform->format);
     }
 
     /**
