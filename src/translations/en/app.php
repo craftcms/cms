@@ -1330,6 +1330,7 @@ return [
     'Sign out from Craft ID' => 'Sign out from Craft ID',
     'Sign out now' => 'Sign out now',
     'Sign out' => 'Sign out',
+    'Signed in' => 'Signed in',
     'Signing in' => 'Signing in',
     'Similar issues on GitHub' => 'Similar issues on GitHub',
     'Similar questions on Stack Exchange' => 'Similar questions on Stack Exchange',

@@ -8,6 +8,7 @@ import $ from 'jquery';
 export default Base.extend(
   {
     $btn: null,
+    $btnLabel: null,
     $liveRegion: null,
 
     busyMessage: null,
@@ -16,6 +17,7 @@ export default Base.extend(
 
     init: function (button, settings) {
       this.$btn = $(button);
+      this.$btnLabel = this.$btn.find('.label');
 
       this.setSettings(settings, Garnish.MultiFunctionBtn.defaults);
 
@@ -40,7 +42,7 @@ export default Base.extend(
       this.endBusyState();
 
       if (this.failureMessage) {
-        this.$liveRegion.html(this.failureMessage);
+        this.updateMessages(this.failureMessage);
       }
     },
 
@@ -48,8 +50,13 @@ export default Base.extend(
       this.endBusyState();
 
       if (this.successMessage) {
-        this.$liveRegion.html(this.successMessage);
+        this.updateMessages(this.successMessage);
       }
+    },
+
+    updateMessages: function (message) {
+      this.$liveRegion.text(message);
+      this.$btnLabel.text(message);
     },
 
     endBusyState: function () {
