@@ -57,6 +57,7 @@ use yii\base\InvalidCallException;
 use yii\base\InvalidConfigException;
 use yii\base\NotSupportedException;
 use yii\base\UnknownPropertyException;
+use function in_array;
 
 /**
  * Asset represents an asset element.
@@ -597,7 +598,7 @@ class Asset extends Element
     public $keptFile;
 
     /**
-     * @var \DateTime|null Date modified
+     * @var DateTime|null Date modified
      */
     public $dateModified;
 
@@ -1391,7 +1392,7 @@ class Asset extends Element
         $transform = $transform ?? $this->_transform;
         $transform = Craft::$app->getAssetTransforms()->normalizeTransform($transform);
 
-        if (!$transform || !$transform->format) {
+        if (!Image::canManipulateAsImage($this->getExtension()) || !$transform || !$transform->format) {
             // todo: maybe we should be passing this off to volume fs
             // so Local filesystems can call FileHelper::getMimeType() (uses magic file instead of ext)
             return FileHelper::getMimeTypeByExtension($this->filename);
@@ -1648,7 +1649,7 @@ class Asset extends Element
     {
         Craft::$app->getDeprecator()->log(self::class . '::getSupportsPreview()', '`' . self::class . '::getSupportsPreview()` has been deprecated. Use `craft\services\Assets::getAssetPreview()` instead.');
 
-        return \in_array($this->kind, [self::KIND_IMAGE, self::KIND_HTML, self::KIND_JAVASCRIPT, self::KIND_JSON], true);
+        return in_array($this->kind, [self::KIND_IMAGE, self::KIND_HTML, self::KIND_JAVASCRIPT, self::KIND_JSON], true);
     }
 
     /**
@@ -2015,7 +2016,7 @@ class Asset extends Element
             $sanitizeCpImageUploads = Craft::$app->getConfig()->getGeneral()->sanitizeCpImageUploads;
 
             if (
-                \in_array($this->getScenario(), [self::SCENARIO_REPLACE, self::SCENARIO_CREATE], true) &&
+                in_array($this->getScenario(), [self::SCENARIO_REPLACE, self::SCENARIO_CREATE], true) &&
                 Assets::getFileKindByExtension($this->tempFilePath) === static::KIND_IMAGE &&
                 !($isCpRequest && !$sanitizeCpImageUploads)
             ) {
