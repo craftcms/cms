@@ -1191,26 +1191,9 @@ Craft.ui = {
       Object.entries(errors).forEach(([fieldHandle, fieldErrors]) => {
         for (var i = 0; i < fieldErrors.length; i++) {
           var listItem = '<li>';
-
-          if (fieldErrors[i].match(new RegExp(`\s?<a `)) != null) {
-            var externalIcon =
-              '<span ' +
-              'data-icon="external" ' +
-              'aria-label="' +
-              Craft.t('app', 'Open the full edit page in a new tab') +
-              '"' +
-              '></span>';
-
-            listItem += fieldErrors[i].replace(
-              new RegExp(`<\/a>`),
-              externalIcon + '</a>'
-            );
-          } else {
-            listItem += '<a data-field-error-key="' + fieldHandle + '" href="#">';
-            listItem += fieldErrors[i];
-            listItem += '</a>';
-          }
-
+          listItem += '<a data-field-error-key="' + fieldHandle + '" href="#">';
+          listItem += fieldErrors[i];
+          listItem += '</a>';
           listItem += '</li>';
 
           $(listItem).appendTo($list);
@@ -1367,8 +1350,8 @@ Craft.ui = {
         $fieldTabAnchor.click();
       }
 
-      // focus on the field errors container
-      $fieldErrorsContainer.focus();
+      // focus on the field container that contains the error
+      $fieldErrorsContainer.parents('.field:first').focus();
     }
   },
 

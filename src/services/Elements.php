@@ -48,6 +48,7 @@ use craft\helpers\Component as ComponentHelper;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
 use craft\helpers\ElementHelper;
+use craft\helpers\Html;
 use craft\helpers\Queue;
 use craft\helpers\StringHelper;
 use craft\helpers\UrlHelper;
@@ -3305,7 +3306,17 @@ class Elements extends Component
         ) {
             $queryParams = ArrayHelper::without(Craft::$app->getRequest()->getQueryParams(), 'site');
             $url = UrlHelper::url($siteElement->getCpEditUrl(), $queryParams + ['prevalidate' => 1]);
-            $message = " <a href=\"$url\" class=\"cross-site-validate\">{$message}</a>";
+            $message = Html::beginTag('a', [
+                'href' => $url,
+                'class' => 'cross-site-validate',
+                'target' => '_blank',
+            ]) .
+                $message .
+                Html::tag('span', '', [
+                    'data-icon' => 'external',
+                    'arial-label' => Craft::t('app', 'Open the full edit page in a new tab'),
+                ]) .
+                Html::endTag('a');
         }
 
         $element->addError('global', $message);
