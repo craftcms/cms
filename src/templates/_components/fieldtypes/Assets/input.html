@@ -30,6 +30,8 @@
                 },
             }) }}
         </div>
+    {% else %}
+        <p class="error">{{ 'You don’t have access to the sources available for this field.'|t('app') }}</p>
     {% endif %}
 </div>
 
