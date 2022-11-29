@@ -1724,7 +1724,7 @@ JS;
         $transform = $transform ?? $this->_transform;
         $transform = ImageTransforms::normalizeTransform($transform);
 
-        if (!$transform || !$transform->format) {
+        if (!Image::canManipulateAsImage($this->getExtension()) || !$transform || !$transform->format) {
             // todo: maybe we should be passing this off to volume fs
             // so Local filesystems can call FileHelper::getMimeType() (uses magic file instead of ext)
             return FileHelper::getMimeTypeByExtension($this->_filename);
