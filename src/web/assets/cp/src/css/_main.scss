@@ -1526,7 +1526,9 @@ ul.icons {
 }
 
 .btngroup--exclusive {
-  .btn[aria-pressed='true']:not(.disabled):not(.loading):not(.dashed):not([aria-disabled]) {
+  .btn[aria-pressed='true']:not(.disabled):not(.loading):not(.dashed):not(
+      [aria-disabled]
+    ) {
     background-color: var(--gray-500);
     color: var(--white);
   }
@@ -3316,7 +3318,13 @@ ul.tree,
   }
 }
 
-.status:not(.on):not(.live):not(.active):not(.enabled):not(.all):not(.pending):not(.off):not(.suspended):not(.expired):not(.yellow):not(.orange):not(.red):not(.pink):not(.purple):not(.blue):not(.green):not(.turquoise):not(.light):not(.grey):not(.black) {
+.status:not(.on):not(.live):not(.active):not(.enabled):not(.all):not(
+    .pending
+  ):not(.off):not(.suspended):not(.expired):not(.yellow):not(.orange):not(
+    .red
+  ):not(.pink):not(.purple):not(.blue):not(.green):not(.turquoise):not(
+    .light
+  ):not(.grey):not(.black) {
   border-color: var(--ui-control-color);
 }
 

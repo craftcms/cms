@@ -1299,7 +1299,9 @@ Craft.BaseElementIndex = Garnish.Base.extend(
     selectSource: function (source) {
       const $source = $(source);
 
-      if (!$source || !$source.length) {
+      // return false if there truly are no sources;
+      // don't attempt to check only default/visible sources
+      if (!this.sourcesByKey || !Object.keys(this.sourcesByKey).length) {
         return false;
       }
 
