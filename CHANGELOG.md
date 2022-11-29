@@ -8,6 +8,7 @@
 - Fixed a bug where the default MySQL backup command would attempt to use credentials from `~/.my.cnf` if it exists, instead of Craft’s configured database connection settings. ([#12349](https://github.com/craftcms/cms/issues/12349))
 - Fixed a bug where it wasn’t possible to access the Customize Sources modal if all sources were disabled. ([#12369](https://github.com/craftcms/cms/issues/12369))
 - Fixed a bug where Assets fields weren’t taking their “Show unpermitted volumes” setting into account when defining the available input sources. ([#12364](https://github.com/craftcms/cms/issues/12364))
+- Fixed a bug where user slideouts included status toggles.
 - Updated Yii to 2.0.47.
 
 ## 4.3.3 - 2022-11-17

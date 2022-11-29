@@ -1622,6 +1622,17 @@ class User extends Element implements IdentityInterface
         ]);
     }
 
+    /**
+     * @inheritdoc
+     */
+    protected function statusFieldHtml(): string
+    {
+        return '';
+    }
+
+    /**
+     * @inheritdoc
+     */
     protected function metadata(): array
     {
         $formatter = Craft::$app->getFormatter();
