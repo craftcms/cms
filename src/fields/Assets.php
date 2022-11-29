@@ -646,8 +646,6 @@ class Assets extends BaseRelationField
         $folderId = $this->_determineUploadFolderId($element, false, false);
         Craft::$app->getSession()->authorize('saveAssets:' . $folderId);
 
-        $assetsService = Craft::$app->getAssets();
-
         if ($this->restrictLocation) {
             if (!$this->showUnpermittedVolumes) {
                 // Make sure they have permission to view the volume
@@ -687,21 +685,19 @@ class Assets extends BaseRelationField
         // Now enforce the showUnpermittedVolumes setting
         if (!$this->showUnpermittedVolumes && !empty($sources)) {
             $userService = Craft::$app->getUser();
-            return ArrayHelper::where($sources, function(string $source) use ($assetsService, $userService) {
-                // Enforce showUnpermittedVolumes setting on volumes listed in sources
-                if (str_starts_with($source, 'volume:')) {
-                    $volume = Craft::$app->getVolumes()->getVolumeByUid(explode(':', $source)[1]);
-                    return $volume && ($userService->checkPermission("viewAssets:$volume->uid"));
-                }
-
+            $volumesService = Craft::$app->getVolumes();
+            return ArrayHelper::where($sources, function(string $source) use ($volumesService, $userService) {
                 // If it’s not a volume folder, let it through
-                if (!str_starts_with($source, 'folder:')) {
+                if (!str_starts_with($source, 'volume:')) {
                     return true;
                 }
-                // Only show it if they have permission to view it
-                $folder = $assetsService->getFolderByUid(explode(':', $source)[1]);
-                $volume = $folder?->getVolume();
-                return $volume && ($userService->checkPermission("viewAssets:$volume->uid") || $volume->getFs() instanceof Temp);
+                // Only show it if they have permission to view it, or if it's the temp volume
+                $volumeUid = explode(':', $source)[1];
+                if ($userService->checkPermission("viewAssets:$volumeUid")) {
+                    return true;
+                }
+                $volume = $volumesService->getVolumeByUid($volumeUid);
+                return $volume?->getFs() instanceof Temp;
             }, true, true, false);
         }
 
