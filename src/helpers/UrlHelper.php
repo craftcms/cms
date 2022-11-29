@@ -569,6 +569,28 @@ class UrlHelper
     }
 
     /**
+     * Returns a CP referral URL.
+     *
+     * @return string|null
+     */
+    public static function cpReferralUrl(): ?string
+    {
+        $referrer = Craft::$app->getRequest()->getReferrer();
+
+        // Make sure it didn't refer itself
+        if ($referrer === Craft::$app->getRequest()->getFullUri()) {
+            return null;
+        }
+
+        // Make sure the CP referred it
+        if (!str_contains($referrer, self::baseCpUrl())) {
+            return null;
+        }
+
+        return $referrer;
+    }
+
+    /**
      * Returns a URL.
      *
      * @param string $path

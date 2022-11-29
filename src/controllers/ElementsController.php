@@ -356,12 +356,7 @@ class ElementsController extends Controller
         $type = $element::lowerDisplayName();
         $enabledForSite = $element->getEnabledForSite();
         $hasRoute = $element->getRoute() !== null;
-
-        $referrer = Craft::$app->getRequest()->getReferrer();
-        if (!str_contains($referrer, UrlHelper::baseCpUrl())) {
-            $referrer = null;
-        }
-        $redirectUrl = $referrer ?? $element->getPostEditUrl() ?? Craft::$app->getConfig()->getGeneral()->getPostCpLoginRedirect();
+        $redirectUrl = UrlHelper::cpReferralUrl() ?? $element->getPostEditUrl() ?? Craft::$app->getConfig()->getGeneral()->getPostCpLoginRedirect();
 
         // Site statuses
         if ($canEditMultipleSites) {

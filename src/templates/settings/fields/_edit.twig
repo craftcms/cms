@@ -22,7 +22,7 @@
 
 {% block content %}
     {{ actionInput('fields/save-field') }}
-    {{ redirectInput('settings/fields/{groupId}') }}
+    {{ redirectInput(redirectUrl) }}
     {% if fieldId is defined and fieldId %}
         {{ hiddenInput('fieldId', fieldId) }}
     {% endif %}

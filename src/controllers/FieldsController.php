@@ -257,6 +257,8 @@ JS;
         $view->registerAssetBundle(FieldSettingsAsset::class);
         $view->registerJs($js);
 
+        $redirectUrl = UrlHelper::cpReferralUrl() ?? 'settings/fields/' . $groupId;
+
         return $this->renderTemplate('settings/fields/_edit.twig', compact(
             'fieldId',
             'field',
@@ -268,7 +270,8 @@ JS;
             'groupId',
             'groupOptions',
             'crumbs',
-            'title'
+            'title',
+            'redirectUrl'
         ));
     }
 
