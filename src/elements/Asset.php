@@ -1725,12 +1725,30 @@ JS;
     }
 
     /**
+     * Returns the file's format, if it can be determined.
+     *
+     * @param ImageTransform|string|array|null $transform A transform handle or configuration that should be applied to the image
+     * @return string|null The asset's format
+     * @throws ImageTransformException If an invalid transform handle is supplied
+     */
+    public function getFormat(mixed $transform = null): ?string
+    {
+        $transform = $transform ?? $this->_transform;
+        $transform = ImageTransforms::normalizeTransform($transform);
+
+        if (!Image::canManipulateAsImage($this->getExtension()) || !$transform || !$transform->format) {
+            return $this->getExtension();
+        }
+
+        return $transform->format;
+    }
+
+    /**
      * Returns the image height.
      *
      * @param ImageTransform|string|array|null $transform A transform handle or configuration that should be applied to the image
      * @return int|null
      */
-
     public function getHeight(mixed $transform = null): ?int
     {
         return $this->_dimensions($transform)[1];
