@@ -429,6 +429,14 @@ class Entry extends Element implements ExpirableElementInterface
     /**
      * @inheritdoc
      */
+    protected static function includeSetStatusAction(): bool
+    {
+        return true;
+    }
+
+    /**
+     * @inheritdoc
+     */
     protected static function defineSortOptions(): array
     {
         return [

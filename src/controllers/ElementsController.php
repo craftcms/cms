@@ -330,7 +330,6 @@ class ElementsController extends Controller
             $isMultiSiteElement &&
             count($propSiteIds) > 1 &&
             (($isCurrent && $canDeleteCanonical) || ($canDeleteDraft && $isNewSite)) &&
-            $elementsService->canDelete($element, $user) &&
             $elementsService->canDeleteForSite($element, $user)
         );
 
