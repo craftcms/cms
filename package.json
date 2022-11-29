@@ -8,7 +8,8 @@
     "dev": "webpack --node-env=production --progress",
     "serve": "webpack-dev-server --node-env=development",
     "check-prettier": "prettier --check .",
-    "fix-prettier": "prettier --write ."
+    "fix-prettier": "prettier --write .",
+    "prepare": "husky install"
   },
   "workspaces": [
     "packages/*"
@@ -20,8 +21,8 @@
     "@craftcms/webpack": "file:packages/craftcms-webpack",
     "@playwright/test": "^1.19.2",
     "husky": "^7.0.4",
-    "lint-staged": "^12.3.8",
-    "prettier": "2.6.2",
+    "lint-staged": "^12.4.0",
+    "prettier": "^2.7.1",
     "tailwindcss": "^3.0.18",
     "vue-apexcharts": "^1.6.2"
   },
