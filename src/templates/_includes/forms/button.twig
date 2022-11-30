@@ -1,6 +1,7 @@
 {% set spinner = spinner ?? false -%}
 {% set busyMessage = busyMessage ?? false %}
 {% set failureMessage = failureMessage ?? false %}
+{% set retryMessage = retryMessage ?? false %}
 {% set successMessage = successMessage ?? false %}
 {% set label = label ?? null %}
 {% set attributes = {
@@ -13,6 +14,7 @@
     data: {
         'busy-message': busyMessage,
         'failure-message': failureMessage,
+        'retry-message': retryMessage,
         'success-message': successMessage,
     }
 }|merge(attributes ?? {}) -%}
@@ -27,7 +29,9 @@
             text: label,
         }) }}
         {% if spinner %}
-            <div class="spinner spinner-absolute"></div>
+            <div class="spinner spinner-absolute">
+                <span class="visually-hidden">{{ 'Loading'|t('app') }}</span>
+            </div>
         {% endif %}
     {% endtag %}
 {% endapply -%}
