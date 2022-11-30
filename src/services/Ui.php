@@ -103,21 +103,25 @@ class Ui extends Component
      */
     public function createAndRender(string $name, array $props = []): string
     {
-        $mounted = $this->_createComponent($name, $props);
-        return $this->_render($mounted);
+        if ($this->getComponent($name)) {
+            $mounted = $this->_createComponent($name, $props);
+            return $this->_render($mounted);
+        }
+
+        return Craft::$app->getView()->renderTemplate(sprintf($this->_componentTemplateFormat, $name), $props);
     }
 
     /**
      * Get the main component object.
      *
      * @param string $name Name of the component
-     * @return object
-     * @throws \yii\base\InvalidConfigException
+     * @return null|object
+     * @throws InvalidConfigException
      */
-    public function getComponent(string $name): object
+    public function getComponent(string $name): ?object
     {
         if (!isset($this->_componentsByName[$name])) {
-            throw new \InvalidArgumentException(sprintf('Unknown component "%s". The registered components are: %s', $name, implode(', ', array_keys($this->_componentsByName))));
+            return null;
         }
 
         return Craft::createObject($this->_componentsByName[$name]);
