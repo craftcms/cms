@@ -1,0 +1,36 @@
+{% import "_includes/forms" as forms -%}
+
+{% apply spaceless %}
+    <div {{ containerAttributes.defaults({id: containerId, class: ['flex', 'color-container']}) }}>
+        {% tag 'div' with {
+            class: ['color', 'static', small ? 'small']|filter,
+        } %}
+            {{ tag('div', {
+                class: ['color-preview'],
+                style: {'background-color': value}|filter,
+            }) }}
+        {% endtag %}
+
+        <div class="color-input-container">
+            <div class="color-hex-indicator light code" aria-hidden="true">#</div>
+            <span id="{{ hexLabelId }}" class="visually-hidden">{{ 'Color hex value'|t('app') }}</span>
+            {{ component('input:text', {
+                id: id,
+                describedBy: describedBy ?? false,
+                name: name,
+                value: value|trim('#'),
+                size: 10,
+                class: 'color-input',
+                autofocus: autofocus,
+                disabled: disabled,
+                aria: {
+                    labelledBy: [labelledBy, hexLabelId]|filter|join(' '),
+                }
+            }) }}
+        </div>
+    </div>
+{% endapply -%}
+
+{% js %}
+new Craft.ColorInput('#{{ containerId|namespaceInputId }}');
+{% endjs -%}

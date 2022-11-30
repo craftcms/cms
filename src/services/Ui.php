@@ -18,6 +18,7 @@ use craft\ui\attributes\ExposeInTemplate;
 use craft\ui\ComponentAttributes;
 use craft\ui\ComponentMetadata;
 use craft\ui\components\Button;
+use craft\ui\components\InputColor;
 use craft\ui\components\InputCopyText;
 use craft\ui\components\InputDate;
 use craft\ui\components\InputDateTime;
@@ -77,6 +78,7 @@ class Ui extends Component
             InputDate::class,
             InputTime::class,
             InputDateTime::class,
+            InputColor::class,
         ];
     }
 
