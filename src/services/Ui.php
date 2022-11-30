@@ -25,6 +25,7 @@ use craft\ui\components\InputDateTime;
 use craft\ui\components\InputHiddenText;
 use craft\ui\components\InputPasswordText;
 use craft\ui\components\InputText;
+use craft\ui\components\InputTextArea;
 use craft\ui\components\InputTime;
 use craft\ui\MountedComponent;
 use Exception;
@@ -79,6 +80,7 @@ class Ui extends Component
             InputTime::class,
             InputDateTime::class,
             InputColor::class,
+            InputTextArea::class,
         ];
     }
 

@@ -1,0 +1,16 @@
+{% set inputAttributes = attributes
+    .defaults({
+        rows: rows,
+        cols: cols,
+        data: {
+            'show-chars-left': showCharsLeft
+        },
+        class: {
+            nicetext: true,
+            text: true,
+            disabled: disabled,
+            fullwidth: not cols
+        }
+    }) %}
+
+<textarea {{ inputAttributes }}>{{ value }}</textarea>
