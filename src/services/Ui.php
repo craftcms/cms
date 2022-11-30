@@ -12,6 +12,7 @@ use craft\base\Component;
 use craft\base\ModelInterface;
 use craft\events\ComponentPreRenderEvent;
 use craft\helpers\ArrayHelper;
+use craft\helpers\StringHelper;
 use craft\ui\attributes\AsTwigComponent;
 use craft\ui\attributes\ExposeInTemplate;
 use craft\ui\ComponentAttributes;
@@ -24,7 +25,6 @@ use craft\ui\components\InputHiddenText;
 use craft\ui\components\InputPasswordText;
 use craft\ui\components\InputText;
 use craft\ui\components\InputTime;
-use craft\ui\components\Test;
 use craft\ui\MountedComponent;
 use Exception;
 use ReflectionClass;
@@ -77,9 +77,6 @@ class Ui extends Component
             InputDate::class,
             InputTime::class,
             InputDateTime::class,
-
-            // Test
-            Test::class,
         ];
     }
 
@@ -175,23 +172,12 @@ class Ui extends Component
                 'type' => $property->getType(),
                 'required' => !$property->getType()->allowsNull(),
                 'default' => $property->getDefaultValue(),
-                'description' => $this->unformattedActionHelp($property->getDocComment()),
+                'description' => StringHelper::docDescription($property->getDocComment()),
             ];
         }
 
         return $props;
     }
-
-    protected function unformattedActionHelp(string $comment): string
-    {
-        $comment = strtr(trim(preg_replace('/^\s*\**( |\t)?/m', '', trim($comment, '/'))), "\r", '');
-        if (preg_match('/^\s*@\w+/m', $comment, $matches, PREG_OFFSET_CAPTURE)) {
-            $comment = trim(substr($comment, 0, $matches[0][1]));
-        }
-
-        return $comment;
-    }
-
 
     /**
      * Creates a component

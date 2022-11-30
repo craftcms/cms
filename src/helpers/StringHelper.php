@@ -1917,4 +1917,20 @@ class StringHelper extends \yii\helpers\StringHelper
 
         return $combined;
     }
+
+    /**
+     * Returns full description from a docblock without any kind of ANSI terminal formatting
+     *
+     * @param string $comment
+     * @return string
+     */
+    public static function docDescription(string $comment)
+    {
+        $comment = strtr(trim(preg_replace('/^\s*\**( |\t)?/m', '', trim($comment, '/'))), "\r", '');
+        if (preg_match('/^\s*@\w+/m', $comment, $matches, PREG_OFFSET_CAPTURE)) {
+            $comment = trim(substr($comment, 0, $matches[0][1]));
+        }
+
+        return $comment;
+    }
 }
