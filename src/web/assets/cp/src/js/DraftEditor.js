@@ -1136,7 +1136,7 @@ Craft.DraftEditor = Garnish.Base.extend(
 
             const $fields = $(selectors.join(','))
               .parents()
-              .filter('.field:not(:has(> .status-badge))');
+              .filter('.flex-fields > .field:not(:has(> .status-badge))');
             for (let i = 0; i < $fields.length; i++) {
               $fields.eq(i).prepend(
                 $('<div/>', {
