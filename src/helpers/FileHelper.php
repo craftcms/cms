@@ -68,6 +68,39 @@ class FileHelper extends \yii\helpers\FileHelper
     }
 
     /**
+     * Returns a relative path based on a source location or the current working directory.
+     *
+     * @param string $to The target path.
+     * @param string|null $from The source location. Defaults to the current working directory.
+     * @param string $ds the directory separator to be used in the normalized result. Defaults to `DIRECTORY_SEPARATOR`.
+     * @return string
+     * @since 4.4.0
+     */
+    public static function relativePath(
+        string $to,
+        ?string $from = null,
+        string $ds = DIRECTORY_SEPARATOR,
+    ): string {
+        $to = static::normalizePath($to, $ds);
+
+        if ($from === null) {
+            $from = getcwd();
+        } else {
+            $from = static::normalizePath($from, $ds);
+        }
+
+        if ($from === $to) {
+            return '.';
+        }
+
+        if (!str_starts_with($to . $ds, $from . $ds)) {
+            return $to;
+        }
+
+        return StringHelper::removeLeft($to, $from . $ds);
+    }
+
+    /**
      * @inheritdoc
      */
     public static function copyDirectory($src, $dst, $options = []): void

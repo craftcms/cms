@@ -95,6 +95,18 @@ class FileHelperTest extends TestCase
     }
 
     /**
+     * @dataProvider relativePathDataProvider
+     * @param string $expected
+     * @param string $to
+     * @param string|null $from
+     * @param string $ds
+     */
+    public function testRelativePath(string $expected, string $to, ?string $from, string $ds): void
+    {
+        self::assertSame($expected, FileHelper::relativePath($to, $from, $ds));
+    }
+
+    /**
      * @dataProvider isDirectoryEmptyDataProvider
      * @param bool $expected
      * @param string $dir
@@ -252,6 +264,18 @@ class FileHelperTest extends TestCase
             [' +HostName[@SSL][@Port]+SharedFolder+Resource', ' \\HostName[@SSL][@Port]\SharedFolder\Resource', '+'],
             ['|?|C:|my_dir', '\\?\C:\my_dir', '|'],
             ['==stuff', '\\\\stuff', '='],
+        ];
+    }
+
+    /**
+     * @return array
+     */
+    public function relativePathDataProvider(): array
+    {
+        return [
+            ['bar/baz', '/foo/bar/baz', '/foo', '/'],
+            ['bar\\baz', '/foo/bar/baz', '/foo', '\\'],
+            ['/foo/bar/baz', '/foo/bar/baz', '/test', '/'],
         ];
     }
 
