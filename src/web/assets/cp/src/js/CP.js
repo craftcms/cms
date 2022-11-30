@@ -1432,6 +1432,12 @@ Craft.CP = Garnish.Base.extend(
       }
       document.body.classList.add(`site--${site.handle}`);
 
+      // Update Front-end link
+      $('#system-info').attr('href', site.baseUrl);
+
+      // Update system name
+      $('#system-name .h2').text(site.name);
+
       // update other URLs on the page
       $('a').each(function () {
         if (

@@ -238,9 +238,15 @@
       this.disable();
       this._deleting = true;
 
-      var data = {
-        id: this.getItemId(this.$rowToDelete),
+      const siteId = parseInt(this.getItemId(this.$rowToDelete), 10);
+      const data = {
+        id: siteId,
       };
+
+      if (siteId === Craft.siteId) {
+        const site = Craft.sites.find((s) => s.id !== siteId);
+        Craft.cp.setSiteId(site.id);
+      }
 
       // Are we transferring content?
       if (this.$deleteActionRadios.eq(0).prop('checked')) {

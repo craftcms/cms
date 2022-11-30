@@ -602,6 +602,7 @@ JS;
                 'handle' => $site->handle,
                 'id' => (int)$site->id,
                 'uid' => (string)$site->uid,
+                'baseUrl' => $site->getBaseUrl(),
                 'name' => Craft::t('site', $site->getName()),
             ];
         }
