@@ -2143,6 +2143,80 @@ class Elements extends Component
         return true;
     }
 
+    public function copyFieldValueFromSite(ElementInterface $element, string $fieldHandle, int $copyFromSiteId): array
+    {
+        // get element for selected site
+        /** @var string|ElementInterface $elementType */
+        $elementType = get_class($element);
+
+        $user = Craft::$app->getUser()->getIdentity();
+
+        $elementForSite = $this->getElementById($element->canonicalId, $elementType, $copyFromSiteId);
+
+        if (!$elementForSite) {
+            return [
+                'success' => false,
+                'message' => Craft::t('app', 'Couldn\'t find this {type} for the site you selected.', [
+                    'type' => $element::lowerDisplayName(),
+                ])
+            ];
+        }
+
+        $currentValue = $element->getFieldValue($fieldHandle);
+        $copyValue = $elementForSite->getFieldValue($fieldHandle);
+
+        if (($field = Craft::$app->fields->getFieldByHandle($fieldHandle)) !== null) {
+            $currentValue = $field->serializeValue($currentValue);
+            $copyValue = $field->serializeValue($copyValue);
+
+            if ($currentValue != $copyValue) {
+                $transaction = Craft::$app->getDb()->beginTransaction();
+                try {
+                    /*if ($value instanceof MatrixBlockQuery) {
+                        $field = Craft::$app->fields->getFieldByHandle($fieldHandle);
+                        $test = $field->serializeValue($value);
+                        $elementClone = clone($element);
+                        $elementClone->canonicalId = null;
+                        Craft::$app->matrix->duplicateBlocks($field, $elementForSite, $elementClone, trackDuplications: false);
+                    } else {
+                        $element->setFieldValue($fieldHandle, $value);
+                    }*/
+
+                    // check if element is a draft - if not, create one
+                    if (!$element->getIsDraft()) {
+                        /** @var Element|DraftBehavior $element */
+                        $draft = Craft::$app->getDrafts()->createDraft($element, $user->id, null, null, [], true);
+                        $draft->setCanonical($element);
+                        $element = $draft;
+                    }
+
+                    $element->setFieldValue($fieldHandle, $copyValue);
+
+                    if (!$this->saveElement($element, true, false, false)) {
+                        return [
+                            'success' => false,
+                            'message' => Craft::t('app', 'Couldn\'t copy the value.')
+                        ];
+                    }
+
+                    $transaction->commit();
+                    return [
+                        'success' => true,
+                        'message' => Craft::t('app', 'Value copied.')
+                    ];
+                } catch (Throwable $e) {
+                    $transaction->rollBack();
+                    throw $e;
+                }
+            }
+        }
+
+        return [
+            'success' => true,
+            'message' => Craft::t('app', 'Nothing to copy.')
+        ];
+    }
+
     // Element classes
     // -------------------------------------------------------------------------
 

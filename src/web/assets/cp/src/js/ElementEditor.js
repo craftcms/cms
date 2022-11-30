@@ -98,6 +98,8 @@ Craft.ElementEditor = Garnish.Base.extend(
       this.$revisionLabel = this.$container.find('.revision-label');
       this.$previewBtn = this.$container.find('.preview-btn');
 
+      this.copyTranslationBtns = this.$container.find('.t9n-indicator');
+
       const $spinnerContainer = this.isFullPage
         ? $('#page-title')
         : this.slideout.$toolbar;
@@ -121,6 +123,8 @@ Craft.ElementEditor = Garnish.Base.extend(
           'click',
           'expandSiteStatuses'
         );
+
+        this.addListener(this.copyTranslationBtns, 'click', 'showFieldTranslationDialogue');
       }
 
       if (this.settings.previewTargets.length && this.isFullPage) {
@@ -524,6 +528,96 @@ Craft.ElementEditor = Garnish.Base.extend(
 
       this.$globalLightswitch.on('change', this._updateSiteStatuses.bind(this));
       this._updateGlobalStatus();
+    },
+
+    showFieldTranslationDialogue: function (ev) {
+      ev.preventDefault();
+
+      $btn = $(ev.target);
+
+      let form =
+        '<form class="fitted copyTranslationForField" method="post" accept-charset="UTF-8" data-action="elements/copy-field-value-from-site">' +
+        Craft.getCsrfInput() +
+        '<label>Copy field value from:</label>' +
+        '<input type="hidden" id="copyFieldHandle" name="copyFieldHandle" value="' + $btn.data('handle') + '"/>' +
+        '<input type="hidden" id="copyFromSiteId" name="copyFromSiteId" value="2"/>' +
+        '<button type="submit" class="btn submit">Copy</button>' +
+        '</form>';
+
+      hud = new Garnish.HUD(
+        $btn,
+        `<div class="copy-translation-dialogue">` +
+        `<span>` +
+        $btn.attr('title') +
+        `</span><hr />` +
+        form +
+        `</div>`
+      );
+
+      this.addListener($('.copyTranslationForField'), 'submit', 'copyTranslatedValueFromSite');
+
+      /*var menuOptions = [{
+        label: this.settings.siteId,
+        value: this.settings.siteId
+      }];
+      this._getOtherSupportedSites().forEach((s) =>
+        menuOptions.push({
+          label: s.name,
+          value: s.id
+        })
+      );
+      console.log(menuOptions);
+      new Garnish.ContextMenu($("#copyTranslationSiteId"), menuOptions, {menuClass: 'menu'});*/
+    },
+
+    copyTranslatedValueFromSite: function (ev) {
+      ev.preventDefault();
+      let $form = $(ev.target);
+
+      let params = {
+        fieldHandle: $form.find('[name="copyFieldHandle"]').val(),
+        copyFromSiteId: $form.find('[name="copyFromSiteId"]').val(),
+        elementId: this.settings.canonicalId,
+        draftId: this.settings.draftId,
+        provisional: this.settings.isProvisionalDraft,
+      }
+
+      if (Craft.csrfTokenName) {
+        params[Craft.csrfTokenName] = Craft.csrfTokenValue;
+      }
+
+      return new Promise((resolve, reject) => {
+        Craft.sendActionRequest('POST', $form.data('action'), {
+          data: params
+          })
+          .then((response) => {
+            window.location.reload();
+
+            let element = response.data.element;
+
+            if (Craft.broadcaster) {
+              Craft.broadcaster.postMessage({
+                pageId: Craft.pageId,
+                event: 'saveDraft',
+                canonicalId: element.canonicalId,
+                draftId: element.draftId,
+                isProvisionalDraft: element.isProvisionalDraft,
+              });
+            }
+
+            resolve();
+          })
+          .catch((e) => {
+            this.setStatusMessage(e.message);
+            let $errorContainer = $form.find('p.error');
+            if ($form.find('p.error').length > 0) {
+              $errorContainer.contents(e.response.data.message);
+            } else {
+              $form.append('<p class="error">' + e.response.data.message + '</p>');
+            }
+            reject(e);
+          });
+      });
     },
 
     /**

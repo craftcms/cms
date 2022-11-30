@@ -686,11 +686,13 @@ class Cp
                     'title' => $config['translationDescription'] ?? Craft::t('app', 'This field is translatable.'),
                     'data' => [
                         'icon' => 'language',
+                        'handle' => $config['id'],
                     ],
                     'aria' => [
                         'label' => $config['translationDescription'] ?? Craft::t('app', 'This field is translatable.'),
                     ],
-                    'role' => 'img',
+                    'role' => 'link',
+                    'tabindex' => 0,
                 ])
                 : '')
             );

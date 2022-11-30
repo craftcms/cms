@@ -575,6 +575,67 @@ class ElementsController extends Controller
         return $response;
     }
 
+    public function actionCopyFieldValueFromSite()
+    {
+        $this->requireAcceptsJson();
+
+        /** @var Element|null $element */
+        $element = $this->_element();
+
+        if (!$element || $element->getIsRevision()) {
+            throw new BadRequestHttpException('No element was identified by the request.');
+        }
+
+        $params = $this->request->getBodyParams();
+        $fieldHandle = $params['fieldHandle'] ?? null;
+        $copyFromSiteId = $params['copyFromSiteId'] ?? null;
+
+        if ($fieldHandle === null || $copyFromSiteId === null) {
+            throw new BadRequestHttpException('No field handle or site id to copy from provided.');
+        }
+
+        $elementsService = Craft::$app->getElements();
+        $user = static::currentUser();
+
+        // check if this entry exists for other sites
+        if (empty($siteIdsForElement = $elementsService->getEnabledSiteIdsForElement($element->id))) {
+            return $this->asFailure(Craft::t('app', 'Couldn\'t find this {type} in other sites.', [
+                'type' => $element::lowerDisplayName(),
+            ]));
+        }
+
+        if (!in_array($copyFromSiteId, $siteIdsForElement, false)) {
+            return $this->asFailure(Craft::t('app', 'Couldn\'t find this {type} for the site you selected.', [
+                'type' => $element::lowerDisplayName(),
+            ]));
+        }
+
+        // todo: IWONA check if we need those checks!
+        if (!$element->getIsDraft() && !$this->_provisional) {
+            if (!$elementsService->canCreateDrafts($element, $user)) {
+                throw new ForbiddenHttpException('User not authorized to create drafts for this element.');
+            }
+        } elseif (!$this->_canSave($element, $user)) {
+            throw new ForbiddenHttpException('User not authorized to save this element.');
+        }
+
+        if (!$elementsService->copyFieldValueFromSite($element, $fieldHandle, $copyFromSiteId)) {
+            $this->_asFailure($element, Craft::t('app', 'Couldn\'t copy the value.'));
+        }
+
+        if (!$this->request->getAcceptsJson()) {
+            // Tell all browser windows about the element save
+            Craft::$app->getSession()->broadcastToJs([
+                'event' => 'saveElement',
+                'id' => $element->id,
+            ]);
+        }
+
+        return $this->_asSuccess(Craft::t('app', 'Value copied.', [
+            'type' => $element::displayName(),
+        ]), $element);
+    }
+
     /**
      * Returns the page title and document title that should be used for Edit Element pages.
      *
