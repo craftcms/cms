@@ -144,7 +144,6 @@ import './login.scss';
       Craft.sendActionRequest('POST', 'users/login', {data})
         .then((response) => {
           this.$submitBtn.successEvent();
-          return;
           window.location.href = response.data.returnUrl;
         })
         .catch(({response}) => {
