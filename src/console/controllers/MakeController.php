@@ -57,8 +57,7 @@ class MakeController extends Controller
     public function actionGenerate(?string $type = null): int
     {
         if ($type === null) {
-            $this->stdout($this->getHelpSummary() . PHP_EOL);
-            return ExitCode::OK;
+            return $this->run('/help', ['make']);
         }
 
         /** @var string|BaseGenerator|null $class */
