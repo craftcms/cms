@@ -5,7 +5,7 @@
  * @license https://craftcms.github.io/license/
  */
 
-namespace craft\console\actions\make;
+namespace craft\console\generators;
 
 use Composer\Json\JsonManipulator;
 use Craft;
@@ -19,12 +19,12 @@ use yii\console\ExitCode;
 use yii\validators\EmailValidator;
 
 /**
- * Class PluginAction
+ * Creates a new Craft plugin.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.4.0
  */
-class PluginAction extends BaseAction
+class Plugin extends BaseGenerator
 {
     private string $name;
     private string $developer;
