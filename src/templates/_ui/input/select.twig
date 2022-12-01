@@ -1,0 +1,49 @@
+{%- set containerAttributes = containerAttributes.defaults({
+    class: {
+        select: true,
+        disabled: disabled
+    },
+}) %}
+
+{% set inputAttributes = attributes.defaults({
+    id: id,
+    class: {
+        fieldtoggle: toggle
+    },
+    autofocus: autofocus,
+    aria: {
+        describedby: describedBy ?? false,
+        labelledby: labelledBy ?? false,
+    },
+    data: {
+        'target-prefix': toggle ? targetPrefix : false,
+    },
+}) %}
+
+<div {{ containerAttributes }}>
+    <select {{ inputAttributes }}>
+        {% for key, option in this.getOptions() %}
+        {% if option.optgroup is defined %}
+        {% if hasOptgroups %}
+            </optgroup>
+        {% else %}
+            {% set hasOptgroups = true %}
+        {% endif %}
+        <optgroup label="{{ option.optgroup }}">
+            {% else %}
+                {% set optionValue = option.value %}
+                {{ tag('option', {
+                    value: optionValue ?? '',
+                    selected: (optionValue~'') is same as (value~''),
+                    disabled: option.disabled ?? false,
+                    hidden: option.hidden ?? false,
+                    text: option.label is defined ? option.label : option,
+                    data: option.data ?? false,
+                }) }}
+            {% endif %}
+            {% endfor %}
+            {% if hasOptgroups %}
+        </optgroup>
+        {% endif %}
+    </select>
+</div>

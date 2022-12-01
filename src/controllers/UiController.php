@@ -31,4 +31,15 @@ class UiController extends Controller
 
         return $this->renderTemplate('_ui/entry', $variables);
     }
+
+    public function actionPreview(string $name)
+    {
+        $props = $this->request->getParam('props', []);
+        $component = Craft::$app->getUi()->createAndRender($name, $props);
+
+        return $this->renderTemplate('_ui/preview', [
+            'component' => $component,
+            'name' => $name,
+        ]);
+    }
 }

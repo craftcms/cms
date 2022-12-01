@@ -24,6 +24,8 @@ use craft\ui\components\InputDate;
 use craft\ui\components\InputDateTime;
 use craft\ui\components\InputHiddenText;
 use craft\ui\components\InputPasswordText;
+use craft\ui\components\InputSelect;
+use craft\ui\components\InputSelectize;
 use craft\ui\components\InputText;
 use craft\ui\components\InputTextArea;
 use craft\ui\components\InputTime;
@@ -73,6 +75,7 @@ class Ui extends Component
 
             // Inputs
             InputText::class,
+            InputTextArea::class,
             InputPasswordText::class,
             InputHiddenText::class,
             InputCopyText::class,
@@ -80,7 +83,8 @@ class Ui extends Component
             InputTime::class,
             InputDateTime::class,
             InputColor::class,
-            InputTextArea::class,
+            InputSelect::class,
+            InputSelectize::class,
         ];
     }
 

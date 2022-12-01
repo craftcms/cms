@@ -1,0 +1,12 @@
+{% extends "_layouts/cp" %}
+{% set title = name ?? 'Preview' %}
+
+{% block body %}
+    <div id="preview" style="padding: 10px">
+        <div>
+            {{ component | raw }}
+        </div>
+    </div>
+
+    {% include '_layouts/components/notifications' %}
+{% endblock %}

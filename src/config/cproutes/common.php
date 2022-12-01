@@ -76,6 +76,8 @@ return [
     'plugin-store' => 'plugin-store',
     'plugin-store/callback' => 'plugin-store/callback',
     'plugin-store/<url:(.*)>' => 'plugin-store',
-    'components' => 'ui/index',
+    'components/preview/<name:(.*)>' => 'ui/preview',
+    'components/markup/<name:(.*)>' => 'ui/markup',
     'components/<name:(.*)>' => 'ui/show',
+    'components' => 'ui/index',
 ];

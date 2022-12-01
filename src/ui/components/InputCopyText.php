@@ -27,6 +27,13 @@ class InputCopyText extends BaseUiComponent
      */
     public ?string $buttonId = null;
 
+    /**
+     * Value of text to be copied
+     *
+     * @var string
+     */
+    public string $value = 'Copy Text';
+
     public function mount(string $id = null)
     {
         $this->id = $id ?? 'copytext' . mt_rand();

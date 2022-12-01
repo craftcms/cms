@@ -4,9 +4,9 @@
 {% block sidebar %}
     <nav>
         <ul>
-            {% for name, component in components %}
+            {% for id, component in components %}
                 <li>
-                    <a href="{{ cpUrl('components/' ~ name) }}">{{ name }}</a>
+                    <a href="{{ cpUrl('components/' ~ id) }}" {% if id == (name ?? '') %}class="sel"{% endif %}>{{id }}</a>
                 </li>
             {% endfor %}
         </ul>
