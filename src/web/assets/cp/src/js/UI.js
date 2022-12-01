@@ -1245,13 +1245,13 @@ Craft.ui = {
       // define regex for searching for field id
       if (errorKeyParts[0] !== undefined) {
         var idRegex = new RegExp(
-          `^` + namespace + `fields-` + errorKeyParts[0] + `.*-field`
+          `^` + namespace + `(fields-)?` + errorKeyParts[0] + `.*-field`
         );
         if (errorKeyParts[2] !== undefined) {
           idRegex = new RegExp(
             `^` +
               namespace +
-              `fields-` +
+              `(fields-)?` +
               errorKeyParts[0] +
               `.*-` +
               errorKeyParts[2] +
@@ -1295,13 +1295,13 @@ Craft.ui = {
       // define regex for searching for errors list for given field
       if (errorKeyParts[0] !== undefined) {
         var regex = new RegExp(
-          `^` + namespace + `fields-` + errorKeyParts[0] + `.*-errors`
+          `^` + namespace + `(fields-)?` + errorKeyParts[0] + `.*-errors`
         );
         if (errorKeyParts[2] !== undefined) {
           regex = new RegExp(
             `^` +
               namespace +
-              `fields-` +
+              `(fields-)?` +
               errorKeyParts[0] +
               `.*-` +
               errorKeyParts[2] +
