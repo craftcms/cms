@@ -60,6 +60,11 @@ class MakeController extends Controller
             return $this->run('/help', ['make']);
         }
 
+        if (!$this->interactive) {
+            $this->stderr("This command must be run interactively.\n", Console::FG_RED);
+            return ExitCode::UNSPECIFIED_ERROR;
+        }
+
         /** @var string|BaseGenerator|null $class */
         $class = ArrayHelper::firstWhere($this->types(), function(string $class) use ($type) {
             /** @var string|BaseGenerator $class */

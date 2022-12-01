@@ -44,11 +44,6 @@ class Plugin extends BaseGenerator
 
     public function run(): int
     {
-        if (!$this->controller->interactive) {
-            $this->controller->stderr("This command must be run interactively.\n", Console::FG_RED);
-            return ExitCode::UNSPECIFIED_ERROR;
-        }
-
         $this->name = $this->controller->prompt('Plugin name:', [
             'required' => true,
         ]);
