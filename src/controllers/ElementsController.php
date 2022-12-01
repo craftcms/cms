@@ -589,6 +589,10 @@ class ElementsController extends Controller
         $fieldHandle = $this->request->getRequiredBodyParam('fieldHandle');
         $copyFromSiteId = $this->request->getRequiredBodyParam('copyFromSiteId');
 
+        if (empty($fieldHandle) || empty($copyFromSiteId)) {
+            throw new BadRequestHttpException("Request missing required param");
+        }
+
         $elementsService = Craft::$app->getElements();
         $user = static::currentUser();
 

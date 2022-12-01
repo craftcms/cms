@@ -52,6 +52,8 @@ Craft.ElementEditor = Garnish.Base.extend(
     previewLinks: null,
     scrollY: null,
 
+    sitesForCopyFieldAction: null,
+
     get slideout() {
       return this.$container.data('slideout');
     },
@@ -123,6 +125,8 @@ Craft.ElementEditor = Garnish.Base.extend(
           'click',
           'expandSiteStatuses'
         );
+
+        this.sitesForCopyFieldAction = this._getSitesForCopyFieldAction();
 
         this.addListener(this.copyTranslationBtns, 'click', 'showFieldTranslationDialogue');
       }
@@ -530,6 +534,18 @@ Craft.ElementEditor = Garnish.Base.extend(
       this._updateGlobalStatus();
     },
 
+    _getSitesForCopyFieldAction: function() {
+      var menuOptions = [];
+      this._getOtherSupportedSites().forEach((s) =>
+        menuOptions.push({
+          label: s.name,
+          value: s.id
+        })
+      );
+
+      return menuOptions;
+    },
+
     showFieldTranslationDialogue: function (ev) {
       ev.preventDefault();
 
@@ -544,13 +560,19 @@ Craft.ElementEditor = Garnish.Base.extend(
         `</span>`;
 
       // only allow the copy field value on the top-level field (e.g. entire matrix field and not it's blocks)
-      if (immediateFieldParentId == topFieldParentId) {
+      if (immediateFieldParentId == topFieldParentId && this.sitesForCopyFieldAction.length > 0) {
+        let select = '<div class="select"><select id="copyFromSiteId" name="copyFromSiteId">';
+        this.sitesForCopyFieldAction.forEach(site =>
+          select += '<option value="' + site.value + '">' + site.label + '</option>'
+        );
+        select += '</select></div>';
+
         hudContent += `<hr />` +
           '<form class="fitted copyTranslationForField" method="post" accept-charset="UTF-8" data-action="elements/copy-field-value-from-site">' +
           Craft.getCsrfInput() +
           '<label>Copy field value from:</label>' +
           '<input type="hidden" id="copyFieldHandle" name="copyFieldHandle" value="' + $btn.data('handle') + '"/>' +
-          '<input type="hidden" id="copyFromSiteId" name="copyFromSiteId" value="2"/>' +
+          select +
           '<button type="submit" class="btn submit">Copy</button>' +
           '</form>';
       }
@@ -560,19 +582,6 @@ Craft.ElementEditor = Garnish.Base.extend(
       hud = new Garnish.HUD($btn, hudContent);
 
       this.addListener($('.copyTranslationForField'), 'submit', 'copyTranslatedValueFromSite');
-
-      /*var menuOptions = [{
-        label: this.settings.siteId,
-        value: this.settings.siteId
-      }];
-      this._getOtherSupportedSites().forEach((s) =>
-        menuOptions.push({
-          label: s.name,
-          value: s.id
-        })
-      );
-      console.log(menuOptions);
-      new Garnish.ContextMenu($("#copyTranslationSiteId"), menuOptions, {menuClass: 'menu'});*/
     },
 
     copyTranslatedValueFromSite: function (ev) {
