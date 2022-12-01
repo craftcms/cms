@@ -575,7 +575,7 @@ class ElementsController extends Controller
         return $response;
     }
 
-    public function actionCopyFieldValueFromSite()
+    public function actionCopyFieldValueFromSite(): Response
     {
         $this->requireAcceptsJson();
 
@@ -586,28 +586,31 @@ class ElementsController extends Controller
             throw new BadRequestHttpException('No element was identified by the request.');
         }
 
-        $params = $this->request->getBodyParams();
-        $fieldHandle = $params['fieldHandle'] ?? null;
-        $copyFromSiteId = $params['copyFromSiteId'] ?? null;
-
-        if ($fieldHandle === null || $copyFromSiteId === null) {
-            throw new BadRequestHttpException('No field handle or site id to copy from provided.');
-        }
+        $fieldHandle = $this->request->getRequiredBodyParam('fieldHandle');
+        $copyFromSiteId = $this->request->getRequiredBodyParam('copyFromSiteId');
 
         $elementsService = Craft::$app->getElements();
         $user = static::currentUser();
 
         // check if this entry exists for other sites
         if (empty($siteIdsForElement = $elementsService->getEnabledSiteIdsForElement($element->id))) {
-            return $this->asFailure(Craft::t('app', 'Couldn\'t find this {type} in other sites.', [
+            $errorMsg = Craft::t('app', 'Couldn’t find this {type} on other sites.', [
                 'type' => $element::lowerDisplayName(),
-            ]));
+            ]);
+
+            Craft::$app->session->setError($errorMsg);
+
+            return $this->_asFailure($element, $errorMsg);
         }
 
         if (!in_array($copyFromSiteId, $siteIdsForElement, false)) {
-            return $this->asFailure(Craft::t('app', 'Couldn\'t find this {type} for the site you selected.', [
+            $errorMsg = Craft::t('app', 'Couldn’t find this {type} on the site you selected.', [
                 'type' => $element::lowerDisplayName(),
-            ]));
+            ]);
+
+            Craft::$app->session->setError($errorMsg);
+
+            return $this->_asFailure($element, $errorMsg);
         }
 
         // todo: IWONA check if we need those checks!
@@ -619,8 +622,11 @@ class ElementsController extends Controller
             throw new ForbiddenHttpException('User not authorized to save this element.');
         }
 
-        if (!$elementsService->copyFieldValueFromSite($element, $fieldHandle, $copyFromSiteId)) {
-            $this->_asFailure($element, Craft::t('app', 'Couldn\'t copy the value.'));
+        $result = $elementsService->copyFieldValueFromSite($element, $fieldHandle, $copyFromSiteId);
+        if ($result['success'] === false) {
+            Craft::$app->session->setError($result['message']);
+
+            return $this->_asFailure($result['element'], $result['message']);
         }
 
         if (!$this->request->getAcceptsJson()) {
@@ -631,9 +637,9 @@ class ElementsController extends Controller
             ]);
         }
 
-        return $this->_asSuccess(Craft::t('app', 'Value copied.', [
-            'type' => $element::displayName(),
-        ]), $element);
+        Craft::$app->session->setNotice($result['message']);
+
+        return $this->_asSuccess($result['message'], $result['element']);
     }
 
     /**

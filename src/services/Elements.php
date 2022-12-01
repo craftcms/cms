@@ -2156,9 +2156,10 @@ class Elements extends Component
         if (!$elementForSite) {
             return [
                 'success' => false,
-                'message' => Craft::t('app', 'Couldn\'t find this {type} for the site you selected.', [
+                'message' => Craft::t('app', 'Couldn’t find this {type} on the site you selected.', [
                     'type' => $element::lowerDisplayName(),
-                ])
+                ]),
+                'element' => $element,
             ];
         }
 
@@ -2195,14 +2196,16 @@ class Elements extends Component
                     if (!$this->saveElement($element, true, false, false)) {
                         return [
                             'success' => false,
-                            'message' => Craft::t('app', 'Couldn\'t copy the value.')
+                            'message' => Craft::t('app', 'Couldn’t copy the value.'),
+                            'element' => $element,
                         ];
                     }
 
                     $transaction->commit();
                     return [
                         'success' => true,
-                        'message' => Craft::t('app', 'Value copied.')
+                        'message' => Craft::t('app', 'Value copied.'),
+                        'element' => $element,
                     ];
                 } catch (Throwable $e) {
                     $transaction->rollBack();
@@ -2213,7 +2216,8 @@ class Elements extends Component
 
         return [
             'success' => true,
-            'message' => Craft::t('app', 'Nothing to copy.')
+            'message' => Craft::t('app', 'Nothing to copy.'),
+            'element' => $element,
         ];
     }
 

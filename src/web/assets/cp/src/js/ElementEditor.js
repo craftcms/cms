@@ -614,6 +614,9 @@ Craft.ElementEditor = Garnish.Base.extend(
               $errorContainer.contents(e.response.data.message);
             } else {
               $form.append('<p class="error">' + e.response.data.message + '</p>');
+            }*/
+            if (e.response.data.message) {
+              Craft.cp.displayError(e.response.data.message);
             }
             reject(e);
           });
