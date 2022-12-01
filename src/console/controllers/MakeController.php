@@ -72,7 +72,7 @@ class MakeController extends Controller
         });
 
         if (!$class) {
-            $this->stderr("Invalid generator type: $type\n", Console::FG_RED);
+            $this->stdout("Invalid generator type: $type\n", Console::FG_RED);
             return ExitCode::UNSPECIFIED_ERROR;
         }
 
