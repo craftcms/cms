@@ -3314,7 +3314,8 @@ class Elements extends Component
                 $message .
                 Html::tag('span', '', [
                     'data-icon' => 'external',
-                    'arial-label' => Craft::t('app', 'Open the full edit page in a new tab'),
+                    'aria-label' => Craft::t('app', 'Open the full edit page in a new tab'),
+                    'role' => 'img',
                 ]) .
                 Html::endTag('a');
         }
