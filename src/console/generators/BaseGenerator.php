@@ -7,7 +7,9 @@
 
 namespace craft\console\generators;
 
+use Craft;
 use craft\console\controllers\MakeController;
+use craft\helpers\FileHelper;
 use craft\helpers\Json;
 use craft\helpers\StringHelper;
 use ReflectionClass;
@@ -67,6 +69,45 @@ abstract class BaseGenerator extends BaseObject
      * @return int The command exit code to return.
      */
     abstract public function run(): int;
+
+    /**
+     * Prompts the user for the base location that a plugin or module should be generated in.
+     *
+     * @param string $text The prompt string
+     * @param string $default The default location to use
+     * @param string|null $relativeTo A location that the returned path should be relative to
+     * @return string
+     */
+    protected function basePathPrompt(string $text, string $default, ?string $relativeTo = null): string
+    {
+        $default = FileHelper::normalizePath(Craft::getAlias($default), '/');
+        $relativeTo = FileHelper::normalizePath(Craft::getAlias($relativeTo ?? '@root'), '/');
+
+        $path = $this->controller->prompt($text, [
+            'default' => FileHelper::relativePath($default, $relativeTo),
+            'validator' => function(string $input, ?string &$error) use ($relativeTo) {
+                $path = FileHelper::normalizePath($input, '/');
+
+                if (!str_starts_with($path, '/')) {
+                    $path = "$relativeTo/$path";
+                }
+
+                if (is_file($path)) {
+                    $error = 'A file already exists there.';
+                    return false;
+                }
+
+                if (is_dir($path) && !FileHelper::isDirectoryEmpty($path)) {
+                    $error = 'A non-empty directory already exists there.';
+                    return false;
+                }
+
+                return true;
+            },
+        ]);
+
+        return FileHelper::relativePath($path, $relativeTo);
+    }
 
     /**
      * Writes contents to a file, and outputs to the console.

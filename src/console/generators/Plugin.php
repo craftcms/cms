@@ -63,20 +63,10 @@ class Plugin extends BaseGenerator
             $this->handle = StringHelper::ensureLeft($this->handle, '_');
         }
 
-        $this->basePath = $this->controller->prompt('Plugin location:', [
-            'default' => FileHelper::relativePath(Craft::getAlias(sprintf('@root/plugins/%s', StringHelper::removeLeft($this->handle, '_')))),
-            'validator' => function(string $input, ?string &$error) {
-                if (is_file($input)) {
-                    $error = 'A file already exists there.';
-                    return false;
-                }
-                if (is_dir($input) && !FileHelper::isDirectoryEmpty($input)) {
-                    $error = 'A non-empty directory already exists there.';
-                    return false;
-                }
-                return true;
-            },
-        ]);
+        $this->basePath = $this->basePathPrompt(
+            'Plugin location:',
+            sprintf('@root/plugins/%s', StringHelper::removeLeft($this->handle, '_'))
+        );
 
         $defaultVendor = trim(preg_replace('/[^a-z\\-]/i', '', StringHelper::toKebabCase($this->developer)), '-');
         $this->packageName = $this->controller->prompt('Composer package name:', [
