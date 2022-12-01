@@ -163,8 +163,6 @@ with the `url` pointing to `$this->basePath`. Then run these commands:
 $installCommands
 MD;
 
-
-
         // Check if the plugin will already be autoloaded
         try {
             $composerPath = Craft::$app->getComposer()->getJsonPath();
