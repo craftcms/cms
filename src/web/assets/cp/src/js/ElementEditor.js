@@ -535,24 +535,29 @@ Craft.ElementEditor = Garnish.Base.extend(
 
       $btn = $(ev.target);
 
-      let form =
-        '<form class="fitted copyTranslationForField" method="post" accept-charset="UTF-8" data-action="elements/copy-field-value-from-site">' +
-        Craft.getCsrfInput() +
-        '<label>Copy field value from:</label>' +
-        '<input type="hidden" id="copyFieldHandle" name="copyFieldHandle" value="' + $btn.data('handle') + '"/>' +
-        '<input type="hidden" id="copyFromSiteId" name="copyFromSiteId" value="2"/>' +
-        '<button type="submit" class="btn submit">Copy</button>' +
-        '</form>';
+      const immediateFieldParentId = $btn.parents('.field:first').attr('id');
+      const topFieldParentId = $btn.parents('.field:last').attr('id');
 
-      hud = new Garnish.HUD(
-        $btn,
-        `<div class="copy-translation-dialogue">` +
+      let hudContent = `<div class="copy-translation-dialogue">` +
         `<span>` +
         $btn.attr('title') +
-        `</span><hr />` +
-        form +
-        `</div>`
-      );
+        `</span>`;
+
+      // only allow the copy field value on the top-level field (e.g. entire matrix field and not it's blocks)
+      if (immediateFieldParentId == topFieldParentId) {
+        hudContent += `<hr />` +
+          '<form class="fitted copyTranslationForField" method="post" accept-charset="UTF-8" data-action="elements/copy-field-value-from-site">' +
+          Craft.getCsrfInput() +
+          '<label>Copy field value from:</label>' +
+          '<input type="hidden" id="copyFieldHandle" name="copyFieldHandle" value="' + $btn.data('handle') + '"/>' +
+          '<input type="hidden" id="copyFromSiteId" name="copyFromSiteId" value="2"/>' +
+          '<button type="submit" class="btn submit">Copy</button>' +
+          '</form>';
+      }
+
+      hudContent += `</div>`;
+
+      hud = new Garnish.HUD($btn, hudContent);
 
       this.addListener($('.copyTranslationForField'), 'submit', 'copyTranslatedValueFromSite');
 
@@ -608,8 +613,8 @@ Craft.ElementEditor = Garnish.Base.extend(
             resolve();
           })
           .catch((e) => {
-            this.setStatusMessage(e.message);
-            let $errorContainer = $form.find('p.error');
+            this.setStatusMessage(e.response.data.message);
+            /*let $errorContainer = $form.find('p.error');
             if ($form.find('p.error').length > 0) {
               $errorContainer.contents(e.response.data.message);
             } else {
