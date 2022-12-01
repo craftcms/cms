@@ -29,6 +29,8 @@ body {
 }
 
 #login-form-top {
+  display: grid;
+  grid-gap: var(--l);
   padding: 1px;
 }
 
@@ -59,19 +61,6 @@ body {
   display: none;
 }
 
-#login-form:not(.reset-password) {
-  #loginName {
-    margin: -1px -1px 0;
-    border-radius: var(--large-border-radius) var(--large-border-radius) 0 0;
-    border-bottom-width: 0;
-
-    &:focus {
-      border-bottom-width: 1px;
-      margin-bottom: -1px;
-    }
-  }
-}
-
 #login-form.reset-password {
   #password-field,
   #rememberMe-field,
@@ -86,15 +75,9 @@ body {
 
 .passwordwrapper {
   margin: 0 -1px -1px;
-  border-radius: 0 0 var(--large-border-radius) var(--large-border-radius);
-
-  &.focus {
-    z-index: 1;
-  }
 
   #password {
     @include padding(14px, 4rem, 14px, 16px);
-    border-radius: inherit;
   }
 
   .password-toggle {
