@@ -134,10 +134,10 @@ class MakeController extends Controller
             $module = Craft::$app;
         } else {
             if ($usedParamCount === 0) {
-                $this->stdout("`make $type` must specify an --app, --module, or --plugin option.\n", $type, Console::FG_RED);
+                $this->stdout("`make $type` must specify an --app, --module, or --plugin option.\n", Console::FG_RED);
                 return ExitCode::UNSPECIFIED_ERROR;
             } elseif ($usedParamCount !== 1) {
-                $this->stdout("`make $type` must only specify --app, --module, or --plugin, but not multiple.\n", $type, Console::FG_RED);
+                $this->stdout("`make $type` must only specify --app, --module, or --plugin, but not multiple.\n", Console::FG_RED);
                 return ExitCode::UNSPECIFIED_ERROR;
             }
 
