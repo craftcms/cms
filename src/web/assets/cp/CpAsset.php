@@ -143,6 +143,7 @@ JS;
             'Color picker',
             'Continue',
             'Copied to clipboard.',
+            'Copy field value from:',
             'Copy the URL',
             'Copy the reference tag',
             'Copy to clipboard',

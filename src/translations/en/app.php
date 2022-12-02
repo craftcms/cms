@@ -316,6 +316,7 @@ return [
     'Copied to clipboard.' => 'Copied to clipboard.',
     'Copy URL' => 'Copy URL',
     'Copy activation URL…' => 'Copy activation URL…',
+    'Copy field value from:' => 'Copy field value from:',
     'Copy impersonation URL…' => 'Copy impersonation URL…',
     'Copy password reset URL…' => 'Copy password reset URL…',
     'Copy reference tag' => 'Copy reference tag',

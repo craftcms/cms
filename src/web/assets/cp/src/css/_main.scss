@@ -5643,6 +5643,12 @@ fieldset {
   }
 }
 
+.copy-translation-dialogue {
+  .select {
+    margin: 0 0.75em;
+  }
+}
+
 .expand-status-btn {
   @include margin-left(5px);
   width: 30px;

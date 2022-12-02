@@ -2143,15 +2143,31 @@ class Elements extends Component
         return true;
     }
 
+    /**
+     * Copy value of a field from another site
+     *
+     * @param ElementInterface $element
+     * @param string $fieldHandle
+     * @param int $copyFromSiteId
+     * @return array
+     * @throws ElementNotFoundException
+     * @throws Exception
+     * @throws Throwable
+     * @throws \craft\errors\InvalidFieldException
+     * @throws \yii\db\Exception
+     */
     public function copyFieldValueFromSite(ElementInterface $element, string $fieldHandle, int $copyFromSiteId): array
     {
+        // reserved $fieldHandles which we need to treat differently
+        $reservedHandles = ['title', 'slug'];
+
         // get element for selected site
         /** @var string|ElementInterface $elementType */
         $elementType = get_class($element);
 
         $user = Craft::$app->getUser()->getIdentity();
 
-        $elementForSite = $this->getElementById($element->canonicalId, $elementType, $copyFromSiteId);
+        $elementForSite = $this->getElementById($element->getCanonicalId(), $elementType, $copyFromSiteId);
 
         if (!$elementForSite) {
             return [
@@ -2163,54 +2179,53 @@ class Elements extends Component
             ];
         }
 
-        $currentValue = $element->getFieldValue($fieldHandle);
-        $copyValue = $elementForSite->getFieldValue($fieldHandle);
+        if (in_array($fieldHandle, $reservedHandles)) {
+            $currentValue = $element->{$fieldHandle};
+            $copiedValue = $elementForSite->{$fieldHandle};
+        } else {
+            $currentValue = $element->getFieldValue($fieldHandle);
+            $copiedValue = $elementForSite->getFieldValue($fieldHandle);
 
-        if (($field = Craft::$app->fields->getFieldByHandle($fieldHandle)) !== null) {
-            $currentValue = $field->serializeValue($currentValue);
-            $copyValue = $field->serializeValue($copyValue);
+            if (($field = Craft::$app->fields->getFieldByHandle($fieldHandle)) !== null) {
+                $currentValue = $field->serializeValue($currentValue);
+                $copiedValue = $field->serializeValue($copiedValue);
+            }
+        }
 
-            if ($currentValue != $copyValue) {
-                $transaction = Craft::$app->getDb()->beginTransaction();
-                try {
-                    /*if ($value instanceof MatrixBlockQuery) {
-                        $field = Craft::$app->fields->getFieldByHandle($fieldHandle);
-                        $test = $field->serializeValue($value);
-                        $elementClone = clone($element);
-                        $elementClone->canonicalId = null;
-                        Craft::$app->matrix->duplicateBlocks($field, $elementForSite, $elementClone, trackDuplications: false);
-                    } else {
-                        $element->setFieldValue($fieldHandle, $value);
-                    }*/
+        if ($currentValue != $copiedValue) {
+            $transaction = Craft::$app->getDb()->beginTransaction();
+            try {
+                // check if element is a draft - if not, create one
+                if (!$element->getIsDraft()) {
+                    /** @var Element|DraftBehavior $element */
+                    $draft = Craft::$app->getDrafts()->createDraft($element, $user->id, null, null, [], true);
+                    $draft->setCanonical($element);
+                    $element = $draft;
+                }
 
-                    // check if element is a draft - if not, create one
-                    if (!$element->getIsDraft()) {
-                        /** @var Element|DraftBehavior $element */
-                        $draft = Craft::$app->getDrafts()->createDraft($element, $user->id, null, null, [], true);
-                        $draft->setCanonical($element);
-                        $element = $draft;
-                    }
+                if (in_array($fieldHandle, $reservedHandles)) {
+                    $element->{$fieldHandle} = $copiedValue;
+                } else {
+                    $element->setFieldValue($fieldHandle, $copiedValue);
+                }
 
-                    $element->setFieldValue($fieldHandle, $copyValue);
-
-                    if (!$this->saveElement($element, true, false, false)) {
-                        return [
-                            'success' => false,
-                            'message' => Craft::t('app', 'Couldn’t copy the value.'),
-                            'element' => $element,
-                        ];
-                    }
-
-                    $transaction->commit();
+                if (!$this->saveElement($element, true, false, false)) {
                     return [
-                        'success' => true,
-                        'message' => Craft::t('app', 'Value copied.'),
+                        'success' => false,
+                        'message' => Craft::t('app', 'Couldn’t copy the value.'),
                         'element' => $element,
                     ];
-                } catch (Throwable $e) {
-                    $transaction->rollBack();
-                    throw $e;
                 }
+
+                $transaction->commit();
+                return [
+                    'success' => true,
+                    'message' => Craft::t('app', 'Value copied.'),
+                    'element' => $element,
+                ];
+            } catch (Throwable $e) {
+                $transaction->rollBack();
+                throw $e;
             }
         }
 

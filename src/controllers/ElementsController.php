@@ -575,6 +575,20 @@ class ElementsController extends Controller
         return $response;
     }
 
+    /**
+     * Returns result of copying field value from another site
+     *
+     * @return Response
+     * @throws BadRequestHttpException
+     * @throws ForbiddenHttpException
+     * @throws ServerErrorHttpException
+     * @throws Throwable
+     * @throws \craft\errors\ElementNotFoundException
+     * @throws \craft\errors\InvalidFieldException
+     * @throws \craft\errors\MissingComponentException
+     * @throws \yii\base\Exception
+     * @throws \yii\db\Exception
+     */
     public function actionCopyFieldValueFromSite(): Response
     {
         $this->requireAcceptsJson();
@@ -596,6 +610,12 @@ class ElementsController extends Controller
         $elementsService = Craft::$app->getElements();
         $user = static::currentUser();
 
+        // if we can't create drafts for this element, just bail;
+        // this check is to both check if user can create drafts AND if element supports them
+        if (!$elementsService->canCreateDrafts($element, $user)) {
+            throw new ForbiddenHttpException('Can‘t create drafts for this element.');
+        }
+
         // check if this entry exists for other sites
         if (empty($siteIdsForElement = $elementsService->getEnabledSiteIdsForElement($element->id))) {
             $errorMsg = Craft::t('app', 'Couldn’t find this {type} on other sites.', [
@@ -615,15 +635,6 @@ class ElementsController extends Controller
             Craft::$app->session->setError($errorMsg);
 
             return $this->_asFailure($element, $errorMsg);
-        }
-
-        // todo: IWONA check if we need those checks!
-        if (!$element->getIsDraft() && !$this->_provisional) {
-            if (!$elementsService->canCreateDrafts($element, $user)) {
-                throw new ForbiddenHttpException('User not authorized to create drafts for this element.');
-            }
-        } elseif (!$this->_canSave($element, $user)) {
-            throw new ForbiddenHttpException('User not authorized to save this element.');
         }
 
         $result = $elementsService->copyFieldValueFromSite($element, $fieldHandle, $copyFromSiteId);

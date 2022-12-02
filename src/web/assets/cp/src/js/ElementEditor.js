@@ -128,7 +128,11 @@ Craft.ElementEditor = Garnish.Base.extend(
 
         this.sitesForCopyFieldAction = this._getSitesForCopyFieldAction();
 
-        this.addListener(this.copyTranslationBtns, 'click', 'showFieldTranslationDialogue');
+        this.addListener(
+          this.copyTranslationBtns,
+          'click',
+          'showFieldTranslationDialogue'
+        );
       }
 
       if (this.settings.previewTargets.length && this.isFullPage) {
@@ -534,12 +538,12 @@ Craft.ElementEditor = Garnish.Base.extend(
       this._updateGlobalStatus();
     },
 
-    _getSitesForCopyFieldAction: function() {
+    _getSitesForCopyFieldAction: function () {
       var menuOptions = [];
       this._getOtherSupportedSites().forEach((s) =>
         menuOptions.push({
           label: s.name,
-          value: s.id
+          value: s.id,
         })
       );
 
@@ -554,24 +558,39 @@ Craft.ElementEditor = Garnish.Base.extend(
       const immediateFieldParentId = $btn.parents('.field:first').attr('id');
       const topFieldParentId = $btn.parents('.field:last').attr('id');
 
-      let hudContent = `<div class="copy-translation-dialogue">` +
+      let hudContent =
+        `<div class="copy-translation-dialogue">` +
         `<span>` +
         $btn.attr('title') +
         `</span>`;
 
       // only allow the copy field value on the top-level field (e.g. entire matrix field and not it's blocks)
-      if (immediateFieldParentId == topFieldParentId && this.sitesForCopyFieldAction.length > 0) {
-        let select = '<div class="select"><select id="copyFromSiteId" name="copyFromSiteId">';
-        this.sitesForCopyFieldAction.forEach(site =>
-          select += '<option value="' + site.value + '">' + site.label + '</option>'
+      // only if drafts can be created for this element (both user has permissions and element supports them)
+      // only if this element exists on other sites too
+      if (
+        this.settings.canCreateDrafts &&
+        immediateFieldParentId == topFieldParentId &&
+        this.sitesForCopyFieldAction.length > 0
+      ) {
+        let select =
+          '<div class="select"><select id="copyFromSiteId" name="copyFromSiteId">';
+        this.sitesForCopyFieldAction.forEach(
+          (site) =>
+            (select +=
+              '<option value="' + site.value + '">' + site.label + '</option>')
         );
         select += '</select></div>';
 
-        hudContent += `<hr />` +
+        hudContent +=
+          `<hr />` +
           '<form class="fitted copyTranslationForField" method="post" accept-charset="UTF-8" data-action="elements/copy-field-value-from-site">' +
           Craft.getCsrfInput() +
-          '<label>Copy field value from:</label>' +
-          '<input type="hidden" id="copyFieldHandle" name="copyFieldHandle" value="' + $btn.data('handle') + '"/>' +
+          '<label>' +
+          Craft.t('app', 'Copy field value from:') +
+          '</label>' +
+          '<input type="hidden" id="copyFieldHandle" name="copyFieldHandle" value="' +
+          $btn.data('handle') +
+          '"/>' +
           select +
           '<button type="submit" class="btn submit">Copy</button>' +
           '</form>';
@@ -581,7 +600,11 @@ Craft.ElementEditor = Garnish.Base.extend(
 
       hud = new Garnish.HUD($btn, hudContent);
 
-      this.addListener($('.copyTranslationForField'), 'submit', 'copyTranslatedValueFromSite');
+      this.addListener(
+        $('.copyTranslationForField'),
+        'submit',
+        'copyTranslatedValueFromSite'
+      );
     },
 
     copyTranslatedValueFromSite: function (ev) {
@@ -594,7 +617,7 @@ Craft.ElementEditor = Garnish.Base.extend(
         elementId: this.settings.canonicalId,
         draftId: this.settings.draftId,
         provisional: this.settings.isProvisionalDraft,
-      }
+      };
 
       if (Craft.csrfTokenName) {
         params[Craft.csrfTokenName] = Craft.csrfTokenValue;
@@ -602,8 +625,8 @@ Craft.ElementEditor = Garnish.Base.extend(
 
       return new Promise((resolve, reject) => {
         Craft.sendActionRequest('POST', $form.data('action'), {
-          data: params
-          })
+          data: params,
+        })
           .then((response) => {
             window.location.reload();
 
@@ -623,15 +646,17 @@ Craft.ElementEditor = Garnish.Base.extend(
           })
           .catch((e) => {
             this.setStatusMessage(e.response.data.message);
-            /*let $errorContainer = $form.find('p.error');
+            let $errorContainer = $form.find('p.error');
             if ($form.find('p.error').length > 0) {
               $errorContainer.contents(e.response.data.message);
             } else {
-              $form.append('<p class="error">' + e.response.data.message + '</p>');
-            }*/
-            if (e.response.data.message) {
-              Craft.cp.displayError(e.response.data.message);
+              $form.append(
+                '<p class="error">' + e.response.data.message + '</p>'
+              );
             }
+            /*if (e.response.data.message) {
+              Craft.cp.displayError(e.response.data.message);
+            }*/
             reject(e);
           });
       });
