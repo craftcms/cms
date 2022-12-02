@@ -17,6 +17,7 @@ use craft\helpers\StringHelper;
 use ReflectionClass;
 use yii\base\BaseObject;
 use yii\base\InvalidArgumentException;
+use yii\base\Module as BaseModule;
 use yii\base\NotSupportedException;
 
 /**
@@ -61,11 +62,9 @@ abstract class BaseGenerator extends BaseObject
     public MakeController $controller;
 
     /**
-     * @var string The base path to the plugin or module that the maker is working with.
-     *
-     * This must be set for [[writeToFile()]] and [[writeJson()]] to work.
+     * @var BaseModule The module that the generator is working with.
      */
-    public string $basePath;
+    public BaseModule $module;
 
     /**
      * Runs the generator command.

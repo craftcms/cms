@@ -16,7 +16,6 @@ use craft\console\generators\Plugin;
 use craft\events\RegisterComponentTypesEvent;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Console;
-use craft\helpers\FileHelper;
 use yii\console\ExitCode;
 
 /**
@@ -132,7 +131,7 @@ class MakeController extends Controller
                 return ExitCode::UNSPECIFIED_ERROR;
             }
 
-            $basePath = '@root';
+            $module = Craft::$app;
         } else {
             if ($usedParamCount === 0) {
                 $this->stdout("`make $type` must specify an --app, --module, or --plugin option.\n", $type, Console::FG_RED);
@@ -143,24 +142,21 @@ class MakeController extends Controller
             }
 
             if ($this->_app) {
-                $basePath = '@craft';
-            } else {
-                if ($this->_module) {
-                    $module = Craft::$app->getModule($this->_module);
-                    if (!$module) {
-                        $this->stdout("No module exists with the ID \"$this->_module\". ", Console::FG_RED);
-                        return ExitCode::UNSPECIFIED_ERROR;
-                    }
-                } else {
-                    $pluginsService = Craft::$app->getPlugins();
-                    try {
-                        $module = $pluginsService->getPlugin($this->_plugin) ?? $pluginsService->createPlugin($this->_plugin);
-                    } catch (InvalidPluginException $e) {
-                        $this->stdout($e->getMessage(), Console::FG_RED);
-                        return ExitCode::UNSPECIFIED_ERROR;
-                    }
+                $module = Craft::$app;
+            } elseif ($this->_module) {
+                $module = Craft::$app->getModule($this->_module);
+                if (!$module) {
+                    $this->stdout("No module exists with the ID \"$this->_module\". ", Console::FG_RED);
+                    return ExitCode::UNSPECIFIED_ERROR;
                 }
-                $basePath = $module->getBasePath();
+            } else {
+                $pluginsService = Craft::$app->getPlugins();
+                try {
+                    $module = $pluginsService->getPlugin($this->_plugin) ?? $pluginsService->createPlugin($this->_plugin);
+                } catch (InvalidPluginException $e) {
+                    $this->stdout($e->getMessage(), Console::FG_RED);
+                    return ExitCode::UNSPECIFIED_ERROR;
+                }
             }
         }
 
@@ -179,7 +175,7 @@ class MakeController extends Controller
         $generator = Craft::createObject([
             'class' => $class,
             'controller' => $this,
-            'basePath' => FileHelper::normalizePath(Craft::getAlias($basePath), '/'),
+            'module' => $module,
         ]);
 
         return $generator->run();
