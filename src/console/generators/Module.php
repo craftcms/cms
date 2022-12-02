@@ -42,7 +42,8 @@ class Module extends BaseGenerator
             'ensureEmpty' => true,
             'ensureAutoloadableFrom' => $composerPath,
         ]);
-        $this->rootNamespace = $this->directoryNamespace($this->targetDir, $composerPath);
+
+        $this->rootNamespace = $this->directoryNamespace($this->targetDir, $composerPath, $addedAutoloadRoot);
 
         $this->controller->stdout(PHP_EOL . 'Generating module files…' . PHP_EOL);
 
@@ -56,12 +57,20 @@ class Module extends BaseGenerator
 
         $instructions = <<<MD
 **The module is ready to be installed!**
+
+MD;
+        if ($addedAutoloadRoot) {
+            $instructions .= <<<MD
 Run the following command to ensure the module gets autoloaded:
 
 ```php
 > composer dump-autoload
 ```
 
+MD;
+        }
+
+        $instructions .= <<<MD
 To install the module, open `config/app.php` and add the following to the `return` array:
 
 ```

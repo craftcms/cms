@@ -188,9 +188,10 @@ abstract class BaseGenerator extends BaseObject
      *
      * @param string $dir The directory path
      * @param string $composerFile The path to `composer.json`
+     * @param bool $addedAutoloadRoot Whether a new autoload root was added
      * @return string
      */
-    protected function directoryNamespace(string $dir, string $composerFile): string
+    protected function directoryNamespace(string $dir, string $composerFile, ?bool &$addedAutoloadRoot = false): string
     {
         $dir = FileHelper::absolutePath($dir, ds: '/');
 
@@ -220,6 +221,7 @@ abstract class BaseGenerator extends BaseObject
         $composerConfig['autoload']['psr-4']["$newRootNamespace\\"] = $newRootPath;
         $this->controller->writeJson($composerFile, $composerConfig);
 
+        $addedAutoloadRoot = true;
         return $newRootNamespace;
     }
 }
