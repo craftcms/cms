@@ -20,7 +20,6 @@ use ReflectionMethod;
 use Seld\CliPrompt\CliPrompt;
 use Throwable;
 use yii\base\Action;
-use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
 use yii\console\Controller as YiiController;
 use yii\helpers\Inflector;
@@ -191,21 +190,6 @@ class Controller extends YiiController
         }
 
         return $options;
-    }
-
-    /**
-     * Returns the value for a custom action option.
-     *
-     * @param string $name
-     * @return mixed
-     * @since 4.4.0
-     */
-    public function getCustomOption(string $name): mixed
-    {
-        if (!$this->_isCustomOption($name)) {
-            throw new InvalidArgumentException("Invalid option name: $name");
-        }
-        return $this->_actions[$this->_actionId]['options'][$name];
     }
 
     /**
