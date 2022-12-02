@@ -9,6 +9,7 @@ namespace craft\console\generators;
 
 use Composer\Json\JsonManipulator;
 use Craft;
+use craft\helpers\App;
 use craft\helpers\ArrayHelper;
 use craft\helpers\FileHelper;
 use craft\helpers\Json;
@@ -64,10 +65,10 @@ class Plugin extends BaseGenerator
             $this->handle = StringHelper::ensureLeft($this->handle, '_');
         }
 
-        $this->targetDir = $this->targetDirPrompt(
-            'Plugin location:',
-            sprintf('@root/plugins/%s', StringHelper::removeLeft($this->handle, '_'))
-        );
+        $this->targetDir = $this->directoryPrompt('Plugin location:', [
+            'default' => sprintf('@root/plugins/%s', StringHelper::removeLeft($this->handle, '_')),
+            'ensureEmpty' => true,
+        ]);
         $this->relativeTargetDir = FileHelper::relativePath($this->targetDir);
 
         $defaultVendor = trim(preg_replace('/[^a-z\\-]/i', '', StringHelper::toKebabCase($this->developer)), '-');
@@ -100,7 +101,7 @@ class Plugin extends BaseGenerator
             }
         }
 
-        $this->craftConfig = Json::decode(file_get_contents(Craft::getAlias('@craftcms/composer.json')));
+        $this->craftConfig = Json::decodeFromFile('@craftcms/composer.json');
 
         $this->minPhpVersion = $this->controller->prompt('Minimum PHP version:', [
             'default' => ltrim($this->craftConfig['require']['php'], '^~'),
@@ -112,11 +113,9 @@ class Plugin extends BaseGenerator
             'pattern' => '/^[\d\.]+\(-\w+(\.\d+)?)?$/',
         ]);
 
-        $this->rootNamespace = $this->controller->prompt('Root namespace', [
-            'default' => str_replace(['-', '/'], ['', '\\'], $this->packageName),
-            'pattern' => '/^[a-z\\\\]+$/i',
+        $this->rootNamespace = $this->namespacePrompt('Root namespace', [
+            'default' => App::normalizeNamespace(str_replace('-', '', $this->packageName)),
         ]);
-        $this->rootNamespace = $this->normalizeNamespace($this->rootNamespace);
 
         $this->addEcs = $this->controller->confirm('Include ECS? (For automated code styling)', true);
         $this->addPhpStan = $this->controller->confirm('Include PHPStan? (For automated code quality checks)', true);
@@ -181,15 +180,12 @@ MD;
         }
 
         $composerDir = FileHelper::normalizePath(dirname(realpath($composerPath)), '/');
-        $composerConfig = Json::decode(file_get_contents($composerPath));
+        $composerConfig = Json::decodeFromFile($composerPath);
         $repositories = $composerConfig['repositories'] ?? [];
 
         foreach ($repositories as $repoConfig) {
             if (isset($repoConfig['type'], $repoConfig['url']) && $repoConfig['type'] === 'path') {
-                $repoPath = FileHelper::normalizePath($repoConfig['url'], '/');
-                if (!str_starts_with($repoPath, '/')) {
-                    $repoPath = "$composerDir/$repoPath";
-                }
+                $repoPath = FileHelper::absolutePath($repoConfig['url'], $composerDir, '/');
                 // Get all the matching folders
                 $flags = GLOB_MARK | GLOB_ONLYDIR;
                 if (defined('GLOB_BRACE')) {

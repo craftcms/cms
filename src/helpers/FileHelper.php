@@ -73,7 +73,7 @@ class FileHelper extends \yii\helpers\FileHelper
      * @param string $to The target path.
      * @param string|null $from The source location. Defaults to the current working directory.
      * @param string $ds the directory separator to be used in the normalized result. Defaults to `DIRECTORY_SEPARATOR`.
-     * @return string
+     * @return string The relative path if possible, or an absolute path if the directory is not contained within `$from`.
      * @since 4.4.0
      */
     public static function relativePath(
@@ -81,12 +81,12 @@ class FileHelper extends \yii\helpers\FileHelper
         ?string $from = null,
         string $ds = DIRECTORY_SEPARATOR,
     ): string {
-        $to = static::normalizePath($to, $ds);
+        $to = static::absolutePath($to, ds: $ds);
 
         if ($from === null) {
-            $from = getcwd();
+            $from = FileHelper::normalizePath(getcwd(), $ds);
         } else {
-            $from = static::normalizePath($from, $ds);
+            $from = static::absolutePath($from, ds: $ds);
         }
 
         if ($from === $to) {
@@ -97,7 +97,51 @@ class FileHelper extends \yii\helpers\FileHelper
             return $to;
         }
 
-        return StringHelper::removeLeft($to, $from . $ds);
+        return substr($to, strlen($from) + 1);
+    }
+
+    /**
+     * Returns an absolute path based on a source location or the current working directory.
+     *
+     * @param string $to The target path.
+     * @param string|null $from The source location. Defaults to the current working directory.
+     * @param string $ds the directory separator to be used in the normalized result. Defaults to `DIRECTORY_SEPARATOR`.
+     * @return string
+     * @since 4.4.0
+     */
+    public static function absolutePath(
+        string $to,
+        ?string $from = null,
+        string $ds = DIRECTORY_SEPARATOR,
+    ): string {
+        $to = static::normalizePath($to, $ds);
+
+        // Already absolute?
+        if (str_starts_with($to, $ds)) {
+            return $to;
+        }
+
+        if ($from === null) {
+            $from = FileHelper::normalizePath(getcwd(), $ds);
+        } else {
+            $from = static::absolutePath($from, ds: $ds);
+        }
+
+        return $from . $ds . $to;
+    }
+
+    /**
+     * Returns whether the given path is within another path.
+     *
+     * @param string $path the path to check
+     * @param string $parentPath the parent path that `$path` should be within
+     * @return bool
+     */
+    public static function isWithin(string $path, string $parentPath): bool
+    {
+        $path = static::absolutePath($path, ds: '/');
+        $parentPath = static::absolutePath($parentPath, ds: '/');
+        return $path !== $parentPath && str_starts_with("$path/", "$parentPath/");
     }
 
     /**

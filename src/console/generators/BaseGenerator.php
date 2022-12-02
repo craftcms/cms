@@ -9,12 +9,15 @@ namespace craft\console\generators;
 
 use Craft;
 use craft\console\controllers\MakeController;
+use craft\helpers\App;
+use craft\helpers\Composer;
 use craft\helpers\FileHelper;
 use craft\helpers\Json;
 use craft\helpers\StringHelper;
 use ReflectionClass;
 use yii\base\BaseObject;
 use yii\base\InvalidArgumentException;
+use yii\base\NotSupportedException;
 
 /**
  * Base generator class.
@@ -72,96 +75,151 @@ abstract class BaseGenerator extends BaseObject
     abstract public function run(): int;
 
     /**
-     * Prompts the user for the base location that a plugin or module should be generated in.
+     * Prompts the user for a PHP namespace.
      *
-     * @param string $text The prompt string
-     * @param string $default The default location to use
-     * @return string
+     * @param string $text The prompt text
+     * @param array $options Prompt options:
+     *
+     * - `required` (bool): whether a value is required
+     * - `default` (string): the default value to use if no input is given
+     * - `validator` (callable): a callable function to validate input. The function must accept two parameters:
+     *     - `$namespace`: a normalized namespace based on the input value
+     *     - `$error`: passed by reference, to be set to the error text if validation failed
+     *
+     * @return string|null The normalized namespace
      */
-    protected function targetDirPrompt(string $text, string $default): string
+    protected function namespacePrompt(string $text, array $options = []): ?string
     {
-        $path = $this->controller->prompt($text, [
-            'default' => FileHelper::relativePath(Craft::getAlias($default)),
-            'validator' => function(string $input, ?string &$error) {
-                $path = FileHelper::normalizePath($input, '/');
-                if (is_file($path)) {
-                    $error = 'A file already exists there.';
+        if (isset($options['pattern'])) {
+            throw new NotSupportedException('`pattern` is not supported by `namespacePrompt()`.');
+        }
+
+        $namespace = $this->controller->prompt($this->controller->markdownToAnsi($text), [
+            'validator' => function(string $input, ?string &$error) use ($options): bool {
+                try {
+                    $namespace = App::normalizeNamespace($input);
+                } catch (InvalidArgumentException) {
+                    $error = 'Invalid namespace';
                     return false;
                 }
-                if (is_dir($path) && !FileHelper::isDirectoryEmpty($path)) {
-                    $error = 'A non-empty directory already exists there.';
-                    return false;
+                if (isset($options['validator'])) {
+                    return $options['validator']($namespace, $error);
                 }
                 return true;
             },
-        ]);
+        ] + $options);
 
-        // Make sure it's absolute
-        $path = FileHelper::normalizePath($path, '/');
-        if (!str_starts_with($path, '/')) {
-            $path = sprintf("%s/%s", FileHelper::normalizePath(getcwd()), $path);
+        if (!$namespace) {
+            return null;
         }
 
-        return $path;
+        return App::normalizeNamespace($namespace);
     }
 
     /**
-     * Normalizes a PHP namespace.
+     * Prompts the user for the path to a directory.
      *
-     * @param string $namespace
-     * @return string
+     * @param string $text The prompt text
+     * @param array $options Prompt options:
+     *
+     * - `required` (bool): whether a value is required
+     * - `default` (string): the default value to use if no input is given
+     * - `ensureEmpty` (bool): whether the directory must be empty, if it exists already
+     * - `ensureAutoloadableFrom` (string): whether the directory must be capable of being autoloaded from a given composer.json file
+     * - `validator` (callable): a callable function to validate input. The function must accept two parameters:
+     *     - `$path`: a normalized absolute path based on the input value
+     *     - `$error`: passed by reference, to be set to the error text if validation failed
+     *
+     * @return string|null the normalized absolute path, or `null`
      */
-    protected function normalizeNamespace(string $namespace): string
+    protected function directoryPrompt(string $text, array $options = []): ?string
     {
-        return trim(preg_replace('/\\\\+/', '\\', $namespace), '\\');
+        if (isset($options['pattern'])) {
+            throw new NotSupportedException('`pattern` is not supported by `directoryPrompt()`.');
+        }
+
+        $validate = function(string $input, ?string &$error) use ($options): bool {
+            $path = FileHelper::absolutePath($input, ds: '/');
+            if (is_file($path)) {
+                $error = 'A file already exists there.';
+                return false;
+            }
+            if (!empty($options['ensureEmpty']) && is_dir($path) && !FileHelper::isDirectoryEmpty($path)) {
+                $error = 'A non-empty directory already exists there.';
+                return false;
+            }
+            if (
+                !empty($options['ensureAutoloadableFrom']) &&
+                !Composer::couldAutoload($path, $options['ensureAutoloadableFrom'], reason: $reason)
+            ) {
+                $error = $this->controller->markdownToAnsi($reason);
+                return false;
+            }
+            if (isset($options['validator'])) {
+                return $options['validator']($path, $error);
+            }
+            return true;
+        };
+
+        if (isset($options['default'])) {
+            $options['default'] = FileHelper::relativePath(Craft::getAlias($options['default']));
+
+            // Make sure the default directory is valid before we suggest it
+            if (!$validate($options['default'], $error)) {
+                unset($options['default']);
+                $options['required'] = true;
+            }
+        }
+
+        $path = $this->controller->prompt($text, [
+            'validator' => $validate,
+        ] + $options);
+
+        if (!$path) {
+            return null;
+        }
+
+        return FileHelper::absolutePath($path, ds: '/');
     }
 
     /**
-     * Ensures that a directory is within an autoload root for a given composer.json file,
+     * Ensures that a directory is autoloadable for a given composer.json file,
      * and returns the root namespace for the directory.
      *
-     * @param string $composerPath The path to composer.json
      * @param string $dir The directory path
+     * @param string $composerFile The path to `composer.json`
      * @return string
      */
-    protected function dirNamespace(string $composerPath, string $dir): string
+    protected function directoryNamespace(string $dir, string $composerFile): string
     {
-        $dir = FileHelper::normalizePath($dir, '/');
-        $composerDir = FileHelper::normalizePath(dirname(realpath($composerPath)), '/');
-        $composerJson = file_get_contents($composerPath);
+        $dir = FileHelper::absolutePath($dir, ds: '/');
 
-        try {
-            $composerConfig = Json::decode($composerJson);
-        } catch (InvalidArgumentException $e) {
-            $this->controller->failure("`$composerPath` contains a syntax error.");
-            $this->controller->stdout(PHP_EOL);
-            throw $e;
+        if (!Composer::couldAutoload($dir, $composerFile, $existingRoot, $reason)) {
+            throw new InvalidArgumentException($reason);
         }
 
-        // Check if that path is already getting autoloaded
-        $autoloadRoots = $composerConfig['autoload']['psr-4'] ?? [];
+        if ($existingRoot) {
+            [$rootNamespace, $rootPath] = $existingRoot;
 
-        foreach ($autoloadRoots as $autoloadNamespace => $autoloadPath) {
-            $autoloadPath = FileHelper::normalizePath($autoloadPath, '/');
-            if (!str_starts_with($autoloadPath, '/')) {
-                $autoloadPath = "$composerDir/$autoloadPath";
+            if ($dir === $rootPath) {
+                return rtrim($rootNamespace, '\\');
             }
-            if (str_starts_with("$dir/", "$autoloadPath/")) {
-                $autoloadRelativePath = FileHelper::relativePath($dir, $autoloadPath);
-                return $this->normalizeNamespace($autoloadNamespace . '\\' . str_replace('/', '\\', $autoloadRelativePath));
-            }
+
+            $relativePath = FileHelper::relativePath($dir, $rootPath);
+            return $rootNamespace . App::normalizeNamespace($relativePath);
         }
 
-        $composerRelativePath = FileHelper::relativePath($dir, $composerDir);
-        $rootNamespace = $this->controller->prompt($this->controller->markdownToAnsi("What should the root namespace for `$composerRelativePath` be?"), [
+        $composerDir = dirname(FileHelper::absolutePath($composerFile, ds: '/'));
+        $newRootPath = FileHelper::relativePath($dir, $composerDir) . '/';
+
+        $newRootNamespace = $this->namespacePrompt("What should the root namespace for `$newRootPath` be?", [
             'required' => true,
-            'pattern' => '/^[a-z\\\\]+$/i',
         ]);
-        $rootNamespace = $this->normalizeNamespace($rootNamespace);
 
-        $composerConfig['autoload']['psr-4']["$rootNamespace\\"] = FileHelper::relativePath($dir, $composerDir) . '/';
-        $this->controller->writeJson($composerPath, $composerConfig);
+        $composerConfig = Json::decodeFromFile($composerFile);
+        $composerConfig['autoload']['psr-4']["$newRootNamespace\\"] = $newRootPath;
+        $this->controller->writeJson($composerFile, $composerConfig);
 
-        return $rootNamespace;
+        return $newRootNamespace;
     }
 }

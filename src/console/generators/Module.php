@@ -37,8 +37,12 @@ class Module extends BaseGenerator
             'pattern' => '/^[a-z]([a-z\\-]*[a-z])?$/',
         ]);
 
-        $this->targetDir = $this->targetDirPrompt('Module location:', "@root/modules/$this->id");
-        $this->rootNamespace = $this->dirNamespace($composerPath, $this->targetDir);
+        $this->targetDir = $this->directoryPrompt('Module location:', [
+            'default' => "@root/modules/$this->id",
+            'ensureEmpty' => true,
+            'ensureAutoloadableFrom' => $composerPath,
+        ]);
+        $this->rootNamespace = $this->directoryNamespace($this->targetDir, $composerPath);
 
         $this->controller->stdout(PHP_EOL . 'Generating module files…' . PHP_EOL);
 

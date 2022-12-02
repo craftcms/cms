@@ -243,6 +243,27 @@ class AppHelperTest extends TestCase
     }
 
     /**
+     * @dataProvider normalizeNamespaceDataProvider
+     */
+    public function testNormalizeNamespace(string|false $expected, string $namespace): void
+    {
+        if ($expected === false) {
+            $this->expectException(InvalidArgumentException::class);
+            App::normalizeNamespace($namespace);
+        } else {
+            self::assertSame($expected, App::normalizeNamespace($namespace));
+        }
+    }
+
+    /**
+     * @dataProvider validateNamespaceDataProvider
+     */
+    public function testValidateNamespace(bool $expected, string $namespace): void
+    {
+        self::assertSame($expected, App::validateNamespace($namespace));
+    }
+
+    /**
      *
      */
     public function testNormalizePhpPaths(): void
@@ -564,6 +585,40 @@ class AppHelperTest extends TestCase
             ['~2', '~2'],
             ['', ''],
             ['\*v^2.0.0(beta)', '\*v^2.0.0(beta)'],
+        ];
+    }
+
+    /**
+     * @return array
+     */
+    public function normalizeNamespaceDataProvider(): array
+    {
+        return [
+            ['foo', '\\foo'],
+            ['foo\\bar\\baz', 'foo/bar/baz'],
+            ['foo\\bar\\baz', 'foo\\\\bar//baz///'],
+            ['foo\\bar\\baz', '\\foo\\/bar\\//baz'],
+            [false, ' foo\\bar\\baz'],
+        ];
+    }
+
+    /**
+     * @return array
+     */
+    public function validateNamespaceDataProvider(): array
+    {
+        return [
+            [true, 'foo'],
+            [true, 'foo\\bar\\baz'],
+            [true, 'Foo\\Bar\\Baz'],
+            [true, 'f0o'],
+            [true, '_foo1_\\_bar2_\\_baz3_'],
+            [false, '1foo'],
+            [false, 'foo\\2bar\\baz'],
+            [false, 'foo/bar/baz'],
+            [false, '\\foo'],
+            [false, 'foo\\'],
+            [false, 'foo \\bar\\baz'],
         ];
     }
 

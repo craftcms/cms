@@ -485,6 +485,40 @@ class App
     }
 
     /**
+     * Normalizes a PHP namespace by replacing forward slashes with backslashes, removing double backslashes,
+     * and any leading/trailing backslashes.
+     *
+     * @param string $namespace
+     * @return string
+     * @throws InvalidArgumentException if the namespace contains any disallowed characters
+     * @since 4.4.0
+     */
+    public static function normalizeNamespace(string $namespace): string
+    {
+        $namespace = trim(preg_replace('/\\\\+/', '\\', str_replace('/', '\\', $namespace)), '\\');
+
+        if (!static::validateNamespace($namespace)) {
+            throw new InvalidArgumentException("`$namespace` is an invalid namespace.");
+        }
+
+        return $namespace;
+    }
+
+    /**
+     * Validates the given PHP namespace.
+     *
+     * @param string $namespace
+     * @return bool
+     * @since 4.4.0
+     */
+    public static function validateNamespace(string $namespace): bool
+    {
+        // Namespaces must only consist of alphanumeric characters and underscores,
+        // and cannot begin with a number
+        return preg_match('/^[a-z_]\w*(\\\\[a-z_]\w*)*$/i', $namespace);
+    }
+
+    /**
      * Normalizes a PHP path setting to an array of paths
      *
      * @param string $value The PHP path setting value
