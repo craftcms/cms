@@ -2472,13 +2472,14 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       if ($actionsBtn) {
         const $actionOptions = $menu.find('a[id*="-actiontrigger"]');
 
-        this.addListener($actionOptions, 'click', (event) => {
-          const keyCode = event.keyCode;
-          this._handleMenuActionTriggerSubmit(event);
-        });
+        this.addListener(
+          $actionOptions,
+          'click',
+          this._handleMenuActionTriggerSubmit.bind(this)
+        );
 
         this.addListener($actionOptions, 'keypress', (event) => {
-          const keyCode = event.keyCode;
+          const {keyCode} = event;
 
           if (keyCode === Garnish.SPACE_KEY || keyCode === Garnish.RETURN_KEY) {
             event.preventDefault();
