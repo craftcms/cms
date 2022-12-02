@@ -28,6 +28,16 @@ Craft.ElementActionTrigger = Garnish.Base.extend(
           this.addListener(this.$trigger, 'submit', 'handleTriggerActivation');
         } else {
           this.addListener(this.$trigger, 'click', 'handleTriggerActivation');
+          this.addListener(this.$trigger, 'keypress', (event) => {
+            const {keyCode} = event;
+
+            if (
+              keyCode === Garnish.RETURN_KEY ||
+              keyCode === Garnish.SPACE_KEY
+            ) {
+              this.handleTriggerActivation(event);
+            }
+          });
         }
       }
 
@@ -71,7 +81,7 @@ Craft.ElementActionTrigger = Garnish.Base.extend(
         return;
       }
 
-      this.$trigger.removeClass('disabled');
+      this.$trigger.removeClass('disabled').removeAttr('aria-disabled');
       this.triggerEnabled = true;
     },
 
@@ -80,7 +90,7 @@ Craft.ElementActionTrigger = Garnish.Base.extend(
         return;
       }
 
-      this.$trigger.addClass('disabled');
+      this.$trigger.addClass('disabled').attr('aria-disabled', 'true');
       this.triggerEnabled = false;
     },
 
