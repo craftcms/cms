@@ -54,6 +54,7 @@ class Json extends \yii\helpers\Json
      * @param bool $asArray whether to return objects in terms of associative arrays
      * @return mixed The JSON-decoded file contents
      * @throws InvalidArgumentException if the file doesn’t exist or there was a problem JSON-decoding it
+     * @since 4.4.0
      */
     public static function decodeFromFile(string $file, bool $asArray = true): mixed
     {
