@@ -45,6 +45,7 @@ import './js/DynamicGenerator.js';
 import './js/EditableTable.js';
 import './js/ElementActionTrigger.js';
 import './js/ElementEditor.js';
+import './js/ElementFieldSettings.js';
 import './js/ElementThumbLoader.js';
 import './js/ElevatedSessionForm.js';
 import './js/ElevatedSessionManager.js';

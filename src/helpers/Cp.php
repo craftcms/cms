@@ -1694,7 +1694,15 @@ JS;
                     $customizable ? 'draggable' : null,
                 ]),
             ]) .
-            Html::tag('span', Html::encode($tab->name)) .
+            Html::beginTag('span') .
+            Html::encode($tab->name) .
+            ($tab->hasConditions() ? Html::tag('div', '', [
+                'class' => ['fld-indicator'],
+                'title' => Craft::t('app', 'This tab is conditional'),
+                'aria' => ['label' => Craft::t('app', 'This tab is conditional')],
+                'data' => ['icon' => 'condition'],
+            ]) : '') .
+            Html::endTag('span') .
             ($customizable
                 ? Html::a('', null, [
                     'role' => 'button',
@@ -1763,7 +1771,6 @@ JS;
             'class' => array_filter([
                 'fld-element',
                 $forLibrary ? 'unused' : null,
-                !$forLibrary && $element->hasConditions() ? 'has-conditions' : null,
             ]),
             'data' => [
                 'uid' => !$forLibrary ? $element->uid : false,

@@ -210,7 +210,7 @@ class Entry extends Element implements ExpirableElementInterface
             $editable = true;
         } else {
             $sections = Craft::$app->getSections()->getAllSections();
-            $editable = false;
+            $editable = null;
         }
 
         $sectionIds = [];
@@ -1440,9 +1440,7 @@ class Entry extends Element implements ExpirableElementInterface
      */
     public function getPostEditUrl(): ?string
     {
-        $section = $this->getSection();
-        $sourceKey = $section->type === Section::TYPE_SINGLE ? 'singles' : $section->handle;
-        return UrlHelper::cpUrl("entries/$sourceKey");
+        return UrlHelper::cpUrl('entries');
     }
 
     /**

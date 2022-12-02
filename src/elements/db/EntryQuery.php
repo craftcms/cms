@@ -55,10 +55,17 @@ class EntryQuery extends ElementQuery
     // -------------------------------------------------------------------------
 
     /**
-     * @var bool Whether to only return entries that the user has permission to edit.
+     * @var bool|null Whether to only return entries that the user has permission to view.
      * @used-by editable()
      */
-    public bool $editable = false;
+    public ?bool $editable = null;
+
+    /**
+     * @var bool|null Whether to only return entries that the user has permission to save.
+     * @used-by savable()
+     * @since 4.4.0
+     */
+    public ?bool $savable = null;
 
     /**
      * @var mixed The section ID(s) that the resulting entries must be in.
@@ -246,13 +253,27 @@ class EntryQuery extends ElementQuery
     /**
      * Sets the [[$editable]] property.
      *
-     * @param bool $value The property value (defaults to true)
+     * @param bool|null $value The property value (defaults to true)
      * @return self self reference
      * @uses $editable
      */
-    public function editable(bool $value = true): self
+    public function editable(?bool $value = true): self
     {
         $this->editable = $value;
+        return $this;
+    }
+
+    /**
+     * Sets the [[$savable]] property.
+     *
+     * @param bool|null $value The property value (defaults to true)
+     * @return self self reference
+     * @uses $savable
+     * @since 4.4.0
+     */
+    public function savable(?bool $value = true): self
+    {
+        $this->savable = $value;
         return $this;
     }
 
@@ -851,7 +872,8 @@ class EntryQuery extends ElementQuery
             }
         }
 
-        $this->_applyEditableParam();
+        $this->_applyAuthParam($this->editable, 'viewEntries', 'viewPeerEntries');
+        $this->_applyAuthParam($this->savable, 'saveEntries', 'savePeerEntries');
         $this->_applySectionIdParam();
         $this->_applyRefParam();
 
@@ -906,13 +928,14 @@ class EntryQuery extends ElementQuery
     }
 
     /**
-     * Applies the 'editable' param to the query being prepared.
-     *
+     * @param bool|null $value
+     * @param string $permissionPrefix
+     * @param string $peerPermissionPrefix
      * @throws QueryAbortedException
      */
-    private function _applyEditableParam(): void
+    private function _applyAuthParam(?bool $value, string $permissionPrefix, string $peerPermissionPrefix): void
     {
-        if (!$this->editable) {
+        if ($value === null) {
             return;
         }
 
@@ -922,20 +945,59 @@ class EntryQuery extends ElementQuery
             throw new QueryAbortedException();
         }
 
-        // Limit the query to only the sections the user has permission to edit
-        $this->subQuery->andWhere([
-            'entries.sectionId' => Craft::$app->getSections()->getEditableSectionIds(),
-        ]);
+        $fullyAuthorizedSectionIds = [];
+        $partiallyAuthorizedSectionIds = [];
+        $unauthorizedSectionIds = [];
 
-        // Enforce the viewPeerEntries permissions for non-Single sections
-        foreach (Craft::$app->getSections()->getEditableSections() as $section) {
-            if ($section->type != Section::TYPE_SINGLE && !$user->can("viewPeerEntries:$section->uid")) {
-                $this->subQuery->andWhere([
-                    'or',
-                    ['not', ['entries.sectionId' => $section->id]],
-                    ['entries.authorId' => $user->id],
-                ]);
+        foreach (Craft::$app->getSections()->getAllSections() as $section) {
+            if ($user->can("$peerPermissionPrefix:$section->uid")) {
+                $fullyAuthorizedSectionIds[] = $section->id;
+            } elseif ($section->type !== Section::TYPE_SINGLE && $user->can("$permissionPrefix:$section->uid")) {
+                $partiallyAuthorizedSectionIds[] = $section->id;
+            } else {
+                $unauthorizedSectionIds[] = $section->id;
             }
+        }
+
+        if ($value) {
+            if (!$fullyAuthorizedSectionIds && !$partiallyAuthorizedSectionIds) {
+                throw new QueryAbortedException();
+            }
+
+            $this->subQuery->andWhere(array_filter([
+                'or',
+                $fullyAuthorizedSectionIds
+                    ? ['entries.sectionId' => $fullyAuthorizedSectionIds]
+                    : null,
+                $partiallyAuthorizedSectionIds
+                    ? [
+                    'entries.sectionId' => $partiallyAuthorizedSectionIds,
+                    'entries.authorId' => $user->id,
+                ]
+                    : null,
+            ]));
+        } else {
+            if (!$unauthorizedSectionIds && !$partiallyAuthorizedSectionIds) {
+                throw new QueryAbortedException();
+            }
+
+            $this->subQuery->andWhere(array_filter([
+                'or',
+                $unauthorizedSectionIds
+                    ? ['entries.sectionId' => $unauthorizedSectionIds]
+                    : null,
+                $partiallyAuthorizedSectionIds
+                    ? [
+                        'and',
+                        ['entries.sectionId' => $partiallyAuthorizedSectionIds],
+                        [
+                            'or',
+                            ['not', ['entries.authorId' => $user->id]],
+                            ['entries.authorId' => null],
+                        ],
+                    ]
+                    : null,
+            ]));
         }
     }
 
