@@ -645,7 +645,6 @@ Craft.ElementEditor = Garnish.Base.extend(
             resolve();
           })
           .catch((e) => {
-            this.setStatusMessage(e.response.data.message);
             let $errorContainer = $form.find('p.error');
             if ($form.find('p.error').length > 0) {
               $errorContainer.contents(e.response.data.message);
