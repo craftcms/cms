@@ -69,9 +69,9 @@ abstract class BaseGenerator extends BaseObject
     /**
      * Runs the generator command.
      *
-     * @return int The command exit code to return.
+     * @return bool Whether the generator was successful
      */
-    abstract public function run(): int;
+    abstract public function run(): bool;
 
     /**
      * Prompts the user for a PHP namespace.

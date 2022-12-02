@@ -178,7 +178,7 @@ class MakeController extends Controller
             'module' => $module,
         ]);
 
-        return $generator->run();
+        return $generator->run() ? ExitCode::OK : ExitCode::UNSPECIFIED_ERROR;
     }
 
     /**

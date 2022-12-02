@@ -15,7 +15,6 @@ use craft\helpers\FileHelper;
 use craft\helpers\Json;
 use craft\helpers\StringHelper;
 use yii\base\Exception as YiiException;
-use yii\console\ExitCode;
 use yii\validators\EmailValidator;
 
 /**
@@ -44,7 +43,7 @@ class Plugin extends BaseGenerator
     private bool $addPhpStan;
     private array $craftConfig;
 
-    public function run(): int
+    public function run(): bool
     {
         $this->name = $this->controller->prompt('Plugin name:', [
             'required' => true,
@@ -176,7 +175,7 @@ $manualInstallInstructions
 MD;
             $this->controller->warning($warning);
             $this->controller->stdout(PHP_EOL);
-            return ExitCode::OK;
+            return true;
         }
 
         $composerDir = FileHelper::normalizePath(dirname(realpath($composerPath)), '/');
@@ -205,7 +204,7 @@ $installCommands
 MD;
                     $this->controller->success($message);
                     $this->controller->stdout(PHP_EOL);
-                    return ExitCode::OK;
+                    return true;
                 }
             }
         }
@@ -216,7 +215,7 @@ MD;
         if (!$addRepo) {
             $this->controller->note($manualInstallInstructions);
             $this->controller->stdout(PHP_EOL);
-            return ExitCode::OK;
+            return true;
         }
 
         // Figure out the repo name
@@ -258,7 +257,7 @@ MD;
         $this->controller->stdout(PHP_EOL);
         $this->controller->success($message);
         $this->controller->stdout(PHP_EOL);
-        return ExitCode::OK;
+        return true;
     }
 
     private function writeGitAttributes(): void

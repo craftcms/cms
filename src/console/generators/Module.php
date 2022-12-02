@@ -9,7 +9,6 @@ namespace craft\console\generators;
 
 use Craft;
 use yii\base\Exception as YiiException;
-use yii\console\ExitCode;
 
 /**
  * Creates a new application module.
@@ -23,13 +22,13 @@ class Module extends BaseGenerator
     private string $targetDir;
     private string $rootNamespace;
 
-    public function run(): int
+    public function run(): bool
     {
         try {
             $composerPath = Craft::$app->getComposer()->getJsonPath();
         } catch (YiiException $e) {
             $this->controller->stdout($e->getMessage() . PHP_EOL);
-            return ExitCode::UNSPECIFIED_ERROR;
+            return false;
         }
 
         $this->id = $this->controller->prompt('Module ID: (kebab-cased)', [
@@ -91,7 +90,7 @@ MD;
 
         $this->controller->success($this->controller->markdownToAnsi($instructions));
         $this->controller->stdout(PHP_EOL);
-        return ExitCode::OK;
+        return true;
     }
 
     private function writeModuleClass(): void
