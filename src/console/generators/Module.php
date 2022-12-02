@@ -88,6 +88,7 @@ MD;
 <?php
 namespace $this->rootNamespace;
 
+use Craft;
 use craft\web\Application as WebApplication;
 use yii\base\Module as BaseModule;
 
@@ -109,19 +110,10 @@ class Module extends BaseModule
 
         parent::init();
 
-        // Defer most module setup tasks until Craft is fully initialized
-        if (Craft::\$app->getIsInitialized()) {
-            \$this->setup();
-        } else {
-            Craft::\$app->on(WebApplication::EVENT_INIT, function() {
-                \$this->setup();
-            });
-        }
-    }
-
-    private function setup(): void
-    {
-        // Place main initialization code here...
+        // Defer most setup tasks until Craft is fully initialized
+        Craft::\$app->onInit(function() {
+            // ...
+        });
     }
 }
 

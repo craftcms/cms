@@ -549,6 +549,7 @@ PHP;
 $headerText
 namespace $this->rootNamespace;
 
+use Craft;
 use craft\base\Plugin as BasePlugin;
 use craft\web\Application as WebApplication;
 
@@ -575,15 +576,10 @@ class Plugin extends BasePlugin
     {
         parent::init();
 
-        // Defer most plugin setup tasks until Craft is fully initialized
-        Craft::\$app->on(WebApplication::EVENT_INIT, function() {
-            \$this->setup();
+        // Defer most setup tasks until Craft is fully initialized
+        Craft::\$app->onInit(function() {
+            // ...
         });
-    }
-
-    private function setup(): void
-    {
-        // Place main initialization code here...
     }
 }
 
