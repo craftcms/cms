@@ -12,6 +12,7 @@ use craft\events\DefineConsoleActionsEvent;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Console;
 use craft\helpers\FileHelper;
+use craft\helpers\Json;
 use craft\helpers\StringHelper;
 use ReflectionFunction;
 use ReflectionFunctionAbstract;
@@ -558,6 +559,7 @@ class Controller extends YiiController
      */
     public function createDirectory(string $path): void
     {
+        $path = FileHelper::relativePath($path);
         $this->do(
             sprintf('Creating %s', $this->ansiFormat("$path/", Console::FG_CYAN)),
             function() use ($path) {
@@ -576,9 +578,23 @@ class Controller extends YiiController
      */
     public function writeToFile(string $file, string $contents, array $options = []): void
     {
+        $file = FileHelper::relativePath($file);
         $description = file_exists($file) ? "Updating `$file`" : "Creating `$file`";
         $this->do($description, function() use ($file, $contents, $options) {
             FileHelper::writeToFile($file, $contents, $options);
         });
+    }
+
+    /**
+     * JSON-encodes a value and writes it to a file.
+     *
+     * @param string $file The path to the file to write to
+     * @param mixed $value The value to be JSON-encoded and written out
+     * @since 4.4.0
+     */
+    public function writeJson(string $file, mixed $value): void
+    {
+        $json = Json::encode($value, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT) . "\n";
+        $this->writeToFile($file, "$json\n");
     }
 }

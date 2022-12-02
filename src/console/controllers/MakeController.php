@@ -8,12 +8,15 @@
 namespace craft\console\controllers;
 
 use Craft;
+use craft\composer\InvalidPluginException;
 use craft\console\Controller;
 use craft\console\generators\BaseGenerator;
+use craft\console\generators\Module;
 use craft\console\generators\Plugin;
 use craft\events\RegisterComponentTypesEvent;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Console;
+use craft\helpers\FileHelper;
 use yii\console\ExitCode;
 
 /**
@@ -50,6 +53,57 @@ class MakeController extends Controller
     public $defaultAction = 'generate';
 
     /**
+     * @var bool
+     */
+    private bool $_app = false;
+
+    /**
+     * @var string|null $module The module ID to generate the component for.
+     */
+    private ?string $_module = null;
+
+    /**
+     * @var string|null $plugin The plugin handle to generate the component for.
+     */
+    private ?string $_plugin = null;
+
+    /**
+     * @inheritdoc
+     */
+    public function getActionOptionsHelp($action): array
+    {
+        return array_merge(parent::getActionOptionsHelp($action), [
+            'app' => [
+                'type' => 'bool',
+                'default' => false,
+                'comment' => 'Generate the component for Craft CMS itself.',
+            ],
+            'module' => [
+                'type' => 'string|null',
+                'default' => null,
+                'comment' => 'The module ID to generate the component for.',
+            ],
+            'plugin' => [
+                'type' => 'string|null',
+                'default' => null,
+                'comment' => 'The plugin handle to generate the component for.',
+            ],
+        ]);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function runAction($id, $params = []): int
+    {
+        $this->_app = (bool)(ArrayHelper::remove($params, 'app') ?? false);
+        $this->_module = ArrayHelper::remove($params, 'module');
+        $this->_plugin = ArrayHelper::remove($params, 'plugin');
+
+        return parent::runAction($id, $params);
+    }
+
+    /**
      * Generates the scaffolding for a new system component.
      *
      * @param string|null $type The type of component to generate.
@@ -63,6 +117,51 @@ class MakeController extends Controller
         if (!$this->interactive) {
             $this->stderr("This command must be run interactively.\n", Console::FG_RED);
             return ExitCode::UNSPECIFIED_ERROR;
+        }
+
+        $usedParams = array_filter([
+            $this->_app ? '--app' : null,
+            $this->_module ? '--module' : null,
+            $this->_plugin ? '--plugin' : null,
+        ]);
+        $usedParamCount = count($usedParams);
+
+        if (in_array($type, ['module', 'plugin'])) {
+            if ($usedParamCount !== 0) {
+                $this->stdout(sprintf("`make $type` doesn’t support the %s %s.\n", implode(' ', $usedParams), $usedParamCount === 1 ? 'option' : 'options'), Console::FG_RED);
+                return ExitCode::UNSPECIFIED_ERROR;
+            }
+
+            $basePath = '@root';
+        } else {
+            if ($usedParamCount === 0) {
+                $this->stdout("`make $type` must specify an --app, --module, or --plugin option.\n", $type, Console::FG_RED);
+                return ExitCode::UNSPECIFIED_ERROR;
+            } elseif ($usedParamCount !== 1) {
+                $this->stdout("`make $type` must only specify --app, --module, or --plugin, but not multiple.\n", $type, Console::FG_RED);
+                return ExitCode::UNSPECIFIED_ERROR;
+            }
+
+            if ($this->_app) {
+                $basePath = '@craft';
+            } else {
+                if ($this->_module) {
+                    $module = Craft::$app->getModule($this->_module);
+                    if (!$module) {
+                        $this->stdout("No module exists with the ID \"$this->_module\". ", Console::FG_RED);
+                        return ExitCode::UNSPECIFIED_ERROR;
+                    }
+                } else {
+                    $pluginsService = Craft::$app->getPlugins();
+                    try {
+                        $module = $pluginsService->getPlugin($this->_plugin) ?? $pluginsService->createPlugin($this->_plugin);
+                    } catch (InvalidPluginException $e) {
+                        $this->stdout($e->getMessage(), Console::FG_RED);
+                        return ExitCode::UNSPECIFIED_ERROR;
+                    }
+                }
+                $basePath = $module->getBasePath();
+            }
         }
 
         /** @var string|BaseGenerator|null $class */
@@ -80,6 +179,7 @@ class MakeController extends Controller
         $generator = Craft::createObject([
             'class' => $class,
             'controller' => $this,
+            'basePath' => FileHelper::normalizePath(Craft::getAlias($basePath), '/'),
         ]);
 
         return $generator->run();
@@ -111,6 +211,7 @@ class MakeController extends Controller
     {
         $types = [
             Plugin::class,
+            Module::class,
         ];
 
         $event = new RegisterComponentTypesEvent([

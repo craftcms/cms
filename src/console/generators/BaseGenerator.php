@@ -14,6 +14,7 @@ use craft\helpers\Json;
 use craft\helpers\StringHelper;
 use ReflectionClass;
 use yii\base\BaseObject;
+use yii\base\InvalidArgumentException;
 
 /**
  * Base generator class.
@@ -61,7 +62,7 @@ abstract class BaseGenerator extends BaseObject
      *
      * This must be set for [[writeToFile()]] and [[writeJson()]] to work.
      */
-    protected string $basePath;
+    public string $basePath;
 
     /**
      * Runs the generator command.
@@ -75,61 +76,92 @@ abstract class BaseGenerator extends BaseObject
      *
      * @param string $text The prompt string
      * @param string $default The default location to use
-     * @param string|null $relativeTo A location that the returned path should be relative to
      * @return string
      */
-    protected function basePathPrompt(string $text, string $default, ?string $relativeTo = null): string
+    protected function targetDirPrompt(string $text, string $default): string
     {
-        $default = FileHelper::normalizePath(Craft::getAlias($default), '/');
-        $relativeTo = FileHelper::normalizePath(Craft::getAlias($relativeTo ?? '@root'), '/');
-
         $path = $this->controller->prompt($text, [
-            'default' => FileHelper::relativePath($default, $relativeTo),
-            'validator' => function(string $input, ?string &$error) use ($relativeTo) {
+            'default' => FileHelper::relativePath(Craft::getAlias($default)),
+            'validator' => function(string $input, ?string &$error) {
                 $path = FileHelper::normalizePath($input, '/');
-
-                if (!str_starts_with($path, '/')) {
-                    $path = "$relativeTo/$path";
-                }
-
                 if (is_file($path)) {
                     $error = 'A file already exists there.';
                     return false;
                 }
-
                 if (is_dir($path) && !FileHelper::isDirectoryEmpty($path)) {
                     $error = 'A non-empty directory already exists there.';
                     return false;
                 }
-
                 return true;
             },
         ]);
 
-        return FileHelper::relativePath($path, $relativeTo);
+        // Make sure it's absolute
+        $path = FileHelper::normalizePath($path, '/');
+        if (!str_starts_with($path, '/')) {
+            $path = sprintf("%s/%s", FileHelper::normalizePath(getcwd()), $path);
+        }
+
+        return $path;
     }
 
     /**
-     * Writes contents to a file, and outputs to the console.
+     * Normalizes a PHP namespace.
      *
-     * @param string $file The path to the file to write to
-     * @param string $contents The file contents
-     * @param array $options Options for [[\craft\helpers\FileHelper::writeToFile()]]
+     * @param string $namespace
+     * @return string
      */
-    protected function writeToFile(string $file, string $contents, array $options = []): void
+    protected function normalizeNamespace(string $namespace): string
     {
-        $this->controller->writeToFile("$this->basePath/$file", $contents, $options);
+        return trim(preg_replace('/\\\\+/', '\\', $namespace), '\\');
     }
 
     /**
-     * JSON-encodes a value and writes it to a file.
+     * Ensures that a directory is within an autoload root for a given composer.json file,
+     * and returns the root namespace for the directory.
      *
-     * @param string $file The path to the file to write to
-     * @param mixed $value The value to be JSON-encoded and written out
+     * @param string $composerPath The path to composer.json
+     * @param string $dir The directory path
+     * @return string
      */
-    protected function writeJson(string $file, mixed $value): void
+    protected function dirNamespace(string $composerPath, string $dir): string
     {
-        $json = Json::encode($value, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT) . "\n";
-        $this->writeToFile($file, $json);
+        $dir = FileHelper::normalizePath($dir, '/');
+        $composerDir = FileHelper::normalizePath(dirname(realpath($composerPath)), '/');
+        $composerJson = file_get_contents($composerPath);
+
+        try {
+            $composerConfig = Json::decode($composerJson);
+        } catch (InvalidArgumentException $e) {
+            $this->controller->failure("`$composerPath` contains a syntax error.");
+            $this->controller->stdout(PHP_EOL);
+            throw $e;
+        }
+
+        // Check if that path is already getting autoloaded
+        $autoloadRoots = $composerConfig['autoload']['psr-4'] ?? [];
+
+        foreach ($autoloadRoots as $autoloadNamespace => $autoloadPath) {
+            $autoloadPath = FileHelper::normalizePath($autoloadPath, '/');
+            if (!str_starts_with($autoloadPath, '/')) {
+                $autoloadPath = "$composerDir/$autoloadPath";
+            }
+            if (str_starts_with("$dir/", "$autoloadPath/")) {
+                $autoloadRelativePath = FileHelper::relativePath($dir, $autoloadPath);
+                return $this->normalizeNamespace($autoloadNamespace . '\\' . str_replace('/', '\\', $autoloadRelativePath));
+            }
+        }
+
+        $composerRelativePath = FileHelper::relativePath($dir, $composerDir);
+        $rootNamespace = $this->controller->prompt($this->controller->markdownToAnsi("What should the root namespace for `$composerRelativePath` be?"), [
+            'required' => true,
+            'pattern' => '/^[a-z\\\\]+$/i',
+        ]);
+        $rootNamespace = $this->normalizeNamespace($rootNamespace);
+
+        $composerConfig['autoload']['psr-4']["$rootNamespace\\"] = FileHelper::relativePath($dir, $composerDir) . '/';
+        $this->controller->writeJson($composerPath, $composerConfig);
+
+        return $rootNamespace;
     }
 }

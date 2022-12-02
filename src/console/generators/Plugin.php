@@ -10,7 +10,6 @@ namespace craft\console\generators;
 use Composer\Json\JsonManipulator;
 use Craft;
 use craft\helpers\ArrayHelper;
-use craft\helpers\Console;
 use craft\helpers\FileHelper;
 use craft\helpers\Json;
 use craft\helpers\StringHelper;
@@ -29,6 +28,8 @@ class Plugin extends BaseGenerator
     private string $name;
     private string $developer;
     private bool $public;
+    private string $targetDir;
+    private string $relativeTargetDir;
     private string $handle;
     private string $packageName;
     private string $description;
@@ -63,10 +64,11 @@ class Plugin extends BaseGenerator
             $this->handle = StringHelper::ensureLeft($this->handle, '_');
         }
 
-        $this->basePath = $this->basePathPrompt(
+        $this->targetDir = $this->targetDirPrompt(
             'Plugin location:',
             sprintf('@root/plugins/%s', StringHelper::removeLeft($this->handle, '_'))
         );
+        $this->relativeTargetDir = FileHelper::relativePath($this->targetDir);
 
         $defaultVendor = trim(preg_replace('/[^a-z\\-]/i', '', StringHelper::toKebabCase($this->developer)), '-');
         $this->packageName = $this->controller->prompt('Composer package name:', [
@@ -114,14 +116,14 @@ class Plugin extends BaseGenerator
             'default' => str_replace(['-', '/'], ['', '\\'], $this->packageName),
             'pattern' => '/^[a-z\\\\]+$/i',
         ]);
-        $this->rootNamespace = trim(str_replace('\\\\', '\\', $this->rootNamespace), '\\');
+        $this->rootNamespace = $this->normalizeNamespace($this->rootNamespace);
 
         $this->addEcs = $this->controller->confirm('Include ECS? (For automated code styling)', true);
         $this->addPhpStan = $this->controller->confirm('Include PHPStan? (For automated code quality checks)', true);
         $this->controller->stdout(PHP_EOL . 'Generating plugin files…' . PHP_EOL);
 
-        if (!file_exists($this->basePath)) {
-            $this->controller->createDirectory($this->basePath);
+        if (!file_exists($this->targetDir)) {
+            $this->controller->createDirectory($this->targetDir);
         }
 
         // Git config
@@ -147,7 +149,7 @@ class Plugin extends BaseGenerator
         // Plugin class
         $this->writePluginClass();
 
-        $this->controller->stdout('Plugin created successfully!' . PHP_EOL . PHP_EOL, Console::FG_GREEN);
+        $this->controller->stdout("Plugin files generated.\n\n");
 
         $installCommands = <<<MD
 ```
@@ -158,12 +160,12 @@ MD;
 
         $manualInstallInstructions = <<<MD
 To add your plugin to Craft, add a `path` repository to composer.json (`https://getcomposer.org/doc/05-repositories.md#path`),
-with the `url` pointing to `$this->basePath`. Then run these commands:
+with the `url` pointing to `$this->relativeTargetDir`. Then run these commands:
 
 $installCommands
 MD;
 
-        // Check if the plugin will already be autoloaded
+        // Check if the plugin will already be loaded with a path repository
         try {
             $composerPath = Craft::$app->getComposer()->getJsonPath();
         } catch (YiiException $e) {
@@ -178,15 +180,13 @@ MD;
             return ExitCode::OK;
         }
 
-
         $composerDir = FileHelper::normalizePath(dirname(realpath($composerPath)), '/');
         $composerConfig = Json::decode(file_get_contents($composerPath));
         $repositories = $composerConfig['repositories'] ?? [];
-        $normalizedBasePath = FileHelper::normalizePath(realpath($this->basePath), '/');
 
-        foreach ($composerConfig['repositories'] as $repoConfig) {
+        foreach ($repositories as $repoConfig) {
             if (isset($repoConfig['type'], $repoConfig['url']) && $repoConfig['type'] === 'path') {
-                $repoPath = $repoConfig['url'];
+                $repoPath = FileHelper::normalizePath($repoConfig['url'], '/');
                 if (!str_starts_with($repoPath, '/')) {
                     $repoPath = "$composerDir/$repoPath";
                 }
@@ -199,10 +199,10 @@ MD;
                 $folders = array_map(function($val) {
                     return FileHelper::normalizePath($val, '/');
                 }, glob($repoPath, $flags));
-                if (in_array($normalizedBasePath, $folders)) {
+                if (in_array($this->targetDir, $folders)) {
                     $message = <<<MD
 **The plugin is ready to be installed!**
-`$this->basePath` is covered by the `{$repoConfig['url']}` repository in composer.json.
+`$this->relativeTargetDir` is covered by the `{$repoConfig['url']}` repository in composer.json.
 To install the plugin, run the following commands:
 
 $installCommands
@@ -214,7 +214,7 @@ MD;
             }
         }
 
-        $addRepo = $this->controller->confirm($this->controller->markdownToAnsi("Create a new `path` repository in composer.json for `$this->basePath`?"), true);
+        $addRepo = $this->controller->confirm($this->controller->markdownToAnsi("Create a new `path` repository in composer.json for `$this->relativeTargetDir`?"), true);
         $this->controller->stdout(PHP_EOL);
 
         if (!$addRepo) {
@@ -240,21 +240,21 @@ MD;
 
         $pluginRepoConfig = [
             'type' => 'path',
-            'url' => FileHelper::relativePath($this->basePath, $composerPath, '/'),
+            'url' => FileHelper::relativePath($this->targetDir, $composerDir, '/'),
         ];
 
         // First try adding it with JsonManipulator
         $manipulator = new JsonManipulator(file_get_contents($composerPath));
         if ($manipulator->addRepository($pluginRepoName, $pluginRepoConfig)) {
-            $this->writeToFile($composerPath, $manipulator->getContents());
+            $this->controller->writeToFile($composerPath, $manipulator->getContents());
         } else {
             $composerConfig['repositories'][$pluginRepoName] = $pluginRepoConfig;
-            $this->controller->writeToFile($composerPath, Json::encode($composerConfig, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT));
+            $this->controller->writeJson($composerPath, $composerConfig);
         }
 
         $message = <<<MD
 **The plugin is ready to be installed!**
-A new repository has been added to composer.json for `$this->basePath`.
+A new repository has been added to composer.json for `$this->relativeTargetDir`.
 To install the plugin, run the following commands:
 
 $installCommands
@@ -287,7 +287,7 @@ tests/ export-ignore
 * text=auto
 
 EOD;
-        $this->writeToFile('.gitattributes', $contents);
+        $this->controller->writeToFile("$this->targetDir/.gitattributes", $contents);
     }
 
     private function writeGitIgnore(): void
@@ -302,7 +302,7 @@ EOD;
 /vendor
 
 EOD;
-        $this->writeToFile('.gitignore', $contents);
+        $this->controller->writeToFile("$this->targetDir/.gitignore", $contents);
     }
 
     private function writeChangelog(): void
@@ -314,7 +314,7 @@ EOD;
 - Initial release
 
 MD;
-        $this->writeToFile('CHANGELOG.md', $contents);
+        $this->controller->writeToFile("$this->targetDir/CHANGELOG.md", $contents);
     }
 
     private function writeLicense(): void
@@ -346,7 +346,7 @@ SOFTWARE.
 MD;
         } else {
             $contents = <<<MD
-Copyright © $this->developer 
+Copyright © $this->developer
 
 Permission is hereby granted to any person obtaining a copy of this software
 (the “Software”) to use, copy, modify, merge, publish and/or distribute copies
@@ -390,7 +390,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 MD;
         }
 
-        $this->writeToFile('LICENSE.md', $contents);
+        $this->controller->writeToFile("$this->targetDir/LICENSE.md", $contents);
     }
 
     private function writeReadme(): void
@@ -435,7 +435,7 @@ composer require $this->packageName
 MD;
         }
 
-        $this->writeToFile('README.md', $contents);
+        $this->controller->writeToFile("$this->targetDir/README.md", $contents);
     }
 
     private function writeComposerConfig(): void
@@ -486,7 +486,7 @@ MD;
             ],
         ]);
 
-        $this->writeJson('composer.json', $config);
+        $this->controller->writeJson("$this->targetDir/composer.json", $config);
     }
 
     private function writeEcsConfig(): void
@@ -511,7 +511,7 @@ return static function(ECSConfig \$ecsConfig): void {
 };
 
 PHP;
-        $this->writeToFile('ecs.php', $contents);
+        $this->controller->writeToFile("$this->targetDir/ecs.php", $contents);
     }
     private function writePhpStanConfig(): void
     {
@@ -525,7 +525,7 @@ parameters:
         - src
 
 NEON;
-        $this->writeToFile('phpstan.neon', $contents);
+        $this->controller->writeToFile("$this->targetDir/phpstan.neon", $contents);
     }
 
     private function writePluginClass(): void
@@ -554,7 +554,7 @@ use craft\web\Application as WebApplication;
 
 /**
  * $this->name plugin
- * 
+ *
  * @method static Plugin getInstance()
  * @author $authorText
  */
@@ -574,13 +574,13 @@ class Plugin extends BasePlugin
     public function init(): void
     {
         parent::init();
-        
+
         // Defer most plugin setup tasks until Craft is fully initialized
         Craft::\$app->on(WebApplication::EVENT_INIT, function() {
             \$this->setup();
         });
     }
-    
+
     private function setup(): void
     {
         // Place main initialization code here...
@@ -588,6 +588,6 @@ class Plugin extends BasePlugin
 }
 
 PHP;
-        $this->writeToFile('src/Plugin.php', $pluginClass);
+        $this->controller->writeToFile("$this->targetDir/src/Plugin.php", $pluginClass);
     }
 }
