@@ -25,7 +25,7 @@ class Module extends BaseGenerator
     public function run(): bool
     {
         try {
-            $composerPath = Craft::$app->getComposer()->getJsonPath();
+            $composerFile = Craft::$app->getComposer()->getJsonPath();
         } catch (YiiException $e) {
             $this->controller->stdout($e->getMessage() . PHP_EOL);
             return false;
@@ -33,16 +33,16 @@ class Module extends BaseGenerator
 
         $this->id = $this->controller->prompt('Module ID: (kebab-cased)', [
             'required' => true,
-            'pattern' => '/^[a-z]([a-z\\-]*[a-z])?$/',
+            'pattern' => '/^[a-z]([a-z0-9\\-]*[a-z0-9])?$/',
         ]);
 
         $this->targetDir = $this->directoryPrompt('Module location:', [
             'default' => "@root/modules/$this->id",
             'ensureEmpty' => true,
-            'ensureAutoloadableFrom' => $composerPath,
+            'ensureAutoloadableFrom' => $composerFile,
         ]);
 
-        $this->rootNamespace = $this->directoryNamespace($this->targetDir, $composerPath, $addedAutoloadRoot);
+        $this->rootNamespace = $this->directoryNamespace($this->targetDir, $composerFile, $addedAutoloadRoot);
 
         $this->controller->stdout(PHP_EOL . 'Generating module files…' . PHP_EOL);
 
