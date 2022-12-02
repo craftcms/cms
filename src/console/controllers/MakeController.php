@@ -195,9 +195,17 @@ class MakeController extends Controller
         if ($action->id === 'generate') {
             $args['type']['comment'] .= " Options include:\n";
 
-            foreach ($this->types() as $type) {
+            /** @var array<string|BaseGenerator> $types */
+            $types = ArrayHelper::index($this->types(), function(string $type) {
                 /** @var string|BaseGenerator $type */
-                $args['type']['comment'] .= $this->markdownToAnsi(sprintf("- `%s`: %s\n", $type::name(), $type::description()));
+                return $type::name();
+            });
+
+            ksort($types);
+
+            foreach ($types as $type) {
+                /** @var string|BaseGenerator $type */
+                $args['type']['comment'] .= $this->markdownToAnsi(sprintf("- `%s`: %s", $type::name(), $type::description())) . PHP_EOL;
             }
         }
 
@@ -210,8 +218,8 @@ class MakeController extends Controller
     private function types(): array
     {
         $types = [
-            Plugin::class,
             Module::class,
+            Plugin::class,
         ];
 
         $event = new RegisterComponentTypesEvent([
