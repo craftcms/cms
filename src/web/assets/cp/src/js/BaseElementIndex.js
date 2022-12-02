@@ -2433,7 +2433,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         }).appendTo($menuTrigger);
 
         var $menu = $(
-            '<ul id="actions-menu" class="menu menu--disclosure"/>'
+            '<div id="actions-menu" class="menu menu--disclosure"/>'
           ).appendTo($menuTrigger),
           $safeList = this._createMenuTriggerList(safeMenuActions, false),
           $destructiveList = this._createMenuTriggerList(
