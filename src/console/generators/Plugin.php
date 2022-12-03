@@ -557,7 +557,6 @@ PHP);
         $class->addMethod('init')
             ->setPublic()
             ->setReturnType('void')
-
             ->setBody(<<<PHP
 parent::init();
 
