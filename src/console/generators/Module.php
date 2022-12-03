@@ -7,6 +7,11 @@
 
 namespace craft\console\generators;
 
+use Craft;
+use craft\web\Application as WebApplication;
+use Nette\PhpGenerator\PhpFile;
+use yii\base\Module as YiiModule;
+
 /**
  * Creates a new application module.
  *
@@ -85,41 +90,42 @@ MD;
 
     private function writeModuleClass(): void
     {
+        $file = new PhpFile();
+
+        $namespace = $file->addNamespace($this->rootNamespace)
+            ->addUse(Craft::class)
+            ->addUse(WebApplication::class, 'WebApplication')
+            ->addUse(YiiModule::class, 'BaseModule');
+
+        $class = $namespace->addClass('Module')
+            ->setExtends(YiiModule::class)
+            ->setComment(<<<EOD
+$this->id module
+
+@method static Module getInstance()
+EOD
+            );
+
         $slashedRootNamespace = addslashes($this->rootNamespace);
-        $moduleClass = <<<PHP
-<?php
-namespace $this->rootNamespace;
-
-use Craft;
-use craft\web\Application as WebApplication;
-use yii\base\Module as BaseModule;
-
-/**
- * $this->id module
- *
- * @method static Module getInstance()
- */
-class Module extends BaseModule
-{
-    public function init(): void
-    {
-        // Set the controllerNamespace based on whether this is a console or web request
-        if (Craft::\$app->getRequest()->getIsConsoleRequest()) {
-            \$this->controllerNamespace = '$slashedRootNamespace\\\\console\\\\controllers';
-        } else {
-            \$this->controllerNamespace = '$slashedRootNamespace\\\\controllers';
-        }
-
-        parent::init();
-
-        // Defer most setup tasks until Craft is fully initialized
-        Craft::\$app->onInit(function() {
-            // ...
-        });
-    }
+        $class->addMethod('init')
+            ->setPublic()
+            ->setReturnType('void')
+            ->setBody(<<<PHP
+// Set the controllerNamespace based on whether this is a console or web request
+if (Craft::\$app->getRequest()->getIsConsoleRequest()) {
+    \$this->controllerNamespace = '$slashedRootNamespace\\\\console\\\\controllers';
+} else {
+    \$this->controllerNamespace = '$slashedRootNamespace\\\\controllers';
 }
 
-PHP;
-        $this->controller->writeToFile("$this->targetDir/Module.php", $moduleClass);
+parent::init();
+
+// Defer most setup tasks until Craft is fully initialized
+Craft::\$app->onInit(function() {
+    // ...
+});
+PHP);
+
+        $this->writePhpFile("$this->targetDir/Module.php", $file);
     }
 }

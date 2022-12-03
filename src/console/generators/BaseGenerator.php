@@ -14,6 +14,8 @@ use craft\helpers\Composer;
 use craft\helpers\FileHelper;
 use craft\helpers\Json;
 use craft\helpers\StringHelper;
+use Nette\PhpGenerator\PhpFile;
+use Nette\PhpGenerator\PsrPrinter;
 use ReflectionClass;
 use yii\base\BaseObject;
 use yii\base\InvalidArgumentException;
@@ -231,5 +233,16 @@ abstract class BaseGenerator extends BaseObject
 
         $addedRoot = true;
         return $newRootNamespace;
+    }
+
+    /**
+     * Writes out a PHP file using [[PsrPrinter]].
+     *
+     * @param string $file
+     * @param PhpFile $phpFile
+     */
+    protected function writePhpFile(string $file, PhpFile $phpFile): void
+    {
+        $this->controller->writeToFile($file, (new PsrPrinter())->printFile($phpFile));
     }
 }

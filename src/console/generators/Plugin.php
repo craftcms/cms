@@ -9,11 +9,14 @@ namespace craft\console\generators;
 
 use Composer\Json\JsonManipulator;
 use Craft;
+use craft\base\Plugin as BasePlugin;
 use craft\helpers\App;
 use craft\helpers\ArrayHelper;
 use craft\helpers\FileHelper;
 use craft\helpers\Json;
 use craft\helpers\StringHelper;
+use craft\web\Application as WebApplication;
+use Nette\PhpGenerator\PhpFile;
 use yii\validators\EmailValidator;
 
 /**
@@ -509,60 +512,60 @@ NEON;
 
     private function writePluginClass(): void
     {
-        if ($this->public) {
-            $licenseText = $this->license === 'mit' ? 'MIT' : 'https://craftcms.github.io/license/ Craft License';
-            $headerText = <<<PHP
-/**
- * @copyright $this->developer
- * @license $licenseText
- */
+        $file = new PhpFile();
 
-PHP;
-        } else {
-            $headerText = '';
-        }
+        $namespace = $file->addNamespace($this->rootNamespace)
+            ->addUse(Craft::class)
+            ->addUse(BasePlugin::class, 'BasePlugin')
+            ->addUse(WebApplication::class, 'WebApplication');
 
         $authorText = $this->developer . ($this->email ? " <$this->email>" : '');
-        $pluginClass = <<<PHP
-<?php
-$headerText
-namespace $this->rootNamespace;
+        $class = $namespace->addClass('Plugin')
+            ->setExtends(BasePlugin::class)
+            ->setComment(<<<EOD
+$this->name plugin
 
-use Craft;
-use craft\base\Plugin as BasePlugin;
-use craft\web\Application as WebApplication;
+@method static Plugin getInstance()
+@author $authorText
+EOD);
 
-/**
- * $this->name plugin
- *
- * @method static Plugin getInstance()
- * @author $authorText
- */
-class Plugin extends BasePlugin
-{
-    public static function config(): array
-    {
-        return [
-            'components' => [
-                // Define component configs here...
-            ],
-        ];
-    }
+        if ($this->public) {
+            $licenseText = $this->license === 'mit' ? 'MIT' : 'https://craftcms.github.io/license/ Craft License';
+            $class->addComment(<<<EOD
+@copyright $this->developer
+@license $licenseText
+EOD);
+        }
 
-    public string \$schemaVersion = '1.0.0';
+        $class->addMethod('config')
+            ->setPublic()
+            ->setStatic()
+            ->setReturnType('array')
+            ->setBody(<<<PHP
+return [
+    'components' => [
+        // Define component configs here...
+    ],
+];
+PHP);
 
-    public function init(): void
-    {
-        parent::init();
+        $class->addProperty('schemaVersion')
+            ->setPublic()
+            ->setType('string')
+            ->setValue('1.0.0');
 
-        // Defer most setup tasks until Craft is fully initialized
-        Craft::\$app->onInit(function() {
-            // ...
-        });
-    }
-}
+        $class->addMethod('init')
+            ->setPublic()
+            ->setReturnType('void')
 
-PHP;
-        $this->controller->writeToFile("$this->targetDir/src/Plugin.php", $pluginClass);
+            ->setBody(<<<PHP
+parent::init();
+
+// Defer most setup tasks until Craft is fully initialized
+Craft::\$app->onInit(function() {
+    // ...
+});
+PHP);
+        $this->writePhpFile("$this->targetDir/src/Plugin.php", $file);
     }
 }
