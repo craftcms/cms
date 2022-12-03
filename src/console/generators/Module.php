@@ -95,20 +95,10 @@ MD;
             ->addUse(Craft::class)
             ->addUse(YiiModule::class, 'BaseModule');
 
-        $class = $namespace->addClass('Module')
-            ->setExtends(YiiModule::class)
-            ->setComment(<<<EOD
-$this->id module
-
-@method static Module getInstance()
-EOD
-            );
-
         $slashedRootNamespace = addslashes($this->rootNamespace);
-        $class->addMethod('init')
-            ->setPublic()
-            ->setReturnType('void')
-            ->setBody(<<<PHP
+        $class = $this->createClass('Module', $namespace, YiiModule::class, [
+            self::CLASS_METHODS => [
+                'init' => <<<PHP
 // Set the controllerNamespace based on whether this is a console or web request
 if (Craft::\$app->getRequest()->getIsConsoleRequest()) {
     \$this->controllerNamespace = '$slashedRootNamespace\\\\console\\\\controllers';
@@ -122,7 +112,16 @@ parent::init();
 Craft::\$app->onInit(function() {
     // ...
 });
-PHP);
+PHP,
+            ],
+        ]);
+
+        $class->setComment(<<<EOD
+$this->id module
+
+@method static Module getInstance()
+EOD
+        );
 
         $this->writePhpFile("$this->targetDir/Module.php", $file);
     }

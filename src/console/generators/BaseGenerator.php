@@ -14,9 +14,17 @@ use craft\helpers\Composer;
 use craft\helpers\FileHelper;
 use craft\helpers\Json;
 use craft\helpers\StringHelper;
+use Nette\PhpGenerator\ClassType;
+use Nette\PhpGenerator\Constant;
+use Nette\PhpGenerator\Factory;
 use Nette\PhpGenerator\PhpFile;
+use Nette\PhpGenerator\PhpNamespace;
 use Nette\PhpGenerator\PsrPrinter;
 use ReflectionClass;
+use ReflectionClassConstant;
+use ReflectionException;
+use ReflectionMethod;
+use ReflectionProperty;
 use yii\base\BaseObject;
 use yii\base\InvalidArgumentException;
 use yii\base\Module as BaseModule;
@@ -30,6 +38,10 @@ use yii\base\NotSupportedException;
  */
 abstract class BaseGenerator extends BaseObject
 {
+    protected const CLASS_CONSTANTS = 'constants';
+    protected const CLASS_PROPERTIES = 'properties';
+    protected const CLASS_METHODS = 'methods';
+
     /**
      * Returns the CLI-facing name of the generator in kebab-case.
      *
@@ -233,6 +245,203 @@ abstract class BaseGenerator extends BaseObject
 
         $addedRoot = true;
         return $newRootNamespace;
+    }
+
+    /**
+     * Creates a new [[ClassType]] that extends a given base class, and populates it with some of its
+     * constants, properties, and methods.
+     *
+     * @param string|null $className The class name
+     * @param PhpNamespace|null $namespace The namespace
+     * @param string|null $baseClass The base class
+     * @param array $members Class members that should be added:
+     *
+     * - `constants`: Array of constant names. You can use key/value pairs to override default values.
+     * - `properties`: Array of property names. You can use key/value pairs to override default values.
+     * - `methods`: Array of method names. You can use key/value pairs to override the method bodies.
+     *
+     *  If a base class is defined, their signatures and docblocks will be pulled in from there.
+     *
+     * @return ClassType
+     */
+    protected function createClass(
+        ?string $className = null,
+        ?PhpNamespace $namespace = null,
+        ?string $baseClass = null,
+        array $members = [],
+    ): ClassType {
+        $class = new ClassType($className, $namespace);
+
+        if ($baseClass) {
+            $class->setExtends($baseClass);
+        }
+
+        if (isset($members[self::CLASS_CONSTANTS])) {
+            foreach ($members[self::CLASS_CONSTANTS] as $constantName => $constantValue) {
+                if (is_string($constantName)) {
+                    $setValue = true;
+                } else {
+                    $constantName = $constantValue;
+                    $setValue = false;
+                }
+                if ($baseClass) {
+                    $constantRef = new ReflectionClassConstant($baseClass, $constantName);
+                    $constant = (new Factory())->fromConstantReflection($constantRef);
+                    $constant->setComment($this->docBlock($constantRef));
+                    if ($setValue) {
+                        $constant->setValue($constantValue);
+                    }
+                    $class->addMember($constant);
+                } else {
+                    $class->addConstant($constantName, $setValue ? $constantValue : null);
+                }
+            }
+        }
+
+        if (isset($members[self::CLASS_PROPERTIES])) {
+            foreach ($members[self::CLASS_PROPERTIES] as $propertyName => $propertyValue) {
+                if (is_string($propertyName)) {
+                    $setValue = true;
+                } else {
+                    $propertyName = $propertyValue;
+                    $setValue = false;
+                }
+                if ($baseClass) {
+                    $propertyRef = new ReflectionProperty($baseClass, $propertyName);
+                    $property = (new Factory())->fromPropertyReflection($propertyRef);
+                    $property->setComment($this->docBlock($propertyRef));
+                    if ($setValue) {
+                        $property->setValue($propertyValue);
+                    }
+                    $class->addMember($property);
+                } elseif ($setValue) {
+                    $class->addProperty($propertyName, $propertyValue);
+                } else {
+                    $class->addProperty($propertyName);
+                }
+            }
+        }
+
+        if (isset($members[self::CLASS_METHODS])) {
+            foreach ($members[self::CLASS_METHODS] as $methodName => $methodBody) {
+                if (is_string($methodName)) {
+                    $setBody = true;
+                } else {
+                    $methodName = $methodBody;
+                    $setBody = false;
+                }
+                if ($baseClass) {
+                    $methodRef = new ReflectionMethod($baseClass, $methodName);
+                    $method = (new Factory())->fromMethodReflection($methodRef);
+                    $method->setComment($this->docBlock($methodRef));
+                    if ($setBody) {
+                        $method->setBody($methodBody);
+                    }
+                    $class->addMember($method);
+                } else {
+                    $method = $class->addMethod($methodName);
+                    if ($setBody) {
+                        $method->setBody($methodBody);
+                    }
+                }
+            }
+        }
+
+        if ($namespace) {
+            $namespace->add($class);
+        }
+
+        return $class;
+    }
+
+    private function docBlock(ReflectionClassConstant|ReflectionProperty|ReflectionMethod $member): ?string
+    {
+        if (!$this->controller->withDocblocks) {
+            return null;
+        }
+
+        // Find the comment
+        $comment = $member->getDocComment();
+        if ($comment === false) {
+            // Find the parent member that actually defines a comment, if any
+            $member = $this->parentMemberWithComment($member, $comment);
+            if (!$member) {
+                return null;
+            }
+        }
+
+        // Clean it up
+        // (copied from @internal Nette\PhpGenerator\Helpers::unformatDocComment())
+        $docBlock = preg_replace('#^\s*\* ?#m', '', trim(trim(trim($comment), '/*')));
+
+        // Parse any @inheritdoc tags
+        $docBlock = preg_replace_callback('/\{?@inheritdoc\}?/i', function(array $match) use ($member): string {
+            $parentMember = $this->parentMemberWithComment($member);
+            return ($parentMember ? $this->docBlock($parentMember) : null) ?? $match[1];
+        }, $docBlock);
+
+        return $docBlock;
+    }
+
+    private function parentMemberWithComment(
+        ReflectionClassConstant|ReflectionProperty|ReflectionMethod $member,
+        string|false &$comment = false,
+    ): ReflectionClassConstant|ReflectionProperty|ReflectionMethod|null {
+        foreach ($this->parentMembers($member) as $parentMember) {
+            /** @var ReflectionClassConstant|ReflectionProperty|ReflectionMethod $parentMember */
+            $comment = $parentMember->getDocComment();
+            if ($comment !== false) {
+                return $parentMember;
+            }
+        }
+        return null;
+    }
+
+    private function parentMembers(
+        ReflectionClassConstant|ReflectionProperty|ReflectionMethod $member,
+    ) {
+        // Return each of the parents that have the same member
+        while (true) {
+            $parentClass = $member->getDeclaringClass()->getParentClass();
+            if (!$parentClass) {
+                break;
+            }
+            try {
+                /** @phpstan-ignore-next-line  */
+                $parentMember = match (true) {
+                    $member instanceof ReflectionClassConstant => $parentClass->getConstant($member->getName()),
+                    $member instanceof ReflectionProperty => $parentClass->getProperty($member->getName()),
+                    $member instanceof ReflectionMethod => $parentClass->getMethod($member->getName()),
+                };
+            } catch (ReflectionException) {
+                break;
+            }
+            if ($parentMember->isPrivate()) {
+                break;
+            }
+            yield $parentMember;
+            $member = $parentMember;
+        }
+
+        if (!$member->getDeclaringClass()->isInterface()) {
+            // Then each of the interfaces implemented by the root declaring class
+            foreach ($member->getDeclaringClass()->getInterfaces() as $interface) {
+                try {
+                    /** @phpstan-ignore-next-line  */
+                    $interfaceMember = match (true) {
+                        $member instanceof ReflectionClassConstant => $interface->getConstant($member->getName()),
+                        $member instanceof ReflectionProperty => $interface->getProperty($member->getName()),
+                        $member instanceof ReflectionMethod => $interface->getMethod($member->getName()),
+                    };
+                } catch (ReflectionException) {
+                    continue;
+                }
+                yield $interfaceMember;
+                foreach ($this->parentMembers($interfaceMember) as $parentMember) {
+                    yield $parentMember;
+                }
+            }
+        }
     }
 
     /**

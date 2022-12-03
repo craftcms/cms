@@ -517,10 +517,31 @@ NEON;
             ->addUse(Craft::class)
             ->addUse(BasePlugin::class, 'BasePlugin');
 
+        $class = $this->createClass('Plugin', $namespace, BasePlugin::class, [
+            self::CLASS_PROPERTIES => [
+                'schemaVersion',
+            ],
+            self::CLASS_METHODS => [
+                'config' => <<<PHP
+return [
+    'components' => [
+        // Define component configs here...
+    ],
+];
+PHP,
+                'init' => <<<PHP
+parent::init();
+
+// Defer most setup tasks until Craft is fully initialized
+Craft::\$app->onInit(function() {
+    // ...
+});
+PHP,
+            ],
+        ]);
+
         $authorText = $this->developer . ($this->email ? " <$this->email>" : '');
-        $class = $namespace->addClass('Plugin')
-            ->setExtends(BasePlugin::class)
-            ->setComment(<<<EOD
+        $class->setComment(<<<EOD
 $this->name plugin
 
 @method static Plugin getInstance()
@@ -535,34 +556,6 @@ EOD);
 EOD);
         }
 
-        $class->addMethod('config')
-            ->setPublic()
-            ->setStatic()
-            ->setReturnType('array')
-            ->setBody(<<<PHP
-return [
-    'components' => [
-        // Define component configs here...
-    ],
-];
-PHP);
-
-        $class->addProperty('schemaVersion')
-            ->setPublic()
-            ->setType('string')
-            ->setValue('1.0.0');
-
-        $class->addMethod('init')
-            ->setPublic()
-            ->setReturnType('void')
-            ->setBody(<<<PHP
-parent::init();
-
-// Defer most setup tasks until Craft is fully initialized
-Craft::\$app->onInit(function() {
-    // ...
-});
-PHP);
         $this->writePhpFile("$this->targetDir/src/Plugin.php", $file);
     }
 }

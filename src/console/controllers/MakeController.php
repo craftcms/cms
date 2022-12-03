@@ -53,6 +53,11 @@ class MakeController extends Controller
     public $defaultAction = 'generate';
 
     /**
+     * @var bool Whether to add DocBlock comments to the generated class constants, properties, and methods.
+     */
+    public bool $withDocblocks = false;
+
+    /**
      * @var bool
      */
     private bool $_app = false;
@@ -66,6 +71,17 @@ class MakeController extends Controller
      * @var string|null $plugin The plugin handle to generate the component for.
      */
     private ?string $_plugin = null;
+
+    /**
+     * @inheritdoc
+     */
+    public function options($actionID): array
+    {
+        // Don't include app/module/plugin since `module` conflicts with yii\base\Controller::$module
+        return array_merge(parent::options($actionID), [
+            'withDocblocks',
+        ]);
+    }
 
     /**
      * @inheritdoc
