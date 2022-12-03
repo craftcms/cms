@@ -8,7 +8,6 @@
 namespace craft\console\generators;
 
 use Craft;
-use craft\web\Application as WebApplication;
 use Nette\PhpGenerator\PhpFile;
 use yii\base\Module as YiiModule;
 
@@ -94,7 +93,6 @@ MD;
 
         $namespace = $file->addNamespace($this->rootNamespace)
             ->addUse(Craft::class)
-            ->addUse(WebApplication::class, 'WebApplication')
             ->addUse(YiiModule::class, 'BaseModule');
 
         $class = $namespace->addClass('Module')

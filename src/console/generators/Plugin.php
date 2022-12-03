@@ -15,7 +15,6 @@ use craft\helpers\ArrayHelper;
 use craft\helpers\FileHelper;
 use craft\helpers\Json;
 use craft\helpers\StringHelper;
-use craft\web\Application as WebApplication;
 use Nette\PhpGenerator\PhpFile;
 use yii\validators\EmailValidator;
 
@@ -516,8 +515,7 @@ NEON;
 
         $namespace = $file->addNamespace($this->rootNamespace)
             ->addUse(Craft::class)
-            ->addUse(BasePlugin::class, 'BasePlugin')
-            ->addUse(WebApplication::class, 'WebApplication');
+            ->addUse(BasePlugin::class, 'BasePlugin');
 
         $authorText = $this->developer . ($this->email ? " <$this->email>" : '');
         $class = $namespace->addClass('Plugin')
