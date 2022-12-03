@@ -16,6 +16,7 @@ use craft\console\generators\Plugin;
 use craft\events\RegisterComponentTypesEvent;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Console;
+use craft\helpers\FileHelper;
 use yii\console\ExitCode;
 
 /**
@@ -131,7 +132,9 @@ class MakeController extends Controller
                 return ExitCode::UNSPECIFIED_ERROR;
             }
 
-            $module = Craft::$app;
+            $module = null;
+            $basePath = FileHelper::normalizePath(Craft::getAlias('@root'), '/');
+            $composerFile = Craft::$app->getComposer()->getJsonPath();
         } else {
             if ($usedParamCount === 0) {
                 $this->stdout("`make $type` must specify an --app, --module, or --plugin option.\n", Console::FG_RED);
@@ -158,6 +161,16 @@ class MakeController extends Controller
                     return ExitCode::UNSPECIFIED_ERROR;
                 }
             }
+
+            $basePath = FileHelper::normalizePath($module->getBasePath(), '/');
+            $composerFile = FileHelper::findClosestFile($basePath, [
+                'only' => ['composer.json'],
+            ]);
+
+            if (!$composerFile) {
+                $this->stdout("No `composer.json` file found at or above `$basePath`.\n", Console::FG_RED);
+                return ExitCode::UNSPECIFIED_ERROR;
+            }
         }
 
         /** @var string|BaseGenerator|null $class */
@@ -176,6 +189,8 @@ class MakeController extends Controller
             'class' => $class,
             'controller' => $this,
             'module' => $module,
+            'basePath' => $basePath,
+            'composerFile' => $composerFile,
         ]);
 
         return $generator->run() ? ExitCode::OK : ExitCode::UNSPECIFIED_ERROR;

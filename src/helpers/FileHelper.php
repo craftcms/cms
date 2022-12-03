@@ -583,6 +583,41 @@ class FileHelper extends \yii\helpers\FileHelper
     }
 
     /**
+     * Traverses up the filesystem looking for the closest file to the given directory.
+     *
+     * @param string $dir the directory at or above which the file will be looked for
+     * @param array $options options for file searching. See [[findFiles()]].
+     * @return string|null the closest matching file
+     * @throws InvalidArgumentException if the directory is invalid
+     * @since 4.4.0
+     */
+    public static function findClosestFile(string $dir, array $options = []): ?string
+    {
+        $options['recursive'] = false;
+        $dir = static::absolutePath($dir, ds: '/');
+        while (true) {
+            $exists = file_exists($dir);
+            try {
+                $files = static::findFiles($dir, $options);
+            } catch (InvalidArgumentException $e) {
+                if ($exists) {
+                    return null;
+                }
+                throw $e;
+            }
+
+            if (!empty($files)) {
+                return reset($files);
+            }
+            $parent = dirname($dir);
+            if ($parent === $dir) {
+                return null;
+            }
+            $dir = $parent;
+        }
+    }
+
+    /**
      * Returns the last modification time for the given path.
      *
      * If the path is a directory, any nested files/directories will be checked as well.

@@ -7,9 +7,6 @@
 
 namespace craft\console\generators;
 
-use Craft;
-use yii\base\Exception as YiiException;
-
 /**
  * Creates a new application module.
  *
@@ -24,13 +21,6 @@ class Module extends BaseGenerator
 
     public function run(): bool
     {
-        try {
-            $composerFile = Craft::$app->getComposer()->getJsonPath();
-        } catch (YiiException $e) {
-            $this->controller->stdout($e->getMessage() . PHP_EOL);
-            return false;
-        }
-
         $this->id = $this->controller->prompt('Module ID: (kebab-cased)', [
             'required' => true,
             'pattern' => '/^[a-z]([a-z0-9\\-]*[a-z0-9])?$/',
@@ -39,10 +29,10 @@ class Module extends BaseGenerator
         $this->targetDir = $this->directoryPrompt('Module location:', [
             'default' => "@root/modules/$this->id",
             'ensureEmpty' => true,
-            'ensureAutoloadableFrom' => $composerFile,
+            'ensureCouldAutoload' => true,
         ]);
 
-        $this->rootNamespace = $this->directoryNamespace($this->targetDir, $composerFile, $addedAutoloadRoot);
+        $this->rootNamespace = $this->ensureAutoloadable($this->targetDir, $addedRoot);
 
         $this->controller->stdout(PHP_EOL . 'Generating module files…' . PHP_EOL);
 
@@ -58,7 +48,7 @@ class Module extends BaseGenerator
 **The module is ready to be installed!**
 
 MD;
-        if ($addedAutoloadRoot) {
+        if ($addedRoot) {
             $instructions .= <<<MD
 Run the following command to ensure the module gets autoloaded:
 

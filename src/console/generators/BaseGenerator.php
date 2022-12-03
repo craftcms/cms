@@ -62,9 +62,19 @@ abstract class BaseGenerator extends BaseObject
     public MakeController $controller;
 
     /**
-     * @var BaseModule The module that the generator is working with.
+     * @var BaseModule The module that the generator is working with, if not the Craft project itself.
      */
-    public BaseModule $module;
+    public ?BaseModule $module;
+
+    /**
+     * @var string The base path that the generator is working with.
+     */
+    public string $basePath;
+
+    /**
+     * @var string The path to `composer.json`.
+     */
+    public string $composerFile;
 
     /**
      * Runs the generator command.
@@ -124,7 +134,7 @@ abstract class BaseGenerator extends BaseObject
      * - `required` (bool): whether a value is required
      * - `default` (string): the default value to use if no input is given
      * - `ensureEmpty` (bool): whether the directory must be empty, if it exists already
-     * - `ensureAutoloadableFrom` (string): whether the directory must be capable of being autoloaded from a given composer.json file
+     * - `ensureCouldAutoload` (bool): whether the directory must be capable of being autoloaded from composer.json
      * - `validator` (callable): a callable function to validate input. The function must accept two parameters:
      *     - `$path`: a normalized absolute path based on the input value
      *     - `$error`: passed by reference, to be set to the error text if validation failed
@@ -148,8 +158,8 @@ abstract class BaseGenerator extends BaseObject
                 return false;
             }
             if (
-                !empty($options['ensureAutoloadableFrom']) &&
-                !Composer::couldAutoload($path, $options['ensureAutoloadableFrom'], reason: $reason)
+                !empty($options['ensureCouldAutoload']) &&
+                !Composer::couldAutoload($path, $this->composerFile, reason: $reason)
             ) {
                 $error = $this->controller->markdownToAnsi($reason);
                 return false;
@@ -182,19 +192,18 @@ abstract class BaseGenerator extends BaseObject
     }
 
     /**
-     * Ensures that a directory is autoloadable for a given composer.json file,
+     * Ensures that a directory is autoloadable in composer.json,
      * and returns the root namespace for the directory.
      *
      * @param string $dir The directory path
-     * @param string $composerFile The path to `composer.json`
-     * @param bool $addedAutoloadRoot Whether a new autoload root was added
+     * @param bool $addedRoot Whether a new autoload root was added
      * @return string
      */
-    protected function directoryNamespace(string $dir, string $composerFile, ?bool &$addedAutoloadRoot = false): string
+    protected function ensureAutoloadable(string $dir, ?bool &$addedRoot = false): string
     {
         $dir = FileHelper::absolutePath($dir, ds: '/');
 
-        if (!Composer::couldAutoload($dir, $composerFile, $existingRoot, $reason)) {
+        if (!Composer::couldAutoload($dir, $this->composerFile, $existingRoot, $reason)) {
             throw new InvalidArgumentException($reason);
         }
 
@@ -209,18 +218,18 @@ abstract class BaseGenerator extends BaseObject
             return $rootNamespace . App::normalizeNamespace($relativePath);
         }
 
-        $composerDir = dirname(FileHelper::absolutePath($composerFile, ds: '/'));
+        $composerDir = dirname(FileHelper::absolutePath($this->composerFile, ds: '/'));
         $newRootPath = FileHelper::relativePath($dir, $composerDir) . '/';
 
         $newRootNamespace = $this->namespacePrompt("What should the root namespace for `$newRootPath` be?", [
             'required' => true,
         ]);
 
-        $composerConfig = Json::decodeFromFile($composerFile);
+        $composerConfig = Json::decodeFromFile($this->composerFile);
         $composerConfig['autoload']['psr-4']["$newRootNamespace\\"] = $newRootPath;
-        $this->controller->writeJson($composerFile, $composerConfig);
+        $this->controller->writeJson($this->composerFile, $composerConfig);
 
-        $addedAutoloadRoot = true;
+        $addedRoot = true;
         return $newRootNamespace;
     }
 }

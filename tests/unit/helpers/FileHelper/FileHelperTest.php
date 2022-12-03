@@ -271,6 +271,19 @@ class FileHelperTest extends TestCase
     }
 
     /**
+     * @dataProvider findClosestFileDataProvider
+     */
+    public function testFindClosestFile(string|null|false $expected, string $dir, array $options = [])
+    {
+        if ($expected === false) {
+            $this->expectException(InvalidArgumentException::class);
+            FileHelper::findClosestFile($dir, $options);
+        } else {
+            self::assertSame($expected, FileHelper::findClosestFile($dir, $options));
+        }
+    }
+
+    /**
      * @return array
      */
     public function normalizePathDataProvider(): array
@@ -420,6 +433,37 @@ class FileHelperTest extends TestCase
             ['content', $sandboxDir . '/notadir/notafile', 'content', [], true, $sandboxDir . '/notadir'],
             ['content', $sandboxDir . '/notafile2', 'content', ['lock' => true]],
 
+        ];
+    }
+
+    /**
+     * @return array
+     */
+    public function findClosestFileDataProvider(): array
+    {
+        return [
+            [
+                FileHelper::normalizePath(__DIR__ . '/sandbox/singlefile/foo.txt', '/'),
+                __DIR__ . '/sandbox/singlefile',
+            ],
+            [
+                FileHelper::normalizePath(__DIR__ . '/sandbox/singlefile/foo.txt', '/'),
+                __DIR__ . '/sandbox/singlefile/nested',
+                [
+                    'except' => ['ignore*'],
+                ],
+            ],
+            [
+                null,
+                '/',
+                [
+                    'only' => ['nonexistent.txt'],
+                ],
+            ],
+            [
+                false,
+                __DIR__ . '/sandbox/singlefile/nonexistent',
+            ],
         ];
     }
 

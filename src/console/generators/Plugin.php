@@ -14,7 +14,6 @@ use craft\helpers\ArrayHelper;
 use craft\helpers\FileHelper;
 use craft\helpers\Json;
 use craft\helpers\StringHelper;
-use yii\base\Exception as YiiException;
 use yii\validators\EmailValidator;
 
 /**
@@ -156,30 +155,8 @@ class Plugin extends BaseGenerator
 ```
 MD;
 
-        $manualInstallInstructions = <<<MD
-To add your plugin to Craft, add a `path` repository to composer.json (`https://getcomposer.org/doc/05-repositories.md#path`),
-with the `url` pointing to `$this->relativeTargetDir`. Then run these commands:
-
-$installCommands
-MD;
-
-        // Check if the plugin will already be loaded with a path repository
-        try {
-            $composerPath = Craft::$app->getComposer()->getJsonPath();
-        } catch (YiiException $e) {
-            $warning = <<<MD
-**Unable to add the plugin to Craft.**
-Reason: {$e->getMessage()}
-
-$manualInstallInstructions
-MD;
-            $this->controller->warning($warning);
-            $this->controller->stdout(PHP_EOL);
-            return true;
-        }
-
-        $composerDir = FileHelper::normalizePath(dirname(realpath($composerPath)), '/');
-        $composerConfig = Json::decodeFromFile($composerPath);
+        $composerDir = dirname($this->composerFile);
+        $composerConfig = Json::decodeFromFile($this->composerFile);
         $repositories = $composerConfig['repositories'] ?? [];
 
         foreach ($repositories as $repoConfig) {
@@ -213,6 +190,13 @@ MD;
         $this->controller->stdout(PHP_EOL);
 
         if (!$addRepo) {
+            $manualInstallInstructions = <<<MD
+To add your plugin to Craft, add a `path` repository to composer.json (`https://getcomposer.org/doc/05-repositories.md#path`),
+with the `url` pointing to `$this->relativeTargetDir`. Then run these commands:
+
+$installCommands
+MD;
+
             $this->controller->note($manualInstallInstructions);
             $this->controller->stdout(PHP_EOL);
             return true;
@@ -239,12 +223,12 @@ MD;
         ];
 
         // First try adding it with JsonManipulator
-        $manipulator = new JsonManipulator(file_get_contents($composerPath));
+        $manipulator = new JsonManipulator(file_get_contents($this->composerFile));
         if ($manipulator->addRepository($pluginRepoName, $pluginRepoConfig)) {
-            $this->controller->writeToFile($composerPath, $manipulator->getContents());
+            $this->controller->writeToFile($this->composerFile, $manipulator->getContents());
         } else {
             $composerConfig['repositories'][$pluginRepoName] = $pluginRepoConfig;
-            $this->controller->writeJson($composerPath, $composerConfig);
+            $this->controller->writeJson($this->composerFile, $composerConfig);
         }
 
         $message = <<<MD
