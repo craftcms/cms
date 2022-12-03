@@ -7,6 +7,8 @@
 
 namespace craft\base;
 
+use craft\helpers\App;
+
 /**
  * Component is the base class for classes representing Craft components in terms of objects.
  *
@@ -22,8 +24,8 @@ abstract class Component extends Model implements ComponentInterface
      */
     public static function displayName(): string
     {
-        $classNameParts = explode('\\', static::class);
-        return array_pop($classNameParts);
+        [, $className] = App::classParts(static::class);
+        return $className;
     }
 
     /**

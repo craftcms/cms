@@ -290,6 +290,19 @@ class AppHelperTest extends TestCase
     }
 
     /**
+     * @dataProvider classPartsDataProvider
+     * @param string|null $expectedNamespace
+     * @param string $expectedClassName
+     * @param string $fqn
+     */
+    public function testClassParts(?string $expectedNamespace, string $expectedClassName, string $fqn): void
+    {
+        [$namespace, $className] = App::classParts($fqn);
+        self::assertSame($expectedNamespace, $namespace);
+        self::assertSame($expectedClassName, $className);
+    }
+
+    /**
      * @dataProvider humanizeClassDataProvider
      * @param string $expected
      * @param string $class
@@ -536,6 +549,18 @@ class AppHelperTest extends TestCase
             [1024, '1K'],
             [pow(1024, 2), '1M'],
             [pow(1024, 3), '1G'],
+        ];
+    }
+
+    /**
+     * @return array
+     */
+    public function classPartsDataProvider(): array
+    {
+        return [
+            [null, 'Foo', 'Foo'],
+            ['foo', 'Bar', 'foo\\Bar'],
+            ['foo\\bar', 'Baz', 'foo\\bar\\Baz'],
         ];
     }
 

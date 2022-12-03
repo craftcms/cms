@@ -658,6 +658,20 @@ class App
     }
 
     /**
+     * Splits a fully-qualified class name into its namespace and class name.
+     *
+     * @param string $fqn
+     * @return array
+     * @since 4.4.0
+     */
+    public static function classParts(string $fqn): array
+    {
+        $parts = explode('\\', $fqn);
+        $className = array_pop($parts);
+        return [implode('\\', $parts) ?: null, $className];
+    }
+
+    /**
      * Returns a humanized class name.
      *
      * @param string $class
@@ -666,9 +680,8 @@ class App
      */
     public static function humanizeClass(string $class): string
     {
-        $classParts = explode('\\', $class);
-
-        return strtolower(Inflector::camel2words(array_pop($classParts)));
+        [, $className] = static::classParts($class);
+        return strtolower(Inflector::camel2words($className));
     }
 
     /**
