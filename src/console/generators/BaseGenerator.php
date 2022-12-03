@@ -14,6 +14,7 @@ use craft\helpers\Composer;
 use craft\helpers\FileHelper;
 use craft\helpers\Json;
 use craft\helpers\StringHelper;
+use Generator;
 use Nette\PhpGenerator\ClassType;
 use Nette\PhpGenerator\Constant;
 use Nette\PhpGenerator\Factory;
@@ -399,7 +400,7 @@ abstract class BaseGenerator extends BaseObject
 
     private function parentMembers(
         ReflectionClassConstant|ReflectionProperty|ReflectionMethod $member,
-    ) {
+    ): Generator {
         // Return each of the parents that have the same member
         while (true) {
             $parentClass = $member->getDeclaringClass()->getParentClass();
@@ -437,9 +438,7 @@ abstract class BaseGenerator extends BaseObject
                     continue;
                 }
                 yield $interfaceMember;
-                foreach ($this->parentMembers($interfaceMember) as $parentMember) {
-                    yield $parentMember;
-                }
+                yield from $this->parentMembers($interfaceMember);
             }
         }
     }
