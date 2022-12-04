@@ -15,6 +15,7 @@ use craft\console\generators\Module;
 use craft\console\generators\Plugin;
 use craft\events\RegisterComponentTypesEvent;
 use craft\helpers\ArrayHelper;
+use craft\helpers\Composer;
 use craft\helpers\Console;
 use craft\helpers\FileHelper;
 use yii\console\ExitCode;
@@ -185,6 +186,11 @@ class MakeController extends Controller
 
             if (!$composerFile) {
                 $this->stdout("No `composer.json` file found at or above `$basePath`.\n", Console::FG_RED);
+                return ExitCode::UNSPECIFIED_ERROR;
+            }
+
+            if (empty(Composer::autoloadConfigFromFile($composerFile))) {
+                $this->stdout("No autoload roots are defined in $composerFile.\n", Console::FG_RED);
                 return ExitCode::UNSPECIFIED_ERROR;
             }
         }

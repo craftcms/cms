@@ -113,7 +113,7 @@ class Plugin extends BaseGenerator
             'pattern' => '/^[\d\.]+\(-\w+(\.\d+)?)?$/',
         ]);
 
-        $this->rootNamespace = $this->namespacePrompt('Root namespace', [
+        $this->rootNamespace = $this->namespacePrompt('Root namespace:', [
             'default' => App::normalizeNamespace(str_replace('-', '', $this->packageName)),
         ]);
 
@@ -517,28 +517,11 @@ NEON;
             ->addUse(Craft::class)
             ->addUse(BasePlugin::class, 'BasePlugin');
 
-        $class = $this->createClass('Plugin', $namespace, BasePlugin::class, [
-            self::CLASS_PROPERTIES => [
-                'schemaVersion',
-            ],
-            self::CLASS_METHODS => [
-                'config' => <<<PHP
-return [
-    'components' => [
-        // Define component configs here...
-    ],
-];
-PHP,
-                'init' => <<<PHP
-parent::init();
-
-// Defer most setup tasks until Craft is fully initialized
-Craft::\$app->onInit(function() {
-    // ...
-});
-PHP,
-            ],
+        $class = $this->createClass('Plugin', BasePlugin::class, [
+            self::CLASS_PROPERTIES => $this->properties(),
+            self::CLASS_METHODS => $this->methods(),
         ]);
+        $namespace->add($class);
 
         $authorText = $this->developer . ($this->email ? " <$this->email>" : '');
         $class->setComment(<<<EOD
@@ -557,5 +540,33 @@ EOD);
         }
 
         $this->writePhpFile("$this->targetDir/src/Plugin.php", $file);
+    }
+
+    private function properties(): array
+    {
+        return [
+            'schemaVersion',
+        ];
+    }
+
+    private function methods(): array
+    {
+        return [
+            'config' => <<<PHP
+return [
+    'components' => [
+        // Define component configs here...
+    ],
+];
+PHP,
+            'init' => <<<PHP
+parent::init();
+
+// Defer most setup tasks until Craft is fully initialized
+Craft::\$app->onInit(function() {
+    // ...
+});
+PHP,
+        ];
     }
 }

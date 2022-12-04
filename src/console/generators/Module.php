@@ -30,13 +30,10 @@ class Module extends BaseGenerator
             'pattern' => '/^[a-z]([a-z0-9\\-]*[a-z0-9])?$/',
         ]);
 
-        $this->targetDir = $this->directoryPrompt('Module location:', [
+        [$this->targetDir, $this->rootNamespace, $addedRoot] = $this->autoloadableDirectoryPrompt('Module location:', [
             'default' => "@root/modules/$this->id",
             'ensureEmpty' => true,
-            'ensureCouldAutoload' => true,
         ]);
-
-        $this->rootNamespace = $this->ensureAutoloadable($this->targetDir, $addedRoot);
 
         $this->controller->stdout(PHP_EOL . 'Generating module files…' . PHP_EOL);
 
@@ -95,10 +92,26 @@ MD;
             ->addUse(Craft::class)
             ->addUse(YiiModule::class, 'BaseModule');
 
+        $class = $this->createClass('Module', YiiModule::class, [
+            self::CLASS_METHODS => $this->methods(),
+        ]);
+        $namespace->add($class);
+
+        $class->setComment(<<<EOD
+$this->id module
+
+@method static Module getInstance()
+EOD
+        );
+
+        $this->writePhpClass($namespace);
+    }
+
+    private function methods(): array
+    {
         $slashedRootNamespace = addslashes($this->rootNamespace);
-        $class = $this->createClass('Module', $namespace, YiiModule::class, [
-            self::CLASS_METHODS => [
-                'init' => <<<PHP
+        return [
+            'init' => <<<PHP
 // Set the controllerNamespace based on whether this is a console or web request
 if (Craft::\$app->getRequest()->getIsConsoleRequest()) {
     \$this->controllerNamespace = '$slashedRootNamespace\\\\console\\\\controllers';
@@ -113,16 +126,6 @@ Craft::\$app->onInit(function() {
     // ...
 });
 PHP,
-            ],
-        ]);
-
-        $class->setComment(<<<EOD
-$this->id module
-
-@method static Module getInstance()
-EOD
-        );
-
-        $this->writePhpFile("$this->targetDir/Module.php", $file);
+        ];
     }
 }

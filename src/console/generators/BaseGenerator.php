@@ -10,6 +10,7 @@ namespace craft\console\generators;
 use Craft;
 use craft\console\controllers\MakeController;
 use craft\helpers\App;
+use craft\helpers\ArrayHelper;
 use craft\helpers\Composer;
 use craft\helpers\FileHelper;
 use craft\helpers\Json;
@@ -141,6 +142,49 @@ abstract class BaseGenerator extends BaseObject
     }
 
     /**
+     * Prompts the user for a PHP namespace that’s autoloaded by composer.json
+     *
+     * @param string $text The prompt text
+     * @param string $relativeDefault The default value to use, relative to the first autoload root’s namespace
+     * @return string The normalized namespace
+     */
+    protected function autoloadedNamespacePrompt(string $text, string $relativeDefault): string
+    {
+        $rootNamespace = ArrayHelper::firstKey(Composer::autoloadConfigFromFile($this->composerFile));
+        if ($relativeDefault) {
+            $default = $rootNamespace . $relativeDefault;
+        } else {
+            $default = rtrim($rootNamespace, '\\');
+        }
+
+        return $this->namespacePrompt($text, [
+            'required' => true,
+            'default' => $default,
+            'validator' => function(string $namespace, string &$error): bool {
+                $rootNamespaces = array_keys(Composer::autoloadConfigFromFile($this->composerFile));
+                foreach ($rootNamespaces as $rootNamespace) {
+                    if (str_starts_with($namespace, $rootNamespace)) {
+                        return true;
+                    }
+                }
+                if (count($rootNamespaces) === 1) {
+                    $error = $this->controller->markdownToAnsi(sprintf(
+                        'The namespace must begin with `%s`.',
+                        reset($rootNamespaces),
+                    ));
+                } else {
+                    $error = $this->controller->markdownToAnsi(sprintf(
+                        'The namespace must begin with one of the autoload roots in `%s`:%s',
+                        $this->composerFile,
+                        implode('', array_map(fn(string $rootNamespace) => "\n - `$rootNamespace`", $rootNamespaces)),
+                    ));
+                }
+                return false;
+            },
+        ]);
+    }
+
+    /**
      * Prompts the user for the path to a directory.
      *
      * @param string $text The prompt text
@@ -149,7 +193,6 @@ abstract class BaseGenerator extends BaseObject
      * - `required` (bool): whether a value is required
      * - `default` (string): the default value to use if no input is given
      * - `ensureEmpty` (bool): whether the directory must be empty, if it exists already
-     * - `ensureCouldAutoload` (bool): whether the directory must be capable of being autoloaded from composer.json
      * - `validator` (callable): a callable function to validate input. The function must accept two parameters:
      *     - `$path`: a normalized absolute path based on the input value
      *     - `$error`: passed by reference, to be set to the error text if validation failed
@@ -170,13 +213,6 @@ abstract class BaseGenerator extends BaseObject
             }
             if (!empty($options['ensureEmpty']) && is_dir($path) && !FileHelper::isDirectoryEmpty($path)) {
                 $error = 'A non-empty directory already exists there.';
-                return false;
-            }
-            if (
-                !empty($options['ensureCouldAutoload']) &&
-                !Composer::couldAutoload($path, $this->composerFile, reason: $reason)
-            ) {
-                $error = $this->controller->markdownToAnsi($reason);
                 return false;
             }
             if (isset($options['validator'])) {
@@ -207,14 +243,49 @@ abstract class BaseGenerator extends BaseObject
     }
 
     /**
+     * Prompts the user for the path to an autoloadable directory.
+     *
+     * @param string $text The prompt text
+     * @param array $options Prompt options:
+     *
+     * - `default` (string): the default value to use if no input is given
+     * - `ensureEmpty` (bool): whether the directory must be empty, if it exists already
+     * - `validator` (callable): a callable function to validate input. The function must accept two parameters:
+     *     - `$path`: a normalized absolute path based on the input value
+     *     - `$error`: passed by reference, to be set to the error text if validation failed
+     *
+     * @return array the normalized absolute path to the directory, its root namespace, and whether a new autoload root was added.
+     * @phpstan-return array{string,string,bool}
+     */
+    protected function autoloadableDirectoryPrompt(string $text, array $options): array
+    {
+        $dir = $this->directoryPrompt($text, [
+            'required' => true,
+            'validator' => function(string $path, ?string &$error) use ($options): bool {
+                if (!Composer::couldAutoload($path, $this->composerFile, reason: $reason)) {
+                    $error = $this->controller->markdownToAnsi($reason);
+                    return false;
+                }
+                if (isset($options['validator'])) {
+                    return $options['validator']($path, $error);
+                }
+                return true;
+            },
+        ] + $options);
+
+        [$namespace, $addedRoot] = $this->ensureAutoloadable($dir);
+        return [$dir, $namespace, $addedRoot];
+    }
+
+    /**
      * Ensures that a directory is autoloadable in composer.json,
      * and returns the root namespace for the directory.
      *
      * @param string $dir The directory path
-     * @param bool $addedRoot Whether a new autoload root was added
-     * @return string
+     * @return array The root namespace, and whether a new autoload root was added
+     * @phpstan-return array{string,bool}
      */
-    protected function ensureAutoloadable(string $dir, ?bool &$addedRoot = false): string
+    protected function ensureAutoloadable(string $dir): array
     {
         $dir = FileHelper::absolutePath($dir, ds: '/');
 
@@ -226,11 +297,11 @@ abstract class BaseGenerator extends BaseObject
             [$rootNamespace, $rootPath] = $existingRoot;
 
             if ($dir === $rootPath) {
-                return rtrim($rootNamespace, '\\');
+                return [rtrim($rootNamespace, '\\'), false];
             }
 
             $relativePath = FileHelper::relativePath($dir, $rootPath);
-            return $rootNamespace . App::normalizeNamespace($relativePath);
+            return [$rootNamespace . App::normalizeNamespace($relativePath), false];
         }
 
         $composerDir = dirname(FileHelper::absolutePath($this->composerFile, ds: '/'));
@@ -244,8 +315,7 @@ abstract class BaseGenerator extends BaseObject
         $composerConfig['autoload']['psr-4']["$newRootNamespace\\"] = $newRootPath;
         $this->controller->writeJson($this->composerFile, $composerConfig);
 
-        $addedRoot = true;
-        return $newRootNamespace;
+        return [$newRootNamespace, true];
     }
 
     /**
@@ -253,9 +323,8 @@ abstract class BaseGenerator extends BaseObject
      * constants, properties, and methods.
      *
      * @param string|null $className The class name
-     * @param PhpNamespace|null $namespace The namespace
      * @param string|null $baseClass The base class
-     * @param array $members Class members that should be added:
+     * @param array $members Class members from the base class that should be added:
      *
      * - `constants`: Array of constant names. You can use key/value pairs to override default values.
      * - `properties`: Array of property names. You can use key/value pairs to override default values.
@@ -267,25 +336,22 @@ abstract class BaseGenerator extends BaseObject
      */
     protected function createClass(
         ?string $className = null,
-        ?PhpNamespace $namespace = null,
         ?string $baseClass = null,
         array $members = [],
     ): ClassType {
-        $class = new ClassType($className, $namespace);
+        $class = new ClassType($className);
 
         if ($baseClass) {
             $class->setExtends($baseClass);
-        }
 
-        if (isset($members[self::CLASS_CONSTANTS])) {
-            foreach ($members[self::CLASS_CONSTANTS] as $constantName => $constantValue) {
-                if (is_string($constantName)) {
-                    $setValue = true;
-                } else {
-                    $constantName = $constantValue;
-                    $setValue = false;
-                }
-                if ($baseClass) {
+            if (isset($members[self::CLASS_CONSTANTS])) {
+                foreach ($members[self::CLASS_CONSTANTS] as $constantName => $constantValue) {
+                    if (is_string($constantName)) {
+                        $setValue = true;
+                    } else {
+                        $constantName = $constantValue;
+                        $setValue = false;
+                    }
                     $constantRef = new ReflectionClassConstant($baseClass, $constantName);
                     $constant = (new Factory())->fromConstantReflection($constantRef);
                     $constant->setComment($this->docBlock($constantRef));
@@ -293,21 +359,17 @@ abstract class BaseGenerator extends BaseObject
                         $constant->setValue($constantValue);
                     }
                     $class->addMember($constant);
-                } else {
-                    $class->addConstant($constantName, $setValue ? $constantValue : null);
                 }
             }
-        }
 
-        if (isset($members[self::CLASS_PROPERTIES])) {
-            foreach ($members[self::CLASS_PROPERTIES] as $propertyName => $propertyValue) {
-                if (is_string($propertyName)) {
-                    $setValue = true;
-                } else {
-                    $propertyName = $propertyValue;
-                    $setValue = false;
-                }
-                if ($baseClass) {
+            if (isset($members[self::CLASS_PROPERTIES])) {
+                foreach ($members[self::CLASS_PROPERTIES] as $propertyName => $propertyValue) {
+                    if (is_string($propertyName)) {
+                        $setValue = true;
+                    } else {
+                        $propertyName = $propertyValue;
+                        $setValue = false;
+                    }
                     $propertyRef = new ReflectionProperty($baseClass, $propertyName);
                     $property = (new Factory())->fromPropertyReflection($propertyRef);
                     $property->setComment($this->docBlock($propertyRef));
@@ -315,23 +377,17 @@ abstract class BaseGenerator extends BaseObject
                         $property->setValue($propertyValue);
                     }
                     $class->addMember($property);
-                } elseif ($setValue) {
-                    $class->addProperty($propertyName, $propertyValue);
-                } else {
-                    $class->addProperty($propertyName);
                 }
             }
-        }
 
-        if (isset($members[self::CLASS_METHODS])) {
-            foreach ($members[self::CLASS_METHODS] as $methodName => $methodBody) {
-                if (is_string($methodName)) {
-                    $setBody = true;
-                } else {
-                    $methodName = $methodBody;
-                    $setBody = false;
-                }
-                if ($baseClass) {
+            if (isset($members[self::CLASS_METHODS])) {
+                foreach ($members[self::CLASS_METHODS] as $methodName => $methodBody) {
+                    if (is_string($methodName)) {
+                        $setBody = true;
+                    } else {
+                        $methodName = $methodBody;
+                        $setBody = false;
+                    }
                     $methodRef = new ReflectionMethod($baseClass, $methodName);
                     $method = (new Factory())->fromMethodReflection($methodRef);
                     $method->setComment($this->docBlock($methodRef));
@@ -339,17 +395,8 @@ abstract class BaseGenerator extends BaseObject
                         $method->setBody($methodBody);
                     }
                     $class->addMember($method);
-                } else {
-                    $method = $class->addMethod($methodName);
-                    if ($setBody) {
-                        $method->setBody($methodBody);
-                    }
                 }
             }
-        }
-
-        if ($namespace) {
-            $namespace->add($class);
         }
 
         return $class;
@@ -452,5 +499,41 @@ abstract class BaseGenerator extends BaseObject
     protected function writePhpFile(string $file, PhpFile $phpFile): void
     {
         $this->controller->writeToFile($file, (new PsrPrinter())->printFile($phpFile));
+    }
+
+    /**
+     * Writes out a PHP class from a given namespace using [[PsrPrinter]].
+     *
+     * @param PhpNamespace $namespace The namespace populated with at least one class.
+     */
+    protected function writePhpClass(PhpNamespace $namespace): void
+    {
+        $classes = $namespace->getClasses();
+
+        if (empty($classes)) {
+            throw new InvalidArgumentException('The namespace doesn’t have any classes defined.');
+        }
+
+        $class = reset($classes);
+        $dir = $this->namespaceDir($namespace);
+        $path = sprintf('%s/%s.php', $dir, $class->getName());
+
+        $file = new PhpFile();
+        $file->addNamespace($namespace);
+        $this->writePhpFile($path, $file);
+    }
+
+    private function namespaceDir(PhpNamespace $namespace): string
+    {
+        $ns = $namespace->getName();
+
+        foreach (Composer::autoloadConfigFromFile($this->composerFile) as $rootNamespace => $rootPath) {
+            if (str_starts_with("$ns\\", $rootNamespace)) {
+                $rootDir = FileHelper::absolutePath($rootPath, dirname($this->composerFile), '/');
+                return FileHelper::absolutePath(substr($ns, strlen($rootNamespace)), $rootDir, '/');
+            }
+        }
+
+        throw new InvalidArgumentException("The namespace `$ns` isn’t autoloadable from `$this->composerFile`.");
     }
 }
