@@ -63,6 +63,10 @@ return ExitCode::OK;
 PHP);
 
         $this->writePhpClass($namespace);
+
+        $this->controller->stdout(PHP_EOL);
+        $this->controller->success('**Command created!**');
+
         return true;
     }
 

@@ -34,22 +34,19 @@ class Module extends BaseGenerator
             'ensureEmpty' => true,
         ]);
 
-        $this->controller->stdout(PHP_EOL . 'Generating module files…' . PHP_EOL);
-
         if (!file_exists($this->targetDir)) {
             $this->controller->createDirectory($this->targetDir);
         }
 
         // Module class
         $this->writeModuleClass();
-        $this->controller->stdout("Module files generated.\n\n");
 
-        $instructions = <<<MD
-**The module is ready to be installed!**
+        $message = <<<MD
+**Module created!**
 
 MD;
         if ($addedRoot) {
-            $instructions .= <<<MD
+            $message .= <<<MD
 Run the following command to ensure the module gets autoloaded:
 
 ```php
@@ -59,7 +56,7 @@ Run the following command to ensure the module gets autoloaded:
 MD;
         }
 
-        $instructions .= <<<MD
+        $message .= <<<MD
 To install the module, open `config/app.php` and add the following to the `return` array:
 
 ```
@@ -78,8 +75,10 @@ also include `'$this->id'` in the `bootstrap` array:
 ```
 MD;
 
-        $this->controller->success($this->controller->markdownToAnsi($instructions));
         $this->controller->stdout(PHP_EOL);
+        $this->controller->success($message);
+        $this->controller->stdout(PHP_EOL);
+
         return true;
     }
 

@@ -10,6 +10,8 @@ namespace craft\console\generators;
 use Craft;
 use craft\helpers\App;
 use Nette\PhpGenerator\PhpNamespace;
+use ReflectionClass;
+use yii\base\Application;
 use yii\helpers\Inflector;
 
 /**
@@ -81,6 +83,33 @@ PHP);
         }
 
         $this->writePhpClass($namespace);
+
+        $message = "**$this->humanName generator created!**";
+        if (!$this->module instanceof Application) {
+            $moduleFile = (new ReflectionClass($this->module))->getFileName();
+            $message .= "\n" . <<<MD
+Register it for Craft’s `make` command by adding the following code to `$moduleFile`:
+
+```
+use craft\\console\\controllers\\MakeController;
+use craft\\events\\RegisterComponentTypesEvent;
+use yii\\base\\Event;
+use $ns$name;
+
+Event::on(
+    MakeController::class,
+    MakeController::EVENT_REGISTER_GENERATOR_TYPES,
+    function(RegisterComponentTypesEvent \$event) {
+        \$event->types[] = $name::class;
+    }
+);
+```
+MD;
+        }
+
+        $this->controller->stdout(PHP_EOL);
+        $this->controller->success($message);
+
         return true;
     }
 
@@ -115,6 +144,9 @@ PHP);
 \$class->addComment(sprintf('%s $lowerHumanType', Inflector::camel2words(\$name)));
 
 \$this->writePhpClass(\$namespace);
+
+\$this->controller->stdout(PHP_EOL);
+\$this->controller->success("**$this->humanName created!**");
 return true;
 PHP,
         ];

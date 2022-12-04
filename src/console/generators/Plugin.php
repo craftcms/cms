@@ -119,7 +119,6 @@ class Plugin extends BaseGenerator
 
         $this->addEcs = $this->controller->confirm('Include ECS? (For automated code styling)', true);
         $this->addPhpStan = $this->controller->confirm('Include PHPStan? (For automated code quality checks)', true);
-        $this->controller->stdout(PHP_EOL . 'Generating plugin files…' . PHP_EOL);
 
         if (!file_exists($this->targetDir)) {
             $this->controller->createDirectory($this->targetDir);
@@ -148,8 +147,6 @@ class Plugin extends BaseGenerator
         // Plugin class
         $this->writePluginClass();
 
-        $this->controller->stdout("Plugin files generated.\n\n");
-
         $installCommands = <<<MD
 ```
 > composer require $this->packageName
@@ -175,12 +172,12 @@ MD;
                 }, glob($repoPath, $flags));
                 if (in_array($this->targetDir, $folders)) {
                     $message = <<<MD
-**The plugin is ready to be installed!**
-`$this->relativeTargetDir` is covered by the `{$repoConfig['url']}` repository in composer.json.
+**Plugin created!**
 To install the plugin, run the following commands:
 
 $installCommands
 MD;
+                    $this->controller->stdout(PHP_EOL);
                     $this->controller->success($message);
                     $this->controller->stdout(PHP_EOL);
                     return true;
@@ -234,7 +231,7 @@ MD;
         }
 
         $message = <<<MD
-**The plugin is ready to be installed!**
+**Plugin created!**
 A new repository has been added to composer.json for `$this->relativeTargetDir`.
 To install the plugin, run the following commands:
 
