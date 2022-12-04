@@ -11,9 +11,6 @@ use Craft;
 use craft\composer\InvalidPluginException;
 use craft\console\Controller;
 use craft\console\generators\BaseGenerator;
-use craft\console\generators\Command;
-use craft\console\generators\Module;
-use craft\console\generators\Plugin;
 use craft\events\RegisterComponentTypesEvent;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Composer;
@@ -251,11 +248,14 @@ class MakeController extends Controller
      */
     private function types(): array
     {
-        $types = [
-            Command::class,
-            Module::class,
-            Plugin::class,
-        ];
+        $generatorsDir = dirname(__DIR__) . '/generators';
+        $types = array_map(
+            fn(string $file) => sprintf('craft\\console\\generators\\%s', pathinfo($file, PATHINFO_FILENAME)),
+            FileHelper::findFiles($generatorsDir, [
+                'only' => ['*.php'],
+                'except' => ['BaseCommand.php'],
+            ])
+        );
 
         $event = new RegisterComponentTypesEvent([
             'types' => $types,
