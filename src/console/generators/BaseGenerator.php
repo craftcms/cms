@@ -109,12 +109,12 @@ abstract class BaseGenerator extends BaseObject
     /**
      * Prompts the user for a PHP namespace.
      *
-     * If [[baseNamespace]] is set, only namespaces within it will be allowed.
-     *
      * @param string $text The prompt text
      * @param array $options Prompt options:
      *
      * - `required` (bool): whether a value is required
+     * - `ensureContained` (bool): whether the namespace must be contained within [[baseNamespace]].
+     *   If this isn’t set, it will default to whether [[baseNamespace]] is set.
      * - `default` (string): the default value to use if no input is given
      * - `validator` (callable): a callable function to validate input. The function must accept two parameters:
      *     - `$namespace`: a normalized namespace based on the input value
@@ -128,9 +128,15 @@ abstract class BaseGenerator extends BaseObject
             throw new NotSupportedException('`pattern` is not supported by `namespacePrompt()`.');
         }
 
+        if (!isset($options['ensureContained'])) {
+            $options['ensureContained'] = isset($this->baseNamespace);
+        } elseif ($options['ensureContained'] && !isset($this->baseNamespace)) {
+            throw new NotSupportedException('`ensureContained` is only supported by `namespacePrompt()` if `baseNamespace` is set.');
+        }
+
         if (isset($options['default'])) {
             $options['default'] = App::normalizeNamespace($options['default']);
-            if ($this->baseNamespace && !str_starts_with("{$options['default']}\\", "$this->baseNamespace\\")) {
+            if ($options['ensureContained'] && !str_starts_with("{$options['default']}\\", "$this->baseNamespace\\")) {
                 throw new InvalidArgumentException("The default value must begin with the base namespace ($this->baseNamespace).");
             }
         }
@@ -143,7 +149,7 @@ abstract class BaseGenerator extends BaseObject
                     $error = 'Invalid namespace';
                     return false;
                 }
-                if ($this->baseNamespace && !str_starts_with("$namespace\\", "$this->baseNamespace\\")) {
+                if ($options['ensureContained'] && !str_starts_with("$namespace\\", "$this->baseNamespace\\")) {
                     $error = $this->controller->markdownToAnsi("The namespace must begin with `$this->baseNamespace`.");
                     return false;
                 }
@@ -170,9 +176,6 @@ abstract class BaseGenerator extends BaseObject
      * - `required` (bool): whether a value is required
      * - `allowNesting' (bool): whether the ID can be nested (e.g. `foo/bar/my-id`)
      * - `default` (string): the default value to use if no input is given
-     * - `validator` (callable): a callable function to validate input. The function must accept two parameters:
-     *     - `$input`: the input value
-     *     - `$error`: passed by reference, to be set to the error text if validation failed
      *
      * @return string
      */
@@ -180,6 +183,10 @@ abstract class BaseGenerator extends BaseObject
     {
         if (isset($options['pattern'])) {
             throw new NotSupportedException('`pattern` is not supported by `idPrompt()`.');
+        }
+
+        if (isset($options['validator'])) {
+            throw new NotSupportedException('`validator` is not supported by `idPrompt()`.');
         }
 
         return $this->controller->prompt($this->controller->markdownToAnsi("$text (kebab-case)"), [
@@ -195,9 +202,6 @@ abstract class BaseGenerator extends BaseObject
      *
      * - `required` (bool): whether a value is required
      * - `default` (string): the default value to use if no input is given
-     * - `validator` (callable): a callable function to validate input. The function must accept two parameters:
-     *     - `$input`: the input value
-     *     - `$error`: passed by reference, to be set to the error text if validation failed
      *
      * @return string
      */
@@ -207,9 +211,60 @@ abstract class BaseGenerator extends BaseObject
             throw new NotSupportedException('`pattern` is not supported by `classNamePrompt()`.');
         }
 
+        if (isset($options['validator'])) {
+            throw new NotSupportedException('`validator` is not supported by `classNamePrompt()`.');
+        }
+
         return $this->controller->prompt($this->controller->markdownToAnsi("$text (PascalCase)"), [
             'pattern' => '/^[a-z]\w*$/i',
         ] + $options);
+    }
+
+    /**
+     * Prompts the user for a fully-qualified PHP class.
+     *
+     * @param string $text The prompt text
+     * @param array $options Prompt options:
+     *
+     * - `required` (bool): whether a value is required
+     * - `ensureExists` (bool): whether the class must exist
+     * - `default` (string): the default value to use if no input is given
+     * - `validator` (callable): a callable function to validate input. The function must accept two parameters:
+     *     - `$class`: the normalized class name
+     *     - `$error`: passed by reference, to be set to the error text if validation failed
+     *
+     * @return string|null the normalized class
+     */
+    protected function classPrompt(string $text, array $options = []): ?string
+    {
+        if (isset($options['pattern'])) {
+            throw new NotSupportedException('`pattern` is not supported by `classPrompt()`.');
+        }
+
+        $class = $this->controller->prompt($this->controller->markdownToAnsi("$text (PascalCase)"), [
+            'validator' => function(string $input, ?string &$error) use ($options): bool {
+                try {
+                    $class = App::normalizeNamespace($input);
+                } catch (InvalidArgumentException) {
+                    $error = 'Invalid class';
+                    return false;
+                }
+                if ($options['ensureExists'] && !class_exists($class)) {
+                    $error = $this->controller->markdownToAnsi("`$class` does not exist.");
+                    return false;
+                }
+                if (isset($options['validator'])) {
+                    return $options['validator']($class, $error);
+                }
+                return true;
+            },
+        ] + $options);
+
+        if (!$class) {
+            return null;
+        }
+
+        return App::normalizeNamespace($class);
     }
 
     /**
@@ -337,6 +392,7 @@ abstract class BaseGenerator extends BaseObject
 
         $newRootNamespace = $this->namespacePrompt("What should the root namespace for `$newRootPath` be?", [
             'required' => true,
+            'ensureContained' => isset($this->baseNamespace),
         ]);
 
         $composerConfig = Json::decodeFromFile($this->composerFile);
