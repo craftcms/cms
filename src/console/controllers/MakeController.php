@@ -270,7 +270,7 @@ class MakeController extends Controller
             fn(string $file) => sprintf('craft\\console\\generators\\%s', pathinfo($file, PATHINFO_FILENAME)),
             FileHelper::findFiles($generatorsDir, [
                 'only' => ['*.php'],
-                'except' => ['BaseCommand.php'],
+                'except' => ['BaseGenerator.php'],
             ])
         );
 
