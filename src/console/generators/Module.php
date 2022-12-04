@@ -25,9 +25,8 @@ class Module extends BaseGenerator
 
     public function run(): bool
     {
-        $this->id = $this->controller->prompt('Module ID: (kebab-cased)', [
+        $this->id = $this->idPrompt('Module ID:', [
             'required' => true,
-            'pattern' => '/^[a-z]([a-z0-9\\-]*[a-z0-9])?$/',
         ]);
 
         [$this->targetDir, $this->rootNamespace, $addedRoot] = $this->autoloadableDirectoryPrompt('Module location:', [

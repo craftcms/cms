@@ -58,7 +58,7 @@ class Plugin extends BaseGenerator
 
         $this->handle = $this->controller->prompt('Plugin handle:', [
             'default' => ($this->public ? '' : '_') . StringHelper::toKebabCase($this->name),
-            'pattern' => '/^\_?[a-z]([a-z\\-]*[a-z])?$/',
+            'pattern' => sprintf('/^\_?%s$/', self::ID_PATTERN),
         ]);
 
         if (!$this->public) {

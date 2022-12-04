@@ -24,7 +24,7 @@ class AssetBundle extends BaseGenerator
 {
     public function run(): bool
     {
-        $name = $this->classNamePrompt('Asset bundle name: (PascalCase)', [
+        $name = $this->classNamePrompt('Asset bundle name:', [
             'required' => true,
         ]);
         $name = StringHelper::removeRight($name, 'Asset');

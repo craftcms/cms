@@ -42,6 +42,8 @@ abstract class BaseGenerator extends BaseObject
     protected const CLASS_PROPERTIES = 'properties';
     protected const CLASS_METHODS = 'methods';
 
+    protected const ID_PATTERN = '[a-z]([a-z0-9\\-]*[a-z0-9])?';
+
     /**
      * Returns the CLI-facing name of the generator in kebab-case.
      *
@@ -160,6 +162,32 @@ abstract class BaseGenerator extends BaseObject
     }
 
     /**
+     * Prompts the user for an ID, such as a module ID or action name (kebab-case).
+     *
+     * @param string $text The prompt text
+     * @param array $options Prompt options:
+     *
+     * - `required` (bool): whether a value is required
+     * - `allowNesting' (bool): whether the ID can be nested (e.g. `foo/bar/my-id`)
+     * - `default` (string): the default value to use if no input is given
+     * - `validator` (callable): a callable function to validate input. The function must accept two parameters:
+     *     - `$input`: the input value
+     *     - `$error`: passed by reference, to be set to the error text if validation failed
+     *
+     * @return string
+     */
+    protected function idPrompt(string $text, array $options = []): string
+    {
+        if (isset($options['pattern'])) {
+            throw new NotSupportedException('`pattern` is not supported by `namespacePrompt()`.');
+        }
+
+        return $this->controller->prompt($this->controller->markdownToAnsi("$text (kebab-case)"), [
+            'pattern' => sprintf('/^%s%s$/', !empty($options['allowNesting']) ? '([a-z][a-z0-9]*\\/)*' : '', self::ID_PATTERN),
+        ] + $options);
+    }
+
+    /**
      * Prompts the user for a PHP class name.
      *
      * @param string $text The prompt text
@@ -171,15 +199,15 @@ abstract class BaseGenerator extends BaseObject
      *     - `$input`: the input value
      *     - `$error`: passed by reference, to be set to the error text if validation failed
      *
-     * @return string|null The normalized namespace
+     * @return string
      */
-    protected function classNamePrompt(string $text, array $options = [])
+    protected function classNamePrompt(string $text, array $options = []): string
     {
         if (isset($options['pattern'])) {
             throw new NotSupportedException('`pattern` is not supported by `namespacePrompt()`.');
         }
 
-        return $this->controller->prompt($this->controller->markdownToAnsi($text), [
+        return $this->controller->prompt($this->controller->markdownToAnsi("$text (PascalCase)"), [
             'pattern' => '/^[a-z]\w*$/i',
         ] + $options);
     }

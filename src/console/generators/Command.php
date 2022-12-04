@@ -25,9 +25,9 @@ class Command extends BaseGenerator
 {
     public function run(): bool
     {
-        $relId = $this->controller->prompt('Command ID: (kebab-case)', [
+        $relId = $this->idPrompt('Command ID:', [
             'required' => true,
-            'pattern' => '/^([a-z][a-z0-9]*\\/)*[a-z]([a-z0-9\\-]*[a-z0-9])?$/',
+            'allowNesting' => true,
         ]);
 
         $idParts = explode('/', $relId);
