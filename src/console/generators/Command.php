@@ -28,7 +28,9 @@ class Command extends BaseGenerator
             'pattern' => '/^[a-z]([a-z0-9\\-]*[a-z0-9])?$/',
         ]);
 
-        $ns = $this->autoloadedNamespacePrompt('Namespace:', 'console\\controllers');
+        $ns = $this->namespacePrompt('Command namespace:', [
+            'default' => "$this->baseNamespace\\console\\controllers",
+        ]);
 
         $namespace = (new PhpNamespace($ns))
             ->addUse(Craft::class)

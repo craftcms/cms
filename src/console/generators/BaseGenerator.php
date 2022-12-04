@@ -10,7 +10,6 @@ namespace craft\console\generators;
 use Craft;
 use craft\console\controllers\MakeController;
 use craft\helpers\App;
-use craft\helpers\ArrayHelper;
 use craft\helpers\Composer;
 use craft\helpers\FileHelper;
 use craft\helpers\Json;
@@ -88,6 +87,13 @@ abstract class BaseGenerator extends BaseObject
     public string $basePath;
 
     /**
+     * @var string|null The base namespace that the generator is working with.
+     *
+     * This will be set for all module and plugin component generators.
+     */
+    public ?string $baseNamespace;
+
+    /**
      * @var string The path to `composer.json`.
      */
     public string $composerFile;
@@ -101,6 +107,8 @@ abstract class BaseGenerator extends BaseObject
 
     /**
      * Prompts the user for a PHP namespace.
+     *
+     * If [[baseNamespace]] is set, only namespaces within it will be allowed.
      *
      * @param string $text The prompt text
      * @param array $options Prompt options:
@@ -119,12 +127,23 @@ abstract class BaseGenerator extends BaseObject
             throw new NotSupportedException('`pattern` is not supported by `namespacePrompt()`.');
         }
 
+        if (isset($options['default'])) {
+            $options['default'] = App::normalizeNamespace($options['default']);
+            if ($this->baseNamespace && !str_starts_with("{$options['default']}\\", "$this->baseNamespace\\")) {
+                throw new InvalidArgumentException("The default value must begin with the base namespace ($this->baseNamespace).");
+            }
+        }
+
         $namespace = $this->controller->prompt($this->controller->markdownToAnsi($text), [
             'validator' => function(string $input, ?string &$error) use ($options): bool {
                 try {
                     $namespace = App::normalizeNamespace($input);
                 } catch (InvalidArgumentException) {
                     $error = 'Invalid namespace';
+                    return false;
+                }
+                if ($this->baseNamespace && !str_starts_with("$namespace\\", "$this->baseNamespace\\")) {
+                    $error = $this->controller->markdownToAnsi("The namespace must begin with `$this->baseNamespace`.");
                     return false;
                 }
                 if (isset($options['validator'])) {
@@ -139,49 +158,6 @@ abstract class BaseGenerator extends BaseObject
         }
 
         return App::normalizeNamespace($namespace);
-    }
-
-    /**
-     * Prompts the user for a PHP namespace that’s autoloaded by composer.json
-     *
-     * @param string $text The prompt text
-     * @param string $relativeDefault The default value to use, relative to the first autoload root’s namespace
-     * @return string The normalized namespace
-     */
-    protected function autoloadedNamespacePrompt(string $text, string $relativeDefault): string
-    {
-        $rootNamespace = ArrayHelper::firstKey(Composer::autoloadConfigFromFile($this->composerFile));
-        if ($relativeDefault) {
-            $default = $rootNamespace . $relativeDefault;
-        } else {
-            $default = rtrim($rootNamespace, '\\');
-        }
-
-        return $this->namespacePrompt($text, [
-            'required' => true,
-            'default' => $default,
-            'validator' => function(string $namespace, string &$error): bool {
-                $rootNamespaces = array_keys(Composer::autoloadConfigFromFile($this->composerFile));
-                foreach ($rootNamespaces as $rootNamespace) {
-                    if (str_starts_with($namespace, $rootNamespace)) {
-                        return true;
-                    }
-                }
-                if (count($rootNamespaces) === 1) {
-                    $error = $this->controller->markdownToAnsi(sprintf(
-                        'The namespace must begin with `%s`.',
-                        reset($rootNamespaces),
-                    ));
-                } else {
-                    $error = $this->controller->markdownToAnsi(sprintf(
-                        'The namespace must begin with one of the autoload roots in `%s`:%s',
-                        $this->composerFile,
-                        implode('', array_map(fn(string $rootNamespace) => "\n - `$rootNamespace`", $rootNamespaces)),
-                    ));
-                }
-                return false;
-            },
-        ]);
     }
 
     /**

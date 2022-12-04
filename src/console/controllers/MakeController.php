@@ -12,6 +12,7 @@ use craft\composer\InvalidPluginException;
 use craft\console\Controller;
 use craft\console\generators\BaseGenerator;
 use craft\events\RegisterComponentTypesEvent;
+use craft\helpers\App;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Composer;
 use craft\helpers\Console;
@@ -149,7 +150,8 @@ class MakeController extends Controller
 
             $module = null;
             $basePath = FileHelper::normalizePath(Craft::getAlias('@root'), '/');
-            $composerFile = Craft::$app->getComposer()->getJsonPath();
+            $composerFile = FileHelper::normalizePath(Craft::$app->getComposer()->getJsonPath(), '/');
+            $baseNamespace = null;
         } else {
             if ($usedParamCount === 0) {
                 $this->stdout("`make $type` must specify an --app, --module, or --plugin option.\n", Console::FG_RED);
@@ -178,17 +180,31 @@ class MakeController extends Controller
             }
 
             $basePath = FileHelper::normalizePath($module->getBasePath(), '/');
-            $composerFile = FileHelper::findClosestFile($basePath, [
+            $composerFile = FileHelper::normalizePath(FileHelper::findClosestFile($basePath, [
                 'only' => ['composer.json'],
-            ]);
+            ]), '/');
 
             if (!$composerFile) {
                 $this->stdout("No `composer.json` file found at or above `$basePath`.\n", Console::FG_RED);
                 return ExitCode::UNSPECIFIED_ERROR;
             }
 
-            if (empty(Composer::autoloadConfigFromFile($composerFile))) {
-                $this->stdout("No autoload roots are defined in $composerFile.\n", Console::FG_RED);
+            // Make sure we have an autoload root that encompasses the module's base path
+            $composerDir = dirname($composerFile);
+            $baseNamespace = null;
+            foreach (Composer::autoloadConfigFromFile($composerFile) as $rootNamespace => $rootPath) {
+                $rootDir = FileHelper::absolutePath($rootPath, $composerDir);
+                if ($rootDir === $basePath) {
+                    $baseNamespace = rtrim($rootNamespace, '\\');
+                    break;
+                } elseif (FileHelper::isWithin($basePath, $rootDir)) {
+                    $relativeBasePath = FileHelper::relativePath($basePath, $rootDir);
+                    $baseNamespace = sprintf('%s\\%s', $rootNamespace, App::normalizeNamespace($relativeBasePath));
+                    break;
+                }
+            }
+            if ($baseNamespace === null) {
+                $this->stdout("$basePath is not autoloadable from any of the autoload roots in $composerFile.\n", Console::FG_RED);
                 return ExitCode::UNSPECIFIED_ERROR;
             }
         }
@@ -210,6 +226,7 @@ class MakeController extends Controller
             'controller' => $this,
             'module' => $module,
             'basePath' => $basePath,
+            'baseNamespace' => $baseNamespace,
             'composerFile' => $composerFile,
         ]);
 
