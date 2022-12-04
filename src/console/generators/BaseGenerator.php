@@ -16,7 +16,6 @@ use craft\helpers\Json;
 use craft\helpers\StringHelper;
 use Generator;
 use Nette\PhpGenerator\ClassType;
-use Nette\PhpGenerator\Constant;
 use Nette\PhpGenerator\Factory;
 use Nette\PhpGenerator\PhpFile;
 use Nette\PhpGenerator\PhpNamespace;
@@ -306,7 +305,31 @@ abstract class BaseGenerator extends BaseObject
      * - `properties`: Array of property names. You can use key/value pairs to override default values.
      * - `methods`: Array of method names. You can use key/value pairs to override the method bodies.
      *
-     *  If a base class is defined, their signatures and docblocks will be pulled in from there.
+     * Note that if any constants, properties, or method parameters are set to a constant, the constant’s *value* will
+     * be copied instead of the constant name. If you want to use the constant name, override the value:
+     *
+     * ```php
+     * use Nette\PhpGenerator\Literal;
+     *
+     * $class = $this->>createClass('ClassName', MyBaseClass::class, [
+     *     'constants' => [
+     *         'MY_CONSTANT' => new Literal('self::FOO'),
+     *     ],
+     *     'properties' => [
+     *         'myProperty' => new Literal('self::FOO'),
+     *     ],
+     *     'methods' => [
+     *         'myMethod',
+     *     ],
+     * ]);
+     *
+     * foreach ($class->getMethod('myMethod')->getParameters() as $parameter) {
+     *     if ($parameter->getName() === 'myParameter') {
+     *         $parameter->setDefaultValue(new Literal('self::FOO'));
+     *         break;
+     *     }
+     * }
+     * ```
      *
      * @return ClassType
      */
