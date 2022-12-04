@@ -131,7 +131,6 @@ MD;
 
 \$namespace = (new PhpNamespace(\$ns))
     ->addUse(Craft::class)
-    ->addUse(BaseGenerator::class)
     ->addUse($baseClass::class);
 
 \$class = \$this->createClass(\$name, $baseClass::class, [
