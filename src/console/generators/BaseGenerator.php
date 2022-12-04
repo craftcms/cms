@@ -179,7 +179,7 @@ abstract class BaseGenerator extends BaseObject
     protected function idPrompt(string $text, array $options = []): string
     {
         if (isset($options['pattern'])) {
-            throw new NotSupportedException('`pattern` is not supported by `namespacePrompt()`.');
+            throw new NotSupportedException('`pattern` is not supported by `idPrompt()`.');
         }
 
         return $this->controller->prompt($this->controller->markdownToAnsi("$text (kebab-case)"), [
@@ -204,7 +204,7 @@ abstract class BaseGenerator extends BaseObject
     protected function classNamePrompt(string $text, array $options = []): string
     {
         if (isset($options['pattern'])) {
-            throw new NotSupportedException('`pattern` is not supported by `namespacePrompt()`.');
+            throw new NotSupportedException('`pattern` is not supported by `classNamePrompt()`.');
         }
 
         return $this->controller->prompt($this->controller->markdownToAnsi("$text (PascalCase)"), [
