@@ -241,7 +241,7 @@ abstract class BaseGenerator extends BaseObject
             throw new NotSupportedException('`pattern` is not supported by `classPrompt()`.');
         }
 
-        $class = $this->controller->prompt($this->controller->markdownToAnsi("$text (PascalCase)"), [
+        $class = $this->controller->prompt($this->controller->markdownToAnsi($text), [
             'validator' => function(string $input, ?string &$error) use ($options): bool {
                 try {
                     $class = App::normalizeNamespace($input);
@@ -498,6 +498,7 @@ abstract class BaseGenerator extends BaseObject
                     }
                     $methodRef = new ReflectionMethod($baseClass, $methodName);
                     $method = (new Factory())->fromMethodReflection($methodRef);
+                    $method->setAbstract(false);
                     $method->setComment($this->docBlock($methodRef));
                     if ($setBody) {
                         $method->setBody($methodBody);
