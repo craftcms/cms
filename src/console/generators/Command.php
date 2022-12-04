@@ -9,8 +9,10 @@ namespace craft\console\generators;
 
 use Craft;
 use craft\console\Controller;
+use craft\helpers\App;
 use craft\helpers\StringHelper;
 use Nette\PhpGenerator\PhpNamespace;
+use yii\base\Application;
 use yii\console\ExitCode;
 
 /**
@@ -23,33 +25,38 @@ class Command extends BaseGenerator
 {
     public function run(): bool
     {
-        $name = $this->controller->prompt('Command name: (kebab-case)', [
+        $relId = $this->controller->prompt('Command ID: (kebab-case)', [
             'required' => true,
-            'pattern' => '/^[a-z]([a-z0-9\\-]*[a-z0-9])?$/',
+            'pattern' => '/^([a-z][a-z0-9]*\\/)*[a-z]([a-z0-9\\-]*[a-z0-9])?$/',
         ]);
+
+        $idParts = explode('/', $relId);
+        $id = array_pop($idParts);
+        $className = sprintf('%sController', StringHelper::toPascalCase($id));
 
         $ns = $this->namespacePrompt('Command namespace:', [
             'default' => "$this->baseNamespace\\console\\controllers",
         ]);
+        $ns = App::normalizeNamespace(sprintf('%s\\%s', $ns, implode('\\', $idParts)));
 
         $namespace = (new PhpNamespace($ns))
             ->addUse(Craft::class)
             ->addUse(Controller::class)
             ->addUse(ExitCode::class);
 
-        $className = sprintf('%sController', StringHelper::toPascalCase($name));
         $class = $this->createClass($className, Controller::class, [
             self::CLASS_PROPERTIES => $this->properties(),
             self::CLASS_METHODS => $this->methods(),
         ]);
         $namespace->add($class);
 
-        $class->addComment(sprintf('%s controller', StringHelper::toTitleCase(str_replace('-', ' ', $name))));
+        $class->addComment(sprintf('%s controller', StringHelper::toTitleCase(str_replace('-', ' ', $id))));
 
+        $uniqueId = $this->module instanceof Application ? $relId : sprintf('%s/%s', $this->module->getUniqueId(), $relId);
         $class->addMethod('actionIndex')
             ->setPublic()
             ->setReturnType('int')
-            ->setComment('Default action')
+            ->setComment("$uniqueId command")
             ->setBody(<<<PHP
 // ...
 return ExitCode::OK;
