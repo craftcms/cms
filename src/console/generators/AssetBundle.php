@@ -42,7 +42,7 @@ class AssetBundle extends BaseGenerator
         ]);
         $namespace->add($class);
 
-        $class->addComment(sprintf('%s asset bundle', StringHelper::toTitleCase(Inflector::camel2words($name))));
+        $class->addComment(sprintf('%s asset bundle', Inflector::camel2words($name)));
 
         $this->writePhpClass($namespace);
 
