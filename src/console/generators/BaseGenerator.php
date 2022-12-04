@@ -160,6 +160,31 @@ abstract class BaseGenerator extends BaseObject
     }
 
     /**
+     * Prompts the user for a PHP class name.
+     *
+     * @param string $text The prompt text
+     * @param array $options Prompt options:
+     *
+     * - `required` (bool): whether a value is required
+     * - `default` (string): the default value to use if no input is given
+     * - `validator` (callable): a callable function to validate input. The function must accept two parameters:
+     *     - `$input`: the input value
+     *     - `$error`: passed by reference, to be set to the error text if validation failed
+     *
+     * @return string|null The normalized namespace
+     */
+    protected function classNamePrompt(string $text, array $options = [])
+    {
+        if (isset($options['pattern'])) {
+            throw new NotSupportedException('`pattern` is not supported by `namespacePrompt()`.');
+        }
+
+        return $this->controller->prompt($this->controller->markdownToAnsi($text), [
+            'pattern' => '/^[a-z]\w*$/i',
+        ] + $options);
+    }
+
+    /**
      * Prompts the user for the path to a directory.
      *
      * @param string $text The prompt text
@@ -514,25 +539,30 @@ abstract class BaseGenerator extends BaseObject
         }
 
         $class = reset($classes);
-        $dir = $this->namespaceDir($namespace);
-        $path = sprintf('%s/%s.php', $dir, $class->getName());
+        $basePath = $this->namespacePath($namespace->getName());
+        $path = sprintf('%s/%s.php', $basePath, $class->getName());
 
         $file = new PhpFile();
         $file->addNamespace($namespace);
         $this->writePhpFile($path, $file);
     }
 
-    private function namespaceDir(PhpNamespace $namespace): string
+    /**
+     * Returns the path that corresponds to a given namespace.
+     *
+     * @param string $namespace
+     * @return string
+     * @throws InvalidArgumentException if the namespace isn’t autoloadable from [[composerFile]].
+     */
+    protected function namespacePath(string $namespace): string
     {
-        $ns = $namespace->getName();
-
         foreach (Composer::autoloadConfigFromFile($this->composerFile) as $rootNamespace => $rootPath) {
-            if (str_starts_with("$ns\\", $rootNamespace)) {
+            if (str_starts_with("$namespace\\", $rootNamespace)) {
                 $rootDir = FileHelper::absolutePath($rootPath, dirname($this->composerFile), '/');
-                return FileHelper::absolutePath(substr($ns, strlen($rootNamespace)), $rootDir, '/');
+                return FileHelper::absolutePath(substr($namespace, strlen($rootNamespace)), $rootDir, '/');
             }
         }
 
-        throw new InvalidArgumentException("The namespace `$ns` isn’t autoloadable from `$this->composerFile`.");
+        throw new InvalidArgumentException("The namespace `$namespace` isn’t autoloadable from `$this->composerFile`.");
     }
 }
