@@ -857,7 +857,6 @@ class AssetQuery extends ElementQuery
             'assets.uploaderId',
             'assets.filename',
             'assets.kind',
-            'assets.alt',
             'assets.width',
             'assets.height',
             'assets.size',
@@ -865,6 +864,7 @@ class AssetQuery extends ElementQuery
             'assets.keptFile',
             'assets.dateModified',
             'volumeFolders.path AS folderPath',
+            'elements_sites.alt',
         ]);
 
         if ($this->volumeId) {
@@ -911,7 +911,7 @@ class AssetQuery extends ElementQuery
         }
 
         if ($this->hasAlt !== null) {
-            $this->subQuery->andWhere($this->hasAlt ? ['not', ['assets.alt' => null]] : ['assets.alt' => null]);
+            $this->subQuery->andWhere($this->hasAlt ? ['not', ['elements_sites.alt' => null]] : ['elements_sites.alt' => null]);
         }
 
         if ($this->width) {

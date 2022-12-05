@@ -43,6 +43,7 @@ use craft\events\ElementQueryEvent;
 use craft\events\InvalidateElementCachesEvent;
 use craft\events\MergeElementsEvent;
 use craft\events\RegisterComponentTypesEvent;
+use craft\fieldlayoutelements\assets\AltField;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Component as ComponentHelper;
 use craft\helpers\DateTimeHelper;
@@ -2958,6 +2959,7 @@ class Elements extends Component
 
             $siteSettingsRecord->slug = $element->slug;
             $siteSettingsRecord->uri = $element->uri;
+            $siteSettingsRecord->alt = $element->alt;
 
             // Avoid `enabled` getting marked as dirty if it’s not really changing
             $enabledForSite = $element->getEnabledForSite();
@@ -2971,6 +2973,9 @@ class Elements extends Component
                     'slug',
                     'uri',
                 ])));
+                if ($siteSettingsRecord->isAttributeChanged('alt')) {
+                    $dirtyAttributes[] = 'alt';
+                }
                 if ($siteSettingsRecord->isAttributeChanged('enabled')) {
                     $dirtyAttributes[] = 'enabledForSite';
                 }

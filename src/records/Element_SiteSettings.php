@@ -19,6 +19,7 @@ use yii\db\ActiveQueryInterface;
  * @property int $siteId Site ID
  * @property string $slug Slug
  * @property string $uri URI
+ * @property string $alt Alt Text for assets
  * @property bool $enabled Enabled
  * @property Element $element Element
  * @property Site $site Site

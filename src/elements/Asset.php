@@ -2431,7 +2431,7 @@ JS;
             $record->folderId = (int)$this->folderId;
             $record->uploaderId = (int)$this->uploaderId ?: null;
             $record->kind = $this->kind;
-            $record->alt = $this->alt;
+            //$record->alt = $this->alt;
             $record->size = (int)$this->size ?: null;
             $record->width = (int)$this->_width ?: null;
             $record->height = (int)$this->_height ?: null;
