@@ -107,6 +107,16 @@ abstract class BaseGenerator extends BaseObject
     abstract public function run(): bool;
 
     /**
+     * Returns the module’s file path.
+     *
+     * @return string
+     */
+    protected function moduleFile(): string
+    {
+        return (new ReflectionClass($this->module))->getFileName();
+    }
+
+    /**
      * Prompts the user for a PHP namespace.
      *
      * @param string $text The prompt text

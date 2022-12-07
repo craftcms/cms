@@ -10,7 +10,6 @@ namespace craft\console\generators;
 use Craft;
 use craft\helpers\App;
 use Nette\PhpGenerator\PhpNamespace;
-use ReflectionClass;
 use yii\base\Application;
 use yii\helpers\Inflector;
 
@@ -86,7 +85,7 @@ PHP);
 
         $message = "**$this->humanName generator created!**";
         if (!$this->module instanceof Application) {
-            $moduleFile = (new ReflectionClass($this->module))->getFileName();
+            $moduleFile = $this->moduleFile();
             $message .= "\n" . <<<MD
 Register it for Craft’s `make` command by adding the following code to `$moduleFile`:
 
