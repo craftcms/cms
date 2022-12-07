@@ -21,7 +21,7 @@ use yii\helpers\Inflector;
  */
 class Generator extends BaseGenerator
 {
-    private string $humanName;
+    private string $displayName;
     private string $baseClassName;
     private ?string $baseClassAlias = null;
     private string $defaultNamespace;
@@ -36,10 +36,10 @@ class Generator extends BaseGenerator
             'default' => "$this->baseNamespace\\console\\generators",
         ]);
 
-        $this->humanName = ucfirst(Inflector::camel2words($name, false));
-        $pluralHumanName = Inflector::pluralize(strtolower($this->humanName));
+        $this->displayName = ucfirst(Inflector::camel2words($name, false));
+        $pluralDisplayName = Inflector::pluralize(strtolower($this->displayName));
 
-        $baseClass = $this->classPrompt("Base class for generated $pluralHumanName:", [
+        $baseClass = $this->classPrompt("Base class for generated $pluralDisplayName:", [
             'required' => true,
             'ensureExists' => true,
         ]);
@@ -50,9 +50,9 @@ class Generator extends BaseGenerator
             $this->baseClassAlias = "Base$this->baseClassName";
         }
 
-        $this->defaultNamespace = $this->namespacePrompt("Default namespace for generated $pluralHumanName (relative to the base namespace):", [
+        $this->defaultNamespace = $this->namespacePrompt("Default namespace for generated $pluralDisplayName (relative to the base namespace):", [
             'ensureContained' => false,
-            'default' => str_replace(' ', '', $pluralHumanName),
+            'default' => str_replace(' ', '', $pluralDisplayName),
         ]);
 
         $namespace = (new PhpNamespace($ns))
@@ -66,8 +66,7 @@ class Generator extends BaseGenerator
             self::CLASS_METHODS => $this->methods(),
         ]);
         $namespace->add($class);
-
-        $class->addComment("$this->humanName generator");
+        $class->addComment(sprintf('Creates a new %s.', strtolower($this->displayName)));
 
         $baseGeneratorClass = BaseGenerator::class;
         foreach (['constants', 'properties', 'methods'] as $type) {
@@ -75,7 +74,7 @@ class Generator extends BaseGenerator
                 ->setPrivate()
                 ->setReturnType('array')
                 ->setBody(<<<PHP
-// List any $type that should be copied into generated $pluralHumanName from $baseClass
+// List any $type that should be copied into generated $pluralDisplayName from $baseClass
 // (see `$baseGeneratorClass::createClass()`)
 return [];
 PHP);
@@ -83,7 +82,7 @@ PHP);
 
         $this->writePhpClass($namespace);
 
-        $message = "**$this->humanName generator created!**";
+        $message = "**$this->displayName generator created!**";
         if (!$this->module instanceof Application) {
             $moduleFile = $this->moduleFile();
             $message .= "\n" . <<<MD
@@ -114,17 +113,17 @@ MD;
 
     private function methods(): array
     {
-        $lowerHumanType = strtolower($this->humanName);
+        $lowerHumanType = strtolower($this->displayName);
         $baseClass = $this->baseClassAlias ?? $this->baseClassName;
         $slashedDefaultNamespace = addslashes($this->defaultNamespace);
 
         return [
             'run' => <<<PHP
-\$name = \$this->classNamePrompt('$this->humanName name:', [
+\$name = \$this->classNamePrompt('$this->displayName name:', [
     'required' => true,
 ]);
 
-\$ns = \$this->namespacePrompt('$this->humanName namespace:', [
+\$ns = \$this->namespacePrompt('$this->displayName namespace:', [
     'default' => "\$this->baseNamespace\\\\$slashedDefaultNamespace",
 ]);
 
@@ -144,7 +143,7 @@ MD;
 \$this->writePhpClass(\$namespace);
 
 \$this->controller->stdout(PHP_EOL);
-\$this->controller->success("**$this->humanName created!**");
+\$this->controller->success("**$this->displayName created!**");
 return true;
 PHP,
         ];

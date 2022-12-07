@@ -18,7 +18,7 @@ use yii\web\Application;
 use yii\web\Response;
 
 /**
- * Element type generator
+ * Creates a new element type.
  */
 class ElementType extends BaseGenerator
 {
