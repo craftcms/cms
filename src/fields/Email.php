@@ -15,6 +15,7 @@ use craft\base\PreviewableFieldInterface;
 use craft\fields\conditions\TextFieldConditionRule;
 use craft\helpers\App;
 use craft\helpers\Cp;
+use craft\helpers\ElementHelper;
 use craft\helpers\Html;
 use craft\helpers\StringHelper;
 use yii\db\Schema;
@@ -150,10 +151,6 @@ class Email extends Field implements PreviewableFieldInterface, CopyableFieldInt
      */
     public function getIsCopyable(?ElementInterface $element = null): bool
     {
-        if (!Craft::$app->getIsMultiSite() || $element === null || isset($element->ownerId)) {
-            return false;
-        }
-
-        return true;
+        return $this->getIsTranslatable($element) && ElementHelper::supportsFieldCopying($element);
     }
 }

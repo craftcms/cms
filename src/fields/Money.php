@@ -377,10 +377,6 @@ JS;
      */
     public function getIsCopyable(?ElementInterface $element = null): bool
     {
-        if (!Craft::$app->getIsMultiSite() || $element === null || isset($element->ownerId)) {
-            return false;
-        }
-
-        return true;
+        return $this->getIsTranslatable($element) && ElementHelper::supportsFieldCopying($element);
     }
 }

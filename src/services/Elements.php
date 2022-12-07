@@ -14,6 +14,7 @@ use craft\base\ElementActionInterface;
 use craft\base\ElementExporterInterface;
 use craft\base\ElementInterface;
 use craft\base\ExpirableElementInterface;
+use craft\base\Field;
 use craft\behaviors\DraftBehavior;
 use craft\behaviors\RevisionBehavior;
 use craft\db\Query;
@@ -2259,7 +2260,7 @@ class Elements extends Component
      * Copy value of a field from another site
      *
      * @param ElementInterface $element
-     * @param string $fieldHandle
+     * @param null|string $fieldHandle
      * @param int $copyFromSiteId
      * @return array
      * @throws ElementNotFoundException
@@ -2268,11 +2269,8 @@ class Elements extends Component
      * @throws \craft\errors\InvalidFieldException
      * @throws \yii\db\Exception
      */
-    public function copyFieldValueFromSite(ElementInterface $element, string $fieldHandle, int $copyFromSiteId): array
+    public function copyFieldValuesFromSite(ElementInterface $element, ?string $fieldHandle, int $copyFromSiteId): array
     {
-        // reserved $fieldHandles which we need to treat differently
-        $reservedHandles = ['title', 'slug'];
-
         // get element for selected site
         /** @var string|ElementInterface $elementType */
         $elementType = get_class($element);
@@ -2303,20 +2301,42 @@ class Elements extends Component
             }
 
             $valueChanged = false;
-            if (in_array($fieldHandle, $reservedHandles) && $element->{$fieldHandle} != $fromElement->{$fieldHandle}) {
-                $element->{$fieldHandle} = $fromElement->{$fieldHandle};
-                $valueChanged = true;
-            } else {
-                if (($field = Craft::$app->fields->getFieldByHandle($fieldHandle)) !== null && $field instanceof CopyableFieldInterface) {
-                    $field->copyValueBetweenSites($fromElement, $element);
-                    if (
-                        $field->serializeValue($element->getFieldValue($fieldHandle)) !=
-                        $field->serializeValue($originalElement->getFieldValue($fieldHandle))
-                    ) {
+
+            // if $fieldHandle === null - we're doing it for all element's fields
+            if ($fieldHandle === null) {
+                $customFields = $element->getFieldLayout()?->getVisibleCustomFields($element);
+                $translatableFields = array_map(function($field) {
+                    /** @var Field $field */
+                    return $field->handle;
+                },
+                    array_filter($customFields,
+                        fn($field) => $field instanceof CopyableFieldInterface && $field->getIsCopyable($element)
+                    )
+                );
+
+                $fields = $element->fields();
+                $translatableFields = array_merge(
+                    $translatableFields,
+                    array_map(function($field) {
+                        return $field->attribute();
+                    },
+                        array_filter(
+                            $element->getFieldLayout()?->getAvailableNativeFields(),
+                            fn($field) => isset($fields[$field->attribute()]) && $field->isCopyable($element)
+                        )
+                    )
+                );
+
+                foreach ($translatableFields as $translatableField) {
+                    $changed = $this->_copyFieldValue($element, $fromElement, $originalElement, $translatableField);
+                    if ($changed === true && $valueChanged !== true) {
                         $valueChanged = true;
                     }
                 }
+            } else {
+                $valueChanged = $this->_copyFieldValue($element, $fromElement, $originalElement, $fieldHandle);
             }
+
 
             if (!$valueChanged) {
                 $transaction->rollBack();
@@ -2330,7 +2350,7 @@ class Elements extends Component
             if (!$this->saveElement($element, true, false, false)) {
                 return [
                     'success' => false,
-                    'message' => Craft::t('app', 'Couldn’t copy the value.'),
+                    'message' => Craft::t('app', 'Couldn’t copy content.'),
                     'element' => $element,
                 ];
             }
@@ -2338,13 +2358,37 @@ class Elements extends Component
             $transaction->commit();
             return [
                 'success' => true,
-                'message' => Craft::t('app', 'Value copied.'),
+                'message' => Craft::t('app', 'Content copied.'),
                 'element' => $element,
             ];
         } catch (Throwable $e) {
             $transaction->rollBack();
             throw $e;
         }
+    }
+
+    private function _copyFieldValue($element, $fromElement, $originalElement, $fieldHandle): bool
+    {
+        // reserved $fieldHandles which we need to treat differently
+        $reservedHandles = ['title', 'slug'];
+
+        $valueChanged = false;
+        if (in_array($fieldHandle, $reservedHandles) && $element->{$fieldHandle} != $fromElement->{$fieldHandle}) {
+            $element->{$fieldHandle} = $fromElement->{$fieldHandle};
+            $valueChanged = true;
+        } else {
+            if (($field = Craft::$app->fields->getFieldByHandle($fieldHandle)) !== null && $field instanceof CopyableFieldInterface) {
+                $field->copyValueBetweenSites($fromElement, $element);
+                if (
+                    $field->serializeValue($element->getFieldValue($fieldHandle)) !=
+                    $field->serializeValue($originalElement->getFieldValue($fieldHandle))
+                ) {
+                    $valueChanged = true;
+                }
+            }
+        }
+
+        return $valueChanged;
     }
 
     // Element classes

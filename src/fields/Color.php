@@ -14,6 +14,7 @@ use craft\base\Field;
 use craft\base\PreviewableFieldInterface;
 use craft\fields\data\ColorData;
 use craft\helpers\Cp;
+use craft\helpers\ElementHelper;
 use craft\helpers\Html;
 use craft\validators\ColorValidator;
 use yii\db\Schema;
@@ -169,10 +170,6 @@ class Color extends Field implements PreviewableFieldInterface, CopyableFieldInt
      */
     public function getIsCopyable(?ElementInterface $element = null): bool
     {
-        if (!Craft::$app->getIsMultiSite() || $element === null || isset($element->ownerId)) {
-            return false;
-        }
-
-        return true;
+        return $this->getIsTranslatable($element) && ElementHelper::supportsFieldCopying($element);
     }
 }

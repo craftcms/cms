@@ -15,6 +15,7 @@ use craft\base\PreviewableFieldInterface;
 use craft\base\SortableFieldInterface;
 use craft\gql\types\DateTime as DateTimeType;
 use craft\helpers\DateTimeHelper;
+use craft\helpers\ElementHelper;
 use craft\i18n\Locale;
 use craft\validators\TimeValidator;
 use DateTime;
@@ -238,10 +239,6 @@ class Time extends Field implements PreviewableFieldInterface, SortableFieldInte
      */
     public function getIsCopyable(?ElementInterface $element = null): bool
     {
-        if (!Craft::$app->getIsMultiSite() || $element === null || isset($element->ownerId)) {
-            return false;
-        }
-
-        return true;
+        return $this->getIsTranslatable($element) && ElementHelper::supportsFieldCopying($element);
     }
 }

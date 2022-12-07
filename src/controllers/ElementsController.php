@@ -587,7 +587,7 @@ class ElementsController extends Controller
      * @throws \yii\base\Exception
      * @throws \yii\db\Exception
      */
-    public function actionCopyFieldValueFromSite(): Response
+    public function actionCopyFieldValuesFromSite(): Response
     {
         $this->requireAcceptsJson();
 
@@ -598,10 +598,11 @@ class ElementsController extends Controller
             throw new BadRequestHttpException('No element was identified by the request.');
         }
 
-        $fieldHandle = $this->request->getRequiredBodyParam('fieldHandle');
+        // if $fieldHandle is null, we're copying all element fields
+        $fieldHandle = $this->request->getBodyParam('fieldHandle', null);
         $copyFromSiteId = $this->request->getRequiredBodyParam('copyFromSiteId');
 
-        if (empty($fieldHandle) || empty($copyFromSiteId)) {
+        if ($fieldHandle === '' || empty($copyFromSiteId)) {
             throw new BadRequestHttpException("Request missing required param");
         }
 
@@ -635,7 +636,7 @@ class ElementsController extends Controller
             return $this->_asFailure($element, $errorMsg);
         }
 
-        $result = $elementsService->copyFieldValueFromSite($element, $fieldHandle, $copyFromSiteId);
+        $result = $elementsService->copyFieldValuesFromSite($element, $fieldHandle, $copyFromSiteId);
         if ($result['success'] === false) {
             Craft::$app->session->setError($result['message']);
 
@@ -766,6 +767,15 @@ class ElementsController extends Controller
                         'params' => ['dropProvisional' => 1],
                     ],
                 ]);
+                if (ElementHelper::supportsFieldCopying($element)) {
+                    $components[] = Html::button(Craft::t('app', 'Copy content from site'), [
+                        'type' => 'button',
+                        'class' => ['btn', 'copy-from-site'],
+                        'aria' => [
+                            'label' => Craft::t('app', 'Copy content from site'),
+                        ],
+                    ]);
+                }
             } else {
                 $components[] = Html::beginForm() .
                     Html::actionInput('elements/save-draft') .

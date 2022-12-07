@@ -16,6 +16,8 @@ Craft.ElementEditor = Garnish.Base.extend(
     $expandSiteStatusesBtn: null,
     $statusIcon: null,
     $previewBtn: null,
+    $copyContentBtn: null,
+    copyTranslationBtns: null,
 
     $editMetaBtn: null,
     metaHud: null,
@@ -100,6 +102,7 @@ Craft.ElementEditor = Garnish.Base.extend(
       this.$revisionLabel = this.$container.find('.revision-label');
       this.$previewBtn = this.$container.find('.preview-btn');
 
+      this.$copyContentBtn = this.$container.find('.copy-from-site');
       this.copyTranslationBtns = this.$container.find('.t9n-indicator');
 
       const $spinnerContainer = this.isFullPage
@@ -129,9 +132,15 @@ Craft.ElementEditor = Garnish.Base.extend(
         this.sitesForCopyFieldAction = this._getSitesForCopyFieldAction();
 
         this.addListener(
+          this.$copyContentBtn,
+          'click',
+          'showElementCopyDialogue'
+        );
+
+        this.addListener(
           this.copyTranslationBtns,
           'click',
-          'showFieldTranslationDialogue'
+          'showFieldCopyDialogue'
         );
       }
 
@@ -550,7 +559,54 @@ Craft.ElementEditor = Garnish.Base.extend(
       return menuOptions;
     },
 
-    showFieldTranslationDialogue: function (ev) {
+    _getCopyBetweenSitesForm: function (fieldHandle = null) {
+      let form = '';
+
+      let select =
+        '<div class="select"><select id="copyFromSiteId" name="copyFromSiteId">';
+      this.sitesForCopyFieldAction.forEach(
+        (site) =>
+          (select +=
+            '<option value="' + site.value + '">' + site.label + '</option>')
+      );
+      select += '</select></div>';
+
+      form +=
+        '<form class="fitted copyBetweenSites" method="post" accept-charset="UTF-8" data-action="elements/copy-field-values-from-site">' +
+        Craft.getCsrfInput();
+
+      if (fieldHandle !== null) {
+        form +=
+          '<input type="hidden" id="copyFieldHandle" name="copyFieldHandle" value="' +
+          $btn.data('handle') +
+          '"/>';
+      }
+
+      form +=
+        '<label>' +
+        Craft.t('app', 'Copy from:') +
+        '</label>' +
+        select +
+        '<button type="submit" class="btn submit">Copy</button>' +
+        '</form>';
+
+      return form;
+    },
+
+    showElementCopyDialogue: function (ev) {
+      $btn = $(ev.target);
+
+      let hudContent =
+        `<div class="copy-translation-dialogue">` +
+        this._getCopyBetweenSitesForm() +
+        `</div>`;
+
+      hud = new Garnish.HUD($btn, hudContent);
+
+      this.addListener($('.copyBetweenSites'), 'submit', 'copyValuesFromSite');
+    },
+
+    showFieldCopyDialogue: function (ev) {
       ev.preventDefault();
 
       $btn = $(ev.target);
@@ -569,52 +625,31 @@ Craft.ElementEditor = Garnish.Base.extend(
         $btn.hasClass('copyable') &&
         this.sitesForCopyFieldAction.length > 0
       ) {
-        let select =
-          '<div class="select"><select id="copyFromSiteId" name="copyFromSiteId">';
-        this.sitesForCopyFieldAction.forEach(
-          (site) =>
-            (select +=
-              '<option value="' + site.value + '">' + site.label + '</option>')
-        );
-        select += '</select></div>';
-
         hudContent +=
-          `<hr />` +
-          '<form class="fitted copyTranslationForField" method="post" accept-charset="UTF-8" data-action="elements/copy-field-value-from-site">' +
-          Craft.getCsrfInput() +
-          '<label>' +
-          Craft.t('app', 'Copy field value from:') +
-          '</label>' +
-          '<input type="hidden" id="copyFieldHandle" name="copyFieldHandle" value="' +
-          $btn.data('handle') +
-          '"/>' +
-          select +
-          '<button type="submit" class="btn submit">Copy</button>' +
-          '</form>';
+          `<hr />` + this._getCopyBetweenSitesForm($btn.data('handle'));
       }
 
       hudContent += `</div>`;
 
       hud = new Garnish.HUD($btn, hudContent);
 
-      this.addListener(
-        $('.copyTranslationForField'),
-        'submit',
-        'copyTranslatedValueFromSite'
-      );
+      this.addListener($('.copyBetweenSites'), 'submit', 'copyValuesFromSite');
     },
 
-    copyTranslatedValueFromSite: function (ev) {
+    copyValuesFromSite: function (ev) {
       ev.preventDefault();
       let $form = $(ev.target);
 
       let params = {
-        fieldHandle: $form.find('[name="copyFieldHandle"]').val(),
         copyFromSiteId: $form.find('[name="copyFromSiteId"]').val(),
         elementId: this.settings.canonicalId,
         draftId: this.settings.draftId,
         provisional: this.settings.isProvisionalDraft,
       };
+
+      if ($form.find('[name="copyFieldHandle"]') != undefined) {
+        params['fieldHandle'] = $form.find('[name="copyFieldHandle"]').val();
+      }
 
       if (Craft.csrfTokenName) {
         params[Craft.csrfTokenName] = Craft.csrfTokenValue;

@@ -23,6 +23,7 @@ use craft\gql\resolvers\OptionField as OptionFieldResolver;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Cp;
 use craft\helpers\Db;
+use craft\helpers\ElementHelper;
 use craft\helpers\Json;
 use craft\helpers\StringHelper;
 use GraphQL\Type\Definition\Type;
@@ -491,11 +492,7 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
      */
     public function getIsCopyable(?ElementInterface $element = null): bool
     {
-        if (!Craft::$app->getIsMultiSite() || $element === null || isset($element->ownerId)) {
-            return false;
-        }
-
-        return true;
+        return $this->getIsTranslatable($element) && ElementHelper::supportsFieldCopying($element);
     }
 
     /**

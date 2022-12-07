@@ -78,8 +78,8 @@ class EntryTitleField extends TitleField
     /**
      * @inheritdoc
      */
-    protected function isCopyable(?ElementInterface $element = null, bool $static = false): bool
+    public function isCopyable(?ElementInterface $element = null, bool $static = false): bool
     {
-        return true;
+        return $this->translatable($element) && ElementHelper::supportsFieldCopying($element);
     }
 }

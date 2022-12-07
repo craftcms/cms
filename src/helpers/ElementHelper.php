@@ -366,6 +366,14 @@ class ElementHelper
         return false;
     }
 
+    public static function supportsFieldCopying($element): bool
+    {
+        return !(!Craft::$app->getIsMultiSite() ||
+            $element === null ||
+            isset($element->ownerId) ||
+            count(static::editableSiteIdsForElement($element)) < 2);
+    }
+
     /**
      * Returns the editable site IDs for a given element, taking user permissions into account.
      *

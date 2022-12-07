@@ -302,7 +302,7 @@ class CustomField extends BaseField
     /**
      * @inheritdoc
      */
-    protected function isCopyable(?ElementInterface $element = null, bool $static = false): bool
+    public function isCopyable(?ElementInterface $element = null, bool $static = false): bool
     {
         if ($this->_field instanceof CopyableFieldInterface) {
             return $this->_field->getIsCopyable($element);

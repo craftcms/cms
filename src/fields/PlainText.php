@@ -15,6 +15,7 @@ use craft\base\PreviewableFieldInterface;
 use craft\base\SortableFieldInterface;
 use craft\fields\conditions\TextFieldConditionRule;
 use craft\helpers\Db;
+use craft\helpers\ElementHelper;
 use LitEmoji\LitEmoji;
 use yii\db\Schema;
 
@@ -266,10 +267,6 @@ class PlainText extends Field implements PreviewableFieldInterface, SortableFiel
      */
     public function getIsCopyable(?ElementInterface $element = null): bool
     {
-        if (!Craft::$app->getIsMultiSite() || $element === null || isset($element->ownerId)) {
-            return false;
-        }
-
-        return true;
+        return $this->getIsTranslatable($element) && ElementHelper::supportsFieldCopying($element);
     }
 }

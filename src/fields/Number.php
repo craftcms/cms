@@ -16,6 +16,7 @@ use craft\base\SortableFieldInterface;
 use craft\fields\conditions\NumberFieldConditionRule;
 use craft\gql\types\Number as NumberType;
 use craft\helpers\Db;
+use craft\helpers\ElementHelper;
 use craft\helpers\Localization;
 use craft\i18n\Locale;
 use GraphQL\Type\Definition\Type;
@@ -351,10 +352,6 @@ JS;
      */
     public function getIsCopyable(?ElementInterface $element = null): bool
     {
-        if (!Craft::$app->getIsMultiSite() || $element === null || isset($element->ownerId)) {
-            return false;
-        }
-
-        return true;
+        return $this->getIsTranslatable($element) && ElementHelper::supportsFieldCopying($element);
     }
 }

@@ -580,7 +580,7 @@ abstract class BaseField extends FieldLayoutElement
      * @param bool $static
      * @return bool
      */
-    protected function isCopyable(?ElementInterface $element = null, bool $static = false): bool
+    public function isCopyable(?ElementInterface $element = null, bool $static = false): bool
     {
         return false;
     }
