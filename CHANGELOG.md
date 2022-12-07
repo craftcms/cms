@@ -1,5 +1,9 @@
 # Release Notes for Craft CMS 4
 
+## Unreleased
+
+- Fixed a bug where entry tab contents could remain visible when switching to other tabs, after changing the entry type.
+
 ## 4.3.4 - 2022-11-29
 
 - The `serve` command now routes requests for nonexistent files to Craft. ([#12310](https://github.com/craftcms/cms/pull/12310))
