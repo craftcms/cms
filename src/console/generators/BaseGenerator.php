@@ -8,6 +8,7 @@
 namespace craft\console\generators;
 
 use Craft;
+use craft\base\PluginInterface;
 use craft\console\controllers\MakeController;
 use craft\helpers\App;
 use craft\helpers\Composer;
@@ -25,6 +26,7 @@ use ReflectionClassConstant;
 use ReflectionException;
 use ReflectionMethod;
 use ReflectionProperty;
+use yii\base\Application;
 use yii\base\BaseObject;
 use yii\base\InvalidArgumentException;
 use yii\base\Module as BaseModule;
@@ -659,5 +661,23 @@ abstract class BaseGenerator extends BaseObject
         }
 
         throw new InvalidArgumentException("The namespace `$namespace` isn’t autoloadable from `$this->composerFile`.");
+    }
+
+    /**
+     * Wraps a string in `Craft::t()` if the component is being generated for Craft or a plugin.
+     *
+     * @param string $message The string to output
+     * @return string The PHP code
+     */
+    protected function messagePhp(string $message): string
+    {
+        $messagePhp = var_export($message, true);
+        $category = match (true) {
+            $this->module instanceof Application => 'app',
+            $this->module instanceof PluginInterface => $this->module->id,
+            default => null,
+        };
+
+        return $category ? sprintf("Craft::t('%s', %s)", $category, $messagePhp) : $messagePhp;
     }
 }
