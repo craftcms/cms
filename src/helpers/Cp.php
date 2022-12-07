@@ -648,6 +648,7 @@ class Cp
         $instructionsPosition = $config['instructionsPosition'] ?? 'before';
         $orientation = $config['orientation'] ?? ($site ? $site->getLocale() : Craft::$app->getLocale())->getOrientation();
         $translatable = Craft::$app->getIsMultiSite() ? ($config['translatable'] ?? ($site !== null)) : false;
+        $copyable = (bool)($config['copyable'] ?? false);
 
         $fieldClass = array_merge(array_filter([
             'field',
@@ -682,7 +683,7 @@ class Cp
                 : '') .
             ($translatable
                 ? Html::tag('span', '', [
-                    'class' => ['t9n-indicator'],
+                    'class' => array_filter(['t9n-indicator', ($copyable ? 'copyable' : '')]),
                     'title' => $config['translationDescription'] ?? Craft::t('app', 'This field is translatable.'),
                     'data' => [
                         'icon' => 'language',

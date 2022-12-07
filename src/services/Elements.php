@@ -8,6 +8,7 @@
 namespace craft\services;
 
 use Craft;
+use craft\base\CopyableFieldInterface;
 use craft\base\Element;
 use craft\base\ElementActionInterface;
 use craft\base\ElementExporterInterface;
@@ -2278,9 +2279,9 @@ class Elements extends Component
 
         $user = Craft::$app->getUser()->getIdentity();
 
-        $elementForSite = $this->getElementById($element->getCanonicalId(), $elementType, $copyFromSiteId);
+        $fromElement = $this->getElementById($element->getCanonicalId(), $elementType, $copyFromSiteId);
 
-        if (!$elementForSite) {
+        if (!$fromElement) {
             return [
                 'success' => false,
                 'message' => Craft::t('app', 'Couldn’t find this {type} on the site you selected.', [
@@ -2290,61 +2291,60 @@ class Elements extends Component
             ];
         }
 
-        if (in_array($fieldHandle, $reservedHandles)) {
-            $currentValue = $element->{$fieldHandle};
-            $copiedValue = $elementForSite->{$fieldHandle};
-        } else {
-            $currentValue = $element->getFieldValue($fieldHandle);
-            $copiedValue = $elementForSite->getFieldValue($fieldHandle);
-
-            if (($field = Craft::$app->fields->getFieldByHandle($fieldHandle)) !== null) {
-                $currentValue = $field->serializeValue($currentValue);
-                $copiedValue = $field->serializeValue($copiedValue);
+        $originalElement = clone($element);
+        $transaction = Craft::$app->getDb()->beginTransaction();
+        try {
+            // check if element is a draft - if not, create one
+            if (!$element->getIsDraft()) {
+                /** @var Element|DraftBehavior $element */
+                $draft = Craft::$app->getDrafts()->createDraft($element, $user->id, null, null, [], true);
+                $draft->setCanonical($element);
+                $element = $draft;
             }
-        }
 
-        if ($currentValue != $copiedValue) {
-            $transaction = Craft::$app->getDb()->beginTransaction();
-            try {
-                // check if element is a draft - if not, create one
-                if (!$element->getIsDraft()) {
-                    /** @var Element|DraftBehavior $element */
-                    $draft = Craft::$app->getDrafts()->createDraft($element, $user->id, null, null, [], true);
-                    $draft->setCanonical($element);
-                    $element = $draft;
+            $valueChanged = false;
+            if (in_array($fieldHandle, $reservedHandles) && $element->{$fieldHandle} != $fromElement->{$fieldHandle}) {
+                $element->{$fieldHandle} = $fromElement->{$fieldHandle};
+                $valueChanged = true;
+            } else {
+                if (($field = Craft::$app->fields->getFieldByHandle($fieldHandle)) !== null && $field instanceof CopyableFieldInterface) {
+                    $field->copyValueBetweenSites($fromElement, $element);
+                    if (
+                        $field->serializeValue($element->getFieldValue($fieldHandle)) !=
+                        $field->serializeValue($originalElement->getFieldValue($fieldHandle))
+                    ) {
+                        $valueChanged = true;
+                    }
                 }
+            }
 
-                if (in_array($fieldHandle, $reservedHandles)) {
-                    $element->{$fieldHandle} = $copiedValue;
-                } else {
-                    $element->setFieldValue($fieldHandle, $copiedValue);
-                }
-
-                if (!$this->saveElement($element, true, false, false)) {
-                    return [
-                        'success' => false,
-                        'message' => Craft::t('app', 'Couldn’t copy the value.'),
-                        'element' => $element,
-                    ];
-                }
-
-                $transaction->commit();
+            if (!$valueChanged) {
+                $transaction->rollBack();
                 return [
                     'success' => true,
-                    'message' => Craft::t('app', 'Value copied.'),
+                    'message' => Craft::t('app', 'Nothing to copy.'),
                     'element' => $element,
                 ];
-            } catch (Throwable $e) {
-                $transaction->rollBack();
-                throw $e;
             }
-        }
 
-        return [
-            'success' => true,
-            'message' => Craft::t('app', 'Nothing to copy.'),
-            'element' => $element,
-        ];
+            if (!$this->saveElement($element, true, false, false)) {
+                return [
+                    'success' => false,
+                    'message' => Craft::t('app', 'Couldn’t copy the value.'),
+                    'element' => $element,
+                ];
+            }
+
+            $transaction->commit();
+            return [
+                'success' => true,
+                'message' => Craft::t('app', 'Value copied.'),
+                'element' => $element,
+            ];
+        } catch (Throwable $e) {
+            $transaction->rollBack();
+            throw $e;
+        }
     }
 
     // Element classes

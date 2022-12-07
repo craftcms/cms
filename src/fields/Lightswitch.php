@@ -8,6 +8,7 @@
 namespace craft\fields;
 
 use Craft;
+use craft\base\CopyableFieldInterface;
 use craft\base\ElementInterface;
 use craft\base\Field;
 use craft\base\PreviewableFieldInterface;
@@ -28,7 +29,7 @@ use yii\db\Schema;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
-class Lightswitch extends Field implements PreviewableFieldInterface, SortableFieldInterface
+class Lightswitch extends Field implements PreviewableFieldInterface, SortableFieldInterface, CopyableFieldInterface
 {
     /**
      * @inheritdoc
@@ -203,5 +204,17 @@ class Lightswitch extends Field implements PreviewableFieldInterface, SortableFi
             'name' => $this->handle,
             'type' => Type::boolean(),
         ];
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getIsCopyable(?ElementInterface $element = null): bool
+    {
+        if (!Craft::$app->getIsMultiSite() || $element === null || isset($element->ownerId)) {
+            return false;
+        }
+
+        return true;
     }
 }

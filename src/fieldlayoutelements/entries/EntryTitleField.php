@@ -74,4 +74,12 @@ class EntryTitleField extends TitleField
 
         return parent::inputHtml($element, $static);
     }
+
+    /**
+     * @inheritdoc
+     */
+    protected function isCopyable(?ElementInterface $element = null, bool $static = false): bool
+    {
+        return true;
+    }
 }

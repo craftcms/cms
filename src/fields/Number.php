@@ -8,6 +8,7 @@
 namespace craft\fields;
 
 use Craft;
+use craft\base\CopyableFieldInterface;
 use craft\base\ElementInterface;
 use craft\base\Field;
 use craft\base\PreviewableFieldInterface;
@@ -27,7 +28,7 @@ use yii\base\InvalidArgumentException;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
-class Number extends Field implements PreviewableFieldInterface, SortableFieldInterface
+class Number extends Field implements PreviewableFieldInterface, SortableFieldInterface, CopyableFieldInterface
 {
     /**
      * @since 3.5.11
@@ -343,5 +344,17 @@ JS;
             'type' => NumberType::getType(),
             'description' => $this->instructions,
         ];
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getIsCopyable(?ElementInterface $element = null): bool
+    {
+        if (!Craft::$app->getIsMultiSite() || $element === null || isset($element->ownerId)) {
+            return false;
+        }
+
+        return true;
     }
 }

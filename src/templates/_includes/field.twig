@@ -30,6 +30,7 @@
         attribute: field.handle,
         translatable: translatable,
         translationDescription: field.getTranslationDescription(element),
+        copyable: field.getIsCopyable(element),
         siteId: siteId,
         required: (not static ? required : false),
         instructions: instructions|e,

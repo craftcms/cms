@@ -249,6 +249,7 @@ abstract class BaseField extends FieldLayoutElement
             'orientation' => $this->orientation($element, $static),
             'translatable' => $this->translatable($element, $static),
             'translationDescription' => $this->translationDescription($element, $static),
+            'copyable' => $this->isCopyable($element, $static),
             'errors' => !$static ? $this->errors($element) : [],
         ]);
     }
@@ -570,5 +571,17 @@ abstract class BaseField extends FieldLayoutElement
     protected function translationDescription(?ElementInterface $element = null, bool $static = false): ?string
     {
         return null;
+    }
+
+    /**
+     * Returns whether field supports copying its value across sites
+     *
+     * @param ElementInterface|null $element
+     * @param bool $static
+     * @return bool
+     */
+    protected function isCopyable(?ElementInterface $element = null, bool $static = false): bool
+    {
+        return false;
     }
 }

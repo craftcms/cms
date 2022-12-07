@@ -410,6 +410,23 @@ abstract class Field extends SavableComponent implements FieldInterface
     }
 
     /**
+     * Returns whether the field is copyable between sites.
+     */
+    public function getIsCopyable(?ElementInterface $element = null): bool
+    {
+        return false;
+    }
+
+    /**
+     * Copies field’s value from one site to another.
+     */
+    public function copyValueBetweenSites(ElementInterface $from, ElementInterface $to): void
+    {
+        $value = $this->serializeValue($from->getFieldValue($this->handle), $from);
+        $to->setFieldValue($this->handle, $value);
+    }
+
+    /**
      * @inheritdoc
      */
     public function getStatus(ElementInterface $element): ?array
@@ -621,7 +638,7 @@ abstract class Field extends SavableComponent implements FieldInterface
     }
 
     /**
-     * @inheritdoc
+     * Copies field’s value from one element to another.
      */
     public function copyValue(ElementInterface $from, ElementInterface $to): void
     {

@@ -8,6 +8,7 @@
 namespace craft\fields;
 
 use Craft;
+use craft\base\CopyableFieldInterface;
 use craft\base\ElementInterface;
 use craft\base\Field;
 use craft\base\PreviewableFieldInterface;
@@ -33,7 +34,7 @@ use yii\db\Schema;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
-abstract class BaseOptionsField extends Field implements PreviewableFieldInterface
+abstract class BaseOptionsField extends Field implements PreviewableFieldInterface, CopyableFieldInterface
 {
     /**
      * @event DefineInputOptionsEvent Event triggered when defining the options for the field's input.
@@ -483,6 +484,18 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
             'type' => $this->multi ? Type::listOf(Type::string()) : Type::string(),
             'description' => Craft::t('app', 'The allowed values are [{values}]', ['values' => implode(', ', $values)]),
         ];
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getIsCopyable(?ElementInterface $element = null): bool
+    {
+        if (!Craft::$app->getIsMultiSite() || $element === null || isset($element->ownerId)) {
+            return false;
+        }
+
+        return true;
     }
 
     /**

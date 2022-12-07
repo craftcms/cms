@@ -8,6 +8,7 @@
 namespace craft\fields;
 
 use Craft;
+use craft\base\CopyableFieldInterface;
 use craft\base\ElementInterface;
 use craft\base\Field;
 use craft\base\PreviewableFieldInterface;
@@ -24,7 +25,7 @@ use yii\db\Schema;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
-class Email extends Field implements PreviewableFieldInterface
+class Email extends Field implements PreviewableFieldInterface, CopyableFieldInterface
 {
     /**
      * @inheritdoc
@@ -142,5 +143,17 @@ class Email extends Field implements PreviewableFieldInterface
         }
         $value = Html::encode($value);
         return "<a href=\"mailto:$value\">$value</a>";
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getIsCopyable(?ElementInterface $element = null): bool
+    {
+        if (!Craft::$app->getIsMultiSite() || $element === null || isset($element->ownerId)) {
+            return false;
+        }
+
+        return true;
     }
 }

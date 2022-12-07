@@ -8,6 +8,7 @@
 namespace craft\fields;
 
 use Craft;
+use craft\base\CopyableFieldInterface;
 use craft\base\ElementInterface;
 use craft\base\Field;
 use craft\base\PreviewableFieldInterface;
@@ -26,7 +27,7 @@ use yii\db\Schema;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.5.12
  */
-class Time extends Field implements PreviewableFieldInterface, SortableFieldInterface
+class Time extends Field implements PreviewableFieldInterface, SortableFieldInterface, CopyableFieldInterface
 {
     /**
      * @inheritdoc
@@ -230,5 +231,17 @@ class Time extends Field implements PreviewableFieldInterface, SortableFieldInte
             'type' => DateTimeType::getType(),
             'description' => $this->instructions,
         ];
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getIsCopyable(?ElementInterface $element = null): bool
+    {
+        if (!Craft::$app->getIsMultiSite() || $element === null || isset($element->ownerId)) {
+            return false;
+        }
+
+        return true;
     }
 }

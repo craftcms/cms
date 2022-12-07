@@ -555,21 +555,18 @@ Craft.ElementEditor = Garnish.Base.extend(
 
       $btn = $(ev.target);
 
-      const immediateFieldParentId = $btn.parents('.field:first').attr('id');
-      const topFieldParentId = $btn.parents('.field:last').attr('id');
-
       let hudContent =
         `<div class="copy-translation-dialogue">` +
         `<span>` +
         $btn.attr('title') +
         `</span>`;
 
-      // only allow the copy field value on the top-level field (e.g. entire matrix field and not it's blocks)
+      // only allow the copy field value of a copyable field
       // only if drafts can be created for this element (both user has permissions and element supports them)
       // only if this element exists on other sites too
       if (
         this.settings.canCreateDrafts &&
-        immediateFieldParentId == topFieldParentId &&
+        $btn.hasClass('copyable') &&
         this.sitesForCopyFieldAction.length > 0
       ) {
         let select =

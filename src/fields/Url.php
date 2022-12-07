@@ -8,6 +8,7 @@
 namespace craft\fields;
 
 use Craft;
+use craft\base\CopyableFieldInterface;
 use craft\base\ElementInterface;
 use craft\base\Field;
 use craft\base\PreviewableFieldInterface;
@@ -29,7 +30,7 @@ use yii\validators\EmailValidator;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
-class Url extends Field implements PreviewableFieldInterface
+class Url extends Field implements PreviewableFieldInterface, CopyableFieldInterface
 {
     /**
      * @since 3.6.0
@@ -347,6 +348,18 @@ JS;
         }
         $value = Html::encode($value);
         return "<a href=\"$value\" target=\"_blank\">$value</a>";
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getIsCopyable(?ElementInterface $element = null): bool
+    {
+        if (!Craft::$app->getIsMultiSite() || $element === null || isset($element->ownerId)) {
+            return false;
+        }
+
+        return true;
     }
 
     /**

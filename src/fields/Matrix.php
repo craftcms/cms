@@ -8,6 +8,7 @@
 namespace craft\fields;
 
 use Craft;
+use craft\base\CopyableFieldInterface;
 use craft\base\EagerLoadingFieldInterface;
 use craft\base\Element;
 use craft\base\ElementInterface;
@@ -57,7 +58,7 @@ use yii\db\Expression;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
-class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragmentFieldInterface
+class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragmentFieldInterface, CopyableFieldInterface
 {
     /**
      * @event SectionEvent The event that is triggered before a section is saved.
@@ -957,6 +958,18 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
         }
 
         return $blockType;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getIsCopyable(?ElementInterface $element = null): bool
+    {
+        if (!Craft::$app->getIsMultiSite() || $element === null || isset($element->ownerId)) {
+            return false;
+        }
+
+        return true;
     }
 
     // Events
