@@ -22,31 +22,41 @@ use yii\helpers\Inflector;
  */
 class AssetBundle extends BaseGenerator
 {
+    private string $className;
+    private string $namespace;
+    private string $displayName;
+
     public function run(): bool
     {
-        $name = $this->classNamePrompt('Asset bundle name:', [
+        $this->className = $this->classNamePrompt('Asset bundle name:', [
             'required' => true,
         ]);
-        $name = StringHelper::removeRight($name, 'Asset');
+        $this->className = StringHelper::ensureRight($this->className, 'Asset');
 
-        $ns = $this->namespacePrompt('Asset bundle namespace:', [
-            'default' => sprintf('%s\\web\\assets\\%s', $this->baseNamespace, strtolower($name)),
+        $this->namespace = $this->namespacePrompt('Asset bundle namespace:', [
+            'default' => sprintf(
+                '%s\\web\\assets\\%s',
+                $this->baseNamespace,
+                strtolower(StringHelper::removeRight($this->className, 'Asset'))
+            ),
         ]);
 
-        $namespace = (new PhpNamespace($ns))
+        $this->displayName = Inflector::camel2words(StringHelper::removeRight($this->className, 'Asset'));
+
+        $namespace = (new PhpNamespace($this->namespace))
             ->addUse(Craft::class)
             ->addUse(BaseAssetBundle::class);
 
-        $class = $this->createClass($name . 'Asset', BaseAssetBundle::class, [
+        $class = $this->createClass($this->className, BaseAssetBundle::class, [
             self::CLASS_PROPERTIES => $this->properties(),
         ]);
         $namespace->add($class);
 
-        $class->addComment(sprintf('%s asset bundle', Inflector::camel2words($name)));
+        $class->addComment("$this->displayName asset bundle");
 
         $this->writePhpClass($namespace);
 
-        $basePath = $this->namespacePath($ns);
+        $basePath = $this->namespacePath($this->namespace);
         $this->controller->createDirectory("$basePath/dist");
         $this->controller->createDirectory("$basePath/src");
 

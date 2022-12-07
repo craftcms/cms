@@ -22,7 +22,7 @@ use yii\web\Response;
  */
 class ElementType extends BaseGenerator
 {
-    private string $name;
+    private string $className;
     private string $pluralName;
     private string $pluralKebabCasedName;
     private string $tableName;
@@ -39,24 +39,24 @@ class ElementType extends BaseGenerator
 
     public function run(): bool
     {
-        $this->name = $this->classNamePrompt('Element type name:', [
+        $this->className = $this->classNamePrompt('Element type name:', [
             'required' => true,
         ]);
 
-        $this->pluralName = Inflector::pluralize($this->name);
+        $this->pluralName = Inflector::pluralize($this->className);
         $this->pluralKebabCasedName = StringHelper::toKebabCase($this->pluralName);
         $this->tableName = strtolower($this->pluralName);
-        $this->displayName = ucfirst(Inflector::camel2words($this->name, false));
+        $this->displayName = ucfirst(Inflector::camel2words($this->className, false));
         $this->pluralDisplayName = Inflector::pluralize($this->displayName);
 
         $this->namespace = $this->namespacePrompt('Element type namespace:', [
             'default' => "$this->baseNamespace\\elements",
         ]);
 
-        $this->queryName = sprintf('%sQuery', $this->name);
+        $this->queryName = sprintf('%sQuery', $this->className);
         $this->queryNamespace = "$this->namespace\\db";
 
-        $this->conditionName = sprintf('%sCondition', $this->name);
+        $this->conditionName = sprintf('%sCondition', $this->className);
         $this->conditionNamespace = "$this->namespace\\conditions";
 
         $this->createElementClass();
@@ -77,13 +77,13 @@ use craft\\events\\RegisterUrlRulesEvent;
 use craft\\services\\Elements;
 use craft\\web\\UrlManager;
 use yii\\base\\Event;
-use $this->namespace$this->name;
+use $this->namespace$this->className;
 
 Event::on(
     Elements::class,
     Elements::EVENT_REGISTER_ELEMENT_TYPES,
     function(RegisterComponentTypesEvent \$event) {
-        \$event->types[] = $this->name::class;
+        \$event->types[] = $this->className::class;
     }
 );
 
@@ -118,7 +118,7 @@ MD;
             ->addUse(UrlHelper::class)
             ->addUse(User::class);
 
-        $class = $this->createClass($this->name, BaseElement::class, [
+        $class = $this->createClass($this->className, BaseElement::class, [
             self::CLASS_METHODS => $this->elementClassMethods(),
         ]);
         $namespace->add($class);
@@ -130,7 +130,7 @@ MD;
 
     private function elementClassMethods(): array
     {
-        $camelCasedName = lcfirst($this->name);
+        $camelCasedName = lcfirst($this->className);
         $lowerDisplayName = strtolower($this->displayName);
         $pluralLowerDisplayName = strtolower($this->pluralDisplayName);
         $allElementsLabelPhp = $this->messagePhp($this->messagePhp("All $pluralLowerDisplayName"));
@@ -140,7 +140,7 @@ MD;
             'lowerDisplayName' => sprintf('return %s;', $this->messagePhp($lowerDisplayName)),
             'pluralDisplayName' => sprintf('return %s;', $this->messagePhp($this->pluralDisplayName)),
             'pluralLowerDisplayName' => sprintf('return %s;', $this->messagePhp($pluralLowerDisplayName)),
-            'refHandle' => sprintf("return '%s';", strtolower($this->name)),
+            'refHandle' => sprintf("return '%s';", strtolower($this->className)),
             'trackChanges' => 'return true;',
             'hasContent' => 'return true;',
             'hasTitles' => 'return true;',
@@ -348,7 +348,7 @@ PHP,
 
     private function createIndexTemplate(): void
     {
-        $slashedName = addslashes("$this->namespace\\$this->name");
+        $slashedName = addslashes("$this->namespace\\$this->className");
         $contents = <<<TWIG
 {% extends '_layouts/elementindex' %}
 {% set title = '$this->pluralDisplayName'|t('app') %}

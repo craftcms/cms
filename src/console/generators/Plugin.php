@@ -26,7 +26,7 @@ use yii\validators\EmailValidator;
  */
 class Plugin extends BaseGenerator
 {
-    private string $name;
+    private string $className;
     private string $developer;
     private bool $public;
     private string $targetDir;
@@ -46,7 +46,7 @@ class Plugin extends BaseGenerator
 
     public function run(): bool
     {
-        $this->name = $this->controller->prompt('Plugin name:', [
+        $this->className = $this->controller->prompt('Plugin name:', [
             'required' => true,
         ]);
 
@@ -57,7 +57,7 @@ class Plugin extends BaseGenerator
         $this->public = $this->controller->confirm('Do you plan on making it public?', true);
 
         $this->handle = $this->controller->prompt('Plugin handle:', [
-            'default' => ($this->public ? '' : '_') . StringHelper::toKebabCase($this->name),
+            'default' => ($this->public ? '' : '_') . StringHelper::toKebabCase($this->className),
             'pattern' => sprintf('/^\_?%s$/', self::ID_PATTERN),
         ]);
 
@@ -186,7 +186,6 @@ MD;
         }
 
         $addRepo = $this->controller->confirm($this->controller->markdownToAnsi("Create a new `path` repository in composer.json for `$this->relativeTargetDir`?"), true);
-        $this->controller->stdout(PHP_EOL);
 
         if (!$addRepo) {
             $manualInstallInstructions = <<<MD
@@ -286,7 +285,7 @@ EOD;
     private function writeChangelog(): void
     {
         $contents = <<<MD
-# Release Notes for $this->name
+# Release Notes for $this->className
 
 ## 1.0.0
 - Initial release
@@ -374,7 +373,7 @@ MD;
     private function writeReadme(): void
     {
         $contents = <<<MD
-# $this->name
+# $this->className
 
 $this->description
 
@@ -393,7 +392,7 @@ You can install this plugin from the Plugin Store or with Composer.
 
 #### From the Plugin Store
 
-Go to the Plugin Store in your project’s Control Panel and search for “{$this->name}”. Then press “Install”.
+Go to the Plugin Store in your project’s Control Panel and search for “{$this->className}”. Then press “Install”.
 
 #### With Composer
 
@@ -445,7 +444,7 @@ MD;
             ],
             'extra' => [
                 'handle' => $this->handle,
-                'name' => $this->name,
+                'name' => $this->className,
                 'developer' => $this->developer,
                 'documentationUrl' => $this->public ? $this->repo : '',
             ],
@@ -522,7 +521,7 @@ NEON;
 
         $authorText = $this->developer . ($this->email ? " <$this->email>" : '');
         $class->setComment(<<<EOD
-$this->name plugin
+$this->className plugin
 
 @method static Plugin getInstance()
 @author $authorText
