@@ -86,7 +86,7 @@ class DeleteUsers extends ElementAction implements DeleteActionInterface
 (() => {
     new Craft.ElementActionTrigger({
         type: {$type},
-        batch: true,
+        bulk: true,
         validateSelection: function(\$selectedItems)
         {
             for (var i = 0; i < \$selectedItems.length; i++)

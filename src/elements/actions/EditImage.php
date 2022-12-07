@@ -53,7 +53,7 @@ class EditImage extends ElementAction
 (() => {
     new Craft.ElementActionTrigger({
         type: {$type},
-        batch: false,
+        bulk: false,
         _imageEditor: null,
         validateSelection: function(\$selectedItems)
         {

@@ -53,7 +53,7 @@ class PreviewAsset extends ElementAction
 (() => {
     new Craft.ElementActionTrigger({
         type: {$type},
-        batch: false,
+        bulk: false,
         validateSelection: function(\$selectedItems)
         {
             return \$selectedItems.length === 1;
