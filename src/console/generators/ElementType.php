@@ -133,7 +133,7 @@ MD;
         $camelCasedName = lcfirst($this->className);
         $lowerDisplayName = strtolower($this->displayName);
         $pluralLowerDisplayName = strtolower($this->pluralDisplayName);
-        $allElementsLabelPhp = $this->messagePhp($this->messagePhp("All $pluralLowerDisplayName"));
+        $allElementsLabelPhp = $this->messagePhp("All $pluralLowerDisplayName");
 
         return [
             'displayName' => sprintf('return %s;', $this->messagePhp($this->displayName)),
