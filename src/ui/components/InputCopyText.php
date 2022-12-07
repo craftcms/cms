@@ -34,9 +34,9 @@ class InputCopyText extends BaseUiComponent
      */
     public string $value = 'Copy Text';
 
-    public function mount(string $id = null)
+    public function prepare(): void
     {
-        $this->id = $id ?? 'copytext' . mt_rand();
+        $this->id = $this->id ?? 'copytext' . mt_rand();
         $this->buttonId = $this->id . '-btn';
     }
 }

@@ -9,7 +9,6 @@ namespace craft\ui\components;
 
 use Craft;
 use craft\base\BaseUiComponent;
-use craft\helpers\DateTimeHelper;
 use craft\ui\attributes\AsTwigComponent;
 use craft\ui\ComponentAttributes;
 use DateTime;
@@ -99,27 +98,20 @@ class InputTime extends BaseUiComponent
     /**
      * Attributes specifically for the container.
      *
-     * @var ComponentAttributes|null
+     * @var array|ComponentAttributes
      */
-    public ?ComponentAttributes $containerAttributes = null;
+    public ComponentAttributes|array $containerAttributes = [];
 
-    public function mount(bool $isMobile = null, mixed $value = null, string $id = null, string $name = null, array $containerAttributes = [])
+    public function prepare(): void
     {
-        $this->isMobile = $isMobile ?? Craft::$app->getRequest()->isMobileBrowser();
+        $this->isMobile = $this->isMobile ?? Craft::$app->getRequest()->isMobileBrowser();
         $this->type = $this->isMobile ? 'time' : 'text';
-        $this->id = ($id ?? 'time' . mt_rand()) . '-time';
+        $this->id = ($this->id ?? 'time' . mt_rand()) . '-time';
 
-        $this->name = $name ? $name . '[time]' : null;
+        $this->name = $this->name ? $this->name . '[time]' : null;
 
-        $this->containerAttributes = new ComponentAttributes($containerAttributes);
-
-        if ($value) {
-            $value = DateTimeHelper::toDateTime($value);
-            if ($value === false) {
-                $value = null;
-            }
-
-            $this->value = $value;
+        if (!($this->containerAttributes instanceof ComponentAttributes)) {
+            $this->containerAttributes = new ComponentAttributes($this->containerAttributes);
         }
     }
 }

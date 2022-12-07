@@ -7,11 +7,10 @@
 
 namespace craft\ui\components;
 
-use Craft;
 use craft\base\BaseUiComponent;
 use craft\helpers\ArrayHelper;
-use craft\helpers\DateTimeHelper;
 use craft\ui\attributes\AsTwigComponent;
+use craft\ui\ComponentAttributes;
 use DateTime;
 
 #[AsTwigComponent('input:datetime')]
@@ -32,34 +31,30 @@ class InputDateTime extends BaseUiComponent
     public ?DateTime $value = null;
 
     /**
-     * @var string|null Date component
+     * @var array Date component
      */
-    public ?string $date = null;
+    public array $date = [];
 
     /**
-     * @var string|null Time component
+     * @var array Time component
      */
-    public ?string $time = null;
+    public array $time = [];
 
-    public function mount(mixed $value = null, string $name = null, array $date = [], array $time = ['outputTzParam' => false])
+    public ?string $dateHtml = null;
+    public ?string $timeHtml = null;
+
+    public ?ComponentAttributes $componentAttributes = null;
+
+    public function prepare(): void
     {
-        if ($value) {
-            $value = DateTimeHelper::toDateTime($value);
-            if ($value === false) {
-                $value = null;
-            }
-
-            $this->value = $value;
-        }
-
         $defaults = [
-            'value' => $value,
-            'name' => $name,
+            'value' => $this->value,
+            'name' => $this->name,
             'hasOuterContainer' => true,
             'isDateTime' => true,
         ];
 
-        $this->date = Craft::$app->getUi()->createAndRender('input:date', ArrayHelper::merge($defaults, $date));
-        $this->time = Craft::$app->getUi()->createAndRender('input:time', ArrayHelper::merge($defaults, $time));
+        $this->dateHtml = InputDate::create(ArrayHelper::merge($defaults, $this->date))->render();
+        $this->timeHtml = InputTime::create(ArrayHelper::merge($defaults, $this->date))->render();
     }
 }

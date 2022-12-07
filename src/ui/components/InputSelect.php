@@ -84,9 +84,9 @@ class InputSelect extends BaseUiComponent
     /**
      * Attributes for the container
      *
-     * @var ComponentAttributes|null
+     * @var array|ComponentAttributes
      */
-    public ?ComponentAttributes $containerAttributes = null;
+    public array|ComponentAttributes $containerAttributes = [];
 
     /**
      * If input should be autofocused. Only applies on desktop browsers.
@@ -95,12 +95,13 @@ class InputSelect extends BaseUiComponent
      */
     public bool $autofocus = false;
 
-    public function mount(
-        array $containerAttributes = [],
-        bool $autofocus = false,
-    ) {
-        $this->containerAttributes = new ComponentAttributes($containerAttributes);
-        $this->autofocus = $autofocus && Craft::$app->getRequest()->isMobileBrowser(true);
+    public function prepare(): void
+    {
+        $this->autofocus = $this->autofocus && Craft::$app->getRequest()->isMobileBrowser(true);
+
+        if (!$this->containerAttributes instanceof ComponentAttributes) {
+            $this->containerAttributes = new ComponentAttributes($this->containerAttributes);
+        }
     }
 
     public function options(array $value): static

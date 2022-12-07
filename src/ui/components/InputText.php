@@ -33,9 +33,17 @@ class InputText extends Input
      */
     public ?int $siteId = null;
 
-    public function mount(string $orientation = null, int $siteId = null)
+    public ?string $value = null;
+
+    public function value(string $value): static
     {
-        $siteId = Craft::$app->getIsMultiSite() && $siteId ? $siteId : null;
+        $this->value = $value;
+        return $this;
+    }
+
+    public function prepare(): void
+    {
+        $siteId = Craft::$app->getIsMultiSite() && $this->siteId ? $this->siteId : null;
         if ($siteId) {
             $site = Craft::$app->getSites()->getSiteById($siteId);
             if (!$site) {
@@ -45,6 +53,6 @@ class InputText extends Input
             $site = null;
         }
 
-        $this->orientation = $orientation ?? ($site ? $site->getLocale() : Craft::$app->getLocale())->getOrientation();
+        $this->orientation = $this->orientation ?? ($site ? $site->getLocale() : Craft::$app->getLocale())->getOrientation();
     }
 }

@@ -24,15 +24,14 @@
     {% set options = options|merge(craft.cp.getEnvOptions(allowedEnvValues)) %}
 {% endif %}
 
-{{ component('input:select', {
+{{ component('input:select', attributes.all() | merge({
     id: id,
     options: options,
     value: value,
-    attributes: attributes.all(),
     containerAttributes: {
         class: (class ?? [])|explodeClass|push('selectize')|unique
     }
-}) }}
+})) }}
 
 {% js %}
 (() => {

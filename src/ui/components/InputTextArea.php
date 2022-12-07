@@ -50,8 +50,8 @@ class InputTextArea extends BaseUiComponent
      */
     public bool $autofocus = false;
 
-    public function mount(bool $autofocus = false)
+    public function prepare(): void
     {
-        $this->autofocus = $autofocus && !Craft::$app->getRequest()->isMobileBrowser(true);
+        $this->autofocus = $this->autofocus && !Craft::$app->getRequest()->isMobileBrowser(true);
     }
 }

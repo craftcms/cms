@@ -20,6 +20,12 @@ class Button extends BaseUiComponent
      */
     public ?string $label = null;
 
+    public function label(string $value = null): static
+    {
+        $this->label = $value;
+        return $this;
+    }
+
     /**
      * Type of the button
      *
@@ -27,19 +33,11 @@ class Button extends BaseUiComponent
      */
     public string $type = 'button';
 
-    /**
-     * Variant of the button.
-     *
-     * @var string
-     */
-    public string $variant = 'default';
-
-    /**
-     * State of the button.
-     *
-     * @var string
-     */
-    public string $state = 'idle';
+    public function type(string $value = 'button'): static
+    {
+        $this->type = in_array($value, ['submit', 'button']) ? $value : 'button';
+        return $this;
+    }
 
     /**
      * Should the spinner be rendered
@@ -48,12 +46,24 @@ class Button extends BaseUiComponent
      */
     public ?bool $spinner = null;
 
+    public function spinner(bool $value = true): static
+    {
+        $this->spinner = $value;
+        return $this;
+    }
+
     /**
      * Mark the button as disabled
      *
      * @var bool|null
      */
     public ?bool $disabled = null;
+
+    public function disabled(bool $value = true): static
+    {
+        $this->disabled = $value;
+        return $this;
+    }
 
     /**
      * Display dashed style button
@@ -69,6 +79,18 @@ class Button extends BaseUiComponent
      */
     public ?bool $loading = null;
 
+    public function loading(bool $value = true): static
+    {
+        $this->loading = $value;
+
+        // Make sure a spinner is rendered for loading
+        if ($value) {
+            $this->spinner = true;
+        }
+
+        return $this;
+    }
+
     /**
      * Submit style button
      *
@@ -76,32 +98,40 @@ class Button extends BaseUiComponent
      */
     public ?bool $submit = null;
 
-    public function mount(string $type = 'button', string $state = 'idle', string $variant = 'default', bool $submit = false)
+    /**
+     * @return void
+     */
+    protected function prepare(): void
     {
-        $this->state = $state;
-        $this->variant = $variant;
-        $this->submit = $submit;
-        $this->type = $type;
-
-        if ($this->state === 'loading') {
-            $this->loading = true;
+        if ($this->loading) {
+            $this->addClass('loading');
             $this->spinner = true;
-            $this->label = null;
         }
 
-        if ($this->state === 'disabled') {
-            $this->disabled = true;
+        switch ($this->state) {
+            case 'loading':
+                $this->loading = true;
+                $this->spinner = true;
+                break;
+            case 'disabled':
+                $this->addClass('disabled');
+                $this->disabled = true;
+                break;
+            case 'dashed':
+                $this->addClass('dashed');
+                $this->dashed = true;
         }
 
-        if ($this->variant === 'submit' || $type === 'submit' || $submit) {
-            $this->type = 'submit';
-            $this->submit = true;
-        }
-
-        if ($this->variant === 'dashed') {
-            $this->dashed = true;
+        switch ($this->variant) {
+            case 'submit':
+                $this->addClass('submit');
+                $this->type = 'submit';
+                break;
+            default:
+                $this->type = 'button';
         }
     }
+
 
     public function rules(): array
     {

@@ -31,22 +31,14 @@ class InputSelectize extends InputSelect
         'dropdownParent' => 'body',
     ];
 
-    public function mount(
-        array $containerAttributes = [],
-        bool $autofocus = false,
-        string $id = null,
-        array $selectizeOptions = [],
-        bool $includeEnvVars = false,
-        array $allowedEnvValues = null,
-    ) {
-        parent::mount($containerAttributes, $autofocus);
+    public function prepare(): void
+    {
+        parent::prepare();
 
-        $this->id = $id ?? 'selectize' . mt_rand();
-        $this->selectizeOptions = ArrayHelper::merge($this->selectizeOptions, $selectizeOptions);
+        $this->id = $this->id ?? 'selectize' . mt_rand();
+        $this->allowedEnvValues = $this->allowedEnvValues ?? $this->optionValues();
 
-        $this->allowedEnvValues = $allowedEnvValues ?? $this->optionValues();
-
-        if ($includeEnvVars) {
+        if ($this->includeEnvVars) {
             $this->options = $this->addHints($this->getOptions());
         }
     }

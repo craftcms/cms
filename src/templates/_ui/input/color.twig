@@ -1,7 +1,7 @@
 {% import "_includes/forms" as forms -%}
 
 {% apply spaceless %}
-    <div {{ containerAttributes.defaults({id: containerId, class: ['flex', 'color-container']}) }}>
+    <div {{ attributes.defaults({id: containerId, class: ['flex', 'color-container']}) }}>
         {% tag 'div' with {
             class: ['color', 'static', small ? 'small']|filter,
         } %}

@@ -10,7 +10,7 @@ namespace craft\ui\components;
 use Craft;
 use craft\base\BaseUiComponent;
 use craft\ui\attributes\AsTwigComponent;
-use craft\ui\ComponentAttributes;
+use craft\validators\ColorValidator;
 
 #[AsTwigComponent('input:color')]
 class InputColor extends BaseUiComponent
@@ -60,23 +60,16 @@ class InputColor extends BaseUiComponent
      */
     public ?string $labelledBy = null;
 
-    /**
-     * @var ComponentAttributes|null Attributes for the containing element;
-     */
-    public ?ComponentAttributes $containerAttributes = null;
+    public function prepare(): void
+    {
+        $this->id = $this->id ?? 'color' . mt_rand();
+        $this->containerId = $this->containerId ?? $this->id . '-container';
+        $this->hexLabelId = 'hex-' . $this->id;
 
-    public function mount(
-        string $id = null,
-        string $containerId = null,
-        bool $autofocus = false,
-        array $containerAttributes = [],
-    ) {
-        $this->id = $id ?? 'color' . mt_rand();
-        $this->containerId = $containerId ?? $this->id . '-container';
-        $this->hexLabelId = 'hex-' . $id;
+        $this->autofocus = $this->autofocus && !Craft::$app->getRequest()->isMobileBrowser(true);
 
-        $this->autofocus = $autofocus && !Craft::$app->getRequest()->isMobileBrowser(true);
-
-        $this->containerAttributes = new ComponentAttributes($containerAttributes);
+        if ($this->value) {
+            $this->value = ColorValidator::normalizeColor($this->value);
+        }
     }
 }

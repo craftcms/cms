@@ -28,6 +28,15 @@ class ComponentAttributes
         return Html::renderTagAttributes($this->attributes);
     }
 
+    public function addClass(string $class): self
+    {
+        $classes = $this->attributes['class'] ?? [];
+        $classes[] = $class;
+
+        $this->attributes['class'] = $classes;
+        return new self($this->attributes);
+    }
+
     /**
      * @return array<string, string>
      */
@@ -81,18 +90,6 @@ class ComponentAttributes
         }
 
         return $clone;
-    }
-
-    public function addClass(string ...$classes): self
-    {
-        $classArray = $this->attributes['class'] ?? [];
-
-        foreach ($classes as $class) {
-            $classArray[] = $class;
-        }
-
-        $attributes = array_merge($this->attributes, ['class' => $classArray]);
-        return new self($attributes);
     }
 
     /**
