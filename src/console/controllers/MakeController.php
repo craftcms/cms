@@ -122,6 +122,14 @@ class MakeController extends Controller
     /**
      * Generates the scaffolding for a new system component.
      *
+     * All commands other than `make module` and `make plugin` require one of the following options to be passed:
+     *
+     * - `--app`
+     * - `--module=<module-id>`
+     * - `--plugin=<plugin-handle>`
+     *
+     * If `--with-docblocks` is passed, generated classes will include DocBlock comments copied from their base class.
+     *
      * @param string|null $type The type of component to generate.
      */
     public function actionGenerate(?string $type = null): int
