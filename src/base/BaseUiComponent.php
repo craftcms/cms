@@ -12,7 +12,7 @@ use craft\events\ComponentPreRenderEvent;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Template;
 use craft\ui\attributes\AsTwigComponent;
-use craft\ui\ComponentAttributes;
+use craft\ui\HtmlAttributes;
 use Illuminate\Support\Collection;
 use Twig\Extension\EscaperExtension;
 use yii\base\InvalidConfigException;
@@ -51,9 +51,9 @@ abstract class BaseUiComponent extends Component implements UiComponentInterface
     /**
      * Anything not consumed by properties will end up here.
      *
-     * @var ComponentAttributes|null Collection of leftover attributes to be used as html attributes.
+     * @var HtmlAttributes|null Collection of leftover attributes to be used as html attributes.
      */
-    protected ?ComponentAttributes $htmlAttributes = null;
+    protected ?HtmlAttributes $htmlAttributes = null;
 
     /**
      * Construct the component
@@ -150,7 +150,7 @@ abstract class BaseUiComponent extends Component implements UiComponentInterface
         unset($leftovers[$attributesVar]);
 
         $attributes['data-ui-component'] = $this->getMetadata()->name;
-        $this->htmlAttributes = new ComponentAttributes(ArrayHelper::merge($leftovers, $attributes));
+        $this->htmlAttributes = new HtmlAttributes(ArrayHelper::merge($leftovers, $attributes));
     }
 
     protected function prepare(): void
@@ -189,7 +189,7 @@ abstract class BaseUiComponent extends Component implements UiComponentInterface
         // TODO: better place for this?
         if (!$this->safeClassesRegistered) {
             $twig = Craft::$app->getView()->getTwig();
-            $twig->getExtension(EscaperExtension::class)->addSafeClass(ComponentAttributes::class, ['html']);
+            $twig->getExtension(EscaperExtension::class)->addSafeClass(HtmlAttributes::class, ['html']);
 
             $this->safeClassesRegistered = true;
         }

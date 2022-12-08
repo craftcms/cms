@@ -10,7 +10,7 @@ namespace craft\ui;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Html;
 
-class ComponentAttributes
+class HtmlAttributes
 {
     public array $attributes = [];
 

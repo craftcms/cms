@@ -10,7 +10,7 @@ namespace craft\ui\components;
 use Craft;
 use craft\base\BaseUiComponent;
 use craft\ui\attributes\AsTwigComponent;
-use craft\ui\ComponentAttributes;
+use craft\ui\HtmlAttributes;
 use DateTime;
 
 #[AsTwigComponent('input:time')]
@@ -98,9 +98,9 @@ class InputTime extends BaseUiComponent
     /**
      * Attributes specifically for the container.
      *
-     * @var array|ComponentAttributes
+     * @var array|HtmlAttributes
      */
-    public ComponentAttributes|array $containerAttributes = [];
+    public HtmlAttributes|array $containerAttributes = [];
 
     public function prepare(): void
     {
@@ -110,8 +110,8 @@ class InputTime extends BaseUiComponent
 
         $this->name = $this->name ? $this->name . '[time]' : null;
 
-        if (!($this->containerAttributes instanceof ComponentAttributes)) {
-            $this->containerAttributes = new ComponentAttributes($this->containerAttributes);
+        if (!($this->containerAttributes instanceof HtmlAttributes)) {
+            $this->containerAttributes = new HtmlAttributes($this->containerAttributes);
         }
     }
 }

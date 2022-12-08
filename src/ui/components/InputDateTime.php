@@ -10,7 +10,7 @@ namespace craft\ui\components;
 use craft\base\BaseUiComponent;
 use craft\helpers\ArrayHelper;
 use craft\ui\attributes\AsTwigComponent;
-use craft\ui\ComponentAttributes;
+use craft\ui\HtmlAttributes;
 use DateTime;
 
 #[AsTwigComponent('input:datetime')]
@@ -43,7 +43,7 @@ class InputDateTime extends BaseUiComponent
     public ?string $dateHtml = null;
     public ?string $timeHtml = null;
 
-    public ?ComponentAttributes $componentAttributes = null;
+    public ?HtmlAttributes $componentAttributes = null;
 
     public function prepare(): void
     {

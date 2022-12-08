@@ -11,7 +11,7 @@ use Craft;
 use craft\base\BaseUiComponent;
 use craft\helpers\ArrayHelper;
 use craft\ui\attributes\AsTwigComponent;
-use craft\ui\ComponentAttributes;
+use craft\ui\HtmlAttributes;
 
 #[AsTwigComponent('input:select')]
 class InputSelect extends BaseUiComponent
@@ -84,9 +84,9 @@ class InputSelect extends BaseUiComponent
     /**
      * Attributes for the container
      *
-     * @var array|ComponentAttributes
+     * @var array|HtmlAttributes
      */
-    public array|ComponentAttributes $containerAttributes = [];
+    public array|HtmlAttributes $containerAttributes = [];
 
     /**
      * If input should be autofocused. Only applies on desktop browsers.
@@ -99,8 +99,8 @@ class InputSelect extends BaseUiComponent
     {
         $this->autofocus = $this->autofocus && Craft::$app->getRequest()->isMobileBrowser(true);
 
-        if (!$this->containerAttributes instanceof ComponentAttributes) {
-            $this->containerAttributes = new ComponentAttributes($this->containerAttributes);
+        if (!$this->containerAttributes instanceof HtmlAttributes) {
+            $this->containerAttributes = new HtmlAttributes($this->containerAttributes);
         }
     }
 
