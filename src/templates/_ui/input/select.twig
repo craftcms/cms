@@ -22,7 +22,7 @@
 
 <div {{ containerAttributes }}>
     <select {{ inputAttributes }}>
-        {% for key, option in this.getOptions() %}
+        {% for key, option in options %}
         {% if option.optgroup is defined %}
         {% if hasOptgroups %}
             </optgroup>

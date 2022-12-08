@@ -33,6 +33,11 @@ class InputText extends Input
      */
     public ?int $siteId = null;
 
+    /**
+     * Value of the input
+     *
+     * @var string|null
+     */
     public ?string $value = null;
 
     public function value(string $value): static
@@ -41,8 +46,9 @@ class InputText extends Input
         return $this;
     }
 
-    public function prepare(): void
-    {
+    public function mount(
+        string $orientation = null,
+    ) {
         $siteId = Craft::$app->getIsMultiSite() && $this->siteId ? $this->siteId : null;
         if ($siteId) {
             $site = Craft::$app->getSites()->getSiteById($siteId);
@@ -53,6 +59,6 @@ class InputText extends Input
             $site = null;
         }
 
-        $this->orientation = $this->orientation ?? ($site ? $site->getLocale() : Craft::$app->getLocale())->getOrientation();
+        $this->orientation = $orientation ?? ($site ? $site->getLocale() : Craft::$app->getLocale())->getOrientation();
     }
 }

@@ -21,6 +21,11 @@ use craft\fieldlayoutelements\BaseField;
 use craft\models\FieldLayout;
 use craft\models\FieldLayoutTab;
 use craft\models\Site;
+use craft\ui\components\InputDate;
+use craft\ui\components\InputSelect;
+use craft\ui\components\InputText;
+use craft\ui\components\InputTextArea;
+use craft\ui\components\InputTime;
 use craft\web\twig\TemplateLoaderException;
 use craft\web\View;
 use yii\base\Event;
@@ -920,10 +925,11 @@ class Cp
      * @param array $config
      * @return string
      * @since 3.6.0
+     * @deprecated [[InputSelect::createAndRender]] should be used instead.
      */
     public static function selectHtml(array $config): string
     {
-        return static::renderTemplate('_includes/forms/select.twig', $config);
+        return InputSelect::createAndRender($config);
     }
 
     /**
@@ -999,10 +1005,11 @@ class Cp
      * @return string
      * @throws InvalidArgumentException if `$config['siteId']` is invalid
      * @since 4.0.0
+     * @deprecated [[InputText::createAndRender]] should be used instead.
      */
     public static function textHtml(array $config): string
     {
-        return static::renderTemplate('_includes/forms/text.twig', $config);
+        return InputText::createAndRender($config);
     }
 
     /**
@@ -1026,10 +1033,11 @@ class Cp
      * @return string
      * @throws InvalidArgumentException if `$config['siteId']` is invalid
      * @since 4.0.0
+     * @deprecated [[InputTextArea::createAndRender]] should be used instead.
      */
     public static function textareaHtml(array $config): string
     {
-        return static::renderTemplate('_includes/forms/textarea.twig', $config);
+        return InputTextArea::createAndRender($config);
     }
 
     /**
@@ -1053,10 +1061,11 @@ class Cp
      * @return string
      * @throws InvalidArgumentException if `$config['siteId']` is invalid
      * @since 4.0.0
+     * @deprecated [[InputDate::createAndRender]] should be used instead.
      */
     public static function dateHtml(array $config): string
     {
-        return static::renderTemplate('_includes/forms/date.twig', $config);
+        return InputDate::createAndRender($config);
     }
 
     /**
@@ -1080,10 +1089,11 @@ class Cp
      * @return string
      * @throws InvalidArgumentException if `$config['siteId']` is invalid
      * @since 4.0.0
+     * @deprecated [[InputTime::createAndRender]] should be used instead.
      */
     public static function timeHtml(array $config): string
     {
-        return static::renderTemplate('_includes/forms/time.twig', $config);
+        return InputTime::createAndRender($config);
     }
 
     /**

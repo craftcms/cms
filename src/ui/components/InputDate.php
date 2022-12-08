@@ -11,6 +11,7 @@ use Craft;
 use craft\base\BaseUiComponent;
 use craft\base\Component;
 use craft\ui\attributes\AsTwigComponent;
+use craft\ui\HtmlAttributes;
 use DateTime;
 
 #[AsTwigComponent('input:date')]
@@ -63,14 +64,14 @@ class InputDate extends BaseUiComponent
      *
      * @var DateTime|null
      */
-    public ?DateTime $value = null;
+    public DateTime|null $value = null;
 
     /**
      * Attributes specifically for the container.
      *
-     * @var array
+     * @var HtmlAttributes|null
      */
-    public array $containerAttributes = [];
+    public ?HtmlAttributes $containerAttributes = null;
 
     /**
      * Is this a date and time field?
@@ -79,11 +80,14 @@ class InputDate extends BaseUiComponent
      */
     public bool $isDateTime = false;
 
-    protected function prepare(): void
-    {
-        $this->isMobile = $this->isMobile ?? Craft::$app->getRequest()->isMobileBrowser();
+    public function mount(
+        string $id = null,
+        bool $isMobile = false,
+        array $containerAttributes = [],
+    ) {
+        $this->isMobile = $isMobile && Craft::$app->getRequest()->isMobileBrowser();
+        $this->id = ($id ?? 'date' . mt_rand()) . '-date';
+        $this->containerAttributes = new HtmlAttributes($containerAttributes);
         $this->type = $this->isMobile ? 'date' : 'text';
-        $this->id = ($this->id ?? 'date' . mt_rand()) . '-date';
-        $this->name = $this->name ? $this->name . '[date]' : null;
     }
 }

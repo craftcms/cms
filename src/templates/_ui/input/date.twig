@@ -16,7 +16,7 @@
             class: {
                 'empty-value': isMobile and not value
             },
-            name: name,
+            name: name ? "#{name}[date]" : null,
             autocomplete: false,
             size: 10,
             placeholder: ' ',

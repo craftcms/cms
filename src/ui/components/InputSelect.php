@@ -95,24 +95,14 @@ class InputSelect extends BaseUiComponent
      */
     public bool $autofocus = false;
 
-    public function prepare(): void
-    {
-        $this->autofocus = $this->autofocus && Craft::$app->getRequest()->isMobileBrowser(true);
-
-        if (!$this->containerAttributes instanceof HtmlAttributes) {
-            $this->containerAttributes = new HtmlAttributes($this->containerAttributes);
-        }
-    }
-
-    public function options(array $value): static
-    {
-        $this->options = $value;
-        return $this;
-    }
-
-    public function getOptions(): array
-    {
-        return $this->normalizeOptions($this->options);
+    public function mount(
+        bool $autofocus = false,
+        array $options = [],
+        array $containerAttributes = [],
+    ) {
+        $this->options = $this->normalizeOptions($options);
+        $this->containerAttributes = new HtmlAttributes($containerAttributes);
+        $this->autofocus = $autofocus && Craft::$app->getRequest()->isMobileBrowser(true);
     }
 
     /**
@@ -134,12 +124,8 @@ class InputSelect extends BaseUiComponent
 
             $optionValue = $option['value'] ?? $option ?? '';
             return ArrayHelper::merge([
-                'optgroup' => null,
-                'data' => null,
                 'selected' => $optionValue === $this->value,
-                'disabled' => null,
-                'hidden' => null,
-                'value' => '',
+                'value' => $optionValue,
                 'label' => $option['label'] ?? $option,
             ], $option);
         }, $options);
