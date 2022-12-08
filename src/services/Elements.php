@@ -2304,37 +2304,19 @@ class Elements extends Component
 
             // if $fieldHandle === null - we're doing it for all element's fields
             if ($fieldHandle === null) {
-                $customFields = $element->getFieldLayout()?->getVisibleCustomFields($element);
-                $translatableFields = array_map(function($field) {
-                    /** @var Field $field */
-                    return $field->handle;
-                },
-                    array_filter($customFields,
-                        fn($field) => $field instanceof CopyableFieldInterface && $field->getIsCopyable($element)
-                    )
-                );
-
-                $fields = $element->fields();
                 $translatableFields = array_merge(
-                    $translatableFields,
-                    array_map(function($field) {
-                        return $field->attribute();
-                    },
-                        array_filter(
-                            $element->getFieldLayout()?->getAvailableNativeFields(),
-                            fn($field) => isset($fields[$field->attribute()]) && $field->isCopyable($element)
-                        )
-                    )
+                    $this->_getTranslatableCustomFieldHandles($element),
+                    $this->_getTranslatableNativeFieldHandles($element)
                 );
 
                 foreach ($translatableFields as $translatableField) {
-                    $changed = $this->_copyFieldValue($element, $fromElement, $originalElement, $translatableField);
+                    $changed = $this->_copyFieldValueByHandle($element, $fromElement, $originalElement, $translatableField);
                     if ($changed === true && $valueChanged !== true) {
                         $valueChanged = true;
                     }
                 }
             } else {
-                $valueChanged = $this->_copyFieldValue($element, $fromElement, $originalElement, $fieldHandle);
+                $valueChanged = $this->_copyFieldValueByHandle($element, $fromElement, $originalElement, $fieldHandle);
             }
 
 
@@ -2367,7 +2349,57 @@ class Elements extends Component
         }
     }
 
-    private function _copyFieldValue($element, $fromElement, $originalElement, $fieldHandle): bool
+    /**
+     * Get field handles of all translatable custom fields used in the element
+     *
+     * @param ElementInterface $element
+     * @return array
+     */
+    private function _getTranslatableCustomFieldHandles(ElementInterface $element): array
+    {
+        $customFields = $element->getFieldLayout()?->getVisibleCustomFields($element);
+        return array_map(
+            function($field) {
+                /** @var Field $field */
+                return $field->handle;
+            },
+            array_filter($customFields,
+                fn($field) => $field instanceof CopyableFieldInterface && $field->getIsCopyable($element)
+            )
+        );
+    }
+
+    /**
+     * Get field handles of all translatable native fields used in the element
+     *
+     * @param ElementInterface $element
+     * @return array
+     * @throws \yii\base\InvalidConfigException
+     */
+    private function _getTranslatableNativeFieldHandles(ElementInterface $element): array
+    {
+        $fields = $element->fields();
+        return array_map(
+            function($field) {
+                return $field->attribute();
+            },
+            array_filter(
+                $element->getFieldLayout()?->getAvailableNativeFields(),
+                fn($field) => isset($fields[$field->attribute()]) && $field->isCopyable($element)
+            )
+        );
+    }
+
+    /**
+     * Copy field value from one element to another and check if it changed
+     *
+     * @param $element
+     * @param $fromElement
+     * @param $originalElement
+     * @param $fieldHandle
+     * @return bool
+     */
+    private function _copyFieldValueByHandle($element, $fromElement, $originalElement, $fieldHandle): bool
     {
         // reserved $fieldHandles which we need to treat differently
         $reservedHandles = ['title', 'slug'];
