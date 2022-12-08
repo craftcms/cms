@@ -22,6 +22,7 @@ use craft\models\FieldLayout;
 use craft\models\FieldLayoutTab;
 use craft\models\Site;
 use craft\ui\components\InputDate;
+use craft\ui\components\InputLightswitch;
 use craft\ui\components\InputSelect;
 use craft\ui\components\InputText;
 use craft\ui\components\InputTextArea;
@@ -891,10 +892,11 @@ class Cp
      * @return string
      * @throws InvalidArgumentException if `$config['siteId']` is invalid
      * @since 4.0.0
+     * @deprecated [[InputLightswitch::createAndRender]] should be used instead.
      */
     public static function lightswitchHtml(array $config): string
     {
-        return static::renderTemplate('_includes/forms/lightswitch.twig', $config);
+        return InputLightswitch::createAndRender($config);
     }
 
     /**

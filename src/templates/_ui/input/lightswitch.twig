@@ -1,0 +1,69 @@
+{%- set on = position == 'on' %}
+{%- set indeterminate = position == 'indeterminate' %}
+{%- set disabled = state == 'disabled' %}
+{%- set hasOnLabel = onLabel is not same as(false) %}
+{%- set hasOffLabel = offLabel is not same as(false) %}
+{%- set hasLabels = hasOnLabel or hasOffLabel %}
+
+{%- set containerAttributes = containerAttributes.defaults({
+    id: id,
+    class: [
+        'lightswitch',
+        on ? 'on' : null,
+        hasLabels ? 'has-labels' : null,
+        indeterminate ? 'indeterminate' : null,
+        small ? 'small' : null,
+        toggle or reverseToggle ? 'fieldtoggle' : null,
+        disabled ? 'disabled' : null,
+    ]|filter,
+    data: {
+        value: value != '1' ? value : false,
+        'indeterminate-value': indeterminateValue != '-' ? indeterminateValue : false,
+        target: toggle ?: false,
+        'reverse-target': reverseToggle ?: false,
+    },
+    type: 'button',
+    role: 'switch',
+    aria: {
+        checked: on ? 'true' : (indeterminate ? 'mixed' : 'false'),
+        labelledby: labelledBy ?? labelId ?? false,
+        describedby: [describedBy ?? null, hasLabels ? descriptionId : null]|filter|join(' ') ?: false,
+    },
+}).all() %}
+
+{% set input %}
+    {% tag 'button' with containerAttributes %}
+        <div class="lightswitch-container">
+            <div class="handle"></div>
+        </div>
+        {% if name is defined -%}
+            {{ hiddenInput(name, on ? value : (indeterminate ? indeterminateValue : ''), {disabled: disabled}) }}
+        {%- endif %}
+    {% endtag %}
+{% endset %}
+
+{% if hasLabels -%}
+    <div class="lightswitch-outer-container">
+        {% if hasLabels %}
+            {{ tag('span', {
+                id: descriptionId,
+                class: 'visually-hidden',
+                text: [
+                    onLabel ? 'Check for {onLabel}.'|t('app', {onLabel: onLabel}),
+                    offLabel ? 'Uncheck for {offLabel}.'|t('app', {offLabel: offLabel}),
+                ]|filter|join(' '),
+            }) }}
+        {% endif %}
+        <div class="lightswitch-inner-container">
+            {% if hasOffLabel %}
+                <span data-toggle="off" aria-hidden="true">{{ offLabel }}</span>
+            {% endif %}
+            {{ input }}
+            {% if hasOnLabel %}
+                <span data-toggle="on" aria-hidden="true">{{ onLabel }}</span>
+            {% endif %}
+        </div>
+    </div>
+{% else %}
+    {{ input }}
+{%- endif %}
