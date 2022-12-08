@@ -96,8 +96,6 @@ Event::on(
     }
 );
 ```
-
-Register a route to the element edit page by adding the follow
 MD;
         }
 

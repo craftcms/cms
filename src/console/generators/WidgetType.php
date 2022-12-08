@@ -6,6 +6,7 @@ use Craft;
 use craft\base\Widget;
 use Nette\PhpGenerator\PhpNamespace;
 use yii\helpers\Inflector;
+use yii\web\Application;
 
 /**
  * Creates a new widget type.
@@ -41,8 +42,32 @@ class WidgetType extends BaseGenerator
 
         $this->writePhpClass($namespace);
 
+        $message = "**Widget type created!**";
+        if (!$this->module instanceof Application) {
+            $moduleFile = $this->moduleFile();
+            $moduleId = $this->module->id;
+            $message .= "\n" . <<<MD
+Add the following code to `$moduleFile` to register the widget type:
+
+```php
+use craft\\events\\RegisterComponentTypesEvent;
+use craft\\services\\Dashboard;
+use yii\\base\\Event;
+use $this->namespace$this->className;
+
+Event::on(
+    Dashboard::class,
+    Dashboard::EVENT_REGISTER_ELEMENT_TYPES,
+    function(RegisterComponentTypesEvent \$event) {
+        \$event->types[] = $this->className::class;
+    }
+);
+```
+MD;
+        }
+
         $this->controller->stdout(PHP_EOL);
-        $this->controller->success("**Widget type created!**");
+        $this->controller->success($message);
         return true;
     }
 
