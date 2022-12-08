@@ -16,7 +16,6 @@ use craft\helpers\ArrayHelper;
 use craft\helpers\FileHelper;
 use craft\helpers\Json;
 use craft\helpers\StringHelper;
-use craft\web\twig\variables\CraftVariable;
 use Nette\PhpGenerator\PhpFile;
 use yii\validators\EmailValidator;
 
@@ -613,10 +612,8 @@ PHP
 
     private function writeSettingsTemplate(): void
     {
-        $craftVariableClass = sprintf('\\%s', CraftVariable::class);
         $pluginClass = "\\$this->rootNamespace\\Plugin";
         $contents = <<<TWIG
-{# @var craft $craftVariableClass #}
 {# @var plugin $pluginClass #}
 
 {% import '_includes/forms.twig' as forms %}
