@@ -43,7 +43,6 @@ class ElementExporter extends BaseGenerator
 
         $this->writePhpClass($namespace);
 
-        $this->controller->stdout(PHP_EOL);
         $this->controller->success(<<<MD
 **Element exporter created!**
 Register it from your element’s `defineExporters()` method.

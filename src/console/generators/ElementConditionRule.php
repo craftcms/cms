@@ -102,7 +102,6 @@ class ElementConditionRule extends BaseGenerator
 
         $this->writePhpClass($namespace);
 
-        $this->controller->stdout(PHP_EOL);
         $this->controller->success(<<<MD
 **Element condition rule created!**
 Register it for use in a condition by including it in the condition’s `conditionRuleTypes()` method.

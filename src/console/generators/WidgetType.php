@@ -45,7 +45,6 @@ class WidgetType extends BaseGenerator
         $message = "**Widget type created!**";
         if (!$this->module instanceof Application) {
             $moduleFile = $this->moduleFile();
-            $moduleId = $this->module->id;
             $message .= "\n" . <<<MD
 Add the following code to `$moduleFile` to register the widget type:
 
@@ -66,7 +65,6 @@ Event::on(
 MD;
         }
 
-        $this->controller->stdout(PHP_EOL);
         $this->controller->success($message);
         return true;
     }

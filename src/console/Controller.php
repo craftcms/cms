@@ -454,8 +454,8 @@ class Controller extends YiiController
      */
     public function note(string $message, string $icon = 'ℹ️ '): void
     {
-        $this->stdout("$icon ", Console::FG_YELLOW, Console::BOLD);
-        $this->stdout(trim(preg_replace('/^/m', '   ', $this->markdownToAnsi($message))) . PHP_EOL);
+        $this->stdout("\n$icon ", Console::FG_YELLOW, Console::BOLD);
+        $this->stdout(trim(preg_replace('/^/m', '   ', $this->markdownToAnsi($message))) . "\n\n");
     }
 
     /**

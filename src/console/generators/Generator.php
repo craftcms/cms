@@ -153,9 +153,7 @@ Event::on(
 MD;
         }
 
-        $this->controller->stdout(PHP_EOL);
         $this->controller->success($message);
-
         return true;
     }
 
@@ -191,7 +189,6 @@ MD;
 
 \$this->writePhpClass(\$namespace);
 
-\$this->controller->stdout(PHP_EOL);
 \$this->controller->success("**$this->ucfirstDisplayName created!**");
 return true;
 PHP,

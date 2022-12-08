@@ -195,9 +195,7 @@ To install the plugin, run the following commands:
 
 $installCommands
 MD;
-                    $this->controller->stdout(PHP_EOL);
                     $this->controller->success($message);
-                    $this->controller->stdout(PHP_EOL);
                     return true;
                 }
             }
@@ -214,7 +212,6 @@ $installCommands
 MD;
 
             $this->controller->note($manualInstallInstructions);
-            $this->controller->stdout(PHP_EOL);
             return true;
         }
 
@@ -254,9 +251,7 @@ To install the plugin, run the following commands:
 
 $installCommands
 MD;
-        $this->controller->stdout(PHP_EOL);
         $this->controller->success($message);
-        $this->controller->stdout(PHP_EOL);
         return true;
     }
 

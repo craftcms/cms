@@ -74,11 +74,7 @@ also include `'$this->id'` in the `bootstrap` array:
 ],
 ```
 MD;
-
-        $this->controller->stdout(PHP_EOL);
         $this->controller->success($message);
-        $this->controller->stdout(PHP_EOL);
-
         return true;
     }
 

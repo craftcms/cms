@@ -60,9 +60,7 @@ class AssetBundle extends BaseGenerator
         $this->controller->createDirectory("$basePath/dist");
         $this->controller->createDirectory("$basePath/src");
 
-        $this->controller->stdout(PHP_EOL);
         $this->controller->success('**Asset bundle created!**');
-
         return true;
     }
 

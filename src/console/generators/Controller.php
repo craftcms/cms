@@ -63,9 +63,7 @@ PHP);
 
         $this->writePhpClass($namespace);
 
-        $this->controller->stdout(PHP_EOL);
         $this->controller->success('**Controller created!**');
-
         return true;
     }
 

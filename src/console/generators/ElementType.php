@@ -100,7 +100,6 @@ Event::on(
 MD;
         }
 
-        $this->controller->stdout(PHP_EOL);
         $this->controller->success($message);
         return true;
     }
