@@ -588,6 +588,7 @@ PHP,
                 ? <<<PHP
 return Craft::\$app->view->renderTemplate('$this->handle/_settings.twig', [
     'plugin' => \$this,
+    'settings' => \$this->getSettings(),
 ]);
 PHP
                 : null,
@@ -613,8 +614,10 @@ PHP
     private function writeSettingsTemplate(): void
     {
         $pluginClass = "\\$this->rootNamespace\\Plugin";
+        $settingsClass = "\\$this->settingsNamespace\\$this->settingsClassName";
         $contents = <<<TWIG
 {# @var plugin $pluginClass #}
+{# @var settings $settingsClass #}
 
 {% import '_includes/forms.twig' as forms %}
 
