@@ -12,6 +12,7 @@ use craft\elements\User;
 use craft\helpers\StringHelper;
 use craft\helpers\UrlHelper;
 use craft\web\CpScreenResponseBehavior;
+use craft\web\twig\variables\CraftVariable;
 use Nette\PhpGenerator\PhpNamespace;
 use yii\helpers\Inflector;
 use yii\web\Application;
@@ -346,8 +347,11 @@ PHP,
 
     private function writeIndexTemplate(): void
     {
+        $craftVariableClass = sprintf('\\%s', CraftVariable::class);
         $slashedName = addslashes("$this->namespace\\$this->className");
         $contents = <<<TWIG
+{# @var craft $craftVariableClass #}
+
 {% extends '_layouts/elementindex' %}
 {% set title = '$this->pluralDisplayName'|t('app') %}
 {% set elementType = '$slashedName' %}
