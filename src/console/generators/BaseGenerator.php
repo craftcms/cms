@@ -585,6 +585,9 @@ abstract class BaseGenerator extends BaseObject
             return ($parentMember ? $this->docBlock($parentMember) : null) ?? $match[1];
         }, $docBlock);
 
+        // Remove any @since tags
+        $docBlock = rtrim(preg_replace('/^@since [^\\n]*\\n?/mi', '', $docBlock), "\n");
+
         return $docBlock;
     }
 
