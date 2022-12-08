@@ -64,7 +64,19 @@ abstract class BaseUiComponent extends Component implements UiComponentInterface
      */
     final public function __construct(array $data = [], array $config = [])
     {
-        $this->mount($data);
+        // Call the mount function first so components have a chance to set properties
+        $this->_mount($data);
+
+        // Remove mounted properties
+        $props = array_intersect_key($data, $this->getAttributes());
+        $this->setAttributes($props, false);
+
+        // Collect leftovers into `htmlAttributes`
+        $leftovers = array_diff_key($data, $this->getAttributes());
+
+        $leftovers['data-ui-component'] = $this->getMetadata()->name;
+        $this->htmlAttributes = new HtmlAttributes($leftovers);
+
         parent::__construct($config);
     }
 
@@ -133,24 +145,34 @@ abstract class BaseUiComponent extends Component implements UiComponentInterface
      * @return void
      * @throws InvalidConfigException
      */
-    public function mount(array $data = []): void
+    private function _mount(array &$data): void
     {
-        $props = array_intersect_key($data, $this->getAttributes());
-        $leftovers = array_diff_key($data, $this->getAttributes());
+        try {
+            $method = (new \ReflectionClass($this))->getMethod('mount');
+        } catch (\ReflectionException $e) {
+            // no hydrate method
+            return;
+        }
 
-        // TODO: Is this safe enough?
-        $this->setAttributes($props, false);
+        $parameters = [];
 
-        /**
-         * Did the user explicitly pass in html attributes?
-         * If so, make sure those are mapped to the `htmlAttributes` property
-         */
-        $attributesVar = $this->getMetadata()->attributesVar;
-        $attributes = $leftovers[$attributesVar] ?? [];
-        unset($leftovers[$attributesVar]);
+        foreach ($method->getParameters() as $refParameter) {
+            $name = $refParameter->getName();
 
-        $attributes['data-ui-component'] = $this->getMetadata()->name;
-        $this->htmlAttributes = new HtmlAttributes(ArrayHelper::merge($leftovers, $attributes));
+            if (\array_key_exists($name, $data)) {
+                $parameters[] = $data[$name];
+
+                // remove the data element so it isn't used to set the property directly.
+                unset($data[$name]);
+            } elseif ($refParameter->isDefaultValueAvailable()) {
+                $parameters[] = $refParameter->getDefaultValue();
+            } else {
+                throw new \LogicException(sprintf('%s::mount() has a required $%s parameter. Make sure this is passed or make give a default value.', \get_class($this), $refParameter->getName()));
+            }
+        }
+
+        /** @phpstan-ignore-next-line */
+        $this->mount(...$parameters);
     }
 
     protected function prepare(): void
