@@ -52,7 +52,7 @@ Add the following code to `$moduleFile` to register the widget type:
 use craft\\events\\RegisterComponentTypesEvent;
 use craft\\services\\Dashboard;
 use yii\\base\\Event;
-use $this->namespace$this->className;
+use $this->namespace\\$this->className;
 
 Event::on(
     Dashboard::class,

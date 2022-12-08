@@ -78,7 +78,7 @@ use craft\\events\\RegisterUrlRulesEvent;
 use craft\\services\\Elements;
 use craft\\web\\UrlManager;
 use yii\\base\\Event;
-use $this->namespace$this->className;
+use $this->namespace\\$this->className;
 
 Event::on(
     Elements::class,

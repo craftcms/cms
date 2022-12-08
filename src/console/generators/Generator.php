@@ -140,7 +140,7 @@ Register it for Craft’s `make` command by adding the following code to `$modul
 use craft\\console\\controllers\\MakeController;
 use craft\\events\\RegisterComponentTypesEvent;
 use yii\\base\\Event;
-use $this->namespace$this->className;
+use $this->namespace\\$this->className;
 
 Event::on(
     MakeController::class,

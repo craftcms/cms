@@ -113,7 +113,7 @@ Add the following code to `$moduleFile` to register the field type:
 use craft\\events\\RegisterComponentTypesEvent;
 use craft\\services\\Fields;
 use yii\\base\\Event;
-use $this->namespace$this->className;
+use $this->namespace\\$this->className;
 
 Event::on(
     Fields::class,
