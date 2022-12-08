@@ -32,7 +32,7 @@ class InputSelect extends BaseUiComponent
      *
      * @var array
      */
-    public array $options = ['Select Option', 'Option 1', 'Option 2'];
+    public array $options = [];
 
     /**
      * Value of the input

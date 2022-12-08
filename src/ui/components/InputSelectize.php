@@ -31,21 +31,26 @@ class InputSelectize extends InputSelect
         'dropdownParent' => 'body',
     ];
 
-    public function prepare(): void
-    {
-        parent::prepare();
+    public function mount(
+        bool $autofocus = false,
+        array $options = [],
+        array $containerAttributes = [],
+        string $id = null,
+        array $allowedEnvValues = null,
+    ) {
+        parent::mount($autofocus, $options, $containerAttributes);
 
-        $this->id = $this->id ?? 'selectize' . mt_rand();
-        $this->allowedEnvValues = $this->allowedEnvValues ?? $this->optionValues();
+        $this->id = $id ?? 'selectize' . mt_rand();
+        $this->allowedEnvValues = $allowedEnvValues ?? $this->optionValues();
 
         if ($this->includeEnvVars) {
-            $this->options = $this->addHints($this->getOptions());
+            $this->options = $this->addHints($this->options);
         }
     }
 
     private function optionValues(): array
     {
-        $withoutGroups = array_filter($this->getOptions(), function($option) {
+        $withoutGroups = array_filter($this->options, function($option) {
             return !isset($option['optgroup']);
         });
 
