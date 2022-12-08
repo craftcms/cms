@@ -48,8 +48,6 @@ class ElementAction extends BaseGenerator
 
     private function methods(): array
     {
-        // List any methods that should be copied into generated element actions from craft\base\ElementAction
-        // (see `craft\console\generators\BaseGenerator::createClass()`)
         return [
             'displayName' => sprintf('return %s;', $this->messagePhp($this->displayName)),
             'getTriggerHtml' => <<<PHP

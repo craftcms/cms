@@ -73,8 +73,6 @@ MD;
 
     private function methods(): array
     {
-        // List any methods that should be copied into generated widget types from craft\base\Widget
-        // (see `craft\console\generators\BaseGenerator::createClass()`)
         return [
             'displayName' => sprintf('return %s;', $this->messagePhp($this->displayName)),
             'isSelectable' => 'return true;',

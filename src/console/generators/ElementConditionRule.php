@@ -112,8 +112,6 @@ MD);
 
     private function methods(): array
     {
-        // List any methods that should be copied into generated element condition rules from craft\base\conditions\BaseConditionRule
-        // (see `craft\console\generators\BaseGenerator::createClass()`)
         return array_filter([
             'getLabel' => sprintf('return %s;', $this->messagePhp($this->displayName)),
             'getExclusiveQueryParams' => $this->param
