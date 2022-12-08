@@ -40,6 +40,7 @@ use yii\base\NotSupportedException;
  */
 abstract class BaseGenerator extends BaseObject
 {
+    protected const CLASS_IMPLEMENTS = 'implements';
     protected const CLASS_CONSTANTS = 'constants';
     protected const CLASS_PROPERTIES = 'properties';
     protected const CLASS_METHODS = 'methods';
@@ -420,11 +421,15 @@ abstract class BaseGenerator extends BaseObject
      *
      * @param string|null $className The class name
      * @param string|null $baseClass The base class
-     * @param array $members Class members from the base class that should be added:
+     * @param array $options Options for the generated class:
      *
-     * - `constants`: Array of constant names. You can use key/value pairs to override default values.
-     * - `properties`: Array of property names. You can use key/value pairs to override default values.
-     * - `methods`: Array of method names. You can use key/value pairs to override the method bodies.
+     * - `implements`: Array of interfaces that the class should implement directly.
+     * - `constants`: Array of constant names that should be copied from the base class or interfaces.
+     *    You can use key/value pairs to override default values.
+     * - `properties`: Array of property names that should be copied from the base class or interfaces.
+     *    You can use key/value pairs to override default values.
+     * - `methods`: Array of method names that should be copied from the base class or interfaces.
+     *    You can use key/value pairs to override the method bodies.
      *
      * Note that if any constants, properties, or method parameters are set to a constant, the constant’s *value* will
      * be copied instead of the constant name. If you want to use the constant name, override the value:
@@ -457,70 +462,101 @@ abstract class BaseGenerator extends BaseObject
     protected function createClass(
         ?string $className = null,
         ?string $baseClass = null,
-        array $members = [],
+        array $options = [],
     ): ClassType {
         $class = new ClassType($className);
 
+        $subClasses = [];
+
         if ($baseClass) {
             $class->setExtends($baseClass);
+            $subClasses[] = $baseClass;
+        }
 
-            if (isset($members[self::CLASS_CONSTANTS])) {
-                foreach ($members[self::CLASS_CONSTANTS] as $constantName => $constantValue) {
-                    if (is_string($constantName)) {
-                        $setValue = true;
-                    } else {
-                        $constantName = $constantValue;
-                        $setValue = false;
-                    }
-                    $constantRef = new ReflectionClassConstant($baseClass, $constantName);
-                    $constant = (new Factory())->fromConstantReflection($constantRef);
-                    $constant->setComment($this->docBlock($constantRef));
-                    if ($setValue) {
-                        $constant->setValue($constantValue);
-                    }
-                    $class->addMember($constant);
-                }
+        if (!empty($options[self::CLASS_IMPLEMENTS])) {
+            foreach ($options[self::CLASS_IMPLEMENTS] as $interface) {
+                $class->addImplement($interface);
+                $subClasses[] = $interface;
             }
+        }
 
-            if (isset($members[self::CLASS_PROPERTIES])) {
-                foreach ($members[self::CLASS_PROPERTIES] as $propertyName => $propertyValue) {
-                    if (is_string($propertyName)) {
-                        $setValue = true;
-                    } else {
-                        $propertyName = $propertyValue;
-                        $setValue = false;
-                    }
-                    $propertyRef = new ReflectionProperty($baseClass, $propertyName);
-                    $property = (new Factory())->fromPropertyReflection($propertyRef);
-                    $property->setComment($this->docBlock($propertyRef));
-                    if ($setValue) {
-                        $property->setValue($propertyValue);
-                    }
-                    $class->addMember($property);
+        if (isset($options[self::CLASS_CONSTANTS])) {
+            foreach ($options[self::CLASS_CONSTANTS] as $constantName => $constantValue) {
+                if (is_string($constantName)) {
+                    $setValue = true;
+                } else {
+                    $constantName = $constantValue;
+                    $setValue = false;
                 }
+                /** @var ReflectionClassConstant $constantRef */
+                $constantRef = $this->findRef($subClasses, fn(string $subClass) => new ReflectionClassConstant($subClass, $constantName));
+                $constant = (new Factory())->fromConstantReflection($constantRef);
+                $constant->setComment($this->docBlock($constantRef));
+                if ($setValue) {
+                    $constant->setValue($constantValue);
+                }
+                $class->addMember($constant);
             }
+        }
 
-            if (isset($members[self::CLASS_METHODS])) {
-                foreach ($members[self::CLASS_METHODS] as $methodName => $methodBody) {
-                    if (is_string($methodName)) {
-                        $setBody = true;
-                    } else {
-                        $methodName = $methodBody;
-                        $setBody = false;
-                    }
-                    $methodRef = new ReflectionMethod($baseClass, $methodName);
-                    $method = (new Factory())->fromMethodReflection($methodRef);
-                    $method->setAbstract(false);
-                    $method->setComment($this->docBlock($methodRef));
-                    if ($setBody) {
-                        $method->setBody($methodBody);
-                    }
-                    $class->addMember($method);
+        if (isset($options[self::CLASS_PROPERTIES])) {
+            foreach ($options[self::CLASS_PROPERTIES] as $propertyName => $propertyValue) {
+                if (is_string($propertyName)) {
+                    $setValue = true;
+                } else {
+                    $propertyName = $propertyValue;
+                    $setValue = false;
                 }
+                /** @var ReflectionProperty $propertyRef */
+                $propertyRef = $this->findRef($subClasses, fn(string $subClass) => new ReflectionProperty($subClass, $propertyName));
+                $property = (new Factory())->fromPropertyReflection($propertyRef);
+                $property->setComment($this->docBlock($propertyRef));
+                if ($setValue) {
+                    $property->setValue($propertyValue);
+                }
+                $class->addMember($property);
+            }
+        }
+
+        if (isset($options[self::CLASS_METHODS])) {
+            foreach ($options[self::CLASS_METHODS] as $methodName => $methodBody) {
+                if (is_string($methodName)) {
+                    $setBody = true;
+                } else {
+                    $methodName = $methodBody;
+                    $setBody = false;
+                }
+                /** @var ReflectionMethod $methodRef */
+                $methodRef = $this->findRef($subClasses, fn(string $subClass) => new ReflectionMethod($subClass, $methodName));
+                $method = (new Factory())->fromMethodReflection($methodRef);
+                $method->setAbstract(false);
+                $method->setComment($this->docBlock($methodRef));
+                if ($setBody) {
+                    $method->setBody($methodBody);
+                }
+                $class->addMember($method);
             }
         }
 
         return $class;
+    }
+
+    private function findRef(
+        array $subClasses,
+        callable $createRef,
+    ): ReflectionClassConstant|ReflectionProperty|ReflectionMethod {
+        if (empty($subClasses)) {
+            throw new InvalidArgumentException('Unable to find subclass members when no base class or interfaces were provided.');
+        }
+
+        foreach ($subClasses as $subClass) {
+            try {
+                return $createRef($subClass);
+            } catch (ReflectionException $e) {
+            }
+        }
+
+        throw $e;
     }
 
     private function docBlock(ReflectionClassConstant|ReflectionProperty|ReflectionMethod $member): ?string
