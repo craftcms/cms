@@ -104,41 +104,14 @@ class Button extends BaseUiComponent
     protected function prepare(): void
     {
         if ($this->loading) {
-            $this->addClass('loading');
             $this->spinner = true;
         }
-
-        switch ($this->state) {
-            case 'loading':
-                $this->loading = true;
-                $this->spinner = true;
-                break;
-            case 'disabled':
-                $this->addClass('disabled');
-                $this->disabled = true;
-                break;
-            case 'dashed':
-                $this->addClass('dashed');
-                $this->dashed = true;
-        }
-
-        switch ($this->variant) {
-            case 'submit':
-                $this->addClass('submit');
-                $this->type = 'submit';
-                break;
-            default:
-                $this->type = 'button';
-        }
     }
-
 
     public function rules(): array
     {
         return [
             [['type'], 'in', 'range' => ['button', 'submit']],
-            [['state'], 'in', 'range' => ['idle', 'loading', 'disabled']],
-            [['variant'], 'in', 'range' => ['default', 'dashed', 'submit']],
         ];
     }
 }
