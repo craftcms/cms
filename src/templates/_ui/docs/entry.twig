@@ -1,0 +1,93 @@
+{% extends "_ui/docs/index" %}
+{% set title = "UI Components" %}
+
+{% css %}
+td {
+    vertical-align: top;
+}
+{% endcss %}
+
+{% block content %}
+    <h1>{{ name }}</h1>
+
+    {% if examples | length %}
+        <ul style="display: flex; gap: 1em; margin-bottom: 1em">
+            {% for example in examples %}
+                {% set exampleId = example.id ?? example.label | kebab %}
+                <li>
+                    <button type="button" class="example-btn" data-config="{{ example.config | json_encode | e('html_attr') }}">
+                        {{ example.label }}
+                    </button>
+                </li>
+            {% endfor %}
+        </ul>
+    {% endif %}
+
+    <iframe
+        id="preview"
+        src="{{ cpUrl('components/preview/' ~ name) }}"
+        width="100%"
+        style="min-height: 200px"
+        frameborder="0"
+    >
+    </iframe>
+
+    <hr>
+    <h2>Props</h2>
+
+    <table class="fullwidth">
+        <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Default</th>
+            <th>Description</th>
+        </tr>
+
+        </thead>
+        <tbody>
+        {% for prop in props %}
+            <tr style="border-top: 1px solid #e8e8e8;">
+                <td>
+                    <strong>{{ prop.name }}</strong>
+                </td>
+                <td>
+                    <code style="white-space: nowrap">{{ prop.type }}</code>
+                </td>
+                <td>
+                    <code>{{ prop.default | json_encode(constant('JSON_PRETTY_PRINT')) }}</code>
+                </td>
+                <td>{{ prop.description }}</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+    <div id="test"></div>
+{% endblock %}
+
+
+{% js %}
+const preview = document.querySelector('#preview');
+const iframeSrc = preview.getAttribute('src');
+const baseUrl = new URL(iframeSrc);
+
+function updateExample(event) {
+  const config = event.target.dataset.config;
+  baseUrl.searchParams.set('props', config);
+
+  fetch(baseUrl)
+    .then(response => response.text())
+    .then(html => {
+      preview.contentWindow.document.open()
+      preview.contentWindow.document.write(html)
+      preview.contentWindow.document.close()
+    })
+}
+
+
+const buttons = document.querySelectorAll('.example-btn');
+if (buttons) {
+  buttons.forEach(el => el.addEventListener('click', updateExample));
+}
+{% endjs %}

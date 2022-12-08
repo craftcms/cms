@@ -1,0 +1,39 @@
+[
+  {
+    "label": "Off",
+    "config": {
+      "on": false
+    }
+  },
+  {
+    "label": "On",
+    "config": {
+      "on": true
+    }
+  },
+  {
+    "label": "Indeterminate",
+    "config": {
+      "indeterminate": true
+    }
+  },
+  {
+    "label": "On label",
+    "config": {
+      "onLabel": "On"
+    }
+  },
+  {
+    "label": "Off label",
+    "config": {
+      "offLabel": "Off"
+    }
+  },
+  {
+    "label": "Both labels",
+    "config": {
+      "onLabel": "On",
+      "offLabel": "Off"
+    }
+  }
+]
