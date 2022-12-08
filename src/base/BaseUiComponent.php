@@ -10,6 +10,7 @@ namespace craft\base;
 use Craft;
 use craft\events\ComponentPreRenderEvent;
 use craft\helpers\ArrayHelper;
+use craft\helpers\Template;
 use craft\ui\attributes\AsTwigComponent;
 use craft\ui\ComponentAttributes;
 use Illuminate\Support\Collection;
@@ -30,45 +31,7 @@ abstract class BaseUiComponent extends Component implements UiComponentInterface
     public const EVENT_COMPONENT_BEFORE_RENDER = 'beforeRenderComponent';
 
     /**
-     * Variant of the button.
-     *
-     * @var string
-     */
-    public string $variant = 'default';
-
-    /**
-     * Set the variant of the button. Should be one of `default`, `submit` or `dashed`
-     *
-     * @param string $value
-     * @return $this
-     */
-    public function variant(string $value = 'default'): static
-    {
-        $this->variant = $value;
-        return $this;
-    }
-
-    /**
-     * State of the button.
-     *
-     * @var string
-     */
-    public string $state = 'idle';
-
-    /**
-     * Set the state of the button. $value should be one of 'idle', 'loading', or 'disabled'
-     *
-     * @param string $value
-     * @return $this
-     */
-    public function state(string $value = 'idle'): static
-    {
-        $this->state = $value;
-        return $this;
-    }
-
-    /**
-     * @var bool
+     * @var bool Set component to debug mode.
      */
     public bool $debug = false;
 
@@ -92,7 +55,14 @@ abstract class BaseUiComponent extends Component implements UiComponentInterface
      */
     protected ?ComponentAttributes $htmlAttributes = null;
 
-    final public function __construct(array $data = [], $config = [])
+    /**
+     * Construct the component
+     *
+     * @param array $data
+     * @param array $config
+     * @throws InvalidConfigException
+     */
+    final public function __construct(array $data = [], array $config = [])
     {
         $this->mount($data);
         parent::__construct($config);
@@ -105,14 +75,32 @@ abstract class BaseUiComponent extends Component implements UiComponentInterface
      */
     private bool $safeClassesRegistered = false;
 
+    /**
+     * Creates a component
+     *
+     * @param array $props
+     * @return static
+     * @throws InvalidConfigException
+     */
     public static function create(array $props = []): static
     {
         return new static($props);
     }
 
-    public function addClass(string $value): void
+    /**
+     * Creates and renders a component
+     *
+     * @param array $props
+     * @return string
+     * @throws InvalidConfigException
+     * @throws \Twig\Error\LoaderError
+     * @throws \Twig\Error\RuntimeError
+     * @throws \Twig\Error\SyntaxError
+     * @throws \yii\base\Exception
+     */
+    public static function createAndRender(array $props = []): string
     {
-        $this->htmlAttributes->addClass($value);
+        return self::create($props)->render();
     }
 
     /**
@@ -161,6 +149,7 @@ abstract class BaseUiComponent extends Component implements UiComponentInterface
         $attributes = $leftovers[$attributesVar] ?? [];
         unset($leftovers[$attributesVar]);
 
+        $attributes['data-ui-component'] = $this->getMetadata()->name;
         $this->htmlAttributes = new ComponentAttributes(ArrayHelper::merge($leftovers, $attributes));
     }
 
@@ -178,18 +167,21 @@ abstract class BaseUiComponent extends Component implements UiComponentInterface
         // Give components a chance to resolve attributes for twig
         $this->prepare();
 
-        $context = ArrayHelper::merge(
+        return ArrayHelper::merge(
             $this->getAttributes(),
             ['this' => $this],
             ['errors' => $this->getErrors()],
             ['attributes' => $this->htmlAttributes],
         );
-
-
-        return $context;
     }
 
-    public function render(): string
+    /**
+     * Resolve variables before calling the render function.
+     *
+     * @return ComponentPreRenderEvent
+     * @throws InvalidConfigException
+     */
+    public function preRender(): ComponentPreRenderEvent
     {
         $this->validate();
 
@@ -211,7 +203,24 @@ abstract class BaseUiComponent extends Component implements UiComponentInterface
         ]);
 
         $this->trigger(self::EVENT_COMPONENT_BEFORE_RENDER, $event);
+        return $event;
+    }
 
+    /**
+     * Render the component.
+     *
+     * Renders a template by default, but individual components can render however they want.
+     *
+     * @return string
+     * @throws InvalidConfigException
+     * @throws \Twig\Error\LoaderError
+     * @throws \Twig\Error\RuntimeError
+     * @throws \Twig\Error\SyntaxError
+     * @throws \yii\base\Exception
+     */
+    public function render(): string
+    {
+        $event = $this->preRender();
         return Craft::$app->getView()->renderTemplate($event->template, $event->variables);
     }
 }
