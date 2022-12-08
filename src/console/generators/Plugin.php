@@ -9,12 +9,14 @@ namespace craft\console\generators;
 
 use Composer\Json\JsonManipulator;
 use Craft;
+use craft\base\Model;
 use craft\base\Plugin as BasePlugin;
 use craft\helpers\App;
 use craft\helpers\ArrayHelper;
 use craft\helpers\FileHelper;
 use craft\helpers\Json;
 use craft\helpers\StringHelper;
+use craft\web\twig\variables\CraftVariable;
 use Nette\PhpGenerator\PhpFile;
 use yii\validators\EmailValidator;
 
@@ -40,6 +42,9 @@ class Plugin extends BaseGenerator
     private string $minPhpVersion;
     private string $minCraftVersion;
     private string $rootNamespace;
+    private bool $hasSettings;
+    private string $settingsNamespace;
+    private string $settingsClassName;
     private bool $addEcs;
     private bool $addPhpStan;
     private array $craftConfig;
@@ -117,6 +122,13 @@ class Plugin extends BaseGenerator
             'default' => App::normalizeNamespace(str_replace('-', '', $this->packageName)),
         ]);
 
+        $this->hasSettings = $this->controller->confirm('Should the plugin have settings?');
+
+        if ($this->hasSettings) {
+            $this->settingsNamespace = "$this->rootNamespace\\models";
+            $this->settingsClassName = 'Settings';
+        }
+
         $this->addEcs = $this->controller->confirm('Include ECS? (For automated code styling)', true);
         $this->addPhpStan = $this->controller->confirm('Include PHPStan? (For automated code quality checks)', true);
 
@@ -146,6 +158,12 @@ class Plugin extends BaseGenerator
 
         // Plugin class
         $this->writePluginClass();
+
+        // Settings
+        if ($this->hasSettings) {
+            $this->writeSettingsModel();
+            $this->writeSettingsTemplate();
+        }
 
         $installCommands = <<<MD
 ```
@@ -513,9 +531,14 @@ NEON;
             ->addUse(Craft::class)
             ->addUse(BasePlugin::class, 'BasePlugin');
 
+        if ($this->hasSettings) {
+            $namespace->addUse(Model::class);
+            $namespace->addUse("$this->settingsNamespace\\$this->settingsClassName");
+        }
+
         $class = $this->createClass('Plugin', BasePlugin::class, [
-            self::CLASS_PROPERTIES => $this->properties(),
-            self::CLASS_METHODS => $this->methods(),
+            self::CLASS_PROPERTIES => $this->pluginProperties(),
+            self::CLASS_METHODS => $this->pluginMethods(),
         ]);
         $namespace->add($class);
 
@@ -524,6 +547,10 @@ $this->name plugin
 
 @method static Plugin getInstance()
 EOD);
+
+        if ($this->hasSettings) {
+            $class->addComment("@method $this->settingsClassName getSettings()");
+        }
 
         if ($this->public) {
             $class->addComment(sprintf('@author %s%s', $this->developer, ($this->email ? " <$this->email>" : '')));
@@ -534,16 +561,17 @@ EOD);
         $this->writePhpFile("$this->targetDir/src/Plugin.php", $file);
     }
 
-    private function properties(): array
+    private function pluginProperties(): array
     {
-        return [
+        return array_filter([
             'schemaVersion',
-        ];
+            'hasCpSettings' => $this->hasSettings ? true : null,
+        ]);
     }
 
-    private function methods(): array
+    private function pluginMethods(): array
     {
-        return [
+        return array_filter([
             'config' => <<<PHP
 return [
     'components' => [
@@ -559,6 +587,48 @@ Craft::\$app->onInit(function() {
     // ...
 });
 PHP,
-        ];
+            'createSettingsModel' => $this->hasSettings
+                ? 'return Craft::createObject(Settings::class);'
+                : null,
+            'settingsHtml' => $this->hasSettings
+                ? <<<PHP
+return Craft::\$app->view->renderTemplate('$this->handle/_settings.twig', [
+    'plugin' => \$this,
+]);
+PHP
+                : null,
+        ]);
+    }
+
+    private function writeSettingsModel(): void
+    {
+        $file = new PhpFile();
+
+        $namespace = $file->addNamespace($this->settingsNamespace)
+            ->addUse(Craft::class)
+            ->addUse(Model::class);
+
+        $class = $this->createClass('Settings', Model::class);
+        $namespace->add($class);
+
+        $class->setComment("$this->name settings");
+
+        $this->writePhpFile("$this->targetDir/src/models/Settings.php", $file);
+    }
+
+    private function writeSettingsTemplate(): void
+    {
+        $craftVariableClass = sprintf('\\%s', CraftVariable::class);
+        $pluginClass = "\\$this->rootNamespace\\Plugin";
+        $contents = <<<TWIG
+{# @var craft $craftVariableClass #}
+{# @var plugin $pluginClass #}
+
+{% import '_includes/forms.twig' as forms %}
+
+{# ... #}
+
+TWIG;
+        $this->controller->writeToFile("$this->targetDir/src/templates/_settings.twig", $contents);
     }
 }
