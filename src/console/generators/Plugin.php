@@ -40,6 +40,7 @@ class Plugin extends BaseGenerator
     private ?string $repo = null;
     private string $minPhpVersion;
     private string $minCraftVersion;
+    private string $className;
     private string $rootNamespace;
     private bool $hasSettings;
     private string $settingsNamespace;
@@ -115,6 +116,10 @@ class Plugin extends BaseGenerator
         $this->minCraftVersion = $this->controller->prompt('Minimum Craft CMS version:', [
             'default' => Craft::$app->getVersion(),
             'pattern' => '/^[\d\.]+\(-\w+(\.\d+)?)?$/',
+        ]);
+
+        $this->className = $this->classNamePrompt('Plugin class name:', [
+            'default' => 'Plugin',
         ]);
 
         $this->rootNamespace = $this->namespacePrompt('Root namespace:', [
@@ -454,12 +459,13 @@ MD;
                     "$this->rootNamespace\\" => 'src/',
                 ],
             ],
-            'extra' => [
+            'extra' => array_filter([
                 'handle' => $this->handle,
                 'name' => $this->name,
                 'developer' => $this->developer,
                 'documentationUrl' => $this->public ? $this->repo : '',
-            ],
+                'class' => $this->className !== 'Plugin' ? "$this->rootNamespace\\$this->className" : false,
+            ], fn($v) => $v !== false),
             'scripts' => array_filter([
                 'check-cs' => $this->addEcs ? 'ecs check --ansi' : null,
                 'fix-cs' => $this->addEcs ? 'ecs check --ansi --fix' : null,
@@ -523,14 +529,14 @@ NEON;
 
         $namespace = $file->addNamespace($this->rootNamespace)
             ->addUse(Craft::class)
-            ->addUse(BasePlugin::class, 'BasePlugin');
+            ->addUse(BasePlugin::class, $this->className === 'Plugin' ? 'BasePlugin' : null);
 
         if ($this->hasSettings) {
             $namespace->addUse(Model::class);
             $namespace->addUse("$this->settingsNamespace\\$this->settingsClassName");
         }
 
-        $class = $this->createClass('Plugin', BasePlugin::class, [
+        $class = $this->createClass($this->className, BasePlugin::class, [
             self::CLASS_PROPERTIES => $this->pluginProperties(),
             self::CLASS_METHODS => $this->pluginMethods(),
         ]);
@@ -539,7 +545,7 @@ NEON;
         $class->setComment(<<<EOD
 $this->name plugin
 
-@method static Plugin getInstance()
+@method static $this->className getInstance()
 EOD);
 
         if ($this->hasSettings) {
@@ -552,7 +558,7 @@ EOD);
             $class->addComment(sprintf('@license %s', $this->license === 'mit' ? 'MIT' : 'https://craftcms.github.io/license/ Craft License'));
         }
 
-        $this->writePhpFile("$this->targetDir/src/Plugin.php", $file);
+        $this->writePhpFile("$this->targetDir/src/$this->className.php", $file);
     }
 
     private function pluginProperties(): array
@@ -613,7 +619,7 @@ PHP
 
     private function writeSettingsTemplate(): void
     {
-        $pluginClass = "\\$this->rootNamespace\\Plugin";
+        $pluginClass = "\\$this->rootNamespace\\$this->className";
         $settingsClass = "\\$this->settingsNamespace\\$this->settingsClassName";
         $contents = <<<TWIG
 {# @var plugin $pluginClass #}
