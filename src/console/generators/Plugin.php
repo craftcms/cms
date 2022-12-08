@@ -26,7 +26,7 @@ use yii\validators\EmailValidator;
  */
 class Plugin extends BaseGenerator
 {
-    private string $className;
+    private string $name;
     private string $developer;
     private bool $public;
     private string $targetDir;
@@ -46,7 +46,7 @@ class Plugin extends BaseGenerator
 
     public function run(): bool
     {
-        $this->className = $this->controller->prompt('Plugin name:', [
+        $this->name = $this->controller->prompt('Plugin name:', [
             'required' => true,
         ]);
 
@@ -57,7 +57,7 @@ class Plugin extends BaseGenerator
         $this->public = $this->controller->confirm('Do you plan on making it public?', true);
 
         $this->handle = $this->controller->prompt('Plugin handle:', [
-            'default' => ($this->public ? '' : '_') . StringHelper::toKebabCase($this->className),
+            'default' => ($this->public ? '' : '_') . StringHelper::toKebabCase($this->name),
             'pattern' => sprintf('/^\_?%s$/', self::ID_PATTERN),
         ]);
 
@@ -285,7 +285,7 @@ EOD;
     private function writeChangelog(): void
     {
         $contents = <<<MD
-# Release Notes for $this->className
+# Release Notes for $this->name
 
 ## 1.0.0
 - Initial release
@@ -373,7 +373,7 @@ MD;
     private function writeReadme(): void
     {
         $contents = <<<MD
-# $this->className
+# $this->name
 
 $this->description
 
@@ -392,7 +392,7 @@ You can install this plugin from the Plugin Store or with Composer.
 
 #### From the Plugin Store
 
-Go to the Plugin Store in your project’s Control Panel and search for “{$this->className}”. Then press “Install”.
+Go to the Plugin Store in your project’s Control Panel and search for “{$this->name}”. Then press “Install”.
 
 #### With Composer
 
@@ -444,7 +444,7 @@ MD;
             ],
             'extra' => [
                 'handle' => $this->handle,
-                'name' => $this->className,
+                'name' => $this->name,
                 'developer' => $this->developer,
                 'documentationUrl' => $this->public ? $this->repo : '',
             ],
@@ -519,20 +519,16 @@ NEON;
         ]);
         $namespace->add($class);
 
-        $authorText = $this->developer . ($this->email ? " <$this->email>" : '');
         $class->setComment(<<<EOD
-$this->className plugin
+$this->name plugin
 
 @method static Plugin getInstance()
-@author $authorText
 EOD);
 
         if ($this->public) {
-            $licenseText = $this->license === 'mit' ? 'MIT' : 'https://craftcms.github.io/license/ Craft License';
-            $class->addComment(<<<EOD
-@copyright $this->developer
-@license $licenseText
-EOD);
+            $class->addComment(sprintf('@author %s%s', $this->developer, ($this->email ? " <$this->email>" : '')));
+            $class->addComment("@copyright $this->developer");
+            $class->addComment(sprintf('@license %s', $this->license === 'mit' ? 'MIT' : 'https://craftcms.github.io/license/ Craft License'));
         }
 
         $this->writePhpFile("$this->targetDir/src/Plugin.php", $file);

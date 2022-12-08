@@ -59,10 +59,10 @@ class ElementType extends BaseGenerator
         $this->conditionName = sprintf('%sCondition', $this->className);
         $this->conditionNamespace = "$this->namespace\\conditions";
 
-        $this->createElementClass();
-        $this->createQueryClass();
-        $this->createConditionClass();
-        $this->createIndexTemplate();
+        $this->writeElementClass();
+        $this->writeQueryClass();
+        $this->writeConditionClass();
+        $this->writeIndexTemplate();
 
         $message = '**Element type created!**';
         if (!$this->module instanceof Application) {
@@ -104,7 +104,7 @@ MD;
         return true;
     }
 
-    private function createElementClass(): void
+    private function writeElementClass(): void
     {
         $namespace = (new PhpNamespace($this->namespace))
             ->addUse(BaseElement::class)
@@ -286,7 +286,7 @@ PHP,
         ];
     }
 
-    private function createQueryClass(): void
+    private function writeQueryClass(): void
     {
         $namespace = (new PhpNamespace($this->queryNamespace))
             ->addUse(Craft::class)
@@ -317,7 +317,7 @@ PHP,
         ];
     }
 
-    private function createConditionClass(): void
+    private function writeConditionClass(): void
     {
         $namespace = (new PhpNamespace($this->conditionNamespace))
             ->addUse(Craft::class)
@@ -344,7 +344,7 @@ PHP,
         ];
     }
 
-    private function createIndexTemplate(): void
+    private function writeIndexTemplate(): void
     {
         $slashedName = addslashes("$this->namespace\\$this->className");
         $contents = <<<TWIG
