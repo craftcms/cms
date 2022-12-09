@@ -912,13 +912,15 @@ PHP;
         }, $code, 1, $count);
 
         if (!$count) {
+            if ($aliasCount) {
+                $className .= 'Alias';
+            }
             // No `use` statements yet
-            $code = preg_replace('/^namespace.*/m', "$0\n\nuse $class;", $code, 1, $count);
+            $code = preg_replace('/^namespace.*/m', sprintf("$0\n\nuse $class%s;", $aliasCount ? " as $className" : ''), $code, 1, $count);
             if (!$count) {
                 // No `namespace` even
                 return $class;
             }
-            [, $className] = App::classParts($class);
         }
 
         return $className;
