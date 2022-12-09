@@ -8,6 +8,7 @@
 namespace craft\helpers;
 
 use Craft;
+use craft\console\MarkdownParser;
 use yii\base\InvalidConfigException;
 use yii\base\InvalidValueException;
 use yii\console\Controller;
@@ -58,6 +59,15 @@ class Console extends \yii\helpers\Console
     {
         $controller = Craft::$app->controller;
         return $controller instanceof Controller && $controller->isColorEnabled();
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function markdownToAnsi($markdown)
+    {
+        $parser = new MarkdownParser();
+        return $parser->parse($markdown);
     }
 
     /**
