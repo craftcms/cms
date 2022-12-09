@@ -3,6 +3,15 @@
 ## Unreleased
 
 - Fixed a bug where entry tab contents could remain visible when switching to other tabs, after changing the entry type.
+- Added `craft\console\Controller::createDirectory()`. ([#12438](https://github.com/craftcms/cms/pull/12438))
+- Added `craft\console\Controller::do()`. ([#12438](https://github.com/craftcms/cms/pull/12438))
+- Added `craft\console\Controller::failure()`. ([#12438](https://github.com/craftcms/cms/pull/12438))
+- Added `craft\console\Controller::note()`. ([#12438](https://github.com/craftcms/cms/pull/12438))
+- Added `craft\console\Controller::success()`. ([#12438](https://github.com/craftcms/cms/pull/12438))
+- Added `craft\console\Controller::tip()`. ([#12438](https://github.com/craftcms/cms/pull/12438))
+- Added `craft\console\Controller::warning()`. ([#12438](https://github.com/craftcms/cms/pull/12438))
+- Added `craft\console\Controller::writeJson()`. ([#12438](https://github.com/craftcms/cms/pull/12438))
+- Added `craft\console\Controller::writeToFile()`. ([#12438](https://github.com/craftcms/cms/pull/12438))
 - Added `craft\helpers\FileHelper::absolutePath()`.
 - Added `craft\helpers\FileHelper::findClosestFile()`.
 - Added `craft\helpers\FileHelper::isWithin()`.
