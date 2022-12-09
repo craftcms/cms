@@ -3,6 +3,10 @@
 ## Unreleased
 
 - Fixed a bug where entry tab contents could remain visible when switching to other tabs, after changing the entry type.
+- Added `craft\helpers\FileHelper::absolutePath()`.
+- Added `craft\helpers\FileHelper::findClosestFile()`.
+- Added `craft\helpers\FileHelper::isWithin()`.
+- Added `craft\helpers\FileHelper::relativePath()`.
 
 ## 4.3.4 - 2022-11-29
 
