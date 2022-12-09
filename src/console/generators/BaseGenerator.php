@@ -866,7 +866,7 @@ PHP;
         $code = preg_replace_callback('/(^[ \t]*use [^;]+;\s+)+/m', function($match) use (
             $class,
             &$className,
-            $aliasCount,
+            &$aliasCount,
         ) {
             /** @var Use_[] $stmts */
             $stmts = $this->parseSnippet($match[0]);
