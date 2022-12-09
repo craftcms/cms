@@ -770,7 +770,7 @@ class ElementsController extends Controller
                 if (ElementHelper::supportsFieldCopying($element)) {
                     $components[] = Html::button(Craft::t('app', 'Copy content from site'), [
                         'type' => 'button',
-                        'class' => ['btn', 'copy-from-site'],
+                        'class' => ['btn', 'copy-all-from-site'],
                         'aria' => [
                             'label' => Craft::t('app', 'Copy content from site'),
                         ],
