@@ -558,6 +558,10 @@ EOD);
             $class->addComment(sprintf('@license %s', $this->license === 'mit' ? 'MIT' : 'https://craftcms.github.io/license/ Craft License'));
         }
 
+        $class->addMethod('attachEventHandlers')
+            ->setPrivate()
+            ->setReturnType('void');
+
         $this->writePhpFile("$this->targetDir/src/$this->className.php", $file);
     }
 
@@ -584,6 +588,7 @@ parent::init();
 
 // Defer most setup tasks until Craft is fully initialized
 Craft::\$app->onInit(function() {
+    \$this->attachEventHandlers();
     // ...
 });
 PHP,

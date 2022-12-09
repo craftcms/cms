@@ -98,6 +98,10 @@ $this->id module
 EOD
         );
 
+        $class->addMethod('attachEventHandlers')
+            ->setPrivate()
+            ->setReturnType('void');
+
         $this->writePhpClass($namespace);
     }
 
@@ -117,6 +121,7 @@ parent::init();
 
 // Defer most setup tasks until Craft is fully initialized
 Craft::\$app->onInit(function() {
+    \$this->attachEventHandlers();
     // ...
 });
 PHP,

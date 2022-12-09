@@ -9,9 +9,12 @@ use craft\elements\conditions\ElementConditionInterface;
 use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\User;
+use craft\events\RegisterUrlRulesEvent;
 use craft\helpers\StringHelper;
 use craft\helpers\UrlHelper;
+use craft\services\Elements;
 use craft\web\CpScreenResponseBehavior;
+use craft\web\UrlManager;
 use Nette\PhpGenerator\PhpNamespace;
 use yii\helpers\Inflector;
 use yii\web\Application;
@@ -67,36 +70,42 @@ class ElementType extends BaseGenerator
         $message = '**Element type created!**';
         if (!$this->module instanceof Application) {
             $moduleFile = $this->moduleFile();
-            $moduleId = $this->module->id;
-            $message .= "\n" . <<<MD
-Add the following code to `$moduleFile` to register the element type and a route to the control panel edit page:
 
-```php
-use craft\\events\\RegisterComponentTypesEvent;
-use craft\\events\\RegisterUrlRulesEvent;
-use craft\\services\\Elements;
-use craft\\web\\UrlManager;
-use yii\\base\\Event;
-use $this->namespace\\$this->className;
+            if (!$this->addRegistrationEventCode(
+                Elements::class,
+                'EVENT_REGISTER_ELEMENT_TYPES',
+                "$this->namespace\\$this->className",
+                $fallbackExample,
+            )) {
+                $message .= "\n" . <<<MD
+Add the following code to `$moduleFile` to register the element type:
 
-Event::on(
-    Elements::class,
-    Elements::EVENT_REGISTER_ELEMENT_TYPES,
-    function(RegisterComponentTypesEvent \$event) {
-        \$event->types[] = $this->className::class;
-    }
-);
+```
+$fallbackExample
+```
 
-Event::on(
-    UrlManager::class,
-    UrlManager::EVENT_REGISTER_CP_URL_RULES,
-    function(RegisterUrlRulesEvent \$event) {
-        \$event->rules['$this->pluralKebabCasedName'] = ['template' => '$moduleId/$this->pluralKebabCasedName/_index.twig'];
-        \$event->rules['$this->pluralKebabCasedName/<elementId:\d+>'] = 'elements/edit';
-    }
-);
+MD;
+            }
+
+            if (!$this->addEventCode(
+                UrlManager::class,
+                'EVENT_REGISTER_CP_URL_RULES',
+                RegisterUrlRulesEvent::class,
+                [],
+                fn() => <<<PHP
+\$event->rules['$this->pluralKebabCasedName'] = ['template' => '{$this->module->id}/$this->pluralKebabCasedName/_index.twig'];
+\$event->rules['$this->pluralKebabCasedName/<elementId:\d+>'] = 'elements/edit';
+PHP,
+                $fallbackExample
+            )) {
+                $message .= "\n" . <<<MD
+Add the following code to `$moduleFile` to register URL rules for the element index and edit pages:
+
+```
+$fallbackExample
 ```
 MD;
+            }
         }
 
         $this->controller->success($message);

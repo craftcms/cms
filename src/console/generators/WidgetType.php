@@ -4,6 +4,7 @@ namespace craft\console\generators;
 
 use Craft;
 use craft\base\Widget;
+use craft\services\Dashboard;
 use Nette\PhpGenerator\PhpNamespace;
 use yii\helpers\Inflector;
 use yii\web\Application;
@@ -43,24 +44,21 @@ class WidgetType extends BaseGenerator
         $this->writePhpClass($namespace);
 
         $message = "**Widget type created!**";
-        if (!$this->module instanceof Application) {
+        if (
+            !$this->module instanceof Application &&
+            !$this->addRegistrationEventCode(
+                Dashboard::class,
+                'EVENT_REGISTER_WIDGET_TYPES',
+                "$this->namespace\\$this->className",
+                $fallbackExample,
+            )
+        ) {
             $moduleFile = $this->moduleFile();
             $message .= "\n" . <<<MD
 Add the following code to `$moduleFile` to register the widget type:
 
-```php
-use craft\\events\\RegisterComponentTypesEvent;
-use craft\\services\\Dashboard;
-use yii\\base\\Event;
-use $this->namespace\\$this->className;
-
-Event::on(
-    Dashboard::class,
-    Dashboard::EVENT_REGISTER_ELEMENT_TYPES,
-    function(RegisterComponentTypesEvent \$event) {
-        \$event->types[] = $this->className::class;
-    }
-);
+```
+$fallbackExample
 ```
 MD;
         }

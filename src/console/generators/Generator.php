@@ -9,6 +9,7 @@ namespace craft\console\generators;
 
 use Craft;
 use craft\base\Component;
+use craft\console\controllers\MakeController;
 use craft\helpers\App;
 use Nette\PhpGenerator\PhpNamespace;
 use yii\base\Application;
@@ -131,24 +132,21 @@ PHP);
         $this->writePhpClass($namespace);
 
         $message = "**$this->ucfirstDisplayName generator created!**";
-        if (!$this->module instanceof Application) {
+        if (
+            !$this->module instanceof Application &&
+            !$this->addRegistrationEventCode(
+                MakeController::class,
+                'EVENT_REGISTER_GENERATOR_TYPES',
+                "$this->namespace\\$this->className",
+                $fallbackExample,
+            )
+        ) {
             $moduleFile = $this->moduleFile();
             $message .= "\n" . <<<MD
 Register it for Craft’s `make` command by adding the following code to `$moduleFile`:
 
 ```
-use craft\\console\\controllers\\MakeController;
-use craft\\events\\RegisterComponentTypesEvent;
-use yii\\base\\Event;
-use $this->namespace\\$this->className;
-
-Event::on(
-    MakeController::class,
-    MakeController::EVENT_REGISTER_GENERATOR_TYPES,
-    function(RegisterComponentTypesEvent \$event) {
-        \$event->types[] = $this->className::class;
-    }
-);
+$fallbackExample
 ```
 MD;
         }

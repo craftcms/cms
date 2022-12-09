@@ -10,7 +10,9 @@ namespace craft\console\generators;
 use Craft;
 use craft\base\PluginInterface;
 use craft\console\controllers\MakeController;
+use craft\events\RegisterComponentTypesEvent;
 use craft\helpers\App;
+use craft\helpers\ArrayHelper;
 use craft\helpers\Composer;
 use craft\helpers\FileHelper;
 use craft\helpers\Json;
@@ -21,6 +23,18 @@ use Nette\PhpGenerator\Factory;
 use Nette\PhpGenerator\PhpFile;
 use Nette\PhpGenerator\PhpNamespace;
 use Nette\PhpGenerator\PsrPrinter;
+use PhpParser\Lexer\Emulative;
+use PhpParser\Node;
+use PhpParser\Node\Name;
+use PhpParser\Node\Stmt;
+use PhpParser\Node\Stmt\ClassMethod;
+use PhpParser\Node\Stmt\Use_;
+use PhpParser\Node\Stmt\UseUse;
+use PhpParser\NodeTraverser;
+use PhpParser\NodeVisitor\CloningVisitor;
+use PhpParser\NodeVisitorAbstract;
+use PhpParser\ParserFactory;
+use PhpParser\PrettyPrinter\Standard;
 use ReflectionClass;
 use ReflectionClassConstant;
 use ReflectionException;
@@ -28,6 +42,7 @@ use ReflectionMethod;
 use ReflectionProperty;
 use yii\base\Application;
 use yii\base\BaseObject;
+use yii\base\Event;
 use yii\base\InvalidArgumentException;
 use yii\base\Module as BaseModule;
 use yii\base\NotSupportedException;
@@ -718,5 +733,280 @@ abstract class BaseGenerator extends BaseObject
         };
 
         return $category ? sprintf("Craft::t('%s', %s)", $category, $messagePhp) : $messagePhp;
+    }
+
+    /**
+     * Adds component registration event code to the module’s `attachEventHandlers()` method, if it has one.
+     *
+     * @param string $serviceClass The service class that fires the registration event
+     * @param string $event The registration event constant name
+     * @param string $componentClass The component class to attach to [[RegisterComponentTypesEvent::$types]]
+     * @param string|null $fallbackExample Example code that can be output if unsuccessful
+     * @return bool Whether an `attachEventHandlers()` method could be found.
+     * @see https://github.com/nikic/PHP-Parser/blob/4.x/doc/component/Pretty_printing.markdown#formatting-preserving-pretty-printing
+     */
+    protected function addRegistrationEventCode(
+        string $serviceClass,
+        string $event,
+        string $componentClass,
+        ?string &$fallbackExample = null,
+    ): bool {
+        return $this->addEventCode(
+            $serviceClass,
+            $event,
+            RegisterComponentTypesEvent::class,
+            [$componentClass],
+            fn($componentClassName) => <<<PHP
+\$event->types[] = $componentClassName::class;
+PHP,
+            $fallbackExample,
+        );
+    }
+
+    /**
+     * Adds class-level event handling code to the module’s `attachEventHandlers()` method, if it has one.
+     *
+     * @param string $class The class that triggers the event
+     * @param string $event The event constant name
+     * @param string $eventClass The event class that will be passed
+     * @param array $uses Any classes that should be imported and passed to the `$code` callable as class names
+     * @param callable $handlerCode Callable that returns the event code to be added
+     * @param string|null $fallbackExample Example code that can be output if unsuccessful
+     * @return bool Whether an `attachEventHandlers()` method could be found.
+     */
+    protected function addEventCode(
+        string $class,
+        string $event,
+        string $eventClass,
+        array $uses,
+        callable $handlerCode,
+        ?string &$fallbackExample = null,
+    ): bool {
+        $file = $this->moduleFile();
+        $code = file_get_contents($file);
+
+        $baseEventClassName = $this->addImport($code, Event::class);
+        $className = $this->addImport($code, $class);
+        $eventClassName = $this->addImport($code, $eventClass);
+        $usesClassNames = array_map(function(string $use) use (&$code) {
+            return $this->addImport($code, $use);
+        }, $uses);
+        $handlerCode = $handlerCode(...$usesClassNames);
+
+        $eventCode = <<<PHP
+$baseEventClassName::on($className::class, $className::$event, function($eventClassName \$event) {
+    $handlerCode
+});
+PHP;
+
+        $visitor = $this->createAppendCodeToMethodVisitor('attachEventHandlers', $eventCode);
+        if (!$this->modifyCode($code, $visitor)) {
+            $fallbackExample = $this->phpExample($eventCode, array_unique(array_merge([
+                Event::class,
+                $class,
+                $eventClass,
+            ], $uses)));
+            return false;
+        }
+
+        $this->controller->writeToFile($file, $code);
+        return true;
+    }
+
+    /**
+     * Returns a new PHP node visitor that appends code to a class method.
+     *
+     * @param string $method The method name to modify
+     * @param string $code The PHP code to append to the method
+     * @return NodeVisitorAbstract
+     */
+    protected function createAppendCodeToMethodVisitor(string $method, string $code): NodeVisitorAbstract
+    {
+        $stmts = $this->parseSnippet($code);
+
+        return new class($method, $stmts) extends NodeVisitorAbstract {
+            public function __construct(
+                private string $method,
+                private array $stmts,
+            ) {
+            }
+
+            public function enterNode(Node $node): ?int
+            {
+                if (!$node instanceof ClassMethod || (string)$node->name !== $this->method) {
+                    return null;
+                }
+
+                array_push($node->stmts, ...$this->stmts);
+                return NodeTraverser::STOP_TRAVERSAL;
+            }
+        };
+    }
+
+    /**
+     * Attempts to add an import to the given PHP code.
+     *
+     * @param string $code The PHP code
+     * @param string $class The class to import
+     * @return string The class name or alias that the class should be referred to by
+     */
+    protected function addImport(string &$code, string $class): string
+    {
+        [, $className] = App::classParts($class);
+        $aliasCount = 0;
+
+        // If the class name matches the class in the code, use an alias
+        if (
+            preg_match('/^(?:abstract |final )?class (\w+)/m', $code, $match) &&
+            $match[1] === $className
+        ) {
+            $aliasCount = 1;
+        }
+
+        $code = preg_replace_callback('/(^[ \t]*use [^;]+;\s+)+/m', function($match) use (
+            $class,
+            &$className,
+            $aliasCount,
+        ) {
+            /** @var Use_[] $stmts */
+            $stmts = $this->parseSnippet($match[0]);
+
+            // See if it's already imported
+            foreach ($stmts as $use) {
+                /** @var UseUse|null $useUse */
+                $useUse = ArrayHelper::firstWhere($use->uses, fn(UseUse $useUse) => (string)$useUse->name === $class);
+                if ($useUse) {
+                    // It's already imported
+                    if ($useUse->alias) {
+                        $className = (string)$useUse->alias;
+                    }
+                    return $match[0];
+                }
+            }
+
+            // Find a unique name for the class
+            do {
+                $tryClassName = $className . ($aliasCount ? sprintf('Alias%s', $aliasCount !== 1 ? $aliasCount : '') : '');
+                $exists = ArrayHelper::contains($stmts, function(Use_ $use) use ($tryClassName) {
+                    return ArrayHelper::contains($use->uses, function(UseUse $useUse) use ($tryClassName) {
+                        return (string)($useUse->alias ?? $useUse->name->getLast()) === $tryClassName;
+                    });
+                });
+                if ($exists) {
+                    $aliasCount++;
+                }
+            } while ($exists);
+
+            if ($aliasCount) {
+                $className = $tryClassName;
+            }
+
+            $stmts[] = new Use_([
+                new UseUse(new Name($class), $aliasCount ? $className : null),
+            ]);
+
+            // Sort the imports
+            usort($stmts, fn(Node $a, Node $b) => (string)($a->uses[0]->name ?? '') <=> (string)($b->uses[0]->name ?? ''));
+
+            return $this->printSnippet($stmts) . "\n\n";
+        }, $code, 1, $count);
+
+        if (!$count) {
+            // No `use` statements yet
+            $code = preg_replace('/^namespace.*/m', "$0\n\nuse $class;", $code, 1, $count);
+            if (!$count) {
+                // No `namespace` even
+                return $class;
+            }
+            [, $className] = App::classParts($class);
+        }
+
+        return $className;
+    }
+
+    /**
+     * Modifies PHP code with a given node visitor
+     *
+     * @param string $code
+     * @param NodeVisitorAbstract $visitor
+     * @return bool Whether the code was modified
+     * @see https://github.com/nikic/PHP-Parser/blob/4.x/doc/component/Pretty_printing.markdown#formatting-preserving-pretty-printing
+     */
+    protected function modifyCode(string &$code, NodeVisitorAbstract $visitor): bool
+    {
+        $lexer = new Emulative([
+            'usedAttributes' => [
+                'comments',
+                'startLine', 'endLine',
+                'startTokenPos', 'endTokenPos',
+            ],
+        ]);
+
+        $parser = (new ParserFactory())->create(ParserFactory::ONLY_PHP7, $lexer);
+
+        $traverser = new NodeTraverser();
+        $traverser->addVisitor(new CloningVisitor());
+        $traverser->addVisitor($visitor);
+
+        $oldStmts = $parser->parse($code);
+        $oldTokens = $lexer->getTokens();
+        $newStmts = $traverser->traverse($oldStmts);
+
+        if ($this->printSnippet($oldStmts) === $this->printSnippet($newStmts)) {
+            // Nothing changed
+            return false;
+        }
+
+        $code = (new Standard())->printFormatPreserving($newStmts, $oldStmts, $oldTokens);
+        return true;
+    }
+
+    /**
+     * Returns a PHP code example
+     *
+     * @param string $code
+     * @param array $uses
+     * @return string
+     */
+    protected function phpExample(string $code, array $uses = []): string
+    {
+        sort($uses);
+        $imports = implode("\n", array_map(fn(string $class) => "use $class;", $uses));
+        $code = $this->formatSnippet($code);
+        return "$imports\n\n$code";
+    }
+
+    /**
+     * Parses a PHP code snippet into statement nodes.
+     *
+     * @param string $snippet
+     * @return Stmt[]
+     */
+    private function parseSnippet(string $snippet): array
+    {
+        $parser = (new ParserFactory())->create(ParserFactory::ONLY_PHP7);
+        return $parser->parse("<?php\n$snippet") ?? [];
+    }
+
+    /**
+     * Formats a PHP code snippet.
+     *
+     * @param string $code
+     * @return string
+     */
+    private function formatSnippet(string $code): string
+    {
+        return $this->printSnippet($this->parseSnippet($code));
+    }
+
+    /**
+     * Prints out a PHP code snippet from nodes.
+     *
+     * @param Node[] $stmts
+     * @return string
+     */
+    private function printSnippet(array $stmts): string
+    {
+        return preg_replace('/^<\?php\s*/', '', (new Standard())->prettyPrint($stmts));
     }
 }

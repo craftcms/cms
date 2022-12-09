@@ -5,6 +5,7 @@ namespace craft\console\generators;
 use Craft;
 use craft\base\Fs;
 use craft\models\FsListing;
+use craft\services\Fs as FsService;
 use Nette\PhpGenerator\PhpNamespace;
 use yii\helpers\Inflector;
 use yii\web\Application;
@@ -45,24 +46,21 @@ class FilesystemType extends BaseGenerator
         $this->writePhpClass($namespace);
 
         $message = "**Filesystem type created!**";
-        if (!$this->module instanceof Application) {
+        if (
+            !$this->module instanceof Application &&
+            !$this->addRegistrationEventCode(
+                FsService::class,
+                'EVENT_REGISTER_FILESYSTEM_TYPES',
+                "$this->namespace\\$this->className",
+                $fallbackExample,
+            )
+        ) {
             $moduleFile = $this->moduleFile();
             $message .= "\n" . <<<MD
 Add the following code to `$moduleFile` to register the filesystem type:
 
-```php
-use craft\\events\\RegisterComponentTypesEvent;
-use craft\\services\\Fs;
-use yii\\base\\Event;
-use $this->namespace\\$this->className;
-
-Event::on(
-    Fs::class,
-    Fs::EVENT_REGISTER_FILESYSTEM_TYPES,
-    function(RegisterComponentTypesEvent \$event) {
-        \$event->types[] = $this->className::class;
-    }
-);
+```
+$fallbackExample
 ```
 MD;
         }

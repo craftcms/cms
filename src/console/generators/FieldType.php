@@ -16,6 +16,7 @@ use craft\helpers\App;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Html;
 use craft\helpers\StringHelper;
+use craft\services\Fields;
 use Nette\PhpGenerator\PhpNamespace;
 use yii\db\Schema;
 use yii\helpers\Inflector;
@@ -104,24 +105,21 @@ class FieldType extends BaseGenerator
         $this->writePhpClass($namespace);
 
         $message = "**Field type created!**";
-        if (!$this->module instanceof Application) {
+        if (
+            !$this->module instanceof Application &&
+            !$this->addRegistrationEventCode(
+                Fields::class,
+                'EVENT_REGISTER_FIELD_TYPES',
+                "$this->namespace\\$this->className",
+                $fallbackExample
+            )
+        ) {
             $moduleFile = $this->moduleFile();
             $message .= "\n" . <<<MD
 Add the following code to `$moduleFile` to register the field type:
 
-```php
-use craft\\events\\RegisterComponentTypesEvent;
-use craft\\services\\Fields;
-use yii\\base\\Event;
-use $this->namespace\\$this->className;
-
-Event::on(
-    Fields::class,
-    Fields::EVENT_REGISTER_FIELD_TYPES,
-    function(RegisterComponentTypesEvent \$event) {
-        \$event->types[] = $this->className::class;
-    }
-);
+```
+$fallbackExample
 ```
 MD;
         }

@@ -49,6 +49,7 @@
     "moneyphp/money": "^4.0",
     "monolog/monolog": "^2.3",
     "nette/php-generator": "^4.0",
+    "nikic/php-parser": "^4.15",
     "pixelandtonic/imagine": "~1.2.4.1",
     "samdark/yii2-psr-log-target": "^1.1",
     "seld/cli-prompt": "^1.0.4",
