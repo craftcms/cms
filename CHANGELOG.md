@@ -7,6 +7,7 @@
 - Added `craft\helpers\FileHelper::findClosestFile()`.
 - Added `craft\helpers\FileHelper::isWithin()`.
 - Added `craft\helpers\FileHelper::relativePath()`.
+- Added `craft\helpers\Json::decodeFromFile()`.
 
 ## 4.3.4 - 2022-11-29
 
