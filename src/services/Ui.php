@@ -11,6 +11,8 @@ use craft\base\Component;
 use craft\helpers\StringHelper;
 use craft\ui\attributes\AsTwigComponent;
 use craft\ui\components\Button;
+use craft\ui\components\ErrorList;
+use craft\ui\components\Field;
 use craft\ui\components\InputColor;
 use craft\ui\components\InputCopyText;
 use craft\ui\components\InputDate;
@@ -23,6 +25,7 @@ use craft\ui\components\InputSelectize;
 use craft\ui\components\InputText;
 use craft\ui\components\InputTextArea;
 use craft\ui\components\InputTime;
+use craft\ui\components\Notice;
 use Exception;
 use ReflectionClass;
 use ReflectionException;
@@ -44,6 +47,9 @@ class Ui extends Component
         return [
             // Button
             Button::class,
+            Field::class,
+            Notice::class,
+            ErrorList::class,
 
             // Inputs
             InputText::class,
@@ -58,6 +64,7 @@ class Ui extends Component
             InputSelect::class,
             InputSelectize::class,
             InputLightswitch::class,
+
         ];
     }
 
@@ -114,11 +121,12 @@ class Ui extends Component
      * @return array
      * @throws ReflectionException
      */
-    public function propsDataFor(string $name): array
+    public function docsDataFor(string $name): array
     {
         $component = $this->getComponentClass($name);
         $reflectionClass = new ReflectionClass($component);
         $props = [];
+        $methods = [];
 
         foreach ($reflectionClass->getProperties(\ReflectionProperty::IS_PUBLIC) as $property) {
             $props[] = [
@@ -130,7 +138,15 @@ class Ui extends Component
             ];
         }
 
-        return $props;
+        foreach ($reflectionClass->getMethods(\ReflectionMethod::IS_PUBLIC) as $method) {
+            $methods[] = [
+                'name' => $method->getName(),
+                'arguments' => $method->getParameters(),
+                'description' => StringHelper::docDescription($method->getDocComment()),
+            ];
+        }
+
+        return [$props, $methods];
     }
 
     /**
