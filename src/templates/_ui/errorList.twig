@@ -1,0 +1,16 @@
+{%- if errors %}
+    {% tag 'ul' with {
+        id: id ?? false,
+        class: 'errors',
+    } %}
+        {% for error in errors %}
+            <li>
+                {{ tag('span', {
+                    class: 'visually-hidden',
+                    text: 'Error:'|t('app'),
+                }) }}
+                {{ error|e|md(inlineOnly=true)|replace('/&amp;(\\w+);/', '&$1;')|raw }}
+            </li>
+        {% endfor %}
+    {% endtag %}
+{%- endif %}

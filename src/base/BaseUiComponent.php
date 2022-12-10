@@ -10,10 +10,10 @@ namespace craft\base;
 use Craft;
 use craft\events\ComponentPreRenderEvent;
 use craft\helpers\ArrayHelper;
-use craft\helpers\Template;
+use craft\models\Site;
 use craft\ui\attributes\AsTwigComponent;
 use craft\ui\HtmlAttributes;
-use Illuminate\Support\Collection;
+use InvalidArgumentException;
 use Twig\Extension\EscaperExtension;
 use yii\base\InvalidConfigException;
 
@@ -36,6 +36,11 @@ abstract class BaseUiComponent extends Component implements UiComponentInterface
     public bool $debug = false;
 
     /**
+     * @var Site|null Site associated with field.
+     */
+    private ?Site $_site = null;
+
+    /**
      * Debug
      *
      * @param bool $value
@@ -47,6 +52,26 @@ abstract class BaseUiComponent extends Component implements UiComponentInterface
         return $this;
     }
 
+    /**
+     * @var int|null ID of the current site.
+     */
+    public ?int $siteId = null;
+
+    /**
+     * @return Site|null Get site for the field.
+     */
+    public function getSite(): ?Site
+    {
+        if (!$this->_site && $this->siteId) {
+            $this->_site = Craft::$app->getSites()->getSiteById($this->siteId);
+
+            if (!$this->_site) {
+                throw new InvalidArgumentException("Invalid site ID: $this->siteId");
+            }
+        }
+
+        return $this->_site;
+    }
 
     /**
      * Anything not consumed by properties will end up here.
@@ -203,7 +228,7 @@ abstract class BaseUiComponent extends Component implements UiComponentInterface
      * @return ComponentPreRenderEvent
      * @throws InvalidConfigException
      */
-    public function preRender(): ComponentPreRenderEvent
+    private function preRender(): ComponentPreRenderEvent
     {
         $this->validate();
 

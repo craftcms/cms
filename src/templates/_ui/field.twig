@@ -1,0 +1,96 @@
+{% set containerTag = fieldset ? 'fieldset' : 'div' %}
+
+{% set labelHtml %}
+    {{ label }}
+    {% if required %}
+        <span class="visually-hidden">{{ 'Required' | t }}</span>
+        <span class="required" aria-hidden="true"></span>
+    {% endif %}
+    {% if translatable %}
+        <span
+            class="t9n-indicator"
+            title="{{ translationDescription | t }}"
+            data-icon="language"
+            aria-label="{{ translationDescription | t }}"
+            role="img"
+        >
+        </span>
+    {% endif %}
+{% endset %}
+
+{% set instructionsHtml %}
+    {% if instructions %}
+        <div class="instructions" id="{{ instructionsId }}">
+            {{ instructions | md('gfm-comment') }}
+        </div>
+    {% endif %}
+{% endset %}
+
+{% tag containerTag with this.getContainerAttributes() %}
+    {% if label and fieldset %}
+        <legend class="visually-hidden" data-label="{{ label }}">{{ labelHtml }}</legend>
+    {% endif %}
+
+    {% if status %}
+        <div id="{{ statusId }}" class="status-badge {{ status[0] }}" title="{{ status[1] }}">
+            <span class="visually-hidden">{{ status[1] }}</span>
+        </div>
+    {% endif %}
+
+    {% if label or showAttribute %}
+        <div class="heading">
+            {{ headingPrefix | raw }}
+
+            {% if label %}
+                {% set labelTag = fieldset ? 'legend' : 'label' %}
+                {% tag labelTag with this.labelAttributes %}
+                    {{ labelHtml }}
+                {% endtag %}
+            {% endif %}
+
+            {% if showAttribute %}
+                <div class="flex-grow"></div>
+                {% include '_includes/forms/copytextbtn' with {
+                    id: "#{id}-attribute",
+                    class: ['code', 'small', 'light'],
+                    value: attribute
+                } only %}
+            {% endif %}
+
+            {{ headingSuffix | raw }}
+        </div>
+    {% endif %}
+
+    {% if instructionsPosition == 'before' %}{{ instructionsHtml }}{% endif %}
+
+    <div class="input {{ this.getOrientation() }} {% if errors %}errors{% endif %}" {{ attr(containerAttributes) }}>
+        {{ inputHtml | raw }}
+    </div>
+
+    {% if instructionsPosition == 'after' %}{{ instructionsHtml }}{% endif %}
+
+    {% if tip %}
+        {{ component('notice', {
+            id: tipId,
+            label: 'Tip:' | t,
+            content: tip
+        }) }}
+    {% endif %}
+
+    {% if warning %}
+        {{ component('notice', {
+            id: warningId,
+            type: 'warning',
+            label: 'Warning:' | t,
+            content: warning
+        }) }}
+    {% endif %}
+
+    {% if errors %}
+        {{ component('errorList', {
+            id: errorsId,
+            errors: errors
+        }) }}
+    {% endif %}
+
+{% endtag %}

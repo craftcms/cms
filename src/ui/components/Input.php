@@ -7,6 +7,7 @@
 
 namespace craft\ui\components;
 
+use Craft;
 use craft\base\BaseUiComponent;
 
 class Input extends BaseUiComponent
@@ -31,4 +32,24 @@ class Input extends BaseUiComponent
      * @var int|null
      */
     public ?int $size = null;
+
+    /**
+     * Text orientation of the input. Should be `ltr` or `rtl`
+     *
+     * @var string|null
+     */
+    public ?string $orientation = null;
+
+    /**
+     * @return string
+     */
+    public function getOrientation(): string
+    {
+        if (!$this->orientation) {
+            $site = $this->getSite();
+            $this->orientation = ($site ? $site->getLocale() : Craft::$app->getLocale())->getOrientation();
+        }
+
+        return $this->orientation;
+    }
 }

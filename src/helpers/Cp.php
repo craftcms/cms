@@ -21,6 +21,7 @@ use craft\fieldlayoutelements\BaseField;
 use craft\models\FieldLayout;
 use craft\models\FieldLayoutTab;
 use craft\models\Site;
+use craft\ui\components\Field;
 use craft\ui\components\InputDate;
 use craft\ui\components\InputLightswitch;
 use craft\ui\components\InputSelect;
@@ -31,7 +32,6 @@ use craft\web\twig\TemplateLoaderException;
 use craft\web\View;
 use yii\base\Event;
 use yii\base\InvalidArgumentException;
-use yii\helpers\Markdown;
 use yii\validators\RequiredValidator;
 
 /**
@@ -592,12 +592,11 @@ class Cp
      * @param array $config
      * @return string
      * @throws TemplateLoaderException if $input begins with `template:` and is followed by an invalid template path
-     * @throws InvalidArgumentException if `$config['siteId']` is invalid
      * @since 3.5.8
+     * @deprecated [[Field::create($config)->render()]] should be used instead.
      */
     public static function fieldHtml(string $input, array $config = []): string
     {
-        $attribute = $config['attribute'] ?? $config['id'] ?? null;
         $id = $config['id'] = $config['id'] ?? 'field' . mt_rand();
         $labelId = $config['labelId'] ?? "$id-label";
         $instructionsId = $config['instructionsId'] ?? "$id-instructions";
@@ -631,189 +630,9 @@ class Cp
             $input = static::renderTemplate(substr($input, 9), $config);
         }
 
-        $fieldset = $config['fieldset'] ?? false;
-        $fieldId = $config['fieldId'] ?? "$id-field";
-        $label = $config['fieldLabel'] ?? $config['label'] ?? null;
-
-        if ($label === '__blank__') {
-            $label = null;
-        }
-
-        $siteId = Craft::$app->getIsMultiSite() && isset($config['siteId']) ? (int)$config['siteId'] : null;
-
-        if ($siteId) {
-            $site = Craft::$app->getSites()->getSiteById($siteId);
-            if (!$site) {
-                throw new InvalidArgumentException("Invalid site ID: $siteId");
-            }
-        } else {
-            $site = null;
-        }
-
-        $required = (bool)($config['required'] ?? false);
-        $instructionsPosition = $config['instructionsPosition'] ?? 'before';
-        $orientation = $config['orientation'] ?? ($site ? $site->getLocale() : Craft::$app->getLocale())->getOrientation();
-        $translatable = Craft::$app->getIsMultiSite() ? ($config['translatable'] ?? ($site !== null)) : false;
-
-        $fieldClass = array_merge(array_filter([
-            'field',
-            ($config['first'] ?? false) ? 'first' : null,
-            $errors ? 'has-errors' : null,
-        ]), Html::explodeClass($config['fieldClass'] ?? []));
-
-        if (isset($config['attribute']) && ($currentUser = Craft::$app->getUser()->getIdentity())) {
-            $showAttribute = $currentUser->admin && $currentUser->getPreference('showFieldHandles');
-        } else {
-            $showAttribute = false;
-        }
-
-        $instructionsHtml = $instructions
-            ? Html::tag('div', preg_replace('/&amp;(\w+);/', '&$1;', Markdown::process(Html::encodeInvalidTags($instructions), 'gfm-comment')), [
-                'id' => $instructionsId,
-                'class' => ['instructions'],
-            ])
-            : '';
-
-        $labelHtml = $label . (
-            ($required
-                ? Html::tag('span', Craft::t('app', 'Required'), [
-                    'class' => ['visually-hidden'],
-                ]) .
-                Html::tag('span', '', [
-                    'class' => ['required'],
-                    'aria' => [
-                        'hidden' => 'true',
-                    ],
-                ])
-                : '') .
-            ($translatable
-                ? Html::tag('span', '', [
-                    'class' => ['t9n-indicator'],
-                    'title' => $config['translationDescription'] ?? Craft::t('app', 'This field is translatable.'),
-                    'data' => [
-                        'icon' => 'language',
-                    ],
-                    'aria' => [
-                        'label' => $config['translationDescription'] ?? Craft::t('app', 'This field is translatable.'),
-                    ],
-                    'role' => 'img',
-                ])
-                : '')
-            );
-
-        $containerTag = $fieldset ? 'fieldset' : 'div';
-
-        return
-            Html::beginTag($containerTag, ArrayHelper::merge(
-                [
-                    'class' => $fieldClass,
-                    'id' => $fieldId,
-                    'data' => [
-                        'attribute' => $attribute,
-                    ],
-                ],
-                $config['fieldAttributes'] ?? []
-            )) .
-            (($label && $fieldset)
-                ? Html::tag('legend', $labelHtml, [
-                    'class' => ['visually-hidden'],
-                    'data' => [
-                        'label' => $label,
-                    ],
-                ])
-                : '') .
-            ($status
-                ? Html::beginTag('div', [
-                    'id' => $statusId,
-                    'class' => ['status-badge', $status[0]],
-                    'title' => $status[1],
-                ]) .
-                Html::tag('span', $status[1], [
-                    'class' => 'visually-hidden',
-                ]) .
-                Html::endTag('div')
-                : '') .
-            (($label || $showAttribute)
-                ? (
-                    Html::beginTag('div', ['class' => 'heading']) .
-                    ($config['headingPrefix'] ?? '') .
-                    ($label
-                        ? Html::tag($fieldset ? 'legend' : 'label', $labelHtml, ArrayHelper::merge([
-                            'id' => $labelId,
-                            'class' => $config['labelClass'] ?? null,
-                            'for' => !$fieldset ? $id : null,
-                            'aria' => [
-                                'hidden' => $fieldset ? 'true' : null,
-                            ],
-                        ], $config['labelAttributes'] ?? []))
-                        : '') .
-                    ($showAttribute
-                        ? Html::tag('div', '', [
-                            'class' => ['flex-grow'],
-                        ]) . static::renderTemplate('_includes/forms/copytextbtn.twig', [
-                            'id' => "$id-attribute",
-                            'class' => ['code', 'small', 'light'],
-                            'value' => $config['attribute'],
-                        ])
-                        : '') .
-                    ($config['headingSuffix'] ?? '') .
-                    Html::endTag('div')
-                )
-                : '') .
-            ($instructionsPosition === 'before' ? $instructionsHtml : '') .
-            Html::tag('div', $input, ArrayHelper::merge(
-                [
-                    'class' => array_filter([
-                        'input',
-                        $orientation,
-                        $errors ? 'errors' : null,
-                    ]),
-                ],
-                $config['inputContainerAttributes'] ?? []
-            )) .
-            ($instructionsPosition === 'after' ? $instructionsHtml : '') .
-            self::_noticeHtml($tipId, 'notice', Craft::t('app', 'Tip:'), $tip) .
-            self::_noticeHtml($warningId, 'warning', Craft::t('app', 'Warning:'), $warning) .
-            ($errors
-                ? static::renderTemplate('_includes/forms/errorList.twig', [
-                    'id' => $errorsId,
-                    'errors' => $errors,
-                ])
-                : '') .
-            Html::endTag($containerTag);
-    }
-
-    /**
-     * Returns the HTML for a field tip/warning.
-     *
-     * @param string $id
-     * @param string $class
-     * @param string $label
-     * @param string|null $message
-     * @return string
-     */
-    private static function _noticeHtml(string $id, string $class, string $label, ?string $message): string
-    {
-        if (!$message) {
-            return '';
-        }
-
-        return
-            Html::beginTag('p', [
-                'id' => $id,
-                'class' => [$class, 'has-icon'],
-            ]) .
-            Html::tag('span', '', [
-                'class' => 'icon',
-                'aria' => [
-                    'hidden' => 'true',
-                ],
-            ]) .
-            Html::tag('span', "$label ", [
-                'class' => 'visually-hidden',
-            ]) .
-            Html::tag('span', preg_replace('/&amp;(\w+);/', '&$1;', Markdown::processParagraph(Html::encodeInvalidTags($message)))) .
-            Html::endTag('p');
+        return Field::create($config)
+            ->inputHtml($input)
+            ->render();
     }
 
     /**
@@ -1531,9 +1350,9 @@ JS, [
 
         if (!$config['customizableTabs']) {
             $tab = array_shift($tabs) ?? new FieldLayoutTab([
-                    'uid' => StringHelper::UUID(),
-                    'layout' => $fieldLayout,
-                ]);
+                'uid' => StringHelper::UUID(),
+                'layout' => $fieldLayout,
+            ]);
             $tab->name = $config['pretendTabName'] ?? Craft::t('app', 'Content');
 
             // Any extra tabs?

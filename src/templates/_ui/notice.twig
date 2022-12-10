@@ -1,0 +1,5 @@
+<p {{ attributes.defaults({id: id, class: [type, 'has-icon']}) }}>
+    <span class="icon" aria-hidden="true"></span>
+    <span class="visually-hidden">{{ label }} </span>
+    <span>{{ content | md('gfm-comment', true) }}</span>
+</p>
