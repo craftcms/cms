@@ -94,7 +94,6 @@ class EntriesController extends BaseEntriesController
         $entry = Craft::createObject(Entry::class);
         $entry->siteId = $site->id;
         $entry->sectionId = $section->id;
-        //$entry->authorId = $this->request->getQueryParam('authorId', $user->id);
         $entry->authorsIds = $this->request->getQueryParam('authorsIds', $user->id);
 
         // Type
@@ -239,8 +238,7 @@ class EntriesController extends BaseEntriesController
         if (
             $entry->id &&
             !$duplicate &&
-            (/*$entry->authorId != $currentUser->id ||*/
-                !in_array($currentUser->id, $entry->authorsIds)) &&
+            !in_array($currentUser->id, $entry->authorsIds) &&
             $section->type !== Section::TYPE_SINGLE &&
             $entry->enabled
         ) {
