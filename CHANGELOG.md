@@ -1,5 +1,11 @@
 # Release Notes for Craft CMS 3.x
 
+## Unreleased
+
+- Fixed a bug where it wasn’t possible to enter `0` in Number fields and numeric column cells within editable tables, using certain keyboard layouts. ([#12412](https://github.com/craftcms/cms/issues/12412))
+- Added `Craft.filterInputVal()`.
+- Added `Craft.filterNumberInputVal()`.
+
 ## 3.7.61 - 2022-11-17
 
 - Fixed an error that occurred if an arrow function was passed to the `|sort` Twig filter. ([#12334](https://github.com/craftcms/cms/issues/12334))
