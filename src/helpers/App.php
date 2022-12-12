@@ -423,7 +423,7 @@ class App
      * Retrieves a bool PHP config setting and normalizes it to an actual bool.
      *
      * @param string $var The PHP config setting to retrieve.
-     * @return bool Whether it is set to the php.ini equivelant of `true`.
+     * @return bool Whether it is set to the php.ini equivalent of `true`.
      */
     public static function phpConfigValueAsBool(string $var): bool
     {

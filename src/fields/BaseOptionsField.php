@@ -12,6 +12,7 @@ use craft\base\ElementInterface;
 use craft\base\Field;
 use craft\base\PreviewableFieldInterface;
 use craft\elements\db\ElementQueryInterface;
+use craft\events\DefineInputOptionsEvent;
 use craft\fields\conditions\OptionsFieldConditionRule;
 use craft\fields\data\MultiOptionsFieldData;
 use craft\fields\data\OptionData;
@@ -34,6 +35,12 @@ use yii\db\Schema;
  */
 abstract class BaseOptionsField extends Field implements PreviewableFieldInterface
 {
+    /**
+     * @event DefineInputOptionsEvent Event triggered when defining the options for the field's input.
+     * @since 4.4.0
+     */
+    public const EVENT_DEFINE_OPTIONS = 'defineOptions';
+
     /**
      * @var array The available options
      */
@@ -517,13 +524,27 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
      * Returns the field options, with labels run through Craft::t().
      *
      * @param bool $encode Whether the option values should be base64-encoded
+     * @param mixed $value The field’s value. This will either be the [[normalizeValue()|normalized value]],
+     * raw POST data (i.e. if there was a validation error), or null
+     * @param ElementInterface|null $element The element the field is associated with, if there is one
      * @return array
      */
-    protected function translatedOptions(bool $encode = false): array
+    protected function translatedOptions(bool $encode = false, mixed $value = null, ?ElementInterface $element = null): array
     {
+        $options = $this->options();
         $translatedOptions = [];
 
-        foreach ($this->options() as $option) {
+        if ($this->hasEventHandlers(self::EVENT_DEFINE_OPTIONS)) {
+            $event = new DefineInputOptionsEvent([
+                'options' => $options,
+                'value' => $value,
+                'element' => $element,
+            ]);
+            $this->trigger(self::EVENT_DEFINE_OPTIONS, $event);
+            $options = $event->options;
+        }
+
+        foreach ($options as $option) {
             if (isset($option['optgroup'])) {
                 $translatedOptions[] = [
                     'optgroup' => Craft::t('site', $option['optgroup']),

@@ -11,6 +11,7 @@ use Craft;
 use craft\base\ElementInterface;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\db\TagQuery;
+use craft\elements\ElementCollection;
 use craft\elements\Tag;
 use craft\gql\arguments\elements\Tag as TagArguments;
 use craft\gql\interfaces\elements\Tag as TagInterface;
@@ -59,7 +60,7 @@ class Tags extends BaseRelationField
      */
     public static function valueType(): string
     {
-        return TagQuery::class;
+        return sprintf('%s|%s<%s>', TagQuery::class, ElementCollection::class, Tag::class);
     }
 
     /**

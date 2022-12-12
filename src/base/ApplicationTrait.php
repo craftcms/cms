@@ -422,6 +422,23 @@ trait ApplicationTrait
     }
 
     /**
+     * Invokes a callback method when Craft is fully initialized.
+     *
+     * @param callable $callback
+     * @since 4.3.5
+     */
+    public function onInit(callable $callback): void
+    {
+        if ($this->_isInitialized) {
+            $callback();
+        } else {
+            $this->on(WebApplication::EVENT_INIT, function() use ($callback) {
+                $callback();
+            });
+        }
+    }
+
+    /**
      * Returns whether this Craft install has multiple sites.
      *
      * @param bool $refresh Whether to ignore the cached result and check again

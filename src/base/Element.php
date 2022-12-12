@@ -948,7 +948,6 @@ abstract class Element extends Component implements ElementInterface
         return $event->actions;
     }
 
-
     /**
      * Returns whether the Set Status action should be included in [[actions()]] automatically.
      *
@@ -957,9 +956,8 @@ abstract class Element extends Component implements ElementInterface
      */
     protected static function includeSetStatusAction(): bool
     {
-        return static::hasStatuses();
+        return false;
     }
-
 
     /**
      * Defines the available element actions for a given source.
