@@ -81,8 +81,8 @@ class TypeResolverTest extends TestCase
             // Entries
             [Entry::class, ['title' => 'Theories of life'], EntryResolver::class],
             [Entry::class, ['title' => StringHelper::randomString(128)], EntryResolver::class],
-            [Entry::class, ['title' => 'Theories of life multi-author', 'authorsIds' => [1,2,3]], EntryResolver::class],
-            [Entry::class, ['title' => 'Theories of life multi-author', 'authorsIds' => [1,2]], EntryResolver::class, true],
+            [Entry::class, ['title' => 'Theories of life multi-author', 'authorsIds' => [1, 2, 3]], EntryResolver::class],
+            [Entry::class, ['title' => 'Theories of life multi-author', 'authorsIds' => [1, 2]], EntryResolver::class, true],
 
             // Globals
             [GlobalSet::class, ['handle' => 'aGlobalSet'], GlobalSetResolver::class, true],
