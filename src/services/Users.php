@@ -658,6 +658,7 @@ class Users extends Component
     public function deleteUserPhoto(User $user): bool
     {
         $photoId = $user->photoId;
+
         if ($this->hasEventHandlers(self::EVENT_BEFORE_DELETE_USER_PHOTO)) {
             $this->trigger(self::EVENT_BEFORE_DELETE_USER_PHOTO, new UserPhotoEvent([
                 'user' => $user,
@@ -665,7 +666,7 @@ class Users extends Component
             ]));
         }
 
-        $result = Craft::$app->getElements()->deleteElementById($user->photoId, Asset::class);
+        $result = Craft::$app->getElements()->deleteElementById($photoId, Asset::class);
 
         if ($result) {
             $user->setPhoto(null);
