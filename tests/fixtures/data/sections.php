@@ -62,4 +62,14 @@ return [
         'propagationMethod' => 'all',
         'uid' => 'section-1005---------------------uid',
     ],
+    [
+        'id' => '1006',
+        'name' => 'Test Multi Author',
+        'handle' => 'testMultiAuthor',
+        'type' => 'channel',
+        'enableVersioning' => false,
+        'propagationMethod' => 'all',
+        'maxAuthors' => 3,
+        'uid' => 'section-1006---------------------uid',
+    ],
 ];

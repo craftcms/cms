@@ -69,4 +69,14 @@ return [
         'sortOrder' => '1',
         'uid' => 'entry-type-1005------------------uid',
     ],
+    [
+        'id' => '1006',
+        'sectionId' => '1006',
+        'fieldLayoutId' => null,
+        'name' => 'Test 1',
+        'handle' => 'test1',
+        'titleFormat' => null,
+        'sortOrder' => '1',
+        'uid' => 'entry-type-1006------------------uid',
+    ],
 ];

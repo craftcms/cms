@@ -60,4 +60,14 @@ return [
         'template' => 'secondtest',
         'enabledByDefault' => true,
     ],
+    [
+        'id' => '1006',
+        'sectionId' => '1006',
+        'siteId' => '1',
+        'hasUrls' => false,
+        'uriFormat' => null,
+        'template' => null,
+        'enabledByDefault' => true,
+        'maxAuthors' => 3,
+    ],
 ];
