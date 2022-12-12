@@ -1235,35 +1235,25 @@ class Entry extends Element implements ExpirableElementInterface
      */
     public function setAuthorsIds(array|string|int|null $authorsIds): void
     {
-        if (empty($authorsIds) || $authorsIds == '') {
-            $authorsIds = null;
+        // make sure we're working with an array
+        if (!is_array($authorsIds)) {
+            $authorsIds = ArrayHelper::toArray($authorsIds);
         }
 
-        if (is_string($authorsIds)) {
-            $authorsIds = explode(',', $authorsIds);
-        }
+        $ids = array_map(function($authorId) {
+            if ($authorId == '') {
+                return null;
+            }
+            if (is_string($authorId)) {
+                return (int)$authorId;
+            }
+            if ($authorId instanceof User) {
+                return $authorId->id;
+            }
+            return $authorId;
+        }, $authorsIds);
 
-        if (is_int($authorsIds)) {
-            $this->_authorsIds = [$authorsIds];
-        }
-
-        if (is_array($authorsIds)) {
-            $ids = array_map(function($authorId) {
-                if ($authorId == '') {
-                    return null;
-                }
-                if (is_string($authorId)) {
-                    return (int)$authorId;
-                }
-                if ($authorId instanceof User) {
-                    return $authorId->id;
-                }
-                return $authorId;
-            }, $authorsIds);
-
-            $this->_authorsIds = array_values(array_filter($ids));
-        }
-
+        $this->_authorsIds = array_values(array_filter($ids));
         $this->_authors = null;
     }
 

@@ -1142,7 +1142,6 @@ class EntryQuery extends ElementQuery
         // get authors info
         // also, because of ->authorId([...]), ->authorsIds([...]) we are now
         // getting multiple rows for one entry
-        // todo: is there a better way to do this? tried with group_concat but throws mysql error
         $distinctRows = [];
         if (!empty($rows)) {
             foreach ($rows as $row) {
@@ -1181,7 +1180,7 @@ class EntryQuery extends ElementQuery
                         $row['authorsIds'] = $entryAuthorsIds;
                         $distinctRows[$row['id']] = $row;
                     // if "negative" search, check if row (entry) doesn't have
-                    // all the authors we need to exclude, and no others
+                    // any of the authors we need to exclude, and no others
                     } elseif (
                         $negativeSearch === true &&
                         !empty(array_diff($_authorsIds, $entryAuthorsIds))
