@@ -11,6 +11,7 @@ use Craft;
 use craft\db\Connection;
 use craft\db\Migration;
 use craft\db\TableSchema;
+use yii\base\InvalidArgumentException;
 
 /**
  * Migration utility methods.
@@ -26,18 +27,23 @@ class MigrationHelper
      * @param string $tableName
      * @param string|string[] $columns
      * @return string|null The foreign key name, or null if it doesn't exist
+     * @throws InvalidArgumentException if `$tableName` doesn’t exist
      * @since 3.0.27
      */
     public static function findForeignKey(string $tableName, $columns)
     {
         $db = Craft::$app->getDb();
         $schema = $db->getSchema();
-        $tableName = $schema->getRawTableName($tableName);
-        $schema->refreshTableSchema($tableName);
+        $rawTableName = $schema->getRawTableName($tableName);
+        $schema->refreshTableSchema($rawTableName);
         if (is_string($columns)) {
             $columns = StringHelper::split($columns);
         }
-        $table = $db->getTableSchema($tableName);
+        $table = $db->getTableSchema($rawTableName);
+
+        if (!$table) {
+            throw new InvalidArgumentException("No `$tableName` table exists.");
+        }
 
         foreach ($table->foreignKeys as $name => $fk) {
             $fkColumns = [];
@@ -129,6 +135,7 @@ class MigrationHelper
      * @param string $oldName
      * @param string $newName
      * @param Migration|null $migration
+     * @throws InvalidArgumentException if `$tableName` doesn’t exist
      */
     public static function renameTable(string $oldName, string $newName, ?Migration $migration = null)
     {
@@ -140,6 +147,13 @@ class MigrationHelper
 
         // Save this for restoring extended foreign key data later.
         $oldTableSchema = $db->getTableSchema($rawOldName);
+
+        if (!$oldTableSchema) {
+            $oldTableSchema = $db->getTableSchema($rawOldName, true);
+            if (!$oldTableSchema) {
+                throw new InvalidArgumentException("No `$oldName` table exists.");
+            }
+        }
 
         // Drop any foreign keys pointing to this table
         $fks = static::findForeignKeysTo($rawOldName);
@@ -516,6 +530,7 @@ class MigrationHelper
      *
      * @param string $tableName
      * @param Migration|null $migration
+     * @throws InvalidArgumentException if `$tableName` doesn’t exist
      */
     public static function dropAllForeignKeysToTable(string $tableName, ?Migration $migration = null)
     {
@@ -523,6 +538,13 @@ class MigrationHelper
         $schema = $db->getSchema();
         $rawTableName = $schema->getRawTableName($tableName);
         $table = $db->getTableSchema($rawTableName);
+
+        if (!$table) {
+            $table = $db->getTableSchema($rawTableName, true);
+            if (!$table) {
+                throw new InvalidArgumentException("No `$tableName` table exists.");
+            }
+        }
 
         foreach ($table->getColumnNames() as $columnName) {
             $fks = static::findForeignKeysTo($rawTableName, $columnName);
