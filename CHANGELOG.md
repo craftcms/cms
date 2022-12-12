@@ -3,6 +3,7 @@
 ## Unreleased
 
 - Fixed a bug where entry tab contents could remain visible when switching to other tabs, after changing the entry type.
+- Fixed a bug where it wasn’t possible to enter `0` in Number fields and numeric column cells within editable tables, using certain keyboard layouts. ([#12412](https://github.com/craftcms/cms/issues/12412))
 - Added `craft\base\ApplicationTrait::onInit()`. ([#12439](https://github.com/craftcms/cms/pull/12439))
 - Added `craft\console\Controller::createDirectory()`. ([#12438](https://github.com/craftcms/cms/pull/12438))
 - Added `craft\console\Controller::do()`. ([#12438](https://github.com/craftcms/cms/pull/12438))
@@ -18,6 +19,8 @@
 - Added `craft\helpers\FileHelper::isWithin()`.
 - Added `craft\helpers\FileHelper::relativePath()`.
 - Added `craft\helpers\Json::decodeFromFile()`.
+- Added `Craft.filterInputVal()`.
+- Added `Craft.filterNumberInputVal()`.
 
 ## 4.3.4 - 2022-11-29
 
