@@ -73,9 +73,16 @@ class Composer extends Component
      */
     public function getJsonPath(): string
     {
-        $jsonPath = defined('CRAFT_COMPOSER_PATH') ? CRAFT_COMPOSER_PATH : Craft::getAlias('@root/composer.json');
+        if (defined('CRAFT_COMPOSER_PATH')) {
+            if (!is_file(CRAFT_COMPOSER_PATH)) {
+                throw new Exception(sprintf('No Composer config found at CRAFT_COMPOSER_PATH (%s).', CRAFT_COMPOSER_PATH));
+            }
+            return CRAFT_COMPOSER_PATH;
+        }
+
+        $jsonPath = Craft::getAlias('@root/composer.json');
         if (!is_file($jsonPath)) {
-            throw new Exception('Could not locate your composer.json file.');
+            throw new Exception("No Composer config found at $jsonPath.");
         }
         return $jsonPath;
     }
