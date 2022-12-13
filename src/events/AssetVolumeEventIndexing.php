@@ -2,6 +2,7 @@
 
 namespace craft\events;
 
+use craft\models\Volume;
 use yii\base\Event;
 
 /**
@@ -13,7 +14,7 @@ use yii\base\Event;
 class AssetVolumeEventIndexing extends Event
 {
     /**
-     * @var array Asset volumes that should be available to be indexed.
+     * @var Volume[] Asset volumes that should be available to be indexed.
      */
     public array $assetVolumes = [];
 }
