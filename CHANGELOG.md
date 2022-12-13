@@ -5,6 +5,7 @@
 - Fixed a bug where entry tab contents could remain visible when switching to other tabs, after changing the entry type.
 - Fixed a bug where it wasn’t possible to enter `0` in Number fields, Money fields, and numeric column cells within editable tables, using certain keyboard layouts. ([#12412](https://github.com/craftcms/cms/issues/12412))
 - Fixed a bug where the default MySQL restore command would attempt to use credentials from `~/.my.cnf` if it existed, instead of Craft’s configured database connection settings. ([#12349](https://github.com/craftcms/cms/issues/12349), [#12430](https://github.com/craftcms/cms/pull/12430))
+- Fixed a JavaScript error that could occur when autosaving an entry draft. ([#12445](https://github.com/craftcms/cms/issues/12445))
 - Added `craft\base\ApplicationTrait::onInit()`. ([#12439](https://github.com/craftcms/cms/pull/12439))
 - Added `craft\console\Controller::createDirectory()`. ([#12438](https://github.com/craftcms/cms/pull/12438))
 - Added `craft\console\Controller::do()`. ([#12438](https://github.com/craftcms/cms/pull/12438))

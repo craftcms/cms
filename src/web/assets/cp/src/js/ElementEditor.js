@@ -1620,7 +1620,13 @@ Craft.ElementEditor = Garnish.Base.extend(
                 'g'
               ),
               (m, pre, id, post) => {
-                if (!this._filterFieldInputName(pre)) {
+                let duplicate = false;
+                try {
+                  duplicate = this._filterFieldInputName(pre);
+                } catch (e) {
+                  console.warn(`Unexpected input name: ${m}`);
+                }
+                if (!duplicate) {
                   return m;
                 }
                 return pre + this.duplicatedElements[id] + post;
@@ -1632,12 +1638,17 @@ Craft.ElementEditor = Garnish.Base.extend(
               (m, name, id) => {
                 // Ignore param names that end in `[enabled]`, `[type]`, etc.
                 // (`[sortOrder]` should pass here, which could be set to a specific order index, but *not* `[sortOrder][]`!)
-                if (
-                  !this._filterFieldInputName(name) ||
-                  name.match(
-                    new RegExp(`${lb}(enabled|sortOrder|type|typeId)${rb}$`)
-                  )
-                ) {
+                let duplicate = false;
+                try {
+                  duplicate =
+                    this._filterFieldInputName(name) &&
+                    !name.match(
+                      new RegExp(`${lb}(enabled|sortOrder|type|typeId)${rb}$`)
+                    );
+                } catch (e) {
+                  console.warn(`Unexpected input name: ${m}`);
+                }
+                if (!duplicate) {
                   return m;
                 }
                 return `&${name}=${this.duplicatedElements[id]}`;
@@ -1657,6 +1668,9 @@ Craft.ElementEditor = Garnish.Base.extend(
       const nestedNames = name.match(
         new RegExp(`(\\bfields|${lb}fields${rb})${lb}[^${rb}]+${rb}`, 'g')
       );
+      if (!nestedNames) {
+        throw `Unexpected input name: ${name}`;
+      }
       const lastHandle = nestedNames[nestedNames.length - 1].match(
         new RegExp(`(?:\\bfields|${lb}fields${rb})${lb}([^${rb}]+)${rb}`)
       )[1];
