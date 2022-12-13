@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 4
 
-## Unreleased
+## 4.3.5 - 2022-12-13
 
 - Fixed a bug where entry tab contents could remain visible when switching to other tabs, after changing the entry type.
 - Fixed a bug where it wasn’t possible to enter `0` in Number fields, Money fields, and numeric column cells within editable tables, using certain keyboard layouts. ([#12412](https://github.com/craftcms/cms/issues/12412))
