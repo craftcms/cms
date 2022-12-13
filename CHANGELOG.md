@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 3.x
 
-## Unreleased
+## 3.7.62 - 2022-12-13
 
 - Fixed a bug where it wasn’t possible to enter `0` in Number fields and numeric column cells within editable tables, using certain keyboard layouts. ([#12412](https://github.com/craftcms/cms/issues/12412))
 - Fixed a JavaScript error that could occur when autosaving an entry draft. ([#12445](https://github.com/craftcms/cms/issues/12445))
