@@ -23,6 +23,9 @@ use yii\base\Event;
  */
 class AssetIndexes extends Utility
 {
+    /**
+     * @event AssetVolumeEventIndexing The event that is triggered when determining assets available to index.
+     */
     public const EVENT_ON_ASSET_VOLUME_INDEXING = 'indexingAssetVolumeEvent';
 
     /**
@@ -55,7 +58,7 @@ class AssetIndexes extends Utility
     public static function contentHtml(): string
     {
         $event = new AssetVolumeEventIndexing([
-            'volumes' => Craft::$app->getVolumes()->getAllVolumes(),
+            'assetVolumes' => Craft::$app->getVolumes()->getAllVolumes(),
         ]);
 
         Event::trigger(
