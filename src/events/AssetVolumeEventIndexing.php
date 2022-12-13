@@ -14,7 +14,7 @@ use yii\base\Event;
 class AssetVolumeEventIndexing extends Event
 {
     /**
-     * @var Volume[] Asset volumes that should be available to be indexed.
+     * @var Volume[] Asset volumes available to be indexed.
      */
     public array $assetVolumes = [];
 }
