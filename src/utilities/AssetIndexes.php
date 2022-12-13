@@ -24,7 +24,7 @@ use yii\base\Event;
 class AssetIndexes extends Utility
 {
     /**
-     * @event AssetVolumeEventIndexing The event that is triggered when determining assets available to index.
+     * @event AssetVolumeEventIndexing The event that is triggered when determining asset volumes available to index.
      */
     public const EVENT_ON_ASSET_VOLUME_INDEXING = 'indexingAssetVolumeEvent';
 
