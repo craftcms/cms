@@ -319,23 +319,25 @@ class FieldLayout extends Model
 
             // Ensure there aren't any layout element UUID conflicts
             $layoutElements = $tab->getElements();
-            $filteredLayoutElements = array_filter($layoutElements, function(FieldLayoutElement $layoutElement) use (&$elementUids) {
-                if (!isset($layoutElement->uid)) {
+            if (!empty($layoutElements)) {
+                $filteredLayoutElements = array_filter($layoutElements, function(FieldLayoutElement $layoutElement) use (&$elementUids) {
+                    if (!isset($layoutElement->uid)) {
+                        return true;
+                    }
+                    if (isset($elementUids[$layoutElement->uid])) {
+                        return false;
+                    }
+                    $elementUids[$layoutElement->uid] = true;
                     return true;
-                }
-                if (isset($elementUids[$layoutElement->uid])) {
-                    return false;
-                }
-                $elementUids[$layoutElement->uid] = true;
-                return true;
-            });
+                });
 
-            if (empty($filteredLayoutElements)) {
-                continue;
-            }
+                if (empty($filteredLayoutElements)) {
+                    continue;
+                }
 
-            if (count($filteredLayoutElements) !== count($layoutElements)) {
-                $tab->setElements($filteredLayoutElements);
+                if (count($filteredLayoutElements) !== count($layoutElements)) {
+                    $tab->setElements($filteredLayoutElements);
+                }
             }
 
             $tab->sortOrder = ++$index;
