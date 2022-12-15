@@ -1,5 +1,9 @@
 # Release Notes for Craft CMS 4
 
+## Unreleased
+
+- Fixed a bug where deleting a field layout tab could result in duplicated tabs. ([#12459](https://github.com/craftcms/cms/issues/12459))
+
 ## 4.3.5 - 2022-12-13
 
 - Fixed a bug where entry tab contents could remain visible when switching to other tabs, after changing the entry type.

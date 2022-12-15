@@ -253,6 +253,7 @@ Craft.FieldLayoutDesigner.Tab = Garnish.Base.extend({
   uid: null,
   $container: null,
   slideout: null,
+  destroyed: false,
 
   init: function (designer, $container) {
     this.designer = designer;
@@ -485,6 +486,10 @@ Craft.FieldLayoutDesigner.Tab = Garnish.Base.extend({
   },
 
   set config(config) {
+    if (this.destroyed) {
+      return;
+    }
+
     // Is the name changing?
     if (config.name && config.name !== this.config.name) {
       this.$container.find('.tabs .tab span').text(config.name);
@@ -505,6 +510,10 @@ Craft.FieldLayoutDesigner.Tab = Garnish.Base.extend({
   },
 
   updateConfig: function (callback) {
+    if (this.destroyed) {
+      return;
+    }
+
     const config = callback(this.config);
     if (config !== false) {
       this.config = config;
@@ -512,6 +521,10 @@ Craft.FieldLayoutDesigner.Tab = Garnish.Base.extend({
   },
 
   updatePositionInConfig: function () {
+    if (this.destroyed) {
+      return;
+    }
+
     this.designer.updateConfig((config) => {
       const tabConfig = this.config;
       const oldIndex = this.index;
@@ -528,6 +541,12 @@ Craft.FieldLayoutDesigner.Tab = Garnish.Base.extend({
   },
 
   destroy: function () {
+    if (this.destroyed) {
+      return;
+    }
+
+    this.destroyed = true;
+
     this.designer.updateConfig((config) => {
       const index = this.index;
       if (index === -1) {
