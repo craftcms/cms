@@ -306,7 +306,6 @@ class FieldLayout extends Model
         $this->_tabs = [];
 
         $index = 0;
-        $elementUids = [];
 
         foreach ($tabs as $tab) {
             if (is_array($tab)) {
@@ -315,27 +314,6 @@ class FieldLayout extends Model
                 $tab = new FieldLayoutTab($tab);
             } else {
                 $tab->setLayout($this);
-            }
-
-            // Ensure there aren't any layout element UUID conflicts
-            $layoutElements = $tab->getElements();
-            $filteredLayoutElements = array_filter($layoutElements, function(FieldLayoutElement $layoutElement) use (&$elementUids) {
-                if (!isset($layoutElement->uid)) {
-                    return true;
-                }
-                if (isset($elementUids[$layoutElement->uid])) {
-                    return false;
-                }
-                $elementUids[$layoutElement->uid] = true;
-                return true;
-            });
-
-            if (empty($filteredLayoutElements)) {
-                continue;
-            }
-
-            if (count($filteredLayoutElements) !== count($layoutElements)) {
-                $tab->setElements($filteredLayoutElements);
             }
 
             $tab->sortOrder = ++$index;
