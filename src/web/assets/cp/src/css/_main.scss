@@ -2632,6 +2632,8 @@ $elementInnerSpacing: 5px;
       @include left($baseElementSidePadding);
       width: $largeThumbSize;
       height: $largeThumbSize;
+      justify-content: flex-start;
+      -ms-flex-pack: start;
 
       &.checkered img {
         @include checkered-bg(15px);
