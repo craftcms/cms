@@ -1403,7 +1403,7 @@ class Gql extends Component
 
         foreach ($event->directives as $directive) {
             /** @var Directive $directive */
-            $directives[] = $directive::create();
+            $directives[] = $directive instanceof Directive ? $directive : $directive::create();
         }
 
         return $directives;
