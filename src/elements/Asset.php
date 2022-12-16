@@ -2050,6 +2050,8 @@ JS;
                 ($userSession->getId() == $this->uploaderId || $userSession->checkPermission("editPeerImages:$volume->uid"))
             );
 
+            $isGif = $this->getMimeType() === 'image/gif';
+
             $previewThumbHtml =
                 Html::beginTag('div', [
                     'id' => 'thumb-container',
@@ -2058,6 +2060,7 @@ JS;
                         'button-fade',
                         $this->getHasCheckeredThumb() ? 'checkered' : null,
                     ]),
+                    'data-mime-type' => $this->getMimeType(),
                 ]) .
                 Html::tag('div', $this->getPreviewThumbImg(350, 190), [
                     'class' => 'preview-thumb',

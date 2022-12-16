@@ -264,6 +264,12 @@
                             id: 'underlineLinks',
                             checked: user.getPreference('underlineLinks') ?? a11yDefaults['underlineLinks'] ?? false,
                         },
+                        {
+                            label: 'Prevent autoplay of time-based media'|t('app'),
+                            name: 'preventAutoplay',
+                            id: 'preventAutoplay',
+                            checked: user.getPreference('preventAutoplay') ?? a11yDefaults['preventAutoplay'] ?? false,
+                        },
                     ],
                 }) }}
 
