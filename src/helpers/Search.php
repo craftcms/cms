@@ -51,6 +51,9 @@ class Search
         if ($processCharMap) {
             $str = strtr($str, StringHelper::asciiCharMap(true, $language ?? Craft::$app->language));
 
+            $elisions = self::_getElisions();
+            $str = str_replace($elisions, '', $str);
+
             // Remove punctuation and diacritics
             $punctuation = self::_getPunctuation();
             $str = str_replace(array_keys($punctuation), $punctuation, $str);
@@ -66,6 +69,36 @@ class Search
 
         // Strip out new lines and superfluous spaces
         return trim(preg_replace(['/[\n\r]+/u', '/\s{2,}/u'], ' ', $str));
+    }
+
+    /**
+     * Returns an array of [elisions](https://en.wikipedia.org/wiki/Elision) that will be stripped from search keywords.
+     *
+     * @return array
+     */
+    private static function _getElisions(): array
+    {
+        static $elisions = [];
+
+        if (empty($elisions)) {
+            $elisions = [
+                "l'",
+                "m'",
+                "t'",
+                "qu'",
+                "n'",
+                "s'",
+                "j'",
+                "d'",
+                "c'",
+                "jusqu'",
+                "quoiqu'",
+                "lorsqu'",
+                "puisqu'",
+            ];
+        }
+
+        return $elisions;
     }
 
     /**
