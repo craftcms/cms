@@ -72,7 +72,7 @@ class Search
     }
 
     /**
-     * Returns an array of [elisions](https://en.wikipedia.org/wiki/Elision) that will be stripped from search keywords.
+     * Returns an array of elisions to remove from search keywords.
      *
      * @return array
      */
