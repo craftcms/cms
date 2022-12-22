@@ -3,6 +3,7 @@
 ## Unreleased
 
 - Fixed a bug where deleting a field layout tab could result in duplicated tabs. ([#12459](https://github.com/craftcms/cms/issues/12459))
+- Fixed an XSS vulnerability.
 
 ## 4.3.5 - 2022-12-13
 
