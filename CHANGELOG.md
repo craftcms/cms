@@ -2,6 +2,7 @@
 
 ## Unreleased
 - Template caching is no longer enabled for tokenized requests. ([#12458](https://github.com/craftcms/cms/issues/12458))
+- Elisions are now stripped from search keywords. ([#12467](https://github.com/craftcms/cms/issues/12467), [#12474](https://github.com/craftcms/cms/pull/12474))
 - Fixed an error that could occur when processing template caches in a console request, if a globally-scoped template cache was processed before it.
 
 ## 3.7.62 - 2022-12-13
