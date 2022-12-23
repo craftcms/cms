@@ -1,6 +1,7 @@
 # Release Notes for Craft CMS 3.x
 
 ## Unreleased
+- Template caching is no longer enabled for tokenized requests. ([#12458](https://github.com/craftcms/cms/issues/12458))
 - Fixed an error that could occur when processing template caches in a console request, if a globally-scoped template cache was processed before it.
 
 ## 3.7.62 - 2022-12-13

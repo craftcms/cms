@@ -408,8 +408,14 @@ class TemplateCaches extends Component
             if (!Craft::$app->getConfig()->getGeneral()->enableTemplateCaching) {
                 $this->_enabled = $this->_enabledGlobally = false;
             } else {
-                $this->_enabled = !Craft::$app->getRequest()->getIsConsoleRequest();
-                $this->_enabledGlobally = true;
+                // Don't enable template caches for tokenized requests
+                $request = Craft::$app->getRequest();
+                if ($request->getHadToken()) {
+                    $this->_enabled = $this->_enabledGlobally = false;
+                } else {
+                    $this->_enabled = !$request->getIsConsoleRequest();
+                    $this->_enabledGlobally = true;
+                }
             }
         }
         return $global ? $this->_enabledGlobally : $this->_enabled;
