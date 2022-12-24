@@ -2,7 +2,22 @@
 
 ## Unreleased
 
+- Template caching is no longer enabled for tokenized requests. ([#12458](https://github.com/craftcms/cms/issues/12458))
+- Elisions are now stripped from search keywords. ([#12467](https://github.com/craftcms/cms/issues/12467), [#12474](https://github.com/craftcms/cms/pull/12474))
+- Fixed a bug where deleting a field layout tab could result in duplicated tabs. ([#12459](https://github.com/craftcms/cms/issues/12459))
+- Fixed a bug where Feed widgets weren’t showing feed items when they were first loaded. ([#12460](https://github.com/craftcms/cms/issues/12460))
+- Fixed an error that occurred when a Date field’s condition rule was set to “has a value” or “is empty”. ([#12457](https://github.com/craftcms/cms/issues/12457))
+- Fixed an error that could occur when processing template caches in a console request, if a globally-scoped template cache was processed before it.
+- Fixed styling issues with large element thumbnail views. ([#12455](https://github.com/craftcms/cms/issues/12455))
+- Fixed a bug where it wasn’t possible to retry all failed jobs when using a proxy queue. ([#12471](https://github.com/craftcms/cms/issues/12471))
+- Fixed an XSS vulnerability.
+
+## 4.3.5 - 2022-12-13
+
 - Fixed a bug where entry tab contents could remain visible when switching to other tabs, after changing the entry type.
+- Fixed a bug where it wasn’t possible to enter `0` in Number fields, Money fields, and numeric column cells within editable tables, using certain keyboard layouts. ([#12412](https://github.com/craftcms/cms/issues/12412))
+- Fixed a bug where the default MySQL restore command would attempt to use credentials from `~/.my.cnf` if it existed, instead of Craft’s configured database connection settings. ([#12349](https://github.com/craftcms/cms/issues/12349), [#12430](https://github.com/craftcms/cms/pull/12430))
+- Fixed a JavaScript error that could occur when autosaving an entry draft. ([#12445](https://github.com/craftcms/cms/issues/12445))
 - Added `craft\base\ApplicationTrait::onInit()`. ([#12439](https://github.com/craftcms/cms/pull/12439))
 - Added `craft\console\Controller::createDirectory()`. ([#12438](https://github.com/craftcms/cms/pull/12438))
 - Added `craft\console\Controller::do()`. ([#12438](https://github.com/craftcms/cms/pull/12438))
@@ -18,6 +33,8 @@
 - Added `craft\helpers\FileHelper::isWithin()`.
 - Added `craft\helpers\FileHelper::relativePath()`.
 - Added `craft\helpers\Json::decodeFromFile()`.
+- Added `Craft.filterInputVal()`.
+- Added `Craft.filterNumberInputVal()`.
 
 ## 4.3.4 - 2022-11-29
 

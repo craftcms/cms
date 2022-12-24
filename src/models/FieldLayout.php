@@ -315,6 +315,7 @@ class FieldLayout extends Model
             } else {
                 $tab->setLayout($this);
             }
+
             $tab->sortOrder = ++$index;
             $this->_tabs[] = $tab;
         }
