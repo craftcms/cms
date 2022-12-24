@@ -1251,6 +1251,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
             new TwigFunction('create', [Craft::class, 'createObject']),
             new TwigFunction('dataUrl', [$this, 'dataUrlFunction']),
             new TwigFunction('date', [$this, 'dateFunction'], ['needs_environment' => true]),
+            new TwigFunction('dump', [$this, 'dumpFunction'], ['is_safe' => ['html'], 'needs_context' => true, 'is_variadic' => true]),
             new TwigFunction('expression', [$this, 'expressionFunction']),
             new TwigFunction('floor', 'floor'),
             new TwigFunction('getenv', [App::class, 'env']),
@@ -1355,6 +1356,31 @@ class Extension extends AbstractExtension implements GlobalsInterface
         }
 
         return twig_date_converter($env, $date, $timezone);
+    }
+
+    /**
+     * Displays a variable(s).
+     *
+     * @param array $context
+     * @param ...$vars
+     * @return string
+     * @since 4.4.0
+     */
+    public function dumpFunction(array $context, ...$vars): string
+    {
+        if (!$vars) {
+            $vars = [TemplateHelper::contextWithoutTemplate($context)];
+        }
+
+        $output = '';
+
+        foreach ($vars as $var) {
+            ob_start();
+            Craft::dump($var);
+            $output .= str_replace('<code>', '<code style="display:block;">', ob_get_clean());
+        }
+
+        return $output;
     }
 
     /**
