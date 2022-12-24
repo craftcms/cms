@@ -32,6 +32,7 @@ use craft\elements\db\ElementQueryInterface;
 use craft\elements\db\EntryQuery;
 use craft\errors\UnsupportedSiteException;
 use craft\events\DefineEntryTypesEvent;
+use craft\events\ElementCriteriaEvent;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Cp;
 use craft\helpers\DateTimeHelper;
@@ -80,6 +81,13 @@ class Entry extends Element implements ExpirableElementInterface
      * @since 3.6.0
      */
     public const EVENT_DEFINE_ENTRY_TYPES = 'defineEntryTypes';
+
+    /**
+     * @event ElementCriteriaEvent The event that is triggered when defining the parent selection criteria.
+     * @see _parentOptionCriteria()
+     * @since 4.4.0
+     */
+    public const EVENT_DEFINE_PARENT_SELECTION_CRITERIA = 'defineParentSelectionCriteria';
 
     /**
      * @inheritdoc
@@ -1760,6 +1768,15 @@ EOD;
             }
 
             $parentOptionCriteria['level'] = sprintf('<=%s', $section->maxLevels - $depth);
+        }
+
+        if ($this->hasEventHandlers(self::EVENT_DEFINE_PARENT_SELECTION_CRITERIA)) {
+            // Fire a defineParentSelectionCriteria event
+            $event = new ElementCriteriaEvent([
+                'criteria' => $parentOptionCriteria,
+            ]);
+            $this->trigger(self::EVENT_DEFINE_PARENT_SELECTION_CRITERIA, $event);
+            return $event->criteria;
         }
 
         return $parentOptionCriteria;
