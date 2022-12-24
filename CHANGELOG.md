@@ -10,6 +10,7 @@
 - Fixed an error that could occur when processing template caches in a console request, if a globally-scoped template cache was processed before it.
 - Fixed styling issues with large element thumbnail views. ([#12455](https://github.com/craftcms/cms/issues/12455))
 - Fixed a bug where it wasn’t possible to retry all failed jobs when using a proxy queue. ([#12471](https://github.com/craftcms/cms/issues/12471))
+- Fixed a bug where the selected table columns would be forgotten if modified from a nested source. ([#12477](https://github.com/craftcms/cms/issues/12477))
 - Fixed an XSS vulnerability.
 
 ## 4.3.5 - 2022-12-13
