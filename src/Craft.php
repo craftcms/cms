@@ -19,6 +19,7 @@ use Symfony\Component\VarDumper\Cloner\VarCloner;
 use Symfony\Component\VarDumper\Dumper\CliDumper;
 use Symfony\Component\VarDumper\Dumper\HtmlDumper;
 use yii\base\ExitException;
+use yii\console\Controller;
 use yii\db\Expression;
 use yii\helpers\VarDumper;
 use yii\web\Application as WebApplication;
@@ -111,8 +112,12 @@ class Craft extends Yii
      */
     public static function dump(mixed $var, int $depth = 20, bool $highlight = true): void
     {
-        if (!$highlight) {
+        if (
+            !$highlight ||
+            (Craft::$app->controller instanceof Controller && !Craft::$app->controller->isColorEnabled())
+        ) {
             VarDumper::dump($var, $depth);
+            echo "\n";
             return;
         }
 
