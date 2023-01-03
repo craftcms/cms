@@ -189,7 +189,7 @@ class Images extends Component
 
 
     /**
-     * Returns whether the Avif image format is supported.
+     * Returns whether the AVIF image format is supported.
      *
      * @return bool
      */
