@@ -78,7 +78,7 @@ class ImageTransforms
      */
     public static function detectTransformFormat(Asset $asset): string
     {
-        if (in_array(mb_strtolower($asset->getExtension()), Image::webSafeFormats(), true)) {
+        if (Image::isWebSafe($asset->getExtension())) {
             return $asset->getExtension();
         }
 

@@ -6,6 +6,7 @@
 - Elisions are now stripped from search keywords. ([#12467](https://github.com/craftcms/cms/issues/12467), [#12474](https://github.com/craftcms/cms/pull/12474))
 - Added support for HEIC/HEIF images. ([#9115](https://github.com/craftcms/cms/discussions/9115))
 - The `allowedFileExtensions` config setting now includes `heic`, `heif`, and `hevc` by default. ([#12490](https://github.com/craftcms/cms/discussions/12490))
+- Added `craft\helpers\Image::isWebSafe()`.
 - Fixed a bug where deleting a field layout tab could result in duplicated tabs. ([#12459](https://github.com/craftcms/cms/issues/12459))
 - Fixed a bug where Feed widgets weren’t showing feed items when they were first loaded. ([#12460](https://github.com/craftcms/cms/issues/12460))
 - Fixed an error that occurred when a Date field’s condition rule was set to a relative range, “has a value”, or “is empty”. ([#12457](https://github.com/craftcms/cms/issues/12457))
