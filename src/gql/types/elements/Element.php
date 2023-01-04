@@ -51,6 +51,10 @@ class Element extends ObjectType
             return $source->{'get' . ucfirst($fieldName)}(empty($arguments) ? false : $arguments);
         }
 
+        if ($fieldName === 'siteHandle') {
+            return $source->getSite()->handle;
+        }
+
         return parent::resolve($source, $arguments, $context, $resolveInfo);
     }
 }

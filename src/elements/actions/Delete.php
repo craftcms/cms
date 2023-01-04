@@ -174,13 +174,13 @@ JS, [static::class]);
         $user = Craft::$app->getUser()->getIdentity();
 
         foreach ($query->all() as $element) {
-            if (!$element->canDelete($user)) {
+            if (!$elementsService->canDelete($element, $user)) {
                 continue;
             }
             if (!isset($deletedElementIds[$element->id])) {
                 if ($withDescendants) {
                     foreach ($element->getDescendants()->all() as $descendant) {
-                        if (!isset($deletedElementIds[$descendant->id]) && $descendant->canDelete($user)) {
+                        if (!isset($deletedElementIds[$descendant->id]) && $elementsService->canDelete($descendant, $user)) {
                             $elementsService->deleteElement($descendant);
                             $deletedElementIds[$descendant->id] = true;
                         }

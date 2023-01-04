@@ -10,6 +10,7 @@ namespace craft\helpers;
 use Craft;
 use craft\base\ComponentInterface;
 use craft\errors\MissingComponentException;
+use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
 
 /**
@@ -30,7 +31,7 @@ class Component
      * @phpstan-param class-string<ComponentInterface>|null $instanceOf
      * @param bool $throwException Whether an exception should be thrown if an issue is encountered
      * @return bool
-     * @throws InvalidConfigException if $config doesn’t contain a `type` value, or the type isn’s compatible with|null $instanceOf.
+     * @throws InvalidConfigException if $config doesn’t contain a `type` value, or the type isn’t compatible with|null $instanceOf.
      * @throws MissingComponentException if the class specified by $config doesn’t exist, or belongs to an uninstalled plugin
      * @since 3.2.0
      */
@@ -89,7 +90,7 @@ class Component
      * @param string|null $instanceOf The class or interface that the component must be an instance of.
      * @phpstan-param class-string<T>|null $instanceOf
      * @return T The component
-     * @throws InvalidConfigException if $config doesn’t contain a `type` value, or the type isn’s compatible with|null $instanceOf.
+     * @throws InvalidConfigException if $config doesn’t contain a `type` value, or the type isn’t compatible with|null $instanceOf.
      * @throws MissingComponentException if the class specified by $config doesn’t exist, or belongs to an uninstalled plugin
      */
     public static function createComponent(string|array $config, ?string $instanceOf = null): ComponentInterface
@@ -144,7 +145,7 @@ class Component
     }
 
     /**
-     * Returns an SVG icon’s contents.
+     * Returns an SVG icon’s contents, namespaced and with `aria-hidden="true"` added to it.
      *
      * @param string|null $icon The path to the SVG icon, or the actual SVG contents
      * @param string $label The label of the component
@@ -157,23 +158,35 @@ class Component
             return self::_defaultIconSvg($label);
         }
 
-        if (stripos($icon, '<svg') !== false) {
-            return $icon;
+        if (stripos($icon, '<svg') === false) {
+            $icon = Craft::getAlias($icon);
+
+            if (!is_file($icon)) {
+                Craft::warning("Icon file doesn't exist: $icon", __METHOD__);
+                return self::_defaultIconSvg($label);
+            }
+
+            if (!FileHelper::isSvg($icon)) {
+                Craft::warning("Icon file is not an SVG: $icon", __METHOD__);
+                return self::_defaultIconSvg($label);
+            }
+
+            $icon = file_get_contents($icon);
         }
 
-        $icon = Craft::getAlias($icon);
+        // Namespace it
+        $ns = StringHelper::randomString(10);
+        $icon = Html::namespaceAttributes($icon, $ns, true);
 
-        if (!is_file($icon)) {
-            Craft::warning("Icon file doesn't exist: $icon", __METHOD__);
-            return self::_defaultIconSvg($label);
+        // Add aria-hidden="true"
+        try {
+            $icon = Html::modifyTagAttributes($icon, [
+                'aria' => ['hidden' => 'true'],
+            ]);
+        } catch (InvalidArgumentException) {
         }
 
-        if (!FileHelper::isSvg($icon)) {
-            Craft::warning("Icon file is not an SVG: $icon", __METHOD__);
-            return self::_defaultIconSvg($label);
-        }
-
-        return file_get_contents($icon);
+        return $icon;
     }
 
     /**

@@ -319,7 +319,7 @@ class Table extends Field
             Json::encode($dropdownSettingsCols, JSON_UNESCAPED_UNICODE) .
             ');');
 
-        $columnsField = $view->renderTemplate('_components/fieldtypes/Table/columntable', [
+        $columnsField = $view->renderTemplate('_components/fieldtypes/Table/columntable.twig', [
             'cols' => $columnSettings,
             'rows' => $this->columns,
             'errors' => $this->getErrors('columns'),
@@ -338,7 +338,7 @@ class Table extends Field
             'initJs' => false,
         ]);
 
-        return $view->renderTemplate('_components/fieldtypes/Table/settings', [
+        return $view->renderTemplate('_components/fieldtypes/Table/settings.twig', [
             'field' => $this,
             'columnsField' => $columnsField,
             'defaultsField' => $defaultsField,
@@ -653,7 +653,7 @@ class Table extends Field
             }
         }
 
-        return Craft::$app->getView()->renderTemplate('_includes/forms/editableTable', [
+        return Craft::$app->getView()->renderTemplate('_includes/forms/editableTable.twig', [
             'id' => $this->getInputId(),
             'name' => $this->handle,
             'cols' => $this->columns,

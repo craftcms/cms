@@ -9,6 +9,7 @@ namespace craft\elements\actions;
 
 use Craft;
 use craft\base\ElementAction;
+use craft\base\ElementInterface;
 
 /**
  * NewSibling represents a “Create a new X before” element action.
@@ -31,6 +32,22 @@ class NewSiblingBefore extends ElementAction
     /**
      * @inheritdoc
      */
+    public function setElementType(string $elementType): void
+    {
+        /** @var string|ElementInterface $elementType */
+        /** @phpstan-var class-string<ElementInterface> $elementType */
+        parent::setElementType($elementType);
+
+        if (!isset($this->label)) {
+            $this->label = Craft::t('app', 'Create a new {type} before', [
+                'type' => $elementType::lowerDisplayName(),
+            ]);
+        }
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function getTriggerLabel(): string
     {
         return $this->label;
@@ -45,7 +62,7 @@ class NewSiblingBefore extends ElementAction
 (() => {
     new Craft.ElementActionTrigger({
         type: $type,
-        batch: false,
+        bulk: false,
         activate: \$selectedItems => {
             Craft.redirectTo(Craft.getUrl($newSiblingUrl, 'before=' + \$selectedItems.find('.element').data('id')));
         },

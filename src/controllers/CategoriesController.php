@@ -58,7 +58,7 @@ class CategoriesController extends Controller
 
         $groups = Craft::$app->getCategories()->getAllGroups();
 
-        return $this->renderTemplate('settings/categories/index', [
+        return $this->renderTemplate('settings/categories/index.twig', [
             'categoryGroups' => $groups,
         ]);
     }
@@ -113,7 +113,7 @@ class CategoriesController extends Controller
         $variables['groupId'] = $groupId;
         $variables['categoryGroup'] = $categoryGroup;
 
-        return $this->renderTemplate('settings/categories/_edit', $variables);
+        return $this->renderTemplate('settings/categories/_edit.twig', $variables);
     }
 
     /**
@@ -225,7 +225,7 @@ class CategoriesController extends Controller
             'New category',
         ]);
 
-        return $this->renderTemplate('categories/_index', [
+        return $this->renderTemplate('categories/_index.twig', [
             'groupHandle' => $groupHandle,
             'groups' => $groups,
         ]);
@@ -254,8 +254,6 @@ class CategoriesController extends Controller
             throw new ForbiddenHttpException('User not authorized to edit content in any sites.');
         }
 
-        $user = Craft::$app->getUser()->getIdentity();
-
         // Create & populate the draft
         $category = Craft::createObject(Category::class);
         $category->siteId = $site->id;
@@ -268,7 +266,7 @@ class CategoriesController extends Controller
         }
 
         // Make sure the user is allowed to create this category
-        if (!$category->canSave($user)) {
+        if (!Craft::$app->getElements()->canSave($category)) {
             throw new ForbiddenHttpException('User not authorized to save this category.');
         }
 
@@ -359,7 +357,6 @@ class CategoriesController extends Controller
                     'category'
                 );
             } catch (Throwable $e) {
-                /** @phpstan-ignore-next-line */
                 throw new ServerErrorHttpException(Craft::t('app', 'An error occurred when duplicating the category.'), 0, $e);
             }
         }
@@ -551,7 +548,7 @@ class CategoriesController extends Controller
             }
         }
 
-        $html = $this->getView()->renderTemplate('_components/fieldtypes/Categories/input',
+        $html = $this->getView()->renderTemplate('_components/fieldtypes/Categories/input.twig',
             [
                 'elements' => $categories,
                 'id' => $this->request->getParam('id'),

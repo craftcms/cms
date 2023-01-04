@@ -34,7 +34,7 @@ class Image extends AssetPreviewHandler
             ]);
         }
 
-        return Craft::$app->getView()->renderTemplate('assets/_previews/image',
+        return Craft::$app->getView()->renderTemplate('assets/_previews/image.twig',
             array_merge([
                 'asset' => $this->asset,
                 'url' => $url,

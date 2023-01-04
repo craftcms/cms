@@ -252,7 +252,6 @@ class AppController extends Controller
                 $backupPath = $db->backup();
             } catch (Throwable $e) {
                 Craft::$app->disableMaintenanceMode();
-                /** @phpstan-ignore-next-line */
                 throw new ServerErrorHttpException('Error backing up the database.', 0, $e);
             }
         }
@@ -304,7 +303,6 @@ class AppController extends Controller
             }
 
             Craft::$app->disableMaintenanceMode();
-            /** @phpstan-ignore-next-line */
             throw new ServerErrorHttpException($error, 0, $e);
         }
 
@@ -362,7 +360,7 @@ class AppController extends Controller
         $this->requirePermission('accessCp');
 
         $message = $this->request->getRequiredBodyParam('message');
-        $user = Craft::$app->getUser()->getIdentity();
+        $user = static::currentUser();
 
         $currentTime = DateTimeHelper::currentUTCDateTime();
         $tomorrow = $currentTime->add(new DateInterval('P1D'));

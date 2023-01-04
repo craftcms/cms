@@ -51,6 +51,8 @@ class CpScreenResponseFormatter extends Component implements ResponseFormatterIn
 
     private function _formatJson(\yii\web\Request $request, YiiResponse $response, CpScreenResponseBehavior $behavior): void
     {
+        $response->format = Response::FORMAT_JSON;
+
         $namespace = StringHelper::randomString(10);
         $view = Craft::$app->getView();
 
@@ -63,7 +65,7 @@ class CpScreenResponseFormatter extends Component implements ResponseFormatterIn
 
         $notice = $behavior->notice ? $view->namespaceInputs($behavior->notice, $namespace) : null;
 
-        $tabs = count($behavior->tabs) > 1 ? $view->namespaceInputs(fn() => $view->renderTemplate('_includes/tabs', [
+        $tabs = count($behavior->tabs) > 1 ? $view->namespaceInputs(fn() => $view->renderTemplate('_includes/tabs.twig', [
             'tabs' => $behavior->tabs,
         ], View::TEMPLATE_MODE_CP), $namespace) : null;
 
@@ -90,6 +92,7 @@ class CpScreenResponseFormatter extends Component implements ResponseFormatterIn
             'tabs' => $tabs,
             'formAttributes' => $behavior->formAttributes,
             'action' => $behavior->action,
+            'submitButtonLabel' => $behavior->submitButtonLabel,
             'content' => $content,
             'sidebar' => $sidebar,
             'headHtml' => $view->getHeadHtml(),
@@ -104,6 +107,8 @@ class CpScreenResponseFormatter extends Component implements ResponseFormatterIn
 
     private function _formatTemplate(YiiResponse $response, CpScreenResponseBehavior $behavior): void
     {
+        $response->format = Response::FORMAT_HTML;
+
         if ($behavior->prepareScreen) {
             call_user_func($behavior->prepareScreen, $response, 'main-form');
         }

@@ -33,7 +33,7 @@ class MultiSelect extends BaseOptionsField
      */
     public static function valueType(): string
     {
-        return MultiOptionsFieldData::class;
+        return sprintf('\\%s', MultiOptionsFieldData::class);
     }
 
     /**
@@ -56,12 +56,12 @@ class MultiSelect extends BaseOptionsField
             Craft::$app->getView()->setInitialDeltaValue($this->handle, null);
         }
 
-        return Craft::$app->getView()->renderTemplate('_includes/forms/multiselect', [
+        return Craft::$app->getView()->renderTemplate('_includes/forms/multiselect.twig', [
             'id' => $this->getInputId(),
             'describedBy' => $this->describedBy,
             'name' => $this->handle,
             'values' => $this->encodeValue($value),
-            'options' => $this->translatedOptions(true),
+            'options' => $this->translatedOptions(true, $value, $element),
         ]);
     }
 

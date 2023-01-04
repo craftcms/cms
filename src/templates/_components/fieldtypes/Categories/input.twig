@@ -18,7 +18,20 @@
     </ul>
 
     <div class="flex flex-nowrap">
-        <button type="button" class="btn add icon dashed" aria-label="{{ selectionLabel }}">{{ selectionLabel }}</button>
+        {{ tag('button', {
+            type: 'button',
+            text: selectionLabel,
+            class: [
+                'btn',
+                'add',
+                'icon',
+                'dashed',
+            ],
+            aria: {
+                label: selectionLabel,
+                describedby: describedBy ?? false,
+            },
+        }) }}
         <div class="spinner hidden"></div>
     </div>
 </div>

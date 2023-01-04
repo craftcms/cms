@@ -30,7 +30,6 @@ parameters:
         - stubs/GraphQL/Type/Definition/ResolveInfo.stub
         - stubs/samdark/log/PsrTarget.stub
         - stubs/yii/base/Component.stub
-        - stubs/yii/base/ErrorHandler.stub
         - stubs/yii/base/Event.stub
         - stubs/yii/base/Module.stub
         - stubs/yii/BaseYii.stub
@@ -40,13 +39,7 @@ parameters:
         - stubs/yii/di/ServiceLocator.stub
         - stubs/yii/helpers/BaseArrayHelper.stub
         - stubs/yii/validators/UniqueValidator.stub
-        - stubs/yii/validators/UrlValidator.stub
         - stubs/yii/validators/Validator.stub
-        - stubs/yii/web/AssetManager.stub
-        - stubs/yii/web/ErrorHandler.stub
-        - stubs/yii/web/Request.stub
-        - stubs/yii/web/Response.stub
-        - stubs/yii/web/User.stub
     earlyTerminatingMethodCalls:
         Craft:
             - dd

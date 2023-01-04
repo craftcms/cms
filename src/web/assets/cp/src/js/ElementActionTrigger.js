@@ -12,6 +12,24 @@ Craft.ElementActionTrigger = Garnish.Base.extend(
     triggerEnabled: true,
 
     init: function (settings) {
+      if (!$.isPlainObject(settings)) {
+        settings = {};
+      }
+
+      // batch => bulk
+      if (typeof settings.batch !== 'undefined') {
+        settings.bulk = settings.batch;
+        delete settings.batch;
+      }
+      Object.defineProperty(settings, 'batch', {
+        get() {
+          return this.bulk;
+        },
+        set(v) {
+          this.bulk = v;
+        },
+      });
+
       this.setSettings(settings, Craft.ElementActionTrigger.defaults);
 
       this.$trigger = $(
@@ -51,13 +69,13 @@ Craft.ElementActionTrigger = Garnish.Base.extend(
     /**
      * Determines if this action can be performed on the currently selected elements.
      *
-     * @return boolean
+     * @returns {boolean}
      */
     validateSelection: function () {
       var valid = true;
       this.$selectedItems = Craft.elementIndex.getSelectedElements();
 
-      if (!this.settings.batch && this.$selectedItems.length > 1) {
+      if (!this.settings.bulk && this.$selectedItems.length > 1) {
         valid = false;
       } else if (typeof this.settings.validateSelection === 'function') {
         valid = this.settings.validateSelection(this.$selectedItems);
@@ -96,7 +114,7 @@ Craft.ElementActionTrigger = Garnish.Base.extend(
   {
     defaults: {
       type: null,
-      batch: true,
+      bulk: true,
       validateSelection: null,
       activate: null,
     },

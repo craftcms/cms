@@ -1,6 +1,7 @@
 import Garnish from './Garnish.js';
 import Base from './Base.js';
 import $ from 'jquery';
+import ResizeHandle from './icons/ResizeHandle';
 
 /**
  * Modal
@@ -79,9 +80,9 @@ export default Base.extend(
       }
 
       if (this.settings.resizable) {
-        var $resizeDragHandle = $('<div class="resizehandle"/>').appendTo(
-          this.$container
-        );
+        var $resizeDragHandle = $('<div class="resizehandle"/>')
+          .appendTo(this.$container)
+          .append(ResizeHandle);
 
         this.resizeDragger = new Garnish.BaseDrag($resizeDragHandle, {
           onDragStart: this._handleResizeStart.bind(this),

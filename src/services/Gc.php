@@ -132,6 +132,8 @@ class Gc extends Component
 
         $this->_deleteOrphanedDraftsAndRevisions();
         $this->_deleteOrphanedSearchIndexes();
+        $this->_deleteOrphanedRelations();
+        $this->_deleteOrphanedStructureElements();
 
         // Fire a 'run' event
         if ($this->hasEventHandlers(self::EVENT_RUN)) {
@@ -353,14 +355,15 @@ SQL;
         $this->_stdout('    > removing empty temp folders ... ');
 
         $emptyFolders = (new Query())
-            ->from(['folders' => Table::VOLUMEFOLDERS])
             ->select(['folders.id', 'folders.path'])
+            ->from(['folders' => Table::VOLUMEFOLDERS])
             ->leftJoin(['assets' => Table::ASSETS], '[[assets.folderId]] = [[folders.id]]')
             ->where([
                 'folders.volumeId' => null,
                 'assets.id' => null,
             ])
             ->andWhere(['not', ['folders.parentId' => null]])
+            ->andWhere(['not', ['folders.path' => null]])
             ->pairs();
 
         $fs = Craft::createObject(Temp::class);
@@ -450,6 +453,56 @@ SQL;
     {
         $this->_stdout('    > deleting orphaned search indexes ... ');
         Craft::$app->getSearch()->deleteOrphanedIndexes();
+        $this->_stdout("done\n", Console::FG_GREEN);
+    }
+
+    private function _deleteOrphanedRelations(): void
+    {
+        $this->_stdout('    > deleting orphaned relations ... ');
+        $relationsTable = Table::RELATIONS;
+        $elementsTable = Table::ELEMENTS;
+
+        if ($this->db->getIsMysql()) {
+            $sql = <<<SQL
+DELETE [[r]].* FROM $relationsTable [[r]]
+LEFT JOIN $elementsTable [[e]] ON [[e.id]] = [[r.targetId]]
+WHERE [[e.id]] IS NULL
+SQL;
+        } else {
+            $sql = <<<SQL
+DELETE FROM $relationsTable
+USING $relationsTable [[r]]
+LEFT JOIN $elementsTable [[e]] ON [[e.id]] = [[r.targetId]]
+WHERE [[e.id]] IS NULL
+SQL;
+        }
+
+        $this->db->createCommand($sql)->execute();
+        $this->_stdout("done\n", Console::FG_GREEN);
+    }
+
+    private function _deleteOrphanedStructureElements(): void
+    {
+        $this->_stdout('    > deleting orphaned structure elements ... ');
+        $structureElementsTable = Table::STRUCTUREELEMENTS;
+        $elementsTable = Table::ELEMENTS;
+
+        if ($this->db->getIsMysql()) {
+            $sql = <<<SQL
+DELETE [[se]].* FROM $structureElementsTable [[se]]
+LEFT JOIN $elementsTable [[e]] ON [[e.id]] = [[se.elementId]]
+WHERE [[se.elementId]] IS NOT NULL AND [[e.id]] IS NULL
+SQL;
+        } else {
+            $sql = <<<SQL
+DELETE FROM $structureElementsTable
+USING $structureElementsTable [[se]]
+LEFT JOIN $elementsTable [[e]] ON [[e.id]] = [[se.elementId]]
+WHERE [[se.elementId]] IS NOT NULL AND [[e.id]] IS NULL
+SQL;
+        }
+
+        $this->db->createCommand($sql)->execute();
         $this->_stdout("done\n", Console::FG_GREEN);
     }
 

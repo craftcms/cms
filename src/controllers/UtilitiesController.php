@@ -84,7 +84,7 @@ class UtilitiesController extends Controller
 
         $this->getView()->registerAssetBundle(UtilitiesAsset::class);
 
-        return $this->renderTemplate('utilities/_index', [
+        return $this->renderTemplate('utilities/_index.twig', [
             'id' => $id,
             'displayName' => $class::displayName(),
             'contentHtml' => $class::contentHtml(),
@@ -107,7 +107,7 @@ class UtilitiesController extends Controller
         $this->requireAcceptsJson();
 
         $logId = Craft::$app->request->getRequiredParam('logId');
-        $html = $this->getView()->renderTemplate('_components/utilities/DeprecationErrors/traces_modal', [
+        $html = $this->getView()->renderTemplate('_components/utilities/DeprecationErrors/traces_modal.twig', [
             'log' => Craft::$app->deprecator->getLogById($logId),
         ]);
 

@@ -168,7 +168,7 @@ Craft.CpScreenSlideout = Craft.Slideout.extend(
     },
 
     /**
-     * @param {object} [data={}]
+     * @param {Object} [data={}]
      * @param {boolean} [refreshInitialData=true]
      * @returns {Promise}
      */
@@ -270,13 +270,17 @@ Craft.CpScreenSlideout = Craft.Slideout.extend(
     },
 
     /**
-     * @param {object} data
-     * @return {Promise}
+     * @param {Object} data
+     * @returns {Promise}
      */
     update: function (data) {
       return new Promise((resolve) => {
         this.namespace = data.namespace;
         this.$content.html(data.content);
+
+        if (data.submitButtonLabel) {
+          this.$saveBtn.text(data.submitButtonLabel);
+        }
 
         this.updateTabs(data.tabs);
 

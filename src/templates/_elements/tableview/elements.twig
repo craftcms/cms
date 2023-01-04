@@ -18,7 +18,16 @@
     {% set elementTitle = element.title ?: element.id %}
     <tr data-id="{{ element.id }}"{% if structure %} data-title="{{ elementTitle }}" data-level="{{ element.level }}" data-descendants="{{ totalDescendants ?? 0 }}"{% endif %}{% if element.id in disabledElementIds %} class="disabled"{% endif %}>
         {% if showCheckboxes %}
-            <td class="checkbox-cell"><div class="checkbox" title="{{ 'Select'|t('app') }}" aria-label="{{ 'Select'|t('app') }}"></div></td>
+            <td class="checkbox-cell">
+                {{ tag('div', {
+                    class: 'checkbox',
+                    title: 'Select'|t('app'),
+                    role: 'checkbox',
+                    aria: {
+                        label: 'Select'|t('app'),
+                    },
+                }) }}
+            </td>
         {% endif %}
         {% for attribute in attributes %}
             {% if loop.first %}

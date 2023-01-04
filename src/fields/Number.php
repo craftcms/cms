@@ -157,7 +157,7 @@ class Number extends Field implements PreviewableFieldInterface, SortableFieldIn
      */
     public function getSettingsHtml(): ?string
     {
-        return Craft::$app->getView()->renderTemplate('_components/fieldtypes/Number/settings',
+        return Craft::$app->getView()->renderTemplate('_components/fieldtypes/Number/settings.twig',
             [
                 'field' => $this,
             ]);
@@ -257,31 +257,16 @@ class Number extends Field implements PreviewableFieldInterface, SortableFieldIn
 
         $js = <<<JS
 (function() {
-    \$('#$namespacedId').on('keydown', ev => {
-        if (
-            !Garnish.isCtrlKeyPressed(ev) &&
-            ![
-                9, // tab,
-                13, // return / enter
-                27, // esc
-                8, 46, // backspace, delete
-                37, 38, 39, 40, // arrows
-                173, 189, 109, // minus, subtract
-                190, 110, // period, decimal
-                188, // comma
-                48, 49, 50, 51, 52, 53, 54, 55, 56, 57, // 0-9
-                96, 97, 98, 99, 100, 101, 102, 103, 104, 105, // numpad 0-9
-            ].includes(ev.which)
-        ) {
-            ev.preventDefault();
-        }
+    const input = \$('#$namespacedId');
+    input.on('input', () => {
+        Craft.filterNumberInputVal(input);
     });
 })();
 JS;
 
         $view->registerJs($js);
 
-        return Craft::$app->getView()->renderTemplate('_components/fieldtypes/Number/input', [
+        return Craft::$app->getView()->renderTemplate('_components/fieldtypes/Number/input.twig', [
             'id' => $id,
             'describedBy' => $this->describedBy,
             'field' => $this,

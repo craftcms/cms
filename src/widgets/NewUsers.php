@@ -95,7 +95,7 @@ class NewUsers extends Widget
      */
     public function getSettingsHtml(): ?string
     {
-        return Craft::$app->getView()->renderTemplate('_components/widgets/NewUsers/settings',
+        return Craft::$app->getView()->renderTemplate('_components/widgets/NewUsers/settings.twig',
             [
                 'widget' => $this,
             ]);

@@ -150,7 +150,8 @@
                 <div class="flex">
                     {% include '_layouts/components/crumbs' %}
                     <div class="flex-grow"></div>
-                    <button type="button" id="announcements-btn" class="btn hidden" aria-label="{{ 'What’s New'|t('app') }}" title="{{ 'What’s New'|t('app') }}">
+                    <button type="button" id="announcements-btn" class="btn hidden" title="{{ 'What’s New'|t('app') }}">
+                        <span class="visually-hidden">{{ 'What’s New'|t('app') }}</span>
                         {{ svg('@app/icons/gift.svg') }}
                     </button>
 
@@ -202,7 +203,7 @@
                         <div id="header-container">
                             <header id="header">
                                 {% block header %}
-                                    <div id="page-title" class="flex flex-nowrap{% if toolbar %} has-toolbar{% endif %}">
+                                    <div id="page-title" class="flex{% if toolbar %} has-toolbar{% endif %}">
                                         {% block pageTitle %}
                                             {% if title is defined and title|length %}
                                                 <h1 class="screen-title" title="{{ title }}">{{ title }}</h1>

@@ -13,6 +13,7 @@ use craft\elements\Asset;
 use craft\elements\conditions\ElementCondition;
 use craft\elements\db\AssetQuery;
 use craft\elements\db\ElementQueryInterface;
+use craft\elements\ElementCollection;
 use craft\errors\FsObjectNotFoundException;
 use craft\errors\InvalidFsException;
 use craft\errors\InvalidSubpathException;
@@ -92,7 +93,7 @@ class Assets extends BaseRelationField
      */
     public static function valueType(): string
     {
-        return AssetQuery::class;
+        return sprintf('\\%s|\\%s<\\%s>', AssetQuery::class, ElementCollection::class, Asset::class);
     }
 
     /**
@@ -181,12 +182,12 @@ class Assets extends BaseRelationField
     /**
      * @inheritdoc
      */
-    protected string $settingsTemplate = '_components/fieldtypes/Assets/settings';
+    protected string $settingsTemplate = '_components/fieldtypes/Assets/settings.twig';
 
     /**
      * @inheritdoc
      */
-    protected string $inputTemplate = '_components/fieldtypes/Assets/input';
+    protected string $inputTemplate = '_components/fieldtypes/Assets/input.twig';
 
     /**
      * @inheritdoc
@@ -645,8 +646,6 @@ class Assets extends BaseRelationField
         $folderId = $this->_determineUploadFolderId($element, false, false);
         Craft::$app->getSession()->authorize('saveAssets:' . $folderId);
 
-        $assetsService = Craft::$app->getAssets();
-
         if ($this->restrictLocation) {
             if (!$this->showUnpermittedVolumes) {
                 // Make sure they have permission to view the volume
@@ -686,15 +685,19 @@ class Assets extends BaseRelationField
         // Now enforce the showUnpermittedVolumes setting
         if (!$this->showUnpermittedVolumes && !empty($sources)) {
             $userService = Craft::$app->getUser();
-            return ArrayHelper::where($sources, function(string $source) use ($assetsService, $userService) {
+            $volumesService = Craft::$app->getVolumes();
+            return ArrayHelper::where($sources, function(string $source) use ($volumesService, $userService) {
                 // If it’s not a volume folder, let it through
-                if (!str_starts_with($source, 'folder:')) {
+                if (!str_starts_with($source, 'volume:')) {
                     return true;
                 }
-                // Only show it if they have permission to view it
-                $folder = $assetsService->getFolderByUid(explode(':', $source)[1]);
-                $volume = $folder?->getVolume();
-                return $volume && ($userService->checkPermission("viewAssets:$volume->uid") || $volume->getFs() instanceof Temp);
+                // Only show it if they have permission to view it, or if it's the temp volume
+                $volumeUid = explode(':', $source)[1];
+                if ($userService->checkPermission("viewAssets:$volumeUid")) {
+                    return true;
+                }
+                $volume = $volumesService->getVolumeByUid($volumeUid);
+                return $volume?->getFs() instanceof Temp;
             }, true, true, false);
         }
 

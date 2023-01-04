@@ -50,7 +50,7 @@ class Edit extends ElementAction
 (() => {
     new Craft.ElementActionTrigger({
         type: $type,
-        batch: false,
+        bulk: false,
         validateSelection: \$selectedItems => Garnish.hasAttr(\$selectedItems.find('.element'), 'data-savable'),
         activate: \$selectedItems => {
             const \$element = \$selectedItems.find('.element:first');

@@ -10,7 +10,7 @@
     {%- set fieldsetAttributes = fieldsetAttributes|merge(('<div ' ~ block('attr') ~ '>')|parseAttr, recursive=true) %}
 {% endif %}
 
-{% tag 'fieldset' with fieldsetAttributes %}
+{% tag 'div' with fieldsetAttributes %}
     {% if name ?? false %}
         {{ hiddenInput(name, '') }}
     {% endif -%}
@@ -19,7 +19,7 @@
         {%- if option is not iterable %}
             {%- set option = {label: option, value: key} %}
         {%- endif %}
-        <div>
+        <div class="checkboxfield">
             {% include "_includes/forms/checkbox" with {
                 describedBy: describedBy ?? false,
                 name: optionName,

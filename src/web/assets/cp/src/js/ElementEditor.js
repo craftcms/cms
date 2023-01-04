@@ -341,7 +341,6 @@ Craft.ElementEditor = Garnish.Base.extend(
 
         if (this.isFullPage) {
           const heightDiff = $('#content').height() - initialHeight;
-          console.log(heightDiff);
           Garnish.$win.scrollTop(scrollTop + heightDiff);
 
           // If there isn’t enough content to simulate the same scroll position, slide it down instead
@@ -739,7 +738,7 @@ Craft.ElementEditor = Garnish.Base.extend(
     },
 
     /**
-     * @return {string}
+     * @returns {string}
      */
     _saveSuccessMessage: function () {
       return this.settings.isProvisionalDraft ||
@@ -749,7 +748,7 @@ Craft.ElementEditor = Garnish.Base.extend(
     },
 
     /**
-     * @return {string}
+     * @returns {string}
      */
     _saveFailMessage: function () {
       return this.settings.isProvisionalDraft ||
@@ -901,9 +900,9 @@ Craft.ElementEditor = Garnish.Base.extend(
 
     /**
      * @param {string} url
-     * @param {string|null} [randoParam]
+     * @param {?string} [randoParam]
      * @param {boolean} [asPromise=false]
-     * @return Promise|string
+     * @returns {(Promise|string)}
      */
     getTokenizedPreviewUrl: function (url, randoParam, asPromise) {
       if (typeof asPromise === 'undefined') {
@@ -996,17 +995,29 @@ Craft.ElementEditor = Garnish.Base.extend(
     },
 
     openPreview: function () {
-      return new Promise((resolve, reject) => {
-        this.openingPreview = true;
-        this.ensureIsDraftOrRevision(true)
-          .then(() => {
-            this.scrollY = window.scrollY;
-            this.getPreview().open();
-            this.openingPreview = false;
-            resolve();
+      if (Garnish.hasAttr(this.$previewBtn, 'aria-disabled')) {
+        return;
+      }
+
+      this.$previewBtn.attr('aria-disabled', true);
+      this.$previewBtn.addClass('loading');
+
+      this.queue.push(
+        () =>
+          new Promise((resolve, reject) => {
+            this.openingPreview = true;
+            this.ensureIsDraftOrRevision(true)
+              .then(() => {
+                this.scrollY = window.scrollY;
+                this.$previewBtn.removeAttr('aria-disabled');
+                this.$previewBtn.removeClass('loading');
+                this.getPreview().open();
+                this.openingPreview = false;
+                resolve();
+              })
+              .catch(reject);
           })
-          .catch(reject);
-      });
+      );
     },
 
     ensureIsDraftOrRevision: function (onlyIfChanged) {
@@ -1125,8 +1136,8 @@ Craft.ElementEditor = Garnish.Base.extend(
     },
 
     /**
-     * @param {object} data
-     * @returns {Promise<unknown>}
+     * @param {Object} data
+     * @returns {Promise}
      */
     saveDraft: function (data) {
       return new Promise((resolve, reject) => {
@@ -1525,7 +1536,7 @@ Craft.ElementEditor = Garnish.Base.extend(
 
     /**
      * @param {string} data
-     * @param {function|null} [deltaCallback] Callback function that should be passed to `Craft.findDeltaData()`
+     * @param {findDeltaDataCallback} [deltaCallback] Callback function that should be passed to `Craft.findDeltaData()`
      * @returns {string}
      */
     prepareData: function (data, deltaCallback) {
@@ -1609,6 +1620,15 @@ Craft.ElementEditor = Garnish.Base.extend(
                 'g'
               ),
               (m, pre, id, post) => {
+                let duplicate = false;
+                try {
+                  duplicate = this._filterFieldInputName(pre);
+                } catch (e) {
+                  console.warn(`Unexpected input name: ${m}`);
+                }
+                if (!duplicate) {
+                  return m;
+                }
                 return pre + this.duplicatedElements[id] + post;
               }
             )
@@ -1618,11 +1638,17 @@ Craft.ElementEditor = Garnish.Base.extend(
               (m, name, id) => {
                 // Ignore param names that end in `[enabled]`, `[type]`, etc.
                 // (`[sortOrder]` should pass here, which could be set to a specific order index, but *not* `[sortOrder][]`!)
-                if (
-                  name.match(
-                    new RegExp(`${lb}(enabled|sortOrder|type|typeId)${rb}$`)
-                  )
-                ) {
+                let duplicate = false;
+                try {
+                  duplicate =
+                    this._filterFieldInputName(name) &&
+                    !name.match(
+                      new RegExp(`${lb}(enabled|sortOrder|type|typeId)${rb}$`)
+                    );
+                } catch (e) {
+                  console.warn(`Unexpected input name: ${m}`);
+                }
+                if (!duplicate) {
                   return m;
                 }
                 return `&${name}=${this.duplicatedElements[id]}`;
@@ -1633,6 +1659,22 @@ Craft.ElementEditor = Garnish.Base.extend(
         }
       }
       return data;
+    },
+
+    _filterFieldInputName: function (name) {
+      // Find the last referenced field handle
+      const lb = encodeURIComponent('[');
+      const rb = encodeURIComponent(']');
+      const nestedNames = name.match(
+        new RegExp(`(\\bfields|${lb}fields${rb})${lb}[^${rb}]+${rb}`, 'g')
+      );
+      if (!nestedNames) {
+        throw `Unexpected input name: ${name}`;
+      }
+      const lastHandle = nestedNames[nestedNames.length - 1].match(
+        new RegExp(`(?:\\bfields|${lb}fields${rb})${lb}([^${rb}]+)${rb}`)
+      )[1];
+      return Craft.fieldsWithoutContent.includes(lastHandle);
     },
 
     updatePreviewTargets: function (previewTargets) {

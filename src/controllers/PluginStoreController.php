@@ -79,7 +79,7 @@ class PluginStoreController extends Controller
 
         $view->registerAssetBundle(PluginStoreAsset::class);
 
-        return $this->renderTemplate('plugin-store/_index');
+        return $this->renderTemplate('plugin-store/_index.twig');
     }
 
     /**
@@ -170,7 +170,7 @@ class PluginStoreController extends Controller
 
         $this->getView()->registerJs('new Craft.PluginStoreOauthCallback(' . Json::encode($options) . ');');
 
-        return $this->renderTemplate('plugin-store/_special/oauth/callback');
+        return $this->renderTemplate('plugin-store/_special/oauth/callback.twig');
     }
 
     /**
@@ -182,7 +182,7 @@ class PluginStoreController extends Controller
     {
         $craftIdAccessToken = $this->getCraftIdAccessToken();
 
-        return $this->renderTemplate('plugin-store/_special/oauth/modal-callback', [
+        return $this->renderTemplate('plugin-store/_special/oauth/modal-callback.twig', [
             'craftIdAccessToken' => $craftIdAccessToken,
         ]);
     }
@@ -211,7 +211,11 @@ class PluginStoreController extends Controller
         try {
             Craft::$app->getPluginStore()->saveToken($token);
         } catch (Throwable $e) {
-            return $this->asFailure($e->getMessage());
+            // Send the message regardless of Dev Mode
+            if (!App::devMode()) {
+                return $this->asFailure($e->getMessage());
+            }
+            throw $e;
         }
 
         return $this->asSuccess(
@@ -233,7 +237,7 @@ class PluginStoreController extends Controller
         $data = [];
 
         // Current user
-        $currentUser = Craft::$app->getUser()->getIdentity();
+        $currentUser = static::currentUser();
         $data['currentUser'] = $currentUser->getAttributes(['email']);
 
         // Craft license/edition info

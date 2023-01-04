@@ -61,7 +61,7 @@ class AssetIndexes extends Utility
         }
 
         $view = Craft::$app->getView();
-        $checkboxSelectHtml = $view->renderTemplate('_includes/forms/checkboxSelect', [
+        $checkboxSelectHtml = $view->renderTemplate('_includes/forms/checkboxSelect.twig', [
             'class' => 'first',
             'name' => 'volumes',
             'options' => $volumeOptions,
@@ -74,7 +74,7 @@ class AssetIndexes extends Utility
 
         $existingIndexingSessions = Craft::$app->getAssetIndexer()->getExistingIndexingSessions();
 
-        return $view->renderTemplate('_components/utilities/AssetIndexes', [
+        return $view->renderTemplate('_components/utilities/AssetIndexes.twig', [
             'existingSessions' => $existingIndexingSessions,
             'checkboxSelectHtml' => $checkboxSelectHtml,
             'dateFormat' => $dateFormat,

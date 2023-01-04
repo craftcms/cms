@@ -135,6 +135,19 @@
             },
         },
         onChange: onChange,
+        onInitialize: function () {
+            // Copy all ARIA attributes from initial select to selectize
+            var s = this;
+            var attrs = {}
+            var initialSelect = $(this.$input)[0];
+            $(initialSelect.attributes).filter(function (index, attribute) {
+                return /^aria-/.test(attribute.name);
+            })
+            .each(function (index, attribute) {
+                attrs[attribute.name] = attribute.value;
+            });
+            $(this.$control_input).attr(attrs);
+        }
     }, {{ selectizeOptions|json_encode|raw }}));
 
     onChange();

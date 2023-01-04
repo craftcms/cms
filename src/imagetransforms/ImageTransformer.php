@@ -35,6 +35,7 @@ use craft\models\ImageTransformIndex;
 use craft\queue\jobs\GeneratePendingTransforms;
 use DateTime;
 use Exception;
+use Imagine\Image\Format;
 use Throwable;
 use yii\base\InvalidConfigException;
 
@@ -311,12 +312,16 @@ class ImageTransformer extends Component implements ImageTransformerInterface, E
         $transform = $index->getTransform();
         $images = Craft::$app->getImages();
 
-        if ($index->format === 'webp' && !$images->getSupportsWebP()) {
-            throw new ImageTransformException("The `webp` format is not supported on this server!");
+        if ($index->format === Format::ID_WEBP && !$images->getSupportsWebP()) {
+            throw new ImageTransformException('The `webp` format is not supported on this server.');
         }
 
-        if ($index->format === 'avif' && !$images->getSupportsAvif()) {
-            throw new ImageTransformException("The `avif` format is not supported on this server!");
+        if ($index->format === Format::ID_AVIF && !$images->getSupportsAvif()) {
+            throw new ImageTransformException('The `avif` format is not supported on this server.');
+        }
+
+        if ($index->format === Format::ID_HEIC && !$images->getSupportsHeic()) {
+            throw new ImageTransformException('The `heic` format is not supported on this server.');
         }
 
         $volume = $asset->getVolume();
@@ -391,8 +396,11 @@ class ImageTransformer extends Component implements ImageTransformerInterface, E
                 'imageTransformIndex' => $index,
                 'path' => $transformPath,
                 'image' => $image,
+                'tempPath' => $tempPath,
             ]);
             $this->trigger(static::EVENT_TRANSFORM_IMAGE, $event);
+
+            $tempPath = $event->tempPath;
 
             $stream = fopen($tempPath, 'rb');
             $transformFs->writeFileFromStream($transformPath, $stream, []);
@@ -690,7 +698,7 @@ class ImageTransformer extends Component implements ImageTransformerInterface, E
     {
         return $this->_createTransformIndexQuery()
             ->select(['id'])
-            ->where(['fileExists' => false, 'inProgress' => false])
+            ->where(['fileExists' => false, 'inProgress' => false, 'error' => false])
             ->column();
     }
 

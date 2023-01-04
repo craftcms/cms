@@ -126,7 +126,7 @@ class Lightswitch extends Field implements PreviewableFieldInterface, SortableFi
     protected function inputHtml(mixed $value, ?ElementInterface $element = null): string
     {
         $id = $this->getInputId();
-        return Craft::$app->getView()->renderTemplate('_includes/forms/lightswitch', [
+        return Craft::$app->getView()->renderTemplate('_includes/forms/lightswitch.twig', [
             'id' => $id,
             'labelId' => $this->getLabelId(),
             'describedBy' => $this->describedBy,
@@ -135,18 +135,6 @@ class Lightswitch extends Field implements PreviewableFieldInterface, SortableFi
             'onLabel' => $this->onLabel,
             'offLabel' => $this->offLabel,
         ]);
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getTableAttributeHtml(mixed $value, ElementInterface $element): string
-    {
-        if ($value) {
-            return '<div class="status enabled" title="' . Craft::t('app', 'Enabled') . '"></div>';
-        }
-
-        return '<div class="status" title="' . Craft::t('app', 'Not enabled') . '"></div>';
     }
 
     /**

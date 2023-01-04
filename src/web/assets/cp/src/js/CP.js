@@ -242,8 +242,13 @@ Craft.CP = Garnish.Base.extend(
       if (Craft.announcements.length) {
         let $btn = $('#announcements-btn').removeClass('hidden');
         const hasUnreads = Craft.announcements.some((a) => a.unread);
+        let $unreadMessage;
         if (hasUnreads) {
-          $btn.addClass('unread');
+          $unreadMessage = $('<span/>', {
+            class: 'visually-hidden',
+            html: Craft.t('app', 'Unread messages'),
+          });
+          $btn.addClass('unread').append($unreadMessage);
         }
         let hud;
         this.addListener($btn, 'click', () => {
@@ -251,18 +256,25 @@ Craft.CP = Garnish.Base.extend(
             let contents = '';
             Craft.announcements.forEach((a) => {
               contents +=
-                `<div class="announcement ${a.unread ? 'unread' : ''}">` +
+                `<div class="announcement ${
+                  a.unread ? 'unread' : ''
+                }" role="listitem">` +
+                '<div class="announcement__header">' +
+                `<h3 class="announcement__heading h2">${a.heading}</h3>` +
                 '<div class="announcement-label-container">' +
-                `<div class="announcement-icon">${a.icon}</div>` +
+                `<div class="announcement-icon" aria-hidden="true">${a.icon}</div>` +
                 `<div class="announcement-label">${a.label}</div>` +
                 '</div>' +
-                `<h2>${a.heading}</h2>` +
+                '</div>' +
                 `<p>${a.body}</p>` +
                 '</div>';
             });
             hud = new Garnish.HUD(
               $btn,
-              `<div id="announcements">${contents}</div>`,
+              `<h2 class="visually-hidden">${Craft.t(
+                'app',
+                'Announcements'
+              )}</h2><div id="announcements" role="list">${contents}</div>`,
               {
                 onShow: () => {
                   $btn.addClass('active');
@@ -286,6 +298,7 @@ Craft.CP = Garnish.Base.extend(
 
             if (hasUnreads) {
               $btn.removeClass('unread');
+              $unreadMessage.remove();
               Craft.sendActionRequest(
                 'POST',
                 'users/mark-announcements-as-read',
@@ -300,6 +313,22 @@ Craft.CP = Garnish.Base.extend(
             hud.show();
           }
         });
+      }
+
+      // Add .stuck class to #footer when stuck
+      // h/t https://stackoverflow.com/a/61115077/1688568
+      const footer = document.getElementById('footer');
+      if (footer) {
+        const observer = new IntersectionObserver(
+          ([ev]) => {
+            ev.target.classList.toggle('stuck', ev.intersectionRatio < 1);
+          },
+          {
+            rootMargin: '0px 0px -1px 0px',
+            threshold: [1],
+          }
+        );
+        observer.observe(footer);
       }
     },
 
@@ -642,7 +671,7 @@ Craft.CP = Garnish.Base.extend(
       return this.tabManager ? this.tabManager.$focusableTab : undefined;
     },
     /**
-     * @param {object} tab
+     * @param {(jQuery|HTMLElement|string)} tab
      * @deprecated in 3.7.0
      */
     selectTab: function (tab) {
@@ -859,7 +888,7 @@ Craft.CP = Garnish.Base.extend(
      * @param {string} [settings.icon] The icon to show on the notification
      * @param {string} [settings.iconLabel] The icon’s ARIA label
      * @param {string} [settings.details] Any additional HTML that should be included below the message
-     * @return {Object} The notification
+     * @returns {Object} The notification
      */
     displayNotification: function (type, message, settings) {
       const notification = new Craft.CP.Notification(type, message, settings);
@@ -881,7 +910,7 @@ Craft.CP = Garnish.Base.extend(
      * @param {string} [settings.icon] The icon to show on the notification
      * @param {string} [settings.iconLabel] The icon’s ARIA label
      * @param {string} [settings.details] Any additional HTML that should be included below the message
-     * @return {Object} The notification
+     * @returns {Object} The notification
      */
     displayNotice: function (message, settings) {
       return this.displayNotification(
@@ -905,7 +934,7 @@ Craft.CP = Garnish.Base.extend(
      * @param {string} [settings.icon] The icon to show on the notification
      * @param {string} [settings.iconLabel] The icon’s ARIA label
      * @param {string} [settings.details] Any additional HTML that should be included below the message
-     * @return {Object} The notification
+     * @returns {Object} The notification
      */
     displaySuccess: function (message, settings) {
       return this.displayNotification(
@@ -929,7 +958,7 @@ Craft.CP = Garnish.Base.extend(
      * @param {string} [settings.icon] The icon to show on the notification
      * @param {string} [settings.iconLabel] The icon’s ARIA label
      * @param {string} [settings.details] Any additional HTML that should be included below the message
-     * @return {Object} The notification
+     * @returns {Object} The notification
      */
     displayError: function (message, settings) {
       if (!message || typeof message === 'object') {
@@ -1359,7 +1388,7 @@ Craft.CP = Garnish.Base.extend(
     /**
      * Returns the active site for the control panel
      *
-     * @return {number}
+     * @returns {number}
      */
     getSiteId: function () {
       // If the old BaseElementIndex.siteId value is in localStorage, go aheand and remove & return that

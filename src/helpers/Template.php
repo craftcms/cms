@@ -9,6 +9,7 @@ namespace craft\helpers;
 
 use Craft;
 use craft\base\ElementInterface;
+use craft\base\ExpirableElementInterface;
 use craft\db\Paginator;
 use craft\web\twig\variables\Paginate;
 use craft\web\View;
@@ -17,6 +18,7 @@ use Twig\Error\RuntimeError;
 use Twig\Markup;
 use Twig\Source;
 use Twig\Template as TwigTemplate;
+use Twig\TemplateWrapper;
 use yii\base\BaseObject;
 use yii\base\InvalidConfigException;
 use yii\base\UnknownMethodException;
@@ -72,13 +74,21 @@ class Template
         // Include this element in any active caches
         if ($object instanceof ElementInterface) {
             $elementsService = Craft::$app->getElements();
-            if ($elementsService->getIsCollectingCacheTags()) {
+            if ($elementsService->getIsCollectingCacheInfo()) {
                 $class = get_class($object);
                 $elementsService->collectCacheTags([
                     'element',
                     "element::$class",
                     "element::$class::$object->id",
                 ]);
+
+                // If the element is expirable, register its expiry date
+                if (
+                    $object instanceof ExpirableElementInterface &&
+                    ($expiryDate = $object->getExpiryDate()) !== null
+                ) {
+                    $elementsService->setCacheExpiryDate($expiryDate);
+                }
             }
         }
 
@@ -313,5 +323,20 @@ class Template
         }
 
         return [$templatePath, $templateLine];
+    }
+
+    /**
+     * Filters the template from a context array.
+     *
+     * Used by the `dump()` function and `dd` tags.
+     *
+     * @param array $context
+     * @return array
+     * @since 4.4.0
+     */
+    public static function contextWithoutTemplate(array $context): array
+    {
+        // Template check copied from twig_var_dump()
+        return array_filter($context, fn($value) => !$value instanceof TwigTemplate && !$value instanceof TemplateWrapper);
     }
 }

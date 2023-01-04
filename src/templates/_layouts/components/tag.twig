@@ -1,0 +1,35 @@
+{% set attributes = (attributes ?? {})
+  |merge({
+    style: {
+      'animation-name': 'none',
+      'appearance': 'auto',
+      'aspect-ratio': 'auto',
+      'background-color': 'transparent',
+      'background-image': 'none',
+      'bottom': 'auto',
+      'color': 'inherit',
+      'display': 'inline',
+      'filter': 'none',
+      'font-size': 'inherit',
+      'font-weight': 'inherit',
+      'height': 'auto',
+      'left': 'auto',
+      'max-height': 'none',
+      'max-width': 'none',
+      'opacity': '1',
+      'position': 'static',
+      'right': 'auto',
+      'rotate': 'none',
+      'top': 'auto',
+      'transform': 'none',
+      'width': 'auto',
+    }
+      |merge(style ?? {})
+      |merge((attribtes.style ?? {})|explodeStyle)
+      |map(v => "#{v} !important")
+  })
+%}
+
+{{- tag(type, attributes|merge({
+  html: content ?? block('content') ?? ''
+})) }}

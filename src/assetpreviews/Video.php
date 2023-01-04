@@ -30,7 +30,7 @@ class Video extends AssetPreviewHandler
             throw new NotSupportedException('Preview not supported.');
         }
 
-        return Craft::$app->getView()->renderTemplate('assets/_previews/video',
+        return Craft::$app->getView()->renderTemplate('assets/_previews/video.twig',
             array_merge([
                 'asset' => $this->asset,
                 'url' => $url,

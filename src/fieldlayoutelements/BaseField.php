@@ -129,19 +129,26 @@ abstract class BaseField extends FieldLayoutElement
         $innerHtml = '';
 
         $label = $this->selectorLabel();
-        $requiredHtml = $this->required ? Html::tag('div', '', [
-            'class' => 'fld-required-indicator',
-            'title' => Craft::t('app', 'This field is required'),
-            'aria' => ['label' => Craft::t('app', 'This field is required')],
-            'data' => ['icon' => 'asterisk'],
-        ]) : '';
+        $indicatorHtml =
+            ($this->required ? Html::tag('div', '', [
+                'class' => ['fld-indicator'],
+                'title' => Craft::t('app', 'This field is required'),
+                'aria' => ['label' => Craft::t('app', 'This field is required')],
+                'data' => ['icon' => 'asterisk'],
+            ]) : '') .
+            ($this->hasConditions() ? Html::tag('div', '', [
+                'class' => ['fld-indicator'],
+                'title' => Craft::t('app', 'This field is conditional'),
+                'aria' => ['label' => Craft::t('app', 'This field is conditional')],
+                'data' => ['icon' => 'condition'],
+            ]) : '');
 
         if ($label !== null) {
             $label = Html::encode($label);
             $innerHtml .= Html::tag('div',
                 Html::tag('h4', $label, [
                     'title' => $label,
-                ]) . $requiredHtml, [
+                ]) . $indicatorHtml, [
                     'class' => 'fld-element-label',
                 ]);
         }
@@ -150,7 +157,7 @@ abstract class BaseField extends FieldLayoutElement
             Html::tag('div', $this->attribute(), [
                 'class' => ['smalltext', 'light', 'code'],
                 'title' => $this->attribute(),
-            ]) . ($label === null ? $requiredHtml : ''), [
+            ]) . ($label === null ? $indicatorHtml : ''), [
                 'class' => 'fld-attribute',
             ]);
 
@@ -199,7 +206,7 @@ abstract class BaseField extends FieldLayoutElement
      */
     protected function settingsHtml(): ?string
     {
-        return Craft::$app->getView()->renderTemplate('_includes/forms/fld/field-settings', [
+        return Craft::$app->getView()->renderTemplate('_includes/forms/fld/field-settings.twig', [
             'field' => $this,
             'defaultLabel' => $this->defaultLabel(),
             'defaultInstructions' => $this->defaultInstructions(),
@@ -438,6 +445,9 @@ abstract class BaseField extends FieldLayoutElement
      */
     protected function statusClass(?ElementInterface $element = null, bool $static = false): ?string
     {
+        if ($element && ($status = $element->getAttributeStatus($this->attribute()))) {
+            return $status[0];
+        }
         return null;
     }
 
@@ -450,6 +460,9 @@ abstract class BaseField extends FieldLayoutElement
      */
     protected function statusLabel(?ElementInterface $element = null, bool $static = false): ?string
     {
+        if ($element && ($status = $element->getAttributeStatus($this->attribute()))) {
+            return $status[1];
+        }
         return null;
     }
 

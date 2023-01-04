@@ -294,7 +294,7 @@ class ElementIndexesController extends BaseElementsController
         $sources = Craft::$app->getElementSources()->getSources($this->elementType, $this->context);
 
         return $this->asJson([
-            'html' => $this->getView()->renderTemplate('_elements/sources', [
+            'html' => $this->getView()->renderTemplate('_elements/sources.twig', [
                 'elementType' => $this->elementType,
                 'sources' => $sources,
             ]),

@@ -10,6 +10,7 @@ namespace craft\db;
 use ArrayAccess;
 use ArrayIterator;
 use craft\base\ClonefixTrait;
+use craft\elements\ElementCollection;
 use craft\events\DefineBehaviorsEvent;
 use craft\helpers\ArrayHelper;
 use Illuminate\Support\Collection;
@@ -119,7 +120,7 @@ class Query extends \yii\db\Query implements ArrayAccess, IteratorAggregate
     public function offsetSet(mixed $offset, mixed $value): void
     {
         if (is_numeric($offset)) {
-            throw new NotSupportedException('Queries do not support setting values using array syncax.');
+            throw new NotSupportedException('Queries do not support setting values using array syntax.');
         }
 
         $this->__set($offset, $value);
@@ -260,7 +261,7 @@ class Query extends \yii\db\Query implements ArrayAccess, IteratorAggregate
      */
     public function collect(?YiiConnection $db = null): Collection
     {
-        return Collection::make($this->all($db));
+        return ElementCollection::make($this->all($db));
     }
 
     /**

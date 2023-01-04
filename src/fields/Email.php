@@ -102,7 +102,7 @@ class Email extends Field implements PreviewableFieldInterface
      */
     protected function inputHtml(mixed $value, ?ElementInterface $element = null): string
     {
-        return Craft::$app->getView()->renderTemplate('_includes/forms/text', [
+        return Craft::$app->getView()->renderTemplate('_includes/forms/text.twig', [
             'type' => 'email',
             'id' => $this->getInputId(),
             'describedBy' => $this->describedBy,
