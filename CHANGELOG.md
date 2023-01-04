@@ -8,6 +8,7 @@
 - It’s now possible to assign aliases `children` fields queried via GraphQL. ([#12494](https://github.com/craftcms/cms/pull/12494))
 - Added `craft\helpers\Image::isWebSafe()`.
 - Added `craft\services\Images::getSupportsHeic()`.
+- `Craft.MatrixInput` now fires `blockSortDragStop`, `beforeMoveBlockUp`, `moveBlockUp`, `beforeMoveBlockDown`, and `moveBlockDown` events. ([#12498](https://github.com/craftcms/cms/pull/12498))
 - Fixed an error that could occur when processing template caches in a console request, if a globally-scoped template cache was processed before it.
 - Fixed a bug where some custom field property types in `craft\behaviors\CustomFieldBehavior` were incorrect.
 - Updated Imagine to 1.3.3.
