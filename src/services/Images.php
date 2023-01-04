@@ -195,7 +195,6 @@ class Images extends Component
         return $info->isFormatSupported(Format::ID_WEBP);
     }
 
-
     /**
      * Returns whether the AVIF image format is supported.
      *
