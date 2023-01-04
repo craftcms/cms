@@ -11,6 +11,7 @@ use Craft;
 use craft\errors\ImageException;
 use craft\image\Svg;
 use Imagick;
+use Imagine\Image\Format;
 use Throwable;
 use TypeError;
 use yii\base\InvalidArgumentException;
@@ -125,6 +126,11 @@ class Image
      */
     public static function canManipulateAsImage(string $extension): bool
     {
+        $extension = strtolower($extension);
+        if ($extension === 'heif') {
+            $extension = Format::ID_HEIC;
+        }
+
         $formats = Craft::$app->getImages()->getSupportedImageFormats();
 
         $alwaysManipulatable = ['svg'];
@@ -133,7 +139,7 @@ class Image
         $formats = array_merge($formats, $alwaysManipulatable);
         $formats = array_diff($formats, $neverManipulatable);
 
-        return in_array(strtolower($extension), $formats);
+        return in_array($extension, $formats);
     }
 
     /**
