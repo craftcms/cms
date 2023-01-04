@@ -4,6 +4,12 @@
 
 - Template caching is no longer enabled for tokenized requests. ([#12458](https://github.com/craftcms/cms/issues/12458))
 - Elisions are now stripped from search keywords. ([#12467](https://github.com/craftcms/cms/issues/12467), [#12474](https://github.com/craftcms/cms/pull/12474))
+- Added support for HEIC/HEIF images. ([#9115](https://github.com/craftcms/cms/discussions/9115))
+- The `allowedFileExtensions` config setting now includes `heic`, `heif`, and `hevc` by default. ([#12490](https://github.com/craftcms/cms/discussions/12490))
+- It’s now possible to assign aliases `children` fields queried via GraphQL. ([#12494](https://github.com/craftcms/cms/pull/12494))
+- Added `craft\helpers\Image::isWebSafe()`.
+- Added `craft\services\Images::getSupportsHeic()`.
+- `Craft.MatrixInput` now fires `blockSortDragStop`, `beforeMoveBlockUp`, `moveBlockUp`, `beforeMoveBlockDown`, and `moveBlockDown` events. ([#12498](https://github.com/craftcms/cms/pull/12498))
 - Fixed a bug where deleting a field layout tab could result in duplicated tabs. ([#12459](https://github.com/craftcms/cms/issues/12459))
 - Fixed a bug where Feed widgets weren’t showing feed items when they were first loaded. ([#12460](https://github.com/craftcms/cms/issues/12460))
 - Fixed an error that occurred when a Date field’s condition rule was set to a relative range, “has a value”, or “is empty”. ([#12457](https://github.com/craftcms/cms/issues/12457))
@@ -11,6 +17,8 @@
 - Fixed styling issues with large element thumbnail views. ([#12455](https://github.com/craftcms/cms/issues/12455))
 - Fixed a bug where it wasn’t possible to retry all failed jobs when using a proxy queue. ([#12471](https://github.com/craftcms/cms/issues/12471))
 - Fixed a bug where the selected table columns would be forgotten if modified from a nested source. ([#12477](https://github.com/craftcms/cms/issues/12477))
+- Fixed a bug where some custom field property types in `craft\behaviors\CustomFieldBehavior` were incorrect.
+- Fixed an error that could occur if a Matrix sub-field’s handle was too long. ([#12422](https://github.com/craftcms/cms/issues/12422))
 - Fixed an XSS vulnerability.
 
 ## 4.3.5 - 2022-12-13
