@@ -874,19 +874,23 @@
     },
 
     moveUp: function () {
+      this.trigger('beforeMoveUp');
       let $prev = this.$container.prev('.matrixblock');
       if ($prev.length) {
         this.$container.insertBefore($prev);
         this.matrix.blockSelect.resetItemOrder();
       }
+      this.trigger('moveUp');
     },
 
     moveDown: function () {
+      this.trigger('beforeMoveDown');
       let $next = this.$container.next('.matrixblock');
       if ($next.length) {
         this.$container.insertAfter($next);
         this.matrix.blockSelect.resetItemOrder();
       }
+      this.trigger('moveDown');
     },
 
     handleActionClick: function (event) {
