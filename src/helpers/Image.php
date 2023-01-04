@@ -9,6 +9,7 @@ namespace craft\helpers;
 
 use Craft;
 use craft\errors\ImageException;
+use craft\helpers\Image as ImageHelper;
 use craft\image\Svg;
 use Imagick;
 use Imagine\Image\Format;
@@ -143,13 +144,25 @@ class Image
     }
 
     /**
-     * Returns a list of web safe image formats.
+     * Returns a list of web-safe image formats.
      *
      * @return string[]
      */
     public static function webSafeFormats(): array
     {
         return ['jpg', 'jpeg', 'gif', 'png', 'svg', 'webp', 'avif'];
+    }
+
+    /**
+     * Returns whether an extension is web-safe.
+     *
+     * @param string $extension
+     * @return bool
+     * @since 3.7.63
+     */
+    public static function isWebSafe(string $extension): bool
+    {
+        return in_array(strtolower($extension), static::webSafeFormats(), true);
     }
 
     /**

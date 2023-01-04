@@ -1227,8 +1227,10 @@ class AssetTransforms extends Component
      */
     public function detectAutoTransformFormat(Asset $asset)
     {
-        if (in_array(mb_strtolower($asset->getExtension()), Image::webSafeFormats(), true)) {
-            return $asset->getExtension();
+        $extension = $asset->getExtension();
+
+        if (Image::isWebSafe($extension)) {
+            return $extension;
         }
 
         if ($asset->kind === Asset::KIND_IMAGE) {
@@ -1241,7 +1243,7 @@ class AssetTransforms extends Component
 
             $volume = $asset->getVolume();
 
-            $tempFilename = uniqid(pathinfo($asset->filename, PATHINFO_FILENAME), true) . '.' . $asset->getExtension();
+            $tempFilename = uniqid(pathinfo($asset->filename, PATHINFO_FILENAME), true) . ".$extension";
             $tempPath = Craft::$app->getPath()->getTempPath() . DIRECTORY_SEPARATOR . $tempFilename;
             $volume->saveFileLocally($asset->getPath(), $tempPath);
 

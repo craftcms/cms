@@ -25,9 +25,10 @@ class Image extends AssetPreviewHandler
      */
     public function getPreviewHtml(): string
     {
-        $isWebSafe = in_array($this->asset->getExtension(), ImageHelper::webSafeFormats());
-
-        if ($isWebSafe && $this->asset->getVolume()->hasUrls) {
+        if (
+            ImageHelper::isWebSafe($this->asset->getExtension()) &&
+            $this->asset->getVolume()->hasUrls
+        ) {
             $url = $this->asset->getUrl();
         } else {
             $url = UrlHelper::actionUrl('assets/thumb', [

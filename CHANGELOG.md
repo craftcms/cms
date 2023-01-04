@@ -5,6 +5,7 @@
 - Elisions are now stripped from search keywords. ([#12467](https://github.com/craftcms/cms/issues/12467), [#12474](https://github.com/craftcms/cms/pull/12474))
 - Added support for HEIC/HEIF images. ([#9115](https://github.com/craftcms/cms/discussions/9115))
 - The `allowedFileExtensions` config setting now includes `heic`, `heif`, and `hevc` by default. ([#12490](https://github.com/craftcms/cms/discussions/12490))
+- Added `craft\helpers\Image::isWebSafe()`.
 - Fixed an error that could occur when processing template caches in a console request, if a globally-scoped template cache was processed before it.
 - Updated Imagine to 1.3.3.
 
