@@ -1742,6 +1742,7 @@ return [
     '{attribute} should contain at most {max, number} {max, plural, one{selection} other{selections}}.' => '{attribute} should contain at most {max, number} {max, plural, one{selection} other{selections}}.',
     '{attribute} should contain {count, number} {count, plural, one{item} other{items}}.' => '{attribute} should contain {count, number} {count, plural, one{item} other{items}}.',
     '{attribute} “{value}” has already been taken.' => '{attribute} “{value}” has already been taken.',
+    '{attribute} should contain at most {value} characters.' => '{attribute} should contain at most {value} characters.',
     '{ctrl}C to copy.' => '{ctrl}C to copy.',
     '{edition} edition' => '{edition} edition',
     '{first, number}-{last, number} of {total, number} {total, plural, =1{{item}} other{{items}}}' => '{first, number}–{last, number} of {total, number} {total, plural, =1{{item}} other{{items}}}',

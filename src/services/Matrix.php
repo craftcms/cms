@@ -193,6 +193,20 @@ class Matrix extends Component
                 } else {
                     $this->_uniqueBlockTypeAndFieldHandles[] = $blockTypeAndFieldHandle;
                 }
+
+                // Make sure the handle isn't too long when including the block type handle as individual fields
+                // don't account for it.
+                $maxHandleLength = Craft::$app->getDb()->getSchema()->maxObjectNameLength;
+                $maxHandleLength -= strlen(Craft::$app->getContent()->fieldColumnPrefix . '_');
+                $maxHandleLength -= strlen($blockType->handle . '_');
+                $maxHandleLength -= strlen('_' . $field->columnSuffix);
+
+                if (strlen($field->handle) > $maxHandleLength) {
+                    $field->addError('handle', Craft::t('app', '{attribute} should contain at most {value} characters.', [
+                        'attribute' => Craft::t('app', 'Handle'),
+                        'value' => $maxHandleLength,
+                    ]));
+                }
             }
 
             if ($field->hasErrors()) {
