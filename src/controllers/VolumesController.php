@@ -98,12 +98,6 @@ class VolumesController extends Controller
             ])
             ->all();
 
-        if (empty($fsOptions)) {
-            $fsOptions = [
-
-            ];
-        }
-
         return $this->asCpScreen()
             ->title($title)
             ->addCrumb(Craft::t('app', 'Settings'), 'settings')
