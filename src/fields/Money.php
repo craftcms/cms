@@ -52,7 +52,7 @@ class Money extends Field implements PreviewableFieldInterface, SortableFieldInt
      */
     public static function valueType(): string
     {
-        return MoneyLibrary::class;
+        return sprintf('\\%s', MoneyLibrary::class);
     }
 
     /**
