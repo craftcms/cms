@@ -38,7 +38,7 @@ class Color extends Field implements PreviewableFieldInterface
      */
     public static function valueType(): string
     {
-        return ColorData::class . '|null';
+        return sprintf('\\%s|null', ColorData::class);
     }
 
     /**
