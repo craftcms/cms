@@ -90,7 +90,15 @@ class VolumesController extends Controller
             $title = trim($volume->name) ?: Craft::t('app', 'Edit Volume');
         }
 
+        // Don't allow any filesystems that other volumes have complete control over
+        $fsHandle = $volume->getFsHandle();
+        $allVolumes = $volumesServices->getAllVolumes();
+        /** @var Collection<string> $excludedFsHandles */
+        $excludedFsHandles = Collection::make($allVolumes)
+            ->filter(fn(Volume $volume) => !$volume->fsSubpath)
+            ->map(fn(Volume $volume) => $volume->getFsHandle());
         $fsOptions = Collection::make(Craft::$app->getFs()->getAllFilesystems())
+            ->filter(fn(FsInterface $fs) => $fs->handle === $fsHandle || !$excludedFsHandles->contains($fs->handle))
             ->sortBy(fn(FsInterface $fs) => $fs->name)
             ->map(fn(FsInterface $fs) => [
                 'label' => $fs->name,
