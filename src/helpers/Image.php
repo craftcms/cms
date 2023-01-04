@@ -9,7 +9,6 @@ namespace craft\helpers;
 
 use Craft;
 use craft\errors\ImageException;
-use craft\helpers\Image as ImageHelper;
 use craft\image\Svg;
 use Imagick;
 use Imagine\Image\Format;
