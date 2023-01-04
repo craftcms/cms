@@ -11,6 +11,7 @@
 - `Craft.MatrixInput` now fires `blockSortDragStop`, `beforeMoveBlockUp`, `moveBlockUp`, `beforeMoveBlockDown`, and `moveBlockDown` events. ([#12498](https://github.com/craftcms/cms/pull/12498))
 - Fixed an error that could occur when processing template caches in a console request, if a globally-scoped template cache was processed before it.
 - Fixed a bug where some custom field property types in `craft\behaviors\CustomFieldBehavior` were incorrect.
+- Fixed an error that could occur if a Matrix sub-field’s handle was too long. ([#12422](https://github.com/craftcms/cms/issues/12422))
 - Updated Imagine to 1.3.3.
 
 ## 3.7.62 - 2022-12-13
