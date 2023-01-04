@@ -19,6 +19,7 @@
 - Fixed a bug where the selected table columns would be forgotten if modified from a nested source. ([#12477](https://github.com/craftcms/cms/issues/12477))
 - Fixed a bug where some custom field property types in `craft\behaviors\CustomFieldBehavior` were incorrect.
 - Fixed an error that could occur if a Matrix sub-field’s handle was too long. ([#12422](https://github.com/craftcms/cms/issues/12422))
+- Fixed a bug where element editor slideouts’ submit buttons weren’t always consistent with the full-page edit form. ([#12487](https://github.com/craftcms/cms/issues/12487))
 - Fixed an XSS vulnerability.
 
 ## 4.3.5 - 2022-12-13
