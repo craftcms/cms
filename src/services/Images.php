@@ -210,7 +210,7 @@ class Images extends Component
      * Returns whether the HEIC/HEIF image format is supported.
      *
      * @return bool
-     * @since 3.7.63
+     * @since 4.3.6
      */
     public function getSupportsHeic(): bool
     {
