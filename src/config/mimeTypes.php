@@ -3,6 +3,10 @@
 $mimeTypes = require Craft::getAlias('@yii/helpers/mimeTypes.php');
 
 return array_merge($mimeTypes, [
+    'avif' => 'image/avif',
+    'heic' => 'image/heic',
+    'heif' => 'image/heic',
+    'hevc' => 'video/mp4',
     'markdown' => 'text/markdown',
     'md' => 'text/markdown',
     'vtt' => 'text/vtt',
