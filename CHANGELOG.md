@@ -8,6 +8,7 @@
 - Added `craft\helpers\Image::isWebSafe()`.
 - Added `craft\services\Images::getSupportsHeic()`.
 - Fixed an error that could occur when processing template caches in a console request, if a globally-scoped template cache was processed before it.
+- Fixed a bug where some custom field property types in `craft\behaviors\CustomFieldBehavior` were incorrect.
 - Updated Imagine to 1.3.3.
 
 ## 3.7.62 - 2022-12-13
@@ -219,7 +220,6 @@
 - Fixed a JavaScript error that occurred when removing a category from a Categories field, if any of its descendants were selected as well. ([#11641](https://github.com/craftcms/cms/issues/11641))
 - Fixed a bug where links to config settings from **Settings** → **General** didn’t include the correct setting anchors. ([#11665](https://github.com/craftcms/cms/pull/11665))
 - Fixed styling issues with Live Preview in Firefox.
-- Fixed a bug where some custom field property types in `craft\behaviors\CustomFieldBehavior` were incorrect.
 
 ### Security
 - Fixed an information disclosure vulnerability.
