@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 4
 
-## Unreleased
+## 4.3.6 - 2023-01-04
 
 - Template caching is no longer enabled for tokenized requests. ([#12458](https://github.com/craftcms/cms/issues/12458))
 - Elisions are now stripped from search keywords. ([#12467](https://github.com/craftcms/cms/issues/12467), [#12474](https://github.com/craftcms/cms/pull/12474))
