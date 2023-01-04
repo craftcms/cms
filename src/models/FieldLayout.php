@@ -767,7 +767,6 @@ class FieldLayout extends Model
         }
 
         if ($changeDeltaRegistration) {
-            /** @phpstan-ignore-next-line */
             $view->setIsDeltaRegistrationActive($isDeltaRegistrationActive);
         }
 
