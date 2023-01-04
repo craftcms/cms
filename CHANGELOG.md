@@ -1,6 +1,7 @@
 # Release Notes for Craft CMS 3.x
 
-## Unreleased
+## 3.7.63 - 2023-01-04
+
 - Template caching is no longer enabled for tokenized requests. ([#12458](https://github.com/craftcms/cms/issues/12458))
 - Elisions are now stripped from search keywords. ([#12467](https://github.com/craftcms/cms/issues/12467), [#12474](https://github.com/craftcms/cms/pull/12474))
 - Added support for HEIC/HEIF images. ([#9115](https://github.com/craftcms/cms/discussions/9115))
