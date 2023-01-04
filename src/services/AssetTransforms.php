@@ -36,6 +36,7 @@ use craft\models\AssetTransform;
 use craft\models\AssetTransformIndex;
 use craft\records\AssetTransform as AssetTransformRecord;
 use DateTime;
+use Imagine\Image\Format;
 use yii\base\Application;
 use yii\base\Component;
 use yii\base\InvalidArgumentException;
@@ -1226,8 +1227,10 @@ class AssetTransforms extends Component
      */
     public function detectAutoTransformFormat(Asset $asset)
     {
-        if (in_array(mb_strtolower($asset->getExtension()), Image::webSafeFormats(), true)) {
-            return $asset->getExtension();
+        $extension = $asset->getExtension();
+
+        if (Image::isWebSafe($extension)) {
+            return $extension;
         }
 
         if ($asset->kind === Asset::KIND_IMAGE) {
@@ -1240,7 +1243,7 @@ class AssetTransforms extends Component
 
             $volume = $asset->getVolume();
 
-            $tempFilename = uniqid(pathinfo($asset->filename, PATHINFO_FILENAME), true) . '.' . $asset->getExtension();
+            $tempFilename = uniqid(pathinfo($asset->filename, PATHINFO_FILENAME), true) . ".$extension";
             $tempPath = Craft::$app->getPath()->getTempPath() . DIRECTORY_SEPARATOR . $tempFilename;
             $volume->saveFileLocally($asset->getPath(), $tempPath);
 
@@ -1557,12 +1560,16 @@ class AssetTransforms extends Component
             $index->detectedFormat = $index->format ?: $this->detectAutoTransformFormat($asset);
         }
 
-        if ($index->format === 'webp' && !$images->getSupportsWebP()) {
-            throw new AssetTransformException("The `webp` format is not supported on this server!");
+        if ($index->format === Format::ID_WEBP && !$images->getSupportsWebP()) {
+            throw new AssetTransformException('The `webp` format is not supported on this server.');
         }
 
-        if ($index->format === 'avif' && !$images->getSupportsAvif()) {
-            throw new AssetTransformException("The `avif` format is not supported on this server!");
+        if ($index->format === Format::ID_AVIF && !$images->getSupportsAvif()) {
+            throw new AssetTransformException('The `avif` format is not supported on this server.');
+        }
+
+        if ($index->format === Format::ID_HEIC && !$images->getSupportsHeic()) {
+            throw new AssetTransformException('The `heic` format is not supported on this server.');
         }
 
         $volume = $asset->getVolume();

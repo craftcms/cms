@@ -130,7 +130,7 @@ class AssetTransformsController extends Controller
             $transform->quality = null;
         }
 
-        if (!empty($transform->format) && !in_array($transform->format, Image::webSafeFormats(), true)) {
+        if (!empty($transform->format) && !Image::isWebSafe($transform->format)) {
             $this->setFailFlash(Craft::t('app', 'That is not an allowed format.'));
             $errors = true;
         }
