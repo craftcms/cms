@@ -98,7 +98,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
      */
     public static function valueType(): string
     {
-        return sprintf('%s|%s<%s>', MatrixBlockQuery::class, ElementCollection::class, MatrixBlock::class);
+        return sprintf('\\%s|\\%s<\\%s>', MatrixBlockQuery::class, ElementCollection::class, MatrixBlock::class);
     }
 
     /**

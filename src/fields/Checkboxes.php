@@ -33,7 +33,7 @@ class Checkboxes extends BaseOptionsField
      */
     public static function valueType(): string
     {
-        return MultiOptionsFieldData::class;
+        return sprintf('\\%s', MultiOptionsFieldData::class);
     }
 
     /**
