@@ -15,6 +15,7 @@
 - Fixed styling issues with large element thumbnail views. ([#12455](https://github.com/craftcms/cms/issues/12455))
 - Fixed a bug where it wasn’t possible to retry all failed jobs when using a proxy queue. ([#12471](https://github.com/craftcms/cms/issues/12471))
 - Fixed a bug where the selected table columns would be forgotten if modified from a nested source. ([#12477](https://github.com/craftcms/cms/issues/12477))
+- Fixed a bug where some custom field property types in `craft\behaviors\CustomFieldBehavior` were incorrect.
 - Fixed an XSS vulnerability.
 
 ## 4.3.5 - 2022-12-13
@@ -602,7 +603,6 @@
 - Fixed a JavaScript error that occurred when removing a category from a Categories field, if any of its descendants were selected as well. ([#11641](https://github.com/craftcms/cms/issues/11641))
 - Fixed a bug where links to config settings from **Settings** → **General** didn’t include the correct setting anchors. ([#11665](https://github.com/craftcms/cms/pull/11665))
 - Fixed styling issues with Live Preview in Firefox.
-- Fixed a bug where some custom field property types in `craft\behaviors\CustomFieldBehavior` were incorrect.
 
 ### Security
 - Fixed an information disclosure vulnerability.
