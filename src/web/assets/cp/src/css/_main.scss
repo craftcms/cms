@@ -2629,7 +2629,7 @@ $elementInnerSpacing: 5px;
 
     .elementthumb:not(:empty) {
       top: $baseElementSidePadding;
-      @include left($baseElementSidePadding);
+      @include left(0);
       width: $largeThumbSize;
       height: $largeThumbSize;
 
@@ -2780,6 +2780,7 @@ $checkboxPadding: $checkboxSize + 4;
     li {
       position: relative;
       @include margin(0, 1px, 1px, 0);
+      max-width: 226px;
 
       &:hover {
         .element {

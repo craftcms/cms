@@ -610,16 +610,18 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       }
     },
 
-    getSourceState: function (source, key, defaultValue) {
-      if (typeof this.sourceStates[source] === 'undefined') {
+    getSourceState: function (sourceKey, key, defaultValue) {
+      sourceKey = sourceKey.replace(/\/.*/, '');
+
+      if (typeof this.sourceStates[sourceKey] === 'undefined') {
         // Set it now so any modifications to it by whoever's calling this will be stored.
-        this.sourceStates[source] = {};
+        this.sourceStates[sourceKey] = {};
       }
 
       if (typeof key === 'undefined') {
-        return this.sourceStates[source];
-      } else if (typeof this.sourceStates[source][key] !== 'undefined') {
-        return this.sourceStates[source][key];
+        return this.sourceStates[sourceKey];
+      } else if (typeof this.sourceStates[sourceKey][key] !== 'undefined') {
+        return this.sourceStates[sourceKey][key];
       } else {
         return typeof defaultValue !== 'undefined' ? defaultValue : null;
       }
@@ -652,7 +654,16 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         delete viewState[key];
       }
 
-      this.sourceStates[this.instanceState.selectedSource] = viewState;
+      const sourceKey = this.instanceState.selectedSource.replace(/\/.*/, '');
+
+      this.sourceStates[sourceKey] = viewState;
+
+      // Clean up sourceStates while we're at it
+      for (let i in this.sourceStates) {
+        if (this.sourceStates.hasOwnProperty(i) && i.includes('/')) {
+          delete this.sourceStates[i];
+        }
+      }
 
       // Store it in localStorage too
       Craft.setLocalStorage(this.sourceStatesStorageKey, this.sourceStates);
@@ -1552,7 +1563,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
      * @returns {string[]}
      */
     getSelectedTableColumns: function ($source) {
-      $source = $source || this.$source;
+      $source = $source || this.$rootSource;
       if ($source) {
         const attributes = this.getSourceState(
           $source.data('key'),
