@@ -124,6 +124,7 @@ return [
     'Applying new propagation method to elements' => 'Aplikovanie novej metódy propagácie na prvky',
     'Applying new propagation method to {section} entries' => 'Aplikovanie novej metódy propagácie na záznamy {section}',
     'Applying this change to existing blocks can take some time.' => 'Aplikovanie tejto zmeny na existujúce bloky môže vyžadovať dlhší čas.',
+    'Archived' => 'Archived',
     'Are you sure you want to close the editor? Any changes will be lost.' => 'Naozaj chcete zatvoriť editor? Zmeny nebudú uložené.',
     'Are you sure you want to close this screen? Any changes will be lost.' => 'Naozaj chcete túto obrazovku zatvoriť? Zmeny nebudú uložené.',
     'Are you sure you want to delete the logo?' => 'Naozaj chcete logo odstrániť?',

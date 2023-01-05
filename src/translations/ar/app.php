@@ -124,6 +124,7 @@ return [
     'Applying new propagation method to elements' => 'تطبيق طريقة نشر جديدة على الكتل البرمجية للعناصر',
     'Applying new propagation method to {section} entries' => 'تطبيق طريقة نشر جديدة على الكتل البرمجية لإدخالات {section}',
     'Applying this change to existing blocks can take some time.' => 'قد يستغرق تطبيق هذا التغيير على الكتل الموجودة بعض الوقت.',
+    'Archived' => 'Archived',
     'Are you sure you want to close the editor? Any changes will be lost.' => 'هل أنت متأكد أنك تريد إغلاق المحرر؟ سيتم فقد أي تغييرات.',
     'Are you sure you want to close this screen? Any changes will be lost.' => 'هل أنت متأكد أنك تريد إغلاق هذه الشاشة؟ سيتم فقدان أي تغييرات.',
     'Are you sure you want to delete the logo?' => 'هل تريد بالتأكيد حذف الشعار؟',

@@ -823,15 +823,6 @@ Craft.EditableTable.Row = Garnish.Base.extend(
         }
         return;
       }
-
-      // Was this an invalid number character?
-      if (
-        ev.data.type === 'number' &&
-        !ctrl &&
-        !Craft.inArray(keyCode, Craft.EditableTable.Row.numericKeyCodes)
-      ) {
-        ev.preventDefault();
-      }
     },
 
     handlePaste: function (ev) {
@@ -851,22 +842,13 @@ Craft.EditableTable.Row = Garnish.Base.extend(
         return;
       }
 
-      var safeValue;
-
       if (ev.data.type === 'number') {
-        // Only grab the number at the beginning of the value (if any)
-        var match = ev.currentTarget.value.match(/^\s*(-?[\d\\.]*)/);
-
-        if (match !== null) {
-          safeValue = match[1];
-        } else {
-          safeValue = '';
-        }
-      } else {
-        // Just strip any newlines
-        safeValue = ev.currentTarget.value.replace(/[\r\n]/g, '');
+        Craft.filterNumberInputVal(ev.currentTarget);
+        return;
       }
 
+      // Strip any newlines
+      const safeValue = ev.currentTarget.value.replace(/[\r\n]/g, '');
       if (safeValue !== ev.currentTarget.value) {
         ev.currentTarget.value = safeValue;
       }
@@ -901,6 +883,7 @@ Craft.EditableTable.Row = Garnish.Base.extend(
     },
   },
   {
+    /** @deprecated */
     numericKeyCodes: [
       9 /* (tab) */, 8 /* (delete) */, 37, 38, 39, 40 /* (arrows) */, 45,
       91 /* (minus) */, 46, 190 /* period */, 48, 49, 50, 51, 52, 53, 54, 55,

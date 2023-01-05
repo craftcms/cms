@@ -542,7 +542,6 @@ class Db
 
         $inVals = [];
         $notInVals = [];
-        $allowNull = false;
 
         foreach ($value as $val) {
             self::_normalizeEmptyValue($val);
@@ -605,29 +604,16 @@ class Db
                 $val = str_replace('\*', '*', $val);
 
                 if ($like) {
+                    if ($caseInsensitive) {
+                        $operator = $operator === '=' ? 'ilike' : 'not ilike';
+                    } else {
+                        $operator = $operator === '=' ? 'like' : 'not like';
+                    }
+
                     // Escape underscores as they are treated as wildcards by LIKE in MySQL and PostgreSQL
                     $val = preg_replace('/(?<!\\\)_/', '\\_', $val);
 
-                    if ($operator === '=') {
-                        $condition[] = [
-                            $caseInsensitive ? 'ilike' : 'like',
-                            $column,
-                            $val,
-                            false,
-                        ];
-                    } else {
-                        $condition[] = [
-                            'or',
-                            [
-                                $caseInsensitive ? 'not ilike' : 'not like',
-                                $column,
-                                $val,
-                                false,
-                            ],
-                            [$column => null],
-                        ];
-                    }
-
+                    $condition[] = [$operator, $column, $val, false];
                     continue;
                 }
 
@@ -642,15 +628,10 @@ class Db
                 continue;
             }
 
-            // ['and', '!=1', '!=2', '!=3'] => NOT IN (1, 2, 3) OR IS NULL
+            // ['and', '!=1', '!=2', '!=3'] => NOT IN (1, 2, 3)
             if ($glue == self::GLUE_AND && $operator === '!=') {
                 $notInVals[] = $val;
                 continue;
-            }
-
-            // ['or', '!=1', '!=2', '!=3'] => !=1 OR !=2 OR !=3 OR IS NULL
-            if ($glue === self::GLUE_OR && $operator === '!=') {
-                $allowNull = true;
             }
 
             $condition[] = [$operator, $caseColumn, $val];
@@ -661,18 +642,7 @@ class Db
         }
 
         if (!empty($notInVals)) {
-            $condition[] = [
-                'or',
-                [
-                    'not',
-                    self::_inCondition($caseColumn, $notInVals),
-                ],
-                [$column => null],
-            ];
-        }
-
-        if ($allowNull) {
-            $condition[] = [$column => null];
+            $condition[] = ['not', self::_inCondition($caseColumn, $notInVals)];
         }
 
         // Skip the glue if there's only one condition

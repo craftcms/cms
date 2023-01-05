@@ -533,7 +533,7 @@ JS,
         return
             Html::button(Html::encode($rule?->getLabel() ?? $this->addRuleLabel), ArrayHelper::merge([
                 'id' => $buttonId,
-                'class' => ['btn', 'menubtn'],
+                'class' => ['btn', 'menubtn', 'wrap'],
                 'autofocus' => $rule?->getAutofocus(),
             ], $buttonAttributes)) .
             Html::tag('div', $optionsHtml, [

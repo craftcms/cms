@@ -124,6 +124,7 @@ return [
     'Applying new propagation method to elements' => 'Застосування нового методу розповсюдження до елементів',
     'Applying new propagation method to {section} entries' => 'Застосування нового способу розповсюдження до записів {section}',
     'Applying this change to existing blocks can take some time.' => 'Щоб застосувати цю зміну до наявних блоків, може знадобитися деякий час.',
+    'Archived' => 'Archived',
     'Are you sure you want to close the editor? Any changes will be lost.' => 'Дійсно закрити редактор? Усі зміни буде втрачено.',
     'Are you sure you want to close this screen? Any changes will be lost.' => 'Дійсно закрити цей екран? Усі зміни буде втрачено.',
     'Are you sure you want to delete the logo?' => 'Дійсно видалити логотип?',
