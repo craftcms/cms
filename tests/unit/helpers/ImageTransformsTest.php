@@ -1,18 +1,18 @@
 <?php
 
-namespace helpers;
+namespace crafttests\unit\helpers;
 
+use Codeception\Test\Unit;
 use craft\errors\ImageTransformException;
 use craft\helpers\ImageTransforms;
 
-class ImageTransformsHelperTest extends \Codeception\Test\Unit
+class ImageTransformsTest extends Unit
 {
     /**
      * @var \UnitTester
      */
     protected $tester;
 
-    // tests
     public function testCreateTransformFromString()
     {
         $this->tester->expectThrowable(ImageTransformException::class, function() {

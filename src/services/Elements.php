@@ -62,6 +62,7 @@ use craft\validators\SlugValidator;
 use craft\web\Application;
 use DateTime;
 use Throwable;
+use UnitEnum;
 use yii\base\Behavior;
 use yii\base\Component;
 use yii\base\Exception;
@@ -411,6 +412,22 @@ class Elements extends Component
      * @since 4.3.0
      */
     public const EVENT_AUTHORIZE_DELETE_FOR_SITE = 'authorizeDeleteForSite';
+
+    /**
+     * @event ElementEvent The event that is triggered before deleting an element for a single site.
+     * @see deleteElementForSite()
+     * @see deleteElementsForSite()
+     * @since 4.4.0
+     */
+    public const EVENT_BEFORE_DELETE_FOR_SITE = 'beforeDeleteForSite';
+
+    /**
+     * @event ElementEvent The event that is triggered after deleting an element for a single site.
+     * @see deleteElementForSite()
+     * @see deleteElementsForSite()
+     * @since 4.4.0
+     */
+    public const EVENT_AFTER_DELETE_FOR_SITE = 'afterDeleteForSite';
 
     /**
      * @var int[] Stores a mapping of source element IDs to their duplicated element IDs.
@@ -1228,17 +1245,17 @@ class Elements extends Component
                 $element->setScenario(Element::SCENARIO_ESSENTIALS);
                 $element->resaving = true;
 
-                // Fire a 'beforeResaveElement' event
-                if ($this->hasEventHandlers(self::EVENT_BEFORE_RESAVE_ELEMENT)) {
-                    $this->trigger(self::EVENT_BEFORE_RESAVE_ELEMENT, new BatchElementActionEvent([
-                        'query' => $query,
-                        'element' => $element,
-                        'position' => $position,
-                    ]));
-                }
-
                 $e = null;
                 try {
+                    // Fire a 'beforeResaveElement' event
+                    if ($this->hasEventHandlers(self::EVENT_BEFORE_RESAVE_ELEMENT)) {
+                        $this->trigger(self::EVENT_BEFORE_RESAVE_ELEMENT, new BatchElementActionEvent([
+                            'query' => $query,
+                            'element' => $element,
+                            'position' => $position,
+                        ]));
+                    }
+
                     // Make sure the element was queried with its content
                     if ($element::hasContent() && $element->contentId === null) {
                         throw new InvalidElementException($element, "Skipped resaving {$element->getUiLabel()} ($element->id) because it wasn’t loaded with its content.");
@@ -1457,7 +1474,7 @@ class Elements extends Component
 
         // Clone any field values that are objects
         foreach ($mainClone->getFieldValues() as $handle => $value) {
-            if (is_object($value)) {
+            if (is_object($value) && (!class_exists(UnitEnum::class) || !$value instanceof UnitEnum)) {
                 $mainClone->setFieldValue($handle, clone $value);
             }
         }
@@ -1577,7 +1594,7 @@ class Elements extends Component
 
                     // Clone any field values that are objects
                     foreach ($siteClone->getFieldValues() as $handle => $value) {
-                        if (is_object($value)) {
+                        if (is_object($value) && (!class_exists(UnitEnum::class) || !$value instanceof UnitEnum)) {
                             $siteClone->setFieldValue($handle, clone $value);
                         }
                     }
@@ -2010,6 +2027,101 @@ class Elements extends Component
         }
 
         return true;
+    }
+
+    /**
+     * Deletes an element in the site it’s loaded in.
+     *
+     * @param ElementInterface $element
+     * @since 4.4.0
+     */
+    public function deleteElementForSite(ElementInterface $element): void
+    {
+        $this->deleteElementsForSite([$element]);
+    }
+
+    /**
+     * Deletes elements in the site they are currently loaded in.
+     *
+     * @param ElementInterface[] $elements
+     * @throws InvalidArgumentException if all elements don’t have the same type and site ID.
+     * @since 4.4.0
+     */
+    public function deleteElementsForSite(array $elements): void
+    {
+        if (empty($elements)) {
+            return;
+        }
+
+        // Make sure each element has the same type and site ID
+        $firstElement = reset($elements);
+        $elementType = get_class($firstElement);
+
+        foreach ($elements as $element) {
+            if (get_class($element) !== $elementType || $element->siteId !== $firstElement->siteId) {
+                throw new InvalidArgumentException('All elements must have the same type and site ID.');
+            }
+        }
+
+        // Separate the multi-site elements from the single-site elements
+        $multiSiteElementIds = $firstElement::find()
+            ->id(array_map(fn(ElementInterface $element) => $element->id, $elements))
+            ->siteId(['not', $firstElement->siteId])
+            ->unique()
+            ->select(['elements.id'])
+            ->column();
+
+        $multiSiteElementIdsIdx = array_flip($multiSiteElementIds);
+        $multiSiteElements = [];
+        $singleSiteElements = [];
+
+        foreach ($elements as $element) {
+            if (isset($multiSiteElementIdsIdx[$element->id])) {
+                $multiSiteElements[] = $element;
+            } else {
+                $singleSiteElements[] = $element;
+            }
+        }
+
+        if (!empty($multiSiteElements)) {
+            // Fire 'beforeDeleteForSite' events
+            if ($this->hasEventHandlers(self::EVENT_BEFORE_DELETE_FOR_SITE)) {
+                foreach ($multiSiteElements as $element) {
+                    $this->trigger(self::EVENT_BEFORE_DELETE_FOR_SITE, new ElementEvent([
+                        'element' => $element,
+                    ]));
+                }
+            }
+
+            // Delete the rows in elements_sites
+            Db::delete(Table::ELEMENTS_SITES, [
+                'elementId' => $multiSiteElementIds,
+                'siteId' => $firstElement->siteId,
+            ]);
+
+            // Resave them
+            $this->resaveElements(
+                $firstElement::find()->id($multiSiteElementIds)->site('*')->unique(),
+                true,
+                updateSearchIndex: false
+            );
+
+            // Fire 'afterDeleteForSite' events
+            if ($this->hasEventHandlers(self::EVENT_AFTER_DELETE_FOR_SITE)) {
+                foreach ($multiSiteElements as $element) {
+                    $this->trigger(self::EVENT_AFTER_DELETE_FOR_SITE, new ElementEvent([
+                        'element' => $element,
+                    ]));
+                }
+            }
+        }
+
+        // Fully delete any single-site elements
+        if (!empty($singleSiteElements)) {
+            foreach ($singleSiteElements as $element) {
+                $this->deleteElement($element);
+            }
+        }
     }
 
     /**
@@ -3428,7 +3540,10 @@ SQL;
             }
         }
 
-        return $this->_authCheck($element, $user, self::EVENT_AUTHORIZE_DELETE_FOR_SITE) ?? $element->canDeleteForSite($user);
+        return $this->_authCheck($element, $user, self::EVENT_AUTHORIZE_DELETE_FOR_SITE) ?? (
+            $element->canDelete($user) &&
+            $element->canDeleteForSite($user)
+        );
     }
 
     /**

@@ -7,3 +7,4 @@ src/templates/*
 src/web/assets/**/dist/*
 tests/_craft/*
 vendor/*
+.ddev/*
