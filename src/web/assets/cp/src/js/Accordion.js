@@ -12,7 +12,7 @@ Craft.Accordion = Garnish.Base.extend({
   init: function (trigger) {
     this.$trigger = $(trigger);
 
-    // Is this already a field toggle?
+    // Is this already an accordion trigger?
     if (this.$trigger.data('accordion')) {
       console.warn('Double-instantiating an accordion trigger on an element');
       this.$trigger.data('accordion').destroy();
