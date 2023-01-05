@@ -1511,7 +1511,7 @@ return [
     'This can be set to an environment variable, or begin with an alias.' => 'This can be set to an environment variable, or begin with an alias.',
     'This can be set to an environment variable.' => 'This can be set to an environment variable.',
     'This element is conditional' => 'This element is conditional',
-    'This entry doesn\'t have revisions' => 'This entry doesn\'t have revisions',
+    'This entry doesn’t have revisions.' => 'This entry doesn’t have revisions.',
     'This field has been modified.' => 'This field has been modified.',
     'This field is conditional' => 'This field is conditional',
     'This field is not set to a valid category group.' => 'This field is not set to a valid category group.',
