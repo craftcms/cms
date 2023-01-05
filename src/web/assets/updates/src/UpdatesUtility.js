@@ -312,7 +312,12 @@ import './updates.scss';
         })
           .appendTo(this.$container)
           .append(
-            $('<div/>', {class: 'release-notes'}).html(this.releaseInfo.notes)
+            $('<div/>', {class: 'release-notes'}).html(
+              this.releaseInfo.notes.replace(
+                /(<\/?h)(3|4|5)\b/g,
+                (m, pre, num) => `${pre}${parseInt(num) + 1} class="h${num}"`
+              )
+            )
           );
 
         // Auto-expand if this is a critical release, or there are any tips/warnings in the release notes
