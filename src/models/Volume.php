@@ -210,9 +210,10 @@ class Volume extends Model
         // if there are other volumes using the same FS
         // and this volume wants to have an empty fsSubpath - add error
         if (!empty($records) && empty($this->$attribute)) {
-            $this->addError($attribute, Craft::t('app', 'If you want to use this filesystem, you have to provide a subpath'));
+            $this->addError($attribute, Craft::t('app', 'If you want to use this filesystem, you have to provide a subpath.'));
         }
 
+        // make sure subpath starts with a unique dir across all volumes that use this FS
         foreach ($records as $record) {
             if (strcmp(explode('/', $record[$attribute])[0], explode('/', $this->$attribute)[0]) === 0) {
                 $this->addError($attribute, Craft::t('app', 'Subpath is not unique for this filesystem.'));

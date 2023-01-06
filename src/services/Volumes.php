@@ -290,7 +290,6 @@ class Volumes extends Component
         }
 
         if ($runValidation && !$volume->validate()) {
-            $test = $volume->getErrors();
             Craft::info('Volume not saved due to validation error.', __METHOD__);
             return false;
         }
@@ -603,7 +602,7 @@ class Volumes extends Component
                 'fieldLayoutId',
                 'uid',
             ])
-            ->from(['volumes' => Table::VOLUMES])
+            ->from([Table::VOLUMES])
             ->where(['dateDeleted' => null])
             ->orderBy(['sortOrder' => SORT_ASC]);
     }
