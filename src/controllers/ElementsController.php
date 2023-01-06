@@ -575,7 +575,7 @@ class ElementsController extends Controller
     }
 
     /**
-     * Returns an element edit screen.
+     * Returns an element revisions index screen.
      *
      * @param int $elementId
      * @return Response
