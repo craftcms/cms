@@ -29,7 +29,7 @@ class PluginController extends Controller
     public bool $force = false;
 
     /**
-     * @var bool Whether install/uninstall/enable/disable should be run on all plugins.
+     * @var bool Whether the action should be run for all Composer-installed plugins.
      * @since 4.4.0
      */
     public bool $all = false;
@@ -120,28 +120,26 @@ class PluginController extends Controller
      */
     public function actionInstall(?string $handle = null): int
     {
-        // if we're supposed to install all plugins
-        if ($this->all === true) {
-            // get all plugins info
+        if ($this->all) {
+            // get all plugins’ info
             $pluginInfo = Craft::$app->getPlugins()->getAllPluginInfo();
 
-            // get handles for the ones that are not installed
-            $handles = array_filter($pluginInfo, function(array $info) {
+            // filter out the ones that are already installed
+            $pluginInfo = array_filter($pluginInfo, function(array $info) {
                 return !$info['isInstalled'];
             });
 
-            // if there aren't any uninstalled plugins to install - message and exit
-            if (empty($handles)) {
+            // if all plugins are already installed, we're done here
+            if (empty($pluginInfo)) {
                 $this->stdout('There aren’t any uninstalled plugins present.' . PHP_EOL);
                 return ExitCode::OK;
             }
 
             // install them one by one
-            foreach ($handles as $pluginHandle => $info) {
-                $this->_installPluginByHandle($pluginHandle);
+            foreach (array_keys($pluginInfo) as $handle) {
+                $this->_installPluginByHandle($handle);
             }
         } else {
-            // otherwise do what we were doing before - install plugin by handle
             $this->_installPluginByHandle($handle);
         }
 
@@ -156,28 +154,26 @@ class PluginController extends Controller
      */
     public function actionUninstall(?string $handle = null): int
     {
-        // if we're supposed to uninstall all plugins
-        if ($this->all === true) {
-            // get all plugins info
+        if ($this->all) {
+            // get all plugins’ info
             $pluginInfo = Craft::$app->getPlugins()->getAllPluginInfo();
 
-            // get handles for the ones that are installed and enabled
-            $handles = array_filter($pluginInfo, function(array $info) {
+            // filter out the ones that are uninstalled/disabled
+            $pluginInfo = array_filter($pluginInfo, function(array $info) {
                 return $info['isInstalled'] && $info['isEnabled'];
             });
 
-            // if there aren't any installed & enabled plugins to uninstall - message and exit
-            if (empty($handles)) {
-                $this->stdout('There aren’t any installed and enabled plugins.' . PHP_EOL);
+            // if all plugins are already uninstalled/disabled, we're done here
+            if (empty($pluginInfo)) {
+                $this->stdout('There aren’t any installed and enabled plugins present.' . PHP_EOL);
                 return ExitCode::OK;
             }
 
             // uninstall them one by one
-            foreach ($handles as $pluginHandle => $info) {
-                $this->_uninstallPluginByHandle($pluginHandle);
+            foreach (array_keys($pluginInfo) as $handle) {
+                $this->_uninstallPluginByHandle($handle);
             }
         } else {
-            // otherwise do what we were doing before - uninstall plugin by handle
             $this->_uninstallPluginByHandle($handle);
         }
 
@@ -192,28 +188,26 @@ class PluginController extends Controller
      */
     public function actionEnable(?string $handle = null): int
     {
-        // if we're supposed to enable all plugins
-        if ($this->all === true) {
-            // get all plugins info
+        if ($this->all) {
+            // get all plugins’ info
             $pluginInfo = Craft::$app->getPlugins()->getAllPluginInfo();
 
-            // get handles for the ones that are installed and disabled
-            $handles = array_filter($pluginInfo, function(array $info) {
+            // filter out the ones that are uninstalled/enabled
+            $pluginInfo = array_filter($pluginInfo, function(array $info) {
                 return $info['isInstalled'] && !$info['isEnabled'];
             });
 
-            // if there aren't any installed & disabled plugins to enable - message and exit
-            if (empty($handles)) {
-                $this->stdout('There aren’t any disabled plugins.' . PHP_EOL);
+            // if all plugins are already uninstalled/enabled, we're done here
+            if (empty($pluginInfo)) {
+                $this->stdout('There aren’t any installed and disabled plugins present.' . PHP_EOL);
                 return ExitCode::OK;
             }
 
             // enable them one by one
-            foreach ($handles as $pluginHandle => $info) {
-                $this->_enablePluginByHandle($pluginHandle);
+            foreach (array_keys($pluginInfo) as $handle) {
+                $this->_enablePluginByHandle($handle);
             }
         } else {
-            // otherwise do what we were doing before - enable plugin by handle
             $this->_enablePluginByHandle($handle);
         }
 
@@ -228,28 +222,26 @@ class PluginController extends Controller
      */
     public function actionDisable(?string $handle = null): int
     {
-        // if we're supposed to disable all plugins
-        if ($this->all === true) {
-            // get all plugins info
+        if ($this->all) {
+            // get all plugins’ info
             $pluginInfo = Craft::$app->getPlugins()->getAllPluginInfo();
 
-            // get handles for the ones that are installed and enabled
-            $handles = array_filter($pluginInfo, function(array $info) {
+            // filter out the ones that are uninstalled/disabled
+            $pluginInfo = array_filter($pluginInfo, function(array $info) {
                 return $info['isInstalled'] && $info['isEnabled'];
             });
 
-            // if there aren't any installed & enabled plugins to disable - message and exit
-            if (empty($handles)) {
-                $this->stdout('There aren’t any enabled plugins.' . PHP_EOL);
+            // if all plugins are already uninstalled/enabled, we're done here
+            if (empty($pluginInfo)) {
+                $this->stdout('There aren’t any installed and enabled plugins present.' . PHP_EOL);
                 return ExitCode::OK;
             }
 
             // disable them one by one
-            foreach ($handles as $pluginHandle => $info) {
-                $this->_disablePluginByHandle($pluginHandle);
+            foreach (array_keys($pluginInfo) as $handle) {
+                $this->_disablePluginByHandle($handle);
             }
         } else {
-            // otherwise do what we were doing before - disable plugin by handle
             $this->_disablePluginByHandle($handle);
         }
 
