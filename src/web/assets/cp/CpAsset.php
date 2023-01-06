@@ -9,6 +9,7 @@ namespace craft\web\assets\cp;
 
 use Craft;
 use craft\base\ElementInterface;
+use craft\base\FieldInterface;
 use craft\config\GeneralConfig;
 use craft\elements\User;
 use craft\helpers\Assets;
@@ -119,6 +120,7 @@ JS;
             'Actions',
             'Add…',
             'All',
+            'Announcements',
             'Any changes will be lost if you leave this page.',
             'Apply this to the {number} remaining conflicts?',
             'Apply',
@@ -306,6 +308,7 @@ JS;
             'This can be left blank if you just want an unlabeled separator.',
             'This field has been modified.',
             'This month',
+            'This tab is conditional',
             'This week',
             'This year',
             'Tip',
@@ -317,6 +320,7 @@ JS;
             'Transfer it to:',
             'Try again',
             'Undo',
+            'Unread announcements',
             'Update {type}',
             'Upload a file',
             'Upload failed for “{filename}”.',
@@ -443,6 +447,7 @@ JS;
             'editableCategoryGroups' => $upToDate ? $this->_editableCategoryGroups() : [],
             'edition' => Craft::$app->getEdition(),
             'elementTypeNames' => $elementTypeNames,
+            'fieldsWithoutContent' => array_map(fn(FieldInterface $field) => $field->handle, Craft::$app->getFields()->getFieldsWithoutContent(false)),
             'handleCasing' => $generalConfig->handleCasing,
             'httpProxy' => $this->_httpProxy($generalConfig),
             'isImagick' => Craft::$app->getImages()->getIsImagick(),
