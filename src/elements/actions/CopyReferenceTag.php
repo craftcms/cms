@@ -45,7 +45,7 @@ class CopyReferenceTag extends ElementAction
 (() => {
     new Craft.ElementActionTrigger({
         type: $type,
-        batch: false,
+        bulk: false,
         activate: \$selectedItems => {
             Craft.ui.createCopyTextPrompt({
                 label: Craft.t('app', 'Copy the reference tag'),

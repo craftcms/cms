@@ -124,6 +124,7 @@ return [
     'Applying new propagation method to elements' => 'מחיל שיטת הפצה חדשה על האלמנטים',
     'Applying new propagation method to {section} entries' => 'מחיל שיטת הפצה חדשה על רשומות ה-{section}',
     'Applying this change to existing blocks can take some time.' => 'החלת השינוי על בלוקים קיימים עשוי לקחת זמן מה.',
+    'Archived' => 'Archived',
     'Are you sure you want to close the editor? Any changes will be lost.' => 'האם אתה בטוח שברצונך לסגור את העורך? כל השינויים יאבדו.',
     'Are you sure you want to close this screen? Any changes will be lost.' => 'האם אתה בטוח שברצונך לסגור את המסך? כל השינויים יאבדו.',
     'Are you sure you want to delete the logo?' => 'האם אתה בטוח שברצונך למחוק את הלוגו?',

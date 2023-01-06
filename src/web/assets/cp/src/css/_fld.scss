@@ -173,48 +173,25 @@ $gridColor: hsl(212, 50%, 95%);
   min-height: 24px;
 }
 
-.fld-required-indicator {
+.fld-indicator {
   display: inline-flex;
-  font-size: 9px;
-  color: var(--link-color);
+  font-size: 11px;
+  color: var(--uicontrol-color);
   @include margin-left(4px);
-}
 
-@mixin striped-bg($color) {
-  background-color: $color;
-
-  &.has-conditions:after {
-    position: absolute;
-    content: ' ';
-    top: 2px;
-    right: 2px;
-    bottom: 2px;
-    left: 2px;
-    z-index: -1;
-    border: 2px solid transparent;
-    border-radius: var(--medium-border-radius);
-    background-image: linear-gradient($color, $color),
-      repeating-linear-gradient(
-        -45deg,
-        var(--white),
-        var(--white) 5px,
-        transparent 5px,
-        transparent 10px
-      );
-    background-origin: border-box;
-    background-clip: content-box, border-box;
+  & + .fld-indicator {
+    @include margin-left(2px);
   }
 }
 
 .fld-element {
   position: relative;
-  z-index: 0; // required for the striped-bg
   display: flex;
   align-items: center;
   padding: 7px 10px;
   box-shadow: inset 0 0 0 1px var(--hairline-color);
   border-radius: var(--medium-border-radius);
-  @include striped-bg(var(--white));
+  background-color: var(--white);
 
   body:not(.dragging) & {
     cursor: move;
@@ -239,7 +216,7 @@ $gridColor: hsl(212, 50%, 95%);
 
   &.fld-field {
     color: var(--medium-text-color);
-    @include striped-bg(var(--gray-100));
+    background-color: var(--gray-100);
 
     &:not(.draghelper) {
       box-shadow: none;

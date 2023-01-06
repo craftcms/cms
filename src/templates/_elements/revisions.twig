@@ -1,0 +1,53 @@
+{% paginate revisionsQuery.limit(100) as pageInfo, revisions %}
+{% if revisions is not empty %}
+    <div class="main tablepane">
+        <table id="revisions" class="data fullwidth">
+            <thead>
+                <th scope="col">{{ 'Revision'|t('app') }}</th>
+                <th scope="col">{{ 'Created at'|t('app') }}</th>
+                <th scope="col">{{ 'Created by'|t('app') }}</th>
+                <th scope="col">{{ 'Notes'|t('app') }}</th>
+            </thead>
+            <tbody>
+                {% for revision in revisions %}
+                    {% set creator = revision.getCreator() %}
+                    {% set revisionLabel = revision.getRevisionLabel() %}
+                    <tr data-id="{{ revision.id }}" tabindex="0">
+                        <th data-title="{{ "Revision"|t('app') }}">
+                            <a href="{{ revision.getCpEditUrl() }}">{{ revisionLabel }}</a>
+                        </th>
+                        <td data-title="{{ "Created at"|t('app') }}">{{ revision.dateCreated|timestamp('short', withPreposition=false) }}</td>
+                        <td data-title="{{ "Created by"|t('app') }}">
+                            {% if creator %}
+                                {% include '_elements/element.twig' with {
+                                    element: creator,
+                                } only %}
+                            {% endif %}
+                        </td>
+                        <td data-title="{{ 'Notes'|t('app') }}">{{ revision.revisionNotes }}
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <div id="footer" class="flex">
+        <div id="count-container" class="light flex-grow">
+            {% include '_includes/pagination' with {
+                'pageInfo' : pageInfo,
+                'itemLabel' : 'revision'|t('app'),
+                'itemsLabel': 'revisions'|t('app')
+            } %}
+        </div>
+    </div>
+
+{% else %}
+    <p class="zilch">
+        {{ 'This {type} doesn’t have revisions.'|t('app', {
+            type: element.lowerDisplayName(),
+        }) }}
+    </p>
+{% endif %}
+
+{% js %}
+    (new Craft.ElementThumbLoader()).load($('#revisions'));
+{% endjs %}

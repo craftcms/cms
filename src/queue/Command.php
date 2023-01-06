@@ -7,6 +7,7 @@
 
 namespace craft\queue;
 
+use craft\console\ControllerTrait;
 use craft\helpers\Console;
 use yii\console\ExitCode;
 use yii\db\Exception as YiiDbException;
@@ -20,6 +21,8 @@ use yii\db\Exception as YiiDbException;
  */
 class Command extends \yii\queue\cli\Command
 {
+    use ControllerTrait;
+
     /**
      * @var Queue
      */
@@ -43,18 +46,6 @@ class Command extends \yii\queue\cli\Command
     protected function isWorkerAction($actionID): bool
     {
         return in_array($actionID, ['run', 'listen'], true);
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function beforeAction($action): bool
-    {
-        if (!parent::beforeAction($action)) {
-            return false;
-        }
-
-        return true;
     }
 
     /**

@@ -55,7 +55,7 @@ class FsController extends Controller
     /**
      * Edit a filesystem.
      *
-     * @param string|null $handle The filesystem’s hnadle, if editing an existing filesystem.
+     * @param string|null $handle The filesystem’s handle, if editing an existing filesystem.
      * @param Fs|null $filesystem The filesystem being edited, if there were any validation errors.
      * @return Response
      * @throws ForbiddenHttpException if the user is not an admin

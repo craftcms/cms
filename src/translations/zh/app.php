@@ -124,6 +124,7 @@ return [
     'Applying new propagation method to elements' => '正在将新的传播方法应用于元素',
     'Applying new propagation method to {section} entries' => '正在将新的传播方法应用于{section}条目',
     'Applying this change to existing blocks can take some time.' => '将此更改应用到现有块可能需要一些时间。',
+    'Archived' => 'Archived',
     'Are you sure you want to close the editor? Any changes will be lost.' => '确定要关闭编辑器吗？所有更改都将丢失。',
     'Are you sure you want to close this screen? Any changes will be lost.' => '确定要关闭此屏幕吗？任何更改都将丢失。',
     'Are you sure you want to delete the logo?' => '确定要删除 logo 吗？',

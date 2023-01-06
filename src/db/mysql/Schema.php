@@ -152,7 +152,7 @@ class Schema extends \yii\db\mysql\Schema
     public function getDefaultBackupCommand(?array $ignoreTables = null): string
     {
         $defaultArgs =
-            ' --defaults-extra-file="' . $this->_createDumpConfigFile() . '"' .
+            ' --defaults-file="' . $this->_createDumpConfigFile() . '"' .
             ' --add-drop-table' .
             ' --comments' .
             ' --create-options' .
@@ -223,7 +223,7 @@ class Schema extends \yii\db\mysql\Schema
     public function getDefaultRestoreCommand(): string
     {
         return 'mysql' .
-            ' --defaults-extra-file="' . $this->_createDumpConfigFile() . '"' .
+            ' --defaults-file="' . $this->_createDumpConfigFile() . '"' .
             ' {database}' .
             ' < "{file}"';
     }

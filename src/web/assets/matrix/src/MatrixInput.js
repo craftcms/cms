@@ -81,6 +81,9 @@
           magnetStrength: 4,
           helperLagBase: 1.5,
           helperOpacity: 0.9,
+          onDragStop: () => {
+            this.trigger('blockSortDragStop');
+          },
           onSortChange: () => {
             this.blockSelect.resetItemOrder();
           },
@@ -879,19 +882,31 @@
     },
 
     moveUp: function () {
+      this.matrix.trigger('beforeMoveBlockUp', {
+        block: this,
+      });
       let $prev = this.$container.prev('.matrixblock');
       if ($prev.length) {
         this.$container.insertBefore($prev);
         this.matrix.blockSelect.resetItemOrder();
       }
+      this.matrix.trigger('moveBlockUp', {
+        block: this,
+      });
     },
 
     moveDown: function () {
+      this.matrix.trigger('beforeMoveBlockDown', {
+        block: this,
+      });
       let $next = this.$container.next('.matrixblock');
       if ($next.length) {
         this.$container.insertAfter($next);
         this.matrix.blockSelect.resetItemOrder();
       }
+      this.matrix.trigger('moveBlockDown', {
+        block: this,
+      });
     },
 
     handleActionClick: function (event) {
