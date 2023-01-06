@@ -3052,7 +3052,7 @@ abstract class Element extends Component implements ElementInterface
      * Returns the element’s revisions index URL in the control panel.
      *
      * @return string|null
-     * @since 3.7.0
+     * @since 4.4.0
      */
     protected function cpRevisionsUrl(): ?string
     {

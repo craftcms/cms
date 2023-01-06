@@ -30,7 +30,7 @@
     {% set revisions = revisionsQuery.all() %}
     {% set revisionsPageUrl = element.getCpRevisionsUrl() %}
     {% if revisionsPageUrl %}
-        {% set hasMoreRevisions = (revisionsQuery.count() - 1) > revisions|length or true %}
+        {% set hasMoreRevisions = (revisionsQuery.count() - 1) > revisions|length %}
     {% endif %}
 {% else %}
     {% set revisions = [] %}
