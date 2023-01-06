@@ -16,6 +16,7 @@ use yii\base\InvalidConfigException;
  *
  * @property-read Volume $volume
  * @property-read VolumeFolder|null $parent
+ * @property string|null $path
  * @property VolumeFolder[] $children
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
@@ -45,7 +46,7 @@ class VolumeFolder extends Model
     /**
      * @var string|null Path
      */
-    public ?string $path = null;
+    private ?string $_path = null;
 
     /**
      * @var string|null UID
@@ -92,6 +93,28 @@ class VolumeFolder extends Model
         }
 
         return $volume;
+    }
+
+    /**
+     * Get volume folder path taking into account volume fsSubpath
+     *
+     * @return string|null
+     * @throws InvalidConfigException
+     */
+    public function getPath(): ?string
+    {
+        return $this->getVolume()->getFsSubpath() . $this->_path;
+    }
+
+    /**
+     * Set the volume folder path
+     *
+     * @param string|null $path
+     * @return void
+     */
+    public function setPath(?string $path = null): void
+    {
+        $this->_path = $path;
     }
 
     /**

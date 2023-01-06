@@ -17,7 +17,6 @@ use craft\events\ConfigEvent;
 use craft\events\VolumeEvent;
 use craft\fs\Temp;
 use craft\helpers\ArrayHelper;
-use craft\helpers\Assets;
 use craft\helpers\Db;
 use craft\helpers\ProjectConfig as ProjectConfigHelper;
 use craft\helpers\StringHelper;
@@ -291,6 +290,7 @@ class Volumes extends Component
         }
 
         if ($runValidation && !$volume->validate()) {
+            $test = $volume->getErrors();
             Craft::info('Volume not saved due to validation error.', __METHOD__);
             return false;
         }
@@ -335,6 +335,7 @@ class Volumes extends Component
             $volumeRecord->name = $data['name'];
             $volumeRecord->handle = $data['handle'];
             $volumeRecord->fs = $data['fs'] ?? null;
+            $volumeRecord->fsSubpath = $data['fsSubpath'] ?? null;
             $volumeRecord->transformFs = $data['transformFs'] ?? null;
             $volumeRecord->transformSubpath = $data['transformSubpath'] ?? null;
             $volumeRecord->sortOrder = $data['sortOrder'];
@@ -373,14 +374,13 @@ class Volumes extends Component
                 $rootFolderRecord = new VolumeFolderRecord([
                     'volumeId' => $volumeRecord->id,
                     'parentId' => null,
-                    'path' => $data['fsSubpath'] ?? '',
+                    'path' => '',
                     'name' => $volumeRecord->name,
                 ]);
 
                 $rootFolderRecord->save();
             } else {
                 $rootFolder->name = $volumeRecord->name;
-                $rootFolder->path = $data['fsSubpath'] ?? '';
                 $assetsService->storeFolderRecord($rootFolder);
             }
 
@@ -458,7 +458,7 @@ class Volumes extends Component
             $folder->volumeId = $volume->id;
             $folder->parentId = null;
             $folder->name = $volume->name;
-            $folder->path = $volume->fsSubpath;
+            $folder->path = '';
             $assetsService->storeFolderRecord($folder);
         }
 
@@ -590,23 +590,22 @@ class Volumes extends Component
     {
         return (new Query())
             ->select([
-                'volumes.id',
-                'volumes.name',
-                'volumes.handle',
-                'volumes.fs',
-                'volumes.transformFs',
-                'volumes.transformSubpath',
-                'volumes.titleTranslationMethod',
-                'volumes.titleTranslationKeyFormat',
-                'volumes.sortOrder',
-                'volumes.fieldLayoutId',
-                'volumes.uid',
-                'volumefolders.path AS fsSubpath',
+                'id',
+                'name',
+                'handle',
+                'fs',
+                'fsSubpath',
+                'transformFs',
+                'transformSubpath',
+                'titleTranslationMethod',
+                'titleTranslationKeyFormat',
+                'sortOrder',
+                'fieldLayoutId',
+                'uid',
             ])
             ->from(['volumes' => Table::VOLUMES])
-            ->leftJoin(['volumefolders' => Table::VOLUMEFOLDERS], '[[volumes.id]] = [[volumefolders.volumeId]]')
-            ->where(['volumes.dateDeleted' => null, 'volumefolders.parentId' => null])
-            ->orderBy(['volumes.sortOrder' => SORT_ASC]);
+            ->where(['dateDeleted' => null])
+            ->orderBy(['sortOrder' => SORT_ASC]);
     }
 
     /**

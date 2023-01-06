@@ -11,7 +11,7 @@ use Craft;
 use craft\base\Field;
 use craft\base\FsInterface;
 use craft\elements\Asset;
-use craft\helpers\Assets as AssetsHelper;
+use craft\helpers\FileHelper;
 use craft\helpers\Json;
 use craft\models\Volume;
 use craft\web\Controller;
@@ -148,7 +148,7 @@ class VolumesController extends Controller
         // prepare fsSubpath for saving
         $fsSubpath = $this->request->getBodyParam('fsSubpath');
         if (!empty($fsSubpath)) {
-            $fsSubpath = ltrim(rtrim(AssetsHelper::prepareAssetName($fsSubpath, false), '/') . '/');
+            $fsSubpath = FileHelper::normalizePath(trim($fsSubpath));
         }
         $volume = new Volume([
             'id' => $volumeId,
@@ -157,7 +157,7 @@ class VolumesController extends Controller
             'name' => $this->request->getBodyParam('name'),
             'handle' => $this->request->getBodyParam('handle'),
             'fsHandle' => $this->request->getBodyParam('fsHandle'),
-            'fsSubpath' => $fsSubpath,
+            'fsSubpath' => $fsSubpath ?? null,
             'transformFsHandle' => $this->request->getBodyParam('transformFsHandle'),
             'transformSubpath' => $this->request->getBodyParam('transformSubpath', ""),
             'titleTranslationMethod' => $this->request->getBodyParam('titleTranslationMethod', Field::TRANSLATION_METHOD_SITE),

@@ -28,7 +28,6 @@ use craft\events\AssetPreviewEvent;
 use craft\events\DefineAssetThumbUrlEvent;
 use craft\events\ReplaceAssetEvent;
 use craft\fs\Temp;
-use craft\helpers\ArrayHelper;
 use craft\helpers\Assets as AssetsHelper;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
@@ -40,7 +39,6 @@ use craft\models\FolderCriteria;
 use craft\models\ImageTransform;
 use craft\models\Volume;
 use craft\models\VolumeFolder;
-use craft\records\Volume as VolumeRecord;
 use craft\records\VolumeFolder as VolumeFolderRecord;
 use yii\base\Component;
 use yii\base\Exception;
@@ -228,10 +226,7 @@ class Assets extends Component
         }
 
         $volume = $parent->getVolume();
-        $path = rtrim($folder->path, '/');
-
-        // check if this folder would have a path that's already used by any volume that uses the same FS as this one
-        $this->_checkPathUniqueForFilesystem($volume->id, $path . '/');
+        $path = rtrim($folder->path, DIRECTORY_SEPARATOR);
 
         $volume->getFs()->createDirectory($path);
 
@@ -276,9 +271,6 @@ class Assets extends Component
 
         $parentFolderPath = dirname($folder->path);
         $newFolderPath = (($parentFolderPath && $parentFolderPath !== '.') ? $parentFolderPath . '/' : '') . $newName . '/';
-
-        // check if this folder would have a path that's already used by any volume that uses the same FS as this one
-        $this->_checkPathUniqueForFilesystem($folder->volumeId, $newFolderPath);
 
         $volume = $folder->getVolume();
 
@@ -1099,35 +1091,6 @@ class Assets extends Component
             } else {
                 $query->andWhere(Db::parseParam('path', $criteria->path));
             }
-        }
-    }
-
-    /**
-     * Check if this folder would have a path that's already used by any volume that uses the same FS as this one
-     * @param int $volumeId
-     * @param string $path
-     * @return void
-     * @throws FsObjectExistsException
-     */
-    private function _checkPathUniqueForFilesystem(int $volumeId, string $path): void
-    {
-        // get volume ids of all volumes using the same FS as this one
-        $volumeIds = VolumeRecord::find()
-            ->select('id')
-            ->where(['fs' => VolumeRecord::find()
-                ->select('fs')
-                ->where(['id' => $volumeId, 'dateDeleted' => null]),
-            ])
-            ->asArray()
-            ->all();
-        $volumeIds = ArrayHelper::getColumn($volumeIds, 'id');
-        $conflictingFolder = $this->findFolder([
-            'volumeId' => $volumeIds,
-            'path' => $path,
-        ]);
-
-        if ($conflictingFolder) {
-            throw new FsObjectExistsException(Craft::t('app', 'A folder with that path already exists for this filesystem.'));
         }
     }
 }

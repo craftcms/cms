@@ -12,13 +12,12 @@ use craft\base\Field;
 use craft\base\FsInterface;
 use craft\base\Model;
 use craft\behaviors\FieldLayoutBehavior;
-use craft\db\Table;
 use craft\elements\Asset;
 use craft\fs\MissingFs;
 use craft\helpers\App;
 use craft\helpers\ArrayHelper;
+use craft\helpers\FileHelper;
 use craft\records\Volume as VolumeRecord;
-use craft\records\VolumeFolder;
 use craft\validators\HandleValidator;
 use craft\validators\UniqueValidator;
 use yii\base\InvalidConfigException;
@@ -179,37 +178,44 @@ class Volume extends Model
             ],
         ];
         $rules[] = [['fieldLayout'], 'validateFieldLayout'];
-        $rules[] = [['fsSubpath'], 'validateFolderUnique', 'skipOnEmpty' => true];
+        $rules[] = [['fsSubpath'], 'validateUniqueFsSubpath', 'skipOnEmpty' => false];
 
         return $rules;
     }
 
     /**
-     * Check if fsSubpath is going to be a unique path in VolumeFolders for all volumes that use the same FS as this volume
+     * Validate unique fsSubpath - not just the entire fsSubpath, but even just the first subfolder
+     *
+     * e.g. if Volume A uses $MY_FS and its fsSubpath is set to foo/bar,
+     * and Volume B wishes to also use $MY_FS
+     * and its fsSubpath is either empty, or set to foo, foo/bar, or foo/bar/baz,
+     * it should result in a validation error due to the conflict with Volume A
      *
      * @param string $attribute
      * @return void
      */
-    public function validateFolderUnique(string $attribute): void
+    public function validateUniqueFsSubpath(string $attribute): void
     {
-        // get all paths used by all volumes that use this FS
-        $fsPaths = VolumeFolder::find()
-            ->select('path')
-            ->leftJoin(['volumes' => Table::VOLUMES], '[[volumes.id]] = [[volumeId]]')
-            ->where([
-                'dateDeleted' => null,
-                'fs' => $this->_fsHandle,
-                'not [[volumes.id]]' => $this->id,
-            ])
-            ->asArray()
-            ->all();
+        // get all volumes that use the same FS, excluding current volume
+        $query = VolumeRecord::find()
+            ->andWhere(['fs' => $this->_fsHandle])
+            ->asArray();
 
-        // check if the fsSubpath they're trying to use is unique for this filesystem
-        if (!empty($fsPaths)) {
-            foreach ($fsPaths as $fsPath) {
-                if (!empty($fsPath['path']) && strcasecmp($fsPath['path'], $this->$attribute) === 0) {
-                    $this->addError($attribute, Craft::t('app', 'Subpath is not unique for this filesystem.'));
-                }
+        if ($this->id !== null) {
+            $query->andWhere('id != ' . $this->id);
+        }
+
+        $records = $query->all();
+
+        // if there are other volumes using the same FS
+        // and this volume wants to have an empty fsSubpath - add error
+        if (!empty($records) && empty($this->$attribute)) {
+            $this->addError($attribute, Craft::t('app', 'If you want to use this filesystem, you have to provide a subpath'));
+        }
+
+        foreach ($records as $record) {
+            if (strcmp(explode('/', $record[$attribute])[0], explode('/', $this->$attribute)[0]) === 0) {
+                $this->addError($attribute, Craft::t('app', 'Subpath is not unique for this filesystem.'));
             }
         }
     }
@@ -398,5 +404,17 @@ class Volume extends Model
         }
 
         return $config;
+    }
+
+    /**
+     * Get volume base path.
+     * If volume has fsSubpath set, then the base path starts with it.
+     * This is then used in VolumeFolder->getPath()|VolumeFolder->$path
+     * to get the actual path to the folder.
+     */
+    public function getFsSubpath(): string
+    {
+        $path = FileHelper::normalizePath(App::parseEnv($this->fsSubpath));
+        return $path ? $path . DIRECTORY_SEPARATOR : $path;
     }
 }
