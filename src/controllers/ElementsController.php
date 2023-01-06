@@ -21,6 +21,7 @@ use craft\events\DefineElementEditorHtmlEvent;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Component;
 use craft\helpers\Cp;
+use craft\helpers\Db;
 use craft\helpers\ElementHelper;
 use craft\helpers\Html;
 use craft\helpers\UrlHelper;
@@ -574,6 +575,64 @@ class ElementsController extends Controller
     }
 
     /**
+     * Returns an element edit screen.
+     *
+     * @param int $elementId
+     * @return Response
+     * @throws BadRequestHttpException
+     * @throws ForbiddenHttpException
+     * @since 4.4.0
+     */
+    public function actionRevisions(int $elementId): Response
+    {
+        $this->requireCpRequest();
+
+        /** @var Element|DraftBehavior|RevisionBehavior|Response|null $element */
+        $element = $this->_element($elementId, null, false);
+
+        if (!$element) {
+            throw new BadRequestHttpException('No element was identified by the request.');
+        }
+
+        if ($element->getIsUnpublishedDraft()) {
+            throw new BadRequestHttpException('Unpublished drafts don\'t have revisions');
+        }
+
+        if (!$element->hasRevisions()) {
+            throw new BadRequestHttpException('Element doesn\'t have revisions');
+        }
+
+        return $this->asCpScreen()
+            ->title(Craft::t('app', 'Revisions for “{title}”', [
+                'title' => $element->getUiLabel(),
+            ]))
+            ->prepareScreen(function(Response $response, string $containerId) use ($element) {
+                // Give the element a chance to do things here too
+                $element->prepareEditScreen($response, $containerId);
+
+                /** @var CpScreenResponseBehavior $behavior */
+                $behavior = $response->getBehavior(CpScreenResponseBehavior::NAME);
+                if (!empty($behavior->crumbs)) {
+                    $behavior->crumbs[] = [
+                        'label' => $element->getUiLabel(),
+                        'url' => $element->getCpEditUrl(),
+                    ];
+                }
+            })
+        ->contentTemplate('_elements/revisions', [
+            'element' => $element,
+            'revisionsQuery' => $element::find()
+                ->revisionOf($element)
+                ->site('*')
+                ->preferSites([$element->siteId])
+                ->unique()
+                ->status(null)
+                ->andWhere(['!=', 'elements.dateCreated', Db::prepareDateForDb($element->dateUpdated)])
+                ->with(['revisionCreator']),
+        ]);
+    }
+
+    /**
      * Returns the page title and document title that should be used for Edit Element pages.
      *
      * @param ElementInterface $element
@@ -709,40 +768,19 @@ class ElementsController extends Controller
             ]);
         }
 
-        // Revert content from this revision & show link to all revisions page
-        if ($isRevision) {
-            // if we have more than 10 revisions (or more than maxRevisions if that's less than 10), show a link to all revisions
-            // 10 is the max amount that shows in the dropdown
-            $maxRevisions = Craft::$app->getConfig()->general->maxRevisions;
-            $revisionsQuery = $element->getRevisionsQuery();
-            $hasMoreRevisions = ($revisionsQuery?->count() - 1) > ($maxRevisions ? min($maxRevisions - 1, 10) : 10);
-
-            if ($hasMoreRevisions) {
-                $components[] = Html::a(
-                    Craft::t('app', 'View all revisions'),
-                    UrlHelper::url($element->getRevisionsCpUrl(), ['site' => $element->getSite()->handle]),
-                    [
-                        'class' => ['secondary-buttons', 'btn'],
-                        'aria' => [
-                            'label' => Craft::t('app', 'Revisions'),
-                        ],
-                        'target' => '',
-                    ]);
-            }
-
-            if ($canSaveCanonical) {
-                $components[] = Html::beginForm() .
-                    Html::actionInput('elements/revert') .
-                    Html::redirectInput('{cpEditUrl}') .
-                    Html::hiddenInput('elementId', (string)$canonical->id) .
-                    Html::hiddenInput('revisionId', (string)$element->revisionId) .
-                    Html::beginTag('div', ['class' => 'secondary-buttons']) .
-                    Html::button(Craft::t('app', 'Revert content from this revision'), [
-                        'class' => ['btn', 'secondary', 'formsubmit'],
-                    ]) .
-                    Html::endTag('div') .
-                    Html::endForm();
-            }
+        // Revert content from this revision
+        if ($isRevision && $canSaveCanonical) {
+            $components[] = Html::beginForm() .
+                Html::actionInput('elements/revert') .
+                Html::redirectInput('{cpEditUrl}') .
+                Html::hiddenInput('elementId', (string)$canonical->id) .
+                Html::hiddenInput('revisionId', (string)$element->revisionId) .
+                Html::beginTag('div', ['class' => 'secondary-buttons']) .
+                Html::button(Craft::t('app', 'Revert content from this revision'), [
+                    'class' => ['btn', 'secondary', 'formsubmit'],
+                ]) .
+                Html::endTag('div') .
+                Html::endForm();
         }
 
         $components[] = $element->getAdditionalButtons();

@@ -829,22 +829,6 @@ interface ElementInterface extends ComponentInterface
     public function hasRevisions(): bool;
 
     /**
-     * Returns query to get all revisions for an element.
-     *
-     * @return ElementQuery|null
-     * @since 4.4.0
-     */
-    public function getRevisionsQuery(): ?ElementQuery;
-
-    /**
-     * Get base CP URL to view all revisions for an element.
-     *
-     * @return string|null
-     * @since 4.4.0
-     */
-    public function getRevisionsCpUrl(): ?string;
-
-    /**
      * Prepares the response for the element’s Edit screen.
      *
      * @param Response $response The response being prepared
@@ -867,6 +851,14 @@ interface ElementInterface extends ComponentInterface
      * @since 4.0.0
      */
     public function getPostEditUrl(): ?string;
+
+    /**
+     * Returns the element’s revisions index URL in the control panel.
+     *
+     * @return string|null
+     * @since 4.4.0
+     */
+    public function getCpRevisionsUrl(): ?string;
 
     /**
      * Returns additional buttons that should be shown at the top of the element’s edit page.

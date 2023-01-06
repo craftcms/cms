@@ -1429,39 +1429,6 @@ class Entry extends Element implements ExpirableElementInterface
     /**
      * @inheritdoc
      */
-    public function getRevisionsQuery(): ?ElementQuery
-    {
-        return $this->find()
-            ->revisionOf($this->getCanonicalId())
-            ->siteId($this->siteId)
-            ->status(null)
-            ->offset(1)
-            ->orderBy(['dateCreated' => SORT_DESC])
-            ->with(['revisionCreator']);
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getRevisionsCpUrl(): ?string
-    {
-        $params = [];
-        $basicRevisionsCpUrl = UrlHelper::cpUrl($this->getCpEditUrl(), [
-            'draftId' => null,
-            'revisionId' => null,
-            'site' => null,
-        ]);
-
-        if (Craft::$app->getIsMultiSite()) {
-            $params['site'] = $this->getSite()->handle;
-        }
-
-        return UrlHelper::urlWithParams($basicRevisionsCpUrl . '/revisions', $params);
-    }
-
-    /**
-     * @inheritdoc
-     */
     protected function cpEditUrl(): ?string
     {
         $section = $this->getSection();
@@ -1473,7 +1440,7 @@ class Entry extends Element implements ExpirableElementInterface
             $path .= "-$this->slug";
         }
 
-        return UrlHelper::cpUrl($path);
+        return $path;
     }
 
     /**
@@ -1482,6 +1449,14 @@ class Entry extends Element implements ExpirableElementInterface
     public function getPostEditUrl(): ?string
     {
         return UrlHelper::cpUrl('entries');
+    }
+
+    /**
+     * @inheritdoc
+     */
+    protected function cpRevisionsUrl(): ?string
+    {
+        return sprintf('%s/revisions', $this->cpEditUrl());
     }
 
     /**
