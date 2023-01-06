@@ -160,12 +160,16 @@ class PluginController extends Controller
 
             // filter out the ones that are uninstalled/disabled
             $pluginInfo = array_filter($pluginInfo, function(array $info) {
-                return $info['isInstalled'] && $info['isEnabled'];
+                return $info['isInstalled'] && ($info['isEnabled'] || $this->force);
             });
 
             // if all plugins are already uninstalled/disabled, we're done here
             if (empty($pluginInfo)) {
-                $this->stdout('There aren’t any installed and enabled plugins present.' . PHP_EOL);
+                if ($this->force) {
+                    $this->stdout('There aren’t any installed plugins present.' . PHP_EOL);
+                } else {
+                    $this->stdout('There aren’t any installed and enabled plugins present.' . PHP_EOL);
+                }
                 return ExitCode::OK;
             }
 
