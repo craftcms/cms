@@ -1829,7 +1829,7 @@ JS;
      */
     public function getPath(?string $filename = null): string
     {
-        return $this->folderPath . ($filename ?: $this->_filename);
+        return $this->_volume->getFsSubpath() . $this->folderPath . ($filename ?: $this->_filename);
     }
 
     /**
@@ -2619,7 +2619,7 @@ JS;
         $newVolume = $hasNewFolder ? $newFolder->getVolume() : $oldVolume;
 
         $oldPath = $this->folderId ? $this->getPath() : null;
-        $newPath = ($newFolder->path ? rtrim($newFolder->path, '/') . '/' : '') . $filename;
+        $newPath = ($newFolder->getPathWithFsSubpath() ? rtrim($newFolder->getPathWithFsSubpath(), '/') . '/' : '') . $filename;
 
         // Is this just a simple move/rename within the same volume?
         if (!isset($this->tempFilePath) && $oldFolder !== null && $oldFolder->volumeId == $newFolder->volumeId) {
@@ -2676,7 +2676,7 @@ JS;
         // Update file properties
         $this->setVolumeId($newFolder->volumeId);
         $this->folderId = $folderId;
-        $this->folderPath = $newFolder->path;
+        $this->folderPath = $newFolder->getPathWithFsSubpath();
         $this->_filename = $filename;
         $this->_volume = $newVolume;
 

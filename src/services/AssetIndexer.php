@@ -682,7 +682,7 @@ class AssetIndexer extends Component
             $asset = new Asset();
             $asset->setVolumeId((int)$volume->id);
             $asset->folderId = $folderId;
-            $asset->folderPath = $folder->path;
+            $asset->folderPath = $folder->getPathWithFsSubpath();
             $asset->setFilename($filename);
             $asset->kind = AssetsHelper::getFileKindByExtension($filename);
         }
