@@ -3006,7 +3006,7 @@ abstract class Element extends Component implements ElementInterface
             $params['revisionId'] = $this->revisionId;
         }
 
-        return UrlHelper::urlWithParams($cpEditUrl, $params);
+        return UrlHelper::cpUrl($cpEditUrl, $params);
     }
 
     /**
@@ -3024,6 +3024,37 @@ abstract class Element extends Component implements ElementInterface
      * @inheritdoc
      */
     public function getPostEditUrl(): ?string
+    {
+        return null;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getCpRevisionsUrl(): ?string
+    {
+        $cpEditUrl = $this->cpRevisionsUrl();
+
+        if (!$cpEditUrl) {
+            return null;
+        }
+
+        $params = [];
+
+        if (Craft::$app->getIsMultiSite()) {
+            $params['site'] = $this->getSite()->handle;
+        }
+
+        return UrlHelper::cpUrl($cpEditUrl, $params);
+    }
+
+    /**
+     * Returns the element’s revisions index URL in the control panel.
+     *
+     * @return string|null
+     * @since 4.4.0
+     */
+    protected function cpRevisionsUrl(): ?string
     {
         return null;
     }
