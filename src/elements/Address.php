@@ -351,7 +351,7 @@ class Address extends Element implements AddressInterface, BlockElementInterface
             return false;
         }
 
-        return Craft::$app->getElements()->canDelete($owner, $user);
+        return Craft::$app->getElements()->canSave($owner, $user);
     }
 
     /**

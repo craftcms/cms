@@ -412,11 +412,10 @@ class Cp
             $attributes['class'][] = 'hasthumb';
         }
 
+        $elementsService = Craft::$app->getElements();
         $user = Craft::$app->getUser()->getIdentity();
 
         if ($user) {
-            $elementsService = Craft::$app->getElements();
-
             if ($elementsService->canView($element, $user)) {
                 $attributes['data']['editable'] = true;
             }
@@ -468,9 +467,11 @@ class Cp
 
             // Should we make the element a link?
             if (
+                $user &&
                 $context === 'index' &&
                 !$element->trashed &&
-                ($cpEditUrl = $element->getCpEditUrl())
+                ($cpEditUrl = $element->getCpEditUrl()) &&
+                $elementsService->canView($element, $user)
             ) {
                 $innerHtml .= Html::a($encodedLabel, $cpEditUrl);
             } else {
@@ -1691,7 +1692,15 @@ JS;
                     $customizable ? 'draggable' : null,
                 ]),
             ]) .
-            Html::tag('span', Html::encode($tab->name)) .
+            Html::beginTag('span') .
+            Html::encode($tab->name) .
+            ($tab->hasConditions() ? Html::tag('div', '', [
+                'class' => ['fld-indicator'],
+                'title' => Craft::t('app', 'This tab is conditional'),
+                'aria' => ['label' => Craft::t('app', 'This tab is conditional')],
+                'data' => ['icon' => 'condition'],
+            ]) : '') .
+            Html::endTag('span') .
             ($customizable
                 ? Html::a('', null, [
                     'role' => 'button',
@@ -1760,7 +1769,6 @@ JS;
             'class' => array_filter([
                 'fld-element',
                 $forLibrary ? 'unused' : null,
-                !$forLibrary && $element->hasConditions() ? 'has-conditions' : null,
             ]),
             'data' => [
                 'uid' => !$forLibrary ? $element->uid : false,

@@ -10,6 +10,7 @@ namespace craft\gql\resolvers\elements;
 use craft\elements\GlobalSet as GlobalSetElement;
 use craft\gql\base\ElementResolver;
 use craft\helpers\Gql as GqlHelper;
+use Illuminate\Support\Collection;
 
 /**
  * Class GlobalSet
@@ -33,7 +34,7 @@ class GlobalSet extends ElementResolver
         $pairs = GqlHelper::extractAllowedEntitiesFromSchema('read');
 
         if (!GqlHelper::canQueryGlobalSets()) {
-            return [];
+            return Collection::empty();
         }
 
         $query->andWhere(['in', 'globalsets.uid', $pairs['globalsets']]);
