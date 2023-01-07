@@ -900,6 +900,7 @@ return [
     'Months' => '月',
     'More Resources' => '更多资源',
     'More actions' => '更多操作',
+    'More info' => 'More info',
     'More' => '更多',
     'More…' => '更多…',
     'Move down' => '下移',
