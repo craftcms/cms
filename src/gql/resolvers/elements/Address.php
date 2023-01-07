@@ -12,6 +12,7 @@ use craft\elements\db\AddressQuery;
 use craft\elements\db\ElementQuery;
 use craft\gql\base\ElementResolver;
 use craft\helpers\Gql as GqlHelper;
+use Illuminate\Support\Collection;
 
 /**
  * Class Address
@@ -45,7 +46,7 @@ class Address extends ElementResolver
         }
 
         if (!GqlHelper::canQueryUsers()) {
-            return [];
+            return Collection::empty();
         }
 
         return $query;

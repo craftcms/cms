@@ -12,6 +12,7 @@ use craft\elements\db\ElementQuery;
 use craft\elements\Tag as TagElement;
 use craft\gql\base\ElementResolver;
 use craft\helpers\Gql as GqlHelper;
+use Illuminate\Support\Collection;
 
 /**
  * Class Tag
@@ -46,7 +47,7 @@ class Tag extends ElementResolver
         $pairs = GqlHelper::extractAllowedEntitiesFromSchema('read');
 
         if (!GqlHelper::canQueryTags()) {
-            return [];
+            return Collection::empty();
         }
 
         $tagsService = Craft::$app->getTags();

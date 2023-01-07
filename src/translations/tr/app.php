@@ -124,6 +124,7 @@ return [
     'Applying new propagation method to elements' => 'Öğelere yeni yayılma yönteminin uygulanması',
     'Applying new propagation method to {section} entries' => '{section} kayıtlarına yeni yayılma yönteminin uygulanması',
     'Applying this change to existing blocks can take some time.' => 'Bu değişikliği mevcut bloklara uygulamak biraz zaman alabilir.',
+    'Archived' => 'Archived',
     'Are you sure you want to close the editor? Any changes will be lost.' => 'Düzenleyiciyi kapatmak istediğinize emin misiniz? Değişiklikler kaybolacak.',
     'Are you sure you want to close this screen? Any changes will be lost.' => 'Bu ekranı kapatmak istediğinizden emin misiniz? Tüm değişiklikler kaybolacak.',
     'Are you sure you want to delete the logo?' => 'Logoyu silmek istediğinizden emin misiniz?',

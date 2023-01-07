@@ -407,8 +407,6 @@ class Categories extends Component
                 // site rows
                 $affectedSiteUids = array_keys($siteData);
 
-                // todo: remove comment when phpstan#5401 is fixed
-                /** @phpstan-ignore-next-line */
                 foreach ($allOldSiteSettingsRecords as $siteId => $siteSettingsRecord) {
                     $siteUid = array_search($siteId, $siteIdMap, false);
                     if (!in_array($siteUid, $affectedSiteUids, false)) {
