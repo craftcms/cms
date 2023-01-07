@@ -900,6 +900,7 @@ return [
     'Months' => 'Hónap',
     'More Resources' => 'További erőforrások',
     'More actions' => 'További műveletek',
+    'More info' => 'More info',
     'More' => 'Tovább',
     'More…' => 'Több…',
     'Move down' => 'Mozgatás lefelé',
