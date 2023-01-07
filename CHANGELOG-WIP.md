@@ -13,6 +13,7 @@
 ### Accessibility
 - Improved the announcement menu for screen readers. ([#12361](https://github.com/craftcms/cms/pull/12361))
 - Improved keyboard control for the Updates utility. ([#12189](https://github.com/craftcms/cms/pull/12189))
+- Improved the color contrast and keyboard control of the Customize Sources modal. ([#12233](https://github.com/craftcms/cms/pull/12233))
 
 ### Administration
 - Conditional layout components are now identified using a condition icon within field layout designers. ([#12250](https://github.com/craftcms/cms/issues/12250))
