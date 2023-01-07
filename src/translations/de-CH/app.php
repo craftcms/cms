@@ -900,6 +900,7 @@ return [
     'Months' => 'Monate',
     'More Resources' => 'Weitere Ressourcen',
     'More actions' => 'Mehr Aktionen',
+    'More info' => 'More info',
     'More' => 'Mehr',
     'More…' => 'Mehr…',
     'Move down' => 'Nach unten schieben',
