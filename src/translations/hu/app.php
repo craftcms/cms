@@ -124,6 +124,7 @@ return [
     'Applying new propagation method to elements' => 'Új propagálási mód alkalmazása az elemekre',
     'Applying new propagation method to {section} entries' => 'Új propagálási mód alkalmazása a {section} bejegyzésekre',
     'Applying this change to existing blocks can take some time.' => 'A változás alkalmazása a meglévő blokkokra némi időt vehet igénybe.',
+    'Archived' => 'Archived',
     'Are you sure you want to close the editor? Any changes will be lost.' => 'Biztosan be kívánja zárni a szerkesztőt? Minden változtatás elveszik.',
     'Are you sure you want to close this screen? Any changes will be lost.' => 'Biztosan be kívánja zárni ezt a képernyőt? Minden változtatás elveszik.',
     'Are you sure you want to delete the logo?' => 'Biztosan törölni szeretné az emblémát?',

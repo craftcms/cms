@@ -7,6 +7,7 @@
 
 namespace craft\helpers;
 
+use Craft;
 use yii\base\InvalidArgumentException;
 
 /**
@@ -43,6 +44,34 @@ class Json extends \yii\helpers\Json
         } catch (InvalidArgumentException) {
             // Wasn't JSON
             return $str;
+        }
+    }
+
+    /**
+     * Decodes JSON from a given file path.
+     *
+     * @param string $file the file path
+     * @param bool $asArray whether to return objects in terms of associative arrays
+     * @return mixed The JSON-decoded file contents
+     * @throws InvalidArgumentException if the file doesn’t exist or there was a problem JSON-decoding it
+     * @since 4.3.5
+     */
+    public static function decodeFromFile(string $file, bool $asArray = true): mixed
+    {
+        $file = Craft::getAlias($file);
+
+        if (!file_exists($file)) {
+            throw new InvalidArgumentException("`$file` doesn’t exist.");
+        }
+
+        if (is_dir($file)) {
+            throw new InvalidArgumentException("`$file` is a directory.");
+        }
+
+        try {
+            return static::decode(file_get_contents($file), $asArray);
+        } catch (InvalidArgumentException) {
+            throw new InvalidArgumentException("`$file` doesn’t contain valid JSON.");
         }
     }
 }

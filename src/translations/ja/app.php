@@ -124,6 +124,7 @@ return [
     'Applying new propagation method to elements' => '新しい伝播方法をエレメントに適用中',
     'Applying new propagation method to {section} entries' => '新しい伝播方法を{section}エントリに適用中',
     'Applying this change to existing blocks can take some time.' => 'この変更を既存のブロックに適用するには少し時間がかかります。',
+    'Archived' => 'Archived',
     'Are you sure you want to close the editor? Any changes will be lost.' => 'エディタを閉じてもよろしいですか？ 変更内容は失われます。',
     'Are you sure you want to close this screen? Any changes will be lost.' => 'この画面を閉じてもよろしいですか？ 変更内容は失われます。',
     'Are you sure you want to delete the logo?' => 'このロゴを削除してもよろしいですか？',
