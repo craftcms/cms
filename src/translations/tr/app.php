@@ -900,6 +900,7 @@ return [
     'Months' => 'Ay',
     'More Resources' => 'Daha Fazla Kaynak',
     'More actions' => 'Daha fazla eylem',
+    'More info' => 'More info',
     'More' => 'Daha Fazla',
     'More…' => 'Daha Fazla…',
     'Move down' => 'Aşağı Taşı',
