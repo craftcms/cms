@@ -900,6 +900,7 @@ return [
     'Months' => 'Mesiace',
     'More Resources' => 'Ďalšie zdroje',
     'More actions' => 'Ďalšie akcie',
+    'More info' => 'More info',
     'More' => 'Viac',
     'More…' => 'Viac…',
     'Move down' => 'Posunúť dole',
