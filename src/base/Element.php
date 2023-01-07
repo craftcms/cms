@@ -75,6 +75,7 @@ use DateTime;
 use Illuminate\Support\Collection;
 use Throwable;
 use Twig\Markup;
+use UnitEnum;
 use yii\base\ErrorHandler;
 use yii\base\Event;
 use yii\base\InvalidCallException;
@@ -928,7 +929,7 @@ abstract class Element extends Component implements ElementInterface
         }
 
         // Prepend Set Status?
-        if (static::hasStatuses() && !$hasActionType(SetStatus::class)) {
+        if (static::includeSetStatusAction() && !$hasActionType(SetStatus::class)) {
             $actions->prepend(SetStatus::class);
         }
 
@@ -945,6 +946,17 @@ abstract class Element extends Component implements ElementInterface
         Event::trigger(static::class, self::EVENT_REGISTER_ACTIONS, $event);
 
         return $event->actions;
+    }
+
+    /**
+     * Returns whether the Set Status action should be included in [[actions()]] automatically.
+     *
+     * @return bool
+     * @since 4.3.2
+     */
+    protected static function includeSetStatusAction(): bool
+    {
+        return false;
     }
 
     /**
@@ -2025,7 +2037,7 @@ abstract class Element extends Component implements ElementInterface
         // If this is a field, make sure the value has been normalized before returning the CustomFieldBehavior value
         if ($this->fieldByHandle($name) !== null) {
             $value = $this->getFieldValue($name);
-            if (is_object($value)) {
+            if (is_object($value) && (!class_exists(UnitEnum::class) || !$value instanceof UnitEnum)) {
                 $value = clone $value;
             }
             return $value;
@@ -2582,7 +2594,7 @@ abstract class Element extends Component implements ElementInterface
         }
 
         // If the canonical element is already memoized via getCanonical(), go with its UUID
-        if (isset($this->_canonical)) {
+        if (isset($this->_canonical) && $this->_canonical) {
             return $this->_canonical->uid;
         }
 
@@ -2994,7 +3006,7 @@ abstract class Element extends Component implements ElementInterface
             $params['revisionId'] = $this->revisionId;
         }
 
-        return UrlHelper::urlWithParams($cpEditUrl, $params);
+        return UrlHelper::cpUrl($cpEditUrl, $params);
     }
 
     /**
@@ -3012,6 +3024,37 @@ abstract class Element extends Component implements ElementInterface
      * @inheritdoc
      */
     public function getPostEditUrl(): ?string
+    {
+        return null;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getCpRevisionsUrl(): ?string
+    {
+        $cpEditUrl = $this->cpRevisionsUrl();
+
+        if (!$cpEditUrl) {
+            return null;
+        }
+
+        $params = [];
+
+        if (Craft::$app->getIsMultiSite()) {
+            $params['site'] = $this->getSite()->handle;
+        }
+
+        return UrlHelper::cpUrl($cpEditUrl, $params);
+    }
+
+    /**
+     * Returns the element’s revisions index URL in the control panel.
+     *
+     * @return string|null
+     * @since 4.4.0
+     */
+    protected function cpRevisionsUrl(): ?string
     {
         return null;
     }
@@ -3607,9 +3650,11 @@ abstract class Element extends Component implements ElementInterface
 
     /**
      * @inheritdoc
+     * @phpstan-ignore-next-line
      */
     public function offsetExists($offset): bool
     {
+        /** @phpstan-ignore-next-line */
         return $offset === 'title' || $this->hasEagerLoadedElements($offset) || parent::offsetExists($offset) || $this->fieldByHandle($offset);
     }
 
@@ -4007,30 +4052,44 @@ abstract class Element extends Component implements ElementInterface
         $this->setFieldParamNamespace($paramNamespace);
         $values = Craft::$app->getRequest()->getBodyParam($paramNamespace, []);
 
-        foreach ($this->fieldLayoutFields(true) as $field) {
-            // Do we have any post data for this field?
-            if (isset($values[$field->handle])) {
-                $value = $values[$field->handle];
-            } elseif (
-                isset($this->_fieldParamNamePrefix) &&
-                $this->_fieldParamNamePrefix !== '' &&
-                UploadedFile::getInstancesByName("$this->_fieldParamNamePrefix.$field->handle")
-            ) {
-                // A file was uploaded for this field
-                $value = null;
-            } else {
-                continue;
-            }
+        // Run through this multiple times, in case any fields become visible as a result of other field value changes
+        $processedFields = [];
+        do {
+            $processedAnyFields = false;
 
-            // Normalize it now in case the system language changes later
-            // (we'll do this with the value directly rather than using setFieldValue() + normalizeFieldValue(),
-            // because it's slightly more efficient and to workaround an infinite loop bug caused by Matrix
-            // needing to render an object template on the owner element during normalization, which would in turn
-            // cause the Matrix field value to be (re-)normalized based on the POST data, and on and on...)
-            $value = $field->normalizeValue($value, $this);
-            $this->setFieldValue($field->handle, $value);
-            $this->_normalizedFieldValues[$field->handle] = true;
-        }
+            foreach ($this->fieldLayoutFields(true) as $field) {
+                // Have we already processed this field?
+                if (isset($processedFields[$field->id])) {
+                    continue;
+                }
+
+                $processedFields[$field->id] = true;
+                $processedAnyFields = true;
+
+                // Do we have any post data for this field?
+                if (isset($values[$field->handle])) {
+                    $value = $values[$field->handle];
+                } elseif (
+                    isset($this->_fieldParamNamePrefix) &&
+                    $this->_fieldParamNamePrefix !== '' &&
+                    UploadedFile::getInstancesByName("$this->_fieldParamNamePrefix.$field->handle")
+                ) {
+                    // A file was uploaded for this field
+                    $value = null;
+                } else {
+                    continue;
+                }
+
+                // Normalize it now in case the system language changes later
+                // (we'll do this with the value directly rather than using setFieldValue() + normalizeFieldValue(),
+                // because it's slightly more efficient and to workaround an infinite loop bug caused by Matrix
+                // needing to render an object template on the owner element during normalization, which would in turn
+                // cause the Matrix field value to be (re-)normalized based on the POST data, and on and on...)
+                $value = $field->normalizeValue($value, $this);
+                $this->setFieldValue($field->handle, $value);
+                $this->_normalizedFieldValues[$field->handle] = true;
+            }
+        } while ($processedAnyFields);
     }
 
     /**

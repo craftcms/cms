@@ -1220,6 +1220,12 @@ class User extends Element implements IdentityInterface
      */
     public function getStatus(): ?string
     {
+        // If they're disabled or archived, go with that
+        $status = parent::getStatus();
+        if ($status !== self::STATUS_ENABLED) {
+            return $status;
+        }
+
         if ($this->suspended) {
             return self::STATUS_SUSPENDED;
         }
@@ -1616,6 +1622,17 @@ class User extends Element implements IdentityInterface
         ]);
     }
 
+    /**
+     * @inheritdoc
+     */
+    protected function statusFieldHtml(): string
+    {
+        return '';
+    }
+
+    /**
+     * @inheritdoc
+     */
     protected function metadata(): array
     {
         $formatter = Craft::$app->getFormatter();

@@ -12,6 +12,7 @@ use craft\elements\Asset as AssetElement;
 use craft\elements\db\ElementQuery;
 use craft\gql\base\ElementResolver;
 use craft\helpers\Gql as GqlHelper;
+use Illuminate\Support\Collection;
 
 /**
  * Class Asset
@@ -46,7 +47,7 @@ class Asset extends ElementResolver
         $pairs = GqlHelper::extractAllowedEntitiesFromSchema('read');
 
         if (!GqlHelper::canQueryAssets()) {
-            return [];
+            return Collection::empty();
         }
 
         $volumesService = Craft::$app->getVolumes();

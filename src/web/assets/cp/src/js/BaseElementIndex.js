@@ -43,6 +43,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
     $filterBtn: null,
     searching: false,
     searchText: null,
+    sortByScore: null,
     trashed: false,
     drafts: false,
     $clearSearchBtn: null,
@@ -563,6 +564,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       // Show the clear button
       this.$clearSearchBtn.removeClass('hidden');
       this.searching = true;
+      this.sortByScore = true;
 
       if (this.activeViewMenu) {
         this.activeViewMenu.updateSortField();
@@ -593,6 +595,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       // Hide the clear button
       this.$clearSearchBtn.addClass('hidden');
       this.searching = false;
+      this.sortByScore = false;
 
       if (this.activeViewMenu) {
         this.activeViewMenu.updateSortField();
@@ -615,16 +618,18 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       }
     },
 
-    getSourceState: function (source, key, defaultValue) {
-      if (typeof this.sourceStates[source] === 'undefined') {
+    getSourceState: function (sourceKey, key, defaultValue) {
+      sourceKey = sourceKey.replace(/\/.*/, '');
+
+      if (typeof this.sourceStates[sourceKey] === 'undefined') {
         // Set it now so any modifications to it by whoever's calling this will be stored.
-        this.sourceStates[source] = {};
+        this.sourceStates[sourceKey] = {};
       }
 
       if (typeof key === 'undefined') {
-        return this.sourceStates[source];
-      } else if (typeof this.sourceStates[source][key] !== 'undefined') {
-        return this.sourceStates[source][key];
+        return this.sourceStates[sourceKey];
+      } else if (typeof this.sourceStates[sourceKey][key] !== 'undefined') {
+        return this.sourceStates[sourceKey][key];
       } else {
         return typeof defaultValue !== 'undefined' ? defaultValue : null;
       }
@@ -657,7 +662,16 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         delete viewState[key];
       }
 
-      this.sourceStates[this.instanceState.selectedSource] = viewState;
+      const sourceKey = this.instanceState.selectedSource.replace(/\/.*/, '');
+
+      this.sourceStates[sourceKey] = viewState;
+
+      // Clean up sourceStates while we're at it
+      for (let i in this.sourceStates) {
+        if (this.sourceStates.hasOwnProperty(i) && i.includes('/')) {
+          delete this.sourceStates[i];
+        }
+      }
 
       // Store it in localStorage too
       Craft.setLocalStorage(this.sourceStatesStorageKey, this.sourceStates);
@@ -1152,6 +1166,17 @@ Craft.BaseElementIndex = Garnish.Base.extend(
      * @param {string} [dir]
      */
     setSelectedSortAttribute: function (attr, dir) {
+      // If score, keep track of that separately
+      if (attr === 'score') {
+        this.sortByScore = true;
+        if (this.activeViewMenu) {
+          this.activeViewMenu.updateSortField();
+        }
+        return;
+      }
+
+      this.sortByScore = false;
+
       // Make sure it's valid
       const sortOption = this.getSortOption(attr);
       if (!sortOption) {
@@ -1223,7 +1248,9 @@ Craft.BaseElementIndex = Garnish.Base.extend(
      * @returns {boolean}
      */
     canSortByStructure: function () {
-      return !this.trashed && !this.drafts && !this.searching;
+      return (
+        !this.trashed && !this.drafts && !this.searching && !this.sortByScore
+      );
     },
 
     /**
@@ -1231,8 +1258,8 @@ Craft.BaseElementIndex = Garnish.Base.extend(
      * @returns {string[]}
      */
     getSortAttributeAndDirection: function () {
-      if (this.searching) {
-        return ['score', 'asc'];
+      if (this.searching && this.sortByScore) {
+        return ['score', 'desc'];
       }
 
       let attribute = this.getSelectedSortAttribute();
@@ -1299,7 +1326,9 @@ Craft.BaseElementIndex = Garnish.Base.extend(
     selectSource: function (source) {
       const $source = $(source);
 
-      if (!$source || !$source.length) {
+      // return false if there truly are no sources;
+      // don't attempt to check only default/visible sources
+      if (!this.sourcesByKey || !Object.keys(this.sourcesByKey).length) {
         return false;
       }
 
@@ -1550,7 +1579,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
      * @returns {string[]}
      */
     getSelectedTableColumns: function ($source) {
-      $source = $source || this.$source;
+      $source = $source || this.$rootSource;
       if ($source) {
         const attributes = this.getSourceState(
           $source.data('key'),
@@ -2803,16 +2832,29 @@ const ViewMenu = Garnish.Base.extend({
     let [attribute, direction] =
       this.elementIndex.getSortAttributeAndDirection();
 
+    // Add/remove a score option
+    const $scoreOption = this.$sortAttributeSelect.children(
+      'option[value="score"]'
+    );
+
     // If searching by score, just keep showing the actual selection
-    if (attribute === 'score') {
-      attribute = this.elementIndex.getSelectedSortAttribute(this.$source);
-      direction = this.elementIndex.getSelectedSortDirection(this.$source);
+    if (this.elementIndex.searching) {
+      if (!$scoreOption.length) {
+        this.$sortAttributeSelect.prepend(
+          $('<option/>', {
+            value: 'score',
+            text: Craft.t('app', 'Score'),
+          })
+        );
+      }
+    } else if ($scoreOption.length) {
+      $scoreOption.remove();
     }
 
     this.$sortAttributeSelect.val(attribute);
     this.sortDirectionListbox.select(direction === 'asc' ? 0 : 1);
 
-    if (attribute === 'structure') {
+    if (['structure', 'score'].includes(attribute)) {
       this.sortDirectionListbox.disable();
       this.$sortDirectionPicker.addClass('disabled');
     } else {

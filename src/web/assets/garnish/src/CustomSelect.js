@@ -190,7 +190,10 @@ export default Base.extend(
             (this._anchorOffset.left + this._menuWidth),
           leftClearance = this._anchorOffsetRight - this._menuWidth;
 
-        if ((align === 'right' && leftClearance >= 0) || rightClearance < 0) {
+        if (
+          ((align === 'right' && leftClearance >= 0) || rightClearance < 0) &&
+          this._menuWidth < this._anchorOffset.left + this._anchorWidth
+        ) {
           this._alignRight();
         } else {
           this._alignLeft();
@@ -276,6 +279,14 @@ export default Base.extend(
         left: this._anchorOffset.left,
         right: 'auto',
       });
+
+      // if menuWidth is larger than the screen estate we have
+      // - set max-width with a slight margin (10)
+      if (this._menuWidth > this._windowWidth - this._anchorOffset.left) {
+        this.$container.css({
+          maxWidth: this._windowWidth - this._anchorOffset.left - 10,
+        });
+      }
     },
 
     _alignRight: function () {
@@ -284,6 +295,14 @@ export default Base.extend(
           this._windowWidth - (this._anchorOffset.left + this._anchorWidth),
         left: 'auto',
       });
+
+      // if menuWidth is larger than the screen estate we have
+      // - set max-width with a slight margin (10)
+      if (this._menuWidth > this._anchorOffset.left + this._anchorWidth) {
+        this.$container.css({
+          maxWidth: this._anchorOffset.left + this._anchorWidth - 10,
+        });
+      }
     },
 
     _alignCenter: function () {

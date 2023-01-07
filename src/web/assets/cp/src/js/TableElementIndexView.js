@@ -101,7 +101,7 @@ Craft.TableElementIndexView = Craft.BaseElementIndexView.extend({
   },
 
   initTableHeaders: function () {
-    const selectedSortAttr = this.elementIndex.getSelectedSortAttribute();
+    const [selectedSortAttr] = this.elementIndex.getSortAttributeAndDirection();
     const $tableHeaders = this.$table
       .children('thead')
       .children()
