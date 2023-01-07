@@ -31,6 +31,7 @@ class Tip extends BaseUiElement
 
     /**
      * @var bool Whether the tip can be dismissed by user
+     * @since 4.4.0
      */
     public bool $dismissible = false;
 
@@ -67,16 +68,16 @@ class Tip extends BaseUiElement
     {
         return
             Cp::textareaFieldHtml([
-            'label' => $this->_isTip() ? Craft::t('app', 'Tip') : Craft::t('app', 'Warning'),
-            'instructions' => Craft::t('app', 'Can contain Markdown formatting.'),
-            'class' => ['nicetext'],
-            'id' => 'tip',
-            'name' => 'tip',
-            'value' => $this->tip,
+                'label' => $this->_isTip() ? Craft::t('app', 'Tip') : Craft::t('app', 'Warning'),
+                'instructions' => Craft::t('app', 'Can contain Markdown formatting.'),
+                'class' => ['nicetext'],
+                'id' => 'tip',
+                'name' => 'tip',
+                'value' => $this->tip,
             ]) .
             Cp::lightswitchFieldHtml([
                 'label' => Craft::t('app', 'Can be dismissed?'),
-                'instructions' => Craft::t('app', 'Whether it can be dismissed by a user and not shown again.'),
+                'instructions' => Craft::t('app', 'Whether this can be dismissed by a user and not shown again.'),
                 'id' => 'dismissible',
                 'name' => 'dismissible',
                 'on' => $this->dismissible,
@@ -88,21 +89,57 @@ class Tip extends BaseUiElement
      */
     public function formHtml(?ElementInterface $element = null, bool $static = false): ?string
     {
-        $classes[] = $this->_isTip() ? self::STYLE_TIP : self::STYLE_WARNING;
+        if (!$this->uid) {
+            $this->dismissible = false;
+        }
+
+        $id = sprintf('tip%s', mt_rand());
+        $namespacedId = Craft::$app->getView()->namespaceInputId($id);
+
+        $classes = [$this->_isTip() ? self::STYLE_TIP : self::STYLE_WARNING];
         if ($this->dismissible) {
             $classes[] = 'dismissible';
         }
 
         $tip = Markdown::process(Html::encode(Craft::t('site', $this->tip)));
+        $closeBtn = $this->dismissible
+            ? Html::button('', [
+                'class' => 'tip-dismiss-btn',
+                'title' => Craft::t('app', 'Dismiss'),
+                'aria' => [
+                    'label' => Craft::t('app', 'Dismiss'),
+                ],
+                'data' => [
+                    'icon' => 'remove',
+                ],
+            ])
+            : '';
 
-        $html = "<div class=\"readable\">" .
-            "<blockquote class=\"note " . implode(' ', $classes) . "\">" .
-                $tip .
-            "</blockquote>";
         if ($this->dismissible) {
-            $html .= "<button type=\"button\" class=\"tip-close-btn\" aria-label=\"Close\" data-icon=\"remove\"></button>";
+            $key = sprintf('Craft-%s.dismissedTips', Craft::$app->getSystemUid());
+            $js = <<<JS
+if (
+  typeof localStorage !== 'undefined' &&
+  typeof localStorage['$key'] !== 'undefined' &&
+  JSON.parse(localStorage['$key']).includes('$this->uid')
+) {
+  document.getElementById('$namespacedId').remove();
+}
+JS;
+        } else {
+            $js = null;
         }
-        $html .= "</div>";
+
+        $html = "<div id=\"$id\" class=\"readable\">" .
+            "<blockquote class=\"note " . implode(' ', $classes) . "\">" .
+                $closeBtn .
+                $tip .
+            "</blockquote>" .
+            '</div>';
+
+        if ($js) {
+            $html .= "<script>$js</script>";
+        }
 
         return $html;
     }

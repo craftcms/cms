@@ -54,8 +54,8 @@ Craft.ElementEditor = Garnish.Base.extend(
 
     hiddenTipsStorageKey: 'Craft-' + Craft.systemUid + '.TipField.hiddenTips',
 
-    get tipCloseBtn() {
-      return this.$container.find('.tip-close-btn');
+    get tipDismissBtn() {
+      return this.$container.find('.tip-dismiss-btn');
     },
 
     get slideout() {
@@ -511,7 +511,6 @@ Craft.ElementEditor = Garnish.Base.extend(
           .replace(originalSerializedStatus, serializedStatuses)
       );
 
-      debugger;
       if (this.lastSerializedValue) {
         this.lastSerializedValue = this.lastSerializedValue.replace(
           originalSerializedStatus,
@@ -1924,56 +1923,30 @@ Craft.ElementEditor = Garnish.Base.extend(
     },
 
     handleDismissibleTips: function () {
-      this.hideTipsOnLoad();
-      this.addListener(this.tipCloseBtn, 'click', (e) => {
+      this.addListener(this.tipDismissBtn, 'click', (e) => {
         this.hideTip(e);
       });
     },
 
     getHiddenTipsUids: function () {
-      if (typeof localStorage[this.hiddenTipsStorageKey] === 'string') {
-        return Craft.filterArray(
-          localStorage[this.hiddenTipsStorageKey].split(',')
-        );
-      } else {
-        return [];
-      }
+      return Craft.getLocalStorage('dismissedTips', []);
     },
 
     setHiddenTipsUids: function (uids) {
-      localStorage[this.hiddenTipsStorageKey] = uids.join(',');
-    },
-
-    hideTipsOnLoad: function () {
-      // get hidden tips info from local storage and handle hiding tips that user dismissed
-      var hiddenTips = this.getHiddenTipsUids();
-      if (hiddenTips.length > 0) {
-        hiddenTips.forEach((uid) => {
-          var readableElement = this.$container.find(
-            '.readable[data-layout-element="' + uid + '"]'
-          );
-          // if we can find that element and it's still set to be dismissible
-          if (
-            readableElement !== undefined &&
-            readableElement.children('.tip-close-btn').length > 0
-          ) {
-            readableElement.addClass('hidden');
-          }
-        });
-      }
+      Craft.setLocalStorage('dismissedTips', uids);
     },
 
     hideTip: function (ev) {
-      var targetElement = ev.target;
-      if (targetElement !== undefined) {
-        var targetParent = $(targetElement).parents('.readable');
-        if (targetParent !== undefined) {
-          var layoutElementUid = targetParent.data('layout-element');
-          targetParent.addClass('hidden');
+      const targetElement = ev.target;
+      if (targetElement) {
+        const $targetParent = $(targetElement).closest('.readable');
+        if ($targetParent.length) {
+          const layoutElementUid = $targetParent.data('layout-element');
+          $targetParent.remove();
           // add info to local storage
           if (typeof Storage !== 'undefined') {
-            var hiddenTips = this.getHiddenTipsUids();
-            if ($.inArray(layoutElementUid, hiddenTips) === -1) {
+            const hiddenTips = this.getHiddenTipsUids();
+            if (!hiddenTips.includes(layoutElementUid)) {
               hiddenTips.push(layoutElementUid);
               this.setHiddenTipsUids(hiddenTips);
             }
