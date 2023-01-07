@@ -1738,7 +1738,7 @@ return [
     'What type of filesystem is this?' => 'What type of filesystem is this?',
     'What type of section is this?' => 'What type of section is this?',
     'What’s New' => 'What’s New',
-    'Whether it can be dismissed by a user and not shown again.' => 'Whether it can be dismissed by a user and not shown again.',
+    'Whether this can be dismissed by a user and not shown again.' => 'Whether this can be dismissed by a user and not shown again.',
     'When someone replaces a file, the record of who uploaded the file will be updated as well.' => 'When someone replaces a file, the record of who uploaded the file will be updated as well.',
     'Where assets should be stored (relative to **Asset Location**) when they are uploaded directly to the field.' => 'Where assets should be stored (relative to **Asset Location**) when they are uploaded directly to the field.',
     'Where assets should be stored when they are uploaded directly to the field.' => 'Where assets should be stored when they are uploaded directly to the field.',
