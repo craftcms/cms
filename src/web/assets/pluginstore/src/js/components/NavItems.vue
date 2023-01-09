@@ -41,11 +41,11 @@
         <li>
           <a
             href="https://console.craftcms.com/"
-            title="Craft ID"
+            title="Craft Console"
             @click="$emit('itemClick')"
           >
             <c-icon icon="world" class="tw-w-6 tw-h-6" />
-            Craft ID
+            Craft Console
           </a>
         </li>
       </ul>
