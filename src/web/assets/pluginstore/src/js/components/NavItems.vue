@@ -40,7 +40,7 @@
         </li>
         <li>
           <a
-            href="https://id.craftcms.com/"
+            href="https://console.craftcms.com/"
             title="Craft ID"
             @click="$emit('itemClick')"
           >
