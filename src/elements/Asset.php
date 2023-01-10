@@ -1031,13 +1031,7 @@ class Asset extends Element
      */
     public function getPostEditUrl(): ?string
     {
-        $volume = $this->getVolume();
-        $uri = "assets/$volume->handle";
-        if ($this->folderPath !== null) {
-            $subfolders = ArrayHelper::filterEmptyStringsFromArray(explode('/', $this->folderPath));
-            $uri .= sprintf('/%s', implode('/', $subfolders));
-        }
-        return UrlHelper::cpUrl($uri);
+        return UrlHelper::cpUrl('assets');
     }
 
     /**
@@ -2246,7 +2240,7 @@ JS;
         $volume = $this->getVolume();
         $uri = "assets/$volume->handle";
         $items = [
-            Html::a(Craft::t('site', $volume->name), UrlHelper::cpUrl($uri)),
+            Html::a(Craft::t('site', Html::encode($volume->name)), UrlHelper::cpUrl($uri)),
         ];
         if ($this->folderPath) {
             $subfolders = ArrayHelper::filterEmptyStringsFromArray(explode('/', $this->folderPath));

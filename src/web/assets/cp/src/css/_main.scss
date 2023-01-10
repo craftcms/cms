@@ -1082,13 +1082,13 @@ td.right {
 }
 
 .customize-sources-item {
+  --selected-item-color: var(--white);
   display: flex;
   width: calc(100% - 1px);
   box-sizing: border-box;
   align-items: center;
   position: relative;
   margin-top: -1px;
-  padding: 8px 14px;
   background-color: var(--gray-100);
   border: solid var(--hairline-color);
   border-width: 1px 0;
@@ -1106,15 +1106,15 @@ td.right {
   }
 
   &.sel {
-    background-color: var(--gray-200);
+    @include light-focus-ring;
+    --ui-control-color: var(--selected-item-color);
+    background-color: var(--dark-sel-color);
+    color: var(--selected-item-color);
     z-index: 1;
   }
 
   .label {
     flex: 1;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
   }
 
   &.heading {
@@ -1124,11 +1124,31 @@ td.right {
       font-size: 12px;
       font-weight: bold;
     }
-  }
 
-  .move {
-    @include margin-left(7px);
+    &.sel .label {
+      color: var(--selected-item-color);
+    }
   }
+}
+
+.customize-sources-item__move {
+  position: absolute;
+  top: 50%;
+  @include right(0);
+  transform: translate(-50%, -50%);
+  justify-content: center;
+  align-items: center;
+
+  &.icon {
+    display: flex;
+    text-decoration: none;
+  }
+}
+
+.customize-sources-item__btn {
+  padding: 8px 14px;
+  @include padding-right(30px);
+  margin: 3px;
 }
 
 .customize-sources-table-column .move {
@@ -1526,7 +1546,9 @@ ul.icons {
 }
 
 .btngroup--exclusive {
-  .btn[aria-pressed='true']:not(.disabled):not(.loading):not(.dashed):not([aria-disabled]) {
+  .btn[aria-pressed='true']:not(.disabled):not(.loading):not(.dashed):not(
+      [aria-disabled]
+    ) {
     background-color: var(--gray-500);
     color: var(--white);
   }
@@ -2627,7 +2649,7 @@ $elementInnerSpacing: 5px;
 
     .elementthumb:not(:empty) {
       top: $baseElementSidePadding;
-      @include left($baseElementSidePadding);
+      @include left(0);
       width: $largeThumbSize;
       height: $largeThumbSize;
 
@@ -2778,6 +2800,7 @@ $checkboxPadding: $checkboxSize + 4;
     li {
       position: relative;
       @include margin(0, 1px, 1px, 0);
+      max-width: 226px;
 
       &:hover {
         .element {
@@ -3316,7 +3339,13 @@ ul.tree,
   }
 }
 
-.status:not(.on):not(.live):not(.active):not(.enabled):not(.all):not(.pending):not(.off):not(.suspended):not(.expired):not(.yellow):not(.orange):not(.red):not(.pink):not(.purple):not(.blue):not(.green):not(.turquoise):not(.light):not(.grey):not(.black) {
+.status:not(.on):not(.live):not(.active):not(.enabled):not(.all):not(
+    .pending
+  ):not(.off):not(.suspended):not(.expired):not(.yellow):not(.orange):not(
+    .red
+  ):not(.pink):not(.purple):not(.blue):not(.green):not(.turquoise):not(
+    .light
+  ):not(.grey):not(.black) {
   border-color: var(--ui-control-color);
 }
 
@@ -5173,7 +5202,7 @@ $min2ColWidth: 400px;
         -webkit-appearance: none;
 
         &:not(.flex) {
-          display: block !important;
+          display: table !important;
           box-sizing: border-box;
           width: calc(100% + 28px);
           @include alignleft;
@@ -5219,6 +5248,10 @@ $min2ColWidth: 400px;
 
   hr {
     margin: 5px -14px;
+  }
+
+  .go:after {
+    color: inherit;
   }
 }
 

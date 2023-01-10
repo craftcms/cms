@@ -35,6 +35,7 @@ use craft\models\ImageTransformIndex;
 use craft\queue\jobs\GeneratePendingTransform;
 use DateTime;
 use Exception;
+use Imagine\Image\Format;
 use Throwable;
 use yii\base\InvalidConfigException;
 
@@ -317,12 +318,16 @@ class ImageTransformer extends Component implements ImageTransformerInterface, E
         $transform = $index->getTransform();
         $images = Craft::$app->getImages();
 
-        if ($index->format === 'webp' && !$images->getSupportsWebP()) {
-            throw new ImageTransformException("The `webp` format is not supported on this server!");
+        if ($index->format === Format::ID_WEBP && !$images->getSupportsWebP()) {
+            throw new ImageTransformException('The `webp` format is not supported on this server.');
         }
 
-        if ($index->format === 'avif' && !$images->getSupportsAvif()) {
-            throw new ImageTransformException("The `avif` format is not supported on this server!");
+        if ($index->format === Format::ID_AVIF && !$images->getSupportsAvif()) {
+            throw new ImageTransformException('The `avif` format is not supported on this server.');
+        }
+
+        if ($index->format === Format::ID_HEIC && !$images->getSupportsHeic()) {
+            throw new ImageTransformException('The `heic` format is not supported on this server.');
         }
 
         $volume = $asset->getVolume();

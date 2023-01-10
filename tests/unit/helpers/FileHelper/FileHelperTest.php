@@ -95,6 +95,41 @@ class FileHelperTest extends TestCase
     }
 
     /**
+     * @dataProvider absolutePathDataProvider
+     * @param string $expected
+     * @param string $to
+     * @param string|null $from
+     * @param string $ds
+     */
+    public function testAbsolutePath(string $expected, string $to, ?string $from, string $ds): void
+    {
+        self::assertSame($expected, FileHelper::absolutePath($to, $from, $ds));
+    }
+
+    /**
+     * @dataProvider relativePathDataProvider
+     * @param string $expected
+     * @param string $to
+     * @param string|null $from
+     * @param string $ds
+     */
+    public function testRelativePath(string $expected, string $to, ?string $from, string $ds): void
+    {
+        self::assertSame($expected, FileHelper::relativePath($to, $from, $ds));
+    }
+
+    /**
+     * @dataProvider isWithinDataProvider
+     * @param bool $expected
+     * @param string $path
+     * @param string $parentPath
+     */
+    public function testIsWithin(bool $expected, string $path, string $parentPath): void
+    {
+        self::assertSame($expected, FileHelper::isWithin($path, $parentPath));
+    }
+
+    /**
      * @dataProvider isDirectoryEmptyDataProvider
      * @param bool $expected
      * @param string $dir
@@ -236,6 +271,19 @@ class FileHelperTest extends TestCase
     }
 
     /**
+     * @dataProvider findClosestFileDataProvider
+     */
+    public function testFindClosestFile(string|null|false $expected, string $dir, array $options = [])
+    {
+        if ($expected === false) {
+            $this->expectException(InvalidArgumentException::class);
+            FileHelper::findClosestFile($dir, $options);
+        } else {
+            self::assertSame($expected, FileHelper::findClosestFile($dir, $options));
+        }
+    }
+
+    /**
      * @return array
      */
     public function normalizePathDataProvider(): array
@@ -252,6 +300,46 @@ class FileHelperTest extends TestCase
             [' +HostName[@SSL][@Port]+SharedFolder+Resource', ' \\HostName[@SSL][@Port]\SharedFolder\Resource', '+'],
             ['|?|C:|my_dir', '\\?\C:\my_dir', '|'],
             ['==stuff', '\\\\stuff', '='],
+        ];
+    }
+
+    /**
+     * @return array
+     */
+    public function absolutePathDataProvider(): array
+    {
+        return [
+            ['/foo/bar', 'bar', '/foo', '/'],
+            ['/foo/bar', '/foo/bar', null, '/'],
+            ['\\foo\\bar', 'bar', '/foo', '\\'],
+            [FileHelper::normalizePath(getcwd(), '/') . '/foo/bar', 'foo/bar', null, '/'],
+            [FileHelper::normalizePath(getcwd(), '/') . '/baz/foo/bar', 'foo/bar', 'baz', '/'],
+        ];
+    }
+
+    /**
+     * @return array
+     */
+    public function relativePathDataProvider(): array
+    {
+        return [
+            ['bar/baz', '/foo/bar/baz', '/foo', '/'],
+            ['bar\\baz', '/foo/bar/baz', '/foo', '\\'],
+            ['/foo/bar/baz', '/foo/bar/baz', '/test', '/'],
+        ];
+    }
+
+    /**
+     * @return array
+     */
+    public function isWithinDataProvider(): array
+    {
+        return [
+            [true, '/foo/bar', '/foo'],
+            [true, 'foo/bar', 'foo'],
+            [true, 'foo/bar', getcwd() . '/foo'],
+            [false, '/foo/bar', '\\foo\\bar'],
+            [false, '/baz', '/foo'],
         ];
     }
 
@@ -345,6 +433,37 @@ class FileHelperTest extends TestCase
             ['content', $sandboxDir . '/notadir/notafile', 'content', [], true, $sandboxDir . '/notadir'],
             ['content', $sandboxDir . '/notafile2', 'content', ['lock' => true]],
 
+        ];
+    }
+
+    /**
+     * @return array
+     */
+    public function findClosestFileDataProvider(): array
+    {
+        return [
+            [
+                FileHelper::normalizePath(__DIR__ . '/sandbox/singlefile/foo.txt', '/'),
+                __DIR__ . '/sandbox/singlefile',
+            ],
+            [
+                FileHelper::normalizePath(__DIR__ . '/sandbox/singlefile/foo.txt', '/'),
+                __DIR__ . '/sandbox/singlefile/nested',
+                [
+                    'except' => ['ignore*'],
+                ],
+            ],
+            [
+                null,
+                '/',
+                [
+                    'only' => ['nonexistent.txt'],
+                ],
+            ],
+            [
+                false,
+                __DIR__ . '/sandbox/singlefile/nonexistent',
+            ],
         ];
     }
 
