@@ -1775,6 +1775,7 @@ return [
     'You need to be on at least {plugin} {version} before you can update to {plugin} {targetVersion}.' => 'You need to be on at least {plugin} {version} before you can update to {plugin} {targetVersion}.',
     'You need to reset your password, but an error was encountered when sending the password reset email.' => 'You need to reset your password, but an error was encountered when sending the password reset email.',
     'You need to reset your password. Check your email for instructions.' => 'You need to reset your password. Check your email for instructions.',
+    'Your Craft license isn’t allowed to run version {version}.' => 'Your Craft license isn’t allowed to run version {version}.',
     'Your Craft license key is invalid.' => 'Your Craft license key is invalid.',
     'Your Email' => 'Your Email',
     'Your account doesn’t have permission to access the control panel when the system is offline.' => 'Your account doesn’t have permission to access the control panel when the system is offline.',
