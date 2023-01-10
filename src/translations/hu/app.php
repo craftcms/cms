@@ -675,6 +675,7 @@ return [
     'General' => 'Általános',
     'Generate YAML Files' => 'YAML fájlok generálása',
     'Generate' => 'Generálás',
+    'Generating image transform' => 'Generating image transform',
     'Generating pending image transforms' => 'Függőben lévő kép-transzformáció generálása',
     'Get help' => 'Segítség kérése',
     'Give feedback' => 'Visszajelzés küldése',
