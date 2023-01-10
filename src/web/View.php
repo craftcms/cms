@@ -30,6 +30,7 @@ use Twig\Extension\CoreExtension;
 use Twig\Extension\DebugExtension;
 use Twig\Extension\ExtensionInterface;
 use Twig\Extension\StringLoaderExtension;
+use Twig\Extra\String\StringExtension;
 use Twig\Template as TwigTemplate;
 use yii\base\Arrayable;
 use yii\base\Exception;
@@ -313,6 +314,7 @@ class View extends \yii\web\View
     {
         $twig = new Environment(new TemplateLoader($this), $this->_getTwigOptions());
 
+        $twig->addExtension(new StringExtension());
         $twig->addExtension(new StringLoaderExtension());
         $twig->addExtension(new Extension($this, $twig));
 
