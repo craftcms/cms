@@ -1,5 +1,11 @@
 # Release Notes for Craft CMS 4
 
+## Unreleased
+
+- Removed the “Timeout” setting from the Gmail and SMTP mailer transporters, as they aren’t supported by Symfony Mailer’s transport configuration.
+- Removed the “Encryption Method” setting from the SMTP mailer transporter, as Symfony Mailer already uses TLS when port 465 is used (as it is by default).
+- The “Port” setting on the SMTP mailer transporter is no longer required. It will default to 465 or 25 depending on whether OpenSSL is installed.
+
 ## 4.3.6.1 - 2023-01-09
 
 - Element edit pages now retain their previous scroll position when they’re automatically refreshed to keep up with changes from another browser tab.
