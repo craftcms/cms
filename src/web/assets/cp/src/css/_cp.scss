@@ -696,17 +696,19 @@ li.breadcrumb-toggle-wrapper {
   padding: 5px 0;
 
   img {
+    --transparentize-amt: 0.7;
+    --transparentize-amt-hover-shadow: 0.4;
     display: block;
     width: 30px;
     height: 30px;
     max-width: none;
     border-radius: 50%;
-    box-shadow: 0 0 0 1px transparentize($grey900, 0.95),
+    box-shadow: 0 0 0 1px transparentize($grey900, 0.6),
       0 0 0 transparentize($grey900, 1);
     transition: box-shadow linear 150ms;
 
     #user-info:hover & {
-      box-shadow: 0 0 0 1px transparentize($grey900, 0.95),
+      box-shadow: 0 0 0 1px transparentize($grey900, 0.6),
         0 2px 10px -2px transparentize($grey900, 0.7);
     }
   }
