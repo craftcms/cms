@@ -1645,6 +1645,7 @@ return [
     'You need to be on at least {plugin} {version} before you can update to {plugin} {targetVersion}.' => '{plugin} {targetVersion} にアップデートするには、事前に {plugin} {version} 以上にしておく必要があります。',
     'You need to reset your password, but an error was encountered when sending the password reset email.' => 'パスワードを再設定する必要がありますが、パスワード再設定用のメールの送信時にエラーが発生しました。',
     'You need to reset your password. Check your email for instructions.' => 'パスワードをリセットしてください。詳しくは送信したメールにご参照ください。',
+    'Your Craft license isn’t allowed to run version {version}.' => 'Your Craft license isn’t allowed to run version {version}.',
     'Your Craft license key is invalid.' => 'Craft ライセンスキーが無効です。',
     'Your Email' => 'あなたのメールアドレス',
     'Your account doesn’t have permission to access the control panel when the system is offline.' => 'お使いのアカウントには、システムがオフラインのときにコントロールパネルにアクセスする権限がありません。',
