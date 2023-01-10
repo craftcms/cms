@@ -703,42 +703,54 @@ $radioSize: 16px;
   line-height: 22px;
 
   h1,
+  .h1,
   h2,
+  .h2,
   h3,
+  .h3,
   h4,
+  .h4,
   h5,
-  h6 {
+  .h5,
+  h6,
+  .h6 {
     margin: 24px 0 16px;
     font-weight: 600;
   }
 
-  h1 {
+  h1,
+  .h1 {
     font-size: 32px;
     line-height: 40px;
     color: #000;
   }
 
-  h2 {
+  h2,
+  .h2 {
     font-size: 24px;
     line-height: 30px;
   }
 
-  h3 {
+  h3,
+  .h3 {
     font-size: 20px;
     line-height: 24px;
   }
 
-  h4 {
+  h4,
+  .h4 {
     font-size: 16px;
     line-height: 20px;
   }
 
-  h5 {
+  h5,
+  .h5 {
     font-size: 14px;
     line-height: 18px;
   }
 
-  h6 {
+  h6,
+  .h6 {
     font-size: 13.6px;
     line-height: 17px;
     color: $mediumTextColor;
@@ -758,6 +770,16 @@ $radioSize: 16px;
     margin-top: 0.25em;
   }
 
+  .tip-dismiss-btn {
+    position: absolute;
+    top: 12px;
+    @include right(12px);
+
+    & + p {
+      margin-top: 0;
+    }
+  }
+
   blockquote {
     margin: 16px 0;
 
@@ -771,8 +793,12 @@ $radioSize: 16px;
       position: relative;
       border-radius: 4px;
       padding: 1em;
-      @include padding-left(56px);
+      @include padding-left(50px);
       border: 1px solid;
+
+      &.dismissible {
+        @include padding-right(36px);
+      }
 
       &:not(.tip):not(.warning) {
         border-color: $errorColor;
@@ -786,7 +812,7 @@ $radioSize: 16px;
 
       &.tip {
         border-color: $linkColor;
-        color: $mediumTextColor;
+        color: $linkColor;
 
         &:before {
           content: 'lightbulb';
@@ -806,11 +832,17 @@ $radioSize: 16px;
 
       &:before {
         @include icon;
+        opacity: 1;
         position: absolute;
-        top: 12px;
+        top: 15px;
         @include left(16px);
-        font-size: 30px;
+        font-size: 24px;
         width: 24px;
+      }
+
+      a[href] {
+        color: currentColor;
+        text-decoration: underline;
       }
     }
   }

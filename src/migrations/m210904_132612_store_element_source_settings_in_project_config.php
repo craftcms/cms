@@ -62,7 +62,7 @@ class m210904_132612_store_element_source_settings_in_project_config extends Mig
                             foreach ($sourceSettings['tableAttributes'] as $attribute) {
                                 // field:id => field:uid
                                 if (preg_match('/^field:(\d+)$/', $attribute, $matches)) {
-                                    $fieldUid = Db::uidById(Table::FIELDS, $matches[1]);
+                                    $fieldUid = Db::uidById(Table::FIELDS, (int)$matches[1]);
                                     if ($fieldUid) {
                                         $tableAttributes[] = "field:$fieldUid";
                                     }

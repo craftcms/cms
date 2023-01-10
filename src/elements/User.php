@@ -313,14 +313,6 @@ class User extends Element implements IdentityInterface
     /**
      * @inheritdoc
      */
-    protected static function includeSetStatusAction(): bool
-    {
-        return false;
-    }
-
-    /**
-     * @inheritdoc
-     */
     protected static function defineActions(string $source): array
     {
         $actions = [];
@@ -1630,6 +1622,17 @@ class User extends Element implements IdentityInterface
         ]);
     }
 
+    /**
+     * @inheritdoc
+     */
+    protected function statusFieldHtml(): string
+    {
+        return '';
+    }
+
+    /**
+     * @inheritdoc
+     */
     protected function metadata(): array
     {
         $formatter = Craft::$app->getFormatter();

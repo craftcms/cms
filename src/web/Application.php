@@ -12,6 +12,7 @@ use craft\base\ApplicationTrait;
 use craft\db\Query;
 use craft\db\Table;
 use craft\debug\DeprecatedPanel;
+use craft\debug\DumpPanel;
 use craft\debug\Module as DebugModule;
 use craft\debug\RequestPanel;
 use craft\debug\UserPanel;
@@ -450,6 +451,7 @@ class Application extends \yii\web\Application
                 ],
                 'request' => RequestPanel::class,
                 'log' => LogPanel::class,
+                'dump' => DumpPanel::class,
                 'deprecated' => DeprecatedPanel::class,
                 'profiling' => ProfilingPanel::class,
                 'db' => DbPanel::class,

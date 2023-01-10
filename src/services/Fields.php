@@ -650,13 +650,49 @@ class Fields extends Component
     /**
      * Returns all fields that have a column in the content table.
      *
+     * @param string|string[]|false|null $context The field context(s) to fetch fields from. Defaults to [[\craft\services\Content::$fieldContext]].
+     * Set to `false` to get all fields regardless of context.
      * @return FieldInterface[] The fields
      */
-    public function getFieldsWithContent(): array
+    public function getFieldsWithContent(mixed $context = null): array
     {
-        return ArrayHelper::where($this->getAllFields(), function(FieldInterface $field) {
+        return ArrayHelper::where($this->getAllFields($context), function(FieldInterface $field) {
             return $field::hasContentColumn();
         }, true, true, false);
+    }
+
+    /**
+     * Returns all fields that don’t have a column in the content table.
+     *
+     * @param string|string[]|false|null $context The field context(s) to fetch fields from. Defaults to [[\craft\services\Content::$fieldContext]].
+     * Set to `false` to get all fields regardless of context.
+     * @return FieldInterface[] The fields
+     * @since 4.3.2
+     */
+    public function getFieldsWithoutContent(mixed $context = null): array
+    {
+        return ArrayHelper::where($this->getAllFields($context), function(FieldInterface $field) {
+            return !$field::hasContentColumn();
+        }, true, true, false);
+    }
+
+    /**
+     * Returns all fields of a certain type.
+     *
+     * @param string $type The field type
+     * @phpstan-param class-string<FieldInterface> $type
+     * @param string|string[]|false|null $context The field context(s) to fetch fields from. Defaults to [[\craft\services\Content::$fieldContext]].
+     * Set to `false` to get all fields regardless of context.
+     * @return FieldInterface[] The fields
+     * @since 4.4.0
+     */
+    public function getFieldsByType(string $type, mixed $context = null): array
+    {
+        return ArrayHelper::where(
+            $this->getAllFields($context),
+            fn(FieldInterface $field) => $field instanceof $type,
+            keepKeys: false
+        );
     }
 
     /**
