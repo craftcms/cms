@@ -1633,13 +1633,7 @@ Craft.ElementEditor = Garnish.Base.extend(
                 'g'
               ),
               (m, pre, id, post) => {
-                let duplicate = false;
-                try {
-                  duplicate = this._filterFieldInputName(pre);
-                } catch (e) {
-                  console.warn(`Unexpected input name: ${m}`);
-                }
-                if (!duplicate) {
+                if (!this._filterFieldInputName(pre)) {
                   return m;
                 }
                 return pre + this.duplicatedElements[id] + post;
@@ -1651,17 +1645,12 @@ Craft.ElementEditor = Garnish.Base.extend(
               (m, name, id) => {
                 // Ignore param names that end in `[enabled]`, `[type]`, etc.
                 // (`[sortOrder]` should pass here, which could be set to a specific order index, but *not* `[sortOrder][]`!)
-                let duplicate = false;
-                try {
-                  duplicate =
-                    this._filterFieldInputName(name) &&
-                    !name.match(
-                      new RegExp(`${lb}(enabled|sortOrder|type|typeId)${rb}$`)
-                    );
-                } catch (e) {
-                  console.warn(`Unexpected input name: ${m}`);
-                }
-                if (!duplicate) {
+                if (
+                  !this._filterFieldInputName(name) ||
+                  name.match(
+                    new RegExp(`${lb}(enabled|sortOrder|type|typeId)${rb}$`)
+                  )
+                ) {
                   return m;
                 }
                 return `&${name}=${this.duplicatedElements[id]}`;
@@ -1679,13 +1668,13 @@ Craft.ElementEditor = Garnish.Base.extend(
       const lb = encodeURIComponent('[');
       const rb = encodeURIComponent(']');
       const nestedNames = name.match(
-        new RegExp(`(\\bfields|${lb}fields${rb})${lb}[^${rb}]+${rb}`, 'g')
+        new RegExp(`(\\bfields|${lb}fields${rb})${lb}.+?${rb}`, 'g')
       );
       if (!nestedNames) {
         throw `Unexpected input name: ${name}`;
       }
       const lastHandle = nestedNames[nestedNames.length - 1].match(
-        new RegExp(`(?:\\bfields|${lb}fields${rb})${lb}([^${rb}]+)${rb}`)
+        new RegExp(`(?:\\bfields|${lb}fields${rb})${lb}(.+?)${rb}`)
       )[1];
       return Craft.fieldsWithoutContent.includes(lastHandle);
     },
