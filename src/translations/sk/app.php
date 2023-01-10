@@ -675,6 +675,7 @@ return [
     'General' => 'Všeobecné',
     'Generate YAML Files' => 'Generovať súbory YAML',
     'Generate' => 'Generovať',
+    'Generating image transform' => 'Generating image transform',
     'Generating pending image transforms' => 'Generovanie čakajúcich transformácií obrazu',
     'Get help' => 'Získať pomoc',
     'Give feedback' => 'Poskytnúť spätnú väzbu',
