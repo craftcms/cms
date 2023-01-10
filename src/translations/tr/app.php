@@ -675,6 +675,7 @@ return [
     'General' => 'Genel',
     'Generate YAML Files' => 'YAML Dosyaları Oluştur',
     'Generate' => 'Oluşturmak',
+    'Generating image transform' => 'Generating image transform',
     'Generating pending image transforms' => 'Beklemede olan resim dönüştürmeler yaratılıyor.',
     'Get help' => 'Yardım alın',
     'Give feedback' => 'Geri bildirim gönderin',
