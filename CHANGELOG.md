@@ -1,5 +1,9 @@
 # Release Notes for Craft CMS 4
 
+## Unreleased
+
+- Element edit pages now retain their previous scroll position when they’re automatically refreshed to keep up with changes from another browser tab.
+
 ## 4.3.6 - 2023-01-04
 
 - Template caching is no longer enabled for tokenized requests. ([#12458](https://github.com/craftcms/cms/issues/12458))

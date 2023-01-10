@@ -198,6 +198,7 @@ Craft.ElementEditor = Garnish.Base.extend(
               ev.data.id === this.settings.canonicalId &&
               !this.settings.draftId)
           ) {
+            Craft.setLocalStorage('scrollY', window.scrollY);
             window.location.reload();
           } else if (
             ev.data.event === 'deleteDraft' &&
@@ -209,6 +210,7 @@ Craft.ElementEditor = Garnish.Base.extend(
             if (url.href !== document.location.href) {
               window.location.href = url;
             } else {
+              Craft.setLocalStorage('scrollY', window.scrollY);
               window.location.reload();
             }
           }
