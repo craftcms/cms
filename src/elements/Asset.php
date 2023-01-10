@@ -57,7 +57,6 @@ use yii\base\InvalidCallException;
 use yii\base\InvalidConfigException;
 use yii\base\NotSupportedException;
 use yii\base\UnknownPropertyException;
-use function in_array;
 
 /**
  * Asset represents an asset element.
@@ -1393,8 +1392,8 @@ class Asset extends Element
         $transform = Craft::$app->getAssetTransforms()->normalizeTransform($transform);
 
         if (!Image::canManipulateAsImage($this->getExtension()) || !$transform || !$transform->format) {
-            // todo: maybe we should be passing this off to volume fs
-            // so Local filesystems can call FileHelper::getMimeType() (uses magic file instead of ext)
+            // todo: maybe we should be passing this off to the volume
+            // so Local can call FileHelper::getMimeType() (uses magic file instead of ext)
             return FileHelper::getMimeTypeByExtension($this->filename);
         }
 
