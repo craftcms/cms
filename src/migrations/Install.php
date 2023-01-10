@@ -112,7 +112,7 @@ class Install extends Migration
             'longitude' => $this->string(),
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
-            'PRIMARY KEY(id)',
+            'PRIMARY KEY([[id]])',
         ]);
         $this->createTable(Table::ANNOUNCEMENTS, [
             'id' => $this->primaryKey(),
