@@ -41,7 +41,7 @@ class CopyUrl extends ElementAction
 (() => {
     new Craft.ElementActionTrigger({
         type: {$type},
-        batch: false,
+        bulk: false,
         validateSelection: function(\$selectedItems)
         {
             return !!\$selectedItems.find('.element').data('url');

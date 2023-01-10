@@ -53,7 +53,7 @@ class View extends ElementAction
 (() => {
     new Craft.ElementActionTrigger({
         type: {$type},
-        batch: false,
+        bulk: false,
         validateSelection: function(\$selectedItems)
         {
             var \$element = \$selectedItems.find('.element');

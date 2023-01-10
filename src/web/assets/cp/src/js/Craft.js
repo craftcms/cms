@@ -2109,6 +2109,38 @@ $.extend(Craft, {
   setFocusWithin: function (container) {
     Garnish.setFocusWithin(container);
   },
+
+  /**
+   * Reduces an input’s value to characters that match the given regex pattern.
+   * @param {jQuery|HTMLElement} input
+   * @param {RegExp} regex
+   */
+  filterInputVal: function (input, regex) {
+    const $input = $(input);
+    const val = $input.val();
+    let selectionStart = $input[0].selectionStart;
+    let newVal = '';
+    for (let i = 0; i < val.length; i++) {
+      if (val[i].match(regex)) {
+        newVal += val[i];
+      } else if (i < selectionStart) {
+        selectionStart--;
+      }
+    }
+    if (newVal !== val) {
+      $input.val(newVal);
+      $input[0].setSelectionRange(selectionStart, selectionStart);
+    }
+  },
+
+  /**
+   * Reduces an input’s value to numeric characters.
+   * @param {jQuery|HTMLElement} input
+   * @param {RegExp} regex
+   */
+  filterNumberInputVal: function (input) {
+    this.filterInputVal(input, /[0-9.,\-]/);
+  },
 });
 
 // -------------------------------------------
