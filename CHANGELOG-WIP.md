@@ -16,6 +16,7 @@
 - Improved keyboard control of the Updates utility. ([#12189](https://github.com/craftcms/cms/pull/12189))
 - Improved the color contrast and keyboard control of the Customize Sources modal. ([#12233](https://github.com/craftcms/cms/pull/12233))
 - Improved info icons for screen readers. ([#12272](https://github.com/craftcms/cms/pull/12272))
+- Removed input autofocussing throughout the control panel. ([#12324](https://github.com/craftcms/cms/discussions/12324), [#12332](https://github.com/craftcms/cms/pull/12332))
 
 ### Administration
 - Conditional layout components are now identified using a condition icon within field layout designers. ([#12250](https://github.com/craftcms/cms/issues/12250))
