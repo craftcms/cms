@@ -1775,6 +1775,7 @@ return [
     'You need to be on at least {plugin} {version} before you can update to {plugin} {targetVersion}.' => 'شما حداقل باید نسخه {version} {plugin} را قبل از بروزرسانی دستی به {plugin} {targetVersion} داشته باشید.',
     'You need to reset your password, but an error was encountered when sending the password reset email.' => 'شما نیاز به بازنشانی رمز عبور خود دارید اما یک خطا در هنگام ارسال پست الکترونیکی بازنشانی رمز عبو اتفاق افتاد.',
     'You need to reset your password. Check your email for instructions.' => 'نیاز است که رمز عبورتان را بازنشانی نمایید. پست الکترونیکی خود را برای دستورالعمل ها بررسی نمایید.',
+    'Your Craft license isn’t allowed to run version {version}.' => 'Your Craft license isn’t allowed to run version {version}.',
     'Your Craft license key is invalid.' => 'کلید لایسنس Craft شما غیر معتبر است.',
     'Your Email' => 'پست الکترونیکی شما',
     'Your account doesn’t have permission to access the control panel when the system is offline.' => 'حساب کاربری شما مجوز دسترسی به صفحه کنترل را هنگام آفلاین بودن سیستم ندارد.',
