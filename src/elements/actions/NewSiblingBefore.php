@@ -62,7 +62,7 @@ class NewSiblingBefore extends ElementAction
 (() => {
     new Craft.ElementActionTrigger({
         type: $type,
-        batch: false,
+        bulk: false,
         activate: \$selectedItems => {
             Craft.redirectTo(Craft.getUrl($newSiblingUrl, 'before=' + \$selectedItems.find('.element').data('id')));
         },

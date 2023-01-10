@@ -38,7 +38,7 @@ class CopyUrl extends ElementAction
 (() => {
     new Craft.ElementActionTrigger({
         type: $type,
-        batch: false,
+        bulk: false,
         validateSelection: \$selectedItems => !!\$selectedItems.find('.element').data('url'),
         activate: \$selectedItems => {
             Craft.ui.createCopyTextPrompt({

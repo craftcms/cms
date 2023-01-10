@@ -18,6 +18,7 @@ use Twig\Error\RuntimeError;
 use Twig\Markup;
 use Twig\Source;
 use Twig\Template as TwigTemplate;
+use Twig\TemplateWrapper;
 use yii\base\BaseObject;
 use yii\base\InvalidConfigException;
 use yii\base\UnknownMethodException;
@@ -322,5 +323,20 @@ class Template
         }
 
         return [$templatePath, $templateLine];
+    }
+
+    /**
+     * Filters the template from a context array.
+     *
+     * Used by the `dump()` function and `dd` tags.
+     *
+     * @param array $context
+     * @return array
+     * @since 4.4.0
+     */
+    public static function contextWithoutTemplate(array $context): array
+    {
+        // Template check copied from twig_var_dump()
+        return array_filter($context, fn($value) => !$value instanceof TwigTemplate && !$value instanceof TemplateWrapper);
     }
 }

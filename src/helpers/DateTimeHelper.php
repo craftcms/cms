@@ -198,6 +198,7 @@ class DateTimeHelper
      *
      * @param string $timeZone
      * @return string
+     * @deprecated in 4.3.7
      */
     public static function timeZoneAbbreviation(string $timeZone): string
     {
@@ -211,6 +212,7 @@ class DateTimeHelper
      *
      * @param string $timeZone
      * @return string
+     * @deprecated in 4.3.7
      */
     public static function timeZoneOffset(string $timeZone): string
     {
