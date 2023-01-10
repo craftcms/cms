@@ -597,7 +597,7 @@ class Asset extends Element
     public $keptFile;
 
     /**
-     * @var \DateTime|null Date modified
+     * @var DateTime|null Date modified
      */
     public $dateModified;
 
@@ -1382,13 +1382,23 @@ class Asset extends Element
     /**
      * Returns the file’s MIME type, if it can be determined.
      *
+     * @param mixed|null $transform A transform handle or configuration that should be applied to the mime type
      * @return string|null
+     * @throws AssetTransformException if $transform is an invalid transform handle
      */
-    public function getMimeType()
+    public function getMimeType(mixed $transform = null): ?string
     {
-        // todo: maybe we should be passing this off to volume types
-        // so Local volumes can call FileHelper::getMimeType() (uses magic file instead of ext)
-        return FileHelper::getMimeTypeByExtension($this->filename);
+        $transform = $transform ?? $this->_transform;
+        $transform = Craft::$app->getAssetTransforms()->normalizeTransform($transform);
+
+        if (!Image::canManipulateAsImage($this->getExtension()) || !$transform || !$transform->format) {
+            // todo: maybe we should be passing this off to the volume
+            // so Local can call FileHelper::getMimeType() (uses magic file instead of ext)
+            return FileHelper::getMimeTypeByExtension($this->filename);
+        }
+
+        // Prepend with '.' to let pathinfo() work
+        return FileHelper::getMimeTypeByExtension('.' . $transform->format);
     }
 
     /**
@@ -1638,7 +1648,7 @@ class Asset extends Element
     {
         Craft::$app->getDeprecator()->log(self::class . '::getSupportsPreview()', '`' . self::class . '::getSupportsPreview()` has been deprecated. Use `craft\services\Assets::getAssetPreview()` instead.');
 
-        return \in_array($this->kind, [self::KIND_IMAGE, self::KIND_HTML, self::KIND_JAVASCRIPT, self::KIND_JSON], true);
+        return in_array($this->kind, [self::KIND_IMAGE, self::KIND_HTML, self::KIND_JAVASCRIPT, self::KIND_JSON], true);
     }
 
     /**
@@ -2005,7 +2015,7 @@ class Asset extends Element
             $sanitizeCpImageUploads = Craft::$app->getConfig()->getGeneral()->sanitizeCpImageUploads;
 
             if (
-                \in_array($this->getScenario(), [self::SCENARIO_REPLACE, self::SCENARIO_CREATE], true) &&
+                in_array($this->getScenario(), [self::SCENARIO_REPLACE, self::SCENARIO_CREATE], true) &&
                 Assets::getFileKindByExtension($this->tempFilePath) === static::KIND_IMAGE &&
                 !($isCpRequest && !$sanitizeCpImageUploads)
             ) {
