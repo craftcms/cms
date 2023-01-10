@@ -30,12 +30,15 @@ class GeneratePendingTransforms extends BaseJob
         $assetTransformsService = Craft::$app->getAssetTransforms();
 
         foreach ($indexIds as $i => $id) {
-            if ($index = $assetTransformsService->getTransformIndexModelById($id)) {
-                $this->setProgress($queue, $i / $totalIndexes, Craft::t('app', '{step, number} of {total, number}', [
-                    'step' => $i + 1,
-                    'total' => $totalIndexes,
-                ]));
+            $this->setProgress($queue, $i / $totalIndexes, Craft::t('app', '{step, number} of {total, number}', [
+                'step' => $i + 1,
+                'total' => $totalIndexes,
+            ]));
 
+            $index = $assetTransformsService->getTransformIndexModelById($id);
+
+            // Make sure it hasn't been generated yet and isn't currently in progress
+            if ($index && !$index->fileExists && !$index->inProgress) {
                 // Don't let an exception stop us from processing the rest
                 try {
                     $assetTransformsService->ensureTransformUrlByIndexModel($index);
