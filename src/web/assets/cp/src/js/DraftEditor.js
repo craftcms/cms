@@ -1287,10 +1287,13 @@ Craft.DraftEditor = Garnish.Base.extend(
       const lb = encodeURIComponent('[');
       const rb = encodeURIComponent(']');
       const nestedNames = name.match(
-        new RegExp(`(\\bfields|${lb}fields${rb})${lb}[^${rb}]+${rb}`, 'g')
+        new RegExp(`(\\bfields|${lb}fields${rb})${lb}.+?${rb}`, 'g')
       );
+      if (!nestedNames) {
+        throw `Unexpected input name: ${name}`;
+      }
       const lastHandle = nestedNames[nestedNames.length - 1].match(
-        new RegExp(`(?:\\bfields|${lb}fields${rb})${lb}([^${rb}]+)${rb}`)
+        new RegExp(`(?:\\bfields|${lb}fields${rb})${lb}(.+?)${rb}`)
       )[1];
       return Craft.fieldsWithoutContent.includes(lastHandle);
     },

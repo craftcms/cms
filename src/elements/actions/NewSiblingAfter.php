@@ -49,7 +49,7 @@ class NewSiblingAfter extends ElementAction
 (() => {
     let trigger = new Craft.ElementActionTrigger({
         type: {$type},
-        batch: false,
+        bulk: false,
         activate: function(\$selectedItems)
         {
             Craft.redirectTo(Craft.getUrl($newSiblingUrl, 'after='+\$selectedItems.find('.element').data('id')));

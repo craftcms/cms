@@ -760,7 +760,7 @@ class Assets extends Component
         }
 
         // Make the thumb a JPG if the image format isn't safe for web
-        $ext = in_array($ext, Image::webSafeFormats(), true) ? $ext : 'jpg';
+        $ext = Image::isWebSafe($ext) ? $ext : 'jpg';
 
         // Should we be rasteriszing the thumb?
         $rasterize = strtolower($ext) === 'svg' && Craft::$app->getConfig()->getGeneral()->rasterizeSvgThumbs;

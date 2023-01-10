@@ -59,7 +59,7 @@ class Tags extends BaseRelationField
      */
     public static function valueType(): string
     {
-        return sprintf('%s|%s[]', TagQuery::class, Tag::class);
+        return sprintf('\\%s|\\%s[]', TagQuery::class, Tag::class);
     }
 
     /**

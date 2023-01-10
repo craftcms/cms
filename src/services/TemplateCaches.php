@@ -49,6 +49,12 @@ class TemplateCaches extends Component
     private $_enabled;
 
     /**
+     * @var bool Whether global template caches should be enabled for this request
+     * @see _isTemplateCachingEnabled()
+     */
+    private $_enabledGlobally;
+
+    /**
      * @var string|null The current request's path
      * @see _path()
      */
@@ -399,12 +405,20 @@ class TemplateCaches extends Component
     private function _isTemplateCachingEnabled(bool $global): bool
     {
         if ($this->_enabled === null) {
-            $this->_enabled = (
-                Craft::$app->getConfig()->getGeneral()->enableTemplateCaching &&
-                ($global || !Craft::$app->getRequest()->getIsConsoleRequest())
-            );
+            if (!Craft::$app->getConfig()->getGeneral()->enableTemplateCaching) {
+                $this->_enabled = $this->_enabledGlobally = false;
+            } else {
+                // Don't enable template caches for tokenized requests
+                $request = Craft::$app->getRequest();
+                if ($request->getHadToken()) {
+                    $this->_enabled = $this->_enabledGlobally = false;
+                } else {
+                    $this->_enabled = !$request->getIsConsoleRequest();
+                    $this->_enabledGlobally = true;
+                }
+            }
         }
-        return $this->_enabled;
+        return $global ? $this->_enabledGlobally : $this->_enabled;
     }
 
     /**

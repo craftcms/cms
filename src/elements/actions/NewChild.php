@@ -65,7 +65,7 @@ class NewChild extends ElementAction
 (() => {
     let trigger = new Craft.ElementActionTrigger({
         type: {$type},
-        batch: false,
+        bulk: false,
         validateSelection: function(\$selectedItems)
         {
             return (!$maxLevels || $maxLevels > \$selectedItems.find('.element').data('level'));
