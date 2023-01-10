@@ -446,7 +446,7 @@ class Asset extends Element
      */
     protected static function defineSearchableAttributes(): array
     {
-        return ['filename', 'extension', 'kind'];
+        return ['filename', 'extension', 'kind', 'alt'];
     }
 
     /**
