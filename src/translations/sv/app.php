@@ -675,6 +675,7 @@ return [
     'General' => 'Allmänna',
     'Generate YAML Files' => 'Generera YAML-filer',
     'Generate' => 'Generera',
+    'Generating image transform' => 'Generating image transform',
     'Generating pending image transforms' => 'Genererar pågående bildtransformationer',
     'Get help' => 'Få hjälp',
     'Give feedback' => 'Ge feedback',
