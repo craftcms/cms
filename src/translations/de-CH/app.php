@@ -1775,6 +1775,7 @@ return [
     'You need to be on at least {plugin} {version} before you can update to {plugin} {targetVersion}.' => 'Sie müssen mindestens über {plugin} {version} verfügen, bevor Sie ein Update auf {plugin} {targetVersion} durchführen können.',
     'You need to reset your password, but an error was encountered when sending the password reset email.' => 'Sie müssen Ihr Passwort zurücksetzen, aber beim Senden der E-Mail zum Zurücksetzen des Passworts ist ein Fehler aufgetreten.',
     'You need to reset your password. Check your email for instructions.' => 'Sie müssen ein neues Passwort erstellen. Sie erhalten eine E-Mail mit weiteren Anweisungen.',
+    'Your Craft license isn’t allowed to run version {version}.' => 'Your Craft license isn’t allowed to run version {version}.',
     'Your Craft license key is invalid.' => 'Ihr Craft-Lizenzschlüssel ist ungültig.',
     'Your Email' => 'Ihre E-Mail-Adresse',
     'Your account doesn’t have permission to access the control panel when the system is offline.' => 'Ihr Benutzerkonto verfügt nicht über die Genehmigung zum Zugriff auf das Control Panel, wenn das System offline ist.',
