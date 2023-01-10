@@ -52,6 +52,12 @@ Craft.ElementEditor = Garnish.Base.extend(
     previewLinks: null,
     scrollY: null,
 
+    hiddenTipsStorageKey: 'Craft-' + Craft.systemUid + '.TipField.hiddenTips',
+
+    get tipDismissBtn() {
+      return this.$container.find('.tip-dismiss-btn');
+    },
+
     get slideout() {
       return this.$container.data('slideout');
     },
@@ -177,6 +183,9 @@ Craft.ElementEditor = Garnish.Base.extend(
         this.showStatusHud(this.$statusIcon);
       });
 
+      // handle closing tips
+      this.handleDismissibleTips();
+
       if (this.isFullPage && Craft.messageReceiver) {
         // Listen on Craft.broadcaster to ignore any messages sent by this very page
         Craft.broadcaster.addEventListener('message', (ev) => {
@@ -189,6 +198,7 @@ Craft.ElementEditor = Garnish.Base.extend(
               ev.data.id === this.settings.canonicalId &&
               !this.settings.draftId)
           ) {
+            Craft.setLocalStorage('scrollY', window.scrollY);
             window.location.reload();
           } else if (
             ev.data.event === 'deleteDraft' &&
@@ -200,6 +210,7 @@ Craft.ElementEditor = Garnish.Base.extend(
             if (url.href !== document.location.href) {
               window.location.href = url;
             } else {
+              Craft.setLocalStorage('scrollY', window.scrollY);
               window.location.reload();
             }
           }
@@ -341,7 +352,6 @@ Craft.ElementEditor = Garnish.Base.extend(
 
         if (this.isFullPage) {
           const heightDiff = $('#content').height() - initialHeight;
-          console.log(heightDiff);
           Garnish.$win.scrollTop(scrollTop + heightDiff);
 
           // If there isn’t enough content to simulate the same scroll position, slide it down instead
@@ -503,7 +513,6 @@ Craft.ElementEditor = Garnish.Base.extend(
           .replace(originalSerializedStatus, serializedStatuses)
       );
 
-      debugger;
       if (this.lastSerializedValue) {
         this.lastSerializedValue = this.lastSerializedValue.replace(
           originalSerializedStatus,
@@ -1485,6 +1494,9 @@ Craft.ElementEditor = Garnish.Base.extend(
               }
             }
 
+            // re-grab dismissible tips, re-attach listener, hide on re-load
+            this.handleDismissibleTips();
+
             this.afterUpdate(data);
 
             if (Craft.broadcaster) {
@@ -1621,6 +1633,9 @@ Craft.ElementEditor = Garnish.Base.extend(
                 'g'
               ),
               (m, pre, id, post) => {
+                if (!this._filterFieldInputName(pre)) {
+                  return m;
+                }
                 return pre + this.duplicatedElements[id] + post;
               }
             )
@@ -1631,6 +1646,7 @@ Craft.ElementEditor = Garnish.Base.extend(
                 // Ignore param names that end in `[enabled]`, `[type]`, etc.
                 // (`[sortOrder]` should pass here, which could be set to a specific order index, but *not* `[sortOrder][]`!)
                 if (
+                  !this._filterFieldInputName(name) ||
                   name.match(
                     new RegExp(`${lb}(enabled|sortOrder|type|typeId)${rb}$`)
                   )
@@ -1645,6 +1661,22 @@ Craft.ElementEditor = Garnish.Base.extend(
         }
       }
       return data;
+    },
+
+    _filterFieldInputName: function (name) {
+      // Find the last referenced field handle
+      const lb = encodeURIComponent('[');
+      const rb = encodeURIComponent(']');
+      const nestedNames = name.match(
+        new RegExp(`(\\bfields|${lb}fields${rb})${lb}.+?${rb}`, 'g')
+      );
+      if (!nestedNames) {
+        throw `Unexpected input name: ${name}`;
+      }
+      const lastHandle = nestedNames[nestedNames.length - 1].match(
+        new RegExp(`(?:\\bfields|${lb}fields${rb})${lb}(.+?)${rb}`)
+      )[1];
+      return Craft.fieldsWithoutContent.includes(lastHandle);
     },
 
     updatePreviewTargets: function (previewTargets) {
@@ -1878,6 +1910,39 @@ Craft.ElementEditor = Garnish.Base.extend(
             this.submittingForm = false;
             this.slideout.hideSubmitSpinner();
           });
+      }
+    },
+
+    handleDismissibleTips: function () {
+      this.addListener(this.tipDismissBtn, 'click', (e) => {
+        this.hideTip(e);
+      });
+    },
+
+    getHiddenTipsUids: function () {
+      return Craft.getLocalStorage('dismissedTips', []);
+    },
+
+    setHiddenTipsUids: function (uids) {
+      Craft.setLocalStorage('dismissedTips', uids);
+    },
+
+    hideTip: function (ev) {
+      const targetElement = ev.target;
+      if (targetElement) {
+        const $targetParent = $(targetElement).closest('.readable');
+        if ($targetParent.length) {
+          const layoutElementUid = $targetParent.data('layout-element');
+          $targetParent.remove();
+          // add info to local storage
+          if (typeof Storage !== 'undefined') {
+            const hiddenTips = this.getHiddenTipsUids();
+            if (!hiddenTips.includes(layoutElementUid)) {
+              hiddenTips.push(layoutElementUid);
+              this.setHiddenTipsUids(hiddenTips);
+            }
+          }
+        }
       }
     },
   },

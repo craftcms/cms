@@ -125,6 +125,13 @@ class Cp
                 }
             }
 
+            if ($licenseKeyStatus === LicenseKeyStatus::Astray) {
+                // todo: swap Console link with a Resolve button
+                $alerts[] = Craft::t('app', 'Your Craft license isn’t allowed to run version {version}.', [
+                        'version' => Craft::$app->getVersion(),
+                    ]) . ' Please renew it from <a href="https://console.craftcms.com">Craft Console</a>.';
+            }
+
             // Any plugin issues?
             if ($path != 'settings/plugins') {
                 $pluginsService = Craft::$app->getPlugins();

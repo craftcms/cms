@@ -38,6 +38,7 @@ use craft\web\twig\nodevisitors\Profiler;
 use craft\web\twig\tokenparsers\CacheTokenParser;
 use craft\web\twig\tokenparsers\DdTokenParser;
 use craft\web\twig\tokenparsers\DeprecatedTokenParser;
+use craft\web\twig\tokenparsers\DumpTokenParser;
 use craft\web\twig\tokenparsers\ExitTokenParser;
 use craft\web\twig\tokenparsers\HeaderTokenParser;
 use craft\web\twig\tokenparsers\HookTokenParser;
@@ -132,6 +133,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
             new CacheTokenParser(),
             new DeprecatedTokenParser(),
             new DdTokenParser(),
+            new DumpTokenParser(),
             new ExitTokenParser(),
             new HeaderTokenParser(),
             new HookTokenParser(),
@@ -234,6 +236,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
             new TwigFilter('replace', [$this, 'replaceFilter']),
             new TwigFilter('rss', [$this, 'rssFilter'], ['needs_environment' => true]),
             new TwigFilter('snake', [$this, 'snakeFilter']),
+            new TwigFilter('sort', [$this, 'sortFilter'], ['needs_environment' => true]),
             new TwigFilter('string', 'strval'),
             new TwigFilter('time', [$this, 'timeFilter'], ['needs_environment' => true]),
             new TwigFilter('timestamp', [$this, 'timestampFilter']),
@@ -475,6 +478,26 @@ class Extension extends AbstractExtension implements GlobalsInterface
     {
         return StringHelper::toSnakeCase((string)$string);
     }
+
+    /**
+     * Sorts an array.
+     *
+     * @param TwigEnvironment $env
+     * @param iterable $array
+     * @param string|callable|null $arrow
+     * @return array
+     * @throws RuntimeError
+     * @since 4.3.2
+     */
+    public function sortFilter(TwigEnvironment $env, iterable $array, string|callable|null $arrow = null): array
+    {
+        if (is_string($arrow) && strtolower($arrow) === 'system') {
+            throw new RuntimeError('The sort filter doesn\'t support sorting by system().');
+        }
+
+        return twig_sort_filter($env, $array, $arrow);
+    }
+
 
     /**
      * Formats the value as a currency number.
@@ -1230,6 +1253,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
             new TwigFunction('create', [Craft::class, 'createObject']),
             new TwigFunction('dataUrl', [$this, 'dataUrlFunction']),
             new TwigFunction('date', [$this, 'dateFunction'], ['needs_environment' => true]),
+            new TwigFunction('dump', [$this, 'dumpFunction'], ['is_safe' => ['html'], 'needs_context' => true, 'is_variadic' => true]),
             new TwigFunction('expression', [$this, 'expressionFunction']),
             new TwigFunction('floor', 'floor'),
             new TwigFunction('getenv', [App::class, 'env']),
@@ -1334,6 +1358,31 @@ class Extension extends AbstractExtension implements GlobalsInterface
         }
 
         return twig_date_converter($env, $date, $timezone);
+    }
+
+    /**
+     * Displays a variable(s).
+     *
+     * @param array $context
+     * @param ...$vars
+     * @return string
+     * @since 4.4.0
+     */
+    public function dumpFunction(array $context, ...$vars): string
+    {
+        if (!$vars) {
+            $vars = [TemplateHelper::contextWithoutTemplate($context)];
+        }
+
+        $output = '';
+
+        foreach ($vars as $var) {
+            ob_start();
+            Craft::dump($var);
+            $output .= str_replace('<code>', '<code style="display:block;">', ob_get_clean());
+        }
+
+        return $output;
     }
 
     /**

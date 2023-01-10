@@ -9,6 +9,7 @@ namespace craft\base;
 
 use craft\behaviors\CustomFieldBehavior;
 use craft\elements\conditions\ElementConditionInterface;
+use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\User;
 use craft\errors\InvalidFieldException;
@@ -850,6 +851,14 @@ interface ElementInterface extends ComponentInterface
      * @since 4.0.0
      */
     public function getPostEditUrl(): ?string;
+
+    /**
+     * Returns the element’s revisions index URL in the control panel.
+     *
+     * @return string|null
+     * @since 4.4.0
+     */
+    public function getCpRevisionsUrl(): ?string;
 
     /**
      * Returns additional buttons that should be shown at the top of the element’s edit page.

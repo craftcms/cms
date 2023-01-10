@@ -17,6 +17,7 @@ use Illuminate\Support\Collection;
  * @template TKey of array-key
  * @template TValue of ElementInterface
  *
+ * @method TValue one(callable|null $callback, mixed $default)
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.3.0
  */
