@@ -675,6 +675,7 @@ return [
     'General' => 'عمومی',
     'Generate YAML Files' => 'ایجاد فایل‌های YAML',
     'Generate' => 'ایجاد',
+    'Generating image transform' => 'Generating image transform',
     'Generating pending image transforms' => 'در حال ایجاد تغییر شکل های در حالت تعلیق',
     'Get help' => 'کمک گرفتن',
     'Give feedback' => 'ارائه بازخورد',
