@@ -1645,6 +1645,7 @@ return [
     'You need to be on at least {plugin} {version} before you can update to {plugin} {targetVersion}.' => 'يجب أن يكون لديك إصدار {plugin} {version} للتمكن من التحديث إلى إصدار {plugin} {targetVersion}.',
     'You need to reset your password, but an error was encountered when sending the password reset email.' => 'أنت بحاجة إلى إعادة تعيين كلمة المرور الخاصة بك، ولكن حدث خطأ عند إرسال البريد الإلكتروني الخاص بإعادة تعيين كلمة المرور.',
     'You need to reset your password. Check your email for instructions.' => 'يلزم إعادة تعيين كلمة المرور. تحقق من البريد الإلكتروني للحصول على التعليمات.',
+    'Your Craft license isn’t allowed to run version {version}.' => 'Your Craft license isn’t allowed to run version {version}.',
     'Your Craft license key is invalid.' => 'مفتاح ترخيص Craft الخاص بك غير صالح.',
     'Your Email' => 'بريدك الإلكتروني',
     'Your account doesn’t have permission to access the control panel when the system is offline.' => 'حسابك لا يملك صلاحية الوصول إلى لوحة التحكم عندما يكون النظام متوقف.',
