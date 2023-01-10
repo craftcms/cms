@@ -1715,7 +1715,7 @@ JS;
     /**
      * Returns the file’s MIME type, if it can be determined.
      *
-     * @param mixed|null $transform A transform handle or configuration that should be applied to the mime type
+     * @param ImageTransform|string|array|null $transform A transform handle or configuration that should be applied to the mime type
      * @return string|null
      * @throws ImageTransformException if $transform is an invalid transform handle
      */
