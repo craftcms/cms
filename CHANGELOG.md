@@ -1,5 +1,10 @@
 # Release Notes for Craft CMS 3.x
 
+## Unreleased
+
+- Deprecated `craft\helpers\DateTimeHelper::timeZoneAbbreviation()`.
+- Deprecated `craft\helpers\DateTimeHelper::timeZoneOffset()`.
+
 ## 3.7.63.1 - 2023-01-09
 
 - Fixed a bug where editing certain Matrix/Neo/Super Table fields could result in content loss. ([#12445](https://github.com/craftcms/cms/issues/12445))
