@@ -1790,6 +1790,7 @@ return [
     'You need to be on at least {plugin} {version} before you can update to {plugin} {targetVersion}.' => '您至少要在 {plugin}{version} 上，然后才能更新至 {plugin}{targetVersion}。',
     'You need to reset your password, but an error was encountered when sending the password reset email.' => '您需要重置密码，但在发送密码重置电子邮件时出现错误。',
     'You need to reset your password. Check your email for instructions.' => '您需要重设密码。请查收电子邮件来获取说明。',
+    'Your Craft license isn’t allowed to run version {version}.' => 'Your Craft license isn’t allowed to run version {version}.',
     'Your Craft license key is invalid.' => '您的 Craft 许可密匙无效。',
     'Your Email' => '您的电子邮件',
     'Your account doesn’t have permission to access the control panel when the system is offline.' => '您的帐户无权在系统离线时访问控制面板。',
