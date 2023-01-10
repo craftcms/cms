@@ -1101,10 +1101,6 @@ li.breadcrumb-toggle-wrapper {
     .meta {
       border-radius: var(--large-border-radius);
 
-      &:not(.read-only):not(.warning) {
-        @include pane;
-      }
-
       &.read-only {
         color: var(--medium-text-color);
         background-color: transparent !important;
@@ -1129,12 +1125,6 @@ li.breadcrumb-toggle-wrapper {
 
           border-bottom-right-radius: var(--large-border-radius);
         }
-      }
-    }
-
-    & > .field {
-      & > .input > .text.fullwidth {
-        @include pane;
       }
     }
 
