@@ -15,17 +15,17 @@ use craft\queue\BaseJob;
 use Throwable;
 
 /**
- * GeneratePendingTransform job
+ * GenerateImageTransform job
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 4.3.4
+ * @since 4.4.0
  */
-class GeneratePendingTransform extends BaseJob
+class GenerateImageTransform extends BaseJob
 {
     /**
-     * @var int The pending transform index ID
+     * @var int The transform ID
      */
-    public int $indexId;
+    public int $transformId;
 
     /**
      * @inheritdoc
@@ -33,11 +33,13 @@ class GeneratePendingTransform extends BaseJob
     public function execute($queue): void
     {
         $transformer = Craft::createObject(ImageTransformer::class);
+        $index = $transformer->getTransformIndexModelById($this->transformId);
 
-        if ($index = $transformer->getTransformIndexModelById($this->indexId)) {
+        if ($index && !$index->fileExists) {
             // Don't let an exception stop us from processing the rest
             try {
-                $asset = Asset::findOne(['id' => $index->assetId]);
+                /** @var Asset|null $asset */
+                $asset = Asset::find()->id($index->assetId)->one();
                 if ($asset) {
                     $transformer->getTransformUrl($asset, $index->getTransform(), true);
                 }
@@ -51,6 +53,6 @@ class GeneratePendingTransform extends BaseJob
      */
     protected function defaultDescription(): ?string
     {
-        return Translation::prep('app', 'Generating pending image transform');
+        return Translation::prep('app', 'Generating image transform');
     }
 }

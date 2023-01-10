@@ -32,7 +32,7 @@ use craft\helpers\UrlHelper;
 use craft\image\Raster;
 use craft\models\ImageTransform;
 use craft\models\ImageTransformIndex;
-use craft\queue\jobs\GeneratePendingTransform;
+use craft\queue\jobs\GenerateImageTransform;
 use DateTime;
 use Exception;
 use Imagine\Image\Format;
@@ -153,18 +153,10 @@ class ImageTransformer extends Component implements ImageTransformerInterface, E
             return $this->getTransformUrl($asset, $imageTransform, true);
         }
 
-        static $queued = null;
-
-        if (!$queued) {
-            // Get all the pending transform index IDs
-            $indexIds = $this->getPendingTransformIndexIds();
-            if (count($indexIds) > 0) {
-                foreach ($indexIds as $indexId) {
-                    Queue::push(new GeneratePendingTransform(compact('indexId')));
-                }
-                $queued = true;
-            }
-        }
+        // Add a Generate Image Transform job to the queue, in case the temp URL never gets requested
+        Queue::push(new GenerateImageTransform([
+            'transformId' => $index->id,
+        ]));
 
         // Return the temporary transform URL
         return UrlHelper::actionUrl('assets/generate-transform', ['transformId' => $index->id], null, false);
