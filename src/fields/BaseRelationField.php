@@ -100,7 +100,7 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
      */
     public static function valueType(): string
     {
-        return sprintf('%s|%s<%s>', ElementQueryInterface::class, ElementCollection::class, ElementInterface::class);
+        return sprintf('\\%s|\\%s<\\%s>', ElementQueryInterface::class, ElementCollection::class, ElementInterface::class);
     }
 
     /**
