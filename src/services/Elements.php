@@ -2958,7 +2958,7 @@ class Elements extends Component
 
             $siteSettingsRecord->slug = $element->slug;
             $siteSettingsRecord->uri = $element->uri;
-            if (isset($element->alt)) {
+            if (property_exists($element::class, 'alt')) {
                 $siteSettingsRecord->alt = $element->alt;
             }
 
@@ -2973,10 +2973,8 @@ class Elements extends Component
                 array_push($dirtyAttributes, ...array_keys($siteSettingsRecord->getDirtyAttributes([
                     'slug',
                     'uri',
+                    'alt',
                 ])));
-                if ($siteSettingsRecord->isAttributeChanged('alt')) {
-                    $dirtyAttributes[] = 'alt';
-                }
                 if ($siteSettingsRecord->isAttributeChanged('enabled')) {
                     $dirtyAttributes[] = 'enabledForSite';
                 }

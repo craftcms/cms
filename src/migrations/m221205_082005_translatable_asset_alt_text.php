@@ -5,7 +5,6 @@ namespace craft\migrations;
 use Craft;
 use craft\db\Migration;
 use craft\db\Table;
-use craft\helpers\Db;
 use craft\records\Asset as AssetRecord;
 
 /**

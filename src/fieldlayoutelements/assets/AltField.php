@@ -96,61 +96,59 @@ class AltField extends TextareaField
 
         if (Craft::$app->getIsMultiSite()) {
             $supportedTranslationMethods = Field::supportedTranslationMethods() ?: [Field::TRANSLATION_METHOD_NONE];
-            if (!empty($supportedTranslationMethods)) {
-                $options = [];
-                foreach ($supportedTranslationMethods as $supportedTranslationMethod) {
-                    $option = ['value' => $supportedTranslationMethod];
-                    switch ($supportedTranslationMethod) {
-                        case 'none':
-                            $option['label'] = Craft::t('app', 'Not translatable');
-                            break;
-                        case 'site':
-                            $option['label'] = Craft::t('app', 'Translate for each site');
-                            break;
-                        case 'siteGroup':
-                            $option['label'] = Craft::t('app', 'Translate for each site group');
-                            break;
-                        case 'language':
-                            $option['label'] = Craft::t('app', 'Translate for each language');
-                            break;
-                        case 'custom':
-                            $option['label'] = Craft::t('app', 'Custom…');
-                            break;
+            $options = [];
+            foreach ($supportedTranslationMethods as $supportedTranslationMethod) {
+                $option = ['value' => $supportedTranslationMethod];
+                switch ($supportedTranslationMethod) {
+                    case 'none':
+                        $option['label'] = Craft::t('app', 'Not translatable');
+                        break;
+                    case 'site':
+                        $option['label'] = Craft::t('app', 'Translate for each site');
+                        break;
+                    case 'siteGroup':
+                        $option['label'] = Craft::t('app', 'Translate for each site group');
+                        break;
+                    case 'language':
+                        $option['label'] = Craft::t('app', 'Translate for each language');
+                        break;
+                    case 'custom':
+                        $option['label'] = Craft::t('app', 'Custom…');
+                        break;
 
-                    }
-                    $options[] = $option;
                 }
+                $options[] = $option;
+            }
 
-                $translationMethod = Cp::selectFieldHtml([
-                    'field' => $this,
-                    'instructions' => Craft::t('app', 'How should this field’s values be translated?'),
-                    'label' => Craft::t('app', 'Translation Method'),
-                    'id' => 'translation-method',
-                    'name' => 'translationMethod',
-                    'options' => $options,
-                    'value' => $this->translationMethod,
-                    'toggle' => true,
-                    'targetPrefix' => 'translation-method-',
+            $translationMethod = Cp::selectFieldHtml([
+                'field' => $this,
+                'instructions' => Craft::t('app', 'How should this field’s values be translated?'),
+                'label' => Craft::t('app', 'Translation Method'),
+                'id' => 'translation-method',
+                'name' => 'translationMethod',
+                'options' => $options,
+                'value' => $this->translationMethod,
+                'toggle' => true,
+                'targetPrefix' => 'translation-method-',
+            ]);
+
+            if (in_array('custom', $supportedTranslationMethods, true)) {
+                $translationMethod .= Html::beginTag('div', [
+                    'id' => 'translation-method-custom',
+                    'class' => $this->translationMethod != 'custom' ? 'hidden' : null,
                 ]);
 
-                if (in_array('custom', $supportedTranslationMethods, true)) {
-                    $translationMethod .= Html::beginTag('div', [
-                        'id' => 'translation-method-custom',
-                        'class' => $this->translationMethod != 'custom' ? 'hidden' : null,
-                    ]);
+                $translationMethod .= Cp::textFieldHtml([
+                    'label' => Craft::t('app', 'Translation Key Format'),
+                    'instructions' => Craft::t('app', 'Template that defines the field’s custom “translation key” format. Field values will be copied to all sites that produce the same key. For example, to make the field translatable based on the first two characters of the site handle, you could enter `{site.handle[:2]}`.'),
+                    'id' => 'translation-key-format',
+                    'class' => 'code',
+                    'name' => 'translationKeyFormat',
+                    'value' => $this->translationKeyFormat ?? '',
+                    'errors' => $this->getErrors('translationKeyFormat'),
+                ]);
 
-                    $translationMethod .= Cp::textFieldHtml([
-                        'label' => Craft::t('app', 'Translation Key Format'),
-                        'instructions' => Craft::t('app', 'Template that defines the field’s custom “translation key” format. Field values will be copied to all sites that produce the same key. For example, to make the field translatable based on the first two characters of the site handle, you could enter `{site.handle[:2]}`.'),
-                        'id' => 'translation-key-format',
-                        'class' => 'code',
-                        'name' => 'translationKeyFormat',
-                        'value' => $this->translationKeyFormat ?? '',
-                        'errors' => $this->getErrors('translationKeyFormat')
-                    ]);
-
-                    $translationMethod .= Html::endTag('div');
-                }
+                $translationMethod .= Html::endTag('div');
             }
         }
 
