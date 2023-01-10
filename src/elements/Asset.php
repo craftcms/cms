@@ -938,7 +938,7 @@ class Asset extends Element
     /**
      * Returns an `<img>` tag based on this asset.
      *
-     * @param mixed $transform The transform to use when generating the html.
+     * @param AssetTransform|string|array|null $transform The transform to use when generating the html.
      * @param string[]|null $sizes The widths/x-descriptors that should be used for the `srcset` attribute
      * (see [[getSrcset()]] for example syntaxes)
      * @return Markup|null
@@ -1242,7 +1242,7 @@ class Asset extends Element
     /**
      * Returns the element’s full URL.
      *
-     * @param string|array|null $transform A transform handle or configuration that should be applied to the
+     * @param AssetTransform|string|array|null $transform A transform handle or configuration that should be applied to the
      * image If an array is passed, it can optionally include a `transform` key that defines a base transform
      * which the rest of the settings should be applied to.
      * @param bool|null $generateNow Whether the transformed image should be generated immediately if it doesn’t exist. If `null`, it will be left
@@ -1382,7 +1382,7 @@ class Asset extends Element
     /**
      * Returns the file’s MIME type, if it can be determined.
      *
-     * @param mixed|null $transform A transform handle or configuration that should be applied to the mime type
+     * @param AssetTransform|string|array|null $transform A transform handle or configuration that should be applied to the mime type
      * @return string|null
      * @throws AssetTransformException if $transform is an invalid transform handle
      */
