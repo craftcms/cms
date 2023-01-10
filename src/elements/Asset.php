@@ -446,7 +446,7 @@ class Asset extends Element
      */
     protected static function defineSearchableAttributes(): array
     {
-        return ['filename', 'extension', 'kind'];
+        return ['filename', 'extension', 'kind', 'alt'];
     }
 
     /**
@@ -1715,13 +1715,23 @@ JS;
     /**
      * Returns the file’s MIME type, if it can be determined.
      *
+     * @param ImageTransform|string|array|null $transform A transform handle or configuration that should be applied to the mime type
      * @return string|null
+     * @throws ImageTransformException if $transform is an invalid transform handle
      */
-    public function getMimeType(): ?string
+    public function getMimeType(mixed $transform = null): ?string
     {
-        // todo: maybe we should be passing this off to volume fs
-        // so Local filesystems can call FileHelper::getMimeType() (uses magic file instead of ext)
-        return FileHelper::getMimeTypeByExtension($this->_filename);
+        $transform = $transform ?? $this->_transform;
+        $transform = ImageTransforms::normalizeTransform($transform);
+
+        if (!Image::canManipulateAsImage($this->getExtension()) || !$transform || !$transform->format) {
+            // todo: maybe we should be passing this off to the filesystem
+            // so Local can call FileHelper::getMimeType() (uses magic file instead of ext)
+            return FileHelper::getMimeTypeByExtension($this->_filename);
+        }
+
+        // Prepend with '.' to let pathinfo() work
+        return FileHelper::getMimeTypeByExtension('.' . $transform->format);
     }
 
     /**
@@ -2240,7 +2250,7 @@ JS;
         $volume = $this->getVolume();
         $uri = "assets/$volume->handle";
         $items = [
-            Html::a(Craft::t('site', $volume->name), UrlHelper::cpUrl($uri)),
+            Html::a(Craft::t('site', Html::encode($volume->name)), UrlHelper::cpUrl($uri)),
         ];
         if ($this->folderPath) {
             $subfolders = ArrayHelper::filterEmptyStringsFromArray(explode('/', $this->folderPath));

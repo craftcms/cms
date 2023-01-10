@@ -650,11 +650,13 @@ class Assets extends Component
      */
     public function getImagePreviewUrl(Asset $asset, int $maxWidth, int $maxHeight): string
     {
+        $isWebSafe = Image::isWebSafe($asset->getExtension());
         $originalWidth = (int)$asset->getWidth();
         $originalHeight = (int)$asset->getHeight();
         [$width, $height] = AssetsHelper::scaledDimensions((int)$asset->getWidth(), (int)$asset->getHeight(), $maxWidth, $maxHeight);
 
         if (
+            !$isWebSafe ||
             !$asset->getVolume()->getFs()->hasUrls ||
             $originalWidth > $width ||
             $originalHeight > $height
