@@ -1,5 +1,9 @@
 # Release Notes for Craft CMS 3.x
 
+## 3.7.63.1 - 2023-01-09
+
+- Fixed a bug where editing certain Matrix/Neo/Super Table fields could result in content loss. ([#12445](https://github.com/craftcms/cms/issues/12445))
+
 ## 3.7.63 - 2023-01-04
 
 - Template caching is no longer enabled for tokenized requests. ([#12458](https://github.com/craftcms/cms/issues/12458))
