@@ -675,6 +675,7 @@ return [
     'General' => '基本',
     'Generate YAML Files' => '生成 YAML 文件',
     'Generate' => '生成',
+    'Generating image transform' => 'Generating image transform',
     'Generating pending image transforms' => '正在生成处理中的图像转换',
     'Get help' => '获得帮助',
     'Give feedback' => '获得反馈',
