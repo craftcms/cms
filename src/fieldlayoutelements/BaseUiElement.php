@@ -7,6 +7,7 @@
 
 namespace craft\fieldlayoutelements;
 
+use Craft;
 use craft\base\FieldLayoutElement;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Component;
@@ -27,6 +28,15 @@ abstract class BaseUiElement extends FieldLayoutElement
     {
         $label = $this->selectorLabel();
 
+        $indicatorHtml = ($this->hasConditions()
+            ? Html::tag('div', '', [
+                'class' => ['fld-indicator'],
+                'title' => Craft::t('app', 'This element is conditional'),
+                'aria' => ['label' => Craft::t('app', 'This element is conditional')],
+                'data' => ['icon' => 'condition'],
+            ])
+            : '');
+
         return
             Html::beginTag('div', [
                 'class' => 'fld-ui-element',
@@ -44,6 +54,7 @@ abstract class BaseUiElement extends FieldLayoutElement
                 $this->selectorLabelAttributes(),
             )) .
             Html::tag('h4', Html::encode($label)) .
+            $indicatorHtml .
             Html::endTag('div') . // .fld-element-label
             Html::endTag('div') . // .field-name
             Html::endTag('div'); // .fld-ui-element

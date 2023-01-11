@@ -20,6 +20,7 @@ use craft\events\ConfigEvent;
 use craft\events\UserAssignGroupEvent;
 use craft\events\UserEvent;
 use craft\events\UserGroupsAssignEvent;
+use craft\events\UserPhotoEvent;
 use craft\helpers\Assets as AssetsHelper;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
@@ -152,6 +153,30 @@ class Users extends Component
      * @event UserAssignGroupEvent The event that is triggered after a user is assigned to the default user group.
      */
     public const EVENT_AFTER_ASSIGN_USER_TO_DEFAULT_GROUP = 'afterAssignUserToDefaultGroup';
+
+    /**
+     * @event UserSavePhotoEvent The event that is triggered before a user photo is saved.
+     * @since 4.4.0
+     */
+    public const EVENT_BEFORE_SAVE_USER_PHOTO = 'beforeSaveUserPhoto';
+
+    /**
+     * @event UserSavePhotoEvent The event that is triggered after a user photo is saved.
+     * @since 4.4.0
+     */
+    public const EVENT_AFTER_SAVE_USER_PHOTO = 'afterSaveUserPhoto';
+
+    /**
+     * @event UserPhotoEvent The event that is triggered before a user photo is deleted.
+     * @since 4.4.0
+     */
+    public const EVENT_BEFORE_DELETE_USER_PHOTO = 'beforeDeleteUserPhoto';
+
+    /**
+     * @event UserPhotoEvent The event that is triggered after a user photo is deleted.
+     * @since 4.4.0
+     */
+    public const EVENT_AFTER_DELETE_USER_PHOTO = 'beforeDeleteUserPhoto';
 
     /**
      * Returns a user by an email address, creating one if none already exists.
@@ -514,8 +539,17 @@ class Users extends Component
 
         $assetsService = Craft::$app->getAssets();
 
+        $event = new UserPhotoEvent([
+            'user' => $user,
+            'photoId' => $user->photoId,
+        ]);
+
+        if ($this->hasEventHandlers(self::EVENT_BEFORE_SAVE_USER_PHOTO)) {
+            $this->trigger(self::EVENT_BEFORE_SAVE_USER_PHOTO, $event);
+        }
+
         // If the photo exists, just replace the file.
-        if ($user->photoId && ($photo = $user->getPhoto()) !== null) {
+        if ($event->photoId && ($photo = Craft::$app->getAssets()->getAssetById($event->photoId)) !== null) {
             $assetsService->replaceAssetFile($photo, $fileLocation, $filename);
         } else {
             $volume = $this->_userPhotoVolume();
@@ -535,6 +569,13 @@ class Users extends Component
 
             $user->setPhoto($photo);
             $elementsService->saveElement($user, false);
+        }
+
+        if ($this->hasEventHandlers(self::EVENT_AFTER_SAVE_USER_PHOTO)) {
+            $this->trigger(self::EVENT_AFTER_SAVE_USER_PHOTO, new UserPhotoEvent([
+                'photoId' => $photo->id,
+                'user' => $user,
+            ]));
         }
     }
 
@@ -616,10 +657,26 @@ class Users extends Component
      */
     public function deleteUserPhoto(User $user): bool
     {
-        $result = Craft::$app->getElements()->deleteElementById($user->photoId, Asset::class);
+        $photoId = $user->photoId;
+
+        if ($this->hasEventHandlers(self::EVENT_BEFORE_DELETE_USER_PHOTO)) {
+            $this->trigger(self::EVENT_BEFORE_DELETE_USER_PHOTO, new UserPhotoEvent([
+                'user' => $user,
+                'photoId' => $photoId,
+            ]));
+        }
+
+        $result = Craft::$app->getElements()->deleteElementById($photoId, Asset::class);
 
         if ($result) {
             $user->setPhoto(null);
+
+            if ($this->hasEventHandlers(self::EVENT_AFTER_DELETE_USER_PHOTO)) {
+                $this->trigger(self::EVENT_AFTER_DELETE_USER_PHOTO, new UserPhotoEvent([
+                    'user' => $user,
+                    'photoId' => $photoId,
+                ]));
+            }
         }
 
         return $result;

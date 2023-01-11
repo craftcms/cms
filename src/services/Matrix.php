@@ -9,6 +9,7 @@ namespace craft\services;
 
 use Craft;
 use craft\base\ElementInterface;
+use craft\base\Field;
 use craft\db\Query;
 use craft\db\Table;
 use craft\elements\db\MatrixBlockQuery;
@@ -25,6 +26,7 @@ use craft\models\FieldLayout;
 use craft\models\MatrixBlockType;
 use craft\models\Site;
 use craft\records\MatrixBlockType as MatrixBlockTypeRecord;
+use craft\validators\StringValidator;
 use craft\web\assets\matrix\MatrixAsset;
 use craft\web\View;
 use Illuminate\Support\Collection;
@@ -186,6 +188,22 @@ class Matrix extends Component
                     $field->addError('handle', $error);
                 } else {
                     $this->_uniqueBlockTypeAndFieldHandles[] = $blockTypeAndFieldHandle;
+                }
+
+                if (!$field->hasErrors('handle')) {
+                    // Make sure the handle isn't too long when including the block type handle as individual fields
+                    // don't account for it.
+                    $maxHandleLength = Craft::$app->getDb()->getSchema()->maxObjectNameLength;
+                    $maxHandleLength -= strlen(Craft::$app->getContent()->fieldColumnPrefix . '_');
+                    $maxHandleLength -= strlen($blockType->handle . '_');
+                    $maxHandleLength -= strlen('_' . $field->columnSuffix);
+
+                    $validator = new StringValidator([
+                        'max' => $maxHandleLength,
+                    ]);
+
+                    /** @var Field $field */
+                    $validator->validateAttribute($field, 'handle');
                 }
             }
 

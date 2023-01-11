@@ -15,9 +15,14 @@ use craft\helpers\Component;
 use craft\helpers\FileHelper;
 use craft\helpers\StringHelper;
 use GuzzleHttp\Client;
+use Symfony\Component\VarDumper\Cloner\VarCloner;
+use Symfony\Component\VarDumper\Dumper\CliDumper;
+use Symfony\Component\VarDumper\Dumper\HtmlDumper;
 use yii\base\ExitException;
+use yii\console\Controller;
 use yii\db\Expression;
 use yii\helpers\VarDumper;
+use yii\web\Application as WebApplication;
 use yii\web\Request;
 use function GuzzleHttp\default_user_agent;
 
@@ -102,24 +107,33 @@ class Craft extends Yii
      * Displays a variable.
      *
      * @param mixed $var The variable to be dumped.
-     * @param int $depth The maximum depth that the dumper should go into the variable. Defaults to 10.
-     * @param bool $highlight Whether the result should be syntax-highlighted. Defaults to true.
+     * @param int $depth The maximum depth that the dumper should go into the variable.
+     * @param bool $highlight Whether the result should be syntax-highlighted.
      */
-    public static function dump(mixed $var, int $depth = 10, bool $highlight = true): void
+    public static function dump(mixed $var, int $depth = 20, bool $highlight = true): void
     {
-        VarDumper::dump($var, $depth, $highlight);
+        if (
+            !$highlight ||
+            (Craft::$app->controller instanceof Controller && !Craft::$app->controller->isColorEnabled())
+        ) {
+            VarDumper::dump($var, $depth);
+            echo "\n";
+            return;
+        }
+
+        $dumper = Craft::$app instanceof WebApplication ? new HtmlDumper() : new CliDumper();
+        $dumper->dump((new VarCloner())->cloneVar($var)->withMaxDepth($depth));
     }
 
     /**
      * Displays a variable and ends the request. (“Dump and die”)
      *
      * @param mixed $var The variable to be dumped.
-     * @param int $depth The maximum depth that the dumper should go into the variable. Defaults to 10.
-     * @param bool|null $highlight Whether the result should be syntax-highlighted.
-     * Defaults to `true` for web requests and `false` for console requests.
+     * @param int $depth The maximum depth that the dumper should go into the variable.
+     * @param bool $highlight Whether the result should be syntax-highlighted.
      * @throws ExitException if the application is in testing mode
      */
-    public static function dd(mixed $var, int $depth = 10, ?bool $highlight = null): void
+    public static function dd(mixed $var, int $depth = 20, bool $highlight = true): void
     {
         // Turn off output buffering and discard OB contents
         while (ob_get_length() !== false) {
@@ -130,11 +144,7 @@ class Craft extends Yii
             }
         }
 
-        if ($highlight === null) {
-            $highlight = !static::$app->getRequest()->getIsConsoleRequest();
-        }
-
-        VarDumper::dump($var, $depth, $highlight);
+        static::dump($var, $depth, $highlight);
         exit();
     }
 
