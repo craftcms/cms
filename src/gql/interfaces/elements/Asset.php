@@ -193,6 +193,11 @@ class Asset extends Element
                 'type' => Type::string(),
                 'description' => 'The file’s MIME type, if it can be determined.',
             ],
+            'format' => [
+                'name' => 'format',
+                'type' => Type::string(),
+                'description' => 'Returns the file’s format, if it can be determined.',
+            ],
             'path' => [
                 'name' => 'path',
                 'type' => Type::nonNull(Type::string()),
