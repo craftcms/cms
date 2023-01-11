@@ -2959,6 +2959,7 @@ class Elements extends Component
             $siteSettingsRecord->slug = $element->slug;
             $siteSettingsRecord->uri = $element->uri;
             if (property_exists($element::class, 'alt')) {
+                /** @phpstan-ignore-next-line */
                 $siteSettingsRecord->alt = $element->alt;
             }
 
@@ -3217,6 +3218,15 @@ class Elements extends Component
             $siteElement->getTitleTranslationKey() === $element->getTitleTranslationKey()
         ) {
             $siteElement->title = $element->title;
+        }
+
+        // Copy the alt value?
+        if (property_exists($element::class, 'alt') &&
+            /** @phpstan-ignore-next-line */
+            $siteElement->getAltTranslationKey() === $element->getAltTranslationKey()
+        ) {
+            /** @phpstan-ignore-next-line */
+            $siteElement->alt = $element->alt;
         }
 
         // Copy the dirty attributes (except title, which may be translatable)

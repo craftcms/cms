@@ -1403,6 +1403,45 @@ JS;
     }
 
     /**
+     * Returns native alt field's translation key for the element
+     *
+     * @return string
+     */
+    public function getAltTranslationKey(): string
+    {
+        $field = $this->getAltField();
+        if ($field === null) {
+            return '';
+        }
+
+        return ElementHelper::translationKey($this, $field->translationMethod, $field->translationKeyFormat);
+    }
+
+    /**
+     * Returns asset's native alt field if present, or null
+     *
+     * @return AltField|null
+     */
+    public function getAltField(): ?AltField
+    {
+        $field = null;
+        $fieldLayout = $this->getFieldLayout();
+        if ($fieldLayout) {
+            foreach ($fieldLayout->getTabs() as $tab) {
+                $field = array_values(array_filter(
+                    $tab->getElements(),
+                    fn($nativeField) => $nativeField instanceof AltField
+                ));
+                if (!empty($field)) {
+                    $field = $field[0];
+                }
+            }
+        }
+
+        return $field;
+    }
+
+    /**
      * Returns the asset’s volume folder.
      *
      * @return VolumeFolder
