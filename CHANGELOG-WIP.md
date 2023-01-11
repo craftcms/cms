@@ -17,6 +17,7 @@
 - Improved the color contrast and keyboard control of the Customize Sources modal. ([#12233](https://github.com/craftcms/cms/pull/12233))
 - Improved info icons for screen readers. ([#12272](https://github.com/craftcms/cms/pull/12272))
 - Removed input autofocussing throughout the control panel. ([#12324](https://github.com/craftcms/cms/discussions/12324), [#12332](https://github.com/craftcms/cms/pull/12332))
+- Improved the login screen for screen readers. ([#12386](https://github.com/craftcms/cms/pull/12386))
 
 ### Administration
 - Conditional layout components are now identified using a condition icon within field layout designers. ([#12250](https://github.com/craftcms/cms/issues/12250))
@@ -67,6 +68,7 @@
 - Deprecated `craft\queue\jobs\GeneratePendingTransforms`. `GenerateImageTransform` should be used instead. ([#12340](https://github.com/craftcms/cms/pull/12340))
 - Added `Craft.Accordion`. ([#12189](https://github.com/craftcms/cms/pull/12189))
 - Added `Craft.ElementFieldSettings`.
+- Added `Garnish.MultiFunctionBtn`.
 - Deprecated `Craft.CategorySelectInput`. `Craft.BaseElementSelectInput` should be used instead. ([#11749](https://github.com/craftcms/cms/pull/11749))
 
 ### System
