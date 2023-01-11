@@ -1645,6 +1645,7 @@ return [
     'You need to be on at least {plugin} {version} before you can update to {plugin} {targetVersion}.' => 'У вас має бути {plugin} хоча б версії {version}, щоб виконати оновлення до {plugin} {targetVersion}.',
     'You need to reset your password, but an error was encountered when sending the password reset email.' => 'Потрібно скинути пароль, але під час надсилання електронного листа для скидання пароля сталася помилка.',
     'You need to reset your password. Check your email for instructions.' => 'Потрібно скинути пароль. Інструкції зі скидання надіслані на вашу адресу електронної пошти.',
+    'Your Craft license isn’t allowed to run version {version}.' => 'Your Craft license isn’t allowed to run version {version}.',
     'Your Craft license key is invalid.' => 'Ліцензійний ключ Craft недійсний.',
     'Your Email' => 'Адреса ел. пошти',
     'Your account doesn’t have permission to access the control panel when the system is offline.' => 'У вашого облікового запису немає дозволу на доступ до панелі керування під час роботи в автономному режимі.',
