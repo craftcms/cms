@@ -21,6 +21,7 @@ use craft\events\DefineElementEditorHtmlEvent;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Component;
 use craft\helpers\Cp;
+use craft\helpers\Db;
 use craft\helpers\ElementHelper;
 use craft\helpers\Html;
 use craft\helpers\UrlHelper;
@@ -571,6 +572,64 @@ class ElementsController extends Controller
         }
 
         return $response;
+    }
+
+    /**
+     * Returns an element revisions index screen.
+     *
+     * @param int $elementId
+     * @return Response
+     * @throws BadRequestHttpException
+     * @throws ForbiddenHttpException
+     * @since 4.4.0
+     */
+    public function actionRevisions(int $elementId): Response
+    {
+        $this->requireCpRequest();
+
+        /** @var Element|DraftBehavior|RevisionBehavior|Response|null $element */
+        $element = $this->_element($elementId, null, false);
+
+        if (!$element) {
+            throw new BadRequestHttpException('No element was identified by the request.');
+        }
+
+        if ($element->getIsUnpublishedDraft()) {
+            throw new BadRequestHttpException('Unpublished drafts don\'t have revisions');
+        }
+
+        if (!$element->hasRevisions()) {
+            throw new BadRequestHttpException('Element doesn\'t have revisions');
+        }
+
+        return $this->asCpScreen()
+            ->title(Craft::t('app', 'Revisions for “{title}”', [
+                'title' => $element->getUiLabel(),
+            ]))
+            ->prepareScreen(function(Response $response, string $containerId) use ($element) {
+                // Give the element a chance to do things here too
+                $element->prepareEditScreen($response, $containerId);
+
+                /** @var CpScreenResponseBehavior $behavior */
+                $behavior = $response->getBehavior(CpScreenResponseBehavior::NAME);
+                if (!empty($behavior->crumbs)) {
+                    $behavior->crumbs[] = [
+                        'label' => $element->getUiLabel(),
+                        'url' => $element->getCpEditUrl(),
+                    ];
+                }
+            })
+        ->contentTemplate('_elements/revisions', [
+            'element' => $element,
+            'revisionsQuery' => $element::find()
+                ->revisionOf($element)
+                ->site('*')
+                ->preferSites([$element->siteId])
+                ->unique()
+                ->status(null)
+                ->andWhere(['!=', 'elements.dateCreated', Db::prepareDateForDb($element->dateUpdated)])
+                ->with(['revisionCreator']),
+        ]);
     }
 
     /**

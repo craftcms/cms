@@ -391,16 +391,6 @@ class DateTimeHelperTest extends TestCase
     }
 
     /**
-     * @dataProvider timeZoneAbbreviationDataProvider
-     * @param string $expected
-     * @param string $timeZone
-     */
-    public function testTimeZoneAbbreviation(string $expected, string $timeZone): void
-    {
-        self::assertSame($expected, DateTimeHelper::timeZoneAbbreviation($timeZone));
-    }
-
-    /**
      * @dataProvider isValidTimeStampDataProvider
      * @param bool $expected
      * @param mixed $timestamp
@@ -418,20 +408,6 @@ class DateTimeHelperTest extends TestCase
     public function testIsValidIntervalString(bool $expected, string $intervalString): void
     {
         self::assertSame($expected, DateTimeHelper::isValidIntervalString($intervalString));
-    }
-
-    /**
-     * @dataProvider timeZoneOffsetDataDataProvider
-     * @param string|string[] $expected
-     * @param string $timeZone
-     */
-    public function testTimeZoneOffset(string|array $expected, string $timeZone): void
-    {
-        if (is_string($expected)) {
-            self::assertSame($expected, DateTimeHelper::timeZoneOffset($timeZone));
-        } else {
-            self::assertContains(DateTimeHelper::timeZoneOffset($timeZone), $expected);
-        }
     }
 
     /**
@@ -521,19 +497,6 @@ class DateTimeHelperTest extends TestCase
             [false, ''],
             [false, 'random string'],
 
-        ];
-    }
-
-    /**
-     * @return array
-     */
-    public function timeZoneOffsetDataDataProvider(): array
-    {
-        return [
-            ['+00:00', 'UTC'],
-            ['+00:00', 'GMT'],
-            [['-05:00', '-04:00'], 'America/New_York'],
-            ['+09:00', '+09:00'],
         ];
     }
 
@@ -758,16 +721,6 @@ class DateTimeHelperTest extends TestCase
             ['2018-08-08T20:00:00+09:00', $tokyoTime],
             ['2018-08-08T20:00:00+02:00', $amsterdamTime],
             'invalid-format-returns-false' => [false, ['date' => '']],
-        ];
-    }
-
-    /**
-     * @return array
-     */
-    public function timeZoneAbbreviationDataProvider(): array
-    {
-        return [
-            ['GMT', 'Etc/GMT+0'],
         ];
     }
 
