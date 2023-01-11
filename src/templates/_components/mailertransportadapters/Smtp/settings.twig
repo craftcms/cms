@@ -17,7 +17,6 @@
     suggestEnvVars: true,
     value: adapter.port,
     size: 20,
-    required: true,
     errors: adapter.getErrors('port')
 }) }}
 
@@ -49,27 +48,3 @@
         errors: adapter.getErrors('password')
     }) }}
 </div>
-
-{{ forms.selectizeField({
-    label: "Encryption Method",
-    id: 'encryptionMethod',
-    name: 'encryptionMethod',
-    options: [
-        { value: 'none', label: "None"|t('app') },
-        { value: 'ssl', label: 'SSL' },
-        { value: 'tls', label: 'TLS' }
-    ],
-    includeEnvVars: true,
-    value: adapter.encryptionMethod ?: 'none',
-    errors: adapter.getErrors('encryptionMethod'),
-}) }}
-
-{{ forms.textField({
-    label: "Timeout"|t('app'),
-    id: 'timeout',
-    name: 'timeout',
-    value: adapter.timeout,
-    size: 2,
-    required: true,
-    errors: adapter.getErrors('timeout')
-}) }}

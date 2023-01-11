@@ -41,7 +41,7 @@ class Time extends Field implements PreviewableFieldInterface, SortableFieldInte
      */
     public static function valueType(): string
     {
-        return DateTime::class . '|null';
+        return sprintf('\\%s|null', DateTime::class);
     }
 
     /**
