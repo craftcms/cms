@@ -365,19 +365,26 @@ class ImageTransformer extends Component implements ImageTransformerInterface, E
             $position = $transform->position;
         }
 
+        $scaleIfSmaller = Craft::$app->getConfig()->getGeneral()->upscaleImages;
+
         switch ($transform->mode) {
             case 'fit':
-                if ($transform->fill && $image instanceof Raster) {
-                    $image->setFill($transform->fill);
+                if ($image instanceof Raster && !$scaleIfSmaller && $transform->fill) {
+                    $image->scaleToFitAndFill(
+                        $transform->width,
+                        $transform->height,
+                        $transform->fill,
+                        $position,
+                    );
+                } else {
+                    $image->scaleToFit($transform->width, $transform->height, $scaleIfSmaller);
                 }
-
-                $image->scaleToFit($transform->width, $transform->height, Craft::$app->getConfig()->getGeneral()->upscaleImages, $position);
                 break;
             case 'stretch':
                 $image->resize($transform->width, $transform->height);
                 break;
             default:
-                $image->scaleAndCrop($transform->width, $transform->height, Craft::$app->getConfig()->getGeneral()->upscaleImages, $position);
+                $image->scaleAndCrop($transform->width, $transform->height, $scaleIfSmaller, $position);
         }
 
         if ($image instanceof Raster) {
