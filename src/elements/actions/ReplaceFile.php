@@ -35,7 +35,7 @@ class ReplaceFile extends ElementAction
 (() => {
     new Craft.ElementActionTrigger({
         type: $type,
-        batch: false,
+        bulk: false,
         validateSelection: \$selectedItems => Garnish.hasAttr(\$selectedItems.find('.element'), 'data-replaceable'),
         activate: \$selectedItems => {
             $('.replaceFile').remove();

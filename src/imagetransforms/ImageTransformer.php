@@ -32,9 +32,10 @@ use craft\helpers\UrlHelper;
 use craft\image\Raster;
 use craft\models\ImageTransform;
 use craft\models\ImageTransformIndex;
-use craft\queue\jobs\GeneratePendingTransforms;
+use craft\queue\jobs\GenerateImageTransform;
 use DateTime;
 use Exception;
+use Imagine\Image\Format;
 use Throwable;
 use yii\base\InvalidConfigException;
 
@@ -152,12 +153,10 @@ class ImageTransformer extends Component implements ImageTransformerInterface, E
             return $this->getTransformUrl($asset, $imageTransform, true);
         }
 
-        static $queued = null;
-
-        if (!$queued) {
-            Queue::push(new GeneratePendingTransforms(), 2048);
-            $queued = true;
-        }
+        // Add a Generate Image Transform job to the queue, in case the temp URL never gets requested
+        Queue::push(new GenerateImageTransform([
+            'transformId' => $index->id,
+        ]));
 
         // Return the temporary transform URL
         return UrlHelper::actionUrl('assets/generate-transform', ['transformId' => $index->id], null, false);
@@ -311,12 +310,16 @@ class ImageTransformer extends Component implements ImageTransformerInterface, E
         $transform = $index->getTransform();
         $images = Craft::$app->getImages();
 
-        if ($index->format === 'webp' && !$images->getSupportsWebP()) {
-            throw new ImageTransformException("The `webp` format is not supported on this server!");
+        if ($index->format === Format::ID_WEBP && !$images->getSupportsWebP()) {
+            throw new ImageTransformException('The `webp` format is not supported on this server.');
         }
 
-        if ($index->format === 'avif' && !$images->getSupportsAvif()) {
-            throw new ImageTransformException("The `avif` format is not supported on this server!");
+        if ($index->format === Format::ID_AVIF && !$images->getSupportsAvif()) {
+            throw new ImageTransformException('The `avif` format is not supported on this server.');
+        }
+
+        if ($index->format === Format::ID_HEIC && !$images->getSupportsHeic()) {
+            throw new ImageTransformException('The `heic` format is not supported on this server.');
         }
 
         $volume = $asset->getVolume();

@@ -11,6 +11,7 @@ use Craft;
 use craft\errors\ImageException;
 use craft\image\Svg;
 use Imagick;
+use Imagine\Image\Format;
 use Throwable;
 use TypeError;
 use yii\base\InvalidArgumentException;
@@ -127,6 +128,11 @@ class Image
      */
     public static function canManipulateAsImage(string $extension): bool
     {
+        $extension = strtolower($extension);
+        if ($extension === 'heif') {
+            $extension = Format::ID_HEIC;
+        }
+
         $formats = Craft::$app->getImages()->getSupportedImageFormats();
 
         $alwaysManipulatable = ['svg'];
@@ -135,17 +141,29 @@ class Image
         $formats = array_merge($formats, $alwaysManipulatable);
         $formats = array_diff($formats, $neverManipulatable);
 
-        return in_array(strtolower($extension), $formats);
+        return in_array($extension, $formats);
     }
 
     /**
-     * Returns a list of web safe image formats.
+     * Returns a list of web-safe image formats.
      *
      * @return string[]
      */
     public static function webSafeFormats(): array
     {
         return ['jpg', 'jpeg', 'gif', 'png', 'svg', 'webp', 'avif'];
+    }
+
+    /**
+     * Returns whether an extension is web-safe.
+     *
+     * @param string $extension
+     * @return bool
+     * @since 4.3.6
+     */
+    public static function isWebSafe(string $extension): bool
+    {
+        return in_array(strtolower($extension), static::webSafeFormats(), true);
     }
 
     /**

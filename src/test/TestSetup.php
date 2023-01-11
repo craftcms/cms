@@ -340,14 +340,16 @@ class TestSetup
         defined('CURLOPT_TIMEOUT_MS') || define('CURLOPT_TIMEOUT_MS', 155);
         defined('CURLOPT_CONNECTTIMEOUT_MS') || define('CURLOPT_CONNECTTIMEOUT_MS', 156);
 
-        $libPath = dirname(__DIR__, 2) . '/lib';
-        $srcPath = dirname(__DIR__);
+        $repoRoot = dirname(__DIR__, 2);
+        $libPath = $repoRoot . '/lib';
+        $srcPath = $repoRoot . '/src';
 
         require $libPath . '/yii2/Yii.php';
         require $srcPath . '/Craft.php';
 
         // Set aliases
         Craft::setAlias('@vendor', $vendorPath);
+        Craft::setAlias('@craftcms', $repoRoot);
         Craft::setAlias('@lib', $libPath);
         Craft::setAlias('@craft', $srcPath);
         Craft::setAlias('@appicons', $srcPath . DIRECTORY_SEPARATOR . 'icons');

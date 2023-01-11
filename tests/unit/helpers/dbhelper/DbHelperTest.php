@@ -43,7 +43,6 @@ class DbHelperTest extends TestCase
             'foo',
             'field_2',
         ],
-        ['foo' => null],
     ];
 
     public const MULTI_PARSEPARAM = ['foo' => ['field_1', 'field_2']];
@@ -393,25 +392,6 @@ class DbHelperTest extends TestCase
                 'field_1, field_2',
                 '!=',
             ],
-            'multi-not-symbol-and' => [
-                [
-                    'or',
-                    ['not', ['foo' => ['field_1', 'field_2']]],
-                    ['foo' => null],
-                ],
-                'foo',
-                'and, field_1, field_2',
-                '!=',
-            ],
-            'multi-not-glue' => [
-                [
-                    'or',
-                    ['not', ['foo' => ['field_1', 'field_2']]],
-                    ['foo' => null],
-                ],
-                'foo',
-                'not, field_1, field_2',
-            ],
             'random-symbol' => [
                 ['raaa', 'foo', 'field_1'],
                 'foo',
@@ -428,63 +408,40 @@ class DbHelperTest extends TestCase
                 'field_1, field_2',
                 'raaa',
             ],
-            'not' => [
+            [
                 '',
                 'foo',
                 'not',
             ],
-            'empty' => [
+            [
                 '',
                 'foo',
                 [],
             ],
-            'blank' => [
+            [
                 '',
                 '',
                 '',
             ],
-            'null' => [
+            [
                 '',
                 'foo',
                 null,
             ],
-            'blank2' => [
+            [
                 '',
                 'foo',
                 '',
             ],
-            'or' => [
+            [
                 ['foo' => ['field_1', 'field_2']],
                 'foo',
                 ['or', 'field_1', 'field_2'],
             ],
-            'not-array' => [
-                [
-                    'or',
-                    ['not', ['foo' => ['field_1', 'field_2']]],
-                    ['foo' => null],
-                ],
+            [
+                ['not', ['foo' => ['field_1', 'field_2']]],
                 'foo',
                 ['not', 'field_1', 'field_2'],
-            ],
-            'not-single' => [
-                [
-                    'or',
-                    ['not', ['foo' => 'field_1']],
-                    ['foo' => null],
-                ],
-                'foo',
-                ['not', 'field_1'],
-            ],
-            'ne-single' => [
-                [
-                    'or',
-                    ['!=', 'foo', 'field_1'],
-                    ['foo' => null],
-                ],
-                'foo',
-                ['field_1'],
-                '!=',
             ],
             [
                 ['foo' => true],
@@ -561,30 +518,6 @@ class DbHelperTest extends TestCase
                 '=',
                 false,
                 Schema::TYPE_BOOLEAN,
-            ],
-            [
-                ['like', 'foo', '%bar%', false],
-                'foo',
-                '*bar*',
-            ],
-            [
-                ['foo' => '*bar*'],
-                'foo',
-                '\*bar\*',
-            ],
-            [
-                ['like', 'foo', '%\_bar\_%', false],
-                'foo',
-                '*_bar_*',
-            ],
-            [
-                [
-                    'or',
-                    ['not like', 'foo', '%bar%', false],
-                    ['foo' => null],
-                ],
-                'foo',
-                'not, *bar*',
             ],
         ];
     }

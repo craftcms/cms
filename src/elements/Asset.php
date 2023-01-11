@@ -2240,7 +2240,7 @@ JS;
         $volume = $this->getVolume();
         $uri = "assets/$volume->handle";
         $items = [
-            Html::a(Craft::t('site', $volume->name), UrlHelper::cpUrl($uri)),
+            Html::a(Craft::t('site', Html::encode($volume->name)), UrlHelper::cpUrl($uri)),
         ];
         if ($this->folderPath) {
             $subfolders = ArrayHelper::filterEmptyStringsFromArray(explode('/', $this->folderPath));
