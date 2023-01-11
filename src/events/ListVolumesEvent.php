@@ -11,15 +11,15 @@ use craft\models\Volume;
 use yii\base\Event;
 
 /**
- * Authenticate User event class.
+ * ListVolumesEvent class.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.4.0
  */
-class AssetVolumeEventIndexing extends Event
+class ListVolumesEvent extends Event
 {
     /**
-     * @var Volume[] Asset volumes available to be indexed.
+     * @var Volume[] The volumes to be listed.
      */
-    public array $assetVolumes = [];
+    public array $volumes = [];
 }

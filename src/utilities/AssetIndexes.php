@@ -9,7 +9,7 @@ namespace craft\utilities;
 
 use Craft;
 use craft\base\Utility;
-use craft\events\AssetVolumeEventIndexing;
+use craft\events\ListVolumesEvent;
 use craft\helpers\Html;
 use craft\i18n\Locale;
 use craft\web\assets\assetindexes\AssetIndexesAsset;
@@ -24,9 +24,10 @@ use yii\base\Event;
 class AssetIndexes extends Utility
 {
     /**
-     * @event AssetVolumeEventIndexing The event that is triggered when determining asset volumes available to index.
+     * @event ListVolumesEvent The event that is triggered when listing the available volumes to index.
+     * @since 4.4.0
      */
-    public const EVENT_ON_ASSET_VOLUME_INDEXING = 'indexingAssetVolumeEvent';
+    public const EVENT_LIST_VOLUMES = 'listVolumes';
 
     /**
      * @inheritdoc
@@ -57,20 +58,15 @@ class AssetIndexes extends Utility
      */
     public static function contentHtml(): string
     {
-        $event = new AssetVolumeEventIndexing([
-            'assetVolumes' => Craft::$app->getVolumes()->getAllVolumes(),
+        // Fire a 'listVolumes' event
+        $event = new ListVolumesEvent([
+            'volumes' => Craft::$app->getVolumes()->getAllVolumes(),
         ]);
+        Event::trigger(self::class, self::EVENT_LIST_VOLUMES, $event,);
 
-        Event::trigger(
-            self::class,
-            self::EVENT_ON_ASSET_VOLUME_INDEXING,
-            $event,
-        );
-
-        $volumes = $event->assetVolumes;
         $volumeOptions = [];
 
-        foreach ($volumes as $volume) {
+        foreach ($event->volumes as $volume) {
             $volumeOptions[] = [
                 'label' => Html::encode($volume->name),
                 'value' => $volume->id,
