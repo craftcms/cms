@@ -189,6 +189,7 @@ Craft.ElementEditor = Garnish.Base.extend(
               ev.data.id === this.settings.canonicalId &&
               !this.settings.draftId)
           ) {
+            Craft.setLocalStorage('scrollY', window.scrollY);
             window.location.reload();
           } else if (
             ev.data.event === 'deleteDraft' &&
@@ -200,6 +201,7 @@ Craft.ElementEditor = Garnish.Base.extend(
             if (url.href !== document.location.href) {
               window.location.href = url;
             } else {
+              Craft.setLocalStorage('scrollY', window.scrollY);
               window.location.reload();
             }
           }
@@ -1345,7 +1347,7 @@ Craft.ElementEditor = Garnish.Base.extend(
 
             const $fields = $(selectors.join(','))
               .parents()
-              .filter('.field:not(:has(> .status-badge))');
+              .filter('.flex-fields > .field:not(:has(> .status-badge))');
             for (let i = 0; i < $fields.length; i++) {
               $fields.eq(i).prepend(
                 $('<div/>', {
@@ -1655,10 +1657,13 @@ Craft.ElementEditor = Garnish.Base.extend(
       const lb = encodeURIComponent('[');
       const rb = encodeURIComponent(']');
       const nestedNames = name.match(
-        new RegExp(`(\\bfields|${lb}fields${rb})${lb}[^${rb}]+${rb}`, 'g')
+        new RegExp(`(\\bfields|${lb}fields${rb})${lb}.+?${rb}`, 'g')
       );
+      if (!nestedNames) {
+        throw `Unexpected input name: ${name}`;
+      }
       const lastHandle = nestedNames[nestedNames.length - 1].match(
-        new RegExp(`(?:\\bfields|${lb}fields${rb})${lb}([^${rb}]+)${rb}`)
+        new RegExp(`(?:\\bfields|${lb}fields${rb})${lb}(.+?)${rb}`)
       )[1];
       return Craft.fieldsWithoutContent.includes(lastHandle);
     },

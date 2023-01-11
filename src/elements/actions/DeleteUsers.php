@@ -82,7 +82,7 @@ class DeleteUsers extends ElementAction implements DeleteActionInterface
 (() => {
     new Craft.ElementActionTrigger({
         type: $type,
-        batch: true,
+        bulk: true,
         validateSelection: \$selectedItems => {
             for (let i = 0; i < \$selectedItems.length; i++) {
                 if ($.inArray(\$selectedItems.eq(i).find('.element').data('id').toString(), $undeletableIds) != -1) {
