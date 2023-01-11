@@ -275,11 +275,6 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         }
       });
 
-      // Auto-focus the Search box
-      if (!Garnish.isMobileBrowser(true)) {
-        this.$search.trigger('focus');
-      }
-
       // View menus
       this.viewMenus = {};
 
@@ -309,7 +304,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         if ($option.length) {
           this.statusMenu.selectOption($option[0]);
         } else {
-          this.setQueryParam('status', null);
+          Craft.setQueryParam('status', null);
         }
       }
 
@@ -328,6 +323,16 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       // ---------------------------------------------------------------------
 
       this.selectDefaultSource();
+
+      // Respect initial search
+      // ---------------------------------------------------------------------
+      // Has to go after selecting the default source because selecting a source
+      // clears out search params
+
+      if (queryParams.search) {
+        this.startSearching();
+        this.searchText = queryParams.search;
+      }
 
       // Select the default sort attribute/direction
       // ---------------------------------------------------------------------
@@ -610,16 +615,18 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       }
     },
 
-    getSourceState: function (source, key, defaultValue) {
-      if (typeof this.sourceStates[source] === 'undefined') {
+    getSourceState: function (sourceKey, key, defaultValue) {
+      sourceKey = sourceKey.replace(/\/.*/, '');
+
+      if (typeof this.sourceStates[sourceKey] === 'undefined') {
         // Set it now so any modifications to it by whoever's calling this will be stored.
-        this.sourceStates[source] = {};
+        this.sourceStates[sourceKey] = {};
       }
 
       if (typeof key === 'undefined') {
-        return this.sourceStates[source];
-      } else if (typeof this.sourceStates[source][key] !== 'undefined') {
-        return this.sourceStates[source][key];
+        return this.sourceStates[sourceKey];
+      } else if (typeof this.sourceStates[sourceKey][key] !== 'undefined') {
+        return this.sourceStates[sourceKey][key];
       } else {
         return typeof defaultValue !== 'undefined' ? defaultValue : null;
       }
@@ -652,7 +659,16 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         delete viewState[key];
       }
 
-      this.sourceStates[this.instanceState.selectedSource] = viewState;
+      const sourceKey = this.instanceState.selectedSource.replace(/\/.*/, '');
+
+      this.sourceStates[sourceKey] = viewState;
+
+      // Clean up sourceStates while we're at it
+      for (let i in this.sourceStates) {
+        if (this.sourceStates.hasOwnProperty(i) && i.includes('/')) {
+          delete this.sourceStates[i];
+        }
+      }
 
       // Store it in localStorage too
       Craft.setLocalStorage(this.sourceStatesStorageKey, this.sourceStates);
@@ -918,6 +934,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         this.searchText !==
         (this.searchText = this.searching ? this.$search.val() : null)
       ) {
+        Craft.setQueryParam('search', this.$search.val());
         this.updateElements();
       }
     },
@@ -1299,7 +1316,9 @@ Craft.BaseElementIndex = Garnish.Base.extend(
     selectSource: function (source) {
       const $source = $(source);
 
-      if (!$source || !$source.length) {
+      // return false if there truly are no sources;
+      // don't attempt to check only default/visible sources
+      if (!this.sourcesByKey || !Object.keys(this.sourcesByKey).length) {
         return false;
       }
 
@@ -1328,6 +1347,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         // Clear the search value without causing it to update elements
         this.searchText = null;
         this.$search.val('');
+        Craft.setQueryParam('search', null);
         this.stopSearching();
       }
 
@@ -1550,7 +1570,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
      * @returns {string[]}
      */
     getSelectedTableColumns: function ($source) {
-      $source = $source || this.$source;
+      $source = $source || this.$rootSource;
       if ($source) {
         const attributes = this.getSourceState(
           $source.data('key'),
