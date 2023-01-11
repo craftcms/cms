@@ -94,6 +94,10 @@
                         id: 'submit',
                         label: 'Sign in'|t('app'),
                         spinner: true,
+                        busyMessage: 'Signing in'|t('app'),
+                        successMessage: 'Signed in'|t('app'),
+                        failureMessage: 'Sign in unsuccessful'|t('app'),
+                        retryMessage: 'Try again'|t('app'),
                     }) }}
                 </div>
 
@@ -103,7 +107,7 @@
                 </div>
             </form>
 
-            <div id="login-errors" role="alert">
+            <div id="login-errors" role="status">
             </div>
 
             <a id="poweredby" href="http://craftcms.com/" title="{{ 'Powered by Craft CMS'|t('app') }}" aria-label="Craft CMS">

@@ -51,9 +51,12 @@ Craft.CustomizeSourcesModal = Garnish.Modal.extend({
       '<form class="modal customize-sources-modal"/>'
     ).appendTo(Garnish.$bod);
 
-    this.$sidebar = $('<div class="cs-sidebar block-types"/>').appendTo(
-      $container
-    );
+    this.$sidebar = $('<div class="cs-sidebar block-types"/>')
+      .appendTo($container)
+      .attr({
+        role: 'navigation',
+        'aria-label': Craft.t('app', 'Source'),
+      });
     this.$sourcesContainer = $('<div class="sources">').appendTo(this.$sidebar);
     this.$sourceSettingsContainer = $('<div class="source-settings">').appendTo(
       $container
@@ -98,6 +101,7 @@ Craft.CustomizeSourcesModal = Garnish.Modal.extend({
       })
       .finally(() => {
         this.$loadingSpinner.remove();
+        Garnish.setFocusWithin(this.$sidebar);
       });
 
     this.addListener(this.$cancelBtn, 'click', 'hide');
@@ -171,6 +175,7 @@ Craft.CustomizeSourcesModal = Garnish.Modal.extend({
       addSource({
         type: 'heading',
       });
+      this.focusLabelInput();
     });
 
     const $newCustomSourceBtn = $('<button/>', {
@@ -190,6 +195,7 @@ Craft.CustomizeSourcesModal = Garnish.Modal.extend({
         tableAttributes: [],
         availableTableAttributes: [],
       });
+      this.focusLabelInput();
     });
 
     const $ul = $('<ul/>')
@@ -208,6 +214,10 @@ Craft.CustomizeSourcesModal = Garnish.Modal.extend({
     this.addListener(Garnish.$win, 'resize', this.updateSidebarView);
 
     this.addSourceMenu = new Garnish.DisclosureMenu($menuBtn);
+  },
+
+  focusLabelInput: function () {
+    this.selectedSource.$labelInput.trigger('focus');
   },
 
   getSourceName: function () {
@@ -336,10 +346,15 @@ Craft.CustomizeSourcesModal = Garnish.Modal.extend({
     const $item = $('<div class="customize-sources-item"/>').appendTo(
       this.$sourcesContainer
     );
-    const $itemLabel = $('<div class="label"/>').appendTo($item);
+    const $itemLabel = $('<div class="label customize-sources-item__btn"/>')
+      .attr({
+        tabindex: '0',
+        role: 'button',
+      })
+      .appendTo($item);
     const $itemInput = $('<input type="hidden"/>').appendTo($item);
     $(
-      `<a class="move icon" title="${Craft.t(
+      `<a class="move icon customize-sources-item__move" title="${Craft.t(
         'app',
         'Reorder'
       )}" role="button"></a>`
@@ -501,7 +516,10 @@ Craft.CustomizeSourcesModal.BaseSource = Garnish.Base.extend({
 
     this.$item.data('source', this);
 
-    this.addListener(this.$item, 'click', 'select');
+    this.addListener(this.$itemLabel, 'click', 'select');
+    this.addListener(this.$itemLabel, 'keypress', (e) =>
+      Garnish.handleActivatingKeypress(e, this.select.bind(this))
+    );
   },
 
   isHeading: function () {
@@ -526,6 +544,9 @@ Craft.CustomizeSourcesModal.BaseSource = Garnish.Base.extend({
     }
 
     this.$item.addClass('sel');
+    this.$itemLabel.attr({
+      'aria-current': 'true',
+    });
     this.modal.selectedSource = this;
     this.modal.updateHeading();
 
@@ -547,6 +568,9 @@ Craft.CustomizeSourcesModal.BaseSource = Garnish.Base.extend({
 
   deselect: function () {
     this.$item.removeClass('sel');
+    this.$itemLabel.attr({
+      'aria-current': 'false',
+    });
     this.modal.selectedSource = null;
     this.$settingsContainer.addClass('hidden');
   },
@@ -569,6 +593,8 @@ Craft.CustomizeSourcesModal.BaseSource = Garnish.Base.extend({
       if (this.modal.sources.length) {
         this.modal.sources[0].select();
       }
+
+      Garnish.setFocusWithin(this.modal.$sourceSettingsContainer);
     }
 
     this.$item.data('source', null);
@@ -843,11 +869,18 @@ Craft.CustomizeSourcesModal.CustomSource =
       $container.append('<hr/>');
 
       this.$deleteBtn = $('<a class="error delete"/>')
+        .attr({
+          role: 'button',
+          tabindex: '0',
+        })
         .text(Craft.t('app', 'Delete custom source'))
         .appendTo($container);
 
       this.addListener(this.$labelInput, 'input', 'handleLabelInputChange');
       this.addListener(this.$deleteBtn, 'click', 'destroy');
+      this.addListener(this.$deleteBtn, 'keypress', (e) => {
+        Garnish.handleActivatingKeypress(e, this.destroy.bind(this));
+      });
     },
 
     availableTableAttributes: function () {
@@ -856,11 +889,6 @@ Craft.CustomizeSourcesModal.CustomSource =
         attributes.push(...this.modal.customFieldAttributes);
       }
       return attributes;
-    },
-
-    select: function () {
-      this.base();
-      this.$labelInput.focus();
     },
 
     handleLabelInputChange: function () {
@@ -903,11 +931,6 @@ Craft.CustomizeSourcesModal.Heading =
       return true;
     },
 
-    select: function () {
-      this.base();
-      this.$labelInput.focus();
-    },
-
     createSettings: function ($container) {
       const $labelField = Craft.ui
         .createTextField({
@@ -925,10 +948,17 @@ Craft.CustomizeSourcesModal.Heading =
 
       this.$deleteBtn = $('<a class="error delete"/>')
         .text(Craft.t('app', 'Delete heading'))
+        .attr({
+          role: 'button',
+          tabindex: '0',
+        })
         .appendTo($container);
 
       this.addListener(this.$labelInput, 'input', 'handleLabelInputChange');
       this.addListener(this.$deleteBtn, 'click', 'destroy');
+      this.addListener(this.$deleteBtn, 'keypress', (e) => {
+        Garnish.handleActivatingKeypress(e, this.destroy.bind(this));
+      });
     },
 
     handleLabelInputChange: function () {
@@ -939,7 +969,7 @@ Craft.CustomizeSourcesModal.Heading =
       this.$itemLabel.html(
         (val
           ? Craft.escapeHtml(val)
-          : `<em class="light">${Craft.t('app', '(blank)')}</em>`) + '&nbsp;'
+          : `<em>${Craft.t('app', '(blank)')}</em>`) + '&nbsp;'
       );
       this.$itemInput.val(val);
     },
