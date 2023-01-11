@@ -1184,43 +1184,6 @@ Craft.ui = {
     $body.prev('.errors-summary').remove();
   },
 
-  showErrorsSummary: function ($body, errors) {
-    if (errors) {
-      var $list = $('<ul class="errors"/>');
-
-      Object.entries(errors).forEach(([fieldHandle, fieldErrors]) => {
-        for (var i = 0; i < fieldErrors.length; i++) {
-          var listItem = '<li>';
-          listItem += '<a data-field-error-key="' + fieldHandle + '" href="#">';
-          listItem += fieldErrors[i];
-          listItem += '</a>';
-          listItem += '</li>';
-
-          $(listItem).appendTo($list);
-        }
-      });
-
-      var $errorsSummary = $('<div class="errors-summary" tabindex="-1" />')
-        .append(
-          '<div>' +
-            '<span class="notification-icon" data-icon="alert" data-label="error" role="img"></span>' +
-            '<h2>' +
-            Craft.t(
-              'app',
-              'Found {num, number} {num, plural, =1{error} other{errors}}:',
-              {
-                num: Object.keys(errors).length,
-              }
-            ) +
-            '</h2>' +
-            '</div>'
-        )
-        .append($list);
-
-      $errorsSummary.insertBefore($body);
-    }
-  },
-
   setFocusOnErrorsSummary: function ($body, namespace = '') {
     var errorsSummaryContainer = $body.find('.errors-summary');
     if (errorsSummaryContainer.length > 0) {
@@ -1228,9 +1191,9 @@ Craft.ui = {
 
       // start listening for clicks on summary errors
       errorsSummaryContainer.find('a').on('click', (ev) => {
-        if ($(ev.target).hasClass('cross-site-validate') == false) {
+        if ($(ev.currentTarget).hasClass('cross-site-validate') == false) {
           ev.preventDefault();
-          this.anchorSummaryErrorToField(ev.target, $body, namespace);
+          this.anchorSummaryErrorToField(ev.currentTarget, $body, namespace);
         }
       });
     }

@@ -811,17 +811,32 @@ JS, [
         return $html;
     }
 
-    private function _errorsSummary(
-        ElementInterface $element,
-    ): string {
+    /**
+     * Return html for errors summary box
+     *
+     * @param ElementInterface $element
+     * @return string
+     */
+    private function _errorsSummary(ElementInterface $element): string
+    {
         $html = '';
 
         if ($element->hasErrors()) {
             $errorsList = [];
             foreach ($element->getErrors() as $key => $errors) {
+
+                // get field by handle (key)
+                $field = Craft::$app->fields->getFieldByHandle($key);
+
                 foreach ($errors as $error) {
                     $errorItem = Html::beginTag('li');
 
+                    // get name of the field; wrap that name in the error message in a span
+                    if ($field && str_contains($error, $field->name)) {
+                        $error = str_replace($field->name, "<span>$field->name</span>", $error);
+                    }
+
+                    // this is true in case of e.g. cross site validation error
                     if (preg_match('/^\s?\<a /', $error)) {
                         $errorItem .= $error;
                     } else {
@@ -1855,6 +1870,7 @@ JS, [
             'modelName' => 'element',
             'element' => $element->toArray($element->attributes()),
             'errors' => $element->getErrors(),
+            'errorsSummary' => $this->_errorsSummary($element),
         ];
 
         return $this->asFailure($message, $data, ['element' => $element]);

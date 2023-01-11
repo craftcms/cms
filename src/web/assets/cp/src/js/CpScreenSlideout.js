@@ -517,8 +517,7 @@ Craft.CpScreenSlideout = Craft.Slideout.extend(
       Craft.cp.displayError(data.message);
       if (data.errors) {
         this.showErrors(data.errors);
-        this.showErrorsSummary(data.errors);
-        this.$c;
+        this.showErrorsSummary(data.errorsSummary);
         Craft.ui.setFocusOnErrorsSummary(this.$container, this.namespace);
       }
     },
@@ -571,19 +570,11 @@ Craft.CpScreenSlideout = Craft.Slideout.extend(
     },
 
     /**
-     * @param {string[]} errors
+     * @param {string} errors
      */
-    showErrorsSummary: function (errors) {
-      var allErrors = {};
-      Object.entries(errors).forEach(([fieldHandle, fieldErrors]) => {
-        allErrors[fieldHandle] = [];
-        for (var i = 0; i < fieldErrors.length; i++) {
-          allErrors[fieldHandle].push(fieldErrors[i]);
-        }
-      });
-
-      if (Object.keys(allErrors).length > 0) {
-        Craft.ui.showErrorsSummary(this.$body, allErrors);
+    showErrorsSummary: function (errorsSummary) {
+      if (errorsSummary.length > 0) {
+        this.$body.before(errorsSummary);
       }
     },
 

@@ -1524,6 +1524,15 @@ li.breadcrumb-toggle-wrapper {
 
     span {
       padding-left: 5px;
+      text-decoration: underline;
+    }
+
+    &:hover {
+      text-decoration: none;
+
+      span {
+        color: blue;
+      }
     }
   }
 }
