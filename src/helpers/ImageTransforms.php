@@ -57,9 +57,7 @@ class ImageTransforms
 
         return Craft::createObject([
             'class' => ImageTransform::class,
-            /** @phpstan-ignore-next-line */
             'width' => $matches['width'] ?? null,
-            /** @phpstan-ignore-next-line */
             'height' => $matches['height'] ?? null,
             'mode' => $matches['mode'],
             'position' => $matches['position'],
@@ -78,7 +76,7 @@ class ImageTransforms
      */
     public static function detectTransformFormat(Asset $asset): string
     {
-        if (in_array(mb_strtolower($asset->getExtension()), Image::webSafeFormats(), true)) {
+        if (Image::isWebSafe($asset->getExtension())) {
             return $asset->getExtension();
         }
 

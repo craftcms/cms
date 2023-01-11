@@ -257,33 +257,9 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
      */
     public function retry(string $id): void
     {
-        $this->_lock(function() use ($id) {
-            Db::update($this->tableName, [
-                'dateReserved' => null,
-                'timeUpdated' => null,
-                'progress' => 0,
-                'progressLabel' => null,
-                'attempt' => 0,
-                'fail' => false,
-                'dateFailed' => null,
-                'error' => null,
-            ], [
-                'id' => $id,
-            ], [], false, $this->db);
-        });
-
-        // If there's a proxy queue, send a new job to that as well
-        if ($this->proxyQueue) {
-            $job = (new Query())
-                ->select(['priority', 'delay', 'ttr'])
-                ->from($this->tableName)
-                ->where(['id' => $id])
-                ->one();
-
-            if ($job) {
-                $this->pushProxyJob($id, $job['priority'], $job['delay'], $job['ttr']);
-            }
-        }
+        $this->_retry([
+            'id' => $id,
+        ]);
     }
 
     /**
@@ -291,23 +267,53 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
      */
     public function retryAll(): void
     {
-        $this->_lock(function() {
+        $this->_retry([
+            'channel' => $this->channel(),
+            'fail' => true,
+        ]);
+    }
+
+    private function _retry(array $condition): void
+    {
+        $this->_lock(function() use ($condition) {
             // Move expired messages into waiting list
             $this->_moveExpired();
 
-            Db::update($this->tableName, [
-                'dateReserved' => null,
-                'timeUpdated' => null,
-                'progress' => 0,
-                'progressLabel' => null,
-                'attempt' => 0,
-                'fail' => false,
-                'dateFailed' => null,
-                'error' => null,
-            ], [
-                'channel' => $this->channel(),
-                'fail' => true,
-            ], [], false, $this->db);
+            if ($this->proxyQueue) {
+                $jobs = (new Query())
+                    ->select(['id', 'priority', 'delay', 'ttr'])
+                    ->from($this->tableName)
+                    ->where($condition)
+                    ->all();
+
+                foreach ($jobs as $job) {
+                    Db::update($this->tableName, [
+                        'dateReserved' => null,
+                        'timeUpdated' => null,
+                        'progress' => 0,
+                        'progressLabel' => null,
+                        'attempt' => 0,
+                        'fail' => false,
+                        'dateFailed' => null,
+                        'error' => null,
+                    ], [
+                        'id' => $job['id'],
+                    ], [], false, $this->db);
+
+                    $this->pushProxyJob($job['id'], $job['priority'], $job['delay'], $job['ttr']);
+                }
+            } else {
+                Db::update($this->tableName, [
+                    'dateReserved' => null,
+                    'timeUpdated' => null,
+                    'progress' => 0,
+                    'progressLabel' => null,
+                    'attempt' => 0,
+                    'fail' => false,
+                    'dateFailed' => null,
+                    'error' => null,
+                ], $condition, updateTimestamp: false, db: $this->db);
+            }
         });
     }
 
@@ -907,11 +913,13 @@ EOD;
             $this->_locked = true;
         }
 
-        $callback();
-
-        if ($acquireLock) {
-            $this->mutex->release(__CLASS__ . "::$channel");
-            $this->_locked = false;
+        try {
+            $callback();
+        } finally {
+            if ($acquireLock) {
+                $this->mutex->release(__CLASS__ . "::$channel");
+                $this->_locked = false;
+            }
         }
     }
 
