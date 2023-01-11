@@ -939,6 +939,29 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       }
     },
 
+    updateScreenReaderStatus: function () {
+      const attribute = this.getSelectedSortAttribute();
+      const direction =
+        this.getSelectedSortDirection() === 'asc'
+          ? Craft.t('app', 'Ascending')
+          : Craft.t('app', 'Descending');
+      const sortLabel = this.getSortLabel(attribute);
+
+      if (!attribute && !direction && !sortLabel) return;
+
+      const message = Craft.t(
+        'app',
+        '{name} sorted by {attribute}, {direction}',
+        {
+          name: this.getSourceLabel(),
+          attribute: sortLabel,
+          direction: direction,
+        }
+      );
+
+      this.$srStatusContainer.empty().text(message);
+    },
+
     showActionTriggers: function () {
       // Ignore if they're already shown
       if (this.showingActionTriggers) {
@@ -2115,29 +2138,6 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       );
     },
 
-    _updateScreenReaderStatus: function () {
-      const attribute = this.getSelectedSortAttribute();
-      const direction =
-        this.getSelectedSortDirection() === 'asc'
-          ? Craft.t('app', 'Ascending')
-          : Craft.t('app', 'Descending');
-      const sortLabel = this.getSortLabel(attribute);
-
-      if (!attribute && !direction && !sortLabel) return;
-
-      const message = Craft.t(
-        'app',
-        '{name} sorted by {attribute}, {direction}',
-        {
-          name: this.getSourceLabel(),
-          attribute: sortLabel,
-          direction: direction,
-        }
-      );
-
-      this.$srStatusContainer.empty().text(message);
-    },
-
     _updateView: function (params, response) {
       // Cleanup
       // -------------------------------------------------------------
@@ -3026,7 +3026,7 @@ const ViewMenu = Garnish.Base.extend({
             $selectedOption.data('dir')
           );
           this.elementIndex.updateElements();
-          this.elementIndex._updateScreenReaderStatus();
+          this.elementIndex.updateScreenReaderStatus();
           this._createRevertBtn();
         }
       },
@@ -3039,7 +3039,7 @@ const ViewMenu = Garnish.Base.extend({
         false
       );
       this.elementIndex.updateElements();
-      this.elementIndex._updateScreenReaderStatus();
+      this.elementIndex.updateScreenReaderStatus();
       this._createRevertBtn();
     });
 
