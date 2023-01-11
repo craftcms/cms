@@ -28,7 +28,6 @@ use Twig\Error\LoaderError as TwigLoaderError;
 use Twig\Error\RuntimeError as TwigRuntimeError;
 use Twig\Error\SyntaxError as TwigSyntaxError;
 use Twig\Extension\CoreExtension;
-use Twig\Extension\DebugExtension;
 use Twig\Extension\ExtensionInterface;
 use Twig\Extension\StringLoaderExtension;
 use Twig\Template as TwigTemplate;
@@ -355,10 +354,6 @@ class View extends \yii\web\View
             $twig->addExtension(new CpExtension());
         } elseif (Craft::$app->getIsInstalled()) {
             $twig->addExtension(new GlobalsExtension());
-        }
-
-        if (App::devMode()) {
-            $twig->addExtension(new DebugExtension());
         }
 
         // Add plugin-supplied extensions

@@ -19,6 +19,7 @@ use Throwable;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
+ * @deprecated in 4.4.0. [[GenerateImageTransform]] should be used instead.
  */
 class GeneratePendingTransforms extends BaseJob
 {
@@ -34,12 +35,15 @@ class GeneratePendingTransforms extends BaseJob
         $totalIndexes = count($indexIds);
 
         foreach ($indexIds as $i => $id) {
-            if ($index = $transformer->getTransformIndexModelById($id)) {
-                $this->setProgress($queue, $i / $totalIndexes, Translation::prep('app', '{step, number} of {total, number}', [
-                    'step' => $i + 1,
-                    'total' => $totalIndexes,
-                ]));
+            $this->setProgress($queue, $i / $totalIndexes, Translation::prep('app', '{step, number} of {total, number}', [
+                'step' => $i + 1,
+                'total' => $totalIndexes,
+            ]));
 
+            $index = $transformer->getTransformIndexModelById($id);
+
+            // Make sure it hasn't been generated yet and isn't currently in progress
+            if ($index && !$index->fileExists && !$index->inProgress) {
                 // Don't let an exception stop us from processing the rest
                 try {
                     $asset = Asset::findOne(['id' => $index->assetId]);
