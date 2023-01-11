@@ -1645,6 +1645,7 @@ return [
     'You need to be on at least {plugin} {version} before you can update to {plugin} {targetVersion}.' => 'Musíte být minimálně na {plugin}{version}, než budete moci aktualizovat na verzi {plugin}{targetVersion}.',
     'You need to reset your password, but an error was encountered when sending the password reset email.' => 'Musíte resetovat heslo, ale při odesílání e-mailu pro resetování hesla došlo k chybě.',
     'You need to reset your password. Check your email for instructions.' => 'Musíte obnovit své heslo. Zkontrolujte svoji emailovou schránku, najdete v ní další instrukce.',
+    'Your Craft license isn’t allowed to run version {version}.' => 'Your Craft license isn’t allowed to run version {version}.',
     'Your Craft license key is invalid.' => 'Váš licenční klíč systému Craft je neplatný.',
     'Your Email' => 'Váš email',
     'Your account doesn’t have permission to access the control panel when the system is offline.' => 'Váš účet nemá oprávnění přihlásit se do ovládacího panelu, když je systém offline.',
