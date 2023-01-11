@@ -424,9 +424,8 @@ Craft.TableElementIndexView = Craft.BaseElementIndexView.extend({
     }
 
     $header.addClass('ordered loading');
-    this.elementIndex.updateElements({
-      sortUpdated: true,
-    });
+    this.elementIndex.updateElements();
+    this.elementIndex._updateScreenReaderStatus();
 
     // No need for two spinners
     this.elementIndex.setIndexAvailable();
