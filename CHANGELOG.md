@@ -7,6 +7,7 @@
 - Removed the “Encryption Method” setting from the SMTP mailer transporter, as Symfony Mailer already uses TLS when port 465 is used (as it is by default).
 - The “Port” setting on the SMTP mailer transporter is no longer required. It will default to 465 or 25 depending on whether OpenSSL is installed.
 - Fixed field status badge styling in some contexts. ([#12403](https://github.com/craftcms/cms/issues/12403))
+- Fixed a bug where exporting elements with multiple field layouts as a CSV file using the “Expanded” export type would result in mismatched column values.
 - Deprecated `craft\helpers\DateTimeHelper::timeZoneAbbreviation()`.
 - Deprecated `craft\helpers\DateTimeHelper::timeZoneOffset()`.
 
