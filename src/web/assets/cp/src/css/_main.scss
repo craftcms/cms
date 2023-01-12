@@ -5790,12 +5790,21 @@ body.reduce-focus-visibility {
   }
 }
 
-.checkbox-icon:before {
-  @include icon;
-  line-height: var(--checkbox-size);
-  color: var(--enabled-color);
-  content: 'check';
-  font-size: 15px;
+.checkbox-icon {
+  display: inline-flex;
+  padding: 3px;
+  background-color: var(--enabled-color);
+  color: var(--white);
+  border-radius: var(--small-border-radius);
+
+  &:before {
+    --checkbox-size: 14px;
+    --icon-opacity: 1;
+    @include icon;
+    content: 'check';
+    line-height: var(--checkbox-size);
+    font-size: var(--checkbox-size);
+  }
 }
 
 .monaco-mouse-cursor-text {
