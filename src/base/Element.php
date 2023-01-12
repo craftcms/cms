@@ -4953,6 +4953,30 @@ JS,
 
     /**
      * @inheritdoc
+     * @throws InvalidConfigException
+     */
+    public function getNativeFieldByAttribute(string $attribute): ?BaseField
+    {
+        if (empty($attribute)) {
+            return null;
+        }
+
+        $fieldLayout = $this->getFieldLayout();
+        if ($fieldLayout) {
+            $field = array_values(array_filter(
+                $fieldLayout->getAvailableNativeFields(),
+                fn($nativeField) => $nativeField->attribute() == $attribute
+            ));
+            if (!empty($field)) {
+                return $field[0];
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * @inheritdoc
      * @throws InvalidConfigException if [[siteId]] is invalid
      */
     public function getSite(): Site

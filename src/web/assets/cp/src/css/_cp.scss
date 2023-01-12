@@ -1523,7 +1523,6 @@ li.breadcrumb-toggle-wrapper {
     color: var(--text-color);
 
     span {
-      padding-left: 5px;
       text-decoration: underline;
     }
 
@@ -1531,7 +1530,7 @@ li.breadcrumb-toggle-wrapper {
       text-decoration: none;
 
       span {
-        color: blue;
+        color: var(--link-color);
       }
     }
   }

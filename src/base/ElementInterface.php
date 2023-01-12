@@ -12,6 +12,7 @@ use craft\elements\conditions\ElementConditionInterface;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\User;
 use craft\errors\InvalidFieldException;
+use craft\fieldlayoutelements\BaseField;
 use craft\models\FieldLayout;
 use craft\models\Site;
 use Illuminate\Support\Collection;
@@ -1609,4 +1610,12 @@ interface ElementInterface extends ComponentInterface
      * Returns the string representation of the element.
      */
     public function __toString(): string;
+
+    /**
+     * Return the first native field for this element matched by the field attribute (~handle)
+     *
+     * @param string $attribute
+     * @return BaseField|null
+     */
+    public function getNativeFieldByAttribute(string $attribute): ?BaseField;
 }

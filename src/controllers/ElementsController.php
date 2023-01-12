@@ -827,13 +827,25 @@ JS, [
 
                 // get field by handle (key)
                 $field = Craft::$app->fields->getFieldByHandle($key);
+                $fieldAttr = 'name';
+                // if we couldn't find the field, try finding it in native fields
+                if (empty($field)) {
+                    $field = $element->getNativeFieldByAttribute($key);
+                    if (!empty($field)) {
+                        $fieldAttr = 'label';
+                    }
+                }
 
                 foreach ($errors as $error) {
                     $errorItem = Html::beginTag('li');
 
                     // get name of the field; wrap that name in the error message in a span
-                    if ($field && str_contains($error, $field->name)) {
-                        $error = str_replace($field->name, "<span>$field->name</span>", $error);
+                    if ($field && str_contains($error, ($fieldAttr === 'label' ? $field->label() : $field->name))) {
+                        $error = str_replace(
+                            ($fieldAttr === 'label' ? $field->label() : $field->name),
+                            "<span>" . ($fieldAttr === 'label' ? $field->label() : $field->name) . "</span>",
+                            $error
+                        );
                     }
 
                     // this is true in case of e.g. cross site validation error
