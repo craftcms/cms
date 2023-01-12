@@ -1536,6 +1536,14 @@ li.breadcrumb-toggle-wrapper {
   }
 }
 
+body.underline-links .errors-summary {
+  & > ul.errors li a {
+    span {
+      font-style: italic;
+    }
+  }
+}
+
 .content.has-sidebar:not(.hiding-sidebar) {
   @include margin-left($sidebarWidth);
 }

@@ -823,8 +823,23 @@ JS, [
 
         if ($element->hasErrors()) {
             $errorsList = [];
-            foreach ($element->getErrors() as $key => $errors) {
+            $allErrors = $element->getErrors();
+            $allKeys = array_keys($allErrors);
 
+            // if you e.g. have an assets field which is set to validate related assets,
+            // you should only see the top-level "Fix validation errors on the related asset" error
+            // and not the details of what's wrong with the selected asset;
+            foreach ($allKeys as $key) {
+                $lastNestedKey = substr_replace($key, '', strrpos($key, '.'));
+                $lastNestedKey = substr_replace($lastNestedKey, '', strrpos($lastNestedKey, '['));
+                if (!empty($lastNestedKey)) {
+                    if (in_array($lastNestedKey, $allKeys)) {
+                        unset($allErrors[$key]);
+                    }
+                }
+            }
+
+            foreach ($allErrors as $key => $errors) {
                 // get field by handle (key)
                 $field = Craft::$app->fields->getFieldByHandle($key);
                 $fieldAttr = 'name';
