@@ -74,6 +74,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
     actions: null,
     actionsHeadHtml: null,
     actionsBodyHtml: null,
+    $actionsMenu: null,
     $selectAllContainer: null,
     $selectAllCheckbox: null,
     showingActionTriggers: false,
@@ -1912,6 +1913,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       }
 
       this.submitAction($option.data('action'));
+      this.$actionsMenu.hide();
     },
 
     _handleStatusChange: function (ev) {
@@ -2504,6 +2506,8 @@ Craft.BaseElementIndex = Garnish.Base.extend(
             this._handleMenuActionTriggerSubmit(event);
           }
         });
+
+        this.$actionsMenu = $actionsBtn.data('trigger');
       }
     },
 
