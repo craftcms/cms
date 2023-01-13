@@ -458,7 +458,7 @@ class ResaveController extends Controller
         /** @var ElementQuery $query */
         /** @var ElementInterface $elementType */
         $elementType = $query->elementType;
-        $count = (int)$query->count();
+        $count = count($query->all());
 
         if ($count === 0) {
             $this->stdout('No ' . $elementType::pluralLowerDisplayName() . ' exist for that criteria.' . PHP_EOL, Console::FG_YELLOW);
