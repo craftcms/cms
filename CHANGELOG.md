@@ -1,5 +1,13 @@
 # Release Notes for Craft CMS 3.x
 
+## Unreleased
+
+- Improved the performance of the “Generating pending image transforms” queue job. ([#12274](https://github.com/craftcms/cms/issues/12274))
+- Fixed field status badge styling in some contexts. ([#12403](https://github.com/craftcms/cms/issues/12403))
+- Fixed a bug where exporting elements with multiple field layouts as a CSV file using the “Expanded” export type would result in mismatched column values.
+- Deprecated `craft\helpers\DateTimeHelper::timeZoneAbbreviation()`.
+- Deprecated `craft\helpers\DateTimeHelper::timeZoneOffset()`.
+
 ## 3.7.63.1 - 2023-01-09
 
 - Fixed a bug where editing certain Matrix/Neo/Super Table fields could result in content loss. ([#12445](https://github.com/craftcms/cms/issues/12445))
