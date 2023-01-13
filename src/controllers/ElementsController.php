@@ -822,10 +822,10 @@ JS, [
         $html = '';
 
         if ($element->hasErrors()) {
-            $errorsList = [];
             $allErrors = $element->getErrors();
             $allKeys = array_keys($allErrors);
 
+            // only show "top-level" errors
             // if you e.g. have an assets field which is set to validate related assets,
             // you should only see the top-level "Fix validation errors on the related asset" error
             // and not the details of what's wrong with the selected asset;
@@ -839,48 +839,45 @@ JS, [
                 }
             }
 
-            foreach ($allErrors as $key => $errors) {
-                // get field by handle (key)
-                $field = Craft::$app->fields->getFieldByHandle($key);
-                $fieldAttr = 'name';
-                // if we couldn't find the field, try finding it in native fields
-                if (empty($field)) {
-                    $field = $element->getNativeFieldByAttribute($key);
-                    if (!empty($field)) {
-                        $fieldAttr = 'label';
-                    }
-                }
+            $errorsList = [];
+            $fieldLayout = $element->getFieldLayout();
+            $layoutElements = $fieldLayout->getVisibleCustomFieldElements($element);
+            $availableNativeFields = $fieldLayout->getAvailableNativeFields();
 
-                foreach ($errors as $error) {
-                    $errorItem = Html::beginTag('li');
+            // prep custom field errors
+            foreach ($layoutElements as $layoutElement) {
+                $field = $layoutElement->getField();
+                $handle = $field->handle;
+                $label = $layoutElement->label ?: $field->name;
+                $errorsList += $this->_prepErrorsSummaryList($allErrors, $handle, $label);
+            }
 
-                    // get name of the field; wrap that name in the error message in a span
-                    if ($field && str_contains($error, ($fieldAttr === 'label' ? $field->label() : $field->name))) {
-                        $error = str_replace(
-                            ($fieldAttr === 'label' ? $field->label() : $field->name),
-                            "<span>" . ($fieldAttr === 'label' ? $field->label() : $field->name) . "</span>",
-                            $error
-                        );
-                    }
-
-                    // this is true in case of e.g. cross site validation error
-                    if (preg_match('/^\s?\<a /', $error)) {
-                        $errorItem .= $error;
-                    } else {
-                        $errorItem .= Html::a(Craft::t('app', $error), '#', [
-                            'data-field-error-key' => $key,
-                        ]);
-                    }
-
-                    $errorItem .= Html::endTag('li');
-
-                    $errorsList[] = $errorItem;
+            // prep native field errors
+            foreach ($availableNativeFields as $nativeField) {
+                if (in_array($nativeField->attribute(), $allKeys)) {
+                    $handle = $nativeField->attribute();
+                    $label = $nativeField->label();
+                    $errorsList += $this->_prepErrorsSummaryList($allErrors, $handle, $label);
                 }
             }
 
-            if (!empty($errorsList)) {
+            // prep errors we couldn't get via previous methods (e.g. for fields inside a matrix block)
+            foreach (array_diff_key($allErrors, $errorsList) as $key => $errors) {
+                $errorsList += $this->_prepErrorsSummaryList($allErrors, $key, null);
+            }
+
+            // order $errorsList as per the original $allErrors list
+            $errorsList = array_replace(array_flip(array_keys($allErrors)), $errorsList);
+
+            // make the list of errors one-dimensional
+            $errors = [];
+            array_walk_recursive($errorsList, function($value, $key) use (&$errors) {
+                $errors[] = $value;
+            });
+
+            if (!empty($errors)) {
                 $heading = Craft::t('app', 'Found {num, number} {num, plural, =1{error} other{errors}}:', [
-                    'num' => count($errorsList),
+                    'num' => count($errors),
                 ]);
 
                 $html = Html::beginTag('div', [
@@ -899,13 +896,51 @@ JS, [
                     Html::beginTag('ul', [
                         'class' => ['errors'],
                     ]) .
-                    implode('', $errorsList) .
+                    implode('', $errors) .
                     Html::endTag('ul') .
                     Html::endTag('div');
             }
         }
 
         return $html;
+    }
+
+    /**
+     * Returns array of <li> items for error given handle
+     *
+     * @param array $allErrors
+     * @param string $handle
+     * @param string|null $label
+     * @return array
+     */
+    private function _prepErrorsSummaryList(array $allErrors, string $handle, ?string $label = null): array
+    {
+        $errorsList = [];
+        if (isset($allErrors[$handle])) {
+            foreach ($allErrors[$handle] as $error) {
+                $errorItem = Html::beginTag('li');
+
+                // get name of the field; wrap that name in the error message in a span
+                if (!empty($label) && str_contains($error, $label)) {
+                    $error = str_replace($label, "<span>$label</span>", $error);
+                }
+
+                // this is true in case of e.g. cross site validation error
+                if (preg_match('/^\s?\<a /', $error)) {
+                    $errorItem .= $error;
+                } else {
+                    $errorItem .= Html::a(Craft::t('app', $error), '#', [
+                        'data-field-error-key' => $handle,
+                    ]);
+                }
+
+                $errorItem .= Html::endTag('li');
+
+                $errorsList[$handle][] = $errorItem;
+            }
+        }
+
+        return $errorsList;
     }
 
     private function _editorSidebar(
