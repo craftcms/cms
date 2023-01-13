@@ -1,5 +1,6 @@
 {%- set type = type ?? 'text' %}
 {%- set autocomplete = autocomplete ?? false %}
+{%- set floatingLabel = floatingLabel ?? false %}
 
 {%- set class = (class ?? [])|explodeClass|merge([
     'text',
@@ -25,7 +26,7 @@
     disabled: disabled ?? false,
     readonly: readonly ?? false,
     title: title ?? false,
-    placeholder: placeholder ?? false,
+    placeholder: floatingLabel ? false : (placeholder ?? false),
     step: step ?? false,
     min: min ?? false,
     max: max ?? false,
@@ -49,6 +50,10 @@
             ("padding-#{orientation == 'ltr' ? 'right' : 'left'}"): (maxlength ?? false) ? "#{7.2*maxlength|length+14}px",
         },
     }, recursive=true) %}
+{%- endif %}
+
+{%- if floatingLabel %}
+    <label class="floating-label">Username</label>
 {%- endif %}
 
 {%- set input = tag('input', inputAttributes) %}

@@ -5638,6 +5638,14 @@ fieldset {
   & > .warning {
     margin: 5px 0 0;
   }
+
+  .floating-label {
+    position: absolute;
+    color: red;
+    top: 50%;
+    left: 14px;
+    transform: translateY(-50%);
+  }
 }
 
 .field > .instructions,

@@ -632,6 +632,8 @@ class Cp
             $input = static::renderTemplate(substr($input, 9), $config);
         }
 
+        $floatingLabel = $config['floatingLabel'] ?? false;
+
         $fieldset = $config['fieldset'] ?? false;
         $fieldId = $config['fieldId'] ?? "$id-field";
         $label = $config['fieldLabel'] ?? $config['label'] ?? null;
