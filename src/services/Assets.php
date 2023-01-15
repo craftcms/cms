@@ -489,7 +489,7 @@ class Assets extends Component
         $query = $this->_createFolderQuery()
             ->where([
                 'and',
-                ['like', 'path', $parentFolder->path . '%', false],
+                ['like', 'path', $parentFolder->path . '_%', false],
                 ['volumeId' => $parentFolder->volumeId],
                 ['not', ['parentId' => null]],
             ]);
