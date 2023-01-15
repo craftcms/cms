@@ -486,19 +486,27 @@ class Assets extends Component
      */
     public function getAllDescendantFolders(VolumeFolder $parentFolder, string $orderBy = 'path'): array
     {
-        $query = $this->_createFolderQuery()
-            ->where([
-                'and',
-                ['like', 'path', $parentFolder->path . '_%', false],
-                ['volumeId' => $parentFolder->volumeId],
-                ['not', ['parentId' => null]],
-            ]);
+        $sql = "
+            WITH RECURSIVE descendants AS
+            (
+                SELECT vf.* FROM ".Table::VOLUMEFOLDERS." vf WHERE vf.parentId = :parent_id
+                UNION ALL
+                SELECT vf2.* FROM ".Table::VOLUMEFOLDERS." vf2 JOIN descendants 
+                ON descendants.id = vf2.parentId
+            )
+            SELECT * FROM descendants
+        ";
+        $params = [':parent_id' => $parentFolder->id];
 
         if ($orderBy) {
-            $query->orderBy($orderBy);
+            $sql .= "ORDER BY :order_by";
+            $params[':order_by'] = $orderBy;
         }
+        
+        $connection = Craft::$app->getDb();
+        $command = $connection->createCommand($sql, $params);
+        $results = $command->queryAll();
 
-        $results = $query->all();
         $descendantFolders = [];
 
         foreach ($results as $result) {
