@@ -489,9 +489,9 @@ class Assets extends Component
         $sql = "
             WITH RECURSIVE descendants AS
             (
-                SELECT vf.* FROM ".Table::VOLUMEFOLDERS." vf WHERE vf.parentId = :parent_id
+                SELECT vf.* FROM " . Table::VOLUMEFOLDERS . " vf WHERE vf.parentId = :parent_id
                 UNION ALL
-                SELECT vf2.* FROM ".Table::VOLUMEFOLDERS." vf2 JOIN descendants 
+                SELECT vf2.* FROM " . Table::VOLUMEFOLDERS . " vf2 JOIN descendants 
                 ON descendants.id = vf2.parentId
             )
             SELECT * FROM descendants
@@ -502,11 +502,11 @@ class Assets extends Component
             $sql .= "ORDER BY :order_by";
             $params[':order_by'] = $orderBy;
         }
-        
+
         $connection = Craft::$app->getDb();
         $command = $connection->createCommand($sql, $params);
-        $results = $command->queryAll();
 
+        $results = $command->queryAll();
         $descendantFolders = [];
 
         foreach ($results as $result) {
