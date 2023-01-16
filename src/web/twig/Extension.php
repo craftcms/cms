@@ -323,13 +323,13 @@ class Extension extends AbstractExtension implements GlobalsInterface
     /**
      * Outputs a value from a Money object.
      *
-     * @param Money|null $money
+     * @param mixed|null $money
      * @param string|null $formatLocale
      * @return string|null
      */
-    public function moneyFilter(?Money $money, ?string $formatLocale = null): ?string
+    public function moneyFilter(mixed $money, ?string $formatLocale = null): ?string
     {
-        if ($money === null) {
+        if (!$money instanceof Money) {
             return null;
         }
 
