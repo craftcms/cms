@@ -466,7 +466,7 @@ class ResaveController extends Controller
         }
 
         if ($query->offset) {
-            $count = max($count - $query->offset, 0);
+            $count = max($count - (int)$query->offset, 0);
         }
 
         if ($query->limit) {
