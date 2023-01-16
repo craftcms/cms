@@ -1522,14 +1522,14 @@ li.breadcrumb-toggle-wrapper {
   & > ul.errors li a {
     color: var(--text-color);
 
-    span {
+    em {
       text-decoration: underline;
     }
 
     &:hover {
       text-decoration: none;
 
-      span {
+      em {
         color: var(--link-color);
       }
     }
@@ -1538,7 +1538,7 @@ li.breadcrumb-toggle-wrapper {
 
 body.underline-links .errors-summary {
   & > ul.errors li a {
-    span {
+    em {
       font-style: italic;
     }
   }

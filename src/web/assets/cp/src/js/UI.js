@@ -1147,7 +1147,7 @@ Craft.ui = {
 
   addErrorsToList: function ($list, errors) {
     for (var i = 0; i < errors.length; i++) {
-      $('<li/>').text(errors[i]).appendTo($list);
+      $('<li/>').text(errors[i].replaceAll('*', '')).appendTo($list);
     }
   },
 

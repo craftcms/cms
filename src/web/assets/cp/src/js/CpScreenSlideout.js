@@ -228,8 +228,25 @@ Craft.CpScreenSlideout = Craft.Slideout.extend(
           .finally(() => {
             this.hideLoadSpinner();
             this.cancelToken = null;
+
+            // this is needed so that we can clear errors after slideout was initiated with
+            // a prevalidate param and we see the errors before we take any action;
+            // without this, on first save attempt errors would show as duplicated
+            // because $fieldsWithErrors is empty at the time of first clearErrors()
+            this.findSlideoutErrorsOnPrevalidatedLoad();
           });
       });
+    },
+
+    findSlideoutErrorsOnPrevalidatedLoad: function () {
+      const errorLists = this.$body.find('ul.errors');
+      let errorFields = [];
+      errorLists.each(function (index, value) {
+        errorFields.push($(value).parent('.field'));
+      });
+      if (errorFields.length > 0) {
+        this.fieldsWithErrors = errorFields;
+      }
     },
 
     getParams: function () {

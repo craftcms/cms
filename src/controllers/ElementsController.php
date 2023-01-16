@@ -32,6 +32,7 @@ use craft\web\Controller;
 use craft\web\CpScreenResponseBehavior;
 use craft\web\View;
 use Throwable;
+use yii\helpers\Markdown;
 use yii\web\BadRequestHttpException;
 use yii\web\ForbiddenHttpException;
 use yii\web\Response;
@@ -838,46 +839,30 @@ JS, [
                     }
                 }
             }
-
             $errorsList = [];
-            $fieldLayout = $element->getFieldLayout();
-            $layoutElements = $fieldLayout->getVisibleCustomFieldElements($element);
-            $availableNativeFields = $fieldLayout->getAvailableNativeFields();
+            foreach ($allErrors as $key => $errors) {
+                foreach ($errors as $error) {
+                    $errorItem = Html::beginTag('li');
 
-            // prep custom field errors
-            foreach ($layoutElements as $layoutElement) {
-                $field = $layoutElement->getField();
-                $handle = $field->handle;
-                $label = $layoutElement->label ?: $field->name;
-                $errorsList += $this->_prepErrorsSummaryList($allErrors, $handle, $label);
-            }
+                    // this is true in case of e.g. cross site validation error
+                    if (preg_match('/^\s?\<a /', $error)) {
+                        $errorItem .= $error;
+                    } else {
+                        $error = Markdown::processParagraph(htmlspecialchars($error));
+                        $errorItem .= Html::a(Craft::t('app', $error), '#', [
+                            'data-field-error-key' => $key,
+                        ]);
+                    }
 
-            // prep native field errors
-            foreach ($availableNativeFields as $nativeField) {
-                if (in_array($nativeField->attribute(), $allKeys)) {
-                    $handle = $nativeField->attribute();
-                    $label = $nativeField->label();
-                    $errorsList += $this->_prepErrorsSummaryList($allErrors, $handle, $label);
+                    $errorItem .= Html::endTag('li');
+
+                    $errorsList[] = $errorItem;
                 }
             }
 
-            // prep errors we couldn't get via previous methods (e.g. for fields inside a matrix block)
-            foreach (array_diff_key($allErrors, $errorsList) as $key => $errors) {
-                $errorsList += $this->_prepErrorsSummaryList($allErrors, $key, null);
-            }
-
-            // order $errorsList as per the original $allErrors list
-            $errorsList = array_replace(array_flip(array_keys($allErrors)), $errorsList);
-
-            // make the list of errors one-dimensional
-            $errors = [];
-            array_walk_recursive($errorsList, function($value, $key) use (&$errors) {
-                $errors[] = $value;
-            });
-
-            if (!empty($errors)) {
+            if (!empty($errorsList)) {
                 $heading = Craft::t('app', 'Found {num, number} {num, plural, =1{error} other{errors}}:', [
-                    'num' => count($errors),
+                    'num' => count($errorsList),
                 ]);
 
                 $html = Html::beginTag('div', [
@@ -896,7 +881,7 @@ JS, [
                     Html::beginTag('ul', [
                         'class' => ['errors'],
                     ]) .
-                    implode('', $errors) .
+                    implode('', $errorsList) .
                     Html::endTag('ul') .
                     Html::endTag('div');
             }
