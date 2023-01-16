@@ -465,6 +465,10 @@ class ResaveController extends Controller
             return ExitCode::OK;
         }
 
+        if ($query->offset) {
+            $count = max($count - $query->offset, 0);
+        }
+
         if ($query->limit) {
             $count = min($count, (int)$query->limit);
         }
