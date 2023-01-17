@@ -24,13 +24,28 @@ export default Base.extend(
       this.$inputWrapper = this.$label.closest('.input');
       this.$input = this.$inputWrapper.find('input').first();
 
+      // If there's already a value on init, activate float
       if (this.$input.val()) {
         this.activateFloat();
       }
+
+      this.addListener(this.$input, 'blur', () => {
+        if (!this.$input.val()) {
+          this.deactivateFloat();
+        }
+      });
+
+      this.addListener(this.$input, 'focus', () => {
+        this.activateFloat();
+      });
     },
 
     activateFloat: function () {
       this.$inputWrapper.addClass(this.settings.activeWrapperClass);
+    },
+
+    deactivateFloat: function () {
+      this.$inputWrapper.removeClass(this.settings.activeWrapperClass);
     },
 
     destroy: function () {
