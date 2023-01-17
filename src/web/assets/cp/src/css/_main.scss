@@ -64,7 +64,6 @@
   --inner-focus-ring: inset 0 0 0 1px hsl(var(--dark-focus-hsl)),
     inset 0 0 0 3px hsla(var(--dark-focus-hsl), 0.7);
   --touch-target-size: 24px; /* Minimum recommended touch target size */
-  --input-padding: 6px 9px;
 }
 
 body,
@@ -5639,10 +5638,6 @@ fieldset {
         top: 0;
         font-size: 0.8rem;
       }
-
-      & .text {
-        padding: 16px 16px 12px;
-      }
     }
   }
 
@@ -5951,6 +5946,12 @@ body.reduce-focus-visibility {
 
 .text,
 .selectize.multiselect .selectize-input {
+  --padding-top: 6px;
+  --padding-right: 9px;
+  --padding-bottom: 6px;
+  --padding-left: 9px;
+  --input-padding: var(--padding-top) var(--padding-right) var(--padding-bottom)
+    var(--padding-left);
   padding: var(--input-padding);
 }
 
