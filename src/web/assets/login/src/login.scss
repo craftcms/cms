@@ -45,9 +45,9 @@ body {
 }
 
 #loginName {
+  --input-padding: 14px 16px;
   margin: 0 -1px;
   width: calc(100% + 2px);
-  padding: 14px 16px;
   border-radius: var(--large-border-radius);
 }
 
