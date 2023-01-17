@@ -1870,6 +1870,7 @@ $.extend(Craft, {
     $('.nicetext', $container).nicetext();
     $('.formsubmit', $container).formsubmit();
     $('.menubtn:not([data-disclosure-trigger])', $container).menubtn();
+    $('.floating-label', $container).floatingLabel();
     $('[data-disclosure-trigger]', $container).disclosureMenu();
     $('.datetimewrapper', $container).datetime();
     $(
@@ -2630,6 +2631,15 @@ $.extend($.fn, {
       // Only instantiate if it's not already a disclosure trigger, and it references a disclosure content
       if (!$trigger.data('trigger') && $trigger.attr('aria-controls')) {
         new Garnish.DisclosureMenu($trigger);
+      }
+    });
+  },
+
+  floatingLabel: function () {
+    return this.each(function () {
+      const $label = $(this);
+      if (!$label.data('floating-label')) {
+        new Garnish.FloatingLabel($label);
       }
     });
   },

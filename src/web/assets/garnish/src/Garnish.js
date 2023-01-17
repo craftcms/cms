@@ -10,6 +10,7 @@ import DragDrop from './DragDrop.js';
 import DragMove from './DragMove.js';
 import DragSort from './DragSort.js';
 import EscManager from './EscManager.js';
+import FloatingLabel from './FloatingLabel.js';
 import HUD from './HUD.js';
 import MenuBtn from './MenuBtn.js';
 import MixedInput from './MixedInput.js';
@@ -904,6 +905,7 @@ Object.assign(Garnish, {
   DragMove,
   DragSort,
   EscManager,
+  FloatingLabel,
   HUD,
   MenuBtn,
   MixedInput,
