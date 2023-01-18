@@ -29,8 +29,10 @@ export default Base.extend(
         this.activateFloat();
       } else {
         const isFocused = this.$input.is(':focus');
-        if (!isFocused) return;
-        this.activateFloat();
+
+        if (isFocused) {
+          this.activateFloat();
+        }
       }
 
       this.addListener(this.$input, 'blur', () => {
