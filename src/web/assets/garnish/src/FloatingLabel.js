@@ -61,7 +61,7 @@ export default Base.extend(
   },
   {
     defaults: {
-      activeWrapperClass: 'has-float',
+      activeWrapperClass: 'float-active',
     },
   }
 );
