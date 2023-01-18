@@ -40,8 +40,8 @@ body {
   }
 
   .input {
-    --input-padding-x: 16px;
-    --input-padding-y: 17px;
+    --input-padding-x: 1rem;
+    --input-padding-y: 1rem;
   }
 
   .btn {
@@ -52,8 +52,8 @@ body {
 #loginName,
 #password {
   .has-float & {
-    --padding-top: 26px;
-    --padding-bottom: 8px;
+    --padding-top: 1.5rem;
+    --padding-bottom: 0.5rem;
   }
 }
 
