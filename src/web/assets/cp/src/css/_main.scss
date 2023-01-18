@@ -5654,6 +5654,7 @@ fieldset {
     @include left(var(--input-padding-x));
     transform: translateY(-50%);
     color: var(--gray-500);
+    cursor: text;
 
     @media (prefers-reduced-motion: no-preference) {
       transition: transform 150ms ease-out, font-size 150ms ease-out;
