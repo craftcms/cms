@@ -108,16 +108,14 @@ Craft.PreviewFileModal = Garnish.Modal.extend(
     _addModalName: function () {
       const headingId = 'preview-heading';
 
-      this.$container
-        .prepend(
-          $('h1')
-            .attr({
-              class: 'visually-hidden',
-              id: headingId,
-            })
-            .text(Craft.t('app', 'Preview file'))
-        )
-        .attr('aria-labelledby', headingId);
+      const modalHeading =
+        '<h1 class="visually-hidden" id="' +
+        headingId +
+        '">' +
+        Craft.t('app', 'Preview file') +
+        '</h1>';
+
+      this.$container.prepend(modalHeading).attr('aria-labelledby', headingId);
     },
 
     /**
