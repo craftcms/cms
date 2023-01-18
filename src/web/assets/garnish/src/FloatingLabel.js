@@ -27,6 +27,10 @@ export default Base.extend(
       // If there's already a value on init, activate float
       if (this.$input.val()) {
         this.activateFloat();
+      } else {
+        const isFocused = this.$input.is(':focus');
+        if (!isFocused) return;
+        this.activateFloat();
       }
 
       this.addListener(this.$input, 'blur', () => {

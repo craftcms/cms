@@ -52,7 +52,6 @@
                     {{ forms.textField({
                         id: 'loginName',
                         name: 'username',
-                        placeholder: usernameLabel,
                         label: usernameLabel,
                         value: username,
                         autocomplete: 'username',
@@ -69,8 +68,9 @@
                     {{ forms.passwordField({
                         id: 'password',
                         name: 'password',
-                        placeholder: 'Password'|t('app'),
+                        label: 'Password'|t('app'),
                         autocomplete: 'current-password',
+                        floatingLabel: true,
                         inputAttributes: {
                             aria: {
                                 label: 'Password'|t('app'),
