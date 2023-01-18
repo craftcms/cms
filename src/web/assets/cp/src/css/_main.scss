@@ -5635,7 +5635,7 @@ fieldset {
 
     &.has-float {
       & .floating-label {
-        top: 0;
+        transform: translateY(-110%);
         font-size: 0.8rem;
       }
     }
@@ -5648,10 +5648,13 @@ fieldset {
 
   .floating-label {
     position: absolute;
-    color: red;
     top: 50%;
-    left: 14px;
+    @include left(var(--input-padding-x));
     transform: translateY(-50%);
+
+    @media (prefers-reduced-motion: no-preference) {
+      transition: transform 150ms ease-out, font-size 150ms ease-out;
+    }
   }
 }
 

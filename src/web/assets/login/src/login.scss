@@ -47,7 +47,6 @@ body {
 }
 
 #loginName {
-  //--input-padding: 14px 16px;
   --padding-top: var(--input-padding-y);
   --padding-right: var(--input-padding-x);
   --padding-bottom: var(--input-padding-y);
@@ -57,21 +56,8 @@ body {
   border-radius: var(--large-border-radius);
 
   .has-float & {
-    --padding-top: 20px;
-    --padding-bottom: 8px;
-  }
-}
-
-.floating-label {
-  @include left(var(--input-padding-x));
-}
-
-.field {
-  > .input {
-    &.has-float {
-      .floating-label {
-      }
-    }
+    --padding-top: 22px;
+    --padding-bottom: 6px;
   }
 }
 
