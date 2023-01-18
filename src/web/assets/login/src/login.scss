@@ -16,7 +16,7 @@ body {
 #login {
   width: 300px;
   --input-padding-x: 16px;
-  --input-padding-y: 14px;
+  --input-padding-y: 17px;
 }
 
 #login h1 {
@@ -56,8 +56,8 @@ body {
   border-radius: var(--large-border-radius);
 
   .has-float & {
-    --padding-top: 22px;
-    --padding-bottom: 6px;
+    --padding-top: 26px;
+    --padding-bottom: 8px;
   }
 }
 
