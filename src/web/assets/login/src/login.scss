@@ -36,9 +36,12 @@ body {
   position: relative;
 
   .field {
+    margin: 0;
+  }
+
+  .input {
     --input-padding-x: 16px;
     --input-padding-y: 17px;
-    margin: 0;
   }
 
   .btn {
@@ -107,7 +110,7 @@ body {
   }
 
   #password {
-    //@include padding(var(--padding-top), 4rem, var(--padding-bottom), var(--padding-left));
+    --padding-right: 4rem;
     border-radius: inherit;
   }
 
