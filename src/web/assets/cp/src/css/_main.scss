@@ -5623,6 +5623,8 @@ fieldset {
   }
 
   & > .input {
+    --input-padding-x: 6px;
+    --input-padding-y: 9px;
     position: relative;
 
     &:after {
@@ -5950,13 +5952,17 @@ body.reduce-focus-visibility {
 
 .text,
 .selectize.multiselect .selectize-input {
-  --padding-top: 6px;
-  --padding-right: 9px;
-  --padding-bottom: 6px;
-  --padding-left: 9px;
-  --input-padding: var(--padding-top) var(--padding-right) var(--padding-bottom)
-    var(--padding-left);
-  padding: var(--input-padding);
+  --padding-top: var(--input-padding-y);
+  --padding-right: var(--input-padding-x);
+  --padding-bottom: var(--input-padding-y);
+  --padding-left: var(--input-padding-x);
+
+  @include padding(
+    var(--padding-top),
+    var(--padding-right),
+    var(--padding-bottom),
+    var(--padding-left)
+  );
 }
 
 .text {

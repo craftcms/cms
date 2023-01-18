@@ -15,8 +15,6 @@ body {
 
 #login {
   width: 300px;
-  --input-padding-x: 16px;
-  --input-padding-y: 17px;
 }
 
 #login h1 {
@@ -38,6 +36,8 @@ body {
   position: relative;
 
   .field {
+    --input-padding-x: 16px;
+    --input-padding-y: 17px;
     margin: 0;
   }
 
@@ -46,19 +46,23 @@ body {
   }
 }
 
-#loginName {
+#loginName,
+#password {
   --padding-top: var(--input-padding-y);
   --padding-right: var(--input-padding-x);
   --padding-bottom: var(--input-padding-y);
   --padding-left: var(--input-padding-x);
-  margin: 0 -1px;
-  width: calc(100% + 2px);
-  border-radius: var(--large-border-radius);
 
   .has-float & {
     --padding-top: 26px;
     --padding-bottom: 8px;
   }
+}
+
+#loginName {
+  margin: 0 -1px;
+  width: calc(100% + 2px);
+  border-radius: var(--large-border-radius);
 }
 
 #loginName-field {
@@ -103,7 +107,7 @@ body {
   }
 
   #password {
-    @include padding(14px, 4rem, 14px, 16px);
+    //@include padding(var(--padding-top), 4rem, var(--padding-bottom), var(--padding-left));
     border-radius: inherit;
   }
 
