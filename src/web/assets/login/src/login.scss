@@ -51,11 +51,6 @@ body {
 
 #loginName,
 #password {
-  --padding-top: var(--input-padding-y);
-  --padding-right: var(--input-padding-x);
-  --padding-bottom: var(--input-padding-y);
-  --padding-left: var(--input-padding-x);
-
   .has-float & {
     --padding-top: 26px;
     --padding-bottom: 8px;
