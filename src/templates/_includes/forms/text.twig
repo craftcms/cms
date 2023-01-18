@@ -1,6 +1,6 @@
 {%- set type = type ?? 'text' %}
 {%- set autocomplete = autocomplete ?? false %}
-{%- set label = label ?? false %}
+{%- set labelId = labelId ?? false %}
 {%- set floatingLabel = floatingLabel ?? false %}
 
 {%- set class = (class ?? [])|explodeClass|merge([
@@ -54,7 +54,11 @@
 {%- endif %}
 
 {%- if floatingLabel and label %}
-    <label id="{{ labelledBy }}" class="floating-label">{{ label }}</label>
+    {{ tag('label', {
+        id: labelId ?? false,
+        class: 'floating-label',
+        text: label,
+    }) }}
 {%- endif %}
 
 {%- set input = tag('input', inputAttributes) %}

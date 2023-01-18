@@ -736,7 +736,7 @@ class Cp
                 ]) .
                 Html::endTag('div')
                 : '') .
-            (($label || $showAttribute)
+            ((($label || $showAttribute) && !$floatingLabel)
                 ? (
                     Html::beginTag('div', ['class' => 'heading']) .
                     ($config['headingPrefix'] ?? '') .
