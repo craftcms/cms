@@ -28,7 +28,7 @@ class SearchQuery
     private $_termOptions;
 
     /**
-     * @var SearchQueryTerm[]|SearchQueryTermGroup
+     * @var array<SearchQueryTerm|SearchQueryTermGroup>
      */
     private $_tokens;
 
@@ -49,7 +49,7 @@ class SearchQuery
     /**
      * Returns the tokens.
      *
-     * @return array
+     * @return array<SearchQueryTerm|SearchQueryTermGroup>
      */
     public function getTokens(): array
     {

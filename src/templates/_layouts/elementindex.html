@@ -47,7 +47,7 @@
 
 
 {% block content %}
-    <div class="main">
+    <div class="main element-index">
         <div class="elements"></div>
     </div>
 {% endblock %}
@@ -68,6 +68,8 @@
         storageKey: 'elementindex.{{ elementType|e("js") }}',
         criteria: Craft.defaultIndexCriteria,
         toolbarSelector: '#toolbar',
+        defaultSource: {{ (defaultSource ?? null)|json_encode|raw }},
+        defaultSourcePath: {{ (defaultSourcePath ?? null)|json_encode|raw }},
         canHaveDrafts: {{ (canHaveDrafts ?? false) ? 'true' : 'false' }},
     });
 {% endblock %}

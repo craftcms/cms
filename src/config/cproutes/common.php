@@ -4,7 +4,8 @@ use craft\helpers\StringHelper;
 
 return [
     'assets/edit/<assetId:\d+><filename:(?:-[^\/]*)?>' => 'assets/edit-asset',
-    'assets/<defaultSource:{handle}(\/.*)?>' => ['template' => 'assets'],
+    'assets' => 'assets/index',
+    'assets/<defaultSource:{handle}(\/.*)?>' => 'assets/index',
     'categories' => 'categories/category-index',
     'categories/<groupHandle:{handle}>' => 'categories/category-index',
     'categories/<groupHandle:{handle}>/new' => 'categories/edit-category',

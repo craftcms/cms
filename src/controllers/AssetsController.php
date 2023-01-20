@@ -55,6 +55,58 @@ class AssetsController extends Controller
     protected $allowAnonymous = ['generate-thumb', 'generate-transform'];
 
     /**
+     * Displays the Assets index page.
+     *
+     * @return Response
+     * @since 3.8.0
+     */
+    public function actionIndex(string $defaultSource = null)
+    {
+        $this->requireCpRequest();
+
+        $variables = [];
+
+        if ($defaultSource) {
+            $defaultSourcePath = ArrayHelper::filterEmptyStringsFromArray(explode('/', $defaultSource));
+            $volumesService = Craft::$app->getVolumes();
+            $volume = $volumesService->getVolumeByHandle(array_shift($defaultSourcePath));
+
+            if ($volume) {
+                $rootFolder = Craft::$app->getAssets()->getRootFolderByVolumeId($volume->id);
+                $variables['defaultSource'] = "folder:$rootFolder->uid";
+                $sourcePath = [$rootFolder->getSourcePathInfo()];
+
+                if (!empty($defaultSourcePath)) {
+                    $subfolder = Craft::$app->getAssets()->findFolder([
+                        'volumeId' => $volume->id,
+                        'path' => sprintf('%s/', implode('/', $defaultSourcePath)),
+                    ]);
+                    if ($subfolder) {
+                        // Create an ancestors array leading up to but not including the root folder
+                        /** @var VolumeFolder[] $folders */
+                        $folders = [];
+                        while ($subfolder && $subfolder->parentId) {
+                            array_unshift($folders, $subfolder);
+                            $subfolder = $subfolder->getParent();
+                        }
+
+                        foreach ($folders as $i => $folder) {
+                            if ($i < count($folders) - 1) {
+                                $folder->setHasChildren(true);
+                            }
+                            $sourcePath[] = $folder->getSourcePathInfo();
+                        }
+                    }
+                }
+
+                $variables['defaultSourcePath'] = $sourcePath;
+            }
+        }
+
+        return $this->renderTemplate('assets/_index', $variables);
+    }
+
+    /**
      * Edits an asset.
      *
      * @param int $assetId The asset ID

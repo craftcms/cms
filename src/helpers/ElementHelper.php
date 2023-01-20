@@ -566,43 +566,12 @@ class ElementHelper
      * @param string $sourceKey The source key/path
      * @param string|null $context The context
      * @return array|null The source definition, or null if it cannot be found
+     * @deprecated in 3.8.0. [[ElementInterface::findSource()]] should be used instead.
      */
     public static function findSource(string $elementType, string $sourceKey, ?string $context = null)
     {
         /** @var string|ElementInterface $elementType */
-        $path = explode('/', $sourceKey);
-        $sources = $elementType::sources($context);
-
-        while (!empty($path)) {
-            $key = array_shift($path);
-            $source = null;
-
-            foreach ($sources as $testSource) {
-                if (isset($testSource['key']) && $testSource['key'] === $key) {
-                    $source = $testSource;
-                    break;
-                }
-            }
-
-            if ($source === null) {
-                return null;
-            }
-
-            // Is that the end of the path?
-            if (empty($path)) {
-                // If this is a nested source, set the full path on it so we don't forget it
-                if ($source['key'] !== $sourceKey) {
-                    $source['keyPath'] = $sourceKey;
-                }
-
-                return $source;
-            }
-
-            // Prepare for searching nested sources
-            $sources = $source['nested'] ?? [];
-        }
-
-        return null;
+        return $elementType::findSource($sourceKey, $context);
     }
 
     /**

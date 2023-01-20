@@ -10,6 +10,7 @@ namespace craft\models;
 use Craft;
 use craft\base\Model;
 use craft\base\VolumeInterface;
+use craft\helpers\Html;
 use craft\volumes\Temp;
 use yii\base\InvalidConfigException;
 
@@ -57,6 +58,11 @@ class VolumeFolder extends Model
     private $_children;
 
     /**
+     * @var bool|null
+     */
+    private $_hasChildren;
+
+    /**
      * @inheritdoc
      */
     protected function defineRules(): array
@@ -91,6 +97,72 @@ class VolumeFolder extends Model
         }
 
         return $volume;
+    }
+
+    /**
+     * Returns info about the folder for an element index’s source path configuration.
+     *
+     * @return array
+     * @since 3.8.0
+     */
+    public function getSourcePathInfo(): array
+    {
+        $volume = $this->getVolume();
+        $info = [
+            'uri' => sprintf('assets/%s%s', $volume->handle, $this->path ? sprintf('/%s', trim($this->path, '/')) : ''),
+            'folderId' => (int)$this->id,
+            'hasChildren' => $this->getHasChildren(),
+        ];
+
+        // Is this a root folder?
+        if (!$this->parentId) {
+            $info += [
+                'label' => Html::tag('span', '', ['data-icon' => 'home']),
+                'altLabel' => Craft::t('app', '{volume} root', [
+                    'volume' => Craft::t('site', $volume->name),
+                ]),
+                'handle' => $volume->handle,
+            ];
+        } else {
+            $info += [
+                'label' => $this->name,
+                'criteria' => [
+                    'folderId' => $this->id,
+                ],
+            ];
+        }
+
+        return $info;
+    }
+
+    /**
+     * Returns whether the folder has any child folders.
+     *
+     * @return bool
+     * @since 3.8.0
+     */
+    public function getHasChildren(): bool
+    {
+        if (isset($this->_children)) {
+            return !empty($this->_children);
+        }
+
+        if (!isset($this->_hasChildren)) {
+            $this->_hasChildren = Craft::$app->getAssets()->foldersExist(['parentId' => $this->id]);
+        }
+
+        return $this->_hasChildren;
+    }
+
+    /**
+     * Sets whether the folder has any child folders.
+     *
+     * @param bool $value
+     * @since 3.8.0
+     */
+    public function setHasChildren(bool $value)
+    {
+        $this->_hasChildren = $value;
     }
 
     /**

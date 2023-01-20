@@ -18,9 +18,7 @@ use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\exporters\Raw;
 use craft\events\ElementActionEvent;
-use craft\helpers\ElementHelper;
 use yii\base\InvalidValueException;
-use yii\db\Expression;
 use yii\web\BadRequestHttpException;
 use yii\web\ForbiddenHttpException;
 use yii\web\Response;
@@ -159,11 +157,11 @@ class ElementIndexesController extends BaseElementsController
      */
     public function actionCountElements(): Response
     {
+        /** @var string|ElementInterface $elementType */
+        $elementType = $this->elementType;
         return $this->asJson([
             'resultSet' => $this->request->getParam('resultSet'),
-            'count' => (int)$this->elementQuery
-                ->select(new Expression('1'))
-                ->count(),
+            'count' => $elementType::indexElementCount($this->elementQuery, $this->sourceKey),
         ]);
     }
 
@@ -406,7 +404,9 @@ class ElementIndexesController extends BaseElementsController
             return null;
         }
 
-        $source = ElementHelper::findSource($this->elementType, $this->sourceKey, $this->context);
+        /** @var ElementInterface|string $elementType */
+        $elementType = $this->elementType;
+        $source = $elementType::findSource($this->sourceKey, $this->context);
 
         if ($source === null) {
             // That wasn't a valid source, or the user doesn't have access to it in this context

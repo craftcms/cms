@@ -56,6 +56,7 @@ class ElementsController extends BaseElementsController
     public function actionGetModalBody(): Response
     {
         $sourceKeys = $this->request->getParam('sources');
+        /** @var ElementInterface|string $elementType */
         $elementType = $this->elementType();
         $context = $this->context();
 
@@ -88,7 +89,7 @@ class ElementsController extends BaseElementsController
             // Did we miss any source keys? (This could happen if some are nested)
             if (!empty($sourceKeys)) {
                 foreach (array_keys($sourceKeys) as $key) {
-                    $source = ElementHelper::findSource($elementType, $key, $context);
+                    $source = $elementType::findSource($key, $context);
                     if ($source !== null) {
                         $sources[$key] = $source;
                     }
