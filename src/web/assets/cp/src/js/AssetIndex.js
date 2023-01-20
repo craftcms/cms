@@ -420,6 +420,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
 
       // Get the old folder IDs, and sort them so that we're moving the most-nested folders first
       var folderIds = [];
+      const folderIdsToDelete = [];
 
       for (var i = 0; i < this._folderDrag.$draggee.length; i++) {
         var $a = this._folderDrag.$draggee.eq(i).children('a'),
@@ -483,12 +484,12 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
 
           // Loop trough all the responses
           for (var i = 0; i < responseArray.length; i++) {
-            var data = responseArray[i];
+            const data = responseArray[i];
 
             // If successful and have data, then update
             if (data.success) {
               if (data.transferList) {
-                fileMoveList = data.transferList;
+                fileMoveList.push(...data.transferList);
               }
 
               if (data.newFolderId) {
@@ -497,6 +498,8 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
                   '/folder:' +
                   data.newFolderUid;
               }
+
+              folderIdsToDelete.push(data.request.params.folderId);
             }
 
             // Push prompt into prompt array
@@ -524,15 +527,17 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
               var params = {};
               // Loop trough all returned data and prepare a new request array
               for (var i = 0; i < returnData.length; i++) {
-                if (returnData[i].choice === 'cancel') {
+                const data = returnData[i];
+
+                if (data.choice === 'cancel') {
                   continue;
                 }
 
-                if (returnData[i].choice === 'replace') {
+                if (data.choice === 'replace') {
                   params.force = true;
                 }
 
-                if (returnData[i].choice === 'merge') {
+                if (data.choice === 'merge') {
                   params.merge = true;
                 }
 
@@ -549,7 +554,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
               if (newParameterArray.length === 0) {
                 this._performActualFolderMove(
                   fileMoveList,
-                  folderIds,
+                  folderIdsToDelete,
                   newSourceKey
                 );
               } else {
@@ -572,7 +577,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
           } else {
             this._performActualFolderMove(
               fileMoveList,
-              folderIds,
+              folderIdsToDelete,
               newSourceKey
             );
           }
@@ -608,6 +613,17 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
     this.progressBar.showProgressBar();
 
     var moveCallback = (folderDeleteList) => {
+      if (!folderDeleteList.length) {
+        this.setIndexAvailable();
+        this.progressBar.hideProgressBar();
+        this._folderDrag.returnHelpersToDraggees();
+        if (newSourceKey) {
+          this.setInstanceState('selectedSource', newSourceKey);
+        }
+        this.refreshSources();
+        return;
+      }
+
       // Delete the old folders
       var counter = 0;
       var limit = folderDeleteList.length;
@@ -621,7 +637,9 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
               this.setIndexAvailable();
               this.progressBar.hideProgressBar();
               this._folderDrag.returnHelpersToDraggees();
-              this.setInstanceState('selectedSource', newSourceKey);
+              if (newSourceKey) {
+                this.setInstanceState('selectedSource', newSourceKey);
+              }
               this.refreshSources();
             }
           }
@@ -1623,7 +1641,11 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
         data: parameters.params,
       })
         .then((response) => {
-          responseArray.push(response.data);
+          responseArray.push(
+            Object.assign({}, response.data, {
+              request: parameters,
+            })
+          );
         })
         .finally(() => {
           this.progressBar.incrementProcessedItemCount(1);
