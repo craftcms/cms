@@ -1597,7 +1597,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
 
   _positionProgressBar: function () {
     if (!this.progressBar) {
-      this.progressBar = new Craft.ProgressBar(this.$main, true);
+      this.progressBar = new Craft.ProgressBar(this.$main, false);
     }
 
     var $container = $(),
