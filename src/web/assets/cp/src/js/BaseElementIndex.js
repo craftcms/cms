@@ -1940,6 +1940,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       var $option = $(ev.selectedOption).addClass('sel');
       this.$siteMenuBtn.html($option.html());
       this._setSite($option.data('site-id'));
+      this.updateElements();
       this.onSelectSite();
     },
 
@@ -1977,8 +1978,6 @@ Craft.BaseElementIndex = Garnish.Base.extend(
           Craft.cp.setSiteId(siteId);
         }
 
-        // Update the elements
-        this.updateElements();
         this.updateFilterBtn();
       }
     },
