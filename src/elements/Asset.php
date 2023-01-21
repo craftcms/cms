@@ -605,7 +605,7 @@ class Asset extends Element
                         'volumeId' => $queryFolder->volumeId,
                         'folderId' => $folder->id,
                         'folderPath' => $path,
-                        'title' => StringHelper::removeLeft($path, $queryFolder->path),
+                        'title' => StringHelper::removeLeft($path, $queryFolder->path ?? ''),
                         'sourcePath' => $sourcePath,
                     ]);
                 }
