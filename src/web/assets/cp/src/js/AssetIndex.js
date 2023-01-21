@@ -71,7 +71,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
       }
 
       this.promptHandler = new Craft.PromptHandler();
-      this.progressBar = new Craft.ProgressBar(this.$main, true);
+      this.progressBar = new Craft.ProgressBar(this.$main, false);
 
       var options = {
         url: Craft.getActionUrl('assets/upload'),
