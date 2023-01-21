@@ -108,10 +108,14 @@ class VolumeFolder extends Model
     public function getSourcePathInfo(): array
     {
         $volume = $this->getVolume();
+        $userSession = Craft::$app->getUser();
+        $canCreate = $userSession->checkPermission("createFoldersInVolume:$volume->uid");
+
         $info = [
             'uri' => sprintf('assets/%s%s', $volume->handle, $this->path ? sprintf('/%s', trim($this->path, '/')) : ''),
             'folderId' => (int)$this->id,
             'hasChildren' => $this->getHasChildren(),
+            'canCreate' => $canCreate,
         ];
 
         // Is this a root folder?
@@ -124,11 +128,18 @@ class VolumeFolder extends Model
                 'handle' => $volume->handle,
             ];
         } else {
+            $canRename = $canCreate & $userSession->checkPermission("deleteFilesAndFoldersInVolume:$volume->uid");
+            $canDelete = $userSession->checkPermission("deletePeerFilesInVolume:$volume->uid");
+            $canMove = $canDelete && $userSession->checkPermission("editPeerFilesInVolume:$volume->uid");
+
             $info += [
                 'label' => $this->name,
                 'criteria' => [
                     'folderId' => $this->id,
                 ],
+                'canRename' => $canRename,
+                'canMove' => $canMove,
+                'canDelete' => $canDelete,
             ];
         }
 

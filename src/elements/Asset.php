@@ -2413,14 +2413,25 @@ class Asset extends Element
      */
     protected function htmlAttributes(string $context): array
     {
+        $volume = $this->getVolume();
+        $userSession = Craft::$app->getUser();
+
         if ($this->isFolder) {
-            return [
+            $attributes = [
                 'data-is-folder' => null,
                 'data-folder-id' => $this->folderId,
                 'data-source-path' => Json::encode($this->sourcePath),
                 'data-has-children' => Craft::$app->getAssets()->foldersExist(['parentId' => $this->folderId]),
-                'data-movable' => null,
             ];
+
+            if (
+                $userSession->checkPermission("editPeerFilesInVolume:$volume->uid") &&
+                $userSession->checkPermission("deletePeerFilesInVolume:$volume->uid")
+            ) {
+                $attributes['data-movable'] = null;
+            }
+
+            return $attributes;
         }
 
         $attributes = [
@@ -2432,8 +2443,6 @@ class Asset extends Element
             $attributes['data-image-height'] = $this->getHeight();
         }
 
-        $volume = $this->getVolume();
-        $userSession = Craft::$app->getUser();
         $imageEditable = $context === 'index' && $this->getSupportsImageEditor();
 
         if ($volume instanceof Temp || $userSession->getId() == $this->uploaderId) {

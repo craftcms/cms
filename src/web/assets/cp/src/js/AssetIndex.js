@@ -134,13 +134,13 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
         this.$uploadButton.removeClass('disabled');
 
         if (this.sourcePath.length) {
-          const folderInfo = this.sourcePath[this.sourcePath.length - 1];
+          const currentFolder = this.sourcePath[this.sourcePath.length - 1];
           if (
-            folderInfo.folderId &&
+            currentFolder.folderId &&
             Garnish.hasAttr(this.$source, 'data-can-upload')
           ) {
             this.uploader.setParams({
-              folderId: folderInfo.folderId,
+              folderId: currentFolder.folderId,
             });
             this.$uploadButton.removeClass('disabled');
           }
@@ -534,39 +534,49 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
     },
 
     getSourcePathActions: function () {
-      const actions = [
-        {
+      const actions = [];
+      const currentFolder = this.sourcePath[this.sourcePath.length - 1];
+
+      if (currentFolder.canCreate) {
+        actions.push({
           label: Craft.t('app', 'New subfolder'),
           onSelect: () => {
             this._createSubfolder();
           },
-        },
-      ];
+        });
+      }
 
-      if (this.settings.context === 'index' && this.sourcePath.length > 1) {
-        actions.push(
-          ...[
-            {
-              label: Craft.t('app', 'Rename folder'),
-              onSelect: () => {
-                this._renameFolder();
-              },
+      if (this.settings.context === 'index') {
+        if (currentFolder.canRename) {
+          actions.push({
+            label: Craft.t('app', 'Rename folder'),
+            onSelect: () => {
+              this._renameFolder();
             },
-            {
+          });
+
+          if (
+            currentFolder.canMove &&
+            this.getMoveTargetSourceKeys(true).length
+          ) {
+            actions.push({
               label: Craft.t('app', 'Move folder'),
               onSelect: () => {
                 this._moveFolder();
               },
-            },
-            {
+            });
+          }
+
+          if (currentFolder.canDelete) {
+            actions.push({
               label: Craft.t('app', 'Delete folder'),
               destructive: true,
               onSelect: () => {
                 this._deleteFolder();
               },
-            },
-          ]
-        );
+            });
+          }
+        }
       }
 
       return actions;
@@ -606,17 +616,17 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
     },
 
     _deleteFolder: function () {
-      const folder = this.sourcePath[this.sourcePath.length - 1];
+      const currentFolder = this.sourcePath[this.sourcePath.length - 1];
 
       if (
         confirm(
           Craft.t('app', 'Really delete folder “{folder}”?', {
-            folder: folder.label,
+            folder: currentFolder.label,
           })
         )
       ) {
         const params = {
-          folderId: folder.folderId,
+          folderId: currentFolder.folderId,
         };
 
         this.setIndexBusy();
@@ -648,10 +658,13 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
      * Rename
      */
     _renameFolder: function () {
-      const folder = this.sourcePath[this.sourcePath.length - 1];
-      const newName = prompt(Craft.t('app', 'Rename folder'), folder.label);
+      const currentFolder = this.sourcePath[this.sourcePath.length - 1];
+      const newName = prompt(
+        Craft.t('app', 'Rename folder'),
+        currentFolder.label
+      );
 
-      if (!newName || newName === folder.label) {
+      if (!newName || newName === currentFolder.label) {
         return;
       }
 
@@ -659,7 +672,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 
       Craft.sendActionRequest('POST', 'assets/rename-folder', {
         data: {
-          folderId: folder.folderId,
+          folderId: currentFolder.folderId,
           newName: newName,
         },
       })
@@ -681,17 +694,28 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
         });
     },
 
+    getMoveTargetSourceKeys: function (peerFiles) {
+      const attr = peerFiles
+        ? 'data-can-move-peer-files-to'
+        : 'data-can-move-to';
+      return this.$sources
+        .toArray()
+        .filter((source) => {
+          const volumeHandle = $(source).data('volume-handle');
+          return (
+            volumeHandle &&
+            volumeHandle !== 'temp' &&
+            Garnish.hasAttr(source, attr)
+          );
+        })
+        .map((source) => $(source).data('key'));
+    },
+
     _moveFolder: function () {
-      const folder = this.sourcePath[this.sourcePath.length - 1];
+      const currentFolder = this.sourcePath[this.sourcePath.length - 1];
 
       new Craft.VolumeFolderSelectorModal({
-        sources: this.$sources
-          .toArray()
-          .filter((source) => {
-            const volumeHandle = $.data(source, 'volume-handle');
-            return volumeHandle && volumeHandle !== 'temp';
-          })
-          .map((source) => $(source).data('key')),
+        sources: this.getMoveTargetSourceKeys(true),
         showTitle: true,
         modalTitle: Craft.t('app', 'Move to'),
         selectBtnLabel: Craft.t('app', 'Move'),
@@ -701,12 +725,12 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
             0,
             this.sourcePath.length - 1
           ),
-          disabledFolderIds: [folder.folderId],
+          disabledFolderIds: [currentFolder.folderId],
         },
         onSelect: ([targetFolder]) => {
           const mover = new Craft.AssetMover();
           mover
-            .moveFolders([folder.folderId], targetFolder.folderId)
+            .moveFolders([currentFolder.folderId], targetFolder.folderId)
             .then((totalFoldersMoved) => {
               if (totalFoldersMoved) {
                 Craft.cp.displayNotice(

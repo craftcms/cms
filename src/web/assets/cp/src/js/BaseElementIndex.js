@@ -969,9 +969,9 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       $.extend(criteria, this.settings.criteria);
 
       if (this.sourcePath.length) {
-        const lastStep = this.sourcePath[this.sourcePath.length - 1];
-        if (typeof lastStep.criteria !== 'undefined') {
-          $.extend(criteria, lastStep.criteria);
+        const currentStep = this.sourcePath[this.sourcePath.length - 1];
+        if (typeof currentStep.criteria !== 'undefined') {
+          $.extend(criteria, currentStep.criteria);
         }
       }
 
