@@ -325,9 +325,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
     handleResize: function () {
       if (this.$sourcePathContainer) {
-        const $labels = this.$sourcePathContainer.find(
-          'a:not([data-has-alt-label]) .label'
-        );
+        const $labels = this.$sourcePathContainer.find('.label');
         $labels.css('width', '');
         const containerWidth =
           this.$sourcePathContainer[0].getBoundingClientRect().width;
@@ -341,11 +339,18 @@ Craft.BaseElementIndex = Garnish.Base.extend(
             parseInt(this.$sourcePathActionsBtn.css('margin-left'));
         }
         if (innerWidth > containerWidth) {
-          const diff = Math.ceil(
-            (innerWidth - containerWidth) / $labels.length
-          );
-          $labels.toArray().forEach((label) => {
-            $(label).width(label.getBoundingClientRect().width - diff);
+          const overage = innerWidth - containerWidth;
+          const labels = $labels.toArray();
+          const labelWidths = [];
+          let totalLabelWidth = 0;
+          labels.forEach((label) => {
+            const width = label.getBoundingClientRect().width;
+            labelWidths.push(width);
+            totalLabelWidth += width;
+          });
+          const reduceFactor = 1 - overage / totalLabelWidth;
+          labels.forEach((label, i) => {
+            $(label).width(Math.floor(labelWidths[i] * reduceFactor));
           });
         }
       }
@@ -589,13 +594,13 @@ Craft.BaseElementIndex = Garnish.Base.extend(
             });
 
             if (step.altLabel) {
-              $a.attr('data-has-alt-label', 'true');
+              $a.html(step.label);
+            } else {
+              $('<span/>', {
+                class: 'label',
+                html: step.label,
+              }).appendTo($a);
             }
-
-            $('<span/>', {
-              class: 'label',
-              html: step.label,
-            }).appendTo($a);
 
             if (!isFirst) {
               $a.append($('<span class="chevron-left"/>'));
