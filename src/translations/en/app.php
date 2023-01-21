@@ -620,6 +620,7 @@ return [
     'Folder renamed' => 'Folder renamed.',
     'Folder was not found while attempting to rename {path}!' => 'Folder was not found while attempting to rename {path}!',
     'Folder “{folder}” already exists at target location' => 'Folder “{folder}” already exists at target location',
+    'Folder' => 'Folder',
     'For when you’re building a website for yourself or a friend.' => 'For when you’re building a website for yourself or a friend.',
     'For when you’re building something professionally for a client or team.' => 'For when you’re building something professionally for a client or team.',
     'Forgot your password?' => 'Forgot your password?',
