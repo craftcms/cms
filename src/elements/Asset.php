@@ -656,7 +656,11 @@ class Asset extends Element
 
     private static function _includeFoldersInIndexElements(AssetQuery $assetQuery, ?string $sourceKey, ?VolumeFolder &$queryFolder = null): bool
     {
-        if (!StringHelper::startsWith($sourceKey, 'folder:') || !is_numeric($assetQuery->folderId)) {
+        if (
+            !Craft::$app->getRequest()->getBodyParam('showFolders') ||
+            !StringHelper::startsWith($sourceKey, 'folder:') ||
+            !is_numeric($assetQuery->folderId)
+        ) {
             return false;
         }
 

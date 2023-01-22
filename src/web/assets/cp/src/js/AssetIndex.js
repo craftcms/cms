@@ -227,6 +227,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 
     getViewParams: function () {
       const data = Object.assign(this.base(), {
+        showFolders: this.settings.showFolders,
         foldersOnly: this.settings.foldersOnly,
       });
 
@@ -794,6 +795,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
   },
   {
     defaults: {
+      showFolders: true,
       foldersOnly: false,
       disabledFolderIds: [],
     },
