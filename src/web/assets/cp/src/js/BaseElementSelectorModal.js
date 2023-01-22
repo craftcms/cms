@@ -25,7 +25,7 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend(
     init: function (elementType, settings) {
       this.elementType = elementType;
       this.setSettings(settings, Craft.BaseElementSelectorModal.defaults);
-      var headingId = 'elementSelectorModalHeading-' + Date.now();
+      const headingId = 'elementSelectorModalHeading-' + Date.now();
 
       // Build the modal
       const $container = $('<div/>', {
@@ -42,7 +42,7 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend(
       const $body = $('<div/>', {
         class: 'body',
       })
-        .append('<div/>', {class: 'spinner big'})
+        .append($('<div/>', {class: 'spinner big'}))
         .appendTo($container);
       const $footer = $('<div/>', {
         class: 'footer',

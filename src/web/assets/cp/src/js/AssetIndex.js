@@ -127,6 +127,8 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
           },
         ];
       }
+
+      this.base();
     },
 
     onSourcePathChange: function () {
@@ -224,7 +226,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
     },
 
     getViewParams: function () {
-      var data = Object.assign(this.base(), {
+      const data = Object.assign(this.base(), {
         foldersOnly: this.settings.foldersOnly,
       });
 

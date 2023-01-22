@@ -147,7 +147,6 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       // ---------------------------------------------------------------------
 
       if (!this.initSources()) {
-        debugger;
         return;
       }
 
@@ -296,7 +295,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       this.initialized = true;
       this.afterInit();
 
-      // Select the initial source + sourcePath
+      // Select the initial source + source path
       // ---------------------------------------------------------------------
 
       this.selectDefaultSource();
