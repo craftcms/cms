@@ -844,13 +844,6 @@ class GeneralConfig extends BaseObject
     public $indexTemplateFilenames = ['index'];
 
     /**
-     * @var bool Whether volume subfolders should be shown alongside assets on the Assets index page, rather than within the source list.
-     * @group Assets
-     * @since 3.8.0
-     */
-    public $inlineVolumeSubfolders = false;
-
-    /**
      * @var mixed The amount of time to track invalid login attempts for a user, for determining if Craft should lock an account.
      *
      * See [[ConfigHelper::durationInSeconds()]] for a list of supported value types.
