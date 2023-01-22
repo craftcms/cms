@@ -72,7 +72,8 @@ Craft.CP = Garnish.Base.extend(
       this.$mainContainer = $('#main-container');
       this.$alerts = $('#alerts');
       this.$crumbs = $('#crumbs');
-      this.initBreadcrumbs();
+      this.$breadcrumbList = $('.breadcrumb-list');
+      this.$breadcrumbItems = $('.breadcrumb-list li');
       this.$notificationContainer = $('#notifications');
       this.$main = $('#main');
       this.$primaryForm = $('#main-form');
@@ -301,42 +302,6 @@ Craft.CP = Garnish.Base.extend(
           }
         });
       }
-    },
-
-    initBreadcrumbs: function () {
-      this.$breadcrumbList = this.$crumbs.find('.breadcrumb-list');
-      this.$breadcrumbItems = this.$crumbs.find('.breadcrumb-list li');
-    },
-
-    /**
-     * @param {Array} crumbs
-     */
-    setBreadcrumbs: function (crumbs) {
-      this.$crumbs.children('nav').remove();
-      if (!crumbs.length) {
-        this.$crumbs.addClass('empty');
-      } else {
-        this.$crumbs.removeClass('empty');
-        const $nav = $('<nav/>', {
-          'aria-label': Craft.t('app', 'Breadcrumbs'),
-        }).appendTo(this.$crumbs);
-        const $ul = $('<ul/>', {
-          class: 'breadcrumb-list',
-        }).appendTo($nav);
-        for (const crumb of crumbs) {
-          $('<li/>')
-            .append(
-              $('<a/>', {
-                href: Craft.getCpUrl(crumb.url),
-                text: crumb.label,
-              })
-            )
-            .appendTo($ul);
-        }
-      }
-
-      this.initBreadcrumbs();
-      this.handleBreadcrumbVisibility();
     },
 
     initSpecialForms: function () {

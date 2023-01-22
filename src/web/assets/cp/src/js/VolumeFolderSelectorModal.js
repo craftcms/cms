@@ -37,7 +37,7 @@ Craft.VolumeFolderSelectorModal = Craft.BaseElementSelectorModal.extend({
     ];
   },
 
-  indexSettings: function () {
+  getIndexSettings: function () {
     return Object.assign(this.base(), {
       foldersOnly: true,
     });

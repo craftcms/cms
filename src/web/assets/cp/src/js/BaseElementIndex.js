@@ -578,7 +578,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
           class: 'source-path chevron-btns',
         }).insertBefore(this.$elements);
         const $nav = $('<nav/>', {
-          'aria-label': this.sourcePathLabel(),
+          'aria-label': this.getSourcePathLabel(),
         }).appendTo(this.$sourcePathContainer);
         const $ol = $('<ol/>').appendTo($nav);
 
@@ -694,20 +694,9 @@ Craft.BaseElementIndex = Garnish.Base.extend(
     },
 
     /**
-     * @param {...Object} step - the new source path step(s) to append
-     */
-    appendToSourcePath(step) {
-      const sourcePath = this.sourcePath.slice();
-      for (let step of arguments) {
-        sourcePath.push(step);
-      }
-      this.sourcePath = sourcePath;
-    },
-
-    /**
      * @returns {string}
      */
-    sourcePathLabel: function () {
+    getSourcePathLabel: function () {
       return '';
     },
 

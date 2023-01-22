@@ -239,7 +239,7 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend(
             this.elementIndex = Craft.createElementIndex(
               this.elementType,
               this.$body,
-              this.indexSettings()
+              this.getIndexSettings()
             );
 
             // Double-clicking or double-tapping should select the elements
@@ -265,7 +265,7 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend(
       );
     },
 
-    indexSettings: function () {
+    getIndexSettings: function () {
       return Object.assign(
         {
           context: 'modal',

@@ -1206,6 +1206,7 @@ class Assets extends Component
      * Returns a DbCommand object prepped for retrieving assets.
      *
      * @return Query
+     * @since 3.8.0
      */
     public function createFolderQuery(): Query
     {

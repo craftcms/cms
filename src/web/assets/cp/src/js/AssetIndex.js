@@ -522,7 +522,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
     /**
      * @returns {string}
      */
-    sourcePathLabel: function () {
+    getSourcePathLabel: function () {
       return Craft.t('app', 'Volume path');
     },
 

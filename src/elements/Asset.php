@@ -834,12 +834,14 @@ class Asset extends Element
     /**
      * @var bool Whether this asset represents a folder.
      * @since 3.8.0
+     * @internal
      */
     public $isFolder = false;
 
     /**
      * @var array|null The source path, if this represents a folder.
      * @since 3.8.0
+     * @internal
      */
     public $sourcePath;
 
@@ -1212,7 +1214,6 @@ class Asset extends Element
     {
         if ($this->isFolder) {
             return null;
-            return UrlHelper::cpUrl(sprintf('assets/%s/%s', $this->getVolume()->handle, $this->folderPath));
         }
 
         $volume = $this->getVolume();
