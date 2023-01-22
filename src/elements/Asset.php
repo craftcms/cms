@@ -1618,6 +1618,10 @@ class Asset extends Element
      */
     public function getHasCheckeredThumb(): bool
     {
+        if ($this->isFolder) {
+            return false;
+        }
+
         return in_array(strtolower($this->getExtension()), ['png', 'gif', 'svg'], true);
     }
 
@@ -1667,9 +1671,14 @@ class Asset extends Element
      */
     public function getFilename(bool $withExtension = true): string
     {
+        if ($this->isFolder) {
+            return '';
+        }
+
         if ($withExtension) {
             return $this->filename;
         }
+
         return pathinfo($this->filename, PATHINFO_FILENAME);
     }
 
@@ -2027,6 +2036,18 @@ class Asset extends Element
 
     // Indexes, etc.
     // -------------------------------------------------------------------------
+
+    /**
+     * @inheritdoc
+     */
+    public function getTableAttributeHtml(string $attribute): string
+    {
+        if ($this->isFolder) {
+            return '';
+        }
+
+        return parent::getTableAttributeHtml($attribute);
+    }
 
     /**
      * @inheritdoc
