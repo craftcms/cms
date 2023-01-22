@@ -714,7 +714,7 @@ class Assets extends BaseRelationField
         $variables = parent::inputTemplateVariables($value, $element);
 
         $uploadVolume = $this->_uploadVolume();
-        $variables['hideSidebar'] = $this->restrictLocation && !$this->allowSubfolders;
+        $variables['showFolders'] = !$this->restrictLocation || $this->allowSubfolders;
         $variables['canUpload'] = (
             $this->allowUploads &&
             $uploadVolume &&

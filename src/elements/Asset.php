@@ -613,9 +613,13 @@ class Asset extends Element
             $totalFolders = $folderQuery->count();
 
             if ($totalFolders > $elementQuery->offset) {
-                $volume = $queryFolder->getVolume();
-                $rootFolder = $assetsService->getRootFolderByVolumeId($volume->id);
-                $baseSourcePathStep = $rootFolder->getSourcePathInfo();
+                $source = ElementHelper::findSource(static::class, $sourceKey);
+                if (isset($source['criteria']['folderId'])) {
+                    $baseFolder = $assetsService->getFolderById($source['criteria']['folderId']);
+                } else {
+                    $baseFolder = $assetsService->getRootFolderByVolumeId($queryFolder->getVolume()->id);
+                }
+                $baseSourcePathStep = $baseFolder->getSourcePathInfo();
 
                 $folderQuery
                     ->offset($elementQuery->offset)
@@ -631,8 +635,8 @@ class Asset extends Element
 
                 foreach ($folders as $folder) {
                     $sourcePath = [$baseSourcePathStep];
-                    $path = '';
-                    $pathSegs = ArrayHelper::filterEmptyStringsFromArray(explode('/', $folder['path']));
+                    $path = rtrim($baseFolder->path ?? '', '/');
+                    $pathSegs = ArrayHelper::filterEmptyStringsFromArray(explode('/', StringHelper::removeLeft($folder['path'], $baseFolder->path ?? '')));
                     foreach ($pathSegs as $i => $seg) {
                         $path .= ($path !== '' ? '/' : '') . $seg;
                         if (isset($foldersByPath[$path])) {
@@ -709,7 +713,11 @@ class Asset extends Element
 
     private static function _includeFoldersInIndexElements(AssetQuery $assetQuery, ?string $sourceKey, ?VolumeFolder &$queryFolder = null): bool
     {
-        if (!str_starts_with($sourceKey, 'volume:') || !is_numeric($assetQuery->folderId)) {
+        if (
+            !Craft::$app->getRequest()->getBodyParam('showFolders') ||
+            !str_starts_with($sourceKey, 'volume:') ||
+            !is_numeric($assetQuery->folderId)
+        ) {
             return false;
         }
 
