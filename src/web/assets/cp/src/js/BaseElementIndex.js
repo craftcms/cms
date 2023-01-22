@@ -56,6 +56,10 @@ Craft.BaseElementIndex = Garnish.Base.extend(
     siteMenu: null,
     siteId: null,
 
+    _sourcePath: null,
+    $sourcePathContainer: null,
+    $sourcePathActionsBtn: null,
+
     $elements: null,
     $updateSpinner: null,
     $viewModeBtnContainer: null,
@@ -319,10 +323,19 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       this.initialized = true;
       this.afterInit();
 
-      // Select the initial source
+      // Select the initial source + source path
       // ---------------------------------------------------------------------
 
       this.selectDefaultSource();
+
+      const sourcePath = this.getDefaultSourcePath();
+      if (sourcePath) {
+        this.sourcePath = sourcePath;
+      }
+      if (this.settings.context === 'index') {
+        this.addListener(Garnish.$win, 'resize', 'handleResize');
+      }
+      this.handleResize();
 
       // Respect initial search
       // ---------------------------------------------------------------------
@@ -357,6 +370,39 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
     afterInit: function () {
       this.onAfterInit();
+    },
+
+    handleResize: function () {
+      if (this.$sourcePathContainer) {
+        const $labels = this.$sourcePathContainer.find('.label');
+        $labels.css('width', '');
+        const containerWidth =
+          this.$sourcePathContainer[0].getBoundingClientRect().width;
+        let innerWidth = this.$sourcePathContainer
+          .children('nav')[0]
+          .getBoundingClientRect().width;
+        if (this.$sourcePathActionsBtn) {
+          innerWidth +=
+            this.$sourcePathActionsBtn[0].getBoundingClientRect().width +
+            parseInt(this.$sourcePathActionsBtn.css('margin-right')) +
+            parseInt(this.$sourcePathActionsBtn.css('margin-left'));
+        }
+        if (innerWidth > containerWidth) {
+          const overage = innerWidth - containerWidth;
+          const labels = $labels.toArray();
+          const labelWidths = [];
+          let totalLabelWidth = 0;
+          labels.forEach((label) => {
+            const width = label.getBoundingClientRect().width;
+            labelWidths.push(width);
+            totalLabelWidth += width;
+          });
+          const reduceFactor = 1 - overage / totalLabelWidth;
+          labels.forEach((label, i) => {
+            $(label).width(Math.floor(labelWidths[i] * reduceFactor));
+          });
+        }
+      }
     },
 
     _createCancelToken: function () {
@@ -535,7 +581,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
           path += paths[i];
           const $source = this.getSourceByKey(path);
 
-          // If the folder can't be found, then just go to the stored instance source.
+          // If the nested source can't be found, then just go to the stored instance source.
           if (!$source) {
             return this.instanceState.selectedSource;
           }
@@ -553,9 +599,208 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       return this.instanceState.selectedSource;
     },
 
+    /**
+     * @returns {Object[]|null}
+     */
+    getDefaultSourcePath: function () {
+      return this.settings.defaultSourcePath;
+    },
+
     getDefaultExpandedSources: function () {
       return this.instanceState.expandedSources;
     },
+
+    /**
+     * @returns {Object[]}
+     */
+    get sourcePath() {
+      return this._sourcePath || [];
+    },
+
+    /**
+     * @param {Object[]|null} sourcePath
+     */
+    set sourcePath(sourcePath) {
+      this._sourcePath = sourcePath && sourcePath.length ? sourcePath : null;
+
+      if (this.$sourcePathContainer) {
+        this.$sourcePathContainer.remove();
+        this.$sourcePathContainer = null;
+        this.$sourcePathActionsBtn = null;
+      }
+
+      if (this._sourcePath) {
+        const actions = this.getSourcePathActions();
+
+        this.$sourcePathContainer = $('<div/>', {
+          class: 'source-path chevron-btns',
+        }).insertBefore(this.$elements);
+        const $nav = $('<nav/>', {
+          'aria-label': this.getSourcePathLabel(),
+        }).appendTo(this.$sourcePathContainer);
+        const $ol = $('<ol/>').appendTo($nav);
+
+        for (let i = 0; i < sourcePath.length; i++) {
+          ((i) => {
+            const step = sourcePath[i];
+            const isFirst = i === 0;
+            const isLast = i === sourcePath.length - 1;
+
+            const $a = $('<a/>', {
+              href: step.uri ? Craft.getCpUrl(step.uri) : '#',
+              class: 'btn',
+            });
+
+            if (step.altLabel) {
+              $a.html(step.label);
+            } else {
+              $('<span/>', {
+                class: 'label',
+                html: step.label,
+              }).appendTo($a);
+            }
+
+            if (!isFirst) {
+              $a.append($('<span class="chevron-left"/>'));
+            }
+
+            if (!isLast || !actions.length) {
+              $a.append($('<span class="chevron-right"/>'));
+            } else {
+              $a.addClass('has-action-menu');
+            }
+
+            if (isLast) {
+              $a.attr('aria-current', 'true');
+            }
+
+            const textLabel = step.altLabel || $a.text();
+            $a.attr('title', textLabel).attr('aria-label', textLabel);
+
+            $('<li/>').append($a).appendTo($ol);
+
+            this.addListener($a, 'click', (ev) => {
+              // Don't interfere if the step has a URI and it was a Ctrl-click
+              if (
+                typeof step.uri === 'undefined' ||
+                !Garnish.isCtrlKeyPressed(ev)
+              ) {
+                ev.preventDefault();
+                this.sourcePath = this.sourcePath.slice(0, i + 1);
+                this.clearSearch(false);
+                this.updateElements();
+              }
+            });
+          })(i);
+        }
+
+        // Action menu
+        if (actions && actions.length) {
+          const actionBtnLabel = this.getSourcePathActionLabel();
+          this.$sourcePathActionsBtn = $('<button/>', {
+            type: 'button',
+            class: 'btn',
+            title: actionBtnLabel,
+            'aria-label': actionBtnLabel,
+          })
+            .append($('<span class="chevron-right"/>'))
+            .appendTo(this.$sourcePathContainer);
+
+          const groupedActions = [
+            actions.filter((a) => !a.destructive && !a.administrative),
+            actions.filter((a) => a.destructive && !a.administrative),
+            actions.filter((a) => a.administrative),
+          ].filter((group) => group.length);
+
+          const menuId = 'menu' + Math.floor(Math.random() * 1000000);
+          const $menu = $('<div/>', {
+            id: menuId,
+            class: 'menu menu--disclosure',
+          }).appendTo(this.$sourcePathContainer);
+
+          groupedActions.forEach((group, index) => {
+            if (index !== 0) {
+              $('<hr/>').appendTo($menu);
+            }
+            this._buildSourcePathActionList(group).appendTo($menu);
+          });
+
+          this.$sourcePathActionsBtn
+            .addClass('menubtn')
+            .attr({
+              'data-disclosure-trigger': true,
+              'aria-controls': menuId,
+            })
+            .disclosureMenu();
+        }
+
+        // Update the URL if we're on the index page
+        if (
+          this.settings.context === 'index' &&
+          typeof sourcePath[sourcePath.length - 1].uri !== 'undefined' &&
+          typeof history != 'undefined'
+        ) {
+          history.replaceState(
+            {},
+            '',
+            Craft.getCpUrl(sourcePath[sourcePath.length - 1].uri)
+          );
+        }
+      }
+
+      this.onSourcePathChange();
+    },
+
+    /**
+     * @returns {string}
+     */
+    getSourcePathLabel: function () {
+      return '';
+    },
+
+    /**
+     * @returns {Object[]}
+     */
+    getSourcePathActions: function () {
+      return [];
+    },
+
+    /**
+     * @returns {string}
+     */
+    getSourcePathActionLabel: function () {
+      return '';
+    },
+
+    _buildSourcePathActionList: function (actions) {
+      const $ul = $('<ul/>');
+
+      actions.forEach((action) => {
+        const $a = $('<a/>', {
+          href: '#',
+          type: 'button',
+          role: 'button',
+          'aria-label': action.label,
+          text: action.label,
+        }).on('click', (ev) => {
+          ev.preventDefault();
+          this.$sourcePathActionsBtn.data('trigger').hide();
+          if (action.onSelect) {
+            action.onSelect();
+          }
+        });
+
+        if (action.destructive) {
+          $a.addClass('error');
+        }
+
+        $('<li/>').append($a).appendTo($ul);
+      });
+
+      return $ul;
+    },
+
+    onSourcePathChange: function () {},
 
     startSearching: function () {
       // Show the clear button
@@ -838,6 +1083,13 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       }
 
       $.extend(criteria, this.settings.criteria);
+
+      if (this.sourcePath.length) {
+        const currentStep = this.sourcePath[this.sourcePath.length - 1];
+        if (typeof currentStep.criteria !== 'undefined') {
+          $.extend(criteria, currentStep.criteria);
+        }
+      }
 
       var params = {
         context: this.settings.context,
@@ -1444,6 +1696,8 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       this.updateSourceMenu();
       this.updateViewMenu();
       this.updateFilterBtn();
+
+      this.sourcePath = null;
 
       this.onSelectSource();
 
@@ -2702,6 +2956,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       submitActionsAction: 'element-indexes/perform-action',
       defaultSiteId: null,
       defaultSource: null,
+      defaultSourcePath: null,
       canHaveDrafts: false,
 
       elementTypeName: Craft.t('app', 'Element'),

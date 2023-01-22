@@ -52,6 +52,11 @@
   --ui-control-color: var(--gray-550);
   --ui-control-hover-color: var(--gray-600);
   --ui-control-active-color: var(--gray-700);
+  --ui-control-bg-color: #{transparentize($inputColor, 0.75)};
+  --ui-control-hover-bg-color: #{transparentize($inputColor, 0.7)};
+  --ui-control-active-bg-color: #{transparentize($inputColor, 0.5)};
+  --ui-control-border-radius: var(--large-border-radius);
+  --ui-control-height: 34px;
   --icon-opacity: 0.8;
   --light-focus-hsl: #{hue($lightFocusColor)}, #{saturation($lightFocusColor)},
     #{lightness($lightFocusColor)};
@@ -396,6 +401,10 @@ pre code {
 a {
   color: var(--link-color);
   cursor: pointer;
+
+  &[aria-current] {
+    cursor: default;
+  }
 
   body.underline-links & {
     text-decoration: underline;
@@ -1370,18 +1379,21 @@ ul.icons {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  border-radius: var(--large-border-radius);
+  border-radius: var(--ui-control-border-radius);
   padding: 7px 14px;
   border: none;
   text-align: center;
   white-space: nowrap;
   user-select: none;
-  cursor: pointer;
   box-sizing: border-box;
   appearance: none;
   color: currentColor;
   font-size: inherit;
-  background-color: transparentize($inputColor, 0.75);
+  background-color: var(--ui-control-bg-color);
+
+  &:not([aria-current]) {
+    cursor: pointer;
+  }
 
   &.chromeless {
     background-color: transparent;
@@ -1407,16 +1419,18 @@ ul.icons {
     text-align: left;
   }
 
-  &:not(.disabled):not(.loading):not(.dashed):not([aria-disabled]) {
+  &:not(.disabled):not(.loading):not(.dashed):not([aria-disabled]):not(
+      [aria-current]
+    ) {
     &:focus,
     &.focus,
     &:hover {
-      background-color: transparentize($inputColor, 0.7);
+      --ui-control-bg-color: var(--ui-control-hover-bg-color);
     }
 
     &:active,
     &.active {
-      background-color: transparentize($inputColor, 0.6);
+      --ui-control-bg-color: var(--ui-control-active-bg-color);
     }
   }
 
@@ -1458,6 +1472,15 @@ ul.icons {
   div.checkbox {
     margin-top: 2px;
   }
+
+  [data-icon] {
+    margin-top: -2px;
+    @include margin-right(4px);
+
+    &.light:before {
+      color: var(--gray-300);
+    }
+  }
 }
 
 .disabled {
@@ -1471,7 +1494,7 @@ ul.icons {
 
 .btn,
 .spinner {
-  height: 34px;
+  height: var(--ui-control-height);
 }
 
 .btn[data-icon-after]:not(:empty):not(.btn-empty):after,
@@ -1516,7 +1539,7 @@ ul.icons {
     }
 
     &:not(.dashed):not(:last-child):not(.btngroup-btn-last) {
-      @include margin-right(1px);
+      @include margin-right(2px);
     }
 
     body.ltr & {
@@ -1903,6 +1926,95 @@ div.btn.submit input {
   }
 }
 
+/* chevron buttons */
+.chevron-btns {
+  display: flex;
+  justify-content: flex-start;
+
+  .btn {
+    position: relative;
+    @include margin-right(calc(var(--ui-control-height) / 2 + 2.8px));
+    @include border-radius(0, 0, 0, 0);
+    @include padding-right(3px);
+
+    &.has-action-menu {
+      @include padding-right(1px);
+      @include margin-right(0);
+    }
+
+    &.menubtn {
+      @include padding-left(3px);
+    }
+
+    .label {
+      display: block;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .chevron-left {
+      position: absolute;
+      top: 0;
+      width: 0;
+      height: 0;
+      @include left(calc(-1 * var(--ui-control-height) / 2));
+      border-top: calc(var(--ui-control-height) / 2) solid
+        var(--ui-control-bg-color);
+      @include border-left(
+        calc(var(--ui-control-height) / 2) solid transparent
+      );
+
+      &:after {
+        display: block;
+        content: '';
+        font-size: 0;
+        position: absolute;
+        top: 0;
+        @include left(calc(-1 * var(--ui-control-height) / 2));
+        border-bottom: calc(var(--ui-control-height) / 2) solid
+          var(--ui-control-bg-color);
+        @include border-left(
+          calc(var(--ui-control-height) / 2) solid transparent
+        );
+      }
+    }
+
+    .chevron-right {
+      position: absolute;
+      top: 0;
+      @include right(calc(-1 * var(--ui-control-height) / 2));
+      border-top: calc(var(--ui-control-height) / 2) solid transparent;
+      border-bottom: calc(var(--ui-control-height) / 2) solid transparent;
+      @include border-left(
+        calc(var(--ui-control-height) / 2) solid var(--ui-control-bg-color)
+      );
+      box-shadow: 0 2px #fff;
+    }
+  }
+
+  ol {
+    position: relative;
+    @include padding-left(0);
+    list-style-type: none;
+    display: flex;
+
+    li {
+      &:first-child .btn {
+        @include border-radius(
+          var(--ui-control-border-radius),
+          0,
+          0,
+          var(--ui-control-border-radius)
+        );
+      }
+
+      &:not(:first-child) .btn {
+        @include padding-left(7px);
+      }
+    }
+  }
+}
+
 /* color inputs */
 .color-input-container {
   position: relative;
@@ -2188,17 +2300,17 @@ h2 + .actions {
 /* ----------------------------------------*/
 
 .tablepane {
-  margin: -24px -24px -12px;
+  margin: -22px -22px -10px;
   overflow-x: auto;
 
   table.data {
     th,
     td {
       &:first-child {
-        @include padding-left(24px);
+        @include padding-left(22px);
       }
       &:last-child {
-        @include padding-right(24px);
+        @include padding-right(22px);
       }
     }
   }
@@ -2276,10 +2388,12 @@ table {
         th,
         td {
           &:first-child {
-            @include border-top-left-radius(var(--large-border-radius));
+            @include border-top-left-radius(var(--small-border-radius));
+            @include border-bottom-left-radius(var(--small-border-radius));
           }
           &:last-child {
-            @include border-top-right-radius(var(--large-border-radius));
+            @include border-top-right-radius(var(--small-border-radius));
+            @include border-bottom-right-radius(var(--small-border-radius));
           }
         }
       }
@@ -2403,7 +2517,7 @@ table {
     tr + tr {
       th,
       td {
-        border-top: 1px solid transparent;
+        border-top: 2px solid transparent;
       }
     }
   }
@@ -2469,8 +2583,7 @@ table {
 }
 
 .datatablesorthelper,
-.editabletablesorthelper,
-.thumbviewhelper {
+.editabletablesorthelper {
   background-color: var(--white);
   @include shadow;
 }
@@ -2702,6 +2815,74 @@ $elementInnerSpacing: 5px;
 
 $checkboxPadding: $checkboxSize + 4;
 
+.element-index {
+  .source-path {
+    background-color: var(--gray-050);
+    border-radius: 3px;
+    --ui-control-bg-color: var(--light-sel-color);
+    --ui-control-hover-bg-color: #{darken($lightSelColor, 5%)};
+    --ui-control-active-bg-color: #{darken($lightSelColor, 10%)};
+    --ui-control-height: 30px;
+
+    .chevron-btns {
+      ol {
+        position: relative;
+        display: inline-flex;
+        background: $white;
+
+        &:before {
+          display: block;
+          content: '';
+          font-size: 0;
+          position: absolute;
+          top: 0;
+          width: 0;
+          height: 0;
+          @include right(0);
+          border-top: calc(var(--ui-control-height) / 2) solid var(--gray-050);
+          @include border-left(
+            calc(var(--ui-control-height) / 2) solid transparent
+          );
+        }
+
+        &:after {
+          display: block;
+          content: '';
+          font-size: 0;
+          position: absolute;
+          top: calc(var(--ui-control-height) / 2);
+          @include right(0);
+          border-bottom: calc(var(--ui-control-height) / 2) solid
+            var(--gray-050);
+          @include border-left(
+            calc(var(--ui-control-height) / 2) solid transparent
+          );
+        }
+
+        .btn {
+          --ui-control-border-radius: var(--small-border-radius);
+        }
+      }
+    }
+
+    .btn.settings {
+      box-shadow: 0 0 0 2px var(--white);
+    }
+  }
+
+  &.main {
+    .source-path {
+      margin: -22px -22px 24px;
+    }
+  }
+
+  .elementselectormodal & {
+    .source-path {
+      margin-bottom: 2px;
+    }
+  }
+}
+
 .elements {
   position: relative;
 
@@ -2733,10 +2914,11 @@ $checkboxPadding: $checkboxSize + 4;
   }
 
   .header {
-    margin: -24px -24px 24px;
+    margin: -22px -22px 24px;
     padding: 14px 24px;
     background-color: var(--gray-050);
     box-shadow: none;
+    border-radius: var(--small-border-radius);
 
     &:after {
       content: '';
@@ -2784,15 +2966,6 @@ $checkboxPadding: $checkboxSize + 4;
 
   // thumbs views
   .thumbsview {
-    @include margin(
-      -$baseElementSidePadding,
-      -$baseElementSidePadding - 1px,
-      -$baseElementSidePadding - 1px,
-      -$baseElementSidePadding
-    );
-    width: calc(
-      100% + #{$baseElementSidePadding + $baseElementSidePadding + 1px}
-    );
     display: grid;
     gap: 5px;
     grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
@@ -2855,18 +3028,6 @@ $checkboxPadding: $checkboxSize + 4;
     position: absolute;
     bottom: 0;
     @include right(-24px);
-  }
-}
-
-.thumbviewhelper {
-  margin: -7px;
-  padding: 7px;
-
-  .thumbsview {
-    &,
-    li {
-      margin: 0 !important;
-    }
   }
 }
 
@@ -4766,6 +4927,12 @@ $min2ColWidth: 400px;
   --content-padding: 24px;
   padding-bottom: 50px;
   user-select: none;
+
+  .header {
+    padding-top: 14px;
+    padding-bottom: 14px;
+    text-align: center;
+  }
 
   .body {
     position: relative;

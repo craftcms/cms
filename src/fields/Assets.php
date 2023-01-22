@@ -644,7 +644,9 @@ class Assets extends BaseRelationField
     public function getInputSources(?ElementInterface $element = null): array|string|null
     {
         $folderId = $this->_determineUploadFolderId($element, false, false);
-        Craft::$app->getSession()->authorize('saveAssets:' . $folderId);
+        $assetsService = Craft::$app->getAssets();
+        $folder = $assetsService->getFolderById($folderId);
+        Craft::$app->getSession()->authorize('saveAssets:' . $folder->getVolume()->uid);
 
         if ($this->restrictLocation) {
             if (!$this->showUnpermittedVolumes) {
