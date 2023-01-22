@@ -112,6 +112,18 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
     },
 
     onSelectSource: function () {
+      if (!this.settings.foldersOnly) {
+        const folderId = this.$source.data('folder-id');
+        if (folderId && Garnish.hasAttr(this.$source, 'data-can-upload')) {
+          this.uploader.setParams({
+            folderId: this.$source.attr('data-folder-id'),
+          });
+          this.$uploadButton.removeClass('disabled');
+        } else {
+          this.$uploadButton.addClass('disabled');
+        }
+      }
+
       const volumeHandle = this.$source.data('volume-handle');
       if (volumeHandle && volumeHandle !== 'temp') {
         this.sourcePath = [
@@ -132,20 +144,12 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
     },
 
     onSourcePathChange: function () {
-      if (!this.settings.foldersOnly) {
-        this.$uploadButton.removeClass('disabled');
-
-        if (this.sourcePath.length) {
-          const currentFolder = this.sourcePath[this.sourcePath.length - 1];
-          if (
-            currentFolder.folderId &&
-            Garnish.hasAttr(this.$source, 'data-can-upload')
-          ) {
-            this.uploader.setParams({
-              folderId: currentFolder.folderId,
-            });
-            this.$uploadButton.removeClass('disabled');
-          }
+      if (!this.settings.foldersOnly && this.sourcePath.length) {
+        const currentFolder = this.sourcePath[this.sourcePath.length - 1];
+        if (currentFolder.folderId) {
+          this.uploader.setParams({
+            folderId: currentFolder.folderId,
+          });
         }
       }
 
