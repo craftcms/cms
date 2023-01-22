@@ -331,7 +331,7 @@ class Asset extends Element
             }
         }
 
-        return parent::findSource($sourceKey, $context);
+        return null;
     }
 
     /**

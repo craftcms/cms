@@ -446,7 +446,7 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
             }
 
             if (!$this->allowMultipleSources && $this->source) {
-                $source = $class::findSource($this->source, 'field');
+                $source = ElementHelper::findSource($class, $this->source, 'field');
 
                 // Does the source specify any criteria attributes?
                 if (isset($source['criteria'])) {

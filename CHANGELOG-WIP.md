@@ -22,7 +22,6 @@
 - Added `craft\services\Assets::createFolderQuery()`.
 - Added `craft\services\Assets::foldersExist()`.
 - Added `craft\services\Search::normalizeSearchQuery()`.
-- Deprecated `craft\helpers\ElementHelper::findSource()`. `craft\base\ElementInterface::findSource()` should be used instead.
 - Added `Craft.AssetMover`.
 - Added `Craft.BaseElementIndex::getSourcePathActionLabel()`.
 - Added `Craft.BaseElementIndex::getSourcePathActions()`.

@@ -15,6 +15,7 @@ use craft\gql\arguments\elements\Category as CategoryArguments;
 use craft\gql\interfaces\elements\Category as CategoryInterface;
 use craft\gql\resolvers\elements\Category as CategoryResolver;
 use craft\helpers\ArrayHelper;
+use craft\helpers\ElementHelper;
 use craft\helpers\Gql;
 use craft\helpers\Gql as GqlHelper;
 use craft\models\GqlSchema;
@@ -131,9 +132,7 @@ class Categories extends BaseRelationField
     {
         // Make sure the field is set to a valid category group
         if ($this->source) {
-            /** @var ElementInterface|string $elementType */
-            $elementType = static::elementType();
-            $source = $elementType::findSource($this->source, 'field');
+            $source = ElementHelper::findSource(static::elementType(), $this->source, 'field');
         }
 
         if (empty($source)) {

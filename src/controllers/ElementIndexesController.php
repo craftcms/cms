@@ -18,6 +18,7 @@ use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\exporters\Raw;
 use craft\events\ElementActionEvent;
+use craft\helpers\ElementHelper;
 use yii\base\InvalidValueException;
 use yii\web\BadRequestHttpException;
 use yii\web\ForbiddenHttpException;
@@ -404,9 +405,7 @@ class ElementIndexesController extends BaseElementsController
             return null;
         }
 
-        /** @var ElementInterface|string $elementType */
-        $elementType = $this->elementType;
-        $source = $elementType::findSource($this->sourceKey, $this->context);
+        $source = ElementHelper::findSource($this->elementType, $this->sourceKey, $this->context);
 
         if ($source === null) {
             // That wasn't a valid source, or the user doesn't have access to it in this context

@@ -680,38 +680,6 @@ abstract class Element extends Component implements ElementInterface
      */
     public static function findSource(string $sourceKey, ?string $context = null): ?array
     {
-        $path = explode('/', $sourceKey);
-        $sources = static::sources($context);
-
-        while (!empty($path)) {
-            $key = array_shift($path);
-            $source = null;
-
-            foreach ($sources as $testSource) {
-                if (isset($testSource['key']) && $testSource['key'] === $key) {
-                    $source = $testSource;
-                    break;
-                }
-            }
-
-            if ($source === null) {
-                return null;
-            }
-
-            // Is that the end of the path?
-            if (empty($path)) {
-                // If this is a nested source, set the full path on it so we don't forget it
-                if ($source['key'] !== $sourceKey) {
-                    $source['keyPath'] = $sourceKey;
-                }
-
-                return $source;
-            }
-
-            // Prepare for searching nested sources
-            $sources = $source['nested'] ?? [];
-        }
-
         return null;
     }
 
@@ -856,7 +824,7 @@ abstract class Element extends Component implements ElementInterface
         if (!empty($viewState['order'])) {
             // Special case for sorting by structure
             if (isset($viewState['order']) && $viewState['order'] === 'structure') {
-                $source = static::findSource($sourceKey, $context);
+                $source = ElementHelper::findSource(static::class, $sourceKey, $context);
 
                 if (isset($source['structureId'])) {
                     $elementQuery->orderBy(['lft' => SORT_ASC]);
