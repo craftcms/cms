@@ -664,6 +664,18 @@ abstract class Element extends Component implements ElementInterface
     }
 
     /**
+     * Defines the sources that elements of this type may belong to.
+     *
+     * @param string|null $context The context ('index' or 'modal').
+     * @return array The sources.
+     * @see sources()
+     */
+    protected static function defineSources(string $context = null): array
+    {
+        return [];
+    }
+
+    /**
      * @inheritdoc
      */
     public static function findSource(string $sourceKey, ?string $context = null): ?array
@@ -701,18 +713,6 @@ abstract class Element extends Component implements ElementInterface
         }
 
         return null;
-    }
-
-    /**
-     * Defines the sources that elements of this type may belong to.
-     *
-     * @param string|null $context The context ('index' or 'modal').
-     * @return array The sources.
-     * @see sources()
-     */
-    protected static function defineSources(string $context = null): array
-    {
-        return [];
     }
 
     /**

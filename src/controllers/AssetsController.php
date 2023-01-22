@@ -72,12 +72,13 @@ class AssetsController extends Controller
             $volume = $volumesService->getVolumeByHandle(array_shift($defaultSourcePath));
 
             if ($volume) {
-                $rootFolder = Craft::$app->getAssets()->getRootFolderByVolumeId($volume->id);
+                $assetsService = Craft::$app->getAssets();
+                $rootFolder = $assetsService->getRootFolderByVolumeId($volume->id);
                 $variables['defaultSource'] = "folder:$rootFolder->uid";
                 $sourcePath = [$rootFolder->getSourcePathInfo()];
 
                 if (!empty($defaultSourcePath)) {
-                    $subfolder = Craft::$app->getAssets()->findFolder([
+                    $subfolder = $assetsService->findFolder([
                         'volumeId' => $volume->id,
                         'path' => sprintf('%s/', implode('/', $defaultSourcePath)),
                     ]);

@@ -564,7 +564,6 @@ class Asset extends Element
                     ->offset($elementQuery->offset)
                     ->limit($elementQuery->limit);
 
-                /** @var VolumeFolder[] $folders */
                 $folders = array_map(function(array $result) {
                     return new VolumeFolder($result);
                 }, $folderQuery->all());
@@ -2412,11 +2411,8 @@ class Asset extends Element
     /**
      * @inheritdoc
      */
-    protected function htmlAttributes(string $context): array
+    public function getHtmlAttributes(string $context): array
     {
-        $volume = $this->getVolume();
-        $userSession = Craft::$app->getUser();
-
         if ($this->isFolder) {
             $attributes = [
                 'data-is-folder' => null,
@@ -2424,6 +2420,9 @@ class Asset extends Element
                 'data-source-path' => Json::encode($this->sourcePath),
                 'data-has-children' => Craft::$app->getAssets()->foldersExist(['parentId' => $this->folderId]),
             ];
+
+            $volume = $this->getVolume();
+            $userSession = Craft::$app->getUser();
 
             if (
                 $userSession->checkPermission("editPeerFilesInVolume:$volume->uid") &&
@@ -2435,6 +2434,14 @@ class Asset extends Element
             return $attributes;
         }
 
+        return parent::getHtmlAttributes($context);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    protected function htmlAttributes(string $context): array
+    {
         $attributes = [
             'data-kind' => $this->kind,
         ];
@@ -2444,6 +2451,8 @@ class Asset extends Element
             $attributes['data-image-height'] = $this->getHeight();
         }
 
+        $volume = $this->getVolume();
+        $userSession = Craft::$app->getUser();
         $imageEditable = $context === 'index' && $this->getSupportsImageEditor();
 
         if ($volume instanceof Temp || $userSession->getId() == $this->uploaderId) {
