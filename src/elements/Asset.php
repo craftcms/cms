@@ -709,7 +709,7 @@ class Asset extends Element
 
     private static function _includeFoldersInIndexElements(AssetQuery $assetQuery, ?string $sourceKey, ?VolumeFolder &$queryFolder = null): bool
     {
-        if (!StringHelper::startsWith($sourceKey, 'volume:') || !is_numeric($assetQuery->folderId)) {
+        if (!str_starts_with($sourceKey, 'volume:') || !is_numeric($assetQuery->folderId)) {
             return false;
         }
 
