@@ -446,6 +446,7 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend(
           hideSidebar: this.settings.hideSidebar,
           defaultSiteId: this.settings.defaultSiteId,
           defaultSource: this.settings.defaultSource,
+          defaultSourcePath: this.settings.defaultSourcePath,
         },
         this.settings.indexSettings
       );
@@ -472,6 +473,7 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend(
       hideSidebar: false,
       defaultSiteId: null,
       defaultSource: null,
+      defaultSourcePath: null,
       bodyAction: 'element-selector-modals/body',
       indexSettings: {},
     },

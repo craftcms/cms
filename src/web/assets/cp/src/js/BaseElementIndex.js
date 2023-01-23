@@ -572,31 +572,40 @@ Craft.BaseElementIndex = Garnish.Base.extend(
     },
 
     getDefaultSourceKey: function () {
+      let sourceKey = null;
+
       if (this.settings.defaultSource) {
-        const paths = this.settings.defaultSource.split('/');
-        let path = '';
+        let $lastSource = null;
+        let refreshSources = false;
 
-        // Expand the tree
-        for (let i = 0; i < paths.length; i++) {
-          path += paths[i];
-          const $source = this.getSourceByKey(path);
-
-          // If the nested source can't be found, then just go to the stored instance source.
-          if (!$source) {
-            return this.instanceState.selectedSource;
+        for (const segment of this.settings.defaultSource.split('/')) {
+          if ($lastSource) {
+            this._expandSource($lastSource);
+            refreshSources = true;
           }
 
-          this._expandSource($source);
-          path += '/';
+          const testSourceKey =
+            (sourceKey !== null ? `${sourceKey}/` : '') + segment;
+          const $source = this.getSourceByKey(testSourceKey);
+
+          if (!$source) {
+            if ($lastSource) {
+              this._collapseSource($lastSource);
+            }
+            break;
+          }
+
+          $lastSource = $source;
+          sourceKey = testSourceKey;
         }
 
-        // Just make sure that the modal is aware of the newly expanded sources, too.
-        this._setSite(this.siteId);
-
-        return this.settings.defaultSource;
+        if (refreshSources) {
+          // Make sure that the modal is aware of the newly expanded sources
+          this._setSite(this.siteId);
+        }
       }
 
-      return this.instanceState.selectedSource;
+      return sourceKey ?? this.instanceState.selectedSource;
     },
 
     /**
