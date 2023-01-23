@@ -447,6 +447,7 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend(
           defaultSiteId: this.settings.defaultSiteId,
           defaultSource: this.settings.defaultSource,
           defaultSourcePath: this.settings.defaultSourcePath,
+          showSourcePath: this.settings.showSourcePath,
         },
         this.settings.indexSettings
       );
@@ -474,6 +475,7 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend(
       defaultSiteId: null,
       defaultSource: null,
       defaultSourcePath: null,
+      showSourcePath: true,
       bodyAction: 'element-selector-modals/body',
       indexSettings: {},
     },
