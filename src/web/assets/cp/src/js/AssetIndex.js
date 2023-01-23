@@ -124,22 +124,6 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
         }
       }
 
-      const volumeHandle = this.$source.data('volume-handle');
-      if (volumeHandle && volumeHandle !== 'temp') {
-        this.sourcePath = [
-          {
-            label: '<span data-icon="home"></span>',
-            altLabel: Craft.t('app', '{volume} root', {
-              volume: this.$source.find('.label').text(),
-            }),
-            uri: `assets/${volumeHandle}`,
-            folderId: this.$source.data('folder-id'),
-            handle: volumeHandle,
-            hasChildren: Garnish.hasAttr(this.$source, 'data-has-children'),
-          },
-        ];
-      }
-
       this.base();
     },
 

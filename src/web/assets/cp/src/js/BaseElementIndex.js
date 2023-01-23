@@ -329,7 +329,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       this.selectDefaultSource();
 
       const sourcePath = this.getDefaultSourcePath();
-      if (sourcePath) {
+      if (sourcePath !== null) {
         this.sourcePath = sourcePath;
       }
       if (this.settings.context === 'index') {
@@ -1706,7 +1706,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       this.updateViewMenu();
       this.updateFilterBtn();
 
-      this.sourcePath = null;
+      this.sourcePath = this.$source.data('default-source-path');
 
       this.onSelectSource();
 

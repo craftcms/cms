@@ -1,7 +1,7 @@
 # Release Notes for Craft CMS 4.4 (WIP)
 
 ### Content Management
-- Volume subfolders are now displayed within the element listing pane on asset indexes, rather than as nested sources in the sidebar. ([#12558](https://github.com/craftcms/cms/pull/12558), [#5809](https://github.com/craftcms/cms/issues/5809))
+- Volume subfolders are now displayed within the element listing pane on asset indexes, rather than as nested sources in the sidebar. ([#12558](https://github.com/craftcms/cms/pull/12558), [#9171](https://github.com/craftcms/cms/discussions/9171), [#5809](https://github.com/craftcms/cms/issues/5809))
 - Asset indexes now display the current subfolder path above the element listing. ([#12558](https://github.com/craftcms/cms/pull/12558))
 - It’s now possible to move volume folders and assets to a new location via a new “Move…” bulk element action, rather than via drag-and-drop interactions. ([#12558](https://github.com/craftcms/cms/pull/12558))
 - Element index pages now track the search term in a query param, so the results can be shared. ([#8942](https://github.com/craftcms/cms/discussions/8942), [#12399](https://github.com/craftcms/cms/pull/12399))
@@ -45,6 +45,7 @@
 ### Extensibility
 - Added the `elements/revisions` action. ([#12211](https://github.com/craftcms/cms/pull/12211))
 - Console controllers that directly use `craft\console\ControllerTrait` no longer need to call `$this->checkTty()` or `$this->checkRootUser()` themselves; they are now called from `ControllerTrait::init()` and `beforeAction()`.
+- Element source definitions can now include a `defaultSourcePath` key.
 - Added `craft\base\Element::cpRevisionsUrl()`.
 - Added `craft\base\Element::indexElements()`.
 - Added `craft\base\ElementInterface::findSource()`.

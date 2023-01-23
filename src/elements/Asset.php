@@ -862,12 +862,15 @@ class Asset extends Element
             $userSession->checkPermission("deletePeerAssets:$volume->uid")
         );
 
+        $sourcePathInfo = $folder->getSourcePathInfo();
+
         $source = [
             'key' => $folder->parentId ? "folder:$folder->uid" : "volume:$volume->uid",
             'label' => $folder->parentId ? $folder->name : Craft::t('site', $folder->name),
             'hasThumbs' => true,
             'criteria' => ['folderId' => $folder->id],
             'defaultSort' => ['dateCreated', 'desc'],
+            'defaultSourcePath' => $sourcePathInfo ? [$sourcePathInfo] : null,
             'data' => [
                 'volume-handle' => $volumeHandle,
                 'folder-id' => $folder->id,
