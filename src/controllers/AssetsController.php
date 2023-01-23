@@ -75,7 +75,6 @@ class AssetsController extends Controller
                 $assetsService = Craft::$app->getAssets();
                 $rootFolder = $assetsService->getRootFolderByVolumeId($volume->id);
                 $variables['defaultSource'] = "folder:$rootFolder->uid";
-                $sourcePath = [$rootFolder->getSourcePathInfo()];
 
                 if (!empty($defaultSourcePath)) {
                     $subfolder = $assetsService->findFolder([
@@ -83,24 +82,22 @@ class AssetsController extends Controller
                         'path' => sprintf('%s/', implode('/', $defaultSourcePath)),
                     ]);
                     if ($subfolder) {
-                        // Create an ancestors array leading up to but not including the root folder
+                        $sourcePath = [];
                         /** @var VolumeFolder[] $folders */
                         $folders = [];
-                        while ($subfolder && $subfolder->parentId) {
+                        while ($subfolder) {
                             array_unshift($folders, $subfolder);
                             $subfolder = $subfolder->getParent();
                         }
-
                         foreach ($folders as $i => $folder) {
                             if ($i < count($folders) - 1) {
                                 $folder->setHasChildren(true);
                             }
                             $sourcePath[] = $folder->getSourcePathInfo();
                         }
+                        $variables['defaultSourcePath'] = $sourcePath;
                     }
                 }
-
-                $variables['defaultSourcePath'] = $sourcePath;
             }
         }
 

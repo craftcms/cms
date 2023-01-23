@@ -102,11 +102,15 @@ class VolumeFolder extends Model
     /**
      * Returns info about the folder for an element index’s source path configuration.
      *
-     * @return array
+     * @return array|null
      * @since 3.8.0
      */
-    public function getSourcePathInfo(): array
+    public function getSourcePathInfo(): ?array
     {
+        if (!$this->volumeId) {
+            return null;
+        }
+
         $volume = $this->getVolume();
         $userSession = Craft::$app->getUser();
         $canCreate = $userSession->checkPermission("createFoldersInVolume:$volume->uid");
