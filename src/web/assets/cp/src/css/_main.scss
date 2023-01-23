@@ -1539,7 +1539,7 @@ ul.icons {
     }
 
     &:not(.dashed):not(:last-child):not(.btngroup-btn-last) {
-      @include margin-right(2px);
+      @include margin-right(1px);
     }
 
     body.ltr & {
@@ -2307,10 +2307,10 @@ h2 + .actions {
     th,
     td {
       &:first-child {
-        @include padding-left(22px);
+        @include padding-left(24px);
       }
       &:last-child {
-        @include padding-right(22px);
+        @include padding-right(24px);
       }
     }
   }
