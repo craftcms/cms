@@ -579,7 +579,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         this.$sourcePathActionsBtn = null;
       }
 
-      if (this._sourcePath) {
+      if (this._sourcePath && this.settings.showSourcePath) {
         const actions = this.getSourcePathActions();
 
         this.$sourcePathContainer = $('<div/>', {
@@ -2557,6 +2557,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       defaultSiteId: null,
       defaultSource: null,
       defaultSourcePath: null,
+      showSourcePath: true,
       canHaveDrafts: false,
 
       elementTypeName: Craft.t('app', 'Element'),

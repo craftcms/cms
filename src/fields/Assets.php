@@ -706,7 +706,9 @@ class Assets extends BaseRelationField
         );
         $variables['defaultFieldLayoutId'] = $uploadVolume->fieldLayoutId ?? null;
 
-        if (!$this->useSingleFolder) {
+        if ($this->useSingleFolder) {
+            $variables['showSourcePath'] = false;
+        } else {
             $uploadFolder = $this->_uploadFolder($element, false);
             if ($uploadFolder->volumeId) {
                 $folders = $this->_folderWithAncestors($uploadFolder);
