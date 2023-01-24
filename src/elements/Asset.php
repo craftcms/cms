@@ -497,7 +497,7 @@ class Asset extends Element
     {
         if (self::isFolderIndex()) {
             return [
-                'title' => Craft::t('app', 'Title'),
+                'title' => Craft::t('app', 'Folder'),
             ];
         }
 
