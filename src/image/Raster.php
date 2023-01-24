@@ -527,8 +527,10 @@ class Raster extends Image
      */
     public function getIsTransparent(): bool
     {
-        if (Craft::$app->getImages()->getIsImagick() && method_exists(\Imagick::class, 'getImageAlphaChannel')) {
-            return $this->_image->getImagick()->getImageAlphaChannel();
+        if (Craft::$app->getImages()->getIsImagick()) {
+            // https://github.com/php-imagine/Imagine/issues/842#issuecomment-1402748019
+            $alphaRange = $this->_image->getImagick()->getImageChannelRange(\Imagick::CHANNEL_ALPHA);
+            return $alphaRange['minima'] < $alphaRange['maxima'];
         }
 
         return false;
