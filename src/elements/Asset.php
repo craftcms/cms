@@ -191,12 +191,22 @@ class Asset extends Element
     public const KIND_XML = 'xml';
     public const KIND_UNKNOWN = 'unknown';
 
+    private static string $_displayName;
+
     /**
      * @inheritdoc
      */
     public static function displayName(): string
     {
-        return Craft::t('app', 'Asset');
+        if (!isset(self::$_displayName)) {
+            if (Craft::$app->getRequest()->getBodyParam('foldersOnly')) {
+                self::$_displayName = Craft::t('app', 'Folder');
+            } else {
+                self::$_displayName = Craft::t('app', 'Asset');
+            }
+        }
+
+        return self::$_displayName;
     }
 
     /**
@@ -525,20 +535,6 @@ class Asset extends Element
                 'attribute' => 'id',
             ],
         ];
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public static function tableAttributes(): array
-    {
-        if (Craft::$app->getRequest()->getBodyParam('foldersOnly')) {
-            return [
-                'title' => ['label' => Craft::t('app', 'Folder')],
-            ];
-        }
-
-        return parent::tableAttributes();
     }
 
     /**
