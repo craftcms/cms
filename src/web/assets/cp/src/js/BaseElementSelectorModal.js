@@ -385,7 +385,7 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend(
 
     _createElementIndex: function () {
       Craft.sendActionRequest('POST', this.settings.bodyAction, {
-        params: this.getElementIndexParams(),
+        data: this.getElementIndexParams(),
       }).then((response) => {
         this.$body.html(response.data.html);
 
