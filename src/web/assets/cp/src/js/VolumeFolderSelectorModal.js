@@ -5,6 +5,9 @@
  */
 Craft.VolumeFolderSelectorModal = Craft.BaseElementSelectorModal.extend({
   init: function (settings) {
+    settings = Object.assign({}, settings, {
+      showSiteMenu: false,
+    });
     this.base('craft\\elements\\Asset', settings);
   },
 
