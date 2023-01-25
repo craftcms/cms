@@ -942,7 +942,6 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       const {viewParams, prevViewParams} = this;
       let successMessage = null;
 
-      // Check to see if source has changed
       if (
         prevViewParams === null ||
         viewParams.source !== prevViewParams.source
@@ -950,10 +949,13 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         successMessage = Craft.t('app', '{source} loaded', {
           source: this.getSourceLabel(),
         });
-      } else if (
-        this.viewParams.viewState.mode !== prevViewParams.viewState.mode
-      ) {
-        console.log('view mode changed');
+      } else if (viewParams.viewState.mode !== prevViewParams.viewState.mode) {
+        successMessage = Craft.t('app', '{name} view loaded', {
+          name:
+            viewParams.viewState.mode === 'grid'
+              ? Craft.t('app', 'Grid')
+              : Craft.t('app', 'Thumbnail'),
+        });
       } else if (
         viewParams.viewState.order !== prevViewParams.viewState.order ||
         viewParams.viewState.sort !== prevViewParams.viewState.sort
@@ -992,8 +994,6 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
     updateLiveRegion: function (message) {
       if (!message) return;
-
-      console.log(message);
 
       this.$srStatusContainer.empty().text(message);
 
