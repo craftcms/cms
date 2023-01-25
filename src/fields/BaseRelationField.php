@@ -478,8 +478,9 @@ JS, [
         if ($errorCount) {
             /** @var ElementInterface|string $elementType */
             $elementType = static::elementType();
-            $element->addError($this->handle, Craft::t('app', 'Fix validation errors on the related {type}.', [
+            $element->addError($this->handle, Craft::t('app', 'Validation errors in {attribute} {type} - please fix them.', [
                 'type' => $errorCount === 1 ? $elementType::lowerDisplayName() : $elementType::pluralLowerDisplayName(),
+                'attribute' => $this->getAttributeLabel($this->handle),
             ]));
         }
     }
