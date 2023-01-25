@@ -903,7 +903,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       return params;
     },
 
-    updateElements: function (preservePagination, pageChanged, sourceChanged) {
+    updateElements: function (preservePagination, pageChanged) {
       // Ignore if we're not fully initialized yet
       if (!this.initialized) {
         return;
@@ -2281,17 +2281,6 @@ Craft.BaseElementIndex = Garnish.Base.extend(
                 {
                   first: this.getFirstItemNum(total),
                   last: this.getLastItemNum(total),
-                  total: total,
-                  item: itemLabel,
-                  items: itemsLabel,
-                }
-              );
-              this.paginationStatusMessage = Craft.t(
-                'app',
-                'Showing {first, number}-{last, number} of {total, number} {total, plural, =1{{item}} other{{items}}}',
-                {
-                  first: first,
-                  last: last,
                   total: total,
                   item: itemLabel,
                   items: itemsLabel,
