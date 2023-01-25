@@ -397,7 +397,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       return Math.min(this.settings.batchSize * (this.page - 1) + 1, total);
     },
 
-    getLastItemNum: function (total) {
+    getLastItemNum: function (first, total) {
       return Math.min(first + (this.settings.batchSize - 1), total);
     },
 
@@ -947,28 +947,32 @@ Craft.BaseElementIndex = Garnish.Base.extend(
             const itemsLabel = this.getItemsLabel();
 
             this._countResults().then((total) => {
-              let paginationMessage =
-                this._isViewPaginated() === true
-                  ? Craft.t(
-                      'app',
-                      'Showing {first, number}-{last, number} of {total, number} {total, plural, =1{{item}} other{{items}}}',
-                      {
-                        first: this.getFirstItemNum(total),
-                        last: this.getLastItemNum(total),
-                        total: total,
-                        item: itemLabel,
-                        items: itemsLabel,
-                      }
-                    )
-                  : Craft.t(
-                      'app',
-                      'Showing {total, number} {total, plural, =1{{item}} other{{items}}}',
-                      {
-                        total: total,
-                        item: itemLabel,
-                        items: itemsLabel,
-                      }
-                    );
+              let paginationMessage;
+
+              if (!this._isViewPaginated) {
+                paginationMessage = Craft.t(
+                  'app',
+                  'Showing {total, number} {total, plural, =1{{item}} other{{items}}}',
+                  {
+                    total: total,
+                    item: itemLabel,
+                    items: itemsLabel,
+                  }
+                );
+              } else {
+                const first = this.getFirstItemNum(total);
+                paginationMessage = Craft.t(
+                  'app',
+                  'Showing {first, number}-{last, number} of {total, number} {total, plural, =1{{item}} other{{items}}}',
+                  {
+                    first: first,
+                    last: this.getLastItemNum(first, total),
+                    total: total,
+                    item: itemLabel,
+                    items: itemsLabel,
+                  }
+                );
+              }
 
               this.updateLiveRegion(paginationMessage);
             });
@@ -1042,6 +1046,8 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
     updateLiveRegion: function (message) {
       if (!message) return;
+
+      console.log(message);
 
       this.$srStatusContainer.empty().text(message);
 
@@ -2275,12 +2281,14 @@ Craft.BaseElementIndex = Garnish.Base.extend(
               );
               this.$countContainer.text(countLabel);
             } else {
+              const first = this.getFirstItemNum(total);
+              const last = this.getLastItemNum(first, total);
               let countLabel = Craft.t(
                 'app',
                 '{first, number}-{last, number} of {total, number} {total, plural, =1{{item}} other{{items}}}',
                 {
-                  first: this.getFirstItemNum(total),
-                  last: this.getLastItemNum(total),
+                  first: first,
+                  last: last,
                   total: total,
                   item: itemLabel,
                   items: itemsLabel,
