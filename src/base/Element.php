@@ -4347,6 +4347,16 @@ abstract class Element extends Component implements ElementInterface
         $contentService->fieldContext = $this->getFieldContext();
         $fieldLayout = $this->getFieldLayout();
         $this->_fieldsByHandle[$handle] = $fieldLayout ? $fieldLayout->getFieldByHandle($handle) : null;
+
+        // nullify values for custom fields that are not part of this layout
+        // https://github.com/craftcms/cms/issues/12539
+        if ($fieldLayout && $this->_fieldsByHandle[$handle] === null) {
+            $behavior = $this->getBehavior('customFields');
+            if (!empty($behavior->$handle)) {
+                $behavior->$handle = null;
+            }
+        }
+
         $contentService->fieldContext = $originalFieldContext;
 
         return $this->_fieldsByHandle[$handle];
