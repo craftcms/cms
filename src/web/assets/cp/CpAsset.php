@@ -287,6 +287,8 @@ JS;
             'Show {title} children',
             'Show',
             'Show/hide children',
+            'Showing {first, number}-{last, number} of {total, number} {total, plural, =1{{item}} other{{items}}}',
+            'Showing {total, number} {total, plural, =1{{item}} other{{items}}}',
             'Showing your unsaved changes.',
             'Sign in',
             'Sign out now',

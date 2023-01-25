@@ -1322,6 +1322,8 @@ return [
     'Show {title} children' => 'Show {title} children',
     'Show' => 'Show',
     'Show/hide children' => 'Show/hide children',
+    'Showing {first, number}-{last, number} of {total, number} {total, plural, =1{{item}} other{{items}}}' => 'Showing {first, number}–{last, number} of {total, number} {total, plural, =1{{item}} other{{items}}}',
+    'Showing {total, number} {total, plural, =1{{item}} other{{items}}}' => 'Showing {total, number} {total, plural, =1{{item}} other{{items}}}',
     'Showing results for “{searchQuery}”' => 'Showing results for “{searchQuery}”',
     'Showing your unsaved changes.' => 'Showing your unsaved changes.',
     'Sign In' => 'Sign In',

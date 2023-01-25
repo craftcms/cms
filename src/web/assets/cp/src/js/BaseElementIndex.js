@@ -46,6 +46,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
     sortByScore: null,
     trashed: false,
     drafts: false,
+    paginationStatusMessage: null,
     $clearSearchBtn: null,
 
     $statusMenuBtn: null,
@@ -918,8 +919,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
           this._updateView(params, response.data);
 
           if (pageChanged) {
-            const $elementContainer = this.view.getElementContainer();
-            Garnish.firstFocusableElement($elementContainer).trigger('focus');
+            this.updateLiveRegion(this.paginationStatusMessage);
           }
         })
         .catch((e) => {
@@ -939,7 +939,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       }
     },
 
-    updateScreenReaderStatus: function () {
+    getSortMessage: function () {
       const attribute = this.getSelectedSortAttribute();
       const direction =
         this.getSelectedSortDirection() === 'asc'
@@ -949,17 +949,27 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
       if (!attribute && !direction && !sortLabel) return;
 
-      const message = Craft.t(
-        'app',
-        '{name} sorted by {attribute}, {direction}',
-        {
-          name: this.getSourceLabel(),
-          attribute: sortLabel,
-          direction: direction,
-        }
-      );
+      return Craft.t('app', '{name} sorted by {attribute}, {direction}', {
+        name: this.getSourceLabel(),
+        attribute: sortLabel,
+        direction: direction,
+      });
+    },
+
+    updateLiveRegion: function (message) {
+      if (!message) return;
 
       this.$srStatusContainer.empty().text(message);
+
+      // Clear message after interval
+      setTimeout(() => {
+        const currentMessage = this.$srStatusContainer.text();
+
+        // Check that this is the same message and hasn't been updated since
+        if (message !== currentMessage) return;
+
+        this.$srStatusContainer.empty();
+      }, 5000);
     },
 
     showActionTriggers: function () {
@@ -2183,6 +2193,15 @@ Craft.BaseElementIndex = Garnish.Base.extend(
                   items: itemsLabel,
                 }
               );
+              this.paginationStatusMessage = Craft.t(
+                'app',
+                'Showing {total, number} {total, plural, =1{{item}} other{{items}}}',
+                {
+                  total: total,
+                  item: itemLabel,
+                  items: itemsLabel,
+                }
+              );
               this.$countContainer.text(countLabel);
             } else {
               let first = Math.min(
@@ -2193,6 +2212,17 @@ Craft.BaseElementIndex = Garnish.Base.extend(
               let countLabel = Craft.t(
                 'app',
                 '{first, number}-{last, number} of {total, number} {total, plural, =1{{item}} other{{items}}}',
+                {
+                  first: first,
+                  last: last,
+                  total: total,
+                  item: itemLabel,
+                  items: itemsLabel,
+                }
+              );
+              this.paginationStatusMessage = Craft.t(
+                'app',
+                'Showing {first, number}-{last, number} of {total, number} {total, plural, =1{{item}} other{{items}}}',
                 {
                   first: first,
                   last: last,
@@ -3026,7 +3056,9 @@ const ViewMenu = Garnish.Base.extend({
             $selectedOption.data('dir')
           );
           this.elementIndex.updateElements();
-          this.elementIndex.updateScreenReaderStatus();
+          this.elementIndex.updateLiveRegion(
+            this.elementIndex.getSortMessage()
+          );
           this._createRevertBtn();
         }
       },
@@ -3039,7 +3071,7 @@ const ViewMenu = Garnish.Base.extend({
         false
       );
       this.elementIndex.updateElements();
-      this.elementIndex.updateScreenReaderStatus();
+      this.elementIndex.updateLiveRegion(this.elementIndex.getSortMessage());
       this._createRevertBtn();
     });
 
