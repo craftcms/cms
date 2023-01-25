@@ -299,6 +299,7 @@ abstract class Field extends SavableComponent implements FieldInterface
                 'searchScore',
                 'siblings',
                 'site',
+                'siteId',
                 'slug',
                 'sortOrder',
                 'status',
