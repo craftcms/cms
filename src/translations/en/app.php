@@ -1947,6 +1947,7 @@ return [
     '{renewalPrice}/year per site for updates after that.' => '{renewalPrice}/year per site for updates after that.',
     '{section} Entry Types' => '{section} Entry Types',
     '{source} is not a structured source. Only structured sources may be used when relating ancestors.' => '{source} is not a structured source. Only structured sources may be used when relating ancestors.',
+    '{source} loaded' => '{source} loaded',
     '{step, number} of {total, number}' => '{step, number} of {total, number}',
     '{title} ({site})' => '{title} ({site})',
     '{total, number} {total, plural, =1{{item}} other{{items}}}' => '{total, number} {total, plural, =1{{item}} other{{items}}}',

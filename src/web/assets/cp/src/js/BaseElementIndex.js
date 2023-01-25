@@ -63,6 +63,8 @@ Craft.BaseElementIndex = Garnish.Base.extend(
     $viewModeBtnContainer: null,
     viewModeBtns: null,
     viewMode: null,
+    viewParams: null,
+    prevViewParams: null,
     view: null,
     _autoSelectElements: null,
     $countSpinner: null,
@@ -882,7 +884,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       return params;
     },
 
-    updateElements: function (preservePagination, pageChanged) {
+    updateElements: function (preservePagination, pageChanged, sourceChanged) {
       // Ignore if we're not fully initialized yet
       if (!this.initialized) {
         return;
@@ -904,10 +906,13 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         this._resetCount();
       }
 
-      var params = this.getViewParams();
+      this.prevViewParams = this.viewParams;
+      this.viewParams = this.getViewParams();
+
+      const successMessage = this.getUpdateSuccessMessage();
 
       Craft.sendActionRequest('POST', this.settings.updateElementsAction, {
-        data: params,
+        data: this.viewParams,
         cancelToken: this._createCancelToken(),
       })
         .then((response) => {
@@ -916,10 +921,13 @@ Craft.BaseElementIndex = Garnish.Base.extend(
             ? Garnish.$scrollContainer
             : this.$main
           ).scrollTop(0);
-          this._updateView(params, response.data);
-
+          this._updateView(this.viewParams, response.data);
           if (pageChanged) {
             this.updateLiveRegion(this.paginationStatusMessage);
+          }
+
+          if (successMessage) {
+            this.updateLiveRegion(successMessage);
           }
         })
         .catch((e) => {
@@ -928,6 +936,32 @@ Craft.BaseElementIndex = Garnish.Base.extend(
             Craft.cp.displayError(Craft.t('app', 'A server error occurred.'));
           }
         });
+    },
+
+    getUpdateSuccessMessage: function () {
+      const {viewParams, prevViewParams} = this;
+      let successMessage = null;
+
+      // Check to see if source has changed
+      if (
+        prevViewParams === null ||
+        viewParams.source !== prevViewParams.source
+      ) {
+        successMessage = Craft.t('app', '{source} loaded', {
+          source: this.getSourceLabel(),
+        });
+      } else if (
+        this.viewParams.viewState.mode !== prevViewParams.viewState.mode
+      ) {
+        console.log('view mode changed');
+      } else if (
+        viewParams.viewState.order !== prevViewParams.viewState.order ||
+        viewParams.viewState.sort !== prevViewParams.viewState.sort
+      ) {
+        successMessage = this.getSortMessage();
+      }
+
+      return successMessage;
     },
 
     updateElementsIfSearchTextChanged: function () {
@@ -958,6 +992,8 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
     updateLiveRegion: function (message) {
       if (!message) return;
+
+      console.log(message);
 
       this.$srStatusContainer.empty().text(message);
 
@@ -1823,6 +1859,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       this.$elements.addClass('busy');
       this.$updateSpinner.appendTo(this.$elements);
       this.isIndexBusy = true;
+      this.updateLiveRegion(Craft.t('app', 'Loading'));
     },
 
     setIndexAvailable: function () {
@@ -1914,11 +1951,17 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       // there won't be a selected source
       if (!this.sourceSelect.totalSelected) {
         this.sourceSelect.selectItem(this.$visibleSources.first());
+        // this.updateLiveRegion(Craft.t('app', '{source} loaded', {
+        //   source: this.getSourceLabel(),
+        // }));
         return;
       }
 
       if (this.selectSource(this.sourceSelect.$selectedItems)) {
         this.updateElements();
+        // this.updateLiveRegion(Craft.t('app', '{source} loaded', {
+        //   source: this.getSourceLabel(),
+        // }));
       }
     },
 
@@ -3056,9 +3099,6 @@ const ViewMenu = Garnish.Base.extend({
             $selectedOption.data('dir')
           );
           this.elementIndex.updateElements();
-          this.elementIndex.updateLiveRegion(
-            this.elementIndex.getSortMessage()
-          );
           this._createRevertBtn();
         }
       },
@@ -3071,7 +3111,6 @@ const ViewMenu = Garnish.Base.extend({
         false
       );
       this.elementIndex.updateElements();
-      this.elementIndex.updateLiveRegion(this.elementIndex.getSortMessage());
       this._createRevertBtn();
     });
 
