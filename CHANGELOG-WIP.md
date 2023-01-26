@@ -33,5 +33,7 @@
 - Added `Craft.BaseElementSelectorModal::getIndexSettings()`.
 - Added `Craft.BaseElementSelectorModal::hasSelection()`.
 - Added `Craft.VolumeFolderSelectorModal`.
+- The custom `activate` jQuery event will now trigger when the <kbd>Return</kbd> key is pressed.
+- The custom `activate` jQuery event will no longer trigger for <kbd>Ctrl</kbd>/<kbd>Command</kbd>-clicks.
 
 ### System

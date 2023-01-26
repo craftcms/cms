@@ -307,6 +307,7 @@ JS;
             '{ctrl}C to copy.',
             '{first, number}-{last, number} of {total, number} {total, plural, =1{{item}} other{{items}}}',
             '{first}-{last} of {total}',
+            '{name} (Folder)',
             '{num, number} {num, plural, =1{Available Update} other{Available Updates}}',
             '{total, number} {total, plural, =1{{item}} other{{items}}}',
             '{totalItems, plural, =1{Item} other{Items}} moved.',

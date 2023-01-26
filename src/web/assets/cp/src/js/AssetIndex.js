@@ -432,27 +432,36 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
       const $folders = $newElements.find('.element[data-is-folder]');
       for (let i = 0; i < $folders.length; i++) {
         const $folder = $folders.eq(i);
+        const $label = $folder.find('.label');
         const folderId = parseInt($folder.data('folder-id'));
+        const folderName = $label.text();
+        const label = Craft.t('app', '{name} (Folder)', {
+          name: folderName,
+        });
         if (this.settings.disabledFolderIds.includes(folderId)) {
+          $label.attr('aria-label', label);
           $newElements.has($folder).addClass('disabled');
           continue;
         }
         const sourcePath = $folder.data('source-path');
         if (sourcePath) {
-          const $label = $folder.find('.label');
           const $a = $('<a/>', {
             href: Craft.getCpUrl(sourcePath[sourcePath.length - 1].uri),
-            text: $label.text(),
+            text: folderName,
+            'aria-label': label,
           });
           $label.empty().append($a);
-          this.addListener($a, 'click', (ev) => {
-            // Don't interfere if it was a Ctrl-click
-            if (!Garnish.isCtrlKeyPressed(ev)) {
-              ev.preventDefault();
-              this.sourcePath = sourcePath;
-              this.clearSearch(false);
-              this.updateElements();
-            }
+          this.addListener($a, 'activate', (ev) => {
+            this.sourcePath = sourcePath;
+            this.clearSearch(false);
+            this.updateElements().then(() => {
+              const firstFocusableEl = this.$elements.find(
+                ':focusable:not(.selectallcontainer)'
+              )[0];
+              if (firstFocusableEl) {
+                firstFocusableEl.focus();
+              }
+            });
           });
         }
       }
@@ -719,6 +728,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
           disabledFolderIds: [currentFolder.folderId],
         },
         onSelect: ([targetFolder]) => {
+          this.$sourcePathActionsBtn.focus();
           const mover = new Craft.AssetMover();
           mover
             .moveFolders([currentFolder.folderId], targetFolder.folderId)
