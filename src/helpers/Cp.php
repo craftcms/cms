@@ -422,10 +422,8 @@ class Cp
         $elementsService = Craft::$app->getElements();
         $user = Craft::$app->getUser()->getIdentity();
 
-        if ($user) {
-            if ($elementsService->canView($element, $user)) {
-                $attributes['data']['editable'] = true;
-            }
+        if ($user && $elementsService->canView($element, $user)) {
+            $attributes['data']['editable'] = true;
 
             if ($context === 'index') {
                 if ($elementsService->canSave($element, $user)) {
