@@ -97,6 +97,8 @@
 - Added `Craft.ElementFieldSettings`.
 - Added `Craft.VolumeFolderSelectorModal`.
 - Added `Garnish.MultiFunctionBtn`.
+- The custom `activate` jQuery event will now trigger when the <kbd>Return</kbd> key is pressed.
+- The custom `activate` jQuery event will no longer trigger for <kbd>Ctrl</kbd>/<kbd>Command</kbd>-clicks.
 - Deprecated `Craft.CategorySelectInput`. `Craft.BaseElementSelectInput` should be used instead. ([#11749](https://github.com/craftcms/cms/pull/11749))
 
 ### System

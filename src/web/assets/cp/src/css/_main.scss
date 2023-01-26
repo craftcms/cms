@@ -1933,17 +1933,49 @@ div.btn.submit input {
 
   .btn {
     position: relative;
-    @include margin-right(calc(var(--ui-control-height) / 2 + 2.8px));
-    @include border-radius(0, 0, 0, 0);
-    @include padding-right(3px);
+    padding: 0;
+    border-radius: 0;
+    background-color: transparent;
 
-    &.has-action-menu {
-      @include padding-right(1px);
-      @include margin-right(0);
+    &:focus {
+      z-index: 1;
     }
 
-    &.menubtn {
-      @include padding-left(3px);
+    &[aria-current],
+    &[data-disclosure-trigger] {
+      color: var(--white);
+      --text-color: var(--white);
+      --ui-control-color: var(--white);
+      --ui-control-bg-color: var(--gray-500);
+      --ui-control-hover-bg-color: #{darken($grey500, 5%)};
+      --ui-control-active-bg-color: #{darken($grey500, 10%)};
+      @include light-on-dark-text;
+    }
+
+    &:not(.has-action-menu) {
+      @include padding-right(calc(var(--ui-control-height) / 2));
+      @include margin-right(2.8px);
+
+      &:not([data-disclosure-trigger]) .btn-body {
+        @include padding-right(7px);
+      }
+    }
+
+    &[data-disclosure-trigger] .btn-body {
+      @include padding(0, 3px, 0, 5px);
+
+      &:after {
+        @include angle;
+        position: relative;
+      }
+    }
+
+    .btn-body {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      height: var(--ui-control-height);
+      background-color: var(--ui-control-bg-color);
     }
 
     .label {
@@ -1952,12 +1984,17 @@ div.btn.submit input {
       text-overflow: ellipsis;
     }
 
+    &.has-action-menu .btn-body {
+      @include padding-right(1px);
+      @include margin-right(0);
+    }
+
     .chevron-left {
       position: absolute;
       top: 0;
       width: 0;
       height: 0;
-      @include left(calc(-1 * var(--ui-control-height) / 2));
+      @include left(0);
       border-top: calc(var(--ui-control-height) / 2) solid
         var(--ui-control-bg-color);
       @include border-left(
@@ -1970,7 +2007,7 @@ div.btn.submit input {
         font-size: 0;
         position: absolute;
         top: 0;
-        @include left(calc(-1 * var(--ui-control-height) / 2));
+        @include right(0);
         border-bottom: calc(var(--ui-control-height) / 2) solid
           var(--ui-control-bg-color);
         @include border-left(
@@ -1982,13 +2019,12 @@ div.btn.submit input {
     .chevron-right {
       position: absolute;
       top: 0;
-      @include right(calc(-1 * var(--ui-control-height) / 2));
+      @include right(0);
       border-top: calc(var(--ui-control-height) / 2) solid transparent;
       border-bottom: calc(var(--ui-control-height) / 2) solid transparent;
       @include border-left(
         calc(var(--ui-control-height) / 2) solid var(--ui-control-bg-color)
       );
-      box-shadow: 0 2px #fff;
     }
   }
 
@@ -2000,16 +2036,28 @@ div.btn.submit input {
 
     li {
       &:first-child .btn {
-        @include border-radius(
-          var(--ui-control-border-radius),
-          0,
-          0,
-          var(--ui-control-border-radius)
-        );
+        .btn-body {
+          @include padding-left(14px);
+          @include border-radius(
+            var(--ui-control-border-radius),
+            0,
+            0,
+            var(--ui-control-border-radius)
+          );
+
+          [data-icon]:before {
+            opacity: 1;
+          }
+        }
       }
 
       &:not(:first-child) .btn {
-        @include padding-left(7px);
+        @include margin-left(calc(-1 * (var(--ui-control-height) / 2)));
+        @include padding-left(calc(var(--ui-control-height) / 2));
+
+        .btn-body {
+          @include padding-left(7px);
+        }
       }
     }
   }
@@ -2825,43 +2873,40 @@ $checkboxPadding: $checkboxSize + 4;
     --ui-control-height: 30px;
 
     .chevron-btns {
-      ol {
-        position: relative;
-        display: inline-flex;
-        background: $white;
+      display: inline-flex;
+      position: relative;
+      background: $white;
 
-        &:before {
-          display: block;
-          content: '';
-          font-size: 0;
-          position: absolute;
-          top: 0;
-          width: 0;
-          height: 0;
-          @include right(0);
-          border-top: calc(var(--ui-control-height) / 2) solid var(--gray-050);
-          @include border-left(
-            calc(var(--ui-control-height) / 2) solid transparent
-          );
-        }
+      &:before {
+        display: block;
+        content: '';
+        font-size: 0;
+        position: absolute;
+        top: 0;
+        width: 0;
+        height: 0;
+        @include right(0);
+        border-top: calc(var(--ui-control-height) / 2) solid $grey050;
+        @include border-left(
+          calc(var(--ui-control-height) / 2) solid transparent
+        );
+      }
 
-        &:after {
-          display: block;
-          content: '';
-          font-size: 0;
-          position: absolute;
-          top: calc(var(--ui-control-height) / 2);
-          @include right(0);
-          border-bottom: calc(var(--ui-control-height) / 2) solid
-            var(--gray-050);
-          @include border-left(
-            calc(var(--ui-control-height) / 2) solid transparent
-          );
-        }
+      &:after {
+        display: block;
+        content: '';
+        font-size: 0;
+        position: absolute;
+        top: calc(var(--ui-control-height) / 2);
+        @include right(0);
+        border-bottom: calc(var(--ui-control-height) / 2) solid $grey050;
+        @include border-left(
+          calc(var(--ui-control-height) / 2) solid transparent
+        );
+      }
 
-        .btn {
-          --ui-control-border-radius: var(--small-border-radius);
-        }
+      .btn {
+        --ui-control-border-radius: 3px;
       }
     }
 
@@ -5438,7 +5483,6 @@ $min2ColWidth: 400px;
 .menu:not(.menu--disclosure) ul li a:not(.sel):not(.disabled):hover,
 .menu:not(.menu--disclosure):not(:hover) ul li a:not(.disabled).hover {
   @include menu-option-active-styles;
-
   --text-color: var(--white);
   --light-text-color: var(--gray-100);
   --ui-control-color: var(--gray-050);

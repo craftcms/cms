@@ -57,7 +57,8 @@ Craft.BaseElementIndex = Garnish.Base.extend(
     siteId: null,
 
     _sourcePath: null,
-    $sourcePathContainer: null,
+    $sourcePathOuterContainer: null,
+    $sourcePathInnerContainer: null,
     $sourcePathActionsBtn: null,
 
     $elements: null,
@@ -373,22 +374,15 @@ Craft.BaseElementIndex = Garnish.Base.extend(
     },
 
     handleResize: function () {
-      if (this.$sourcePathContainer) {
-        const $labels = this.$sourcePathContainer.find('.label');
+      if (this.$sourcePathOuterContainer) {
+        const $labels = this.$sourcePathInnerContainer.find('.label');
         $labels.css('width', '');
-        const containerWidth =
-          this.$sourcePathContainer[0].getBoundingClientRect().width;
-        let innerWidth = this.$sourcePathContainer
-          .children('nav')[0]
-          .getBoundingClientRect().width;
-        if (this.$sourcePathActionsBtn) {
-          innerWidth +=
-            this.$sourcePathActionsBtn[0].getBoundingClientRect().width +
-            parseInt(this.$sourcePathActionsBtn.css('margin-right')) +
-            parseInt(this.$sourcePathActionsBtn.css('margin-left'));
-        }
-        if (innerWidth > containerWidth) {
-          const overage = innerWidth - containerWidth;
+        const outerWidth =
+          this.$sourcePathOuterContainer[0].getBoundingClientRect().width;
+        const innerWidth =
+          this.$sourcePathInnerContainer[0].getBoundingClientRect().width;
+        if (innerWidth > outerWidth) {
+          const overage = innerWidth - outerWidth;
           const labels = $labels.toArray();
           const labelWidths = [];
           let totalLabelWidth = 0;
@@ -632,21 +626,25 @@ Craft.BaseElementIndex = Garnish.Base.extend(
     set sourcePath(sourcePath) {
       this._sourcePath = sourcePath && sourcePath.length ? sourcePath : null;
 
-      if (this.$sourcePathContainer) {
-        this.$sourcePathContainer.remove();
-        this.$sourcePathContainer = null;
+      if (this.$sourcePathOuterContainer) {
+        this.$sourcePathOuterContainer.remove();
+        this.$sourcePathOuterContainer = null;
+        this.$sourcePathInnerContainer = null;
         this.$sourcePathActionsBtn = null;
       }
 
       if (this._sourcePath && this.settings.showSourcePath) {
         const actions = this.getSourcePathActions();
 
-        this.$sourcePathContainer = $('<div/>', {
-          class: 'source-path chevron-btns',
+        this.$sourcePathOuterContainer = $('<div/>', {
+          class: 'source-path',
         }).insertBefore(this.$elements);
+        this.$sourcePathInnerContainer = $('<div/>', {
+          class: 'chevron-btns',
+        }).appendTo(this.$sourcePathOuterContainer);
         const $nav = $('<nav/>', {
           'aria-label': this.getSourcePathLabel(),
-        }).appendTo(this.$sourcePathContainer);
+        }).appendTo(this.$sourcePathInnerContainer);
         const $ol = $('<ol/>').appendTo($nav);
 
         for (let i = 0; i < sourcePath.length; i++) {
@@ -655,50 +653,49 @@ Craft.BaseElementIndex = Garnish.Base.extend(
             const isFirst = i === 0;
             const isLast = i === sourcePath.length - 1;
 
-            const $a = $('<a/>', {
+            step.$btn = $('<a/>', {
               href: step.uri ? Craft.getCpUrl(step.uri) : '#',
               class: 'btn',
+              role: 'button',
             });
 
+            const $btnBody = $('<span/>', {
+              class: 'btn-body',
+            }).appendTo(step.$btn);
+
             if (step.altLabel) {
-              $a.html(step.label);
+              step.$btn.attr('title', step.altLabel);
+              step.$btn.attr('aria-label', step.altLabel);
+              $btnBody.html(step.label);
             } else {
-              $('<span/>', {
+              const $label = $('<span/>', {
                 class: 'label',
                 html: step.label,
-              }).appendTo($a);
+              }).appendTo($btnBody);
+              step.$btn.attr('title', $label.text());
             }
 
             if (!isFirst) {
-              $a.append($('<span class="chevron-left"/>'));
+              step.$btn.append($('<span class="chevron-left"/>'));
             }
 
             if (!isLast || !actions.length) {
-              $a.append($('<span class="chevron-right"/>'));
+              step.$btn.append($('<span class="chevron-right"/>'));
             } else {
-              $a.addClass('has-action-menu');
+              step.$btn.addClass('has-action-menu');
             }
 
             if (isLast) {
-              $a.attr('aria-current', 'true');
+              step.$btn.attr('aria-current', 'true');
             }
 
-            const textLabel = step.altLabel || $a.text();
-            $a.attr('title', textLabel).attr('aria-label', textLabel);
+            $('<li/>').append(step.$btn).appendTo($ol);
 
-            $('<li/>').append($a).appendTo($ol);
-
-            this.addListener($a, 'click', (ev) => {
-              // Don't interfere if the step has a URI and it was a Ctrl-click
-              if (
-                typeof step.uri === 'undefined' ||
-                !Garnish.isCtrlKeyPressed(ev)
-              ) {
-                ev.preventDefault();
-                this.sourcePath = this.sourcePath.slice(0, i + 1);
-                this.clearSearch(false);
-                this.updateElements();
-              }
+            this.addListener(step.$btn, 'activate', (ev) => {
+              this.sourcePath = this.sourcePath.slice(0, i + 1);
+              this.sourcePath[i].$btn.focus();
+              this.clearSearch(false);
+              this.updateElements();
             });
           })(i);
         }
@@ -706,14 +703,18 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         // Action menu
         if (actions && actions.length) {
           const actionBtnLabel = this.getSourcePathActionLabel();
+          const menuId = 'menu' + Math.floor(Math.random() * 1000000);
           this.$sourcePathActionsBtn = $('<button/>', {
             type: 'button',
             class: 'btn',
             title: actionBtnLabel,
             'aria-label': actionBtnLabel,
+            'data-disclosure-trigger': true,
+            'aria-controls': menuId,
           })
-            .append($('<span class="chevron-right"/>'))
-            .appendTo(this.$sourcePathContainer);
+            .append($('<span/>', {class: 'btn-body'}))
+            .append($('<span/>', {class: 'chevron-right'}))
+            .appendTo(this.$sourcePathInnerContainer);
 
           const groupedActions = [
             actions.filter((a) => !a.destructive && !a.administrative),
@@ -721,11 +722,10 @@ Craft.BaseElementIndex = Garnish.Base.extend(
             actions.filter((a) => a.administrative),
           ].filter((group) => group.length);
 
-          const menuId = 'menu' + Math.floor(Math.random() * 1000000);
           const $menu = $('<div/>', {
             id: menuId,
             class: 'menu menu--disclosure',
-          }).appendTo(this.$sourcePathContainer);
+          }).appendTo(this.$sourcePathInnerContainer);
 
           groupedActions.forEach((group, index) => {
             if (index !== 0) {
@@ -734,13 +734,8 @@ Craft.BaseElementIndex = Garnish.Base.extend(
             this._buildSourcePathActionList(group).appendTo($menu);
           });
 
-          this.$sourcePathActionsBtn
-            .addClass('menubtn')
-            .attr({
-              'data-disclosure-trigger': true,
-              'aria-controls': menuId,
-            })
-            .disclosureMenu();
+          this.$sourcePathActionsBtn.disclosureMenu();
+          this.handleResize();
         }
 
         // Update the URL if we're on the index page
@@ -1142,52 +1137,58 @@ Craft.BaseElementIndex = Garnish.Base.extend(
     },
 
     updateElements: function (preservePagination, pageChanged) {
-      // Ignore if we're not fully initialized yet
-      if (!this.initialized) {
-        return;
-      }
+      return new Promise((resolve, reject) => {
+        // Ignore if we're not fully initialized yet
+        if (!this.initialized) {
+          reject('The element index isn’t initialized yet.');
+          return;
+        }
 
-      // Cancel any ongoing requests
-      this._cancelRequests();
+        // Cancel any ongoing requests
+        this._cancelRequests();
 
-      this.setIndexBusy();
+        this.setIndexBusy();
 
-      // Kill the old view class
-      if (this.view) {
-        this.view.destroy();
-        delete this.view;
-      }
+        // Kill the old view class
+        if (this.view) {
+          this.view.destroy();
+          delete this.view;
+        }
 
-      if (preservePagination !== true) {
-        this.setPage(1);
-        this._resetCount();
-      }
+        if (preservePagination !== true) {
+          this.setPage(1);
+          this._resetCount();
+        }
 
-      var params = this.getViewParams();
+        var params = this.getViewParams();
 
-      Craft.sendActionRequest('POST', this.settings.updateElementsAction, {
-        data: params,
-        cancelToken: this._createCancelToken(),
-      })
-        .then((response) => {
-          this.setIndexAvailable();
-          (this.settings.context === 'index'
-            ? Garnish.$scrollContainer
-            : this.$main
-          ).scrollTop(0);
-          this._updateView(params, response.data);
-
-          if (pageChanged) {
-            const $elementContainer = this.view.getElementContainer();
-            Garnish.firstFocusableElement($elementContainer).trigger('focus');
-          }
+        Craft.sendActionRequest('POST', this.settings.updateElementsAction, {
+          data: params,
+          cancelToken: this._createCancelToken(),
         })
-        .catch((e) => {
-          this.setIndexAvailable();
-          if (!this._ignoreFailedRequest) {
-            Craft.cp.displayError(Craft.t('app', 'A server error occurred.'));
-          }
-        });
+          .then((response) => {
+            this.setIndexAvailable();
+            (this.settings.context === 'index'
+              ? Garnish.$scrollContainer
+              : this.$main
+            ).scrollTop(0);
+            this._updateView(params, response.data);
+
+            if (pageChanged) {
+              const $elementContainer = this.view.getElementContainer();
+              Garnish.firstFocusableElement($elementContainer).trigger('focus');
+            }
+
+            resolve();
+          })
+          .catch((e) => {
+            this.setIndexAvailable();
+            if (!this._ignoreFailedRequest) {
+              Craft.cp.displayError(Craft.t('app', 'A server error occurred.'));
+            }
+            reject(e);
+          });
+      });
     },
 
     updateElementsIfSearchTextChanged: function () {
