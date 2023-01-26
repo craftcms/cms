@@ -63,7 +63,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
     viewModeBtns: null,
     viewMode: null,
     viewParams: null,
-    prevViewParams: null,
+    previousViewParams: null,
     view: null,
     _autoSelectElements: null,
     $countSpinner: null,
@@ -925,7 +925,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         this._resetCount();
       }
 
-      this.prevViewParams = this.viewParams;
+      this.previousViewParams = this.viewParams;
       this.viewParams = this.getViewParams();
 
       const successMessage = this.getUpdateSuccessMessage();
@@ -941,16 +941,15 @@ Craft.BaseElementIndex = Garnish.Base.extend(
             : this.$main
           ).scrollTop(0);
           this._updateView(this.viewParams, response.data);
+          let successMessage = null;
 
           if (pageChanged) {
             const itemLabel = this.getItemLabel();
             const itemsLabel = this.getItemsLabel();
 
             this._countResults().then((total) => {
-              let paginationMessage;
-
               if (!this._isViewPaginated) {
-                paginationMessage = Craft.t(
+                successMessage = Craft.t(
                   'app',
                   'Showing {total, number} {total, plural, =1{{item}} other{{items}}}',
                   {
@@ -961,7 +960,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
                 );
               } else {
                 const first = this.getFirstItemNum(total);
-                paginationMessage = Craft.t(
+                successMessage = Craft.t(
                   'app',
                   'Showing {first, number}-{last, number} of {total, number} {total, plural, =1{{item}} other{{items}}}',
                   {
@@ -973,9 +972,9 @@ Craft.BaseElementIndex = Garnish.Base.extend(
                   }
                 );
               }
-
-              this.updateLiveRegion(paginationMessage);
             });
+          } else {
+            successMessage = this.getUpdateSuccessMessage();
           }
 
           if (successMessage) {
@@ -991,28 +990,19 @@ Craft.BaseElementIndex = Garnish.Base.extend(
     },
 
     getUpdateSuccessMessage: function () {
-      let successMessage = null;
-      const {viewParams, prevViewParams} = this;
+      // Set default success message
+      let successMessage = this.getSortMessage();
 
-      if (
-        prevViewParams === null ||
-        viewParams.source !== prevViewParams.source
-      ) {
-        successMessage = Craft.t('app', '{source} loaded', {
-          source: this.getSourceLabel(),
-        });
-      } else if (viewParams.viewState.mode !== prevViewParams.viewState.mode) {
-        successMessage = Craft.t('app', '{name} view loaded', {
-          name:
-            viewParams.viewState.mode === 'grid'
-              ? Craft.t('app', 'Grid')
-              : Craft.t('app', 'Thumbnail'),
-        });
-      } else if (
-        viewParams.viewState.order !== prevViewParams.viewState.order ||
-        viewParams.viewState.sort !== prevViewParams.viewState.sort
-      ) {
-        successMessage = this.getSortMessage();
+      const {viewParams, previousViewParams} = this;
+      console.log(viewParams);
+
+      if (previousViewParams) {
+        const newStatus =
+          viewParams.criteria.status !== previousViewParams.criteria.status;
+
+        if (newStatus) {
+          successMessage = 'result #';
+        }
       }
 
       return successMessage;
