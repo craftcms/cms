@@ -430,6 +430,10 @@ class Cp
                     $attributes['data']['savable'] = true;
                 }
 
+                if ($elementsService->canDuplicate($element, $user)) {
+                    $attributes['data']['duplicatable'] = true;
+                }
+
                 if ($elementsService->canDelete($element, $user)) {
                     $attributes['data']['deletable'] = true;
                 }
