@@ -1001,6 +1001,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         // Ignore if we're not fully initialized yet
         if (!this.initialized) {
           reject('The element index isn’t initialized yet.');
+          return;
         }
 
         // Cancel any ongoing requests
