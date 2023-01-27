@@ -1945,7 +1945,7 @@ JS;
     public function getThumbAlt(): ?string
     {
         if ($this->isFolder) {
-            return Craft::t('app', 'Folder');
+            return null;
         }
 
         return $this->alt;
