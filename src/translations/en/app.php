@@ -1432,6 +1432,7 @@ return [
     'The file failed to upload to the server properly.' => 'The file failed to upload to the server properly.',
     'The file “{name}” does not appear to be an image.' => 'The file “{name}” does not appear to be an image.',
     'The file “{path}” does not appear to be an image.' => 'The file “{path}” does not appear to be an image.',
+    'The filesystem doesn\'t contain any files.' => 'The filesystem doesn\'t contain any files.',
     'The following <a href="{url}">aliases</a> are defined:' => 'The following <a href="{url}">aliases</a> are defined:',
     'The following items were not indexed.' => 'The following items were not indexed.',
     'The following {items} could not be found. Should they be deleted from the index?' => 'The following {items} could not be found. Should they be deleted from the index?',
