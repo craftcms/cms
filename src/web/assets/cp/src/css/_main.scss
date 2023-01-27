@@ -1950,6 +1950,7 @@ div.btn.submit input {
       --ui-control-hover-bg-color: #{darken($grey500, 5%)};
       --ui-control-active-bg-color: #{darken($grey500, 10%)};
       @include light-on-dark-text;
+      @include light-focus-ring;
     }
 
     &:not(.has-action-menu) {
