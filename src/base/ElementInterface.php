@@ -791,6 +791,8 @@ interface ElementInterface extends ComponentInterface
     /**
      * Returns whether the given user is authorized to save this element in its current form.
      *
+     * This will only be called if the element can be [[canView()|viewed]].
+     *
      * @param User $user
      * @return bool
      * @since 4.0.0
@@ -799,6 +801,8 @@ interface ElementInterface extends ComponentInterface
 
     /**
      * Returns whether the given user is authorized to duplicate this element.
+     *
+     * This will only be called if the element can be [[canView()|viewed]] and/or [[canSave()|saved]].
      *
      * @param User $user
      * @return bool
@@ -809,7 +813,7 @@ interface ElementInterface extends ComponentInterface
     /**
      * Returns whether the given user is authorized to delete this element.
      *
-     * This will only be called if the element can be [[canView()|viewed]].
+     * This will only be called if the element can be [[canView()|viewed]] and/or [[canSave()|saved]].
      *
      * @param User $user
      * @return bool
@@ -820,6 +824,8 @@ interface ElementInterface extends ComponentInterface
     /**
      * Returns whether the given user is authorized to delete this element for its current site.
      *
+     * This will only be called if the element can be [[canView()|viewed]] and/or [[canSave()|saved]].
+     *
      * @param User $user
      * @return bool
      * @since 4.0.0
@@ -828,6 +834,8 @@ interface ElementInterface extends ComponentInterface
 
     /**
      * Returns whether the given user is authorized to create drafts for this element.
+     *
+     * This will only be called if the element can be [[canView()|viewed]] and/or [[canSave()|saved]].
      *
      * ::: tip
      * If this is going to return `true` under any circumstances, make sure [[trackChanges()]] is returning `true`,
