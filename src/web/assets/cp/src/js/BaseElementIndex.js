@@ -927,7 +927,6 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
       this.previousViewParams = this.viewParams;
       this.viewParams = this.getViewParams();
-      console.log(this.viewParams);
 
       Craft.sendActionRequest('POST', this.settings.updateElementsAction, {
         data: this.viewParams,
@@ -992,7 +991,24 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
       if (!previousViewParams) return;
 
-      return !this.isEqual(viewParams.criteria, previousViewParams.criteria);
+      return !this.shallowEqual(
+        viewParams.criteria,
+        previousViewParams.criteria
+      );
+    },
+
+    shallowEqual: function (object1, object2) {
+      const keys1 = Object.keys(object1);
+      const keys2 = Object.keys(object2);
+      if (keys1.length !== keys2.length) {
+        return false;
+      }
+      for (let key of keys1) {
+        if (object1[key] !== object2[key]) {
+          return false;
+        }
+      }
+      return true;
     },
 
     sourceHasChanged: function () {
@@ -1012,71 +1028,6 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         viewParams.viewState.order !== previousViewParams.viewState.order ||
         viewParams.viewState.sort !== previousViewParams.viewState.sort
       );
-    },
-
-    isEqual: function (obj1, obj2) {
-      /**
-       * More accurately check the type of a JavaScript object
-       * @param  {Object} obj The object
-       * @return {String}     The object type
-       */
-      function getType(obj) {
-        return Object.prototype.toString.call(obj).slice(8, -1).toLowerCase();
-      }
-
-      /**
-       * Check if two arrays are equal
-       * @return {Boolean} Returns true if they're equal
-       */
-      function areArraysEqual() {
-        // Check length
-        if (obj1.length !== obj2.length) return false;
-
-        // Check each item in the array
-        for (let i = 0; i < obj1.length; i++) {
-          if (!isEqual(obj1[i], obj2[i])) return false;
-        }
-
-        // If no errors, return true
-        return true;
-      }
-
-      /**
-       * Check if two objects are equal
-       * @return {Boolean} If true, both objects are equal
-       */
-      function areObjectsEqual() {
-        if (Object.keys(obj1).length !== Object.keys(obj2).length) return false;
-
-        // Check each item in the object
-        for (let key in obj1) {
-          if (Object.prototype.hasOwnProperty.call(obj1, key)) {
-            if (!isEqual(obj1[key], obj2[key])) return false;
-          }
-        }
-
-        // If no errors, return true
-        return true;
-      }
-
-      /**
-       * Check if two primitives are equal
-       * @return {Boolean} If true, both primitives are equal
-       */
-      function arePrimitivesEqual() {
-        return obj1 === obj2;
-      }
-
-      // Get the object type
-      let type = getType(obj1);
-
-      // If the two items are not the same type, return false
-      if (type !== getType(obj2)) return false;
-
-      // Compare based on type
-      if (type === 'array') return areArraysEqual();
-      if (type === 'object') return areObjectsEqual();
-      return arePrimitivesEqual();
     },
 
     updateElementsIfSearchTextChanged: function () {
@@ -1108,6 +1059,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
     updateLiveRegion: function (message) {
       if (!message) return;
 
+      console.log(message);
       this.$srStatusContainer.empty().text(message);
 
       // Clear message after interval
