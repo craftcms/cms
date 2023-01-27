@@ -991,24 +991,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
       if (!previousViewParams) return;
 
-      return !this.shallowEqual(
-        viewParams.criteria,
-        previousViewParams.criteria
-      );
-    },
-
-    shallowEqual: function (object1, object2) {
-      const keys1 = Object.keys(object1);
-      const keys2 = Object.keys(object2);
-      if (keys1.length !== keys2.length) {
-        return false;
-      }
-      for (let key of keys1) {
-        if (object1[key] !== object2[key]) {
-          return false;
-        }
-      }
-      return true;
+      return !_.isEqual(viewParams.criteria, previousViewParams.criteria);
     },
 
     sourceHasChanged: function () {
@@ -1059,7 +1042,6 @@ Craft.BaseElementIndex = Garnish.Base.extend(
     updateLiveRegion: function (message) {
       if (!message) return;
 
-      console.log(message);
       this.$srStatusContainer.empty().text(message);
 
       // Clear message after interval
