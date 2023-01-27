@@ -364,7 +364,7 @@ JS;
             '{element} pagination',
             '{first, number}-{last, number} of {total, number} {total, plural, =1{{item}} other{{items}}}',
             '{first}-{last} of {total}',
-            '{name} (Folder)',
+            '{name} folder',
             '{num, number} {num, plural, =1{Available Update} other{Available Updates}}',
             '{num, number} {num, plural, =1{degree} other{degrees}}',
             '{num, number} {num, plural, =1{notification} other{notifications}}',
