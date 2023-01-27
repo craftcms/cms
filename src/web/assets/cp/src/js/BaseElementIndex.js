@@ -393,11 +393,11 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         : this.settings.elementTypePluralName.toLowerCase();
     },
 
-    getFirstItemNum: function (total) {
+    getFirstItemNumber: function (total) {
       return Math.min(this.settings.batchSize * (this.page - 1) + 1, total);
     },
 
-    getLastItemNum: function (first, total) {
+    getLastItemNumber: function (first, total) {
       return Math.min(first + (this.settings.batchSize - 1), total);
     },
 
@@ -958,13 +958,13 @@ Craft.BaseElementIndex = Garnish.Base.extend(
                   }
                 );
               } else {
-                const first = this.getFirstItemNum(total);
+                const first = this.getFirstItemNumber(total);
                 successMessage = Craft.t(
                   'app',
                   'Showing {first, number}-{last, number} of {total, number} {total, plural, =1{{item}} other{{items}}}',
                   {
                     first: first,
-                    last: this.getLastItemNum(first, total),
+                    last: this.getLastItemNumber(first, total),
                     total: total,
                     item: itemLabel,
                     items: itemsLabel,
@@ -2263,8 +2263,8 @@ Craft.BaseElementIndex = Garnish.Base.extend(
               );
               this.$countContainer.text(countLabel);
             } else {
-              const first = this.getFirstItemNum(total);
-              const last = this.getLastItemNum(first, total);
+              const first = this.getFirstItemNumber(total);
+              const last = this.getLastItemNumber(first, total);
               let countLabel = Craft.t(
                 'app',
                 '{first, number}-{last, number} of {total, number} {total, plural, =1{{item}} other{{items}}}',
