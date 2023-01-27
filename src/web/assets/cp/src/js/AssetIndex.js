@@ -435,7 +435,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
         const $label = $folder.find('.label');
         const folderId = parseInt($folder.data('folder-id'));
         const folderName = $label.text();
-        const label = Craft.t('app', '{name} (Folder)', {
+        const label = Craft.t('app', '{name} folder', {
           name: folderName,
         });
         if (this.settings.disabledFolderIds.includes(folderId)) {
@@ -448,6 +448,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
           const $a = $('<a/>', {
             href: Craft.getCpUrl(sourcePath[sourcePath.length - 1].uri),
             text: folderName,
+            role: 'button',
             'aria-label': label,
           });
           $label.empty().append($a);

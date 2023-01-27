@@ -627,7 +627,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
             }
 
             if (isLast) {
-              step.$btn.attr('aria-current', 'true');
+              step.$btn.attr('aria-current', 'page');
             }
 
             $('<li/>').append(step.$btn).appendTo($ol);

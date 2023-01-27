@@ -1757,7 +1757,7 @@ return [
     '{first, number}-{last, number} of {total, number} {total, plural, =1{{item}} other{{items}}}' => '{first, number}–{last, number} of {total, number} {total, plural, =1{{item}} other{{items}}}',
     '{first}-{last} of {total}' => '{first}–{last} of {total}',
     '{id} – {name}' => '{id} – {name}',
-    '{name} (Folder)' => '{name} (Folder)',
+    '{name} folder' => '{name} folder',
     '{name} has been added, but an error occurred when installing it.' => '{name} has been added, but an error occurred when installing it.',
     '{name} should be at least {value}.' => '{name} should be at least {value}.',
     '{num, number} {num, plural, =1{Available Update} other{Available Updates}}' => '{num, number} {num, plural, =1{Available Update} other{Available Updates}}',
