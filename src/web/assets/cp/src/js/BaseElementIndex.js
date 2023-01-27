@@ -928,8 +928,6 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       this.previousViewParams = this.viewParams;
       this.viewParams = this.getViewParams();
 
-      const successMessage = this.getUpdateSuccessMessage();
-
       Craft.sendActionRequest('POST', this.settings.updateElementsAction, {
         data: this.viewParams,
         cancelToken: this._createCancelToken(),
@@ -941,13 +939,14 @@ Craft.BaseElementIndex = Garnish.Base.extend(
             : this.$main
           ).scrollTop(0);
           this._updateView(this.viewParams, response.data);
-          let successMessage = null;
 
-          if (pageChanged) {
+          if (this.criteriaHasChanged() && !this.sourceHasChanged()) {
             const itemLabel = this.getItemLabel();
             const itemsLabel = this.getItemsLabel();
 
             this._countResults().then((total) => {
+              let successMessage;
+
               if (!this._isViewPaginated) {
                 successMessage = Craft.t(
                   'app',
@@ -972,13 +971,11 @@ Craft.BaseElementIndex = Garnish.Base.extend(
                   }
                 );
               }
+
+              this.updateLiveRegion(successMessage);
             });
           } else {
-            successMessage = this.getUpdateSuccessMessage();
-          }
-
-          if (successMessage) {
-            this.updateLiveRegion(successMessage);
+            this.updateLiveRegion(this.getSortMessage());
           }
         })
         .catch((e) => {
@@ -989,23 +986,20 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         });
     },
 
-    getUpdateSuccessMessage: function () {
-      // Set default success message
-      let successMessage = this.getSortMessage();
-
+    criteriaHasChanged: function () {
       const {viewParams, previousViewParams} = this;
-      console.log(viewParams);
 
-      if (previousViewParams) {
-        const newStatus =
-          viewParams.criteria.status !== previousViewParams.criteria.status;
+      if (!previousViewParams) return;
 
-        if (newStatus) {
-          successMessage = 'result #';
-        }
-      }
+      return viewParams.criteria !== previousViewParams.criteria;
+    },
 
-      return successMessage;
+    sourceHasChanged: function () {
+      const {viewParams, previousViewParams} = this;
+
+      if (!previousViewParams) return;
+
+      return viewParams.source !== previousViewParams.source;
     },
 
     updateElementsIfSearchTextChanged: function () {
@@ -1036,8 +1030,6 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
     updateLiveRegion: function (message) {
       if (!message) return;
-
-      console.log(message);
 
       this.$srStatusContainer.empty().text(message);
 
