@@ -9,6 +9,7 @@ namespace craft\base;
 
 use craft\behaviors\CustomFieldBehavior;
 use craft\elements\conditions\ElementConditionInterface;
+use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\User;
 use craft\errors\InvalidFieldException;
@@ -770,6 +771,8 @@ interface ElementInterface extends ComponentInterface
     /**
      * Returns whether the given user is authorized to save this element in its current form.
      *
+     * This will only be called if the element can be [[canView()|viewed]].
+     *
      * @param User $user
      * @return bool
      * @since 4.0.0
@@ -778,6 +781,8 @@ interface ElementInterface extends ComponentInterface
 
     /**
      * Returns whether the given user is authorized to duplicate this element.
+     *
+     * This will only be called if the element can be [[canView()|viewed]] and/or [[canSave()|saved]].
      *
      * @param User $user
      * @return bool
@@ -788,7 +793,7 @@ interface ElementInterface extends ComponentInterface
     /**
      * Returns whether the given user is authorized to delete this element.
      *
-     * This will only be called if the element can be [[canView()|viewed]].
+     * This will only be called if the element can be [[canView()|viewed]] and/or [[canSave()|saved]].
      *
      * @param User $user
      * @return bool
@@ -799,6 +804,8 @@ interface ElementInterface extends ComponentInterface
     /**
      * Returns whether the given user is authorized to delete this element for its current site.
      *
+     * This will only be called if the element can be [[canView()|viewed]] and/or [[canSave()|saved]].
+     *
      * @param User $user
      * @return bool
      * @since 4.0.0
@@ -807,6 +814,8 @@ interface ElementInterface extends ComponentInterface
 
     /**
      * Returns whether the given user is authorized to create drafts for this element.
+     *
+     * This will only be called if the element can be [[canView()|viewed]] and/or [[canSave()|saved]].
      *
      * ::: tip
      * If this is going to return `true` under any circumstances, make sure [[trackChanges()]] is returning `true`,
@@ -850,6 +859,14 @@ interface ElementInterface extends ComponentInterface
      * @since 4.0.0
      */
     public function getPostEditUrl(): ?string;
+
+    /**
+     * Returns the element’s revisions index URL in the control panel.
+     *
+     * @return string|null
+     * @since 4.4.0
+     */
+    public function getCpRevisionsUrl(): ?string;
 
     /**
      * Returns additional buttons that should be shown at the top of the element’s edit page.

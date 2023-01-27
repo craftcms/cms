@@ -1440,7 +1440,7 @@ class Entry extends Element implements ExpirableElementInterface
             $path .= "-$this->slug";
         }
 
-        return UrlHelper::cpUrl($path);
+        return $path;
     }
 
     /**
@@ -1449,6 +1449,14 @@ class Entry extends Element implements ExpirableElementInterface
     public function getPostEditUrl(): ?string
     {
         return UrlHelper::cpUrl('entries');
+    }
+
+    /**
+     * @inheritdoc
+     */
+    protected function cpRevisionsUrl(): ?string
+    {
+        return sprintf('%s/revisions', $this->cpEditUrl());
     }
 
     /**

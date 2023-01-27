@@ -38,6 +38,7 @@ use craft\web\twig\nodevisitors\Profiler;
 use craft\web\twig\tokenparsers\CacheTokenParser;
 use craft\web\twig\tokenparsers\DdTokenParser;
 use craft\web\twig\tokenparsers\DeprecatedTokenParser;
+use craft\web\twig\tokenparsers\DumpTokenParser;
 use craft\web\twig\tokenparsers\ExitTokenParser;
 use craft\web\twig\tokenparsers\HeaderTokenParser;
 use craft\web\twig\tokenparsers\HookTokenParser;
@@ -132,6 +133,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
             new CacheTokenParser(),
             new DeprecatedTokenParser(),
             new DdTokenParser(),
+            new DumpTokenParser(),
             new ExitTokenParser(),
             new HeaderTokenParser(),
             new HookTokenParser(),
