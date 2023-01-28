@@ -152,7 +152,7 @@ Garnish.$doc.ready(function () {
       },
 
       /**
-       * Updates Craft ID.
+       * Updates Craft Console.
        *
        * @param craftIdJson
        */
@@ -160,7 +160,7 @@ Garnish.$doc.ready(function () {
         this.$store.commit('craft/updateCraftId', craftId);
 
         if (this.craftId && this.craftId.email !== this.cart.email) {
-          // Update the cart’s email with the one from the Craft ID account
+          // Update the cart’s email with the one from the Craft Console account
           let data = {
             email: this.craftId.email,
           };
@@ -255,7 +255,7 @@ Garnish.$doc.ready(function () {
           $pluginStoreActionsSpinner.addClass('hidden');
         });
 
-        // Craft ID
+        // Craft Console
         const $craftId = $('#craftid-account');
         const $craftIdConnectForm = $('#craftid-connect-form');
         const $craftIdDisconnectForm = $('#craftid-disconnect-form');

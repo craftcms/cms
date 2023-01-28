@@ -135,12 +135,14 @@ abstract class BaseField extends FieldLayoutElement
                 'title' => Craft::t('app', 'This field is required'),
                 'aria' => ['label' => Craft::t('app', 'This field is required')],
                 'data' => ['icon' => 'asterisk'],
+                'role' => 'img',
             ]) : '') .
             ($this->hasConditions() ? Html::tag('div', '', [
                 'class' => ['fld-indicator'],
                 'title' => Craft::t('app', 'This field is conditional'),
                 'aria' => ['label' => Craft::t('app', 'This field is conditional')],
                 'data' => ['icon' => 'condition'],
+                'role' => 'img',
             ]) : '');
 
         if ($label !== null) {
