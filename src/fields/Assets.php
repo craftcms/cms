@@ -93,7 +93,7 @@ class Assets extends BaseRelationField
      */
     public static function valueType(): string
     {
-        return sprintf('%s|%s<%s>', AssetQuery::class, ElementCollection::class, Asset::class);
+        return sprintf('\\%s|\\%s<\\%s>', AssetQuery::class, ElementCollection::class, Asset::class);
     }
 
     /**
