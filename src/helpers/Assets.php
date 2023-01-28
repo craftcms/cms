@@ -77,21 +77,21 @@ class Assets
     }
 
     /**
-     * Generates a URL for a given Assets file on a filesystem.
+     * Generates the URL for an asset.
      *
      * @param FsInterface $fs
      * @param Asset $asset
      * @param string|null $uri Asset URI to use. Defaults to the filename.
      * @param DateTime|null $dateUpdated last datetime the target of the url was updated, if known
      * @return string
-     * @throws InvalidConfigException
+     * @throws InvalidConfigException if the asset doesn’t have a filename.
      */
     public static function generateUrl(FsInterface $fs, Asset $asset, ?string $uri = null, ?DateTime $dateUpdated = null): string
     {
-        $revParams = self::revParams($asset, $dateUpdated);
         $pathParts = explode('/', $asset->folderPath . ($uri ?? $asset->getFilename()));
         $path = implode('/', array_map('rawurlencode', $pathParts));
-        return UrlHelper::urlWithParams($fs->getRootUrl() . $path, $revParams);
+        $url = sprintf('%s/%s', StringHelper::ensureRight($fs->getRootUrl() ?? '', '/'), $path);
+        return UrlHelper::urlWithParams($url, self::revParams($asset, $dateUpdated));
     }
 
     /**

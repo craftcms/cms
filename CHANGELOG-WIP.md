@@ -74,6 +74,8 @@
 - Added `craft\utilities\AssetIndexes::EVENT_LIST_VOLUMES`. ([#12383](https://github.com/craftcms/cms/pull/12383), [#12443](https://github.com/craftcms/cms/pull/12443))
 - Renamed `craft\elements\conditions\assets\EditableConditionRule` to `SavableConditionRule`, while preserving the original class name with an alias. ([#12266](https://github.com/craftcms/cms/pull/12266))
 - Renamed `craft\elements\conditions\entries\EditableConditionRule` to `SavableConditionRule`, while preserving the original class name with an alias. ([#12266](https://github.com/craftcms/cms/pull/12266))
+- Deprecated `craft\imagetransforms\ImageTransformer::ensureTransformUrlByIndexModel()`. `getTransformUrl()` should be used instead.
+- Deprecated `craft\imagetransforms\ImageTransformer::procureTransformedImage()`. `generateTransform()` should be used instead.
 - Deprecated `craft\queue\jobs\GeneratePendingTransforms`. `GenerateImageTransform` should be used instead. ([#12340](https://github.com/craftcms/cms/pull/12340))
 - Added `Craft.Accordion`. ([#12189](https://github.com/craftcms/cms/pull/12189))
 - Added `Craft.ElementFieldSettings`.

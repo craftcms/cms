@@ -1522,33 +1522,30 @@ JS;
 
     private function _url(mixed $transform = null, ?bool $immediately = null): ?string
     {
-        $volume = $this->getVolume();
-
-        $transform = $transform ?? $this->_transform;
-
-        if ($transform === null || !Image::canManipulateAsImage(pathinfo($this->getFilename(), PATHINFO_EXTENSION))) {
-            return Html::encodeSpaces(Assets::generateUrl($volume->getFs(), $this));
-        }
-
-        $fsNoUrls = !$transform && !$volume->getFs()->hasUrls;
-        $noFolder = !$this->folderId;
-        $transformNoUrl = $transform && !$volume->getTransformFs()->hasUrls;
-
-        if ($fsNoUrls || $noFolder || $transformNoUrl) {
+        if (!$this->folderId) {
             return null;
         }
 
-        $mimeType = $this->getMimeType();
-        $generalConfig = Craft::$app->getConfig()->getGeneral();
+        $volume = $this->getVolume();
+        $transform = $transform ?? $this->_transform;
 
-        if (
-            ($mimeType === 'image/gif' && !$generalConfig->transformGifs) ||
-            ($mimeType === 'image/svg+xml' && !$generalConfig->transformSvgs)
-        ) {
-            return Html::encodeSpaces(Assets::generateUrl($volume->getFs(), $this));
+        if ($transform) {
+            $mimeType = $this->getMimeType();
+            $generalConfig = Craft::$app->getConfig()->getGeneral();
+            if (
+                ($mimeType === 'image/gif' && !$generalConfig->transformGifs) ||
+                ($mimeType === 'image/svg+xml' && !$generalConfig->transformSvgs) ||
+                !Image::canManipulateAsImage(pathinfo($this->getFilename(), PATHINFO_EXTENSION))
+            ) {
+                $transform = null;
+            }
         }
 
         if ($transform) {
+            if (!$volume->getTransformFs()->hasUrls) {
+                return null;
+            }
+
             if (is_array($transform)) {
                 if (isset($transform['width'])) {
                     $transform['width'] = round((float)$transform['width']);
@@ -1600,7 +1597,12 @@ JS;
             }
         }
 
-        return Html::encodeSpaces(Assets::generateUrl($volume->getFs(), $this));
+        $fs = $volume->getFs();
+        if (!$fs->hasUrls) {
+            return null;
+        }
+
+        return Html::encodeSpaces(Assets::generateUrl($fs, $this));
     }
 
     /**
