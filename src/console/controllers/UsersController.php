@@ -460,7 +460,7 @@ class UsersController extends Controller
 
         $this->stdout('Unlocking the user ...' . PHP_EOL);
         if (!Craft::$app->getUsers()->unlockUser($user)) {
-            $this->stderr("Failed to unlock user “{$user->username}”" . PHP_EOL);
+            $this->stderr("Failed to unlock user “{$user->username}”." . PHP_EOL, Console::FG_RED);
             return ExitCode::UNSPECIFIED_ERROR;
         };
 
