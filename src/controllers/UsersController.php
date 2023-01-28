@@ -1370,10 +1370,10 @@ JS,
         // If this is public registration and it's a Pro version,
         // set the default group on the user, so that any content
         // based on user group condition can be validated and saved against them
-        if ($isPublicRegistration && Craft::$app->getEdition() === Craft::Pro) {
-            $uid = Craft::$app->getProjectConfig()->get('users.defaultGroup');
-            if ($uid) {
-                $group = Craft::$app->userGroups->getGroupByUid($uid);
+        if ($isPublicRegistration) {
+            $defaultGroupUid = Craft::$app->getProjectConfig()->get('users.defaultGroup');
+            if ($defaultGroupUid) {
+                $group = Craft::$app->userGroups->getGroupByUid($defaultGroupUid);
                 if ($group) {
                     $user->setGroups([$group]);
                 }
