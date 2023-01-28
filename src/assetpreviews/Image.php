@@ -9,6 +9,7 @@ namespace craft\assetpreviews;
 
 use Craft;
 use craft\base\AssetPreviewHandler;
+use craft\helpers\Image as ImageHelper;
 use craft\helpers\UrlHelper;
 
 /**
@@ -24,9 +25,10 @@ class Image extends AssetPreviewHandler
      */
     public function getPreviewHtml(): string
     {
-        $volume = $this->asset->getVolume();
-
-        if ($volume->hasUrls) {
+        if (
+            ImageHelper::isWebSafe($this->asset->getExtension()) &&
+            $this->asset->getVolume()->hasUrls
+        ) {
             $url = $this->asset->getUrl();
         } else {
             $url = UrlHelper::actionUrl('assets/thumb', [

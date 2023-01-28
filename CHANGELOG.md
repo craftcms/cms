@@ -1,5 +1,41 @@
 # Release Notes for Craft CMS 3.x
 
+## Unreleased
+
+- Improved the performance of the “Generating pending image transforms” queue job. ([#12274](https://github.com/craftcms/cms/issues/12274))
+- Fixed field status badge styling in some contexts. ([#12403](https://github.com/craftcms/cms/issues/12403))
+- Fixed a bug where exporting elements with multiple field layouts as a CSV file using the “Expanded” export type would result in mismatched column values.
+- Fixed a bug where cancelling a conflicting volume folder move would result in the moved folder getting deleted.
+- Fixed a bug where Date and Number fields could be misinterpreted in category Live Preview requests, if the site’s language used different date/number formats than the user’s formatting locale.
+- Deprecated `craft\helpers\DateTimeHelper::timeZoneAbbreviation()`.
+- Deprecated `craft\helpers\DateTimeHelper::timeZoneOffset()`.
+
+## 3.7.63.1 - 2023-01-09
+
+- Fixed a bug where editing certain Matrix/Neo/Super Table fields could result in content loss. ([#12445](https://github.com/craftcms/cms/issues/12445))
+
+## 3.7.63 - 2023-01-04
+
+- Template caching is no longer enabled for tokenized requests. ([#12458](https://github.com/craftcms/cms/issues/12458))
+- Elisions are now stripped from search keywords. ([#12467](https://github.com/craftcms/cms/issues/12467), [#12474](https://github.com/craftcms/cms/pull/12474))
+- Added support for HEIC/HEIF images. ([#9115](https://github.com/craftcms/cms/discussions/9115))
+- The `allowedFileExtensions` config setting now includes `heic`, `heif`, and `hevc` by default. ([#12490](https://github.com/craftcms/cms/discussions/12490))
+- It’s now possible to assign aliases `children` fields queried via GraphQL. ([#12494](https://github.com/craftcms/cms/pull/12494))
+- Added `craft\helpers\Image::isWebSafe()`.
+- Added `craft\services\Images::getSupportsHeic()`.
+- `Craft.MatrixInput` now fires `blockSortDragStop`, `beforeMoveBlockUp`, `moveBlockUp`, `beforeMoveBlockDown`, and `moveBlockDown` events. ([#12498](https://github.com/craftcms/cms/pull/12498))
+- Fixed an error that could occur when processing template caches in a console request, if a globally-scoped template cache was processed before it.
+- Fixed a bug where some custom field property types in `craft\behaviors\CustomFieldBehavior` were incorrect.
+- Fixed an error that could occur if a Matrix sub-field’s handle was too long. ([#12422](https://github.com/craftcms/cms/issues/12422))
+- Updated Imagine to 1.3.3.
+
+## 3.7.62 - 2022-12-13
+
+- Fixed a bug where it wasn’t possible to enter `0` in Number fields and numeric column cells within editable tables, using certain keyboard layouts. ([#12412](https://github.com/craftcms/cms/issues/12412))
+- Fixed a JavaScript error that could occur when autosaving an entry draft. ([#12445](https://github.com/craftcms/cms/issues/12445))
+- Added `Craft.filterInputVal()`.
+- Added `Craft.filterNumberInputVal()`.
+
 ## 3.7.61 - 2022-11-17
 
 - Fixed an error that occurred if an arrow function was passed to the `|sort` Twig filter. ([#12334](https://github.com/craftcms/cms/issues/12334))
