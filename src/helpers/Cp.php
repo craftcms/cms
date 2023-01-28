@@ -1708,6 +1708,7 @@ JS;
                 'title' => Craft::t('app', 'This tab is conditional'),
                 'aria' => ['label' => Craft::t('app', 'This tab is conditional')],
                 'data' => ['icon' => 'condition'],
+                'role' => 'img',
             ]) : '') .
             Html::endTag('span') .
             ($customizable
