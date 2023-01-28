@@ -11,6 +11,7 @@
 - Fixed a bug where cancelling a conflicting volume folder move would result in the moved folder getting deleted.
 - Fixed a bug where `craft\elements\Category::canDuplicate()` wasn’t factoring in save permissions.
 - Fixed a bug where the horizontal scroll position wasn’t being retained when refreshing Live Preview. ([#12504](https://github.com/craftcms/cms/issues/12504))
+- Fixed a bug where user group condition rules for the default user group weren’t getting matched properly during public registration. ([#12283](https://github.com/craftcms/cms/issues/12283))
 - Deprecated `craft\helpers\DateTimeHelper::timeZoneAbbreviation()`.
 - Deprecated `craft\helpers\DateTimeHelper::timeZoneOffset()`.
 
