@@ -125,6 +125,13 @@ class Cp
                 }
             }
 
+            if ($licenseKeyStatus === LicenseKeyStatus::Astray) {
+                // todo: swap Console link with a Resolve button
+                $alerts[] = Craft::t('app', 'Your Craft license isn’t allowed to run version {version}.', [
+                        'version' => Craft::$app->getVersion(),
+                    ]) . ' Please renew it from <a href="https://console.craftcms.com">Craft Console</a>.';
+            }
+
             // Any plugin issues?
             if ($path != 'settings/plugins') {
                 $pluginsService = Craft::$app->getPlugins();
@@ -415,14 +422,16 @@ class Cp
         $elementsService = Craft::$app->getElements();
         $user = Craft::$app->getUser()->getIdentity();
 
-        if ($user) {
-            if ($elementsService->canView($element, $user)) {
-                $attributes['data']['editable'] = true;
-            }
+        if ($user && $elementsService->canView($element, $user)) {
+            $attributes['data']['editable'] = true;
 
             if ($context === 'index') {
                 if ($elementsService->canSave($element, $user)) {
                     $attributes['data']['savable'] = true;
+                }
+
+                if ($elementsService->canDuplicate($element, $user)) {
+                    $attributes['data']['duplicatable'] = true;
                 }
 
                 if ($elementsService->canDelete($element, $user)) {
