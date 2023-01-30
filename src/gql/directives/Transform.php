@@ -69,9 +69,16 @@ class Transform extends Directive
      */
     public static function apply(mixed $source, mixed $value, array $arguments, ResolveInfo $resolveInfo): mixed
     {
+        $applicableFields = [
+            'height',
+            'width',
+            'format',
+            'url',
+        ];
+
         $onAssetElement = $value instanceof Asset;
         $onAssetElementList = $value instanceof Collection && !$value->isEmpty();
-        $onApplicableAssetField = $source instanceof Asset && in_array($resolveInfo->fieldName, ['height', 'width', 'url']);
+        $onApplicableAssetField = $source instanceof Asset && in_array($resolveInfo->fieldName, $applicableFields);
 
         if (!($onAssetElement || $onAssetElementList || $onApplicableAssetField) || empty($arguments)) {
             return $value;
@@ -99,6 +106,7 @@ class Transform extends Directive
             'height' => $source->getHeight($transform),
             'width' => $source->getWidth($transform),
             'url' => $source->getUrl($transform),
+            'format' => $source->getFormat($transform),
             default => $value,
         };
     }
