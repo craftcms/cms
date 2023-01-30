@@ -228,4 +228,36 @@ class ImageTransformsTest extends Unit
             ],
         ];
     }
+
+    /**
+     * @dataProvider parseTransformStringDataProvider
+     */
+    public function testParseTransformString(array $config): void
+    {
+        $transform = new ImageTransform($config);
+        $str = ImageTransforms::getTransformString($transform);
+        $this->assertSame($config, ImageTransforms::parseTransformString($str));
+    }
+
+    public function parseTransformStringDataProvider(): array
+    {
+        return [
+            [[
+                'width' => 100,
+                'height' => 200,
+                'mode' => 'fit',
+                'position' => 'top-left',
+                'quality' => 70,
+                'interlace' => 'partition',
+            ]],
+            [[
+                'width' => 100,
+                'height' => null,
+                'mode' => 'crop',
+                'position' => 'bottom-right',
+                'quality' => null,
+                'interlace' => 'none',
+            ]],
+        ];
+    }
 }
