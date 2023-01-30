@@ -1522,30 +1522,23 @@ JS;
 
     private function _url(mixed $transform = null, ?bool $immediately = null): ?string
     {
-        $volume = $this->getVolume();
-
-        $transform = $transform ?? $this->_transform;
-
-        if ($transform === null || !Image::canManipulateAsImage(pathinfo($this->getFilename(), PATHINFO_EXTENSION))) {
-            return Html::encodeSpaces(Assets::generateUrl($volume->getFs(), $this));
-        }
-
-        $fsNoUrls = !$transform && !$volume->getFs()->hasUrls;
-        $noFolder = !$this->folderId;
-        $transformNoUrl = $transform && !$volume->getTransformFs()->hasUrls;
-
-        if ($fsNoUrls || $noFolder || $transformNoUrl) {
+        if (!$this->folderId) {
             return null;
         }
 
-        $mimeType = $this->getMimeType();
-        $generalConfig = Craft::$app->getConfig()->getGeneral();
+        $volume = $this->getVolume();
+        $transform = $transform ?? $this->_transform;
 
-        if (
-            ($mimeType === 'image/gif' && !$generalConfig->transformGifs) ||
-            ($mimeType === 'image/svg+xml' && !$generalConfig->transformSvgs)
-        ) {
-            return Html::encodeSpaces(Assets::generateUrl($volume->getFs(), $this));
+        if ($transform) {
+            $mimeType = $this->getMimeType();
+            $generalConfig = Craft::$app->getConfig()->getGeneral();
+            if (
+                ($mimeType === 'image/gif' && !$generalConfig->transformGifs) ||
+                ($mimeType === 'image/svg+xml' && !$generalConfig->transformSvgs) ||
+                !Image::canManipulateAsImage(pathinfo($this->getFilename(), PATHINFO_EXTENSION))
+            ) {
+                $transform = null;
+            }
         }
 
         if ($transform) {
@@ -1564,43 +1557,51 @@ JS;
                 $immediately = Craft::$app->getConfig()->getGeneral()->generateTransformsBeforePageLoad;
             }
 
+            if ($this->hasEventHandlers(self::EVENT_BEFORE_GENERATE_TRANSFORM)) {
+                $event = new GenerateTransformEvent([
+                    'asset' => $this,
+                    'transform' => $transform,
+                ]);
+
+                $this->trigger(self::EVENT_BEFORE_GENERATE_TRANSFORM, $event);
+
+                // If a plugin set the url, we'll just use that.
+                if ($event->url !== null) {
+                    return Html::encodeSpaces($event->url);
+                }
+            }
+
+            $imageTransformer = $transform->getImageTransformer();
+
             try {
-                if ($this->hasEventHandlers(self::EVENT_BEFORE_GENERATE_TRANSFORM)) {
-                    $event = new GenerateTransformEvent([
-                        'asset' => $this,
-                        'transform' => $transform,
-                    ]);
-
-                    $this->trigger(self::EVENT_BEFORE_GENERATE_TRANSFORM, $event);
-
-                    // If a plugin set the url, we'll just use that.
-                    if ($event->url !== null) {
-                        return Html::encodeSpaces($event->url);
-                    }
-                }
-
-                $imageTransformer = $transform->getImageTransformer();
                 $url = Html::encodeSpaces($imageTransformer->getTransformUrl($this, $transform, $immediately));
-
-                if ($this->hasEventHandlers(self::EVENT_AFTER_GENERATE_TRANSFORM)) {
-                    $event = new GenerateTransformEvent([
-                        'asset' => $this,
-                        'transform' => $transform,
-                        'url' => $url,
-                    ]);
-
-                    $this->trigger(self::EVENT_AFTER_GENERATE_TRANSFORM, $event);
-                }
-
-                return $url;
+            } catch (NotSupportedException) {
+                return null;
             } catch (ImageTransformException $e) {
                 Craft::warning("Couldn’t get image transform URL: {$e->getMessage()}", __METHOD__);
                 Craft::$app->getErrorHandler()->logException($e);
                 return null;
             }
+
+            if ($this->hasEventHandlers(self::EVENT_AFTER_GENERATE_TRANSFORM)) {
+                $event = new GenerateTransformEvent([
+                    'asset' => $this,
+                    'transform' => $transform,
+                    'url' => $url,
+                ]);
+
+                $this->trigger(self::EVENT_AFTER_GENERATE_TRANSFORM, $event);
+            }
+
+            return $url;
         }
 
-        return Html::encodeSpaces(Assets::generateUrl($volume->getFs(), $this));
+        $fs = $volume->getFs();
+        if (!$fs->hasUrls) {
+            return null;
+        }
+
+        return Html::encodeSpaces(Assets::generateUrl($fs, $this));
     }
 
     /**

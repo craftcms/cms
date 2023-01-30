@@ -21,10 +21,12 @@ use craft\fields\Assets as AssetsField;
 use craft\helpers\App;
 use craft\helpers\Assets;
 use craft\helpers\Db;
+use craft\helpers\FileHelper;
 use craft\helpers\ImageTransforms;
 use craft\helpers\StringHelper;
 use craft\i18n\Formatter;
 use craft\imagetransforms\ImageTransformer;
+use craft\models\ImageTransform;
 use craft\models\VolumeFolder;
 use craft\web\Controller;
 use craft\web\UploadedFile;
@@ -1286,5 +1288,50 @@ class AssetsController extends Controller
         }
 
         return $tempPath;
+    }
+
+    /**
+     * Generates a fallback transform.
+     *
+     * @param int $assetId
+     * @param string $transform
+     * @return Response
+     * @since 4.4.0
+     */
+    public function actionGenerateFallbackTransform(int $assetId, string $transform): Response
+    {
+        $transformString = Craft::$app->getSecurity()->validateData($transform);
+        if ($transformString === false) {
+            throw new BadRequestHttpException('Request contained an invalid transform param.');
+        }
+
+        /** @var Asset|null $asset */
+        $asset = Asset::find()->id($assetId)->one();
+        if (!$asset) {
+            throw new NotFoundHttpException("Invalid asset ID: $assetId");
+        }
+
+        $transform = new ImageTransform(ImageTransforms::parseTransformString($transformString));
+        $ext = $transform->format ?: ImageTransforms::detectTransformFormat($asset);
+        $filename = sprintf('%s.%s', $asset->id, $ext);
+        $path = implode(DIRECTORY_SEPARATOR, [
+            Craft::$app->getPath()->getImageTransformsPath(),
+            $transformString,
+            $filename,
+        ]);
+
+        if (!file_exists($path) || filemtime($path) < ($asset->dateModified?->getTimestamp() ?? 0)) {
+            $tempPath = ImageTransforms::generateTransform($asset, $transform);
+            FileHelper::createDirectory(dirname($path));
+            rename($tempPath, $path);
+        }
+
+        $responseFilename = sprintf('%s.%s', $asset->getFilename(false), $ext);
+
+        return $this->response
+            ->setCacheHeaders()
+            ->sendFile($path, $responseFilename, [
+                'inline' => true,
+            ]);
     }
 }
