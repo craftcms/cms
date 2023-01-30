@@ -38,6 +38,7 @@ use Exception;
 use Imagine\Image\Format;
 use Throwable;
 use yii\base\InvalidConfigException;
+use yii\base\NotSupportedException;
 
 /**
  * ImageTransformer transforms image assets using GD or ImageMagick.
@@ -77,6 +78,11 @@ class ImageTransformer extends Component implements ImageTransformerInterface, E
     public function getTransformUrl(Asset $asset, ImageTransform $imageTransform, bool $immediately): string
     {
         $fs = $asset->getVolume()->getTransformFs();
+
+        if (!$fs->hasUrls) {
+            throw new NotSupportedException('The asset’s volume’s transform filesystem doesn’t have URLs.');
+        }
+
         $index = $this->getTransformIndex($asset, $imageTransform);
         $uri = str_replace('\\', '/', $this->getTransformBasePath($asset)) . $this->getTransformUri($asset, $index);
 
@@ -327,39 +333,23 @@ class ImageTransformer extends Component implements ImageTransformerInterface, E
      */
     protected function generateTransformedImage(Asset $asset, ImageTransformIndex $index): void
     {
-        if (!Image::canManipulateAsImage(pathinfo($asset->getFilename(), PATHINFO_EXTENSION))) {
+        if (!Image::canManipulateAsImage($asset->getExtension())) {
             return;
-        }
-
-        $transform = $index->getTransform();
-        $images = Craft::$app->getImages();
-
-        if ($index->format === Format::ID_WEBP && !$images->getSupportsWebP()) {
-            throw new ImageTransformException('The `webp` format is not supported on this server.');
-        }
-
-        if ($index->format === Format::ID_AVIF && !$images->getSupportsAvif()) {
-            throw new ImageTransformException('The `avif` format is not supported on this server.');
-        }
-
-        if ($index->format === Format::ID_HEIC && !$images->getSupportsHeic()) {
-            throw new ImageTransformException('The `heic` format is not supported on this server.');
         }
 
         $volume = $asset->getVolume();
         $transformFs = $volume->getTransformFs();
         $transformPath = $this->getTransformBasePath($asset) . $this->getTransformSubpath($asset, $index);
 
-        // Already created. Relax, grasshopper!
         if ($transformFs->fileExists($transformPath)) {
             $dateModified = $transformFs->getDateModified($transformPath);
             $parameterChangeTime = $index->getTransform()->parameterChangeTime;
 
             if (!$parameterChangeTime || $parameterChangeTime->getTimestamp() <= $dateModified) {
+                // The file already exists and isn't stale yet
                 return;
             }
 
-            // Let's cook up a new one.
             try {
                 $volume->getFs()->deleteFile($transformPath);
             } catch (Throwable) {
@@ -367,52 +357,11 @@ class ImageTransformer extends Component implements ImageTransformerInterface, E
             }
         }
 
-        $imageSource = TransformHelper::getLocalImageSource($asset);
-        $quality = $transform->quality ?: Craft::$app->getConfig()->getGeneral()->defaultImageQuality;
+        $tempPath = TransformHelper::generateTransform($asset, $index->getTransform(), function() use ($index) {
+            $this->storeTransformIndexData($index);
+        }, $image);
 
-        if (strtolower($asset->getExtension()) === 'svg' && $index->detectedFormat !== 'svg') {
-            $size = max($transform->width, $transform->height) ?? 1000;
-            $image = $images->loadImage($imageSource, true, $size);
-        } else {
-            $image = $images->loadImage($imageSource);
-        }
-
-        if ($image instanceof Raster) {
-            $image->setQuality($quality);
-        }
-
-        // In case this takes a while, update the timestamp so we know it's all working
-        $image->setHeartbeatCallback(fn() => $this->storeTransformIndexData($index));
-
-        switch ($transform->mode) {
-            case 'fit':
-                $image->scaleToFit($transform->width, $transform->height);
-                break;
-            case 'stretch':
-                $image->resize($transform->width, $transform->height);
-                break;
-            default:
-                if ($asset->getHasFocalPoint()) {
-                    $position = $asset->getFocalPoint();
-                } elseif (!preg_match('/(top|center|bottom)-(left|center|right)/', $transform->position)) {
-                    $position = 'center-center';
-                } else {
-                    $position = $transform->position;
-                }
-                $image->scaleAndCrop($transform->width, $transform->height, Craft::$app->getConfig()->getGeneral()->upscaleImages, $position);
-        }
-
-        if ($image instanceof Raster) {
-            $image->setInterlace($transform->interlace);
-        }
-
-        $tempFilename = uniqid(pathinfo($index->filename, PATHINFO_FILENAME), true) . '.' . $index->detectedFormat;
-        $tempPath = Craft::$app->getPath()->getTempPath() . DIRECTORY_SEPARATOR . $tempFilename;
-        $image->saveAs($tempPath);
-
-        clearstatcache(true, $tempPath);
-
-        try {
+        if ($this->hasEventHandlers(static::EVENT_TRANSFORM_IMAGE)) {
             $event = new ImageTransformerOperationEvent([
                 'asset' => $asset,
                 'imageTransformIndex' => $index,
@@ -421,23 +370,19 @@ class ImageTransformer extends Component implements ImageTransformerInterface, E
                 'tempPath' => $tempPath,
             ]);
             $this->trigger(static::EVENT_TRANSFORM_IMAGE, $event);
-
             $tempPath = $event->tempPath;
+        }
 
-            $stream = fopen($tempPath, 'rb');
-            $transformFs->writeFileFromStream($transformPath, $stream, []);
+        $stream = fopen($tempPath, 'rb');
 
-            if (file_exists($event->path)) {
-                FileHelper::unlink($event->path);
-            }
+        try {
+            $transformFs->writeFileFromStream($transformPath, $stream);
         } catch (FsException $e) {
             Craft::$app->getErrorHandler()->logException($e);
         }
 
-        // Maybe a plugin changed the path to something else. Check if we need to remove this, too.
-        if (file_exists($tempPath)) {
-            FileHelper::unlink($tempPath);
-        }
+        fclose($stream);
+        FileHelper::unlink($tempPath);
     }
 
     /**

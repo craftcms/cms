@@ -12,6 +12,7 @@
 - Assets, categories, and entries will now redirect to the last-selected source on their index pages when saved. ([#11996](https://github.com/craftcms/cms/discussions/11996))
 - Dropdown fields that don’t have a blank option and are missing a value will now include and select a blank option at the beginning of their menu. ([#12235](https://github.com/craftcms/cms/discussions/12235))
 - Tip and Warning field layout UI elements can now be marked as dismissible, giving authors the ability to hide them. ([#12188](https://github.com/craftcms/cms/discussions/12188))
+- All assets now get thumbnails in the control panel, even if they don’t have a transform filesystem with a base URL.
 
 ### Accessibility
 - Improved the announcement menu for screen readers. ([#12361](https://github.com/craftcms/cms/pull/12361))
@@ -61,12 +62,16 @@
 - Added `craft\fields\BaseOptionsField::EVENT_DEFINE_OPTIONS`. ([#12351](https://github.com/craftcms/cms/pull/12351))
 - Added `craft\fields\BaseRelationField::$branchLimit`.
 - Added `craft\fields\BaseRelationField::$maintainHierarchy`.
+- Added `craft\helpers\ImageTransforms::generateTransform()`.
+- Added `craft\helpers\ImageTransforms::parseTransformString()`.
+- Added `craft\imagetransforms\FallbackTransformer`.
 - Added `craft\queue\jobs\GenerateImageTransform`. ([#12340](https://github.com/craftcms/cms/pull/12340))
 - Added `craft\services\Elements::deleteElementForSite()`.
 - Added `craft\services\Elements::deleteElementsForSite()`.
 - Added `craft\services\Elements::EVENT_AFTER_DELETE_FOR_SITE`. ([#12354](https://github.com/craftcms/cms/issues/12354))
 - Added `craft\services\Elements::EVENT_BEFORE_DELETE_FOR_SITE`. ([#12354](https://github.com/craftcms/cms/issues/12354))
 - Added `craft\services\Fields::getFieldsByType()`. ([#12381](https://github.com/craftcms/cms/discussions/12381))
+- Added `craft\services\Path::getImageTransformsPath()`.
 - Added `craft\services\Users::EVENT_AFTER_DELETE_USER_PHOTO`. ([#12360](https://github.com/craftcms/cms/pull/12360))
 - Added `craft\services\Users::EVENT_AFTER_SAVE_USER_PHOTO`. ([#12360](https://github.com/craftcms/cms/pull/12360))
 - Added `craft\services\Users::EVENT_BEFORE_DELETE_USER_PHOTO`. ([#12360](https://github.com/craftcms/cms/pull/12360))
