@@ -3486,6 +3486,8 @@ SQL;
     /**
      * Returns whether a user is authorized to duplicate the given element.
      *
+     * This should always be called in conjunction with [[canView()]] or [[canSave()]].
+     *
      * @param ElementInterface $element
      * @param User|null $user
      * @return bool
@@ -3506,6 +3508,8 @@ SQL;
     /**
      * Returns whether a user is authorized to delete the given element.
      *
+     * This should always be called in conjunction with [[canView()]] or [[canSave()]].
+     *
      * @param ElementInterface $element
      * @param User|null $user
      * @return bool
@@ -3525,6 +3529,8 @@ SQL;
 
     /**
      * Returns whether a user is authorized to delete the given element for its current site.
+     *
+     * This should always be called in conjunction with [[canView()]] or [[canSave()]].
      *
      * @param ElementInterface $element
      * @param User|null $user
@@ -3548,6 +3554,8 @@ SQL;
 
     /**
      * Returns whether a user is authorized to create drafts for the given element.
+     *
+     * This should always be called in conjunction with [[canView()]] or [[canSave()]].
      *
      * @param ElementInterface $element
      * @param User|null $user

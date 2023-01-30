@@ -78,7 +78,7 @@ class ImageTransform extends Model
     public string $position = 'center-center';
 
     /**
-     * @var 'none'|'line'|'plane'|'partition' Position
+     * @var 'none'|'line'|'plane'|'partition' Interlace
      */
     public string $interlace = 'none';
 

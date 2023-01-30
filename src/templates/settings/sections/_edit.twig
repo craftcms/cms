@@ -89,7 +89,7 @@
         {% set siteRows = siteRows|merge({
             (site.handle): {
                 heading: site.name|t('site')|e,
-                enabled: include('_includes/forms/lightswitch', {
+                enabled: include('_includes/forms/lightswitch.twig', {
                     name: 'sites['~site.handle~'][enabled]',
                     on: brandNewSection or siteSettings,
                     value: site.id,

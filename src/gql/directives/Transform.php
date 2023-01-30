@@ -7,6 +7,7 @@
 
 namespace craft\gql\directives;
 
+use Craft;
 use craft\elements\Asset;
 use craft\gql\arguments\Transform as TransformArguments;
 use craft\gql\base\Directive;
@@ -69,37 +70,37 @@ class Transform extends Directive
      */
     public static function apply(mixed $source, mixed $value, array $arguments, ResolveInfo $resolveInfo): mixed
     {
-        $onAssetElement = $value instanceof Asset;
-        $onAssetElementList = $value instanceof Collection && !$value->isEmpty();
-        $onApplicableAssetField = $source instanceof Asset && in_array($resolveInfo->fieldName, ['height', 'width', 'url']);
-
-        if (!($onAssetElement || $onAssetElementList || $onApplicableAssetField) || empty($arguments)) {
+        if (empty($arguments)) {
             return $value;
         }
 
         $transform = Gql::prepareTransformArguments($arguments);
 
-        // If this directive is applied to an entire Asset
-        if ($onAssetElement) {
-            return $value->setTransform($transform);
-        }
-
-        if ($onAssetElementList) {
+        if ($value instanceof Asset) {
+            $value->setTransform($transform);
+        } elseif ($value instanceof Collection) {
             foreach ($value as $asset) {
                 // If this somehow ended up being a mix of elements, don't explicitly fail, just set the transform on the asset elements
                 if ($asset instanceof Asset) {
                     $asset->setTransform($transform);
                 }
             }
-
-            return $value;
+        } elseif ($source instanceof Asset) {
+            switch ($resolveInfo->fieldName) {
+                case 'format':
+                    return $source->getFormat($transform);
+                case 'height':
+                    return $source->getHeight($transform);
+                case 'mimeType':
+                    return $source->getMimeType($transform);
+                case 'url':
+                    $generateNow = $arguments['immediately'] ?? Craft::$app->getConfig()->getGeneral()->generateTransformsBeforePageLoad;
+                    return $source->getUrl($transform, $generateNow);
+                case 'width':
+                    return $source->getWidth($transform);
+            }
         }
 
-        return match ($resolveInfo->fieldName) {
-            'height' => $source->getHeight($transform),
-            'width' => $source->getWidth($transform),
-            'url' => $source->getUrl($transform),
-            default => $value,
-        };
+        return $value;
     }
 }

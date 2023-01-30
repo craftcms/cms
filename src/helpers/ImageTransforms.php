@@ -8,6 +8,7 @@
 namespace craft\helpers;
 
 use Craft;
+use craft\base\Image as BaseImage;
 use craft\base\LocalFsInterface;
 use craft\elements\Asset;
 use craft\errors\AssetException;
@@ -19,6 +20,8 @@ use craft\errors\ImageTransformException;
 use craft\image\Raster;
 use craft\models\ImageTransform;
 use craft\validators\ColorValidator;
+use Imagine\Image\Format;
+use yii\base\InvalidArgumentException;
 
 /**
  * Image Transforms helper.
@@ -82,13 +85,13 @@ class ImageTransforms
      */
     public static function detectTransformFormat(Asset $asset): string
     {
-        if (Image::isWebSafe($asset->getExtension())) {
-            return $asset->getExtension();
+        $ext = strtolower($asset->getExtension());
+        if (Image::isWebSafe($ext)) {
+            return $ext;
         }
 
         if ($asset->kind !== Asset::KIND_IMAGE) {
-            throw new AssetOperationException(Craft::t('app',
-                'Tried to detect the appropriate image format for a non-image!'));
+            throw new AssetOperationException(Craft::t('app', 'Tried to detect the appropriate image format for a non-image!'));
         }
 
         return 'jpg';
@@ -243,6 +246,29 @@ class ImageTransforms
     }
 
     /**
+     * Parses a transform string.
+     *
+     * @param string $str
+     * @return array
+     * @since 4.4.0
+     */
+    public static function parseTransformString(string $str): array
+    {
+        if (!preg_match('/^_?(?P<width>\d+|AUTO)x(?P<height>\d+|AUTO)_(?P<mode>[a-z]+)_(?P<position>[a-z\-]+)(?:_(?P<quality>\d+))?_(?P<interlace>[a-z]+)$/', $str, $match)) {
+            throw new InvalidArgumentException("Invalid transform string: $str");
+        }
+
+        return [
+            'width' => $match['width'] !== 'AUTO' ? (int)$match['width'] : null,
+            'height' => $match['height'] !== 'AUTO' ? (int)$match['height'] : null,
+            'mode' => $match['mode'],
+            'position' => $match['position'],
+            'quality' => $match['quality'],
+            'interlace' => $match['interlace'],
+        ];
+    }
+
+    /**
      * Normalize a transform from handle or a set of properties to an ImageTransform.
      *
      * @param mixed $transform
@@ -351,5 +377,98 @@ class ImageTransforms
                 copy($source, $destination);
             }
         }
+    }
+
+    /**
+     * Generates an image transform for an asset.
+     *
+     * @param Asset $asset The asset
+     * @param ImageTransform $transform The image transform
+     * @param callable|null $heartbeat A callback that should be called while the transform is being generated
+     * @param BaseImage|null $image The image object loaded for the transform
+     * @return string The temp path that the transform was saved to
+     * @throws ImageTransformException if the transform couldn’t be generated.
+     */
+    public static function generateTransform(
+        Asset $asset,
+        ImageTransform $transform,
+        ?callable $heartbeat = null,
+        ?BaseImage &$image = null,
+    ): string {
+        $ext = strtolower($asset->getExtension());
+        if (!Image::canManipulateAsImage($ext)) {
+            throw new ImageTransformException("Transforming .$ext files is not supported.");
+        }
+
+        $format = $transform->format ?: static::detectTransformFormat($asset);
+        $imagesService = Craft::$app->getImages();
+
+        $supported = match ($format) {
+            Format::ID_WEBP => $imagesService->getSupportsWebP(),
+            Format::ID_AVIF => $imagesService->getSupportsAvif(),
+            Format::ID_HEIC => $imagesService->getSupportsHeic(),
+            default => true,
+        };
+
+        if (!$supported) {
+            throw new ImageTransformException("The `$format` format is not supported on this server.");
+        }
+
+        $generalConfig = Craft::$app->getConfig()->getGeneral();
+        $imageSource = static::getLocalImageSource($asset);
+
+        if ($ext === 'svg' && $format !== 'svg') {
+            $size = max($transform->width, $transform->height) ?? 1000;
+            $image = $imagesService->loadImage($imageSource, true, $size);
+        } else {
+            $image = $imagesService->loadImage($imageSource);
+        }
+
+        if ($image instanceof Raster) {
+            $image->setQuality($transform->quality ?: $generalConfig->defaultImageQuality);
+            $image->setHeartbeatCallback($heartbeat);
+        }
+
+        if ($asset->getHasFocalPoint()) {
+            $position = $asset->getFocalPoint();
+        } elseif (!preg_match('/(top|center|bottom)-(left|center|right)/', $transform->position)) {
+            $position = 'center-center';
+        } else {
+            $position = $transform->position;
+        }
+
+        $scaleIfSmaller = Craft::$app->getConfig()->getGeneral()->upscaleImages;
+
+        switch ($transform->mode) {
+            case 'fit':
+                if ($image instanceof Raster && !$scaleIfSmaller && $transform->fill) {
+                    $image->scaleToFitAndFill(
+                        $transform->width,
+                        $transform->height,
+                        $transform->fill,
+                        $position,
+                    );
+                } else {
+                    $image->scaleToFit($transform->width, $transform->height, $scaleIfSmaller);
+                }
+                break;
+            case 'stretch':
+                $image->resize($transform->width, $transform->height);
+                break;
+            default:
+                $image->scaleAndCrop($transform->width, $transform->height, $scaleIfSmaller, $position);
+        }
+
+        if ($image instanceof Raster) {
+            $image->setInterlace($transform->interlace);
+        }
+
+        // Save it!
+        $tempFilename = sprintf('%s.%s', uniqid($asset->getFilename(false), true), $format);
+        $tempPath = Craft::$app->getPath()->getTempPath() . DIRECTORY_SEPARATOR . $tempFilename;
+        $image->saveAs($tempPath);
+        clearstatcache(true, $tempPath);
+
+        return $tempPath;
     }
 }

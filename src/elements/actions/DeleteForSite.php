@@ -103,7 +103,10 @@ JS, [static::class]);
         // Ignore any elements the user doesn’t have permission to delete
         $elements = array_filter(
             $query->all(),
-            fn(ElementInterface $element) => $elementsService->canDeleteForSite($element, $user),
+            fn(ElementInterface $element) => (
+                $elementsService->canView($element, $user) &&
+                $elementsService->canDeleteForSite($element, $user)
+            ),
         );
 
         $elementsService->deleteElementsForSite($elements);

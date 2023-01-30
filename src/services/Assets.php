@@ -35,6 +35,7 @@ use craft\helpers\FileHelper;
 use craft\helpers\Image;
 use craft\helpers\Json;
 use craft\helpers\StringHelper;
+use craft\imagetransforms\FallbackTransformer;
 use craft\models\FolderCriteria;
 use craft\models\ImageTransform;
 use craft\models\Volume;
@@ -618,24 +619,21 @@ class Assets extends Component
             return AssetsHelper::iconUrl($extension);
         }
 
-        $volume = $asset->getVolume();
-        try {
-            $transformFs = $volume->getTransformFs();
-        } catch (InvalidConfigException) {
-            $transformFs = null;
-        }
-
-        if (!$transformFs?->hasUrls) {
-            return AssetsHelper::iconUrl($extension);
-        }
-
         $transform = new ImageTransform([
             'width' => $width,
             'height' => $height,
             'mode' => 'crop',
         ]);
 
-        return $asset->getUrl($transform, false) ?? AssetsHelper::iconUrl($extension);
+        $url = $asset->getUrl($transform, false);
+
+        if (!$url) {
+            // Try again with the fallback transformer
+            $transform->setTransformer(FallbackTransformer::class);
+            $url = $asset->getUrl($transform);
+        }
+
+        return $url ?? AssetsHelper::iconUrl($extension);
     }
 
     /**

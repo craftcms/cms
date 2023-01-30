@@ -422,14 +422,16 @@ class Cp
         $elementsService = Craft::$app->getElements();
         $user = Craft::$app->getUser()->getIdentity();
 
-        if ($user) {
-            if ($elementsService->canView($element, $user)) {
-                $attributes['data']['editable'] = true;
-            }
+        if ($user && $elementsService->canView($element, $user)) {
+            $attributes['data']['editable'] = true;
 
             if ($context === 'index') {
                 if ($elementsService->canSave($element, $user)) {
                     $attributes['data']['savable'] = true;
+                }
+
+                if ($elementsService->canDuplicate($element, $user)) {
+                    $attributes['data']['duplicatable'] = true;
                 }
 
                 if ($elementsService->canDelete($element, $user)) {
@@ -1706,6 +1708,7 @@ JS;
                 'title' => Craft::t('app', 'This tab is conditional'),
                 'aria' => ['label' => Craft::t('app', 'This tab is conditional')],
                 'data' => ['icon' => 'condition'],
+                'role' => 'img',
             ]) : '') .
             Html::endTag('span') .
             ($customizable
