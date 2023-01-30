@@ -6,6 +6,12 @@
 - Removed the “Timeout” setting from the Gmail and SMTP mailer transporters, as they aren’t supported by Symfony Mailer’s transport configuration.
 - Removed the “Encryption Method” setting from the SMTP mailer transporter, as Symfony Mailer already uses TLS when port 465 is used (as it is by default).
 - The “Port” setting on the SMTP mailer transporter is no longer required. It will default to 465 or 25 depending on whether OpenSSL is installed.
+- Fixed field status badge styling in some contexts. ([#12403](https://github.com/craftcms/cms/issues/12403))
+- Fixed a bug where exporting elements with multiple field layouts as a CSV file using the “Expanded” export type would result in mismatched column values.
+- Fixed a bug where cancelling a conflicting volume folder move would result in the moved folder getting deleted.
+- Fixed a bug where `craft\elements\Category::canDuplicate()` wasn’t factoring in save permissions.
+- Fixed a bug where the horizontal scroll position wasn’t being retained when refreshing Live Preview. ([#12504](https://github.com/craftcms/cms/issues/12504))
+- Fixed a bug where user group condition rules for the default user group weren’t getting matched properly during public registration. ([#12283](https://github.com/craftcms/cms/issues/12283))
 - Deprecated `craft\helpers\DateTimeHelper::timeZoneAbbreviation()`.
 - Deprecated `craft\helpers\DateTimeHelper::timeZoneOffset()`.
 

@@ -35,9 +35,8 @@ class DumpPanel extends Panel
             isset($debugModule->panels['dump']) &&
             $debugModule->panels['dump'] instanceof DumpPanel
         ) {
-            ob_start();
-            Craft::dump($var);
-            $debugModule->panels['dump']->data[] = [$file, $line, ob_get_clean()];
+            $dump = Craft::dump($var, return: true);
+            $debugModule->panels['dump']->data[] = [$file, $line, $dump];
         }
     }
 
