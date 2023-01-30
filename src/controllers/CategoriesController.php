@@ -739,6 +739,7 @@ class CategoriesController extends Controller
         }
         $category->setEnabledForSite($enabledForSite ?? $category->getEnabledForSite());
 
+        Craft::$app->updateTargetLanguage(true);
         $fieldsLocation = $this->request->getParam('fieldsLocation', 'fields');
         $category->setFieldValuesFromRequest($fieldsLocation);
 

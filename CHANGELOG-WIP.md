@@ -5,6 +5,7 @@
 ### Accessibility
 
 ### Administration
+- Added the `users/unlock` console command. ([#12345](https://github.com/craftcms/cms/discussions/12345))
 - The `utils/prune-revisions` console command now has a `--section` option. ([#8783](https://github.com/craftcms/cms/discussions/8783))
 
 ### Development
