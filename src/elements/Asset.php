@@ -1739,10 +1739,10 @@ JS;
      * Returns the file's format, if it can be determined.
      *
      * @param ImageTransform|string|array|null $transform A transform handle or configuration that should be applied to the image
-     * @return string|null The asset's format
+     * @return string The asset's format
      * @throws ImageTransformException If an invalid transform handle is supplied
      */
-    public function getFormat(mixed $transform = null): ?string
+    public function getFormat(mixed $transform = null): string
     {
         $ext = $this->getExtension();
 
