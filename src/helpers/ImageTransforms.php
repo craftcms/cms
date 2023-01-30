@@ -256,7 +256,7 @@ class ImageTransforms
             'height' => $match['height'] !== 'AUTO' ? (int)$match['height'] : null,
             'mode' => $match['mode'],
             'position' => $match['position'],
-            'quality' => $match['quality'],
+            'quality' => $match['quality'] ? (int)$match['quality'] : null,
             'interlace' => $match['interlace'],
         ];
     }
