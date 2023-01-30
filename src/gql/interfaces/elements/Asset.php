@@ -197,7 +197,7 @@ class Asset extends Element
                 'name' => 'format',
                 'args' => Transform::getArguments(),
                 'type' => Type::string(),
-                'description' => 'Returns the file’s format, if it can be determined.',
+                'description' => 'Returns the file’s format.',
             ],
             'path' => [
                 'name' => 'path',
