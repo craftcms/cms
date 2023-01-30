@@ -249,6 +249,7 @@ class ImageTransformsTest extends Unit
                 'position' => 'top-left',
                 'quality' => 70,
                 'interlace' => 'partition',
+                'fill' => null,
             ]],
             [[
                 'width' => 100,
@@ -257,6 +258,34 @@ class ImageTransformsTest extends Unit
                 'position' => 'bottom-right',
                 'quality' => null,
                 'interlace' => 'none',
+                'fill' => null,
+            ]],
+            [[
+                'width' => 100,
+                'height' => 200,
+                'mode' => 'fit',
+                'position' => 'top-left',
+                'quality' => 70,
+                'interlace' => 'partition',
+                'fill' => 'transparent',
+            ]],
+            [[
+                'width' => 100,
+                'height' => 200,
+                'mode' => 'fit',
+                'position' => 'top-left',
+                'quality' => 70,
+                'interlace' => 'partition',
+                'fill' => '#f00',
+            ]],
+            [[
+                'width' => 100,
+                'height' => 200,
+                'mode' => 'fit',
+                'position' => 'top-left',
+                'quality' => 70,
+                'interlace' => 'partition',
+                'fill' => '#ff0000',
             ]],
         ];
     }
