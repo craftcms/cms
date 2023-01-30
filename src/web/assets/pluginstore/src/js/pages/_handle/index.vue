@@ -303,7 +303,7 @@ c-2-26.8-24.8-53.5-42-72.5S0,169.8,0,144C0,76,64.8,32,128,32S256,76,256,144z"
           'app',
           {
             accountLink:
-              '<a href="https://id.craftcms.com" rel="noopener" target="_blank">id.craftcms.com</a>',
+              '<a href="https://console.craftcms.com" rel="noopener" target="_blank">console.craftcms.com</a>',
           }
         );
       },
