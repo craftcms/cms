@@ -1744,14 +1744,14 @@ JS;
      */
     public function getFormat(mixed $transform = null): ?string
     {
-        $transform = $transform ?? $this->_transform;
-        $transform = ImageTransforms::normalizeTransform($transform);
+        $ext = $this->getExtension();
 
-        if (!Image::canManipulateAsImage($this->getExtension()) || !$transform || !$transform->format) {
-            return $this->getExtension();
+        if (!Image::canManipulateAsImage($ext)) {
+            return $ext;
         }
 
-        return $transform->format;
+        $transform = $transform ?? $this->_transform;
+        return ImageTransforms::normalizeTransform($transform)?->format ?? $ext;
     }
 
     /**
