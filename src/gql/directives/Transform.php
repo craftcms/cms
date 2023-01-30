@@ -74,6 +74,7 @@ class Transform extends Directive
             'width',
             'format',
             'url',
+            'mimeType',
         ];
 
         $onAssetElement = $value instanceof Asset;
@@ -107,6 +108,7 @@ class Transform extends Directive
             'width' => $source->getWidth($transform),
             'url' => $source->getUrl($transform),
             'format' => $source->getFormat($transform),
+            'mimeType' => $source->getMimeType($transform),
             default => $value,
         };
     }
