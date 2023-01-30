@@ -46,6 +46,7 @@
 ### Extensibility
 - Added the `elements/revisions` action. ([#12211](https://github.com/craftcms/cms/pull/12211))
 - Console controllers that directly use `craft\console\ControllerTrait` no longer need to call `$this->checkTty()` or `$this->checkRootUser()` themselves; they are now called from `ControllerTrait::init()` and `beforeAction()`.
+- Element custom field validation now respects the list of attributes passed to `validate()`.
 - Added `craft\base\Element::cpRevisionsUrl()`.
 - Added `craft\base\ElementInterface::getCpRevisionsUrl()`.
 - Added `craft\console\ControllerTrait::beforeAction()`.
