@@ -169,6 +169,9 @@ class AssetIndexer extends Component
             $total += $this->storeIndexList($fileList, $session->id, (int)$volume->id);
         }
 
+        if ($total === 0) {
+            $session->processIfRootEmpty = true;
+        }
         $session->totalEntries = $total;
         $this->storeIndexingSession($session);
 
@@ -212,6 +215,7 @@ class AssetIndexer extends Component
             'actionRequired' => false,
             'isCli' => $isCli,
             'dateUpdated' => null,
+            'processIfRootEmpty' => false,
         ]);
 
         $this->storeIndexingSession($session);
@@ -238,6 +242,7 @@ class AssetIndexer extends Component
         $record->cacheRemoteImages = $session->cacheRemoteImages;
         $record->actionRequired = $session->actionRequired;
         $record->isCli = $session->isCli;
+        $record->processIfRootEmpty = $session->processIfRootEmpty;
         $record->save();
 
         $session->id = $record->id;
@@ -295,34 +300,41 @@ class AssetIndexer extends Component
         $indexEntry = $this->getNextIndexEntry($indexingSession);
 
         // The most likely scenario is that the last entry is being worked on.
-        if (!$indexEntry) {
+        if (!$indexEntry && !$indexingSession->processIfRootEmpty) {
             $mutex->release($lockName);
             return $indexingSession;
         }
 
         // Mark as started.
-        $this->updateIndexEntry($indexEntry->id, ['inProgress' => true]);
-        $mutex->release($lockName);
+        if ($indexEntry) {
+            $this->updateIndexEntry($indexEntry->id, ['inProgress' => true]);
+            $mutex->release($lockName);
 
-        try {
-            if ($indexEntry->isDir) {
-                $recordId = $this->indexFolderByEntry($indexEntry)->id;
-            } else {
-                $recordId = $this->indexFileByEntry($indexEntry, $indexingSession->cacheRemoteImages)->id;
+            try {
+                if ($indexEntry->isDir) {
+                    $recordId = $this->indexFolderByEntry($indexEntry)->id;
+                } else {
+                    $recordId = $this->indexFileByEntry($indexEntry, $indexingSession->cacheRemoteImages)->id;
+                }
+
+                $this->updateIndexEntry($indexEntry->id, ['completed' => true, 'inProgress' => false, 'recordId' => $recordId]);
+            } catch (AssetDisallowedExtensionException|AssetNotIndexableException) {
+                $this->updateIndexEntry($indexEntry->id, ['completed' => true, 'inProgress' => false, 'isSkipped' => true]);
+            } catch (Throwable $exception) {
+                Craft::$app->getErrorHandler()->logException($exception);
+                $this->updateIndexEntry($indexEntry->id, ['completed' => true, 'inProgress' => false, 'isSkipped' => true]);
             }
 
-            $this->updateIndexEntry($indexEntry->id, ['completed' => true, 'inProgress' => false, 'recordId' => $recordId]);
-        } catch (AssetDisallowedExtensionException|AssetNotIndexableException) {
-            $this->updateIndexEntry($indexEntry->id, ['completed' => true, 'inProgress' => false, 'isSkipped' => true]);
-        } catch (Throwable $exception) {
-            Craft::$app->getErrorHandler()->logException($exception);
-            $this->updateIndexEntry($indexEntry->id, ['completed' => true, 'inProgress' => false, 'isSkipped' => true]);
+            $session = $this->incrementProcessedEntryCount($indexingSession);
+        } else {
+            $session = $indexingSession;
         }
-
-        $session = $this->incrementProcessedEntryCount($indexingSession);
 
         if ($session->processedEntries == $session->totalEntries) {
             $session->actionRequired = true;
+            if ($session->processIfRootEmpty) {
+                $session->processIfRootEmpty = false;
+            }
             $this->storeIndexingSession($session);
         }
 
@@ -831,6 +843,7 @@ class AssetIndexer extends Component
                 'actionRequired',
                 'dateCreated',
                 'dateUpdated',
+                'processIfRootEmpty',
             ])
             ->from(Table::ASSETINDEXINGSESSIONS);
     }

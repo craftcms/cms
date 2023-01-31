@@ -25,6 +25,7 @@ type AssetIndexingSessionModel = {
   readonly actionRequired: boolean;
   readonly skippedEntries: string[];
   readonly missingEntries: StringHash;
+  readonly processIfRootEmpty: boolean;
 };
 
 type CraftResponse = {
@@ -433,6 +434,16 @@ export class AssetIndexer {
 
       this.enqueueTask(task);
     }
+
+    if (session.getProcessIfRootEmpty()) {
+      const task: ConcurrentTask = {
+        sessionId: session.getSessionId(),
+        action: IndexingActions.PROCESS,
+        params: {sessionId: this._currentIndexingSession},
+      };
+
+      this.enqueueTask(task);
+    }
   }
 
   /**
@@ -552,6 +563,10 @@ class AssetIndexingSession {
    */
   public getSessionId(): number {
     return this.indexingSessionData.id;
+  }
+
+  public getProcessIfRootEmpty(): boolean {
+    return this.indexingSessionData.processIfRootEmpty;
   }
 
   /**

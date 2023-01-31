@@ -148,6 +148,7 @@ class Install extends Migration
             'cacheRemoteImages' => $this->boolean(),
             'isCli' => $this->boolean()->defaultValue(false),
             'actionRequired' => $this->boolean()->defaultValue(false),
+            'processIfRootEmpty' => $this->boolean()->defaultValue(false),
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
             'uid' => $this->uid(),

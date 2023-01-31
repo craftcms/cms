@@ -20,6 +20,7 @@ use craft\db\Table;
  * @property bool $cacheRemoteImages Whether remote images should be cached locally.
  * @property bool $isCli Whether indexing is run via CLI.
  * @property bool $actionRequired Whether action is required.
+ * @property bool $processIfRootEmpty Whether to continue processing if the FS root folder is empty.
  * @property string $dateUpdated Time when indexing session was last updated.
  * @property string $dateCreated Time when indexing session was last updated.
  *

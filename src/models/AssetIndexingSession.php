@@ -74,4 +74,9 @@ class AssetIndexingSession extends Model
      * @var array The missing entries.
      */
     public array $missingEntries = [];
+
+    /**
+     * @var bool Whether to continue processing if the FS root folder is empty.
+     */
+    public bool $processIfRootEmpty = false;
 }
