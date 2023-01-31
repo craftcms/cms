@@ -1216,6 +1216,11 @@ ul.icons {
   }
 }
 
+.inline-flex {
+  display: inline-flex;
+  align-items: center;
+}
+
 .flex-grow {
   flex: 1;
 }
@@ -1802,12 +1807,7 @@ div.btn.submit input {
     border-radius: 0;
     background-color: transparent;
 
-    &:focus {
-      z-index: 1;
-    }
-
-    &[aria-current],
-    &[data-disclosure-trigger] {
+    &.current-step {
       --text-color: #{$white};
       --ui-control-color: #{$white};
       --ui-control-bg-color: #{$grey500};
@@ -1816,16 +1816,20 @@ div.btn.submit input {
       @include light-on-dark-text;
     }
 
+    &:focus {
+      z-index: 1;
+    }
+
     &:not(.has-action-menu) {
       @include padding-right(calc(var(--ui-control-height) / 2));
       @include margin-right(2.8px);
 
-      &:not([data-disclosure-trigger]) .btn-body {
+      &:not(.current-step[data-disclosure-trigger]) .btn-body {
         @include padding-right(7px);
       }
     }
 
-    &[data-disclosure-trigger] .btn-body {
+    &.current-step[data-disclosure-trigger] .btn-body {
       @include padding(0, 3px, 0, 5px);
 
       &:after {
@@ -1899,7 +1903,7 @@ div.btn.submit input {
     display: flex;
 
     li {
-      &:first-child .btn {
+      &.first-step .btn {
         .btn-body {
           @include padding-left(14px);
           @include border-radius(
@@ -1909,13 +1913,13 @@ div.btn.submit input {
             var(--ui-control-border-radius)
           );
 
-          [data-icon]:before {
-            opacity: 1;
+          .chevron-left {
+            display: none;
           }
         }
       }
 
-      &:not(:first-child) .btn {
+      &:not(.first-step) .btn {
         @include margin-left(calc(-1 * (var(--ui-control-height) / 2)));
         @include padding-left(calc(var(--ui-control-height) / 2));
 
@@ -4718,7 +4722,7 @@ ul.tree,
         @include menu-option-styles;
         font-size: 14px;
 
-        &:not(.flex) {
+        &:not(.flex):not(.inline-flex) {
           display: block !important;
         }
 
@@ -4733,6 +4737,12 @@ ul.tree,
           border-radius: $mediumBorderRadius;
           box-shadow: 0 0 0 1px transparentize($grey600, 0.75),
             0 1px 3px -1px transparentize($grey600, 0.5);
+        }
+
+        &.inline-flex {
+          [data-icon] {
+            @include margin(-3px, 5px, 0, 0);
+          }
         }
       }
     }

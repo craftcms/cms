@@ -196,6 +196,7 @@ JS;
             'Make required',
             'Matrix block could not be added. Maximum number of blocks reached.',
             'Merge the folder (any conflicting files will be replaced)',
+            'More items',
             'More',
             'More…',
             'Move down',

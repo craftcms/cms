@@ -842,6 +842,7 @@ return [
     'Modules' => 'Modules',
     'Months' => 'Months',
     'More Resources' => 'More Resources',
+    'More items' => 'More items',
     'More' => 'More',
     'More…' => 'More…',
     'Move down' => 'Move down',

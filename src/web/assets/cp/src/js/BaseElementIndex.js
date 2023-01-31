@@ -59,6 +59,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
     _sourcePath: null,
     $sourcePathOuterContainer: null,
     $sourcePathInnerContainer: null,
+    $sourcePathOverflowBtnContainer: null,
     $sourcePathActionsBtn: null,
 
     $elements: null,
@@ -324,28 +325,8 @@ Craft.BaseElementIndex = Garnish.Base.extend(
     },
 
     handleResize: function () {
-      if (this.$sourcePathOuterContainer) {
-        const $labels = this.$sourcePathInnerContainer.find('.label');
-        $labels.css('width', '');
-        const outerWidth =
-          this.$sourcePathOuterContainer[0].getBoundingClientRect().width;
-        const innerWidth =
-          this.$sourcePathInnerContainer[0].getBoundingClientRect().width;
-        if (innerWidth > outerWidth) {
-          const overage = innerWidth - outerWidth;
-          const labels = $labels.toArray();
-          const labelWidths = [];
-          let totalLabelWidth = 0;
-          labels.forEach((label) => {
-            const width = label.getBoundingClientRect().width;
-            labelWidths.push(width);
-            totalLabelWidth += width;
-          });
-          const reduceFactor = 1 - overage / totalLabelWidth;
-          labels.forEach((label, i) => {
-            $(label).width(Math.floor(labelWidths[i] * reduceFactor));
-          });
-        }
+      if (this.sourcePath.length) {
+        this._updateSourcePathVisibility();
       }
     },
 
@@ -571,6 +552,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         this.$sourcePathOuterContainer.remove();
         this.$sourcePathOuterContainer = null;
         this.$sourcePathInnerContainer = null;
+        this.$sourcePathOverflowBtnContainer = null;
         this.$sourcePathActionsBtn = null;
       }
 
@@ -588,17 +570,78 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         }).appendTo(this.$sourcePathInnerContainer);
         const $ol = $('<ol/>').appendTo($nav);
 
+        let $overflowBtn, overflowMenuId, $overflowUl;
+
+        if (sourcePath.length > 1) {
+          this.$sourcePathOverflowBtnContainer = $('<li/>', {
+            class: 'first-step hidden',
+          }).appendTo($ol);
+
+          overflowMenuId = 'menu' + Math.floor(Math.random() * 1000000);
+          $overflowBtn = $('<button/>', {
+            type: 'button',
+            class: 'btn',
+            title: Craft.t('app', 'More items'),
+            'aria-label': Craft.t('app', 'More items'),
+            'data-disclosure-trigger': true,
+            'aria-controls': overflowMenuId,
+          })
+            .append(
+              $('<span/>', {class: 'btn-body'}).append(
+                $('<span/>', {'data-icon': 'ellipsis'})
+              )
+            )
+            .append($('<span/>', {class: 'chevron-right'}))
+            .appendTo(this.$sourcePathOverflowBtnContainer);
+
+          const $overflowMenu = $('<div/>', {
+            id: overflowMenuId,
+            class: 'menu menu--disclosure',
+          }).appendTo(this.$sourcePathOverflowBtnContainer);
+          $overflowUl = $('<ul/>').appendTo($overflowMenu);
+
+          $overflowBtn.disclosureMenu();
+        }
+
         for (let i = 0; i < sourcePath.length; i++) {
           ((i) => {
             const step = sourcePath[i];
+
+            if ($overflowUl && i < sourcePath.length - 2) {
+              step.$overflowLi = $('<li/>', {
+                class: 'hidden',
+              }).appendTo($overflowUl);
+
+              $('<a/>', {
+                class: 'inline-flex',
+                href: '#',
+                type: 'button',
+                role: 'button',
+                html:
+                  step.label +
+                  (step.altLabel ? ` <span>${step.altLabel}</span>` : ''),
+              })
+                .appendTo(step.$overflowLi)
+                .on('click', (ev) => {
+                  ev.preventDefault();
+                  this.$sourcePathActionsBtn.data('trigger').hide();
+                  this.selectSourcePathStep(i);
+                });
+            }
+
             const isFirst = i === 0;
             const isLast = i === sourcePath.length - 1;
 
+            step.$li = $('<li/>').appendTo($ol);
             step.$btn = $('<a/>', {
               href: step.uri ? Craft.getCpUrl(step.uri) : '#',
               class: 'btn',
               role: 'button',
             });
+
+            if (isFirst) {
+              step.$li.addClass('first-step');
+            }
 
             const $btnBody = $('<span/>', {
               class: 'btn-body',
@@ -608,17 +651,16 @@ Craft.BaseElementIndex = Garnish.Base.extend(
               step.$btn.attr('title', step.altLabel);
               step.$btn.attr('aria-label', step.altLabel);
               $btnBody.html(step.label);
+              delete step.$label;
             } else {
-              const $label = $('<span/>', {
+              step.$label = $('<span/>', {
                 class: 'label',
                 html: step.label,
               }).appendTo($btnBody);
-              step.$btn.attr('title', $label.text());
+              step.$btn.attr('title', step.$label.text());
             }
 
-            if (!isFirst) {
-              step.$btn.append($('<span class="chevron-left"/>'));
-            }
+            step.$btn.append($('<span class="chevron-left"/>'));
 
             if (!isLast || !actions.length) {
               step.$btn.append($('<span class="chevron-right"/>'));
@@ -627,16 +669,13 @@ Craft.BaseElementIndex = Garnish.Base.extend(
             }
 
             if (isLast) {
-              step.$btn.attr('aria-current', 'page');
+              step.$btn.addClass('current-step').attr('aria-current', 'page');
             }
 
-            $('<li/>').append(step.$btn).appendTo($ol);
+            step.$btn.appendTo(step.$li);
 
-            this.addListener(step.$btn, 'activate', (ev) => {
-              this.sourcePath = this.sourcePath.slice(0, i + 1);
-              this.sourcePath[i].$btn.focus();
-              this.clearSearch(false);
-              this.updateElements();
+            this.addListener(step.$btn, 'activate', () => {
+              this.selectSourcePathStep(i);
             });
           })(i);
         }
@@ -647,7 +686,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
           const menuId = 'menu' + Math.floor(Math.random() * 1000000);
           this.$sourcePathActionsBtn = $('<button/>', {
             type: 'button',
-            class: 'btn',
+            class: 'btn current-step',
             title: actionBtnLabel,
             'aria-label': actionBtnLabel,
             'data-disclosure-trigger': true,
@@ -676,7 +715,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
           });
 
           this.$sourcePathActionsBtn.disclosureMenu();
-          this.handleResize();
+          this._updateSourcePathVisibility();
         }
 
         // Update the URL if we're on the index page
@@ -717,6 +756,65 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       return '';
     },
 
+    _updateSourcePathVisibility: function () {
+      const firstStep = this.sourcePath[0];
+      const lastStep = this.sourcePath[this.sourcePath.length - 1];
+
+      // reset the source path styles
+      if (this.$sourcePathOverflowBtnContainer) {
+        this.$sourcePathOverflowBtnContainer.addClass('hidden');
+        firstStep.$li.addClass('first-step');
+      }
+
+      for (const step of this.sourcePath) {
+        if (step.$overflowLi) {
+          step.$overflowLi.addClass('hidden');
+        }
+        step.$li.removeClass('hidden');
+      }
+
+      if (lastStep.$label) {
+        lastStep.$label.css('width', '');
+      }
+
+      let overage = this._checkSourcePathOverage();
+      if (!overage) {
+        return;
+      }
+
+      // show the overflow menu, if we have one
+      if (this.$sourcePathOverflowBtnContainer) {
+        this.$sourcePathOverflowBtnContainer.removeClass('hidden');
+        firstStep.$li.removeClass('first-step');
+
+        for (let i = 0; i < this.sourcePath.length - 2; i++) {
+          const step = this.sourcePath[i];
+          step.$overflowLi.removeClass('hidden');
+          step.$li.addClass('hidden');
+
+          // are we done yet?
+          overage = this._checkSourcePathOverage();
+          if (!overage) {
+            return;
+          }
+        }
+      }
+
+      // if we're still here, truncation is the only remaining strategy
+      if (lastStep.$label) {
+        const width = lastStep.$label[0].getBoundingClientRect().width;
+        lastStep.$label.width(Math.floor(width - overage));
+      }
+    },
+
+    _checkSourcePathOverage: function () {
+      const outerWidth =
+        this.$sourcePathOuterContainer[0].getBoundingClientRect().width;
+      const innerWidth =
+        this.$sourcePathInnerContainer[0].getBoundingClientRect().width;
+      return Math.max(innerWidth - outerWidth, 0);
+    },
+
     _buildSourcePathActionList: function (actions) {
       const $ul = $('<ul/>');
 
@@ -746,6 +844,13 @@ Craft.BaseElementIndex = Garnish.Base.extend(
     },
 
     onSourcePathChange: function () {},
+
+    selectSourcePathStep: function (num) {
+      this.sourcePath = this.sourcePath.slice(0, num + 1);
+      this.sourcePath[num].$btn.focus();
+      this.clearSearch(false);
+      this.updateElements();
+    },
 
     startSearching: function () {
       // Show the clear button and add/select the Score sort option
