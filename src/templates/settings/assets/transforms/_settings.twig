@@ -95,7 +95,7 @@
                 {{ forms.colorField({
                     label: 'Fill Color',
                     name: 'fill',
-                    value: (transform is defined and transform.mode == 'fit' ? transform.fill : null),
+                    value: (transform is defined and transform.mode == 'fit' and transform.fill != 'transparent' ? transform.fill : null),
                     errors: (transform is defined ? transform.getErrors('fill') : null)
                 }) }}
             </div>
