@@ -221,6 +221,7 @@ JS;
             'Merge the folder (any conflicting files will be replaced)',
             'Mobile',
             'More info',
+            'More items',
             'More',
             'More…',
             'Move down',

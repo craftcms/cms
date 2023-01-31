@@ -904,6 +904,7 @@ return [
     'More Resources' => 'More Resources',
     'More actions' => 'More actions',
     'More info' => 'More info',
+    'More items' => 'More items',
     'More' => 'More',
     'More…' => 'More…',
     'Move down' => 'Move down',
