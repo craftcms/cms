@@ -463,8 +463,8 @@ Craft.BaseElementIndex = Garnish.Base.extend(
           this.selectDefaultSource();
         })
         .catch(() => {
-          this.setIndexAvailable();
           if (!this._ignoreFailedRequest) {
+            this.setIndexAvailable();
             Craft.cp.displayError(Craft.t('app', 'A server error occurred.'));
           }
         });
@@ -917,8 +917,8 @@ Craft.BaseElementIndex = Garnish.Base.extend(
           }
         })
         .catch((e) => {
-          this.setIndexAvailable();
           if (!this._ignoreFailedRequest) {
+            this.setIndexAvailable();
             Craft.cp.displayError(Craft.t('app', 'A server error occurred.'));
           }
         });
