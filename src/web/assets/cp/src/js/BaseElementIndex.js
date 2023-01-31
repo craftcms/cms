@@ -666,7 +666,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
           ((i) => {
             const step = sourcePath[i];
 
-            if ($overflowUl && i < sourcePath.length - 2) {
+            if ($overflowUl && i < sourcePath.length - 1) {
               step.$overflowLi = $('<li/>', {
                 class: 'hidden',
               }).appendTo($overflowUl);
@@ -846,7 +846,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         this.$sourcePathOverflowBtnContainer.removeClass('hidden');
         firstStep.$li.removeClass('first-step');
 
-        for (let i = 0; i < this.sourcePath.length - 2; i++) {
+        for (let i = 0; i < this.sourcePath.length - 1; i++) {
           const step = this.sourcePath[i];
           step.$overflowLi.removeClass('hidden');
           step.$li.addClass('hidden');
@@ -1245,6 +1245,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       return new Promise((resolve, reject) => {
         // Ignore if we're not fully initialized yet
         if (!this.initialized) {
+          debugger;
           reject('The element index isn’t initialized yet.');
           return;
         }
@@ -2316,7 +2317,9 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       var $option = $(ev.selectedOption).addClass('sel');
       this.$siteMenuBtn.html($option.html());
       this._setSite($option.data('site-id'));
-      this.updateElements();
+      if (this.initialized) {
+        this.updateElements();
+      }
       this.onSelectSite();
     },
 
