@@ -127,7 +127,7 @@ class VolumeFolder extends Model
             $info += [
                 'label' => Html::tag('span', '', ['data-icon' => 'home']),
                 'altLabel' => Craft::t('app', '{volume} root', [
-                    'volume' => Craft::t('site', $volume->name),
+                    'volume' => Html::encode(Craft::t('site', $volume->name)),
                 ]),
                 'handle' => $volume->handle,
             ];
@@ -137,7 +137,7 @@ class VolumeFolder extends Model
             $canMove = $canDelete && $userSession->checkPermission("editPeerFilesInVolume:$volume->uid");
 
             $info += [
-                'label' => $this->name,
+                'label' => Html::encode($this->name),
                 'criteria' => [
                     'folderId' => $this->id,
                 ],
