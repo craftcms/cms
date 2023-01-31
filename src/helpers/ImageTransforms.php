@@ -432,7 +432,7 @@ class ImageTransforms
 
         if ($asset->getHasFocalPoint()) {
             $position = $asset->getFocalPoint();
-        } elseif (!preg_match('/(top|center|bottom)-(left|center|right)/', $transform->position)) {
+        } elseif (!preg_match('/^(top|center|bottom)-(left|center|right)$/', $transform->position)) {
             $position = 'center-center';
         } else {
             $position = $transform->position;
