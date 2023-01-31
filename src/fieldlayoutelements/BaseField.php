@@ -219,6 +219,9 @@ abstract class BaseField extends FieldLayoutElement
 
         $statusClass = $this->statusClass($element, $static);
         $label = $this->showLabel() ? $this->label() : null;
+        $instructions = $this->instructions($element, $static);
+        $tip = $this->tip($element, $static);
+        $warning = $this->warning($element, $static);
 
         return Cp::fieldHtml($inputHtml, [
             'fieldset' => $this->useFieldset(),
@@ -236,9 +239,9 @@ abstract class BaseField extends FieldLayoutElement
             'label' => $label !== null ? Html::encode($label) : null,
             'attribute' => $this->attribute(),
             'required' => !$static && $this->required,
-            'instructions' => $this->instructions($element, $static),
-            'tip' => $this->tip($element, $static),
-            'warning' => $this->warning($element, $static),
+            'instructions' => $instructions !== null ? Html::encode($instructions) : null,
+            'tip' => $tip !== null ? Html::encode($tip) : null,
+            'warning' => $warning !== null ? Html::encode($warning) : null,
             'orientation' => $this->orientation($element, $static),
             'translatable' => $this->translatable($element, $static),
             'translationDescription' => $this->translationDescription($element, $static),
