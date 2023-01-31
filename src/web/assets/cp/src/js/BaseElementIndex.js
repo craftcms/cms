@@ -624,7 +624,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
                 .appendTo(step.$overflowLi)
                 .on('click', (ev) => {
                   ev.preventDefault();
-                  this.$sourcePathActionsBtn.data('trigger').hide();
+                  $overflowBtn.data('trigger').hide();
                   this.selectSourcePathStep(i);
                 });
             }
