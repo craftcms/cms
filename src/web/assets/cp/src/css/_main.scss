@@ -1216,11 +1216,6 @@ ul.icons {
   }
 }
 
-.inline-flex {
-  display: inline-flex;
-  align-items: center;
-}
-
 .flex-grow {
   flex: 1;
 }
@@ -1825,12 +1820,12 @@ div.btn.submit input {
       @include margin-right(2.8px);
 
       &:not(.current-step[data-disclosure-trigger]) .btn-body {
-        @include padding-right(7px);
+        @include padding-right(5px);
       }
     }
 
     &.current-step[data-disclosure-trigger] .btn-body {
-      @include padding(0, 3px, 0, 5px);
+      @include padding(0, 3px, 0, 8px);
 
       &:after {
         @include angle;
@@ -1844,6 +1839,12 @@ div.btn.submit input {
       justify-content: center;
       height: var(--ui-control-height);
       background-color: var(--ui-control-bg-color);
+
+      [data-icon] {
+        width: 13px;
+        text-align: center;
+        @include margin-right(0);
+      }
     }
 
     .label {
@@ -4722,8 +4723,14 @@ ul.tree,
         @include menu-option-styles;
         font-size: 14px;
 
-        &:not(.flex):not(.inline-flex) {
+        &:not(.flex) {
           display: block !important;
+        }
+
+        &.flex {
+          [data-icon] {
+            margin-top: -2px;
+          }
         }
 
         &.sel {
@@ -4737,12 +4744,6 @@ ul.tree,
           border-radius: $mediumBorderRadius;
           box-shadow: 0 0 0 1px transparentize($grey600, 0.75),
             0 1px 3px -1px transparentize($grey600, 0.5);
-        }
-
-        &.inline-flex {
-          [data-icon] {
-            @include margin(-3px, 5px, 0, 0);
-          }
         }
       }
     }

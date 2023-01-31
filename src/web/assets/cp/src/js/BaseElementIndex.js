@@ -613,7 +613,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
               }).appendTo($overflowUl);
 
               $('<a/>', {
-                class: 'inline-flex',
+                class: 'flex flex-nowrap',
                 href: '#',
                 type: 'button',
                 role: 'button',
