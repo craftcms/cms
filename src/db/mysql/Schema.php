@@ -395,13 +395,13 @@ SQL;
         }
         
         // Certificates
-        if(isset($this->db->attributes[\PDO::MYSQL_ATTR_SSL_CA])) {
+        if (isset($this->db->attributes[\PDO::MYSQL_ATTR_SSL_CA])) {
             $contents .= PHP_EOL . 'ssl_ca=' . $this->db->attributes[\PDO::MYSQL_ATTR_SSL_CA];
         }
-        if(isset($this->db->attributes[\PDO::MYSQL_ATTR_SSL_CERT])) {
+        if (isset($this->db->attributes[\PDO::MYSQL_ATTR_SSL_CERT])) {
             $contents .= PHP_EOL . 'ssl_cert=' . $this->db->attributes[\PDO::MYSQL_ATTR_SSL_CERT];
         }
-        if(isset($this->db->attributes[\PDO::MYSQL_ATTR_SSL_KEY])) {
+        if (isset($this->db->attributes[\PDO::MYSQL_ATTR_SSL_KEY])) {
             $contents .= PHP_EOL . 'ssl_key=' . $this->db->attributes[\PDO::MYSQL_ATTR_SSL_KEY];
         }
         
