@@ -185,7 +185,7 @@
           'app',
           {
             accountLink:
-              '<a href="https://id.craftcms.com" rel="noopener" target="_blank">id.craftcms.com</a>',
+              '<a href="https://console.craftcms.com" rel="noopener" target="_blank">console.craftcms.com</a>',
           }
         );
       },

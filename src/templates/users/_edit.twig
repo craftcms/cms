@@ -76,7 +76,7 @@
                 {{ forms.field({
                     label: "Photo"|t('app'),
                     id: 'photo'
-                }, include('users/_photo', {user: user}, with_context = false)) }}
+                }, include('users/_photo.twig', {user: user}, with_context = false)) }}
             {% endif %}
 
             {% if isNewUser %}

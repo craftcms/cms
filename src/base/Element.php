@@ -1807,6 +1807,12 @@ abstract class Element extends Component implements ElementInterface
     protected ?string $revisionNotes = null;
 
     /**
+     * @var array<string,int>|null
+     * @see validate()
+     */
+    private ?array $_attributeNames;
+
+    /**
      * @var int|null
      * @see getCanonicalId()
      * @see setCanonicalId()
@@ -2324,6 +2330,17 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
+    public function validate($attributeNames = null, $clearErrors = true)
+    {
+        $this->_attributeNames = $attributeNames ? array_flip((array)$attributeNames) : null;
+        $result = parent::validate($attributeNames, $clearErrors);
+        $this->_attributeNames = null;
+        return $result;
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function afterValidate(): void
     {
         if (
@@ -2337,6 +2354,11 @@ abstract class Element extends Component implements ElementInterface
             foreach ($layoutElements as $layoutElement) {
                 $field = $layoutElement->getField();
                 $attribute = "field:$field->handle";
+
+                if (isset($this->_attributeNames) && !isset($this->_attributeNames[$attribute])) {
+                    continue;
+                }
+
                 $isEmpty = fn() => $field->isValueEmpty($this->getFieldValue($field->handle), $this);
 
                 if ($scenario === self::SCENARIO_LIVE && $layoutElement->required) {

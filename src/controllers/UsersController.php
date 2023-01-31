@@ -1367,6 +1367,19 @@ JS,
             }
         }
 
+        // If this is public registration and it's a Pro version,
+        // set the default group on the user, so that any content
+        // based on user group condition can be validated and saved against them
+        if ($isPublicRegistration) {
+            $defaultGroupUid = Craft::$app->getProjectConfig()->get('users.defaultGroup');
+            if ($defaultGroupUid) {
+                $group = Craft::$app->userGroups->getGroupByUid($defaultGroupUid);
+                if ($group) {
+                    $user->setGroups([$group]);
+                }
+            }
+        }
+
         // If this is Craft Pro, grab any profile content from post
         $fieldsLocation = $this->request->getParam('fieldsLocation', 'fields');
         $user->setFieldValuesFromRequest($fieldsLocation);
