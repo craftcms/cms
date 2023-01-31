@@ -428,8 +428,10 @@ class AssetIndexer extends Component
             $hasAssets = (new Query())
                 ->from(['a' => Table::ASSETS])
                 ->innerJoin(['f' => Table::VOLUMEFOLDERS], '[[f.id]] = [[a.folderId]]')
+                ->leftJoin(['e' => Table::ELEMENTS], '[[e.id]] = [[a.id]]')
                 ->where(['a.volumeId' => $volumeId])
                 ->andWhere(['like', 'f.path', "$path%", false])
+                ->andWhere(['e.dateDeleted' => null])
                 ->exists();
 
             if (!$hasAssets) {
