@@ -150,7 +150,7 @@ class ImageTransformer extends Component implements ImageTransformerInterface, E
             }
         }
 
-        $url = sprintf('%s/%s', sprintf(StringHelper::ensureRight($fs->getRootUrl() ?? '', '/')), $uri);
+        $url = sprintf('%s/%s', rtrim($fs->getRootUrl() ?? '', '/'), $uri);
         return UrlHelper::urlWithParams($url, AssetsHelper::revParams($asset, $index->dateUpdated));
     }
 
