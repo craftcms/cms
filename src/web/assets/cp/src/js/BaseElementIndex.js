@@ -1586,6 +1586,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       var $option = $(ev.selectedOption).addClass('sel');
       this.$siteMenuBtn.html($option.html());
       this._setSite($option.data('site-id'));
+      this.updateElements();
       this.onSelectSite();
     },
 
@@ -1644,14 +1645,9 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         }
       }
 
-      if (this.initialized) {
-        if (this.settings.context === 'index') {
-          // Remember this site for later
-          Craft.cp.setSiteId(siteId);
-        }
-
-        // Update the elements
-        this.updateElements();
+      if (this.initialized && this.settings.context === 'index') {
+        // Remember this site for later
+        Craft.cp.setSiteId(siteId);
       }
     },
 
