@@ -83,6 +83,7 @@ use yii\base\InvalidCallException;
 use yii\base\InvalidConfigException;
 use yii\base\NotSupportedException;
 use yii\base\UnknownPropertyException;
+use yii\db\Expression;
 use yii\db\ExpressionInterface;
 use yii\validators\BooleanValidator;
 use yii\validators\NumberValidator;
@@ -859,6 +860,14 @@ abstract class Element extends Component implements ElementInterface
 
     /**
      * @inheritdoc
+     */
+    public static function findSource(string $sourceKey, ?string $context = null): ?array
+    {
+        return null;
+    }
+
+    /**
+     * @inheritdoc
      * @since 3.5.0
      */
     public static function fieldLayouts(string $source): array
@@ -1059,7 +1068,7 @@ abstract class Element extends Component implements ElementInterface
         if (!empty($viewState['order'])) {
             // Special case for sorting by structure
             if ($viewState['order'] === 'structure') {
-                $source = ElementHelper::findSource(static::class, $sourceKey, $context);
+                $source = static::findSource($sourceKey, $context);
 
                 if (isset($source['structureId'])) {
                     $elementQuery->orderBy(['lft' => SORT_ASC]);
@@ -1118,7 +1127,7 @@ abstract class Element extends Component implements ElementInterface
             $elementQuery->cache();
         }
 
-        $variables['elements'] = $elementQuery->all($db);
+        $variables['elements'] = static::indexElements($elementQuery, $sourceKey);
 
         $template = '_elements/' . $viewState['mode'] . 'view/' . ($includeContainer ? 'container' : 'elements');
 
@@ -1126,7 +1135,7 @@ abstract class Element extends Component implements ElementInterface
     }
 
     /**
-     * Preps the element criteria for a given table attribute
+     * Prepares an element query for an element index that includes a given table attribute.
      *
      * @param ElementQueryInterface $elementQuery
      * @param string $attribute
@@ -1139,6 +1148,29 @@ abstract class Element extends Component implements ElementInterface
             $fieldUid = $matches[1];
             Craft::$app->getFields()->getFieldByUid($fieldUid)?->modifyElementIndexQuery($elementQuery);
         }
+    }
+
+    /**
+     * Returns the resulting elements for an element index.
+     *
+     * @param ElementQueryInterface $elementQuery
+     * @param string|null $sourceKey
+     * @return ElementInterface[]
+     * @since 4.4.0
+     */
+    protected static function indexElements(ElementQueryInterface $elementQuery, ?string $sourceKey): array
+    {
+        return $elementQuery->all();
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function indexElementCount(ElementQueryInterface $elementQuery, ?string $sourceKey): int
+    {
+        return (int)$elementQuery
+            ->select(new Expression('1'))
+            ->count();
     }
 
     /**
