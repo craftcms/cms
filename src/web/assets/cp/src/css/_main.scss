@@ -1950,6 +1950,20 @@ div.btn.submit input {
 
     &:focus {
       z-index: 1;
+      box-shadow: none;
+
+      .label {
+        z-index: 1;
+        box-shadow: var(--focus-ring);
+      }
+
+      .reduce-focus-visibility &:not(:focus-visible) .label {
+        box-shadow: none;
+      }
+    }
+
+    .reduce-focus-visibility &:focus-visible .label {
+      box-shadow: var(--focus-ring);
     }
 
     &:not(.has-action-menu) {
@@ -1962,11 +1976,15 @@ div.btn.submit input {
     }
 
     &.current-step[data-disclosure-trigger] .btn-body {
-      @include padding(0, 3px, 0, 8px);
+      @include padding-left(8px);
 
-      &:after {
-        @include angle;
-        position: relative;
+      .label {
+        padding: 3px;
+
+        &:after {
+          @include angle;
+          position: relative;
+        }
       }
     }
 
@@ -1985,7 +2003,8 @@ div.btn.submit input {
     }
 
     .label {
-      display: block;
+      display: inline-flex;
+      align-items: center;
       overflow: hidden;
       text-overflow: ellipsis;
     }

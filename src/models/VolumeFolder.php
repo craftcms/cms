@@ -126,8 +126,8 @@ class VolumeFolder extends Model
         // Is this a root folder?
         if (!$this->parentId) {
             $info += [
-                'label' => Html::tag('span', '', ['data-icon' => 'home']),
-                'altLabel' => Craft::t('app', '{volume} root', [
+                'icon' => 'home',
+                'label' => Craft::t('app', '{volume} root', [
                     'volume' => Html::encode(Craft::t('site', $volume->name)),
                 ]),
                 'handle' => $volume->handle,
