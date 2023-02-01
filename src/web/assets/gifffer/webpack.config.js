@@ -2,6 +2,7 @@
 /* globals module, require, __dirname */
 const {getConfig} = require('@craftcms/webpack');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
+const path = require('path');
 
 module.exports = getConfig({
   context: __dirname,
@@ -13,10 +14,10 @@ module.exports = getConfig({
             from: require.resolve('gifffer/build/gifffer.min.js'),
             to: 'gifffer.js',
           },
-          // {
-          //   from: 'gifffer/imgs/',
-          //   to: 'imgs/',
-          // },
+          {
+            from: path.resolve(__dirname, 'gifffer/imgs'),
+            to: 'imgs',
+          },
         ],
       }),
     ],
