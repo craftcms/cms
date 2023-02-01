@@ -4,6 +4,7 @@ namespace craft\elements\conditions\users;
 
 use Craft;
 use craft\elements\conditions\ElementCondition;
+use craft\elements\User;
 
 /**
  * User query condition.
@@ -13,6 +14,11 @@ use craft\elements\conditions\ElementCondition;
  */
 class UserCondition extends ElementCondition
 {
+    /**
+     * @inheritdoc
+     */
+    public ?string $elementType = User::class;
+
     /**
      * @inheritdoc
      */

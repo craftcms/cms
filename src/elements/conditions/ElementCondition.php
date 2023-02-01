@@ -9,6 +9,7 @@ use craft\base\ElementInterface;
 use craft\elements\db\ElementQueryInterface;
 use craft\errors\InvalidTypeException;
 use craft\fields\conditions\FieldConditionRuleInterface;
+use craft\helpers\ArrayHelper;
 
 /**
  * ElementCondition provides an element condition.
@@ -55,7 +56,10 @@ class ElementCondition extends BaseCondition implements ElementConditionInterfac
      */
     public function __construct(?string $elementType = null, array $config = [])
     {
-        $this->elementType = $elementType;
+        if ($elementType !== null) {
+            $this->elementType = $elementType;
+        }
+
         parent::__construct($config);
     }
 
@@ -111,6 +115,11 @@ class ElementCondition extends BaseCondition implements ElementConditionInterfac
             /** @var string|ElementInterface $elementType */
             /** @phpstan-var class-string<ElementInterface>|ElementInterface $elementType */
             $elementType = $this->elementType;
+
+            // If the element type is not localized, don't allow the site condition rule
+            if (!$elementType::isLocalized()) {
+                ArrayHelper::removeValue($types, SiteConditionRule::class);
+            }
 
             if ($elementType::hasUris()) {
                 $types[] = HasUrlConditionRule::class;
