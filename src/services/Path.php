@@ -385,6 +385,24 @@ class Path extends Component
     }
 
     /**
+     * Returns the path to the `storage/runtime/assets/imagetransforms/` directory.
+     *
+     * @param bool $create Whether the directory should be created if it doesn't exist
+     * @return string
+     * @since 4.4.0
+     */
+    public function getImageTransformsPath(bool $create = true): string
+    {
+        $path = $this->getAssetsPath($create) . DIRECTORY_SEPARATOR . 'imagetransforms';
+
+        if ($create) {
+            FileHelper::createDirectory($path);
+        }
+
+        return $path;
+    }
+
+    /**
      * Returns the path to the `storage/runtime/pluginicons/` directory.
      *
      * @param bool $create Whether the directory should be created if it doesn't exist

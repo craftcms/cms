@@ -5,6 +5,7 @@ namespace crafttests\unit\helpers;
 use Codeception\Test\Unit;
 use craft\errors\ImageTransformException;
 use craft\helpers\ImageTransforms;
+use craft\models\ImageTransform;
 
 class ImageTransformsTest extends Unit
 {
@@ -30,5 +31,37 @@ class ImageTransformsTest extends Unit
 
         $withInterlace = ImageTransforms::createTransformFromString('_1280x600_crop_center-center_95_line');
         $this->assertSame($withInterlace->interlace, 'line');
+    }
+
+    /**
+     * @dataProvider parseTransformStringDataProvider
+     */
+    public function testParseTransformString(array $config): void
+    {
+        $transform = new ImageTransform($config);
+        $str = ImageTransforms::getTransformString($transform);
+        $this->assertSame($config, ImageTransforms::parseTransformString($str));
+    }
+
+    public function parseTransformStringDataProvider(): array
+    {
+        return [
+            [[
+                'width' => 100,
+                'height' => 200,
+                'mode' => 'fit',
+                'position' => 'top-left',
+                'quality' => 70,
+                'interlace' => 'partition',
+            ]],
+            [[
+                'width' => 100,
+                'height' => null,
+                'mode' => 'crop',
+                'position' => 'bottom-right',
+                'quality' => null,
+                'interlace' => 'none',
+            ]],
+        ];
     }
 }

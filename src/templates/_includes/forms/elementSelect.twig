@@ -30,9 +30,9 @@
 
 {% tag 'div' with containerAttributes %}
     {% if maintainHierarchy %}
-        {{ include('_elements/structurelist', { elements, id })}}
+        {{ include('_elements/structurelist.twig', { elements, id })}}
     {% else %}
-        {{ include('_elements/list', { elements, viewMode, disabled }) }}
+        {{ include('_elements/list.twig', { elements, viewMode, disabled }) }}
     {% endif %}
 
     <div class="flex flex-nowrap">
