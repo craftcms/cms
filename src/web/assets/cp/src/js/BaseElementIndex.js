@@ -74,6 +74,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
     actions: null,
     actionsHeadHtml: null,
     actionsBodyHtml: null,
+    $actionsMenu: null,
     $selectAllContainer: null,
     $selectAllCheckbox: null,
     showingActionTriggers: false,
@@ -1914,7 +1915,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
     },
 
     _handleMenuActionTriggerSubmit: function (ev) {
-      var $option = $(ev.option);
+      var $option = $(ev.target);
 
       // Make sure Craft.ElementActionTrigger isn't overriding this
       if ($option.hasClass('disabled') || $option.data('custom-handler')) {
@@ -1922,6 +1923,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       }
 
       this.submitAction($option.data('action'));
+      this.$actionsMenu.hide();
     },
 
     _handleStatusChange: function (ev) {
@@ -2445,19 +2447,23 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         }
       }
 
-      var $btn;
+      let $actionsBtn;
 
       if (safeMenuActions.length || destructiveMenuActions.length) {
         var $menuTrigger = $('<form/>');
 
-        $btn = $('<button/>', {
+        $actionsBtn = $('<button/>', {
           type: 'button',
           class: 'btn menubtn',
           'data-icon': 'settings',
           title: Craft.t('app', 'Actions'),
+          'aria-controls': 'actions-menu',
+          'data-disclosure-trigger': true,
         }).appendTo($menuTrigger);
 
-        var $menu = $('<ul class="menu"/>').appendTo($menuTrigger),
+        var $menu = $(
+            '<div id="actions-menu" class="menu menu--disclosure"/>'
+          ).appendTo($menuTrigger),
           $safeList = this._createMenuTriggerList(safeMenuActions, false),
           $destructiveList = this._createMenuTriggerList(
             destructiveMenuActions,
@@ -2492,10 +2498,25 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
       Craft.initUiElements(this._$triggers);
 
-      if ($btn) {
-        $btn
-          .data('menubtn')
-          .on('optionSelect', this._handleMenuActionTriggerSubmit.bind(this));
+      if ($actionsBtn) {
+        const $actionOptions = $menu.find('a[id*="-actiontrigger"]');
+
+        this.addListener(
+          $actionOptions,
+          'click',
+          this._handleMenuActionTriggerSubmit.bind(this)
+        );
+
+        this.addListener($actionOptions, 'keypress', (event) => {
+          const {keyCode} = event;
+
+          if (keyCode === Garnish.SPACE_KEY || keyCode === Garnish.RETURN_KEY) {
+            event.preventDefault();
+            this._handleMenuActionTriggerSubmit(event);
+          }
+        });
+
+        this.$actionsMenu = $actionsBtn.data('trigger');
       }
     },
 
@@ -2637,6 +2658,8 @@ Craft.BaseElementIndex = Garnish.Base.extend(
                   action: actions[i],
                 },
                 text: actions[i].name,
+                role: 'button',
+                tabindex: 0,
               })
             )
             .appendTo($ul);
