@@ -63,7 +63,7 @@
   --ui-control-bg-color: #{transparentize($inputColor, 0.75)};
   --ui-control-hover-bg-color: #{transparentize($inputColor, 0.7)};
   --ui-control-active-bg-color: #{transparentize($inputColor, 0.5)};
-  --ui-control-height: 34px;
+  --ui-control-height: calc((34rem / 16)); // 1rem == 16px
   --light-focus-hsl: #{hue($lightFocusColor)}, #{saturation($lightFocusColor)},
     #{lightness($lightFocusColor)};
   --medium-focus-hsl: #{hue($mediumFocusColor)},
@@ -1861,7 +1861,7 @@ div.btn.submit input {
       background-color: var(--ui-control-bg-color);
 
       [data-icon] {
-        width: 13px;
+        --ui-control-height: calc((13rem / 16)); // 1rem == 16px
         text-align: center;
         @include margin-right(0);
       }
@@ -2430,7 +2430,7 @@ table {
     tr + tr {
       th,
       td {
-        border-top: 2px solid transparent;
+        border-top: 1px solid transparent;
       }
     }
   }
@@ -2745,12 +2745,12 @@ $checkboxPadding: $checkboxSize + 4;
     --ui-control-bg-color: #{$lightSelColor};
     --ui-control-hover-bg-color: #{darken($lightSelColor, 5%)};
     --ui-control-active-bg-color: #{darken($lightSelColor, 10%)};
-    --ui-control-height: 30px;
 
     .chevron-btns {
       display: inline-flex;
       position: relative;
       background: $white;
+      --ui-control-height: calc((30rem / 16)); // 1rem == 16px
 
       &:before {
         display: block;
