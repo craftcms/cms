@@ -588,7 +588,9 @@ Craft.BaseElementIndex = Garnish.Base.extend(
           })
             .append(
               $('<span/>', {class: 'btn-body'}).append(
-                $('<span/>', {'data-icon': 'ellipsis'})
+                $('<span/>', {class: 'label'}).append(
+                  $('<span/>', {'data-icon': 'ellipsis', 'aria-hidden': 'true'})
+                )
               )
             )
             .append($('<span/>', {class: 'chevron-right'}))
