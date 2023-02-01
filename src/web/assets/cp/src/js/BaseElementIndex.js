@@ -16,7 +16,6 @@ Craft.BaseElementIndex = Garnish.Base.extend(
     sourceSelect: null,
 
     $container: null,
-    headerContainerHeight: 0,
     $main: null,
     isIndexBusy: false,
 
@@ -120,9 +119,6 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       // ---------------------------------------------------------------------
 
       this.$main = this.$container.find('.main');
-      this.headerContainerHeight = this.$container
-        .find('#header-container')
-        .height();
       this.$toolbar = this.$container.find(this.settings.toolbarSelector);
       this.$statusMenuBtn = this.$toolbar.find('.statusmenubtn:first');
       this.$statusMenuContainer = this.$statusMenuBtn.parent();
@@ -776,9 +772,14 @@ Craft.BaseElementIndex = Garnish.Base.extend(
           this.setIndexAvailable();
 
           if (this.settings.context === 'index') {
-            Garnish.$scrollContainer.scrollTop(
-              this.$main.offset().top - this.headerContainerHeight
-            );
+            if (Craft.cp.fixedHeader) {
+              const headerContainerHeight = Craft.cp.$headerContainer.height();
+              const maxScrollTop =
+                this.$main.offset().top - headerContainerHeight;
+              if (maxScrollTop < Garnish.$scrollContainer.scrollTop()) {
+                Garnish.$scrollContainer.scrollTop(maxScrollTop);
+              }
+            }
           } else {
             this.$main.scrollTop(0);
           }
