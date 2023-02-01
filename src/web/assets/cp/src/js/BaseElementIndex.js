@@ -910,10 +910,20 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       })
         .then((response) => {
           this.setIndexAvailable();
-          (this.settings.context === 'index'
-            ? Garnish.$scrollContainer
-            : this.$main
-          ).scrollTop(0);
+
+          if (this.settings.context === 'index') {
+            if (Craft.cp.fixedHeader) {
+              const headerContainerHeight = Craft.cp.$headerContainer.height();
+              const maxScrollTop =
+                this.$main.offset().top - headerContainerHeight;
+              if (maxScrollTop < Garnish.$scrollContainer.scrollTop()) {
+                Garnish.$scrollContainer.scrollTop(maxScrollTop);
+              }
+            }
+          } else {
+            this.$main.scrollTop(0);
+          }
+
           this._updateView(params, response.data);
 
           if (pageChanged) {
