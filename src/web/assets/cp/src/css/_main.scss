@@ -2414,6 +2414,13 @@ table {
         border-top: 1px solid transparent;
       }
     }
+
+    tr.sel + tr.sel {
+      th,
+      td {
+        border-top-color: var(--gray-300);
+      }
+    }
   }
 
   // collapsable data tables for small screens
