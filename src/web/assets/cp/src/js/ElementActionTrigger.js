@@ -45,17 +45,11 @@ Craft.ElementActionTrigger = Garnish.Base.extend(
         if (this.$trigger.prop('nodeName') === 'FORM') {
           this.addListener(this.$trigger, 'submit', 'handleTriggerActivation');
         } else {
-          this.addListener(this.$trigger, 'click', 'handleTriggerActivation');
-          this.addListener(this.$trigger, 'keypress', (event) => {
-            const {keyCode} = event;
-
-            if (
-              keyCode === Garnish.RETURN_KEY ||
-              keyCode === Garnish.SPACE_KEY
-            ) {
-              this.handleTriggerActivation(event);
-            }
-          });
+          this.addListener(
+            this.$trigger,
+            'activate',
+            'handleTriggerActivation'
+          );
         }
       }
 
@@ -112,10 +106,7 @@ Craft.ElementActionTrigger = Garnish.Base.extend(
       this.triggerEnabled = false;
     },
 
-    handleTriggerActivation: function (ev) {
-      ev.preventDefault();
-      ev.stopPropagation();
-
+    handleTriggerActivation: function () {
       if (this.triggerEnabled) {
         this.settings.activate(this.$selectedItems);
       }
