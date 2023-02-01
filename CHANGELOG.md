@@ -9,6 +9,7 @@
 - Fixed a bug where Date and Number fields could be misinterpreted in category Live Preview requests, if the site’s language used different date/number formats than the user’s formatting locale.
 - Fixed a bug where the horizontal scroll position wasn’t being retained when refreshing Live Preview. ([#12504](https://github.com/craftcms/cms/issues/12504))
 - Fixed a bug where HTML tags within field labels, instructions, tips, and warnings weren’t always getting escaped.
+- Fixed a bug where the sidebar scroll position wasn’t retained when selecting a new source on element index pages. ([#12523](https://github.com/craftcms/cms/issues/12523))
 - Deprecated `craft\helpers\DateTimeHelper::timeZoneAbbreviation()`.
 - Deprecated `craft\helpers\DateTimeHelper::timeZoneOffset()`.
 
