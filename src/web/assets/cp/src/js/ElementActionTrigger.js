@@ -45,7 +45,11 @@ Craft.ElementActionTrigger = Garnish.Base.extend(
         if (this.$trigger.prop('nodeName') === 'FORM') {
           this.addListener(this.$trigger, 'submit', 'handleTriggerActivation');
         } else {
-          this.addListener(this.$trigger, 'click', 'handleTriggerActivation');
+          this.addListener(
+            this.$trigger,
+            'activate',
+            'handleTriggerActivation'
+          );
         }
       }
 
@@ -94,7 +98,7 @@ Craft.ElementActionTrigger = Garnish.Base.extend(
         return;
       }
 
-      this.$trigger.removeClass('disabled');
+      this.$trigger.removeClass('disabled').removeAttr('aria-disabled');
       this.triggerEnabled = true;
     },
 
@@ -103,14 +107,11 @@ Craft.ElementActionTrigger = Garnish.Base.extend(
         return;
       }
 
-      this.$trigger.addClass('disabled');
+      this.$trigger.addClass('disabled').attr('aria-disabled', 'true');
       this.triggerEnabled = false;
     },
 
-    handleTriggerActivation: function (ev) {
-      ev.preventDefault();
-      ev.stopPropagation();
-
+    handleTriggerActivation: function () {
       if (this.triggerEnabled) {
         this.settings.activate(this.$selectedItems);
       }
