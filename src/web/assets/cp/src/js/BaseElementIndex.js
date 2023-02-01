@@ -617,9 +617,9 @@ Craft.BaseElementIndex = Garnish.Base.extend(
                 href: '#',
                 type: 'button',
                 role: 'button',
-                html:
-                  step.label +
-                  (step.altLabel ? ` <span>${step.altLabel}</span>` : ''),
+                html: step.icon
+                  ? `<span data-icon="${step.icon}" aria-hidden="true"></span><span>${step.label}</span>`
+                  : step.label,
               })
                 .appendTo(step.$overflowLi)
                 .on('click', (ev) => {
@@ -633,32 +633,31 @@ Craft.BaseElementIndex = Garnish.Base.extend(
             const isLast = i === sourcePath.length - 1;
 
             step.$li = $('<li/>').appendTo($ol);
+
+            if (isFirst) {
+              step.$li.addClass('first-step');
+            }
+
             step.$btn = $('<a/>', {
               href: step.uri ? Craft.getCpUrl(step.uri) : '#',
               class: 'btn',
               role: 'button',
             });
 
-            if (isFirst) {
-              step.$li.addClass('first-step');
+            if (step.icon) {
+              step.$btn.attr('aria-label', step.label);
             }
 
             const $btnBody = $('<span/>', {
               class: 'btn-body',
             }).appendTo(step.$btn);
 
-            if (step.altLabel) {
-              step.$btn.attr('title', step.altLabel);
-              step.$btn.attr('aria-label', step.altLabel);
-              $btnBody.html(step.label);
-              delete step.$label;
-            } else {
-              step.$label = $('<span/>', {
-                class: 'label',
-                html: step.label,
-              }).appendTo($btnBody);
-              step.$btn.attr('title', step.$label.text());
-            }
+            step.$label = $('<span/>', {
+              class: 'label',
+              html: step.icon
+                ? `<span data-icon="${step.icon}" aria-hidden="true"></span>`
+                : step.label,
+            }).appendTo($btnBody);
 
             step.$btn.append($('<span class="chevron-left"/>'));
 
@@ -692,7 +691,11 @@ Craft.BaseElementIndex = Garnish.Base.extend(
             'data-disclosure-trigger': true,
             'aria-controls': menuId,
           })
-            .append($('<span/>', {class: 'btn-body'}))
+            .append(
+              $('<span/>', {class: 'btn-body'}).append(
+                $('<span/>', {class: 'label'})
+              )
+            )
             .append($('<span/>', {class: 'chevron-right'}))
             .appendTo(this.$sourcePathInnerContainer);
 
@@ -773,9 +776,8 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         step.$li.removeClass('hidden');
       }
 
-      if (lastStep.$label) {
-        lastStep.$label.css('width', '');
-      }
+      lastStep.$label.css('width', '');
+      lastStep.$btn.removeAttr('title');
 
       let overage = this._checkSourcePathOverage();
       if (!overage) {
@@ -801,9 +803,10 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       }
 
       // if we're still here, truncation is the only remaining strategy
-      if (lastStep.$label) {
+      if (!lastStep.icon) {
         const width = lastStep.$label[0].getBoundingClientRect().width;
         lastStep.$label.width(Math.floor(width - overage));
+        lastStep.$btn.attr('title', lastStep.label);
       }
     },
 
