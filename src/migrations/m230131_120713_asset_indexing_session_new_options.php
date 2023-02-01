@@ -6,9 +6,9 @@ use craft\db\Migration;
 use craft\db\Table;
 
 /**
- * m230131_120713_asset_indexing_session_add_processIfRootEmpty migration.
+ * m230131_120713_asset_indexing_session_new_options migration.
  */
-class m230131_120713_asset_indexing_session_add_processIfRootEmpty extends Migration
+class m230131_120713_asset_indexing_session_new_options extends Migration
 {
     /**
      * @inheritdoc
@@ -24,6 +24,13 @@ class m230131_120713_asset_indexing_session_add_processIfRootEmpty extends Migra
                 $this->boolean()->defaultValue(false)->after('actionRequired'),
             );
         }
+        if (!isset($table->columns['listEmptyFolders'])) {
+            $this->addColumn(
+                Table::ASSETINDEXINGSESSIONS,
+                'listEmptyFolders',
+                $this->boolean()->defaultValue(false)->after('cacheRemoteImages'),
+            );
+        }
 
         return true;
     }
@@ -36,6 +43,9 @@ class m230131_120713_asset_indexing_session_add_processIfRootEmpty extends Migra
         $table = $this->db->schema->getTableSchema(Table::ASSETINDEXINGSESSIONS);
         if (isset($table->columns['processIfRootEmpty'])) {
             $this->dropColumn(Table::ASSETINDEXINGSESSIONS, 'processIfRootEmpty');
+        }
+        if (isset($table->columns['listEmptyFolders'])) {
+            $this->dropColumn(Table::ASSETINDEXINGSESSIONS, 'listEmptyFolders');
         }
         return true;
     }

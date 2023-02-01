@@ -26,6 +26,7 @@ type AssetIndexingSessionModel = {
   readonly skippedEntries: string[];
   readonly missingEntries: StringHash;
   readonly processIfRootEmpty: boolean;
+  readonly listEmptyFolders: boolean;
 };
 
 type CraftResponse = {
@@ -298,39 +299,63 @@ export class AssetIndexer {
     const haveMissingItems = missingFiles.length || missingFolders.length;
 
     if (haveMissingItems) {
-      let itemText = '';
-      if (missingFiles.length) {
-        itemText += 'files';
-      }
-      if (missingFiles.length && missingFolders.length) {
-        itemText += ' and ';
-      }
       if (missingFolders.length) {
-        itemText += 'folders';
-      }
-      const translationParams = {items: itemText};
+        let missingEntries = '';
+        for (const [id, uri] of missingFolders) {
+          missingEntries += `<li><label><input type="checkbox" checked="checked" name="deleteFolder[]" value="${id}"> ${uri}</label></li>`;
+        }
 
-      let missingEntries = '';
-      for (const [id, uri] of missingFolders) {
-        missingEntries += `<li><label><input type="checkbox" checked="checked" name="deleteFolder[]" value="${id}"> ${uri}</label></li>`;
-      }
-      for (const [id, uri] of missingFiles) {
-        missingEntries += `<li><label><input type="checkbox" checked="checked" name="deleteAsset[]" value="${id}"> ${uri}</label></li>`;
-      }
+        const translationParams = {items: 'folders'};
+        let missingItemsHeading = this._getMissingItemsHeading(
+          'folders',
+          translationParams,
+          session
+        );
+        let missingItemsCopy = this._getMissingItemsCopy(
+          'folders',
+          translationParams,
+          session
+        );
 
-      $confirmBody.append(
-        $(`
-                <h2>${Craft.t('app', 'Missing {items}', translationParams)}</h2>
-                <p>${Craft.t(
-                  'app',
-                  'The following {items} could not be found. Should they be deleted from the index?',
-                  translationParams
-                )}</p>
+        $confirmBody.append(
+          $(`
+                <h2>${missingItemsHeading}</h2>
+                <p>${missingItemsCopy}</p>
                 <ul>
                     ${missingEntries}
                 </ul>
             `)
-      );
+        );
+      }
+
+      if (missingFiles.length) {
+        let missingEntries = '';
+        for (const [id, uri] of missingFiles) {
+          missingEntries += `<li><label><input type="checkbox" checked="checked" name="deleteAsset[]" value="${id}"> ${uri}</label></li>`;
+        }
+
+        const translationParams = {items: 'files'};
+        let missingItemsHeading = this._getMissingItemsHeading(
+          'files',
+          translationParams,
+          session
+        );
+        let missingItemsCopy = this._getMissingItemsCopy(
+          'files',
+          translationParams,
+          session
+        );
+
+        $confirmBody.append(
+          $(`
+                <h2>${missingItemsHeading}</h2>
+                <p>${missingItemsCopy}</p>
+                <ul>
+                    ${missingEntries}
+                </ul>
+            `)
+        );
+      }
     }
 
     const $modal = $('<form class="modal fitted confirmmodal"/>').appendTo(
@@ -398,6 +423,50 @@ export class AssetIndexer {
 
       this.enqueueTask(task, true);
     });
+  }
+
+  private _getMissingItemsHeading(
+    missingType: string,
+    translationParams: object,
+    session: AssetIndexingSession
+  ): string {
+    let missingItemsHeading = Craft.t(
+      'app',
+      'Missing {items}',
+      translationParams
+    );
+
+    if (missingType == 'folders' && session.getListEmptyFolders()) {
+      missingItemsHeading = Craft.t(
+        'app',
+        'Missing or empty {items}',
+        translationParams
+      );
+    }
+
+    return missingItemsHeading;
+  }
+
+  private _getMissingItemsCopy(
+    missingType: string,
+    translationParams: object,
+    session: AssetIndexingSession
+  ): string {
+    let missingItemsCopy = Craft.t(
+      'app',
+      'The following {items} could not be found. Should they be deleted from the index?',
+      translationParams
+    );
+
+    if (missingType == 'folders' && session.getListEmptyFolders()) {
+      missingItemsCopy = Craft.t(
+        'app',
+        'The following {items} could not be found or are empty. Should they be deleted from the index?',
+        translationParams
+      );
+    }
+
+    return missingItemsCopy;
   }
 
   public startIndexing(data: any, cb: () => void): void {
@@ -567,6 +636,10 @@ class AssetIndexingSession {
 
   public getProcessIfRootEmpty(): boolean {
     return this.indexingSessionData.processIfRootEmpty;
+  }
+
+  public getListEmptyFolders(): boolean {
+    return this.indexingSessionData.listEmptyFolders;
   }
 
   /**

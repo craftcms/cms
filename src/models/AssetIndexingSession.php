@@ -44,6 +44,11 @@ class AssetIndexingSession extends Model
     public bool $cacheRemoteImages;
 
     /**
+     * @var bool Whether empty folders should be listed for deletion.
+     */
+    public bool $listEmptyFolders;
+
+    /**
      * Whether this session runs in CLI.
      *
      * @var bool

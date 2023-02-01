@@ -52,12 +52,13 @@ class AssetIndexesController extends Controller
         $request = Craft::$app->getRequest();
         $volumes = (array)$request->getRequiredBodyParam('volumes');
         $cacheRemoteImages = (bool)$request->getBodyParam('cacheImages', false);
+        $listEmptyFolders = (bool)$request->getBodyParam('listEmptyFolders', false);
 
         if (empty($volumes)) {
             return $this->asFailure(Craft::t('app', 'No volumes specified.'));
         }
 
-        $indexingSession = Craft::$app->getAssetIndexer()->startIndexingSession($volumes, $cacheRemoteImages);
+        $indexingSession = Craft::$app->getAssetIndexer()->startIndexingSession($volumes, $cacheRemoteImages, $listEmptyFolders);
         $sessionData = $this->prepareSessionData($indexingSession);
 
         $data = ['session' => $sessionData];
