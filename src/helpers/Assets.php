@@ -77,21 +77,22 @@ class Assets
     }
 
     /**
-     * Generates a URL for a given Assets file on a filesystem.
+     * Generates the URL for an asset.
      *
      * @param FsInterface $fs
      * @param Asset $asset
      * @param string|null $uri Asset URI to use. Defaults to the filename.
      * @param DateTime|null $dateUpdated last datetime the target of the url was updated, if known
      * @return string
-     * @throws InvalidConfigException
+     * @throws InvalidConfigException if the asset doesn’t have a filename.
      */
     public static function generateUrl(FsInterface $fs, Asset $asset, ?string $uri = null, ?DateTime $dateUpdated = null): string
     {
-        $revParams = self::revParams($asset, $dateUpdated);
         $pathParts = explode('/', $asset->folderPath . ($uri ?? $asset->getFilename()));
         $path = implode('/', array_map('rawurlencode', $pathParts));
-        return UrlHelper::urlWithParams($fs->getRootUrl() . $path, $revParams);
+        $rootUrl = $fs->getRootUrl() ?? '';
+        $url = ($rootUrl !== '' ? StringHelper::ensureRight($rootUrl, '/') : '') . $path;
+        return UrlHelper::urlWithParams($url, self::revParams($asset, $dateUpdated));
     }
 
     /**
@@ -845,6 +846,10 @@ class Assets
      */
     public static function iconPath(string $extension): string
     {
+        if (!preg_match('/^\w+$/', $extension)) {
+            throw new InvalidArgumentException("$extension isn’t a valid file extension.");
+        }
+
         $path = sprintf('%s%s%s.svg', Craft::$app->getPath()->getAssetsIconsPath(), DIRECTORY_SEPARATOR, strtolower($extension));
 
         if (file_exists($path)) {
