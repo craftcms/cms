@@ -29,14 +29,14 @@ use yii\base\Component;
 class PluginStore extends Component
 {
     /**
-     * @var string Craft ID endpoint
+     * @var string Craft Console endpoint
      */
-    public $craftIdEndpoint = 'https://id.craftcms.com';
+    public $craftIdEndpoint = 'https://console.craftcms.com';
 
     /**
      * @var string OAuth endpoint
      */
-    public $craftOauthEndpoint = 'https://id.craftcms.com/oauth';
+    public $craftOauthEndpoint = 'https://console.craftcms.com/oauth';
 
     /**
      * @var string API endpoint
