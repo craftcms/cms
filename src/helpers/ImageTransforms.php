@@ -442,7 +442,7 @@ class ImageTransforms
 
         switch ($transform->mode) {
             case 'fit':
-                if ($image instanceof Raster && !$scaleIfSmaller && $transform->fill) {
+                if ($image instanceof Raster && $transform->fill) {
                     $image->scaleToFitAndFill(
                         $transform->width,
                         $transform->height,

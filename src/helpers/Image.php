@@ -91,6 +91,11 @@ class Image
         $imageRatio = $sourceWidth / $sourceHeight;
         $transformRatio = $width / $height;
 
+        // When mode is `fit` with a fill provided, always use the transform size
+        if ($mode === 'fit' && $fill) {
+            return [$width, $height];
+        }
+
         if ($upscale ?? Craft::$app->getConfig()->getGeneral()->upscaleImages) {
             // Special case for 'fit' since that's the only one whose dimensions vary from the transform dimensions
             if ($mode === 'fit') {
@@ -98,11 +103,6 @@ class Image
                 $height = (int)round($sourceHeight / $factor);
             }
 
-            return [$width, $height];
-        }
-
-        // When mode is `fit` with a fill provided, always use the transform size
-        if ($mode === 'fit' && $fill) {
             return [$width, $height];
         }
 
