@@ -11,11 +11,12 @@ module.exports = getConfig({
         patterns: [
           {
             from: require.resolve('gifffer/build/gifffer.min.js'),
+            to: 'gifffer.js',
           },
-          {
-            from: 'gifffer/imgs/',
-            to: 'imgs/',
-          },
+          // {
+          //   from: 'gifffer/imgs/',
+          //   to: 'imgs/',
+          // },
         ],
       }),
     ],
