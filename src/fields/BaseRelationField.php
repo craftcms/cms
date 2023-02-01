@@ -412,7 +412,7 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
             return $value;
         }
 
-        /** @var ElementInterface $class */
+        /** @var ElementInterface|string $class */
         $class = static::elementType();
         /** @var ElementQuery $query */
         $query = $class::find()
@@ -446,7 +446,7 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
             }
 
             if (!$this->allowMultipleSources && $this->source) {
-                $source = ElementHelper::findSource($class, $this->source);
+                $source = ElementHelper::findSource($class, $this->source, 'field');
 
                 // Does the source specify any criteria attributes?
                 if (isset($source['criteria'])) {

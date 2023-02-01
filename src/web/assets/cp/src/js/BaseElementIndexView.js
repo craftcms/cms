@@ -105,16 +105,9 @@ Craft.BaseElementIndexView = Garnish.Base.extend(
         if (!this.elementIndex.trashed) {
           this.addListener(
             this.$elementContainer,
-            'dblclick',
+            'dblclick,taphold',
             this._handleElementEditing
           );
-          if ($.isTouchCapable()) {
-            this.addListener(
-              this.$elementContainer,
-              'taphold',
-              this._handleElementEditing
-            );
-          }
         }
       }
 
