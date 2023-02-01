@@ -10,6 +10,7 @@ namespace craft\helpers;
 use Craft;
 use HTMLPurifier_Config;
 use IteratorAggregate;
+use LanguageDetection\Language;
 use Normalizer;
 use Stringy\Stringy as BaseStringy;
 use voku\helper\ASCII;
@@ -1577,7 +1578,17 @@ class StringHelper extends \yii\helpers\StringHelper
         /** @var ASCII::*_LANGUAGE_CODE $language */
         $language = $language ?? Craft::$app->language;
 
-        return (string)BaseStringy::create($str)->toAscii($language);
+        // keep the "old" toAscii behaviour if it produces a result
+        $asciiString = (string)BaseStringy::create($str)->toAscii($language);
+
+        // but if we were not able to get the ascii version of the string
+        // let's try to detect the language of the provided $str
+        if (empty($asciiString)) {
+            $ld = new Language();
+            $language = $ld->detect($str);
+            $asciiString = (string)BaseStringy::create($str)->toAscii($language);
+        }
+        return $asciiString;
     }
 
     /**
