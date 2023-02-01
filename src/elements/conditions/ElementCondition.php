@@ -116,7 +116,7 @@ class ElementCondition extends BaseCondition implements ElementConditionInterfac
             /** @phpstan-var class-string<ElementInterface>|ElementInterface $elementType */
             $elementType = $this->elementType;
 
-            // If the element type is not localized, don't allow the site condition rule
+            // Only localized element types get the site rule
             if (!$elementType::isLocalized()) {
                 ArrayHelper::removeValue($types, SiteConditionRule::class);
             }
