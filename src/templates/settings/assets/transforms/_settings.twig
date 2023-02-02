@@ -77,7 +77,27 @@
             }) }}
         </div>
 
-        <div id="position-container"{% if transform is defined and not transform.mode in ['crop', 'fit'] %} class="hidden"{% endif %}>
+        <div id="letterbox-position-container"{% if transform is defined and transform.mode != 'letterbox' %} class="hidden"{% endif %}>
+            {{ forms.selectField({
+                label: "Position"|t('app'),
+                id: 'position',
+                name: 'position',
+                options: {
+                    'top-left': "Top-Left"|t('app'),
+                    'top-center': "Top-Center"|t('app'),
+                    'top-right': "Top-Right"|t('app'),
+                    'center-left': "Center-Left"|t('app'),
+                    'center-center': "Center-Center"|t('app'),
+                    'center-right': "Center-Right"|t('app'),
+                    'bottom-left': "Bottom-Left"|t('app'),
+                    'bottom-center': "Bottom-Center"|t('app'),
+                    'bottom-right': "Bottom-Right"|t('app')
+                },
+                value: (transform is defined and transform.mode != 'letterbox' ? transform.position : 'center-center')
+            }) }}
+        </div>
+
+        <div id="position-container"{% if transform is defined and transform.mode in ['stretch', 'letterbox'] %} class="hidden"{% endif %}>
             {{ forms.selectField({
                 label: "Default Focal Point"|t('app'),
                 id: 'position',
@@ -201,7 +221,7 @@
     $('#mode input').change(function() {
         const value = $(this).val();
 
-        if (['crop', 'fit', 'letterbox'].indexOf(value) != -1) {
+        if (['crop', 'fit'].includes(value)) {
             $('#position-container').removeClass('hidden');
         } else {
             $('#position-container').addClass('hidden');
@@ -209,8 +229,10 @@
 
         if (value == 'letterbox') {
             $('#fill-color').removeClass('hidden')
+            $('#letterbox-position-container').removeClass('hidden')
         } else {
             $('#fill-color').addClass('hidden')
+            $('#letterbox-position-container').addClass('hidden')
         }
     });
 
