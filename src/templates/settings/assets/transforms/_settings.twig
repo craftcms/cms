@@ -135,6 +135,15 @@
             errors: (transform is defined ? transform.getErrors('height') : null),
         }) }}
 
+
+        {{ forms.lightswitchField({
+            label: 'Allow Upscaling'|t('app'),
+            id: 'upscale',
+            name: 'upscale',
+            on: transform.upscale ?? craft.app.config.general.upscaleImages,
+            errors: (transform is defined ? transform.getErrors('upscale') : null)
+        }) }}
+
         {% embed '_includes/forms/field' with {
             label: 'Quality'|t('app'),
             errors: (transform is defined ? transform.getErrors('quality') : null),

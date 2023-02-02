@@ -98,6 +98,11 @@ class ImageTransform extends Model
     public ?string $fill = null;
 
     /**
+     * @var bool|null
+     */
+    public ?bool $upscale = null;
+
+    /**
      * @var string The image transformer to use.
      * @phpstan-var class-string<ImageTransformerInterface>
      */
@@ -117,6 +122,7 @@ class ImageTransform extends Model
             'quality' => Craft::t('app', 'Quality'),
             'width' => Craft::t('app', 'Width'),
             'fill' => Craft::t('app', 'Fill'),
+            'upscale' => Craft::t('app', 'Allow Upscaling'),
             'transformer' => Craft::t('app', 'Image transformer'),
         ];
     }
@@ -133,6 +139,7 @@ class ImageTransform extends Model
         $rules[] = [['name', 'handle', 'mode', 'position'], 'required'];
         $rules[] = [['handle'], 'string', 'max' => 255];
         $rules[] = [['fill'], ColorValidator::class];
+        $rules[] = [['upscale'], 'boolean'];
         $rules[] = [
             ['mode'],
             'in',

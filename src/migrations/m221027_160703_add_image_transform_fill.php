@@ -2,6 +2,7 @@
 
 namespace craft\migrations;
 
+use Craft;
 use craft\db\Migration;
 use craft\db\Table;
 
@@ -22,6 +23,8 @@ class m221027_160703_add_image_transform_fill extends Migration
             'mode',
             $this->enum('mode', ['stretch', 'fit', 'crop', 'letterbox'])->notNull()->defaultValue('crop'),
         );
+        $allowUpscale = Craft::$app->getConfig()->getGeneral()->upscaleImages;
+        $this->addColumn(Table::IMAGETRANSFORMS, 'upscale', $this->boolean()->notNull()->defaultValue($allowUpscale)->after('fill'));
 
         return true;
     }
@@ -32,6 +35,7 @@ class m221027_160703_add_image_transform_fill extends Migration
     public function safeDown(): bool
     {
         $this->dropColumn(Table::IMAGETRANSFORMS, 'fill');
+        $this->dropColumn(Table::IMAGETRANSFORMS, 'upscale');
         $this->alterColumn(
             Table::IMAGETRANSFORMS,
             'mode',

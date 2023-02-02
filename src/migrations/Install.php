@@ -198,6 +198,7 @@ class Install extends Migration
             'quality' => $this->integer(),
             'interlace' => $this->enum('interlace', ['none', 'line', 'plane', 'partition'])->notNull()->defaultValue('none'),
             'fill' => $this->string(11)->null(),
+            'upscale' => $this->boolean()->notNull()->defaultValue(true),
             'parameterChangeTime' => $this->dateTime(),
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),

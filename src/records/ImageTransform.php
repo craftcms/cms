@@ -24,6 +24,7 @@ use craft\db\Table;
  * @property string $interlace Interlace
  * @property string $fill Fill
  * @property int $quality Quality
+ * @property bool $upscale Allow Upscaling
  * @property string|null $parameterChangeTime Critical parameter change time
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.0.0

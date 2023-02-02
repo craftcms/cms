@@ -223,6 +223,7 @@ class ImageTransforms extends Component
             'quality' => (int)$transform->quality ?: null,
             'width' => (int)$transform->width ?: null,
             'fill' => $transform->fill,
+            'upscale' => $transform->upscale,
         ];
 
         $configPath = ProjectConfig::PATH_IMAGE_TRANSFORMS . '.' . $transform->uid;
@@ -260,8 +261,9 @@ class ImageTransforms extends Component
             $qualityChanged = $transformRecord->quality !== $data['quality'];
             $interlaceChanged = $transformRecord->interlace !== $data['interlace'];
             $fillChanged = $transformRecord->fill !== $data['fill'];
+            $upscaleChanged = $transformRecord->upscale !== $data['upscale'];
 
-            if ($heightChanged || $modeChanged || $qualityChanged || $interlaceChanged || $fillChanged) {
+            if ($heightChanged || $modeChanged || $qualityChanged || $interlaceChanged || $fillChanged || $upscaleChanged) {
                 $transformRecord->parameterChangeTime = Db::prepareDateForDb(new DateTime());
                 $deleteTransformIndexes = true;
             }
@@ -274,6 +276,7 @@ class ImageTransforms extends Component
             $transformRecord->interlace = $data['interlace'];
             $transformRecord->format = $data['format'];
             $transformRecord->fill = $data['fill'];
+            $transformRecord->upscale = $data['upscale'];
             $transformRecord->uid = $transformUid;
 
             $transformRecord->save(false);
@@ -604,6 +607,7 @@ class ImageTransforms extends Component
                 'quality',
                 'interlace',
                 'fill',
+                'upscale',
                 'parameterChangeTime',
                 'uid',
             ])
