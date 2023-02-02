@@ -516,21 +516,26 @@ class Assets extends Component
      *
      * @param VolumeFolder $parentFolder
      * @param string $orderBy
+     * @param bool $withParent Whether the parent folder should be included in the results
      * @return array
      */
-    public function getAllDescendantFolders(VolumeFolder $parentFolder, string $orderBy = 'path'): array
+    public function getAllDescendantFolders(VolumeFolder $parentFolder, string $orderBy = 'path', bool $withParent = true): array
     {
         /** @var Query $query */
         $query = $this->_createFolderQuery()
             ->where([
                 'and',
-                ['like', 'path', $parentFolder->path . '%', false],
+                ['like', 'path', Db::escapeForLike($parentFolder->path) . '%', false],
                 ['volumeId' => $parentFolder->volumeId],
                 ['not', ['parentId' => null]],
             ]);
 
         if ($orderBy) {
             $query->orderBy($orderBy);
+        }
+
+        if (!$withParent) {
+            $query->andWhere(['not', ['id' => $parentFolder->id]]);
         }
 
         $results = $query->all();

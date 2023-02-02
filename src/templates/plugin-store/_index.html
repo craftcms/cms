@@ -14,12 +14,12 @@
 
         <div class="menu">
             <ul>
-                <li><a href="{{ craft.cp.craftIdAccountUrl() }}" rel="noopener" target="_blank">{{ "Manage your Craft ID"|t('app') }}</a></li>
+                <li><a href="{{ craft.cp.craftIdAccountUrl() }}" rel="noopener" target="_blank">Manage your Craft Console account</a></li>
                 <li>
                     <form method="post" id="disconnect">
                         {{ csrfInput() }}
                         {{ actionInput('plugin-store/disconnect') }}
-                        <a onclick="document.getElementById('disconnect').submit();">{{ "Sign out from Craft ID"|t('app') }}</a>
+                        <a onclick="document.getElementById('disconnect').submit();">Sign out from Craft Console</a>
                     </form>
                 </li>
             </ul>
@@ -30,10 +30,10 @@
         <form id="craftid-connect-form" method="post">
             {{ csrfInput() }}
             {{ actionInput('plugin-store/connect') }}
-            <div class="ssl-status light" title="{{ craft.app.request.isSecureConnection ? "Your connection is secure"|t('app') : "Your connection is insecure"|t('app') }}" aria-label="{{ craft.app.request.isSecureConnection ? "Your connection is secure"|t('app') : "Your connection is insecure"|t('app') }}">
+            <div class="ssl-status light" title="{{ craft.app.request.isSecureConnection ? "Your connection is secure"|t('app') : "Your connection is insecure"|t('app') }}" aria-label="{{ craft.app.request.isSecureConnection ? "Your connection is secure"|t('app') : "Your connection is insecure" }}">
                 <i class="{{ craft.app.request.isSecureConnection ? "secure" : "insecure" }} icon"></i>
             </div>
-            <a onclick="document.getElementById('craftid-connect-form').submit();">{{ 'Sign into Craft ID'|t('app') }}</a>
+            <a onclick="document.getElementById('craftid-connect-form').submit();">Sign into Craft Console</a>
         </form>
         -->
     </div>
