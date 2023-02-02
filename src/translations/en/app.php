@@ -748,6 +748,7 @@ return [
     'Includes suspending, unsuspending, and unlocking user accounts.' => 'Includes suspending, unsuspending, and unlocking user accounts.',
     'Incorrect current password.' => 'Incorrect current password.',
     'Incorrect password.' => 'Incorrect password.',
+    'Increase contrast' => 'Increase contrast',
     'Information' => 'Information',
     'Initial Rows' => 'Initial Rows',
     'Insert the button label for adding a new row to the table.' => 'Insert the button label for adding a new row to the table.',
