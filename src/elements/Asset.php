@@ -1650,6 +1650,7 @@ JS;
             [$width * 2, $height * 2],
         ];
         $assetsService = Craft::$app->getAssets();
+        $isGif = $this->getIsGif();
 
         foreach ($thumbSizes as [$width, $height]) {
             $url = $assetsService->getThumbUrl($this, $width, $height);
@@ -1658,8 +1659,9 @@ JS;
 
         return Html::tag('img', '', [
             'sizes' => "{$thumbSizes[0][0]}px",
-            'srcset' => implode(', ', $srcsets),
+            'srcset' => $isGif ? '' : implode(', ', $srcsets),
             'alt' => $this->alt ?? $this->title,
+            'data-gifffer' => $isGif ? $this->getThumbUrl(300) : null,
         ]);
     }
 
@@ -2086,7 +2088,7 @@ JS;
                 ($userSession->getId() == $this->uploaderId || $userSession->checkPermission("editPeerImages:$volume->uid"))
             );
 
-            $isGif = $this->getMimeType() === 'image/gif';
+            $isGif = $this->getIsGif();
 
             $previewThumbHtml =
                 Html::beginTag('div', [

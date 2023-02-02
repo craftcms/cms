@@ -1,6 +1,7 @@
 /** global: Craft */
 /** global: Garnish */
 import $ from 'jquery';
+import Gifffer from 'gifffer';
 
 /**
  * CP class
@@ -113,6 +114,10 @@ Craft.CP = Garnish.Base.extend(
         this.addListener(Garnish.$win, 'scroll', 'updateFixedHeader');
         this.updateFixedHeader();
       }
+
+      this.addListener(Garnish.$win, 'load', (ev) => {
+        Gifffer();
+      });
 
       Garnish.$doc.ready(() => {
         // Update responsive tables on window resize
