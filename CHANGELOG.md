@@ -11,6 +11,7 @@
 - Fixed a bug where HTML tags within field labels, instructions, tips, and warnings weren’t always getting escaped.
 - Fixed a bug where the sidebar scroll position wasn’t retained when selecting a new source on element index pages. ([#12523](https://github.com/craftcms/cms/issues/12523))
 - Fixed a bug where `resave/*` commands’ output didn’t take the offset into account. ([#12526](https://github.com/craftcms/cms/issues/12526))
+- Fixed a bug where warnings were getting logged for video assets that were “missing” their dimensions.
 - Deprecated `craft\helpers\DateTimeHelper::timeZoneAbbreviation()`.
 - Deprecated `craft\helpers\DateTimeHelper::timeZoneOffset()`.
 
