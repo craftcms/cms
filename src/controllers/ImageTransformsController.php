@@ -134,7 +134,7 @@ class ImageTransformsController extends Controller
         $transform->quality = $this->request->getBodyParam('quality') ?: null;
         $transform->interlace = $this->request->getBodyParam('interlace');
         $transform->format = $this->request->getBodyParam('format');
-        $transform->fill = $this->request->getBodyParam('fill');
+        $transform->fill = $this->request->getBodyParam('fill') ?: null;
 
         if (empty($transform->format)) {
             $transform->format = null;
@@ -158,11 +158,8 @@ class ImageTransformsController extends Controller
             $errors = true;
         }
 
-        $useFill = $this->request->getBodyParam('useFill');
-        if ($useFill && $transform->mode === 'letterbox') {
+        if ($transform->mode === 'letterbox') {
             $transform->fill = $transform->fill ? ColorValidator::normalizeColor($transform->fill) : 'transparent';
-        } else {
-            $transform->fill = null;
         }
 
         if (!$errors) {

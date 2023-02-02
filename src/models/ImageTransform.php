@@ -140,6 +140,7 @@ class ImageTransform extends Model
                 'stretch',
                 'fit',
                 'crop',
+                'letterbox',
             ],
         ];
         $rules[] = [
@@ -217,6 +218,7 @@ class ImageTransform extends Model
             'crop' => Craft::t('app', 'Scale and crop'),
             'fit' => Craft::t('app', 'Scale to fit'),
             'stretch' => Craft::t('app', 'Stretch to fit'),
+            'letterbox' => Craft::t('app', 'Letterbox'),
         ];
     }
 
