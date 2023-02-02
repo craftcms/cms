@@ -3059,7 +3059,7 @@ $checkboxPadding: $checkboxSize + 4;
 /* editable tables */
 table.editable {
   border-radius: var(--large-border-radius);
-  border: var(--input-border);
+  border: 1px solid var(--input-border-color);
 
   th,
   td.action {
@@ -3080,7 +3080,7 @@ table.editable {
   thead {
     tr {
       th {
-        border-bottom: var(--input-border);
+        border-bottom: 1px solid var(--input-border-color);
 
         &.has-info {
           @include padding-right(calc(15px + 1em));
@@ -3099,7 +3099,7 @@ table.editable {
       &:not(:first-child) {
         th,
         td {
-          border-top: var(--input-border);
+          border-top: 1px solid var(--input-border-color);
         }
       }
 
@@ -3118,7 +3118,7 @@ table.editable {
 
       td:not(:first-child),
       th ~ td:not(.hidden) ~ td {
-        @include border-left(var(--input-border));
+        @include border-left(1px solid var(--input-border-color));
       }
 
       th {
@@ -4148,7 +4148,7 @@ $min2ColWidth: 400px;
 
   select {
     @include padding-left(6px);
-    border: var(--input-border);
+    border: 1px solid var(--input-border-color);
     width: 100%;
     background-color: transparent;
   }
@@ -5734,7 +5734,7 @@ div.checkbox:before {
   content: '';
   font-size: 0;
   background-color: hsl(212, 50%, 99%);
-  border: var(--input-border);
+  border: 1px solid var(--input-border-color);
   background-clip: padding-box;
   border-radius: var(--small-border-radius);
 }
@@ -5861,7 +5861,7 @@ div.radio:before {
   width: var(--radio-size);
   height: var(--radio-size);
   background-color: hsl(212, 50%, 99%);
-  border: var(--input-border);
+  border: 1px solid var(--input-border-color);
 }
 
 input.radio + label:after,
