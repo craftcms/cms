@@ -360,6 +360,14 @@ class DbHelperTest extends TestCase
     }
 
     /**
+     * @dataProvider rawTableShortNameDataProvider
+     */
+    public function testRawTableShortName(string $expected, string $name): void
+    {
+        self::assertSame($expected, Db::rawTableShortName($name));
+    }
+
+    /**
      * @return array
      */
     public function parseParamDataProvider(): array
@@ -775,6 +783,18 @@ class DbHelperTest extends TestCase
             [['Serialized data'], [$serializable]],
             [[false], [false]],
             [['😀😘'], ['😀😘']],
+        ];
+    }
+
+    public function rawTableShortNameDataProvider(): array
+    {
+        return [
+            ['foo', 'foo'],
+            ['foo}}', 'foo}}'],
+            ['foo', '{{foo}}'],
+            ['foo', '{{%foo}}'],
+            ['foo', '{{foo%}}'],
+            ['foo', '{{fo%o}}'],
         ];
     }
 

@@ -1,6 +1,9 @@
 # Release Notes for Craft CMS 4.4 (WIP)
 
 ### Content Management
+- Volume subfolders are now displayed within the element listing pane on asset indexes, rather than as nested sources in the sidebar. ([#12558](https://github.com/craftcms/cms/pull/12558), [#9171](https://github.com/craftcms/cms/discussions/9171), [#5809](https://github.com/craftcms/cms/issues/5809))
+- Asset indexes now display the current subfolder path above the element listing. ([#12558](https://github.com/craftcms/cms/pull/12558))
+- It’s now possible to move volume folders and assets to a new location via a new “Move…” bulk element action, rather than via drag-and-drop interactions. ([#12558](https://github.com/craftcms/cms/pull/12558))
 - All element sources now have a “Duplicate” action, even if the element type’s `defineActions()` method didn’t include one. ([#12382](https://github.com/craftcms/cms/discussions/12382))
 - Element index pages now track the search term in a query param, so the results can be shared. ([#8942](https://github.com/craftcms/cms/discussions/8942), [#12399](https://github.com/craftcms/cms/pull/12399))
 - Entries with more than 10 revisions now include a “View all revisions” item within their revision menu, which links to a new revisions index page for the entry that paginates through all its revisions. ([#8609](https://github.com/craftcms/cms/discussions/8609))
@@ -13,6 +16,7 @@
 - Dropdown fields that don’t have a blank option and are missing a value will now include and select a blank option at the beginning of their menu. ([#12235](https://github.com/craftcms/cms/discussions/12235))
 - Tip and Warning field layout UI elements can now be marked as dismissible, giving authors the ability to hide them. ([#12188](https://github.com/craftcms/cms/discussions/12188))
 - All assets now get thumbnails in the control panel, even if they don’t have a transform filesystem with a base URL.
+- Dropdown and Multi-select fields now use Selectize. ([#8403](https://github.com/craftcms/cms/discussions/8403))
 
 ### Accessibility
 - Improved the announcement menu for screen readers. ([#12361](https://github.com/craftcms/cms/pull/12361))
@@ -22,6 +26,7 @@
 - Removed input autofocussing throughout the control panel. ([#12324](https://github.com/craftcms/cms/discussions/12324), [#12332](https://github.com/craftcms/cms/pull/12332), [#12406](https://github.com/craftcms/cms/pull/12406))
 - Improved the login screen for screen readers. ([#12386](https://github.com/craftcms/cms/pull/12386))
 - Improved _conditional_ and _required_ field indicators for screen readers. ([#12509](https://github.com/craftcms/cms/pull/12509))
+- Improved bulk element action triggers on element index pages. ([#12415](https://github.com/craftcms/cms/pull/12415))
 
 ### Administration
 - Conditional layout components are now identified using a condition icon within field layout designers. ([#12250](https://github.com/craftcms/cms/issues/12250))
@@ -46,9 +51,13 @@
 ### Extensibility
 - Added the `elements/revisions` action. ([#12211](https://github.com/craftcms/cms/pull/12211))
 - Console controllers that directly use `craft\console\ControllerTrait` no longer need to call `$this->checkTty()` or `$this->checkRootUser()` themselves; they are now called from `ControllerTrait::init()` and `beforeAction()`.
+- Element source definitions can now include a `defaultSourcePath` key.
 - Element custom field validation now respects the list of attributes passed to `validate()`.
 - Added `craft\base\Element::cpRevisionsUrl()`.
+- Added `craft\base\Element::indexElements()`.
+- Added `craft\base\ElementInterface::findSource()`.
 - Added `craft\base\ElementInterface::getCpRevisionsUrl()`.
+- Added `craft\base\ElementInterface::indexElementCount()`.
 - Added `craft\console\ControllerTrait::beforeAction()`.
 - Added `craft\console\ControllerTrait::init()`.
 - Added `craft\console\ControllerTrait::options()`.
@@ -63,16 +72,22 @@
 - Added `craft\fields\BaseOptionsField::EVENT_DEFINE_OPTIONS`. ([#12351](https://github.com/craftcms/cms/pull/12351))
 - Added `craft\fields\BaseRelationField::$branchLimit`.
 - Added `craft\fields\BaseRelationField::$maintainHierarchy`.
+- Added `craft\helpers\Db::rawTableShortName()`.
 - Added `craft\helpers\ImageTransforms::generateTransform()`.
 - Added `craft\helpers\ImageTransforms::parseTransformString()`.
 - Added `craft\imagetransforms\FallbackTransformer`.
+- Added `craft\models\VolumeFolder::getHasChildren()`.
+- Added `craft\models\VolumeFolder::setHasChildren()`.
 - Added `craft\queue\jobs\GenerateImageTransform`. ([#12340](https://github.com/craftcms/cms/pull/12340))
+- Added `craft\services\Assets::createFolderQuery()`.
+- Added `craft\services\Assets::foldersExist()`.
 - Added `craft\services\Elements::deleteElementForSite()`.
 - Added `craft\services\Elements::deleteElementsForSite()`.
 - Added `craft\services\Elements::EVENT_AFTER_DELETE_FOR_SITE`. ([#12354](https://github.com/craftcms/cms/issues/12354))
 - Added `craft\services\Elements::EVENT_BEFORE_DELETE_FOR_SITE`. ([#12354](https://github.com/craftcms/cms/issues/12354))
 - Added `craft\services\Fields::getFieldsByType()`. ([#12381](https://github.com/craftcms/cms/discussions/12381))
 - Added `craft\services\Path::getImageTransformsPath()`.
+- Added `craft\services\Search::normalizeSearchQuery()`.
 - Added `craft\services\Users::EVENT_AFTER_DELETE_USER_PHOTO`. ([#12360](https://github.com/craftcms/cms/pull/12360))
 - Added `craft\services\Users::EVENT_AFTER_SAVE_USER_PHOTO`. ([#12360](https://github.com/craftcms/cms/pull/12360))
 - Added `craft\services\Users::EVENT_BEFORE_DELETE_USER_PHOTO`. ([#12360](https://github.com/craftcms/cms/pull/12360))
@@ -80,12 +95,25 @@
 - Added `craft\utilities\AssetIndexes::EVENT_LIST_VOLUMES`. ([#12383](https://github.com/craftcms/cms/pull/12383), [#12443](https://github.com/craftcms/cms/pull/12443))
 - Renamed `craft\elements\conditions\assets\EditableConditionRule` to `SavableConditionRule`, while preserving the original class name with an alias. ([#12266](https://github.com/craftcms/cms/pull/12266))
 - Renamed `craft\elements\conditions\entries\EditableConditionRule` to `SavableConditionRule`, while preserving the original class name with an alias. ([#12266](https://github.com/craftcms/cms/pull/12266))
+- `craft\base\ElementQuery::joinElementTable()` now accepts table names in the format of `{{%tablename}}`.
 - Deprecated `craft\imagetransforms\ImageTransformer::ensureTransformUrlByIndexModel()`. `getTransformUrl()` should be used instead.
 - Deprecated `craft\imagetransforms\ImageTransformer::procureTransformedImage()`. `generateTransform()` should be used instead.
 - Deprecated `craft\queue\jobs\GeneratePendingTransforms`. `GenerateImageTransform` should be used instead. ([#12340](https://github.com/craftcms/cms/pull/12340))
 - Added `Craft.Accordion`. ([#12189](https://github.com/craftcms/cms/pull/12189))
+- Added `Craft.AssetMover`.
+- Added `Craft.BaseElementIndex::getSourcePathActionLabel()`.
+- Added `Craft.BaseElementIndex::getSourcePathActions()`.
+- Added `Craft.BaseElementIndex::getSourcePathLabel()`.
+- Added `Craft.BaseElementIndex::onSourcePathChange()`.
+- Added `Craft.BaseElementIndex::sourcePath`.
+- Added `Craft.BaseElementSelectorModal::getElementIndexParams()`.
+- Added `Craft.BaseElementSelectorModal::getIndexSettings()`.
+- Added `Craft.BaseElementSelectorModal::hasSelection()`.
 - Added `Craft.ElementFieldSettings`.
+- Added `Craft.VolumeFolderSelectorModal`.
 - Added `Garnish.MultiFunctionBtn`.
+- The custom `activate` jQuery event will now trigger when the <kbd>Return</kbd> key is pressed.
+- The custom `activate` jQuery event will no longer trigger for <kbd>Ctrl</kbd>/<kbd>Command</kbd>-clicks.
 - Deprecated `Craft.CategorySelectInput`. `Craft.BaseElementSelectInput` should be used instead. ([#11749](https://github.com/craftcms/cms/pull/11749))
 
 ### System

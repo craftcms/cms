@@ -211,15 +211,7 @@ class Search extends Component
      */
     public function searchElements(ElementQuery $elementQuery): array
     {
-        $searchQuery = $elementQuery->search;
-        if (is_string($searchQuery)) {
-            $searchQuery = new SearchQuery($searchQuery, Craft::$app->getConfig()->getGeneral()->defaultSearchTermOptions);
-        } elseif (is_array($searchQuery)) {
-            $options = array_merge($searchQuery);
-            $searchQuery = ArrayHelper::remove($options, 'query');
-            $options = array_merge(Craft::$app->getConfig()->getGeneral()->defaultSearchTermOptions, $options);
-            $searchQuery = new SearchQuery($searchQuery, $options);
-        }
+        $searchQuery = $this->normalizeSearchQuery($elementQuery->search);
 
         $elementQuery = (clone $elementQuery)
             ->search(null)
@@ -334,6 +326,29 @@ class Search extends Component
         }
 
         return $scores;
+    }
+
+    /**
+     * Normalizes a `search` param into a [[SearchQuery]] object.
+     *
+     * @param string|array|SearchQuery $searchQuery
+     * @return SearchQuery
+     * @since 4.4.0
+     */
+    public function normalizeSearchQuery(string|array|SearchQuery $searchQuery): SearchQuery
+    {
+        if ($searchQuery instanceof SearchQuery) {
+            return $searchQuery;
+        }
+
+        if (is_string($searchQuery)) {
+            return new SearchQuery($searchQuery, Craft::$app->getConfig()->getGeneral()->defaultSearchTermOptions);
+        }
+
+        $options = array_merge($searchQuery);
+        $searchQuery = ArrayHelper::remove($options, 'query');
+        $options = array_merge(Craft::$app->getConfig()->getGeneral()->defaultSearchTermOptions, $options);
+        return new SearchQuery($searchQuery, $options);
     }
 
     /**

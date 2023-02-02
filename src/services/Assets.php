@@ -404,7 +404,7 @@ class Assets extends Component
             return $this->_foldersById[$folderId];
         }
 
-        $result = $this->_createFolderQuery()
+        $result = $this->createFolderQuery()
             ->where(['id' => $folderId])
             ->one();
 
@@ -427,7 +427,7 @@ class Assets extends Component
             return $this->_foldersByUid[$folderUid];
         }
 
-        $result = $this->_createFolderQuery()
+        $result = $this->createFolderQuery()
             ->where(['uid' => $folderUid])
             ->one();
 
@@ -450,7 +450,7 @@ class Assets extends Component
             $criteria = new FolderCriteria($criteria);
         }
 
-        $query = $this->_createFolderQuery();
+        $query = $this->createFolderQuery();
 
         $this->_applyFolderConditions($query, $criteria);
 
@@ -487,7 +487,7 @@ class Assets extends Component
      */
     public function getAllDescendantFolders(VolumeFolder $parentFolder, string $orderBy = 'path'): array
     {
-        $query = $this->_createFolderQuery()
+        $query = $this->createFolderQuery()
             ->where([
                 'and',
                 ['like', 'path', $parentFolder->path . '%', false],
@@ -565,6 +565,27 @@ class Assets extends Component
         $this->_applyFolderConditions($query, $criteria);
 
         return (int)$query->count('[[id]]');
+    }
+
+    /**
+     * Returns whether any folders exist which match a given criteria.
+     *
+     * @param mixed $criteria
+     * @return bool
+     * @since 4.4.0
+     */
+    public function foldersExist($criteria = null): bool
+    {
+        if (!($criteria instanceof FolderCriteria)) {
+            $criteria = new FolderCriteria($criteria);
+        }
+
+        $query = (new Query())
+            ->from([Table::VOLUMEFOLDERS]);
+
+        $this->_applyFolderConditions($query, $criteria);
+
+        return $query->exists();
     }
 
     // File and folder managing
@@ -1017,8 +1038,9 @@ class Assets extends Component
      * Returns a DbCommand object prepped for retrieving assets.
      *
      * @return Query
+     * @since 4.4.0
      */
-    private function _createFolderQuery(): Query
+    public function createFolderQuery(): Query
     {
         return (new Query())
             ->select(['id', 'parentId', 'volumeId', 'name', 'path', 'uid'])

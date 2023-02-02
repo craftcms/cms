@@ -2048,6 +2048,7 @@ class ElementQuery extends Query implements ElementQueryInterface
      */
     protected function joinElementTable(string $table): void
     {
+        $table = Db::rawTableShortName($table);
         $joinTable = [$table => "{{%$table}}"];
         $this->query->innerJoin($joinTable, "[[$table.id]] = [[subquery.elementsId]]");
         $this->subQuery->innerJoin($joinTable, "[[$table.id]] = [[elements.id]]");

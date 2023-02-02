@@ -599,6 +599,16 @@ class ElementHelper
             $sources = $source['nested'] ?? [];
         }
 
+        if (!str_starts_with($sourceKey, 'custom:')) {
+            // Let the element get involved
+            /** @var string|ElementInterface $elementType */
+            $source = $elementType::findSource($sourceKey, $context);
+            if ($source) {
+                $source['type'] = ElementSources::TYPE_NATIVE;
+                return $source;
+            }
+        }
+
         return null;
     }
 
