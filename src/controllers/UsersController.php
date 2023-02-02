@@ -1425,7 +1425,8 @@ JS,
             'useShapes' => (bool)$this->request->getBodyParam('useShapes', $user->getPreference('useShapes')),
             'underlineLinks' => (bool)$this->request->getBodyParam('underlineLinks', $user->getPreference('underlineLinks')),
             'notificationDuration' => $this->request->getBodyParam('notificationDuration', $user->getPreference('notificationDuration')),
-        ];
+            'increaseContrast' => (bool)$this->request->getBodyParam('increaseContrast', $user->getPreference('increaseContrast')),
+            ];
 
         if ($user->admin) {
             $preferences = array_merge($preferences, [

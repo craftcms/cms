@@ -75,6 +75,7 @@ class GeneralConfig extends BaseConfig
      * - `underlineLinks` – Whether links should be underlined.
      * - `notificationDuration` – How long notifications should be shown before they disappear automatically (in
      *   milliseconds). Set to `0` to show them indefinitely.
+     * - `increaseContrast` - Whether the UI should be updated to have a higher contrast
      *
      * ```php
      * ->accessibilityDefaults([
@@ -90,6 +91,7 @@ class GeneralConfig extends BaseConfig
         'useShapes' => false,
         'underlineLinks' => false,
         'notificationDuration' => 5000,
+        'increaseContrast' => false,
     ];
 
     /**

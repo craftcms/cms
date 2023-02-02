@@ -30,9 +30,11 @@ html {
 
 body {
   min-height: 100vh;
-}
 
-body {
+  &.increase-contrast {
+    --input-border-color: var(--gray-400);
+  }
+
   :focus {
     outline-style: solid;
     outline-color: transparent;

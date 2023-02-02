@@ -264,6 +264,12 @@
                             id: 'underlineLinks',
                             checked: user.getPreference('underlineLinks') ?? a11yDefaults['underlineLinks'] ?? false,
                         },
+                        {
+                            label: 'Increase contrast'|t('app'),
+                            name: 'increaseContrast',
+                            id: 'increaseContrast',
+                            checked: user.getPreference('increaseContrast') ?? a11yDefaults['increaseContrast'] ?? false,
+                        },
                     ],
                 }) }}
 
