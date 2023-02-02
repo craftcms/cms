@@ -3179,9 +3179,9 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
-    public function getExtension(): ?string
+    public function getIsGif(): bool
     {
-        return null;
+        return false;
     }
 
     /**

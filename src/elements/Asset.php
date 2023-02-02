@@ -1703,11 +1703,21 @@ JS;
     }
 
     /**
-     * @inheritdoc
+     * Returns the file extension.
+     *
+     * @return string
      */
     public function getExtension(): string
     {
         return pathinfo($this->_filename, PATHINFO_EXTENSION);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getIsGif(): bool
+    {
+        return $this->getExtension() === 'gif';
     }
 
     /**

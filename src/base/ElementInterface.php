@@ -928,11 +928,12 @@ interface ElementInterface extends ComponentInterface
     public function getHasRoundedThumb(): bool;
 
     /**
-     * Returns the file extension.
+     * Returns whether the element is a GIF.
      *
-     * @return string|null
+     * @return bool
+     * @since 4.0.0
      */
-    public function getExtension(): ?string;
+    public function getIsGif(): bool;
 
     /**
      * Returns whether the element is enabled for the current site.

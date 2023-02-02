@@ -341,7 +341,7 @@ class Cp
         $isRevision = !$isDraft && $element->getIsRevision();
         $label = $element->getUiLabel();
         $showStatus = $showStatus && ($isDraft || $element::hasStatuses());
-        $isGif = $element->getExtension() === 'gif';
+        $isGif = $element->getIsGif();
 
         // Create the thumb/icon image, if there is one
         if ($showThumb) {
