@@ -2282,6 +2282,23 @@ class Elements extends Component
                     $filteredElements = $elements;
                 }
 
+                // filter out fields that are not part of this layout
+                // https://github.com/craftcms/cms/issues/12539
+                $filteredElements = array_values(
+                    array_filter($filteredElements, function($filteredElement) use ($plan) {
+                        $fieldLayout = $filteredElement->getFieldLayout();
+                        return (
+                            !$fieldLayout ||
+                            $fieldLayout->getFieldByHandle($plan->handle) !== null
+                        );
+                    })
+                );
+
+                // if we have nothing left in the $filteredElements, move on to the next iteration
+                if (empty($filteredElements)) {
+                    continue;
+                }
+
                 // Get the eager-loading map from the source element type
                 /** @var ElementInterface|string $elementType */
                 $map = $elementType::eagerLoadingMap($filteredElements, $plan->handle);
