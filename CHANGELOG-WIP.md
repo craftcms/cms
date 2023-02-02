@@ -27,6 +27,7 @@
 - Improved the login screen for screen readers. ([#12386](https://github.com/craftcms/cms/pull/12386))
 - Improved _conditional_ and _required_ field indicators for screen readers. ([#12509](https://github.com/craftcms/cms/pull/12509))
 - Improved bulk element action triggers on element index pages. ([#12415](https://github.com/craftcms/cms/pull/12415))
+- Improved the color contrast of element indexes. ([#12213](https://github.com/craftcms/cms/pull/12213))
 
 ### Administration
 - Conditional layout components are now identified using a condition icon within field layout designers. ([#12250](https://github.com/craftcms/cms/issues/12250))

@@ -2547,11 +2547,14 @@ table {
 
     tbody {
       tr {
+        --hover-bg-color: var(--gray-050);
+        --selected-bg-color: var(--dark-sel-color);
+
         &:not(.disabled) {
           &:hover {
             th,
             td {
-              background-color: var(--gray-050);
+              background-color: var(--hover-bg-color);
             }
           }
 
@@ -2561,9 +2564,14 @@ table {
           }
 
           &.sel {
+            --link-color: var(--white);
+            --ui-control-color: var(--white);
+            @include custom-color-focus-ring(hsl(var(--light-focus-hsl)));
+
             th,
             td {
-              background-color: var(--light-sel-color);
+              color: var(--white);
+              background-color: var(--selected-bg-color);
             }
           }
         }
@@ -2591,6 +2599,13 @@ table {
       th,
       td {
         border-top: 1px solid transparent;
+      }
+    }
+
+    tr.sel + tr.sel {
+      th,
+      td {
+        border-top-color: var(--gray-300);
       }
     }
   }
@@ -3031,6 +3046,10 @@ $checkboxPadding: $checkboxSize + 4;
 
     .move + .toggle {
       @include margin-left(calc(var(--touch-target-size) * -2));
+    }
+
+    .enabled-label {
+      margin-left: var(--xs);
     }
   }
 
@@ -6040,12 +6059,21 @@ body.reduce-focus-visibility {
   }
 }
 
-.checkbox-icon:before {
-  @include icon;
-  line-height: var(--checkbox-size);
-  color: var(--enabled-color);
-  content: 'check';
-  font-size: 15px;
+.checkbox-icon {
+  display: inline-flex;
+  padding: 3px;
+  background-color: var(--enabled-color);
+  color: var(--white);
+  border-radius: var(--small-border-radius);
+
+  &:before {
+    --checkbox-size: 14px;
+    --icon-opacity: 1;
+    @include icon;
+    content: 'check';
+    line-height: var(--checkbox-size);
+    font-size: var(--checkbox-size);
+  }
 }
 
 .monaco-mouse-cursor-text {

@@ -740,13 +740,12 @@ class ElementHelper
                 return '';
             }
 
-            $label = Craft::t('app', 'Enabled');
-            return Html::tag('div', '', [
+            return Html::tag('span', '', [
                 'class' => 'checkbox-icon',
                 'role' => 'img',
-                'title' => $label,
+                'title' => Craft::t('app', 'Enabled'),
                 'aria' => [
-                    'label' => $label,
+                    'label' => Craft::t('app', 'Enabled'),
                 ],
             ]);
         }
