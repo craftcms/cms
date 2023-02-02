@@ -135,7 +135,7 @@ class ImageTransformsController extends Controller
         $transform->interlace = $this->request->getBodyParam('interlace');
         $transform->format = $this->request->getBodyParam('format');
         $transform->fill = $this->request->getBodyParam('fill') ?: null;
-        $transform->upscale = $this->request->getBodyParam('upscale', Craft::$app->getConfig()->getGeneral()->upscaleImages);
+        $transform->upscale = $this->request->getBodyParam('upscale', $transform->upscale);
 
         if (empty($transform->format)) {
             $transform->format = null;

@@ -240,11 +240,11 @@ class Raster extends Image
     /**
      * @inheritdoc
      */
-    public function scaleToFit(?int $targetWidth, ?int $targetHeight, bool $scaleIfSmaller = true): self
+    public function scaleToFit(?int $targetWidth, ?int $targetHeight, bool $scaleIfSmaller = null): self
     {
         $this->normalizeDimensions($targetWidth, $targetHeight);
 
-        $scaleIfSmaller = $scaleIfSmaller && Craft::$app->getConfig()->getGeneral()->upscaleImages;
+        $scaleIfSmaller = $scaleIfSmaller ?? Craft::$app->getConfig()->getGeneral()->upscaleImages;
 
         if ($scaleIfSmaller || $this->getWidth() > $targetWidth || $this->getHeight() > $targetHeight) {
             $factor = max($this->getWidth() / $targetWidth, $this->getHeight() / $targetHeight);
@@ -261,11 +261,14 @@ class Raster extends Image
      * @param int|null $targetHeight
      * @param string|null $fill
      * @param string|array $position
+     * @param bool|null $upscale
      * @return Raster
      */
-    public function scaleToFitAndFill(?int $targetWidth, ?int $targetHeight, string $fill = null, string|array $position = 'center-center'): static
+    public function scaleToFitAndFill(?int $targetWidth, ?int $targetHeight, string $fill = null, string|array $position = 'center-center', bool $upscale = null): static
     {
-        $this->scaleToFit($targetWidth, $targetHeight);
+        $upscale = $upscale ?? Craft::$app->getConfig()->getGeneral()->upscaleImages;
+
+        $this->scaleToFit($targetWidth, $targetHeight, $upscale);
         $this->setFill($fill);
 
         $box = new Box($targetWidth, $targetHeight);

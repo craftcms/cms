@@ -109,6 +109,20 @@ class ImageTransform extends Model
     protected string $transformer = self::DEFAULT_TRANSFORMER;
 
     /**
+     * Construct an image transform.
+     *
+     * @param array $config
+     */
+    public function __construct(array $config = [])
+    {
+        if (!isset($config['upscale'])) {
+            $config['upscale'] = Craft::$app->getConfig()->getGeneral()->upscaleImages;
+        }
+
+        parent::__construct($config);
+    }
+
+    /**
      * @inheritdoc
      */
     public function attributeLabels(): array

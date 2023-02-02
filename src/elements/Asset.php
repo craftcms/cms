@@ -2616,7 +2616,8 @@ JS;
             $transform->width,
             $transform->height,
             $transform->mode,
-            $transform->fill
+            $transform->fill,
+            $transform->upscale
         );
     }
 

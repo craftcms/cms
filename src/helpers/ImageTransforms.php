@@ -34,7 +34,7 @@ class ImageTransforms
     /**
      * @var string The pattern to use for matching against a transform string.
      */
-    public const TRANSFORM_STRING_PATTERN = '/_(?P<width>\d+|AUTO)x(?P<height>\d+|AUTO)_(?P<mode>[a-z]+)(?:_(?P<position>[a-z\-]+))?(?:_(?P<quality>\d+))?(?:_(?P<interlace>[a-z]+))?(?:_(?P<fill>[0-9a-f]{6}|transparent))?/i';
+    public const TRANSFORM_STRING_PATTERN = '/_(?P<width>\d+|AUTO)x(?P<height>\d+|AUTO)_(?P<mode>[a-z]+)(?:_(?P<position>[a-z\-]+))?(?:_(?P<quality>\d+))?(?:_(?P<interlace>[a-z]+))?(?:_(?P<fill>[0-9a-f]{6}|transparent))?(?:_(?P<upscale>upscale))?/i';
 
     /**
      * Create an AssetImageTransform model from a string.
@@ -59,7 +59,7 @@ class ImageTransforms
             unset($matches['quality']);
         }
 
-        if (isset($matches['fill'])) {
+        if (!empty($matches['fill'])) {
             $fill = ColorValidator::normalizeColor($matches['fill']);
         }
 
@@ -72,6 +72,7 @@ class ImageTransforms
             'quality' => $matches['quality'] ?? null,
             'interlace' => $matches['interlace'] ?? 'none',
             'fill' => $fill ?? null,
+            'upscale' => ($matches['upscale'] ?? null) === 'upscale',
             'transformer' => ImageTransform::DEFAULT_TRANSFORMER,
         ]);
     }
@@ -242,7 +243,8 @@ class ImageTransforms
             '_' . $transform->position .
             ($transform->quality ? '_' . $transform->quality : '') .
             '_' . $transform->interlace .
-            ($transform->fill ? '_' . ltrim($transform->fill, '#') : '');
+            ($transform->fill ? '_' . ltrim($transform->fill, '#') : '') .
+            ($transform->upscale ? '_' . 'upscale' : '');
     }
 
     /**
@@ -299,6 +301,7 @@ class ImageTransforms
                 'mode',
                 'position',
                 'fill',
+                'upscale',
                 'quality',
                 'interlace',
             ]);
@@ -438,7 +441,7 @@ class ImageTransforms
             $position = $transform->position;
         }
 
-        $scaleIfSmaller = Craft::$app->getConfig()->getGeneral()->upscaleImages;
+        $scaleIfSmaller = $transform->upscale ?? Craft::$app->getConfig()->getGeneral()->upscaleImages;
 
         switch ($transform->mode) {
             case 'letterbox':
@@ -448,6 +451,7 @@ class ImageTransforms
                         $transform->height,
                         $transform->fill,
                         $position,
+                        $scaleIfSmaller
                     );
                 } else {
                     Craft::warning("Cannot add fill to non-raster images");

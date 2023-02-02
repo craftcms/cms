@@ -28,6 +28,7 @@ class ImageTransformsTest extends Unit
         'fill' => '#ff0000',
         'quality' => 95,
         'interlace' => 'line',
+        'upscale' => false,
     ];
 
     public function testCreateTransformFromStringInvalid()
@@ -94,6 +95,19 @@ class ImageTransformsTest extends Unit
                     'fill' => 'transparent',
                 ],
                 '_1280x600_crop_center-center_95_line_transparent',
+            ],
+            'upscale' => [
+                [
+                    'upscale' => true,
+                ],
+                '_1280x600_crop_center-center_95_line_upscale',
+            ],
+            'upscale with fill' => [
+                [
+                    'fill' => '#ff0000',
+                    'upscale' => true,
+                ],
+                '_1280x600_crop_center-center_95_line_ff0000_upscale',
             ],
         ];
     }
@@ -242,51 +256,61 @@ class ImageTransformsTest extends Unit
     public function parseTransformStringDataProvider(): array
     {
         return [
-            [[
-                'width' => 100,
-                'height' => 200,
-                'mode' => 'fit',
-                'position' => 'top-left',
-                'quality' => 70,
-                'interlace' => 'partition',
-                'fill' => null,
-            ]],
-            [[
-                'width' => 100,
-                'height' => null,
-                'mode' => 'crop',
-                'position' => 'bottom-right',
-                'quality' => null,
-                'interlace' => 'none',
-                'fill' => null,
-            ]],
-            [[
-                'width' => 100,
-                'height' => 200,
-                'mode' => 'fit',
-                'position' => 'top-left',
-                'quality' => 70,
-                'interlace' => 'partition',
-                'fill' => 'transparent',
-            ]],
-            [[
-                'width' => 100,
-                'height' => 200,
-                'mode' => 'fit',
-                'position' => 'top-left',
-                'quality' => 70,
-                'interlace' => 'partition',
-                'fill' => '#f00',
-            ]],
-            [[
-                'width' => 100,
-                'height' => 200,
-                'mode' => 'fit',
-                'position' => 'top-left',
-                'quality' => 70,
-                'interlace' => 'partition',
-                'fill' => '#ff0000',
-            ]],
+            [
+                [
+                    'width' => 100,
+                    'height' => 200,
+                    'mode' => 'fit',
+                    'position' => 'top-left',
+                    'quality' => 70,
+                    'interlace' => 'partition',
+                    'fill' => null,
+                ],
+            ],
+            [
+                [
+                    'width' => 100,
+                    'height' => null,
+                    'mode' => 'crop',
+                    'position' => 'bottom-right',
+                    'quality' => null,
+                    'interlace' => 'none',
+                    'fill' => null,
+                ],
+            ],
+            [
+                [
+                    'width' => 100,
+                    'height' => 200,
+                    'mode' => 'fit',
+                    'position' => 'top-left',
+                    'quality' => 70,
+                    'interlace' => 'partition',
+                    'fill' => 'transparent',
+                ],
+            ],
+            [
+                [
+                    'width' => 100,
+                    'height' => 200,
+                    'mode' => 'fit',
+                    'position' => 'top-left',
+                    'quality' => 70,
+                    'interlace' => 'partition',
+                    'fill' => '#f00',
+                ],
+            ],
+            [
+                [
+                    'width' => 100,
+                    'height' => 200,
+                    'mode' => 'fit',
+                    'position' => 'top-left',
+                    'quality' => 70,
+                    'interlace' => 'partition',
+                    'fill' => '#ff0000',
+                ],
+            ],
         ];
     }
 }
