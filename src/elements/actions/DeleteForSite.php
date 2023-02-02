@@ -117,9 +117,9 @@ JS, [static::class]);
                 'siteId' => $query->siteId,
             ]);
 
-            // Resave the elements
+            // Delete the elements
             foreach ($otherSiteElements as $element) {
-                if (!$elementsService->canDelete($element, $user)) {
+                if (!$elementsService->canView($element, $user) || !$elementsService->canDelete($element, $user)) {
                     continue;
                 }
 
@@ -135,7 +135,7 @@ JS, [static::class]);
             ->all();
 
         foreach ($singleSiteElements as $element) {
-            if ($elementsService->canDelete($element, $user)) {
+            if ($elementsService->canView($element, $user) && $elementsService->canDelete($element, $user)) {
                 $elementsService->deleteElement($element);
             }
         }
