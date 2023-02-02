@@ -479,6 +479,18 @@ class Db
     }
 
     /**
+     * Escapes underscores within a value for a `LIKE` condition.
+     *
+     * @param string $value The value
+     * @return string The escaped value
+     * @since 4.3.7
+     */
+    public static function escapeForLike(string $value): string
+    {
+        return preg_replace('/(?<!\\\)_/', '\\_', $value);
+    }
+
+    /**
      * Parses a query param value and returns a [[\yii\db\QueryInterface::where()]]-compatible condition.
      *
      * If the `$value` is a string, it will automatically be converted to an array, split on any commas within the
@@ -609,11 +621,7 @@ class Db
                     } else {
                         $operator = $operator === '=' ? 'like' : 'not like';
                     }
-
-                    // Escape underscores as they are treated as wildcards by LIKE in MySQL and PostgreSQL
-                    $val = preg_replace('/(?<!\\\)_/', '\\_', $val);
-
-                    $condition[] = [$operator, $column, $val, false];
+                    $condition[] = [$operator, $column, static::escapeForLike($val), false];
                     continue;
                 }
 
