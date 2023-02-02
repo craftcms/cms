@@ -13,6 +13,7 @@
 - Fixed a bug where `resave/*` commands’ output didn’t take the offset into account. ([#12526](https://github.com/craftcms/cms/issues/12526))
 - Fixed a bug where warnings were getting logged for video assets that were “missing” their dimensions.
 - Fixed a bug where `craft\services\Assets::getAllDescendantFolders()` could return unexpected results for folders that contained an underscore.
+- Fixed a bug where `craft\image\Raster::getIsTransparent()` wasn’t working. ([#12565](https://github.com/craftcms/cms/issues/12565))
 - Added `craft\helpers\Db::escapeForLike()`.
 - `craft\services\Assets::getAllDescendantFolders()` now has a `$withParent` argument, which can be passed `false` to omit the parent folder from the results. ([#12536](https://github.com/craftcms/cms/issues/12536))
 - Deprecated `craft\helpers\DateTimeHelper::timeZoneAbbreviation()`.
