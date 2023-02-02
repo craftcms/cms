@@ -441,8 +441,8 @@ class ImageTransforms
         $scaleIfSmaller = Craft::$app->getConfig()->getGeneral()->upscaleImages;
 
         switch ($transform->mode) {
-            case 'fit':
-                if ($image instanceof Raster && $transform->fill) {
+            case 'letterbox':
+                if ($image instanceof Raster) {
                     $image->scaleToFitAndFill(
                         $transform->width,
                         $transform->height,
@@ -450,8 +450,12 @@ class ImageTransforms
                         $position,
                     );
                 } else {
+                    Craft::warning("Cannot add fill to non-raster images");
                     $image->scaleToFit($transform->width, $transform->height, $scaleIfSmaller);
                 }
+                break;
+            case 'fit':
+                $image->scaleToFit($transform->width, $transform->height, $scaleIfSmaller);
                 break;
             case 'stretch':
                 $image->resize($transform->width, $transform->height);

@@ -550,8 +550,9 @@ class Raster extends Image
      * @param string $fill Hex color of the fill.
      * @return $this Self reference
      */
-    public function setFill(string $fill): self
+    public function setFill(string $fill = null): self
     {
+        $fill = $fill ?? 'transparent';
         if ($fill === 'transparent') {
             $this->_fill = $this->_image->palette()->color('#ffffff', 0);
         } else {

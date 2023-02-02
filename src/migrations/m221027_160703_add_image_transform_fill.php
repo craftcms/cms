@@ -17,6 +17,11 @@ class m221027_160703_add_image_transform_fill extends Migration
     {
         // Place migration code here...
         $this->addColumn(Table::IMAGETRANSFORMS, 'fill', $this->string(11)->null()->after('interlace'));
+        $this->alterColumn(
+            Table::IMAGETRANSFORMS,
+            'mode',
+            $this->enum('mode', ['stretch', 'fit', 'crop', 'letterbox'])->notNull()->defaultValue('crop'),
+        );
 
         return true;
     }
@@ -26,7 +31,13 @@ class m221027_160703_add_image_transform_fill extends Migration
      */
     public function safeDown(): bool
     {
-        echo "m221027_160703_add_image_transform_fill cannot be reverted.\n";
-        return false;
+        $this->dropColumn(Table::IMAGETRANSFORMS, 'fill');
+        $this->alterColumn(
+            Table::IMAGETRANSFORMS,
+            'mode',
+            $this->enum('mode', ['stretch', 'fit', 'crop'])->notNull()->defaultValue('crop'),
+        );
+
+        return true;
     }
 }

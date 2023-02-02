@@ -68,7 +68,7 @@ class ImageTransform extends Model
     public ?DateTime $parameterChangeTime = null;
 
     /**
-     * @var 'crop'|'fit'|'stretch' Mode
+     * @var string 'crop'|'fit'|'stretch'|'letterbox' Mode
      */
     public string $mode = 'crop';
 

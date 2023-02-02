@@ -159,7 +159,7 @@ class ImageTransformsController extends Controller
         }
 
         $useFill = $this->request->getBodyParam('useFill');
-        if ($useFill && $transform->mode === 'fit') {
+        if ($useFill && $transform->mode === 'letterbox') {
             $transform->fill = $transform->fill ? ColorValidator::normalizeColor($transform->fill) : 'transparent';
         } else {
             $transform->fill = null;

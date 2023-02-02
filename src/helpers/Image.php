@@ -92,7 +92,7 @@ class Image
         $transformRatio = $width / $height;
 
         // When mode is `fit` with a fill provided, always use the transform size
-        if ($mode === 'fit' && $fill) {
+        if ($mode === 'letterbox') {
             return [$width, $height];
         }
 
