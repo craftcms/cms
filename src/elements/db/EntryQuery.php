@@ -831,7 +831,7 @@ class EntryQuery extends ElementQuery
             return false;
         }
 
-        $this->joinElementTable('entries');
+        $this->joinElementTable(Table::ENTRIES);
 
         $this->query->select([
             'entries.sectionId',

@@ -1843,4 +1843,24 @@ class Db
 
         return null;
     }
+
+    /**
+     * Returns a table name with curly brackets and percent sign removed.
+     *
+     * @param string $name
+     * @return string
+     * @since 4.4.0
+     */
+    public static function rawTableShortName(string $name): string
+    {
+        // Based on Schema::getRawTableName(),
+        // except we drop the % rather than replacing it with the table alias
+        if (str_contains($name, '{{')) {
+            $name = preg_replace('/\\{\\{(.*?)\\}\\}/', '\1', $name);
+            // % could technically not be anywhere in the string
+            return str_replace('%', '', $name);
+        }
+
+        return $name;
+    }
 }
