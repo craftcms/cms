@@ -530,7 +530,10 @@ class Raster extends Image
         if (Craft::$app->getImages()->getIsImagick()) {
             // https://github.com/php-imagine/Imagine/issues/842#issuecomment-1402748019
             $alphaRange = $this->_image->getImagick()->getImageChannelRange(\Imagick::CHANNEL_ALPHA);
-            return $alphaRange['minima'] < $alphaRange['maxima'];
+            return (
+                isset($alphaRange['minima'], $alphaRange['maxima']) &&
+                $alphaRange['minima'] < $alphaRange['maxima']
+            );
         }
 
         return false;
