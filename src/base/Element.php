@@ -4352,7 +4352,7 @@ abstract class Element extends Component implements ElementInterface
         // https://github.com/craftcms/cms/issues/12539
         if ($fieldLayout && $this->_fieldsByHandle[$handle] === null) {
             $behavior = $this->getBehavior('customFields');
-            if (!empty($behavior->$handle)) {
+            if (isset($behavior->$handle)) {
                 $behavior->$handle = null;
             }
         }

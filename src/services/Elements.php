@@ -2287,8 +2287,10 @@ class Elements extends Component
                 $filteredElements = array_values(
                     array_filter($filteredElements, function($filteredElement) use ($plan) {
                         $fieldLayout = $filteredElement->getFieldLayout();
-                        return ($fieldLayout && $fieldLayout->getFieldByHandle($plan->handle) !== null) ||
-                            !$fieldLayout;
+                        return (
+                            !$fieldLayout ||
+                            $fieldLayout->getFieldByHandle($plan->handle) !== null
+                        );
                     })
                 );
 
