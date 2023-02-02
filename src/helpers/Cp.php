@@ -341,6 +341,7 @@ class Cp
         $isRevision = !$isDraft && $element->getIsRevision();
         $label = $element->getUiLabel();
         $showStatus = $showStatus && ($isDraft || $element::hasStatuses());
+        $isGif = $element->getExtension() === 'gif';
 
         // Create the thumb/icon image, if there is one
         if ($showThumb) {
@@ -368,7 +369,8 @@ class Cp
                 ]),
                 'data' => [
                     'sizes' => $sizesHtml,
-                    'srcset' => $srcsetHtml,
+                    'srcset' => $isGif ? '' : $srcsetHtml,
+                    'gifffer' => $isGif ? $thumbUrl : null,
                     'alt' => $element->getThumbAlt(),
                 ],
             ]);

@@ -928,6 +928,13 @@ interface ElementInterface extends ComponentInterface
     public function getHasRoundedThumb(): bool;
 
     /**
+     * Returns the file extension.
+     *
+     * @return string|null
+     */
+    public function getExtension(): ?string;
+
+    /**
      * Returns whether the element is enabled for the current site.
      *
      * This can also be set to an array of site ID/site-enabled mappings.

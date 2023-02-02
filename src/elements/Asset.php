@@ -1703,9 +1703,7 @@ JS;
     }
 
     /**
-     * Returns the file extension.
-     *
-     * @return string
+     * @inheritdoc
      */
     public function getExtension(): string
     {
