@@ -659,7 +659,11 @@ class Assets extends Component
             $url = $asset->getUrl($transform);
         }
 
-        return $url ?? AssetsHelper::iconUrl($extension);
+        if ($url === null) {
+            return AssetsHelper::iconUrl($extension);
+        }
+
+        return AssetsHelper::revUrl($url, $asset);
     }
 
     /**
