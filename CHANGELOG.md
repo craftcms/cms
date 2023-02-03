@@ -18,6 +18,7 @@
 - Fixed a bug where `craft\image\Raster::getIsTransparent()` wasn’t working. ([#12565](https://github.com/craftcms/cms/issues/12565))
 - Fixed a bug where the component name comments in project config YAML files would always lag behind the current project config a little. ([#12576](https://github.com/craftcms/cms/issues/12576), ([#12581](https://github.com/craftcms/cms/pull/12581)))
 - Fixed a MySQL error that occurred when creating a database backup using the default backup command, when running MySQL 5.7.41+ or 8.0.32+. ([#12557](https://github.com/craftcms/cms/issues/12557), [#12560](https://github.com/craftcms/cms/pull/12560))
+- Fixed a bug where database backups weren’t respecting SSL database connection settings if they were specified when using MySQL. ([#10351](https://github.com/craftcms/cms/issues/10351), [#11753](https://github.com/craftcms/cms/issues/11753), [#12596](https://github.com/craftcms/cms/pull/12596))
 - Fixed a bug where element indexes could stop showing their loading spinner prematurely if the element listing needed to be reloaded multiple times in rapid succession. ([#12595](https://github.com/craftcms/cms/issues/12595))
 - Added `craft\helpers\Db::escapeForLike()`.
 - `craft\services\Assets::getAllDescendantFolders()` now has a `$withParent` argument, which can be passed `false` to omit the parent folder from the results. ([#12536](https://github.com/craftcms/cms/issues/12536))
