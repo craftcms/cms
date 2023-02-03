@@ -530,17 +530,13 @@ class AssetIndexer extends Component
     public function indexFileByListing(int $volumeId, FsListing $listing, int $sessionId, bool $cacheImages = false, bool $createIfMissing = true): Asset
     {
         $indexEntry = new AssetIndexData([
-            'id' => null,
             'volumeId' => $volumeId,
             'sessionId' => $sessionId,
             'uri' => $listing->getUri(),
             'size' => $listing->getFileSize(),
             'timestamp' => $listing->getDateModified(),
             'isDir' => $listing->getIsDir(),
-            'recordId' => null,
             'inProgress' => true,
-            'isSkipped' => null,
-            'completed' => false,
         ]);
 
         $asset = $this->indexFileByEntry($indexEntry, $cacheImages, $createIfMissing);
@@ -562,17 +558,13 @@ class AssetIndexer extends Component
     public function indexFolderByListing(int $volumeId, FsListing $listing, int $sessionId, bool $createIfMissing = true): VolumeFolder
     {
         $indexEntry = new AssetIndexData([
-            'id' => null,
             'volumeId' => $volumeId,
             'sessionId' => $sessionId,
             'uri' => $listing->getUri(),
             'size' => $listing->getFileSize(),
             'timestamp' => $listing->getDateModified(),
             'isDir' => $listing->getIsDir(),
-            'recordId' => null,
             'inProgress' => true,
-            'isSkipped' => null,
-            'completed' => false,
         ]);
 
         $folder = $this->indexFolderByEntry($indexEntry, $createIfMissing);
