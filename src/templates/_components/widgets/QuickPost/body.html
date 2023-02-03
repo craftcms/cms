@@ -9,8 +9,8 @@
     {% if section.type != 'single' and entryType.hasTitleField %}
         {% set titleField = fieldLayout.getField('title') %}
         {{ forms.textField({
-            label: titleField.label ? titleField.label|t('site') : 'Title'|t('app'),
-            instructions: titleField.instructions ? titleField.instructions|t('site'),
+            label: titleField.label ? titleField.label|t('site')|e : 'Title'|t('app'),
+            instructions: titleField.instructions ? titleField.instructions|t('site')|e,
             attribute: 'title',
             id: 'title'~random(),
             name: 'title',

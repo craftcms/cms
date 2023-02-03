@@ -136,7 +136,7 @@ class Cp extends Component
     const EVENT_REGISTER_CP_SETTINGS = 'registerCpSettings';
 
     /**
-     * Returns the Craft ID account URL.
+     * Returns the Craft Console account URL.
      *
      * @return string
      */
