@@ -828,8 +828,11 @@ class Asset extends Element
     {
         parent::init();
 
-        if ($this->alt === '') {
-            $this->alt = null;
+        if (isset($this->alt)) {
+            $this->alt = trim($this->alt);
+            if ($this->alt === '') {
+                $this->alt = null;
+            }
         }
 
         $this->_oldVolumeId = $this->_volumeId;
