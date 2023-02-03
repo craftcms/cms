@@ -113,6 +113,14 @@ class DbHelperTest extends TestCase
     }
 
     /**
+     * @dataProvider escapeForLikeDataProvider
+     */
+    public function testEscapeForLike(string $expected, string $value): void
+    {
+        self::assertSame($expected, Db::escapeForLike($value));
+    }
+
+    /**
      * @dataProvider extractGlueDataProvider
      *
      * @param string|null $expectedGlue
@@ -360,6 +368,14 @@ class DbHelperTest extends TestCase
     }
 
     /**
+     * @dataProvider rawTableShortNameDataProvider
+     */
+    public function testRawTableShortName(string $expected, string $name): void
+    {
+        self::assertSame($expected, Db::rawTableShortName($name));
+    }
+
+    /**
      * @return array
      */
     public function parseParamDataProvider(): array
@@ -544,6 +560,18 @@ class DbHelperTest extends TestCase
             ['foo\, bar', 'foo, bar'],
             ['foo\, bar*', 'foo, bar*'],
             ['foo\, bar', 'foo\, bar'],
+        ];
+    }
+
+    /**
+     * @return array
+     */
+    public function escapeForLikeDataProvider(): array
+    {
+        return [
+            ['\\_foo', '_foo'],
+            ['foo\\_bar', 'foo_bar'],
+            ['foo\\_', 'foo_'],
         ];
     }
 
@@ -775,6 +803,18 @@ class DbHelperTest extends TestCase
             [['Serialized data'], [$serializable]],
             [[false], [false]],
             [['😀😘'], ['😀😘']],
+        ];
+    }
+
+    public function rawTableShortNameDataProvider(): array
+    {
+        return [
+            ['foo', 'foo'],
+            ['foo}}', 'foo}}'],
+            ['foo', '{{foo}}'],
+            ['foo', '{{%foo}}'],
+            ['foo', '{{foo%}}'],
+            ['foo', '{{fo%o}}'],
         ];
     }
 

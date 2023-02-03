@@ -43,6 +43,32 @@ class Duplicate extends ElementAction
 
     /**
      * @inheritdoc
+     * @since 3.5.0
+     */
+    public function getTriggerHtml(): ?string
+    {
+        // Only enable for duplicatable elements, per canDuplicate()
+        Craft::$app->getView()->registerJsWithVars(fn($type) => <<<JS
+(() => {
+    new Craft.ElementActionTrigger({
+        type: $type,
+        validateSelection: \$selectedItems => {
+            for (let i = 0; i < \$selectedItems.length; i++) {
+                if (!Garnish.hasAttr(\$selectedItems.eq(i).find('.element'), 'data-duplicatable')) {
+                    return false;
+                }
+            }
+            return true;
+        },
+    });
+})();
+JS, [static::class]);
+
+        return null;
+    }
+
+    /**
+     * @inheritdoc
      */
     public function performAction(ElementQueryInterface $query): bool
     {

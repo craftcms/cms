@@ -8,6 +8,7 @@
 namespace craft\web\twig\nodes;
 
 use Craft;
+use craft\helpers\Template;
 use Twig\Compiler;
 use Twig\Node\Node;
 
@@ -27,8 +28,14 @@ class DdNode extends Node
         $compiler->addDebugInfo($this);
 
         $compiler
-            ->write(Craft::class . '::dd(')
-            ->subcompile($this->getNode('var'))
-            ->raw(");\n");
+            ->write(Craft::class . '::dd(');
+
+        if ($this->hasNode('var')) {
+            $compiler->subcompile($this->getNode('var'));
+        } else {
+            $compiler->raw(sprintf('%s::contextWithoutTemplate($context)', Template::class));
+        }
+
+        $compiler->raw(");\n");
     }
 }

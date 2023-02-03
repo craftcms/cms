@@ -11,6 +11,7 @@ use Craft;
 use craft\base\ElementInterface;
 use craft\fields\data\MultiOptionsFieldData;
 use craft\helpers\ArrayHelper;
+use craft\helpers\Cp;
 
 /**
  * MultiSelect represents a Multi-select field.
@@ -56,12 +57,29 @@ class MultiSelect extends BaseOptionsField
             Craft::$app->getView()->setInitialDeltaValue($this->handle, null);
         }
 
-        return Craft::$app->getView()->renderTemplate('_includes/forms/multiselect.twig', [
-            'id' => $this->getInputId(),
+        $id = $this->getInputId();
+
+        $view = Craft::$app->getView();
+        $view->registerJsWithVars(fn($id) => <<<JS
+$('#' + $id).selectize({
+  plugins: ['remove_button'],
+});
+JS, [
+            $view->namespaceInputId($id),
+        ]);
+
+        return Cp::multiSelectHtml([
+            'id' => $id,
             'describedBy' => $this->describedBy,
+            'class' => 'selectize',
             'name' => $this->handle,
             'values' => $this->encodeValue($value),
-            'options' => $this->translatedOptions(true),
+            'options' => $this->translatedOptions(true, $value, $element),
+            'inputAttributes' => [
+                'style' => [
+                    'display' => 'none', // Hide it before selectize does its thing
+                ],
+            ],
         ]);
     }
 

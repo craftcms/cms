@@ -1,0 +1,19 @@
+{% set elements = elements ?? [] %}
+{% set id = id ?? null %}
+
+<ul class="elements structure">
+    {% nav element in elements %}
+        <li id="{{ id }}-element-{{ element.id }}">
+            {% set indent = (element.level - 1) * 35 %}
+            <div class="row" style="margin-left: -{{ indent }}px; padding-left: {{ indent }}px;">
+                {%- include "_elements/element" with { element: element, context: 'field' } -%}
+            </div>
+
+            {% ifchildren %}
+                <ul>
+                    {% children %}
+                </ul>
+            {% endifchildren %}
+        </li>
+    {% endnav %}
+</ul>

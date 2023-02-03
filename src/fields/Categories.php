@@ -11,7 +11,6 @@ use Craft;
 use craft\base\ElementInterface;
 use craft\elements\Category;
 use craft\elements\db\CategoryQuery;
-use craft\elements\db\ElementQueryInterface;
 use craft\elements\ElementCollection;
 use craft\gql\arguments\elements\Category as CategoryArguments;
 use craft\gql\interfaces\elements\Category as CategoryInterface;
@@ -68,37 +67,28 @@ class Categories extends BaseRelationField
     /**
      * @inheritdoc
      */
-    public bool $allowLimit = false;
-
-    /**
-     * @inheritdoc
-     */
     public bool $allowMultipleSources = false;
-
-    /**
-     * @var int|null Branch limit
-     */
-    public ?int $branchLimit = null;
-
-    /**
-     * @inheritdoc
-     */
-    protected string $settingsTemplate = '_components/fieldtypes/Categories/settings.twig';
-
-    /**
-     * @inheritdoc
-     */
-    protected string $inputTemplate = '_components/fieldtypes/Categories/input.twig';
-
-    /**
-     * @inheritdoc
-     */
-    protected ?string $inputJsClass = 'Craft.CategorySelectInput';
 
     /**
      * @inheritdoc
      */
     protected bool $sortable = false;
+
+    /**
+     * @inheritdoc
+     */
+    public function __construct(array $config = [])
+    {
+        // allow categories to limit selection if `maintainHierarchy` isn't checked
+        $config['allowLimit'] = true;
+
+        // Default maintainHierarchy to true for existing Assets fields
+        if (isset($config['id']) && !isset($config['maintainHierarchy'])) {
+            $config['maintainHierarchy'] = true;
+        }
+
+        parent::__construct($config);
+    }
 
     /**
      * @inheritdoc
@@ -143,17 +133,6 @@ class Categories extends BaseRelationField
         }
 
         return parent::inputHtml($value, $element);
-    }
-
-    /**
-     * @inheritdoc
-     */
-    protected function inputTemplateVariables(array|ElementQueryInterface $value = null, ?ElementInterface $element = null): array
-    {
-        $variables = parent::inputTemplateVariables($value, $element);
-        $variables['branchLimit'] = $this->branchLimit;
-
-        return $variables;
     }
 
     public function getEagerLoadingMap(array $sourceElements): array|null|false

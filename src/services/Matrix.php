@@ -810,7 +810,7 @@ class Matrix extends Component
                         } else {
                             // Duplicate the blocks, but **don't track** the duplications, so the edit page doesn’t think
                             // its blocks have been replaced by the other sites’ blocks
-                            $this->duplicateBlocks($field, $owner, $localizedOwner, trackDuplications: false);
+                            $this->duplicateBlocks($field, $owner, $localizedOwner, trackDuplications: false, force: true);
                         }
 
                         // Make sure we don't duplicate blocks for any of the sites that were just propagated to
@@ -849,6 +849,7 @@ class Matrix extends Component
      * @param bool $deleteOtherBlocks Whether to delete any blocks that belong to the element, which weren’t included in the duplication
      * @param bool $trackDuplications whether to keep track of the duplications from [[\craft\services\Elements::$duplicatedElementIds]]
      * and [[\craft\services\Elements::$duplicatedElementSourceIds]]
+     * @param bool $force Whether to force duplication, even if it looks like only the block ownership was duplicated
      * @throws Throwable if reasons
      * @since 3.2.0
      */
@@ -859,6 +860,7 @@ class Matrix extends Component
         bool $checkOtherSites = false,
         bool $deleteOtherBlocks = true,
         bool $trackDuplications = true,
+        bool $force = false,
     ): void {
         $elementsService = Craft::$app->getElements();
         /** @var MatrixBlockQuery|Collection $value */
@@ -894,7 +896,7 @@ class Matrix extends Component
                     } else {
                         $newBlockId = $block->getCanonicalId();
                     }
-                } elseif ($block->primaryOwnerId === $target->id) {
+                } elseif (!$force && $block->primaryOwnerId === $target->id) {
                     // Only the block ownership was duplicated, so just update its sort order for the target element
                     Db::update(Table::MATRIXBLOCKS_OWNERS, [
                         'sortOrder' => $block->sortOrder,

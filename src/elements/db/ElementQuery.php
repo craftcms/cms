@@ -1888,6 +1888,7 @@ class ElementQuery extends Query implements ElementQueryInterface
      *
      * @return bool Whether the query should be prepared and returned to the query builder.
      * If false, the query will be cancelled and no results will be returned.
+     * @throws QueryAbortedException
      * @see prepare()
      * @see afterPrepare()
      */
@@ -2047,6 +2048,7 @@ class ElementQuery extends Query implements ElementQueryInterface
      */
     protected function joinElementTable(string $table): void
     {
+        $table = Db::rawTableShortName($table);
         $joinTable = [$table => "{{%$table}}"];
         $this->query->innerJoin($joinTable, "[[$table.id]] = [[subquery.elementsId]]");
         $this->subQuery->innerJoin($joinTable, "[[$table.id]] = [[elements.id]]");
