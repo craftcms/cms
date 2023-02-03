@@ -9,6 +9,8 @@ div.user-photo {
 
 div.user-photo #current-photo {
   position: relative;
+  width: 100px;
+  height: 100px;
 }
 
 div.user-photo #current-photo:after {

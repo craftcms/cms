@@ -113,6 +113,14 @@ class DbHelperTest extends TestCase
     }
 
     /**
+     * @dataProvider escapeForLikeDataProvider
+     */
+    public function testEscapeForLike(string $expected, string $value): void
+    {
+        self::assertSame($expected, Db::escapeForLike($value));
+    }
+
+    /**
      * @dataProvider extractGlueDataProvider
      *
      * @param string|null $expectedGlue
@@ -544,6 +552,18 @@ class DbHelperTest extends TestCase
             ['foo\, bar', 'foo, bar'],
             ['foo\, bar*', 'foo, bar*'],
             ['foo\, bar', 'foo\, bar'],
+        ];
+    }
+
+    /**
+     * @return array
+     */
+    public function escapeForLikeDataProvider(): array
+    {
+        return [
+            ['\\_foo', '_foo'],
+            ['foo\\_bar', 'foo_bar'],
+            ['foo\\_', 'foo_'],
         ];
     }
 

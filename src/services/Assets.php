@@ -482,20 +482,25 @@ class Assets extends Component
      *
      * @param VolumeFolder $parentFolder
      * @param string $orderBy
+     * @param bool $withParent Whether the parent folder should be included in the results
      * @return VolumeFolder[]
      */
-    public function getAllDescendantFolders(VolumeFolder $parentFolder, string $orderBy = 'path'): array
+    public function getAllDescendantFolders(VolumeFolder $parentFolder, string $orderBy = 'path', bool $withParent = true): array
     {
         $query = $this->_createFolderQuery()
             ->where([
                 'and',
-                ['like', 'path', $parentFolder->path . '%', false],
+                ['like', 'path', Db::escapeForLike($parentFolder->path) . '%', false],
                 ['volumeId' => $parentFolder->volumeId],
                 ['not', ['parentId' => null]],
             ]);
 
         if ($orderBy) {
             $query->orderBy($orderBy);
+        }
+
+        if (!$withParent) {
+            $query->andWhere(['not', ['id' => $parentFolder->id]]);
         }
 
         $results = $query->all();
@@ -635,7 +640,13 @@ class Assets extends Component
             'mode' => 'crop',
         ]);
 
-        return $asset->getUrl($transform, false) ?? AssetsHelper::iconUrl($extension);
+        $url = $asset->getUrl($transform, false);
+
+        if ($url === null) {
+            return AssetsHelper::iconUrl($extension);
+        }
+
+        return AssetsHelper::revUrl($url, $asset);
     }
 
     /**
