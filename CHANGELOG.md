@@ -32,6 +32,7 @@
 - Fixed a bug where asset thumbnails weren’t getting versioned in the control panel, unless the `revAssetUrls` config setting was enabled. ([#12603](https://github.com/craftcms/cms/issues/12603))
 - Fixed a bug where entry relations could be lost when switching entry types, for relational fields that didn’t exist on the prior entry type. ([#12592](https://github.com/craftcms/cms/issues/12592))
 - Fixed a bug where Matrix blocks weren’t getting duplicated to other sites when first editing an unpublished draft. ([#11366](https://github.com/craftcms/cms/issues/11366))
+- Fixed a bug where element indexes would show show an expand/collapse toggle for structured elements that only had unsaved draft children, which aren’t actually shown. ([#11253](https://github.com/craftcms/cms/issues/11253))
 - Added `craft\helpers\Assets::revUrl()`.
 - Added `craft\helpers\Db::escapeForLike()`.
 - `craft\helpers\Assets::revParams()` no longer takes the `revAssetUrls` config setting into account. That should be factored in by whatever is calling it.
