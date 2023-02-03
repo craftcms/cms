@@ -433,7 +433,7 @@ class ImageTransforms
             $image->setHeartbeatCallback($heartbeat);
         }
 
-        if ($asset->getHasFocalPoint()) {
+        if ($asset->getHasFocalPoint() && $transform->mode === 'crop') {
             $position = $asset->getFocalPoint();
         } elseif (!preg_match('/^(top|center|bottom)-(left|center|right)$/', $transform->position)) {
             $position = 'center-center';

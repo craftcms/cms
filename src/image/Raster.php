@@ -274,45 +274,19 @@ class Raster extends Image
         $box = new Box($targetWidth, $targetHeight);
         $canvas = $this->_instance->create($box, $this->_fill);
 
-        // $position will be an array when a focal point is set. In which case,
-        // we do our best to center things on the focal point
-        if (is_array($position)) {
-            $focalX = $this->getWidth() * $position['x'];
-            $focalY = $this->getHeight() * $position['y'];
+        [$verticalPosition, $horizontalPosition] = explode('-', $position);
 
-            $x = $box->getWidth() / 2 - $focalX;
-            $y = $box->getHeight() / 2 - $focalY;
+        $y = match ($verticalPosition) {
+            'top' => 0,
+            'bottom' => ($box->getHeight() - $this->getHeight()),
+            default => ($box->getHeight() - $this->getHeight()) / 2,
+        };
 
-            // Left edge of image is outside of box.
-            if ($x < 0) {
-                $x = 0;
-            // Edge of photo bleeds outside of box horizontally.
-            } elseif ($x + $this->getWidth() > $box->getWidth()) {
-                $x = $box->getWidth() - $this->getWidth();
-            }
-
-            // Top is outside of box.
-            if ($y < 0) {
-                $y = 0;
-            // Photo bleeds outside of box vertically
-            } elseif ($y + $this->getHeight() > $box->getHeight()) {
-                $y = $box->getHeight() - $this->getHeight();
-            }
-        } else {
-            [$verticalPosition, $horizontalPosition] = explode('-', $position);
-
-            $y = match ($verticalPosition) {
-                'top' => 0,
-                'bottom' => ($box->getHeight() - $this->getHeight()),
-                default => ($box->getHeight() - $this->getHeight()) / 2,
-            };
-
-            $x = match ($horizontalPosition) {
-                'left' => 0,
-                'right' => ($box->getWidth() - $this->getWidth()),
-                default => ($box->getWidth() - $this->getWidth()) / 2,
-            };
-        }
+        $x = match ($horizontalPosition) {
+            'left' => 0,
+            'right' => ($box->getWidth() - $this->getWidth()),
+            default => ($box->getWidth() - $this->getWidth()) / 2,
+        };
 
         $point = new Point($x, $y);
 
