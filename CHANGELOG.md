@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 4
 
-## Unreleased
+## 4.3.7 - 2023-02-03
 
 - Improved the performance of the “Generating pending image transforms” queue job. ([#12274](https://github.com/craftcms/cms/issues/12274))
 - Removed the “Timeout” setting from the Gmail and SMTP mailer transporters, as they aren’t supported by Symfony Mailer’s transport configuration.
