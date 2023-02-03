@@ -91,7 +91,7 @@ class Image
         $imageRatio = $sourceWidth / $sourceHeight;
         $transformRatio = $width / $height;
 
-        // When mode is `fit` with a fill provided, always use the transform size
+        // When mode is `letterbox` always use the transform size
         if ($mode === 'letterbox') {
             return [$width, $height];
         }
@@ -106,7 +106,7 @@ class Image
             return [$width, $height];
         }
 
-        // When mode is `fit` (no fill provided) or the source is the same ratio as the transform
+        // When mode is `fit` or the source is the same ratio as the transform
         if ($mode === 'fit' || $imageRatio === $transformRatio) {
             $targetWidth = min($sourceWidth, $width, (int)round($sourceWidth / $factor));
             $targetHeight = min($sourceHeight, $height, (int)round($sourceHeight / $factor));
