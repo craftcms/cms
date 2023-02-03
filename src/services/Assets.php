@@ -640,7 +640,13 @@ class Assets extends Component
             'mode' => 'crop',
         ]);
 
-        return $asset->getUrl($transform, false) ?? AssetsHelper::iconUrl($extension);
+        $url = $asset->getUrl($transform, false);
+
+        if ($url === null) {
+            return AssetsHelper::iconUrl($extension);
+        }
+
+        return AssetsHelper::revUrl($url, $asset);
     }
 
     /**
