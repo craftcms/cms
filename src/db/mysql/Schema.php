@@ -150,6 +150,18 @@ class Schema extends \yii\db\mysql\Schema
      */
     public function getDefaultBackupCommand(array $ignoreTables = null): string
     {
+        $useSingleTransaction = true;
+        $serverVersion = App::normalizeVersion(Craft::$app->getDb()->getSchema()->getServerVersion());
+
+        $isMySQL5 = version_compare($serverVersion, '8', '<');
+        $isMySQL8 = version_compare($serverVersion, '8', '>=');
+
+        // https://bugs.mysql.com/bug.php?id=109685
+        if (($isMySQL5 && version_compare($serverVersion, '5.7.41', '>=')) ||
+            ($isMySQL8 && version_compare($serverVersion, '8.0.32', '>='))) {
+            $useSingleTransaction = false;
+        }
+
         $defaultArgs =
             ' --defaults-extra-file="' . $this->_createDumpConfigFile() . '"' .
             ' --add-drop-table' .
@@ -163,8 +175,12 @@ class Schema extends \yii\db\mysql\Schema
             ' --triggers' .
             ' --no-tablespaces';
 
+        if ($useSingleTransaction) {
+            $defaultArgs .= ' --single-transaction';
+        }
+
         // If the server is MySQL 5.x, we need to see what version of mysqldump is installed (5.x or 8.x)
-        if (version_compare(App::normalizeVersion(Craft::$app->getDb()->getSchema()->getServerVersion()), "8", "<")) {
+        if ($isMySQL5) {
             // Find out if the db supports column-statistics
             $shellCommand = new ShellCommand();
 
@@ -198,7 +214,6 @@ class Schema extends \yii\db\mysql\Schema
 
         $schemaDump = 'mysqldump' .
             $defaultArgs .
-            ' --single-transaction' .
             ' --no-data' .
             ' --result-file="{file}"' .
             ' {database}';
