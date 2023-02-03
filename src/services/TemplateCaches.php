@@ -457,19 +457,22 @@ class TemplateCaches extends Component
             throw new Exception('Not possible to determine the request path for console commands.');
         }
 
-        if (Craft::$app->getRequest()->getIsCpRequest()) {
+        $isCpRequest = $request->getIsCpRequest();
+        if ($isCpRequest) {
             $this->_path = 'cp:';
         } else {
             $this->_path = 'site:';
         }
 
-        $this->_path .= Craft::$app->getRequest()->getPathInfo();
+        $this->_path .= $request->getPathInfo();
         if (Craft::$app->getDb()->getIsMysql()) {
             $this->_path = StringHelper::encodeMb4($this->_path);
         }
 
-        if (($pageNum = Craft::$app->getRequest()->getPageNum()) != 1) {
-            $this->_path .= '/' . Craft::$app->getConfig()->getGeneral()->getPageTrigger() . $pageNum;
+        $pageNum = $request->getPageNum();
+        if ($pageNum !== 1) {
+            $pageTrigger = $isCpRequest ? 'p' : Craft::$app->getConfig()->getGeneral()->getPageTrigger();
+            $this->_path .= sprintf('/%s%s', $pageTrigger, $pageNum);
         }
 
         return $this->_path;
