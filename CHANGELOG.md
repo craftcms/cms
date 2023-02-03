@@ -31,10 +31,12 @@
 - Fixed a bug where element editors wouldn’t show tabs that didn’t contain any characters that could be converted to ASCII. ([#12602](https://github.com/craftcms/cms/issues/12602))
 - Fixed a bug where asset thumbnails weren’t getting versioned in the control panel, unless the `revAssetUrls` config setting was enabled. ([#12603](https://github.com/craftcms/cms/issues/12603))
 - Fixed a bug where entry relations could be lost when switching entry types, for relational fields that didn’t exist on the prior entry type. ([#12592](https://github.com/craftcms/cms/issues/12592))
+- Fixed a bug where Matrix blocks weren’t getting duplicated to other sites when first editing an unpublished draft. ([#11366](https://github.com/craftcms/cms/issues/11366))
 - Added `craft\helpers\Assets::revUrl()`.
 - Added `craft\helpers\Db::escapeForLike()`.
 - `craft\helpers\Assets::revParams()` no longer takes the `revAssetUrls` config setting into account. That should be factored in by whatever is calling it.
 - `craft\services\Assets::getAllDescendantFolders()` now has a `$withParent` argument, which can be passed `false` to omit the parent folder from the results. ([#12536](https://github.com/craftcms/cms/issues/12536))
+- `craft\services\Matrix::duplicateBlocks()` now has a `$force` argument.
 - Deprecated `craft\helpers\DateTimeHelper::timeZoneAbbreviation()`.
 - Deprecated `craft\helpers\DateTimeHelper::timeZoneOffset()`.
 
