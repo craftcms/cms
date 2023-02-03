@@ -6,6 +6,7 @@
 - Removed the “Timeout” setting from the Gmail and SMTP mailer transporters, as they aren’t supported by Symfony Mailer’s transport configuration.
 - Removed the “Encryption Method” setting from the SMTP mailer transporter, as Symfony Mailer already uses TLS when port 465 is used (as it is by default).
 - The “Port” setting on the SMTP mailer transporter is no longer required. It will default to 465 or 25 depending on whether OpenSSL is installed.
+- Added more reserved field handles to avoid conflicts with `craft\base\Element` properties. ([#12577](https://github.com/craftcms/cms/issues/12577))
 - Fixed field status badge styling in some contexts. ([#12403](https://github.com/craftcms/cms/issues/12403))
 - Fixed a bug where exporting elements with multiple field layouts as a CSV file using the “Expanded” export type would result in mismatched column values.
 - Fixed a bug where cancelling a conflicting volume folder move would result in the moved folder getting deleted.
@@ -13,6 +14,18 @@
 - Fixed a bug where the horizontal scroll position wasn’t being retained when refreshing Live Preview. ([#12504](https://github.com/craftcms/cms/issues/12504))
 - Fixed a bug where user group condition rules for the default user group weren’t getting matched properly during public registration. ([#12283](https://github.com/craftcms/cms/issues/12283))
 - Fixed a bug where HTML tags within field labels, instructions, tips, and warnings weren’t always getting escaped.
+- Fixed a bug where the sidebar scroll position wasn’t retained when selecting a new source on element index pages. ([#12523](https://github.com/craftcms/cms/issues/12523))
+- Fixed a bug where `resave/*` commands’ output didn’t take the offset into account. ([#12526](https://github.com/craftcms/cms/issues/12526))
+- Fixed a bug where warnings were getting logged for video assets that were “missing” their dimensions.
+- Fixed a bug where `craft\services\Assets::getAllDescendantFolders()` could return unexpected results for folders that contained an underscore.
+- Fixed a bug where accessing a custom field’s magic property on an element would return the field’s raw database value rather than `null`, if it didn’t belong to the element’s field layout anymore. ([#12539](https://github.com/craftcms/cms/issues/12539), [#12578](https://github.com/craftcms/cms/pull/12578))
+- Fixed a bug where previewing an asset could wipe out all `h1` tags within Redactor fields. ([#12545](https://github.com/craftcms/cms/issues/12545))
+- Fixed a bug where `craft\image\Raster::getIsTransparent()` wasn’t working. ([#12565](https://github.com/craftcms/cms/issues/12565))
+- Fixed a bug where textual condition rules were still showing a text input when the “is empty” or “has a value” operators were selected. ([#12587](https://github.com/craftcms/cms/pull/12587))
+- Fixed a bug where the component name comments in project config YAML files would always lag behind the current project config a little. ([#12576](https://github.com/craftcms/cms/issues/12576), ([#12581](https://github.com/craftcms/cms/pull/12581)))
+- Fixed a MySQL error that occurred when creating a database backup using the default backup command, when running MySQL 5.7.41+ or 8.0.32+. ([#12557](https://github.com/craftcms/cms/issues/12557), [#12560](https://github.com/craftcms/cms/pull/12560))
+- Added `craft\helpers\Db::escapeForLike()`.
+- `craft\services\Assets::getAllDescendantFolders()` now has a `$withParent` argument, which can be passed `false` to omit the parent folder from the results. ([#12536](https://github.com/craftcms/cms/issues/12536))
 - Deprecated `craft\helpers\DateTimeHelper::timeZoneAbbreviation()`.
 - Deprecated `craft\helpers\DateTimeHelper::timeZoneOffset()`.
 
