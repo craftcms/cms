@@ -582,8 +582,7 @@ class AssetIndexer extends Component
      */
     protected function storeIndexEntry(AssetIndexData $indexEntry)
     {
-        Db::insert(Table::ASSETINDEXDATA, [
-            'id' => $indexEntry->id,
+        $data = [
             'sessionId' => $indexEntry->sessionId,
             'volumeId' => $indexEntry->volumeId,
             'uri' => $indexEntry->uri,
@@ -594,7 +593,13 @@ class AssetIndexer extends Component
             'isSkipped' => $indexEntry->isSkipped,
             'inProgress' => $indexEntry->inProgress,
             'completed' => $indexEntry->completed,
-        ]);
+        ];
+
+        if ($indexEntry->id) {
+            $data['id'] = $indexEntry->id;
+        }
+
+        Db::insert(Table::ASSETINDEXDATA, $data);
     }
 
     /**
