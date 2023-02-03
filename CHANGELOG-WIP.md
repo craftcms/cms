@@ -35,6 +35,10 @@
 - The `plugin/install`, `plugin/uninstall`, `plugin/enable`, and `plugin/disabled` commands now support an `--all` option, which applies the action to all applicable Composer-installed plugins. ([#11373](https://github.com/craftcms/cms/discussions/11373), [#12218](https://github.com/craftcms/cms/pull/12218))
 - The `project-config/apply` command now supports a `--quiet` option, which reduces the command output. ([#12568](https://github.com/craftcms/cms/discussions/12568))
 - Added the `users/unlock` console command. ([#12345](https://github.com/craftcms/cms/discussions/12345))
+- The Asset Indexes utility no longer skips volumes if the root folder was completely empty. ([#12585](https://github.com/craftcms/cms/issues/12585), [#12604](https://github.com/craftcms/cms/pull/12604))
+- The Asset Indexes utility now has a “List empty folders” setting, which determines whether empty folders sholud be listed for deletion from the index. ([#12604](https://github.com/craftcms/cms/pull/12604))
+- The Asset Indexes utility now lists missing/empty folders and files separately in the review screen. ([#12604](https://github.com/craftcms/cms/pull/12604))
+- Improved the CLI output for `index-assets` commands. ([#12604](https://github.com/craftcms/cms/pull/12604))
 
 ### Development
 - Added the `exec` command, which executes an individual PHP statement and outputs the result. ([#12528](https://github.com/craftcms/cms/pull/12528))
@@ -97,6 +101,7 @@
 - Added `craft\utilities\AssetIndexes::EVENT_LIST_VOLUMES`. ([#12383](https://github.com/craftcms/cms/pull/12383), [#12443](https://github.com/craftcms/cms/pull/12443))
 - Renamed `craft\elements\conditions\assets\EditableConditionRule` to `SavableConditionRule`, while preserving the original class name with an alias. ([#12266](https://github.com/craftcms/cms/pull/12266))
 - Renamed `craft\elements\conditions\entries\EditableConditionRule` to `SavableConditionRule`, while preserving the original class name with an alias. ([#12266](https://github.com/craftcms/cms/pull/12266))
+- `craft\services\AssetIndexer::startIndexingSession()` and `createIndexingSession()` now have a `$listEmptyFolders` argument. ([#12604](https://github.com/craftcms/cms/pull/12604))
 - `craft\base\ElementQuery::joinElementTable()` now accepts table names in the format of `{{%tablename}}`.
 - Deprecated `craft\imagetransforms\ImageTransformer::ensureTransformUrlByIndexModel()`. `getTransformUrl()` should be used instead.
 - Deprecated `craft\imagetransforms\ImageTransformer::procureTransformedImage()`. `generateTransform()` should be used instead.
