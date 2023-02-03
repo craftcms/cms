@@ -52,14 +52,14 @@
                     {{ "Fit"|t('app') }}
                 </label>
 
-                <label id="mode-stretch">
-                    <input type="radio" name="mode" value="stretch"{% if transform is defined and transform.mode == 'stretch' %} checked{% endif %}>
-                    {{ "Stretch"|t('app') }}
-                </label>
-
                 <label id="mode-letterbox">
                     <input type="radio" name="mode" value="letterbox"{% if transform is defined and transform.mode == 'letterbox' %} checked{% endif %}>
                     {{ "Letterbox"|t('app') }}
+                </label>
+
+                <label id="mode-stretch">
+                    <input type="radio" name="mode" value="stretch"{% if transform is defined and transform.mode == 'stretch' %} checked{% endif %}>
+                    {{ "Stretch"|t('app') }}
                 </label>
             </div>
         {% endset %}
@@ -79,7 +79,7 @@
 
         <div id="letterbox-position-container"{% if transform is defined and transform.mode != 'letterbox' %} class="hidden"{% endif %}>
             {{ forms.selectField({
-                label: "Position"|t('app'),
+                label: "Image Position"|t('app'),
                 id: 'position',
                 name: 'position',
                 options: {

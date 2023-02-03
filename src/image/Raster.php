@@ -263,6 +263,7 @@ class Raster extends Image
      * @param string|array $position
      * @param bool|null $upscale
      * @return Raster
+     * @since 4.4.0
      */
     public function scaleToFitAndFill(?int $targetWidth, ?int $targetHeight, string $fill = null, string|array $position = 'center-center', bool $upscale = null): static
     {
@@ -526,6 +527,7 @@ class Raster extends Image
      *
      * @param string $fill Hex color of the fill.
      * @return $this Self reference
+     * @since 4.4.0
      */
     public function setFill(string $fill = null): self
     {

@@ -93,12 +93,14 @@ class ImageTransform extends Model
     public ?string $uid = null;
 
     /**
-     * @var string|null
+     * @var string|null Fill color
+     * @since 4.4.0
      */
     public ?string $fill = null;
 
     /**
-     * @var bool|null
+     * @var bool|null Allow upscaling
+     * @since 4.4.0
      */
     public ?bool $upscale = null;
 
@@ -109,17 +111,15 @@ class ImageTransform extends Model
     protected string $transformer = self::DEFAULT_TRANSFORMER;
 
     /**
-     * Construct an image transform.
-     *
-     * @param array $config
+     * @inheritdoc
      */
-    public function __construct(array $config = [])
+    public function init(): void
     {
-        if (!isset($config['upscale'])) {
-            $config['upscale'] = Craft::$app->getConfig()->getGeneral()->upscaleImages;
-        }
+        parent::init();
 
-        parent::__construct($config);
+        if (!isset($this->upscale)) {
+            $this->upscale = Craft::$app->getConfig()->getGeneral()->upscaleImages;
+        }
     }
 
     /**
@@ -135,7 +135,7 @@ class ImageTransform extends Model
             'position' => Craft::t('app', 'Position'),
             'quality' => Craft::t('app', 'Quality'),
             'width' => Craft::t('app', 'Width'),
-            'fill' => Craft::t('app', 'Fill'),
+            'fill' => Craft::t('app', 'Fill Color'),
             'upscale' => Craft::t('app', 'Allow Upscaling'),
             'transformer' => Craft::t('app', 'Image transformer'),
         ];
