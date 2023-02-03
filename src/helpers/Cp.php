@@ -1120,7 +1120,10 @@ class Cp
      */
     public static function dateTimeFieldHtml(array $config): string
     {
-        $config['id'] = $config['id'] ?? 'datetime' . mt_rand();
+        $config += [
+            'id' => 'datetime' . mt_rand(),
+            'fieldset' => true,
+        ];
         return static::fieldHtml('template:_includes/forms/datetime.twig', $config);
     }
 
