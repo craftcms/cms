@@ -98,16 +98,16 @@ class ImageTransformsTest extends Unit
             ],
             'upscale' => [
                 [
-                    'upscale' => true,
+                    'upscale' => false,
                 ],
-                '_1280x600_crop_center-center_95_line_upscale',
+                '_1280x600_crop_center-center_95_line_ns',
             ],
             'upscale with fill' => [
                 [
                     'fill' => '#ff0000',
-                    'upscale' => true,
+                    'upscale' => false,
                 ],
-                '_1280x600_crop_center-center_95_line_ff0000_upscale',
+                '_1280x600_crop_center-center_95_line_ff0000_ns',
             ],
         ];
     }
@@ -208,28 +208,38 @@ class ImageTransformsTest extends Unit
     {
         return [
             'basic transform' => [
-                '_1200x900_crop_center-center_none_upscale',
+                '_1200x900_crop_center-center_none_ns',
                 [
                     'width' => 1200,
                     'height' => 900,
+                    'upscale' => false,
                 ],
             ],
             'no width' => [
-                '_AUTOx900_crop_center-center_none_upscale',
+                '_AUTOx900_crop_center-center_none',
                 [
                     'width' => null,
                     'height' => 900,
+                    'upscale' => true,
                 ],
             ],
             'no height' => [
-                '_1200xAUTO_crop_center-center_none_upscale',
+                '_1200xAUTO_crop_center-center_none',
                 [
                     'width' => 1200,
                     'height' => null,
                 ],
             ],
-            'no upscale' => [
+            'upscale' => [
                 '_1200xAUTO_crop_center-center_none',
+                [
+                    'width' => 1200,
+                    'height' => null,
+                    'upscale' => true,
+                ],
+            ],
+            'no upscale' => [
+                '_1200xAUTO_crop_center-center_none_ns',
                 [
                     'width' => 1200,
                     'height' => null,
@@ -241,12 +251,12 @@ class ImageTransformsTest extends Unit
                 $this->fullTransform,
             ],
             'full transform' => [
-                '_100x200_fit_center-center_95_line_ff0000_upscale',
-                ArrayHelper::merge($this->fullTransform, ['handle' => null]),
+                '_100x200_fit_center-center_95_line_ff0000_ns',
+                ArrayHelper::merge($this->fullTransform, ['handle' => null, 'upscale' => false]),
             ],
             'transparent fill' => [
-                '_100x200_fit_center-center_95_line_transparent_upscale',
-                ArrayHelper::merge($this->fullTransform, ['fill' => 'transparent', 'handle' => null]),
+                '_100x200_fit_center-center_95_line_transparent_ns',
+                ArrayHelper::merge($this->fullTransform, ['fill' => 'transparent', 'handle' => null, 'upscale' => false]),
             ],
         ];
     }

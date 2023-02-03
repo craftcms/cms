@@ -34,7 +34,7 @@ class ImageTransforms
     /**
      * @var string The pattern to use for matching against a transform string.
      */
-    public const TRANSFORM_STRING_PATTERN = '/_(?P<width>\d+|AUTO)x(?P<height>\d+|AUTO)_(?P<mode>[a-z]+)(?:_(?P<position>[a-z\-]+))?(?:_(?P<quality>\d+))?(?:_(?P<interlace>[a-z]+))?(?:_(?P<fill>[0-9a-f]{6}|transparent))?(?:_(?P<upscale>upscale))?/i';
+    public const TRANSFORM_STRING_PATTERN = '/_(?P<width>\d+|AUTO)x(?P<height>\d+|AUTO)_(?P<mode>[a-z]+)(?:_(?P<position>[a-z\-]+))?(?:_(?P<quality>\d+))?(?:_(?P<interlace>[a-z]+))?(?:_(?P<fill>[0-9a-f]{6}|transparent))?(?:_(?P<upscale>ns))?/i';
 
     /**
      * Create an AssetImageTransform model from a string.
@@ -72,7 +72,7 @@ class ImageTransforms
             'quality' => $matches['quality'] ?? null,
             'interlace' => $matches['interlace'] ?? 'none',
             'fill' => $fill ?? null,
-            'upscale' => ($matches['upscale'] ?? null) === 'upscale',
+            'upscale' => ($matches['upscale'] ?? null) !== 'ns',
             'transformer' => ImageTransform::DEFAULT_TRANSFORMER,
         ]);
     }
@@ -244,7 +244,7 @@ class ImageTransforms
             ($transform->quality ? '_' . $transform->quality : '') .
             '_' . $transform->interlace .
             ($transform->fill ? '_' . ltrim($transform->fill, '#') : '') .
-            ($transform->upscale ? '_' . 'upscale' : '');
+            ($transform->upscale ? '' : '_ns');
     }
 
     /**
@@ -256,10 +256,11 @@ class ImageTransforms
      */
     public static function parseTransformString(string $str): array
     {
-        if (!preg_match('/^_?(?P<width>\d+|AUTO)x(?P<height>\d+|AUTO)_(?P<mode>[a-z]+)_(?P<position>[a-z\-]+)(?:_(?P<quality>\d+))?_(?P<interlace>[a-z]+)(?:_(?P<fill>transparent|[0-9a-f]{3}|[0-9a-f]{6}))?(?:_(?P<upscale>upscale))?$/', $str, $match)) {
+        if (!preg_match('/^_?(?P<width>\d+|AUTO)x(?P<height>\d+|AUTO)_(?P<mode>[a-z]+)_(?P<position>[a-z\-]+)(?:_(?P<quality>\d+))?_(?P<interlace>[a-z]+)(?:_(?P<fill>transparent|[0-9a-f]{3}|[0-9a-f]{6}))?(?:_(?P<upscale>ns))?$/', $str, $match)) {
             throw new InvalidArgumentException("Invalid transform string: $str");
         }
 
+        $upscale = $match['upscale'] ?? null;
         return [
             'width' => $match['width'] !== 'AUTO' ? (int)$match['width'] : null,
             'height' => $match['height'] !== 'AUTO' ? (int)$match['height'] : null,
@@ -268,7 +269,7 @@ class ImageTransforms
             'quality' => $match['quality'] ? (int)$match['quality'] : null,
             'interlace' => $match['interlace'],
             'fill' => ($match['fill'] ?? null) ? sprintf('%s%s', $match['fill'] !== 'transparent' ? '#' : '', $match['fill']) : null,
-            'upscale' => (($match['upscale'] ?? null)) && $match['upscale'] === 'upscale',
+            'upscale' => $upscale !== 'ns',
         ];
     }
 
