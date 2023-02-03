@@ -16,6 +16,7 @@ use craft\helpers\Db;
 use craft\helpers\FileHelper;
 use craft\helpers\StringHelper;
 use mikehaertl\shellcommand\Command as ShellCommand;
+use PDO;
 use yii\base\ErrorException;
 use yii\base\NotSupportedException;
 use yii\db\Exception;
@@ -407,18 +408,18 @@ SQL;
             $contents .= PHP_EOL . 'host=' . ($parsed['host'] ?? '') .
                 PHP_EOL . 'port=' . ($parsed['port'] ?? '');
         }
-        
+
         // Certificates
-        if (isset($this->db->attributes[\PDO::MYSQL_ATTR_SSL_CA])) {
-            $contents .= PHP_EOL . 'ssl_ca=' . $this->db->attributes[\PDO::MYSQL_ATTR_SSL_CA];
+        if (isset($this->db->attributes[PDO::MYSQL_ATTR_SSL_CA])) {
+            $contents .= PHP_EOL . 'ssl_ca=' . $this->db->attributes[PDO::MYSQL_ATTR_SSL_CA];
         }
-        if (isset($this->db->attributes[\PDO::MYSQL_ATTR_SSL_CERT])) {
-            $contents .= PHP_EOL . 'ssl_cert=' . $this->db->attributes[\PDO::MYSQL_ATTR_SSL_CERT];
+        if (isset($this->db->attributes[PDO::MYSQL_ATTR_SSL_CERT])) {
+            $contents .= PHP_EOL . 'ssl_cert=' . $this->db->attributes[PDO::MYSQL_ATTR_SSL_CERT];
         }
-        if (isset($this->db->attributes[\PDO::MYSQL_ATTR_SSL_KEY])) {
-            $contents .= PHP_EOL . 'ssl_key=' . $this->db->attributes[\PDO::MYSQL_ATTR_SSL_KEY];
+        if (isset($this->db->attributes[PDO::MYSQL_ATTR_SSL_KEY])) {
+            $contents .= PHP_EOL . 'ssl_key=' . $this->db->attributes[PDO::MYSQL_ATTR_SSL_KEY];
         }
-        
+
         FileHelper::writeToFile($this->tempMyCnfPath, '');
         // Avoid a “world-writable config file 'my.cnf' is ignored” warning
         chmod($this->tempMyCnfPath, 0600);
