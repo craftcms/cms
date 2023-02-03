@@ -13,7 +13,7 @@
     autofocus: (autofocus ?? false) and not craft.app.request.isMobileBrowser(true),
     disabled: (disabled ?? false) ? true : false,
     aria: {
-        labelledby: labelledBy ?? false,
+        labelledby: (inputAttributes.aria.label ?? false) ? false : (labelledBy ?? false),
         describedby: describedBy ?? false,
     },
     data: {
