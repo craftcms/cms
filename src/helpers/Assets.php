@@ -88,14 +88,18 @@ class Assets
      */
     public static function generateUrl(FsInterface $fs, Asset $asset, ?string $uri = null, ?DateTime $dateUpdated = null): string
     {
-        $revParams = self::revParams($asset, $dateUpdated);
         $pathParts = explode('/', $asset->folderPath . ($uri ?? $asset->getFilename()));
-        $path = implode('/', array_map('rawurlencode', $pathParts));
-        return UrlHelper::urlWithParams($fs->getRootUrl() . $path, $revParams);
+        $url = $fs->getRootUrl() . implode('/', array_map('rawurlencode', $pathParts));
+
+        if (Craft::$app->getConfig()->getGeneral()->revAssetUrls) {
+            return self::revUrl($url, $asset, $dateUpdated);
+        }
+
+        return $url;
     }
 
     /**
-     * Revisions the query parameters that should be appended to asset URLs, per the `revAssetUrls` config setting.
+     * Returns revision query parameters that should be appended to as asset URL.
      *
      * @param Asset $asset
      * @param DateTime|null $dateUpdated
@@ -104,10 +108,6 @@ class Assets
      */
     public static function revParams(Asset $asset, ?DateTime $dateUpdated = null): array
     {
-        if (!Craft::$app->getConfig()->getGeneral()->revAssetUrls) {
-            return [];
-        }
-
         /** @var DateTime $dateModified */
         $dateModified = max($asset->dateModified, $dateUpdated ?? null);
         $v = $dateModified->getTimestamp();
@@ -121,6 +121,20 @@ class Assets
     }
 
     /**
+     * Appends revision parameters to a URL.
+     *
+     * @param Asset $asset
+     * @param DateTime|null $dateUpdated
+     * @return string
+     * @since 4.3.7
+     */
+    public static function revUrl(string $url, Asset $asset, ?DateTime $dateUpdated = null): string
+    {
+        $revParams = static::revParams($asset, $dateUpdated);
+        return UrlHelper::urlWithParams($url, $revParams);
+    }
+
+    /**
      * Get appendix for a URL based on its Source caching settings.
      *
      * @param Asset $asset
@@ -130,8 +144,12 @@ class Assets
      */
     public static function urlAppendix(Asset $asset, ?DateTime $dateUpdated = null): string
     {
+        if (!Craft::$app->getConfig()->getGeneral()->revAssetUrls) {
+            return '';
+        }
+
         $revParams = self::revParams($asset, $dateUpdated);
-        return $revParams ? sprintf('?%s', UrlHelper::buildQuery($revParams)) : '';
+        return sprintf('?%s', UrlHelper::buildQuery($revParams));
     }
 
     /**

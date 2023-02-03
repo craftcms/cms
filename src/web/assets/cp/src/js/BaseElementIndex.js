@@ -81,7 +81,6 @@ Craft.BaseElementIndex = Garnish.Base.extend(
     exportersByType: null,
     _$triggers: null,
 
-    _ignoreFailedRequest: false,
     _cancelToken: null,
 
     viewMenus: null,
@@ -361,11 +360,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
     _cancelRequests: function () {
       if (this._cancelToken) {
-        this._ignoreFailedRequest = true;
         this._cancelToken.cancel();
-        Garnish.requestAnimationFrame(() => {
-          this._ignoreFailedRequest = false;
-        });
       }
     },
 
@@ -462,9 +457,9 @@ Craft.BaseElementIndex = Garnish.Base.extend(
           this.initSources();
           this.selectDefaultSource();
         })
-        .catch(() => {
-          this.setIndexAvailable();
-          if (!this._ignoreFailedRequest) {
+        .catch((e) => {
+          if (!axios.isCancel(e)) {
+            this.setIndexAvailable();
             Craft.cp.displayError(Craft.t('app', 'A server error occurred.'));
           }
         });
@@ -927,8 +922,8 @@ Craft.BaseElementIndex = Garnish.Base.extend(
           }
         })
         .catch((e) => {
-          this.setIndexAvailable();
-          if (!this._ignoreFailedRequest) {
+          if (!axios.isCancel(e)) {
+            this.setIndexAvailable();
             Craft.cp.displayError(Craft.t('app', 'A server error occurred.'));
           }
         });
@@ -2604,8 +2599,8 @@ Craft.BaseElementIndex = Garnish.Base.extend(
           Craft.getActionUrl('element-indexes/export'),
           params
         )
-          .catch(() => {
-            if (!this._ignoreFailedRequest) {
+          .catch((e) => {
+            if (!axios.isCancel(e)) {
               Craft.cp.displayError(Craft.t('app', 'A server error occurred.'));
             }
           })
