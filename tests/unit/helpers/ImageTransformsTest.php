@@ -28,7 +28,7 @@ class ImageTransformsTest extends Unit
         'fill' => '#ff0000',
         'quality' => 95,
         'interlace' => 'line',
-        'upscale' => false,
+        'upscale' => true,
     ];
 
     public function testCreateTransformFromStringInvalid()
@@ -208,24 +208,32 @@ class ImageTransformsTest extends Unit
     {
         return [
             'basic transform' => [
-                '_1200x900_crop_center-center_none',
+                '_1200x900_crop_center-center_none_upscale',
                 [
                     'width' => 1200,
                     'height' => 900,
                 ],
             ],
             'no width' => [
-                '_AUTOx900_crop_center-center_none',
+                '_AUTOx900_crop_center-center_none_upscale',
                 [
                     'width' => null,
                     'height' => 900,
                 ],
             ],
             'no height' => [
+                '_1200xAUTO_crop_center-center_none_upscale',
+                [
+                    'width' => 1200,
+                    'height' => null,
+                ],
+            ],
+            'no upscale' => [
                 '_1200xAUTO_crop_center-center_none',
                 [
                     'width' => 1200,
                     'height' => null,
+                    'upscale' => false,
                 ],
             ],
             'with handle' => [
@@ -233,11 +241,11 @@ class ImageTransformsTest extends Unit
                 $this->fullTransform,
             ],
             'full transform' => [
-                '_100x200_fit_center-center_95_line_ff0000',
+                '_100x200_fit_center-center_95_line_ff0000_upscale',
                 ArrayHelper::merge($this->fullTransform, ['handle' => null]),
             ],
             'transparent fill' => [
-                '_100x200_fit_center-center_95_line_transparent',
+                '_100x200_fit_center-center_95_line_transparent_upscale',
                 ArrayHelper::merge($this->fullTransform, ['fill' => 'transparent', 'handle' => null]),
             ],
         ];
@@ -265,6 +273,7 @@ class ImageTransformsTest extends Unit
                     'quality' => 70,
                     'interlace' => 'partition',
                     'fill' => null,
+                    'upscale' => true,
                 ],
             ],
             [
@@ -276,6 +285,7 @@ class ImageTransformsTest extends Unit
                     'quality' => null,
                     'interlace' => 'none',
                     'fill' => null,
+                    'upscale' => false,
                 ],
             ],
             [
@@ -287,6 +297,7 @@ class ImageTransformsTest extends Unit
                     'quality' => 70,
                     'interlace' => 'partition',
                     'fill' => 'transparent',
+                    'upscale' => true,
                 ],
             ],
             [
@@ -298,6 +309,7 @@ class ImageTransformsTest extends Unit
                     'quality' => 70,
                     'interlace' => 'partition',
                     'fill' => '#f00',
+                    'upscale' => false,
                 ],
             ],
             [
@@ -309,6 +321,7 @@ class ImageTransformsTest extends Unit
                     'quality' => 70,
                     'interlace' => 'partition',
                     'fill' => '#ff0000',
+                    'upscale' => true,
                 ],
             ],
         ];

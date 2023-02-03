@@ -256,7 +256,7 @@ class ImageTransforms
      */
     public static function parseTransformString(string $str): array
     {
-        if (!preg_match('/^_?(?P<width>\d+|AUTO)x(?P<height>\d+|AUTO)_(?P<mode>[a-z]+)_(?P<position>[a-z\-]+)(?:_(?P<quality>\d+))?_(?P<interlace>[a-z]+)(?:_(?P<fill>transparent|[\da-z]{3}|[\da-z]{6}))?$/', $str, $match)) {
+        if (!preg_match('/^_?(?P<width>\d+|AUTO)x(?P<height>\d+|AUTO)_(?P<mode>[a-z]+)_(?P<position>[a-z\-]+)(?:_(?P<quality>\d+))?_(?P<interlace>[a-z]+)(?:_(?P<fill>transparent|[0-9a-f]{3}|[0-9a-f]{6}))?(?:_(?P<upscale>upscale))?$/', $str, $match)) {
             throw new InvalidArgumentException("Invalid transform string: $str");
         }
 
@@ -268,6 +268,7 @@ class ImageTransforms
             'quality' => $match['quality'] ? (int)$match['quality'] : null,
             'interlace' => $match['interlace'],
             'fill' => ($match['fill'] ?? null) ? sprintf('%s%s', $match['fill'] !== 'transparent' ? '#' : '', $match['fill']) : null,
+            'upscale' => (($match['upscale'] ?? null)) && $match['upscale'] === 'upscale',
         ];
     }
 
