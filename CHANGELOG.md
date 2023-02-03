@@ -8,6 +8,7 @@
 - The “Port” setting on the SMTP mailer transporter is no longer required. It will default to 465 or 25 depending on whether OpenSSL is installed.
 - Added more reserved field handles to avoid conflicts with `craft\base\Element` properties. ([#12577](https://github.com/craftcms/cms/issues/12577))
 - Assets’ `alt` properties are now automatically trimmed of leading/trailing whitespace.
+- Asset element components in the control panel now include a `data-alt` attribute. ([#12600](https://github.com/craftcms/cms/discussions/12600))
 - Fixed field status badge styling in some contexts. ([#12403](https://github.com/craftcms/cms/issues/12403))
 - Fixed a bug where exporting elements with multiple field layouts as a CSV file using the “Expanded” export type would result in mismatched column values.
 - Fixed a bug where cancelling a conflicting volume folder move would result in the moved folder getting deleted.

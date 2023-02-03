@@ -2503,6 +2503,7 @@ JS;
         $attributes = [
             'data' => [
                 'kind' => $this->kind,
+                'alt' => $this->alt,
             ],
         ];
 
