@@ -66,7 +66,7 @@ class AssetIndexesController extends Controller
 
         if ($indexingSession->totalEntries === 0 && !$indexingSession->processIfRootEmpty) {
             $data['stop'] = $indexingSession->id;
-            $error = Craft::t('app', 'The filesystem doesn\'t contain any files.');
+            $error = Craft::t('app', 'The filesystem doesn’t contain any files.');
             Craft::$app->getAssetIndexer()->stopIndexingSession($indexingSession);
         }
 
