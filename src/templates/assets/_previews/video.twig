@@ -1,4 +1,16 @@
-<video autoplay controls style="width: 100%; height: 100%">
+{% set height = asset.alt ? '60%' : '100%' %}
+{% set altHeight = '40%' %}
+
+<video autoplay controls style="width: 100%; height: {{ height }};">
   <source src="{{ url }}" type="{{ asset.mimeType }}">
   Your browser does not support the video tag.
 </video>
+
+{% if asset.alt %}
+  <div class="video-alt" style="height: {{ altHeight }};">
+    <h2 class="video-alt__heading">Transcript</h2>
+    <p class="video-alt__text">
+      {{ asset.alt|nl2br }}
+    </p>
+  </div>
+{% endif %}
