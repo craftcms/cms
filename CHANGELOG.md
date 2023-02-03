@@ -18,7 +18,7 @@
 - Fixed a bug where accessing a custom field’s magic property on an element would return the field’s raw database value rather than `null`, if it didn’t belong to the element’s field layout anymore. ([#12539](https://github.com/craftcms/cms/issues/12539), [#12578](https://github.com/craftcms/cms/pull/12578))
 - Fixed a bug where `craft\image\Raster::getIsTransparent()` wasn’t working. ([#12565](https://github.com/craftcms/cms/issues/12565))
 - Fixed a bug where the component name comments in project config YAML files would always lag behind the current project config a little. ([#12576](https://github.com/craftcms/cms/issues/12576), ([#12581](https://github.com/craftcms/cms/pull/12581)))
-- Fixed a MySQL error that occurred when creating a database backup using the default backup command, when running MySQL 5.7.41+ or 8.0.32+. ([#12557](https://github.com/craftcms/cms/issues/12557), [#12560](https://github.com/craftcms/cms/pull/12560))
+- Fixed a SQL error that occurred when creating a database backup using the default backup command, when running MySQL 5.7.41+ or 8.0.32+. ([#12557](https://github.com/craftcms/cms/issues/12557), [#12560](https://github.com/craftcms/cms/pull/12560))
 - Fixed a bug where database backups weren’t respecting SSL database connection settings if they were specified when using MySQL. ([#10351](https://github.com/craftcms/cms/issues/10351), [#11753](https://github.com/craftcms/cms/issues/11753), [#12596](https://github.com/craftcms/cms/pull/12596))
 - Fixed a bug where element indexes could stop showing their loading spinner prematurely if the element listing needed to be reloaded multiple times in rapid succession. ([#12595](https://github.com/craftcms/cms/issues/12595))
 - Fixed a bug where element indexes would show show an expand/collapse toggle for structured elements that only had unsaved draft children, which aren’t actually shown. ([#11253](https://github.com/craftcms/cms/issues/11253))
@@ -1813,7 +1813,7 @@
 - Fixed a bug where editable tables within nested Matrix field settings were initially unresponsive when editing an existing Matrix field. ([#7911](https://github.com/craftcms/cms/issues/7911))
 - Fixed a bug where duplicated entries’ slugs and URIs could be incremented when changing a section’s propagation method. ([#7895](https://github.com/craftcms/cms/issues/7895))
 - Fixed a bug where the `Permissions-Policy` anti-FLoC header was being applied incorrectly. ([#7896](https://github.com/craftcms/cms/issues/7896))
-- Fixed a MySQL error that could occur when indexing search keywords which contained certain Russian characters. ([#7905](https://github.com/craftcms/cms/issues/7905))
+- Fixed a SQL error that could occur when indexing search keywords which contained certain Russian characters on MySQL. ([#7905](https://github.com/craftcms/cms/issues/7905))
 - Fixed a bug where `craft\elements\actions\Delete` wasn’t hard-deleting elements when `$hard` was set to `true`, if the element index wasn’t already set to query soft-deleted elements. ([#7901](https://github.com/craftcms/cms/issues/7901))
 - Fixed a bug where `craft\elements\actions\Delete` wasn’t clearing search indexes when `$hard` was set to `true`. ([#7901](https://github.com/craftcms/cms/issues/7901))
 - Fixed a PHP error that could occur if `config/app.php` was overriding the `log` component using `craft\helpers\App::logConfig()`, and expecting it to return an array with log target configs (as it used to before Craft 3.6).
@@ -1889,7 +1889,7 @@
 ### Fixed
 - Fixed a bug where restored entries could get deleted by garbage collection, if their `authorId` value was set to a soft-deleted author. ([#7751](https://github.com/craftcms/cms/issues/7751))
 - Fixed a bug where indexing assets from the command line could work incorrectly in some cases. ([#7741](https://github.com/craftcms/cms/issues/7741))
-- Fixed a MySQL error that could occur if a job in the queue failed and had a very long error message.
+- Fixed a SQL error that could occur if a job in the queue failed and had a very long error message on MySQL.
 - Fixed a bug where validation events would trigger when saving an element via `craft\services\Elements::saveElement()`, even if `$runValidation` was set to `false`. ([#7756](https://github.com/craftcms/cms/issues/7756))
 - Fixed a bug where `craft\helpers\Html::parseTag()` would parse child tags of `<script>` and `<style>` tags.
 - Fixed a bug where pagination labels below Vue admin tables weren’t using the translatable pagination message.
