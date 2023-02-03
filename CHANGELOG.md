@@ -9,6 +9,7 @@
 - Added more reserved field handles to avoid conflicts with `craft\base\Element` properties. ([#12577](https://github.com/craftcms/cms/issues/12577))
 - Assets’ `alt` properties are now automatically trimmed of leading/trailing whitespace.
 - Asset element components in the control panel now include a `data-alt` attribute. ([#12600](https://github.com/craftcms/cms/discussions/12600))
+- Control panel requests no longer override the `pageTrigger` config setting value to `'p'`. ([#12598](https://github.com/craftcms/cms/issues/12598), [#12614](https://github.com/craftcms/cms/pull/12614))
 - Fixed field status badge styling in some contexts. ([#12403](https://github.com/craftcms/cms/issues/12403))
 - Fixed a bug where exporting elements with multiple field layouts as a CSV file using the “Expanded” export type would result in mismatched column values.
 - Fixed a bug where cancelling a conflicting volume folder move would result in the moved folder getting deleted.
@@ -32,8 +33,10 @@
 - Fixed a bug where asset thumbnails weren’t getting versioned in the control panel, unless the `revAssetUrls` config setting was enabled. ([#12603](https://github.com/craftcms/cms/issues/12603))
 - Fixed a bug where entry relations could be lost when switching entry types, for relational fields that didn’t exist on the prior entry type. ([#12592](https://github.com/craftcms/cms/issues/12592))
 - Fixed a bug where Matrix blocks weren’t getting duplicated to other sites when first editing an unpublished draft. ([#11366](https://github.com/craftcms/cms/issues/11366))
+- Fixed a bug where element indexes would show show an expand/collapse toggle for structured elements that only had unsaved draft children, which aren’t actually shown. ([#11253](https://github.com/craftcms/cms/issues/11253))
 - Added `craft\helpers\Assets::revUrl()`.
 - Added `craft\helpers\Db::escapeForLike()`.
+- Added `craft\web\twig\variables\Paginate::$pageTrigger`. ([#12614](https://github.com/craftcms/cms/pull/12614))
 - `craft\helpers\Assets::revParams()` no longer takes the `revAssetUrls` config setting into account. That should be factored in by whatever is calling it.
 - `craft\services\Assets::getAllDescendantFolders()` now has a `$withParent` argument, which can be passed `false` to omit the parent folder from the results. ([#12536](https://github.com/craftcms/cms/issues/12536))
 - `craft\services\Matrix::duplicateBlocks()` now has a `$force` argument.

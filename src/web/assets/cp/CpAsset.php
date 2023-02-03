@@ -415,7 +415,7 @@ JS;
             'omitScriptNameInUrls' => $generalConfig->omitScriptNameInUrls,
             'orientation' => $orientation,
             'pageNum' => $request->getPageNum(),
-            'pageTrigger' => $generalConfig->getPageTrigger(),
+            'pageTrigger' => 'p',
             'path' => $request->getPathInfo(),
             'pathParam' => $generalConfig->pathParam,
             'Pro' => Craft::Pro,

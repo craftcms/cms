@@ -69,11 +69,31 @@ class Paginate extends BaseObject
     public int $totalPages = 0;
 
     /**
+     * @var string
+     * @since 3.7.64
+     */
+    public string $pageTrigger;
+
+    /**
      * @var string Base path
      * @see getBasePath()
      * @see setBasePath()
      */
     private string $_basePath;
+
+    /**
+     * @inheritdoc
+     */
+    public function init()
+    {
+        parent::init();
+
+        if (!isset($this->pageTrigger)) {
+            $this->pageTrigger = Craft::$app->getRequest()->getIsCpRequest()
+                ? 'p'
+                : Craft::$app->getConfig()->getGeneral()->getPageTrigger();
+        }
+    }
 
     /**
      * Returns the base path that should be used for pagination URLs.
@@ -111,8 +131,7 @@ class Paginate extends BaseObject
             return null;
         }
 
-        $pageTrigger = Craft::$app->getConfig()->getGeneral()->getPageTrigger();
-        $useQueryParam = str_starts_with($pageTrigger, '?');
+        $useQueryParam = str_starts_with($this->pageTrigger, '?');
 
         $path = $this->getBasePath();
 
@@ -122,7 +141,7 @@ class Paginate extends BaseObject
                 $path .= '/';
             }
 
-            $path .= $pageTrigger . $page;
+            $path .= $this->pageTrigger . $page;
         }
 
         // Build the URL with the same query string as the current request
@@ -130,7 +149,7 @@ class Paginate extends BaseObject
 
         // If using a query param, append or remove it
         if ($useQueryParam) {
-            $param = trim($pageTrigger, '?=');
+            $param = trim($this->pageTrigger, '?=');
             if ($page != 1) {
                 $url = UrlHelper::urlWithParams($url, [$param => $page]);
             } else {
