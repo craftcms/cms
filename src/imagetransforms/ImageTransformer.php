@@ -151,7 +151,12 @@ class ImageTransformer extends Component implements ImageTransformerInterface, E
         }
 
         $url = sprintf('%s/%s', rtrim($fs->getRootUrl() ?? '', '/'), $uri);
-        return UrlHelper::urlWithParams($url, AssetsHelper::revParams($asset, $index->dateUpdated));
+
+        if (Craft::$app->getConfig()->getGeneral()->revAssetUrls) {
+            return AssetsHelper::revUrl($url, $asset, $index->dateUpdated);
+        }
+
+        return $url;
     }
 
     /**
