@@ -45,6 +45,7 @@ class AssetIndexingSession extends Model
 
     /**
      * @var bool Whether empty folders should be listed for deletion.
+     * @since 4.4.0
      */
     public bool $listEmptyFolders;
 
@@ -82,6 +83,7 @@ class AssetIndexingSession extends Model
 
     /**
      * @var bool Whether to continue processing if the FS root folder is empty.
+     * @since 4.4.0
      */
     public bool $processIfRootEmpty = false;
 }
