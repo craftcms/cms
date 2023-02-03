@@ -69,7 +69,7 @@ class Image
      * @param int $sourceHeight
      * @param int|null $transformWidth
      * @param int|null $transformHeight
-     * @param string $mode The transform mode (`crop`, `fit`, or `stretch`)
+     * @param string $mode The transform mode (`crop`, `fit`, `letterbox` or `stretch`)
      * @param bool|null $upscale Whether to upscale the image to fill the transform dimensions.
      * Defaults to the `upscaleImages` config setting.
      * @return int[]
@@ -82,7 +82,6 @@ class Image
         ?int $transformWidth,
         ?int $transformHeight,
         string $mode = 'crop',
-        ?string $fill = null,
         ?bool $upscale = null,
     ): array {
         [$width, $height] = static::calculateMissingDimension($transformWidth, $transformHeight, $sourceWidth, $sourceHeight);

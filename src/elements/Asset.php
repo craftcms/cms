@@ -3000,7 +3000,6 @@ JS;
             $transform->width,
             $transform->height,
             $transform->mode,
-            $transform->fill,
             $transform->upscale
         );
     }
