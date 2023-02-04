@@ -1,5 +1,11 @@
 # Release Notes for Craft CMS 4
 
+## Unreleased
+
+- The `_includes/forms/checkbox.twig`, `select.twig`, and `text.twig` templates no longer add an `aria-labelledby` attribute to the input if an `aria-label` attribute is also specified.
+- `craft\helpers\Cp::dateTimeFieldHtml()` now returns inputs contained within a fieldset.
+- Fixed a bug where some inputs were getting `aria-labelledby` attributes that referenced a nonexistent label ID.
+
 ## 4.3.7 - 2023-02-03
 
 - Improved the performance of the “Generating pending image transforms” queue job. ([#12274](https://github.com/craftcms/cms/issues/12274))
