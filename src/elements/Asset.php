@@ -2999,7 +2999,8 @@ JS;
             $this->_height,
             $transform->width,
             $transform->height,
-            $transform->mode
+            $transform->mode,
+            $transform->upscale
         );
     }
 
