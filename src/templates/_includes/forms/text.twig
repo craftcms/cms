@@ -31,7 +31,7 @@
     max: max ?? false,
     dir: orientation,
     aria: {
-        labelledby: labelledBy ?? false,
+        labelledby: (inputAttributes.aria.label ?? false) ? false : (labelledBy ?? false),
         describedby: describedBy ?? false,
     },
 }|merge(inputAttributes ?? [], recursive=true) %}
