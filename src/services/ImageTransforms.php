@@ -260,8 +260,8 @@ class ImageTransforms extends Component
             $modeChanged = $transformRecord->mode !== $data['mode'] || $transformRecord->position !== $data['position'];
             $qualityChanged = $transformRecord->quality !== $data['quality'];
             $interlaceChanged = $transformRecord->interlace !== $data['interlace'];
-            $fillChanged = $transformRecord->fill !== $data['fill'];
-            $upscaleChanged = $transformRecord->upscale !== $data['upscale'];
+            $fillChanged = $transformRecord->fill !== ($data['fill'] ?? null);
+            $upscaleChanged = $transformRecord->upscale !== ($data['upscale'] ?? null);
 
             if ($heightChanged || $modeChanged || $qualityChanged || $interlaceChanged || $fillChanged || $upscaleChanged) {
                 $transformRecord->parameterChangeTime = Db::prepareDateForDb(new DateTime());
@@ -275,8 +275,8 @@ class ImageTransforms extends Component
             $transformRecord->quality = $data['quality'];
             $transformRecord->interlace = $data['interlace'];
             $transformRecord->format = $data['format'];
-            $transformRecord->fill = $data['fill'];
-            $transformRecord->upscale = $data['upscale'];
+            $transformRecord->fill = $data['fill'] ?? null;
+            $transformRecord->upscale = $data['upscale'] ?? null;
             $transformRecord->uid = $transformUid;
 
             $transformRecord->save(false);
