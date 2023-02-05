@@ -1150,10 +1150,6 @@ JS, [
         }
 
         return Craft::$app->getDb()->transaction(function() use ($element, $user, $elementsService): ?Response {
-
-            // Need to apply the params first in case the `typeId` was changed.
-            $this->_applyParamsToElement($element);
-
             // Are we creating the draft here?
             if (!$element->getIsDraft()) {
                 /** @var Element|DraftBehavior $element */
@@ -1161,6 +1157,8 @@ JS, [
                 $draft->setCanonical($element);
                 $element = $this->element = $draft;
             }
+
+            $this->_applyParamsToElement($element);
 
             // Make sure nothing just changed that would prevent the user from saving
             if (!$this->_canSave($element, $user)) {

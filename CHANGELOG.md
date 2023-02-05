@@ -5,6 +5,7 @@
 - The `_includes/forms/checkbox.twig`, `select.twig`, and `text.twig` templates no longer add an `aria-labelledby` attribute to the input if an `aria-label` attribute is also specified.
 - `craft\helpers\Cp::dateTimeFieldHtml()` now returns inputs contained within a fieldset.
 - Fixed a bug where some inputs were getting `aria-labelledby` attributes that referenced a nonexistent label ID.
+- Fixed a bug where the first changes to entries weren’t saving properly. ([#12623](https://github.com/craftcms/cms/issues/12623), [#12592](https://github.com/craftcms/cms/issues/12592))
 
 ## 4.3.7 - 2023-02-03
 
