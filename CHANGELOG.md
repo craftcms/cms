@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 3.x
 
-## Unreleased
+## 3.7.64.1 - 2023-02-05
 
 - Fixed a bug where `craft\behaviors\CustomFieldBehavior::$owner` was getting nullified by `craft\base\Element::fieldByHandle()`. ([#12624](https://github.com/craftcms/cms/issues/12624))
 
