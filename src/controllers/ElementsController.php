@@ -208,9 +208,9 @@ class ElementsController extends Controller
 
         // Redirect to its edit page
         $editUrl = $element->getCpEditUrl() ?? UrlHelper::actionUrl('elements/edit', [
-                'draftId' => $element->draftId,
-                'siteId' => $element->siteId,
-            ]);
+            'draftId' => $element->draftId,
+            'siteId' => $element->siteId,
+        ]);
 
         $response = $this->_asSuccess(Craft::t('app', '{type} created.', [
             'type' => Craft::t('app', 'Draft'),
@@ -1152,8 +1152,15 @@ JS, [
         return Craft::$app->getDb()->transaction(function() use ($element, $user, $elementsService): ?Response {
             // Are we creating the draft here?
             if (!$element->getIsDraft()) {
+                $newAttributes = [];
+
+                // If the typeId was changed, use the new typeId for the draft.
+                if (isset($this->_attributes['typeId'])) {
+                    $newAttributes['typeId'] = $this->_attributes['typeId'];
+                }
+
                 /** @var Element|DraftBehavior $element */
-                $draft = Craft::$app->getDrafts()->createDraft($element, $user->id, null, null, [], $this->_provisional);
+                $draft = Craft::$app->getDrafts()->createDraft($element, $user->id, null, null, $newAttributes, $this->_provisional);
                 $draft->setCanonical($element);
                 $element = $this->element = $draft;
             }
