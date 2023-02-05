@@ -6,6 +6,7 @@ use Craft;
 use craft\db\Migration;
 use craft\db\Table;
 use craft\services\ProjectConfig;
+use yii\db\Exception;
 
 /**
  * m221027_160703_add_image_transform_fill migration.
@@ -32,7 +33,19 @@ class m221027_160703_add_image_transform_fill extends Migration
                 $check .= $this->db->quoteValue($value);
             }
             $check .= ')';
-            $this->execute("alter table {{%imagetransforms}} drop constraint {{%imagetransforms_mode_check}}, add check ({$check})");
+            $tryConstraints = [
+                '{{%imagetransforms_mode_check}}',
+                '{{%assettransforms_mode_check}}',
+            ];
+            foreach ($tryConstraints as $constraint) {
+                try {
+                    $sql = sprintf('alter table %s drop constraint %s, add check (%s)', Table::IMAGETRANSFORMS, $constraint, $check);
+                    $this->execute($sql);
+                    break;
+                } catch (Exception) {
+                    // try the next one...
+                }
+            }
         } else {
             $this->alterColumn(Table::IMAGETRANSFORMS, 'mode', $this->enum('mode', $modeOptions)->notNull()->defaultValue('crop'));
         }
