@@ -4338,6 +4338,11 @@ abstract class Element extends Component implements ElementInterface
      */
     protected function fieldByHandle(string $handle)
     {
+        // ignore if it's not a custom field handle
+        if (!isset(CustomFieldBehavior::$fieldHandles[$handle])) {
+            return null;
+        }
+
         if ($this->_fieldsByHandle !== null && array_key_exists($handle, $this->_fieldsByHandle)) {
             return $this->_fieldsByHandle[$handle];
         }
