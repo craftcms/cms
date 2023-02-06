@@ -1038,13 +1038,20 @@ class Elements extends Component
      * (this can only be disabled when updating an existing element)
      * @param bool|null $updateSearchIndex Whether to update the element search index for the element
      * (this will happen via a background job if this is a web request)
+     * @param bool $forceTouch Whether to force the `dateUpdated` timestamp to be updated for the element,
+     * regardless of whether it’s being resaved
      * @return bool
      * @throws ElementNotFoundException if $element has an invalid $id
      * @throws Exception if the $element doesn’t have any supported sites
      * @throws Throwable if reasons
      */
-    public function saveElement(ElementInterface $element, bool $runValidation = true, bool $propagate = true, ?bool $updateSearchIndex = null): bool
-    {
+    public function saveElement(
+        ElementInterface $element,
+        bool $runValidation = true,
+        bool $propagate = true,
+        ?bool $updateSearchIndex = null,
+        bool $forceTouch = false,
+    ): bool {
         // Force propagation for new elements
         $propagate = !$element->id || $propagate;
 
@@ -1052,7 +1059,13 @@ class Elements extends Component
         $duplicateOf = $element->duplicateOf;
         $element->duplicateOf = null;
 
-        $success = $this->_saveElementInternal($element, $runValidation, $propagate, $updateSearchIndex);
+        $success = $this->_saveElementInternal(
+            $element,
+            $runValidation,
+            $propagate,
+            $updateSearchIndex,
+            forceTouch: $forceTouch,
+        );
         $element->duplicateOf = $duplicateOf;
         return $success;
     }
@@ -2872,8 +2885,8 @@ class Elements extends Component
      * @param bool|null $updateSearchIndex Whether to update the element search index for the element
      * (this will happen via a background job if this is a web request)
      * @param array|null $supportedSites The element’s supported site info, indexed by site ID
-     * @param bool $forceTouch Whether to force the `dateUpdated` timestamps to be updated for the elements,
-     * regardless of whether they’re being resaved
+     * @param bool $forceTouch Whether to force the `dateUpdated` timestamp to be updated for the element,
+     * regardless of whether it’s being resaved
      * @return bool
      * @throws ElementNotFoundException if $element has an invalid $id
      * @throws UnsupportedSiteException if the element is being saved for a site it doesn’t support
