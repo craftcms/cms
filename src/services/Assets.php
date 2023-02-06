@@ -226,7 +226,7 @@ class Assets extends Component
         }
 
         $volume = $parent->getVolume();
-        $path = rtrim($folder->path, '/');
+        $path = rtrim($folder->getPathWithFsSubpath(), DIRECTORY_SEPARATOR);
 
         $volume->getFs()->createDirectory($path);
 
@@ -308,7 +308,7 @@ class Assets extends Component
             if ($folder && $deleteDir) {
                 $volume = $folder->getVolume();
                 try {
-                    $volume->getFs()->deleteDirectory($folder->path);
+                    $volume->getFs()->deleteDirectory($folder->getPathWithFsSubpath());
                 } catch (VolumeException $exception) {
                     Craft::$app->getErrorHandler()->logException($exception);
                     // Carry on.
@@ -792,6 +792,12 @@ class Assets extends Component
         $parentFolder = Craft::$app->getVolumes()->ensureTopFolder($volume);
         $folderModel = $parentFolder;
         $parentId = $parentFolder->id;
+
+        $volumeFsSubpath = $volume->getFsSubpath();
+        $pos = strpos($fullPath, $volumeFsSubpath);
+        if ($pos !== false) {
+            $fullPath = substr_replace($fullPath, '', $pos, strlen($volumeFsSubpath));
+        }
 
         if ($fullPath !== '') {
             // If we don't have a folder matching these, create a new one

@@ -755,6 +755,18 @@ class Asset extends Element
      */
     private ?int $_oldVolumeId = null;
 
+    public function __construct($config = [])
+    {
+        if (isset($config['volumeId'])) {
+            $volume = Craft::$app->getVolumes()->getVolumeById($config['volumeId']);
+            $fsSubpath = $volume->getFsSubpath();
+            if (!empty($fsSubpath) && !str_starts_with($config['folderPath'], $fsSubpath)) {
+                $config['folderPath'] = $fsSubpath . $config['folderPath'];
+            }
+        }
+        parent::__construct($config);
+    }
+
     /**
      * @inheritdoc
      */
@@ -830,6 +842,14 @@ class Asset extends Element
 
         if ($this->alt === '') {
             $this->alt = null;
+        }
+
+        if ($this->_volumeId !== null) {
+            $volume = $this->getVolume();
+            $fsSubpath = $volume->getFsSubpath();
+            if (!empty($fsSubpath) && !str_starts_with($this->folderPath, $fsSubpath)) {
+                $this->folderPath = $fsSubpath . $this->folderPath;
+            }
         }
 
         $this->_oldVolumeId = $this->_volumeId;
@@ -1857,7 +1877,7 @@ JS;
      */
     public function getPath(?string $filename = null): string
     {
-        return $this->_volume->getFsSubpath() . $this->folderPath . ($filename ?: $this->_filename);
+        return $this->folderPath . ($filename ?: $this->_filename);
     }
 
     /**
@@ -2646,8 +2666,10 @@ JS;
         $newFolder = $hasNewFolder ? $assetsService->getFolderById($folderId) : $oldFolder;
         $newVolume = $hasNewFolder ? $newFolder->getVolume() : $oldVolume;
 
+        $newFolderPath = $newFolder->getPathWithFsSubpath();
+
         $oldPath = $this->folderId ? $this->getPath() : null;
-        $newPath = ($newFolder->getPathWithFsSubpath() ? rtrim($newFolder->getPathWithFsSubpath(), '/') . '/' : '') . $filename;
+        $newPath = ($newFolderPath ? rtrim($newFolderPath, '/') . '/' : '') . $filename;
 
         // Is this just a simple move/rename within the same volume?
         if (!isset($this->tempFilePath) && $oldFolder !== null && $oldFolder->volumeId == $newFolder->volumeId) {
@@ -2704,7 +2726,7 @@ JS;
         // Update file properties
         $this->setVolumeId($newFolder->volumeId);
         $this->folderId = $folderId;
-        $this->folderPath = $newFolder->getPathWithFsSubpath();
+        $this->folderPath = $newFolderPath;
         $this->_filename = $filename;
         $this->_volume = $newVolume;
 
