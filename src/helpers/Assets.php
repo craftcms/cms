@@ -90,7 +90,6 @@ class Assets
     {
         $revParams = self::revParams($asset, $dateUpdated);
         $pathParts = explode('/', $asset->folderPath . ($uri ?? $asset->getFilename()));
-
         $path = implode('/', array_map('rawurlencode', $pathParts));
         return UrlHelper::urlWithParams($fs->getRootUrl() . $path, $revParams);
     }
