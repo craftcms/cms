@@ -386,7 +386,7 @@ class AssetIndexer extends Component
         $volumeList = array_keys($volumeList);
 
         $missingFolders = (new Query())
-            ->select(['path' => 'folders.path', 'volumeName' => 'volumes.name', 'volumeId' => 'volumes.id', 'folderId' => 'folders.id'])
+            ->select(['path' => 'folders.path', 'volumeName' => 'volumes.name', 'volumeId' => 'volumes.id', 'volumeFsSubpath' => 'volumes.fsSubpath', 'folderId' => 'folders.id'])
             ->from(['folders' => Table::VOLUMEFOLDERS])
             ->leftJoin(['volumes' => Table::VOLUMES], '[[volumes.id]] = [[folders.volumeId]]')
             ->leftJoin(['indexData' => Table::ASSETINDEXDATA], ['and', '[[folders.id]] = [[indexData.recordId]]', ['indexData.isDir' => true]])
@@ -397,7 +397,7 @@ class AssetIndexer extends Component
             ->all();
 
         $missingFiles = (new Query())
-            ->select(['path' => 'folders.path', 'volumeName' => 'volumes.name', 'filename' => 'assets.filename', 'assetId' => 'assets.id'])
+            ->select(['path' => 'folders.path', 'volumeName' => 'volumes.name', 'volumeFsSubpath' => 'volumes.fsSubpath', 'filename' => 'assets.filename', 'assetId' => 'assets.id'])
             ->from(['assets' => Table::ASSETS])
             ->leftJoin(['elements' => Table::ELEMENTS], '[[elements.id]] = [[assets.id]]')
             ->leftJoin(['folders' => Table::VOLUMEFOLDERS], '[[folders.id]] = [[assets.folderId]]')
@@ -409,7 +409,7 @@ class AssetIndexer extends Component
             ->andWhere(['indexData.id' => null])
             ->all();
 
-        foreach ($missingFolders as ['folderId' => $folderId, 'path' => $path, 'volumeName' => $volumeName, 'volumeId' => $volumeId]) {
+        foreach ($missingFolders as ['folderId' => $folderId, 'path' => $path, 'volumeName' => $volumeName, 'volumeId' => $volumeId, 'volumeFsSubpath' => $volumeFsSubpath]) {
             /**
              * Check to see if the folders are actually empty
              * @link https://github.com/craftcms/cms/issues/11949
@@ -422,12 +422,12 @@ class AssetIndexer extends Component
                 ->exists();
 
             if (!$hasAssets) {
-                $missing['folders'][$folderId] = $volumeName . '/' . $path;
+                $missing['folders'][$folderId] = $volumeName . '/' . (!empty($volumeFsSubpath) ? $volumeFsSubpath . '/' : '') . $path;
             }
         }
 
-        foreach ($missingFiles as ['assetId' => $assetId, 'path' => $path, 'volumeName' => $volumeName, 'filename' => $filename]) {
-            $missing['files'][$assetId] = $volumeName . '/' . $path . $filename;
+        foreach ($missingFiles as ['assetId' => $assetId, 'path' => $path, 'volumeName' => $volumeName, 'filename' => $filename, 'volumeFsSubpath' => $volumeFsSubpath]) {
+            $missing['files'][$assetId] = $volumeName . '/' . (!empty($volumeFsSubpath) ? $volumeFsSubpath . '/' : '') . $path . $filename;
         }
 
         return $missing;

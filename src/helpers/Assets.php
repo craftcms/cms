@@ -89,7 +89,7 @@ class Assets
     public static function generateUrl(FsInterface $fs, Asset $asset, ?string $uri = null, ?DateTime $dateUpdated = null): string
     {
         $revParams = self::revParams($asset, $dateUpdated);
-        $pathParts = array_filter(explode('/', $asset->folderPath . ($uri ?? $asset->getFilename())));
+        $pathParts = explode('/', $asset->folderPath . ($uri ?? $asset->getFilename()));
 
         $path = implode('/', array_map('rawurlencode', $pathParts));
         return UrlHelper::urlWithParams($fs->getRootUrl() . $path, $revParams);
