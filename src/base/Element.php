@@ -5007,6 +5007,11 @@ JS,
      */
     protected function fieldByHandle(string $handle): ?FieldInterface
     {
+        // ignore if it's not a custom field handle
+        if (!isset(CustomFieldBehavior::$fieldHandles[$handle])) {
+            return null;
+        }
+
         if (array_key_exists($handle, $this->_fieldsByHandle)) {
             return $this->_fieldsByHandle[$handle];
         }
