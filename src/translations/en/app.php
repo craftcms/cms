@@ -1580,6 +1580,7 @@ return [
     'Total Price' => 'Total Price',
     'Total releases' => 'Total releases',
     'Townland' => 'Townland',
+    'Transcript' => 'Transcript',
     'Transfer it to:' => 'Transfer it to:',
     'Transform Filesystem' => 'Transform Filesystem',
     'Transform Subpath' => 'Transform Subpath',
