@@ -1,5 +1,5 @@
 {% set height = asset.alt ? '60%' : '100%' %}
-{% set altHeight = '40%' %}
+{% set transcriptHeight = '40%' %}
 
 <video autoplay controls style="width: 100%; height: {{ height }};">
   <source src="{{ url }}" type="{{ asset.mimeType }}">
@@ -7,7 +7,7 @@
 </video>
 
 {% if asset.alt %}
-  <div class="video-transcript" tabindex="0" style="height: {{ altHeight }};">
+  <div class="video-transcript" tabindex="0" style="height: {{ transcriptHeight }};">
     <div class="video-transcript__inner">
       <h2 class="video-transcript__heading">{{ 'Transcript'|t('app') }}</h2>
       <p class="video-transcript__text">
