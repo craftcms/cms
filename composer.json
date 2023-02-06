@@ -74,7 +74,8 @@
     "fakerphp/faker": "^1.19.0",
     "league/factory-muffin": "^3.3.0",
     "phpstan/phpstan": "^1.8.5",
-    "vlucas/phpdotenv": "^5.4.1"
+    "vlucas/phpdotenv": "^5.4.1",
+    "yiisoft/yii2-redis": "^2.0"
   },
   "provide": {
     "bower-asset/inputmask": "~3.2.2|~3.3.5",

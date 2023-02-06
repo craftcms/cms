@@ -343,22 +343,6 @@ class Controller extends YiiController
     }
 
     /**
-     * Converts Markdown to be better readable in console environments by applying some ANSI format.
-     *
-     * @param string $markdown
-     * @return string
-     * @since 4.3.5
-     */
-    public function markdownToAnsi(string $markdown): string
-    {
-        if (!$this->isColorEnabled()) {
-            return $markdown;
-        }
-
-        return trim(Console::markdownToAnsi($markdown));
-    }
-
-    /**
      * Prompts the user for a password and validates it.
      *
      * @param array $options options to customize the behavior of the prompt:
@@ -444,62 +428,6 @@ class Controller extends YiiController
         ];
 
         Console::table($headers, $data, $options);
-    }
-
-    /**
-     * Outputs a note to the console.
-     *
-     * @param string $message The message. Supports Markdown formatting.
-     * @since 4.3.5
-     */
-    public function note(string $message, string $icon = 'ℹ️ '): void
-    {
-        $this->stdout("\n$icon ", Console::FG_YELLOW, Console::BOLD);
-        $this->stdout(trim(preg_replace('/^/m', '   ', $this->markdownToAnsi($message))) . "\n\n");
-    }
-
-    /**
-     * Outputs a success message to the console.
-     *
-     * @param string $message The message. Supports Markdown formatting.
-     * @since 4.3.5
-     */
-    public function success(string $message): void
-    {
-        $this->note($message, '✅');
-    }
-
-    /**
-     * Outputs a failure message to the console.
-     *
-     * @param string $message The message. Supports Markdown formatting.
-     * @since 4.3.5
-     */
-    public function failure(string $message): void
-    {
-        $this->note($message, '❌');
-    }
-
-    /**
-     * Outputs a tip to the console.
-     *
-     * @param string $message The message. Supports Markdown formatting.
-     * @since 4.3.5
-     */
-    public function tip(string $message): void
-    {
-        $this->note($message, '💡');
-    }
-
-    /**
-     * Outputs a warning to the console.
-     *
-     * @param string $message The message. Supports Markdown formatting.
-     * @since 4.3.5
-     */
-    public function warning(string $message): void
-    {
-        $this->note($message, '⚠️ ');
     }
 
     /**

@@ -68,9 +68,15 @@
 - Added `craft\base\ElementInterface::getCpRevisionsUrl()`.
 - Added `craft\base\ElementInterface::indexElementCount()`.
 - Added `craft\console\ControllerTrait::beforeAction()`.
+- Added `craft\console\ControllerTrait::failure()`.
 - Added `craft\console\ControllerTrait::init()`.
+- Added `craft\console\ControllerTrait::markdownToAnsi()`.
+- Added `craft\console\ControllerTrait::note()`.
 - Added `craft\console\ControllerTrait::options()`.
 - Added `craft\console\ControllerTrait::runAction()`.
+- Added `craft\console\ControllerTrait::success()`.
+- Added `craft\console\ControllerTrait::tip()`.
+- Added `craft\console\ControllerTrait::warning()`.
 - Added `craft\debug\DumpPanel`.
 - Added `craft\elements\conditions\assets\ViewableConditionRule`. ([#12266](https://github.com/craftcms/cms/pull/12266))
 - Added `craft\elements\conditions\entries\ViewableConditionRule`. ([#12266](https://github.com/craftcms/cms/pull/12266))
