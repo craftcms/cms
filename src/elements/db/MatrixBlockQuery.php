@@ -676,8 +676,13 @@ class MatrixBlockQuery extends ElementQuery
             }
         } else {
             if ($this->fieldId) {
-                foreach ($this->fieldId as $fieldId) {
-                    $tags[] = "field:$fieldId";
+                if (is_array($this->fieldId)) {
+                    foreach ($this->fieldId as $fieldId) {
+                        $tags[] = "field:$fieldId";
+                    }
+                }
+                else {
+                    $tags[] = "field:{$this->fieldId}";
                 }
             }
             if ($this->primaryOwnerId) {
