@@ -1069,7 +1069,7 @@ abstract class Element extends Component implements ElementInterface
         if (!empty($viewState['order'])) {
             // Special case for sorting by structure
             if ($viewState['order'] === 'structure') {
-                $source = static::findSource($sourceKey, $context);
+                $source = ElementHelper::findSource(static::class, $sourceKey, $context);
 
                 if (isset($source['structureId'])) {
                     $elementQuery->orderBy(['lft' => SORT_ASC]);
