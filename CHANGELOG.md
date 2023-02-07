@@ -3,6 +3,7 @@
 ## Unreleased
 
 - Fixed a bug where revision notes weren’t always being retained for provisional drafts. ([#12641](https://github.com/craftcms/cms/issues/12641))
+- Fixed a bug where it wasn’t possible to access the Customize Sources modal on element index pages, if all sources were disabled. ([#12634](https://github.com/craftcms/cms/issues/12634))
 
 ## 4.3.7.1 - 2023-02-05
 
