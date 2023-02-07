@@ -1,5 +1,9 @@
 # Release Notes for Craft CMS 3.x
 
+## Unreleased
+
+- Fixed a bug where Matrix blocks weren’t getting eager-loaded. ([#12631](https://github.com/craftcms/cms/issues/12631))
+
 ## 3.7.64.1 - 2023-02-05
 
 - Fixed a bug where `craft\behaviors\CustomFieldBehavior::$owner` was getting nullified by `craft\base\Element::fieldByHandle()`. ([#12624](https://github.com/craftcms/cms/issues/12624))
