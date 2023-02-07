@@ -2258,8 +2258,9 @@ class Elements extends Component
      * @param string $elementType
      * @param array $elementsBySite
      * @param EagerLoadPlan[] $with
+     * @param bool $checkIfInLayout
      */
-    private function _eagerLoadElementsInternal(string $elementType, array $elementsBySite, array $with)
+    private function _eagerLoadElementsInternal(string $elementType, array $elementsBySite, array $with, bool $checkIfInLayout = true)
     {
         foreach ($elementsBySite as $siteId => $elements) {
             // In case the elements were
@@ -2284,19 +2285,22 @@ class Elements extends Component
 
                 // filter out fields that are not part of this layout
                 // https://github.com/craftcms/cms/issues/12539
-                $filteredElements = array_values(
-                    array_filter($filteredElements, function($filteredElement) use ($plan) {
-                        $fieldLayout = $filteredElement->getFieldLayout();
-                        return (
-                            !$fieldLayout ||
-                            $fieldLayout->getFieldByHandle($plan->handle) !== null
-                        );
-                    })
-                );
+                if ($checkIfInLayout) {
+                    $filteredElements = array_values(
+                        array_filter($filteredElements, function($filteredElement) use ($plan) {
+                            $fieldLayout = $filteredElement->getFieldLayout();
+                            $fieldHandle = preg_replace('/(\w+)([\.|:]\S+)/', '$1', $plan->handle, 1);
+                            return (
+                                !$fieldLayout ||
+                                $fieldLayout->getFieldByHandle($fieldHandle) !== null
+                            );
+                        })
+                    );
 
-                // if we have nothing left in the $filteredElements, move on to the next iteration
-                if (empty($filteredElements)) {
-                    continue;
+                    // if we have nothing left in the $filteredElements, move on to the next iteration
+                    if (empty($filteredElements)) {
+                        continue;
+                    }
                 }
 
                 // Get the eager-loading map from the source element type
@@ -2453,7 +2457,12 @@ class Elements extends Component
 
                 // Now eager-load any sub paths
                 if (!empty($map['map']) && !empty($plan->nested)) {
-                    $this->_eagerLoadElementsInternal($map['elementType'], array_map('array_values', $targetElements), $plan->nested);
+                    $this->_eagerLoadElementsInternal(
+                        $map['elementType'],
+                        array_map('array_values', $targetElements),
+                        $plan->nested,
+                        false
+                    );
                 }
             }
         }
