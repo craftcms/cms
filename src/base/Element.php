@@ -94,6 +94,7 @@ use yii\web\Response;
 /**
  * Element is the base class for classes representing elements in terms of objects.
  *
+ * @mixin CustomFieldBehavior
  * @property int|null $canonicalId The element’s canonical ID
  * @property-read string $canonicalUid The element’s canonical UID
  * @property-read bool $isCanonical Whether this is the canonical element
