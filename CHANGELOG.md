@@ -1,5 +1,9 @@
 # Release Notes for Craft CMS 4
 
+## Unreleased
+
+- Fixed a bug where revision notes weren’t always being retained for provisional drafts. ([#12641](https://github.com/craftcms/cms/issues/12641))
+
 ## 4.3.7.1 - 2023-02-05
 
 - The `_includes/forms/checkbox.twig`, `select.twig`, and `text.twig` templates no longer add an `aria-labelledby` attribute to the input if an `aria-label` attribute is also specified.
