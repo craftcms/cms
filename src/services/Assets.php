@@ -525,10 +525,13 @@ class Assets extends Component
         $query = $this->_createFolderQuery()
             ->where([
                 'and',
-                ['like', 'path', Db::escapeForLike($parentFolder->path) . '%', false],
                 ['volumeId' => $parentFolder->volumeId],
                 ['not', ['parentId' => null]],
             ]);
+
+        if ($parentFolder->path !== null) {
+            $query->andWhere(['like', 'path', Db::escapeForLike($parentFolder->path) . '%', false]);
+        }
 
         if ($orderBy) {
             $query->orderBy($orderBy);

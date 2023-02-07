@@ -3,6 +3,7 @@
 ## Unreleased
 
 - Fixed a bug where Matrix blocks weren’t getting eager-loaded. ([#12631](https://github.com/craftcms/cms/issues/12631))
+- Fixed a PHP error that could occur when calling `craft\services\Assets::getAllDescendantFolders()` for the root folder. ([craftcms/feed-me#1231](https://github.com/craftcms/feed-me/issues/1231))
 
 ## 3.7.64.1 - 2023-02-05
 
