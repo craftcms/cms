@@ -4587,7 +4587,7 @@ JS,
             'labelClass' => 'h6',
             'class' => ['nicetext', 'notes'],
             'name' => 'notes',
-            'value' => $this->getIsCanonical() || $this->isProvisionalDraft ? $this->revisionNotes : $this->draftNotes,
+            'value' => $this->getIsDraft() ? $this->draftNotes : $this->revisionNotes,
             'rows' => 1,
             'inputAttributes' => [
                 'aria' => [
