@@ -94,6 +94,12 @@ class VolumeFolder extends Model
         return $volume;
     }
 
+    /**
+     * Get volume folder path including volume's fsSubpath
+     *
+     * @return string|null
+     * @throws InvalidConfigException
+     */
     public function getPathWithFsSubpath(): ?string
     {
         return $this->getVolume()->getFsSubpath() . $this->path;

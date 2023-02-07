@@ -148,7 +148,7 @@ class VolumesController extends Controller
         // prepare fsSubpath for saving
         $fsSubpath = $this->request->getBodyParam('fsSubpath');
         if (!empty($fsSubpath)) {
-            $fsSubpath = FileHelper::normalizePath(trim($fsSubpath));
+            $fsSubpath = FileHelper::normalizePath(ltrim(trim($fsSubpath), '/'));
         }
         $volume = new Volume([
             'id' => $volumeId,

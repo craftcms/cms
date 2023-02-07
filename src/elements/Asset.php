@@ -757,9 +757,10 @@ class Asset extends Element
 
     public function __construct($config = [])
     {
+        // make sure asset folderPath accounts for volume's fsSubpath
         if (isset($config['volumeId'])) {
             $volume = Craft::$app->getVolumes()->getVolumeById($config['volumeId']);
-            $fsSubpath = $volume->getFsSubpath();
+            $fsSubpath = $volume?->getFsSubpath();
             if (!empty($fsSubpath) && !str_starts_with($config['folderPath'], $fsSubpath)) {
                 $config['folderPath'] = $fsSubpath . $config['folderPath'];
             }
@@ -844,9 +845,9 @@ class Asset extends Element
             $this->alt = null;
         }
 
+        // make sure asset folderPath accounts for volume's fsSubpath
         if ($this->_volumeId !== null) {
-            $volume = $this->getVolume();
-            $fsSubpath = $volume->getFsSubpath();
+            $fsSubpath = $this->getVolume()->getFsSubpath();
             if (!empty($fsSubpath) && !str_starts_with($this->folderPath, $fsSubpath)) {
                 $this->folderPath = $fsSubpath . $this->folderPath;
             }

@@ -793,6 +793,7 @@ class Assets extends Component
         $folderModel = $parentFolder;
         $parentId = $parentFolder->id;
 
+        // fullPath shouldn't contain volume's fsSubpath
         $volumeFsSubpath = $volume->getFsSubpath();
         $pos = strpos($fullPath, $volumeFsSubpath);
         if ($pos !== false) {

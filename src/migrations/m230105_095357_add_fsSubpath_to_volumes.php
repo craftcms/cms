@@ -15,7 +15,16 @@ class m230105_095357_add_fsSubpath_to_volumes extends Migration
      */
     public function safeUp(): bool
     {
-        $this->addColumn(Table::VOLUMES, 'fsSubpath', $this->string()->null()->after('fs'));
+        $table = $this->db->schema->getTableSchema(Table::VOLUMES);
+
+        if (!isset($table->columns['fsSubpath'])) {
+            $this->addColumn(
+                Table::VOLUMES,
+                'fsSubpath',
+                $this->string()->null()->after('fs'),
+            );
+        }
+
         return true;
     }
 

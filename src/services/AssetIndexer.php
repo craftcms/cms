@@ -61,6 +61,7 @@ class AssetIndexer extends Component
     public function getIndexListOnVolume(Volume $volume, string $directory = ''): Generator
     {
         try {
+            // only index volume's fsSubpath folder
             $fsSubpath = $volume->getFsSubpath();
             $fileList = $volume->getFs()->getFileList($fsSubpath . $directory);
         } catch (InvalidConfigException|FsException $exception) {
