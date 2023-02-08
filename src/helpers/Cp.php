@@ -336,10 +336,12 @@ class Cp
         bool $showDraftName = true,
         bool $single = false,
         bool $autoReload = true,
+        bool $isEditable = false,
     ): string {
         $isDraft = $element->getIsDraft();
         $isRevision = !$isDraft && $element->getIsRevision();
         $label = $element->getUiLabel();
+        $labelId = $showLabel ? "element-label-$element->id" : null;
         $showStatus = $showStatus && ($isDraft || $element::hasStatuses());
 
         // Create the thumb/icon image, if there is one
@@ -424,6 +426,7 @@ class Cp
 
         if ($user && $elementsService->canView($element, $user)) {
             $attributes['data']['editable'] = true;
+            $isEditable = true;
 
             if ($context === 'index') {
                 if ($elementsService->canSave($element, $user)) {
@@ -462,7 +465,7 @@ class Cp
         $innerHtml .= $imgHtml;
 
         if ($showLabel) {
-            $innerHtml .= '<div class="label">';
+            $innerHtml .= "<div id=\"$labelId\" class=\"label\">";
             $innerHtml .= '<span class="title">';
 
             $encodedLabel = Html::encode($label);
