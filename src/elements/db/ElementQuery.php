@@ -560,6 +560,7 @@ class ElementQuery extends Query implements ElementQueryInterface
     /**
      * @inheritdoc
      * @uses $inReverse
+     * @return static
      */
     public function inReverse(bool $value = true): self
     {
@@ -570,6 +571,7 @@ class ElementQuery extends Query implements ElementQueryInterface
     /**
      * @inheritdoc
      * @uses $asArray
+     * @return static
      */
     public function asArray(bool $value = true): self
     {
@@ -580,6 +582,7 @@ class ElementQuery extends Query implements ElementQueryInterface
     /**
      * @inheritdoc
      * @uses $asArray
+     * @return static
      */
     public function ignorePlaceholders(bool $value = true): self
     {
@@ -590,6 +593,7 @@ class ElementQuery extends Query implements ElementQueryInterface
     /**
      * @inheritdoc
      * @uses $drafts
+     * @return static
      */
     public function drafts(?bool $value = true): self
     {
@@ -601,6 +605,7 @@ class ElementQuery extends Query implements ElementQueryInterface
      * @inheritdoc
      * @uses $draftId
      * @uses $drafts
+     * @return static
      */
     public function draftId(?int $value = null): self
     {
@@ -615,6 +620,7 @@ class ElementQuery extends Query implements ElementQueryInterface
      * @inheritdoc
      * @uses $draftOf
      * @uses $drafts
+     * @return static
      */
     public function draftOf($value): self
     {
@@ -635,6 +641,7 @@ class ElementQuery extends Query implements ElementQueryInterface
      * @inheritdoc
      * @uses $draftCreator
      * @uses $drafts
+     * @return static
      */
     public function draftCreator($value): self
     {
@@ -655,6 +662,7 @@ class ElementQuery extends Query implements ElementQueryInterface
      * @inheritdoc
      * @uses $provisionalDrafts
      * @uses $drafts
+     * @return static
      */
     public function provisionalDrafts(?bool $value = true): self
     {
@@ -668,6 +676,7 @@ class ElementQuery extends Query implements ElementQueryInterface
     /**
      * @inheritdoc
      * @uses $savedDraftsOnly
+     * @return static
      */
     public function savedDraftsOnly(bool $value = true): self
     {
@@ -678,6 +687,7 @@ class ElementQuery extends Query implements ElementQueryInterface
     /**
      * @inheritdoc
      * @uses $revisions
+     * @return static
      */
     public function revisions(?bool $value = true): self
     {
@@ -689,6 +699,7 @@ class ElementQuery extends Query implements ElementQueryInterface
      * @inheritdoc
      * @uses $revisionId
      * @uses $revisions
+     * @return static
      */
     public function revisionId(?int $value = null): self
     {
@@ -703,6 +714,7 @@ class ElementQuery extends Query implements ElementQueryInterface
      * @inheritdoc
      * @uses $revisionOf
      * @uses $revisions
+     * @return static
      */
     public function revisionOf($value): self
     {
@@ -723,6 +735,7 @@ class ElementQuery extends Query implements ElementQueryInterface
      * @inheritdoc
      * @uses $revisionCreator
      * @uses $revisions
+     * @return static
      */
     public function revisionCreator($value): self
     {
@@ -742,6 +755,7 @@ class ElementQuery extends Query implements ElementQueryInterface
     /**
      * @inheritdoc
      * @uses $id
+     * @return static
      */
     public function id($value): self
     {
@@ -752,6 +766,7 @@ class ElementQuery extends Query implements ElementQueryInterface
     /**
      * @inheritdoc
      * @uses $uid
+     * @return static
      */
     public function uid($value): self
     {
@@ -762,6 +777,7 @@ class ElementQuery extends Query implements ElementQueryInterface
     /**
      * @inheritdoc
      * @uses $siteSettingsId
+     * @return static
      */
     public function siteSettingsId($value): self
     {
@@ -772,6 +788,7 @@ class ElementQuery extends Query implements ElementQueryInterface
     /**
      * @inheritdoc
      * @uses $fixedOrder
+     * @return static
      */
     public function fixedOrder(bool $value = true): self
     {
@@ -782,6 +799,7 @@ class ElementQuery extends Query implements ElementQueryInterface
     /**
      * @inheritdoc
      * @uses $orderBy
+     * @return static
      */
     public function orderBy($columns): self
     {
@@ -798,6 +816,7 @@ class ElementQuery extends Query implements ElementQueryInterface
     /**
      * @inheritdoc
      * @uses $orderBy
+     * @return static
      */
     public function addOrderBy($columns): self
     {
@@ -820,6 +839,7 @@ class ElementQuery extends Query implements ElementQueryInterface
     /**
      * @inheritdoc
      * @uses $status
+     * @return static
      */
     public function status(array|string|null $value): self
     {
@@ -830,6 +850,7 @@ class ElementQuery extends Query implements ElementQueryInterface
     /**
      * @inheritdoc
      * @uses $archived
+     * @return static
      */
     public function archived(bool $value = true): self
     {
@@ -840,6 +861,7 @@ class ElementQuery extends Query implements ElementQueryInterface
     /**
      * @inheritdoc
      * @uses $trashed
+     * @return static
      */
     public function trashed(?bool $value = true): self
     {
@@ -850,6 +872,7 @@ class ElementQuery extends Query implements ElementQueryInterface
     /**
      * @inheritdoc
      * @uses $dateCreated
+     * @return static
      */
     public function dateCreated(mixed $value): self
     {
@@ -860,6 +883,7 @@ class ElementQuery extends Query implements ElementQueryInterface
     /**
      * @inheritdoc
      * @uses $dateUpdated
+     * @return static
      */
     public function dateUpdated(mixed $value): self
     {
@@ -871,6 +895,7 @@ class ElementQuery extends Query implements ElementQueryInterface
      * @inheritdoc
      * @throws InvalidArgumentException if $value is invalid
      * @uses $siteId
+     * @return static
      */
     public function site($value): self
     {
@@ -907,6 +932,7 @@ class ElementQuery extends Query implements ElementQueryInterface
     /**
      * @inheritdoc
      * @uses $siteId
+     * @return static
      */
     public function siteId($value): self
     {
@@ -929,6 +955,7 @@ class ElementQuery extends Query implements ElementQueryInterface
      * @inheritdoc
      * @uses $unique
      * @since 3.2.0
+     * @return static
      */
     public function unique(bool $value = true): self
     {
@@ -940,6 +967,7 @@ class ElementQuery extends Query implements ElementQueryInterface
      * @inheritdoc
      * @uses $preferSites
      * @since 3.2.0
+     * @return static
      */
     public function preferSites(?array $value = null): self
     {
@@ -950,6 +978,7 @@ class ElementQuery extends Query implements ElementQueryInterface
     /**
      * @inheritdoc
      * @uses $relatedTo
+     * @return static
      */
     public function relatedTo($value): self
     {
@@ -961,6 +990,7 @@ class ElementQuery extends Query implements ElementQueryInterface
      * @inheritdoc
      * @throws NotSupportedException
      * @uses $relatedTo
+     * @return static
      */
     public function andRelatedTo($value): self
     {
@@ -989,6 +1019,7 @@ class ElementQuery extends Query implements ElementQueryInterface
     /**
      * @inheritdoc
      * @uses $title
+     * @return static
      */
     public function title($value): self
     {
@@ -999,6 +1030,7 @@ class ElementQuery extends Query implements ElementQueryInterface
     /**
      * @inheritdoc
      * @uses $slug
+     * @return static
      */
     public function slug($value): self
     {
@@ -1009,6 +1041,7 @@ class ElementQuery extends Query implements ElementQueryInterface
     /**
      * @inheritdoc
      * @uses $uri
+     * @return static
      */
     public function uri($value): self
     {
@@ -1019,6 +1052,7 @@ class ElementQuery extends Query implements ElementQueryInterface
     /**
      * @inheritdoc
      * @uses $search
+     * @return static
      */
     public function search($value): self
     {
@@ -1029,6 +1063,7 @@ class ElementQuery extends Query implements ElementQueryInterface
     /**
      * @inheritdoc
      * @uses $ref
+     * @return static
      */
     public function ref($value): self
     {
@@ -1039,6 +1074,7 @@ class ElementQuery extends Query implements ElementQueryInterface
     /**
      * @inheritdoc
      * @uses $with
+     * @return static
      */
     public function with(array|string|null $value): self
     {
@@ -1049,6 +1085,7 @@ class ElementQuery extends Query implements ElementQueryInterface
     /**
      * @inheritdoc
      * @uses $with
+     * @return static
      */
     public function andWith(array|string|null $value): self
     {
@@ -1066,6 +1103,7 @@ class ElementQuery extends Query implements ElementQueryInterface
     /**
      * @inheritdoc
      * @uses $withStructure
+     * @return static
      */
     public function withStructure(bool $value = true): self
     {
@@ -1076,6 +1114,7 @@ class ElementQuery extends Query implements ElementQueryInterface
     /**
      * @inheritdoc
      * @uses $structureId
+     * @return static
      */
     public function structureId(?int $value = null): self
     {
@@ -1086,6 +1125,7 @@ class ElementQuery extends Query implements ElementQueryInterface
     /**
      * @inheritdoc
      * @uses $level
+     * @return static
      */
     public function level($value = null): self
     {
@@ -1096,6 +1136,7 @@ class ElementQuery extends Query implements ElementQueryInterface
     /**
      * @inheritdoc
      * @uses $hasDescendants
+     * @return static
      */
     public function hasDescendants(bool $value = true): self
     {
@@ -1106,6 +1147,7 @@ class ElementQuery extends Query implements ElementQueryInterface
     /**
      * @inheritdoc
      * @uses $leaves
+     * @return static
      */
     public function leaves(bool $value = true): self
     {
@@ -1116,6 +1158,7 @@ class ElementQuery extends Query implements ElementQueryInterface
     /**
      * @inheritdoc
      * @uses $ancestorOf
+     * @return static
      */
     public function ancestorOf(ElementInterface|int|null $value): self
     {
@@ -1126,6 +1169,7 @@ class ElementQuery extends Query implements ElementQueryInterface
     /**
      * @inheritdoc
      * @uses $ancestorDist
+     * @return static
      */
     public function ancestorDist(?int $value = null): self
     {
@@ -1136,6 +1180,7 @@ class ElementQuery extends Query implements ElementQueryInterface
     /**
      * @inheritdoc
      * @uses $descendantOf
+     * @return static
      */
     public function descendantOf(ElementInterface|int|null $value): self
     {
@@ -1146,6 +1191,7 @@ class ElementQuery extends Query implements ElementQueryInterface
     /**
      * @inheritdoc
      * @uses $descendantDist
+     * @return static
      */
     public function descendantDist(?int $value = null): self
     {
@@ -1156,6 +1202,7 @@ class ElementQuery extends Query implements ElementQueryInterface
     /**
      * @inheritdoc
      * @uses $siblingOf
+     * @return static
      */
     public function siblingOf(ElementInterface|int|null $value): self
     {
@@ -1166,6 +1213,7 @@ class ElementQuery extends Query implements ElementQueryInterface
     /**
      * @inheritdoc
      * @uses $prevSiblingOf
+     * @return static
      */
     public function prevSiblingOf(ElementInterface|int|null $value): self
     {
@@ -1176,6 +1224,7 @@ class ElementQuery extends Query implements ElementQueryInterface
     /**
      * @inheritdoc
      * @uses $nextSiblingOf
+     * @return static
      */
     public function nextSiblingOf(ElementInterface|int|null $value): self
     {
@@ -1186,6 +1235,7 @@ class ElementQuery extends Query implements ElementQueryInterface
     /**
      * @inheritdoc
      * @uses $positionedBefore
+     * @return static
      */
     public function positionedBefore(ElementInterface|int|null $value): self
     {
@@ -1196,6 +1246,7 @@ class ElementQuery extends Query implements ElementQueryInterface
     /**
      * @inheritdoc
      * @uses $positionedAfter
+     * @return static
      */
     public function positionedAfter(ElementInterface|int|null $value): self
     {
@@ -1206,7 +1257,7 @@ class ElementQuery extends Query implements ElementQueryInterface
     /**
      * Sets the [[status()|status]] param to `null`.
      *
-     * @return self self reference
+     * @return static
      * @since 3.0.17
      * @deprecated in 4.0.0. `status(null)` should be used instead.
      */
