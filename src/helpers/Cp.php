@@ -519,6 +519,21 @@ class Cp
             }
         }
 
+        if ($isEditable) {
+            $innerHtml .= Html::tag('button', '', [
+                'data' => [
+                    'icon' => 'edit',
+                    'edit-element' => true,
+                ],
+                'class' => ['icon', 'icon-btn', 'edit-btn'],
+                'aria' => [
+                    'label' => Craft::t('app', 'Edit'),
+                    'describedby' => $labelId,
+                ],
+                'type' => 'button',
+            ]);
+        }
+
         if ($context === 'field' && $inputName !== null) {
             $innerHtml .= Html::hiddenInput($inputName . ($single ? '' : '[]'), (string)$element->id) .
                 Html::button('', [
