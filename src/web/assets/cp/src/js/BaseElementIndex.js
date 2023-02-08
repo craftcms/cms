@@ -2329,7 +2329,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
                   this.removeListener($prevBtn, 'click');
                   this.removeListener($nextBtn, 'click');
                   this.setPage(this.page - 1);
-                  this.updateElements(true, true);
+                  this.updateElements(true);
                 });
               }
 
@@ -2338,7 +2338,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
                   this.removeListener($prevBtn, 'click');
                   this.removeListener($nextBtn, 'click');
                   this.setPage(this.page + 1);
-                  this.updateElements(true, true);
+                  this.updateElements(true);
                 });
               }
             }
