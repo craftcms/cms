@@ -1,5 +1,9 @@
 # Release Notes for Craft CMS 4
 
+## Unreleased
+
+- Fixed a bug where images within the image editor weren’t getting versioned, unless the `revAssetUrls` config setting was enabled. ([#12603](https://github.com/craftcms/cms/issues/12603))
+
 ## 4.3.8 - 2023-02-07
 
 - Updated Composer to 2.2.19, fixing a PHP error that could occur when performing a Composer action within Craft, when the autoload classmap was generated with Composer 2.5. ([#12482](https://github.com/craftcms/cms/issues/12482))

@@ -690,7 +690,7 @@ class Assets extends Component
             throw new NotSupportedException('A preview URL couldn’t be generated for the asset.');
         }
 
-        return $url;
+        return AssetsHelper::revUrl($url, $asset);
     }
 
     /**
