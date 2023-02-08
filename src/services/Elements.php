@@ -2258,9 +2258,8 @@ class Elements extends Component
      * @param string $elementType
      * @param array $elementsBySite
      * @param EagerLoadPlan[] $with
-     * @param bool $checkIfInLayout
      */
-    private function _eagerLoadElementsInternal(string $elementType, array $elementsBySite, array $with, bool $checkIfInLayout = true)
+    private function _eagerLoadElementsInternal(string $elementType, array $elementsBySite, array $with)
     {
         foreach ($elementsBySite as $siteId => $elements) {
             // In case the elements were
@@ -2281,26 +2280,6 @@ class Elements extends Component
                     }
                 } else {
                     $filteredElements = $elements;
-                }
-
-                // filter out fields that are not part of this layout
-                // https://github.com/craftcms/cms/issues/12539
-                if ($checkIfInLayout) {
-                    $filteredElements = array_values(
-                        array_filter($filteredElements, function($filteredElement) use ($plan) {
-                            $fieldLayout = $filteredElement->getFieldLayout();
-                            $fieldHandle = preg_replace('/(\w+)([\.|:]\S+)/', '$1', $plan->handle, 1);
-                            return (
-                                !$fieldLayout ||
-                                $fieldLayout->getFieldByHandle($fieldHandle) !== null
-                            );
-                        })
-                    );
-
-                    // if we have nothing left in the $filteredElements, move on to the next iteration
-                    if (empty($filteredElements)) {
-                        continue;
-                    }
                 }
 
                 // Get the eager-loading map from the source element type
@@ -2460,8 +2439,7 @@ class Elements extends Component
                     $this->_eagerLoadElementsInternal(
                         $map['elementType'],
                         array_map('array_values', $targetElements),
-                        $plan->nested,
-                        false
+                        $plan->nested
                     );
                 }
             }
