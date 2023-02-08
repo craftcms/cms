@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Fixed a PHP error that occurred after performing a Composer action within Craft.
+- Fixed a bug where element attributes weren’t getting eager-loaded. ([#12646](https://github.com/craftcms/cms/pull/12646), [#12645](https://github.com/craftcms/cms/issues/12645))
 - Fixed a bug where images within the image editor weren’t getting versioned, unless the `revAssetUrls` config setting was enabled. ([#12603](https://github.com/craftcms/cms/issues/12603))
 
 ## 4.3.8 - 2023-02-07
