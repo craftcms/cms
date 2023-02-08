@@ -449,19 +449,6 @@ class Cp
 
         $innerHtml = '';
 
-        if ($context === 'field' && $inputName !== null) {
-            $innerHtml .= Html::hiddenInput($inputName . ($single ? '' : '[]'), (string)$element->id) .
-                Html::button('', [
-                    'class' => ['delete', 'icon'],
-                    'title' => Craft::t('app', 'Remove'),
-                    'aria' => [
-                        'label' => Craft::t('app', 'Remove {label}', [
-                            'label' => $label,
-                        ]),
-                    ],
-                ]);
-        }
-
         $innerHtml .= $imgHtml;
 
         if ($showLabel) {
@@ -530,6 +517,19 @@ class Cp
                     ],
                 ]);
             }
+        }
+
+        if ($context === 'field' && $inputName !== null) {
+            $innerHtml .= Html::hiddenInput($inputName . ($single ? '' : '[]'), (string)$element->id) .
+                Html::button('', [
+                    'class' => ['delete', 'icon'],
+                    'title' => Craft::t('app', 'Remove'),
+                    'aria' => [
+                        'label' => Craft::t('app', 'Remove {label}', [
+                            'label' => $label,
+                        ]),
+                    ],
+                ]);
         }
 
         // Allow plugins to modify the inner HTML
