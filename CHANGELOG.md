@@ -3,6 +3,7 @@
 ## Unreleased
 
 - Fixed a PHP error that occurred after performing a Composer action within Craft.
+- Fixed a bug where element attributes weren’t getting eager-loaded. ([#12646](https://github.com/craftcms/cms/pull/12646), [#12645](https://github.com/craftcms/cms/issues/12645))
 
 ## 3.7.65 - 2023-02-07
 
