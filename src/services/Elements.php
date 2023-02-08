@@ -2522,9 +2522,8 @@ class Elements extends Component
      * @phpstan-param class-string<ElementInterface> $elementType
      * @param ElementInterface[][] $elementsBySite
      * @param EagerLoadPlan[] $with
-     * @param bool $checkIfInLayout
      */
-    private function _eagerLoadElementsInternal(string $elementType, array $elementsBySite, array $with, bool $checkIfInLayout = true): void
+    private function _eagerLoadElementsInternal(string $elementType, array $elementsBySite, array $with): void
     {
         $elementsService = Craft::$app->getElements();
 
@@ -2547,23 +2546,6 @@ class Elements extends Component
                     }
                 } else {
                     $filteredElements = $elements;
-                }
-
-                // filter out fields that are not part of this layout
-                // https://github.com/craftcms/cms/issues/12539
-                if ($checkIfInLayout) {
-                    $filteredElements = array_values(
-                        array_filter($filteredElements, function($filteredElement) use ($plan) {
-                            $fieldLayout = $filteredElement->getFieldLayout();
-                            $fieldHandle = preg_replace('/(\w+)([\.|:]\S+)/', '$1', $plan->handle, 1);
-                            return $fieldLayout?->getFieldByHandle($plan->handle) !== null;
-                        })
-                    );
-
-                    // if we have nothing left in the $filteredElements, move on to the next iteration
-                    if (empty($filteredElements)) {
-                        continue;
-                    }
                 }
 
                 // Get the eager-loading map from the source element type
@@ -2734,7 +2716,6 @@ class Elements extends Component
                         $map['elementType'],
                         array_map('array_values', $targetElements),
                         $plan->nested,
-                        false
                     );
                 }
             }
