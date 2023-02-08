@@ -266,6 +266,7 @@ class Query extends \yii\db\Query implements ArrayAccess, IteratorAggregate
 
     /**
      * @inheritdoc
+     * @return ?array
      */
     public function one($db = null): mixed
     {
