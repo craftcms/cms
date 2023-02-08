@@ -670,6 +670,10 @@ JS;
      */
     public function getEagerLoadingMap(array $sourceElements)
     {
+        if (empty($sourceElements)) {
+            return null;
+        }
+
         $sourceSiteId = $sourceElements[0]->siteId;
 
         // Get the source element IDs
