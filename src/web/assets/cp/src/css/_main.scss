@@ -2707,6 +2707,9 @@ $baseElementSidePadding: 7px;
 $elementInnerSpacing: 5px;
 
 .element {
+  --label-spacing: 10px;
+  --label-padding: calc(var(--touch-target-size) + var(--label-spacing));
+  --button-gap: 3px;
   position: relative;
   cursor: default;
   user-select: none;
@@ -2875,9 +2878,10 @@ $elementInnerSpacing: 5px;
     }
   }
 
-  &.removable {
+  &.removable,
+  &.editable {
     .label {
-      @include padding-right(20px);
+      @include padding-right(var(--label-padding));
     }
 
     .delete:before {
@@ -2886,11 +2890,8 @@ $elementInnerSpacing: 5px;
 
     &.small,
     &.large:not(.hasthumb) {
-      .delete {
-        @include right($baseElementSidePadding);
-      }
-
       .icon-btn {
+        @include right($baseElementSidePadding);
         position: absolute;
         top: 50%;
         transform: translateY(-50%);
@@ -2902,6 +2903,21 @@ $elementInnerSpacing: 5px;
         position: absolute;
         @include right($baseElementSidePadding);
       }
+    }
+  }
+
+  &.removable.editable {
+    --label-padding: calc(
+      (var(--touch-target-size) * 2) + var(--button-gap) + var(--label-spacing)
+    );
+
+    // Shift edit button over so they don't overlap
+    .edit-btn {
+      @include right(
+        calc(
+          var(--touch-target-size) + var(--button-gap) + $baseElementSidePadding
+        )
+      );
     }
   }
 

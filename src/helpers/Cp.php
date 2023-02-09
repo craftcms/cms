@@ -426,6 +426,7 @@ class Cp
 
         if ($user && $elementsService->canView($element, $user)) {
             $attributes['data']['editable'] = true;
+            $attributes['class'][] = 'editable';
             $isEditable = true;
 
             if ($context === 'index') {
