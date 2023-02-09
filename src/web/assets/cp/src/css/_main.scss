@@ -1484,7 +1484,7 @@ ul.icons {
 }
 
 .icon-btn {
-  @include touch-target();
+  @include touch-target;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -2802,7 +2802,7 @@ $elementInnerSpacing: 5px;
         top: calc(50% - 5px);
       }
 
-      .icon:not(.delete) {
+      .icon:not(.delete):not(.edit-btn) {
         position: absolute;
         @include left($baseElementSidePadding - 1);
         top: calc(50% - 11px);
@@ -2887,9 +2887,13 @@ $elementInnerSpacing: 5px;
     &.small,
     &.large:not(.hasthumb) {
       .delete {
-        position: absolute;
-        top: calc(50% - 11px);
         @include right($baseElementSidePadding);
+      }
+
+      .icon-btn {
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
       }
     }
 
