@@ -488,6 +488,15 @@ class ElementQuery extends Query implements ElementQueryInterface
     private array|null $_cacheTags = null;
 
     /**
+     * @var array<string,string> Column alias => name mapping
+     * @see prepare()
+     * @see joinElementTable()
+     * @see _applyOrderByParams()
+     * @see _applySelectParam()
+     */
+    private array $_columnMap = [];
+
+    /**
      * @var bool Whether an element table has been joined for the query
      * @see prepare()
      * @see joinElementTable()
@@ -1287,6 +1296,16 @@ class ElementQuery extends Query implements ElementQueryInterface
             ->innerJoin(['elements' => Table::ELEMENTS], '[[elements.id]] = [[subquery.elementsId]]')
             ->innerJoin(['elements_sites' => Table::ELEMENTS_SITES], '[[elements_sites.id]] = [[subquery.elementsSitesId]]');
 
+        // Prepare a new column mapping
+        // (for use in SELECT and ORDER BY clauses)
+        $this->_columnMap = [
+            'id' => 'elements.id',
+            'enabled' => 'elements.enabled',
+            'dateCreated' => 'elements.dateCreated',
+            'dateUpdated' => 'elements.dateUpdated',
+            'uid' => 'elements.uid',
+        ];
+
         // Keep track of whether an element table is joined into the query
         $this->_joinedElementTable = false;
 
@@ -1311,7 +1330,8 @@ class ElementQuery extends Query implements ElementQueryInterface
             $this->subQuery->andWhere(['elements_sites.siteId' => $this->siteId]);
         }
 
-        if ($class::hasContent() && isset($this->contentTable)) {
+        $hasContent = $class::hasContent() && isset($this->contentTable);
+        if ($hasContent) {
             $this->customFields = $this->customFields();
             $this->_joinContentTable($class);
         } else {
@@ -1374,22 +1394,19 @@ class ElementQuery extends Query implements ElementQueryInterface
             $this->subQuery->andWhere(Db::parseParam('elements_sites.uri', $this->uri, '=', true));
         }
 
-        // Map ambiguous column names to the `elements` table
-        // (for use in SELECT and ORDER BY clauses)
-        $columnMap = [
-            'id' => 'elements.id',
-            'enabled' => 'elements.enabled',
-            'dateCreated' => 'elements.dateCreated',
-            'dateUpdated' => 'elements.dateUpdated',
-            'uid' => 'elements.uid',
-        ];
+        if ($hasContent) {
+            if ($class::hasTitles()) {
+                $this->_columnMap['title'] = 'content.title';
+            }
 
-        if (is_array($this->customFields)) {
             // Map custom field handles to their content columns
             foreach ($this->customFields as $field) {
-                if (($column = $this->_fieldColumn($field)) !== null) {
-                    $firstCol = is_string($column) ? $column : reset($column);
-                    $columnMap[$field->handle] = "content.$firstCol";
+                if (!isset($this->_columnMap[$field->handle])) {
+                    $column = $this->_fieldColumn($field);
+                    if ($column !== null) {
+                        $firstCol = is_string($column) ? $column : reset($column);
+                        $this->_columnMap[$field->handle] = "content.$firstCol";
+                    }
                 }
             }
         }
@@ -1398,8 +1415,8 @@ class ElementQuery extends Query implements ElementQueryInterface
         $this->_applyStructureParams($class);
         $this->_applyRevisionParams();
         $this->_applySearchParam($builder->db);
-        $this->_applyOrderByParams($builder->db, $columnMap);
-        $this->_applySelectParam($columnMap);
+        $this->_applyOrderByParams($builder->db);
+        $this->_applySelectParam();
         $this->_applyJoinParams();
 
         // Give other classes a chance to make changes up front
@@ -2051,11 +2068,20 @@ class ElementQuery extends Query implements ElementQueryInterface
      */
     protected function joinElementTable(string $table): void
     {
-        $table = Db::rawTableShortName($table);
-        $joinTable = [$table => "{{%$table}}"];
-        $this->query->innerJoin($joinTable, "[[$table.id]] = [[subquery.elementsId]]");
-        $this->subQuery->innerJoin($joinTable, "[[$table.id]] = [[elements.id]]");
+        $alias = Db::rawTableShortName($table);
+        $table = "{{%$alias}}";
+
+        $joinTable = [$alias => $table];
+        $this->query->innerJoin($joinTable, "[[$alias.id]] = [[subquery.elementsId]]");
+        $this->subQuery->innerJoin($joinTable, "[[$alias.id]] = [[elements.id]]");
         $this->_joinedElementTable = true;
+
+        // Add element table cols to the column map
+        foreach (Craft::$app->getDb()->getTableSchema($table)->columns as $column) {
+            if (!isset($this->_columnMap[$column->name])) {
+                $this->_columnMap[$column->name] = "$alias.$column->name";
+            }
+        }
     }
 
     /**
@@ -2650,12 +2676,10 @@ class ElementQuery extends Query implements ElementQueryInterface
      * Applies the 'fixedOrder' and 'orderBy' params to the query being prepared.
      *
      * @param Connection $db
-     * @param string[] $columnMap
-     * @phpstan-param array<string,string> $columnMap
      * @throws Exception if the DB connection doesn't support fixed ordering
      * @throws QueryAbortedException
      */
-    private function _applyOrderByParams(Connection $db, array $columnMap): void
+    private function _applyOrderByParams(Connection $db): void
     {
         if (!isset($this->orderBy) || !empty($this->query->orderBy)) {
             return;
@@ -2694,7 +2718,7 @@ class ElementQuery extends Query implements ElementQueryInterface
         $orderBy = array_merge($this->orderBy);
         $orderByColumns = array_keys($orderBy);
 
-        foreach ($columnMap as $orderValue => $columnName) {
+        foreach ($this->_columnMap as $orderValue => $columnName) {
             // Are we ordering by this column name?
             $pos = array_search($orderValue, $orderByColumns, true);
 
@@ -2759,11 +2783,8 @@ class ElementQuery extends Query implements ElementQueryInterface
 
     /**
      * Applies the 'select' param to the query being prepared.
-     *
-     * @param string[] $columnMap
-     * @phpstan-param array<string,string> $columnMap
      */
-    private function _applySelectParam(array $columnMap): void
+    private function _applySelectParam(): void
     {
         // Select all columns defined by [[select]], swapping out any mapped column names
         $select = [];
@@ -2774,12 +2795,12 @@ class ElementQuery extends Query implements ElementQueryInterface
                 $includeDefaults = true;
             } else {
                 // Is this a mapped column name (without a custom alias)?
-                if ($alias === $column && isset($columnMap[$alias])) {
-                    $column = $columnMap[$alias];
+                if ($alias === $column && isset($this->_columnMap[$alias])) {
+                    $column = $this->_columnMap[$alias];
 
                     // Completely ditch the mapped name if instantiated elements are going to be returned
                     if (!$this->asArray) {
-                        $alias = $columnMap[$alias];
+                        $alias = $this->_columnMap[$alias];
                     }
                 }
 
