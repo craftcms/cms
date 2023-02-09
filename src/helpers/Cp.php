@@ -341,7 +341,7 @@ class Cp
         $isDraft = $element->getIsDraft();
         $isRevision = !$isDraft && $element->getIsRevision();
         $label = $element->getUiLabel();
-        $labelId = $showLabel && ($element->id) ? "element-label-$element->id" : null;
+        $labelId = $showLabel && ($element->id) ? "element-label-" . mt_rand() : null;
         $showStatus = $showStatus && ($isDraft || $element::hasStatuses());
 
         // Create the thumb/icon image, if there is one
