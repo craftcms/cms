@@ -9,6 +9,7 @@ Craft.BaseElementIndexView = Garnish.Base.extend(
     $loadingMoreSpinner: null,
     $elementContainer: null,
     $scroller: null,
+    $editBtn: null,
 
     elementIndex: null,
     thumbLoader: null,
@@ -36,6 +37,7 @@ Craft.BaseElementIndexView = Garnish.Base.extend(
       // Get the actual elements container and its child elements
       this.$elementContainer = this.getElementContainer();
       var $elements = this.$elementContainer.children();
+      this.$editBtn = this.$elementContainer.find('[data-edit-element]');
 
       this.setTotalVisible($elements.length);
       this.setMorePending(
@@ -78,6 +80,7 @@ Craft.BaseElementIndexView = Garnish.Base.extend(
       // Enable inline element editing if this is an index page
       if (this.settings.context === 'index') {
         this._handleElementEditing = (ev) => {
+          ev.stopPropagation();
           var $target = $(ev.target);
 
           if ($target.prop('nodeName') === 'A') {
@@ -103,11 +106,7 @@ Craft.BaseElementIndexView = Garnish.Base.extend(
         };
 
         if (!this.elementIndex.trashed) {
-          this.addListener(
-            this.$elementContainer,
-            'dblclick,taphold',
-            this._handleElementEditing
-          );
+          this.addListener(this.$editBtn, 'click', this._handleElementEditing);
         }
       }
 
