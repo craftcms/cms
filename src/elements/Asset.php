@@ -470,6 +470,16 @@ class Asset extends Element
                 'orderBy' => 'elements.id',
                 'attribute' => 'id',
             ],
+            [
+                'label' => Craft::t('app', 'Width'),
+                'orderBy' => 'width',
+                'attribute' => 'width',
+            ],
+            [
+                'label' => Craft::t('app', 'Height'),
+                'orderBy' => 'height',
+                'attribute' => 'height',
+            ],
         ];
     }
 
