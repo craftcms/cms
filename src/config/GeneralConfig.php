@@ -1785,7 +1785,6 @@ class GeneralConfig extends BaseConfig
      * CRAFT_OMIT_SCRIPT_NAME_IN_URLS=1
      * ```
      * :::
-     * ```
      *
      * ::: tip
      * Even when this is set to `true`, the script name could still be included in some action URLs.
