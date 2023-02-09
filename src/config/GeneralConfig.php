@@ -649,7 +649,7 @@ class GeneralConfig extends BaseConfig
      * ->cpTrigger(null)
      * ```
      * ```shell Environment Override
-     * CRAFT_CP_TRIGGER=null
+     * CRAFT_CP_TRIGGER=
      * ```
      * :::
      *
@@ -1860,7 +1860,7 @@ class GeneralConfig extends BaseConfig
      * ->pathParam(null)
      * ```
      * ```shell Environment Override
-     * CRAFT_PATH_PARAM=null
+     * CRAFT_PATH_PARAM=
      * ```
      * :::
      *
@@ -1912,7 +1912,7 @@ class GeneralConfig extends BaseConfig
      * ->phpSessionName(null)
      * ```
      * ```shell Environment Override
-     * CRAFT_PHP_SESSION_NAME=null
+     * CRAFT_PHP_SESSION_NAME=
      * ```
      * :::
      *

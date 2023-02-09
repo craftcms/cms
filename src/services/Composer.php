@@ -524,7 +524,8 @@ class Composer extends Component
     protected function createComposer(IOInterface $io, string $jsonPath, bool $prepForUpdate = true): \Composer\Composer
     {
         $config = $this->composerConfig($io, $jsonPath, $prepForUpdate);
-        $composer = Factory::create($io, $config);
+        // Bypass Factory::create()'s insistence on setting $disablePlugins to 'local'
+        $composer = (new Factory())->createComposer($io, $config);
         $lockFile = pathinfo($jsonPath, PATHINFO_EXTENSION) === 'json'
             ? substr($jsonPath, 0, -4) . 'lock'
             : $jsonPath . '.lock';
