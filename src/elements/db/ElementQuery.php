@@ -2042,9 +2042,12 @@ class ElementQuery extends Query implements ElementQueryInterface
     }
 
     /**
-     * Joins in a table with an `id` column that has a foreign key pointing to `craft_elements`.`id`.
+     * Joins in a table with an `id` column that has a foreign key pointing to `elements.id`.
      *
-     * @param string $table The unprefixed table name. This will also be used as the table’s alias within the query.
+     * The table will be joined with an alias based on the unprefixed table name. For example,
+     * if `{{%entries}}` is passed, the table will be aliased to `entries`.
+     *
+     * @param string $table The table name, e.g. `entries` or `{{%entries}}`
      */
     protected function joinElementTable(string $table): void
     {
