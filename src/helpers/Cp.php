@@ -341,7 +341,7 @@ class Cp
         $isDraft = $element->getIsDraft();
         $isRevision = !$isDraft && $element->getIsRevision();
         $label = $element->getUiLabel();
-        $labelId = $showLabel ? "element-label-$element->id" : null;
+        $labelId = $showLabel && ($element->id) ? "element-label-$element->id" : null;
         $showStatus = $showStatus && ($isDraft || $element::hasStatuses());
 
         // Create the thumb/icon image, if there is one
@@ -452,7 +452,10 @@ class Cp
         $innerHtml .= $imgHtml;
 
         if ($showLabel) {
-            $innerHtml .= "<div id=\"$labelId\" class=\"label\">";
+            $innerHtml .= Html::beginTag('div', [
+                'id' => $labelId,
+                'class' => 'label',
+            ]);
             $innerHtml .= '<span class="title">';
 
             $encodedLabel = Html::encode($label);
