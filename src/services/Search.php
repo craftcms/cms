@@ -26,6 +26,7 @@ use craft\search\SearchQuery;
 use craft\search\SearchQueryTerm;
 use craft\search\SearchQueryTermGroup;
 use yii\base\Component;
+use yii\base\InvalidArgumentException;
 use yii\db\Expression;
 use yii\db\Schema;
 
@@ -240,6 +241,34 @@ class Search extends Component
     }
 
     /**
+     * Normalizes a `search` param into a [[SearchQuery]] object.
+     *
+     * @param string|array|SearchQuery $searchQuery
+     * @return SearchQuery
+     * @since 3.8.0
+     */
+    public function normalizeSearchQuery($searchQuery): SearchQuery
+    {
+        if ($searchQuery instanceof SearchQuery) {
+            return $searchQuery;
+        }
+
+        if (is_string($searchQuery)) {
+            return new SearchQuery($searchQuery, Craft::$app->getConfig()->getGeneral()->defaultSearchTermOptions);
+        }
+
+        if (is_array($searchQuery)) {
+            $options = $searchQuery;
+            $searchQuery = $options['query'];
+            unset($options['query']);
+            $options = array_merge(Craft::$app->getConfig()->getGeneral()->defaultSearchTermOptions, $options);
+            return new SearchQuery($searchQuery, $options);
+        }
+
+        throw new InvalidArgumentException('Invalid search query.');
+    }
+
+    /**
      * Filters a list of element IDs by a given search query.
      *
      * @param ElementQuery|null $elementQuery
@@ -263,15 +292,7 @@ class Search extends Component
                 ->limit(null);
         }
 
-        if (is_string($searchQuery)) {
-            $searchQuery = new SearchQuery($searchQuery, Craft::$app->getConfig()->getGeneral()->defaultSearchTermOptions);
-        } elseif (is_array($searchQuery)) {
-            $options = $searchQuery;
-            $searchQuery = $options['query'];
-            unset($options['query']);
-            $options = array_merge(Craft::$app->getConfig()->getGeneral()->defaultSearchTermOptions, $options);
-            $searchQuery = new SearchQuery($searchQuery, $options);
-        }
+        $searchQuery = $this->normalizeSearchQuery($searchQuery);
 
         // Fire a 'beforeSearch' event
         if ($this->hasEventHandlers(self::EVENT_BEFORE_SEARCH)) {

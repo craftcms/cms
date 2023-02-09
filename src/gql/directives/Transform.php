@@ -71,40 +71,33 @@ class Transform extends Directive
      */
     public static function apply($source, $value, array $arguments, ResolveInfo $resolveInfo)
     {
-        $onAssetElement = $value instanceof Asset;
-        $onAssetElementList = is_array($value) && !empty($value);
-        $onApplicableAssetField = $source instanceof Asset && in_array($resolveInfo->fieldName, ['height', 'width', 'url']);
-
-        if (!($onAssetElement || $onAssetElementList || $onApplicableAssetField) || empty($arguments)) {
+        if (empty($arguments)) {
             return $value;
         }
 
-        $generateNow = $arguments['immediately'] ?? Craft::$app->getConfig()->getGeneral()->generateTransformsBeforePageLoad;
         $transform = Gql::prepareTransformArguments($arguments);
 
-        // If this directive is applied to an entire Asset
-        if ($onAssetElement) {
-            return $value->setTransform($transform);
-        }
-
-        if ($onAssetElementList) {
-            foreach ($value as &$asset) {
+        if ($value instanceof Asset) {
+            $value->setTransform($transform);
+        } elseif (is_array($value)) {
+            foreach ($value as $asset) {
                 // If this somehow ended up being a mix of elements, don't explicitly fail, just set the transform on the asset elements
                 if ($asset instanceof Asset) {
                     $asset->setTransform($transform);
                 }
             }
-
-            return $value;
-        }
-
-        switch ($resolveInfo->fieldName) {
-            case 'height':
-                return $source->getHeight($transform);
-            case 'width':
-                return $source->getWidth($transform);
-            case 'url':
-                return $source->getUrl($transform, $generateNow);
+        } elseif ($source instanceof Asset) {
+            switch ($resolveInfo->fieldName) {
+                case 'height':
+                    return $source->getHeight($transform);
+                case 'mimeType':
+                    return $source->getMimeType($transform);
+                case 'url':
+                    $generateNow = $arguments['immediately'] ?? Craft::$app->getConfig()->getGeneral()->generateTransformsBeforePageLoad;
+                    return $source->getUrl($transform, $generateNow);
+                case 'width':
+                    return $source->getWidth($transform);
+            }
         }
 
         return $value;

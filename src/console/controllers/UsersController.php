@@ -438,6 +438,37 @@ class UsersController extends Controller
     }
 
     /**
+     * Unlocks a user's account.
+     *
+     * @param string $user The ID, username, or email address of the user account.
+     * @return int
+     * @since 3.8.0
+     */
+    public function actionUnlock(string $user): int
+    {
+        try {
+            $user = $this->_user($user);
+        } catch (InvalidArgumentException $e) {
+            $this->stderr($e->getMessage() . PHP_EOL, Console::FG_RED) . PHP_EOL;
+            return ExitCode::UNSPECIFIED_ERROR;
+        }
+
+        if (!$user->locked) {
+            $this->stdout("User “{$user->username}” is not locked." . PHP_EOL);
+            return ExitCode::OK;
+        }
+
+        $this->stdout('Unlocking the user ...' . PHP_EOL);
+        if (!Craft::$app->getUsers()->unlockUser($user)) {
+            $this->stderr("Failed to unlock user “{$user->username}”." . PHP_EOL, Console::FG_RED);
+            return ExitCode::UNSPECIFIED_ERROR;
+        };
+
+        $this->stdout("User “{$user->username}” unlocked." . PHP_EOL, Console::FG_GREEN);
+        return ExitCode::OK;
+    }
+
+    /**
      * Resolves a `user` argument.
      *
      * @param string $value The `user` argument value

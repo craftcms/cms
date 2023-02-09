@@ -18,6 +18,7 @@
                 : false,
             sites: (source.sites ?? false) ? source.sites|join(',') : false,
             'override-status': (source.criteria.status ?? false) ? true : false,
+            'default-source-path': (source.defaultSourcePath ?? false) ? source.defaultSourcePath|json_encode : false,
         }|merge(source.data ?? {}),
         html: sourceInnerHtml(source)
     }) }}

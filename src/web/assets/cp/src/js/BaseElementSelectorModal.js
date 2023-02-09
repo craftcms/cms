@@ -25,25 +25,28 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend(
     init: function (elementType, settings) {
       this.elementType = elementType;
       this.setSettings(settings, Craft.BaseElementSelectorModal.defaults);
-      var $headingId = 'elementSelectorModalHeading-' + Date.now();
+      const headingId = 'elementSelectorModalHeading-' + Date.now();
 
       // Build the modal
-      var $container = $(
-          '<div class="modal elementselectormodal" aria-labelledby="' +
-            $headingId +
-            '"></div>'
-        ).appendTo(Garnish.$bod),
-        $heading = $(
-          '<h2 id="' +
-            $headingId +
-            '" class="visually-hidden">' +
-            this.settings.modalTitle +
-            '</h2>'
-        ).appendTo($container),
-        $body = $(
-          '<div class="body"><div class="spinner big"></div></div>'
-        ).appendTo($container),
-        $footer = $('<div class="footer"/>').appendTo($container);
+      const $container = $('<div/>', {
+        class: 'modal elementselectormodal',
+        'aria-labelledby': headingId,
+      }).appendTo(Garnish.$bod);
+      const $headingContainer = $('<div/>', {
+        class: this.settings.showTitle ? 'header' : 'visually-hidden',
+      }).appendTo($container);
+      $('<h2/>', {
+        id: headingId,
+        text: this.settings.modalTitle,
+      }).appendTo($headingContainer);
+      const $body = $('<div/>', {
+        class: 'body',
+      })
+        .append($('<div/>', {class: 'spinner big'}))
+        .appendTo($container);
+      const $footer = $('<div/>', {
+        class: 'footer',
+      }).appendTo($container);
 
       if (this.settings.fullscreen) {
         $container.addClass('fullscreen');
@@ -69,7 +72,7 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend(
       this.$selectBtn = $('<button/>', {
         type: 'button',
         class: 'btn disabled submit',
-        text: Craft.t('app', 'Select'),
+        text: this.settings.selectBtnLabel,
       }).appendTo(this.$primaryButtons);
 
       this.$body = $body;
@@ -97,12 +100,18 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend(
 
     updateSelectBtnState: function () {
       if (this.$selectBtn) {
-        if (this.elementIndex.getSelectedElements().length) {
+        if (this.hasSelection()) {
           this.enableSelectBtn();
         } else {
           this.disableSelectBtn();
         }
       }
+    },
+
+    hasSelection: function () {
+      return (
+        this.elementIndex && this.elementIndex.getSelectedElements().length
+      );
     },
 
     enableSelectBtn: function () {
@@ -136,9 +145,11 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend(
     },
 
     selectElements: function () {
-      if (this.elementIndex && this.elementIndex.getSelectedElements().length) {
+      if (this.hasSelection()) {
         // TODO: This code shouldn't know about views' elementSelect objects
-        this.elementIndex.view.elementSelect.clearMouseUpTimeout();
+        if (this.elementSelect) {
+          this.elementIndex.view.elementSelect.clearMouseUpTimeout();
+        }
 
         var $selectedElements = this.elementIndex.getSelectedElements(),
           elementInfo = this.getElementInfo($selectedElements);
@@ -195,9 +206,8 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend(
       this.base();
     },
 
-    _createElementIndex: function () {
-      // Get the modal body HTML based on the settings
-      var data = {
+    getElementIndexParams: function () {
+      const params = {
         context: 'modal',
         elementType: this.elementType,
         sources: this.settings.sources,
@@ -207,12 +217,16 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend(
         this.settings.showSiteMenu !== null &&
         this.settings.showSiteMenu !== 'auto'
       ) {
-        data.showSiteMenu = this.settings.showSiteMenu ? '1' : '0';
+        params.showSiteMenu = this.settings.showSiteMenu ? '1' : '0';
       }
 
+      return params;
+    },
+
+    _createElementIndex: function () {
       Craft.postActionRequest(
         this.settings.bodyAction,
-        data,
+        this.getElementIndexParams(),
         (response, textStatus) => {
           if (textStatus === 'success') {
             this.$body.html(response.html);
@@ -225,23 +239,7 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend(
             this.elementIndex = Craft.createElementIndex(
               this.elementType,
               this.$body,
-              Object.assign(
-                {
-                  context: 'modal',
-                  modal: this,
-                  storageKey: this.settings.storageKey,
-                  criteria: this.settings.criteria,
-                  disabledElementIds: this.settings.disabledElementIds,
-                  selectable: true,
-                  multiSelect: this.settings.multiSelect,
-                  buttonContainer: this.$secondaryButtons,
-                  onSelectionChange: this.onSelectionChange.bind(this),
-                  hideSidebar: this.settings.hideSidebar,
-                  defaultSiteId: this.settings.defaultSiteId,
-                  defaultSource: this.settings.defaultSource,
-                },
-                this.settings.indexSettings
-              )
+              this.getIndexSettings()
             );
 
             // Double-clicking or double-tapping should select the elements
@@ -256,8 +254,36 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend(
                 }
               }
             );
+
+            this.on('updateSizeAndPosition', () => {
+              this.elementIndex.handleResize();
+            });
+
+            this.updateSelectBtnState();
           }
         }
+      );
+    },
+
+    getIndexSettings: function () {
+      return Object.assign(
+        {
+          context: 'modal',
+          modal: this,
+          storageKey: this.settings.storageKey,
+          criteria: this.settings.criteria,
+          disabledElementIds: this.settings.disabledElementIds,
+          selectable: true,
+          multiSelect: this.settings.multiSelect,
+          buttonContainer: this.$secondaryButtons,
+          onSelectionChange: this.onSelectionChange.bind(this),
+          hideSidebar: this.settings.hideSidebar,
+          defaultSiteId: this.settings.defaultSiteId,
+          defaultSource: this.settings.defaultSource,
+          defaultSourcePath: this.settings.defaultSourcePath,
+          showSourcePath: this.settings.showSourcePath,
+        },
+        this.settings.indexSettings
       );
     },
   },
@@ -274,11 +300,15 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend(
       disableElementsOnSelect: false,
       hideOnSelect: true,
       modalTitle: Craft.t('app', 'Select element'),
+      showTitle: false,
+      selectBtnLabel: Craft.t('app', 'Select'),
       onCancel: $.noop,
       onSelect: $.noop,
       hideSidebar: false,
       defaultSiteId: null,
       defaultSource: null,
+      defaultSourcePath: null,
+      showSourcePath: true,
       bodyAction: 'elements/get-modal-body',
       indexSettings: {},
     },
