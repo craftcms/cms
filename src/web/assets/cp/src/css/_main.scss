@@ -2876,6 +2876,14 @@ $elementInnerSpacing: 5px;
       text-overflow: ellipsis;
       word-wrap: normal;
     }
+
+    &.editable {
+      .edit-btn {
+        position: absolute;
+        bottom: $baseElementSidePadding;
+        @include right($baseElementSidePadding);
+      }
+    }
   }
 
   &.removable,
@@ -2925,6 +2933,11 @@ $elementInnerSpacing: 5px;
     .delete {
       display: none;
     }
+  }
+
+  // Hide edit button by default (only unset for element index and fields)
+  .edit-btn {
+    display: none;
   }
 }
 
@@ -3041,6 +3054,14 @@ $checkboxPadding: $checkboxSize + 4;
 
       .checkbox {
         @include margin-right($elementInnerSpacing);
+      }
+    }
+  }
+
+  .element {
+    &.editable {
+      .edit-btn {
+        display: flex;
       }
     }
   }

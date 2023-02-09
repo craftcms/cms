@@ -256,6 +256,7 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
 
     addElements: function ($elements) {
       this.thumbLoader.load($elements);
+      $editBtns = $elements.find('[data-edit-element]');
 
       if (this.settings.selectable) {
         this.elementSelect.addItems($elements);
@@ -267,7 +268,10 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
 
       if (this.settings.editable) {
         this._handleShowElementEditor = (ev) => {
-          var $element = $(ev.currentTarget);
+          const $element = $(ev.target).closest('.element');
+
+          if ($element.length === 0) return;
+
           if (
             Garnish.hasAttr($element, 'data-editable') &&
             !$element.hasClass('disabled') &&
@@ -277,11 +281,7 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
           }
         };
 
-        this.addListener($elements, 'dblclick', this._handleShowElementEditor);
-
-        if ($.isTouchCapable()) {
-          this.addListener($elements, 'taphold', this._handleShowElementEditor);
-        }
+        this.addListener($editBtns, 'click', this._handleShowElementEditor);
       }
 
       $elements.find('.delete').on('click dblclick', (ev) => {
