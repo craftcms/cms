@@ -425,11 +425,11 @@ class Cp
         $user = Craft::$app->getUser()->getIdentity();
 
         if ($user && $elementsService->canView($element, $user)) {
-            $attributes['data']['editable'] = true;
-            $attributes['class'][] = 'editable';
-            $isEditable = true;
-
             if ($context === 'index') {
+                $attributes['data']['editable'] = true;
+                $attributes['class'][] = 'editable';
+                $isEditable = true;
+
                 if ($elementsService->canSave($element, $user)) {
                     $attributes['data']['savable'] = true;
                 }
@@ -523,7 +523,8 @@ class Cp
             }
         }
 
-        if ($isEditable) {
+        // Only show edit button in index/field contexts
+        if (($context === 'field' || $context === 'index') && $isEditable) {
             $innerHtml .= Html::tag('button', '', [
                 'data' => [
                     'icon' => 'edit',

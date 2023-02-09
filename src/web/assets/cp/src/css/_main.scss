@@ -2707,7 +2707,7 @@ $baseElementSidePadding: 7px;
 $elementInnerSpacing: 5px;
 
 .element {
-  --label-spacing: 10px;
+  --label-spacing: 5px;
   --label-padding: calc(var(--touch-target-size) + var(--label-spacing));
   --button-gap: 3px;
   position: relative;
