@@ -16,6 +16,7 @@ use craft\db\Query;
 use craft\db\Table;
 use craft\elements\actions\Delete;
 use craft\elements\actions\DeleteActionInterface;
+use craft\elements\actions\Duplicate;
 use craft\elements\actions\Edit;
 use craft\elements\actions\SetStatus;
 use craft\elements\actions\View;
@@ -82,6 +83,7 @@ use yii\base\InvalidCallException;
 use yii\base\InvalidConfigException;
 use yii\base\NotSupportedException;
 use yii\base\UnknownPropertyException;
+use yii\db\Expression;
 use yii\db\ExpressionInterface;
 use yii\validators\BooleanValidator;
 use yii\validators\NumberValidator;
@@ -92,6 +94,7 @@ use yii\web\Response;
 /**
  * Element is the base class for classes representing elements in terms of objects.
  *
+ * @mixin CustomFieldBehavior
  * @property int|null $canonicalId The element’s canonical ID
  * @property-read string $canonicalUid The element’s canonical UID
  * @property-read bool $isCanonical Whether this is the canonical element
@@ -858,6 +861,14 @@ abstract class Element extends Component implements ElementInterface
 
     /**
      * @inheritdoc
+     */
+    public static function findSource(string $sourceKey, ?string $context = null): ?array
+    {
+        return null;
+    }
+
+    /**
+     * @inheritdoc
      * @since 3.5.0
      */
     public static function fieldLayouts(string $source): array
@@ -907,6 +918,11 @@ abstract class Element extends Component implements ElementInterface
                 )
             )
         );
+
+        // Prepend Duplicate?
+        if (!$hasActionType(Duplicate::class)) {
+            $actions->prepend(Duplicate::class);
+        }
 
         // Prepend Edit?
         if (!$hasActionType(Edit::class)) {
@@ -1112,7 +1128,7 @@ abstract class Element extends Component implements ElementInterface
             $elementQuery->cache();
         }
 
-        $variables['elements'] = $elementQuery->all($db);
+        $variables['elements'] = static::indexElements($elementQuery, $sourceKey);
 
         $template = '_elements/' . $viewState['mode'] . 'view/' . ($includeContainer ? 'container' : 'elements');
 
@@ -1120,7 +1136,7 @@ abstract class Element extends Component implements ElementInterface
     }
 
     /**
-     * Preps the element criteria for a given table attribute
+     * Prepares an element query for an element index that includes a given table attribute.
      *
      * @param ElementQueryInterface $elementQuery
      * @param string $attribute
@@ -1133,6 +1149,29 @@ abstract class Element extends Component implements ElementInterface
             $fieldUid = $matches[1];
             Craft::$app->getFields()->getFieldByUid($fieldUid)?->modifyElementIndexQuery($elementQuery);
         }
+    }
+
+    /**
+     * Returns the resulting elements for an element index.
+     *
+     * @param ElementQueryInterface $elementQuery
+     * @param string|null $sourceKey
+     * @return ElementInterface[]
+     * @since 4.4.0
+     */
+    protected static function indexElements(ElementQueryInterface $elementQuery, ?string $sourceKey): array
+    {
+        return $elementQuery->all();
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function indexElementCount(ElementQueryInterface $elementQuery, ?string $sourceKey): int
+    {
+        return (int)$elementQuery
+            ->select(new Expression('1'))
+            ->count();
     }
 
     /**
@@ -1271,6 +1310,10 @@ abstract class Element extends Component implements ElementInterface
                     return !$fieldLayout || $fieldLayout->getFieldByHandle($handle) !== null;
                 })
             );
+
+            if (empty($sourceElements)) {
+                return false;
+            }
 
             return $field->getEagerLoadingMap($sourceElements);
         }
@@ -1776,6 +1819,12 @@ abstract class Element extends Component implements ElementInterface
      * @see setRevisionNotes()
      */
     protected ?string $revisionNotes = null;
+
+    /**
+     * @var array<string,int>|null
+     * @see validate()
+     */
+    private ?array $_attributeNames;
 
     /**
      * @var int|null
@@ -2295,6 +2344,17 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
+    public function validate($attributeNames = null, $clearErrors = true)
+    {
+        $this->_attributeNames = $attributeNames ? array_flip((array)$attributeNames) : null;
+        $result = parent::validate($attributeNames, $clearErrors);
+        $this->_attributeNames = null;
+        return $result;
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function afterValidate(): void
     {
         if (
@@ -2308,6 +2368,11 @@ abstract class Element extends Component implements ElementInterface
             foreach ($layoutElements as $layoutElement) {
                 $field = $layoutElement->getField();
                 $attribute = "field:$field->handle";
+
+                if (isset($this->_attributeNames) && !isset($this->_attributeNames[$attribute])) {
+                    continue;
+                }
+
                 $isEmpty = fn() => $field->isValueEmpty($this->getFieldValue($field->handle), $this);
 
                 if ($scenario === self::SCENARIO_LIVE && $layoutElement->required) {
@@ -3015,7 +3080,7 @@ abstract class Element extends Component implements ElementInterface
             $params['revisionId'] = $this->revisionId;
         }
 
-        return UrlHelper::urlWithParams($cpEditUrl, $params);
+        return UrlHelper::cpUrl($cpEditUrl, $params);
     }
 
     /**
@@ -3033,6 +3098,37 @@ abstract class Element extends Component implements ElementInterface
      * @inheritdoc
      */
     public function getPostEditUrl(): ?string
+    {
+        return null;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getCpRevisionsUrl(): ?string
+    {
+        $cpEditUrl = $this->cpRevisionsUrl();
+
+        if (!$cpEditUrl) {
+            return null;
+        }
+
+        $params = [];
+
+        if (Craft::$app->getIsMultiSite()) {
+            $params['site'] = $this->getSite()->handle;
+        }
+
+        return UrlHelper::cpUrl($cpEditUrl, $params);
+    }
+
+    /**
+     * Returns the element’s revisions index URL in the control panel.
+     *
+     * @return string|null
+     * @since 4.4.0
+     */
+    protected function cpRevisionsUrl(): ?string
     {
         return null;
     }

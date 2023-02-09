@@ -2849,7 +2849,7 @@ class GeneralConfig extends BaseConfig
     public array $trustedHosts = ['any'];
 
     /**
-     * @var bool Whether images should be upscaled if the provided transform size is larger than the image.
+     * @var bool Whether image transforms should allow upscaling by default, for images that are smaller than the transform dimensions.
      *
      * ::: code
      * ```php Static Config
@@ -6196,7 +6196,7 @@ class GeneralConfig extends BaseConfig
     }
 
     /**
-     * Whether images should be upscaled if the provided transform size is larger than the image.
+     * Whether image transforms should allow upscaling by default, for images that are smaller than the transform dimensions.
      *
      * ```php
      * ->upscaleImages(false)

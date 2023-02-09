@@ -32,6 +32,7 @@ use craft\elements\db\ElementQueryInterface;
 use craft\elements\db\EntryQuery;
 use craft\errors\UnsupportedSiteException;
 use craft\events\DefineEntryTypesEvent;
+use craft\events\ElementCriteriaEvent;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Cp;
 use craft\helpers\DateTimeHelper;
@@ -80,6 +81,13 @@ class Entry extends Element implements ExpirableElementInterface
      * @since 3.6.0
      */
     public const EVENT_DEFINE_ENTRY_TYPES = 'defineEntryTypes';
+
+    /**
+     * @event ElementCriteriaEvent The event that is triggered when defining the parent selection criteria.
+     * @see _parentOptionCriteria()
+     * @since 4.4.0
+     */
+    public const EVENT_DEFINE_PARENT_SELECTION_CRITERIA = 'defineParentSelectionCriteria';
 
     /**
      * @inheritdoc
@@ -210,7 +218,7 @@ class Entry extends Element implements ExpirableElementInterface
             $editable = true;
         } else {
             $sections = Craft::$app->getSections()->getAllSections();
-            $editable = false;
+            $editable = null;
         }
 
         $sectionIds = [];
@@ -495,21 +503,15 @@ class Entry extends Element implements ExpirableElementInterface
             ],
             [
                 'label' => Craft::t('app', 'Date Created'),
-                'orderBy' => 'elements.dateCreated',
-                'attribute' => 'dateCreated',
+                'orderBy' => 'dateCreated',
                 'defaultDir' => 'desc',
             ],
             [
                 'label' => Craft::t('app', 'Date Updated'),
-                'orderBy' => 'elements.dateUpdated',
-                'attribute' => 'dateUpdated',
+                'orderBy' => 'dateUpdated',
                 'defaultDir' => 'desc',
             ],
-            [
-                'label' => Craft::t('app', 'ID'),
-                'orderBy' => 'elements.id',
-                'attribute' => 'id',
-            ],
+            'id' => Craft::t('app', 'ID'),
         ];
     }
 
@@ -1432,7 +1434,7 @@ class Entry extends Element implements ExpirableElementInterface
             $path .= "-$this->slug";
         }
 
-        return UrlHelper::cpUrl($path);
+        return $path;
     }
 
     /**
@@ -1440,9 +1442,15 @@ class Entry extends Element implements ExpirableElementInterface
      */
     public function getPostEditUrl(): ?string
     {
-        $section = $this->getSection();
-        $sourceKey = $section->type === Section::TYPE_SINGLE ? 'singles' : $section->handle;
-        return UrlHelper::cpUrl("entries/$sourceKey");
+        return UrlHelper::cpUrl('entries');
+    }
+
+    /**
+     * @inheritdoc
+     */
+    protected function cpRevisionsUrl(): ?string
+    {
+        return sprintf('%s/revisions', $this->cpEditUrl());
     }
 
     /**
@@ -1762,6 +1770,15 @@ EOD;
             }
 
             $parentOptionCriteria['level'] = sprintf('<=%s', $section->maxLevels - $depth);
+        }
+
+        if ($this->hasEventHandlers(self::EVENT_DEFINE_PARENT_SELECTION_CRITERIA)) {
+            // Fire a defineParentSelectionCriteria event
+            $event = new ElementCriteriaEvent([
+                'criteria' => $parentOptionCriteria,
+            ]);
+            $this->trigger(self::EVENT_DEFINE_PARENT_SELECTION_CRITERIA, $event);
+            return $event->criteria;
         }
 
         return $parentOptionCriteria;

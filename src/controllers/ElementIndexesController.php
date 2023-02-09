@@ -23,7 +23,6 @@ use craft\helpers\Cp;
 use craft\helpers\ElementHelper;
 use craft\services\ElementSources;
 use yii\base\InvalidValueException;
-use yii\db\Expression;
 use yii\web\BadRequestHttpException;
 use yii\web\ForbiddenHttpException;
 use yii\web\Response;
@@ -166,11 +165,11 @@ class ElementIndexesController extends BaseElementsController
      */
     public function actionCountElements(): Response
     {
+        /** @var string|ElementInterface $elementType */
+        $elementType = $this->elementType;
         return $this->asJson([
             'resultSet' => $this->request->getParam('resultSet'),
-            'count' => (int)$this->elementQuery
-                ->select(new Expression('1'))
-                ->count(),
+            'count' => $elementType::indexElementCount($this->elementQuery, $this->sourceKey),
         ]);
     }
 
