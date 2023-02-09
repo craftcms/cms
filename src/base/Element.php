@@ -1272,6 +1272,10 @@ abstract class Element extends Component implements ElementInterface
                 })
             );
 
+            if (empty($sourceElements)) {
+                return false;
+            }
+
             return $field->getEagerLoadingMap($sourceElements);
         }
 
