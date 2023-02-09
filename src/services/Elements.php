@@ -2436,7 +2436,11 @@ class Elements extends Component
 
                 // Now eager-load any sub paths
                 if (!empty($map['map']) && !empty($plan->nested)) {
-                    $this->_eagerLoadElementsInternal($map['elementType'], array_map('array_values', $targetElements), $plan->nested);
+                    $this->_eagerLoadElementsInternal(
+                        $map['elementType'],
+                        array_map('array_values', $targetElements),
+                        $plan->nested
+                    );
                 }
             }
         }

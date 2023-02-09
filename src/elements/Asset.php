@@ -2558,7 +2558,10 @@ class Asset extends Element
         }
 
         if (!$this->_width || !$this->_height) {
-            if ($this->getScenario() !== self::SCENARIO_CREATE) {
+            if (
+                $this->kind === self::KIND_IMAGE &&
+                $this->getScenario() !== self::SCENARIO_CREATE
+            ) {
                 Craft::warning("Asset $this->id is missing its width or height", __METHOD__);
             }
 

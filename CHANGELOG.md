@@ -1,8 +1,29 @@
 # Release Notes for Craft CMS 3.x
 
-## Unreleased
+## 3.7.65.2 - 2023-02-08
+
+- Fixed a PHP error that could occur if relational fields were getting eager-loaded for elements that the fields didn’t belong to. ([#12648](https://github.com/craftcms/cms/issues/12648))
+
+## 3.7.65.1 - 2023-02-08
+
+- Fixed a PHP error that occurred after performing a Composer action within Craft. ([#12647](https://github.com/craftcms/cms/issues/12647))
+- Fixed a bug where element attributes weren’t getting eager-loaded. ([#12646](https://github.com/craftcms/cms/pull/12646), [#12645](https://github.com/craftcms/cms/issues/12645))
+
+## 3.7.65 - 2023-02-07
+
+- Updated Composer to 2.2.19, fixing a PHP error that could occur when performing a Composer action within Craft, when the autoload classmap was generated with Composer 2.5. ([#12482](https://github.com/craftcms/cms/issues/12482))
+- Fixed a bug where Matrix blocks weren’t getting eager-loaded. ([#12631](https://github.com/craftcms/cms/issues/12631))
+- Fixed a PHP error that could occur when calling `craft\services\Assets::getAllDescendantFolders()` for the root folder. ([craftcms/feed-me#1231](https://github.com/craftcms/feed-me/issues/1231))
+
+## 3.7.64.1 - 2023-02-05
+
+- Fixed a bug where `craft\behaviors\CustomFieldBehavior::$owner` was getting nullified by `craft\base\Element::fieldByHandle()`. ([#12624](https://github.com/craftcms/cms/issues/12624))
+
+## 3.7.64 - 2023-02-03
 
 - Improved the performance of the “Generating pending image transforms” queue job. ([#12274](https://github.com/craftcms/cms/issues/12274))
+- Added more reserved field handles to avoid conflicts with `craft\base\Element` properties. ([#12577](https://github.com/craftcms/cms/issues/12577))
+- Control panel requests no longer override the `pageTrigger` config setting value to `'p'`. ([#12598](https://github.com/craftcms/cms/issues/12598), [#12614](https://github.com/craftcms/cms/pull/12614))
 - Fixed field status badge styling in some contexts. ([#12403](https://github.com/craftcms/cms/issues/12403))
 - Fixed a bug where exporting elements with multiple field layouts as a CSV file using the “Expanded” export type would result in mismatched column values.
 - Fixed a bug where cancelling a conflicting volume folder move would result in the moved folder getting deleted.
@@ -10,6 +31,19 @@
 - Fixed a bug where the horizontal scroll position wasn’t being retained when refreshing Live Preview. ([#12504](https://github.com/craftcms/cms/issues/12504))
 - Fixed a bug where HTML tags within field labels, instructions, tips, and warnings weren’t always getting escaped.
 - Fixed a bug where the sidebar scroll position wasn’t retained when selecting a new source on element index pages. ([#12523](https://github.com/craftcms/cms/issues/12523))
+- Fixed a bug where `resave/*` commands’ output didn’t take the offset into account. ([#12526](https://github.com/craftcms/cms/issues/12526))
+- Fixed a bug where warnings were getting logged for video assets that were “missing” their dimensions.
+- Fixed a bug where `craft\services\Assets::getAllDescendantFolders()` could return unexpected results for folders that contained an underscore.
+- Fixed a bug where accessing a custom field’s magic property on an element would return the field’s raw database value rather than `null`, if it didn’t belong to the element’s field layout anymore. ([#12539](https://github.com/craftcms/cms/issues/12539), [#12578](https://github.com/craftcms/cms/pull/12578))
+- Fixed a bug where `craft\image\Raster::getIsTransparent()` wasn’t working. ([#12565](https://github.com/craftcms/cms/issues/12565))
+- Fixed a bug where the component name comments in project config YAML files would always lag behind the current project config a little. ([#12576](https://github.com/craftcms/cms/issues/12576), [#12581](https://github.com/craftcms/cms/pull/12581))
+- Fixed a SQL error that occurred when creating a database backup using the default backup command, when running MySQL 5.7.41+ or 8.0.32+. ([#12557](https://github.com/craftcms/cms/issues/12557), [#12560](https://github.com/craftcms/cms/pull/12560))
+- Fixed a bug where database backups weren’t respecting SSL database connection settings if they were specified when using MySQL. ([#10351](https://github.com/craftcms/cms/issues/10351), [#11753](https://github.com/craftcms/cms/issues/11753), [#12596](https://github.com/craftcms/cms/pull/12596))
+- Fixed a bug where element indexes could stop showing their loading spinner prematurely if the element listing needed to be reloaded multiple times in rapid succession. ([#12595](https://github.com/craftcms/cms/issues/12595))
+- Fixed a bug where element indexes would show show an expand/collapse toggle for structured elements that only had unsaved draft children, which aren’t actually shown. ([#11253](https://github.com/craftcms/cms/issues/11253))
+- Added `craft\helpers\Db::escapeForLike()`.
+- Added `craft\web\twig\variables\Paginate::$pageTrigger`. ([#12614](https://github.com/craftcms/cms/pull/12614))
+- `craft\services\Assets::getAllDescendantFolders()` now has a `$withParent` argument, which can be passed `false` to omit the parent folder from the results. ([#12536](https://github.com/craftcms/cms/issues/12536))
 - Deprecated `craft\helpers\DateTimeHelper::timeZoneAbbreviation()`.
 - Deprecated `craft\helpers\DateTimeHelper::timeZoneOffset()`.
 
@@ -1798,7 +1832,7 @@
 - Fixed a bug where editable tables within nested Matrix field settings were initially unresponsive when editing an existing Matrix field. ([#7911](https://github.com/craftcms/cms/issues/7911))
 - Fixed a bug where duplicated entries’ slugs and URIs could be incremented when changing a section’s propagation method. ([#7895](https://github.com/craftcms/cms/issues/7895))
 - Fixed a bug where the `Permissions-Policy` anti-FLoC header was being applied incorrectly. ([#7896](https://github.com/craftcms/cms/issues/7896))
-- Fixed a MySQL error that could occur when indexing search keywords which contained certain Russian characters. ([#7905](https://github.com/craftcms/cms/issues/7905))
+- Fixed a SQL error that could occur when indexing search keywords which contained certain Russian characters on MySQL. ([#7905](https://github.com/craftcms/cms/issues/7905))
 - Fixed a bug where `craft\elements\actions\Delete` wasn’t hard-deleting elements when `$hard` was set to `true`, if the element index wasn’t already set to query soft-deleted elements. ([#7901](https://github.com/craftcms/cms/issues/7901))
 - Fixed a bug where `craft\elements\actions\Delete` wasn’t clearing search indexes when `$hard` was set to `true`. ([#7901](https://github.com/craftcms/cms/issues/7901))
 - Fixed a PHP error that could occur if `config/app.php` was overriding the `log` component using `craft\helpers\App::logConfig()`, and expecting it to return an array with log target configs (as it used to before Craft 3.6).
@@ -1874,7 +1908,7 @@
 ### Fixed
 - Fixed a bug where restored entries could get deleted by garbage collection, if their `authorId` value was set to a soft-deleted author. ([#7751](https://github.com/craftcms/cms/issues/7751))
 - Fixed a bug where indexing assets from the command line could work incorrectly in some cases. ([#7741](https://github.com/craftcms/cms/issues/7741))
-- Fixed a MySQL error that could occur if a job in the queue failed and had a very long error message.
+- Fixed a SQL error that could occur if a job in the queue failed and had a very long error message on MySQL.
 - Fixed a bug where validation events would trigger when saving an element via `craft\services\Elements::saveElement()`, even if `$runValidation` was set to `false`. ([#7756](https://github.com/craftcms/cms/issues/7756))
 - Fixed a bug where `craft\helpers\Html::parseTag()` would parse child tags of `<script>` and `<style>` tags.
 - Fixed a bug where pagination labels below Vue admin tables weren’t using the translatable pagination message.

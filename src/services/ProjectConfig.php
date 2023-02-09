@@ -1713,7 +1713,9 @@ class ProjectConfig extends Component
                 'except' => ['.*', '.*/'],
             ]);
 
-            $projectConfigNames = $this->get(self::CONFIG_NAMES_KEY);
+            // get fresh internal config so that all the name comments are properly updated
+            $internalConfigData = $this->_loadInternalConfigData();
+            $projectConfigNames = $this->_traverseDataArray($internalConfigData, self::CONFIG_NAMES_KEY);
 
             $uids = [];
             $replacements = [];

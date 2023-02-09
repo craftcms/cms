@@ -86,7 +86,6 @@ Craft.BaseElementIndex = Garnish.Base.extend(
     _$detachedToolbarItems: null,
     _$triggers: null,
 
-    _ignoreFailedRequest: false,
     _cancelToken: null,
 
     /**
@@ -337,11 +336,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
     _cancelRequests: function () {
       if (this._cancelToken) {
-        this._ignoreFailedRequest = true;
         this._cancelToken.cancel();
-        Garnish.requestAnimationFrame(() => {
-          this._ignoreFailedRequest = false;
-        });
       }
     },
 
@@ -429,9 +424,9 @@ Craft.BaseElementIndex = Garnish.Base.extend(
           this.initSources();
           this.selectDefaultSource();
         })
-        .catch(() => {
-          this.setIndexAvailable();
-          if (!this._ignoreFailedRequest) {
+        .catch((e) => {
+          if (!axios.isCancel(e)) {
+            this.setIndexAvailable();
             Craft.cp.displayError(Craft.t('app', 'A server error occurred.'));
           }
         });
@@ -1158,8 +1153,8 @@ Craft.BaseElementIndex = Garnish.Base.extend(
             resolve();
           })
           .catch((e) => {
-            this.setIndexAvailable();
-            if (!this._ignoreFailedRequest) {
+            if (!axios.isCancel(e)) {
+              this.setIndexAvailable();
               Craft.cp.displayError(Craft.t('app', 'A server error occurred.'));
             }
             reject(e);
@@ -2628,10 +2623,10 @@ Craft.BaseElementIndex = Garnish.Base.extend(
             submitting = false;
             $spinner.addClass('hidden');
           })
-          .catch(function () {
+          .catch((e) => {
             submitting = false;
             $spinner.addClass('hidden');
-            if (!this._ignoreFailedRequest) {
+            if (!axios.isCancel(e)) {
               Craft.cp.displayError(Craft.t('app', 'A server error occurred.'));
             }
           });
