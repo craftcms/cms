@@ -9,6 +9,7 @@ namespace craft\queue;
 
 use Craft;
 use craft\base\Batchable;
+use craft\helpers\ConfigHelper;
 use craft\helpers\Queue as QueueHelper;
 use craft\i18n\Translation;
 
@@ -35,6 +36,11 @@ abstract class BaseBatchedJob extends BaseJob
      * @var int The index of the current batch (starting with `0`)
      */
     public int $batchIndex = 0;
+
+    /**
+     * @var int The offset to start fetching items by.
+     */
+    public int $itemOffset = 0;
 
     /**
      * @var int|null The job’s priority
@@ -102,22 +108,35 @@ abstract class BaseBatchedJob extends BaseJob
      */
     public function execute($queue): void
     {
-        $offset = $this->batchIndex * $this->batchSize;
-        $items = $this->data()->getSlice($offset, $this->batchSize);
+        $items = $this->data()->getSlice($this->itemOffset, $this->batchSize);
         $totalInBatch = is_array($items) ? count($items) : iterator_count($items);
+
+        $memoryLimit = ConfigHelper::sizeInBytes(ini_get('memory_limit'));
+        $startMemory = $memoryLimit != -1 ? memory_get_usage() : null;
+
         $i = 0;
 
         foreach ($items as $item) {
             $this->setProgress($queue, $i / $totalInBatch, Translation::prep('app', '{step, number} of {total, number}', [
-                'step' => $i + 1,
-                'total' => $totalInBatch,
+                'step' => $this->itemOffset + 1,
+                'total' => $this->totalItems(),
             ]));
             $this->processItem($item);
+            $this->itemOffset++;
             $i++;
+
+            // Make sure we're not getting uncomfortably close to the memory limit, every 10 items
+            if ($startMemory !== null && $i % 10 === 0) {
+                $memory = memory_get_usage();
+                $avgMemory = ($memory - $startMemory) / $i;
+                if ($memory + ($avgMemory * 15) > $memoryLimit) {
+                    break;
+                }
+            }
         }
 
         // Spawn another job if there are more items
-        if ($offset + $this->batchSize < $this->totalItems()) {
+        if ($this->itemOffset < $this->totalItems()) {
             $nextJob = clone $this;
             $nextJob->batchIndex++;
             QueueHelper::push($nextJob, $this->priority, 0, $this->ttr, $queue);
