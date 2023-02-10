@@ -1584,6 +1584,7 @@ return [
     'Total Price' => 'قیمت کل',
     'Total releases' => 'تعداد نسخه‌های منتشر‌شده',
     'Townland' => 'Townland',
+    'Transcript' => 'Transcript',
     'Transfer it to:' => 'آن را انتقال بده به:',
     'Transform Filesystem' => 'سیستم‌فایل تغییر شکل',
     'Transform Subpath' => 'زیر‌مسیر تغییر شکل',

@@ -1584,6 +1584,7 @@ return [
     'Total Price' => '合計価格',
     'Total releases' => 'リリースの合計',
     'Townland' => 'Townland',
+    'Transcript' => 'Transcript',
     'Transfer it to:' => '次の場所へ移す:',
     'Transform Filesystem' => 'ファイルシステムを変換',
     'Transform Subpath' => 'サブパスを変換',

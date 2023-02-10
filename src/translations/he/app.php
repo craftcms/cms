@@ -1584,6 +1584,7 @@ return [
     'Total Price' => 'מחיר כולל',
     'Total releases' => 'סה"כ הגרסאות',
     'Townland' => 'Townland',
+    'Transcript' => 'Transcript',
     'Transfer it to:' => 'העבר את זה ל-',
     'Transform Filesystem' => 'מערכת קבצים של התמרות',
     'Transform Subpath' => 'נתיב משנה של התמרה',

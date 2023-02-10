@@ -1584,6 +1584,7 @@ return [
     'Total Price' => 'Pris i alt',
     'Total releases' => 'Udgivelser i alt',
     'Townland' => 'Townland',
+    'Transcript' => 'Transcript',
     'Transfer it to:' => 'Overfør det til:',
     'Transform Filesystem' => 'Transformer filsystem',
     'Transform Subpath' => 'Transformer understi',

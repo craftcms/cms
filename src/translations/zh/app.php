@@ -1584,6 +1584,7 @@ return [
     'Total Price' => '总价',
     'Total releases' => '总版本数',
     'Townland' => '镇区',
+    'Transcript' => 'Transcript',
     'Transfer it to:' => '把它转移到：',
     'Transform Filesystem' => '转换文件系统',
     'Transform Subpath' => '转换子路径',
