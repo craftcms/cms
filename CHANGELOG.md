@@ -1,5 +1,9 @@
 # Release Notes for Craft CMS 3.x
 
+## Unreleased
+
+- Fixed a bug where entries that aren’t propagated to the primary site weren’t showing revision notes. ([#12641](https://github.com/craftcms/cms/issues/12641))
+
 ## 3.7.65.2 - 2023-02-08
 
 - Fixed a PHP error that could occur if relational fields were getting eager-loaded for elements that the fields didn’t belong to. ([#12648](https://github.com/craftcms/cms/issues/12648))
