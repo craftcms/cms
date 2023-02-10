@@ -8,13 +8,13 @@
 namespace craft\queue\jobs;
 
 use Craft;
+use craft\base\Batchable;
+use craft\base\Element;
 use craft\base\ElementInterface;
-use craft\elements\db\ElementQuery;
-use craft\elements\db\ElementQueryInterface;
-use craft\events\BatchElementActionEvent;
+use craft\db\QueryBatcher;
+use craft\helpers\ElementHelper;
 use craft\i18n\Translation;
-use craft\queue\BaseJob;
-use craft\services\Elements;
+use craft\queue\BaseBatchedJob;
 
 /**
  * PropagateElements job
@@ -22,7 +22,7 @@ use craft\services\Elements;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.13
  */
-class PropagateElements extends BaseJob
+class PropagateElements extends BaseBatchedJob
 {
     /**
      * @var string The element type that should be propagated
@@ -45,25 +45,60 @@ class PropagateElements extends BaseJob
     /**
      * @inheritdoc
      */
-    public function execute($queue): void
+    public function init(): void
     {
-        /** @var ElementQuery $query */
-        $query = $this->_query();
-        $total = $query->count();
+        parent::init();
+
+        if ($this->siteId !== null) {
+            $this->siteId = array_map(fn($siteId) => (int)$siteId, (array)$this->siteId);
+        }
+    }
+
+    /**
+     * @inheritdoc
+     */
+    protected function loadData(): Batchable
+    {
+        /** @var string|ElementInterface $elementType */
+        /** @phpstan-var class-string<ElementInterface>|ElementInterface $elementType */
+        $elementType = $this->elementType;
+        $query = $elementType::find()
+            ->offset(null)
+            ->limit(null)
+            ->orderBy(['elements.id' => SORT_ASC]);
+
+        if (!empty($this->criteria)) {
+            Craft::configure($query, $this->criteria);
+        }
+
+        return new QueryBatcher($query);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    protected function processItem(mixed $item)
+    {
+        /** @var ElementInterface $item */
+        $item->setScenario(Element::SCENARIO_ESSENTIALS);
+        $item->newSiteIds = [];
+        $supportedSiteIds = array_map(fn($siteInfo) => $siteInfo['siteId'], ElementHelper::supportedSitesForElement($item));
+        $elementSiteIds = $this->siteId !== null ? array_intersect($this->siteId, $supportedSiteIds) : $supportedSiteIds;
         $elementsService = Craft::$app->getElements();
 
-        $callback = function(BatchElementActionEvent $e) use ($queue, $query, $total) {
-            if ($e->query === $query) {
-                $this->setProgress($queue, ($e->position - 1) / $total, Translation::prep('app', '{step, number} of {total, number}', [
-                    'step' => $e->position,
-                    'total' => $total,
-                ]));
+        foreach ($elementSiteIds as $siteId) {
+            if ($siteId !== $item->siteId) {
+                // Make sure the site element wasn't updated more recently than the main one
+                $siteElement = $elementsService->getElementById($item->id, get_class($item), $siteId);
+                if ($siteElement === null || $siteElement->dateUpdated < $item->dateUpdated) {
+                    $elementsService->propagateElement($item, $siteId, $siteElement ?? false);
+                }
             }
-        };
+        }
 
-        $elementsService->on(Elements::EVENT_BEFORE_PROPAGATE_ELEMENT, $callback);
-        $elementsService->propagateElements($query, $this->siteId);
-        $elementsService->off(Elements::EVENT_BEFORE_PROPAGATE_ELEMENT, $callback);
+        // It's now fully duplicated and propagated
+        $item->markAsDirty();
+        $item->afterPropagate(false);
     }
 
     /**
@@ -71,37 +106,11 @@ class PropagateElements extends BaseJob
      */
     protected function defaultDescription(): ?string
     {
-        /** @var ElementQuery $query */
-        $query = $this->_query();
-        /** @var ElementInterface $elementType */
-        $elementType = $query->elementType;
-        $total = $query->count();
-        return Translation::prep('app', 'Propagating {type}', [
-            'type' => $total == 1 ? $elementType::lowerDisplayName() : $elementType::pluralLowerDisplayName(),
-        ]);
-    }
-
-    /**
-     * Returns the element query based on the criteria.
-     *
-     * @return ElementQueryInterface
-     */
-    private function _query(): ElementQueryInterface
-    {
         /** @var string|ElementInterface $elementType */
         /** @phpstan-var class-string<ElementInterface>|ElementInterface $elementType */
         $elementType = $this->elementType;
-        $query = $elementType::find();
-
-        if (!empty($this->criteria)) {
-            Craft::configure($query, $this->criteria);
-        }
-
-        $query
-            ->offset(null)
-            ->limit(null)
-            ->orderBy([]);
-
-        return $query;
+        return Translation::prep('app', 'Propagating {type}', [
+            'type' => $this->totalItems() == 1 ? $elementType::lowerDisplayName() : $elementType::pluralLowerDisplayName(),
+        ]);
     }
 }
