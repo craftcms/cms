@@ -4340,6 +4340,7 @@ abstract class Element extends Component implements ElementInterface
         if (!isset($this->_currentRevision)) {
             $canonical = $this->getCanonical(true);
             $this->_currentRevision = static::find()
+                ->siteId($canonical->siteId)
                 ->revisionOf($canonical->id)
                 ->dateCreated($canonical->dateUpdated)
                 ->status(null)
