@@ -1584,6 +1584,7 @@ return [
     'Total Price' => 'Preço Total',
     'Total releases' => 'Lançamentos totais',
     'Townland' => 'Townland',
+    'Transcript' => 'Transcript',
     'Transfer it to:' => 'Transferi-lo para:',
     'Transform Filesystem' => 'Transformar sistema de ficheiros',
     'Transform Subpath' => 'Transformar sub-caminho',
