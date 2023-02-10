@@ -219,7 +219,7 @@ class Cp extends Component
             $navItems[] = [
                 'label' => Craft::t('app', 'Categories'),
                 'url' => 'categories',
-                'fontIcon' => 'categories',
+                'fontIcon' => 'tree',
             ];
         }
 
@@ -422,7 +422,7 @@ class Cp extends Component
             'label' => Craft::t('app', 'Globals'),
         ];
         $settings[$label]['categories'] = [
-            'iconMask' => '@appicons/folder-open.svg',
+            'iconMask' => '@appicons/tree.svg',
             'label' => Craft::t('app', 'Categories'),
         ];
         $settings[$label]['tags'] = [
