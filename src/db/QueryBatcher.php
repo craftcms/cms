@@ -13,13 +13,24 @@ use yii\db\Query as YiiQuery;
 use yii\db\QueryInterface;
 
 /**
- * QueryBatcher class.
+ * QueryBatcher provides a [[Batchable]] wrapper for a given [[QueryInterface]] object.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.4.0
  */
 class QueryBatcher implements Batchable
 {
+    /**
+     * Constructor
+     *
+     * :::warning
+     * The query should have [[QueryInterface::orderBy()|`orderBy`]] set on it, ideally to the table’s primary key
+     * column. That will ensure that the rows returned in result batches are consecutive.
+     * :::
+     *
+     * @param QueryInterface $query
+     * @param YiiConnection|null $db
+     */
     public function __construct(
         private QueryInterface $query,
         private ?YiiConnection $db = null,

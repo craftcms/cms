@@ -22,6 +22,12 @@ use craft\i18n\Translation;
  * so the `priority` and `ttr` settings can be maintained for additional spawned jobs.
  * :::
  *
+ * :::warning
+ * Spawned jobs are cloned from the current job, so any public properties that are set to objects which aren’t
+ * `serialize()`-friendly should be excluded via `__sleep()`, and any private/protected properties will need
+ * to be reset to their default values via `__wakeup()` to avoid uninitialized property errors.
+ * :::
+ *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.4.0
  */
