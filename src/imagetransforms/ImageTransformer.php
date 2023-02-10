@@ -97,7 +97,7 @@ class ImageTransformer extends Component implements ImageTransformerInterface, E
                 // Add a Generate Image Transform job to the queue, in case the temp URL never gets requested
                 Queue::push(new GenerateImageTransform([
                     'transformId' => $index->id,
-                ]));
+                ]), 2048);
 
                 // Return the temporary transform URL
                 return UrlHelper::actionUrl('assets/generate-transform', [
