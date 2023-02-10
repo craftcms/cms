@@ -1936,6 +1936,7 @@ return [
     '{attribute} should contain {count, number} {count, plural, one{item} other{items}}.' => 'Количество объектов, которое должно находиться в {attribute}: {count, number}{count, plural, one{} other{}}.',
     '{attribute} “{value}” has already been taken.' => '{attribute} «{value}» уже занято.',
     '{ctrl}C to copy.' => '{ctrl}C, чтобы скопировать.',
+    '{description} (batch {index, number} of {total, number})' => '{description} (batch {index, number} of {total, number})',
     '{edition} edition' => 'Редакция {edition}',
     '{element} pagination' => 'Разбивка на страницы: {element}',
     '{filename} isn’t selectable for this field.' => 'Файл «{filename}» для этого поля выбрать нельзя.',
