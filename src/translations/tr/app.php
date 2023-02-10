@@ -1938,6 +1938,7 @@ Tebrikler! Craft eposta göndermeyi başardı.Gerkli ayarlar şu şekilde: {{ se
     '{attribute} should contain {count, number} {count, plural, one{item} other{items}}.' => '{attribute} {count, number} {count, plural, one{öğe} other{öğe}} içermelidir.',
     '{attribute} “{value}” has already been taken.' => '{attribute} "{value}" zaten kullanılmış.',
     '{ctrl}C to copy.' => 'Kopyalamak için {ctrl}C',
+    '{description} (batch {index, number} of {total, number})' => '{description} (batch {index, number} of {total, number})',
     '{edition} edition' => '{edition} sürüm',
     '{element} pagination' => '{element} sayfalandırma',
     '{filename} isn’t selectable for this field.' => '{filename} bu alan için seçilemez.',
