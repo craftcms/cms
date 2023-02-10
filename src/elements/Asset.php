@@ -12,7 +12,10 @@ use craft\base\Element;
 use craft\base\Field;
 use craft\base\LocalVolumeInterface;
 use craft\base\VolumeInterface;
+use craft\controllers\ElementIndexesController;
+use craft\controllers\ElementsController;
 use craft\db\Query;
+use craft\db\QueryAbortedException;
 use craft\db\Table;
 use craft\elements\actions\CopyReferenceTag;
 use craft\elements\actions\CopyUrl;
@@ -20,6 +23,7 @@ use craft\elements\actions\DeleteAssets;
 use craft\elements\actions\DownloadAssetFile;
 use craft\elements\actions\Edit;
 use craft\elements\actions\EditImage;
+use craft\elements\actions\MoveAssets;
 use craft\elements\actions\PreviewAsset;
 use craft\elements\actions\RenameFile;
 use craft\elements\actions\ReplaceFile;
@@ -38,12 +42,16 @@ use craft\helpers\ElementHelper;
 use craft\helpers\FileHelper;
 use craft\helpers\Html;
 use craft\helpers\Image;
+use craft\helpers\Json;
 use craft\helpers\StringHelper;
 use craft\helpers\Template;
 use craft\helpers\UrlHelper;
 use craft\models\AssetTransform;
 use craft\models\VolumeFolder;
 use craft\records\Asset as AssetRecord;
+use craft\search\SearchQuery;
+use craft\search\SearchQueryTerm;
+use craft\search\SearchQueryTermGroup;
 use craft\validators\AssetLocationValidator;
 use craft\validators\DateTimeValidator;
 use craft\validators\StringValidator;
@@ -288,11 +296,14 @@ class Asset extends Element
             $sourceIds = $volumes->getAllVolumeIds();
         }
 
-        $additionalCriteria = $context === 'settings' ? ['parentId' => ':empty:'] : [];
+        $tree = Craft::$app->getAssets()->getFolderTreeByVolumeIds($sourceIds, [
+            'parentId' => ':empty:',
+        ]);
+        $sources = [];
 
-        $tree = Craft::$app->getAssets()->getFolderTreeByVolumeIds($sourceIds, $additionalCriteria);
-
-        $sourceList = self::_assembleSourceList($tree, $context !== 'settings', Craft::$app->getUser()->getIdentity());
+        foreach ($tree as $folder) {
+            $sources[] = self::_assembleSourceInfoForFolder($folder, Craft::$app->getUser()->getIdentity());
+        }
 
         // Add the Temporary Uploads location, if that's not set to a real volume
         if (
@@ -302,10 +313,27 @@ class Asset extends Element
         ) {
             $temporaryUploadFolder = Craft::$app->getAssets()->getUserTemporaryUploadFolder();
             $temporaryUploadFolder->name = Craft::t('app', 'Temporary Uploads');
-            $sourceList[] = self::_assembleSourceInfoForFolder($temporaryUploadFolder);
+            $sources[] = self::_assembleSourceInfoForFolder($temporaryUploadFolder);
         }
 
-        return $sourceList;
+        return $sources;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function findSource(string $sourceKey, ?string $context = null): ?array
+    {
+        if (preg_match('/^folder:[\w\-]+(?:\/.+)?\/folder:([\w\-]+)$/', $sourceKey, $match)) {
+            $folder = Craft::$app->getAssets()->getFolderByUid($match[1]);
+            if ($folder) {
+                $source = self::_assembleSourceInfoForFolder($folder, Craft::$app->getUser()->getIdentity());
+                $source['keyPath'] = $sourceKey;
+                return $source;
+            }
+        }
+
+        return null;
     }
 
     /**
@@ -377,6 +405,9 @@ class Asset extends Element
                 $actions[] = EditImage::class;
             }
 
+            // Move
+            $actions[] = MoveAssets::class;
+
             // Delete
             if ($isTemp || $userSession->checkPermission("deleteFilesAndFoldersInVolume:$volume->uid")) {
                 $actions[] = DeleteAssets::class;
@@ -392,6 +423,20 @@ class Asset extends Element
     protected static function defineSearchableAttributes(): array
     {
         return ['filename', 'extension', 'kind'];
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function sortOptions(): array
+    {
+        if (self::isFolderIndex()) {
+            return [
+                'title' => Craft::t('app', 'Folder'),
+            ];
+        }
+
+        return parent::sortOptions();
     }
 
     /**
@@ -425,7 +470,31 @@ class Asset extends Element
                 'orderBy' => 'elements.id',
                 'attribute' => 'id',
             ],
+            [
+                'label' => Craft::t('app', 'Width'),
+                'orderBy' => 'width',
+                'attribute' => 'width',
+            ],
+            [
+                'label' => Craft::t('app', 'Height'),
+                'orderBy' => 'height',
+                'attribute' => 'height',
+            ],
         ];
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function tableAttributes(): array
+    {
+        if (self::isFolderIndex()) {
+            return [
+                'title' => ['label' => Craft::t('app', 'Folder')],
+            ];
+        }
+
+        return parent::tableAttributes();
     }
 
     /**
@@ -485,33 +554,255 @@ class Asset extends Element
     }
 
     /**
-     * Transforms an asset folder tree into a source list.
-     *
-     * @param array $folders
-     * @param bool $includeNestedFolders
-     * @param User|null $user
-     * @return array
+     * @inheritdoc
      */
-    private static function _assembleSourceList(array $folders, bool $includeNestedFolders = true, User $user = null): array
+    protected static function indexElements(ElementQueryInterface $elementQuery, ?string $sourceKey): array
     {
-        $sources = [];
+        $assets = [];
 
-        foreach ($folders as $folder) {
-            $sources[] = self::_assembleSourceInfoForFolder($folder, $includeNestedFolders, $user);
+        // Include folders in the results?
+        /** @var AssetQuery $elementQuery */
+        if (self::_includeFoldersInIndexElements($elementQuery, $sourceKey, $queryFolder)) {
+            $assetsService = Craft::$app->getAssets();
+            $folderQuery = self::_createFolderQueryForIndex($elementQuery, $queryFolder);
+            $totalFolders = $folderQuery->count();
+
+            if ($totalFolders > $elementQuery->offset) {
+                $source = ElementHelper::findSource(static::class, $sourceKey);
+                if (isset($source['criteria']['folderId'])) {
+                    $baseFolder = $assetsService->getFolderById($source['criteria']['folderId']);
+                } else {
+                    $baseFolder = $assetsService->getRootFolderByVolumeId($queryFolder->getVolume()->id);
+                }
+                $baseSourcePathStep = $baseFolder->getSourcePathInfo();
+
+                $folderQuery
+                    ->offset($elementQuery->offset)
+                    ->limit($elementQuery->limit);
+
+                $folders = array_map(function(array $result) {
+                    return new VolumeFolder($result);
+                }, $folderQuery->all());
+
+                $foldersByPath = ArrayHelper::index($folders, function(VolumeFolder $folder) {
+                    return rtrim($folder->path, '/');
+                });
+
+                foreach ($folders as $folder) {
+                    $sourcePath = [$baseSourcePathStep];
+                    $path = rtrim($baseFolder->path ?? '', '/');
+                    $pathSegs = ArrayHelper::filterEmptyStringsFromArray(explode('/', StringHelper::removeLeft($folder['path'], $baseFolder->path ?? '')));
+                    foreach ($pathSegs as $i => $seg) {
+                        $path .= ($path !== '' ? '/' : '') . $seg;
+                        if (isset($foldersByPath[$path])) {
+                            $stepFolder = $foldersByPath[$path];
+                        } else {
+                            $stepFolder = $assetsService->findFolder([
+                                'volumeId' => $queryFolder->volumeId,
+                                'path' => "$path/",
+                            ]);
+                            if (!$stepFolder) {
+                                $stepFolderId = $assetsService->ensureFolderByFullPathAndVolume($path, $queryFolder->getVolume());
+                                $stepFolder = $assetsService->getFolderById($stepFolderId);
+                            }
+                            $foldersByPath[$path] = $stepFolder;
+                        }
+
+                        if ($i < count($pathSegs) - 1) {
+                            $stepFolder->setHasChildren(true);
+                        }
+                        $sourcePath[] = $stepFolder->getSourcePathInfo();
+                    }
+
+                    $path = rtrim($folder->path, '/');
+                    $assets[] = new self([
+                        'isFolder' => true,
+                        'volumeId' => $queryFolder->volumeId,
+                        'folderId' => $folder->id,
+                        'folderPath' => $path,
+                        'title' => StringHelper::removeLeft($path, $queryFolder->path ?? ''),
+                        'sourcePath' => $sourcePath,
+                    ]);
+                }
+            }
+
+            // Is there room for any normal assets as well?
+            $totalAssets = count($assets);
+            if ($totalAssets < $elementQuery->limit) {
+                $elementQuery->offset(max($elementQuery->offset - $totalFolders, 0));
+                $elementQuery->limit($elementQuery->limit - $totalAssets);
+            }
         }
 
-        return $sources;
+        if (!self::isFolderIndex()) {
+            $assets = array_merge($assets, $elementQuery->all());
+        }
+
+        return $assets;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function indexElementCount(ElementQueryInterface $elementQuery, ?string $sourceKey): int
+    {
+        $count = 0;
+
+        /** @var AssetQuery $elementQuery */
+        if (self::_includeFoldersInIndexElements($elementQuery, $sourceKey, $queryFolder)) {
+            try {
+                $count += self::_createFolderQueryForIndex($elementQuery, $queryFolder)->count();
+            } catch (QueryAbortedException $e) {
+                return 0;
+            }
+        }
+
+        if (!self::isFolderIndex()) {
+            $count += parent::indexElementCount($elementQuery, $sourceKey);
+        }
+
+        return $count;
+    }
+
+    private static function _includeFoldersInIndexElements(AssetQuery $assetQuery, ?string $sourceKey, ?VolumeFolder &$queryFolder = null): bool
+    {
+        if (
+            !Craft::$app->getRequest()->getBodyParam('showFolders') ||
+            !StringHelper::startsWith($sourceKey, 'folder:') ||
+            !is_numeric($assetQuery->folderId)
+        ) {
+            return false;
+        }
+
+        if ($queryFolder === null) {
+            $assetsService = Craft::$app->getAssets();
+            $queryFolder = $assetsService->getFolderById($assetQuery->folderId);
+            if (!$queryFolder) {
+                return false;
+            }
+        }
+
+        if ($queryFolder->getVolume() instanceof Temp) {
+            return false;
+        }
+
+        if ($assetQuery->search) {
+            $assetQuery->search = $searchQuery = Craft::$app->getSearch()->normalizeSearchQuery($assetQuery->search);
+            $tokens = $searchQuery->getTokens();
+            if (count($tokens) !== 1 || !self::_validateSearchTermForIndex(reset($tokens))) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    /**
+     * @param SearchQueryTerm|SearchQueryTermGroup $token
+     * @return bool
+     */
+    private static function _validateSearchTermForIndex($token): bool
+    {
+        if ($token instanceof SearchQueryTermGroup) {
+            foreach ($token->terms as $term) {
+                if (!self::_validateSearchTermForIndex($term)) {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        /** @var SearchQueryTerm $token */
+        return !$token->exclude && !$token->attribute;
+    }
+
+    /**
+     * @throws QueryAbortedException
+     */
+    private static function _createFolderQueryForIndex(AssetQuery $assetQuery, ?VolumeFolder $queryFolder = null): Query
+    {
+        if (
+            is_array($assetQuery->orderBy) &&
+            is_string($firstOrderByCol = ArrayHelper::firstKey($assetQuery->orderBy)) &&
+            in_array($firstOrderByCol, ['title', 'filename'])
+        ) {
+            $sortDir = $assetQuery->orderBy[$firstOrderByCol];
+        } else {
+            $sortDir = SORT_ASC;
+        }
+
+        $assetsService = Craft::$app->getAssets();
+        $query = $assetsService->createFolderQuery()
+            ->orderBy(['name' => $sortDir]);
+
+        if ($assetQuery->includeSubfolders) {
+            if ($queryFolder === null) {
+                $queryFolder = $assetsService->getFolderById($assetQuery->folderId);
+                if (!$queryFolder) {
+                    throw new QueryAbortedException();
+                }
+            }
+            $query
+                ->where(['volumeId' => $queryFolder->volumeId])
+                ->andWhere(['not', ['id' => $queryFolder->id]])
+                ->andWhere(['like', 'path', "$queryFolder->path%", false]);
+        } else {
+            $query->where(['parentId' => $assetQuery->folderId]);
+        }
+
+        if ($assetQuery->search) {
+            // `search` will already be normalized to a SearchQuery obj via _includeFoldersInIndexElements(),
+            // and we already know it only has one token
+            /** @var SearchQuery $searchQuery */
+            $searchQuery = $assetQuery->search;
+            $token = ArrayHelper::firstValue($searchQuery->getTokens());
+            $query->andWhere(self::_buildFolderQuerySearchCondition($token));
+        }
+
+        return $query;
+    }
+
+    /**
+     * @param SearchQueryTerm|SearchQueryTermGroup $token
+     * @return array
+     */
+    private static function _buildFolderQuerySearchCondition($token): array
+    {
+        if ($token instanceof SearchQueryTermGroup) {
+            $condition = ['or'];
+            foreach ($token->terms as $term) {
+                $condition[] = self::_buildFolderQuerySearchCondition($term);
+            }
+            return $condition;
+        }
+
+        $isPgsql = Craft::$app->getDb()->getIsPgsql();
+
+        /** @var SearchQueryTerm $token */
+        if ($token->subLeft || $token->subRight) {
+            return [$isPgsql ? 'ilike' : 'like', 'name', sprintf('%s%s%s',
+                $token->subLeft ? '%' : '',
+                $token->term,
+                $token->subRight ? '%' : '',
+            ), false];
+        }
+
+        // Only Postgres supports case-sensitive queries
+        if ($isPgsql) {
+            return ['=', 'lower([[name]])', mb_strtolower($token->term)];
+        }
+
+        return ['name' => $token->term];
     }
 
     /**
      * Transforms an VolumeFolderModel into a source info array.
      *
      * @param VolumeFolder $folder
-     * @param bool $includeNestedFolders
      * @param User|null $user
      * @return array
      */
-    private static function _assembleSourceInfoForFolder(VolumeFolder $folder, bool $includeNestedFolders = true, User $user = null): array
+    private static function _assembleSourceInfoForFolder(VolumeFolder $folder, User $user = null): array
     {
         $volume = $folder->getVolume();
 
@@ -532,15 +823,19 @@ class Asset extends Element
             $userSession->checkPermission("deletePeerFilesInVolume:$volume->uid")
         );
 
+        $sourcePathInfo = $folder->getSourcePathInfo();
+
         $source = [
             'key' => 'folder:' . $folder->uid,
             'label' => $folder->parentId ? $folder->name : Craft::t('site', $folder->name),
             'hasThumbs' => true,
             'criteria' => ['folderId' => $folder->id],
             'defaultSort' => ['dateCreated', 'desc'],
+            'defaultSourcePath' => $sourcePathInfo ? [$sourcePathInfo] : null,
             'data' => [
                 'volume-handle' => $volumeHandle,
                 'folder-id' => $folder->id,
+                'has-children' => $folder->getHasChildren(),
                 'can-upload' => $folder->volumeId === null || $canUpload,
                 'can-move-to' => $canMoveTo,
                 'can-move-peer-files-to' => $canMovePeerFilesTo,
@@ -553,12 +848,30 @@ class Asset extends Element
             }
         }
 
-        if ($includeNestedFolders) {
-            $source['nested'] = self::_assembleSourceList($folder->getChildren(), true, $user);
-        }
-
         return $source;
     }
+
+    private static function isFolderIndex(): bool
+    {
+        return (
+            (Craft::$app->controller instanceof ElementIndexesController || Craft::$app->controller instanceof ElementsController) &&
+            Craft::$app->getRequest()->getBodyParam('foldersOnly')
+        );
+    }
+
+    /**
+     * @var bool Whether this asset represents a folder.
+     * @since 3.8.0
+     * @internal
+     */
+    public $isFolder = false;
+
+    /**
+     * @var array|null The source path, if this represents a folder.
+     * @since 3.8.0
+     * @internal
+     */
+    public $sourcePath;
 
     /**
      * @var int|null Folder ID
@@ -597,7 +910,7 @@ class Asset extends Element
     public $keptFile;
 
     /**
-     * @var \DateTime|null Date modified
+     * @var DateTime|null Date modified
      */
     public $dateModified;
 
@@ -874,6 +1187,10 @@ class Asset extends Element
      */
     protected function isEditable(): bool
     {
+        if ($this->isFolder) {
+            return false;
+        }
+
         $volume = $this->getVolume();
         $userSession = Craft::$app->getUser();
         $isUploader = $this->uploaderId && $this->uploaderId == $userSession->getId();
@@ -891,6 +1208,10 @@ class Asset extends Element
      */
     protected function isDeletable(): bool
     {
+        if ($this->isFolder) {
+            return false;
+        }
+
         $volume = $this->getVolume();
 
         if ($volume instanceof Temp) {
@@ -919,6 +1240,10 @@ class Asset extends Element
      */
     protected function cpEditUrl(): ?string
     {
+        if ($this->isFolder) {
+            return null;
+        }
+
         $volume = $this->getVolume();
         if ($volume instanceof Temp) {
             return null;
@@ -938,7 +1263,7 @@ class Asset extends Element
     /**
      * Returns an `<img>` tag based on this asset.
      *
-     * @param mixed $transform The transform to use when generating the html.
+     * @param AssetTransform|string|array|null $transform The transform to use when generating the html.
      * @param string[]|null $sizes The widths/x-descriptors that should be used for the `srcset` attribute
      * (see [[getSrcset()]] for example syntaxes)
      * @return Markup|null
@@ -1242,7 +1567,7 @@ class Asset extends Element
     /**
      * Returns the element’s full URL.
      *
-     * @param string|array|null $transform A transform handle or configuration that should be applied to the
+     * @param AssetTransform|string|array|null $transform A transform handle or configuration that should be applied to the
      * image If an array is passed, it can optionally include a `transform` key that defines a base transform
      * which the rest of the settings should be applied to.
      * @param bool|null $generateNow Whether the transformed image should be generated immediately if it doesn’t exist. If `null`, it will be left
@@ -1252,6 +1577,10 @@ class Asset extends Element
      */
     public function getUrl($transform = null, bool $generateNow = null)
     {
+        if ($this->isFolder) {
+            return null;
+        }
+
         $volume = $this->getVolume();
 
         if (!$volume->hasUrls || !$this->folderId) {
@@ -1300,6 +1629,10 @@ class Asset extends Element
      */
     public function getThumbUrl(int $size)
     {
+        if ($this->isFolder) {
+            return Craft::$app->getAssetManager()->getPublishedUrl('@app/web/assets/cp/dist', true, 'images/folder.svg');
+        }
+
         if ($this->getWidth() && $this->getHeight()) {
             [$width, $height] = Assets::scaledDimensions($this->getWidth(), $this->getHeight(), $size, $size);
         } else {
@@ -1314,6 +1647,10 @@ class Asset extends Element
      */
     public function getHasCheckeredThumb(): bool
     {
+        if ($this->isFolder) {
+            return false;
+        }
+
         return in_array(strtolower($this->getExtension()), ['png', 'gif', 'svg'], true);
     }
 
@@ -1363,9 +1700,14 @@ class Asset extends Element
      */
     public function getFilename(bool $withExtension = true): string
     {
+        if ($this->isFolder) {
+            return '';
+        }
+
         if ($withExtension) {
             return $this->filename;
         }
+
         return pathinfo($this->filename, PATHINFO_FILENAME);
     }
 
@@ -1382,13 +1724,23 @@ class Asset extends Element
     /**
      * Returns the file’s MIME type, if it can be determined.
      *
+     * @param AssetTransform|string|array|null $transform A transform handle or configuration that should be applied to the mime type
      * @return string|null
+     * @throws AssetTransformException if $transform is an invalid transform handle
      */
-    public function getMimeType()
+    public function getMimeType(mixed $transform = null): ?string
     {
-        // todo: maybe we should be passing this off to volume types
-        // so Local volumes can call FileHelper::getMimeType() (uses magic file instead of ext)
-        return FileHelper::getMimeTypeByExtension($this->filename);
+        $transform = $transform ?? $this->_transform;
+        $transform = Craft::$app->getAssetTransforms()->normalizeTransform($transform);
+
+        if (!Image::canManipulateAsImage($this->getExtension()) || !$transform || !$transform->format) {
+            // todo: maybe we should be passing this off to the volume
+            // so Local can call FileHelper::getMimeType() (uses magic file instead of ext)
+            return FileHelper::getMimeTypeByExtension($this->filename);
+        }
+
+        // Prepend with '.' to let pathinfo() work
+        return FileHelper::getMimeTypeByExtension('.' . $transform->format);
     }
 
     /**
@@ -1638,7 +1990,7 @@ class Asset extends Element
     {
         Craft::$app->getDeprecator()->log(self::class . '::getSupportsPreview()', '`' . self::class . '::getSupportsPreview()` has been deprecated. Use `craft\services\Assets::getAssetPreview()` instead.');
 
-        return \in_array($this->kind, [self::KIND_IMAGE, self::KIND_HTML, self::KIND_JAVASCRIPT, self::KIND_JSON], true);
+        return in_array($this->kind, [self::KIND_IMAGE, self::KIND_HTML, self::KIND_JAVASCRIPT, self::KIND_JSON], true);
     }
 
     /**
@@ -1713,6 +2065,18 @@ class Asset extends Element
 
     // Indexes, etc.
     // -------------------------------------------------------------------------
+
+    /**
+     * @inheritdoc
+     */
+    public function getTableAttributeHtml(string $attribute): string
+    {
+        if ($this->isFolder) {
+            return '';
+        }
+
+        return parent::getTableAttributeHtml($attribute);
+    }
 
     /**
      * @inheritdoc
@@ -2005,7 +2369,7 @@ class Asset extends Element
             $sanitizeCpImageUploads = Craft::$app->getConfig()->getGeneral()->sanitizeCpImageUploads;
 
             if (
-                \in_array($this->getScenario(), [self::SCENARIO_REPLACE, self::SCENARIO_CREATE], true) &&
+                in_array($this->getScenario(), [self::SCENARIO_REPLACE, self::SCENARIO_CREATE], true) &&
                 Assets::getFileKindByExtension($this->tempFilePath) === static::KIND_IMAGE &&
                 !($isCpRequest && !$sanitizeCpImageUploads)
             ) {
@@ -2092,6 +2456,35 @@ class Asset extends Element
     {
         // Only allow the asset to be restored if the file was kept on delete
         return $this->keptFile && parent::beforeRestore();
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getHtmlAttributes(string $context): array
+    {
+        if ($this->isFolder) {
+            $attributes = [
+                'data-is-folder' => null,
+                'data-folder-id' => $this->folderId,
+                'data-source-path' => Json::encode($this->sourcePath),
+                'data-has-children' => Craft::$app->getAssets()->foldersExist(['parentId' => $this->folderId]),
+            ];
+
+            $volume = $this->getVolume();
+            $userSession = Craft::$app->getUser();
+
+            if (
+                $userSession->checkPermission("editPeerFilesInVolume:$volume->uid") &&
+                $userSession->checkPermission("deletePeerFilesInVolume:$volume->uid")
+            ) {
+                $attributes['data-movable'] = null;
+            }
+
+            return $attributes;
+        }
+
+        return parent::getHtmlAttributes($context);
     }
 
     /**

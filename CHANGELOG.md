@@ -1,5 +1,9 @@
 # Release Notes for Craft CMS 3.x
 
+## 3.7.65.2 - 2023-02-08
+
+- Fixed a PHP error that could occur if relational fields were getting eager-loaded for elements that the fields didn’t belong to. ([#12648](https://github.com/craftcms/cms/issues/12648))
+
 ## 3.7.65.1 - 2023-02-08
 
 - Fixed a PHP error that occurred after performing a Composer action within Craft. ([#12647](https://github.com/craftcms/cms/issues/12647))

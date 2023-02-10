@@ -43,7 +43,7 @@ class AssetElementTest extends TestCase
         ]);
 
         $this->tester->mockCraftMethods('assetTransforms', [
-            'normalizeTransform' => Expected::once(new AssetTransform()),
+            'normalizeTransform' => Expected::atLeastOnce(new AssetTransform()),
             'extendTransform' => Expected::once(new AssetTransform()),
         ]);
 

@@ -72,16 +72,21 @@ Craft.ElementActionTrigger = Garnish.Base.extend(
      * @return boolean
      */
     validateSelection: function () {
-      var valid = true;
       this.$selectedItems = Craft.elementIndex.getSelectedElements();
 
       if (!this.settings.bulk && this.$selectedItems.length > 1) {
-        valid = false;
-      } else if (typeof this.settings.validateSelection === 'function') {
-        valid = this.settings.validateSelection(this.$selectedItems);
+        return false;
       }
 
-      return valid;
+      if (this.settings.requireId && this.$selectedItems.is('[data-id=""]')) {
+        return false;
+      }
+
+      if (typeof this.settings.validateSelection === 'function') {
+        return this.settings.validateSelection(this.$selectedItems);
+      }
+
+      return true;
     },
 
     enableTrigger: function () {
@@ -115,6 +120,7 @@ Craft.ElementActionTrigger = Garnish.Base.extend(
     defaults: {
       type: null,
       bulk: true,
+      requireId: true,
       validateSelection: null,
       activate: null,
     },

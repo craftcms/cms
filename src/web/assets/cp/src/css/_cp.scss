@@ -998,10 +998,10 @@ li.breadcrumb-toggle-wrapper {
 
 #footer {
   z-index: 1;
-  margin: 25px -24px -24px; // 1px extra on top is intentional
+  margin: 25px -22px -22px; // 1px extra on top is intentional
   padding: 10px 24px;
   background-color: $grey050;
-  border-radius: 0 0 $largeBorderRadius $largeBorderRadius;
+  border-radius: $smallBorderRadius;
 
   &:empty {
     display: none;
