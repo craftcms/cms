@@ -1584,6 +1584,7 @@ return [
     'Total Price' => 'Celková cena',
     'Total releases' => 'Celkový počet vydání',
     'Townland' => 'Městská část',
+    'Transcript' => 'Transcript',
     'Transfer it to:' => 'Převést na:',
     'Transform Filesystem' => 'Transformovat systém souborů',
     'Transform Subpath' => 'Transformovat dílčí cestu',
