@@ -68,8 +68,8 @@ Craft.BaseElementIndex = Garnish.Base.extend(
     $viewModeBtnContainer: null,
     viewModeBtns: null,
     viewMode: null,
-    viewParams: null,
-    previousViewParams: null,
+    _viewParams: null,
+    _previousViewParams: null,
     view: null,
     _autoSelectElements: null,
     $countSpinner: null,
@@ -1309,11 +1309,11 @@ Craft.BaseElementIndex = Garnish.Base.extend(
           this._resetCount();
         }
 
-        this.previousViewParams = this.viewParams;
-        this.viewParams = this.getViewParams();
+        this._previousViewParams = this._viewParams;
+        this._viewParams = this.getViewParams();
 
         Craft.sendActionRequest('POST', this.settings.updateElementsAction, {
-          data: this.viewParams,
+          data: this._viewParams,
           cancelToken: this._createCancelToken(),
         })
           .then((response) => {
@@ -1333,7 +1333,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
               this.$main.scrollTop(0);
             }
 
-            this._updateView(this.viewParams, response.data);
+            this._updateView(this._viewParams, response.data);
 
             if (this.criteriaHasChanged() && !this.sourceHasChanged()) {
               const itemLabel = this.getItemLabel();
@@ -1386,29 +1386,34 @@ Craft.BaseElementIndex = Garnish.Base.extend(
     },
 
     criteriaHasChanged: function () {
-      const {viewParams, previousViewParams} = this;
+      if (!this._previousViewParams) {
+        return false;
+      }
 
-      if (!previousViewParams) return;
-
-      return !_.isEqual(viewParams.criteria, previousViewParams.criteria);
+      return !_.isEqual(
+        this._viewParams.criteria,
+        this._previousViewParams.criteria
+      );
     },
 
     sourceHasChanged: function () {
-      const {viewParams, previousViewParams} = this;
+      if (!this._previousViewParams) {
+        return false;
+      }
 
-      if (!previousViewParams) return;
-
-      return viewParams.source !== previousViewParams.source;
+      return this._viewParams.source !== this._previousViewParams.source;
     },
 
     sortHasChanged: function () {
-      const {viewParams, previousViewParams} = this;
-
-      if (!previousViewParams) return;
+      if (!this._previousViewParams) {
+        return false;
+      }
 
       return (
-        viewParams.viewState.order !== previousViewParams.viewState.order ||
-        viewParams.viewState.sort !== previousViewParams.viewState.sort
+        this._viewParams.viewState.order !==
+          this._previousViewParams.viewState.order ||
+        this._viewParams.viewState.sort !==
+          this._previousViewParams.viewState.sort
       );
     },
 
