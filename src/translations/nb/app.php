@@ -1938,6 +1938,7 @@ Gratulerer! Craft var i stand til å sende e-post. Her er innstillingene du beny
     '{attribute} should contain {count, number} {count, plural, one{item} other{items}}.' => '{attribute} skal inneholde {count, number} {count, plural, one{element} other{elementer}}.',
     '{attribute} “{value}” has already been taken.' => '{attribute} «{value}» er allerede tatt.',
     '{ctrl}C to copy.' => '{ctrl}C for å kopiere.',
+    '{description} (batch {index, number} of {total, number})' => '{description} (batch {index, number} of {total, number})',
     '{edition} edition' => '{edition}-utgave',
     '{element} pagination' => '{element} paginering',
     '{filename} isn’t selectable for this field.' => '{filename} er ikke valgt for dette feltet.',
