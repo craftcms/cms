@@ -94,6 +94,7 @@ use yii\web\Response;
 /**
  * Element is the base class for classes representing elements in terms of objects.
  *
+ * @mixin CustomFieldBehavior
  * @property int|null $canonicalId The element’s canonical ID
  * @property-read string $canonicalUid The element’s canonical UID
  * @property-read bool $isCanonical Whether this is the canonical element
@@ -1068,7 +1069,7 @@ abstract class Element extends Component implements ElementInterface
         if (!empty($viewState['order'])) {
             // Special case for sorting by structure
             if ($viewState['order'] === 'structure') {
-                $source = static::findSource($sourceKey, $context);
+                $source = ElementHelper::findSource(static::class, $sourceKey, $context);
 
                 if (isset($source['structureId'])) {
                     $elementQuery->orderBy(['lft' => SORT_ASC]);
@@ -1301,6 +1302,19 @@ abstract class Element extends Component implements ElementInterface
         // (Leave it up to the extended class to set the field context, if it shouldn't be 'global')
         $field = Craft::$app->getFields()->getFieldByHandle($handle);
         if ($field && $field instanceof EagerLoadingFieldInterface) {
+            // filter out elements, if field is not part of its layout
+            // https://github.com/craftcms/cms/issues/12539
+            $sourceElements = array_values(
+                array_filter($sourceElements, function($sourceElement) use ($handle) {
+                    $fieldLayout = $sourceElement->getFieldLayout();
+                    return !$fieldLayout || $fieldLayout->getFieldByHandle($handle) !== null;
+                })
+            );
+
+            if (empty($sourceElements)) {
+                return false;
+            }
+
             return $field->getEagerLoadingMap($sourceElements);
         }
 
@@ -4326,6 +4340,7 @@ abstract class Element extends Component implements ElementInterface
         if (!isset($this->_currentRevision)) {
             $canonical = $this->getCanonical(true);
             $this->_currentRevision = static::find()
+                ->siteId($canonical->siteId)
                 ->revisionOf($canonical->id)
                 ->dateCreated($canonical->dateUpdated)
                 ->status(null)
@@ -4678,7 +4693,7 @@ JS,
             'labelClass' => 'h6',
             'class' => ['nicetext', 'notes'],
             'name' => 'notes',
-            'value' => $this->getIsCanonical() || $this->isProvisionalDraft ? $this->revisionNotes : $this->draftNotes,
+            'value' => $this->getIsDraft() ? $this->draftNotes : $this->revisionNotes,
             'rows' => 1,
             'inputAttributes' => [
                 'aria' => [
@@ -5007,6 +5022,11 @@ JS,
      */
     protected function fieldByHandle(string $handle): ?FieldInterface
     {
+        // ignore if it's not a custom field handle
+        if (!isset(CustomFieldBehavior::$fieldHandles[$handle])) {
+            return null;
+        }
+
         if (array_key_exists($handle, $this->_fieldsByHandle)) {
             return $this->_fieldsByHandle[$handle];
         }

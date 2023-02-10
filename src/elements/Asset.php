@@ -521,21 +521,17 @@ class Asset extends Element
             ],
             [
                 'label' => Craft::t('app', 'Date Uploaded'),
-                'orderBy' => 'elements.dateCreated',
-                'attribute' => 'dateCreated',
+                'orderBy' => 'dateCreated',
                 'defaultDir' => 'desc',
             ],
             [
                 'label' => Craft::t('app', 'Date Updated'),
-                'orderBy' => 'elements.dateUpdated',
-                'attribute' => 'dateUpdated',
+                'orderBy' => 'dateUpdated',
                 'defaultDir' => 'desc',
             ],
-            [
-                'label' => Craft::t('app', 'ID'),
-                'orderBy' => 'elements.id',
-                'attribute' => 'id',
-            ],
+            'id' => Craft::t('app', 'ID'),
+            'width' => Craft::t('app', 'Width'),
+            'height' => Craft::t('app', 'Height'),
         ];
     }
 
@@ -2999,7 +2995,8 @@ JS;
             $this->_height,
             $transform->width,
             $transform->height,
-            $transform->mode
+            $transform->mode,
+            $transform->upscale
         );
     }
 
