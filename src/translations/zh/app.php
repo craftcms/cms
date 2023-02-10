@@ -1936,6 +1936,7 @@ return [
     '{attribute} should contain {count, number} {count, plural, one{item} other{items}}.' => '{attribute} 应包含 {count, number} {count, plural, one{个项目} other{项目}}。',
     '{attribute} “{value}” has already been taken.' => '对于{attribute}，“{value}”已被占用。',
     '{ctrl}C to copy.' => '单击 {ctrl}C 以复制。',
+    '{description} (batch {index, number} of {total, number})' => '{description} (batch {index, number} of {total, number})',
     '{edition} edition' => '{edition} 版本',
     '{element} pagination' => '{element}分页',
     '{filename} isn’t selectable for this field.' => '此字段不可选择 {filename}。',
