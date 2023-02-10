@@ -1584,6 +1584,7 @@ return [
     'Total Price' => 'Cena całkowita',
     'Total releases' => 'Zwolnienia ogółem',
     'Townland' => 'Miasto',
+    'Transcript' => 'Transcript',
     'Transfer it to:' => 'Przenieś ją do:',
     'Transform Filesystem' => 'Przekształć system plików',
     'Transform Subpath' => 'Przekształć podścieżkę',
