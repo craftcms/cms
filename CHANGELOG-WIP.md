@@ -66,6 +66,7 @@
 - Element source definitions can now include a `defaultSourcePath` key.
 - Element custom field validation now respects the list of attributes passed to `validate()`.
 - Improving IDE autocompletion for chained query param calls. ([#12656](https://github.com/craftcms/cms/pull/12656))
+- Added `craft\base\Batchable`.
 - Added `craft\base\Element::cpRevisionsUrl()`.
 - Added `craft\base\Element::indexElements()`.
 - Added `craft\base\ElementInterface::findSource()`.
@@ -81,6 +82,7 @@
 - Added `craft\console\ControllerTrait::success()`.
 - Added `craft\console\ControllerTrait::tip()`.
 - Added `craft\console\ControllerTrait::warning()`.
+- Added `craft\db\QueryBatcher`.
 - Added `craft\debug\DumpPanel`.
 - Added `craft\elements\conditions\assets\ViewableConditionRule`. ([#12266](https://github.com/craftcms/cms/pull/12266))
 - Added `craft\elements\conditions\entries\ViewableConditionRule`. ([#12266](https://github.com/craftcms/cms/pull/12266))
@@ -101,6 +103,7 @@
 - Added `craft\models\ImageTransform::$upscale`.
 - Added `craft\models\VolumeFolder::getHasChildren()`.
 - Added `craft\models\VolumeFolder::setHasChildren()`.
+- Added `craft\queue\BaseBatchableJob`. ([#12638](https://github.com/craftcms/cms/pull/12638))
 - Added `craft\queue\jobs\GenerateImageTransform`. ([#12340](https://github.com/craftcms/cms/pull/12340))
 - Added `craft\services\Assets::createFolderQuery()`.
 - Added `craft\services\Assets::foldersExist()`.
@@ -143,6 +146,7 @@
 ### System
 - Improved element deletion performance. ([#12223](https://github.com/craftcms/cms/pull/12223))
 - Improved queue performance. ([#12274](https://github.com/craftcms/cms/issues/12274), [#12340](https://github.com/craftcms/cms/pull/12340))
+- “Applying new propagation method to elements”, “Propagating [element type]”, and “Resaving [element type]” queue jobs are now splt up into batches of up to 100 items. ([#12638](https://github.com/craftcms/cms/pull/12638))
 - Assets’ alternative text values are now included as search keywords.
 - Updated LitEmoji to v4. ([#12226](https://github.com/craftcms/cms/discussions/12226))
 - Fixed a database deadlock error that could occur when updating a relation or structure position for an element that was simultaneously being saved. ([#9905](https://github.com/craftcms/cms/issues/9905))
