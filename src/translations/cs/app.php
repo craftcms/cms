@@ -1938,6 +1938,7 @@ Gratulujeme, Craftu se podařilo odeslat email.Byla pro to použita následujíc
     '{attribute} should contain {count, number} {count, plural, one{item} other{items}}.' => 'Atribut {attribute} by měl obsahovat {count, number} {count, plural, one{položku} other{položky}}.',
     '{attribute} “{value}” has already been taken.' => '{attribute} "{value}" je již obsazen.',
     '{ctrl}C to copy.' => '{ctrl}C pro kopírování.',
+    '{description} (batch {index, number} of {total, number})' => '{description} (batch {index, number} of {total, number})',
     '{edition} edition' => '{edition} edice',
     '{element} pagination' => 'Číslování stránek {element}',
     '{filename} isn’t selectable for this field.' => '{filename} nelze pro toto pole vybrat.',
