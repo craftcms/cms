@@ -74,7 +74,7 @@ class ApplyNewPropagationMethod extends BaseBatchedJob
     /**
      * @inheritdoc
      */
-    protected function processItem(mixed $item)
+    protected function processItem(mixed $item): void
     {
         // Skip revisions
         try {

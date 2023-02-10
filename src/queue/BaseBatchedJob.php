@@ -154,7 +154,7 @@ abstract class BaseBatchedJob extends BaseJob
      *
      * @param mixed $item
      */
-    abstract protected function processItem(mixed $item);
+    abstract protected function processItem(mixed $item): void;
 
     /**
      * @inheritdoc

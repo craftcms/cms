@@ -89,7 +89,7 @@ class ResaveElements extends BaseBatchedJob
     /**
      * @inheritdoc
      */
-    protected function processItem(mixed $item)
+    protected function processItem(mixed $item): void
     {
         // Make sure the element was queried with its content
         /** @var ElementInterface $item */

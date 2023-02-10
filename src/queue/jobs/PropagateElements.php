@@ -77,7 +77,7 @@ class PropagateElements extends BaseBatchedJob
     /**
      * @inheritdoc
      */
-    protected function processItem(mixed $item)
+    protected function processItem(mixed $item): void
     {
         /** @var ElementInterface $item */
         $item->setScenario(Element::SCENARIO_ESSENTIALS);
