@@ -1940,6 +1940,7 @@ Köszönjük, hogy regsiztráltál, a felhasználói filókod aktiváláshoz kat
     '{attribute} should contain {count, number} {count, plural, one{item} other{items}}.' => 'A(z) {attribute} elemnek tartalmaznia kell a(z) {count, number} {count, plural, one{elemet} other{elemet}}.',
     '{attribute} “{value}” has already been taken.' => '{attribute} "{value}" már foglalt.',
     '{ctrl}C to copy.' => '{ctrl}C a másoláshoz',
+    '{description} (batch {index, number} of {total, number})' => '{description} (batch {index, number} of {total, number})',
     '{edition} edition' => '{edition} kiadás',
     '{element} pagination' => '{element} oldaltördelés',
     '{filename} isn’t selectable for this field.' => '{filename} nem választható ehhez a mezőhöz.',

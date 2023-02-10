@@ -1936,6 +1936,7 @@ return [
     '{attribute} should contain {count, number} {count, plural, one{item} other{items}}.' => '{attribute} צריך להכיל {count, number} {count, plural, one{פריט} other{פריטים}}.',
     '{attribute} “{value}” has already been taken.' => '{attribute} "{value}" כבר תפוס.',
     '{ctrl}C to copy.' => 'C{ctrl} כדי להעתיק.',
+    '{description} (batch {index, number} of {total, number})' => '{description} (batch {index, number} of {total, number})',
     '{edition} edition' => 'מהדורה {edition}',
     '{element} pagination' => 'עימוד {element}',
     '{filename} isn’t selectable for this field.' => 'לא ניתן לבחור את {filename} עבור השדה הזה.',

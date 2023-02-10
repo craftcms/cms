@@ -1936,6 +1936,7 @@ return [
     '{attribute} should contain {count, number} {count, plural, one{item} other{items}}.' => '{attribute} debería contener {count, number} {count, plural, one{item} other{items}}.',
     '{attribute} “{value}” has already been taken.' => '{attribute} "{value}" ya está en uso.',
     '{ctrl}C to copy.' => '{ctrl}C para copiar.',
+    '{description} (batch {index, number} of {total, number})' => '{description} (batch {index, number} of {total, number})',
     '{edition} edition' => 'Edición {edition}',
     '{element} pagination' => 'Paginación de {element}',
     '{filename} isn’t selectable for this field.' => '{filename} no se puede seleccionar en este campo.',

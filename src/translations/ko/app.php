@@ -1936,6 +1936,7 @@ return [
     '{attribute} should contain {count, number} {count, plural, one{item} other{items}}.' => '{attribute}은(는) {count, number} {count, plural, one{개의 항목} other{개의 항목}}을 포함해야 합니다.',
     '{attribute} “{value}” has already been taken.' => '{attribute} "{value}"(이)가 이미 사용 중입니다.',
     '{ctrl}C to copy.' => '복사하려면 {ctrl}C.',
+    '{description} (batch {index, number} of {total, number})' => '{description} (batch {index, number} of {total, number})',
     '{edition} edition' => '{edition} 버전',
     '{element} pagination' => '{element} 페이지 매김',
     '{filename} isn’t selectable for this field.' => '{filename}은(는) 이 필드에서 선택할 수 없습니다.',

@@ -1936,6 +1936,7 @@ return [
     '{attribute} should contain {count, number} {count, plural, one{item} other{items}}.' => '{attribute} باید شامل {count, number} {count, plural, one{آیتم} other{آیتم}} باشد.',
     '{attribute} “{value}” has already been taken.' => '{attribute} “{value}” از قبل گرفته شده است.',
     '{ctrl}C to copy.' => 'برای کپی از {ctrl}C استفاده نمایید.',
+    '{description} (batch {index, number} of {total, number})' => '{description} (batch {index, number} of {total, number})',
     '{edition} edition' => '{edition} ویرایش',
     '{element} pagination' => 'صفحه‌بندی {element}',
     '{filename} isn’t selectable for this field.' => '{filename} برای این فیلد قابل‌انتخاب نیست.',

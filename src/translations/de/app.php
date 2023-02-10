@@ -1938,6 +1938,7 @@ Glückwunsch! Craft konnte erfolgreich eine E-Mail versenden. Hier sind die von 
     '{attribute} should contain {count, number} {count, plural, one{item} other{items}}.' => '{attribute} sollte {count, number} {count, plural, one{Element} other{Elemente}} enthalten.',
     '{attribute} “{value}” has already been taken.' => '{attribute} "{value}" ist bereits vergeben.',
     '{ctrl}C to copy.' => '{ctrl}C zum Kopieren.',
+    '{description} (batch {index, number} of {total, number})' => '{description} (batch {index, number} of {total, number})',
     '{edition} edition' => '{edition} Edition',
     '{element} pagination' => '{element} Paginierung',
     '{filename} isn’t selectable for this field.' => '{filename} kann für dieses Feld nicht ausgewählt werden.',

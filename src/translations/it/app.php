@@ -1938,6 +1938,7 @@ Congratulazioni! Craft ti ha inviato una email con successo. Ecco le impostazion
     '{attribute} should contain {count, number} {count, plural, one{item} other{items}}.' => '{attribute} deve contenere {count, number} {count, plural, one{elemento} other{elementi}}.',
     '{attribute} “{value}” has already been taken.' => '{attribute} "{value}" è già stato preso.',
     '{ctrl}C to copy.' => '{ctrl}C per copiare.',
+    '{description} (batch {index, number} of {total, number})' => '{description} (batch {index, number} of {total, number})',
     '{edition} edition' => 'Edizione {edition}',
     '{element} pagination' => 'Impaginazione {element}',
     '{filename} isn’t selectable for this field.' => '{filename} non è selezionabile per questo campo.',
