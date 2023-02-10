@@ -1938,6 +1938,7 @@ Gratulacje! Craft z powodzeniem może wysyłać e-maile. Zostały użyte poniżs
     '{attribute} should contain {count, number} {count, plural, one{item} other{items}}.' => 'Atrybut {attribute} powinien zawierać {count, number} {count, plural, one{pozycję} other{poz}}.',
     '{attribute} “{value}” has already been taken.' => '{attribute} "{value}" jest już zajęty.',
     '{ctrl}C to copy.' => '{ctrl}C, aby skopiować.',
+    '{description} (batch {index, number} of {total, number})' => '{description} (batch {index, number} of {total, number})',
     '{edition} edition' => 'Wersja {edition}',
     '{element} pagination' => '{element} — paginacja',
     '{filename} isn’t selectable for this field.' => 'W tym polu nie można wybrać {filename}.',
