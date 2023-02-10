@@ -970,6 +970,11 @@ Craft.BaseElementIndex = Garnish.Base.extend(
     },
 
     getSourceState: function (sourceKey, key, defaultValue) {
+      // account for when all sources are disabled
+      if (sourceKey == undefined) {
+        return null;
+      }
+
       sourceKey = sourceKey.replace(/\/.*/, '');
 
       if (typeof this.sourceStates[sourceKey] === 'undefined') {
@@ -997,6 +1002,11 @@ Craft.BaseElementIndex = Garnish.Base.extend(
     setSelecetedSourceState: function (key, value) {
       var viewState = this.getSelectedSourceState();
 
+      // account for when all sources are disabled
+      if (viewState == null) {
+        viewState = [];
+      }
+
       if (typeof key === 'object') {
         for (let k in key) {
           if (key.hasOwnProperty(k)) {
@@ -1013,7 +1023,12 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         delete viewState[key];
       }
 
-      const sourceKey = this.instanceState.selectedSource.replace(/\/.*/, '');
+      // account for when all sources are disabled
+      let sourceKey = '*';
+      if (this.instanceState.selectedSource != undefined) {
+        // otherwise do what we used to do
+        sourceKey = this.instanceState.selectedSource.replace(/\/.*/, '');
+      }
 
       this.sourceStates[sourceKey] = viewState;
 

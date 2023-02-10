@@ -1551,7 +1551,7 @@ class Sections extends Component
             ->site('*')
             ->unique()
             ->status(null)
-            ->orderBy(['elements.id' => SORT_ASC])
+            ->orderBy(['id' => SORT_ASC])
             ->withStructure(false);
 
         $structuresService = Craft::$app->getStructures();

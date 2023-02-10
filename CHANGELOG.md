@@ -1,5 +1,27 @@
 # Release Notes for Craft CMS 4
 
+## Unreleased
+
+- Fixed a bug where entries that aren’t propagated to the primary site weren’t showing revision notes. ([#12641](https://github.com/craftcms/cms/issues/12641))
+
+## 4.3.8.2 - 2023-02-08
+
+- Fixed a PHP error that could occur if relational fields were getting eager-loaded for elements that the fields didn’t belong to. ([#12648](https://github.com/craftcms/cms/issues/12648))
+
+## 4.3.8.1 - 2023-02-08
+
+- Fixed a PHP error that occurred after performing a Composer action within Craft. ([#12647](https://github.com/craftcms/cms/issues/12647))
+- Fixed a bug where element attributes weren’t getting eager-loaded. ([#12646](https://github.com/craftcms/cms/pull/12646), [#12645](https://github.com/craftcms/cms/issues/12645))
+- Fixed a bug where images within the image editor weren’t getting versioned, unless the `revAssetUrls` config setting was enabled. ([#12603](https://github.com/craftcms/cms/issues/12603))
+
+## 4.3.8 - 2023-02-07
+
+- Updated Composer to 2.2.19, fixing a PHP error that could occur when performing a Composer action within Craft, when the autoload classmap was generated with Composer 2.5. ([#12482](https://github.com/craftcms/cms/issues/12482))
+- Fixed a bug where Matrix blocks weren’t getting eager-loaded. ([#12631](https://github.com/craftcms/cms/issues/12631))
+- Fixed a PHP error that could occur when calling `craft\services\Assets::getAllDescendantFolders()` for the root folder. ([craftcms/feed-me#1231](https://github.com/craftcms/feed-me/issues/1231))
+- Fixed a bug where revision notes weren’t always being retained for provisional drafts. ([#12641](https://github.com/craftcms/cms/issues/12641))
+- Fixed a bug where it wasn’t possible to access the Customize Sources modal on element index pages, if all sources were disabled. ([#12634](https://github.com/craftcms/cms/issues/12634))
+
 ## 4.3.7.1 - 2023-02-05
 
 - The `_includes/forms/checkbox.twig`, `select.twig`, and `text.twig` templates no longer add an `aria-labelledby` attribute to the input if an `aria-label` attribute is also specified.

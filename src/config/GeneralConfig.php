@@ -649,7 +649,7 @@ class GeneralConfig extends BaseConfig
      * ->cpTrigger(null)
      * ```
      * ```shell Environment Override
-     * CRAFT_CP_TRIGGER=null
+     * CRAFT_CP_TRIGGER=
      * ```
      * :::
      *
@@ -1785,7 +1785,6 @@ class GeneralConfig extends BaseConfig
      * CRAFT_OMIT_SCRIPT_NAME_IN_URLS=1
      * ```
      * :::
-     * ```
      *
      * ::: tip
      * Even when this is set to `true`, the script name could still be included in some action URLs.
@@ -1860,7 +1859,7 @@ class GeneralConfig extends BaseConfig
      * ->pathParam(null)
      * ```
      * ```shell Environment Override
-     * CRAFT_PATH_PARAM=null
+     * CRAFT_PATH_PARAM=
      * ```
      * :::
      *
@@ -1912,7 +1911,7 @@ class GeneralConfig extends BaseConfig
      * ->phpSessionName(null)
      * ```
      * ```shell Environment Override
-     * CRAFT_PHP_SESSION_NAME=null
+     * CRAFT_PHP_SESSION_NAME=
      * ```
      * :::
      *
