@@ -41,6 +41,7 @@
                     |filter(a => a != 'title')
                     |values
                 : false,
+            'default-source-path': (source.defaultSourcePath ?? false) ? source.defaultSourcePath|json_encode : false,
             sites: (source.sites ?? false) ? source.sites|join(',') : false,
             'override-status': (source.criteria.status ?? false) ? true : false,
             disabled: source.disabled ?? false,

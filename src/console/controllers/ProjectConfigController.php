@@ -33,6 +33,12 @@ class ProjectConfigController extends Controller
     public bool $force = false;
 
     /**
+     * @var bool Whether to reduce the command output.
+     * @since 4.4.0
+     */
+    public bool $quiet = false;
+
+    /**
      * @var bool Whether to treat the loaded project config as the source of truth, instead of the YAML files.
      * @since 3.5.13
      */
@@ -90,6 +96,7 @@ class ProjectConfigController extends Controller
             case 'apply':
             case 'sync':
                 $options[] = 'force';
+                $options[] = 'quiet';
                 break;
             case 'diff':
                 $options[] = 'invert';
@@ -291,14 +298,16 @@ class ProjectConfigController extends Controller
             try {
                 $forceUpdate = $projectConfig->forceUpdate;
                 $projectConfig->forceUpdate = $this->force;
-                $this->_processingPaths = [];
 
-                $projectConfig->on(ProjectConfigService::EVENT_ADD_ITEM, [$this, 'onStartProcessingItem'], ['label' => 'adding'], false);
-                $projectConfig->on(ProjectConfigService::EVENT_ADD_ITEM, [$this, 'onFinishProcessingItem'], ['label' => 'adding'], true);
-                $projectConfig->on(ProjectConfigService::EVENT_REMOVE_ITEM, [$this, 'onStartProcessingItem'], ['label' => 'removing'], false);
-                $projectConfig->on(ProjectConfigService::EVENT_REMOVE_ITEM, [$this, 'onFinishProcessingItem'], ['label' => 'removing'], true);
-                $projectConfig->on(ProjectConfigService::EVENT_UPDATE_ITEM, [$this, 'onStartProcessingItem'], ['label' => 'updating'], false);
-                $projectConfig->on(ProjectConfigService::EVENT_UPDATE_ITEM, [$this, 'onFinishProcessingItem'], ['label' => 'updating'], true);
+                if (!$this->quiet) {
+                    $this->_processingPaths = [];
+                    $projectConfig->on(ProjectConfigService::EVENT_ADD_ITEM, [$this, 'onStartProcessingItem'], ['label' => 'adding'], false);
+                    $projectConfig->on(ProjectConfigService::EVENT_ADD_ITEM, [$this, 'onFinishProcessingItem'], ['label' => 'adding'], true);
+                    $projectConfig->on(ProjectConfigService::EVENT_REMOVE_ITEM, [$this, 'onStartProcessingItem'], ['label' => 'removing'], false);
+                    $projectConfig->on(ProjectConfigService::EVENT_REMOVE_ITEM, [$this, 'onFinishProcessingItem'], ['label' => 'removing'], true);
+                    $projectConfig->on(ProjectConfigService::EVENT_UPDATE_ITEM, [$this, 'onStartProcessingItem'], ['label' => 'updating'], false);
+                    $projectConfig->on(ProjectConfigService::EVENT_UPDATE_ITEM, [$this, 'onFinishProcessingItem'], ['label' => 'updating'], true);
+                }
 
                 $projectConfig->applyExternalChanges();
 

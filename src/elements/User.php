@@ -362,21 +362,15 @@ class User extends Element implements IdentityInterface
                 ],
                 [
                     'label' => Craft::t('app', 'Date Created'),
-                    'orderBy' => 'elements.dateCreated',
-                    'attribute' => 'dateCreated',
+                    'orderBy' => 'dateCreated',
                     'defaultDir' => 'desc',
                 ],
                 [
                     'label' => Craft::t('app', 'Date Updated'),
-                    'orderBy' => 'elements.dateUpdated',
-                    'attribute' => 'dateUpdated',
+                    'orderBy' => 'dateUpdated',
                     'defaultDir' => 'desc',
                 ],
-                [
-                    'label' => Craft::t('app', 'ID'),
-                    'orderBy' => 'elements.id',
-                    'attribute' => 'id',
-                ],
+                'id' => Craft::t('app', 'ID'),
             ];
         } else {
             $attributes = [
@@ -392,21 +386,15 @@ class User extends Element implements IdentityInterface
                 ],
                 [
                     'label' => Craft::t('app', 'Date Created'),
-                    'orderBy' => 'elements.dateCreated',
-                    'attribute' => 'dateCreated',
+                    'orderBy' => 'dateCreated',
                     'defaultDir' => 'desc',
                 ],
                 [
                     'label' => Craft::t('app', 'Date Updated'),
-                    'orderBy' => 'elements.dateUpdated',
-                    'attribute' => 'dateUpdated',
+                    'orderBy' => 'dateUpdated',
                     'defaultDir' => 'desc',
                 ],
-                [
-                    'label' => Craft::t('app', 'ID'),
-                    'orderBy' => 'elements.id',
-                    'attribute' => 'id',
-                ],
+                'id' => Craft::t('app', 'ID'),
             ];
         }
 

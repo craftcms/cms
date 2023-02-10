@@ -17,7 +17,7 @@
   --medium-dark-text-color: var(--gray-550);
   --medium-text-color: var(--gray-550);
   --light-text-color: var(--gray-500);
-  --link-color: #2563eb;
+  --link-color: #1f5fea;
 
   // font styles
   --font-weight-bold: 700;
@@ -25,7 +25,7 @@
   // menu colors
   --menu-option-color: var(--text-color);
   --menu-option-active-color: var(--white);
-  --menu-option-active-background-color: var(--gray-350);
+  --menu-option-active-background-color: var(--dark-sel-color);
 
   // hairline colors
   --hairline-color: #{transparentize(hsl(209, 20%, 25%), 0.9)};
@@ -47,7 +47,7 @@
 
   // selection colors
   --light-sel-color: var(--gray-200);
-  --dark-sel-color: var(--gray-600);
+  --dark-sel-color: var(--gray-500);
 
   // alert/notice colors
   --error-color: var(--red-600);

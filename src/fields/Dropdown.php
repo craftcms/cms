@@ -12,6 +12,7 @@ use craft\base\ElementInterface;
 use craft\base\SortableFieldInterface;
 use craft\fields\data\SingleOptionFieldData;
 use craft\helpers\ArrayHelper;
+use craft\helpers\Cp;
 
 /**
  * Dropdown represents a Dropdown field.
@@ -62,7 +63,7 @@ class Dropdown extends BaseOptionsField implements SortableFieldInterface
             }
         }
 
-        return Craft::$app->getView()->renderTemplate('_includes/forms/select.twig', [
+        return Cp::selectizeHtml([
             'id' => $this->getInputId(),
             'describedBy' => $this->describedBy,
             'name' => $this->handle,

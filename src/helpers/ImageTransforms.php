@@ -19,6 +19,7 @@ use craft\errors\ImageException;
 use craft\errors\ImageTransformException;
 use craft\image\Raster;
 use craft\models\ImageTransform;
+use craft\validators\ColorValidator;
 use Imagine\Image\Format;
 use yii\base\InvalidArgumentException;
 
@@ -33,7 +34,7 @@ class ImageTransforms
     /**
      * @var string The pattern to use for matching against a transform string.
      */
-    public const TRANSFORM_STRING_PATTERN = '/_(?P<width>\d+|AUTO)x(?P<height>\d+|AUTO)_(?P<mode>[a-z]+)(?:_(?P<position>[a-z\-]+))?(?:_(?P<quality>\d+))?(?:_(?P<interlace>[a-z]+))?/i';
+    public const TRANSFORM_STRING_PATTERN = '/_(?P<width>\d+|AUTO)x(?P<height>\d+|AUTO)_(?P<mode>[a-z]+)(?:_(?P<position>[a-z\-]+))?(?:_(?P<quality>\d+))?(?:_(?P<interlace>[a-z]+))?(?:_(?P<fill>[0-9a-f]{6}|transparent))?(?:_(?P<upscale>ns))?/i';
 
     /**
      * Create an AssetImageTransform model from a string.
@@ -58,6 +59,10 @@ class ImageTransforms
             unset($matches['quality']);
         }
 
+        if (!empty($matches['fill'])) {
+            $fill = ColorValidator::normalizeColor($matches['fill']);
+        }
+
         return Craft::createObject([
             'class' => ImageTransform::class,
             'width' => $matches['width'] ?? null,
@@ -66,6 +71,8 @@ class ImageTransforms
             'position' => $matches['position'],
             'quality' => $matches['quality'] ?? null,
             'interlace' => $matches['interlace'] ?? 'none',
+            'fill' => $fill ?? null,
+            'upscale' => ($matches['upscale'] ?? null) !== 'ns',
             'transformer' => ImageTransform::DEFAULT_TRANSFORMER,
         ]);
     }
@@ -235,7 +242,9 @@ class ImageTransforms
             '_' . $transform->mode .
             '_' . $transform->position .
             ($transform->quality ? '_' . $transform->quality : '') .
-            '_' . $transform->interlace;
+            '_' . $transform->interlace .
+            ($transform->fill ? '_' . ltrim($transform->fill, '#') : '') .
+            ($transform->upscale ? '' : '_ns');
     }
 
     /**
@@ -247,17 +256,20 @@ class ImageTransforms
      */
     public static function parseTransformString(string $str): array
     {
-        if (!preg_match('/^_?(?P<width>\d+|AUTO)x(?P<height>\d+|AUTO)_(?P<mode>[a-z]+)_(?P<position>[a-z\-]+)(?:_(?P<quality>\d+))?_(?P<interlace>[a-z]+)$/', $str, $match)) {
+        if (!preg_match('/^_?(?P<width>\d+|AUTO)x(?P<height>\d+|AUTO)_(?P<mode>[a-z]+)_(?P<position>[a-z\-]+)(?:_(?P<quality>\d+))?_(?P<interlace>[a-z]+)(?:_(?P<fill>transparent|[0-9a-f]{3}|[0-9a-f]{6}))?(?:_(?P<upscale>ns))?$/', $str, $match)) {
             throw new InvalidArgumentException("Invalid transform string: $str");
         }
 
+        $upscale = $match['upscale'] ?? null;
         return [
             'width' => $match['width'] !== 'AUTO' ? (int)$match['width'] : null,
             'height' => $match['height'] !== 'AUTO' ? (int)$match['height'] : null,
             'mode' => $match['mode'],
             'position' => $match['position'],
-            'quality' => $match['quality'],
+            'quality' => $match['quality'] ? (int)$match['quality'] : null,
             'interlace' => $match['interlace'],
+            'fill' => ($match['fill'] ?? null) ? sprintf('%s%s', $match['fill'] !== 'transparent' ? '#' : '', $match['fill']) : null,
+            'upscale' => $upscale !== 'ns',
         ];
     }
 
@@ -290,6 +302,8 @@ class ImageTransforms
                 'parameterChangeTime',
                 'mode',
                 'position',
+                'fill',
+                'upscale',
                 'quality',
                 'interlace',
             ]);
@@ -304,6 +318,16 @@ class ImageTransforms
             if (!empty($transform['height']) && !is_numeric($transform['height'])) {
                 Craft::warning("Invalid transform height: {$transform['height']}", __METHOD__);
                 $transform['height'] = null;
+            }
+
+            if (!empty($transform['fill'])) {
+                $normalizedValue = ColorValidator::normalizeColor($transform['fill']);
+                if ((new ColorValidator())->validate($normalizedValue)) {
+                    $transform['fill'] = $normalizedValue;
+                } else {
+                    Craft::warning("Invalid transform fill: {$transform['fill']}", __METHOD__);
+                    $transform['fill'] = null;
+                }
             }
 
             if (array_key_exists('transform', $transform)) {
@@ -411,22 +435,39 @@ class ImageTransforms
             $image->setHeartbeatCallback($heartbeat);
         }
 
+        if ($asset->getHasFocalPoint() && $transform->mode === 'crop') {
+            $position = $asset->getFocalPoint();
+        } elseif (!preg_match('/^(top|center|bottom)-(left|center|right)$/', $transform->position)) {
+            $position = 'center-center';
+        } else {
+            $position = $transform->position;
+        }
+
+        $scaleIfSmaller = $transform->upscale ?? Craft::$app->getConfig()->getGeneral()->upscaleImages;
+
         switch ($transform->mode) {
+            case 'letterbox':
+                if ($image instanceof Raster) {
+                    $image->scaleToFitAndFill(
+                        $transform->width,
+                        $transform->height,
+                        $transform->fill,
+                        $position,
+                        $scaleIfSmaller
+                    );
+                } else {
+                    Craft::warning("Cannot add fill to non-raster images");
+                    $image->scaleToFit($transform->width, $transform->height, $scaleIfSmaller);
+                }
+                break;
             case 'fit':
-                $image->scaleToFit($transform->width, $transform->height);
+                $image->scaleToFit($transform->width, $transform->height, $scaleIfSmaller);
                 break;
             case 'stretch':
                 $image->resize($transform->width, $transform->height);
                 break;
             default:
-                if ($asset->getHasFocalPoint()) {
-                    $position = $asset->getFocalPoint();
-                } elseif (!preg_match('/(top|center|bottom)-(left|center|right)/', $transform->position)) {
-                    $position = 'center-center';
-                } else {
-                    $position = $transform->position;
-                }
-                $image->scaleAndCrop($transform->width, $transform->height, $generalConfig->upscaleImages, $position);
+                $image->scaleAndCrop($transform->width, $transform->height, $scaleIfSmaller, $position);
         }
 
         if ($image instanceof Raster) {

@@ -12,6 +12,7 @@ use craft\base\imagetransforms\ImageTransformerInterface;
 use craft\base\Model;
 use craft\imagetransforms\ImageTransformer;
 use craft\records\ImageTransform as ImageTransformRecord;
+use craft\validators\ColorValidator;
 use craft\validators\DateTimeValidator;
 use craft\validators\HandleValidator;
 use craft\validators\UniqueValidator;
@@ -67,7 +68,7 @@ class ImageTransform extends Model
     public ?DateTime $parameterChangeTime = null;
 
     /**
-     * @var 'crop'|'fit'|'stretch' Mode
+     * @var string 'crop'|'fit'|'stretch'|'letterbox' Mode
      */
     public string $mode = 'crop';
 
@@ -92,10 +93,34 @@ class ImageTransform extends Model
     public ?string $uid = null;
 
     /**
+     * @var string|null Fill color
+     * @since 4.4.0
+     */
+    public ?string $fill = null;
+
+    /**
+     * @var bool|null Allow upscaling
+     * @since 4.4.0
+     */
+    public ?bool $upscale = null;
+
+    /**
      * @var string The image transformer to use.
      * @phpstan-var class-string<ImageTransformerInterface>
      */
     protected string $transformer = self::DEFAULT_TRANSFORMER;
+
+    /**
+     * @inheritdoc
+     */
+    public function init(): void
+    {
+        parent::init();
+
+        if (!isset($this->upscale)) {
+            $this->upscale = Craft::$app->getConfig()->getGeneral()->upscaleImages;
+        }
+    }
 
     /**
      * @inheritdoc
@@ -110,6 +135,8 @@ class ImageTransform extends Model
             'position' => Craft::t('app', 'Position'),
             'quality' => Craft::t('app', 'Quality'),
             'width' => Craft::t('app', 'Width'),
+            'fill' => Craft::t('app', 'Fill Color'),
+            'upscale' => Craft::t('app', 'Allow Upscaling'),
             'transformer' => Craft::t('app', 'Image transformer'),
         ];
     }
@@ -125,6 +152,8 @@ class ImageTransform extends Model
         $rules[] = [['handle'], 'string', 'max' => 255];
         $rules[] = [['name', 'handle', 'mode', 'position'], 'required'];
         $rules[] = [['handle'], 'string', 'max' => 255];
+        $rules[] = [['fill'], ColorValidator::class];
+        $rules[] = [['upscale'], 'boolean'];
         $rules[] = [
             ['mode'],
             'in',
@@ -132,6 +161,7 @@ class ImageTransform extends Model
                 'stretch',
                 'fit',
                 'crop',
+                'letterbox',
             ],
         ];
         $rules[] = [
@@ -209,6 +239,7 @@ class ImageTransform extends Model
             'crop' => Craft::t('app', 'Scale and crop'),
             'fit' => Craft::t('app', 'Scale to fit'),
             'stretch' => Craft::t('app', 'Stretch to fit'),
+            'letterbox' => Craft::t('app', 'Letterbox'),
         ];
     }
 
