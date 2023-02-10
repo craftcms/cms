@@ -1936,6 +1936,7 @@ return [
     '{attribute} should contain {count, number} {count, plural, one{item} other{items}}.' => '{attribute}は、{count, number} 個の{count, plural, one{項目} other{項目}}を含む必要があります。',
     '{attribute} “{value}” has already been taken.' => '{attribute} 「{value}」はすでに使用されています。',
     '{ctrl}C to copy.' => '{ctrl}C でコピー',
+    '{description} (batch {index, number} of {total, number})' => '{description} (batch {index, number} of {total, number})',
     '{edition} edition' => '{edition}エディション',
     '{element} pagination' => '{element}のページネーション',
     '{filename} isn’t selectable for this field.' => '{filename}はこのフィールドに対して選択できません。',
