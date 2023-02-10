@@ -896,6 +896,8 @@ class User extends Element implements IdentityInterface
             ]);
         }
 
+        $query->andWhere(['or', ['active' => true], ['pending' => true]]);
+
         if ($this->id) {
             $query->andWhere(['not', ['elements.id' => $this->id]]);
         }
