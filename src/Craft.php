@@ -109,20 +109,28 @@ class Craft extends Yii
      * @param mixed $var The variable to be dumped.
      * @param int $depth The maximum depth that the dumper should go into the variable.
      * @param bool $highlight Whether the result should be syntax-highlighted.
+     * @param bool $return Whether the dump result should be returned instead of output.
+     * @return string|null The output, if `$return` is true
      */
-    public static function dump(mixed $var, int $depth = 20, bool $highlight = true): void
+    public static function dump(mixed $var, int $depth = 20, bool $highlight = true, bool $return = false): ?string
     {
-        if (
-            !$highlight ||
-            (Craft::$app->controller instanceof Controller && !Craft::$app->controller->isColorEnabled())
-        ) {
+        if (!$highlight) {
+            if ($return) {
+                ob_start();
+            }
             VarDumper::dump($var, $depth);
             echo "\n";
-            return;
+            return $return ? ob_get_clean() : null;
         }
 
-        $dumper = Craft::$app instanceof WebApplication ? new HtmlDumper() : new CliDumper();
-        $dumper->dump((new VarCloner())->cloneVar($var)->withMaxDepth($depth));
+        if (Craft::$app instanceof WebApplication) {
+            $dumper = new HtmlDumper();
+        } else {
+            $dumper = new CliDumper();
+            $dumper->setColors(Craft::$app->controller instanceof Controller && Craft::$app->controller->isColorEnabled());
+        }
+
+        return $dumper->dump((new VarCloner())->cloneVar($var)->withMaxDepth($depth), $return ? true : null);
     }
 
     /**

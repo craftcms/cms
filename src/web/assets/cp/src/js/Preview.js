@@ -59,6 +59,7 @@ Craft.Preview = Garnish.Base.extend(
 
     iframeHeight: null,
     scrollTop: null,
+    scrollLeft: null,
 
     dragger: null,
     dragStartEditorWidth: null,
@@ -623,16 +624,22 @@ Craft.Preview = Garnish.Base.extend(
           let sameHost;
           if (resetScroll) {
             this.scrollTop = null;
+            this.scrollLeft = null;
           } else if (this.iframeLoaded && this.$iframe) {
             if (this._useIframeResizer()) {
               this.iframeHeight = this.$iframe.height();
               this.scrollTop = this.$iframeContainer.scrollTop();
+              this.scrollLeft = this.$iframeContainer.scrollLeft();
             } else {
               sameHost = Craft.isSameHost(url);
               if (sameHost && this.$iframe[0].contentWindow) {
                 this.scrollTop = $(
                   this.$iframe[0].contentWindow.document
                 ).scrollTop();
+
+                this.scrollLeft = $(
+                  this.$iframe[0].contentWindow.document
+                ).scrollLeft();
               }
             }
           }
@@ -657,6 +664,7 @@ Craft.Preview = Garnish.Base.extend(
             if (!resetScroll && this.iframeHeight !== null) {
               $iframe.height(this.iframeHeight);
               this.$iframeContainer.scrollTop(this.scrollTop);
+              this.$iframeContainer.scrollLeft(this.scrollLeft);
             }
 
             iFrameResize(
@@ -669,6 +677,7 @@ Craft.Preview = Garnish.Base.extend(
                     this.iframeLoaded = true;
                     this.iframeHeight = null;
                     this.scrollTop = null;
+                    this.scrollLeft = null;
                     iframe.scrolling = 'no';
                   },
                 },
@@ -679,8 +688,18 @@ Craft.Preview = Garnish.Base.extend(
           } else {
             $iframe.on('load', () => {
               this.iframeLoaded = true;
-              if (!resetScroll && sameHost && this.scrollTop !== null) {
-                $($iframe[0].contentWindow.document).scrollTop(this.scrollTop);
+              if (!resetScroll && sameHost) {
+                if (this.scrollTop !== null) {
+                  $($iframe[0].contentWindow.document).scrollTop(
+                    this.scrollTop
+                  );
+                }
+
+                if (this.scrollLeft !== null) {
+                  $($iframe[0].contentWindow.document).scrollLeft(
+                    this.scrollLeft
+                  );
+                }
               }
             });
           }

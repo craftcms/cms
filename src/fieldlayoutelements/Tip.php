@@ -117,7 +117,7 @@ class Tip extends BaseUiElement
 
         if ($this->dismissible) {
             $key = sprintf('Craft-%s.dismissedTips', Craft::$app->getSystemUid());
-            $js = <<<JS
+            $js = <<<JAVASCRIPT
 if (
   typeof localStorage !== 'undefined' &&
   typeof localStorage['$key'] !== 'undefined' &&
@@ -125,7 +125,7 @@ if (
 ) {
   document.getElementById('$namespacedId').remove();
 }
-JS;
+JAVASCRIPT;
         } else {
             $js = null;
         }

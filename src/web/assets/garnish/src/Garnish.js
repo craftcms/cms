@@ -14,6 +14,7 @@ import HUD from './HUD.js';
 import MenuBtn from './MenuBtn.js';
 import MixedInput from './MixedInput.js';
 import Modal from './Modal.js';
+import MultiFunctionBtn from './MultiFunctionBtn.js';
 import NiceText from './NiceText.js';
 import Select from './Select.js';
 import SelectMenu from './SelectMenu.js';
@@ -907,6 +908,7 @@ Object.assign(Garnish, {
   MenuBtn,
   MixedInput,
   Modal,
+  MultiFunctionBtn,
   NiceText,
   Select,
   SelectMenu,
@@ -944,7 +946,6 @@ function triggerResizeEvent(elem) {
 $.extend($.event.special, {
   activate: {
     setup: function (data, namespaces, eventHandle) {
-      var activateNamespace = this._namespace + '-activate';
       var $elem = $(this);
 
       $elem.on({
@@ -953,33 +954,35 @@ $.extend($.event.special, {
           e.preventDefault();
         },
         'click.garnish-activate': function (e) {
-          e.preventDefault();
+          const disabled = $elem.hasClass('disabled');
 
-          if (!$elem.hasClass('disabled')) {
-            $elem.trigger('activate');
-          }
-        },
-        'keydown.garnish-activate': function (e) {
-          // Ignore if the event was bubbled up, or if it wasn't the space key
-          if (this !== $elem[0] || e.keyCode !== Garnish.SPACE_KEY) {
+          // Don't interfere if this is a link and it was a Ctrl-click
+          if (
+            !disabled &&
+            $elem.prop('nodeName') === 'A' &&
+            Garnish.hasAttr($elem, 'href') &&
+            !['#', ''].includes($elem.attr('href')) &&
+            Garnish.isCtrlKeyPressed(e)
+          ) {
             return;
           }
 
           e.preventDefault();
 
-          if (!$elem.hasClass('disabled')) {
-            $elem.addClass('active');
-
-            Garnish.$doc.on('keyup.garnish-activate', function (e) {
-              $elem.removeClass('active');
-
-              if (e.keyCode === Garnish.SPACE_KEY) {
-                e.preventDefault();
-                $elem.trigger('activate');
-              }
-
-              Garnish.$doc.off('keyup.garnish-activate');
-            });
+          if (!disabled) {
+            $elem.trigger('activate');
+          }
+        },
+        'keydown.garnish-activate': function (e) {
+          // Ignore if the event was bubbled up, or if it wasn't the Space/Return key
+          if (
+            this === $elem[0] &&
+            [Garnish.SPACE_KEY, Garnish.RETURN_KEY].includes(e.keyCode)
+          ) {
+            e.preventDefault();
+            if (!$elem.hasClass('disabled')) {
+              $elem.trigger('activate');
+            }
           }
         },
       });

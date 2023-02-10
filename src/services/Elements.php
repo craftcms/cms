@@ -2823,7 +2823,11 @@ class Elements extends Component
 
                 // Now eager-load any sub paths
                 if (!empty($map['map']) && !empty($plan->nested)) {
-                    $this->_eagerLoadElementsInternal($map['elementType'], array_map('array_values', $targetElements), $plan->nested);
+                    $this->_eagerLoadElementsInternal(
+                        $map['elementType'],
+                        array_map('array_values', $targetElements),
+                        $plan->nested,
+                    );
                 }
             }
         }
@@ -3486,6 +3490,8 @@ SQL;
     /**
      * Returns whether a user is authorized to duplicate the given element.
      *
+     * This should always be called in conjunction with [[canView()]] or [[canSave()]].
+     *
      * @param ElementInterface $element
      * @param User|null $user
      * @return bool
@@ -3506,6 +3512,8 @@ SQL;
     /**
      * Returns whether a user is authorized to delete the given element.
      *
+     * This should always be called in conjunction with [[canView()]] or [[canSave()]].
+     *
      * @param ElementInterface $element
      * @param User|null $user
      * @return bool
@@ -3525,6 +3533,8 @@ SQL;
 
     /**
      * Returns whether a user is authorized to delete the given element for its current site.
+     *
+     * This should always be called in conjunction with [[canView()]] or [[canSave()]].
      *
      * @param ElementInterface $element
      * @param User|null $user
@@ -3548,6 +3558,8 @@ SQL;
 
     /**
      * Returns whether a user is authorized to create drafts for the given element.
+     *
+     * This should always be called in conjunction with [[canView()]] or [[canSave()]].
      *
      * @param ElementInterface $element
      * @param User|null $user

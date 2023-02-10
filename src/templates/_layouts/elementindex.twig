@@ -42,7 +42,7 @@
 
 
 {% block content %}
-    <div class="main">
+    <div class="main element-index">
         <span class="visually-hidden" role="status" data-status-message></span>
         <a class="skip-link btn" href="#footer">{{ 'Skip to {title}'|t('app', { title: 'Footer'|t }) }}</a>
         <div class="elements busy">
@@ -68,6 +68,8 @@
         storageKey: 'elementindex.{{ elementType|e("js") }}',
         criteria: Craft.defaultIndexCriteria,
         toolbarSelector: '#toolbar',
+        defaultSource: {{ (defaultSource ?? null)|json_encode|raw }},
+        defaultSourcePath: {{ (defaultSourcePath ?? null)|json_encode|raw }},
         canHaveDrafts: {{ (canHaveDrafts ?? false) ? 'true' : 'false' }},
     });
 {% endblock %}

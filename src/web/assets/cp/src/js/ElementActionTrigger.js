@@ -45,7 +45,11 @@ Craft.ElementActionTrigger = Garnish.Base.extend(
         if (this.$trigger.prop('nodeName') === 'FORM') {
           this.addListener(this.$trigger, 'submit', 'handleTriggerActivation');
         } else {
-          this.addListener(this.$trigger, 'click', 'handleTriggerActivation');
+          this.addListener(
+            this.$trigger,
+            'activate',
+            'handleTriggerActivation'
+          );
         }
       }
 
@@ -72,16 +76,21 @@ Craft.ElementActionTrigger = Garnish.Base.extend(
      * @returns {boolean}
      */
     validateSelection: function () {
-      var valid = true;
       this.$selectedItems = Craft.elementIndex.getSelectedElements();
 
       if (!this.settings.bulk && this.$selectedItems.length > 1) {
-        valid = false;
-      } else if (typeof this.settings.validateSelection === 'function') {
-        valid = this.settings.validateSelection(this.$selectedItems);
+        return false;
       }
 
-      return valid;
+      if (this.settings.requireId && this.$selectedItems.is('[data-id=""]')) {
+        return false;
+      }
+
+      if (typeof this.settings.validateSelection === 'function') {
+        return this.settings.validateSelection(this.$selectedItems);
+      }
+
+      return true;
     },
 
     enableTrigger: function () {
@@ -89,7 +98,7 @@ Craft.ElementActionTrigger = Garnish.Base.extend(
         return;
       }
 
-      this.$trigger.removeClass('disabled');
+      this.$trigger.removeClass('disabled').removeAttr('aria-disabled');
       this.triggerEnabled = true;
     },
 
@@ -98,14 +107,11 @@ Craft.ElementActionTrigger = Garnish.Base.extend(
         return;
       }
 
-      this.$trigger.addClass('disabled');
+      this.$trigger.addClass('disabled').attr('aria-disabled', 'true');
       this.triggerEnabled = false;
     },
 
-    handleTriggerActivation: function (ev) {
-      ev.preventDefault();
-      ev.stopPropagation();
-
+    handleTriggerActivation: function () {
       if (this.triggerEnabled) {
         this.settings.activate(this.$selectedItems);
       }
@@ -115,6 +121,7 @@ Craft.ElementActionTrigger = Garnish.Base.extend(
     defaults: {
       type: null,
       bulk: true,
+      requireId: true,
       validateSelection: null,
       activate: null,
     },
