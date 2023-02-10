@@ -1650,7 +1650,6 @@ JS;
             [$width * 2, $height * 2],
         ];
         $assetsService = Craft::$app->getAssets();
-        $isGif = $this->getIsGif();
 
         foreach ($thumbSizes as [$width, $height]) {
             $url = $assetsService->getThumbUrl($this, $width, $height);
@@ -1659,9 +1658,8 @@ JS;
 
         return Html::tag('img', '', [
             'sizes' => "{$thumbSizes[0][0]}px",
-            'srcset' => $isGif ? '' : implode(', ', $srcsets),
+            'srcset' => implode(', ', $srcsets),
             'alt' => $this->alt ?? $this->title,
-            //'data-gifffer' => $isGif ? $this->getThumbUrl(300) : null,
         ]);
     }
 

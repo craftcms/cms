@@ -30,6 +30,7 @@ use craft\web\assets\elementresizedetector\ElementResizeDetectorAsset;
 use craft\web\assets\fabric\FabricAsset;
 use craft\web\assets\fileupload\FileUploadAsset;
 use craft\web\assets\garnish\GarnishAsset;
+use craft\web\assets\gifa11y\Gifa11yAsset;
 use craft\web\assets\iframeresizer\IframeResizerAsset;
 use craft\web\assets\jquerypayment\JqueryPaymentAsset;
 use craft\web\assets\jquerytouchevents\JqueryTouchEventsAsset;
@@ -61,6 +62,7 @@ class CpAsset extends AssetBundle
         D3Asset::class,
         ElementResizeDetectorAsset::class,
         GarnishAsset::class,
+        Gifa11yAsset::class,
         JqueryAsset::class,
         JqueryTouchEventsAsset::class,
         JqueryUiAsset::class,
