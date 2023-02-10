@@ -1584,6 +1584,7 @@ return [
     'Total Price' => 'Toplam Fiyat',
     'Total releases' => 'Toplam yayınlama',
     'Townland' => 'Kasaba',
+    'Transcript' => 'Transcript',
     'Transfer it to:' => 'Şuraya aktar:',
     'Transform Filesystem' => 'Dosya Sistemini Dönüştür',
     'Transform Subpath' => 'Alt Yolu Dönüştür',

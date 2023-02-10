@@ -1584,6 +1584,7 @@ return [
     'Total Price' => 'Total Price',
     'Total releases' => 'การเผยแพร่ทั้งหมด',
     'Townland' => 'ทาวน์แลนด์',
+    'Transcript' => 'Transcript',
     'Transfer it to:' => 'Transfer it to:',
     'Transform Filesystem' => 'แปลงระบบไฟล์',
     'Transform Subpath' => 'แปลงเส้นทางย่อย',

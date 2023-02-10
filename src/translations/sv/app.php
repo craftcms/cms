@@ -1584,6 +1584,7 @@ return [
     'Total Price' => 'Totalt pris',
     'Total releases' => 'Totalt antal släpp',
     'Townland' => 'Townland',
+    'Transcript' => 'Transcript',
     'Transfer it to:' => 'Överför den till:',
     'Transform Filesystem' => 'Omvandla filsystem',
     'Transform Subpath' => 'Omvandla underordnad sökväg',

@@ -1584,6 +1584,7 @@ return [
     'Total Price' => 'Teljes ár',
     'Total releases' => 'Kibocsátások összesen',
     'Townland' => 'Townland',
+    'Transcript' => 'Transcript',
     'Transfer it to:' => 'Áthelyezés ide:',
     'Transform Filesystem' => 'Fájlrendszer transzformálása',
     'Transform Subpath' => 'Részútvonal transzformálása',

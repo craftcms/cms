@@ -1584,6 +1584,7 @@ return [
     'Total Price' => 'Totale prijs',
     'Total releases' => 'Totaal aantal annuleringen',
     'Townland' => 'Townland',
+    'Transcript' => 'Transcript',
     'Transfer it to:' => 'Overdragen naar:',
     'Transform Filesystem' => 'Bestandssysteem transformeren',
     'Transform Subpath' => 'Subpad transformeren',
