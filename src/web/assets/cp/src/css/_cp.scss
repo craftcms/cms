@@ -701,12 +701,12 @@ li.breadcrumb-toggle-wrapper {
     height: 30px;
     max-width: none;
     border-radius: 50%;
-    box-shadow: 0 0 0 1px transparentize($grey900, 0.6),
+    box-shadow: 0 0 0 1px transparentize($grey900, 0.95),
       0 0 0 transparentize($grey900, 1);
     transition: box-shadow linear 150ms;
 
     #user-info:hover & {
-      box-shadow: 0 0 0 1px transparentize($grey900, 0.6),
+      box-shadow: 0 0 0 1px transparentize($grey900, 0.95),
         0 2px 10px -2px transparentize($grey900, 0.7);
     }
   }
