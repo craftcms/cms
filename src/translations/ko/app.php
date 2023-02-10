@@ -1584,6 +1584,7 @@ return [
     'Total Price' => '총계',
     'Total releases' => '총 릴리스',
     'Townland' => 'Townland',
+    'Transcript' => 'Transcript',
     'Transfer it to:' => '다음으로 전송:',
     'Transform Filesystem' => '파일 시스템 변환',
     'Transform Subpath' => '하위 경로 변환',
