@@ -1936,6 +1936,7 @@ return [
     '{attribute} should contain {count, number} {count, plural, one{item} other{items}}.' => '{attribute} має (мають) містити {count, number} {count, plural, one{об\'єкт} few {об\'єкти} many {об\'єктів} other{об\'єкта}}.',
     '{attribute} “{value}” has already been taken.' => '{attribute} «{value}» вже зайнято.',
     '{ctrl}C to copy.' => '{ctrl}C, щоб скопіювати.',
+    '{description} (batch {index, number} of {total, number})' => '{description} (batch {index, number} of {total, number})',
     '{edition} edition' => 'Версія {edition}',
     '{element} pagination' => 'Поділ на сторінки: {element}',
     '{filename} isn’t selectable for this field.' => 'Файл «{filename}» для цього поля вибрати не можна.',
