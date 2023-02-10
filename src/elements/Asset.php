@@ -1661,7 +1661,7 @@ JS;
             'sizes' => "{$thumbSizes[0][0]}px",
             'srcset' => $isGif ? '' : implode(', ', $srcsets),
             'alt' => $this->alt ?? $this->title,
-            'data-gifffer' => $isGif ? $this->getThumbUrl(300) : null,
+            //'data-gifffer' => $isGif ? $this->getThumbUrl(300) : null,
         ]);
     }
 

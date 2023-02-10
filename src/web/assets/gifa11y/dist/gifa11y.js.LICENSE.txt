@@ -1,0 +1,6 @@
+/*
+ * Gifa11y
+ * @author: Adam Chaboryk
+ * @version: 1.0.7
+ * @license: MIT
+ */

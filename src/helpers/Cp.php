@@ -370,7 +370,7 @@ class Cp
                 'data' => [
                     'sizes' => $sizesHtml,
                     'srcset' => $isGif ? '' : $srcsetHtml,
-                    'gifffer' => $isGif ? $thumbUrl : null,
+                    //'gifffer' => $isGif ? $thumbUrl : null,
                     'alt' => $element->getThumbAlt(),
                 ],
             ]);
