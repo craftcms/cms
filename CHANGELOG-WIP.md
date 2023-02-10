@@ -5,6 +5,7 @@
 - Asset indexes now display the current subfolder path above the element listing. ([#12558](https://github.com/craftcms/cms/pull/12558))
 - It’s now possible to move volume folders and assets to a new location via a new “Move…” bulk element action, rather than via drag-and-drop interactions. ([#12558](https://github.com/craftcms/cms/pull/12558))
 - It’s now possible to sort asset indexes by image width and height. ([#12653](https://github.com/craftcms/cms/pull/12653))
+- Elements now have a `revisionNotes` field when queried via GraphQL. ([#12610](https://github.com/craftcms/cms/issues/12610))
 
 ### Accessibility
 
