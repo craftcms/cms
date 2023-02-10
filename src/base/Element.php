@@ -3179,14 +3179,6 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
-    public function getIsGif(): bool
-    {
-        return false;
-    }
-
-    /**
-     * @inheritdoc
-     */
     public function getEnabledForSite(?int $siteId = null): ?bool
     {
         if ($siteId === null) {

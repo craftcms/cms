@@ -1713,14 +1713,6 @@ JS;
     }
 
     /**
-     * @inheritdoc
-     */
-    public function getIsGif(): bool
-    {
-        return $this->getExtension() === 'gif';
-    }
-
-    /**
      * Returns the file’s MIME type, if it can be determined.
      *
      * @param ImageTransform|string|array|null $transform A transform handle or configuration that should be applied to the mime type
@@ -2086,8 +2078,6 @@ JS;
                 ($userSession->getId() == $this->uploaderId || $userSession->checkPermission("editPeerImages:$volume->uid"))
             );
 
-            $isGif = $this->getIsGif();
-
             $previewThumbHtml =
                 Html::beginTag('div', [
                     'id' => 'thumb-container',
@@ -2096,7 +2086,6 @@ JS;
                         'button-fade',
                         $this->getHasCheckeredThumb() ? 'checkered' : null,
                     ]),
-                    'data-mime-type' => $this->getMimeType(),
                 ]) .
                 Html::tag('div', $this->getPreviewThumbImg(350, 190), [
                     'class' => 'preview-thumb',
