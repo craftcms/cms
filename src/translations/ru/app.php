@@ -1584,6 +1584,7 @@ return [
     'Total Price' => 'Общая стоимость',
     'Total releases' => 'Всего выпусков',
     'Townland' => 'Таунленд',
+    'Transcript' => 'Transcript',
     'Transfer it to:' => 'Передать:',
     'Transform Filesystem' => 'Преобразование файловой системы',
     'Transform Subpath' => 'Преобразование подпути',
