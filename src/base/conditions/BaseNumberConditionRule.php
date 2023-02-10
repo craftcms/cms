@@ -29,11 +29,6 @@ abstract class BaseNumberConditionRule extends BaseTextConditionRule
     /**
      * @inheritdoc
      */
-    protected bool $reloadOnOperatorChange = true;
-
-    /**
-     * @inheritdoc
-     */
     public function getConfig(): array
     {
         return array_merge(parent::getConfig(), [

@@ -35,6 +35,7 @@ use craft\helpers\FileHelper;
 use craft\helpers\Image;
 use craft\helpers\Json;
 use craft\helpers\StringHelper;
+use craft\imagetransforms\FallbackTransformer;
 use craft\models\FolderCriteria;
 use craft\models\ImageTransform;
 use craft\models\Volume;
@@ -403,7 +404,7 @@ class Assets extends Component
             return $this->_foldersById[$folderId];
         }
 
-        $result = $this->_createFolderQuery()
+        $result = $this->createFolderQuery()
             ->where(['id' => $folderId])
             ->one();
 
@@ -426,7 +427,7 @@ class Assets extends Component
             return $this->_foldersByUid[$folderUid];
         }
 
-        $result = $this->_createFolderQuery()
+        $result = $this->createFolderQuery()
             ->where(['uid' => $folderUid])
             ->one();
 
@@ -449,7 +450,7 @@ class Assets extends Component
             $criteria = new FolderCriteria($criteria);
         }
 
-        $query = $this->_createFolderQuery();
+        $query = $this->createFolderQuery();
 
         $this->_applyFolderConditions($query, $criteria);
 
@@ -482,20 +483,28 @@ class Assets extends Component
      *
      * @param VolumeFolder $parentFolder
      * @param string $orderBy
+     * @param bool $withParent Whether the parent folder should be included in the results
      * @return VolumeFolder[]
      */
-    public function getAllDescendantFolders(VolumeFolder $parentFolder, string $orderBy = 'path'): array
+    public function getAllDescendantFolders(VolumeFolder $parentFolder, string $orderBy = 'path', bool $withParent = true): array
     {
-        $query = $this->_createFolderQuery()
+        $query = $this->createFolderQuery()
             ->where([
                 'and',
-                ['like', 'path', $parentFolder->path . '%', false],
                 ['volumeId' => $parentFolder->volumeId],
                 ['not', ['parentId' => null]],
             ]);
 
+        if ($parentFolder->path !== null) {
+            $query->andWhere(['like', 'path', Db::escapeForLike($parentFolder->path) . '%', false]);
+        }
+
         if ($orderBy) {
             $query->orderBy($orderBy);
+        }
+
+        if (!$withParent) {
+            $query->andWhere(['not', ['id' => $parentFolder->id]]);
         }
 
         $results = $query->all();
@@ -566,6 +575,27 @@ class Assets extends Component
         return (int)$query->count('[[id]]');
     }
 
+    /**
+     * Returns whether any folders exist which match a given criteria.
+     *
+     * @param mixed $criteria
+     * @return bool
+     * @since 4.4.0
+     */
+    public function foldersExist($criteria = null): bool
+    {
+        if (!($criteria instanceof FolderCriteria)) {
+            $criteria = new FolderCriteria($criteria);
+        }
+
+        $query = (new Query())
+            ->from([Table::VOLUMEFOLDERS]);
+
+        $this->_applyFolderConditions($query, $criteria);
+
+        return $query->exists();
+    }
+
     // File and folder managing
     // -------------------------------------------------------------------------
 
@@ -618,24 +648,25 @@ class Assets extends Component
             return AssetsHelper::iconUrl($extension);
         }
 
-        $volume = $asset->getVolume();
-        try {
-            $transformFs = $volume->getTransformFs();
-        } catch (InvalidConfigException) {
-            $transformFs = null;
-        }
-
-        if (!$transformFs?->hasUrls) {
-            return AssetsHelper::iconUrl($extension);
-        }
-
         $transform = new ImageTransform([
             'width' => $width,
             'height' => $height,
             'mode' => 'crop',
         ]);
 
-        return $asset->getUrl($transform, false) ?? AssetsHelper::iconUrl($extension);
+        $url = $asset->getUrl($transform, false);
+
+        if (!$url) {
+            // Try again with the fallback transformer
+            $transform->setTransformer(FallbackTransformer::class);
+            $url = $asset->getUrl($transform);
+        }
+
+        if ($url === null) {
+            return AssetsHelper::iconUrl($extension);
+        }
+
+        return AssetsHelper::revUrl($url, $asset);
     }
 
     /**
@@ -676,7 +707,7 @@ class Assets extends Component
             throw new NotSupportedException('A preview URL couldn’t be generated for the asset.');
         }
 
-        return $url;
+        return AssetsHelper::revUrl($url, $asset);
     }
 
     /**
@@ -1026,8 +1057,9 @@ class Assets extends Component
      * Returns a DbCommand object prepped for retrieving assets.
      *
      * @return Query
+     * @since 4.4.0
      */
-    private function _createFolderQuery(): Query
+    public function createFolderQuery(): Query
     {
         return (new Query())
             ->select(['id', 'parentId', 'volumeId', 'name', 'path', 'uid'])

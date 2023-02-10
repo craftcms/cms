@@ -183,7 +183,7 @@ class RecentEntries extends Widget
             ->siteId($targetSiteId)
             ->limit($this->limit ?: 100)
             ->with(['author'])
-            ->orderBy('elements.dateCreated desc')
+            ->orderBy(['dateCreated' => SORT_DESC])
             ->all();
     }
 

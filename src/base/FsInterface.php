@@ -22,6 +22,13 @@ use Generator;
 interface FsInterface extends SavableComponentInterface
 {
     /**
+     * Returns the root URL for a filesystem, if it has one.
+     *
+     * @return string|null
+     */
+    public function getRootUrl(): ?string;
+
+    /**
      * List files.
      *
      * @param string $directory The path of the directory to list files of

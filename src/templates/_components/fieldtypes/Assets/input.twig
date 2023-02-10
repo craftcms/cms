@@ -61,8 +61,13 @@
     canUpload: canUpload,
     defaultFieldLayoutId: defaultFieldLayoutId,
     modalSettings: {
-        hideSidebar: hideSidebar,
-        defaultSource: defaultUploadLocation
+        hideSidebar: hideSidebar ?? false,
+        defaultSource: defaultSource ?? null,
+        defaultSourcePath: defaultSourcePath ?? null,
+        showSourcePath: showSourcePath ?? true,
+        indexSettings: {
+            showFolders: showFolders ?? true,
+        },
     },
     describedBy: (describedBy ?? false) ? describedBy|split(' ')|map(id => id|namespaceInputId)|join(' ') : null,
 } %}

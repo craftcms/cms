@@ -26,6 +26,7 @@ use craft\helpers\FileHelper;
 use craft\helpers\Image;
 use craft\helpers\ImageTransforms;
 use craft\helpers\Json;
+use craft\helpers\StringHelper;
 use craft\models\AssetIndexData;
 use craft\models\AssetIndexingSession;
 use craft\models\FsListing;
@@ -144,10 +145,11 @@ class AssetIndexer extends Component
      *
      * @param array $volumes
      * @param bool $cacheRemoteImages
+     * @param bool $listEmptyFolders
      * @return AssetIndexingSession
      * @since 4.0.0
      */
-    public function startIndexingSession(array $volumes, bool $cacheRemoteImages = true): AssetIndexingSession
+    public function startIndexingSession(array $volumes, bool $cacheRemoteImages = true, bool $listEmptyFolders = false): AssetIndexingSession
     {
         $volumeList = [];
         $volumeService = Craft::$app->getVolumes();
@@ -162,7 +164,7 @@ class AssetIndexer extends Component
             }
         }
 
-        $session = $this->createIndexingSession($volumeList, $cacheRemoteImages);
+        $session = $this->createIndexingSession($volumeList, $cacheRemoteImages, listEmptyFolders: $listEmptyFolders);
         $total = 0;
 
         /** @var Volume $volume */
@@ -171,6 +173,9 @@ class AssetIndexer extends Component
             $total += $this->storeIndexList($fileList, $session->id, (int)$volume->id);
         }
 
+        if ($total === 0) {
+            $session->processIfRootEmpty = true;
+        }
         $session->totalEntries = $total;
         $this->storeIndexingSession($session);
 
@@ -195,10 +200,11 @@ class AssetIndexer extends Component
      * @param Volume[] $volumeList
      * @param bool $cacheRemoteImages Whether remote images should be cached.
      * @param bool $isCli Whether indexing is run via CLI
+     * @param bool $listEmptyFolders Whether empty folders should be listed for deletion.
      * @return AssetIndexingSession
      * @since 4.0.0
      */
-    public function createIndexingSession(array $volumeList, bool $cacheRemoteImages = true, bool $isCli = false): AssetIndexingSession
+    public function createIndexingSession(array $volumeList, bool $cacheRemoteImages = true, bool $isCli = false, bool $listEmptyFolders = false): AssetIndexingSession
     {
         $indexedVolumes = [];
 
@@ -211,9 +217,11 @@ class AssetIndexer extends Component
             'indexedVolumes' => Json::encode($indexedVolumes),
             'processedEntries' => 0,
             'cacheRemoteImages' => $cacheRemoteImages,
+            'listEmptyFolders' => $listEmptyFolders,
             'actionRequired' => false,
             'isCli' => $isCli,
             'dateUpdated' => null,
+            'processIfRootEmpty' => false,
         ]);
 
         $this->storeIndexingSession($session);
@@ -238,8 +246,10 @@ class AssetIndexer extends Component
         $record->totalEntries = $session->totalEntries;
         $record->processedEntries = $session->processedEntries;
         $record->cacheRemoteImages = $session->cacheRemoteImages;
+        $record->listEmptyFolders = $session->listEmptyFolders;
         $record->actionRequired = $session->actionRequired;
         $record->isCli = $session->isCli;
+        $record->processIfRootEmpty = $session->processIfRootEmpty;
         $record->save();
 
         $session->id = $record->id;
@@ -297,34 +307,41 @@ class AssetIndexer extends Component
         $indexEntry = $this->getNextIndexEntry($indexingSession);
 
         // The most likely scenario is that the last entry is being worked on.
-        if (!$indexEntry) {
+        if (!$indexEntry && !$indexingSession->processIfRootEmpty) {
             $mutex->release($lockName);
             return $indexingSession;
         }
 
         // Mark as started.
-        $this->updateIndexEntry($indexEntry->id, ['inProgress' => true]);
-        $mutex->release($lockName);
+        if ($indexEntry) {
+            $this->updateIndexEntry($indexEntry->id, ['inProgress' => true]);
+            $mutex->release($lockName);
 
-        try {
-            if ($indexEntry->isDir) {
-                $recordId = $this->indexFolderByEntry($indexEntry)->id;
-            } else {
-                $recordId = $this->indexFileByEntry($indexEntry, $indexingSession->cacheRemoteImages)->id;
+            try {
+                if ($indexEntry->isDir) {
+                    $recordId = $this->indexFolderByEntry($indexEntry)->id;
+                } else {
+                    $recordId = $this->indexFileByEntry($indexEntry, $indexingSession->cacheRemoteImages)->id;
+                }
+
+                $this->updateIndexEntry($indexEntry->id, ['completed' => true, 'inProgress' => false, 'recordId' => $recordId]);
+            } catch (AssetDisallowedExtensionException|AssetNotIndexableException) {
+                $this->updateIndexEntry($indexEntry->id, ['completed' => true, 'inProgress' => false, 'isSkipped' => true]);
+            } catch (Throwable $exception) {
+                Craft::$app->getErrorHandler()->logException($exception);
+                $this->updateIndexEntry($indexEntry->id, ['completed' => true, 'inProgress' => false, 'isSkipped' => true]);
             }
 
-            $this->updateIndexEntry($indexEntry->id, ['completed' => true, 'inProgress' => false, 'recordId' => $recordId]);
-        } catch (AssetDisallowedExtensionException|AssetNotIndexableException) {
-            $this->updateIndexEntry($indexEntry->id, ['completed' => true, 'inProgress' => false, 'isSkipped' => true]);
-        } catch (Throwable $exception) {
-            Craft::$app->getErrorHandler()->logException($exception);
-            $this->updateIndexEntry($indexEntry->id, ['completed' => true, 'inProgress' => false, 'isSkipped' => true]);
+            $session = $this->incrementProcessedEntryCount($indexingSession);
+        } else {
+            $session = $indexingSession;
         }
-
-        $session = $this->incrementProcessedEntryCount($indexingSession);
 
         if ($session->processedEntries == $session->totalEntries) {
             $session->actionRequired = true;
+            if ($session->processIfRootEmpty) {
+                $session->processIfRootEmpty = false;
+            }
             $this->storeIndexingSession($session);
         }
 
@@ -386,16 +403,21 @@ class AssetIndexer extends Component
 
         $volumeList = array_keys($volumeList);
 
-        $missingFolders = (new Query())
+        $missingFoldersQuery = (new Query())
             ->select(['path' => 'folders.path', 'volumeName' => 'volumes.name', 'volumeId' => 'volumes.id', 'volumeFsSubpath' => 'volumes.fsSubpath', 'folderId' => 'folders.id'])
             ->from(['folders' => Table::VOLUMEFOLDERS])
             ->leftJoin(['volumes' => Table::VOLUMES], '[[volumes.id]] = [[folders.volumeId]]')
-            ->leftJoin(['indexData' => Table::ASSETINDEXDATA], ['and', '[[folders.id]] = [[indexData.recordId]]', ['indexData.isDir' => true]])
             ->where(['<', 'folders.dateCreated', $cutoff])
             ->andWhere(['folders.volumeId' => $volumeList])
-            ->andWhere(['not', ['folders.parentId' => null]])
-            ->andWhere(['indexData.id' => null])
-            ->all();
+            ->andWhere(['not', ['folders.parentId' => null]]);
+
+        if (!$session->listEmptyFolders) {
+            $missingFoldersQuery
+                ->leftJoin(['indexData' => Table::ASSETINDEXDATA], ['and', '[[folders.id]] = [[indexData.recordId]]', ['indexData.isDir' => true]])
+                ->andWhere(['indexData.id' => null]);
+        }
+
+        $missingFolders = $missingFoldersQuery->all();
 
         $missingFiles = (new Query())
             ->select(['path' => 'folders.path', 'volumeName' => 'volumes.name', 'volumeFsSubpath' => 'volumes.fsSubpath', 'filename' => 'assets.filename', 'assetId' => 'assets.id'])
@@ -418,12 +440,24 @@ class AssetIndexer extends Component
             $hasAssets = (new Query())
                 ->from(['a' => Table::ASSETS])
                 ->innerJoin(['f' => Table::VOLUMEFOLDERS], '[[f.id]] = [[a.folderId]]')
+                ->leftJoin(['e' => Table::ELEMENTS], '[[e.id]] = [[a.id]]')
                 ->where(['a.volumeId' => $volumeId])
                 ->andWhere(['like', 'f.path', "$path%", false])
-                ->exists();
+                ->andWhere(['e.dateDeleted' => null])
+                ->count();
 
-            if (!$hasAssets) {
+            if ($hasAssets == 0) {
                 $missing['folders'][$folderId] = $volumeName . '/' . (!empty($volumeFsSubpath) ? $volumeFsSubpath . '/' : '') . $path;
+            }
+
+            if ($session->listEmptyFolders && $hasAssets > 0) {
+                // if the folder contains as many assets as are listed in the $missingFiles
+                // allow this folder to be offered for deletion (with the assets in it)
+                if ($hasAssets == count(array_filter($missingFiles, function($file) use ($path) {
+                    return StringHelper::startsWith($file['path'], $path);
+                }))) {
+                    $missing['folders'][$folderId] = $volumeName . '/' . $path;
+                }
             }
         }
 
@@ -532,17 +566,13 @@ class AssetIndexer extends Component
     public function indexFileByListing(int $volumeId, FsListing $listing, int $sessionId, bool $cacheImages = false, bool $createIfMissing = true): Asset
     {
         $indexEntry = new AssetIndexData([
-            'id' => null,
             'volumeId' => $volumeId,
             'sessionId' => $sessionId,
             'uri' => $listing->getUri(),
             'size' => $listing->getFileSize(),
             'timestamp' => $listing->getDateModified(),
             'isDir' => $listing->getIsDir(),
-            'recordId' => null,
             'inProgress' => true,
-            'isSkipped' => null,
-            'completed' => false,
         ]);
 
         $asset = $this->indexFileByEntry($indexEntry, $cacheImages, $createIfMissing);
@@ -564,17 +594,13 @@ class AssetIndexer extends Component
     public function indexFolderByListing(int $volumeId, FsListing $listing, int $sessionId, bool $createIfMissing = true): VolumeFolder
     {
         $indexEntry = new AssetIndexData([
-            'id' => null,
             'volumeId' => $volumeId,
             'sessionId' => $sessionId,
             'uri' => $listing->getUri(),
             'size' => $listing->getFileSize(),
             'timestamp' => $listing->getDateModified(),
             'isDir' => $listing->getIsDir(),
-            'recordId' => null,
             'inProgress' => true,
-            'isSkipped' => null,
-            'completed' => false,
         ]);
 
         $folder = $this->indexFolderByEntry($indexEntry, $createIfMissing);
@@ -592,8 +618,7 @@ class AssetIndexer extends Component
      */
     protected function storeIndexEntry(AssetIndexData $indexEntry)
     {
-        Db::insert(Table::ASSETINDEXDATA, [
-            'id' => $indexEntry->id,
+        $data = [
             'sessionId' => $indexEntry->sessionId,
             'volumeId' => $indexEntry->volumeId,
             'uri' => $indexEntry->uri,
@@ -604,7 +629,13 @@ class AssetIndexer extends Component
             'isSkipped' => $indexEntry->isSkipped,
             'inProgress' => $indexEntry->inProgress,
             'completed' => $indexEntry->completed,
-        ]);
+        ];
+
+        if ($indexEntry->id) {
+            $data['id'] = $indexEntry->id;
+        }
+
+        Db::insert(Table::ASSETINDEXDATA, $data);
     }
 
     /**
@@ -829,8 +860,10 @@ class AssetIndexer extends Component
                 'totalEntries',
                 'processedEntries',
                 'cacheRemoteImages',
+                'listEmptyFolders',
                 'isCli',
                 'actionRequired',
+                'processIfRootEmpty',
                 'dateCreated',
                 'dateUpdated',
             ])

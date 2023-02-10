@@ -308,8 +308,15 @@ class FieldLayoutTab extends FieldLayoutComponent
      */
     public function getHtmlId(): string
     {
+        $asciiName = StringHelper::toKebabCase(StringHelper::toAscii($this->name, 'en'));
+
+        if ($asciiName === '') {
+            // Use md5() as a fallback
+            $asciiName = sprintf('tab-%s', md5($this->name));
+        }
+
         // Use two dashes here in case a tab name starts with “Tab”
-        return 'tab--' . StringHelper::toKebabCase(StringHelper::toAscii($this->name, 'en'));
+        return "tab--$asciiName";
     }
 
     /**

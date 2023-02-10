@@ -1568,7 +1568,8 @@ class ProjectConfig extends Component
                 'except' => ['.*', '.*/'],
             ]);
 
-            $projectConfigNames = $this->getInternalConfig()->get(self::PATH_META_NAMES);
+            // get fresh internal config so that all the name comments are properly updated
+            $projectConfigNames = $this->_loadInternalConfig()->get(self::PATH_META_NAMES);
 
             $uids = [];
             $replacements = [];

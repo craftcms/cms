@@ -47,7 +47,7 @@ interface ElementQueryInterface extends QueryInterface, Arrayable
      * ```
      *
      * @param bool $value The property value
-     * @return self self reference
+     * @return static
      */
     public function inReverse(bool $value = true): self;
 
@@ -71,7 +71,7 @@ interface ElementQueryInterface extends QueryInterface, Arrayable
      * ```
      *
      * @param bool $value The property value (defaults to true)
-     * @return self self reference
+     * @return static
      */
     public function asArray(bool $value = true): self;
 
@@ -80,7 +80,7 @@ interface ElementQueryInterface extends QueryInterface, Arrayable
      * elements that were set by [[\craft\services\Elements::setPlaceholderElement()]].
      *
      * @param bool $value The property value (defaults to true)
-     * @return self self reference
+     * @return static
      * @since 3.2.9
      */
     public function ignorePlaceholders(bool $value = true): self;
@@ -107,7 +107,7 @@ interface ElementQueryInterface extends QueryInterface, Arrayable
      * ```
      *
      * @param bool|null $value The property value (defaults to true)
-     * @return self self reference
+     * @return static
      * @since 3.2.0
      */
     public function drafts(?bool $value = true): self;
@@ -138,7 +138,7 @@ interface ElementQueryInterface extends QueryInterface, Arrayable
      * ```
      *
      * @param int|null $value The property value
-     * @return self self reference
+     * @return static
      * @since 3.2.0
      */
     public function draftId(?int $value = null): self;
@@ -172,7 +172,7 @@ interface ElementQueryInterface extends QueryInterface, Arrayable
      * ```
      *
      * @param mixed $value The property value
-     * @return self self reference
+     * @return static
      * @since 3.2.0
      */
     public function draftOf(mixed $value): self;
@@ -204,7 +204,7 @@ interface ElementQueryInterface extends QueryInterface, Arrayable
      * ```
      *
      * @param mixed $value The property value
-     * @return self self reference
+     * @return static
      * @since 3.2.0
      */
     public function draftCreator(mixed $value): self;
@@ -231,7 +231,7 @@ interface ElementQueryInterface extends QueryInterface, Arrayable
      * ```
      *
      * @param bool|null $value The property value
-     * @return self self reference
+     * @return static
      * @since 3.7.0
      */
     public function provisionalDrafts(?bool $value = true): self;
@@ -258,7 +258,7 @@ interface ElementQueryInterface extends QueryInterface, Arrayable
      * ```
      *
      * @param bool $value The property value (defaults to true)
-     * @return self self reference
+     * @return static
      * @since 3.6.6
      */
     public function savedDraftsOnly(bool $value = true): self;
@@ -285,7 +285,7 @@ interface ElementQueryInterface extends QueryInterface, Arrayable
      * ```
      *
      * @param bool|null $value The property value (defaults to true)
-     * @return self self reference
+     * @return static
      * @since 3.2.0
      */
     public function revisions(?bool $value = true): self;
@@ -316,7 +316,7 @@ interface ElementQueryInterface extends QueryInterface, Arrayable
      * ```
      *
      * @param int|null $value The property value
-     * @return self self reference
+     * @return static
      * @since 3.2.0
      */
     public function revisionId(?int $value = null): self;
@@ -348,7 +348,7 @@ interface ElementQueryInterface extends QueryInterface, Arrayable
      * ```
      *
      * @param mixed $value The property value
-     * @return self self reference
+     * @return static
      * @since 3.2.0
      */
     public function revisionOf(mixed $value): self;
@@ -380,7 +380,7 @@ interface ElementQueryInterface extends QueryInterface, Arrayable
      * ```
      *
      * @param mixed $value The property value
-     * @return self self reference
+     * @return static
      * @since 3.2.0
      */
     public function revisionCreator(mixed $value): self;
@@ -420,7 +420,7 @@ interface ElementQueryInterface extends QueryInterface, Arrayable
      * :::
      *
      * @param mixed $value The property value
-     * @return self self reference
+     * @return static
      */
     public function id(mixed $value): self;
 
@@ -444,7 +444,7 @@ interface ElementQueryInterface extends QueryInterface, Arrayable
      * ```
      *
      * @param mixed $value The property value
-     * @return self self reference
+     * @return static
      */
     public function uid(mixed $value): self;
 
@@ -477,7 +477,7 @@ interface ElementQueryInterface extends QueryInterface, Arrayable
      * ```
      *
      * @param mixed $value The property value
-     * @return self self reference
+     * @return static
      * @since 3.7.0
      */
     public function siteSettingsId(mixed $value): self;
@@ -508,7 +508,7 @@ interface ElementQueryInterface extends QueryInterface, Arrayable
      * ```
      *
      * @param bool $value The property value (defaults to true)
-     * @return self self reference
+     * @return static
      */
     public function fixedOrder(bool $value = true): self;
 
@@ -540,7 +540,7 @@ interface ElementQueryInterface extends QueryInterface, Arrayable
      * ```
      *
      * @param string|string[]|null $value The property value
-     * @return self self reference
+     * @return static
      */
     public function status(array|string|null $value): self;
 
@@ -548,7 +548,7 @@ interface ElementQueryInterface extends QueryInterface, Arrayable
      * Sets the [[$archived]] property.
      *
      * @param bool $value The property value (defaults to true)
-     * @return self self reference
+     * @return static
      */
     public function archived(bool $value = true): self;
 
@@ -572,7 +572,7 @@ interface ElementQueryInterface extends QueryInterface, Arrayable
      * ```
      *
      * @param bool|null $value The property value (defaults to true)
-     * @return self self reference
+     * @return static
      * @since 3.1.0
      */
     public function trashed(?bool $value = true): self;
@@ -612,7 +612,7 @@ interface ElementQueryInterface extends QueryInterface, Arrayable
      * ```
      *
      * @param mixed $value The property value
-     * @return self self reference
+     * @return static
      */
     public function dateCreated(mixed $value): self;
 
@@ -649,7 +649,7 @@ interface ElementQueryInterface extends QueryInterface, Arrayable
      * ```
      *
      * @param mixed $value The property value
-     * @return self self reference
+     * @return static
      */
     public function dateUpdated(mixed $value): self;
 
@@ -690,7 +690,7 @@ interface ElementQueryInterface extends QueryInterface, Arrayable
      * ```
      *
      * @param mixed $value The property value
-     * @return self self reference
+     * @return static
      */
     public function site(mixed $value): self;
 
@@ -725,7 +725,7 @@ interface ElementQueryInterface extends QueryInterface, Arrayable
      * ```
      *
      * @param mixed $value The property value
-     * @return self self reference
+     * @return static
      */
     public function siteId(mixed $value): self;
 
@@ -754,7 +754,7 @@ interface ElementQueryInterface extends QueryInterface, Arrayable
      * ```
      *
      * @param bool $value The property value (defaults to true)
-     * @return self self reference
+     * @return static
      * @since 3.2.0
      */
     public function unique(bool $value = true): self;
@@ -789,7 +789,7 @@ interface ElementQueryInterface extends QueryInterface, Arrayable
      * ```
      *
      * @param array|null $value The property value
-     * @return self self reference
+     * @return static
      * @since 3.2.0
      */
     public function preferSites(?array $value = null): self;
@@ -816,7 +816,7 @@ interface ElementQueryInterface extends QueryInterface, Arrayable
      * ```
      *
      * @param mixed $value The property value
-     * @return self self reference
+     * @return static
      */
     public function relatedTo(mixed $value): self;
 
@@ -844,7 +844,7 @@ interface ElementQueryInterface extends QueryInterface, Arrayable
      * ```
      *
      * @param mixed $value The property value
-     * @return self self reference
+     * @return static
      * @since 3.6.11
      */
     public function andRelatedTo(mixed $value): self;
@@ -881,7 +881,7 @@ interface ElementQueryInterface extends QueryInterface, Arrayable
      * ```
      *
      * @param mixed $value The property value
-     * @return self self reference
+     * @return static
      */
     public function title(mixed $value): self;
 
@@ -923,7 +923,7 @@ interface ElementQueryInterface extends QueryInterface, Arrayable
      * ```
      *
      * @param mixed $value The property value
-     * @return self self reference
+     * @return static self reference
      */
     public function slug(mixed $value): self;
 
@@ -965,7 +965,7 @@ interface ElementQueryInterface extends QueryInterface, Arrayable
      * ```
      *
      * @param mixed $value The property value
-     * @return self self reference
+     * @return static
      */
     public function uri(mixed $value): self;
 
@@ -997,7 +997,7 @@ interface ElementQueryInterface extends QueryInterface, Arrayable
      * ```
      *
      * @param mixed $value The property value
-     * @return self self reference
+     * @return static
      */
     public function search(mixed $value): self;
 
@@ -1005,7 +1005,7 @@ interface ElementQueryInterface extends QueryInterface, Arrayable
      * Narrows the query results based on a reference string.
      *
      * @param mixed $value The property value
-     * @return self self reference
+     * @return static
      */
     public function ref(mixed $value): self;
 
@@ -1031,7 +1031,7 @@ interface ElementQueryInterface extends QueryInterface, Arrayable
      * ```
      *
      * @param array|string|null $value The property value
-     * @return self self reference
+     * @return static
      */
     public function with(array|string|null $value): self;
 
@@ -1039,7 +1039,7 @@ interface ElementQueryInterface extends QueryInterface, Arrayable
      * Causes the query to return matching {elements} eager-loaded with related elements, in addition to the elements that were already specified by [[with()]]..
      *
      * @param array|string|null $value The property value to append
-     * @return self self reference
+     * @return static
      * @since 3.0.9
      */
     public function andWith(array|string|null $value): self;
@@ -1048,7 +1048,7 @@ interface ElementQueryInterface extends QueryInterface, Arrayable
      * Explicitly determines whether the query should join in the structure data.
      *
      * @param bool $value The property value (defaults to true)
-     * @return self self reference
+     * @return static
      */
     public function withStructure(bool $value = true): self;
 
@@ -1056,7 +1056,7 @@ interface ElementQueryInterface extends QueryInterface, Arrayable
      * Determines which structure data should be joined into the query.
      *
      * @param int|null $value The property value
-     * @return self self reference
+     * @return static
      */
     public function structureId(?int $value = null): self;
 
@@ -1090,7 +1090,7 @@ interface ElementQueryInterface extends QueryInterface, Arrayable
      * ```
      *
      * @param mixed $value The property value
-     * @return self self reference
+     * @return static
      */
     public function level(mixed $value = null): self;
 
@@ -1116,7 +1116,7 @@ interface ElementQueryInterface extends QueryInterface, Arrayable
      * ```
      *
      * @param bool $value The property value
-     * @return self self reference
+     * @return static
      * @since 3.0.4
      */
     public function hasDescendants(bool $value = true): self;
@@ -1143,7 +1143,7 @@ interface ElementQueryInterface extends QueryInterface, Arrayable
      * ```
      *
      * @param bool $value The property value
-     * @return self self reference
+     * @return static
      */
     public function leaves(bool $value = true): self;
 
@@ -1180,7 +1180,7 @@ interface ElementQueryInterface extends QueryInterface, Arrayable
      * :::
      *
      * @param int|ElementInterface|null $value The property value
-     * @return self self reference
+     * @return static
      */
     public function ancestorOf(ElementInterface|int|null $value): self;
 
@@ -1206,7 +1206,7 @@ interface ElementQueryInterface extends QueryInterface, Arrayable
      * ```
      *
      * @param int|null $value The property value
-     * @return self self reference
+     * @return static
      */
     public function ancestorDist(?int $value = null): self;
 
@@ -1243,7 +1243,7 @@ interface ElementQueryInterface extends QueryInterface, Arrayable
      * :::
      *
      * @param int|ElementInterface|null $value The property value
-     * @return self self reference
+     * @return static
      */
     public function descendantOf(ElementInterface|int|null $value): self;
 
@@ -1269,7 +1269,7 @@ interface ElementQueryInterface extends QueryInterface, Arrayable
      * ```
      *
      * @param int|null $value The property value
-     * @return self self reference
+     * @return static
      */
     public function descendantDist(?int $value = null): self;
 
@@ -1300,7 +1300,7 @@ interface ElementQueryInterface extends QueryInterface, Arrayable
      * ```
      *
      * @param int|ElementInterface|null $value The property value
-     * @return self self reference
+     * @return static
      */
     public function siblingOf(ElementInterface|int|null $value): self;
 
@@ -1331,7 +1331,7 @@ interface ElementQueryInterface extends QueryInterface, Arrayable
      * ```
      *
      * @param int|ElementInterface|null $value The property value
-     * @return self self reference
+     * @return static
      */
     public function prevSiblingOf(ElementInterface|int|null $value): self;
 
@@ -1362,7 +1362,7 @@ interface ElementQueryInterface extends QueryInterface, Arrayable
      * ```
      *
      * @param int|ElementInterface|null $value The property value
-     * @return self self reference
+     * @return static
      */
     public function nextSiblingOf(ElementInterface|int|null $value): self;
 
@@ -1393,7 +1393,7 @@ interface ElementQueryInterface extends QueryInterface, Arrayable
      * ```
      *
      * @param int|ElementInterface|null $value The property value
-     * @return self self reference
+     * @return static
      */
     public function positionedBefore(ElementInterface|int|null $value): self;
 
@@ -1424,7 +1424,7 @@ interface ElementQueryInterface extends QueryInterface, Arrayable
      * ```
      *
      * @param int|ElementInterface|null $value The property value
-     * @return self self reference
+     * @return static
      */
     public function positionedAfter(ElementInterface|int|null $value): self;
 
