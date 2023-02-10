@@ -1584,6 +1584,7 @@ return [
     'Total Price' => 'Загальна ціна',
     'Total releases' => 'Усього випусків',
     'Townland' => 'Селищний район',
+    'Transcript' => 'Transcript',
     'Transfer it to:' => 'Передати до:',
     'Transform Filesystem' => 'Перетворення файлової системи',
     'Transform Subpath' => 'Перетворення підшляху',
