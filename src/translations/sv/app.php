@@ -1936,6 +1936,7 @@ return [
     '{attribute} should contain {count, number} {count, plural, one{item} other{items}}.' => '{attribute} ska innehålla {count, number} {count, plural, one{objekt} other{objekt}}.',
     '{attribute} “{value}” has already been taken.' => '{attribute} "{value}" är redan upptaget.',
     '{ctrl}C to copy.' => '{ctrl}C för att kopiera.',
+    '{description} (batch {index, number} of {total, number})' => '{description} (batch {index, number} of {total, number})',
     '{edition} edition' => 'Utgåva {edition}',
     '{element} pagination' => '{element}-paginering',
     '{filename} isn’t selectable for this field.' => '{filename} kan inte väljas för detta fält.',
