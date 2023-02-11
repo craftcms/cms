@@ -6,7 +6,7 @@
 Craft.HandleGenerator = Craft.BaseInputGenerator.extend({
   generateTargetValue: function (sourceVal) {
     // Remove HTML tags
-    var handle = sourceVal.replace('/<(.*?)>/g', '');
+    var handle = sourceVal.replace(/<(.*?)>/g, '');
 
     // Remove inner-word punctuation
     handle = handle.replace(/['"‘’“”\[\]\(\)\{\}:]/g, '');
