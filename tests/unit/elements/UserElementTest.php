@@ -81,6 +81,27 @@ class UserElementTest extends TestCase
         $this->tester->deleteElement($user);
     }
 
+    public function testUniqueAttributesForInactiveUsers(): void
+    {
+        $user = new User([
+            'active' => true,
+            'email' => $this->inactiveUser->email,
+            'username' => $this->inactiveUser->username,
+            'unverifiedEmail' => $this->inactiveUser->unverifiedEmail,
+        ]);
+
+        $this->tester->saveElement($user);
+
+        self::assertFalse($user->hasErrors());
+
+        Craft::$app->getUsers()->activateUser($this->inactiveUser);
+
+        self::assertTrue($this->inactiveUser->hasErrors('email'));
+        self::assertTrue($this->inactiveUser->hasErrors('username'));
+
+        $this->tester->deleteElement($user);
+    }
+
     /**
      * @throws Exception
      */

@@ -828,6 +828,7 @@ class User extends Element implements IdentityInterface
                 UniqueValidator::class,
                 'targetClass' => UserRecord::class,
                 'caseInsensitive' => true,
+                'filter' => ['or', ['active' => true], ['pending' => true]],
             ];
 
             $rules[] = [['unverifiedEmail'], 'validateUnverifiedEmail'];

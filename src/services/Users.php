@@ -11,6 +11,7 @@ use Craft;
 use craft\db\Query;
 use craft\db\Table;
 use craft\elements\Asset;
+use craft\elements\db\UserQuery;
 use craft\elements\User;
 use craft\errors\ImageException;
 use craft\errors\InvalidSubpathException;
@@ -244,7 +245,7 @@ class Users extends Component
     {
         $query = User::find()
             ->addSelect(['users.password', 'users.passwordResetRequired'])
-            ->status(null);
+            ->status(UserQuery::STATUS_CREDENTIALED);
 
         if (Craft::$app->getDb()->getIsMysql()) {
             $query
@@ -790,6 +791,20 @@ class Users extends Component
             return false;
         }
 
+        $user->active = true;
+        $user->pending = false;
+        $user->locked = false;
+        $user->suspended = false;
+        $user->verificationCode = null;
+        $user->verificationCodeIssuedDate = null;
+        $user->invalidLoginCount = null;
+        $user->lastInvalidLoginDate = null;
+        $user->lockoutDate = null;
+
+        if (!$user->validate()) {
+            return false;
+        }
+
         $transaction = Craft::$app->getDb()->beginTransaction();
         try {
             $userRecord = $this->_getUserRecordById($user->id);
@@ -804,16 +819,6 @@ class Users extends Component
             $userRecord->lastInvalidLoginDate = null;
             $userRecord->lockoutDate = null;
             $userRecord->save();
-
-            $user->active = true;
-            $user->pending = false;
-            $user->locked = false;
-            $user->suspended = false;
-            $user->verificationCode = null;
-            $user->verificationCodeIssuedDate = null;
-            $user->invalidLoginCount = null;
-            $user->lastInvalidLoginDate = null;
-            $user->lockoutDate = null;
 
             // If they have an unverified email address, now is the time to set it to their primary email address
             $this->verifyEmailForUser($user);
