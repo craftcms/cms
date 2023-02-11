@@ -28,6 +28,7 @@ use craft\models\Structure;
 use craft\records\CategoryGroup as CategoryGroupRecord;
 use craft\records\CategoryGroup_SiteSettings as CategoryGroup_SiteSettingsRecord;
 use craft\web\View;
+use DateTime;
 use Throwable;
 use yii\base\Component;
 use yii\base\Exception;
@@ -577,17 +578,37 @@ class Categories extends Component
         $transaction = Craft::$app->getDb()->beginTransaction();
         try {
             // Delete the categories
-            /** @var Category[] $categories */
-            $categories = Category::find()
-                ->groupId($categoryGroupRecord->id)
-                ->status(null)
-                ->all();
-            $elementsService = Craft::$app->getElements();
+            $elementsTable = Table::ELEMENTS;
+            $categoriesTable = Table::CATEGORIES;
+            $now = Db::prepareDateForDb(new DateTime());
+            $db = Craft::$app->getDb();
 
-            foreach ($categories as $category) {
-                $category->deletedWithGroup = true;
-                $elementsService->deleteElement($category);
+            if ($db->getIsMysql()) {
+                $sql = <<<SQL
+UPDATE $elementsTable [[elements]], $categoriesTable [[categories]] 
+SET [[elements.dateDeleted]] = '$now',
+  [[categories.deletedWithGroup]] = 1
+WHERE [[categories.groupId]] = $group->id AND
+  [[categories.id]] = [[elements.id]] AND
+  [[elements.canonicalId]] IS NULL AND
+  [[elements.revisionId]] IS NULL AND
+  [[elements.dateDeleted]] IS NULL
+SQL;
+            } else {
+                $sql = <<<SQL
+UPDATE $elementsTable
+SET [[elements.dateDeleted]] = '$now',
+  [[categories.deletedWithGroup]] = TRUE
+FROM $categoriesTable
+WHERE [[categories.groupId]] = $group->id AND
+  [[categories.id]] = [[elements.id]] AND
+  [[elements.canonicalId]] IS NULL AND
+  [[elements.revisionId]] IS NULL AND
+  [[elements.dateDeleted]] IS NULL
+SQL;
             }
+
+            $db->createCommand($sql)->execute();
 
             // Delete the structure
             Craft::$app->getStructures()->deleteStructureById($categoryGroupRecord->structureId);
