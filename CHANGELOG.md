@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Image thumbnails and previews are no longer versioned if their image URL doesn’t begin with one of the asset’s base filesystem URLs. ([#12663](https://github.com/craftcms/cms/issues/12663))
+- `craft\helpers\Assets::revUrl()` now has an `$fsOnly` argument.
 - Fixed a bug where entries that aren’t propagated to the primary site weren’t showing revision notes. ([#12641](https://github.com/craftcms/cms/issues/12641))
 - Fixed a bug where HTML tags weren’t getting stripped from auto-generated Handle and URI Format setting values.
 

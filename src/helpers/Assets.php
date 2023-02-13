@@ -126,11 +126,27 @@ class Assets
      * @param string $url
      * @param Asset $asset
      * @param DateTime|null $dateUpdated
+     * @param bool $fsOnly Only append a revision param if the URL begins with the asset’s filesystem URL
      * @return string
      * @since 4.3.7
      */
-    public static function revUrl(string $url, Asset $asset, ?DateTime $dateUpdated = null): string
+    public static function revUrl(string $url, Asset $asset, ?DateTime $dateUpdated = null, bool $fsOnly = false): string
     {
+        if ($fsOnly) {
+            $volume = $asset->getVolume();
+            $fss = array_unique([$volume->getFs(), $volume->getTransformFs()], SORT_REGULAR);
+            $matchingFs = ArrayHelper::contains($fss, function(FsInterface $fs) use ($url): bool {
+                if (!$fs->hasUrls) {
+                    return false;
+                }
+                $baseUrl = $fs->getRootUrl();
+                return $baseUrl !== null && StringHelper::startsWith($url, StringHelper::ensureRight($baseUrl, '/'));
+            });
+            if (!$matchingFs) {
+                return $url;
+            }
+        }
+
         $revParams = static::revParams($asset, $dateUpdated);
         return UrlHelper::urlWithParams($url, $revParams);
     }
