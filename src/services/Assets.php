@@ -666,7 +666,7 @@ class Assets extends Component
             return AssetsHelper::iconUrl($extension);
         }
 
-        return AssetsHelper::revUrl($url, $asset);
+        return AssetsHelper::revUrl($url, $asset, fsOnly: true);
     }
 
     /**
@@ -707,7 +707,7 @@ class Assets extends Component
             throw new NotSupportedException('A preview URL couldn’t be generated for the asset.');
         }
 
-        return AssetsHelper::revUrl($url, $asset);
+        return AssetsHelper::revUrl($url, $asset, fsOnly: true);
     }
 
     /**

@@ -2,7 +2,10 @@
 
 ## Unreleased
 
+- Image thumbnails and previews are no longer versioned if their image URL doesn’t begin with one of the asset’s base filesystem URLs. ([#12663](https://github.com/craftcms/cms/issues/12663))
+- `craft\helpers\Assets::revUrl()` now has an `$fsOnly` argument.
 - Fixed a bug where entries that aren’t propagated to the primary site weren’t showing revision notes. ([#12641](https://github.com/craftcms/cms/issues/12641))
+- Fixed a bug where HTML tags weren’t getting stripped from auto-generated Handle and URI Format setting values.
 
 ## 4.3.8.2 - 2023-02-08
 
@@ -12,7 +15,7 @@
 
 - Fixed a PHP error that occurred after performing a Composer action within Craft. ([#12647](https://github.com/craftcms/cms/issues/12647))
 - Fixed a bug where element attributes weren’t getting eager-loaded. ([#12646](https://github.com/craftcms/cms/pull/12646), [#12645](https://github.com/craftcms/cms/issues/12645))
-- Fixed a bug where images within the image editor weren’t getting versioned, unless the `revAssetUrls` config setting was enabled. ([#12603](https://github.com/craftcms/cms/issues/12603))
+- Fixed a bug where image previews weren’t getting versioned, unless the `revAssetUrls` config setting was enabled. ([#12603](https://github.com/craftcms/cms/issues/12603))
 
 ## 4.3.8 - 2023-02-07
 
