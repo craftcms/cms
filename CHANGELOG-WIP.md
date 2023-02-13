@@ -123,9 +123,12 @@
 - Renamed `craft\elements\conditions\entries\EditableConditionRule` to `SavableConditionRule`, while preserving the original class name with an alias. ([#12266](https://github.com/craftcms/cms/pull/12266))
 - `craft\services\AssetIndexer::startIndexingSession()` and `createIndexingSession()` now have a `$listEmptyFolders` argument. ([#12604](https://github.com/craftcms/cms/pull/12604))
 - `craft\base\ElementQuery::joinElementTable()` now accepts table names in the format of `{{%tablename}}`.
+- Deprecated `craft\helpers\Assets::sortFolderTree()`.
 - Deprecated `craft\imagetransforms\ImageTransformer::ensureTransformUrlByIndexModel()`. `getTransformUrl()` should be used instead.
 - Deprecated `craft\imagetransforms\ImageTransformer::procureTransformedImage()`. `generateTransform()` should be used instead.
 - Deprecated `craft\queue\jobs\GeneratePendingTransforms`. `GenerateImageTransform` should be used instead. ([#12340](https://github.com/craftcms/cms/pull/12340))
+- Deprecated `craft\services\Assets::getFolderTreeByVolumeIds`
+- Deprecated `craft\services\Assets::`
 - Added `Craft.Accordion`. ([#12189](https://github.com/craftcms/cms/pull/12189))
 - Added `Craft.AssetMover`.
 - Added `Craft.BaseElementIndex::getSourcePathActionLabel()`.
