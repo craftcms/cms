@@ -1143,11 +1143,22 @@ abstract class Element extends Component implements ElementInterface
      */
     protected static function prepElementQueryForTableAttribute(ElementQueryInterface $elementQuery, string $attribute): void
     {
-        /** @var ElementQuery $elementQuery */
-        // Is this a custom field?
-        if (preg_match('/^field:(.+)/', $attribute, $matches)) {
-            $fieldUid = $matches[1];
-            Craft::$app->getFields()->getFieldByUid($fieldUid)?->modifyElementIndexQuery($elementQuery);
+        switch ($attribute) {
+            case 'revisionNotes':
+                $elementQuery->andWith('currentRevision');
+                break;
+            case 'revisionCreator':
+                $elementQuery->andWith('currentRevision.revisionCreator');
+                break;
+            case 'drafts':
+                $elementQuery->andWith(['drafts', ['status' => null, 'orderBy' => ['dateUpdated' => SORT_DESC]]]);
+                break;
+            default:
+                // Is this a custom field?
+                if (preg_match('/^field:(.+)/', $attribute, $matches)) {
+                    $fieldUid = $matches[1];
+                    Craft::$app->getFields()->getFieldByUid($fieldUid)?->modifyElementIndexQuery($elementQuery);
+                }
         }
     }
 
@@ -4524,6 +4535,45 @@ abstract class Element extends Component implements ElementInterface
                 }
 
                 return Html::encode($this->slug);
+
+            case 'revisionNotes':
+                $revision = $this->getCurrentRevision();
+                if (!$revision) {
+                    return '';
+                }
+                /** @var RevisionBehavior|null $behavior */
+                $behavior = $revision->getBehavior('revision');
+                if (!$behavior) {
+                    return '';
+                }
+                return Html::encode($behavior->revisionNotes);
+
+            case 'revisionCreator':
+                $revision = $this->getCurrentRevision();
+                if (!$revision) {
+                    return '';
+                }
+                /** @var RevisionBehavior|null $behavior */
+                $behavior = $revision->getBehavior('revision');
+                if (!$behavior) {
+                    return '';
+                }
+                $creator = $behavior->getCreator();
+                return $creator ? Cp::elementHtml($creator) : '';
+
+            case 'drafts':
+                if (!$this->hasEagerLoadedElements('drafts')) {
+                    return '';
+                }
+
+                $drafts = $this->getEagerLoadedElements('drafts')->all();
+
+                foreach ($drafts as $draft) {
+                    /** @var ElementInterface|DraftBehavior $draft */
+                    $draft->setUiLabel($draft->draftName);
+                }
+
+                return Cp::elementPreviewHtml($drafts, Cp::ELEMENT_SIZE_SMALL, true, false, true, false);
 
             default:
                 // Is this a custom field?

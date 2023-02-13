@@ -9,11 +9,9 @@ namespace craft\elements;
 
 use Craft;
 use craft\base\Element;
-use craft\base\ElementInterface;
 use craft\base\ExpirableElementInterface;
 use craft\base\Field;
 use craft\behaviors\DraftBehavior;
-use craft\behaviors\RevisionBehavior;
 use craft\controllers\ElementIndexesController;
 use craft\db\Connection;
 use craft\db\FixedOrderExpression;
@@ -638,15 +636,6 @@ class Entry extends Element implements ExpirableElementInterface
         switch ($attribute) {
             case 'author':
                 $elementQuery->andWith(['author', ['status' => null]]);
-                break;
-            case 'revisionNotes':
-                $elementQuery->andWith('currentRevision');
-                break;
-            case 'revisionCreator':
-                $elementQuery->andWith('currentRevision.revisionCreator');
-                break;
-            case 'drafts':
-                $elementQuery->andWith(['drafts', ['status' => null, 'orderBy' => ['dateUpdated' => SORT_DESC]]]);
                 break;
             default:
                 parent::prepElementQueryForTableAttribute($elementQuery, $attribute);
@@ -1530,60 +1519,17 @@ class Entry extends Element implements ExpirableElementInterface
             case 'author':
                 $author = $this->getAuthor();
                 return $author ? Cp::elementHtml($author) : '';
-
             case 'section':
                 return Html::encode(Craft::t('site', $this->getSection()->name));
-
             case 'type':
                 try {
                     return Html::encode(Craft::t('site', $this->getType()->name));
                 } catch (InvalidConfigException) {
                     return Craft::t('app', 'Unknown');
                 }
-
-            case 'revisionNotes':
-                /** @var Entry|null $revision */
-                $revision = $this->getCurrentRevision();
-                if (!$revision) {
-                    return '';
-                }
-                /** @var RevisionBehavior|null $behavior */
-                $behavior = $revision->getBehavior('revision');
-                if (!$behavior) {
-                    return '';
-                }
-                return Html::encode($behavior->revisionNotes);
-
-            case 'revisionCreator':
-                /** @var Entry|null $revision */
-                $revision = $this->getCurrentRevision();
-                if (!$revision) {
-                    return '';
-                }
-                /** @var RevisionBehavior|null $behavior */
-                $behavior = $revision->getBehavior('revision');
-                if (!$behavior) {
-                    return '';
-                }
-                $creator = $behavior->getCreator();
-                return $creator ? Cp::elementHtml($creator) : '';
-
-            case 'drafts':
-                if (!$this->hasEagerLoadedElements('drafts')) {
-                    return '';
-                }
-
-                $drafts = $this->getEagerLoadedElements('drafts')->all();
-
-                foreach ($drafts as $draft) {
-                    /** @var ElementInterface|DraftBehavior $draft */
-                    $draft->setUiLabel($draft->draftName);
-                }
-
-                return Cp::elementPreviewHtml($drafts, Cp::ELEMENT_SIZE_SMALL, true, false, true, false);
+            default:
+                return parent::tableAttributeHtml($attribute);
         }
-
-        return parent::tableAttributeHtml($attribute);
     }
 
     /**
