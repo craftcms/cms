@@ -2002,6 +2002,13 @@ abstract class Element extends Component implements ElementInterface
     private ?string $_uiLabel = null;
 
     /**
+     * @var string[]
+     * @see getUiLabelPath()
+     * @see setUiLabelPath()
+     */
+    private array $_uiLabelPath = [];
+
+    /**
      * @var bool|null
      * @see getIsFresh()
      * @see setIsFresh()
@@ -2929,6 +2936,22 @@ abstract class Element extends Component implements ElementInterface
     public function setUiLabel(?string $label): void
     {
         $this->_uiLabel = $label;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getUiLabelPath(): array
+    {
+        return $this->_uiLabelPath;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function setUiLabelPath(array $path): void
+    {
+        $this->_uiLabelPath = $path;
     }
 
     /**

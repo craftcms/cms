@@ -2706,6 +2706,20 @@ $elementInnerSpacing: 5px;
   font-weight: normal;
   border-radius: var(--small-border-radius);
 
+  .label {
+    .segment:after {
+      display: inline-flex !important;
+      position: relative;
+      top: -2px;
+      @include margin(0, 5px, 0, 2px);
+      @include angle(right, var(--light-text-color), 1px);
+
+      .sel & {
+        @include angle(right, var(--white), 1px);
+      }
+    }
+  }
+
   &:focus,
   li:focus & {
     background-color: var(--gray-050);

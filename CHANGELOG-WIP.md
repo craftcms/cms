@@ -71,7 +71,9 @@
 - Added `craft\base\Element::indexElements()`.
 - Added `craft\base\ElementInterface::findSource()`.
 - Added `craft\base\ElementInterface::getCpRevisionsUrl()`.
+- Added `craft\base\ElementInterface::getUiLabelPath()`.
 - Added `craft\base\ElementInterface::indexElementCount()`.
+- Added `craft\base\ElementInterface::setUiLabelPath()`.
 - Added `craft\console\ControllerTrait::beforeAction()`.
 - Added `craft\console\ControllerTrait::failure()`.
 - Added `craft\console\ControllerTrait::init()`.

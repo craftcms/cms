@@ -664,12 +664,16 @@ class Asset extends Element
                     }
 
                     $path = rtrim($folder->path, '/');
+                    $path = StringHelper::removeRight($path, $folder->name);
+                    $path = StringHelper::removeLeft($path, $queryFolder->path ?? '');
+
                     $assets[] = new self([
                         'isFolder' => true,
                         'volumeId' => $queryFolder->volumeId,
                         'folderId' => $folder->id,
                         'folderPath' => $path,
-                        'title' => StringHelper::removeLeft($path, $queryFolder->path ?? ''),
+                        'title' => $folder->name,
+                        'uiLabelPath' => ArrayHelper::filterEmptyStringsFromArray(explode('/', $path)),
                         'sourcePath' => $sourcePath,
                     ]);
                 }
