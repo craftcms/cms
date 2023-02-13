@@ -1144,6 +1144,9 @@ abstract class Element extends Component implements ElementInterface
     protected static function prepElementQueryForTableAttribute(ElementQueryInterface $elementQuery, string $attribute): void
     {
         switch ($attribute) {
+            case 'parent':
+                $elementQuery->andWith(['parent', ['status' => null]]);
+                break;
             case 'revisionNotes':
                 $elementQuery->andWith('currentRevision');
                 break;
@@ -4471,6 +4474,10 @@ abstract class Element extends Component implements ElementInterface
     protected function tableAttributeHtml(string $attribute): string
     {
         switch ($attribute) {
+            case 'parent':
+                $parent = $this->getParent();
+                return $parent ? Cp::elementHtml($parent) : '';
+
             case 'link':
                 if (ElementHelper::isDraftOrRevision($this)) {
                     return '';
