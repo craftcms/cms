@@ -338,7 +338,6 @@ class Cp
         bool $autoReload = true,
     ): string {
         $isDraft = $element->getIsDraft();
-        $isRevision = !$isDraft && $element->getIsRevision();
         $label = $element->getUiLabel();
         $showStatus = $showStatus && ($isDraft || $element::hasStatuses());
 
