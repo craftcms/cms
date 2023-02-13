@@ -123,6 +123,7 @@ class Assets
     /**
      * Appends revision parameters to a URL.
      *
+     * @param string $url
      * @param Asset $asset
      * @param DateTime|null $dateUpdated
      * @return string
