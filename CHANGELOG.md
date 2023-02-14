@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- HTML Purifier now allows `oembed` tags. ([ckeditor#59](https://github.com/craftcms/ckeditor/issues/59))
+- Added `craft\htmlpurifier\VideoEmbedUrlDef`.
 - Fixed a bug where entries that aren’t propagated to the primary site weren’t showing revision notes. ([#12641](https://github.com/craftcms/cms/issues/12641))
 - Fixed a bug where HTML tags weren’t getting stripped from auto-generated Handle and URI Format setting values.
 - Fixed a JavaScript error that could occur if an object with `null `values was passed to `Craft.compare()`.
