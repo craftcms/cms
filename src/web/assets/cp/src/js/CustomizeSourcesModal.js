@@ -516,10 +516,7 @@ Craft.CustomizeSourcesModal.BaseSource = Garnish.Base.extend({
 
     this.$item.data('source', this);
 
-    this.addListener(this.$itemLabel, 'click', 'select');
-    this.addListener(this.$itemLabel, 'keypress', (e) =>
-      Garnish.handleActivatingKeypress(e, this.select.bind(this))
-    );
+    this.addListener(this.$itemLabel, 'activate', this.select);
   },
 
   isHeading: function () {
