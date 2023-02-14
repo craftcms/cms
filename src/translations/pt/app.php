@@ -106,6 +106,7 @@ return [
     'An error occurred when duplicating the entry.' => 'Ocorreu um erro aquando da duplicação da entrada.',
     'An error occurred when installing {name}.' => 'Ocorreu um erro ao instalar {name}.',
     'An error occurred while processing your request.' => 'Um erro ocorreu enquanto processávamos sua requisição.',
+    'Ancestors' => 'Ancestors',
     'Announcements' => 'Announcements',
     'Any changes will be lost if you leave this page.' => 'Quaisquer alterações serão perdidas se você sair desta página.',
     'Anything cached with `Craft::$app->cache->set()`' => 'Qualquer coisa em cache com `Craft::$app->cache->set()`',
