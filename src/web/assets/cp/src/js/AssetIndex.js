@@ -676,6 +676,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
           sourcePath[sourcePath.length - 1].uri =
             sourcePath[sourcePath.length - 1].uri + `/${response.data.newName}`;
           this.sourcePath = sourcePath;
+          this.setIndexAvailable();
         })
         .catch(({response}) => {
           this.setIndexAvailable();
