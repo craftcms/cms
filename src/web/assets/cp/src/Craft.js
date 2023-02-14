@@ -29,6 +29,7 @@ import './js/Tabs.js';
 import './js/Accordion';
 import './js/AddressesInput.js';
 import './js/AdminTable.js';
+import './js/AnimatedImageController.js';
 import './js/AssetImageEditor.js';
 import './js/AssetIndex.js';
 import './js/AssetMover.js';

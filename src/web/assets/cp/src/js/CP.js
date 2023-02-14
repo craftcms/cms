@@ -8,6 +8,7 @@ import $ from 'jquery';
 Craft.CP = Garnish.Base.extend(
   {
     authManager: null,
+    animatedImageController: null,
 
     $nav: null,
     $navToggle: null,
@@ -130,6 +131,7 @@ Craft.CP = Garnish.Base.extend(
         });
         this.handleWindowResize();
         this.setSidebarNavAttributes();
+        this.animatedImageController = new Craft.AnimatedImageController();
 
         // Wait a frame before initializing any confirm-unload forms,
         // so other JS that runs on ready() has a chance to initialize

@@ -150,11 +150,12 @@ Garnish = $.extend(Garnish, {
     return Garnish.prefersReducedMotion() ? 0 : duration;
   },
 
-  getGifs: function (container = Garnish.$doc) {
+  getPotentiallyAnimatedImages: function (container = Garnish.$doc) {
     const $container = $(container);
 
-    const $gifs = $(container).find('[src$=".gif"]');
-    console.log($gifs);
+    return $(container).find(
+      'img[src$=".gif"],img[srcset*=".gif"],img[src$=".webp"],img[srcset*=".webp"]'
+    );
   },
 
   /**
