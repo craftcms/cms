@@ -1735,11 +1735,7 @@ class ElementQuery extends Query implements ElementQueryInterface
         $behaviorVars = array_keys(Craft::getObjectVars($behavior));
         $fields = array_merge(
             array_combine($vars, $vars),
-            array_combine($behaviorVars, array_map(function(string $var) use ($behavior) {
-                return function() use ($behavior, $var) {
-                    return $behavior->$var;
-                };
-            }, $behaviorVars))
+            array_combine($behaviorVars, array_map(fn(string $var) => fn() => $behavior->$var, $behaviorVars))
         );
         unset($fields['query'], $fields['subQuery'], $fields['owner']);
         return $fields;
