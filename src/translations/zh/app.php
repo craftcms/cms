@@ -106,6 +106,7 @@ return [
     'An error occurred when duplicating the entry.' => '复制条目时出错。',
     'An error occurred when installing {name}.' => '安装 {name} 时出错。',
     'An error occurred while processing your request.' => '处理您的请求时出错。',
+    'Ancestors' => 'Ancestors',
     'Announcements' => 'Announcements',
     'Any changes will be lost if you leave this page.' => '如果离开该页，所有更改都将丢失。',
     'Anything cached with `Craft::$app->cache->set()`' => '使用 `Craft::$app->cache->set()` 缓存的任何内容',
