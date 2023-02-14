@@ -949,10 +949,7 @@ Craft.CustomizeSourcesModal.Heading =
         .appendTo($container);
 
       this.addListener(this.$labelInput, 'input', 'handleLabelInputChange');
-      this.addListener(this.$deleteBtn, 'click', 'destroy');
-      this.addListener(this.$deleteBtn, 'keypress', (e) => {
-        Garnish.handleActivatingKeypress(e, this.destroy.bind(this));
-      });
+      this.addListener(this.$deleteBtn, 'activate', 'destroy');
     },
 
     handleLabelInputChange: function () {
