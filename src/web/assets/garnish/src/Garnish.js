@@ -150,6 +150,13 @@ Garnish = $.extend(Garnish, {
     return Garnish.prefersReducedMotion() ? 0 : duration;
   },
 
+  getGifs: function (container = Garnish.$doc) {
+    const $container = $(container);
+
+    const $gifs = $(container).find('[src$=".gif"]');
+    console.log($gifs);
+  },
+
   /**
    * Returns whether a variable is an array.
    *
