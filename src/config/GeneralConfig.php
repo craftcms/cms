@@ -73,6 +73,7 @@ class GeneralConfig extends BaseConfig
      * - `alwaysShowFocusRings` - Whether focus rings should always be shown when an element has focus.
      * - `useShapes` – Whether shapes should be used to represent statuses.
      * - `underlineLinks` – Whether links should be underlined.
+     * - `preventAutoplay` – Whether time-based media should be paused by default (i.e. videos, GIFs, etc.)
      * - `notificationDuration` – How long notifications should be shown before they disappear automatically (in
      *   milliseconds). Set to `0` to show them indefinitely.
      *
@@ -89,6 +90,7 @@ class GeneralConfig extends BaseConfig
         'alwaysShowFocusRings' => false,
         'useShapes' => false,
         'underlineLinks' => false,
+        'preventAutoplay' => true,
         'notificationDuration' => 5000,
     ];
 
@@ -3140,6 +3142,7 @@ class GeneralConfig extends BaseConfig
      * - `alwaysShowFocusRings` - Whether focus rings should always be shown when an element has focus.
      * - `useShapes` – Whether shapes should be used to represent statuses.
      * - `underlineLinks` – Whether links should be underlined.
+     * - `preventAutoplay` – Whether time-based media should be paused by default (i.e. videos, GIFs, etc.)
      * - `notificationDuration` – How long notifications should be shown before they disappear automatically (in
      *   milliseconds). Set to `0` to show them indefinitely.
      *

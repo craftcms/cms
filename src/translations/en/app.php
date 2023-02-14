@@ -1121,6 +1121,7 @@ return [
     'Prettify query' => 'Prettify query',
     'Prettify' => 'Prettify',
     'Prev' => 'Prev',
+    'Prevent autoplay of time-based media' => 'Prevent autoplay of time-based media',
     'Preview Format' => 'Preview Format',
     'Preview Mode' => 'Preview Mode',
     'Preview Targets' => 'Preview Targets',
