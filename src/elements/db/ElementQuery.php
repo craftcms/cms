@@ -1730,13 +1730,18 @@ class ElementQuery extends Query implements ElementQueryInterface
      */
     public function fields(): array
     {
-        $fields = array_unique(array_merge(
-            array_keys(Craft::getObjectVars($this)),
-            array_keys(Craft::getObjectVars($this->getBehavior('customFields')))
-        ));
-        $fields = array_combine($fields, $fields);
+        $vars = array_keys(Craft::getObjectVars($this));
+        $behavior = $this->getBehavior('customFields');
+        $behaviorVars = array_keys(Craft::getObjectVars($behavior));
+        $fields = array_merge(
+            array_combine($vars, $vars),
+            array_combine($behaviorVars, array_map(function(string $var) use ($behavior) {
+                return function() use ($behavior, $var) {
+                    return $behavior->$var;
+                };
+            }, $behaviorVars))
+        );
         unset($fields['query'], $fields['subQuery'], $fields['owner']);
-
         return $fields;
     }
 
