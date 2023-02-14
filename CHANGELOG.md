@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 3.x
 
-## Unreleased
+## 3.7.66 - 2023-02-14
 
 - HTML Purifier now allows `oembed` tags. ([ckeditor#59](https://github.com/craftcms/ckeditor/issues/59))
 - Added `craft\htmlpurifier\VideoEmbedUrlDef`.
