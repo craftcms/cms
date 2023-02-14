@@ -106,6 +106,7 @@ return [
     'An error occurred when duplicating the entry.' => 'เกิดข้อผิดพลาดขึ้นในขณะที่ทำซ้ำรายการ',
     'An error occurred when installing {name}.' => 'เกิดข้อผิดพลาดขึ้นในขณะที่ติดตั้ง {name}',
     'An error occurred while processing your request.' => 'เกิดข้อผิดพลาดขึ้นในขณะที่ประมวลผลคำขอของคุณ',
+    'Ancestors' => 'Ancestors',
     'Announcements' => 'Announcements',
     'Any changes will be lost if you leave this page.' => 'การเปลี่ยนแปลงใดๆ จะสูญหายไป หากคุณออกจากหน้านี้',
     'Anything cached with `Craft::$app->cache->set()`' => 'ทั้งหมดที่แคชด้วย `Craft::$app->cache->set()`',
