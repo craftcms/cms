@@ -106,6 +106,7 @@ return [
     'An error occurred when duplicating the entry.' => 'エントリの複製時にエラーが発生しました。',
     'An error occurred when installing {name}.' => '{name} のインストール時にエラーが発生しました。',
     'An error occurred while processing your request.' => 'リクエストの処理中にエラーが発生しました。',
+    'Ancestors' => 'Ancestors',
     'Announcements' => 'Announcements',
     'Any changes will be lost if you leave this page.' => 'このページから離れるとすべての変更が失われます。',
     'Anything cached with `Craft::$app->cache->set()`' => '`Craft::$app->cache->set()` でキャッシュされたもの',

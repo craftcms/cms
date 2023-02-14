@@ -106,6 +106,7 @@ return [
     'An error occurred when duplicating the entry.' => '항목을 복제하는 동안 오류가 발생했습니다.',
     'An error occurred when installing {name}.' => '{name}을(를) 설치하는 동안 오류가 발생했습니다.',
     'An error occurred while processing your request.' => '요청을 처리하는 중에 오류가 발생했습니다.',
+    'Ancestors' => 'Ancestors',
     'Announcements' => 'Announcements',
     'Any changes will be lost if you leave this page.' => '이 페이지를 나가면 모든 변경 사항이 손실됩니다.',
     'Anything cached with `Craft::$app->cache->set()`' => '`Craft::$app->cache->set()`에서 캐시된 모든 항목',

@@ -106,6 +106,7 @@ return [
     'An error occurred when duplicating the entry.' => 'Der skete en fejl under duplikering af posten.',
     'An error occurred when installing {name}.' => 'Der opstod en fejl under installationen af {name}.',
     'An error occurred while processing your request.' => 'Der opstod en fejl under behandling af din anmodning.',
+    'Ancestors' => 'Ancestors',
     'Announcements' => 'Announcements',
     'Any changes will be lost if you leave this page.' => 'Eventuelle ændringer vil gå tabt hvis du forlader denne side.',
     'Anything cached with `Craft::$app->cache->set()`' => 'Alt, der er cachelagret med `Craft::$app->cache->set()`',

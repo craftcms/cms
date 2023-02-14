@@ -106,6 +106,7 @@ return [
     'An error occurred when duplicating the entry.' => 'Pri duplikovaní vstupu došlo k chybe.',
     'An error occurred when installing {name}.' => 'Počas inštalácie programu {name} sa vyskytla chyba.',
     'An error occurred while processing your request.' => 'Pri spracovaní požiadavky sa vyskytla chyba.',
+    'Ancestors' => 'Ancestors',
     'Announcements' => 'Announcements',
     'Any changes will be lost if you leave this page.' => 'Všetky zmeny sa stratia, ak túto stránku opustíš.',
     'Anything cached with `Craft::$app->cache->set()`' => 'Všetko vo vyrovnávacej pamäti s `Craft::$app->cache->set()`',

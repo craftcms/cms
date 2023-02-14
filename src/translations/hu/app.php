@@ -106,6 +106,7 @@ return [
     'An error occurred when duplicating the entry.' => 'Hiba történt a bejegyzés többszörözése közben.',
     'An error occurred when installing {name}.' => 'Hiba történt {name} telepítésekor.',
     'An error occurred while processing your request.' => 'Hiba történt a kérés feldolgozásakor.',
+    'Ancestors' => 'Ancestors',
     'Announcements' => 'Announcements',
     'Any changes will be lost if you leave this page.' => 'Minden módosítás el fog veszni, ha elhagyod ezt az oldalt.',
     'Anything cached with `Craft::$app->cache->set()`' => 'Bármi `Craft::$app->cache->set()` által gyorsítótárazott',
