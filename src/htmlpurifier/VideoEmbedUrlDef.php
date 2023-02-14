@@ -1,8 +1,21 @@
 <?php
+/**
+ * @link https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license https://craftcms.github.io/license/
+ */
 
 namespace craft\htmlpurifier;
 
-class VideoEmbedUrlDef extends \HTMLPurifier_AttrDef_URI
+use HTMLPurifier_AttrDef_URI;
+
+/**
+ * Class VideoEmbedUrlDef
+ *
+ * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @since 3.7.66
+ */
+class VideoEmbedUrlDef extends HTMLPurifier_AttrDef_URI
 {
     public function validate($uri, $config, $context)
     {
