@@ -106,6 +106,7 @@ return [
     'An error occurred when duplicating the entry.' => 'Під час дублювання запису сталася помилка.',
     'An error occurred when installing {name}.' => 'Під час установлення {name} сталася помилка.',
     'An error occurred while processing your request.' => 'Під час обробки запиту виникла помилка.',
+    'Ancestors' => 'Ancestors',
     'Announcements' => 'Announcements',
     'Any changes will be lost if you leave this page.' => 'Будь-які зміни буде втрачено, якщо ви залишите цю сторінку.',
     'Anything cached with `Craft::$app->cache->set()`' => 'Усе кешовано за допомогою `Craft::$app->cache->set()`',
