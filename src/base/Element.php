@@ -1144,6 +1144,9 @@ abstract class Element extends Component implements ElementInterface
     protected static function prepElementQueryForTableAttribute(ElementQueryInterface $elementQuery, string $attribute): void
     {
         switch ($attribute) {
+            case 'ancestors':
+                $elementQuery->andWith(['ancestors', ['status' => null]]);
+                break;
             case 'parent':
                 $elementQuery->andWith(['parent', ['status' => null]]);
                 break;
@@ -4474,6 +4477,17 @@ abstract class Element extends Component implements ElementInterface
     protected function tableAttributeHtml(string $attribute): string
     {
         switch ($attribute) {
+            case 'ancestors':
+                $ancestors = $this->getAncestors();
+                if (!$ancestors instanceof Collection || $ancestors->isEmpty()) {
+                    return '';
+                }
+                $html = Html::beginTag('ul', ['class' => 'path']);
+                foreach ($ancestors as $ancestor) {
+                    $html .= Html::tag('li', Cp::elementHtml($ancestor));
+                }
+                return $html . Html::endTag('ul');
+
             case 'parent':
                 $parent = $this->getParent();
                 return $parent ? Cp::elementHtml($parent) : '';

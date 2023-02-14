@@ -523,6 +523,7 @@ class Entry extends Element implements ExpirableElementInterface
             'type' => ['label' => Craft::t('app', 'Entry Type')],
             'author' => ['label' => Craft::t('app', 'Author')],
             'slug' => ['label' => Craft::t('app', 'Slug')],
+            'ancestors' => ['label' => Craft::t('app', 'Ancestors')],
             'parent' => ['label' => Craft::t('app', 'Parent')],
             'uri' => ['label' => Craft::t('app', 'URI')],
             'postDate' => ['label' => Craft::t('app', 'Post Date')],
