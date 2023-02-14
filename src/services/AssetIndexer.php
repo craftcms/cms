@@ -72,6 +72,19 @@ class AssetIndexer extends Component
 
         foreach ($fileList as $listing) {
             $path = $listing->getUri();
+            // skip transforms folders
+            $transformSubpath = StringHelper::removeRight($volume->transformSubpath, '/');
+            $transformSubpath = $transformSubpath ? $transformSubpath . DIRECTORY_SEPARATOR : '';
+            $listingPath = $path ? $path . DIRECTORY_SEPARATOR : $path;
+            if (
+                $listing->getIsDir() &&
+                !empty($transformSubpath) &&
+                $volume->getTransformFs()->id === $volume->getFs()->id &&
+                str_starts_with($listingPath, $transformSubpath)
+            ) {
+                continue;
+            }
+
             $segments = preg_split('/\\\\|\//', $path);
             $lastSegmentIndex = count($segments) - 1;
 
@@ -715,7 +728,7 @@ class AssetIndexer extends Component
             $asset = new Asset();
             $asset->setVolumeId((int)$volume->id);
             $asset->folderId = $folderId;
-            $asset->folderPath = $folder->getPathWithFsSubpath();
+            $asset->folderPath = $folder->path;
             $asset->setFilename($filename);
             $asset->kind = AssetsHelper::getFileKindByExtension($filename);
         }

@@ -768,7 +768,7 @@ class Assets extends Component
 
         // Check whether a filename we'd want to use does not exist
         $canUse = static function($filenameToTest) use ($potentialConflicts, $volume, $folder) {
-            return !isset($potentialConflicts[mb_strtolower($filenameToTest)]) && !$volume->getFs()->fileExists($folder->path . $filenameToTest);
+            return !isset($potentialConflicts[mb_strtolower($filenameToTest)]) && !$volume->getFs()->fileExists($folder->getPathWithFsSubpath() . $filenameToTest);
         };
 
         if ($canUse($originalFilename)) {
@@ -858,7 +858,7 @@ class Assets extends Component
 
                 // Ensure a physical folder exists, if needed.
                 if (!$justRecord) {
-                    $volume->getFs()->createDirectory($path);
+                    $volume->getFs()->createDirectory($volumeFsSubpath . $path);
                 }
 
                 // Set the variables for next iteration.
@@ -881,6 +881,12 @@ class Assets extends Component
             $record = new VolumeFolderRecord();
         } else {
             $record = VolumeFolderRecord::findOne(['id' => $folder->id]);
+        }
+
+        $volumeFsSubpath = $folder->getVolume()->getFsSubpath();
+        $pos = strpos($folder->path, $volumeFsSubpath);
+        if ($pos !== false) {
+            $folder->path = substr_replace($folder->path, '', $pos, strlen($volumeFsSubpath));
         }
 
         $record->parentId = $folder->parentId;

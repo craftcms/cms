@@ -1053,19 +1053,6 @@ class Asset extends Element
      */
     private ?int $_oldVolumeId = null;
 
-    public function __construct($config = [])
-    {
-        // make sure asset folderPath accounts for volume's fsSubpath
-        if (isset($config['volumeId'])) {
-            $volume = Craft::$app->getVolumes()->getVolumeById($config['volumeId']);
-            $fsSubpath = $volume?->getFsSubpath();
-            if (!empty($fsSubpath) && !str_starts_with($config['folderPath'], $fsSubpath)) {
-                $config['folderPath'] = $fsSubpath . $config['folderPath'];
-            }
-        }
-        parent::__construct($config);
-    }
-
     /**
      * @inheritdoc
      */
@@ -1143,14 +1130,6 @@ class Asset extends Element
             $this->alt = trim($this->alt);
             if ($this->alt === '') {
                 $this->alt = null;
-            }
-        }
-
-        // make sure asset folderPath accounts for volume's fsSubpath
-        if ($this->_volumeId !== null) {
-            $fsSubpath = $this->getVolume()->getFsSubpath();
-            if (!empty($fsSubpath) && !str_starts_with($this->folderPath, $fsSubpath)) {
-                $this->folderPath = $fsSubpath . $this->folderPath;
             }
         }
 
@@ -2223,9 +2202,10 @@ JS;
     public function getImageTransformSourcePath(): string
     {
         $fs = $this->getFs();
+        $volume = $this->getVolume();
 
         if ($fs instanceof LocalFsInterface) {
-            return FileHelper::normalizePath($fs->getRootPath() . DIRECTORY_SEPARATOR . $this->getPath());
+            return FileHelper::normalizePath($fs->getRootPath() . DIRECTORY_SEPARATOR . $volume->getFsSubpath() . $this->getPath());
         }
 
         return Craft::$app->getPath()->getAssetSourcesPath() . DIRECTORY_SEPARATOR . $this->id . '.' . $this->getExtension();
@@ -2242,7 +2222,7 @@ JS;
     {
         $tempFilename = uniqid(pathinfo($this->_filename, PATHINFO_FILENAME), true) . '.' . $this->getExtension();
         $tempPath = Craft::$app->getPath()->getTempPath() . DIRECTORY_SEPARATOR . $tempFilename;
-        Assets::downloadFile($this->getFs(), $this->getPath(), $tempPath);
+        Assets::downloadFile($this->getFs(), $this->getVolume()->getFsSubpath() . $this->getPath(), $tempPath);
 
         return $tempPath;
     }
@@ -2256,7 +2236,7 @@ JS;
      */
     public function getStream()
     {
-        return $this->getFs()->getFileStream($this->getPath());
+        return $this->getFs()->getFileStream($this->getVolume()->getFsSubpath() . $this->getPath());
     }
 
     /**
@@ -2865,7 +2845,7 @@ JS;
     public function afterDelete(): void
     {
         if (!$this->keepFileOnDelete) {
-            $this->getFs()->deleteFile($this->getPath());
+            $this->getFs()->deleteFile($this->getVolume()->getFsSubpath() . $this->getPath());
         }
 
         Craft::$app->getImageTransforms()->deleteAllTransformData($this);
@@ -3051,7 +3031,7 @@ JS;
 
         $newFolderPath = $newFolder->getPathWithFsSubpath();
 
-        $oldPath = $this->folderId ? $this->getPath() : null;
+        $oldPath = $this->folderId ? $oldVolume->getFsSubpath() . $this->getPath() : null;
         $newPath = ($newFolderPath ? rtrim($newFolderPath, '/') . '/' : '') . $filename;
 
         // Is this just a simple move/rename within the same volume?

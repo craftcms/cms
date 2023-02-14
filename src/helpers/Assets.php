@@ -91,7 +91,8 @@ class Assets
         $pathParts = explode('/', $asset->folderPath . ($uri ?? $asset->getFilename()));
         $path = implode('/', array_map('rawurlencode', $pathParts));
         $rootUrl = $fs->getRootUrl() ?? '';
-        $url = ($rootUrl !== '' ? StringHelper::ensureRight($rootUrl, '/') : '') . $path;
+        $fsSubpath = $asset->getVolume()->getFsSubpath();
+        $url = ($rootUrl !== '' ? StringHelper::ensureRight($rootUrl, '/') : '') . $fsSubpath . $path;
 
         if (Craft::$app->getConfig()->getGeneral()->revAssetUrls) {
             return self::revUrl($url, $asset, $dateUpdated);
