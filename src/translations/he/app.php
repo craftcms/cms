@@ -106,6 +106,7 @@ return [
     'An error occurred when duplicating the entry.' => 'אירעה שגיאה בעת שכפול הערך.',
     'An error occurred when installing {name}.' => 'אירעה שגיאה בעת התקנת {name}.',
     'An error occurred while processing your request.' => 'אירעה שגיאה בעת עיבוד הבקשה שלך.',
+    'Ancestors' => 'Ancestors',
     'Announcements' => 'Announcements',
     'Any changes will be lost if you leave this page.' => 'אם תעזוב את דף זה תאבד את כל השינויים.',
     'Anything cached with `Craft::$app->cache->set()`' => 'כל מה שהוטמן באמצעות `Craft::$app->cache->set()`',
