@@ -1,5 +1,9 @@
 # Release Notes for Craft CMS 3.x
 
+## Unreleased
+
+- Fixed a bug where clicking on the scrollbar of a disclosure menu would close it. ([#12681](https://github.com/craftcms/cms/issues/12681))
+
 ## 3.7.66 - 2023-02-14
 
 - HTML Purifier now allows `oembed` tags. ([ckeditor#59](https://github.com/craftcms/ckeditor/issues/59))
