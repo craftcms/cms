@@ -1524,6 +1524,7 @@ return [
     'This can be set to an environment variable matching one of the option values.' => 'This can be set to an environment variable matching one of the option values.',
     'This can be set to an environment variable with a boolean value ({examples}).' => 'This can be set to an environment variable with a boolean value ({examples}).',
     'This can be set to an environment variable with a value of a [supported time zone]({url}).' => 'This can be set to an environment variable with a value of a [supported time zone]({url}).',
+    'This can be set to an environment variable, or a Twig template that outputs an ID.' => 'This can be set to an environment variable, or a Twig template that outputs an ID.',
     'This can be set to an environment variable, or begin with an alias.' => 'This can be set to an environment variable, or begin with an alias.',
     'This can be set to an environment variable.' => 'This can be set to an environment variable.',
     'This element is conditional' => 'This element is conditional',

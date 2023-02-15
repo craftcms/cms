@@ -47,6 +47,13 @@ class ElementCondition extends BaseCondition implements ElementConditionInterfac
     public array $queryParams = [];
 
     /**
+     * @var ElementInterface|null The element that this condition is being executed in reference to, if any.
+     *
+     * @since 4.4.0
+     */
+    public ?ElementInterface $referenceElement = null;
+
+    /**
      * Constructor.
      *
      * @param string|null $elementType

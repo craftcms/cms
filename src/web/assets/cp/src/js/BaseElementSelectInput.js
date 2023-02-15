@@ -21,6 +21,7 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
     $spinner: null,
 
     _initialized: false,
+    _ignoreNextUpdate: false,
 
     init: function (settings) {
       // Normalize the settings and set them
@@ -488,6 +489,8 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
           storageKey: this.modalStorageKey,
           sources: this.settings.sources,
           condition: this.settings.condition,
+          referenceElementId: this.settings.referenceElementId,
+          referenceElementSiteId: this.settings.referenceElementSiteId,
           criteria: this.settings.criteria,
           multiSelect: this.settings.limit != 1,
           hideOnSelect: !this.settings.maintainHierarchy,
@@ -529,6 +532,7 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
     },
 
     onModalSelect: function (elements) {
+      this._ignoreNextUpdate = true;
       if (this.settings.maintainHierarchy) {
         this.selectStructuredElements(elements);
       } else {
@@ -547,6 +551,17 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
     },
 
     onModalHide: function () {
+      // If the modal has a condition and a reference element, recreate it each time it’s opened
+      // in case something about the edited element is going to affect the condition
+      if (
+        this.modal &&
+        this.settings.condition &&
+        this.settings.referenceElementId
+      ) {
+        this.modal.destroy();
+        this.modal = null;
+      }
+
       // If can add more elements, do default behavior of focus on "Add" button
       if (this.canAddMoreElements()) return;
 
@@ -775,6 +790,8 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
       elementType: null,
       sources: null,
       condition: null,
+      referenceElementId: null,
+      referenceElementSiteId: null,
       criteria: {},
       allowSelfRelations: false,
       sourceElementId: null,
