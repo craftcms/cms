@@ -132,7 +132,12 @@ Craft.ElementThumbLoader.Worker = Garnish.Base.extend({
       alt: $container.attr('data-alt') || '',
     });
     this.addListener($img, 'load,error', 'loadNext');
-    $img.appendTo($container);
+
+    // Wrapper to help with cover image placement if image should be paused
+    const $wrapper = $('<div/>')
+      .appendTo($container)
+      .addClass('elementthumb__wrapper');
+    $img.appendTo($wrapper);
     picturefill({
       elements: [$img[0]],
     });

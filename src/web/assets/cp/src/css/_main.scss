@@ -2753,13 +2753,26 @@ $elementInnerSpacing: 5px;
       align-items: center;
       -ms-flex-align: center;
 
-      img {
+      img,
+      .elementthumb__wrapper {
         display: block;
-        flex-shrink: 0;
         pointer-events: none;
-        border-radius: var(--small-border-radius);
+      }
+
+      img {
         max-width: 100%;
         max-height: 100%;
+        border-radius: var(--small-border-radius);
+      }
+
+      .elementthumb__wrapper {
+        display: flex;
+        position: relative;
+        justify-content: center;
+        align-items: center;
+        flex-shrink: 0;
+        height: 100%;
+        width: 100%;
       }
 
       &.rounded img {

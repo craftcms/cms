@@ -15,11 +15,57 @@ Craft.AnimatedImageController = Garnish.Base.extend({
       Garnish.$bod.hasClass('prevent-autoplay')
     ) {
       this.$images.each((index, image) => {
-        if (image.complete) {
+        this.pause(image);
+      });
+
+      // Add mutation observer to listen for new images
+      const observer = new MutationObserver((mutations) => {
+        for (let i = 0; i < mutations.length; i++) {
+          for (var j = 0; j < mutations[i].addedNodes.length; j++) {
+            this.checkNode(mutations[i].addedNodes[j]);
+          }
+        }
+      });
+
+      observer.observe(document.documentElement, {
+        childList: true,
+        subtree: true,
+      });
+    }
+  },
+
+  checkNode: function (node) {
+    if (node.nodeType === 1 && node.tagName === 'IMG') {
+      if (!this.isWebpOrGif(node)) return;
+      this.pause(node);
+    } else if ($(node).find('img').length > 0) {
+      const $childImages = $(node).find('img');
+
+      $childImages.each((index, image) => {
+        if (this.isWebpOrGif(image)) {
           this.pause(image);
         }
       });
     }
+  },
+
+  isWebpOrGif: function (image) {
+    const $image = $(image).first();
+    const imageSrc = $image.attr('src');
+    const imageSrcset = $image.attr('srcset');
+
+    let value = false;
+
+    if (imageSrc) {
+      value =
+        imageSrc.indexOf('.gif') !== -1 || imageSrc.indexOf('.webp') !== -1;
+    } else if (imageSrcset) {
+      value =
+        imageSrcset.indexOf('.gif') !== -1 ||
+        imageSrcset.indexOf('.webp') !== -1;
+    }
+
+    return value;
   },
 
   coverImage: function (image) {
@@ -56,6 +102,13 @@ Craft.AnimatedImageController = Garnish.Base.extend({
 
   pause: function (image) {
     const $image = $(image).first();
-    this.coverImage($image);
+
+    if ($image[0].complete) {
+      this.coverImage($image);
+    } else {
+      this.addListener($image, 'load', () => {
+        this.coverImage($image);
+      });
+    }
   },
 });
