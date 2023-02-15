@@ -9,6 +9,7 @@
     not (currentUser.getPreference('alwaysShowFocusRings') ?? a11yDefaults['alwaysShowFocusRings'] ?? false) ? 'reduce-focus-visibility',
     (currentUser.getPreference('useShapes') ?? a11yDefaults['useShapes'] ?? false) ? 'use-shapes',
     (currentUser.getPreference('underlineLinks') ?? a11yDefaults['underlineLinks'] ?? false) ? 'underline-links',
+    (currentUser.getPreference('preventAutoplay') ?? a11yDefaults['underlineLinks'] ?? false) ? 'prevent-autoplay',
     requestedSite ? "site--#{requestedSite.handle}",
 ])|filter -%}
 
