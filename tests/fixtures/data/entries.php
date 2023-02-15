@@ -81,5 +81,11 @@ return [
         'typeId' => '1005',
         'title' => 'Single entry',
     ],
+    [
+        'authorId' => '1',
+        'sectionId' => '1006',
+        'typeId' => '1006',
+        'title' => 'Structure Parent',
+    ],
 
 ];
