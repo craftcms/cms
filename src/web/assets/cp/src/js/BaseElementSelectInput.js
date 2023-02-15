@@ -21,7 +21,6 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
     $spinner: null,
 
     _initialized: false,
-    _ignoreNextUpdate: false,
 
     init: function (settings) {
       // Normalize the settings and set them
@@ -532,7 +531,6 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
     },
 
     onModalSelect: function (elements) {
-      this._ignoreNextUpdate = true;
       if (this.settings.maintainHierarchy) {
         this.selectStructuredElements(elements);
       } else {
