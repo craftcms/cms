@@ -1,5 +1,10 @@
 # Release Notes for Craft CMS 4
 
+## Unreleased
+
+- Fixed a bug where clicking on the scrollbar of a disclosure menu would close it. ([#12681](https://github.com/craftcms/cms/issues/12681))
+- Fixed a bug where large asset thumbnails weren’t centered within Assets fields. ([#12682](https://github.com/craftcms/cms/issues/12682))
+
 ## 4.3.9 - 2023-02-14
 
 - Image thumbnails and previews are no longer versioned if their image URL doesn’t begin with one of the asset’s base filesystem URLs. ([#12663](https://github.com/craftcms/cms/issues/12663))

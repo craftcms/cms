@@ -2865,7 +2865,7 @@ $elementInnerSpacing: 5px;
     .elementthumb:not(:empty) {
       top: $baseElementSidePadding;
       @include left(0);
-      width: $largeThumbSize;
+      width: 100%;
       height: $largeThumbSize;
 
       &.checkered img {
@@ -3086,10 +3086,6 @@ $checkboxPadding: $checkboxSize + 4;
 
       .element.large.hasthumb {
         width: unset;
-
-        .elementthumb:not(:empty) {
-          width: 100%;
-        }
       }
 
       &.has-checkbox {
