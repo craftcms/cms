@@ -115,6 +115,7 @@ abstract class BaseElementSelectConditionRule extends BaseConditionRule
                 'suggestionFilter' => fn($value) => is_int($value) && $value > 0,
                 'required' => true,
                 'id' => 'elementId',
+                'class' => 'code',
                 'name' => 'elementId',
                 'value' => $this->getElementId(false),
                 'tip' => Craft::t('app', 'This can be set to an environment variable, or a Twig template that outputs an ID.'),
