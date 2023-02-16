@@ -19,38 +19,38 @@ Craft.AnimatedImageController = Garnish.Base.extend({
       });
 
       // Add mutation observer to listen for new images
-      const observer = new MutationObserver((mutations) => {
-        for (let i = 0; i < mutations.length; i++) {
-          for (var j = 0; j < mutations[i].addedNodes.length; j++) {
-            this.checkNode(mutations[i].addedNodes[j]);
-          }
-        }
-      });
-
-      observer.observe(document.documentElement, {
-        childList: true,
-        subtree: true,
-      });
+      // const observer = new MutationObserver((mutations) => {
+      //   for (let i = 0; i < mutations.length; i++) {
+      //     for (var j = 0; j < mutations[i].addedNodes.length; j++) {
+      //       this.checkNode(mutations[i].addedNodes[j]);
+      //     }
+      //   }
+      // });
+      //
+      // observer.observe(document.documentElement, {
+      //   childList: true,
+      //   subtree: true,
+      // });
     }
   },
 
-  checkNode: function (node) {
-    if (node.nodeType === 1 && node.tagName === 'IMG') {
-      if (!this.isWebpOrGif(node)) return;
-      this.pause(node);
-    } else if ($(node).find('img').length > 0) {
-      const $childImages = $(node).find('img');
-
-      $childImages.each((index, image) => {
-        if (this.isWebpOrGif(image)) {
-          this.pause(image);
-        }
-      });
-    }
-  },
+  // checkNode: function (node) {
+  //   if (node.nodeType === 1 && node.tagName === 'IMG') {
+  //     if (!this.isWebpOrGif(node)) return;
+  //     this.pause(node);
+  //   } else if ($(node).find('img').length > 0) {
+  //     const $childImages = $(node).find('img');
+  //
+  //     $childImages.each((index, image) => {
+  //       if (this.isWebpOrGif(image)) {
+  //         this.pause(image);
+  //       }
+  //     });
+  //   }
+  // },
 
   isWebpOrGif: function (image) {
-    const $image = $(image).first();
+    const $image = $(image);
     const imageSrc = $image.attr('src');
     const imageSrcset = $image.attr('srcset');
 
@@ -69,7 +69,7 @@ Craft.AnimatedImageController = Garnish.Base.extend({
   },
 
   coverImage: function (image) {
-    const $image = $(image).first();
+    const $image = $(image);
     const $parent = $image.parent();
     const width = $image.width();
     const height = $image.height();
@@ -101,7 +101,7 @@ Craft.AnimatedImageController = Garnish.Base.extend({
   pauseAll: function () {},
 
   pause: function (image) {
-    const $image = $(image).first();
+    const $image = $(image);
 
     if ($image[0].complete) {
       this.coverImage($image);
