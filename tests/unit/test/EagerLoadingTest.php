@@ -82,7 +82,7 @@ class EagerLoadingTest extends TestCase
 
     /**
      * Test eager loading relational field that doesn't exist,
-     * exists and is part of the layout, exists and is not part of the layout
+     * exists, has content and is part of the layout, exists and is not part of the layout
      *
      * @return void
      */
