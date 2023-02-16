@@ -3314,6 +3314,18 @@ $checkboxPadding: $checkboxSize + 4;
   .flex {
     padding-top: 7px;
   }
+
+  .structure ul {
+    @include margin-left(12px);
+
+    li {
+      background-position: 0 2px !important;
+
+      .element {
+        margin: 0;
+      }
+    }
+  }
 }
 
 /* editable tables */
@@ -7357,15 +7369,6 @@ $titlebarBorderRadius: calc(var(--large-border-radius) - 1px);
   position: absolute;
   top: 0;
   @include right(5px);
-}
-
-.categoriesfield {
-  position: relative;
-  min-height: 30px;
-}
-
-.categoriesfield .structure ul {
-  @include margin-left(12px);
 }
 
 /* site pickers */
