@@ -1993,6 +1993,9 @@ JS;
             'sizes' => "{$thumbSizes[0][0]}px",
             'srcset' => implode(', ', $srcsets),
             'alt' => $this->alt ?? $this->title,
+            'data' => [
+                'animation-toggle' => true,
+            ],
         ]);
     }
 

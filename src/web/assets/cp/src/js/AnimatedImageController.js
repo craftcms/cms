@@ -55,6 +55,10 @@ Craft.AnimatedImageController = Garnish.Base.extend({
     return value;
   },
 
+  getToggleEnabled: function (image) {
+    return $(image).attr('data-animation-toggle') !== null;
+  },
+
   coverImage: function (image) {
     const $image = $(image);
     const $parent = $image.parent();
@@ -85,6 +89,21 @@ Craft.AnimatedImageController = Garnish.Base.extend({
     $canvas.insertBefore($image);
   },
 
+  addToggle: function (image) {
+    if (!this.getToggleEnabled(image)) return;
+
+    const $image = $(image);
+    const $wrapper = $image.parent();
+
+    const $toggle = $('<button/>', {
+      type: 'button',
+      text: 'Play',
+    });
+
+    $wrapper.append($toggle);
+    // $toggle.append($wrapper);
+  },
+
   pauseAll: function () {},
 
   pause: function (image) {
@@ -92,9 +111,11 @@ Craft.AnimatedImageController = Garnish.Base.extend({
 
     if ($image[0].complete) {
       this.coverImage($image);
+      this.addToggle($image);
     } else {
       this.addListener($image, 'load', () => {
         this.coverImage($image);
+        this.addToggle($image);
       });
     }
   },
