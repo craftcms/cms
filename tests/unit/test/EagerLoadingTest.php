@@ -69,6 +69,17 @@ class EagerLoadingTest extends TestCase
      */
     public function testEagerLoadingScenario2(): void
     {
+        // test eager loading element attributes e.g. revisions, descendants etc
+        // #12646, #12645
+        $entry = Entry::find()->sectionId(1004)->with(['revisions'])->one();
+        self::assertNotEmpty($entry->getEagerLoadedElements('revisions'));
+    }
+
+    /**
+     * @return void
+     */
+    public function testEagerLoadingScenario3(): void
+    {
         // get entries from section 1000
         // that section has field-layout: field_layout_with_matrix_and_normal_fields
         // which doesn't contain the 'relatedEntry' field created for section 1006
