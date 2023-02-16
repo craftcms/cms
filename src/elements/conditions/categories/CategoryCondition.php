@@ -2,6 +2,7 @@
 
 namespace craft\elements\conditions\categories;
 
+use craft\elements\Category;
 use craft\elements\conditions\ElementCondition;
 use craft\elements\conditions\LevelConditionRule;
 
@@ -13,6 +14,11 @@ use craft\elements\conditions\LevelConditionRule;
  */
 class CategoryCondition extends ElementCondition
 {
+    /**
+     * @inheritdoc
+     */
+    public ?string $elementType = Category::class;
+
     /**
      * @inheritdoc
      */

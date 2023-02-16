@@ -4,6 +4,7 @@ namespace craft\elements\conditions\entries;
 
 use craft\elements\conditions\ElementCondition;
 use craft\elements\conditions\LevelConditionRule;
+use craft\elements\Entry;
 
 /**
  * Entry query condition.
@@ -13,6 +14,11 @@ use craft\elements\conditions\LevelConditionRule;
  */
 class EntryCondition extends ElementCondition
 {
+    /**
+     * @inheritdoc
+     */
+    public ?string $elementType = Entry::class;
+
     /**
      * @inheritdoc
      */

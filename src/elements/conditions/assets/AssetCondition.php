@@ -2,6 +2,7 @@
 
 namespace craft\elements\conditions\assets;
 
+use craft\elements\Asset;
 use craft\elements\conditions\ElementCondition;
 
 /**
@@ -12,6 +13,11 @@ use craft\elements\conditions\ElementCondition;
  */
 class AssetCondition extends ElementCondition
 {
+    /**
+     * @inheritdoc
+     */
+    public ?string $elementType = Asset::class;
+
     /**
      * @inheritdoc
      */

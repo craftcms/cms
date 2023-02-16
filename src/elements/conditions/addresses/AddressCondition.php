@@ -2,6 +2,7 @@
 
 namespace craft\elements\conditions\addresses;
 
+use craft\elements\Address;
 use craft\elements\conditions\ElementCondition;
 
 /**
@@ -12,6 +13,11 @@ use craft\elements\conditions\ElementCondition;
  */
 class AddressCondition extends ElementCondition
 {
+    /**
+     * @inheritdoc
+     */
+    public ?string $elementType = Address::class;
+
     /**
      * @inheritdoc
      */

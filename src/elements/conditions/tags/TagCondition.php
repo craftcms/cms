@@ -3,6 +3,7 @@
 namespace craft\elements\conditions\tags;
 
 use craft\elements\conditions\ElementCondition;
+use craft\elements\Tag;
 
 /**
  * Tag query condition.
@@ -12,6 +13,11 @@ use craft\elements\conditions\ElementCondition;
  */
 class TagCondition extends ElementCondition
 {
+    /**
+     * @inheritdoc
+     */
+    public ?string $elementType = Tag::class;
+
     /**
      * @inheritdoc
      */
