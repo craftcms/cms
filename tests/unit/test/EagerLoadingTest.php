@@ -16,7 +16,7 @@ use crafttests\fixtures\EntryWithMatrixFixture;
 use yii\base\ErrorException;
 
 /**
- * Unit tests for App
+ * Unit tests for eager loading content
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.4
@@ -33,6 +33,9 @@ class EagerLoadingTest extends TestCase
     }
 
     /**
+     * Test eager loading simple relational field, matrix field,
+     * relational field within a matrix field
+     *
      * @return void
      */
     public function testEagerLoadingScenario1(): void
@@ -66,17 +69,21 @@ class EagerLoadingTest extends TestCase
     }
 
     /**
+     * Test if eager loading element attributes (e.g. revisions, descendants)
+     * returns results (#12646, #12645)
+     *
      * @return void
      */
     public function testEagerLoadingScenario2(): void
     {
-        // test eager loading element attributes e.g. revisions, descendants etc
-        // #12646, #12645
         $entry = Entry::find()->sectionId(1004)->with(['revisions'])->one();
         self::assertNotEmpty($entry->getEagerLoadedElements('revisions'));
     }
 
     /**
+     * Test eager loading relational field that doesn't exist,
+     * exists and is part of the layout, exists and is not part of the layout
+     *
      * @return void
      */
     public function testEagerLoadingScenario3(): void
@@ -128,13 +135,14 @@ class EagerLoadingTest extends TestCase
     }
 
     /**
+     * Test if removing a relational field, that was populated with content, from the layout
+     * returns empty results
+     *
      * @return void
      * @throws \yii\base\Exception
      */
     public function testEagerLoadingScenario4(): void
     {
-        // test that removing a relational field that was populated with content
-        // from the layout returns empty results
         $this->_removeFieldFromLayout('field_layout_with_matrix_with_relational_field', 'relatedEntry');
 
         $entry = Entry::find()
