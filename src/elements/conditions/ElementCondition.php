@@ -56,10 +56,7 @@ class ElementCondition extends BaseCondition implements ElementConditionInterfac
      */
     public function __construct(?string $elementType = null, array $config = [])
     {
-        if ($elementType !== null) {
-            $this->elementType = $elementType;
-        }
-
+        $this->elementType = $elementType;
         parent::__construct($config);
     }
 
