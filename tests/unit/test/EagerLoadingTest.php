@@ -10,6 +10,7 @@ namespace crafttests\unit\test;
 use Codeception\Test\Unit;
 use Craft;
 use craft\elements\Entry;
+use craft\fieldlayoutelements\CustomField;
 use craft\test\TestCase;
 use crafttests\fixtures\EntryWithMatrixFixture;
 use yii\base\ErrorException;
@@ -124,5 +125,52 @@ class EagerLoadingTest extends TestCase
             $this->fail();
         }
         self::assertTrue(true);
+    }
+
+    /**
+     * @return void
+     * @throws \yii\base\Exception
+     */
+    public function testEagerLoadingScenario4(): void
+    {
+        // test that removing a relational field that was populated with content
+        // from the layout returns empty results
+        $this->_removeFieldFromLayout('field_layout_with_matrix_with_relational_field', 'relatedEntry');
+
+        $entry = Entry::find()
+            ->title('Matrix with relational field')
+            ->with([
+                'relatedEntry', // field exists, was part of the layout and was populated with data, then was removed from the layout
+            ])
+            ->one();
+
+        self::assertNotNull($entry);
+        self::assertEmpty($entry->getEagerLoadedElements('relatedEntry'));
+    }
+
+    /**
+     * Remove field by handle from layout by type
+     *
+     * @param string $layoutType
+     * @param string $fieldHandle
+     * @return void
+     * @throws \yii\base\Exception
+     */
+    private function _removeFieldFromLayout(string $layoutType, string $fieldHandle): void
+    {
+        $fieldsService = Craft::$app->getFields();
+        $fieldLayout = $fieldsService->getLayoutByType($layoutType);
+        $tabs = $fieldLayout->getTabs();
+        $layoutElements = $tabs[0]->getElements();
+        foreach ($layoutElements as $key => $element) {
+            if ($element instanceof CustomField) {
+                if ($element->getField()->handle === $fieldHandle) {
+                    unset($layoutElements[$key]);
+                }
+            }
+        }
+
+        $tabs[0]->setElements($layoutElements);
+        $fieldsService->saveLayout($fieldLayout);
     }
 }
