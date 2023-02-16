@@ -21,6 +21,7 @@ use craft\helpers\StringHelper;
 use craft\models\FieldLayout;
 use craft\models\TagGroup;
 use craft\records\TagGroup as TagGroupRecord;
+use DateTime;
 use Throwable;
 use yii\base\Component;
 
@@ -362,17 +363,37 @@ class Tags extends Component
         $transaction = Craft::$app->getDb()->beginTransaction();
         try {
             // Delete the tags
-            /** @var Tag[] $tags */
-            $tags = Tag::find()
-                ->groupId($tagGroupRecord->id)
-                ->status(null)
-                ->all();
-            $elementsService = Craft::$app->getElements();
+            $elementsTable = Table::ELEMENTS;
+            $tagsTable = Table::TAGS;
+            $now = Db::prepareDateForDb(new DateTime());
+            $db = Craft::$app->getDb();
 
-            foreach ($tags as $tag) {
-                $tag->deletedWithGroup = true;
-                $elementsService->deleteElement($tag);
+            if ($db->getIsMysql()) {
+                $sql = <<<SQL
+UPDATE $elementsTable [[elements]], $tagsTable [[tags]] 
+SET [[elements.dateDeleted]] = '$now',
+  [[tags.deletedWithGroup]] = 1
+WHERE [[tags.groupId]] = $tagGroup->id AND
+  [[tags.id]] = [[elements.id]] AND
+  [[elements.canonicalId]] IS NULL AND
+  [[elements.revisionId]] IS NULL AND
+  [[elements.dateDeleted]] IS NULL
+SQL;
+            } else {
+                $sql = <<<SQL
+UPDATE $elementsTable
+SET [[elements.dateDeleted]] = '$now',
+  [[tags.deletedWithGroup]] = TRUE
+FROM $tagsTable
+WHERE [[tags.groupId]] = $tagGroup->id AND
+  [[tags.id]] = [[elements.id]] AND
+  [[elements.canonicalId]] IS NULL AND
+  [[elements.revisionId]] IS NULL AND
+  [[elements.dateDeleted]] IS NULL
+SQL;
             }
+
+            $db->createCommand($sql)->execute();
 
             // Delete the field layout
             if ($tagGroupRecord->fieldLayoutId) {
