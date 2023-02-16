@@ -7,47 +7,34 @@ Craft.AnimatedImageController = Garnish.Base.extend({
   $images: null,
 
   init: function () {
-    this.$images = Garnish.getPotentiallyAnimatedImages();
+    this.$images = $();
+    const $images = Garnish.getPotentiallyAnimatedImages();
 
     // Pause images based on system and control panel settings
     if (
       Garnish.prefersReducedMotion() ||
       Garnish.$bod.hasClass('prevent-autoplay')
     ) {
-      this.$images.each((index, image) => {
-        this.pause(image);
-      });
+      if (Garnish.$bod.data('animation-controller')) {
+        console.warn('Cannot instantiate another animation controller');
+        return;
+      }
 
-      // Add mutation observer to listen for new images
-      // const observer = new MutationObserver((mutations) => {
-      //   for (let i = 0; i < mutations.length; i++) {
-      //     for (var j = 0; j < mutations[i].addedNodes.length; j++) {
-      //       this.checkNode(mutations[i].addedNodes[j]);
-      //     }
-      //   }
-      // });
-      //
-      // observer.observe(document.documentElement, {
-      //   childList: true,
-      //   subtree: true,
-      // });
+      this.addImages($images);
     }
   },
 
-  // checkNode: function (node) {
-  //   if (node.nodeType === 1 && node.tagName === 'IMG') {
-  //     if (!this.isWebpOrGif(node)) return;
-  //     this.pause(node);
-  //   } else if ($(node).find('img').length > 0) {
-  //     const $childImages = $(node).find('img');
-  //
-  //     $childImages.each((index, image) => {
-  //       if (this.isWebpOrGif(image)) {
-  //         this.pause(image);
-  //       }
-  //     });
-  //   }
-  // },
+  addImages: function ($images) {
+    this.$images = this.$images.add($images);
+    $images.data('animation-controller', this);
+
+    // Go through each image and pause
+    for (let i = 0; i < $images.length; i++) {
+      this.pause($images[i]);
+    }
+
+    Garnish.$bod.data('animation-controller', this);
+  },
 
   isWebpOrGif: function (image) {
     const $image = $(image);
