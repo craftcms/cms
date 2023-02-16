@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Removed the "Site" condition rule for non-localizable element types. ([#12601](https://github.com/craftcms/cms/pull/12601))
 - Fixed a bug where clicking on the scrollbar of a disclosure menu would close it. ([#12681](https://github.com/craftcms/cms/issues/12681))
 - Fixed a bug where large asset thumbnails weren’t centered within Assets fields. ([#12682](https://github.com/craftcms/cms/issues/12682))
 
@@ -47,7 +48,6 @@
 - Improved the performance of the “Generating pending image transforms” queue job. ([#12274](https://github.com/craftcms/cms/issues/12274))
 - Removed the “Timeout” setting from the Gmail and SMTP mailer transporters, as they aren’t supported by Symfony Mailer’s transport configuration.
 - Removed the “Encryption Method” setting from the SMTP mailer transporter, as Symfony Mailer already uses TLS when port 465 is used (as it is by default).
-- Removed the "Site" condition rule for non-localizable element types. ([#12601](https://github.com/craftcms/cms/pull/12601))
 - The “Port” setting on the SMTP mailer transporter is no longer required. It will default to 465 or 25 depending on whether OpenSSL is installed.
 - Added more reserved field handles to avoid conflicts with `craft\base\Element` properties. ([#12577](https://github.com/craftcms/cms/issues/12577))
 - Assets’ `alt` properties are now automatically trimmed of leading/trailing whitespace.
