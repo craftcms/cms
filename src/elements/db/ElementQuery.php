@@ -2355,9 +2355,8 @@ class ElementQuery extends Query implements ElementQueryInterface
     private function _shouldJoinStructureData(): bool
     {
         return (
-            !$this->trashed &&
             !$this->revisions &&
-            ($this->withStructure ?? (bool)$this->structureId)
+            ($this->withStructure ?? ($this->structureId && !$this->trashed))
         );
     }
 

@@ -203,11 +203,25 @@ class Categories extends Component
      * Returns a group by its handle.
      *
      * @param string $groupHandle
+     * @param bool $withTrashed
      * @return CategoryGroup|null
      */
-    public function getGroupByHandle(string $groupHandle): ?CategoryGroup
+    public function getGroupByHandle(string $groupHandle, bool $withTrashed = false): ?CategoryGroup
     {
-        return $this->_groups()->firstWhere('handle', $groupHandle, true);
+        /** @var CategoryGroup|null $group */
+        $group = $this->_groups()->firstWhere('handle', $groupHandle, true);
+
+        if (!$group && $withTrashed) {
+            /** @var CategoryGroupRecord|null $record */
+            $record = CategoryGroupRecord::findWithTrashed()
+                ->andWhere(['handle' => $groupHandle])
+                ->one();
+            if ($record) {
+                $group = $this->_createCategoryGroupFromRecord($record);
+            }
+        }
+
+        return $group;
     }
 
     /**
@@ -747,6 +761,7 @@ SQL;
             'name',
             'handle',
             'defaultPlacement',
+            'dateDeleted',
             'uid',
         ]));
 
