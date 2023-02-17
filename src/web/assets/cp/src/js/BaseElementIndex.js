@@ -1122,12 +1122,13 @@ Craft.BaseElementIndex = Garnish.Base.extend(
      * @returns {string}
      */
     getSelectedSortAttribute: function ($source) {
-      $source = $source || this.$source;
+      $source = $source ? this.getRootSource($source) : this.$rootSource;
+
       if ($source) {
         const attribute = this.getSourceState($source.data('key'), 'order');
 
         // Make sure it's valid
-        if (this.getSortOption(attribute)) {
+        if (this.getSortOption(attribute, $source)) {
           return attribute;
         }
       }
@@ -1485,7 +1486,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
      * @returns {Object[]}
      */
     getSortOptions: function ($source) {
-      $source = $source || this.$rootSource;
+      $source = $source ? this.getRootSource($source) : this.$rootSource;
       const sortOptions = ($source ? $source.data('sort-opts') : null) || [];
 
       // Make sure there's at least one non-structure attribute
@@ -1518,7 +1519,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
      * @returns {string[]}
      */
     getDefaultSort: function ($source) {
-      $source = $source || this.$rootSource;
+      $source = $source ? this.getRootSource($source) : this.$rootSource;
       if ($source) {
         let defaultSort = $source.data('default-sort');
         if (defaultSort) {
@@ -1550,7 +1551,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
      * @returns {Object[]}
      */
     getTableColumnOptions: function ($source) {
-      $source = $source || this.$rootSource;
+      $source = $source ? this.getRootSource($source) : this.$rootSource;
       return ($source ? $source.data('table-col-opts') : null) || [];
     },
 
@@ -1573,7 +1574,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
      * @returns {string[]}
      */
     getDefaultTableColumns: function ($source) {
-      $source = $source || this.$rootSource;
+      $source = $source ? this.getRootSource($source) : this.$rootSource;
       return ($source ? $source.data('default-table-cols') : null) || [];
     },
 
@@ -1583,7 +1584,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
      * @returns {string[]}
      */
     getSelectedTableColumns: function ($source) {
-      $source = $source || this.$rootSource;
+      $source = $source ? this.getRootSource($source) : this.$rootSource;
       if ($source) {
         const attributes = this.getSourceState(
           $source.data('key'),
