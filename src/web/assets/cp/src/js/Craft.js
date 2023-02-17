@@ -1252,7 +1252,7 @@ $.extend(Craft, {
       return false;
     }
 
-    if (typeof obj1 === 'object') {
+    if (typeof obj1 === 'object' && obj1 !== null && obj2 !== null) {
       // Compare the lengths
       if (obj1.length !== obj2.length) {
         return false;

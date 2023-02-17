@@ -1,8 +1,18 @@
 # Release Notes for Craft CMS 3.x
 
-## Unreleased
+## 3.7.67 - 2023-02-17
 
+- Fixed a bug where clicking on the scrollbar of a disclosure menu would close it. ([#12681](https://github.com/craftcms/cms/issues/12681))
+- Fixed an error that could occur when loading the Plugin Store, if there wasn’t a `.env` file. ([#12687](https://github.com/craftcms/cms/issues/12687))
+
+## 3.7.66 - 2023-02-14
+
+- HTML Purifier now allows `oembed` tags. ([ckeditor#59](https://github.com/craftcms/ckeditor/issues/59))
+- Added `craft\htmlpurifier\VideoEmbedUrlDef`.
 - Fixed a bug where entries that aren’t propagated to the primary site weren’t showing revision notes. ([#12641](https://github.com/craftcms/cms/issues/12641))
+- Fixed a bug where HTML tags weren’t getting stripped from auto-generated Handle and URI Format setting values.
+- Fixed a JavaScript error that could occur if an object with `null` values was passed to `Craft.compare()`.
+- Fixed a bug where `craft\elements\db\ElementQuery::toArray()` was calling getter methods whose names conflicted with custom field handles. ([#12635](https://github.com/craftcms/cms/pull/12635))
 
 ## 3.7.65.2 - 2023-02-08
 
