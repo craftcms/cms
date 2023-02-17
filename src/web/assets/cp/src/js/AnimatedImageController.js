@@ -97,11 +97,12 @@ Craft.AnimatedImageController = Garnish.Base.extend({
 
     const $toggle = $('<button/>', {
       type: 'button',
-      text: 'Play',
+      'data-icon': 'play',
+      'aria-label': Craft.t('app', 'Play'),
+      class: 'animated-image-toggle btn',
     });
 
     $wrapper.append($toggle);
-    // $toggle.append($wrapper);
   },
 
   pauseAll: function () {},

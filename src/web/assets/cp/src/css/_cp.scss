@@ -1618,3 +1618,16 @@ li.breadcrumb-toggle-wrapper {
     }
   }
 }
+
+// Animated Image Controller
+.animated-image-toggle {
+  @include two-color-focus-ring(false);
+  @include touch-target;
+  position: absolute;
+  bottom: 10px;
+  @include right(10px);
+  height: 40px;
+  width: 40px;
+  background-color: rgba(0, 0, 0, 0.7);
+  color: var(--white);
+}

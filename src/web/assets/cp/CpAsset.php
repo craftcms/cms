@@ -261,6 +261,7 @@ JS;
             'Pay {price}',
             'Pending',
             'Phone',
+            'Play',
             'Portrait',
             'Preview file',
             'Preview',
