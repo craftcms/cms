@@ -548,6 +548,14 @@ class DbHelperTest extends TestCase
             ['\,', ','],
             ['\,\*', ',*'],
             ['\,\*', '\,\*'],
+            ['\>10', '>10'],
+            ['\not :empty:', 'not :empty:'],
+            ['\:notempty:', ':notempty:'],
+            ['\:empty:', ':empty:'],
+            ['\NOT :EMPTY:', 'NOT :EMPTY:'],
+            ['\:NOTEMPTY:', ':NOTEMPTY:'],
+            ['\:EMPTY:', ':EMPTY:'],
+            [':foo:', ':foo:'],
         ];
     }
 
