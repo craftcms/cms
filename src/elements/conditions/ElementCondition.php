@@ -9,7 +9,6 @@ use craft\base\ElementInterface;
 use craft\elements\db\ElementQueryInterface;
 use craft\errors\InvalidTypeException;
 use craft\fields\conditions\FieldConditionRuleInterface;
-use craft\helpers\ArrayHelper;
 
 /**
  * ElementCondition provides an element condition.
@@ -104,20 +103,15 @@ class ElementCondition extends BaseCondition implements ElementConditionInterfac
             SlugConditionRule::class,
         ];
 
-        if (Craft::$app->getIsMultiSite()) {
+        /** @var string|ElementInterface|null $elementType */
+        /** @phpstan-var class-string<ElementInterface>|ElementInterface|null $elementType */
+        $elementType = $this->elementType;
+
+        if (Craft::$app->getIsMultiSite() && (!$elementType || $elementType::isLocalized())) {
             $types[] = SiteConditionRule::class;
         }
 
-        if ($this->elementType !== null) {
-            /** @var string|ElementInterface $elementType */
-            /** @phpstan-var class-string<ElementInterface>|ElementInterface $elementType */
-            $elementType = $this->elementType;
-
-            // Only localized element types get the site rule
-            if (!$elementType::isLocalized()) {
-                ArrayHelper::removeValue($types, SiteConditionRule::class);
-            }
-
+        if ($elementType !== null) {
             if ($elementType::hasUris()) {
                 $types[] = HasUrlConditionRule::class;
                 $types[] = UriConditionRule::class;
