@@ -829,6 +829,7 @@ class User extends Element implements IdentityInterface
                 'targetClass' => UserRecord::class,
                 'caseInsensitive' => true,
                 'filter' => ['or', ['active' => true], ['pending' => true]],
+                'when' => $treatAsActive,
             ];
 
             $rules[] = [['unverifiedEmail'], 'validateUnverifiedEmail'];

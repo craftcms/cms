@@ -81,12 +81,12 @@ class UserElementTest extends TestCase
         $this->tester->deleteElement($user);
     }
 
-    public function testUniqueAttributesForInactiveUsers(): void
+    public function testUniqueAttributesForActiveUser(): void
     {
         $user = new User([
             'active' => true,
-            'email' => $this->inactiveUser->email,
             'username' => $this->inactiveUser->username,
+            'email' => $this->inactiveUser->email,
             'unverifiedEmail' => $this->inactiveUser->unverifiedEmail,
         ]);
 
@@ -94,10 +94,35 @@ class UserElementTest extends TestCase
 
         self::assertFalse($user->hasErrors());
 
-        Craft::$app->getUsers()->activateUser($this->inactiveUser);
+        $user->username = $this->activeUser->username;
+        $user->email = $this->activeUser->email;
+        $user->unverifiedEmail = $this->activeUser->unverifiedEmail;
 
-        self::assertTrue($this->inactiveUser->hasErrors('email'));
-        self::assertTrue($this->inactiveUser->hasErrors('username'));
+        $this->tester->saveElement($user, false);
+
+        self::assertTrue($user->hasErrors('username'));
+        self::assertTrue($user->hasErrors('email'));
+
+        $this->tester->deleteElement($user);
+    }
+
+    public function testUniqueAttributesForInactiveUser(): void
+    {
+        $user = new User([
+            'active' => false,
+            'email' => $this->activeUser->email,
+            'username' => $this->activeUser->username,
+            'unverifiedEmail' => $this->activeUser->unverifiedEmail,
+        ]);
+
+        $this->tester->saveElement($user);
+
+        self::assertFalse($user->hasErrors());
+
+        Craft::$app->getUsers()->activateUser($user);
+
+        self::assertTrue($user->hasErrors('email'));
+        self::assertTrue($user->hasErrors('username'));
 
         $this->tester->deleteElement($user);
     }
