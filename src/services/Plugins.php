@@ -1174,7 +1174,12 @@ class Plugins extends Component
 
         // If the license key is set to an empty environment variable, set the environment variable's value
         $oldLicenseKey = $this->getStoredPluginInfo($handle)['licenseKey'] ?? null;
-        if (preg_match('/^\$(\w+)$/', $oldLicenseKey, $matches) && App::env($matches[1]) === '') {
+        // https://github.com/craftcms/cms/issues/12687 - check if the .env file exists first
+        if (
+            preg_match('/^\$(\w+)$/', $oldLicenseKey, $matches) &&
+            App::env($matches[1]) === '' &&
+            file_exists(Craft::$app->getConfig()->getDotEnvPath())
+        ) {
             Craft::$app->getConfig()->setDotEnvVar($matches[1], $normalizedLicenseKey);
         } else {
             // Set the plugin's license key in the project config
