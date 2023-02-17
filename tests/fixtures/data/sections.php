@@ -62,4 +62,13 @@ return [
         'propagationMethod' => 'all',
         'uid' => 'section-1005---------------------uid',
     ],
+    [
+        'id' => '1006',
+        'name' => 'Test Eager Loading',
+        'handle' => 'testEagerLoading',
+        'type' => 'channel',
+        'enableVersioning' => false,
+        'propagationMethod' => 'all',
+        'uid' => 'section-1006---------------------uid',
+    ],
 ];
