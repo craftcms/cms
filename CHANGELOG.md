@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 3.x
 
-## Unreleased
+## 3.7.67 - 2023-02-17
 
 - Fixed a bug where clicking on the scrollbar of a disclosure menu would close it. ([#12681](https://github.com/craftcms/cms/issues/12681))
 - Fixed an error that could occur when loading the Plugin Store, if there wasn’t a `.env` file. ([#12687](https://github.com/craftcms/cms/issues/12687))
