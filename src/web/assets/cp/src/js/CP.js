@@ -1479,8 +1479,7 @@ Craft.CP.GlobalAnimationController = Garnish.Base.extend({
   },
 
   addImagesInContainer: function (container) {
-    const $container = $(container);
-    const $animated = Garnish.getPotentiallyAnimatedImages();
+    const $animated = Garnish.getPotentiallyAnimatedImages(container);
 
     if ($animated.length === 0) return;
 
@@ -1489,7 +1488,6 @@ Craft.CP.GlobalAnimationController = Garnish.Base.extend({
 
   addImages: function ($images) {
     this.$images = this.$images.add($images);
-    $images.data('animation-controller', this);
 
     // Go through each image and create toggle + cover
     for (let i = 0; i < $images.length; i++) {
@@ -1505,16 +1503,14 @@ Craft.CP.GlobalAnimationController = Garnish.Base.extend({
         });
       }
     }
-
-    Garnish.$bod.data('animation-controller', this);
   },
 
   getToggleEnabled: function (image) {
-    return $(image).attr('data-animation-toggle') !== null;
+    return !$(image).attr('data-disable-toggle');
   },
 
   getAnimationToggleButton: function (image) {
-    return $(image).parent().find('[data-animation-toggle-btn]');
+    return $(image).parent().find('[data-animation-toggle]');
   },
 
   getAnimationCoverImage: function (image) {
@@ -1554,6 +1550,8 @@ Craft.CP.GlobalAnimationController = Garnish.Base.extend({
   createToggle: function (image) {
     if (!this.getToggleEnabled(image)) return;
 
+    console.log('toggle is enabled');
+
     const $image = $(image);
     const $wrapper = $image.parent();
 
@@ -1561,7 +1559,7 @@ Craft.CP.GlobalAnimationController = Garnish.Base.extend({
       type: 'button',
       'data-icon': 'play',
       'data-animation-state': 'paused',
-      'data-animation-toggle-btn': true,
+      'data-animation-toggle': true,
       'aria-label': Craft.t('app', 'Play'),
       class: 'animated-image-toggle btn',
     });
