@@ -1127,7 +1127,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         const attribute = this.getSourceState($source.data('key'), 'order');
 
         // Make sure it's valid
-        if (this.getSortOption(attribute, $source)) {
+        if (this.getSortOption(attribute)) {
           return attribute;
         }
       }
