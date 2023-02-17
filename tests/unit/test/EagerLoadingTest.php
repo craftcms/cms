@@ -19,7 +19,7 @@ use yii\base\ErrorException;
  * Unit tests for eager loading content
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 4.4
+ * @since 4.3.10
  */
 class EagerLoadingTest extends TestCase
 {

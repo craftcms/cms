@@ -13,7 +13,7 @@ use craft\test\fixtures\elements\EntryFixture as BaseEntryFixture;
  * Class EntryWithFieldsFixture
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 4.4
+ * @since 4.3.10
  */
 class EntryWithMatrixFixture extends BaseEntryFixture
 {
