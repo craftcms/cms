@@ -1,8 +1,9 @@
 # Release Notes for Craft CMS 4
 
-## Unreleased
+## 4.3.10 - 2023-02-17
 
 - Fixed a bug where clicking on the scrollbar of a disclosure menu would close it. ([#12681](https://github.com/craftcms/cms/issues/12681))
+- Fixed an error that could occur when loading the Plugin Store, if there wasn’t a `.env` file. ([#12687](https://github.com/craftcms/cms/issues/12687))
 - Fixed a bug where large asset thumbnails weren’t centered within Assets fields. ([#12682](https://github.com/craftcms/cms/issues/12682))
 - Fixed a PHP error that could occur when versioning asset URLs. ([#12678](https://github.com/craftcms/cms/issues/12678))
 - Fixed a bug where the “Site” element condition rule was available for non-localizable element types’ conditions. ([#12601](https://github.com/craftcms/cms/pull/12601))
