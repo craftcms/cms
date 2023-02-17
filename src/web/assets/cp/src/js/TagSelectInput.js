@@ -272,13 +272,6 @@ Craft.TagSelectInput = Craft.BaseElementSelectInput.extend(
         text: title,
       }).appendTo($titleContainer);
 
-      var margin = -($element.outerWidth() + 10);
-      this.$addTagInput.css('margin-' + Craft.left, margin + 'px');
-
-      var animateCss = {};
-      animateCss['margin-' + Craft.left] = 0;
-      this.$addTagInput.velocity(animateCss, 'fast');
-
       this.$elements = this.$elements.add($element);
 
       this.addElements($element);
