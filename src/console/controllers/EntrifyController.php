@@ -104,6 +104,8 @@ class EntrifyController extends Controller
             return ExitCode::UNSPECIFIED_ERROR;
         }
 
+        $projectConfigChanged = false;
+
         if (
             !isset($this->section) &&
             !$this->confirm("Have you already created a section to replace the “{$categoryGroup->name}” category group?")
@@ -116,6 +118,7 @@ class EntrifyController extends Controller
             $this->run('sections/create', [
                 'fromCategoryGroup' => $categoryGroup->handle,
             ]);
+            $projectConfigChanged = true;
         }
 
         try {
@@ -221,6 +224,7 @@ class EntrifyController extends Controller
                     $categoryGroup->handle,
                     'interactive' => false,
                 ]);
+                $projectConfigChanged = true;
             }
 
             $fields = $this->_findInProjectConfig($projectConfigService, fn(array $config) => (
@@ -240,8 +244,13 @@ class EntrifyController extends Controller
                     }
 
                     $this->success(sprintf('Categories %s converted.', $total === 1 ? 'field' : 'fields'));
+                    $projectConfigChanged = true;
                 }
             }
+        }
+
+        if ($projectConfigChanged) {
+            $this->_deployTip('categories', $categoryGroup->handle);
         }
 
         return ExitCode::OK;
@@ -263,6 +272,8 @@ class EntrifyController extends Controller
             return ExitCode::UNSPECIFIED_ERROR;
         }
 
+        $projectConfigChanged = false;
+
         if (
             !isset($this->section) &&
             !$this->confirm("Have you already created a section to replace the “{$tagGroup->name}” tag group?")
@@ -275,6 +286,7 @@ class EntrifyController extends Controller
             $this->run('sections/create', [
                 'fromTagGroup' => $tagGroup->handle,
             ]);
+            $projectConfigChanged = true;
         }
 
         try {
@@ -341,6 +353,7 @@ class EntrifyController extends Controller
                     $tagGroup->handle,
                     'interactive' => false,
                 ]);
+                $projectConfigChanged = true;
             }
 
             $fields = $this->_findInProjectConfig($projectConfigService, fn(array $config) => (
@@ -359,8 +372,13 @@ class EntrifyController extends Controller
                     }
 
                     $this->success(sprintf('Tags %s converted.', $total === 1 ? 'field' : 'fields'));
+                    $projectConfigChanged = true;
                 }
             }
+        }
+
+        if ($projectConfigChanged) {
+            $this->_deployTip('tags', $tagGroup->handle);
         }
 
         return ExitCode::OK;
@@ -382,6 +400,8 @@ class EntrifyController extends Controller
             return ExitCode::UNSPECIFIED_ERROR;
         }
 
+        $projectConfigChanged = false;
+
         if (
             !isset($this->section) &&
             !$this->confirm("Have you already created a section to replace the “{$globalSet->name}” global set")
@@ -394,6 +414,7 @@ class EntrifyController extends Controller
             $this->run('sections/create', [
                 'fromGlobalSet' => $globalSet->handle,
             ]);
+            $projectConfigChanged = true;
         }
 
         try {
@@ -405,7 +426,10 @@ class EntrifyController extends Controller
         }
 
         $this->do("Converting “{$globalSet->name}”", function() use ($section, $entryType, $globalSet) {
-            Craft::$app->getGlobals()->deleteSet($globalSet);
+            if (!$globalSet->dateDeleted) {
+                Craft::$app->getGlobals()->deleteSet($globalSet);
+                $projectConfigChanged = true;
+            }
 
             $oldEntry = Entry::find()
                 ->section($section)
@@ -446,6 +470,11 @@ class EntrifyController extends Controller
         });
 
         $this->success('Global set converted.');
+
+        if ($projectConfigChanged) {
+            $this->_deployTip('global-set', $globalSet->handle);
+        }
+
         return ExitCode::OK;
     }
 
@@ -563,5 +592,22 @@ class EntrifyController extends Controller
                 }
             }
         }
+    }
+
+    private function _deployTip(string $action, string $handle): void
+    {
+        $command = "php craft entrify/$action $handle --section={$this->_section->handle}";
+
+        if (!$this->_forSingle) {
+            $command .= " --entry-type={$this->_entryType->handle} --author={$this->_author->username}";
+        }
+
+        $this->tip(<<<MD
+Run this command on other environments immediately after deploying these changes:
+
+```
+$command
+```
+MD);
     }
 }
