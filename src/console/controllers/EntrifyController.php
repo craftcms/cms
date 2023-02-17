@@ -219,7 +219,7 @@ class EntrifyController extends Controller
 
         $projectConfigService = Craft::$app->getProjectConfig();
         if (!$projectConfigService->readOnly) {
-            if (!$categoryGroup->dateDeleted && $this->confirm("Delete the “{$categoryGroup}” category group?")) {
+            if (!$categoryGroup->dateDeleted && $this->confirm("Delete the “{$categoryGroup}” category group?", true)) {
                 $this->do('Deleting category group', function() use ($categoryGroup) {
                     Craft::$app->getCategories()->deleteGroup($categoryGroup);
                 });
@@ -234,7 +234,7 @@ class EntrifyController extends Controller
             if (!empty($fields)) {
                 $total = count($fields);
                 $this->stdout(sprintf("Found %s relating to the “{$categoryGroup->name}” category group.\n", $total === 1 ? 'one Categories field' : "$total Categories fields"));
-                if ($this->confirm($total === 1 ? 'Convert it to an Entries field?' : 'Convert them to Entries fields?')) {
+                if ($this->confirm($total === 1 ? 'Convert it to an Entries field?' : 'Convert them to Entries fields?', true)) {
                     foreach ($fields as [$path, $config]) {
                         $this->do(sprintf('Converting %s', ($config['name'] ?? null) ? "“{$config['name']}”" : 'Categories filed'), function() use ($projectConfigService, $path, $config) {
                             $config['type'] = Entries::class;
@@ -348,7 +348,7 @@ class EntrifyController extends Controller
 
         $projectConfigService = Craft::$app->getProjectConfig();
         if (!$projectConfigService->readOnly) {
-            if (!$tagGroup->dateDeleted && $this->confirm("Delete the “{$tagGroup}” tag group?")) {
+            if (!$tagGroup->dateDeleted && $this->confirm("Delete the “{$tagGroup}” tag group?", true)) {
                 $this->do('Deleting tag group', function() use ($tagGroup) {
                     Craft::$app->getTags()->deleteTagGroup($tagGroup);
                 });
@@ -363,7 +363,7 @@ class EntrifyController extends Controller
             if (!empty($fields)) {
                 $total = count($fields);
                 $this->stdout(sprintf("Found %s relating to the “{$tagGroup->name}” tag group.\n", $total === 1 ? 'one Tags field' : "$total Tags fields"));
-                if ($this->confirm($total === 1 ? 'Convert it to an Entries field?' : 'Convert them to Entries fields?')) {
+                if ($this->confirm($total === 1 ? 'Convert it to an Entries field?' : 'Convert them to Entries fields?', true)) {
                     foreach ($fields as [$path, $config]) {
                         $this->do(sprintf('Converting %s', ($config['name'] ?? null) ? "“{$config['name']}”" : 'Tags filed'), function() use ($projectConfigService, $path, $config) {
                             $config['type'] = Entries::class;
