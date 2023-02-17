@@ -11,6 +11,7 @@ use Craft;
 use craft\assetpreviews\Image as ImagePreview;
 use craft\base\Element;
 use craft\elements\Asset;
+use craft\elements\conditions\ElementCondition;
 use craft\errors\AssetException;
 use craft\errors\DeprecationException;
 use craft\errors\ElementNotFoundException;
@@ -262,6 +263,9 @@ class AssetsController extends Controller
             $folderId = $field->resolveDynamicPathToFolderId($element);
 
             $selectionCondition = $field->getSelectionCondition();
+            if ($selectionCondition instanceof ElementCondition) {
+                $selectionCondition->referenceElement = $element;
+            }
         } else {
             $selectionCondition = null;
         }

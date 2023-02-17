@@ -1,5 +1,21 @@
 # Release Notes for Craft CMS 4
 
+## Unreleased
+
+- Fixed a bug where clicking on the scrollbar of a disclosure menu would close it. ([#12681](https://github.com/craftcms/cms/issues/12681))
+- Fixed a bug where large asset thumbnails weren’t centered within Assets fields. ([#12682](https://github.com/craftcms/cms/issues/12682))
+
+## 4.3.9 - 2023-02-14
+
+- Image thumbnails and previews are no longer versioned if their image URL doesn’t begin with one of the asset’s base filesystem URLs. ([#12663](https://github.com/craftcms/cms/issues/12663))
+- HTML Purifier now allows `oembed` tags. ([ckeditor#59](https://github.com/craftcms/ckeditor/issues/59))
+- Added `craft\htmlpurifier\VideoEmbedUrlDef`.
+- `craft\helpers\Assets::revUrl()` now has an `$fsOnly` argument.
+- Fixed a bug where entries that aren’t propagated to the primary site weren’t showing revision notes. ([#12641](https://github.com/craftcms/cms/issues/12641))
+- Fixed a bug where HTML tags weren’t getting stripped from auto-generated Handle and URI Format setting values.
+- Fixed a JavaScript error that could occur if an object with `null` values was passed to `Craft.compare()`.
+- Fixed a bug where `craft\elements\db\ElementQuery::toArray()` was calling getter methods whose names conflicted with custom field handles. ([#12635](https://github.com/craftcms/cms/pull/12635))
+
 ## 4.3.8.2 - 2023-02-08
 
 - Fixed a PHP error that could occur if relational fields were getting eager-loaded for elements that the fields didn’t belong to. ([#12648](https://github.com/craftcms/cms/issues/12648))
@@ -8,7 +24,7 @@
 
 - Fixed a PHP error that occurred after performing a Composer action within Craft. ([#12647](https://github.com/craftcms/cms/issues/12647))
 - Fixed a bug where element attributes weren’t getting eager-loaded. ([#12646](https://github.com/craftcms/cms/pull/12646), [#12645](https://github.com/craftcms/cms/issues/12645))
-- Fixed a bug where images within the image editor weren’t getting versioned, unless the `revAssetUrls` config setting was enabled. ([#12603](https://github.com/craftcms/cms/issues/12603))
+- Fixed a bug where image previews weren’t getting versioned, unless the `revAssetUrls` config setting was enabled. ([#12603](https://github.com/craftcms/cms/issues/12603))
 
 ## 4.3.8 - 2023-02-07
 

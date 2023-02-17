@@ -64,6 +64,8 @@
         elementType: elementType,
         sources: sources,
         condition: condition ? condition.getConfig() : null,
+        referenceElementId: referenceElement.id ?? null,
+        referenceElementSiteId: referenceElement.siteId ?? null,
         criteria: criteria,
         allowSelfRelations: allowSelfRelations ?? false,
         maintainHierarchy: maintainHierarchy,

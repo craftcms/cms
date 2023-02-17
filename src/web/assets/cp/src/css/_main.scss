@@ -2706,6 +2706,20 @@ $elementInnerSpacing: 5px;
   font-weight: normal;
   border-radius: var(--small-border-radius);
 
+  .label {
+    .segment:after {
+      display: inline-flex !important;
+      position: relative;
+      top: -2px;
+      @include margin(0, 5px, 0, 2px);
+      @include angle(right, var(--light-text-color), 1px);
+
+      .sel & {
+        @include angle(right, var(--white), 1px);
+      }
+    }
+  }
+
   &:focus,
   li:focus & {
     background-color: var(--gray-050);
@@ -2851,7 +2865,7 @@ $elementInnerSpacing: 5px;
     .elementthumb:not(:empty) {
       top: $baseElementSidePadding;
       @include left(0);
-      width: $largeThumbSize;
+      width: 100%;
       height: $largeThumbSize;
 
       &.checkered img {
@@ -3072,10 +3086,6 @@ $checkboxPadding: $checkboxSize + 4;
 
       .element.large.hasthumb {
         width: unset;
-
-        .elementthumb:not(:empty) {
-          width: 100%;
-        }
       }
 
       &.has-checkbox {
@@ -3303,6 +3313,18 @@ $checkboxPadding: $checkboxSize + 4;
 
   .flex {
     padding-top: 7px;
+  }
+
+  .structure ul {
+    @include margin-left(12px);
+
+    li {
+      background-position: 0 2px !important;
+
+      .element {
+        margin: 0;
+      }
+    }
   }
 }
 
@@ -5396,6 +5418,30 @@ $min2ColWidth: 400px;
 }
 
 /* ----------------------------------------
+/*  Alternative Text
+/* ----------------------------------------*/
+.video-transcript {
+  background-color: var(--gray-050);
+  overflow-y: scroll;
+  font-size: 1rem;
+  position: relative;
+
+  @include focus-styles {
+    // Unset default
+    box-shadow: none;
+    color: var(--white);
+    background-color: var(--gray-800);
+  }
+}
+
+.video-transcript__inner {
+  margin-left: auto;
+  margin-right: auto;
+  max-width: 550px;
+  padding: var(--xl);
+}
+
+/* ----------------------------------------
 /*  Menus
 /* ----------------------------------------*/
 
@@ -7323,15 +7369,6 @@ $titlebarBorderRadius: calc(var(--large-border-radius) - 1px);
   position: absolute;
   top: 0;
   @include right(5px);
-}
-
-.categoriesfield {
-  position: relative;
-  min-height: 30px;
-}
-
-.categoriesfield .structure ul {
-  @include margin-left(12px);
 }
 
 /* site pickers */

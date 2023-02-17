@@ -5,6 +5,7 @@
 - Asset indexes now display the current subfolder path above the element listing. ([#12558](https://github.com/craftcms/cms/pull/12558))
 - It’s now possible to move volume folders and assets to a new location via a new “Move…” bulk element action, rather than via drag-and-drop interactions. ([#12558](https://github.com/craftcms/cms/pull/12558))
 - It’s now possible to sort asset indexes by image width and height. ([#12653](https://github.com/craftcms/cms/pull/12653))
+- Entry and category indexes can now have “Ancestors” and “Parent” columns. ([#12666](https://github.com/craftcms/cms/discussions/12666))
 - All element sources now have a “Duplicate” action, even if the element type’s `defineActions()` method didn’t include one. ([#12382](https://github.com/craftcms/cms/discussions/12382))
 - Element index pages now track the search term in a query param, so the results can be shared. ([#8942](https://github.com/craftcms/cms/discussions/8942), [#12399](https://github.com/craftcms/cms/pull/12399))
 - Entries with more than 10 revisions now include a “View all revisions” item within their revision menu, which links to a new revisions index page for the entry that paginates through all its revisions. ([#8609](https://github.com/craftcms/cms/discussions/8609))
@@ -29,16 +30,20 @@
 - Improved _conditional_ and _required_ field indicators for screen readers. ([#12509](https://github.com/craftcms/cms/pull/12509))
 - Improved bulk element action triggers on element index pages. ([#12415](https://github.com/craftcms/cms/pull/12415))
 - Improved the color contrast of element indexes. ([#12213](https://github.com/craftcms/cms/pull/12213))
+- Asset preview modals now show videos’ alt text. ([#12637](https://github.com/craftcms/cms/pull/12637))
 
 ### Administration
 - Conditional layout components are now identified using a condition icon within field layout designers. ([#12250](https://github.com/craftcms/cms/issues/12250))
 - All CLI commands now support an `--isolated` option, which ensures the command is run in isolation. ([#12337](https://github.com/craftcms/cms/discussions/12337), [#12350](https://github.com/craftcms/cms/pull/12350))
+- Added the `entrify/categories`, `entrify/tags`, and `entrify/global-set` commands, for converting categories, tags, and global sets to entries. ([#12689](https://github.com/craftcms/cms/pull/12689), [#9781](https://github.com/craftcms/cms/discussions/9781))
+- Added the `sections/create` and `sections/delete` commands. ([#12689](https://github.com/craftcms/cms/pull/12689))
 - The `plugin/install`, `plugin/uninstall`, `plugin/enable`, and `plugin/disabled` commands now support an `--all` option, which applies the action to all applicable Composer-installed plugins. ([#11373](https://github.com/craftcms/cms/discussions/11373), [#12218](https://github.com/craftcms/cms/pull/12218))
 - The `project-config/apply` command now supports a `--quiet` option, which reduces the command output. ([#12568](https://github.com/craftcms/cms/discussions/12568))
 - Added the `users/unlock` console command. ([#12345](https://github.com/craftcms/cms/discussions/12345))
 - The Asset Indexes utility no longer skips volumes if the root folder was completely empty. ([#12585](https://github.com/craftcms/cms/issues/12585), [#12604](https://github.com/craftcms/cms/pull/12604))
 - The Asset Indexes utility now has a “List empty folders” setting, which determines whether empty folders sholud be listed for deletion from the index. ([#12604](https://github.com/craftcms/cms/pull/12604))
 - The Asset Indexes utility now lists missing/empty folders and files separately in the review screen. ([#12604](https://github.com/craftcms/cms/pull/12604))
+- Relational condition rules for conditions that are saved to the project config now accept a Twig template which outputs a related element ID dynamically. ([#12679](https://github.com/craftcms/cms/pull/12679), [#12676](https://github.com/craftcms/cms/discussions/12676))
 - Improved the CLI output for `index-assets` commands. ([#12604](https://github.com/craftcms/cms/pull/12604))
 
 ### Development
@@ -52,6 +57,7 @@
 - Added the `{% dump %}` tag, which dumps variables into a new “Dumps” Debug Toolbar panel. ([#12506](https://github.com/craftcms/cms/pull/12506))
 - The `dump()` Twig function now utilizes `Craft::dump()`, and no longer requires Dev Mode to be active. ([#12486](https://github.com/craftcms/cms/pull/12486), [#12479](https://github.com/craftcms/cms/discussions/12479))
 - The `{% dd %}` Twig tag can now output the entire `context` array, if no variable is passed to it. ([#12486](https://github.com/craftcms/cms/pull/12486))
+- Added the `revesionNotes` field to elements queried via GraphQL. ([#12610](https://github.com/craftcms/cms/issues/12610))
 - Added `ancestors` and `descendants` fields to categories queried via GraphQL. ([#12427](https://github.com/craftcms/cms/issues/12427))
 - Added `craft\elements\Asset::getFormat()` and the `format` field for assets queried via GraphQL. ([#12398](https://github.com/craftcms/cms/pull/12398), [#12521](https://github.com/craftcms/cms/pull/12521))
 - `Craft::dump()`, `Craft::dd()`, the `dump()` Twig function, and the `{% dd %}` Twig tag now use Symfony’s VarDumper. ([#12479](https://github.com/craftcms/cms/discussions/12479))
@@ -64,11 +70,15 @@
 - Element source definitions can now include a `defaultSourcePath` key.
 - Element custom field validation now respects the list of attributes passed to `validate()`.
 - Improving IDE autocompletion for chained query param calls. ([#12656](https://github.com/craftcms/cms/pull/12656))
+- Added `craft\base\Batchable`.
 - Added `craft\base\Element::cpRevisionsUrl()`.
 - Added `craft\base\Element::indexElements()`.
 - Added `craft\base\ElementInterface::findSource()`.
 - Added `craft\base\ElementInterface::getCpRevisionsUrl()`.
+- Added `craft\base\ElementInterface::getUiLabelPath()`.
 - Added `craft\base\ElementInterface::indexElementCount()`.
+- Added `craft\base\ElementInterface::setUiLabelPath()`.
+- Added `craft\base\Event`, which provides a `once()` static method for registering an event handler that will only be triggered up to once time.
 - Added `craft\console\ControllerTrait::beforeAction()`.
 - Added `craft\console\ControllerTrait::failure()`.
 - Added `craft\console\ControllerTrait::init()`.
@@ -79,8 +89,10 @@
 - Added `craft\console\ControllerTrait::success()`.
 - Added `craft\console\ControllerTrait::tip()`.
 - Added `craft\console\ControllerTrait::warning()`.
+- Added `craft\db\QueryBatcher`.
 - Added `craft\debug\DumpPanel`.
 - Added `craft\elements\conditions\assets\ViewableConditionRule`. ([#12266](https://github.com/craftcms/cms/pull/12266))
+- Added `craft\elements\conditions\ElementCondition::$referenceElement`.
 - Added `craft\elements\conditions\entries\ViewableConditionRule`. ([#12266](https://github.com/craftcms/cms/pull/12266))
 - Added `craft\elements\Entry::EVENT_DEFINE_PARENT_SELECTION_CRITERIA`. ([#12475](https://github.com/craftcms/cms/discussions/12475))
 - Added `craft\events\DefineInputOptionsEvent`. ([#12351](https://github.com/craftcms/cms/pull/12351))
@@ -92,13 +104,17 @@
 - Added `craft\helpers\Db::rawTableShortName()`.
 - Added `craft\helpers\ImageTransforms::generateTransform()`.
 - Added `craft\helpers\ImageTransforms::parseTransformString()`.
+- Added `craft\helpers\StringHelper::toHandle()`.
 - Added `craft\image\Raster::scaleToFitAndFill()`.
 - Added `craft\image\Raster::setFill()`.
 - Added `craft\imagetransforms\FallbackTransformer`.
+- Added `craft\models\CategoryGroup::$dateDeleted`.
 - Added `craft\models\ImageTransform::$fill`.
 - Added `craft\models\ImageTransform::$upscale`.
+- Added `craft\models\TagGroup::$dateDeleted`.
 - Added `craft\models\VolumeFolder::getHasChildren()`.
 - Added `craft\models\VolumeFolder::setHasChildren()`.
+- Added `craft\queue\BaseBatchableJob`. ([#12638](https://github.com/craftcms/cms/pull/12638))
 - Added `craft\queue\jobs\GenerateImageTransform`. ([#12340](https://github.com/craftcms/cms/pull/12340))
 - Added `craft\services\Assets::createFolderQuery()`.
 - Added `craft\services\Assets::foldersExist()`.
@@ -118,9 +134,15 @@
 - Renamed `craft\elements\conditions\entries\EditableConditionRule` to `SavableConditionRule`, while preserving the original class name with an alias. ([#12266](https://github.com/craftcms/cms/pull/12266))
 - `craft\services\AssetIndexer::startIndexingSession()` and `createIndexingSession()` now have a `$listEmptyFolders` argument. ([#12604](https://github.com/craftcms/cms/pull/12604))
 - `craft\base\ElementQuery::joinElementTable()` now accepts table names in the format of `{{%tablename}}`.
+- `craft\services\Categories::getGroupByHandle()` now has a `$withTrashed` argument.
+- `craft\services\Globals::getSetByHandle()` now has a `$withTrashed` argument.
+- `craft\services\Tags::getTagGroupByHandle()` now has a `$withTrashed` argument.
+- Deprecated `craft\helpers\Assets::sortFolderTree()`.
 - Deprecated `craft\imagetransforms\ImageTransformer::ensureTransformUrlByIndexModel()`. `getTransformUrl()` should be used instead.
 - Deprecated `craft\imagetransforms\ImageTransformer::procureTransformedImage()`. `generateTransform()` should be used instead.
 - Deprecated `craft\queue\jobs\GeneratePendingTransforms`. `GenerateImageTransform` should be used instead. ([#12340](https://github.com/craftcms/cms/pull/12340))
+- Deprecated `craft\services\Assets::getFolderTreeByVolumeIds`
+- Deprecated `craft\services\Assets::`
 - Added `Craft.Accordion`. ([#12189](https://github.com/craftcms/cms/pull/12189))
 - Added `Craft.AssetMover`.
 - Added `Craft.BaseElementIndex::getSourcePathActionLabel()`.
@@ -141,7 +163,9 @@
 ### System
 - Improved element deletion performance. ([#12223](https://github.com/craftcms/cms/pull/12223))
 - Improved queue performance. ([#12274](https://github.com/craftcms/cms/issues/12274), [#12340](https://github.com/craftcms/cms/pull/12340))
+- “Applying new propagation method to elements”, “Propagating [element type]”, and “Resaving [element type]” queue jobs are now splt up into batches of up to 100 items. ([#12638](https://github.com/craftcms/cms/pull/12638))
 - Assets’ alternative text values are now included as search keywords.
+- Entry type, section, category group, and tag group deletion no longer involves looping through all affected entries/categories/tags and deleting each one individually via `craft\services\Elements::deleteElement()`. ([#12665](https://github.com/craftcms/cms/pull/12665))
 - Updated LitEmoji to v4. ([#12226](https://github.com/craftcms/cms/discussions/12226))
 - Fixed a database deadlock error that could occur when updating a relation or structure position for an element that was simultaneously being saved. ([#9905](https://github.com/craftcms/cms/issues/9905))
 - Fixed a bug where element query `select()` and `orderBy()` params could resolve element extension table column names to custom field columns, if a custom field had a conflicting handle. ([#12652](https://github.com/craftcms/cms/issues/12652))

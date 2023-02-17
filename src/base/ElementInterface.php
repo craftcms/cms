@@ -759,6 +759,22 @@ interface ElementInterface extends ComponentInterface
     public function setUiLabel(?string $label): void;
 
     /**
+     * Returns any path segment labels that should be prepended to the element’s UI label.
+     *
+     * @return string[]
+     * @since 4.4.0
+     */
+    public function getUiLabelPath(): array;
+
+    /**
+     * Defines any path segment labels that should be prepended to the element’s UI label.
+     *
+     * @param string[] $path
+     * @since 4.4.0
+     */
+    public function setUiLabelPath(array $path): void;
+
+    /**
      * Returns the reference string to this element.
      *
      * @return string|null

@@ -338,7 +338,6 @@ class Cp
         bool $autoReload = true,
     ): string {
         $isDraft = $element->getIsDraft();
-        $isRevision = !$isDraft && $element->getIsRevision();
         $label = $element->getUiLabel();
         $showStatus = $showStatus && ($isDraft || $element::hasStatuses());
 
@@ -376,11 +375,20 @@ class Cp
             $imgHtml = '';
         }
 
+        $title = '';
+        foreach ($element->getUiLabelPath() as $segment) {
+            $title .= "$segment → ";
+        }
+        $title .= $label;
+        if (Craft::$app->getIsMultiSite()) {
+            $title .= sprintf(' - %s', Craft::t('site', $element->getSite()->getName()));
+        }
+
         $attributes = ArrayHelper::merge(
             Html::normalizeTagAttributes($element->getHtmlAttributes($context)),
             [
                 'class' => ['element', $size],
-                'title' => $label . (Craft::$app->getIsMultiSite() ? ' – ' . Craft::t('site', $element->getSite()->getName()) : ''),
+                'title' => $title,
                 'data' => array_filter([
                     'type' => get_class($element),
                     'id' => $element->id,
@@ -465,7 +473,13 @@ class Cp
             $innerHtml .= '<div class="label">';
             $innerHtml .= '<span class="title">';
 
-            $encodedLabel = Html::encode($label);
+            $encodedLabel = '';
+
+            foreach ($element->getUiLabelPath() as $segment) {
+                $encodedLabel .= Html::tag('span', Html::encode($segment), ['class' => 'segment']);
+            }
+
+            $encodedLabel .= Html::encode($label);
 
             if ($showDraftName && $isDraft && !$element->getIsUnpublishedDraft()) {
                 /** @var DraftBehavior|ElementInterface $element */

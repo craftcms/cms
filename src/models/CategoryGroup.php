@@ -18,6 +18,7 @@ use craft\helpers\StringHelper;
 use craft\records\CategoryGroup as CategoryGroupRecord;
 use craft\validators\HandleValidator;
 use craft\validators\UniqueValidator;
+use DateTime;
 
 /**
  * CategoryGroup model.
@@ -75,6 +76,12 @@ class CategoryGroup extends Model
      * @var string|null UID
      */
     public ?string $uid = null;
+
+    /**
+     * @var DateTime|null The date that the category group was trashed
+     * @since 4.4.0
+     */
+    public ?DateTime $dateDeleted = null;
 
     /**
      * @var CategoryGroup_SiteSettings[]
