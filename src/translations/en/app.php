@@ -1070,6 +1070,7 @@ return [
     'Password' => 'Password',
     'Past year' => 'Past year',
     'Past {num} days' => 'Past {num} days',
+    'Pause' => 'Pause',
     'Pay {price}' => 'Pay {price}',
     'Pending' => 'Pending',
     'Perform Craft CMS and plugin updates' => 'Perform Craft CMS and plugin updates',

@@ -28,9 +28,19 @@ Craft.AnimatedImageController = Garnish.Base.extend({
     this.$images = this.$images.add($images);
     $images.data('animation-controller', this);
 
-    // Go through each image and pause
+    // Go through each image and create toggle + cover
     for (let i = 0; i < $images.length; i++) {
-      this.pause($images[i]);
+      const $image = $($images[i]);
+
+      if ($image[0].complete) {
+        this.coverImage($image);
+        this.createToggle($image);
+      } else {
+        this.addListener($image, 'load', () => {
+          this.coverImage($image);
+          this.createToggle($image);
+        });
+      }
     }
 
     Garnish.$bod.data('animation-controller', this);
@@ -57,6 +67,14 @@ Craft.AnimatedImageController = Garnish.Base.extend({
 
   getToggleEnabled: function (image) {
     return $(image).attr('data-animation-toggle') !== null;
+  },
+
+  getAnimationToggleButton: function (image) {
+    return $(image).parent().find('[data-animation-toggle-btn]');
+  },
+
+  getAnimationCoverImage: function (image) {
+    return $(image).parent().find('canvas');
   },
 
   coverImage: function (image) {
@@ -89,7 +107,7 @@ Craft.AnimatedImageController = Garnish.Base.extend({
     $canvas.insertBefore($image);
   },
 
-  addToggle: function (image) {
+  createToggle: function (image) {
     if (!this.getToggleEnabled(image)) return;
 
     const $image = $(image);
@@ -98,26 +116,66 @@ Craft.AnimatedImageController = Garnish.Base.extend({
     const $toggle = $('<button/>', {
       type: 'button',
       'data-icon': 'play',
+      'data-animation-state': 'paused',
+      'data-animation-toggle-btn': true,
       'aria-label': Craft.t('app', 'Play'),
       class: 'animated-image-toggle btn',
     });
 
     $wrapper.append($toggle);
+
+    this.addListener($toggle, 'click', (ev) => {
+      this.handleToggleClick(ev);
+    });
   },
 
-  pauseAll: function () {},
+  handleToggleClick: function (event) {
+    const $toggle = $(event.target);
+    const isPaused = $toggle.attr('data-animation-state') === 'paused';
+    const $image = $toggle.parent().find('img');
+
+    if (isPaused) {
+      this.play($image);
+    } else {
+      this.pause($image);
+    }
+  },
+
+  pauseAll: function () {
+    for (let i = 0; i < this.$images.length; i++) {
+      this.pause(this.$images[i]);
+    }
+  },
 
   pause: function (image) {
     const $image = $(image);
+    const $coverImage = this.getAnimationCoverImage($image);
+    const $toggleBtn = this.getAnimationToggleButton($image);
 
-    if ($image[0].complete) {
-      this.coverImage($image);
-      this.addToggle($image);
-    } else {
-      this.addListener($image, 'load', () => {
-        this.coverImage($image);
-        this.addToggle($image);
-      });
+    $coverImage.removeClass('hidden');
+    $toggleBtn.attr({
+      'aria-label': Craft.t('app', 'Play'),
+      'data-animation-state': 'paused',
+      'data-icon': 'play',
+    });
+  },
+
+  playAll: function () {
+    for (let i = 0; i < this.$images.length; i++) {
+      this.play(this.$images[i]);
     }
+  },
+
+  play: function (image) {
+    const $image = $(image);
+    const $coverImage = this.getAnimationCoverImage($image);
+    const $toggleBtn = this.getAnimationToggleButton($image);
+
+    $coverImage.addClass('hidden');
+    $toggleBtn.attr({
+      'aria-label': Craft.t('app', 'Pause'),
+      'data-animation-state': 'playing',
+      'data-icon': 'pause',
+    });
   },
 });

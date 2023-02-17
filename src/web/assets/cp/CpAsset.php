@@ -258,6 +258,7 @@ JS;
             'Password',
             'Past year',
             'Past {num} days',
+            'Pause',
             'Pay {price}',
             'Pending',
             'Phone',
