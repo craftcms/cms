@@ -35,6 +35,8 @@
 ### Administration
 - Conditional layout components are now identified using a condition icon within field layout designers. ([#12250](https://github.com/craftcms/cms/issues/12250))
 - All CLI commands now support an `--isolated` option, which ensures the command is run in isolation. ([#12337](https://github.com/craftcms/cms/discussions/12337), [#12350](https://github.com/craftcms/cms/pull/12350))
+- Added the `entrify/categories`, `entrify/tags`, and `entrify/global-set` commands, for converting categories, tags, and global sets to entries. ([#12689](https://github.com/craftcms/cms/pull/12689), [#9781](https://github.com/craftcms/cms/discussions/9781))
+- Added the `sections/create` and `sections/delete` commands. ([#12689](https://github.com/craftcms/cms/pull/12689))
 - The `plugin/install`, `plugin/uninstall`, `plugin/enable`, and `plugin/disabled` commands now support an `--all` option, which applies the action to all applicable Composer-installed plugins. ([#11373](https://github.com/craftcms/cms/discussions/11373), [#12218](https://github.com/craftcms/cms/pull/12218))
 - The `project-config/apply` command now supports a `--quiet` option, which reduces the command output. ([#12568](https://github.com/craftcms/cms/discussions/12568))
 - Added the `users/unlock` console command. ([#12345](https://github.com/craftcms/cms/discussions/12345))
@@ -76,6 +78,7 @@
 - Added `craft\base\ElementInterface::getUiLabelPath()`.
 - Added `craft\base\ElementInterface::indexElementCount()`.
 - Added `craft\base\ElementInterface::setUiLabelPath()`.
+- Added `craft\base\Event`, which provides a `once()` static method for registering an event handler that will only be triggered up to once time.
 - Added `craft\console\ControllerTrait::beforeAction()`.
 - Added `craft\console\ControllerTrait::failure()`.
 - Added `craft\console\ControllerTrait::init()`.
@@ -101,11 +104,14 @@
 - Added `craft\helpers\Db::rawTableShortName()`.
 - Added `craft\helpers\ImageTransforms::generateTransform()`.
 - Added `craft\helpers\ImageTransforms::parseTransformString()`.
+- Added `craft\helpers\StringHelper::toHandle()`.
 - Added `craft\image\Raster::scaleToFitAndFill()`.
 - Added `craft\image\Raster::setFill()`.
 - Added `craft\imagetransforms\FallbackTransformer`.
+- Added `craft\models\CategoryGroup::$dateDeleted`.
 - Added `craft\models\ImageTransform::$fill`.
 - Added `craft\models\ImageTransform::$upscale`.
+- Added `craft\models\TagGroup::$dateDeleted`.
 - Added `craft\models\VolumeFolder::getHasChildren()`.
 - Added `craft\models\VolumeFolder::setHasChildren()`.
 - Added `craft\queue\BaseBatchableJob`. ([#12638](https://github.com/craftcms/cms/pull/12638))
@@ -128,6 +134,9 @@
 - Renamed `craft\elements\conditions\entries\EditableConditionRule` to `SavableConditionRule`, while preserving the original class name with an alias. ([#12266](https://github.com/craftcms/cms/pull/12266))
 - `craft\services\AssetIndexer::startIndexingSession()` and `createIndexingSession()` now have a `$listEmptyFolders` argument. ([#12604](https://github.com/craftcms/cms/pull/12604))
 - `craft\base\ElementQuery::joinElementTable()` now accepts table names in the format of `{{%tablename}}`.
+- `craft\services\Categories::getGroupByHandle()` now has a `$withTrashed` argument.
+- `craft\services\Globals::getSetByHandle()` now has a `$withTrashed` argument.
+- `craft\services\Tags::getTagGroupByHandle()` now has a `$withTrashed` argument.
 - Deprecated `craft\helpers\Assets::sortFolderTree()`.
 - Deprecated `craft\imagetransforms\ImageTransformer::ensureTransformUrlByIndexModel()`. `getTransformUrl()` should be used instead.
 - Deprecated `craft\imagetransforms\ImageTransformer::procureTransformedImage()`. `generateTransform()` should be used instead.
