@@ -154,7 +154,7 @@ Garnish = $.extend(Garnish, {
     const $container = $(container);
 
     return $(container).find(
-      'img[src$=".gif"],img[srcset*=".gif"],img[src$=".webp"],img[srcset*=".webp"]'
+      'img[src*=".gif"],img[srcset*=".gif"],img[src*=".webp"],img[srcset*=".webp"]'
     );
   },
 

@@ -8,7 +8,7 @@ import $ from 'jquery';
 Craft.CP = Garnish.Base.extend(
   {
     authManager: null,
-    animatedImageController: null,
+    globalAnimationController: null,
 
     $nav: null,
     $navToggle: null,
@@ -116,7 +116,7 @@ Craft.CP = Garnish.Base.extend(
       }
 
       $(window).on('load', () => {
-        this.animatedImageController = new Craft.AnimatedImageController();
+        this.globalAnimationController = new Craft.GlobalAnimationController();
       });
 
       Garnish.$doc.ready(() => {

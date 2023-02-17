@@ -1,9 +1,9 @@
 /** global: Craft */
 /** global: Garnish */
 /**
- * Animated Image Controller
+ * Global Animation Controller
  */
-Craft.AnimatedImageController = Garnish.Base.extend({
+Craft.GlobalAnimationController = Garnish.Base.extend({
   $images: null,
 
   init: function () {
