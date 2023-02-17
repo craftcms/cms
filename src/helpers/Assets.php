@@ -136,7 +136,12 @@ class Assets
     {
         if ($fsOnly) {
             $volume = $asset->getVolume();
-            $fss = array_unique([$volume->getFs(), $volume->getTransformFs()], SORT_REGULAR);
+            $fs = $volume->getFs();
+            $fss = [$fs];
+            $transformFs = $volume->getTransformFs();
+            if ($transformFs !== $fs) {
+                $fss[] = $transformFs;
+            }
             $matchingFs = ArrayHelper::contains($fss, function(FsInterface $fs) use ($url): bool {
                 if (!$fs->hasUrls) {
                     return false;

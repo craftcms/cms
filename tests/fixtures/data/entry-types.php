@@ -69,4 +69,15 @@ return [
         'sortOrder' => '1',
         'uid' => 'entry-type-1005------------------uid',
     ],
+    [
+        'id' => '1006',
+        'sectionId' => '1006',
+        'fieldLayoutId' => null,
+        'name' => 'With matrix with relations',
+        'handle' => 'withMatrixWithRelations',
+        'titleFormat' => null,
+        'sortOrder' => '1',
+        'fieldLayoutType' => 'field_layout_with_matrix_with_relational_field',
+        'uid' => 'entry-type-1006------------------uid',
+    ],
 ];
