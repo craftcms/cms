@@ -4,6 +4,7 @@
 
 - Fixed a bug where clicking on the scrollbar of a disclosure menu would close it. ([#12681](https://github.com/craftcms/cms/issues/12681))
 - Fixed a bug where large asset thumbnails weren’t centered within Assets fields. ([#12682](https://github.com/craftcms/cms/issues/12682))
+- Fixed a PHP error that could occur when versioning asset URLs. ([#12678](https://github.com/craftcms/cms/issues/12678))
 
 ## 4.3.9 - 2023-02-14
 
