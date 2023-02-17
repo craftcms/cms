@@ -55,7 +55,6 @@ import './js/EntryIndex.js';
 import './js/FieldLayoutDesigner.js';
 import './js/VolumeFolderSelectorModal.js';
 import './js/FieldToggle.js';
-import './js/GlobalAnimationController.js';
 import './js/Grid.js';
 import './js/HandleGenerator.js';
 import './js/ImageUpload.js';

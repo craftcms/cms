@@ -1761,14 +1761,6 @@ $.extend(Craft, {
   },
 
   /**
-   * Returns the global animation controller
-   *
-   */
-  getGlobalAnimationController: function () {
-    return Garnish.$bod.data('animation-controller');
-  },
-
-  /**
    * Creates a validation error list.
    *
    * @param {Object} errors

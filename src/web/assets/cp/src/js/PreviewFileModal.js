@@ -232,10 +232,10 @@ Craft.PreviewFileModal = Garnish.Modal.extend(
             this.$container
           );
 
-          if ($animated.length > 0) {
-            this.animationController = Craft.getGlobalAnimationController();
-            this.animationController.addImages($animated);
-          }
+          // if ($animated.length > 0) {
+          //   this.animationController = Craft.getGlobalAnimationController();
+          //   this.animationController.addImages($animated);
+          // }
         })
         .catch(({response}) => {
           onResponse();
