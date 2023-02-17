@@ -220,10 +220,10 @@ class EntrifyController extends Controller
         $projectConfigService = Craft::$app->getProjectConfig();
         if (!$projectConfigService->readOnly) {
             if (!$categoryGroup->dateDeleted && $this->confirm("Delete the “{$categoryGroup}” category group?")) {
-                $this->run('category-groups/delete', [
-                    $categoryGroup->handle,
-                    'interactive' => false,
-                ]);
+                $this->do('Deleting category group', function() use ($categoryGroup) {
+                    Craft::$app->getCategories()->deleteGroup($categoryGroup);
+                });
+                $this->success('Category group deleted.');
                 $projectConfigChanged = true;
             }
 
@@ -349,10 +349,10 @@ class EntrifyController extends Controller
         $projectConfigService = Craft::$app->getProjectConfig();
         if (!$projectConfigService->readOnly) {
             if (!$tagGroup->dateDeleted && $this->confirm("Delete the “{$tagGroup}” tag group?")) {
-                $this->run('tag-groups/delete', [
-                    $tagGroup->handle,
-                    'interactive' => false,
-                ]);
+                $this->do('Deleting tag group', function() use ($tagGroup) {
+                    Craft::$app->getTags()->deleteTagGroup($tagGroup);
+                });
+                $this->success('Tag group deleted.');
                 $projectConfigChanged = true;
             }
 
