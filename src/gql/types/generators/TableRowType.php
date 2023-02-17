@@ -37,7 +37,11 @@ class TableRowType implements GeneratorInterface, SingleGeneratorInterface
     public static function getName($context = null): string
     {
         /** @var TableField $context */
-        return $context->handle . '_TableRow';
+        if ($context->context !== 'global') {
+            return implode('_', [$context->handle, $context->id, 'TableRow']);
+        }
+
+        return implode('_', [$context->handle, 'TableRow']);
     }
 
     /**
