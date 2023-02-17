@@ -51,7 +51,7 @@ class EntrifyController extends Controller
     /**
      * @var string|null The author username or email that entries should have
      */
-    public ?string $author;
+    public ?string $author = null;
 
     private bool $_forSingle;
     private Section $_section;
