@@ -101,24 +101,31 @@ class Tags extends Component
     {
         if (!isset($this->_tagGroups)) {
             $groups = [];
+            /** @var TagGroupRecord[] $records */
             $records = TagGroupRecord::find()
                 ->orderBy(['name' => SORT_ASC])
                 ->all();
 
             foreach ($records as $record) {
-                $groups[] = new TagGroup($record->toArray([
-                    'id',
-                    'name',
-                    'handle',
-                    'fieldLayoutId',
-                    'uid',
-                ]));
+                $groups[] = $this->_createTagGroupFromRecord($record);
             }
 
             $this->_tagGroups = new MemoizableArray($groups);
         }
 
         return $this->_tagGroups;
+    }
+
+    private function _createTagGroupFromRecord(TagGroupRecord $record): TagGroup
+    {
+        return new TagGroup($record->toArray([
+            'id',
+            'name',
+            'handle',
+            'fieldLayoutId',
+            'dateDeleted',
+            'uid',
+        ]));
     }
 
     /**
@@ -168,11 +175,25 @@ class Tags extends Component
      * Gets a group by its handle.
      *
      * @param string $groupHandle
+     * @param bool $withTrashed
      * @return TagGroup|null
      */
-    public function getTagGroupByHandle(string $groupHandle): ?TagGroup
+    public function getTagGroupByHandle(string $groupHandle, bool $withTrashed = false): ?TagGroup
     {
-        return $this->_tagGroups()->firstWhere('handle', $groupHandle, true);
+        /** @var TagGroup|null $group */
+        $group = $this->_tagGroups()->firstWhere('handle', $groupHandle, true);
+
+        if (!$group && $withTrashed) {
+            /** @var TagGroupRecord|null $record */
+            $record = TagGroupRecord::findWithTrashed()
+                ->andWhere(['handle' => $groupHandle])
+                ->one();
+            if ($record) {
+                $group = $this->_createTagGroupFromRecord($record);
+            }
+        }
+
+        return $group;
     }
 
     /**

@@ -1792,6 +1792,33 @@ class StringHelper extends \yii\helpers\StringHelper
     }
 
     /**
+     * Returns a handle-safe version of a string.
+     *
+     * @param string $str
+     * @return string
+     * @since 4.4.0
+     */
+    public static function toHandle(string $str): string
+    {
+        // Remove HTML tags
+        $handle = static::stripHtml($str);
+
+        // Remove inner-word punctuation
+        $handle = preg_replace('/[\'"‘’“”\[\]\(\)\{\}:]/', '', $handle);
+    
+        // Make it lowercase
+        $handle = static::toLowerCase($handle);
+    
+        // Convert extended ASCII characters to basic ASCII
+        $handle = static::toAscii($handle);
+
+        // Handle must start with a letter
+        $handle = preg_replace('/^[^a-z]+/', '', $handle);
+
+        return static::toCamelCase($handle);
+    }
+
+    /**
      * Returns a string with whitespace removed from the start and end of the
      * string. Supports the removal of unicode whitespace. Accepts an optional
      * string of characters to strip instead of the defaults.

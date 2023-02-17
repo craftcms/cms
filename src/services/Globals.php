@@ -245,9 +245,10 @@ class Globals extends Component
      *
      * @param string $globalSetHandle
      * @param int|null $siteId
+     * @param bool $withTrashed
      * @return GlobalSet|null
      */
-    public function getSetByHandle(string $globalSetHandle, ?int $siteId = null): ?GlobalSet
+    public function getSetByHandle(string $globalSetHandle, ?int $siteId = null, bool $withTrashed = false): ?GlobalSet
     {
         /** @noinspection PhpUnhandledExceptionInspection */
         $currentSiteId = Craft::$app->getSites()->getCurrentSite()->id;
@@ -257,14 +258,23 @@ class Globals extends Component
         }
 
         if ($siteId == $currentSiteId) {
-            return $this->_allSets($siteId)->firstWhere('handle', $globalSetHandle, true);
+            /** @var GlobalSet|null $globalSet */
+            $globalSet = $this->_allSets($siteId)->firstWhere('handle', $globalSetHandle, true);
+            if ($globalSet) {
+                return $globalSet;
+            }
+        }
+
+        $globalSetQuery = GlobalSet::find()
+            ->handle($globalSetHandle)
+            ->siteId($siteId);
+
+        if ($withTrashed) {
+            $globalSetQuery->trashed(null);
         }
 
         /** @var GlobalSet|null */
-        return GlobalSet::find()
-            ->handle($globalSetHandle)
-            ->siteId($siteId)
-            ->one();
+        return $globalSetQuery->one();
     }
 
     /**
