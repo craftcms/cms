@@ -228,14 +228,11 @@ Craft.PreviewFileModal = Garnish.Modal.extend(
           Craft.appendHeadHtml(response.data.headHtml);
           Craft.appendBodyHtml(response.data.bodyHtml);
 
-          const $animated = Garnish.getPotentiallyAnimatedImages(
-            this.$container
-          );
-
-          // if ($animated.length > 0) {
-          //   this.animationController = Craft.getGlobalAnimationController();
-          //   this.animationController.addImages($animated);
-          // }
+          if (Craft.cp.globalAnimationController) {
+            Craft.cp.globalAnimationController.addImagesInContainer(
+              this.$container
+            );
+          }
         })
         .catch(({response}) => {
           onResponse();

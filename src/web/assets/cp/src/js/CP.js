@@ -143,7 +143,13 @@ Craft.CP = Garnish.Base.extend(
       }
 
       // Global Animation Controller
-      this.globalAnimationController = new Craft.CP.GlobalAnimationController();
+      if (
+        Garnish.prefersReducedMotion() ||
+        Garnish.$bod.hasClass('prevent-autoplay')
+      ) {
+        this.globalAnimationController =
+          new Craft.CP.GlobalAnimationController();
+      }
 
       // Toggles
       this.addListener(this.$navToggle, 'click', 'toggleNav');
@@ -1469,19 +1475,16 @@ Craft.CP.GlobalAnimationController = Garnish.Base.extend({
   init: function () {
     this.$images = $();
     const $images = Garnish.getPotentiallyAnimatedImages();
+    this.addImages($images);
+  },
 
-    // Pause images based on system and control panel settings
-    if (
-      Garnish.prefersReducedMotion() ||
-      Garnish.$bod.hasClass('prevent-autoplay')
-    ) {
-      if (Garnish.$bod.data('animation-controller')) {
-        console.warn('Cannot instantiate another animation controller');
-        return;
-      }
+  addImagesInContainer: function (container) {
+    const $container = $(container);
+    const $animated = Garnish.getPotentiallyAnimatedImages();
 
-      this.addImages($images);
-    }
+    if ($animated.length === 0) return;
+
+    this.addImages($animated);
   },
 
   addImages: function ($images) {
@@ -1504,25 +1507,6 @@ Craft.CP.GlobalAnimationController = Garnish.Base.extend({
     }
 
     Garnish.$bod.data('animation-controller', this);
-  },
-
-  isWebpOrGif: function (image) {
-    const $image = $(image);
-    const imageSrc = $image.attr('src');
-    const imageSrcset = $image.attr('srcset');
-
-    let value = false;
-
-    if (imageSrc) {
-      value =
-        imageSrc.indexOf('.gif') !== -1 || imageSrc.indexOf('.webp') !== -1;
-    } else if (imageSrcset) {
-      value =
-        imageSrcset.indexOf('.gif') !== -1 ||
-        imageSrcset.indexOf('.webp') !== -1;
-    }
-
-    return value;
   },
 
   getToggleEnabled: function (image) {
