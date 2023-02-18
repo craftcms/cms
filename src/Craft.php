@@ -192,7 +192,7 @@ class Craft extends Yii
     public static function bootstrapContainer(): void
     {
         self::$container->setDefinitions([
-            \yii\web\Cookie::class => \Craft::cookieConfig()
+            \yii\web\Cookie::class => \Craft::cookieConfig(),
         ]);
     }
 
