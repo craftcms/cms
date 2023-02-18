@@ -339,4 +339,18 @@ class Template
         // Template check copied from twig_var_dump()
         return array_filter($context, fn($value) => !$value instanceof TwigTemplate && !$value instanceof TemplateWrapper);
     }
+
+    /**
+     * Preloads Single section entries into the given context.
+     *
+     * @param array $context
+     * @param string[] $handles
+     * @since 4.4.0
+     */
+    public static function preloadSingles(array &$context, array $handles): void
+    {
+        // Filter out any handles that are already defined variables in the context
+        $handles = array_diff($handles, array_keys($context));
+        $context += Craft::$app->getEntries()->getSingleEntriesByHandle($handles);
+    }
 }
