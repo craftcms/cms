@@ -7,8 +7,10 @@
 
 namespace crafttests;
 
+use Craft;
 use craft\helpers\App;
 use PHPUnit\Framework\TestCase;
+use yii\web\Cookie;
 
 class CraftTest extends TestCase
 {
@@ -60,5 +62,15 @@ class CraftTest extends TestCase
         $this->assertEquals(false, $env);
         $this->assertIsBool($env);
         putenv('CRAFT_TEST');
+    }
+
+    public function testDependencyInjection(): void
+    {
+        $cookie = Craft::createObject(Cookie::class);
+        $cookieConfig = Craft::cookieConfig();
+
+        foreach ($cookieConfig as $property => $value) {
+            $this->assertEquals($cookie->$property, $value);
+        }
     }
 }

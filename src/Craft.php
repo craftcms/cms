@@ -173,7 +173,9 @@ class Craft extends Yii
                     $request = static::$app->getRequest();
                 }
 
-                $generalConfig->useSecureCookies = $request->getIsSecureConnection();
+                if (!$request->isConsoleRequest) {
+                    $generalConfig->useSecureCookies = $request->getIsSecureConnection();
+                }
             }
 
             self::$_baseCookieConfig = [
@@ -185,6 +187,13 @@ class Craft extends Yii
         }
 
         return array_merge(self::$_baseCookieConfig, $config);
+    }
+
+    public static function bootstrapContainer(): void
+    {
+        self::$container->setDefinitions([
+            \yii\web\Cookie::class => \Craft::cookieConfig()
+        ]);
     }
 
     /**

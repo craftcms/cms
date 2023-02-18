@@ -118,10 +118,13 @@ class TestSetup
      */
     public static function warmCraft(): mixed
     {
-        $app = self::createTestCraftObjectConfig();
-        $app['isInstalled'] = false;
+        $app = Craft::createObject([
+            'isInstalled' => false
+        ] + self::createTestCraftObjectConfig());
 
-        return Craft::createObject($app);
+        Craft::bootstrapContainer();
+
+        return $app;
     }
 
     /**

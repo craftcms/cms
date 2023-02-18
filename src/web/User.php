@@ -94,15 +94,17 @@ class User extends \yii\web\User
     public function sendUsernameCookie(UserElement $user): void
     {
         $generalConfig = Craft::$app->getConfig()->getGeneral();
+        $cookie = Craft::createObject([
+            'class' => Cookie::class,
+        ] + $this->usernameCookie);
 
         if ($generalConfig->rememberUsernameDuration !== 0) {
-            $cookie = new Cookie($this->usernameCookie);
             $cookie->value = $user->username;
             $seconds = ConfigHelper::durationInSeconds($generalConfig->rememberUsernameDuration);
             $cookie->expire = time() + $seconds;
             Craft::$app->getResponse()->getCookies()->add($cookie);
         } else {
-            Craft::$app->getResponse()->getCookies()->remove(new Cookie($this->usernameCookie));
+            Craft::$app->getResponse()->getCookies()->remove($cookie);
         }
     }
 

@@ -251,6 +251,8 @@ $config = ArrayHelper::merge(
 /** @var \craft\web\Application|craft\console\Application $app */
 $app = Craft::createObject($config);
 
+Craft::bootstrapContainer();
+
 // If there was a max_input_vars error, kill the request before we start processing it with incomplete data
 if ($lastError && strpos($lastError['message'], 'max_input_vars') !== false) {
     throw new ErrorException($lastError['message']);
