@@ -4557,6 +4557,7 @@ $min2ColWidth: 400px;
     position: relative;
 
     & > .so-sidebar {
+      --visible: false;
       position: absolute;
       top: 0;
       @include pane();
@@ -4664,6 +4665,7 @@ $min2ColWidth: 400px;
         }
 
         & > .so-sidebar {
+          --visible: true;
           position: relative;
           display: block !important;
           top: auto;

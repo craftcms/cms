@@ -1487,11 +1487,19 @@ Craft.CP.GlobalAnimationController = Garnish.Base.extend({
   },
 
   addImages: function ($images) {
+    if ($images.length === 0) return;
+
     this.$images = this.$images.add($images);
 
     // Go through each image and create toggle + cover
     for (let i = 0; i < $images.length; i++) {
       const $image = $($images[i]);
+
+      // If image has already been added, return
+      if ($image.data('animation-controller')) {
+        console.warn('Image has already been added to animation controller');
+        return;
+      }
 
       if ($image[0].complete) {
         this.coverImage($image);
@@ -1502,6 +1510,8 @@ Craft.CP.GlobalAnimationController = Garnish.Base.extend({
           this.createToggle($image);
         });
       }
+
+      $image.data('animation-controller', this);
     }
   },
 
@@ -1522,6 +1532,19 @@ Craft.CP.GlobalAnimationController = Garnish.Base.extend({
     const $parent = $image.parent();
     const width = $image.width();
     const height = $image.height();
+
+    if (width === 0 || height === 0) {
+      console.warn('Image has no dimensions');
+
+      // Create resize observer
+      const resizeObserver = new ResizeObserver((entries) => {
+        for (const entry of entries) {
+          console.log(entry);
+        }
+      });
+
+      return;
+    }
 
     const $canvas = $('<canvas></canvas>')
       .attr({
@@ -1549,8 +1572,6 @@ Craft.CP.GlobalAnimationController = Garnish.Base.extend({
 
   createToggle: function (image) {
     if (!this.getToggleEnabled(image)) return;
-
-    console.log('toggle is enabled');
 
     const $image = $(image);
     const $wrapper = $image.parent();
