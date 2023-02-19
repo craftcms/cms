@@ -1526,7 +1526,9 @@ ul.icons {
 }
 
 .btngroup--exclusive {
-  .btn[aria-pressed='true']:not(.disabled):not(.loading):not(.dashed):not([aria-disabled]) {
+  .btn[aria-pressed='true']:not(.disabled):not(.loading):not(.dashed):not(
+      [aria-disabled]
+    ) {
     background-color: var(--gray-500);
     color: var(--white);
   }
@@ -2627,8 +2629,8 @@ $elementInnerSpacing: 5px;
 
     .elementthumb:not(:empty) {
       top: $baseElementSidePadding;
-      @include left($baseElementSidePadding);
-      width: $largeThumbSize;
+      @include left(0);
+      width: 100%;
       height: $largeThumbSize;
 
       &.checkered img {
@@ -2778,6 +2780,7 @@ $checkboxPadding: $checkboxSize + 4;
     li {
       position: relative;
       @include margin(0, 1px, 1px, 0);
+      max-width: 226px;
 
       &:hover {
         .element {
@@ -2787,10 +2790,6 @@ $checkboxPadding: $checkboxSize + 4;
 
       .element.large.hasthumb {
         width: unset;
-
-        .elementthumb:not(:empty) {
-          width: 100%;
-        }
       }
 
       &.has-checkbox {
@@ -3316,7 +3315,13 @@ ul.tree,
   }
 }
 
-.status:not(.on):not(.live):not(.active):not(.enabled):not(.all):not(.pending):not(.off):not(.suspended):not(.expired):not(.yellow):not(.orange):not(.red):not(.pink):not(.purple):not(.blue):not(.green):not(.turquoise):not(.light):not(.grey):not(.black) {
+.status:not(.on):not(.live):not(.active):not(.enabled):not(.all):not(
+    .pending
+  ):not(.off):not(.suspended):not(.expired):not(.yellow):not(.orange):not(
+    .red
+  ):not(.pink):not(.purple):not(.blue):not(.green):not(.turquoise):not(
+    .light
+  ):not(.grey):not(.black) {
   border-color: var(--ui-control-color);
 }
 

@@ -88,14 +88,18 @@ class Assets
      */
     public static function generateUrl(FsInterface $fs, Asset $asset, ?string $uri = null, ?DateTime $dateUpdated = null): string
     {
-        $revParams = self::revParams($asset, $dateUpdated);
         $pathParts = explode('/', $asset->folderPath . ($uri ?? $asset->getFilename()));
-        $path = implode('/', array_map('rawurlencode', $pathParts));
-        return UrlHelper::urlWithParams($fs->getRootUrl() . $path, $revParams);
+        $url = $fs->getRootUrl() . implode('/', array_map('rawurlencode', $pathParts));
+
+        if (Craft::$app->getConfig()->getGeneral()->revAssetUrls) {
+            return self::revUrl($url, $asset, $dateUpdated);
+        }
+
+        return $url;
     }
 
     /**
-     * Revisions the query parameters that should be appended to asset URLs, per the `revAssetUrls` config setting.
+     * Returns revision query parameters that should be appended to as asset URL.
      *
      * @param Asset $asset
      * @param DateTime|null $dateUpdated
@@ -104,10 +108,6 @@ class Assets
      */
     public static function revParams(Asset $asset, ?DateTime $dateUpdated = null): array
     {
-        if (!Craft::$app->getConfig()->getGeneral()->revAssetUrls) {
-            return [];
-        }
-
         /** @var DateTime $dateModified */
         $dateModified = max($asset->dateModified, $dateUpdated ?? null);
         $v = $dateModified->getTimestamp();
@@ -121,6 +121,42 @@ class Assets
     }
 
     /**
+     * Appends revision parameters to a URL.
+     *
+     * @param string $url
+     * @param Asset $asset
+     * @param DateTime|null $dateUpdated
+     * @param bool $fsOnly Only append a revision param if the URL begins with the asset’s filesystem URL
+     * @return string
+     * @since 4.3.7
+     */
+    public static function revUrl(string $url, Asset $asset, ?DateTime $dateUpdated = null, bool $fsOnly = false): string
+    {
+        if ($fsOnly) {
+            $volume = $asset->getVolume();
+            $fs = $volume->getFs();
+            $fss = [$fs];
+            $transformFs = $volume->getTransformFs();
+            if ($transformFs !== $fs) {
+                $fss[] = $transformFs;
+            }
+            $matchingFs = ArrayHelper::contains($fss, function(FsInterface $fs) use ($url): bool {
+                if (!$fs->hasUrls) {
+                    return false;
+                }
+                $baseUrl = $fs->getRootUrl();
+                return $baseUrl !== null && StringHelper::startsWith($url, StringHelper::ensureRight($baseUrl, '/'));
+            });
+            if (!$matchingFs) {
+                return $url;
+            }
+        }
+
+        $revParams = static::revParams($asset, $dateUpdated);
+        return UrlHelper::urlWithParams($url, $revParams);
+    }
+
+    /**
      * Get appendix for a URL based on its Source caching settings.
      *
      * @param Asset $asset
@@ -130,8 +166,12 @@ class Assets
      */
     public static function urlAppendix(Asset $asset, ?DateTime $dateUpdated = null): string
     {
+        if (!Craft::$app->getConfig()->getGeneral()->revAssetUrls) {
+            return '';
+        }
+
         $revParams = self::revParams($asset, $dateUpdated);
-        return $revParams ? sprintf('?%s', UrlHelper::buildQuery($revParams)) : '';
+        return sprintf('?%s', UrlHelper::buildQuery($revParams));
     }
 
     /**
@@ -510,6 +550,8 @@ class Assets
                         'avif',
                         'bmp',
                         'gif',
+                        'heic',
+                        'heif',
                         'jfif',
                         'jp2',
                         'jpe',
@@ -587,6 +629,7 @@ class Assets
                         'avi',
                         'fla',
                         'flv',
+                        'hevc',
                         'm1s',
                         'm2s',
                         'm2t',
@@ -842,6 +885,10 @@ class Assets
      */
     public static function iconPath(string $extension): string
     {
+        if (!preg_match('/^\w+$/', $extension)) {
+            throw new InvalidArgumentException("$extension isn’t a valid file extension.");
+        }
+
         $path = sprintf('%s%s%s.svg', Craft::$app->getPath()->getAssetsIconsPath(), DIRECTORY_SEPARATOR, strtolower($extension));
 
         if (file_exists($path)) {

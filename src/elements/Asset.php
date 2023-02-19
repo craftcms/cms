@@ -828,8 +828,11 @@ class Asset extends Element
     {
         parent::init();
 
-        if ($this->alt === '') {
-            $this->alt = null;
+        if (isset($this->alt)) {
+            $this->alt = trim($this->alt);
+            if ($this->alt === '') {
+                $this->alt = null;
+            }
         }
 
         $this->_oldVolumeId = $this->_volumeId;
@@ -2246,7 +2249,7 @@ JS;
         $volume = $this->getVolume();
         $uri = "assets/$volume->handle";
         $items = [
-            Html::a(Craft::t('site', $volume->name), UrlHelper::cpUrl($uri)),
+            Html::a(Craft::t('site', Html::encode($volume->name)), UrlHelper::cpUrl($uri)),
         ];
         if ($this->folderPath) {
             $subfolders = ArrayHelper::filterEmptyStringsFromArray(explode('/', $this->folderPath));
@@ -2500,6 +2503,7 @@ JS;
         $attributes = [
             'data' => [
                 'kind' => $this->kind,
+                'alt' => $this->alt,
             ],
         ];
 
@@ -2572,7 +2576,10 @@ JS;
         }
 
         if (!$this->_width || !$this->_height) {
-            if ($this->getScenario() !== self::SCENARIO_CREATE) {
+            if (
+                $this->kind === self::KIND_IMAGE &&
+                $this->getScenario() !== self::SCENARIO_CREATE
+            ) {
                 Craft::warning("Asset $this->id is missing its width or height", __METHOD__);
             }
 

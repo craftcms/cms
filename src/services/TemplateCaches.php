@@ -35,6 +35,12 @@ class TemplateCaches extends Component
     private bool $_enabled;
 
     /**
+     * @var bool Whether global template caches should be enabled for this request
+     * @see _isTemplateCachingEnabled()
+     */
+    private bool $_enabledGlobally;
+
+    /**
      * @var string|null The current request's path
      * @see _path()
      */
@@ -300,12 +306,20 @@ class TemplateCaches extends Component
     private function _isTemplateCachingEnabled(bool $global): bool
     {
         if (!isset($this->_enabled)) {
-            $this->_enabled = (
-                Craft::$app->getConfig()->getGeneral()->enableTemplateCaching &&
-                ($global || !Craft::$app->getRequest()->getIsConsoleRequest())
-            );
+            if (!Craft::$app->getConfig()->getGeneral()->enableTemplateCaching) {
+                $this->_enabled = $this->_enabledGlobally = false;
+            } else {
+                // Don't enable template caches for tokenized requests
+                $request = Craft::$app->getRequest();
+                if ($request->getHadToken()) {
+                    $this->_enabled = $this->_enabledGlobally = false;
+                } else {
+                    $this->_enabled = !$request->getIsConsoleRequest();
+                    $this->_enabledGlobally = true;
+                }
+            }
         }
-        return $this->_enabled;
+        return $global ? $this->_enabledGlobally : $this->_enabled;
     }
 
     /**
@@ -345,19 +359,22 @@ class TemplateCaches extends Component
             throw new Exception('Not possible to determine the request path for console commands.');
         }
 
-        if (Craft::$app->getRequest()->getIsCpRequest()) {
+        $isCpRequest = $request->getIsCpRequest();
+        if ($isCpRequest) {
             $this->_path = 'cp:';
         } else {
             $this->_path = 'site:';
         }
 
-        $this->_path .= Craft::$app->getRequest()->getPathInfo();
+        $this->_path .= $request->getPathInfo();
         if (Craft::$app->getDb()->getIsMysql()) {
             $this->_path = StringHelper::encodeMb4($this->_path);
         }
 
-        if (($pageNum = Craft::$app->getRequest()->getPageNum()) != 1) {
-            $this->_path .= '/' . Craft::$app->getConfig()->getGeneral()->getPageTrigger() . $pageNum;
+        $pageNum = $request->getPageNum();
+        if ($pageNum !== 1) {
+            $pageTrigger = $isCpRequest ? 'p' : Craft::$app->getConfig()->getGeneral()->getPageTrigger();
+            $this->_path .= sprintf('/%s%s', $pageTrigger, $pageNum);
         }
 
         return $this->_path;

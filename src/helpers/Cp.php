@@ -125,6 +125,13 @@ class Cp
                 }
             }
 
+            if ($licenseKeyStatus === LicenseKeyStatus::Astray) {
+                // todo: swap Console link with a Resolve button
+                $alerts[] = Craft::t('app', 'Your Craft license isn’t allowed to run version {version}.', [
+                        'version' => Craft::$app->getVersion(),
+                    ]) . ' Please renew it from <a href="https://console.craftcms.com">Craft Console</a>.';
+            }
+
             // Any plugin issues?
             if ($path != 'settings/plugins') {
                 $pluginsService = Craft::$app->getPlugins();
@@ -331,7 +338,6 @@ class Cp
         bool $autoReload = true,
     ): string {
         $isDraft = $element->getIsDraft();
-        $isRevision = !$isDraft && $element->getIsRevision();
         $label = $element->getUiLabel();
         $showStatus = $showStatus && ($isDraft || $element::hasStatuses());
 
@@ -415,10 +421,8 @@ class Cp
         $elementsService = Craft::$app->getElements();
         $user = Craft::$app->getUser()->getIdentity();
 
-        if ($user) {
-            if ($elementsService->canView($element, $user)) {
-                $attributes['data']['editable'] = true;
-            }
+        if ($user && $elementsService->canView($element, $user)) {
+            $attributes['data']['editable'] = true;
 
             if ($context === 'index') {
                 if ($elementsService->canSave($element, $user)) {
@@ -606,9 +610,19 @@ class Cp
         $errors = $config['errors'] ?? null;
         $status = $config['status'] ?? null;
 
+        $fieldset = $config['fieldset'] ?? false;
+        $fieldId = $config['fieldId'] ?? "$id-field";
+        $label = $config['fieldLabel'] ?? $config['label'] ?? null;
+
+        if ($label === '__blank__') {
+            $label = null;
+        }
+
+        $siteId = Craft::$app->getIsMultiSite() && isset($config['siteId']) ? (int)$config['siteId'] : null;
+
         if (str_starts_with($input, 'template:')) {
             // Set labelledBy and describedBy values in case the input template supports it
-            if (!isset($config['labelledBy'])) {
+            if (!isset($config['labelledBy']) && $label) {
                 $config['labelledBy'] = $labelId;
             }
             if (!isset($config['describedBy'])) {
@@ -624,16 +638,6 @@ class Cp
 
             $input = static::renderTemplate(substr($input, 9), $config);
         }
-
-        $fieldset = $config['fieldset'] ?? false;
-        $fieldId = $config['fieldId'] ?? "$id-field";
-        $label = $config['fieldLabel'] ?? $config['label'] ?? null;
-
-        if ($label === '__blank__') {
-            $label = null;
-        }
-
-        $siteId = Craft::$app->getIsMultiSite() && isset($config['siteId']) ? (int)$config['siteId'] : null;
 
         if ($siteId) {
             $site = Craft::$app->getSites()->getSiteById($siteId);
@@ -668,32 +672,37 @@ class Cp
             ])
             : '';
 
-        $labelHtml = $label . (
-            ($required
-                ? Html::tag('span', Craft::t('app', 'Required'), [
-                    'class' => ['visually-hidden'],
-                ]) .
-                Html::tag('span', '', [
-                    'class' => ['required'],
-                    'aria' => [
-                        'hidden' => 'true',
-                    ],
-                ])
-                : '') .
-            ($translatable
-                ? Html::tag('span', '', [
-                    'class' => ['t9n-indicator'],
-                    'title' => $config['translationDescription'] ?? Craft::t('app', 'This field is translatable.'),
-                    'data' => [
-                        'icon' => 'language',
-                    ],
-                    'aria' => [
-                        'label' => $config['translationDescription'] ?? Craft::t('app', 'This field is translatable.'),
-                    ],
-                    'role' => 'img',
-                ])
-                : '')
-            );
+        if ($label) {
+            $labelHtml = $label . (
+                    ($required
+                        ? Html::tag('span', Craft::t('app', 'Required'), [
+                            'class' => ['visually-hidden'],
+                        ]) .
+                        Html::tag('span', '', [
+                            'class' => ['required'],
+                            'aria' => [
+                                'hidden' => 'true',
+                            ],
+                        ])
+                        : '') .
+                    ($translatable
+                        ? Html::tag('span', '', [
+                            'class' => ['t9n-indicator'],
+                            'title' => $config['translationDescription'] ?? Craft::t('app', 'This field is translatable.'),
+                            'data' => [
+                                'icon' => 'language',
+                            ],
+                            'aria' => [
+                                'label' => $config['translationDescription'] ?? Craft::t('app', 'This field is translatable.'),
+                            ],
+                            'role' => 'img',
+                        ])
+                        : '')
+                );
+        } else {
+            $labelHtml = '';
+        }
+
 
         $containerTag = $fieldset ? 'fieldset' : 'div';
 
@@ -1110,7 +1119,10 @@ class Cp
      */
     public static function dateTimeFieldHtml(array $config): string
     {
-        $config['id'] = $config['id'] ?? 'datetime' . mt_rand();
+        $config += [
+            'id' => 'datetime' . mt_rand(),
+            'fieldset' => true,
+        ];
         return static::fieldHtml('template:_includes/forms/datetime.twig', $config);
     }
 

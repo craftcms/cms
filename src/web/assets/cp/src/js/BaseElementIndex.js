@@ -85,7 +85,6 @@ Craft.BaseElementIndex = Garnish.Base.extend(
     exportersByType: null,
     _$triggers: null,
 
-    _ignoreFailedRequest: false,
     _cancelToken: null,
 
     viewMenus: null,
@@ -365,11 +364,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
     _cancelRequests: function () {
       if (this._cancelToken) {
-        this._ignoreFailedRequest = true;
         this._cancelToken.cancel();
-        Garnish.requestAnimationFrame(() => {
-          this._ignoreFailedRequest = false;
-        });
       }
     },
 
@@ -465,9 +460,9 @@ Craft.BaseElementIndex = Garnish.Base.extend(
           this.initSources();
           this.selectDefaultSource();
         })
-        .catch(() => {
-          this.setIndexAvailable();
-          if (!this._ignoreFailedRequest) {
+        .catch((e) => {
+          if (!axios.isCancel(e)) {
+            this.setIndexAvailable();
             Craft.cp.displayError(Craft.t('app', 'A server error occurred.'));
           }
         });
@@ -613,16 +608,23 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       }
     },
 
-    getSourceState: function (source, key, defaultValue) {
-      if (typeof this.sourceStates[source] === 'undefined') {
+    getSourceState: function (sourceKey, key, defaultValue) {
+      // account for when all sources are disabled
+      if (sourceKey == undefined) {
+        return null;
+      }
+
+      sourceKey = sourceKey.replace(/\/.*/, '');
+
+      if (typeof this.sourceStates[sourceKey] === 'undefined') {
         // Set it now so any modifications to it by whoever's calling this will be stored.
-        this.sourceStates[source] = {};
+        this.sourceStates[sourceKey] = {};
       }
 
       if (typeof key === 'undefined') {
-        return this.sourceStates[source];
-      } else if (typeof this.sourceStates[source][key] !== 'undefined') {
-        return this.sourceStates[source][key];
+        return this.sourceStates[sourceKey];
+      } else if (typeof this.sourceStates[sourceKey][key] !== 'undefined') {
+        return this.sourceStates[sourceKey][key];
       } else {
         return typeof defaultValue !== 'undefined' ? defaultValue : null;
       }
@@ -638,6 +640,11 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
     setSelecetedSourceState: function (key, value) {
       var viewState = this.getSelectedSourceState();
+
+      // account for when all sources are disabled
+      if (viewState == null) {
+        viewState = [];
+      }
 
       if (typeof key === 'object') {
         for (let k in key) {
@@ -655,7 +662,21 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         delete viewState[key];
       }
 
-      this.sourceStates[this.instanceState.selectedSource] = viewState;
+      // account for when all sources are disabled
+      let sourceKey = '*';
+      if (this.instanceState.selectedSource != undefined) {
+        // otherwise do what we used to do
+        sourceKey = this.instanceState.selectedSource.replace(/\/.*/, '');
+      }
+
+      this.sourceStates[sourceKey] = viewState;
+
+      // Clean up sourceStates while we're at it
+      for (let i in this.sourceStates) {
+        if (this.sourceStates.hasOwnProperty(i) && i.includes('/')) {
+          delete this.sourceStates[i];
+        }
+      }
 
       // Store it in localStorage too
       Craft.setLocalStorage(this.sourceStatesStorageKey, this.sourceStates);
@@ -897,10 +918,20 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       })
         .then((response) => {
           this.setIndexAvailable();
-          (this.settings.context === 'index'
-            ? Garnish.$scrollContainer
-            : this.$main
-          ).scrollTop(0);
+
+          if (this.settings.context === 'index') {
+            if (Craft.cp.fixedHeader) {
+              const headerContainerHeight = Craft.cp.$headerContainer.height();
+              const maxScrollTop =
+                this.$main.offset().top - headerContainerHeight;
+              if (maxScrollTop < Garnish.$scrollContainer.scrollTop()) {
+                Garnish.$scrollContainer.scrollTop(maxScrollTop);
+              }
+            }
+          } else {
+            this.$main.scrollTop(0);
+          }
+
           this._updateView(params, response.data);
 
           if (pageChanged) {
@@ -909,8 +940,8 @@ Craft.BaseElementIndex = Garnish.Base.extend(
           }
         })
         .catch((e) => {
-          this.setIndexAvailable();
-          if (!this._ignoreFailedRequest) {
+          if (!axios.isCancel(e)) {
+            this.setIndexAvailable();
             Craft.cp.displayError(Craft.t('app', 'A server error occurred.'));
           }
         });
@@ -1094,7 +1125,8 @@ Craft.BaseElementIndex = Garnish.Base.extend(
      * @returns {string}
      */
     getSelectedSortAttribute: function ($source) {
-      $source = $source || this.$source;
+      $source = $source ? this.getRootSource($source) : this.$rootSource;
+
       if ($source) {
         const attribute = this.getSourceState($source.data('key'), 'order');
 
@@ -1302,7 +1334,9 @@ Craft.BaseElementIndex = Garnish.Base.extend(
     selectSource: function (source) {
       const $source = $(source);
 
-      if (!$source || !$source.length) {
+      // return false if there truly are no sources;
+      // don't attempt to check only default/visible sources
+      if (!this.sourcesByKey || !Object.keys(this.sourcesByKey).length) {
         return false;
       }
 
@@ -1455,7 +1489,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
      * @returns {Object[]}
      */
     getSortOptions: function ($source) {
-      $source = $source || this.$rootSource;
+      $source = $source ? this.getRootSource($source) : this.$rootSource;
       const sortOptions = ($source ? $source.data('sort-opts') : null) || [];
 
       // Make sure there's at least one non-structure attribute
@@ -1488,7 +1522,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
      * @returns {string[]}
      */
     getDefaultSort: function ($source) {
-      $source = $source || this.$rootSource;
+      $source = $source ? this.getRootSource($source) : this.$rootSource;
       if ($source) {
         let defaultSort = $source.data('default-sort');
         if (defaultSort) {
@@ -1520,7 +1554,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
      * @returns {Object[]}
      */
     getTableColumnOptions: function ($source) {
-      $source = $source || this.$rootSource;
+      $source = $source ? this.getRootSource($source) : this.$rootSource;
       return ($source ? $source.data('table-col-opts') : null) || [];
     },
 
@@ -1543,7 +1577,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
      * @returns {string[]}
      */
     getDefaultTableColumns: function ($source) {
-      $source = $source || this.$rootSource;
+      $source = $source ? this.getRootSource($source) : this.$rootSource;
       return ($source ? $source.data('default-table-cols') : null) || [];
     },
 
@@ -1553,7 +1587,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
      * @returns {string[]}
      */
     getSelectedTableColumns: function ($source) {
-      $source = $source || this.$source;
+      $source = $source ? this.getRootSource($source) : this.$rootSource;
       if ($source) {
         const attributes = this.getSourceState(
           $source.data('key'),
@@ -1931,6 +1965,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       var $option = $(ev.selectedOption).addClass('sel');
       this.$siteMenuBtn.html($option.html());
       this._setSite($option.data('site-id'));
+      this.updateElements();
       this.onSelectSite();
     },
 
@@ -1968,8 +2003,6 @@ Craft.BaseElementIndex = Garnish.Base.extend(
           Craft.cp.setSiteId(siteId);
         }
 
-        // Update the elements
-        this.updateElements();
         this.updateFilterBtn();
       }
     },
@@ -2585,8 +2618,8 @@ Craft.BaseElementIndex = Garnish.Base.extend(
           Craft.getActionUrl('element-indexes/export'),
           params
         )
-          .catch(() => {
-            if (!this._ignoreFailedRequest) {
+          .catch((e) => {
+            if (!axios.isCancel(e)) {
               Craft.cp.displayError(Craft.t('app', 'A server error occurred.'));
             }
           })

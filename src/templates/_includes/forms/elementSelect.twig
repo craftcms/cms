@@ -30,7 +30,7 @@
 {% tag 'div' with containerAttributes %}
     <div class="elements">
         {% for element in elements %}
-            {% set element = include('_elements/element', {
+            {% set element = include('_elements/element.twig', {
                 context: 'field',
                 size: (viewMode == 'large' ? 'large' : 'small')
             }) %}

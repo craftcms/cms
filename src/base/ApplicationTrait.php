@@ -99,6 +99,7 @@ use craft\services\Webpack;
 use craft\web\Application as WebApplication;
 use craft\web\AssetManager;
 use craft\web\Request as WebRequest;
+use craft\web\User as UserSession;
 use craft\web\View;
 use Illuminate\Support\Collection;
 use Yii;
@@ -321,7 +322,9 @@ trait ApplicationTrait
         if ($useUserLanguage) {
             // If the user is logged in *and* has a primary language set, use that
             // (don't actually try to fetch the user, as plugins haven't been loaded yet)
-            $id = Session::get($this->getUser()->idParam);
+            /** @var UserSession $user */
+            $user = $this->getUser();
+            $id = Session::get($user->idParam);
             if (
                 $id &&
                 ($language = $this->getUsers()->getUserPreference($id, 'language')) !== null &&
@@ -419,6 +422,23 @@ trait ApplicationTrait
     public function getIsInitialized(): bool
     {
         return $this->_isInitialized;
+    }
+
+    /**
+     * Invokes a callback method when Craft is fully initialized.
+     *
+     * @param callable $callback
+     * @since 4.3.5
+     */
+    public function onInit(callable $callback): void
+    {
+        if ($this->_isInitialized) {
+            $callback();
+        } else {
+            $this->on(WebApplication::EVENT_INIT, function() use ($callback) {
+                $callback();
+            });
+        }
     }
 
     /**

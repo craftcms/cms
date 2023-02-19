@@ -257,6 +257,9 @@ class GeneralConfig extends BaseConfig
         'gif',
         'gz',
         'gzip',
+        'heic',
+        'heif',
+        'hevc',
         'itt',
         'jp2',
         'jpeg',
@@ -646,7 +649,7 @@ class GeneralConfig extends BaseConfig
      * ->cpTrigger(null)
      * ```
      * ```shell Environment Override
-     * CRAFT_CP_TRIGGER=null
+     * CRAFT_CP_TRIGGER=
      * ```
      * :::
      *
@@ -1783,6 +1786,12 @@ class GeneralConfig extends BaseConfig
      * ```
      * :::
      *
+     * ::: tip
+     * Even when this is set to `true`, the script name could still be included in some action URLs.
+     * If you want to ensure that `index.php` is fully omitted from **all** generated URLs, set the <config4:pathParam>
+     * config setting to `null`.
+     * :::
+     *
      * @group Routing
      */
     public bool $omitScriptNameInUrls = false;
@@ -1850,7 +1859,7 @@ class GeneralConfig extends BaseConfig
      * ->pathParam(null)
      * ```
      * ```shell Environment Override
-     * CRAFT_PATH_PARAM=null
+     * CRAFT_PATH_PARAM=
      * ```
      * :::
      *
@@ -1902,7 +1911,7 @@ class GeneralConfig extends BaseConfig
      * ->phpSessionName(null)
      * ```
      * ```shell Environment Override
-     * CRAFT_PHP_SESSION_NAME=null
+     * CRAFT_PHP_SESSION_NAME=
      * ```
      * :::
      *

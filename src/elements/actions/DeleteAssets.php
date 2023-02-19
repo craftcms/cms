@@ -81,7 +81,7 @@ JS, [static::class]);
 
         try {
             foreach ($query->all() as $asset) {
-                if ($elementsService->canDelete($asset, $user)) {
+                if ($elementsService->canView($asset, $user) && $elementsService->canDelete($asset, $user)) {
                     $elementsService->deleteElement($asset);
                 }
             }
