@@ -1675,6 +1675,15 @@ JS,
         }
 
         $emailSent = Craft::$app->getUsers()->sendActivationEmail($user);
+        $userVariable = $this->request->getValidatedBodyParam('userVariable') ?? 'user';
+
+        if ($user->hasErrors()) {
+            return $this->asModelFailure(
+                $user,
+                Craft::t('app', 'Couldn’t send activation email.'),
+                $userVariable,
+            );
+        }
 
         return $emailSent ?
             $this->asSuccess(Craft::t('app', 'Activation email sent.')) :

@@ -412,6 +412,10 @@ class Users extends Component
     {
         $url = $this->getActivationUrl($user);
 
+        if (!$url) {
+            return false;
+        }
+
         return Craft::$app->getMailer()
             ->composeFromKey('account_activation', ['link' => Template::raw($url)])
             ->setTo($user)
@@ -429,6 +433,10 @@ class Users extends Component
     public function sendNewEmailVerifyEmail(User $user): bool
     {
         $url = $this->getEmailVerifyUrl($user);
+
+        if (!$url) {
+            return false;
+        }
 
         return Craft::$app->getMailer()
             ->composeFromKey('verify_new_email', ['link' => Template::raw($url)])
@@ -448,6 +456,10 @@ class Users extends Component
     {
         $url = $this->getPasswordResetUrl($user);
 
+        if (!$url) {
+            return false;
+        }
+
         return Craft::$app->getMailer()
             ->composeFromKey('forgot_password', ['link' => Template::raw($url)])
             ->setTo($user)
@@ -460,7 +472,7 @@ class Users extends Component
      * @param User $user
      * @return string
      */
-    public function getActivationUrl(User $user): string
+    public function getActivationUrl(User $user): ?string
     {
         // If the user doesn't have a password yet, use a Password Reset URL
         if (!$user->password) {
@@ -476,7 +488,7 @@ class Users extends Component
      * @param User $user The user that should get the new Email Verification URL.
      * @return string The new Email Verification URL.
      */
-    public function getEmailVerifyUrl(User $user): string
+    public function getEmailVerifyUrl(User $user): ?string
     {
         $fePath = Craft::$app->getConfig()->getGeneral()->getVerifyEmailPath();
         return $this->_getUserUrl($user, $fePath, Request::CP_PATH_VERIFY_EMAIL);
@@ -488,7 +500,7 @@ class Users extends Component
      * @param User $user The user that should get the new Password Reset URL
      * @return string The new Password Reset URL.
      */
-    public function getPasswordResetUrl(User $user): string
+    public function getPasswordResetUrl(User $user): ?string
     {
         $fePath = Craft::$app->getConfig()->getGeneral()->getSetPasswordPath();
         return $this->_getUserUrl($user, $fePath, Request::CP_PATH_SET_PASSWORD);
@@ -1157,7 +1169,7 @@ class Users extends Component
      * @param User $user The user.
      * @return string The user’s brand new verification code.
      */
-    public function setVerificationCodeOnUser(User $user): string
+    public function setVerificationCodeOnUser(User $user): ?string
     {
         $userRecord = $this->_getUserRecordById($user->id);
 
@@ -1177,11 +1189,23 @@ class Users extends Component
             $userRecord->pending = true;
         }
 
+        $transaction = Craft::$app->getDb()->beginTransaction();
         $userRecord->save();
 
+        $originalUser = clone $user;
         $user->pending = $userRecord->pending;
         $user->verificationCode = $hashedCode;
         $user->verificationCodeIssuedDate = $issueDate;
+
+        if (!$user->validate()) {
+            $transaction->rollBack();
+            $user->pending = $originalUser->pending;
+            $user->verificationCode = $originalUser->verificationCode;
+            $user->verificationCodeIssuedDate = $originalUser->verificationCodeIssuedDate;
+            return null;
+        }
+
+        $transaction->commit();
 
         // Invalidate caches
         Craft::$app->getElements()->invalidateCachesForElement($user);
@@ -1533,9 +1557,13 @@ class Users extends Component
      * @see getPasswordResetUrl()
      * @see getEmailVerifyUrl()
      */
-    private function _getUserUrl(User $user, string $fePath, string $cpPath): string
+    private function _getUserUrl(User $user, string $fePath, string $cpPath): ?string
     {
         $unhashedVerificationCode = $this->setVerificationCodeOnUser($user);
+
+        if (!$unhashedVerificationCode) {
+            return null;
+        }
 
         $params = [
             'code' => $unhashedVerificationCode,
