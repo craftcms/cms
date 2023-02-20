@@ -607,6 +607,16 @@ class ElementHelper
             $sources = $source['nested'] ?? [];
         }
 
+        if (!str_starts_with($sourceKey, 'custom:')) {
+            // Let the element get involved
+            /** @var string|ElementInterface $elementType */
+            $source = $elementType::findSource($sourceKey, $context);
+            if ($source) {
+                $source['type'] = ElementSources::TYPE_NATIVE;
+                return $source;
+            }
+        }
+
         return null;
     }
 
@@ -738,13 +748,12 @@ class ElementHelper
                 return '';
             }
 
-            $label = Craft::t('app', 'Enabled');
-            return Html::tag('div', '', [
+            return Html::tag('span', '', [
                 'class' => 'checkbox-icon',
                 'role' => 'img',
-                'title' => $label,
+                'title' => Craft::t('app', 'Enabled'),
                 'aria' => [
-                    'label' => $label,
+                    'label' => Craft::t('app', 'Enabled'),
                 ],
             ]);
         }

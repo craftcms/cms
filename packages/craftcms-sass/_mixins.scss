@@ -92,7 +92,7 @@ $textColor: $grey700;
 $mediumDarkTextColor: $grey550;
 $mediumTextColor: $grey550;
 $lightTextColor: $grey500;
-$linkColor: #2563eb;
+$linkColor: #1f5fea;
 
 // menu colors
 $menuOptionColor: $textColor;
@@ -119,7 +119,7 @@ $darkFocusRing: 0 0 0 1px $darkFocusColor,
 
 // selection colors
 $lightSelColor: $grey200;
-$darkSelColor: $grey600;
+$darkSelColor: $grey500;
 
 // alert/notice colors
 $errorColor: $red600;
@@ -287,6 +287,14 @@ $radioSize: 16px;
 @mixin light-focus-ring() {
   --focus-ring: 0 0 0 1px hsl(var(--light-focus-hsl)),
     0 0 0 3px hsla(var(--light-focus-hsl), 0.7);
+}
+
+@mixin custom-color-focus-ring($primary, $secondary: null) {
+  @if $secondary != null {
+    --focus-ring: 0 0 0 1px #{$primary}, 0 0 0 3px #{$secondary};
+  } @else {
+    --focus-ring: 0 0 0 3px #{$primary};
+  }
 }
 
 @mixin two-color-focus-ring($light-button: true) {

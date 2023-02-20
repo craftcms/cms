@@ -13,9 +13,11 @@ use Craft;
 use craft\base\Model;
 use craft\helpers\App;
 use craft\helpers\Console;
+use craft\mutex\Mutex as CraftMutex;
 use yii\base\Action;
 use yii\base\InvalidRouteException;
 use yii\console\Exception;
+use yii\redis\Mutex as RedisMutex;
 
 /**
  * ConsoleControllerTrait implements the common methods and properties for console controllers.
@@ -113,13 +115,46 @@ trait ControllerTrait
             $uniqueId = $action->getUniqueId();
             $name = "isolated-command:$uniqueId";
 
-            if (!Craft::$app->getMutex()->acquire($name)) {
+            $mutex = Craft::$app->getMutex();
+            if (!$mutex->acquire($name)) {
                 $this->stderr("The $uniqueId command is already running.\n", Console::FG_RED);
                 return false;
             }
 
             // Remember the lock name for runAction()
             $this->isolationMutexName = $name;
+
+            // If they're using a Redis mutex, make sure it’s set to a 15 minute duration
+            if ($mutex instanceof RedisMutex) {
+                $expire = $mutex->expire;
+            } elseif ($mutex instanceof CraftMutex && $mutex->mutex instanceof RedisMutex) {
+                $expire = $mutex->mutex->expire;
+            } else {
+                $expire = false;
+            }
+
+            if ($expire !== false && $expire < 900) {
+                $this->warning(<<<MD
+The `mutex` component is configured to let locks expire after $expire seconds.
+To ensure `--isolated` works reliably, modify the component definition in
+`config/app.php` so `expire` is set to 900 seconds for console requests:
+
+```php
+'mutex' => function() {
+    \$config = [
+        'class' => craft\\mutex\\Mutex::class,
+        'mutex' => [
+            'class' => yii\\redis\\Mutex::class,
+            'expire' => Craft::\$app->request->isConsoleRequest ? 900 : 30,
+            // ...
+        ],
+    ];
+    return Craft::createObject(\$config);
+},
+```
+MD
+                );
+            }
         }
 
         return true;
@@ -207,5 +242,77 @@ trait ControllerTrait
 
             return true;
         };
+    }
+
+    /**
+     * Outputs a note to the console.
+     *
+     * @param string $message The message. Supports Markdown formatting.
+     * @since 4.4.0
+     */
+    public function note(string $message, string $icon = 'ℹ️ '): void
+    {
+        $this->stdout("\n$icon ", Console::FG_YELLOW, Console::BOLD);
+        $this->stdout(trim(preg_replace('/^/m', '   ', $this->markdownToAnsi($message))) . "\n\n");
+    }
+
+    /**
+     * Outputs a success message to the console.
+     *
+     * @param string $message The message. Supports Markdown formatting.
+     * @since 4.4.0
+     */
+    public function success(string $message): void
+    {
+        $this->note($message, '✅');
+    }
+
+    /**
+     * Outputs a failure message to the console.
+     *
+     * @param string $message The message. Supports Markdown formatting.
+     * @since 4.4.0
+     */
+    public function failure(string $message): void
+    {
+        $this->note($message, '❌');
+    }
+
+    /**
+     * Outputs a tip to the console.
+     *
+     * @param string $message The message. Supports Markdown formatting.
+     * @since 4.4.0
+     */
+    public function tip(string $message): void
+    {
+        $this->note($message, '💡');
+    }
+
+    /**
+     * Outputs a warning to the console.
+     *
+     * @param string $message The message. Supports Markdown formatting.
+     * @since 4.4.0
+     */
+    public function warning(string $message): void
+    {
+        $this->note($message, '⚠️ ');
+    }
+
+    /**
+     * Converts Markdown to be better readable in console environments by applying some ANSI format.
+     *
+     * @param string $markdown
+     * @return string
+     * @since 4.4.0
+     */
+    public function markdownToAnsi(string $markdown): string
+    {
+        if (!$this->isColorEnabled()) {
+            return $markdown;
+        }
+
+        return trim(Console::markdownToAnsi($markdown));
     }
 }

@@ -44,6 +44,12 @@ class AssetIndexingSession extends Model
     public bool $cacheRemoteImages;
 
     /**
+     * @var bool Whether empty folders should be listed for deletion.
+     * @since 4.4.0
+     */
+    public bool $listEmptyFolders;
+
+    /**
      * Whether this session runs in CLI.
      *
      * @var bool
@@ -74,4 +80,10 @@ class AssetIndexingSession extends Model
      * @var array The missing entries.
      */
     public array $missingEntries = [];
+
+    /**
+     * @var bool Whether to continue processing if the FS root folder is empty.
+     * @since 4.4.0
+     */
+    public bool $processIfRootEmpty = false;
 }

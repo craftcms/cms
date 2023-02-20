@@ -314,21 +314,15 @@ class Category extends Element
             'uri' => Craft::t('app', 'URI'),
             [
                 'label' => Craft::t('app', 'Date Created'),
-                'orderBy' => 'elements.dateCreated',
-                'attribute' => 'dateCreated',
+                'orderBy' => 'dateCreated',
                 'defaultDir' => 'desc',
             ],
             [
                 'label' => Craft::t('app', 'Date Updated'),
-                'orderBy' => 'elements.dateUpdated',
-                'attribute' => 'dateUpdated',
+                'orderBy' => 'dateUpdated',
                 'defaultDir' => 'desc',
             ],
-            [
-                'label' => Craft::t('app', 'ID'),
-                'orderBy' => 'elements.id',
-                'attribute' => 'id',
-            ],
+            'id ' => Craft::t('app', 'ID'),
         ];
     }
 
@@ -338,6 +332,8 @@ class Category extends Element
     protected static function defineTableAttributes(): array
     {
         return [
+            'ancestors' => ['label' => Craft::t('app', 'Ancestors')],
+            'parent' => ['label' => Craft::t('app', 'Parent')],
             'slug' => ['label' => Craft::t('app', 'Slug')],
             'uri' => ['label' => Craft::t('app', 'URI')],
             'link' => ['label' => Craft::t('app', 'Link'), 'icon' => 'world'],
@@ -530,7 +526,12 @@ class Category extends Element
      */
     public function canDuplicate(User $user): bool
     {
-        return true;
+        if (parent::canDuplicate($user)) {
+            return true;
+        }
+
+        $group = $this->getGroup();
+        return $user->can("saveCategories:$group->uid");
     }
 
     /**

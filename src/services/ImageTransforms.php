@@ -222,6 +222,8 @@ class ImageTransforms extends Component
             'position' => $transform->position,
             'quality' => (int)$transform->quality ?: null,
             'width' => (int)$transform->width ?: null,
+            'fill' => $transform->fill,
+            'upscale' => $transform->upscale,
         ];
 
         $configPath = ProjectConfig::PATH_IMAGE_TRANSFORMS . '.' . $transform->uid;
@@ -258,8 +260,10 @@ class ImageTransforms extends Component
             $modeChanged = $transformRecord->mode !== $data['mode'] || $transformRecord->position !== $data['position'];
             $qualityChanged = $transformRecord->quality !== $data['quality'];
             $interlaceChanged = $transformRecord->interlace !== $data['interlace'];
+            $fillChanged = $transformRecord->fill !== ($data['fill'] ?? null);
+            $upscaleChanged = $transformRecord->upscale !== ($data['upscale'] ?? null);
 
-            if ($heightChanged || $modeChanged || $qualityChanged || $interlaceChanged) {
+            if ($heightChanged || $modeChanged || $qualityChanged || $interlaceChanged || $fillChanged || $upscaleChanged) {
                 $transformRecord->parameterChangeTime = Db::prepareDateForDb(new DateTime());
                 $deleteTransformIndexes = true;
             }
@@ -271,6 +275,8 @@ class ImageTransforms extends Component
             $transformRecord->quality = $data['quality'];
             $transformRecord->interlace = $data['interlace'];
             $transformRecord->format = $data['format'];
+            $transformRecord->fill = $data['fill'] ?? null;
+            $transformRecord->upscale = $data['upscale'] ?? null;
             $transformRecord->uid = $transformUid;
 
             $transformRecord->save(false);
@@ -600,6 +606,8 @@ class ImageTransforms extends Component
                 'format',
                 'quality',
                 'interlace',
+                'fill',
+                'upscale',
                 'parameterChangeTime',
                 'uid',
             ])

@@ -152,7 +152,7 @@ class Cp extends Component
     }
 
     /**
-     * Returns the Craft ID account URL.
+     * Returns the Craft Console account URL.
      *
      * @return string
      */

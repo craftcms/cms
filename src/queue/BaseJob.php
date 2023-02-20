@@ -37,6 +37,12 @@ abstract class BaseJob extends BaseObject implements JobInterface
      */
     private ?string $_progressLabel = null;
 
+    public function __wakeup(): void
+    {
+        $this->_progress = 0;
+        $this->_progressLabel = null;
+    }
+
     /**
      * @inheritdoc
      */

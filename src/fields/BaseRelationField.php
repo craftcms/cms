@@ -19,6 +19,7 @@ use craft\base\PreviewableFieldInterface;
 use craft\db\Query;
 use craft\db\QueryAbortedException;
 use craft\db\Table as DbTable;
+use craft\elements\conditions\ElementCondition;
 use craft\elements\conditions\ElementConditionInterface;
 use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
@@ -1203,6 +1204,11 @@ JS;
             }
         }
 
+        $selectionCondition = $this->getSelectionCondition();
+        if ($selectionCondition instanceof ElementCondition) {
+            $selectionCondition->referenceElement = $element;
+        }
+
         return [
             'jsClass' => $this->inputJsClass,
             'elementType' => static::elementType(),
@@ -1213,7 +1219,8 @@ JS;
             'name' => $this->handle,
             'elements' => $value,
             'sources' => $this->getInputSources($element),
-            'condition' => $this->getSelectionCondition(),
+            'condition' => $selectionCondition,
+            'referenceElement' => $element,
             'criteria' => $selectionCriteria,
             'showSiteMenu' => ($this->targetSiteId || !$this->showSiteMenu) ? false : 'auto',
             'allowSelfRelations' => (bool)$this->allowSelfRelations,

@@ -338,7 +338,6 @@ class Cp
         bool $autoReload = true,
     ): string {
         $isDraft = $element->getIsDraft();
-        $isRevision = !$isDraft && $element->getIsRevision();
         $label = $element->getUiLabel();
         $showStatus = $showStatus && ($isDraft || $element::hasStatuses());
 
@@ -376,11 +375,20 @@ class Cp
             $imgHtml = '';
         }
 
+        $title = '';
+        foreach ($element->getUiLabelPath() as $segment) {
+            $title .= "$segment → ";
+        }
+        $title .= $label;
+        if (Craft::$app->getIsMultiSite()) {
+            $title .= sprintf(' - %s', Craft::t('site', $element->getSite()->getName()));
+        }
+
         $attributes = ArrayHelper::merge(
             Html::normalizeTagAttributes($element->getHtmlAttributes($context)),
             [
                 'class' => ['element', $size],
-                'title' => $label . (Craft::$app->getIsMultiSite() ? ' – ' . Craft::t('site', $element->getSite()->getName()) : ''),
+                'title' => $title,
                 'data' => array_filter([
                     'type' => get_class($element),
                     'id' => $element->id,
@@ -422,14 +430,16 @@ class Cp
         $elementsService = Craft::$app->getElements();
         $user = Craft::$app->getUser()->getIdentity();
 
-        if ($user) {
-            if ($elementsService->canView($element, $user)) {
-                $attributes['data']['editable'] = true;
-            }
+        if ($user && $elementsService->canView($element, $user)) {
+            $attributes['data']['editable'] = true;
 
             if ($context === 'index') {
                 if ($elementsService->canSave($element, $user)) {
                     $attributes['data']['savable'] = true;
+                }
+
+                if ($elementsService->canDuplicate($element, $user)) {
+                    $attributes['data']['duplicatable'] = true;
                 }
 
                 if ($elementsService->canDelete($element, $user)) {
@@ -463,7 +473,13 @@ class Cp
             $innerHtml .= '<div class="label">';
             $innerHtml .= '<span class="title">';
 
-            $encodedLabel = Html::encode($label);
+            $encodedLabel = '';
+
+            foreach ($element->getUiLabelPath() as $segment) {
+                $encodedLabel .= Html::tag('span', Html::encode($segment), ['class' => 'segment']);
+            }
+
+            $encodedLabel .= Html::encode($label);
 
             if ($showDraftName && $isDraft && !$element->getIsUnpublishedDraft()) {
                 /** @var DraftBehavior|ElementInterface $element */
@@ -613,9 +629,19 @@ class Cp
         $errors = $config['errors'] ?? null;
         $status = $config['status'] ?? null;
 
+        $fieldset = $config['fieldset'] ?? false;
+        $fieldId = $config['fieldId'] ?? "$id-field";
+        $label = $config['fieldLabel'] ?? $config['label'] ?? null;
+
+        if ($label === '__blank__') {
+            $label = null;
+        }
+
+        $siteId = Craft::$app->getIsMultiSite() && isset($config['siteId']) ? (int)$config['siteId'] : null;
+
         if (str_starts_with($input, 'template:')) {
             // Set labelledBy and describedBy values in case the input template supports it
-            if (!isset($config['labelledBy'])) {
+            if (!isset($config['labelledBy']) && $label) {
                 $config['labelledBy'] = $labelId;
             }
             if (!isset($config['describedBy'])) {
@@ -631,16 +657,6 @@ class Cp
 
             $input = static::renderTemplate(substr($input, 9), $config);
         }
-
-        $fieldset = $config['fieldset'] ?? false;
-        $fieldId = $config['fieldId'] ?? "$id-field";
-        $label = $config['fieldLabel'] ?? $config['label'] ?? null;
-
-        if ($label === '__blank__') {
-            $label = null;
-        }
-
-        $siteId = Craft::$app->getIsMultiSite() && isset($config['siteId']) ? (int)$config['siteId'] : null;
 
         if ($siteId) {
             $site = Craft::$app->getSites()->getSiteById($siteId);
@@ -676,34 +692,38 @@ class Cp
             ])
             : '';
 
-        $labelHtml = $label . (
-            ($required
-                ? Html::tag('span', Craft::t('app', 'Required'), [
-                    'class' => ['visually-hidden'],
-                ]) .
-                Html::tag('span', '', [
-                    'class' => ['required'],
-                    'aria' => [
-                        'hidden' => 'true',
-                    ],
-                ])
-                : '') .
-            ($translatable
-                ? Html::tag('span', '', [
-                    'class' => array_filter(['t9n-indicator', ($copyable ? 'copyable' : '')]),
-                    'title' => $config['translationDescription'] ?? Craft::t('app', 'This field is translatable.'),
-                    'data' => [
-                        'icon' => 'language',
-                        'handle' => $attribute,
-                    ],
-                    'aria' => [
-                        'label' => $config['translationDescription'] ?? Craft::t('app', 'This field is translatable.'),
-                    ],
-                    'role' => 'link',
-                    'tabindex' => 0,
-                ])
-                : '')
-            );
+        if ($label) {
+            $labelHtml = $label . (
+                    ($required
+                        ? Html::tag('span', Craft::t('app', 'Required'), [
+                            'class' => ['visually-hidden'],
+                        ]) .
+                        Html::tag('span', '', [
+                            'class' => ['required'],
+                            'aria' => [
+                                'hidden' => 'true',
+                            ],
+                        ])
+                        : '') .
+                    ($translatable
+                        ? Html::tag('span', '', [
+                            'class' => array_filter(['t9n-indicator', ($copyable ? 'copyable' : '')]),
+                            'title' => $config['translationDescription'] ?? Craft::t('app', 'This field is translatable.'),
+                            'data' => [
+                                'icon' => 'language',
+                                'handle' => $attribute,
+                            ],
+                            'aria' => [
+                                'label' => $config['translationDescription'] ?? Craft::t('app', 'This field is translatable.'),
+                            ],
+                            'role' => 'link',
+                            'tabindex' => 0,
+                        ])
+                        : '')
+                );
+        } else {
+            $labelHtml = '';
+        }
 
         $containerTag = $fieldset ? 'fieldset' : 'div';
 
@@ -1120,7 +1140,10 @@ class Cp
      */
     public static function dateTimeFieldHtml(array $config): string
     {
-        $config['id'] = $config['id'] ?? 'datetime' . mt_rand();
+        $config += [
+            'id' => 'datetime' . mt_rand(),
+            'fieldset' => true,
+        ];
         return static::fieldHtml('template:_includes/forms/datetime.twig', $config);
     }
 
@@ -1709,6 +1732,7 @@ JS;
                 'title' => Craft::t('app', 'This tab is conditional'),
                 'aria' => ['label' => Craft::t('app', 'This tab is conditional')],
                 'data' => ['icon' => 'condition'],
+                'role' => 'img',
             ]) : '') .
             Html::endTag('span') .
             ($customizable

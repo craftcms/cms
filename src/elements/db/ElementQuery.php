@@ -488,6 +488,15 @@ class ElementQuery extends Query implements ElementQueryInterface
     private array|null $_cacheTags = null;
 
     /**
+     * @var array<string,string> Column alias => name mapping
+     * @see prepare()
+     * @see joinElementTable()
+     * @see _applyOrderByParams()
+     * @see _applySelectParam()
+     */
+    private array $_columnMap = [];
+
+    /**
      * @var bool Whether an element table has been joined for the query
      * @see prepare()
      * @see joinElementTable()
@@ -560,6 +569,7 @@ class ElementQuery extends Query implements ElementQueryInterface
     /**
      * @inheritdoc
      * @uses $inReverse
+     * @return static
      */
     public function inReverse(bool $value = true): self
     {
@@ -570,6 +580,7 @@ class ElementQuery extends Query implements ElementQueryInterface
     /**
      * @inheritdoc
      * @uses $asArray
+     * @return static
      */
     public function asArray(bool $value = true): self
     {
@@ -580,6 +591,7 @@ class ElementQuery extends Query implements ElementQueryInterface
     /**
      * @inheritdoc
      * @uses $asArray
+     * @return static
      */
     public function ignorePlaceholders(bool $value = true): self
     {
@@ -590,6 +602,7 @@ class ElementQuery extends Query implements ElementQueryInterface
     /**
      * @inheritdoc
      * @uses $drafts
+     * @return static
      */
     public function drafts(?bool $value = true): self
     {
@@ -601,6 +614,7 @@ class ElementQuery extends Query implements ElementQueryInterface
      * @inheritdoc
      * @uses $draftId
      * @uses $drafts
+     * @return static
      */
     public function draftId(?int $value = null): self
     {
@@ -615,6 +629,7 @@ class ElementQuery extends Query implements ElementQueryInterface
      * @inheritdoc
      * @uses $draftOf
      * @uses $drafts
+     * @return static
      */
     public function draftOf($value): self
     {
@@ -635,6 +650,7 @@ class ElementQuery extends Query implements ElementQueryInterface
      * @inheritdoc
      * @uses $draftCreator
      * @uses $drafts
+     * @return static
      */
     public function draftCreator($value): self
     {
@@ -655,6 +671,7 @@ class ElementQuery extends Query implements ElementQueryInterface
      * @inheritdoc
      * @uses $provisionalDrafts
      * @uses $drafts
+     * @return static
      */
     public function provisionalDrafts(?bool $value = true): self
     {
@@ -668,6 +685,7 @@ class ElementQuery extends Query implements ElementQueryInterface
     /**
      * @inheritdoc
      * @uses $savedDraftsOnly
+     * @return static
      */
     public function savedDraftsOnly(bool $value = true): self
     {
@@ -678,6 +696,7 @@ class ElementQuery extends Query implements ElementQueryInterface
     /**
      * @inheritdoc
      * @uses $revisions
+     * @return static
      */
     public function revisions(?bool $value = true): self
     {
@@ -689,6 +708,7 @@ class ElementQuery extends Query implements ElementQueryInterface
      * @inheritdoc
      * @uses $revisionId
      * @uses $revisions
+     * @return static
      */
     public function revisionId(?int $value = null): self
     {
@@ -703,6 +723,7 @@ class ElementQuery extends Query implements ElementQueryInterface
      * @inheritdoc
      * @uses $revisionOf
      * @uses $revisions
+     * @return static
      */
     public function revisionOf($value): self
     {
@@ -723,6 +744,7 @@ class ElementQuery extends Query implements ElementQueryInterface
      * @inheritdoc
      * @uses $revisionCreator
      * @uses $revisions
+     * @return static
      */
     public function revisionCreator($value): self
     {
@@ -742,6 +764,7 @@ class ElementQuery extends Query implements ElementQueryInterface
     /**
      * @inheritdoc
      * @uses $id
+     * @return static
      */
     public function id($value): self
     {
@@ -752,6 +775,7 @@ class ElementQuery extends Query implements ElementQueryInterface
     /**
      * @inheritdoc
      * @uses $uid
+     * @return static
      */
     public function uid($value): self
     {
@@ -762,6 +786,7 @@ class ElementQuery extends Query implements ElementQueryInterface
     /**
      * @inheritdoc
      * @uses $siteSettingsId
+     * @return static
      */
     public function siteSettingsId($value): self
     {
@@ -772,6 +797,7 @@ class ElementQuery extends Query implements ElementQueryInterface
     /**
      * @inheritdoc
      * @uses $fixedOrder
+     * @return static
      */
     public function fixedOrder(bool $value = true): self
     {
@@ -782,6 +808,7 @@ class ElementQuery extends Query implements ElementQueryInterface
     /**
      * @inheritdoc
      * @uses $orderBy
+     * @return static
      */
     public function orderBy($columns): self
     {
@@ -798,6 +825,7 @@ class ElementQuery extends Query implements ElementQueryInterface
     /**
      * @inheritdoc
      * @uses $orderBy
+     * @return static
      */
     public function addOrderBy($columns): self
     {
@@ -820,6 +848,7 @@ class ElementQuery extends Query implements ElementQueryInterface
     /**
      * @inheritdoc
      * @uses $status
+     * @return static
      */
     public function status(array|string|null $value): self
     {
@@ -830,6 +859,7 @@ class ElementQuery extends Query implements ElementQueryInterface
     /**
      * @inheritdoc
      * @uses $archived
+     * @return static
      */
     public function archived(bool $value = true): self
     {
@@ -840,6 +870,7 @@ class ElementQuery extends Query implements ElementQueryInterface
     /**
      * @inheritdoc
      * @uses $trashed
+     * @return static
      */
     public function trashed(?bool $value = true): self
     {
@@ -850,6 +881,7 @@ class ElementQuery extends Query implements ElementQueryInterface
     /**
      * @inheritdoc
      * @uses $dateCreated
+     * @return static
      */
     public function dateCreated(mixed $value): self
     {
@@ -860,6 +892,7 @@ class ElementQuery extends Query implements ElementQueryInterface
     /**
      * @inheritdoc
      * @uses $dateUpdated
+     * @return static
      */
     public function dateUpdated(mixed $value): self
     {
@@ -871,6 +904,7 @@ class ElementQuery extends Query implements ElementQueryInterface
      * @inheritdoc
      * @throws InvalidArgumentException if $value is invalid
      * @uses $siteId
+     * @return static
      */
     public function site($value): self
     {
@@ -907,6 +941,7 @@ class ElementQuery extends Query implements ElementQueryInterface
     /**
      * @inheritdoc
      * @uses $siteId
+     * @return static
      */
     public function siteId($value): self
     {
@@ -929,6 +964,7 @@ class ElementQuery extends Query implements ElementQueryInterface
      * @inheritdoc
      * @uses $unique
      * @since 3.2.0
+     * @return static
      */
     public function unique(bool $value = true): self
     {
@@ -940,6 +976,7 @@ class ElementQuery extends Query implements ElementQueryInterface
      * @inheritdoc
      * @uses $preferSites
      * @since 3.2.0
+     * @return static
      */
     public function preferSites(?array $value = null): self
     {
@@ -950,6 +987,7 @@ class ElementQuery extends Query implements ElementQueryInterface
     /**
      * @inheritdoc
      * @uses $relatedTo
+     * @return static
      */
     public function relatedTo($value): self
     {
@@ -961,6 +999,7 @@ class ElementQuery extends Query implements ElementQueryInterface
      * @inheritdoc
      * @throws NotSupportedException
      * @uses $relatedTo
+     * @return static
      */
     public function andRelatedTo($value): self
     {
@@ -989,6 +1028,7 @@ class ElementQuery extends Query implements ElementQueryInterface
     /**
      * @inheritdoc
      * @uses $title
+     * @return static
      */
     public function title($value): self
     {
@@ -999,6 +1039,7 @@ class ElementQuery extends Query implements ElementQueryInterface
     /**
      * @inheritdoc
      * @uses $slug
+     * @return static
      */
     public function slug($value): self
     {
@@ -1009,6 +1050,7 @@ class ElementQuery extends Query implements ElementQueryInterface
     /**
      * @inheritdoc
      * @uses $uri
+     * @return static
      */
     public function uri($value): self
     {
@@ -1019,6 +1061,7 @@ class ElementQuery extends Query implements ElementQueryInterface
     /**
      * @inheritdoc
      * @uses $search
+     * @return static
      */
     public function search($value): self
     {
@@ -1029,6 +1072,7 @@ class ElementQuery extends Query implements ElementQueryInterface
     /**
      * @inheritdoc
      * @uses $ref
+     * @return static
      */
     public function ref($value): self
     {
@@ -1039,6 +1083,7 @@ class ElementQuery extends Query implements ElementQueryInterface
     /**
      * @inheritdoc
      * @uses $with
+     * @return static
      */
     public function with(array|string|null $value): self
     {
@@ -1049,6 +1094,7 @@ class ElementQuery extends Query implements ElementQueryInterface
     /**
      * @inheritdoc
      * @uses $with
+     * @return static
      */
     public function andWith(array|string|null $value): self
     {
@@ -1066,6 +1112,7 @@ class ElementQuery extends Query implements ElementQueryInterface
     /**
      * @inheritdoc
      * @uses $withStructure
+     * @return static
      */
     public function withStructure(bool $value = true): self
     {
@@ -1076,6 +1123,7 @@ class ElementQuery extends Query implements ElementQueryInterface
     /**
      * @inheritdoc
      * @uses $structureId
+     * @return static
      */
     public function structureId(?int $value = null): self
     {
@@ -1086,6 +1134,7 @@ class ElementQuery extends Query implements ElementQueryInterface
     /**
      * @inheritdoc
      * @uses $level
+     * @return static
      */
     public function level($value = null): self
     {
@@ -1096,6 +1145,7 @@ class ElementQuery extends Query implements ElementQueryInterface
     /**
      * @inheritdoc
      * @uses $hasDescendants
+     * @return static
      */
     public function hasDescendants(bool $value = true): self
     {
@@ -1106,6 +1156,7 @@ class ElementQuery extends Query implements ElementQueryInterface
     /**
      * @inheritdoc
      * @uses $leaves
+     * @return static
      */
     public function leaves(bool $value = true): self
     {
@@ -1116,6 +1167,7 @@ class ElementQuery extends Query implements ElementQueryInterface
     /**
      * @inheritdoc
      * @uses $ancestorOf
+     * @return static
      */
     public function ancestorOf(ElementInterface|int|null $value): self
     {
@@ -1126,6 +1178,7 @@ class ElementQuery extends Query implements ElementQueryInterface
     /**
      * @inheritdoc
      * @uses $ancestorDist
+     * @return static
      */
     public function ancestorDist(?int $value = null): self
     {
@@ -1136,6 +1189,7 @@ class ElementQuery extends Query implements ElementQueryInterface
     /**
      * @inheritdoc
      * @uses $descendantOf
+     * @return static
      */
     public function descendantOf(ElementInterface|int|null $value): self
     {
@@ -1146,6 +1200,7 @@ class ElementQuery extends Query implements ElementQueryInterface
     /**
      * @inheritdoc
      * @uses $descendantDist
+     * @return static
      */
     public function descendantDist(?int $value = null): self
     {
@@ -1156,6 +1211,7 @@ class ElementQuery extends Query implements ElementQueryInterface
     /**
      * @inheritdoc
      * @uses $siblingOf
+     * @return static
      */
     public function siblingOf(ElementInterface|int|null $value): self
     {
@@ -1166,6 +1222,7 @@ class ElementQuery extends Query implements ElementQueryInterface
     /**
      * @inheritdoc
      * @uses $prevSiblingOf
+     * @return static
      */
     public function prevSiblingOf(ElementInterface|int|null $value): self
     {
@@ -1176,6 +1233,7 @@ class ElementQuery extends Query implements ElementQueryInterface
     /**
      * @inheritdoc
      * @uses $nextSiblingOf
+     * @return static
      */
     public function nextSiblingOf(ElementInterface|int|null $value): self
     {
@@ -1186,6 +1244,7 @@ class ElementQuery extends Query implements ElementQueryInterface
     /**
      * @inheritdoc
      * @uses $positionedBefore
+     * @return static
      */
     public function positionedBefore(ElementInterface|int|null $value): self
     {
@@ -1196,6 +1255,7 @@ class ElementQuery extends Query implements ElementQueryInterface
     /**
      * @inheritdoc
      * @uses $positionedAfter
+     * @return static
      */
     public function positionedAfter(ElementInterface|int|null $value): self
     {
@@ -1206,7 +1266,7 @@ class ElementQuery extends Query implements ElementQueryInterface
     /**
      * Sets the [[status()|status]] param to `null`.
      *
-     * @return self self reference
+     * @return static
      * @since 3.0.17
      * @deprecated in 4.0.0. `status(null)` should be used instead.
      */
@@ -1287,6 +1347,16 @@ class ElementQuery extends Query implements ElementQueryInterface
             ->innerJoin(['elements' => Table::ELEMENTS], '[[elements.id]] = [[subquery.elementsId]]')
             ->innerJoin(['elements_sites' => Table::ELEMENTS_SITES], '[[elements_sites.id]] = [[subquery.elementsSitesId]]');
 
+        // Prepare a new column mapping
+        // (for use in SELECT and ORDER BY clauses)
+        $this->_columnMap = [
+            'id' => 'elements.id',
+            'enabled' => 'elements.enabled',
+            'dateCreated' => 'elements.dateCreated',
+            'dateUpdated' => 'elements.dateUpdated',
+            'uid' => 'elements.uid',
+        ];
+
         // Keep track of whether an element table is joined into the query
         $this->_joinedElementTable = false;
 
@@ -1311,7 +1381,8 @@ class ElementQuery extends Query implements ElementQueryInterface
             $this->subQuery->andWhere(['elements_sites.siteId' => $this->siteId]);
         }
 
-        if ($class::hasContent() && isset($this->contentTable)) {
+        $hasContent = $class::hasContent() && isset($this->contentTable);
+        if ($hasContent) {
             $this->customFields = $this->customFields();
             $this->_joinContentTable($class);
         } else {
@@ -1374,22 +1445,19 @@ class ElementQuery extends Query implements ElementQueryInterface
             $this->subQuery->andWhere(Db::parseParam('elements_sites.uri', $this->uri, '=', true));
         }
 
-        // Map ambiguous column names to the `elements` table
-        // (for use in SELECT and ORDER BY clauses)
-        $columnMap = [
-            'id' => 'elements.id',
-            'enabled' => 'elements.enabled',
-            'dateCreated' => 'elements.dateCreated',
-            'dateUpdated' => 'elements.dateUpdated',
-            'uid' => 'elements.uid',
-        ];
+        if ($hasContent) {
+            if ($class::hasTitles()) {
+                $this->_columnMap['title'] = 'content.title';
+            }
 
-        if (is_array($this->customFields)) {
             // Map custom field handles to their content columns
             foreach ($this->customFields as $field) {
-                if (($column = $this->_fieldColumn($field)) !== null) {
-                    $firstCol = is_string($column) ? $column : reset($column);
-                    $columnMap[$field->handle] = "content.$firstCol";
+                if (!isset($this->_columnMap[$field->handle])) {
+                    $column = $this->_fieldColumn($field);
+                    if ($column !== null) {
+                        $firstCol = is_string($column) ? $column : reset($column);
+                        $this->_columnMap[$field->handle] = "content.$firstCol";
+                    }
                 }
             }
         }
@@ -1398,8 +1466,8 @@ class ElementQuery extends Query implements ElementQueryInterface
         $this->_applyStructureParams($class);
         $this->_applyRevisionParams();
         $this->_applySearchParam($builder->db);
-        $this->_applyOrderByParams($builder->db, $columnMap);
-        $this->_applySelectParam($columnMap);
+        $this->_applyOrderByParams($builder->db);
+        $this->_applySelectParam();
         $this->_applyJoinParams();
 
         // Give other classes a chance to make changes up front
@@ -1730,13 +1798,14 @@ class ElementQuery extends Query implements ElementQueryInterface
      */
     public function fields(): array
     {
-        $fields = array_unique(array_merge(
-            array_keys(Craft::getObjectVars($this)),
-            array_keys(Craft::getObjectVars($this->getBehavior('customFields')))
-        ));
-        $fields = array_combine($fields, $fields);
+        $vars = array_keys(Craft::getObjectVars($this));
+        $behavior = $this->getBehavior('customFields');
+        $behaviorVars = array_keys(Craft::getObjectVars($behavior));
+        $fields = array_merge(
+            array_combine($vars, $vars),
+            array_combine($behaviorVars, array_map(fn(string $var) => fn() => $behavior->$var, $behaviorVars))
+        );
         unset($fields['query'], $fields['subQuery'], $fields['owner']);
-
         return $fields;
     }
 
@@ -2042,16 +2111,29 @@ class ElementQuery extends Query implements ElementQueryInterface
     }
 
     /**
-     * Joins in a table with an `id` column that has a foreign key pointing to `craft_elements`.`id`.
+     * Joins in a table with an `id` column that has a foreign key pointing to `elements.id`.
      *
-     * @param string $table The unprefixed table name. This will also be used as the table’s alias within the query.
+     * The table will be joined with an alias based on the unprefixed table name. For example,
+     * if `{{%entries}}` is passed, the table will be aliased to `entries`.
+     *
+     * @param string $table The table name, e.g. `entries` or `{{%entries}}`
      */
     protected function joinElementTable(string $table): void
     {
-        $joinTable = [$table => "{{%$table}}"];
-        $this->query->innerJoin($joinTable, "[[$table.id]] = [[subquery.elementsId]]");
-        $this->subQuery->innerJoin($joinTable, "[[$table.id]] = [[elements.id]]");
+        $alias = Db::rawTableShortName($table);
+        $table = "{{%$alias}}";
+
+        $joinTable = [$alias => $table];
+        $this->query->innerJoin($joinTable, "[[$alias.id]] = [[subquery.elementsId]]");
+        $this->subQuery->innerJoin($joinTable, "[[$alias.id]] = [[elements.id]]");
         $this->_joinedElementTable = true;
+
+        // Add element table cols to the column map
+        foreach (Craft::$app->getDb()->getTableSchema($table)->columns as $column) {
+            if (!isset($this->_columnMap[$column->name])) {
+                $this->_columnMap[$column->name] = "$alias.$column->name";
+            }
+        }
     }
 
     /**
@@ -2273,9 +2355,8 @@ class ElementQuery extends Query implements ElementQueryInterface
     private function _shouldJoinStructureData(): bool
     {
         return (
-            !$this->trashed &&
             !$this->revisions &&
-            ($this->withStructure ?? (bool)$this->structureId)
+            ($this->withStructure ?? ($this->structureId && !$this->trashed))
         );
     }
 
@@ -2646,12 +2727,10 @@ class ElementQuery extends Query implements ElementQueryInterface
      * Applies the 'fixedOrder' and 'orderBy' params to the query being prepared.
      *
      * @param Connection $db
-     * @param string[] $columnMap
-     * @phpstan-param array<string,string> $columnMap
      * @throws Exception if the DB connection doesn't support fixed ordering
      * @throws QueryAbortedException
      */
-    private function _applyOrderByParams(Connection $db, array $columnMap): void
+    private function _applyOrderByParams(Connection $db): void
     {
         if (!isset($this->orderBy) || !empty($this->query->orderBy)) {
             return;
@@ -2690,7 +2769,7 @@ class ElementQuery extends Query implements ElementQueryInterface
         $orderBy = array_merge($this->orderBy);
         $orderByColumns = array_keys($orderBy);
 
-        foreach ($columnMap as $orderValue => $columnName) {
+        foreach ($this->_columnMap as $orderValue => $columnName) {
             // Are we ordering by this column name?
             $pos = array_search($orderValue, $orderByColumns, true);
 
@@ -2755,11 +2834,8 @@ class ElementQuery extends Query implements ElementQueryInterface
 
     /**
      * Applies the 'select' param to the query being prepared.
-     *
-     * @param string[] $columnMap
-     * @phpstan-param array<string,string> $columnMap
      */
-    private function _applySelectParam(array $columnMap): void
+    private function _applySelectParam(): void
     {
         // Select all columns defined by [[select]], swapping out any mapped column names
         $select = [];
@@ -2770,12 +2846,12 @@ class ElementQuery extends Query implements ElementQueryInterface
                 $includeDefaults = true;
             } else {
                 // Is this a mapped column name (without a custom alias)?
-                if ($alias === $column && isset($columnMap[$alias])) {
-                    $column = $columnMap[$alias];
+                if ($alias === $column && isset($this->_columnMap[$alias])) {
+                    $column = $this->_columnMap[$alias];
 
                     // Completely ditch the mapped name if instantiated elements are going to be returned
                     if (!$this->asArray) {
-                        $alias = $columnMap[$alias];
+                        $alias = $this->_columnMap[$alias];
                     }
                 }
 

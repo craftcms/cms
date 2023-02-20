@@ -33,7 +33,7 @@ class CsvResponseFormatter extends Component implements ResponseFormatterInterfa
     public bool $includeHeaderRow = true;
 
     /**
-     * @var string[] the header row values. The array keys of first result in
+     * @var string[] the header row values. The unique keys across all rows in
      * [[YiiResponse::$data]] will be used by default.
      */
     public array $headers;
@@ -80,15 +80,35 @@ class CsvResponseFormatter extends Component implements ResponseFormatterInterfa
 
         $suspectCharacters = ['=', '-', '+', '@'];
 
-        $headersIncluded = false;
-
-        foreach ($data as $row) {
-            // Include the headers
-            if (!$headersIncluded && $this->includeHeaderRow) {
-                $headers = $this->headers ?? array_keys($row);
-                fputcsv($fp, $headers, ',');
-                $headersIncluded = true;
+        // If $this->headers is set, we can trust that the data will be uniform
+        if (isset($this->headers)) {
+            $headers = $this->headers;
+        } else {
+            // Find all the unique keys
+            $keys = [];
+            foreach ($data as $row) {
+                // Can't use `$keys += $row` here because that wouldn't give us the desired
+                // result if any numeric keys are being used
+                foreach (array_keys($row) as $key) {
+                    $keys[$key] = null;
+                }
             }
+            $headers = array_keys($keys);
+            foreach ($data as &$row) {
+                $normalizedRow = [];
+                foreach ($headers as $key) {
+                    $normalizedRow[] = $row[$key] ?? '';
+                }
+                $row = $normalizedRow;
+            }
+            unset($row);
+        }
+
+        if ($this->includeHeaderRow) {
+            fputcsv($fp, $headers, ',');
+        }
+
+        foreach ($data as &$row) {
             foreach ($row as &$field) {
                 if (is_scalar($field)) {
                     $field = (string)$field;
@@ -105,6 +125,7 @@ class CsvResponseFormatter extends Component implements ResponseFormatterInterfa
             unset($field);
             fputcsv($fp, $row, $this->delimiter, $this->enclosure, $this->escapeChar);
         }
+        unset($row);
 
         fclose($fp);
         $response->content = file_get_contents($file);

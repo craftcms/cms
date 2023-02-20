@@ -20,6 +20,7 @@ use craft\helpers\ArrayHelper;
 use craft\helpers\Cp;
 use craft\helpers\Db;
 use craft\helpers\ElementHelper;
+use craft\helpers\Html;
 use GraphQL\Type\Definition\Type;
 use yii\db\Schema;
 
@@ -212,5 +213,26 @@ class Lightswitch extends Field implements PreviewableFieldInterface, SortableFi
     public function getIsCopyable(?ElementInterface $element = null): bool
     {
         return $this->getIsTranslatable($element) && ElementHelper::supportsFieldCopying($element);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getTableAttributeHtml(mixed $value, ElementInterface $element): string
+    {
+        if (!$value) {
+            return '';
+        }
+        
+        $label = $this->onLabel ?: Craft::t('app', 'Enabled');
+
+        return Html::tag('span', '', [
+            'class' => 'checkbox-icon',
+            'role' => 'img',
+            'title' => $label,
+            'aria' => [
+                'label' => $label,
+            ],
+        ]);
     }
 }

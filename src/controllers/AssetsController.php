@@ -11,6 +11,7 @@ use Craft;
 use craft\assetpreviews\Image as ImagePreview;
 use craft\base\Element;
 use craft\elements\Asset;
+use craft\elements\conditions\ElementCondition;
 use craft\errors\AssetException;
 use craft\errors\DeprecationException;
 use craft\errors\ElementNotFoundException;
@@ -19,12 +20,15 @@ use craft\errors\UploadFailedException;
 use craft\errors\VolumeException;
 use craft\fields\Assets as AssetsField;
 use craft\helpers\App;
+use craft\helpers\ArrayHelper;
 use craft\helpers\Assets;
 use craft\helpers\Db;
+use craft\helpers\FileHelper;
 use craft\helpers\ImageTransforms;
 use craft\helpers\StringHelper;
 use craft\i18n\Formatter;
 use craft\imagetransforms\ImageTransformer;
+use craft\models\ImageTransform;
 use craft\models\VolumeFolder;
 use craft\web\Controller;
 use craft\web\UploadedFile;
@@ -63,6 +67,56 @@ class AssetsController extends Controller
      * @inheritdoc
      */
     protected array|bool|int $allowAnonymous = ['generate-thumb', 'generate-transform'];
+
+    /**
+     * Displays the Assets index page.
+     *
+     * @return Response
+     * @since 4.4.0
+     */
+    public function actionIndex(string $defaultSource = null)
+    {
+        $this->requireCpRequest();
+
+        $variables = [];
+
+        if ($defaultSource) {
+            $defaultSourcePath = ArrayHelper::filterEmptyStringsFromArray(explode('/', $defaultSource));
+            $volumesService = Craft::$app->getVolumes();
+            $volume = $volumesService->getVolumeByHandle(array_shift($defaultSourcePath));
+
+            if ($volume) {
+                $assetsService = Craft::$app->getAssets();
+                $rootFolder = $assetsService->getRootFolderByVolumeId($volume->id);
+                $variables['defaultSource'] = "volume:$volume->uid";
+
+                if (!empty($defaultSourcePath)) {
+                    $subfolder = $assetsService->findFolder([
+                        'volumeId' => $volume->id,
+                        'path' => sprintf('%s/', implode('/', $defaultSourcePath)),
+                    ]);
+                    if ($subfolder) {
+                        $sourcePath = [];
+                        /** @var VolumeFolder[] $folders */
+                        $folders = [];
+                        while ($subfolder) {
+                            array_unshift($folders, $subfolder);
+                            $subfolder = $subfolder->getParent();
+                        }
+                        foreach ($folders as $i => $folder) {
+                            if ($i < count($folders) - 1) {
+                                $folder->setHasChildren(true);
+                            }
+                            $sourcePath[] = $folder->getSourcePathInfo();
+                        }
+                        $variables['defaultSourcePath'] = $sourcePath;
+                    }
+                }
+            }
+        }
+
+        return $this->renderTemplate('assets/_index', $variables);
+    }
 
     /**
      * Returns an updated preview image for an asset.
@@ -209,6 +263,9 @@ class AssetsController extends Controller
             $folderId = $field->resolveDynamicPathToFolderId($element);
 
             $selectionCondition = $field->getSelectionCondition();
+            if ($selectionCondition instanceof ElementCondition) {
+                $selectionCondition->referenceElement = $element;
+            }
         } else {
             $selectionCondition = null;
         }
@@ -1286,5 +1343,50 @@ class AssetsController extends Controller
         }
 
         return $tempPath;
+    }
+
+    /**
+     * Generates a fallback transform.
+     *
+     * @param int $assetId
+     * @param string $transform
+     * @return Response
+     * @since 4.4.0
+     */
+    public function actionGenerateFallbackTransform(int $assetId, string $transform): Response
+    {
+        $transformString = Craft::$app->getSecurity()->validateData($transform);
+        if ($transformString === false) {
+            throw new BadRequestHttpException('Request contained an invalid transform param.');
+        }
+
+        /** @var Asset|null $asset */
+        $asset = Asset::find()->id($assetId)->one();
+        if (!$asset) {
+            throw new NotFoundHttpException("Invalid asset ID: $assetId");
+        }
+
+        $transform = new ImageTransform(ImageTransforms::parseTransformString($transformString));
+        $ext = $transform->format ?: ImageTransforms::detectTransformFormat($asset);
+        $filename = sprintf('%s.%s', $asset->id, $ext);
+        $path = implode(DIRECTORY_SEPARATOR, [
+            Craft::$app->getPath()->getImageTransformsPath(),
+            $transformString,
+            $filename,
+        ]);
+
+        if (!file_exists($path) || filemtime($path) < ($asset->dateModified?->getTimestamp() ?? 0)) {
+            $tempPath = ImageTransforms::generateTransform($asset, $transform);
+            FileHelper::createDirectory(dirname($path));
+            rename($tempPath, $path);
+        }
+
+        $responseFilename = sprintf('%s.%s', $asset->getFilename(false), $ext);
+
+        return $this->response
+            ->setCacheHeaders()
+            ->sendFile($path, $responseFilename, [
+                'inline' => true,
+            ]);
     }
 }

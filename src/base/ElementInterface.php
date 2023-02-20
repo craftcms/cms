@@ -299,6 +299,16 @@ interface ElementInterface extends ComponentInterface
     public static function sources(string $context): array;
 
     /**
+     * Returns a source definition by a given source key/path and context.
+     *
+     * @param string $sourceKey
+     * @param string|null $context
+     * @return array|null
+     * @since 4.4.0
+     */
+    public static function findSource(string $sourceKey, ?string $context = null): ?array;
+
+    /**
      * Returns all of the field layouts associated with elements from the given source.
      *
      * This is used to determine which custom fields should be included in the element index sort menu,
@@ -387,6 +397,16 @@ interface ElementInterface extends ComponentInterface
      * @return string The element index HTML
      */
     public static function indexHtml(ElementQueryInterface $elementQuery, ?array $disabledElementIds, array $viewState, ?string $sourceKey, ?string $context, bool $includeContainer, bool $showCheckboxes): string;
+
+    /**
+     * Returns the total number of elements that will be shown on an element index, for the given element query.
+     *
+     * @param ElementQueryInterface $elementQuery
+     * @param string|null $sourceKey
+     * @return int
+     * @since 4.4.0
+     */
+    public static function indexElementCount(ElementQueryInterface $elementQuery, ?string $sourceKey): int;
 
     /**
      * Returns the sort options for the element type.
@@ -739,6 +759,22 @@ interface ElementInterface extends ComponentInterface
     public function setUiLabel(?string $label): void;
 
     /**
+     * Returns any path segment labels that should be prepended to the element’s UI label.
+     *
+     * @return string[]
+     * @since 4.4.0
+     */
+    public function getUiLabelPath(): array;
+
+    /**
+     * Defines any path segment labels that should be prepended to the element’s UI label.
+     *
+     * @param string[] $path
+     * @since 4.4.0
+     */
+    public function setUiLabelPath(array $path): void;
+
+    /**
      * Returns the reference string to this element.
      *
      * @return string|null
@@ -771,6 +807,8 @@ interface ElementInterface extends ComponentInterface
     /**
      * Returns whether the given user is authorized to save this element in its current form.
      *
+     * This will only be called if the element can be [[canView()|viewed]].
+     *
      * @param User $user
      * @return bool
      * @since 4.0.0
@@ -779,6 +817,8 @@ interface ElementInterface extends ComponentInterface
 
     /**
      * Returns whether the given user is authorized to duplicate this element.
+     *
+     * This will only be called if the element can be [[canView()|viewed]] and/or [[canSave()|saved]].
      *
      * @param User $user
      * @return bool
@@ -789,7 +829,7 @@ interface ElementInterface extends ComponentInterface
     /**
      * Returns whether the given user is authorized to delete this element.
      *
-     * This will only be called if the element can be [[canView()|viewed]].
+     * This will only be called if the element can be [[canView()|viewed]] and/or [[canSave()|saved]].
      *
      * @param User $user
      * @return bool
@@ -800,6 +840,8 @@ interface ElementInterface extends ComponentInterface
     /**
      * Returns whether the given user is authorized to delete this element for its current site.
      *
+     * This will only be called if the element can be [[canView()|viewed]] and/or [[canSave()|saved]].
+     *
      * @param User $user
      * @return bool
      * @since 4.0.0
@@ -808,6 +850,8 @@ interface ElementInterface extends ComponentInterface
 
     /**
      * Returns whether the given user is authorized to create drafts for this element.
+     *
+     * This will only be called if the element can be [[canView()|viewed]] and/or [[canSave()|saved]].
      *
      * ::: tip
      * If this is going to return `true` under any circumstances, make sure [[trackChanges()]] is returning `true`,

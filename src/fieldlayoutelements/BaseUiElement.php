@@ -34,6 +34,7 @@ abstract class BaseUiElement extends FieldLayoutElement
                 'title' => Craft::t('app', 'This element is conditional'),
                 'aria' => ['label' => Craft::t('app', 'This element is conditional')],
                 'data' => ['icon' => 'condition'],
+                'role' => 'img',
             ])
             : '');
 

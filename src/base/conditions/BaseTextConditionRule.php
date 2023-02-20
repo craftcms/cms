@@ -29,6 +29,11 @@ abstract class BaseTextConditionRule extends BaseConditionRule
     /**
      * @inheritdoc
      */
+    protected bool $reloadOnOperatorChange = true;
+
+    /**
+     * @inheritdoc
+     */
     public function getConfig(): array
     {
         return array_merge(parent::getConfig(), [
@@ -68,6 +73,10 @@ abstract class BaseTextConditionRule extends BaseConditionRule
      */
     protected function inputHtml(): string
     {
+        // don't show the value input if the condition checks for empty/notempty
+        if ($this->operator === self::OPERATOR_EMPTY || $this->operator === self::OPERATOR_NOT_EMPTY) {
+            return '';
+        }
         return
             Html::hiddenLabel(Html::encode($this->getLabel()), 'value') .
             Cp::textHtml($this->inputOptions());
