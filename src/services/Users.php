@@ -791,6 +791,7 @@ class Users extends Component
             return false;
         }
 
+        $originalUser = clone $user;
         $user->active = true;
         $user->pending = false;
         $user->locked = false;
@@ -802,6 +803,16 @@ class Users extends Component
         $user->lockoutDate = null;
 
         if (!$user->validate()) {
+            $user->active = $originalUser->active;
+            $user->pending = $originalUser->pending;
+            $user->locked = $originalUser->locked;
+            $user->suspended = $originalUser->suspended;
+            $user->verificationCode = $originalUser->verificationCode;
+            $user->verificationCodeIssuedDate = $originalUser->verificationCodeIssuedDate;
+            $user->invalidLoginCount = $originalUser->invalidLoginCount;
+            $user->lastInvalidLoginDate = $originalUser->lastInvalidLoginDate;
+            $user->lockoutDate = $originalUser->lockoutDate;
+
             return false;
         }
 
