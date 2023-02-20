@@ -127,6 +127,19 @@ class UserElementTest extends TestCase
         $this->tester->deleteElement($user);
     }
 
+    public function testUserStatusChange()
+    {
+        $this->expectException(Exception::class);
+        $this->activeUser->active = false;
+        $this->tester->saveElement($this->activeUser);
+
+        $this->activeUser->pending = true;
+        $this->tester->saveElement($this->activeUser);
+
+        $this->activeUser->suspended = false;
+        $this->tester->saveElement($this->activeUser);
+    }
+
     /**
      * @throws Exception
      */

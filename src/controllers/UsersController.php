@@ -736,10 +736,11 @@ class UsersController extends Controller
      *
      * @return Response
      */
-    public function actionActivateUser(): Response
+    public function actionActivateUser(): ?Response
     {
         $this->requirePermission('administrateUsers');
         $this->requirePostRequest();
+        $userVariable = $this->request->getValidatedBodyParam('userVariable') ?? 'user';
 
         $userId = $this->request->getRequiredBodyParam('userId');
         $user = Craft::$app->getUsers()->getUserById($userId);
@@ -749,9 +750,17 @@ class UsersController extends Controller
         }
 
         if (Craft::$app->getUsers()->activateUser($user)) {
-            $this->setSuccessFlash(Craft::t('app', 'Successfully activated the user.'));
+            return $this->asModelSuccess(
+                $user,
+                Craft::t('app', 'Successfully activated the user.'),
+                $userVariable,
+            );
         } else {
-            $this->setFailFlash(Craft::t('app', 'There was a problem activating the user.'));
+            return $this->asModelFailure(
+                $user,
+                Craft::t('app', 'There was a problem activating the user.'),
+                $userVariable,
+            );
         }
 
         return $this->redirectToPostedUrl();
