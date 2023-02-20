@@ -375,7 +375,7 @@ class Locale extends BaseObject
      * Sets the locale’s display name.
      *
      * @param string|null $displayName
-     * @since 4.4.0
+     * @since 5.0.0
      */
     public function setDisplayName(?string $displayName): void
     {
