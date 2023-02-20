@@ -55,10 +55,10 @@ class GlobalSetQuery extends ElementQuery
      * Sets the [[$editable]] property.
      *
      * @param bool $value The property value (defaults to true)
-     * @return self self reference
+     * @return static self reference
      * @uses $editable
      */
-    public function editable(bool $value = true): self
+    public function editable(bool $value = true): static
     {
         $this->editable = $value;
         return $this;
@@ -93,10 +93,10 @@ class GlobalSetQuery extends ElementQuery
      * ```
      *
      * @param mixed $value The property value
-     * @return self self reference
+     * @return static self reference
      * @uses $handle
      */
-    public function handle(mixed $value): self
+    public function handle(mixed $value): static
     {
         $this->handle = $value;
         return $this;
