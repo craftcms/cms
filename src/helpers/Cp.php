@@ -706,7 +706,7 @@ class Cp
                         ])
                         : '') .
                     ($translatable
-                        ? Html::tag('span', '', [
+                        ? Html::tag('button', '', [
                             'class' => array_filter(['t9n-indicator', ($copyable ? 'copyable' : '')]),
                             'title' => $config['translationDescription'] ?? Craft::t('app', 'This field is translatable.'),
                             'data' => [
@@ -716,8 +716,6 @@ class Cp
                             'aria' => [
                                 'label' => $config['translationDescription'] ?? Craft::t('app', 'This field is translatable.'),
                             ],
-                            'role' => 'link',
-                            'tabindex' => 0,
                         ])
                         : '')
                 );
