@@ -950,13 +950,6 @@ class UsersController extends Controller
                         'confirm' => Craft::t('app', 'Deactivating a user revokes their ability to sign in. Are you sure you want to continue?'),
                     ];
                 }
-
-                if ($isCurrentUser || $currentUser->can('deleteUsers')) {
-                    $destructiveActions[] = [
-                        'id' => 'delete-btn',
-                        'label' => Craft::t('app', 'Delete…'),
-                    ];
-                }
             }
         }
 

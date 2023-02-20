@@ -37,7 +37,7 @@
             <button type="button" class="btn submit formsubmit" data-form="userform">{{ 'Save'|t('app') }}</button>
             <button type="button" class="btn submit menubtn" data-form="userform"></button>
             <div class="menu">
-                <ul>
+                <ul role="group">
                     <li>
                         <a class="formsubmit" data-redirect="{{ (isNewUser ? 'users/{id}' : user.getCpEditUrl())|hash }}">
                             {{ forms.optionShortcutLabel('S') }}
@@ -46,6 +46,12 @@
                     </li>
                     <li><a class="formsubmit" data-redirect="{{ 'users/new#'|hash }}">{{ "Save and add another"|t('app') }}</a></li>
                 </ul>
+                {% if user.getIsCurrent() or currentUser.can('deleteUsers') %}
+                    <hr>
+                    <ul role="group">
+                        <li><a class="error" id="delete-btn">{{ "Delete…"|t('app') }}</a></li>
+                    </ul>
+                {% endif %}
             </div>
         </div>
     {% endif %}
