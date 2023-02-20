@@ -6,6 +6,7 @@
 - Improved source item navigation for screen readers. ([#12054](https://github.com/craftcms/cms/pull/12054))
 
 ### Administration
+- Added support for defining custom locale aliases, via a new `localeAliases` config setting. ([#12705](https://github.com/craftcms/cms/pull/12705))
 
 ### Development
 
