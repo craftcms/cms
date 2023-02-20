@@ -1582,11 +1582,11 @@ class User extends Element implements IdentityInterface
 
             case 'preferredLanguage':
                 $language = $this->getPreferredLanguage();
-                return $language ? (new Locale($language))->getDisplayName(Craft::$app->language) : '';
+                return $language ? Craft::$app->getI18n()->getLocaleById($language)->getDisplayName(Craft::$app->language) : '';
 
             case 'preferredLocale':
                 $locale = $this->getPreferredLocale();
-                return $locale ? (new Locale($locale))->getDisplayName(Craft::$app->language) : '';
+                return $locale ? Craft::$app->getI18n()->getLocaleById($locale)->getDisplayName(Craft::$app->language) : '';
         }
 
         return parent::tableAttributeHtml($attribute);
