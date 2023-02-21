@@ -796,7 +796,7 @@ class UserQuery extends ElementQuery
             return false;
         }
 
-        $this->joinElementTable('users');
+        $this->joinElementTable(Table::USERS);
 
         $this->query->select([
             'users.photoId',

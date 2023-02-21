@@ -1,6 +1,6 @@
 {% requireAdmin %}
 
-{% extends "_layouts/cp" %}
+{% extends '_layouts/cp.twig' %}
 
 {% set crumbs = [
     { label: "Settings"|t('app'), url: url('settings') }
@@ -9,7 +9,7 @@
 {% set fullPageForm = true %}
 {% set title = "Email Settings"|t('app') %}
 
-{% import "_includes/forms" as forms %}
+{% import '_includes/forms.twig' as forms %}
 
 {% do view.registerTranslations('app', [
     "Email sent successfully! Check your inbox.",
@@ -49,7 +49,6 @@
         name: 'fromEmail',
         suggestEnvVars: true,
         value: settings.fromEmail,
-        autofocus: true,
         required: true,
         errors: (freshSettings ? null : settings.getErrors('fromEmail'))
     }) }}

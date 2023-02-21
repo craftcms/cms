@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Fixed a bug where `craft\events\RegisterElementSourcesEvent::$context` wasn’t always set to `modal` when defining the available element sources for an element selection modal.
 - Fixed a bug where user activation/verification/reset-password URLs could be root-relative, if the `@web` alias was explicitly set to a root-relative URL.
 
 ## 4.3.10 - 2023-02-17

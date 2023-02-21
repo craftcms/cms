@@ -1,4 +1,4 @@
-{% extends "_layouts/cp" %}
+{% extends '_layouts/cp.twig' %}
 
 {% if CraftEdition == CraftPro and currentUser.can('editUsers') %}
     {% set crumbs = [
@@ -6,7 +6,7 @@
     ] %}
 {% endif %}
 
-{% import "_includes/forms" as forms %}
+{% import '_includes/forms.twig' as forms %}
 
 {% do view.registerAssetBundle("craft\\web\\assets\\fileupload\\FileUploadAsset") %}
 {% do view.setIsDeltaRegistrationActive(true) %}
@@ -158,7 +158,7 @@
                         {% do view.registerDeltaName('groups') %}
                         {% set assignableGroups = craft.app.userGroups.getAssignableGroups(user) %}
 
-                        {% embed '_includes/forms/field' with {
+                        {% embed '_includes/forms/field.twig' with {
                             fieldId: 'user-groups',
                         } %}
                             {% block input %}

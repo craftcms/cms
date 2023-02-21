@@ -41,7 +41,7 @@ class ElementSelectorModalsController extends BaseElementsController
 
         if (is_array($sourceKeys)) {
             $indexedSourceKeys = array_flip($sourceKeys);
-            $allSources = Craft::$app->getElementSources()->getSources($elementType);
+            $allSources = Craft::$app->getElementSources()->getSources($elementType, $context);
             $sources = [];
 
             foreach ($allSources as $source) {
@@ -81,7 +81,7 @@ class ElementSelectorModalsController extends BaseElementsController
                 }
             }
         } else {
-            $sources = Craft::$app->getElementSources()->getSources($elementType);
+            $sources = Craft::$app->getElementSources()->getSources($elementType, $context);
         }
 
         // Show the sidebar if there are at least two (non-heading) sources
