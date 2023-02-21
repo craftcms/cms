@@ -21,6 +21,7 @@
 - Added `craft\base\Element::indexElements()`.
 - Added `craft\base\ElementInterface::findSource()`.
 - Added `craft\base\ElementInterface::indexElementCount()`.
+- Added `craft\db\Migration::dropForeignKeyIfExists()`.
 - Added `craft\models\VolumeFolder::getHasChildren()`.
 - Added `craft\models\VolumeFolder::setHasChildren()`.
 - Added `craft\services\Assets::createFolderQuery()`.
@@ -40,3 +41,4 @@
 - The custom `activate` jQuery event will no longer trigger for <kbd>Ctrl</kbd>/<kbd>Command</kbd>-clicks.
 
 ### System
+- Fixed a database deadlock error that could occur when updating a relation or structure position for an element that was simultaneously being saved. ([#9905](https://github.com/craftcms/cms/issues/9905))
