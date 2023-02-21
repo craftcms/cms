@@ -8,10 +8,10 @@
 namespace craft\models;
 
 use Craft;
+use craft\base\BaseFsInterface;
 use craft\base\Field;
 use craft\base\FsInterface;
 use craft\base\Model;
-use craft\base\VolumeInterface;
 use craft\behaviors\FieldLayoutBehavior;
 use craft\elements\Asset;
 use craft\fs\MissingFs;
@@ -32,7 +32,7 @@ use yii\base\InvalidConfigException;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.0.0
  */
-class Volume extends Model implements VolumeInterface
+class Volume extends Model implements BaseFsInterface
 {
     /**
      * @var int|null ID

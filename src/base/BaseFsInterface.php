@@ -12,12 +12,12 @@ use craft\errors\FsObjectNotFoundException;
 use Generator;
 
 /**
- * VolumeInterface defines the common interface to be implemented by filesystem classes and volume model.
+ * BaseFsInterface defines the common interface to be implemented by filesystem classes and volume model.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.5.0
  */
-interface VolumeInterface
+interface BaseFsInterface
 {
     /**
      * List files.
