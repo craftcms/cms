@@ -37,7 +37,7 @@
             <button type="button" class="btn submit formsubmit" data-form="userform">{{ 'Save'|t('app') }}</button>
             <button type="button" class="btn submit menubtn" data-form="userform"></button>
             <div class="menu">
-                <ul role="group">
+                <ul>
                     <li>
                         <a class="formsubmit" data-redirect="{{ (isNewUser ? 'users/{id}' : user.getCpEditUrl())|hash }}">
                             {{ forms.optionShortcutLabel('S') }}

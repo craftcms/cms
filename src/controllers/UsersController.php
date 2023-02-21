@@ -749,13 +749,7 @@ class UsersController extends Controller
             $this->_noUserExists();
         }
 
-        if (Craft::$app->getUsers()->activateUser($user)) {
-            return $this->asModelSuccess(
-                $user,
-                Craft::t('app', 'Successfully activated the user.'),
-                $userVariable,
-            );
-        } else {
+        if (!Craft::$app->getUsers()->activateUser($user)) {
             return $this->asModelFailure(
                 $user,
                 Craft::t('app', 'There was a problem activating the user.'),
@@ -763,7 +757,11 @@ class UsersController extends Controller
             );
         }
 
-        return $this->redirectToPostedUrl();
+        return $this->asModelSuccess(
+            $user,
+            Craft::t('app', 'Successfully activated the user.'),
+            $userVariable,
+        );
     }
 
     /**
