@@ -356,7 +356,7 @@ class ImageTransformer extends Component implements ImageTransformerInterface, E
             }
 
             try {
-                $volume->getFs()->deleteFile($transformPath);
+                $volume->deleteFile($transformPath);
             } catch (Throwable) {
                 // Unlikely, but if it got deleted while we were comparing timestamps, don't freak out.
             }

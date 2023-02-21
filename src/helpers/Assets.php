@@ -8,6 +8,7 @@
 namespace craft\helpers;
 
 use Craft;
+use craft\base\BaseFsInterface;
 use craft\base\FsInterface;
 use craft\base\LocalFsInterface;
 use craft\elements\Asset;
@@ -79,14 +80,14 @@ class Assets
     /**
      * Generates the URL for an asset.
      *
-     * @param FsInterface $fs
+     * @param BaseFsInterface $fs
      * @param Asset $asset
      * @param string|null $uri Asset URI to use. Defaults to the filename.
      * @param DateTime|null $dateUpdated last datetime the target of the url was updated, if known
      * @return string
      * @throws InvalidConfigException if the asset doesn’t have a filename.
      */
-    public static function generateUrl(FsInterface $fs, Asset $asset, ?string $uri = null, ?DateTime $dateUpdated = null): string
+    public static function generateUrl(BaseFsInterface $fs, Asset $asset, ?string $uri = null, ?DateTime $dateUpdated = null): string
     {
         $pathParts = explode('/', $asset->folderPath . ($uri ?? $asset->getFilename()));
         $path = implode('/', array_map('rawurlencode', $pathParts));
@@ -845,14 +846,14 @@ class Assets
     /**
      * Save a file from a filesystem locally.
      *
-     * @param FsInterface $fs
+     * @param BaseFsInterface $fs
      * @param string $uriPath
      * @param string $localPath
      * @return int
      * @throws FsException
      * @since 4.0.0
      */
-    public static function downloadFile(FsInterface $fs, string $uriPath, string $localPath): int
+    public static function downloadFile(BaseFsInterface $fs, string $uriPath, string $localPath): int
     {
         $stream = $fs->getFileStream($uriPath);
         $outputStream = fopen($localPath, 'wb');

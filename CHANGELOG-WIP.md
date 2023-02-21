@@ -73,6 +73,7 @@
 - Element source definitions can now include a `defaultSourcePath` key.
 - Element custom field validation now respects the list of attributes passed to `validate()`.
 - Improving IDE autocompletion for chained query param calls. ([#12656](https://github.com/craftcms/cms/pull/12656))
+- Added `craft\base\BaseFsInterface`. ([#12709](https://github.com/craftcms/cms/pull/12709))
 - Added `craft\base\Batchable`.
 - Added `craft\base\Element::cpRevisionsUrl()`.
 - Added `craft\base\Element::indexElements()`.
@@ -138,9 +139,11 @@
 - Renamed `craft\elements\conditions\entries\EditableConditionRule` to `SavableConditionRule`, while preserving the original class name with an alias. ([#12266](https://github.com/craftcms/cms/pull/12266))
 - `craft\services\AssetIndexer::startIndexingSession()` and `createIndexingSession()` now have a `$listEmptyFolders` argument. ([#12604](https://github.com/craftcms/cms/pull/12604))
 - `craft\base\ElementQuery::joinElementTable()` now accepts table names in the format of `{{%tablename}}`.
+- `craft\models\Volume` now implements `craft\base\BaseFsInterface`. ([#12709](https://github.com/craftcms/cms/pull/12709))
 - `craft\services\Categories::getGroupByHandle()` now has a `$withTrashed` argument.
 - `craft\services\Globals::getSetByHandle()` now has a `$withTrashed` argument.
 - `craft\services\Tags::getTagGroupByHandle()` now has a `$withTrashed` argument.
+- Deprecated `craft\elements\Asset::getFs()`. `getVolume()` should be used instead.
 - Deprecated `craft\helpers\Assets::sortFolderTree()`.
 - Deprecated `craft\imagetransforms\ImageTransformer::ensureTransformUrlByIndexModel()`. `getTransformUrl()` should be used instead.
 - Deprecated `craft\imagetransforms\ImageTransformer::procureTransformedImage()`. `generateTransform()` should be used instead.
