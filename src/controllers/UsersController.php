@@ -14,6 +14,7 @@ use craft\elements\Address;
 use craft\elements\Asset;
 use craft\elements\Entry;
 use craft\elements\User;
+use craft\errors\InvalidElementException;
 use craft\errors\UploadFailedException;
 use craft\errors\UserLockedException;
 use craft\events\DefineUserContentSummaryEvent;
@@ -519,7 +520,7 @@ class UsersController extends Controller
             if (empty($errors) && !empty($user) && !Craft::$app->getUsers()->sendPasswordResetEmail($user)) {
                 throw new Exception();
             }
-        } catch (Throwable $e) {
+        } catch (Exception) {
             $errors[] = Craft::t('app', 'There was a problem sending the password reset email.');
         }
 
@@ -562,7 +563,7 @@ class UsersController extends Controller
 
         try {
             $url = Craft::$app->getUsers()->getPasswordResetUrl($user);
-        } catch (Throwable $exception) {
+        } catch (InvalidElementException) {
             $errors = $user->getFirstErrors();
             throw new BadRequestHttpException(reset($errors));
         }
@@ -763,9 +764,9 @@ class UsersController extends Controller
 
         try {
             if (!Craft::$app->getUsers()->activateUser($user)) {
-                throw new Exception();
+                throw new InvalidElementException($user);
             }
-        } catch (Throwable $exception) {
+        } catch (InvalidElementException) {
             return $this->asModelFailure(
                 $user,
                 Craft::t('app', 'There was a problem activating the user.'),
@@ -1697,7 +1698,7 @@ JS,
 
         try {
             $emailSent = Craft::$app->getUsers()->sendActivationEmail($user);
-        } catch (Throwable $exception) {
+        } catch (InvalidElementException) {
             $emailSent = false;
         }
 
