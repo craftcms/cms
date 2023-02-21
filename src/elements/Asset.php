@@ -1882,7 +1882,7 @@ JS;
      */
     public function getStream()
     {
-        return $this->getFs()->getFileStream($this->getPath());
+        return $this->_volume->getFileStream($this->getPath());
     }
 
     /**
@@ -2479,7 +2479,7 @@ JS;
     public function afterDelete(): void
     {
         if (!$this->keepFileOnDelete) {
-            $this->getFs()->deleteFile($this->getPath());
+            $this->_volume->deleteFile($this->getPath());
         }
 
         Craft::$app->getImageTransforms()->deleteAllTransformData($this);
@@ -2636,7 +2636,7 @@ JS;
 
         // Is this just a simple move/rename within the same volume?
         if (!isset($this->tempFilePath) && $oldFolder !== null && $oldFolder->volumeId == $newFolder->volumeId) {
-            $oldVolume->getFs()->renameFile($oldPath, $newPath);
+            $oldVolume->renameFile($oldPath, $newPath);
         } else {
             // Get the temp path
             if (isset($this->tempFilePath)) {
@@ -2662,12 +2662,12 @@ JS;
 
             if ($this->folderId) {
                 // Delete the old file
-                $oldVolume->getFs()->deleteFile($oldPath);
+                $oldVolume->deleteFile($oldPath);
             }
 
             // Upload the file to the new location
             try {
-                $newVolume->getFs()->writeFileFromStream($newPath, $stream, [
+                $newVolume->writeFileFromStream($newPath, $stream, [
                     Fs::CONFIG_MIMETYPE => FileHelper::getMimeType($tempPath),
                 ]);
             } catch (VolumeException $exception) {

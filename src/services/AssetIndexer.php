@@ -61,7 +61,7 @@ class AssetIndexer extends Component
     public function getIndexListOnVolume(Volume $volume, string $directory = ''): Generator
     {
         try {
-            $fileList = $volume->getFs()->getFileList($directory);
+            $fileList = $volume->getFileList($directory);
         } catch (InvalidConfigException|FsException $exception) {
             Craft::$app->getErrorHandler()->logException($exception);
             return;

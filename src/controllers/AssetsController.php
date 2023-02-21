@@ -379,7 +379,7 @@ class AssetsController extends Controller
             } else {
                 // If all we have is the filename, then make sure that the destination is empty and go for it.
                 $volume = $sourceAsset->getVolume();
-                $volume->getFs()->deleteFile(rtrim($sourceAsset->folderPath, '/') . '/' . $targetFilename);
+                $volume->deleteFile(rtrim($sourceAsset->folderPath, '/') . '/' . $targetFilename);
                 $sourceAsset->newFilename = $targetFilename;
                 // Don't validate required custom fields
                 Craft::$app->getElements()->saveElement($sourceAsset);
@@ -598,7 +598,7 @@ class AssetsController extends Controller
                 Craft::$app->getElements()->mergeElementsByIds($conflictingAsset->id, $asset->id);
             } else {
                 $volume = $folder->getVolume();
-                $volume->getFs()->deleteFile(rtrim($folder->path, '/') . '/' . $asset->getFilename());
+                $volume->deleteFile(rtrim($folder->path, '/') . '/' . $asset->getFilename());
             }
         }
 
@@ -667,7 +667,7 @@ class AssetsController extends Controller
         ]);
 
         if (!$existingFolder) {
-            $existingFolder = $targetVolume->getFs()->directoryExists(rtrim($destinationFolder->path, '/') . '/' . $folderToMove->name);
+            $existingFolder = $targetVolume->directoryExists(rtrim($destinationFolder->path, '/') . '/' . $folderToMove->name);
         }
 
         // If this a conflict and no force or merge flags were passed in then STOP RIGHT THERE!
@@ -719,7 +719,7 @@ class AssetsController extends Controller
                 }
             } elseif ($force) {
                 // An un-indexed folder is conflicting. If we're forcing things, just remove it.
-                $targetVolume->getFs()->deleteDirectory(rtrim($destinationFolder->path, '/') . '/' . $folderToMove->name);
+                $targetVolume->deleteDirectory(rtrim($destinationFolder->path, '/') . '/' . $folderToMove->name);
             }
 
             // Mirror the structure, passing along the exsting folder map

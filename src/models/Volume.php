@@ -11,6 +11,7 @@ use Craft;
 use craft\base\Field;
 use craft\base\FsInterface;
 use craft\base\Model;
+use craft\base\VolumeInterface;
 use craft\behaviors\FieldLayoutBehavior;
 use craft\elements\Asset;
 use craft\fs\MissingFs;
@@ -19,6 +20,7 @@ use craft\helpers\ArrayHelper;
 use craft\records\Volume as VolumeRecord;
 use craft\validators\HandleValidator;
 use craft\validators\UniqueValidator;
+use Generator;
 use yii\base\InvalidConfigException;
 
 /**
@@ -30,7 +32,7 @@ use yii\base\InvalidConfigException;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.0.0
  */
-class Volume extends Model
+class Volume extends Model implements VolumeInterface
 {
     /**
      * @var int|null ID
@@ -359,5 +361,126 @@ class Volume extends Model
         }
 
         return $config;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getFileList(string $directory = '', bool $recursive = true): Generator
+    {
+        return $this->getFs()->getFileList($directory, $recursive);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getFileSize(string $uri): int
+    {
+        return $this->getFs()->getFileSize($uri);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getDateModified(string $uri): int
+    {
+        return $this->getFs()->getDateModified($uri);
+    }
+
+
+    /**
+     * @inheritdoc
+     */
+    public function write(string $path, string $contents, array $config = []): void
+    {
+        $this->getFs()->write($path, $contents, $config);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function read(string $path): string
+    {
+        return $this->getFs()->read($path);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function writeFileFromStream(string $path, $stream, array $config = []): void
+    {
+        $this->getFs()->writeFileFromStream($path, $stream, $config);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function fileExists(string $path): bool
+    {
+        return $this->getFs()->fileExists($path);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function deleteFile(string $path): void
+    {
+        $this->getFs()->deleteFile($path);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function renameFile(string $path, string $newPath): void
+    {
+        $this->getFs()->renameFile($path, $newPath);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function copyFile(string $path, string $newPath): void
+    {
+        $this->getFs()->copyFile($path, $newPath);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getFileStream(string $uriPath)
+    {
+        return $this->getFs()->getFileStream($uriPath);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function directoryExists(string $path): bool
+    {
+        return $this->getFs()->directoryExists($path);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function createDirectory(string $path, array $config = []): void
+    {
+        $this->getFs()->createDirectory($path, $config);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function deleteDirectory(string $path): void
+    {
+        $this->getFs()->deleteDirectory($path);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function renameDirectory(string $path, string $newName): void
+    {
+        $this->getFs()->renameDirectory($path, $newName);
     }
 }
