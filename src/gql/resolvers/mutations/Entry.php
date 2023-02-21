@@ -104,7 +104,7 @@ class Entry extends ElementMutationResolver
     }
 
     /**
-     * Create a new draft for the entry id identified by the arguments
+     * Create a new draft for the entry ID identified by the arguments
      *
      * @param $source
      * @param array $arguments
@@ -207,12 +207,12 @@ class Entry extends ElementMutationResolver
             $entry = $elementService->createElement(EntryElement::class);
         }
 
-        // If they are identifying a specific entry, don't allow changing the section id.
+        // If they are identifying a specific entry, don't allow changing the section ID.
         if ($canIdentify && $entry->sectionId !== $section->id) {
             throw new Error('Impossible to change the section of an existing entry');
         }
 
-        // Null the field layout id in case the entry type changes.
+        // Null the field layout ID in case the entry type changes.
         if ($entry->typeId != $entryType->id) {
             $entry->fieldLayoutId = null;
         }

@@ -931,7 +931,7 @@ class Asset extends Element
     public $newFilename;
 
     /**
-     * @var int|null New folder id
+     * @var int|null New folder ID
      */
     public $newFolderId;
 
@@ -941,7 +941,7 @@ class Asset extends Element
     public $tempFilePath;
 
     /**
-     * @var bool Whether Asset should avoid filename conflicts when saved.
+     * @var bool Whether the asset should avoid filename conflicts when saved.
      */
     public $avoidFilenameConflicts = false;
 
@@ -1853,7 +1853,7 @@ class Asset extends Element
     }
 
     /**
-     * Set a source to use for transforms for this Assets File.
+     * Set a source to use for transforms for this asset.
      *
      * @param string $uri
      */
@@ -1956,7 +1956,7 @@ class Asset extends Element
     }
 
     /**
-     * Return whether the Asset has a URL.
+     * Return whether the asset has a URL.
      *
      * @return bool
      * @deprecated in 3.0.0-RC12. Use getVolume()->hasUrls instead.

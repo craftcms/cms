@@ -74,12 +74,12 @@ class Assets extends Component
     const EVENT_AFTER_REPLACE_ASSET = 'afterReplaceFile';
 
     /**
-     * @event GetAssetUrlEvent The event that is triggered when a transform is being generated for an Asset.
+     * @event GetAssetUrlEvent The event that is triggered when a transform is being generated for an asset.
      */
     const EVENT_GET_ASSET_URL = 'getAssetUrl';
 
     /**
-     * @event GetAssetThumbUrlEvent The event that is triggered when a thumbnail is being generated for an Asset.
+     * @event GetAssetThumbUrlEvent The event that is triggered when a thumbnail is being generated for an asset.
      * @todo rename to GET_THUMB_URL in Craft 4
      */
     const EVENT_GET_ASSET_THUMB_URL = 'getAssetThumbUrl';
@@ -156,15 +156,13 @@ class Assets extends Component
     }
 
     /**
-     * Replace an Asset's file.
-     *
-     * Replace an Asset's file by it's id, a local file and the filename to use.
+     * Replace an asset's file.
      *
      * @param Asset $asset
-     * @param string $pathOnServer
-     * @param string $filename
+     * @param string $pathOnServer The path to the replacement file
+     * @param string $filename The new filename to use
      * @throws FileException If there was a problem with the actual file.
-     * @throws AssetLogicException If the Asset to be replaced cannot be found.
+     * @throws AssetLogicException If the asset to be replaced cannot be found.
      */
     public function replaceAssetFile(Asset $asset, string $pathOnServer, string $filename)
     {
@@ -196,10 +194,10 @@ class Assets extends Component
     }
 
     /**
-     * Move or rename an Asset.
+     * Move or rename an asset.
      *
      * @param Asset $asset The asset whose file should be renamed
-     * @param VolumeFolder $folder The Volume Folder to move the Asset to.
+     * @param VolumeFolder $folder The volume folder to move the asset to.
      * @param string $filename The new filename
      * @return bool Whether the asset was renamed successfully
      * @throws AssetLogicException if the asset’s volume is missing
@@ -228,7 +226,7 @@ class Assets extends Component
     }
 
     /**
-     * Save an Asset folder.
+     * Save a volume folder.
      *
      * @param VolumeFolder $folder
      * @param bool $indexExisting Set to true to just index the folder if it already exists on volume.
@@ -270,15 +268,15 @@ class Assets extends Component
     }
 
     /**
-     * Rename a folder by it's id.
+     * Renames a folder by its ID.
      *
      * @param int $folderId
      * @param string $newName
      * @return string The new folder name after cleaning it.
      * @throws AssetLogicException If the folder to be renamed can't be found or trying to rename the top folder.
-     * @throws VolumeObjectExistsException If a folder already exists with such name in the Volume, but not in Index
-     * @throws VolumeObjectNotFoundException If the folder to be renamed can't be found in the Volume.
-     * @throws AssetConflictException If a folder already exists with such name in Assets Index
+     * @throws VolumeObjectExistsException If a folder already exists with the same name in the volume, but not in the index
+     * @throws VolumeObjectNotFoundException If the folder to be renamed can't be found in the volume.
+     * @throws AssetConflictException If a folder already exists with the same name
      */
     public function renameFolderById(int $folderId, string $newName): string
     {
@@ -372,7 +370,7 @@ class Assets extends Component
     }
 
     /**
-     * Get the folder tree for Assets by volume ids
+     * Returns the folder tree for assets by volume IDs
      *
      * @param array $allowedVolumeIds
      * @param array $additionalCriteria additional criteria for filtering the tree
@@ -409,7 +407,7 @@ class Assets extends Component
     }
 
     /**
-     * Get the folder tree for Assets by a folder id.
+     * Returns the folder tree for assets by a folder ID.
      *
      * @param int $folderId
      * @return array
@@ -952,11 +950,11 @@ class Assets extends Component
     }
 
     /**
-     * Ensure a folder entry exists in the DB for the full path and return it's id. Depending on the use, it's possible to also ensure a physical folder exists.
+     * Ensures a folder entry exists in the DB for the full path and return its ID. Depending on the use, it's possible to also ensure a physical folder exists.
      *
      * @param string $fullPath The path to ensure the folder exists at.
      * @param VolumeInterface $volume
-     * @param bool $justRecord If set to false, will also make sure the physical folder exists on Volume.
+     * @param bool $justRecord If set to false, will also make sure the physical folder exists on the volume.
      * @return int
      * @throws VolumeException If the volume cannot be found.
      */

@@ -748,7 +748,7 @@ class GeneralConfig extends BaseObject
     public $extraFileKinds = [];
 
     /**
-     * @var string|bool The string to use to separate words when uploading Assets. If set to `false`, spaces will be left alone.
+     * @var string|bool The string to use to separate words when uploading assets. If set to `false`, spaces will be left alone.
      * @group Assets
      */
     public $filenameWordSeparator = '-';

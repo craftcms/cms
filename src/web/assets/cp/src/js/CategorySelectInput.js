@@ -1,7 +1,7 @@
 /** global: Craft */
 /** global: Garnish */
 /**
- * Category Select input
+ * Category select input
  */
 Craft.CategorySelectInput = Craft.BaseElementSelectInput.extend({
   setSettings: function () {

@@ -502,7 +502,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
     },
 
     /**
-     * Load the preview for an Asset element
+     * Load the preview for an asset
      * @private
      */
     _loadPreview: function ($element) {

@@ -17,7 +17,7 @@ class m170227_120814_focal_point_percentage extends Migration
      */
     public function safeUp()
     {
-        // Fetch all Assets with focal points
+        // Fetch all assets with focal points
         $focalPointColumn = Craft::$app->getDb()->quoteColumnName('focalPoint');
 
         $assets = (new Query())

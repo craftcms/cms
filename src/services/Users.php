@@ -442,7 +442,7 @@ class Users extends Component
      * @param string $fileLocation the local image path on server
      * @param string|null $filename name of the file to use, defaults to filename of `$fileLocation`
      * @throws ImageException if the file provided is not a manipulatable image
-     * @throws VolumeException if the user photo Volume is not provided or is invalid
+     * @throws VolumeException if the user photo volume is not provided or is invalid
      */
     public function saveUserPhoto(string $fileLocation, User $user, string $filename = null)
     {

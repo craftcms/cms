@@ -1,6 +1,6 @@
 <?php
 /**
- * The base class for all asset Volumes. All Volume types must extend this class.
+ * The base class for all volumes. All volume types must extend this class.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
@@ -76,7 +76,7 @@ abstract class Volume extends SavableComponent implements VolumeInterface
         ];
         $rules[] = [['fieldLayout'], 'validateFieldLayout'];
 
-        // Require URLs for public Volumes.
+        // Require URLs for public volumes.
         if ($this->hasUrls) {
             $rules[] = [['url'], 'required'];
         }

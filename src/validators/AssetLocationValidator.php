@@ -64,7 +64,7 @@ class AssetLocationValidator extends Validator
     public $filenameConflict;
 
     /**
-     * @var bool Whether Asset should avoid filename conflicts when saved.
+     * @var bool Whether the asset should avoid filename conflicts when saved.
      */
     public $avoidFilenameConflicts;
 
