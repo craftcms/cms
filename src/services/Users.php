@@ -13,6 +13,7 @@ use craft\db\Table;
 use craft\elements\Asset;
 use craft\elements\User;
 use craft\errors\ImageException;
+use craft\errors\InvalidElementException;
 use craft\errors\InvalidSubpathException;
 use craft\errors\UserNotFoundException;
 use craft\errors\VolumeException;
@@ -406,6 +407,7 @@ class Users extends Component
      *
      * @param User $user The user to send the activation email to.
      * @return bool Whether the email was sent successfully.
+     * @throws InvalidElementException if the user doesn't validate
      */
     public function sendActivationEmail(User $user): bool
     {
@@ -424,7 +426,7 @@ class Users extends Component
      *
      * @param User $user The user to send the activation email to.
      * @return bool Whether the email was sent successfully.
-     * @throws Exception When the user doesn't validate
+     * @throws InvalidElementException if the user doesn't validate
      */
     public function sendNewEmailVerifyEmail(User $user): bool
     {
@@ -443,7 +445,7 @@ class Users extends Component
      *
      * @param User $user The user to send the forgot password email to.
      * @return bool Whether the email was sent successfully.
-     * @throws Exception When the user doesn't validate
+     * @throws InvalidElementException if the user doesn't validate
      */
     public function sendPasswordResetEmail(User $user): bool
     {
@@ -460,7 +462,7 @@ class Users extends Component
      *
      * @param User $user
      * @return string
-     * @throws Exception When the user doesn't validate
+     * @throws InvalidElementException if the user doesn't validate
      */
     public function getActivationUrl(User $user): string
     {
@@ -477,7 +479,7 @@ class Users extends Component
      *
      * @param User $user The user that should get the new Email Verification URL.
      * @return string The new Email Verification URL.
-     * @throws Exception When the user doesn't validate
+     * @throws InvalidElementException if the user doesn't validate
      */
     public function getEmailVerifyUrl(User $user): string
     {
@@ -490,7 +492,7 @@ class Users extends Component
      *
      * @param User $user The user that should get the new Password Reset URL
      * @return string The new Password Reset URL.
-     * @throws Exception When the user doesn't validate
+     * @throws InvalidElementException if the user doesn't validate
      */
     public function getPasswordResetUrl(User $user): string
     {
@@ -1160,7 +1162,7 @@ class Users extends Component
      *
      * @param User $user The user.
      * @return string The user’s brand new verification code.
-     * @throws Exception When the user doesn't validate
+     * @throws InvalidElementException if the user doesn't validate
      */
     public function setVerificationCodeOnUser(User $user): string
     {
@@ -1195,7 +1197,7 @@ class Users extends Component
             $user->pending = $originalUser->pending;
             $user->verificationCode = $originalUser->verificationCode;
             $user->verificationCodeIssuedDate = $originalUser->verificationCodeIssuedDate;
-            throw new Exception('Unable to set verification code on user: ' . implode(', ', $user->getFirstErrors()));
+            throw new InvalidElementException($user, 'Unable to set verification code on user: ' . implode(', ', $user->getFirstErrors()));
         }
 
         $transaction->commit();
@@ -1547,7 +1549,7 @@ class Users extends Component
      * @param string $fePath The URL or path to use if we end up linking to the front end
      * @param string $cpPath The path to use if we end up linking to the control panel
      * @return string
-     * @throws Exception When the user doesn't validate
+     * @throws InvalidElementException if the user doesn't validate
      * @see getEmailVerifyUrl()
      * @see getPasswordResetUrl()
      */
