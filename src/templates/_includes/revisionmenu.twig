@@ -4,7 +4,7 @@
     Only an existing element should be passed to this.
 #}
 
-{% import "_includes/forms" as forms %}
+{% import '_includes/forms.twig' as forms %}
 
 {% set showDrafts = showDrafts ?? false %}
 {% set drafts = element.id and showDrafts ? element.find()
