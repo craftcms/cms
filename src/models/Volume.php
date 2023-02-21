@@ -366,6 +366,14 @@ class Volume extends Model implements BaseFsInterface
     /**
      * @inheritdoc
      */
+    public function getRootUrl(): ?string
+    {
+        return $this->getFs()->getRootUrl();
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function getFileList(string $directory = '', bool $recursive = true): Generator
     {
         return $this->getFs()->getFileList($directory, $recursive);
