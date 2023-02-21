@@ -67,7 +67,7 @@ class ElementsController extends BaseElementsController
 
         if (is_array($sourceKeys)) {
             $sourceKeys = array_flip($sourceKeys);
-            $allSources = Craft::$app->getElementIndexes()->getSources($elementType);
+            $allSources = Craft::$app->getElementIndexes()->getSources($elementType, $context);
             $sources = [];
             $nextHeading = null;
 
@@ -95,7 +95,7 @@ class ElementsController extends BaseElementsController
                 }
             }
         } else {
-            $sources = Craft::$app->getElementIndexes()->getSources($elementType);
+            $sources = Craft::$app->getElementIndexes()->getSources($elementType, $context);
         }
 
         // Figure out if we should be showing the sidebar
