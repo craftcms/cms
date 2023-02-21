@@ -752,7 +752,7 @@ class AssetIndexer extends Component
                     // if $dimensions is not an array by now, either smart-guessing failed or the user wants to cache this.
                     if (!is_array($dimensions)) {
                         $tempPath = AssetsHelper::tempFilePath(pathinfo($filename, PATHINFO_EXTENSION));
-                        AssetsHelper::downloadFile($volume->getFs(), $indexEntry->uri, $tempPath);
+                        AssetsHelper::downloadFile($volume, $indexEntry->uri, $tempPath);
                         $dimensions = Image::imageSize($tempPath);
                     }
                 }

@@ -1916,12 +1916,11 @@ JS;
             return $url;
         }
 
-        $fs = $volume->getFs();
-        if (!$fs->hasUrls) {
+        if (!$volume->getFs()->hasUrls) {
             return null;
         }
 
-        return Html::encodeSpaces(Assets::generateUrl($fs, $this));
+        return Html::encodeSpaces(Assets::generateUrl($volume, $this));
     }
 
     /**
@@ -2204,7 +2203,7 @@ JS;
      */
     public function getImageTransformSourcePath(): string
     {
-        $fs = $this->getFs();
+        $fs = $this->getVolume()->getFs();
 
         if ($fs instanceof LocalFsInterface) {
             return FileHelper::normalizePath($fs->getRootPath() . DIRECTORY_SEPARATOR . $this->getPath());
@@ -2224,7 +2223,7 @@ JS;
     {
         $tempFilename = uniqid(pathinfo($this->_filename, PATHINFO_FILENAME), true) . '.' . $this->getExtension();
         $tempPath = Craft::$app->getPath()->getTempPath() . DIRECTORY_SEPARATOR . $tempFilename;
-        Assets::downloadFile($this->getFs(), $this->getPath(), $tempPath);
+        Assets::downloadFile($this->getVolume(), $this->getPath(), $tempPath);
 
         return $tempPath;
     }
@@ -2956,6 +2955,7 @@ JS;
      * @return FsInterface
      * @throws InvalidConfigException
      * @since 4.0.0
+     * @deprecated in 4.4.0
      */
     public function getFs(): FsInterface
     {
@@ -3049,7 +3049,7 @@ JS;
             } else {
                 $tempFilename = uniqid(pathinfo($filename, PATHINFO_FILENAME), true) . '.' . pathinfo($filename, PATHINFO_EXTENSION);
                 $tempPath = Craft::$app->getPath()->getTempPath() . DIRECTORY_SEPARATOR . $tempFilename;
-                Assets::downloadFile($oldVolume->getFs(), $oldPath, $tempPath);
+                Assets::downloadFile($oldVolume, $oldPath, $tempPath);
             }
 
             // Try to open a file stream
