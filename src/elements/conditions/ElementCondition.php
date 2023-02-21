@@ -110,15 +110,15 @@ class ElementCondition extends BaseCondition implements ElementConditionInterfac
             SlugConditionRule::class,
         ];
 
-        if (Craft::$app->getIsMultiSite()) {
+        /** @var string|ElementInterface|null $elementType */
+        /** @phpstan-var class-string<ElementInterface>|ElementInterface|null $elementType */
+        $elementType = $this->elementType;
+
+        if (Craft::$app->getIsMultiSite() && (!$elementType || $elementType::isLocalized())) {
             $types[] = SiteConditionRule::class;
         }
 
-        if ($this->elementType !== null) {
-            /** @var string|ElementInterface $elementType */
-            /** @phpstan-var class-string<ElementInterface>|ElementInterface $elementType */
-            $elementType = $this->elementType;
-
+        if ($elementType !== null) {
             if ($elementType::hasUris()) {
                 $types[] = HasUrlConditionRule::class;
                 $types[] = UriConditionRule::class;

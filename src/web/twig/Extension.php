@@ -184,6 +184,8 @@ class Extension extends AbstractExtension implements GlobalsInterface
             new TwigFilter('ascii', [StringHelper::class, 'toAscii']),
             new TwigFilter('atom', [$this, 'atomFilter'], ['needs_environment' => true]),
             new TwigFilter('attr', [$this, 'attrFilter'], ['is_safe' => ['html']]),
+            new TwigFilter('base64_decode', 'base64_decode'),
+            new TwigFilter('base64_encode', 'base64_encode'),
             new TwigFilter('boolean', 'boolval'),
             new TwigFilter('camel', [$this, 'camelFilter']),
             new TwigFilter('column', [ArrayHelper::class, 'getColumn']),

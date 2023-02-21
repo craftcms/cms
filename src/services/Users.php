@@ -540,7 +540,7 @@ class Users extends Component
      * @param string $fileLocation the local image path on server
      * @param string|null $filename name of the file to use, defaults to filename of `$fileLocation`
      * @throws ImageException if the file provided is not a manipulatable image
-     * @throws VolumeException if the user photo Volume is not provided or is invalid
+     * @throws VolumeException if the user photo volume is not provided or is invalid
      */
     public function saveUserPhoto(string $fileLocation, User $user, ?string $filename = null): void
     {
@@ -1584,10 +1584,19 @@ class Users extends Component
         // Only use cpUrl() if this is a control panel request, or the base control panel URL has been explicitly set,
         // so UrlHelper won't use HTTP_HOST
         if ($generalConfig->baseCpUrl || Craft::$app->getRequest()->getIsCpRequest()) {
-            return UrlHelper::cpUrl($cpPath, $params, $scheme);
+            $url = UrlHelper::cpUrl($cpPath, $params, $scheme);
+        } else {
+            $path = UrlHelper::prependCpTrigger($cpPath);
+            $url = UrlHelper::siteUrl($path, $params, $scheme);
         }
 
-        $path = UrlHelper::prependCpTrigger($cpPath);
-        return UrlHelper::siteUrl($path, $params, $scheme);
+        if (UrlHelper::isRootRelativeUrl($url)) {
+            $request = Craft::$app->getRequest();
+            if (!$request->getIsConsoleRequest()) {
+                $url = rtrim($request->getHostInfo() . $request->getBaseUrl(), '/') . $url;
+            }
+        }
+
+        return $url;
     }
 }

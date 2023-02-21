@@ -390,6 +390,29 @@ class ExtensionTest extends TestCase
     /**
      *
      */
+    public function testBase64DecodeFilter(): void
+    {
+        $encoded = base64_encode('foo');
+        $this->testRenderResult(
+            'foo',
+            "{{ '$encoded'|base64_decode }}",
+        );
+    }
+
+    /**
+     *
+     */
+    public function testBase64EncodeFilter(): void
+    {
+        $this->testRenderResult(
+            base64_encode('foo'),
+            '{{ "foo"|base64_encode }}',
+        );
+    }
+
+    /**
+     *
+     */
     public function testParseAttrFilter(): void
     {
         $this->testRenderResult(
