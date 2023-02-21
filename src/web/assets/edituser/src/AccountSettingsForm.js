@@ -1,5 +1,3 @@
-import './account.scss';
-
 (function ($) {
   /** global: Craft */
   /** global: Garnish */

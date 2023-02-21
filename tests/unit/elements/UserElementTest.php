@@ -124,6 +124,11 @@ class UserElementTest extends TestCase
         self::assertTrue($user->hasErrors('email'));
         self::assertTrue($user->hasErrors('username'));
 
+        $activationUrl = Craft::$app->getUsers()->getActivationUrl($user);
+        self::assertNull($activationUrl);
+        self::assertTrue($user->hasErrors('email'));
+        self::assertTrue($user->hasErrors('username'));
+
         $this->tester->deleteElement($user);
     }
 
