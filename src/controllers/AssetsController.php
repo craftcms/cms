@@ -218,10 +218,10 @@ class AssetsController extends Controller
     }
 
     /**
-     * Upload a file
+     * Handles a file upload.
      *
      * @return Response
-     * @throws BadRequestHttpException for reasons
+     * @throws BadRequestHttpException
      * @since 3.4.0
      */
     public function actionUpload(): Response
@@ -361,13 +361,13 @@ class AssetsController extends Controller
     }
 
     /**
-     * Replace a file
+     * Replaces a file.
      *
      * @return Response
      * @throws BadRequestHttpException if incorrect combination of parameters passed.
      * @throws ForbiddenHttpException
      * @throws InvalidConfigException
-     * @throws NotFoundHttpException if Asset cannot be found by id.
+     * @throws NotFoundHttpException if the asset can’t be found
      * @throws VolumeException
      */
     public function actionReplaceFile(): Response
@@ -381,9 +381,9 @@ class AssetsController extends Controller
 
         $assets = Craft::$app->getAssets();
 
-        // Must have at least one existing Asset (source or target).
-        // Must have either target Asset or target file name.
-        // Must have either uploaded file or source Asset.
+        // Must have at least one existing asset (source or target).
+        // Must have either target asset or target filename.
+        // Must have either uploaded file or source asset.
         if ((empty($assetId) && empty($sourceAssetId)) ||
             (empty($assetId) && empty($targetFilename)) ||
             ($uploadedFile === null && empty($sourceAssetId))
@@ -457,7 +457,7 @@ class AssetsController extends Controller
     }
 
     /**
-     * Create a folder.
+     * Creates a folder.
      *
      * @return Response
      * @throws BadRequestHttpException if the parent folder cannot be found
@@ -478,7 +478,7 @@ class AssetsController extends Controller
         }
 
         try {
-            // Check if it's possible to create subfolders in target Volume.
+            // Check if it's possible to create subfolders in the target volume.
             $this->requireVolumePermissionByFolder('createFolders', $parentFolder);
 
             $folderModel = new VolumeFolder();
@@ -521,7 +521,7 @@ class AssetsController extends Controller
             throw new BadRequestHttpException('The folder cannot be found');
         }
 
-        // Check if it's possible to delete objects in the target Volume.
+        // Check if it's possible to delete objects in the target volume.
         $this->requireVolumePermissionByFolder('deleteAssets', $folder);
         $assets->deleteFoldersByIds($folderId);
 
@@ -529,7 +529,7 @@ class AssetsController extends Controller
     }
 
     /**
-     * Delete an Asset.
+     * Deletes an asset.
      *
      * @return Response|null
      * @throws BadRequestHttpException if the folder cannot be found
@@ -547,7 +547,7 @@ class AssetsController extends Controller
             throw new BadRequestHttpException("Invalid asset ID: $assetId");
         }
 
-        // Check if it's possible to delete objects in the target Volume.
+        // Check if it's possible to delete objects in the target volume.
         $this->requireVolumePermissionByAsset('deleteAssets', $asset);
         $this->requirePeerVolumePermissionByAsset('deletePeerAssets', $asset);
 
@@ -569,7 +569,7 @@ class AssetsController extends Controller
     }
 
     /**
-     * Rename a folder
+     * Renames a folder.
      *
      * @return Response
      * @throws BadRequestHttpException if the folder cannot be found
@@ -589,7 +589,7 @@ class AssetsController extends Controller
             throw new BadRequestHttpException('The folder cannot be found');
         }
 
-        // Check if it's possible to delete objects and create folders in target Volume.
+        // Check if it's possible to delete objects and create folders in the target volume.
         $this->requireVolumePermissionByFolder('deleteAssets', $folder);
         $this->requireVolumePermissionByFolder('createFolders', $folder);
 
@@ -599,7 +599,7 @@ class AssetsController extends Controller
 
 
     /**
-     * Move an Asset or multiple Assets.
+     * Move one or more assets.
      *
      * @return Response
      * @throws BadRequestHttpException if the asset or the target folder cannot be found
@@ -635,14 +635,14 @@ class AssetsController extends Controller
         // Get the target filename
         $filename = $this->request->getBodyParam('filename') ?? $asset->getFilename();
 
-        // Check if it's possible to delete objects in source Volume and save Assets in target Volume.
+        // Check if it's possible to delete objects in the source volume and save assets in the target volume.
         $this->requireVolumePermissionByFolder('saveAssets', $folder);
         $this->requireVolumePermissionByAsset('deleteAssets', $asset);
         $this->requirePeerVolumePermissionByAsset('savePeerAssets', $asset);
         $this->requirePeerVolumePermissionByAsset('deletePeerAssets', $asset);
 
         if ($this->request->getBodyParam('force')) {
-            // Check for a conflicting Asset
+            // Check for a conflicting asset
             /** @var Asset|null $conflictingAsset */
             $conflictingAsset = Asset::find()
                 ->select(['elements.id'])
@@ -650,7 +650,7 @@ class AssetsController extends Controller
                 ->filename(Db::escapeParam($asset->getFilename()))
                 ->one();
 
-            // If there's an Asset conflicting, then merge and replace file.
+            // If there's a conflicting asset, then merge and replace the file.
             if ($conflictingAsset) {
                 Craft::$app->getElements()->mergeElementsByIds($conflictingAsset->id, $asset->id);
             } else {
@@ -679,7 +679,7 @@ class AssetsController extends Controller
     }
 
     /**
-     * Move a folder.
+     * Moves a folder.
      *
      * @return Response
      * @throws BadRequestHttpException if the folder to move, or the destination parent folder, cannot be found
@@ -710,8 +710,8 @@ class AssetsController extends Controller
             throw new BadRequestHttpException('The destination folder does not exist');
         }
 
-        // Check if it's possible to delete objects in source Volume, create folders
-        // in target Volume and save Assets in target Volume.
+        // Check if it's possible to delete objects in the source volume, create folders
+        // in the target volume, and save assets in the target volume.
         $this->requireVolumePermissionByFolder('deleteAssets', $folderToMove);
         $this->requireVolumePermissionByFolder('createFolders', $destinationFolder);
         $this->requireVolumePermissionByFolder('saveAssets', $destinationFolder);
@@ -804,10 +804,10 @@ class AssetsController extends Controller
     }
 
     /**
-     * Return the image editor template.
+     * Returns the Image Editor template.
      *
      * @return Response
-     * @throws BadRequestHttpException if the Asset is missing.
+     * @throws BadRequestHttpException if the asset is missing.
      * @throws Exception
      * @throws LoaderError
      * @throws RuntimeError
@@ -830,7 +830,7 @@ class AssetsController extends Controller
     }
 
     /**
-     * Get the image being edited.
+     * Returns the image being edited.
      *
      * @return Response
      * @throws BadRequestHttpException
@@ -857,11 +857,11 @@ class AssetsController extends Controller
     }
 
     /**
-     * Save an image according to posted parameters.
+     * Saves an image according to the posted parameters.
      *
      * @return Response
      * @throws BadRequestHttpException if some parameters are missing.
-     * @throws Throwable if something went wrong saving the Asset.
+     * @throws Throwable if something went wrong saving the asset.
      */
     public function actionSaveImage(): Response
     {
@@ -1006,7 +1006,7 @@ class AssetsController extends Controller
     }
 
     /**
-     * Download a file.
+     * Returns a file’s contents.
      *
      * @return Response
      * @throws AssetException
@@ -1086,7 +1086,7 @@ class AssetsController extends Controller
     }
 
     /**
-     * Generate a transform.
+     * Generates a transform.
      *
      * @param int|null $transformId
      * @return Response
@@ -1096,7 +1096,7 @@ class AssetsController extends Controller
     public function actionGenerateTransform(?int $transformId = null): Response
     {
         try {
-            // If transform Id was not passed in, see if file id and handle were.
+            // If a transform ID was not passed in, see if a file ID and handle were.
             if ($transformId) {
                 $transformer = Craft::createObject(ImageTransformer::class);
                 $transformIndexModel = $transformer->getTransformIndexModelById($transformId);
@@ -1129,7 +1129,7 @@ class AssetsController extends Controller
     }
 
     /**
-     * Return the file preview for an Asset.
+     * Returns file preview info for an asset.
      *
      * @return Response
      * @throws BadRequestHttpException if not a valid request
@@ -1244,7 +1244,7 @@ class AssetsController extends Controller
     }
 
     /**
-     * Requires a volume permission by a given asset.
+     * Requires a volume permission for a given asset.
      *
      * @param string $permissionName The name of the permission to require (sans `:<volume-uid>` suffix)
      * @param Asset $asset The asset whose volume should be checked
@@ -1269,7 +1269,7 @@ class AssetsController extends Controller
     }
 
     /**
-     * Requires a volume permission by a given asset, only if it wasn't uploaded by the current user.
+     * Requires a peer permission for a given asset, unless it was uploaded by the current user.
      *
      * @param string $permissionName The name of the peer permission to require (sans `:<volume-uid>` suffix)
      * @param Asset $asset The asset whose volume should be checked
@@ -1287,7 +1287,7 @@ class AssetsController extends Controller
     }
 
     /**
-     * Requires a volume permission by a given folder.
+     * Requires a volume permission for a given folder.
      *
      * @param string $permissionName The name of the peer permission to require (sans `:<volume-uid>` suffix)
      * @param VolumeFolder $folder The folder whose volume should be checked

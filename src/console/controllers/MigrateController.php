@@ -140,7 +140,7 @@ class MigrateController extends BaseMigrateController
      * Note that the values setting via options are not available
      * until [[beforeAction()]] is being called.
      *
-     * @param string $actionID the action id of the current request
+     * @param string $actionID the action ID of the current request
      * @return string[] the names of the options valid for the action
      */
     public function options($actionID): array

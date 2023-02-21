@@ -974,7 +974,7 @@ class Asset extends Element
     public ?string $newFilename = null;
 
     /**
-     * @var int|null New folder id
+     * @var int|null New folder ID
      */
     public ?int $newFolderId = null;
 
@@ -984,7 +984,7 @@ class Asset extends Element
     public ?string $tempFilePath = null;
 
     /**
-     * @var bool Whether Asset should avoid filename conflicts when saved.
+     * @var bool Whether the asset should avoid filename conflicts when saved.
      */
     public bool $avoidFilenameConflicts = false;
 

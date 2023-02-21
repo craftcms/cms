@@ -524,7 +524,7 @@ interface ElementInterface extends ComponentInterface
     /**
      * Returns the GraphQL type name by an element’s context.
      *
-     * @param mixed $context The element’s context, such as a Volume, Entry Type or Matrix Block Type.
+     * @param mixed $context The element’s context, such as a volume, entry type or Matrix block type.
      * @return string
      * @since 3.3.0
      */
@@ -542,7 +542,7 @@ interface ElementInterface extends ComponentInterface
     /**
      * Returns the GraphQL scopes required by element’s context.
      *
-     * @param mixed $context The element’s context, such as a Volume, Entry Type or Matrix Block Type.
+     * @param mixed $context The element’s context, such as a volume, entry type or Matrix block type.
      * @return array
      * @since 3.3.0
      */
