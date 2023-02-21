@@ -43,6 +43,7 @@ use craft\web\UploadedFile;
 use craft\web\View;
 use DateTime;
 use Throwable;
+use yii\base\Exception;
 use yii\base\InvalidArgumentException;
 use yii\web\BadRequestHttpException;
 use yii\web\ForbiddenHttpException;
@@ -514,7 +515,11 @@ class UsersController extends Controller
         }
 
         // Don't try to send the email if there are already error or there is no user
-        if (empty($errors) && !empty($user) && !Craft::$app->getUsers()->sendPasswordResetEmail($user)) {
+        try {
+            if (empty($errors) && !empty($user) && !Craft::$app->getUsers()->sendPasswordResetEmail($user)) {
+                throw new Exception();
+            }
+        } catch (Throwable $e) {
             $errors[] = Craft::t('app', 'There was a problem sending the password reset email.');
         }
 
@@ -555,8 +560,15 @@ class UsersController extends Controller
             $this->_noUserExists();
         }
 
+        try {
+            $url = Craft::$app->getUsers()->getPasswordResetUrl($user);
+        } catch (Throwable $exception) {
+            $errors = $user->getFirstErrors();
+            throw new BadRequestHttpException(reset($errors));
+        }
+
         return $this->asJson([
-            'url' => Craft::$app->getUsers()->getPasswordResetUrl($user),
+            'url' => $url,
         ]);
     }
 
@@ -749,7 +761,11 @@ class UsersController extends Controller
             $this->_noUserExists();
         }
 
-        if (!Craft::$app->getUsers()->activateUser($user)) {
+        try {
+            if (!Craft::$app->getUsers()->activateUser($user)) {
+                throw new Exception();
+            }
+        } catch (Throwable $exception) {
             return $this->asModelFailure(
                 $user,
                 Craft::t('app', 'There was a problem activating the user.'),
@@ -1679,9 +1695,13 @@ JS,
             $this->requirePermission('administrateUsers');
         }
 
-        $emailSent = Craft::$app->getUsers()->sendActivationEmail($user);
-        $userVariable = $this->request->getValidatedBodyParam('userVariable') ?? 'user';
+        try {
+            $emailSent = Craft::$app->getUsers()->sendActivationEmail($user);
+        } catch (Throwable $exception) {
+            $emailSent = false;
+        }
 
+        $userVariable = $this->request->getValidatedBodyParam('userVariable') ?? 'user';
         if ($user->hasErrors()) {
             return $this->asModelFailure(
                 $user,
