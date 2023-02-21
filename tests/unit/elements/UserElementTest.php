@@ -81,53 +81,28 @@ class UserElementTest extends TestCase
         $this->tester->deleteElement($user);
     }
 
-    public function testUniqueAttributesForActiveUser(): void
-    {
-        $user = new User([
-            'active' => true,
-            'username' => $this->inactiveUser->username,
-            'email' => $this->inactiveUser->email,
-            'unverifiedEmail' => $this->inactiveUser->unverifiedEmail,
-        ]);
-
-        $this->tester->saveElement($user);
-
-        self::assertFalse($user->hasErrors());
-
-        $user->username = $this->activeUser->username;
-        $user->email = $this->activeUser->email;
-        $user->unverifiedEmail = $this->activeUser->unverifiedEmail;
-
-        $this->tester->saveElement($user, false);
-
-        self::assertTrue($user->hasErrors('username'));
-        self::assertTrue($user->hasErrors('email'));
-
-        $this->tester->deleteElement($user);
-    }
-
-    public function testUniqueAttributesForInactiveUser(): void
+    public function testActivationValidation()
     {
         $user = new User([
             'active' => false,
-            'email' => $this->activeUser->email,
-            'username' => $this->activeUser->username,
-            'unverifiedEmail' => $this->activeUser->unverifiedEmail,
+            'email' => 'unverifemail@email.com',
+            'username' => 'unverifusername',
         ]);
 
         $this->tester->saveElement($user);
 
-        self::assertFalse($user->hasErrors());
-
-        Craft::$app->getUsers()->activateUser($user);
-
-        self::assertTrue($user->hasErrors('email'));
-        self::assertTrue($user->hasErrors('username'));
+        $user->username = $this->activeUser->username;
+        $user->email = $this->activeUser->email;
 
         $activationUrl = Craft::$app->getUsers()->getActivationUrl($user);
         self::assertNull($activationUrl);
-        self::assertTrue($user->hasErrors('email'));
         self::assertTrue($user->hasErrors('username'));
+        self::assertTrue($user->hasErrors('email'));
+
+        $activated = Craft::$app->getUsers()->activateUser($user);
+        self::assertFalse($activated);
+        self::assertTrue($user->hasErrors('username'));
+        self::assertTrue($user->hasErrors('email'));
 
         $this->tester->deleteElement($user);
     }
