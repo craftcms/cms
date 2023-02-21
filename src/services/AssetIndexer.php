@@ -62,7 +62,7 @@ class AssetIndexer extends Component
     public function getIndexListOnVolume(Volume $volume, string $directory = ''): Generator
     {
         try {
-            $fileList = $volume->getFs()->getFileList($directory);
+            $fileList = $volume->getFileList($directory);
         } catch (InvalidConfigException|FsException $exception) {
             Craft::$app->getErrorHandler()->logException($exception);
             return;
@@ -536,13 +536,12 @@ class AssetIndexer extends Component
             $dirname = '';
         }
 
-        $fs = $volume->getFs();
         $listing = new FsListing([
             'dirname' => $dirname,
             'basename' => pathinfo($path, PATHINFO_BASENAME),
             'type' => 'file',
-            'dateModified' => $fs->getDateModified($path),
-            'fileSize' => $fs->getFileSize($path),
+            'dateModified' => $volume->getDateModified($path),
+            'fileSize' => $volume->getFileSize($path),
         ]);
 
         return $this->indexFileByListing((int)$volume->id, $listing, $sessionId, $cacheImages, $createIfMissing);
@@ -753,7 +752,7 @@ class AssetIndexer extends Component
                     // if $dimensions is not an array by now, either smart-guessing failed or the user wants to cache this.
                     if (!is_array($dimensions)) {
                         $tempPath = AssetsHelper::tempFilePath(pathinfo($filename, PATHINFO_EXTENSION));
-                        AssetsHelper::downloadFile($volume->getFs(), $indexEntry->uri, $tempPath);
+                        AssetsHelper::downloadFile($volume, $indexEntry->uri, $tempPath);
                         $dimensions = Image::imageSize($tempPath);
                     }
                 }
