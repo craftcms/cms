@@ -1540,10 +1540,19 @@ class Users extends Component
         // Only use cpUrl() if this is a control panel request, or the base control panel URL has been explicitly set,
         // so UrlHelper won't use HTTP_HOST
         if ($generalConfig->baseCpUrl || Craft::$app->getRequest()->getIsCpRequest()) {
-            return UrlHelper::cpUrl($cpPath, $params, $scheme);
+            $url = UrlHelper::cpUrl($cpPath, $params, $scheme);
+        } else {
+            $path = UrlHelper::prependCpTrigger($cpPath);
+            $url = UrlHelper::siteUrl($path, $params, $scheme);
         }
 
-        $path = UrlHelper::prependCpTrigger($cpPath);
-        return UrlHelper::siteUrl($path, $params, $scheme);
+        if (UrlHelper::isRootRelativeUrl($url)) {
+            $request = Craft::$app->getRequest();
+            if (!$request->getIsConsoleRequest()) {
+                $url = rtrim($request->getHostInfo() . $request->getBaseUrl(), '/') . $url;
+            }
+        }
+
+        return $url;
     }
 }
