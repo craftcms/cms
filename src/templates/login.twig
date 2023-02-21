@@ -1,5 +1,5 @@
-{% extends "_layouts/basecp" %}
-{% import "_includes/forms" as forms %}
+{% extends '_layouts/basecp.twig' %}
+{% import '_includes/forms.twig' as forms %}
 {% set title = "Sign In"|t('app') %}
 {% set bodyClass = 'login' %}
 {% do view.registerAssetBundle("craft\\web\\assets\\login\\LoginAsset") %}
