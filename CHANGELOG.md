@@ -1,5 +1,8 @@
 # Release Notes for Craft CMS 3.x
 
+## Unreleased
+- Fixed a bug where `craft\events\RegisterElementSourcesEvent::$context` wasn’t always set to `modal` when defining the available element sources for an element selection modal.
+
 ## 3.7.67 - 2023-02-17
 
 - Fixed a bug where clicking on the scrollbar of a disclosure menu would close it. ([#12681](https://github.com/craftcms/cms/issues/12681))
