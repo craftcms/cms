@@ -143,6 +143,9 @@ class UserElementTest extends TestCase
 
         $this->activeUser->suspended = false;
         $this->tester->saveElement($this->activeUser);
+
+        $this->activeUser->locked = false;
+        $this->tester->saveElement($this->activeUser);
     }
 
     /**
