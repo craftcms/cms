@@ -828,8 +828,6 @@ class User extends Element implements IdentityInterface
                 UniqueValidator::class,
                 'targetClass' => UserRecord::class,
                 'caseInsensitive' => true,
-                'filter' => ['or', ['active' => true], ['pending' => true]],
-                'when' => $treatAsActive,
             ];
 
             $rules[] = [['unverifiedEmail'], 'validateUnverifiedEmail'];
@@ -897,8 +895,6 @@ class User extends Element implements IdentityInterface
                 'lower([[email]])' => mb_strtolower($this->unverifiedEmail),
             ]);
         }
-
-        $query->andWhere(['or', ['active' => true], ['pending' => true]]);
 
         if ($this->id) {
             $query->andWhere(['not', ['elements.id' => $this->id]]);

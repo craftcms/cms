@@ -11,7 +11,6 @@ use Craft;
 use craft\db\Query;
 use craft\db\Table;
 use craft\elements\Asset;
-use craft\elements\db\UserQuery;
 use craft\elements\User;
 use craft\errors\ImageException;
 use craft\errors\InvalidSubpathException;
@@ -245,7 +244,7 @@ class Users extends Component
     {
         $query = User::find()
             ->addSelect(['users.password', 'users.passwordResetRequired'])
-            ->status(UserQuery::STATUS_CREDENTIALED);
+            ->status(null);
 
         if (Craft::$app->getDb()->getIsMysql()) {
             $query
