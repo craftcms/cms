@@ -1467,9 +1467,9 @@ Craft.CP.Notification = Garnish.Base.extend({
       'data-type': this.type,
     }).appendTo(Craft.cp.$notificationContainer);
 
-    const $body = $('<div class="notification-body"/>')
-      .appendTo(this.$container)
-      .attr('role', 'status');
+    const $body = $('<div class="notification-body"/>').appendTo(
+      this.$container
+    );
 
     if (this.settings.icon) {
       const $icon = $('<span/>', {
