@@ -502,13 +502,12 @@ class AssetIndexer extends Component
             $dirname = '';
         }
 
-        $fs = $volume->getFs();
         $listing = new FsListing([
             'dirname' => $dirname,
             'basename' => pathinfo($path, PATHINFO_BASENAME),
             'type' => 'file',
-            'dateModified' => $fs->getDateModified($path),
-            'fileSize' => $fs->getFileSize($path),
+            'dateModified' => $volume->getDateModified($path),
+            'fileSize' => $volume->getFileSize($path),
         ]);
 
         return $this->indexFileByListing((int)$volume->id, $listing, $sessionId, $cacheImages, $createIfMissing);
