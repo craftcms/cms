@@ -1471,10 +1471,25 @@ Craft.CP = Garnish.Base.extend(
 
 Craft.CP.GlobalAnimationController = Garnish.Base.extend({
   $images: null,
+  resizeObserver: null,
 
   init: function () {
     this.$images = $();
     const $images = Garnish.getPotentiallyAnimatedImages();
+
+    // Create resize observer
+    this.resizeObserver = new ResizeObserver((entries) => {
+      for (const entry of entries) {
+        if (entry.contentBoxSize) {
+          const $targetImage = $(entry.target);
+
+          if (entry.contentRect.width > 0 || entry.contentRect.height > 0) {
+            this.coverImage($targetImage);
+          }
+        }
+      }
+    });
+
     this.addImages($images);
   },
 
@@ -1504,10 +1519,12 @@ Craft.CP.GlobalAnimationController = Garnish.Base.extend({
       if ($image[0].complete) {
         this.coverImage($image);
         this.createToggle($image);
+        this.resizeObserver.observe($image[0]);
       } else {
         this.addListener($image, 'load', () => {
           this.coverImage($image);
           this.createToggle($image);
+          this.resizeObserver.observe($image[0]);
         });
       }
 
@@ -1527,47 +1544,66 @@ Craft.CP.GlobalAnimationController = Garnish.Base.extend({
     return $(image).parent().find('canvas');
   },
 
+  imageSizeChanged: function (image) {
+    const $image = $(image);
+    const width = $image.width();
+    const height = $image.height();
+    const prevWidth = $image.attr('data-width');
+    const prevHeight = $image.attr('data-height');
+
+    if (!prevWidth || !prevHeight) return;
+
+    return (
+      width !== parseInt(prevWidth, 10) || height !== parseInt(prevHeight, 10)
+    );
+  },
+
   coverImage: function (image) {
     const $image = $(image);
     const $parent = $image.parent();
+    let $canvas = $parent.find('[data-image-cover]');
     const width = $image.width();
     const height = $image.height();
 
-    if (width === 0 || height === 0) {
-      console.warn('Image has no dimensions');
-
-      // Create resize observer
-      const resizeObserver = new ResizeObserver((entries) => {
-        for (const entry of entries) {
-          console.log(entry);
-        }
+    if ($canvas.length === 0) {
+      $image.attr({
+        'data-width': width,
+        'data-height': height,
       });
+      $canvas = $('<canvas></canvas>')
+        .attr({
+          width: width,
+          height: height,
+          'aria-hidden': 'true',
+          role: 'presentation',
+          'data-image-cover': true,
+        })
+        .css({
+          position: 'absolute',
+          top: '50%',
+          left: '50%',
+          transform: 'translate(-50%, -50%)',
+        });
 
-      return;
+      // Draw first frame on canvas
+      $canvas[0].getContext('2d').drawImage($image[0], 0, 0, width, height);
+
+      // Place canvas inside parent
+      $parent.css({
+        position: 'relative',
+      });
+      $canvas.insertBefore($image);
+    } else if ($canvas.length > 0 && this.imageSizeChanged($image)) {
+      // Redraw and place canvas again
+      setTimeout(() => {
+        $canvas[0].getContext('2d').drawImage($image[0], 0, 0, width, height);
+        $canvas.attr({
+          width: width,
+          height: height,
+        });
+        console.log('redrawing');
+      }, 3000);
     }
-
-    const $canvas = $('<canvas></canvas>')
-      .attr({
-        width: width,
-        height: height,
-        'aria-hidden': 'true',
-        role: 'presentation',
-      })
-      .css({
-        position: 'absolute',
-        top: '50%',
-        left: '50%',
-        transform: 'translate(-50%, -50%)',
-      });
-
-    // Draw first frame on canvas
-    $canvas[0].getContext('2d').drawImage($image[0], 0, 0, width, height);
-
-    // Place canvas inside parent
-    $parent.css({
-      position: 'relative',
-    });
-    $canvas.insertBefore($image);
   },
 
   createToggle: function (image) {

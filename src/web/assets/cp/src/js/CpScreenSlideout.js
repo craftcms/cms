@@ -270,16 +270,6 @@ Craft.CpScreenSlideout = Craft.Slideout.extend(
     },
 
     /**
-     * Queries CSS custom property to see if sidebar is visible
-     */
-    sidebarIsVisible: function () {
-      return (
-        getComputedStyle(this.$sidebar[0]).getPropertyValue('--visible') ===
-        'true'
-      );
-    },
-
-    /**
      * @param {Object} data
      * @returns {Promise}
      */
@@ -349,7 +339,7 @@ Craft.CpScreenSlideout = Craft.Slideout.extend(
             Craft.initUiElements(this.$sidebar);
             new Craft.ElementThumbLoader().load(this.$sidebar);
 
-            if (this.sidebarIsVisible() && Craft.cp.globalAnimationController) {
+            if (Craft.cp.globalAnimationController) {
               Craft.cp.globalAnimationController.addImagesInContainer(
                 this.$sidebar
               );
