@@ -74,7 +74,9 @@ class Relations extends Component
             if (isset($targetIds[$relation['targetId']])) {
                 // Anything to update?
                 $sortOrder = $targetIds[$relation['targetId']] + 1;
-                if ($relation['sourceSiteId'] != $sourceSiteId || $relation['sortOrder'] != $sortOrder) {
+                // only update relations if the source is not being propagated
+                // https://github.com/craftcms/cms/issues/12702
+                if ((!$source->propagating && $relation['sourceSiteId'] != $sourceSiteId) || $relation['sortOrder'] != $sortOrder) {
                     $updateCommands[] = $db->createCommand()->update(Table::RELATIONS, [
                         'sourceSiteId' => $sourceSiteId,
                         'sortOrder' => $sortOrder,
