@@ -44,12 +44,12 @@ class Relations extends Component
         $targetIds = array_flip(array_values(array_unique(array_filter($targetIds))));
 
         // Get the current relations
-        $oldRelationConditions = ['fieldId' => $field->id, 'sourceId' => $source->id];
+        $oldRelationCondition = ['fieldId' => $field->id, 'sourceId' => $source->id];
 
         if ($field->localizeRelations) {
-            $oldRelationConditions = [
+            $oldRelationCondition = [
                 'and',
-                $oldRelationConditions,
+                $oldRelationCondition,
                 ['or', ['sourceSiteId' => null], ['sourceSiteId' => $source->siteId]],
             ];
         }
@@ -59,7 +59,7 @@ class Relations extends Component
         $oldRelations = (new Query())
             ->select(['id', 'sourceSiteId', 'targetId', 'sortOrder'])
             ->from([Table::RELATIONS])
-            ->where($oldRelationConditions)
+            ->where($oldRelationCondition)
             ->all($db);
 
         /** @var Command[] $updateCommands */
