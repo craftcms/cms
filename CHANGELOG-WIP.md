@@ -17,6 +17,7 @@
 - `craft\elements\Asset::getMimeType()` now has a `$transform` argument, and assets’ `mimeType` GraphQL fields now support a `@transform` directive. ([#12269](https://github.com/craftcms/cms/discussions/12269), [#12397](https://github.com/craftcms/cms/pull/12397), [#12522](https://github.com/craftcms/cms/pull/12522))
 
 ### Extensibility
+- Added support for private plugins. ([#12716](https://github.com/craftcms/cms/pull/12716), [#8908](https://github.com/craftcms/cms/discussions/8908))
 - Element source definitions can now include a `defaultSourcePath` key.
 - Added `craft\base\Element::indexElements()`.
 - Added `craft\base\ElementInterface::findSource()`.
