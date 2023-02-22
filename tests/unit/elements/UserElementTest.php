@@ -100,16 +100,31 @@ class UserElementTest extends TestCase
         self::assertTrue($user->hasErrors('username'));
         self::assertTrue($user->hasErrors('email'));
 
+        $this->tester->deleteElement($user);
+    }
+
+    public function testActivationUrl(): void
+    {
+        $user = new User([
+            'active' => false,
+            'email' => 'unverifemail@email.com',
+            'username' => 'unverifusername',
+        ]);
+
+        $this->tester->saveElement($user);
+
+        $user->username = $this->activeUser->username;
+        $user->email = $this->activeUser->email;
+
         self::expectException(InvalidElementException::class);
         Craft::$app->getUsers()->getActivationUrl($user);
-
         $this->tester->deleteElement($user);
     }
 
     public function testUserStatusChange()
     {
-        $this->expectException(Exception::class);
         $this->activeUser->active = false;
+        $this->expectException(Exception::class);
         $this->tester->saveElement($this->activeUser);
     }
 
