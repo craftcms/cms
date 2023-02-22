@@ -1783,13 +1783,9 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       if (this.sourceViewModes.length > 1) {
         this.$viewModeBtnContainer = $(
           '<section class="btngroup btngroup--exclusive"/>'
-        ).attr('aria-label', Craft.t('app', 'View'));
-
-        if (this.activeViewMenu) {
-          this.$viewModeBtnContainer.insertBefore(this.activeViewMenu.$trigger);
-        } else {
-          this.$viewModeBtnContainer.appendTo(this.$toolbar);
-        }
+        )
+          .attr('aria-label', Craft.t('app', 'View'))
+          .insertAfter(this.$searchContainer);
 
         for (var i = 0; i < this.sourceViewModes.length; i++) {
           let sourceViewMode = this.sourceViewModes[i];
