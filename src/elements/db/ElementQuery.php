@@ -354,6 +354,7 @@ class ElementQuery extends Query implements ElementQueryInterface
 
     /**
      * @inheritdoc
+     * @var array|string|null
      * @used-by orderBy()
      * @used-by addOrderBy()
      */
