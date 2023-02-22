@@ -824,8 +824,14 @@ JS;
                 $targetIds = $this->_all($value, $element)->ids();
             }
 
-            /** @var int|int[]|false|null $targetIds */
-            Craft::$app->getRelations()->saveRelations($this, $element, $targetIds);
+            // only save relations if we're not applying PC changes to a single Entry;
+            // https://github.com/craftcms/cms/issues/12702
+            /** @phpstan-ignore-next-line */
+            $section = $element->canGetProperty('section') ? $element->section : null;
+            if (!(Craft::$app->projectConfig->getIsApplyingExternalChanges() && $section !== null && $section->type == 'single')) {
+                /** @var int|int[]|false|null $targetIds */
+                Craft::$app->getRelations()->saveRelations($this, $element, $targetIds);
+            }
 
             // Reset the field value if this is a new element
             if ($isNew) {
