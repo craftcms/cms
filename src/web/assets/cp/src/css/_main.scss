@@ -1160,8 +1160,18 @@ td.right {
   margin: 3px;
 }
 
-.customize-sources-table-column .move {
-  @include margin-right(10px);
+.customize-sources-table-column {
+  display: flex;
+  align-items: start;
+  align-content: stretch;
+  margin-bottom: 4px;
+
+  .move {
+    margin-top: -3px;
+    @include margin-right(10px);
+    position: relative;
+    z-index: 1;
+  }
 }
 
 ul.path {
@@ -5204,8 +5214,18 @@ $min2ColWidth: 400px;
   }
 }
 
-.element-index-view-menu-table-column .icon.move {
-  @include margin-right(10px);
+.element-index-view-menu-table-column {
+  display: flex;
+  align-items: start;
+  align-content: stretch;
+  margin-bottom: 4px;
+
+  .icon.move {
+    margin-top: -3px;
+    @include margin-right(10px);
+    position: relative;
+    z-index: 1;
+  }
 }
 
 /* sort fields */
@@ -6019,7 +6039,7 @@ div.checkbox {
   position: relative;
   @include padding-left($checkboxSize + 5);
   line-height: 16px;
-  height: 16px;
+  min-height: 16px;
   cursor: pointer;
 
   .info {
