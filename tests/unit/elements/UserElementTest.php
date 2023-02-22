@@ -11,6 +11,7 @@ use Craft;
 use craft\db\Query;
 use craft\db\Table;
 use craft\elements\User;
+use craft\errors\InvalidElementException;
 use craft\helpers\Session;
 use craft\helpers\StringHelper;
 use craft\services\Users;
@@ -79,6 +80,46 @@ class UserElementTest extends TestCase
         );
 
         $this->tester->deleteElement($user);
+    }
+
+    public function testActivationValidation()
+    {
+        $user = new User([
+            'active' => false,
+            'email' => 'unverifemail@email.com',
+            'username' => 'unverifusername',
+        ]);
+
+        $this->tester->saveElement($user);
+
+        $user->username = $this->activeUser->username;
+        $user->email = $this->activeUser->email;
+
+        $activated = Craft::$app->getUsers()->activateUser($user);
+        self::assertFalse($activated);
+        self::assertTrue($user->hasErrors('username'));
+        self::assertTrue($user->hasErrors('email'));
+
+        self::expectException(InvalidElementException::class);
+        Craft::$app->getUsers()->getActivationUrl($user);
+
+        $this->tester->deleteElement($user);
+    }
+
+    public function testUserStatusChange()
+    {
+        $this->expectException(Exception::class);
+        $this->activeUser->active = false;
+        $this->tester->saveElement($this->activeUser);
+
+        $this->activeUser->pending = true;
+        $this->tester->saveElement($this->activeUser);
+
+        $this->activeUser->suspended = false;
+        $this->tester->saveElement($this->activeUser);
+
+        $this->activeUser->locked = false;
+        $this->tester->saveElement($this->activeUser);
     }
 
     /**

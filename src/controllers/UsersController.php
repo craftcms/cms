@@ -14,6 +14,7 @@ use craft\elements\Address;
 use craft\elements\Asset;
 use craft\elements\Entry;
 use craft\elements\User;
+use craft\errors\InvalidElementException;
 use craft\errors\UploadFailedException;
 use craft\errors\UserLockedException;
 use craft\events\DefineUserContentSummaryEvent;
@@ -43,6 +44,7 @@ use craft\web\UploadedFile;
 use craft\web\View;
 use DateTime;
 use Throwable;
+use yii\base\Exception;
 use yii\base\InvalidArgumentException;
 use yii\web\BadRequestHttpException;
 use yii\web\ForbiddenHttpException;
@@ -514,7 +516,11 @@ class UsersController extends Controller
         }
 
         // Don't try to send the email if there are already error or there is no user
-        if (empty($errors) && !empty($user) && !Craft::$app->getUsers()->sendPasswordResetEmail($user)) {
+        try {
+            if (empty($errors) && !empty($user) && !Craft::$app->getUsers()->sendPasswordResetEmail($user)) {
+                throw new Exception();
+            }
+        } catch (Exception) {
             $errors[] = Craft::t('app', 'There was a problem sending the password reset email.');
         }
 
@@ -555,8 +561,15 @@ class UsersController extends Controller
             $this->_noUserExists();
         }
 
+        try {
+            $url = Craft::$app->getUsers()->getPasswordResetUrl($user);
+        } catch (InvalidElementException) {
+            $errors = $user->getFirstErrors();
+            throw new BadRequestHttpException(reset($errors));
+        }
+
         return $this->asJson([
-            'url' => Craft::$app->getUsers()->getPasswordResetUrl($user),
+            'url' => $url,
         ]);
     }
 
@@ -736,10 +749,11 @@ class UsersController extends Controller
      *
      * @return Response
      */
-    public function actionActivateUser(): Response
+    public function actionActivateUser(): ?Response
     {
         $this->requirePermission('administrateUsers');
         $this->requirePostRequest();
+        $userVariable = $this->request->getValidatedBodyParam('userVariable') ?? 'user';
 
         $userId = $this->request->getRequiredBodyParam('userId');
         $user = Craft::$app->getUsers()->getUserById($userId);
@@ -748,13 +762,23 @@ class UsersController extends Controller
             $this->_noUserExists();
         }
 
-        if (Craft::$app->getUsers()->activateUser($user)) {
-            $this->setSuccessFlash(Craft::t('app', 'Successfully activated the user.'));
-        } else {
-            $this->setFailFlash(Craft::t('app', 'There was a problem activating the user.'));
+        try {
+            if (!Craft::$app->getUsers()->activateUser($user)) {
+                throw new InvalidElementException($user);
+            }
+        } catch (InvalidElementException) {
+            return $this->asModelFailure(
+                $user,
+                Craft::t('app', 'There was a problem activating the user.'),
+                $userVariable,
+            );
         }
 
-        return $this->redirectToPostedUrl();
+        return $this->asModelSuccess(
+            $user,
+            Craft::t('app', 'Successfully activated the user.'),
+            $userVariable,
+        );
     }
 
     /**
@@ -1672,7 +1696,20 @@ JS,
             $this->requirePermission('administrateUsers');
         }
 
-        $emailSent = Craft::$app->getUsers()->sendActivationEmail($user);
+        try {
+            $emailSent = Craft::$app->getUsers()->sendActivationEmail($user);
+        } catch (InvalidElementException) {
+            $emailSent = false;
+        }
+
+        $userVariable = $this->request->getValidatedBodyParam('userVariable') ?? 'user';
+        if ($user->hasErrors()) {
+            return $this->asModelFailure(
+                $user,
+                Craft::t('app', 'Couldn’t send activation email.'),
+                $userVariable,
+            );
+        }
 
         return $emailSent ?
             $this->asSuccess(Craft::t('app', 'Activation email sent.')) :

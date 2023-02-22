@@ -13,6 +13,7 @@ use craft\db\Table;
 use craft\elements\Asset;
 use craft\elements\User;
 use craft\errors\ImageException;
+use craft\errors\InvalidElementException;
 use craft\errors\InvalidSubpathException;
 use craft\errors\UserNotFoundException;
 use craft\errors\VolumeException;
@@ -406,6 +407,7 @@ class Users extends Component
      *
      * @param User $user The user to send the activation email to.
      * @return bool Whether the email was sent successfully.
+     * @throws InvalidElementException if the user doesn't validate
      */
     public function sendActivationEmail(User $user): bool
     {
@@ -424,6 +426,7 @@ class Users extends Component
      *
      * @param User $user The user to send the activation email to.
      * @return bool Whether the email was sent successfully.
+     * @throws InvalidElementException if the user doesn't validate
      */
     public function sendNewEmailVerifyEmail(User $user): bool
     {
@@ -442,6 +445,7 @@ class Users extends Component
      *
      * @param User $user The user to send the forgot password email to.
      * @return bool Whether the email was sent successfully.
+     * @throws InvalidElementException if the user doesn't validate
      */
     public function sendPasswordResetEmail(User $user): bool
     {
@@ -458,6 +462,7 @@ class Users extends Component
      *
      * @param User $user
      * @return string
+     * @throws InvalidElementException if the user doesn't validate
      */
     public function getActivationUrl(User $user): string
     {
@@ -474,6 +479,7 @@ class Users extends Component
      *
      * @param User $user The user that should get the new Email Verification URL.
      * @return string The new Email Verification URL.
+     * @throws InvalidElementException if the user doesn't validate
      */
     public function getEmailVerifyUrl(User $user): string
     {
@@ -486,6 +492,7 @@ class Users extends Component
      *
      * @param User $user The user that should get the new Password Reset URL
      * @return string The new Password Reset URL.
+     * @throws InvalidElementException if the user doesn't validate
      */
     public function getPasswordResetUrl(User $user): string
     {
@@ -790,6 +797,31 @@ class Users extends Component
             return false;
         }
 
+        $originalUser = clone $user;
+        $user->active = true;
+        $user->pending = false;
+        $user->locked = false;
+        $user->suspended = false;
+        $user->verificationCode = null;
+        $user->verificationCodeIssuedDate = null;
+        $user->invalidLoginCount = null;
+        $user->lastInvalidLoginDate = null;
+        $user->lockoutDate = null;
+
+        if (!$user->validate()) {
+            $user->active = $originalUser->active;
+            $user->pending = $originalUser->pending;
+            $user->locked = $originalUser->locked;
+            $user->suspended = $originalUser->suspended;
+            $user->verificationCode = $originalUser->verificationCode;
+            $user->verificationCodeIssuedDate = $originalUser->verificationCodeIssuedDate;
+            $user->invalidLoginCount = $originalUser->invalidLoginCount;
+            $user->lastInvalidLoginDate = $originalUser->lastInvalidLoginDate;
+            $user->lockoutDate = $originalUser->lockoutDate;
+
+            return false;
+        }
+
         $transaction = Craft::$app->getDb()->beginTransaction();
         try {
             $userRecord = $this->_getUserRecordById($user->id);
@@ -804,16 +836,6 @@ class Users extends Component
             $userRecord->lastInvalidLoginDate = null;
             $userRecord->lockoutDate = null;
             $userRecord->save();
-
-            $user->active = true;
-            $user->pending = false;
-            $user->locked = false;
-            $user->suspended = false;
-            $user->verificationCode = null;
-            $user->verificationCodeIssuedDate = null;
-            $user->invalidLoginCount = null;
-            $user->lastInvalidLoginDate = null;
-            $user->lockoutDate = null;
 
             // If they have an unverified email address, now is the time to set it to their primary email address
             $this->verifyEmailForUser($user);
@@ -1140,6 +1162,7 @@ class Users extends Component
      *
      * @param User $user The user.
      * @return string The user’s brand new verification code.
+     * @throws InvalidElementException if the user doesn't validate
      */
     public function setVerificationCodeOnUser(User $user): string
     {
@@ -1161,11 +1184,23 @@ class Users extends Component
             $userRecord->pending = true;
         }
 
+        $transaction = Craft::$app->getDb()->beginTransaction();
         $userRecord->save();
 
+        $originalUser = clone $user;
         $user->pending = $userRecord->pending;
         $user->verificationCode = $hashedCode;
         $user->verificationCodeIssuedDate = $issueDate;
+
+        if (!$user->validate()) {
+            $transaction->rollBack();
+            $user->pending = $originalUser->pending;
+            $user->verificationCode = $originalUser->verificationCode;
+            $user->verificationCodeIssuedDate = $originalUser->verificationCodeIssuedDate;
+            throw new InvalidElementException($user, 'Unable to set verification code on user: ' . implode(', ', $user->getFirstErrors()));
+        }
+
+        $transaction->commit();
 
         // Invalidate caches
         Craft::$app->getElements()->invalidateCachesForElement($user);
@@ -1514,8 +1549,9 @@ class Users extends Component
      * @param string $fePath The URL or path to use if we end up linking to the front end
      * @param string $cpPath The path to use if we end up linking to the control panel
      * @return string
-     * @see getPasswordResetUrl()
+     * @throws InvalidElementException if the user doesn't validate
      * @see getEmailVerifyUrl()
+     * @see getPasswordResetUrl()
      */
     private function _getUserUrl(User $user, string $fePath, string $cpPath): string
     {
