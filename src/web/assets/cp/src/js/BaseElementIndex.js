@@ -66,7 +66,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
     $updateSpinner: null,
     $viewModeBtnContainer: null,
     viewModeBtns: null,
-    viewMode: null,
+    _viewMode: null,
     view: null,
     _autoSelectElements: null,
     $countSpinner: null,
@@ -92,6 +92,17 @@ Craft.BaseElementIndex = Garnish.Base.extend(
     viewMenus: null,
     activeViewMenu: null,
     filterHuds: null,
+
+    get viewMode() {
+      if (this._viewMode === 'structure' && !this.canSortByStructure()) {
+        return 'table';
+      }
+      return this._viewMode;
+    },
+
+    set viewMode(viewMode) {
+      this._viewMode = viewMode;
+    },
 
     /**
      * Constructor
@@ -1228,17 +1239,24 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         paginated: this._isViewPaginated() ? 1 : 0,
       };
 
-      // Possible that the order/sort isn't entirely accurate if we're sorting by Score
-      const [sortAttribute, sortDirection] =
-        this.getSortAttributeAndDirection();
-      params.viewState.order = sortAttribute;
-      params.viewState.sort = sortDirection;
+      // override viewState.mode in case it's different from what's stored
+      params.viewState.mode = this.viewMode;
 
-      if (sortAttribute === 'structure') {
+      if (this.viewMode === 'structure') {
+        params.viewState.mode = 'table';
+        params.viewState.order = 'structure';
+        params.viewState.sort = 'asc';
+
         if (typeof this.instanceState.collapsedElementIds === 'undefined') {
           this.instanceState.collapsedElementIds = [];
         }
         params.collapsedElementIds = this.instanceState.collapsedElementIds;
+      } else {
+        // Possible that the order/sort isn't entirely accurate if we're sorting by Score
+        const [sortAttribute, sortDirection] =
+          this.getSortAttributeAndDirection();
+        params.viewState.order = sortAttribute;
+        params.viewState.sort = sortDirection;
       }
 
       if (
@@ -1262,7 +1280,6 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       return new Promise((resolve, reject) => {
         // Ignore if we're not fully initialized yet
         if (!this.initialized) {
-          debugger;
           reject('The element index isn’t initialized yet.');
           return;
         }
@@ -1571,10 +1588,8 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         return;
       }
 
-      if (attr === 'structure') {
-        dir = 'asc';
-      } else {
-        dir = dir || sortOption.defaultDir;
+      if (!dir) {
+        dir = sortOption.defaultDir;
       }
 
       const history = [];
@@ -1631,13 +1646,11 @@ Craft.BaseElementIndex = Garnish.Base.extend(
     },
 
     /**
-     * Returns whether sorting by a structure is permitted for the current state.
+     * Returns whether we can use the structure view for the current state.
      * @returns {boolean}
      */
     canSortByStructure: function () {
-      return (
-        !this.trashed && !this.drafts && !this.searching && !this.sortByScore
-      );
+      return !this.trashed && !this.drafts && !this.searching;
     },
 
     /**
@@ -1649,20 +1662,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         return ['score', 'desc'];
       }
 
-      let attribute = this.getSelectedSortAttribute();
-      let direction = this.getSelectedSortDirection();
-
-      if (attribute === 'structure') {
-        if (!this.canSortByStructure()) {
-          const alt = this.getSortOptions().find((a) => a.attr !== 'structure');
-          attribute = alt.attr;
-          direction = alt.defaultDir;
-        } else {
-          direction = 'asc';
-        }
-      }
-
-      return [attribute, direction];
+      return [this.getSelectedSortAttribute(), this.getSelectedSortDirection()];
     },
 
     getSortLabel: function (attr) {
@@ -1823,7 +1823,15 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       }
 
       // Figure out which mode we should start with
-      var viewMode = this.getSelectedViewMode();
+      var viewMode = this.getSelectedSourceState('mode');
+
+      // Maintain the structure view for source states that were saved with an older Craft version
+      if (
+        viewMode === 'table' &&
+        this.getSourceState($source.data('key'), 'order') === 'structure'
+      ) {
+        viewMode = 'structure';
+      }
 
       if (!viewMode || !this.doesSourceHaveViewMode(viewMode)) {
         // Try to keep using the current view mode
@@ -1874,8 +1882,8 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       $source = $source ? this.getRootSource($source) : this.$rootSource;
       const sortOptions = ($source ? $source.data('sort-opts') : null) || [];
 
-      // Make sure there's at least one non-structure attribute
-      if (!sortOptions.find((a) => a.attr !== 'structure')) {
+      // Make sure there's at least one attribute
+      if (!sortOptions.length) {
         sortOptions.push({
           label: Craft.t('app', 'Title'),
           attr: 'title',
@@ -1999,13 +2007,21 @@ Craft.BaseElementIndex = Garnish.Base.extend(
     },
 
     getViewModesForSource: function () {
-      var viewModes = [
-        {
-          mode: 'table',
-          title: Craft.t('app', 'Display in a table'),
-          icon: 'list',
-        },
-      ];
+      var viewModes = [];
+
+      if (Garnish.hasAttr(this.$source, 'data-has-structure')) {
+        viewModes.push({
+          mode: 'structure',
+          title: Craft.t('app', 'Display in a structured table'),
+          icon: Craft.orientation === 'rtl' ? 'structurertl' : 'structure',
+        });
+      }
+
+      viewModes.push({
+        mode: 'table',
+        title: Craft.t('app', 'Display in a table'),
+        icon: 'list',
+      });
 
       if (this.$source && Garnish.hasAttr(this.$source, 'data-has-thumbs')) {
         viewModes.push({
@@ -2035,27 +2051,32 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       }
 
       // Has anything changed?
-      if (viewMode === this.viewMode) {
+      if (viewMode === this._viewMode) {
         return;
       }
 
       // Deselect the previous view mode
       if (
-        this.viewMode &&
-        typeof this.viewModeBtns[this.viewMode] !== 'undefined'
+        this._viewMode &&
+        typeof this.viewModeBtns[this._viewMode] !== 'undefined'
       ) {
-        this.viewModeBtns[this.viewMode]
+        this.viewModeBtns[this._viewMode]
           .removeClass('active')
           .attr('aria-pressed', 'false');
       }
 
-      this.viewMode = viewMode;
-      this.setSelecetedSourceState('mode', this.viewMode);
+      this._viewMode = viewMode;
+      this.setSelecetedSourceState('mode', this._viewMode);
 
-      if (typeof this.viewModeBtns[this.viewMode] !== 'undefined') {
-        this.viewModeBtns[this.viewMode]
+      if (typeof this.viewModeBtns[this._viewMode] !== 'undefined') {
+        this.viewModeBtns[this._viewMode]
           .addClass('active')
           .attr('aria-pressed', 'true');
+      }
+
+      // Update the view menu
+      if (this.activeViewMenu) {
+        this.activeViewMenu.updateSortField();
       }
     },
 
@@ -2067,6 +2088,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
     getViewClass: function (mode) {
       switch (mode) {
         case 'table':
+        case 'structure':
           return Craft.TableElementIndexView;
         case 'thumbs':
           return Craft.ThumbsElementIndexView;
@@ -2510,10 +2532,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
     // -------------------------------------------------------------------------
 
     _isViewPaginated: function () {
-      return (
-        this.settings.context === 'index' &&
-        this.getSortAttributeAndDirection()[0] !== 'structure'
-      );
+      return this.settings.context === 'index' && this.viewMode !== 'structure';
     },
 
     _updateView: function (params, response) {
@@ -2714,8 +2733,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       this.view = this.createView(this.getSelectedViewMode(), {
         context: this.settings.context,
         batchSize:
-          this.settings.context !== 'index' ||
-          this.getSortAttributeAndDirection()[0] === 'structure'
+          this.settings.context !== 'index' || this.viewMode === 'structure'
             ? this.settings.batchSize
             : null,
         params: params,
@@ -3133,9 +3151,11 @@ const ViewMenu = Garnish.Base.extend({
 
   $trigger: null,
   $container: null,
+  $sortField: null,
   $sortAttributeSelect: null,
   $sortDirectionPicker: null,
   sortDirectionListbox: null,
+  $tableColumnsField: null,
   $tableColumnsContainer: null,
   $revertContainer: null,
   $revertBtn: null,
@@ -3195,6 +3215,16 @@ const ViewMenu = Garnish.Base.extend({
   },
 
   updateSortField: function () {
+    if (this.$sortField) {
+      if (this.elementIndex.viewMode === 'structure') {
+        this.$sortField.addClass('hidden');
+        this.$tableColumnsField.addClass('first-child');
+      } else {
+        this.$sortField.removeClass('hidden');
+        this.$tableColumnsField.removeClass('first-child');
+      }
+    }
+
     let [attribute, direction] =
       this.elementIndex.getSortAttributeAndDirection();
 
@@ -3220,22 +3250,12 @@ const ViewMenu = Garnish.Base.extend({
     this.$sortAttributeSelect.val(attribute);
     this.sortDirectionListbox.select(direction === 'asc' ? 0 : 1);
 
-    if (['structure', 'score'].includes(attribute)) {
+    if (attribute === 'score') {
       this.sortDirectionListbox.disable();
       this.$sortDirectionPicker.addClass('disabled');
     } else {
       this.sortDirectionListbox.enable();
       this.$sortDirectionPicker.removeClass('disabled');
-    }
-
-    if (!this.elementIndex.canSortByStructure()) {
-      this.$sortAttributeSelect
-        .children('option[value="structure"]')
-        .attr('disabled', 'disabled');
-    } else {
-      this.$sortAttributeSelect
-        .children('option[value="structure"]')
-        .removeAttr('disabled');
     }
   },
 
@@ -3317,8 +3337,10 @@ const ViewMenu = Garnish.Base.extend({
 
   _buildMenu: function () {
     const $metaContainer = $('<div class="meta"/>').appendTo(this.$container);
-    this._createSortField().appendTo($metaContainer);
-    this._createTableColumnsField().appendTo($metaContainer);
+    this.$sortField = this._createSortField().appendTo($metaContainer);
+    this.$tableColumnsField =
+      this._createTableColumnsField().appendTo($metaContainer);
+    this.updateSortField();
 
     this.$sortAttributeSelect.focus();
 
@@ -3407,6 +3429,12 @@ const ViewMenu = Garnish.Base.extend({
             this.$sortAttributeSelect.val(),
             $selectedOption.data('dir')
           );
+
+          if (!this.elementIndex.sortByScore) {
+            // In case it's actually the structure view
+            this.elementIndex.selectViewMode(this.elementIndex.viewMode);
+          }
+
           this.elementIndex.updateElements();
           this._createRevertBtn();
         }
@@ -3419,11 +3447,13 @@ const ViewMenu = Garnish.Base.extend({
         null,
         false
       );
+
+      // In case it's actually the structure view
+      this.elementIndex.selectViewMode(this.elementIndex.viewMode);
+
       this.elementIndex.updateElements();
       this._createRevertBtn();
     });
-
-    this.updateSortField();
 
     const $field = Craft.ui.createField($container, {
       label: Craft.t('app', 'Sort by'),

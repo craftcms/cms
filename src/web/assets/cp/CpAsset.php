@@ -169,6 +169,7 @@ JS;
             'Discard changes',
             'Discard',
             'Display as thumbnails',
+            'Display in a structured table',
             'Display in a table',
             'Done',
             'Draft Name',

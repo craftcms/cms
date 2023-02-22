@@ -4402,8 +4402,8 @@ $min2ColWidth: 400px;
     }
   }
 
-  & > .field:not(:first-child),
-  & > .flex-fields + .field {
+  & > .field:not(:first-child):not(.first-child),
+  & > .flex-fields + .field:not(.first-child) {
     border-top: 1px solid var(--hairline-color);
   }
 
