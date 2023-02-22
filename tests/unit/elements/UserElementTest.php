@@ -11,6 +11,7 @@ use Craft;
 use craft\db\Query;
 use craft\db\Table;
 use craft\elements\User;
+use craft\errors\InvalidElementException;
 use craft\helpers\Session;
 use craft\helpers\StringHelper;
 use craft\services\Users;
@@ -99,7 +100,7 @@ class UserElementTest extends TestCase
         self::assertTrue($user->hasErrors('username'));
         self::assertTrue($user->hasErrors('email'));
 
-        self::expectException(Exception::class);
+        self::expectException(InvalidElementException::class);
         Craft::$app->getUsers()->getActivationUrl($user);
 
         $this->tester->deleteElement($user);
