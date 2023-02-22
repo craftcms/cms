@@ -4912,8 +4912,18 @@ $min2ColWidth: 400px;
   }
 }
 
-.element-index-view-menu-table-column .icon.move {
-  @include margin-right(10px);
+.element-index-view-menu-table-column {
+  display: flex;
+  align-items: start;
+  align-content: stretch;
+  margin-bottom: 4px;
+
+  .icon.move {
+    margin-top: -3px;
+    @include margin-right(10px);
+    position: relative;
+    z-index: 1;
+  }
 }
 
 /* sort fields */
