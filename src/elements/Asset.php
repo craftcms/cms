@@ -1950,6 +1950,11 @@ JS;
             return null;
         }
 
+        $extension = $this->getExtension();
+        if (!Image::canManipulateAsImage($extension)) {
+            return $extension;
+        }
+
         return $this->alt;
     }
 
