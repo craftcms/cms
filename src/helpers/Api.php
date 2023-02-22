@@ -70,7 +70,7 @@ abstract class Api
         $pluginLicenses = [];
         $pluginsService = Craft::$app->getPlugins();
         foreach ($pluginsService->getAllPluginInfo() as $pluginHandle => $pluginInfo) {
-            if ($pluginInfo['isInstalled']) {
+            if ($pluginInfo['isInstalled'] && !$pluginInfo['private']) {
                 $headers['X-Craft-System'] .= ",plugin-{$pluginHandle}:{$pluginInfo['version']};{$pluginInfo['edition']}";
                 try {
                     $licenseKey = $pluginsService->getPluginLicenseKey($pluginHandle);
@@ -174,7 +174,7 @@ abstract class Api
         $pluginLicenseStatuses = [];
         $pluginLicenseEditions = [];
         foreach ($pluginsService->getAllPluginInfo() as $pluginHandle => $pluginInfo) {
-            if ($pluginInfo['isInstalled']) {
+            if ($pluginInfo['isInstalled'] && !$pluginInfo['private']) {
                 $pluginLicenseStatuses[$pluginHandle] = LicenseKeyStatus::Unknown;
             }
         }
