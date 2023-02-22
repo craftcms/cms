@@ -82,7 +82,7 @@ class UserElementTest extends TestCase
         $this->tester->deleteElement($user);
     }
 
-    public function testActivationValidation()
+    public function testActivationValidation(): void
     {
         $user = new User([
             'active' => false,
@@ -110,15 +110,6 @@ class UserElementTest extends TestCase
     {
         $this->expectException(Exception::class);
         $this->activeUser->active = false;
-        $this->tester->saveElement($this->activeUser);
-
-        $this->activeUser->pending = true;
-        $this->tester->saveElement($this->activeUser);
-
-        $this->activeUser->suspended = false;
-        $this->tester->saveElement($this->activeUser);
-
-        $this->activeUser->locked = false;
         $this->tester->saveElement($this->activeUser);
     }
 
