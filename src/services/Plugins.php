@@ -1010,6 +1010,7 @@ class Plugins extends Component
 
         $info['isInstalled'] = $installed = $pluginInfo !== null;
         $info['isEnabled'] = $plugin !== null;
+        $info['private'] = StringHelper::startsWith($handle, '_');
         $info['moduleId'] = $handle;
         $info['edition'] = $edition;
         $info['hasMultipleEditions'] = count($editions) > 1;
