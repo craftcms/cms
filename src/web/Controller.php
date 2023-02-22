@@ -82,8 +82,6 @@ abstract class Controller extends \yii\web\Controller
                 }
             }
             $this->allowAnonymous = $normalized;
-        } elseif (!is_int($this->allowAnonymous)) {
-            throw new InvalidConfigException('Invalid $allowAnonymous value');
         }
 
         parent::init();

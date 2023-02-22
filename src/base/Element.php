@@ -3296,7 +3296,7 @@ abstract class Element extends Component implements ElementInterface
             return $this->_enabledForSite[$siteId] ?? ($siteId == $this->siteId ? true : null);
         }
         if ($siteId == $this->siteId) {
-            return is_bool($this->_enabledForSite) ? $this->_enabledForSite : true;
+            return $this->_enabledForSite;
         }
         return null;
     }
