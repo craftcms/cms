@@ -1558,6 +1558,32 @@ Craft.CP.GlobalAnimationController = Garnish.Base.extend({
     );
   },
 
+  getCanvas: function (image) {
+    const $image = $(image);
+    const width = $image.width();
+    const height = $image.height();
+
+    const $canvas = $('<canvas></canvas>')
+      .attr({
+        width: width,
+        height: height,
+        'aria-hidden': 'true',
+        role: 'presentation',
+        'data-image-cover': true,
+      })
+      .css({
+        position: 'absolute',
+        top: '50%',
+        left: '50%',
+        transform: 'translate(-50%, -50%)',
+      });
+
+    // Draw first frame on canvas
+    $canvas[0].getContext('2d').drawImage($image[0], 0, 0, width, height);
+
+    return $canvas;
+  },
+
   coverImage: function (image) {
     const $image = $(image);
     const $parent = $image.parent();
@@ -1570,39 +1596,17 @@ Craft.CP.GlobalAnimationController = Garnish.Base.extend({
         'data-width': width,
         'data-height': height,
       });
-      $canvas = $('<canvas></canvas>')
-        .attr({
-          width: width,
-          height: height,
-          'aria-hidden': 'true',
-          role: 'presentation',
-          'data-image-cover': true,
-        })
-        .css({
-          position: 'absolute',
-          top: '50%',
-          left: '50%',
-          transform: 'translate(-50%, -50%)',
-        });
-
-      // Draw first frame on canvas
-      $canvas[0].getContext('2d').drawImage($image[0], 0, 0, width, height);
-
-      // Place canvas inside parent
+      $canvas = this.getCanvas($image);
       $parent.css({
         position: 'relative',
       });
       $canvas.insertBefore($image);
     } else if ($canvas.length > 0 && this.imageSizeChanged($image)) {
-      // Redraw and place canvas again
-      setTimeout(() => {
-        $canvas[0].getContext('2d').drawImage($image[0], 0, 0, width, height);
-        $canvas.attr({
-          width: width,
-          height: height,
-        });
-        console.log('redrawing');
-      }, 3000);
+      console.log('redraw');
+      // Replace canvas
+      $canvas.remove();
+      const $newCanvas = this.getCanvas($image);
+      $newCanvas.insertBefore($image);
     }
   },
 
