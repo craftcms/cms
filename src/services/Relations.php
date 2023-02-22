@@ -74,7 +74,7 @@ class Relations extends Component
             if (isset($targetIds[$relation['targetId']])) {
                 // Anything to update?
                 $sortOrder = $targetIds[$relation['targetId']] + 1;
-                if ($relation['sourceSiteId'] != $sourceSiteId || $relation['sortOrder'] != $sortOrder) {
+                if (!$source->propagating && ($relation['sourceSiteId'] != $sourceSiteId || $relation['sortOrder'] != $sortOrder)) {
                     $updateCommands[] = $db->createCommand()->update(Table::RELATIONS, [
                         'sourceSiteId' => $sourceSiteId,
                         'sortOrder' => $sortOrder,
