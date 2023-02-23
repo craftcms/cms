@@ -1856,7 +1856,7 @@ class Asset extends Element
 
         return [
             Craft::t('app', 'Location') => function() use ($volume) {
-                $loc = [Craft::t('site', $volume->name)];
+                $loc = [Html::encode(Craft::t('site', $volume->name))];
                 if ($this->folderPath) {
                     array_push($loc, ...ArrayHelper::filterEmptyStringsFromArray(explode('/', $this->folderPath)));
                 }
