@@ -10,6 +10,10 @@
 - Fixed a bug where localized relations could be moved to a newly-added site rather than copied, when applying project config changes. ([#12702](https://github.com/craftcms/cms/issues/12702))
 - Fixed a bug where element indexes’ “View” buttons could be inconsistently positioned in the toolbar.
 
+## Unreleased (4.4)
+
+- Fixed a bug where filesystem root URLs could be missing a slash. ([#12725](https://github.com/craftcms/cms/issues/12725))
+
 ## 4.4.0-beta.1 - 2023-02-22
 
 ### Content Management

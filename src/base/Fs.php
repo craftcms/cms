@@ -38,7 +38,12 @@ abstract class Fs extends SavableComponent implements FsInterface
             return null;
         }
 
-        return App::parseEnv($this->url) ?: null;
+        $url = App::parseEnv($this->url);
+        if (is_string($url)) {
+            $url = rtrim($url, '/');
+        }
+
+        return $url ? "$url/" : null;
     }
 
     /**
