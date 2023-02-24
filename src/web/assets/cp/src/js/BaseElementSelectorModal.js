@@ -277,6 +277,7 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend(
           multiSelect: this.settings.multiSelect,
           buttonContainer: this.$secondaryButtons,
           onSelectionChange: this.onSelectionChange.bind(this),
+          onSourcePathChange: this.onSelectionChange.bind(this),
           hideSidebar: this.settings.hideSidebar,
           defaultSiteId: this.settings.defaultSiteId,
           defaultSource: this.settings.defaultSource,

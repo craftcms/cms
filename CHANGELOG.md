@@ -6,6 +6,10 @@
 - Fixed a bug where asset thumbnails within collapsed Matrix blocks weren’t loading when the block was expanded. ([#12720](https://github.com/craftcms/cms/issues/12720))
 - Fixed an XSS vulnerability.
 
+## Unreleased (3.8)
+
+- Fixed a bug where it was possible to move a folder into its parent folder. ([#12738](https://github.com/craftcms/cms/issues/12738))
+
 ## 3.8.0-beta.1 - 2023-02-22
 
 ### Content Management

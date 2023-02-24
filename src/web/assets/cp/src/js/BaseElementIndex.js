@@ -843,7 +843,10 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       return $ul;
     },
 
-    onSourcePathChange: function () {},
+    onSourcePathChange: function () {
+      this.settings.onSourcePathChange();
+      this.trigger('sourcePathChange');
+    },
 
     selectSourcePathStep: function (num) {
       this.sourcePath = this.sourcePath.slice(0, num + 1);
@@ -1105,7 +1108,6 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       return new Promise((resolve, reject) => {
         // Ignore if we're not fully initialized yet
         if (!this.initialized) {
-          debugger;
           reject('The element index isn’t initialized yet.');
           return;
         }
@@ -2687,6 +2689,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       onSelectSite: $.noop,
       onUpdateElements: $.noop,
       onSelectionChange: $.noop,
+      onSourcePathChange: $.noop,
       onEnableElements: $.noop,
       onDisableElements: $.noop,
       onAfterAction: $.noop,
