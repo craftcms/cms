@@ -91,6 +91,7 @@ abstract class BaseMultiSelectConditionRule extends BaseConditionRule
         $js = <<<JS
 $('#$namespacedId').selectize({
     plugins: ['remove_button'],
+    dropdownParent: 'body',
     onDropdownClose: () => {
         htmx.trigger(htmx.find('#$namespacedId'), 'change');
     },
