@@ -12,6 +12,11 @@
 - Fixed a bug where element indexes’ “View” buttons could be inconsistently positioned in the toolbar.
 - Fixed a bug where element selector modal footers could hide the modal contents. ([#12708](https://github.com/craftcms/cms/issues/12708))
 
+## Unreleased (4.4)
+
+- Fixed a bug where Dropdown and Multi-select fields could overflow their containers. ([#12728](https://github.com/craftcms/cms/issues/12728))
+- Fixed a bug where Dropdown and Multi-select fields’ menus weren’t visible in Live Preview. ([#12728](https://github.com/craftcms/cms/issues/12728))
+
 ## 4.4.0-beta.2 - 2023-02-22
 
 - Fixed a bug where filesystem root URLs could be missing a slash. ([#12725](https://github.com/craftcms/cms/issues/12725))
