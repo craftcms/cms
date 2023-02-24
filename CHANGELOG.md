@@ -9,6 +9,7 @@
 - Fixed a bug where control panel notifications weren’t being announced to screen readers. ([#12714](https://github.com/craftcms/cms/pull/12714))
 - Fixed a bug where localized relations could be moved to a newly-added site rather than copied, when applying project config changes. ([#12702](https://github.com/craftcms/cms/issues/12702))
 - Fixed a bug where element indexes’ “View” buttons could be inconsistently positioned in the toolbar.
+- Fixed a bug where element selector modal footers could hide the modal contents. ([#12708](https://github.com/craftcms/cms/issues/12708))
 
 ## 4.3.10 - 2023-02-17
 
