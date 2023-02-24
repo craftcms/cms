@@ -211,7 +211,7 @@ class MigrateController extends BaseMigrateController
         }
 
         try {
-            if (!parent::beforeAction($action)) {
+            if (!$this->traitBeforeAction($action)) {
                 return false;
             }
         } catch (InvalidConfigException $e) {
