@@ -3644,6 +3644,7 @@ const FilterHud = Garnish.HUD.extend({
 
         this.$hud.find('.condition-container').on('htmx:load', () => {
           this.setReady();
+          this.updateSizeAndPosition(true);
         });
         this.setFocus();
       })
