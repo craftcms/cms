@@ -202,7 +202,6 @@ class MigrateController extends BaseMigrateController
             }
 
             $this->migrationPath = $this->getMigrator()->migrationPath;
-            FileHelper::createDirectory($this->migrationPath);
         }
 
         // Make sure that the project config YAML exists in case any migrations need to check incoming YAML values
@@ -211,8 +210,12 @@ class MigrateController extends BaseMigrateController
             $projectConfig->regenerateExternalConfig();
         }
 
-        if (!$this->traitBeforeAction($action)) {
-            return false;
+        try {
+            if (!parent::beforeAction($action)) {
+                return false;
+            }
+        } catch (InvalidConfigException $e) {
+            return true;
         }
 
         return true;
