@@ -2237,7 +2237,7 @@ JS;
      */
     public function getStream()
     {
-        return $this->_volume->getFileStream($this->getPath());
+        return $this->getVolume()->getFileStream($this->getPath());
     }
 
     /**
@@ -2846,7 +2846,7 @@ JS;
     public function afterDelete(): void
     {
         if (!$this->keepFileOnDelete) {
-            $this->_volume->deleteFile($this->getPath());
+            $this->getVolume()->deleteFile($this->getPath());
         }
 
         Craft::$app->getImageTransforms()->deleteAllTransformData($this);

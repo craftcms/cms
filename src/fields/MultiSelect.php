@@ -63,6 +63,7 @@ class MultiSelect extends BaseOptionsField
         $view->registerJsWithVars(fn($id) => <<<JS
 $('#' + $id).selectize({
   plugins: ['remove_button'],
+  dropdownParent: 'body',
 });
 JS, [
             $view->namespaceInputId($id),
