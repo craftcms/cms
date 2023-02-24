@@ -1849,6 +1849,10 @@ JS;
         $volume = $this->getVolume();
         $transform = $transform ?? $this->_transform;
 
+        if ($transform === null) {
+            return Html::encodeSpaces(Assets::generateUrl($volume, $this));
+        }
+
         if ($transform) {
             $mimeType = $this->getMimeType();
             $generalConfig = Craft::$app->getConfig()->getGeneral();
