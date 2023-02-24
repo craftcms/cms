@@ -701,19 +701,25 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 
     _moveFolder: function () {
       const currentFolder = this.sourcePath[this.sourcePath.length - 1];
+      const parentFolder = this.sourcePath[this.sourcePath.length - 2];
+
+      const disabledFolderIds = [currentFolder.folderId];
+      if (parentFolder) {
+        disabledFolderIds.push(parentFolder.folderId);
+      }
 
       new Craft.VolumeFolderSelectorModal({
         sources: this.getMoveTargetSourceKeys(true),
         showTitle: true,
         modalTitle: Craft.t('app', 'Move to'),
         selectBtnLabel: Craft.t('app', 'Move'),
+        disabledFolderIds: disabledFolderIds,
         indexSettings: {
           defaultSource: this.sourceKey,
           defaultSourcePath: this.sourcePath.slice(
             0,
             this.sourcePath.length - 1
           ),
-          disabledFolderIds: [currentFolder.folderId],
         },
         onSelect: ([targetFolder]) => {
           this.$sourcePathActionsBtn.focus();
