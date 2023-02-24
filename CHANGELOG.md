@@ -16,6 +16,7 @@
 
 - Fixed a bug where Dropdown and Multi-select fields could overflow their containers. ([#12728](https://github.com/craftcms/cms/issues/12728))
 - Fixed a bug where Dropdown and Multi-select fields’ menus weren’t visible in Live Preview. ([#12728](https://github.com/craftcms/cms/issues/12728))
+- Fixed a bug where the `svg()` Twig function wasn’t working when an asset was passed in. ([#12733](https://github.com/craftcms/cms/issues/12733))
 
 ## 4.4.0-beta.2 - 2023-02-22
 
