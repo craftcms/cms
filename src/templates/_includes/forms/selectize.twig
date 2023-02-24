@@ -1,7 +1,5 @@
 {% set id = id ?? "selectize#{random()}" %}
-{% set selectizeOptions = {
-    dropdownParent: 'body',
-}|merge(selectizeOptions ?? []) %}
+{% set selectizeOptions = selectizeOptions ?? [] %}
 
 {# Normalize the options #}
 {% set options = (options ?? [])|map((o, k) => (o.optgroup is defined or o.value is defined) ? o : {
