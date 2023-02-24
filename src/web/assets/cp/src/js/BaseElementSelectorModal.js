@@ -219,6 +219,10 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend(
       if (!this.elementIndex) {
         this._createElementIndex();
       } else {
+        // make sure we're able to scroll the entire elementIndex if more elements were added
+        // after modal was first initialised
+        this.updateModalBottomPadding();
+
         // Auto-focus the Search box
         if (!Garnish.isMobileBrowser(true)) {
           this.elementIndex.$search.trigger('focus');
