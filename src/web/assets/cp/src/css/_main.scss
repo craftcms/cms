@@ -6634,7 +6634,7 @@ tr.indexingSession td.progress div.progressContainer div.progressInfo {
 
 body .selectize-dropdown {
   border: none;
-  z-index: 100;
+  z-index: 101;
 }
 
 /* single select styles */
@@ -6643,7 +6643,7 @@ body .selectize-dropdown {
   height: 34px;
 
   &:not(.fullwidth) {
-    width: 25em;
+    max-width: 25em;
   }
 }
 
