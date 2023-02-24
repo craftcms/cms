@@ -14,6 +14,7 @@ use craft\base\ElementExporterInterface;
 use craft\base\ElementInterface;
 use craft\elements\actions\DeleteActionInterface;
 use craft\elements\actions\Restore;
+use craft\elements\conditions\ElementCondition;
 use craft\elements\conditions\ElementConditionInterface;
 use craft\elements\conditions\ElementConditionRuleInterface;
 use craft\elements\db\ElementQueryInterface;
@@ -23,7 +24,6 @@ use craft\helpers\Cp;
 use craft\helpers\ElementHelper;
 use craft\services\ElementSources;
 use yii\base\InvalidValueException;
-use yii\db\Expression;
 use yii\web\BadRequestHttpException;
 use yii\web\ForbiddenHttpException;
 use yii\web\Response;
@@ -166,11 +166,11 @@ class ElementIndexesController extends BaseElementsController
      */
     public function actionCountElements(): Response
     {
+        /** @var string|ElementInterface $elementType */
+        $elementType = $this->elementType;
         return $this->asJson([
             'resultSet' => $this->request->getParam('resultSet'),
-            'count' => (int)$this->elementQuery
-                ->select(new Expression('1'))
-                ->count(),
+            'count' => $elementType::indexElementCount($this->elementQuery, $this->sourceKey),
         ]);
     }
 
@@ -493,7 +493,17 @@ class ElementIndexesController extends BaseElementsController
             return null;
         }
 
-        return Craft::$app->getConditions()->createCondition($conditionConfig);
+        $condition = Craft::$app->getConditions()->createCondition($conditionConfig);
+
+        if ($condition instanceof ElementCondition) {
+            $referenceElementId = $this->request->getBodyParam('referenceElementId');
+            if ($referenceElementId) {
+                $siteId = $this->request->getBodyParam('referenceElementSiteId');
+                $condition->referenceElement = Craft::$app->getElements()->getElementById((int)$referenceElementId, siteId: $siteId);
+            }
+        }
+
+        return $condition;
     }
 
     /**

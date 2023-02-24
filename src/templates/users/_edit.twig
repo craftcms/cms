@@ -49,6 +49,7 @@
             </div>
         </div>
     {% endif %}
+
 {% endblock %}
 
 {% block content %}
@@ -347,7 +348,6 @@
                     <h5 class="heading">{{ "Status"|t('app') }}</h5>
                     <div class="value flex">
                         <div class="flex-grow"><span class="status {{ user.getStatus() }}"></span> {{ statusLabel }}</div>
-
                         {% if actions|length %}
                             <div>
                                 {{ forms.button({
@@ -370,18 +370,18 @@
                                         <ul>
                                             {% for actionItem in actionList %}
                                                 <li>
-                                                  {{ tag('a', {
-                                                      id: actionItem.id ?? false,
-                                                      class: [
-                                                          (actionItem.action ?? false) ? 'formsubmit',
-                                                          (actionItem.destructive ?? false) ? 'error',
-                                                      ]|filter,
-                                                      data: {
-                                                          action: actionItem.action ?? false,
-                                                          confirm: actionItem.confirm ?? false,
-                                                      },
-                                                      text: actionItem.label,
-                                                  }) }}
+                                                    {{ tag('a', {
+                                                        id: actionItem.id ?? false,
+                                                        class: [
+                                                            (actionItem.action ?? false) ? 'formsubmit',
+                                                            (actionItem.destructive ?? false) ? 'error',
+                                                        ]|filter,
+                                                        data: {
+                                                            action: actionItem.action ?? false,
+                                                            confirm: actionItem.confirm ?? false,
+                                                        },
+                                                        text: actionItem.label,
+                                                    }) }}
                                                 </li>
                                             {% endfor %}
                                         </ul>

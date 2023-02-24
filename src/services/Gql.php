@@ -728,7 +728,7 @@ class Gql extends Component
     }
 
     /**
-     * Returns a GraphQL token by its id.
+     * Returns a GraphQL token by its ID.
      *
      * @param int $id
      * @return GqlToken|null

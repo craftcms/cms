@@ -9,6 +9,7 @@ namespace craft\elements\db;
 
 use craft\base\ElementInterface;
 use craft\db\QueryAbortedException;
+use craft\db\Table;
 use craft\elements\Address;
 use craft\helpers\ArrayHelper;
 use yii\base\InvalidConfigException;
@@ -228,7 +229,7 @@ class AddressQuery extends ElementQuery
     {
         $this->_normalizeOwnerId();
 
-        $this->joinElementTable('addresses');
+        $this->joinElementTable(Table::ADDRESSES);
 
         $this->query->select([
             'addresses.id',

@@ -150,7 +150,8 @@
                 <div class="flex">
                     {% include '_layouts/components/crumbs' %}
                     <div class="flex-grow"></div>
-                    <button type="button" id="announcements-btn" class="btn hidden" aria-label="{{ 'What’s New'|t('app') }}" title="{{ 'What’s New'|t('app') }}">
+                    <button type="button" id="announcements-btn" class="btn hidden" title="{{ 'What’s New'|t('app') }}">
+                        <span class="visually-hidden">{{ 'What’s New'|t('app') }}</span>
                         {{ svg('@app/icons/gift.svg') }}
                     </button>
 

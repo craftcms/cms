@@ -58,7 +58,7 @@ class SectionsController extends Controller
     /**
      * Edit a section.
      *
-     * @param int|null $sectionId The section’s id, if any.
+     * @param int|null $sectionId The section’s ID, if any.
      * @param Section|null $section The section being edited, if there were any validation errors.
      * @return Response
      * @throws NotFoundHttpException if the requested section cannot be found

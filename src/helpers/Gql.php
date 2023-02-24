@@ -383,7 +383,7 @@ class Gql
     }
 
     /**
-     * Prepare arguments intended for Asset transforms.
+     * Prepare arguments intended for asset transforms.
      *
      * @param array $arguments
      * @return array|string

@@ -375,11 +375,20 @@ class Cp
             $imgHtml = '';
         }
 
+        $title = '';
+        foreach ($element->getUiLabelPath() as $segment) {
+            $title .= "$segment → ";
+        }
+        $title .= $label;
+        if (Craft::$app->getIsMultiSite()) {
+            $title .= sprintf(' - %s', Craft::t('site', $element->getSite()->getName()));
+        }
+
         $attributes = ArrayHelper::merge(
             Html::normalizeTagAttributes($element->getHtmlAttributes($context)),
             [
                 'class' => ['element', $size],
-                'title' => $label . (Craft::$app->getIsMultiSite() ? ' – ' . Craft::t('site', $element->getSite()->getName()) : ''),
+                'title' => $title,
                 'data' => array_filter([
                     'type' => get_class($element),
                     'id' => $element->id,
@@ -429,6 +438,10 @@ class Cp
                     $attributes['data']['savable'] = true;
                 }
 
+                if ($elementsService->canDuplicate($element, $user)) {
+                    $attributes['data']['duplicatable'] = true;
+                }
+
                 if ($elementsService->canDelete($element, $user)) {
                     $attributes['data']['deletable'] = true;
                 }
@@ -460,7 +473,13 @@ class Cp
             $innerHtml .= '<div class="label">';
             $innerHtml .= '<span class="title">';
 
-            $encodedLabel = Html::encode($label);
+            $encodedLabel = '';
+
+            foreach ($element->getUiLabelPath() as $segment) {
+                $encodedLabel .= Html::tag('span', Html::encode($segment), ['class' => 'segment']);
+            }
+
+            $encodedLabel .= Html::encode($label);
 
             if ($showDraftName && $isDraft && !$element->getIsUnpublishedDraft()) {
                 /** @var DraftBehavior|ElementInterface $element */
@@ -1704,7 +1723,16 @@ JS;
                     $customizable ? 'draggable' : null,
                 ]),
             ]) .
-            Html::tag('span', Html::encode($tab->name)) .
+            Html::beginTag('span') .
+            Html::encode($tab->name) .
+            ($tab->hasConditions() ? Html::tag('div', '', [
+                'class' => ['fld-indicator'],
+                'title' => Craft::t('app', 'This tab is conditional'),
+                'aria' => ['label' => Craft::t('app', 'This tab is conditional')],
+                'data' => ['icon' => 'condition'],
+                'role' => 'img',
+            ]) : '') .
+            Html::endTag('span') .
             ($customizable
                 ? Html::a('', null, [
                     'role' => 'button',
@@ -1773,7 +1801,6 @@ JS;
             'class' => array_filter([
                 'fld-element',
                 $forLibrary ? 'unused' : null,
-                !$forLibrary && $element->hasConditions() ? 'has-conditions' : null,
             ]),
             'data' => [
                 'uid' => !$forLibrary ? $element->uid : false,

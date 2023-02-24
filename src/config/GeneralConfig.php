@@ -1278,7 +1278,7 @@ class GeneralConfig extends BaseConfig
     public array $extraNameSuffixes = [];
 
     /**
-     * @var string|false The string to use to separate words when uploading Assets. If set to `false`, spaces will be left alone.
+     * @var string|false The string to use to separate words when uploading assets. If set to `false`, spaces will be left alone.
      *
      * ::: code
      * ```php Static Config
@@ -2848,7 +2848,7 @@ class GeneralConfig extends BaseConfig
     public array $trustedHosts = ['any'];
 
     /**
-     * @var bool Whether images should be upscaled if the provided transform size is larger than the image.
+     * @var bool Whether image transforms should allow upscaling by default, for images that are smaller than the transform dimensions.
      *
      * ::: code
      * ```php Static Config
@@ -4415,7 +4415,7 @@ class GeneralConfig extends BaseConfig
     }
 
     /**
-     * The string to use to separate words when uploading Assets. If set to `false`, spaces will be left alone.
+     * The string to use to separate words when uploading assets. If set to `false`, spaces will be left alone.
      *
      * ```php
      * ->filenameWordSeparator(false)
@@ -6195,7 +6195,7 @@ class GeneralConfig extends BaseConfig
     }
 
     /**
-     * Whether images should be upscaled if the provided transform size is larger than the image.
+     * Whether image transforms should allow upscaling by default, for images that are smaller than the transform dimensions.
      *
      * ```php
      * ->upscaleImages(false)

@@ -4,7 +4,8 @@ use craft\helpers\StringHelper;
 
 return [
     'assets/edit/<elementId:\d+><filename:(?:-[^\/]*)?>' => 'elements/edit',
-    'assets/<defaultSource:{handle}(\/.*)?>' => ['template' => 'assets'],
+    'assets' => 'assets/index',
+    'assets/<defaultSource:{handle}(\/.*)?>' => 'assets/index',
     'categories' => 'categories/category-index',
     'categories/<groupHandle:{handle}>' => 'categories/category-index',
     'categories/<groupHandle:{handle}>/new' => 'categories/create',
@@ -15,6 +16,7 @@ return [
     'entries/<sectionHandle:{handle}>' => ['template' => 'entries'],
     'entries/<section:{handle}>/new' => 'entries/create',
     'entries/<section:{handle}>/<elementId:\d+><slug:(?:-[^\/]*)?>' => 'elements/edit',
+    'entries/<section:{handle}>/<elementId:\d+><slug:(?:-[^\/]*)?>/revisions' => 'elements/revisions',
     'globals' => 'globals',
     'globals/<globalSetHandle:{handle}>' => 'globals/edit-content',
     'myaccount' => [

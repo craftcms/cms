@@ -8,7 +8,9 @@
 namespace craft\base\imagetransforms;
 
 use craft\elements\Asset;
+use craft\errors\ImageTransformException;
 use craft\models\ImageTransform;
+use yii\base\NotSupportedException;
 
 /**
  * TransformerInterface defines the common interface to be implemented by all image drivers.
@@ -25,6 +27,8 @@ interface ImageTransformerInterface
      * @param ImageTransform $imageTransform
      * @param bool $immediately Whether the image should be transformed immediately
      * @return string The URL for the transform
+     * @throws NotSupportedException if the transformer can’t be used with the given asset.
+     * @throws ImageTransformException if a problem occurs.
      */
     public function getTransformUrl(Asset $asset, ImageTransform $imageTransform, bool $immediately): string;
 

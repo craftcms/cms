@@ -23,7 +23,6 @@ use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
 use craft\helpers\FileHelper;
 use craft\helpers\ProjectConfig as ProjectConfigHelper;
-use craft\helpers\StringHelper;
 use DateTime;
 use ReflectionClass;
 use ReflectionException;
@@ -239,7 +238,7 @@ class Plugins extends Component
                     isset($plugin->minVersionRequired) &&
                     $plugin->minVersionRequired &&
                     !str_starts_with($row['version'], 'dev-') &&
-                    !StringHelper::endsWith($row['version'], '-dev') &&
+                    !str_ends_with($row['version'], '-dev') &&
                     version_compare($row['version'], $plugin->minVersionRequired, '<')
                 ) {
                     throw new HttpException(200, Craft::t('app', 'You need to be on at least {plugin} {version} before you can update to {plugin} {targetVersion}.', [
@@ -1010,6 +1009,7 @@ class Plugins extends Component
 
         $info['isInstalled'] = $installed = $pluginInfo !== null;
         $info['isEnabled'] = $plugin !== null;
+        $info['private'] = str_starts_with($handle, '_');
         $info['moduleId'] = $handle;
         $info['edition'] = $edition;
         $info['hasMultipleEditions'] = count($editions) > 1;

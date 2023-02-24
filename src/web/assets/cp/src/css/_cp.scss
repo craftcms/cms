@@ -607,7 +607,7 @@ li.breadcrumb-toggle-wrapper {
   &:active,
   &.active {
     svg {
-      @include svg-mask(var(--link-color));
+      @include svg-mask(var(--ui-control-active-color));
     }
   }
 }
@@ -639,12 +639,7 @@ li.breadcrumb-toggle-wrapper {
       }
     }
 
-    h2 {
-      position: relative;
-      margin: 0 0 3px;
-    }
-
-    &.unread h2:after {
+    &.unread .announcement__heading:after {
       content: '';
       display: block;
       position: absolute;
@@ -659,6 +654,16 @@ li.breadcrumb-toggle-wrapper {
     p {
       margin: 0;
     }
+  }
+
+  .announcement__header {
+    display: grid;
+  }
+
+  .announcement__heading {
+    position: relative;
+    margin: 0 0 3px;
+    order: 1;
   }
 }
 
@@ -1037,10 +1042,10 @@ li.breadcrumb-toggle-wrapper {
   position: sticky;
   bottom: 0;
   z-index: 1;
-  margin: 25px calc(var(--xl) * -1) calc(var(--xl) * -1); // 1px extra on top is intentional
+  margin: 25px calc((var(--xl) * -1) + 2px) calc((var(--xl) * -1) + 2px); // 1px extra on top is intentional
   padding: var(--s) var(--xl);
   background-color: var(--gray-050);
-  border-radius: 0 0 var(--large-border-radius) var(--large-border-radius);
+  border-radius: var(--small-border-radius);
   box-sizing: border-box;
   min-height: 50px;
 

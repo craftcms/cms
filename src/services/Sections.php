@@ -37,6 +37,7 @@ use craft\queue\jobs\ResaveElements;
 use craft\records\EntryType as EntryTypeRecord;
 use craft\records\Section as SectionRecord;
 use craft\records\Section_SiteSettings as Section_SiteSettingsRecord;
+use DateTime;
 use Throwable;
 use yii\base\Component;
 use yii\base\Exception;
@@ -864,16 +865,35 @@ class Sections extends Component
         try {
             // All entries *should* be deleted by now via their entry types, but loop through all the sites in case
             // there are any lingering entries from unsupported sites
-            $entryQuery = Entry::find()
-                ->sectionId($sectionRecord->id)
-                ->status(null);
-            $elementsService = Craft::$app->getElements();
-            foreach (Craft::$app->getSites()->getAllSiteIds() as $siteId) {
-                foreach (Db::each($entryQuery->siteId($siteId)) as $entry) {
-                    /** @var Entry $entry */
-                    $elementsService->deleteElement($entry);
-                }
+            $elementsTable = Table::ELEMENTS;
+            $entriesTable = Table::ENTRIES;
+            $now = Db::prepareDateForDb(new DateTime());
+            $db = Craft::$app->getDb();
+
+            if ($db->getIsMysql()) {
+                $sql = <<<SQL
+UPDATE $elementsTable [[elements]], $entriesTable [[sections]] 
+SET [[elements.dateDeleted]] = '$now'
+WHERE [[sections.sectionId]] = $section->id AND
+  [[sections.id]] = [[elements.id]] AND
+  [[elements.canonicalId]] IS NULL AND
+  [[elements.revisionId]] IS NULL AND
+  [[elements.dateDeleted]] IS NULL
+SQL;
+            } else {
+                $sql = <<<SQL
+UPDATE $elementsTable
+SET [[elements.dateDeleted]] = '$now'
+FROM $entriesTable
+WHERE [[sections.sectionId]] = $section->id AND
+  [[sections.id]] = [[elements.id]] AND
+  [[elements.canonicalId]] IS NULL AND
+  [[elements.revisionId]] IS NULL AND
+  [[elements.dateDeleted]] IS NULL
+SQL;
             }
+
+            $db->createCommand($sql)->execute();
 
             // Delete the structure
             if ($sectionRecord->structureId) {
@@ -1334,22 +1354,38 @@ class Sections extends Component
         $transaction = Craft::$app->getDb()->beginTransaction();
 
         try {
-            // Delete the entries, including unpublished drafts
-            // (loop through all the sites in case there are any lingering entries from unsupported sites
-            $entryQuery = Entry::find()
-                ->typeId($entryTypeRecord->id)
-                ->status(null)
-                ->drafts(null)
-                ->draftOf(false);
+            // Delete the entries
+            $elementsTable = Table::ELEMENTS;
+            $entriesTable = Table::ENTRIES;
+            $now = Db::prepareDateForDb(new DateTime());
+            $db = Craft::$app->getDb();
 
-            $elementsService = Craft::$app->getElements();
-            foreach (Craft::$app->getSites()->getAllSiteIds() as $siteId) {
-                foreach (Db::each($entryQuery->siteId($siteId)) as $entry) {
-                    /** @var Entry $entry */
-                    $entry->deletedWithEntryType = true;
-                    $elementsService->deleteElement($entry);
-                }
+            if ($db->getIsMysql()) {
+                $sql = <<<SQL
+UPDATE $elementsTable [[elements]], $entriesTable [[entries]] 
+SET [[elements.dateDeleted]] = '$now',
+  [[entries.deletedWithEntryType]] = 1
+WHERE [[entries.typeId]] = $entryType->id AND
+  [[entries.id]] = [[elements.id]] AND
+  [[elements.canonicalId]] IS NULL AND
+  [[elements.revisionId]] IS NULL AND
+  [[elements.dateDeleted]] IS NULL
+SQL;
+            } else {
+                $sql = <<<SQL
+UPDATE $elementsTable
+SET [[elements.dateDeleted]] = '$now',
+  [[entries.deletedWithEntryType]] = TRUE
+FROM $entriesTable
+WHERE [[entries.typeId]] = $entryType->id AND
+  [[entries.id]] = [[elements.id]] AND
+  [[elements.canonicalId]] IS NULL AND
+  [[elements.revisionId]] IS NULL AND
+  [[elements.dateDeleted]] IS NULL
+SQL;
             }
+
+            $db->createCommand($sql)->execute();
 
             // Delete the field layout
             if ($entryTypeRecord->fieldLayoutId) {
@@ -1551,7 +1587,7 @@ class Sections extends Component
             ->site('*')
             ->unique()
             ->status(null)
-            ->orderBy(['elements.id' => SORT_ASC])
+            ->orderBy(['id' => SORT_ASC])
             ->withStructure(false);
 
         $structuresService = Craft::$app->getStructures();

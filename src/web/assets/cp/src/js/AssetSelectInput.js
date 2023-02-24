@@ -1,11 +1,9 @@
 /** global: Craft */
 /** global: Garnish */
 /**
- * Asset Select input
+ * Asset select input
  */
 Craft.AssetSelectInput = Craft.BaseElementSelectInput.extend({
-  requestId: 0,
-  hud: null,
   $uploadBtn: null,
   uploader: null,
   progressBar: null,
@@ -89,7 +87,7 @@ Craft.AssetSelectInput = Craft.BaseElementSelectInput.extend({
   },
 
   /**
-   * Load the preview for an Asset element
+   * Load the preview for an asset
    * @private
    */
   _loadPreview: function ($element) {

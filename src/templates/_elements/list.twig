@@ -1,0 +1,16 @@
+{% set elements = elements ?? [] %}
+{% set disabled = disabled ?? null %}
+{% set viewMode = viewMode ?? null %}
+
+<div class="elements">
+    {% for element in elements %}
+        {% set element = include('_elements/element', {
+            context: 'field',
+            size: (viewMode == 'large' ? 'large' : 'small')
+        }) %}
+        {% if disabled %}
+            {% set element = element|removeClass('removable') %}
+        {% endif %}
+        {{ element|raw }}
+    {% endfor %}
+</div>

@@ -26,10 +26,12 @@ import './js/ElementEditorSlideout.js';
 import './js/Tabs.js';
 
 // Finally load the remaining files
+import './js/Accordion';
 import './js/AddressesInput.js';
 import './js/AdminTable.js';
 import './js/AssetImageEditor.js';
 import './js/AssetIndex.js';
+import './js/AssetMover.js';
 import './js/AssetSelectInput.js';
 import './js/AssetSelectorModal.js';
 import './js/AuthManager.js';
@@ -45,11 +47,13 @@ import './js/DynamicGenerator.js';
 import './js/EditableTable.js';
 import './js/ElementActionTrigger.js';
 import './js/ElementEditor.js';
+import './js/ElementFieldSettings.js';
 import './js/ElementThumbLoader.js';
 import './js/ElevatedSessionForm.js';
 import './js/ElevatedSessionManager.js';
 import './js/EntryIndex.js';
 import './js/FieldLayoutDesigner.js';
+import './js/VolumeFolderSelectorModal.js';
 import './js/FieldToggle.js';
 import './js/Grid.js';
 import './js/HandleGenerator.js';
