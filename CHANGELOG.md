@@ -14,6 +14,7 @@
 
 ## Unreleased (4.4)
 
+- Fixed a bug where it was possible to move a folder into its parent folder. ([#12738](https://github.com/craftcms/cms/issues/12738))
 - Fixed a bug where Dropdown and Multi-select fields could overflow their containers. ([#12728](https://github.com/craftcms/cms/issues/12728))
 - Fixed a bug where Dropdown and Multi-select fields’ menus weren’t visible in Live Preview. ([#12728](https://github.com/craftcms/cms/issues/12728))
 - Fixed a bug where the `svg()` Twig function wasn’t working when an asset was passed in. ([#12733](https://github.com/craftcms/cms/issues/12733))
