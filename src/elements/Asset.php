@@ -1849,10 +1849,6 @@ JS;
         $volume = $this->getVolume();
         $transform = $transform ?? $this->_transform;
 
-        if ($transform === null) {
-            return Html::encodeSpaces(Assets::generateUrl($volume, $this));
-        }
-
         if ($transform) {
             $mimeType = $this->getMimeType();
             $generalConfig = Craft::$app->getConfig()->getGeneral();
@@ -1920,9 +1916,10 @@ JS;
             return $url;
         }
 
-        if (!$volume->getFs()->hasUrls) {
-            return null;
-        }
+        // todo: uncomment for v5. Currently Imager X is relying on a relative URL being returned
+        //if (!$volume->getFs()->hasUrls) {
+        //    return null;
+        //}
 
         return Html::encodeSpaces(Assets::generateUrl($volume, $this));
     }
