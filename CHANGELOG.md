@@ -12,7 +12,7 @@
 - Fixed a bug where element indexes’ “View” buttons could be inconsistently positioned in the toolbar.
 - Fixed a bug where element selector modal footers could hide the modal contents. ([#12708](https://github.com/craftcms/cms/issues/12708))
 
-## Unreleased (4.4)
+## 4.4.0-beta.3 - 2023-02-25
 
 - Improved element index pages for screen readers. ([#12731](https://github.com/craftcms/cms/pull/12731))
 - `craft\helpers\App::env()` now returns `null` if the original value was `'null'`. ([#12742](https://github.com/craftcms/cms/pull/12742))
