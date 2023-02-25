@@ -21,6 +21,7 @@
 - Fixed a bug where Dropdown and Multi-select fields’ menus weren’t visible in Live Preview. ([#12728](https://github.com/craftcms/cms/issues/12728))
 - Fixed a bug where the `svg()` Twig function wasn’t working when an asset was passed in. ([#12733](https://github.com/craftcms/cms/issues/12733))
 - Fixed a bug where transforms’ `format` settings weren’t always respected if `generateTransformsBeforePageLoad` was enabled. ([#12729](https://github.com/craftcms/cms/issues/12729))
+- Fixed an Imager X compatibility bug. ([#12737](https://github.com/craftcms/cms/issues/12737))
 
 ## 4.4.0-beta.2 - 2023-02-22
 
