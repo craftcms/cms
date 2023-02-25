@@ -14,9 +14,13 @@
 
 ## Unreleased (4.4)
 
+- Improved element index pages for screen readers. ([#12731](https://github.com/craftcms/cms/pull/12731))
+- `craft\helpers\App::env()` now returns `null` if the original value was `'null'`. ([#12742](https://github.com/craftcms/cms/pull/12742))
+- Fixed a bug where it was possible to move a folder into its parent folder. ([#12738](https://github.com/craftcms/cms/issues/12738))
 - Fixed a bug where Dropdown and Multi-select fields could overflow their containers. ([#12728](https://github.com/craftcms/cms/issues/12728))
 - Fixed a bug where Dropdown and Multi-select fields’ menus weren’t visible in Live Preview. ([#12728](https://github.com/craftcms/cms/issues/12728))
 - Fixed a bug where the `svg()` Twig function wasn’t working when an asset was passed in. ([#12733](https://github.com/craftcms/cms/issues/12733))
+- Fixed a bug where transforms’ `format` settings weren’t always respected if `generateTransformsBeforePageLoad` was enabled. ([#12729](https://github.com/craftcms/cms/issues/12729))
 
 ## 4.4.0-beta.2 - 2023-02-22
 
