@@ -1916,9 +1916,10 @@ JS;
             return $url;
         }
 
-        if (!$volume->getFs()->hasUrls) {
-            return null;
-        }
+        // todo: uncomment for v5. Currently Imager X is relying on a relative URL being returned
+        //if (!$volume->getFs()->hasUrls) {
+        //    return null;
+        //}
 
         return Html::encodeSpaces(Assets::generateUrl($volume, $this));
     }
