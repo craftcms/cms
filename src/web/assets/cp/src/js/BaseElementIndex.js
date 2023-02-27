@@ -2975,6 +2975,8 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         })
         .appendTo($form);
 
+      const $exportSubmit = new Garnish.MultiFunctionBtn($submitBtn);
+
       var hud = new Garnish.HUD(this.$exportBtn, $form);
 
       hud.on('hide', () => {
