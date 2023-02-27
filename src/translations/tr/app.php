@@ -1768,7 +1768,7 @@ return [
     'You need to be on at least {plugin} {version} before you can update to {plugin} {targetVersion}.' => '{plugin} {targetVersion} sürümüne güncelleyebilmeniz için en az {plugin} {version} sürümünde olmanız gerekir.',
     'You need to reset your password, but an error was encountered when sending the password reset email.' => 'Parolanızı sıfırlamanız gerekiyor ancak parola sıfırlama e-postası gönderilirken bir hatayla karşılaşıldı.',
     'You need to reset your password. Check your email for instructions.' => 'Şifrenizi sıfırlamanız gerekmektedir. Talimatlar için epostanızı kontrol ediniz.',
-    'Your Craft license isn’t allowed to run version {version}.' => 'Your Craft license isn’t allowed to run version {version}.',
+    'Your Craft license isn’t allowed to run version {version}.' => 'Craft lisansınızın {version} sürümünü çalıştırmasına izin verilmiyor.',
     'Your Craft license key is invalid.' => 'Craft lisans anahtarınız geçersiz.',
     'Your Email' => 'Epostanız',
     'Your account doesn’t have permission to access the control panel when the system is offline.' => 'Hesabınızın sistem kapalıyken kontrol paneline erişim izni yok.',
