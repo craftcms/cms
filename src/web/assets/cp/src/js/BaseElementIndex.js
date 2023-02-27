@@ -2993,7 +2993,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         }
 
         submitting = true;
-        $submitBtn.addClass('loading');
+        $exportSubmit.busyEvent();
 
         var params = this.getViewParams();
         delete params.criteria.offset;
@@ -3028,7 +3028,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
           })
           .finally(() => {
             submitting = false;
-            $submitBtn.removeClass('loading');
+            $exportSubmit.successEvent();
           });
       });
     },

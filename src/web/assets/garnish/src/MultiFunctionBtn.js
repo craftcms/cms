@@ -56,7 +56,7 @@ export default Base.extend(
       this.$btn.addClass(this.settings.busyClass);
 
       if (this.busyMessage) {
-        this.updateMessages(this.busyMessage, false);
+        this.updateMessages(this.busyMessage);
       }
     },
 
@@ -89,10 +89,10 @@ export default Base.extend(
       }
     },
 
-    updateMessages: function (message, updateLabel = true) {
+    updateMessages: function (message) {
       this.$liveRegion.text(message);
 
-      if (updateLabel) {
+      if (this.settings.changeButtonText) {
         this.$btnLabel.text(message);
       }
 
@@ -119,6 +119,7 @@ export default Base.extend(
       busyClass: 'loading',
       clearLiveRegionTimeout: 2500,
       failureMessageDuration: 3000,
+      changeButtonText: false,
     },
   }
 );
