@@ -4,25 +4,30 @@ import './login.scss';
   /** global: Craft */
   /** global: Garnish */
   var LoginForm = Garnish.Base.extend({
+    $loginDiv: null,
     $form: null,
     $loginNameInput: null,
     $passwordInput: null,
     $rememberMeCheckbox: null,
     $forgotPasswordLink: null,
     $rememberPasswordLink: null,
+    $mfaVerificationCodeInput: null,
     $submitBtn: null,
     $errors: null,
 
     forgotPassword: false,
     validateOnInput: false,
+    mfa: false,
 
     init: function () {
+      this.$loginDiv = $('#login');
       this.$form = $('#login-form');
       this.$loginNameInput = $('#loginName');
       this.$passwordInput = $('#password');
       this.$rememberMeCheckbox = $('#rememberMe');
       this.$forgotPasswordLink = $('#forgot-password');
       this.$rememberPasswordLink = $('#remember-password');
+      this.$mfaVerificationCodeInput = $('#verificationCode');
       this.$submitBtn = $('#submit');
       this.$errors = $('#login-errors');
 
@@ -113,9 +118,31 @@ import './login.scss';
 
       if (this.forgotPassword) {
         this.submitForgotPassword();
+      } else if (this.mfa) {
+        this.submitMfa();
       } else {
         this.submitLogin();
       }
+    },
+
+    submitMfa: function () {
+      var data = {
+        verificationCode: this.$mfaVerificationCodeInput.val(),
+      };
+
+      Craft.sendActionRequest('POST', 'users/verify-mfa-code', {data})
+        .then((response) => {
+          window.location.href = response.data.returnUrl;
+        })
+        .catch(({response}) => {
+          Garnish.shake(this.$form, 'left');
+          this.onSubmitResponse();
+
+          // Add the error message
+          this.showError(response.data.message);
+        });
+
+      return false;
     },
 
     submitForgotPassword: function () {
@@ -141,7 +168,11 @@ import './login.scss';
 
       Craft.sendActionRequest('POST', 'users/login', {data})
         .then((response) => {
-          window.location.href = response.data.returnUrl;
+          if (response.data.mfa !== undefined && response.data.mfa == true) {
+            this.showMfaForm();
+          } else {
+            window.location.href = response.data.returnUrl;
+          }
         })
         .catch(({response}) => {
           Garnish.shake(this.$form, 'left');
@@ -152,6 +183,12 @@ import './login.scss';
         });
 
       return false;
+    },
+
+    showMfaForm: function () {
+      this.mfa = true;
+      this.$loginDiv.addClass('mfa');
+      this.onSubmitResponse();
     },
 
     onSubmitResponse: function () {

@@ -43,6 +43,7 @@ use craft\web\UploadedFile;
 use craft\web\View;
 use DateTime;
 use Throwable;
+use yii\base\Exception;
 use yii\base\InvalidArgumentException;
 use yii\web\BadRequestHttpException;
 use yii\web\ForbiddenHttpException;
@@ -151,6 +152,7 @@ class UsersController extends Controller
         'get-remaining-session-time' => self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE,
         'session-info' => self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE,
         'login' => self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE,
+        'verify-mfa-code' => self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE,
         'logout' => self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE,
         'impersonate-with-token' => self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE,
         'save-user' => self::ALLOW_ANONYMOUS_LIVE,
@@ -216,6 +218,45 @@ class UsersController extends Controller
         } else {
             $duration = $generalConfig->userSessionDuration;
         }
+
+        $authenticatorService = Craft::$app->getAuthenticator();
+        if ($authenticatorService->getDataForMfaLogin() !== null) {
+            return $this->_mfaStep();
+        }
+
+        return $this->_completeLogin($user, $duration);
+    }
+
+    public function actionVerifyMfaCode(): Response
+    {
+        $verificationCode = Craft::$app->request->getRequiredBodyParam('verificationCode');
+        if (empty($verificationCode)) {
+            return $this->asFailure('Please provide a verification code');
+        }
+
+        $authenticatorService = Craft::$app->getAuthenticator();
+
+        $mfaData = $authenticatorService->getDataForMfaLogin(true);
+        if ($mfaData === null) {
+            throw new Exception(Craft::t('app', 'User not found'));
+        }
+
+        $user = $mfaData['user'];
+        $duration = $mfaData['duration'];
+
+        $verified = $authenticatorService->verifyCode($user, $verificationCode);
+
+        if ($verified === false) {
+            return $this->_handleLoginFailure(User::AUTH_INVALID_MFA_CODE, $user);
+        }
+
+        $authenticatorService->removeDataForMfaLogin();
+        return $this->_completeLogin($user, $duration);
+    }
+
+    private function _completeLogin(User $user, int $duration)
+    {
+        $userSession = Craft::$app->getUser();
 
         // Try logging them in
         if (!$userSession->login($user, $duration)) {
@@ -2095,6 +2136,28 @@ JS,
                 'errorMessage' => $event->message,
             ]
         );
+    }
+
+    private function _mfaStep(): Response
+    {
+        // Get the return URL
+        $authenticatorService = Craft::$app->getAuthenticator();
+        $mfaUrl = $authenticatorService->getMfaUrl();
+
+        // If this was an Ajax request, just return success:true
+        if ($this->request->getAcceptsJson()) {
+            $return = [
+                'mfa' => true,
+            ];
+
+            if (Craft::$app->getConfig()->getGeneral()->enableCsrfProtection) {
+                $return['csrfTokenValue'] = $this->request->getCsrfToken();
+            }
+
+            return $this->asSuccess(data: $return);
+        }
+
+        return $this->redirectToPostedUrl(null, $mfaUrl);
     }
 
     /**

@@ -202,6 +202,13 @@ class Install extends Migration
             'dateUpdated' => $this->dateTime()->notNull(),
             'uid' => $this->uid(),
         ]);
+        $this->createTable(Table::AUTHENTICATOR, [
+            'id' => $this->primaryKey(),
+            'userId' => $this->integer()->notNull(),
+            'mfaSecret' => $this->string()->defaultValue(null),
+            'dateCreated' => $this->dateTime()->notNull(),
+            'dateUpdated' => $this->dateTime()->notNull(),
+        ]);
         $this->createTable(Table::CATEGORIES, [
             'id' => $this->integer()->notNull(),
             'groupId' => $this->integer()->notNull(),
@@ -749,6 +756,7 @@ class Install extends Migration
             'unverifiedEmail' => $this->string(),
             'passwordResetRequired' => $this->boolean()->defaultValue(false)->notNull(),
             'lastPasswordChangeDate' => $this->dateTime(),
+            'requireMfa' => $this->boolean()->defaultValue(false)->notNull(),
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
             'PRIMARY KEY([[id]])',
@@ -993,6 +1001,7 @@ class Install extends Migration
         $this->addForeignKey(null, Table::ASSETS, ['id'], Table::ELEMENTS, ['id'], 'CASCADE', null);
         $this->addForeignKey(null, Table::ASSETS, ['uploaderId'], Table::USERS, ['id'], 'SET NULL', null);
         $this->addForeignKey(null, Table::ASSETS, ['volumeId'], Table::VOLUMES, ['id'], 'CASCADE', null);
+        $this->addForeignKey(null, Table::AUTHENTICATOR, ['userId'], Table::USERS, ['id'], 'CASCADE', null);
         $this->addForeignKey(null, Table::CATEGORIES, ['groupId'], Table::CATEGORYGROUPS, ['id'], 'CASCADE', null);
         $this->addForeignKey(null, Table::CATEGORIES, ['id'], Table::ELEMENTS, ['id'], 'CASCADE', null);
         $this->addForeignKey(null, Table::CATEGORIES, ['parentId'], Table::CATEGORIES, ['id'], 'SET NULL', null);

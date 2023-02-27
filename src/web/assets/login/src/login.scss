@@ -15,6 +15,11 @@ body {
 
 #login {
   width: 300px;
+
+  &.mfa {
+    width: auto;
+    max-width: 600px;
+  }
 }
 
 #login h1 {
@@ -142,6 +147,22 @@ body {
   text-align: center;
   color: var(--error-color);
   margin-top: 1em;
+}
+
+.mfa-form {
+  display: none;
+}
+
+#login.mfa {
+  #login-form-top,
+  #login-form-bottom,
+  #login-form-extra {
+    display: none;
+  }
+
+  .mfa-form {
+    display: block;
+  }
 }
 
 #poweredby {

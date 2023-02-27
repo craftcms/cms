@@ -812,6 +812,7 @@ class UserQuery extends ElementQuery
             'users.lastLoginDate',
             'users.lockoutDate',
             'users.hasDashboard',
+            'users.requireMfa',
         ]);
 
         // todo: cleanup after next breakpoint

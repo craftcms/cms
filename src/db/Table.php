@@ -23,6 +23,8 @@ abstract class Table
     /** @since 4.0.0 */
     public const ASSETINDEXINGSESSIONS = '{{%assetindexingsessions}}';
     public const ASSETS = '{{%assets}}';
+    /** @since 4.5.0 */
+    public const AUTHENTICATOR = '{{%authenticator}}';
     /** @since 4.0.0 */
     public const IMAGETRANSFORMINDEX = '{{%imagetransformindex}}';
     /** @since 4.0.0 */

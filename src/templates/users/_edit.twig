@@ -331,6 +331,10 @@
             </div>
         {% endif %}
 
+        <div id="security" class="flex-fields hidden">
+            {% include 'users/_mfa' %}
+        </div>
+
         {# Give plugins a chance to add other things here #}
         {% hook "cp.users.edit.content" %}
 

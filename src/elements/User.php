@@ -68,6 +68,7 @@ use yii\web\IdentityInterface;
  * @property-read bool $isCurrent whether this is the current logged-in user
  * @property-read string|null $preferredLanguage the user’s preferred language
  * @property-read string|null $preferredLocale the user’s preferred formatting locale
+ * @property-read bool $requireMfa whether user has MFA enabled
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
@@ -122,6 +123,7 @@ class User extends Element implements IdentityInterface
     public const AUTH_NO_CP_ACCESS = 'no_cp_access';
     public const AUTH_NO_CP_OFFLINE_ACCESS = 'no_cp_offline_access';
     public const AUTH_NO_SITE_OFFLINE_ACCESS = 'no_site_offline_access';
+    public const AUTH_INVALID_MFA_CODE = 'invalid_mfa_code';
 
     // Validation scenarios
     // -------------------------------------------------------------------------
@@ -427,6 +429,7 @@ class User extends Element implements IdentityInterface
             'groups' => ['label' => Craft::t('app', 'Groups')],
             'preferredLanguage' => ['label' => Craft::t('app', 'Preferred Language')],
             'preferredLocale' => ['label' => Craft::t('app', 'Preferred Locale')],
+            'requireMfa' => ['label' => Craft::t('app', 'MFA Enabled')],
             'id' => ['label' => Craft::t('app', 'ID')],
             'uid' => ['label' => Craft::t('app', 'UID')],
             'lastLoginDate' => ['label' => Craft::t('app', 'Last Login')],
@@ -665,6 +668,12 @@ class User extends Element implements IdentityInterface
      * @var string|null Verification code
      */
     public ?string $verificationCode = null;
+
+    /**
+     * @var bool Is MFA enabled
+     * @since 4.5.0
+     */
+    public bool $requireMfa = false;
 
     /**
      * @var string|null Last login attempt IP address.

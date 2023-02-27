@@ -60,6 +60,9 @@ class User
             case UserElement::AUTH_NO_SITE_OFFLINE_ACCESS:
                 $message = Craft::t('app', 'You cannot access the site while the system is offline with that account.');
                 break;
+            case UserElement::AUTH_INVALID_MFA_CODE:
+                $message = Craft::t('app', 'Couldn’t verify the code.');
+                break;
             default:
                 if (Craft::$app->getConfig()->getGeneral()->useEmailAsUsername) {
                     $message = Craft::t('app', 'Invalid email or password.');

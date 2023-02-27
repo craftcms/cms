@@ -1,0 +1,57 @@
+{% import '_includes/forms.twig' as forms %}
+
+{% if user is not defined %}
+    {% set mfaData = craft.app.authenticator.getDataForMfaLogin() %}
+    {% if mfaData == null %}
+        {% set user = false %}
+    {% else %}
+        {% set user = mfaData.user %}
+    {% endif %}
+{% endif %}
+
+{% do view.registerAssetBundle("craft\\web\\assets\\authenticator\\AuthenticatorAsset") %}
+
+{{ forms.checkboxField({
+    label: 'Enable MFA'|t('app'),
+    name: 'requireMfa',
+    id: 'requireMfa',
+    instructions: 'Should Multi-Factor Authentication (MFA) be enabled.'|t('app'),
+    checked: user ? user.requireMfa : false
+}) }}
+
+{#toggle: 'setup2fa'
+{% do view.registerDeltaName('setup2fa') %}
+{{ hiddenInput('setup2fa', '') }}#}
+
+<div id="setup2fa" class="field">
+    <h3>Step 1: Download an app</h3>
+    <p>Download a TOPT app, e.g. Google Authenticator.</p>
+
+    <h3>Step 2: Use the app to setup your personal secret</h3>
+    <p>
+        To continue turning on the Two Factor Authentication (2FA),
+        please use the app you just installed to scan the QR code
+        or enter the secret key shown below.
+    </p>
+    <div id="qrSecret"><em>The QR code and secret key will show once you check the "Enable 2FA" checkbox.</em></div>
+
+    <h3>Step 3: Verify with the code from the app</h3>
+    <p>Please enter the code from the app to verify your setup. Please note that the code is time sensitive.</p>
+    <div id="verify2faSetup">
+        {{ forms.textField({
+            'label': 'Verification code',
+            'id': 'verificationCode',
+            'name': 'verificationCode',
+            'placeholder': 'XXXXXX'
+        }) }}
+        {#{{ forms.button({
+            'label': 'Verify',
+            'id': 'verify2fa',
+            'spinner': true,
+            'class': ['submit']
+        }) }}#}
+    </div>
+
+    <h3>Step 4: Continuous use</h3>
+    <p>Now every time you log in, you'll be asked to enter a verification code from the app.</p>
+</div>
