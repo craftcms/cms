@@ -34,6 +34,12 @@ export default Base.extend(
 
       if (this.$btn.prev().attr('role') === 'status') {
         this.$liveRegion = this.$btn.prev();
+      } else {
+        this.$liveRegion = $('<div/>', {
+          class: 'visually-hidden',
+          role: 'status',
+        });
+        this.$btn.before(this.$liveRegion);
       }
 
       this.busyMessage = this.$btn.data('busy-message');
