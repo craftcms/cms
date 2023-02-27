@@ -42,10 +42,14 @@ export default Base.extend(
         this.$btn.before(this.$liveRegion);
       }
 
-      this.busyMessage = this.$btn.data('busy-message');
+      this.busyMessage = this.$btn.data('busy-message')
+        ? this.$btn.data('busy-message')
+        : Craft.t('app', 'Loading');
       this.failureMessage = this.$btn.data('failure-message');
       this.retryMessage = this.$btn.data('retry-message');
-      this.successMessage = this.$btn.data('success-message');
+      this.successMessage = this.$btn.data('success-message')
+        ? this.$btn.data('success-message')
+        : Craft.t('app', 'Success');
     },
 
     busyEvent: function () {
