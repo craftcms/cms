@@ -1640,7 +1640,7 @@ return [
     'You need to be on at least {plugin} {version} before you can update to {plugin} {targetVersion}.' => 'Legalább a(z) {plugin} {version} verzión kell lennie, mielőtt frissítheti a(z) {plugin} {targetVersion} verzióra.',
     'You need to reset your password, but an error was encountered when sending the password reset email.' => 'Vissza kell állítanod a jelszavad, a jelszó visszaállítására emlékeztető e-mail küldésekor azonban hiba lépett fel.',
     'You need to reset your password. Check your email for instructions.' => 'Újra kell állítani jelszavát. Nézze meg az utasításokat az e-mailben.',
-    'Your Craft license isn’t allowed to run version {version}.' => 'Your Craft license isn’t allowed to run version {version}.',
+    'Your Craft license isn’t allowed to run version {version}.' => 'A Craft licencével nem futtathatja a(z) {version} verziót.',
     'Your Craft license key is invalid.' => 'A Craft licenckulcsa érvénytelen.',
     'Your Email' => 'E-mail Címe',
     'Your account doesn’t have permission to access the control panel when the system is offline.' => 'A fiókja nem teszi lehetővé, hogy a vezérlőpultot offline állapotban elérhesse.',
