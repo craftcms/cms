@@ -560,6 +560,10 @@ trait ApplicationTrait
     public function getCanTestEditions(): bool
     {
         /** @var WebApplication|ConsoleApplication $this */
+        if (App::env('CRAFT_NO_TRIALS')) {
+            return false;
+        }
+
         $request = $this->getRequest();
         if ($request->getIsConsoleRequest()) {
             return false;
