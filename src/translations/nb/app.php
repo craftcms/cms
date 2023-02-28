@@ -1658,7 +1658,7 @@ return [
     'You need to be on at least {plugin} {version} before you can update to {plugin} {targetVersion}.' => 'Du må være på minst {plugin} {version} før du kan oppdatere til {plugin} {targetVersion}.',
     'You need to reset your password, but an error was encountered when sending the password reset email.' => 'Du må tilbakestille passordet, men det oppstod en feil ved sending av e-post for tilbakestilling av passord.',
     'You need to reset your password. Check your email for instructions.' => 'Du må nullstille passordet ditt. Sjekk e-posten din for instruksjoner.',
-    'Your Craft license isn’t allowed to run version {version}.' => 'Your Craft license isn’t allowed to run version {version}.',
+    'Your Craft license isn’t allowed to run version {version}.' => 'Craft-lisensen kan ikke kjøre versjon {version}.',
     'Your Craft license key is invalid.' => 'Lisensnøkkelen for Craft er ugyldig.',
     'Your Email' => 'Din e-post',
     'Your account doesn’t have permission to access the control panel when the system is offline.' => 'Kontoen din har ikke tilgang til kontrollpanelet når systemet er offline.',
