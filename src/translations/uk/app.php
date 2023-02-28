@@ -1964,7 +1964,7 @@ return [
     '{pct} width' => 'Ширина {pct}',
     '{renewalPrice}/year per site for updates after that.' => '{renewalPrice}/рік для окремого сайту за наступні оновлення.',
     '{section} Entry Types' => 'Типи записів розділу «{section}»',
-    '{source} is not a structured source. Only structured sources may be used when relating ancestors.' => '{source} is not a structured source. Only structured sources may be used when relating ancestors.',
+    '{source} is not a structured source. Only structured sources may be used when relating ancestors.' => '{source} не є структурованим джерелом. Під час установлення зв\'язків із предками можна використовувати лише структуровані джерела.',
     '{step, number} of {total, number}' => '{step, number} з {total, number}',
     '{title} ({site})' => '{title} ({site})',
     '{total, number} {total, plural, =1{{item}} other{{items}}}' => '{total, number} {total, plural, one {} few {{items}} many {{items}} =1{{item}} other{{items}}}',
