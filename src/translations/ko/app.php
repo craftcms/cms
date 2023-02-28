@@ -1640,7 +1640,7 @@ return [
     'You need to be on at least {plugin} {version} before you can update to {plugin} {targetVersion}.' => '{plugin} {targetVersion} 로 업데이트 하기 전에 최소한 {plugin} {version} 이어야 합니다.',
     'You need to reset your password, but an error was encountered when sending the password reset email.' => '비밀번호를 재설정해야 하지만 비밀번호 재설정 이메일 전송 시 오류가 발생했습니다.',
     'You need to reset your password. Check your email for instructions.' => '비밀번호를 재설정하셔야 합니다. 이메일에 있는 설명을 확인해 주세요.',
-    'Your Craft license isn’t allowed to run version {version}.' => 'Your Craft license isn’t allowed to run version {version}.',
+    'Your Craft license isn’t allowed to run version {version}.' => '해당 Craft 라이선스로 버전 {version}을(를) 실행할 수 없습니다.',
     'Your Craft license key is invalid.' => 'Craft 라이선스 키가 유효하지 않습니다.',
     'Your Email' => '이메일',
     'Your account doesn’t have permission to access the control panel when the system is offline.' => '해당 계정은 시스템이 오프라인 상태일 때 제어판에 액세스할 수 있는 권한이 없습니다.',
