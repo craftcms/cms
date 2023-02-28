@@ -1640,7 +1640,7 @@ return [
     'You need to be on at least {plugin} {version} before you can update to {plugin} {targetVersion}.' => 'Vous devez au minimum utiliser {plugin} {version} pour pouvoir procéder à une mise à niveau vers {plugin} {targetVersion}.',
     'You need to reset your password, but an error was encountered when sending the password reset email.' => 'Vous devez réinitialiser votre mot de passe, mais une erreur s’est produite lors de l’envoi du courriel de réinitialisation du mot de passe.',
     'You need to reset your password. Check your email for instructions.' => 'Vous devez réinitialiser votre mot de passe. Vérifiez votre messagerie pour les instructions.',
-    'Your Craft license isn’t allowed to run version {version}.' => 'Your Craft license isn’t allowed to run version {version}.',
+    'Your Craft license isn’t allowed to run version {version}.' => 'Votre licence Craft ne peut exécuter la version {version}.',
     'Your Craft license key is invalid.' => 'Votre clé de licence Craft n’est pas valide.',
     'Your Email' => 'Votre courriel',
     'Your account doesn’t have permission to access the control panel when the system is offline.' => 'Votre compte n’est pas autorisé à accéder au panneau de configuration quand le système est hors ligne.',
