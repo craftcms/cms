@@ -1727,7 +1727,7 @@ return [
     'Village/Township' => 'Dorf/Township',
     'Visit webpage' => 'Webseite besuchen',
     'Volume - {volume}' => 'Volumen – {volume}',
-    'Volume path' => 'Volumen-Pfad',
+    'Volume path' => 'Volume-Pfad',
     'Volume saved.' => 'Volumen gespeichert.',
     'Volume' => 'Volume',
     'Volumes' => 'Volumen',
