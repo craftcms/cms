@@ -1911,7 +1911,7 @@ div.btn.submit input {
         content: '';
         font-size: 0;
         position: absolute;
-        top: 0;
+        bottom: 0;
         @include right(0);
         border-bottom: calc(var(--ui-control-height) / 2) solid
           var(--ui-control-bg-color);
