@@ -1,0 +1,18 @@
+{% import '_includes/forms.twig' as forms %}
+
+<div id="verifyMfaSetup">
+    {% for key,label in fields %}
+        {{ forms.textField({
+            'label': label,
+            'id': key,
+            'name': key,
+            'placeholder': 'XXXXXX'
+        }) }}
+    {% endfor %}
+    {#{{ forms.button({
+        'label': 'Verify',
+        'id': 'verify2fa',
+        'spinner': true,
+        'class': ['submit']
+    }) }}#}
+</div>

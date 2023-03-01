@@ -1,0 +1,75 @@
+{% import '_includes/forms.twig' as forms %}
+
+{% if user is not defined %}
+    {% set mfaData = craft.app.authenticator.getDataForMfaLogin() %}
+    {% if mfaData == null %}
+        {% set user = false %}
+    {% else %}
+        {% set user = mfaData.user %}
+    {% endif %}
+{% endif %}
+
+{% if showEnableCheckbox is not defined %}
+    {% set showEnableCheckbox = true %}
+{% endif %}
+
+{% if fields is not defined %}
+    {% set fields = {'verificationCode' : 'Verification Code'} %}
+{% endif %}
+
+{% do view.registerAssetBundle("craft\\web\\assets\\authenticator\\AuthenticatorAsset") %}
+
+{% if showEnableCheckbox %}
+    {{ forms.checkboxField({
+        label: 'Enable MFA'|t('app'),
+        name: 'requireMfa',
+        id: 'requireMfa',
+        instructions: 'Should Multi-Factor Authentication (MFA) be enabled.'|t('app'),
+        checked: user ? user.requireMfa : false
+    }) }}
+{% endif %}
+
+{#toggle: 'setup2fa'
+{% do view.registerDeltaName('setup2fa') %}
+{{ hiddenInput('setup2fa', '') }}#}
+
+<div id="setup2fa" class="field">
+    <h3>Step 1: Download an app.</h3>
+    <p>Download a TOPT app, e.g. Google Authenticator, MS Authenticator, Authy, 1Password.</p>
+
+    <h3>Step 2: Use the app to set up your connection.</h3>
+    <p>
+        To continue turning on the Two-Factor Authentication (2FA),
+        please use the app you just installed to scan the QR code
+        or enter the secret key shown below.
+    </p>
+    <div id="qrContainer">
+        {% if (qrCode is defined and qrCode is not empty) or (secret is defined and secret is not empty) %}
+            {% if secret is defined and secret is not empty %}
+                <div class="secret">
+                    Secret Key: {{ secret }}
+                </div>
+            {% endif %}
+            {% if qrCode is defined and qrCode is not empty %}
+                <div class="qrCode">QR Code:
+                    {{ qrCode|raw }}
+                </div>
+            {% endif %}
+        {% else %}
+            <em>The QR code and secret key will show once you check the "Enable 2FA" checkbox.</em>
+        {% endif %}
+    </div>
+
+    <h3>Step 3: Verify with the code from the app</h3>
+    <p>Please enter the code from the app to verify your setup. Please note that the code is time sensitive.</p>
+    {% include '_components/authentication/googleauthenticator/verification.twig' with {'fields' : fields} %}
+
+    <h3>Step 4: Continuous use</h3>
+    <p>Now every time you log in, you'll be asked to enter a verification code from the app.</p>
+</div>
+
+{% js %}
+    {% if showEnableCheckbox == false %}
+
+    {% endif %}
+{% endjs %}

@@ -4,14 +4,14 @@
   Craft.Authenticator = Garnish.Base.extend(
     {
       $qrSecretContainer: null,
-      $enable2faCheckbox: null,
+      $enableMfaCheckbox: null,
       $verificationForm: null,
       $verificationCodeInput: null,
 
       init: function (settings) {
-        this.$qrSecretContainer = $('#qrSecret');
-        this.$enable2faCheckbox = $('#require2fa');
-        this.$verificationForm = $('#verify2faSetup');
+        this.$qrSecretContainer = $('#qrContainer');
+        this.$enableMfaCheckbox = $('#requireMfa');
+        this.$verificationForm = $('#verifyMfaSetup');
         this.$verifyButton = this.$verificationForm.find('button');
         this.$verificationCodeInput = this.$verificationForm.find(
           'input[name="verificationCode"]'
@@ -19,14 +19,14 @@
 
         this.setSettings(settings, Craft.Authenticator.defaults);
 
-        this.addListener(this.$enable2faCheckbox, 'change', 'getQrSecret');
+        this.addListener(this.$enableMfaCheckbox, 'change', 'getQrCode');
         this.addListener(this.$verifyButton, 'click', 'verifyCode');
       },
 
       verifyCode: function (ev) {
         const verificationCode = this.$verificationCodeInput.val();
         if (verificationCode !== undefined && verificationCode.length > 0) {
-          Craft.sendActionRequest('POST', this.settings.verifyCodeAction, {
+          Craft.sendActionRequest('POST', this.settings.verifyAction, {
             data: {
               code: verificationCode,
             },
@@ -42,12 +42,12 @@
         }
       },
 
-      getQrSecret: function (ev) {
+      getQrCode: function (ev) {
         let isChecked = ev.currentTarget.checked;
 
         if (isChecked) {
           // get qr and secret
-          Craft.sendActionRequest('POST', this.settings.getQrSecretAction)
+          Craft.sendActionRequest('POST', this.settings.getQrCodeAction)
             .then((response) => {
               let secret =
                 '<div class="secret">Secret Key (input without spaces): ' +
@@ -70,8 +70,8 @@
     },
     {
       defaults: {
-        getQrSecretAction: 'authenticator/enable2fa-step1',
-        verifyCodeAction: 'authenticator/enable2fa-step2',
+        getQrCodeAction: 'authentication/get-qr-code',
+        verifyAction: 'authentication/verify',
       },
     }
   );

@@ -395,12 +395,12 @@ class User extends \yii\web\User
             return false;
         }
 
-        // check if user has MFA enabled
-        $authenticatorService = Craft::$app->getAuthenticator();
+        // check if user requires MFA to login
+        $authenticationService = Craft::$app->getAuthentication();
         $user = UserElement::findIdentity($identity->getId());
-        if ($authenticatorService->mfaEnabled($user)) {
+        if ($user->requireMfa) { // todo: move this to a method that checks other stuff too?
             // save user to session
-            $authenticatorService->storeDataForMfaLogin($user, $duration);
+            $authenticationService->storeDataForMfaLogin($user, $duration);
         }
 
         return parent::beforeLogin($identity, $cookieBased, $duration);

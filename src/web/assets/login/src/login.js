@@ -11,7 +11,7 @@ import './login.scss';
     $rememberMeCheckbox: null,
     $forgotPasswordLink: null,
     $rememberPasswordLink: null,
-    $mfaVerificationCodeInput: null,
+    $mfaFormContainer: null,
     $submitBtn: null,
     $errors: null,
 
@@ -27,7 +27,7 @@ import './login.scss';
       this.$rememberMeCheckbox = $('#rememberMe');
       this.$forgotPasswordLink = $('#forgot-password');
       this.$rememberPasswordLink = $('#remember-password');
-      this.$mfaVerificationCodeInput = $('#verificationCode');
+      this.$mfaFormContainer = $('#mfa-form');
       this.$submitBtn = $('#submit');
       this.$errors = $('#login-errors');
 
@@ -126,11 +126,13 @@ import './login.scss';
     },
 
     submitMfa: function () {
-      var data = {
-        verificationCode: this.$mfaVerificationCodeInput.val(),
-      };
+      let data = [];
 
-      Craft.sendActionRequest('POST', 'users/verify-mfa-code', {data})
+      this.$mfaFormContainer.find('input').each(function (index, element) {
+        data[$(element).attr('name')] = $(element).val();
+      });
+
+      Craft.sendActionRequest('POST', 'users/verify-mfa', {data})
         .then((response) => {
           window.location.href = response.data.returnUrl;
         })
@@ -169,7 +171,7 @@ import './login.scss';
       Craft.sendActionRequest('POST', 'users/login', {data})
         .then((response) => {
           if (response.data.mfa !== undefined && response.data.mfa == true) {
-            this.showMfaForm();
+            this.showMfaForm(response.data.mfaForm);
           } else {
             window.location.href = response.data.returnUrl;
           }
@@ -185,8 +187,9 @@ import './login.scss';
       return false;
     },
 
-    showMfaForm: function () {
+    showMfaForm: function (mfaForm) {
       this.mfa = true;
+      this.$mfaFormContainer.append(mfaForm);
       this.$loginDiv.addClass('mfa');
       this.onSubmitResponse();
     },

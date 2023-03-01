@@ -152,7 +152,7 @@ class UsersController extends Controller
         'get-remaining-session-time' => self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE,
         'session-info' => self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE,
         'login' => self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE,
-        'verify-mfa-code' => self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE,
+        'verify-mfa' => self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE,
         'logout' => self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE,
         'impersonate-with-token' => self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE,
         'save-user' => self::ALLOW_ANONYMOUS_LIVE,
@@ -219,24 +219,32 @@ class UsersController extends Controller
             $duration = $generalConfig->userSessionDuration;
         }
 
-        $authenticatorService = Craft::$app->getAuthenticator();
-        if ($authenticatorService->getDataForMfaLogin() !== null) {
-            return $this->_mfaStep();
+        $authenticationService = Craft::$app->getAuthentication();
+        // if user requires MFA to login and we have their data stored in session, proceed to show the MFA step
+        if ($user->requireMfa && $authenticationService->getDataForMfaLogin() !== null) {
+            return $this->_mfaStep($user);
         }
 
         return $this->_completeLogin($user, $duration);
     }
 
-    public function actionVerifyMfaCode(): Response
+    /**
+     * Verify MFA code
+     * @return Response
+     * @throws BadRequestHttpException
+     * @throws Exception
+     * @throws ServiceUnavailableHttpException
+     */
+    public function actionVerifyMfa(): Response
     {
         $verificationCode = Craft::$app->request->getRequiredBodyParam('verificationCode');
+
         if (empty($verificationCode)) {
             return $this->asFailure('Please provide a verification code');
         }
 
-        $authenticatorService = Craft::$app->getAuthenticator();
-
-        $mfaData = $authenticatorService->getDataForMfaLogin(true);
+        $authenticationService = Craft::$app->getAuthentication();
+        $mfaData = $authenticationService->getDataForMfaLogin(true);
         if ($mfaData === null) {
             throw new Exception(Craft::t('app', 'User not found'));
         }
@@ -244,16 +252,24 @@ class UsersController extends Controller
         $user = $mfaData['user'];
         $duration = $mfaData['duration'];
 
-        $verified = $authenticatorService->verifyCode($user, $verificationCode);
+        $verified = $authenticationService->verify($user, $verificationCode);
 
         if ($verified === false) {
             return $this->_handleLoginFailure(User::AUTH_INVALID_MFA_CODE, $user);
         }
 
-        $authenticatorService->removeDataForMfaLogin();
+        $authenticationService->removeDataForMfaLogin();
         return $this->_completeLogin($user, $duration);
     }
 
+    /**
+     * Finish logging user in
+     *
+     * @param User $user
+     * @param int $duration
+     * @return Response|null
+     * @throws ServiceUnavailableHttpException
+     */
     private function _completeLogin(User $user, int $duration)
     {
         $userSession = Craft::$app->getUser();
@@ -2138,16 +2154,17 @@ JS,
         );
     }
 
-    private function _mfaStep(): Response
+    private function _mfaStep(User $user): Response
     {
         // Get the return URL
-        $authenticatorService = Craft::$app->getAuthenticator();
-        $mfaUrl = $authenticatorService->getMfaUrl();
+        $authenticationService = Craft::$app->getAuthentication();
+        $mfaUrl = $authenticationService->getMfaUrl(); // only used for non-ajax requests
 
         // If this was an Ajax request, just return success:true
         if ($this->request->getAcceptsJson()) {
             $return = [
                 'mfa' => true,
+                'mfaForm' => $authenticationService->getFormHtml($user),
             ];
 
             if (Craft::$app->getConfig()->getGeneral()->enableCsrfProtection) {
@@ -2157,7 +2174,7 @@ JS,
             return $this->asSuccess(data: $return);
         }
 
-        return $this->redirectToPostedUrl(null, $mfaUrl);
+        return $this->redirectToPostedUrl(null, $mfaUrl); // todo: should this render a template instead??
     }
 
     /**
