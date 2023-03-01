@@ -8,8 +8,11 @@
 namespace craft\services;
 
 use Craft;
+use craft\authentication\type\EmailCode;
+use craft\authentication\type\GoogleAuthenticator;
 use craft\base\authentication\BaseAuthenticationType;
 use craft\elements\User;
+use craft\events\MfaOptionEvent;
 use craft\helpers\UrlHelper;
 use yii\base\Component;
 use yii\base\Exception;
@@ -23,12 +26,22 @@ use yii\base\Exception;
  */
 class Authentication extends Component
 {
-    /**
-     * @var string the session variable name used to store the identity of the user we're logging in.
-     */
-    public string $mfaParam = '__mfa';
+    public const EVENT_REGISTER_MFA_OPTIONS = 'registerMfaOptions';
 
+    /**
+     * @var string the session key used to store the id of the user we're logging in.
+     */
+    protected const MFA_USER_SESSION_KEY = 'craft.mfa.user';
+
+    /**
+     * @var BaseAuthenticationType|null authenticator instance in use
+     */
     private ?BaseAuthenticationType $_authenticator = null;
+
+    /**
+     * @var array $_mfaOptions all available MFA options
+     */
+    private array $_mfaOptions = [];
 
 
 //    public function mfaEnabled(User $user): bool
@@ -36,14 +49,30 @@ class Authentication extends Component
 //        return $user->requireMfa && $this->_getStoredSecret($user->id) !== null;
 //    }
 
+    /**
+     * Store the user id and duration in session while we proceed to the MFA step of logging them in
+     *
+     * @param User $user
+     * @param int $duration
+     * @return void
+     * @throws \craft\errors\MissingComponentException
+     */
     public function storeDataForMfaLogin(User $user, int $duration): void
     {
-        Craft::$app->getSession()->set($this->mfaParam, [$user->id, $duration]);
+        Craft::$app->getSession()->set(self::MFA_USER_SESSION_KEY, [$user->id, $duration]);
     }
 
-    public function getDataForMfaLogin($forget = false): ?array
+    /**
+     * Get data of the user we're logging in and duration from session
+     *
+     * @param bool $forget
+     * @return array|null
+     * @throws Exception
+     * @throws \craft\errors\MissingComponentException
+     */
+    public function getDataForMfaLogin(bool $forget = false): ?array
     {
-        $data = Craft::$app->getSession()->get($this->mfaParam);
+        $data = Craft::$app->getSession()->get(self::MFA_USER_SESSION_KEY);
 
         if ($data === null) {
             return null;
@@ -66,12 +95,24 @@ class Authentication extends Component
         return null;
     }
 
+    /**
+     * Remove user's data from session
+     *
+     * @return void
+     * @throws \craft\errors\MissingComponentException
+     */
     public function removeDataForMfaLogin(): void
     {
-        Craft::$app->getSession()->remove($this->mfaParam);
+        Craft::$app->getSession()->remove(self::MFA_USER_SESSION_KEY);
     }
 
-    public function getMfaUrl($default = null): string
+    /**
+     * Get MFA step URL - used for non-ajax requests only?
+     *
+     * @param ?string $default
+     * @return string
+     */
+    public function getMfaUrl(string $default = null): string
     {
         if ($default !== null) {
             $url = UrlHelper::cpUrl($default);
@@ -85,6 +126,12 @@ class Authentication extends Component
         return str_replace(['{', '}'], '', $url);
     }
 
+    /**
+     * Get html of the form for the MFA step
+     *
+     * @param User $user
+     * @return string
+     */
     public function getFormHtml(User $user): string
     {
         $this->_authenticator = $user->getDefaultMfaMethod();
@@ -92,6 +139,13 @@ class Authentication extends Component
         return $this->_authenticator->getFormHtml($user);
     }
 
+    /**
+     * Verify MFA step
+     *
+     * @param User $user
+     * @param string $verificationCode
+     * @return bool
+     */
     public function verify(User $user, string $verificationCode): bool
     {
         if ($this->_authenticator === null) {
@@ -99,5 +153,32 @@ class Authentication extends Component
         }
 
         return $this->_authenticator->verify($user, $verificationCode);
+    }
+
+    public function getAlternativeMfaOptions(string $currentAuthenticator = ''): array
+    {
+        return array_filter($this->getAllMfaOptions(), function($option) use ($currentAuthenticator) {
+            return $option !== $currentAuthenticator;
+        });
+    }
+
+    public function getAllMfaOptions(): array
+    {
+        if (!empty($this->_mfaOptions)) {
+            return $this->_mfaOptions;
+        }
+
+        $options = [
+            GoogleAuthenticator::class,
+            EmailCode::class,
+        ];
+
+        $event = new MfaOptionEvent([
+            'options' => $options,
+        ]);
+
+        $this->trigger(self::EVENT_REGISTER_MFA_OPTIONS, $event);
+
+        return $this->_mfaOptions = $event->options;
     }
 }

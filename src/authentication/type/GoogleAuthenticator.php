@@ -22,7 +22,7 @@ class GoogleAuthenticator extends BaseAuthenticationType
     /**
      * The key to store the authenticator secret in session, while setting up this method.
      */
-    public const AUTHENTICATOR_SECRET_SESSION_KEY = 'craft.authenticator.secret';
+    protected const AUTHENTICATOR_SECRET_SESSION_KEY = 'craft.authenticator.secret';
 
     /**
      * @inheritdoc
@@ -53,7 +53,7 @@ class GoogleAuthenticator extends BaseAuthenticationType
     /**
      * @inheritdoc
      */
-    public function getFormHtml(User $user): string
+    public function getFormHtml(User $user, string $html = '', ?array $options = []): string
     {
         $data = [
             'user' => $user,
@@ -62,7 +62,7 @@ class GoogleAuthenticator extends BaseAuthenticationType
 
         // if secret is stored in the DB - show the verification code form only (it means they've finished the setup)
         if ($this->_getSecretFromDb($user->id)) {
-            $html = Craft::$app->getView()->renderTemplate(
+            $formHtml = Craft::$app->getView()->renderTemplate(
                 '_components/authentication/googleauthenticator/verification.twig',
                 $data
             );
@@ -71,13 +71,13 @@ class GoogleAuthenticator extends BaseAuthenticationType
             $data['secret'] = $this->getSecret($user);
             $data['qrCode'] = $this->generateQrCode($user, $data['secret']);
 
-            $html = Craft::$app->getView()->renderTemplate(
+            $formHtml = Craft::$app->getView()->renderTemplate(
                 '_components/authentication/googleauthenticator/setup.twig',
                 $data + ['showEnableCheckbox' => false]
             );
         }
 
-        return $html;
+        return parent::getFormHtml($user, $formHtml, $options);
     }
 
     /**

@@ -17,7 +17,7 @@ class EmailCode extends BaseAuthenticationType
     /**
      * The key to store the authenticator secret in session, while setting up this method.
      */
-    public const EMAIL_CODE_SESSION_KEY = 'craft.email.code';
+    protected const EMAIL_CODE_SESSION_KEY = 'craft.email.code';
 
     /**
      * @inheritdoc
@@ -48,17 +48,19 @@ class EmailCode extends BaseAuthenticationType
     /**
      * @inheritdoc
      */
-    public function getFormHtml(User $user): string
+    public function getFormHtml(User $user, string $html = '', ?array $options = []): string
     {
         $data = [
             'user' => $user,
             'fields' => $this->getFields(),
         ];
 
-        return Craft::$app->getView()->renderTemplate(
+        $formHtml = Craft::$app->getView()->renderTemplate(
             '_components/authentication/emailcode/verification.twig',
             $data
         );
+
+        return parent::getFormHtml($user, $formHtml, $options);
     }
 
     /**

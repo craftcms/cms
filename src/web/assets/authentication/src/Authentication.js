@@ -5,15 +5,15 @@
     {
       $qrSecretContainer: null,
       $enableMfaCheckbox: null,
-      $verificationForm: null,
+      $verificationContainer: null,
       $verificationCodeInput: null,
 
       init: function (settings) {
         this.$qrSecretContainer = $('#qrContainer');
         this.$enableMfaCheckbox = $('#requireMfa');
-        this.$verificationForm = $('#verifyMfaSetup');
-        this.$verifyButton = this.$verificationForm.find('button');
-        this.$verificationCodeInput = this.$verificationForm.find(
+        this.$verificationContainer = $('#verifyContainer');
+        this.$verifyButton = this.$verificationContainer.find('button');
+        this.$verificationCodeInput = this.$verificationContainer.find(
           'input[name="verificationCode"]'
         );
 
@@ -34,7 +34,7 @@
           })
             .then((response) => {
               this.$qrSecretContainer.html('');
-              this.$verificationForm.html('').append('Verified');
+              this.$verificationContainer.html('').append('Verified');
               Craft.cp.displayNotice(response.data.message);
             })
             .catch((e) => {

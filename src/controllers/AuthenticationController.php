@@ -9,7 +9,6 @@ namespace craft\controllers;
 
 use Craft;
 use craft\web\Controller;
-use yii\base\Exception;
 use yii\web\Response;
 
 /** @noinspection ClassOverridesFieldOfSuperClassInspection */
@@ -27,37 +26,22 @@ class AuthenticationController extends Controller
      */
     protected array|bool|int $allowAnonymous = true;
 
-//    public function actionGetQrCode(): Response
-//    {
-//
-//    }
-
-    public function actionVerify(): Response
+    public function actionGetAlternativeMfaOptions(): ?Response
     {
-        $verificationCode = Craft::$app->request->getRequiredBodyParam('verificationCode');
-        if (empty($verificationCode)) {
-            return $this->asFailure('Please provide a verification code');
+        if (!$this->request->getIsPost()) {
+            return null;
         }
 
-        $authenticationService = Craft::$app->getAuthentication();
+        $currentMethod = Craft::$app->getRequest()->getRequiredBodyParam('currentAuthenticator');
+        $alternativeOptions = Craft::$app->getAuthentication()->getAlternativeMfaOptions($currentMethod);
 
-        $mfaData = $authenticationService->getDataForMfaLogin();
-        if ($mfaData === null) {
-            throw new Exception(Craft::t('app', 'User not found'));
-        }
-
-        $user = $mfaData['user'];
-
-        $verified = $authenticationService->verify($user, $verificationCode);
-
-        if ($verified === false) {
-            return $this->asFailure(
-                Craft::t('app', 'Couldn’t verify.'),
+        if ($this->request->getAcceptsJson()) {
+            return $this->asSuccess(
+                data: ['alternativeOptions' => $alternativeOptions],
             );
         }
 
-        return $this->asSuccess(
-            Craft::t('app', 'Verified'),
-        );
+        // todo: finish me
+        return null;
     }
 }

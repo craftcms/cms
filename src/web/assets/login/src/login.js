@@ -12,6 +12,7 @@ import './login.scss';
     $forgotPasswordLink: null,
     $rememberPasswordLink: null,
     $mfaFormContainer: null,
+    $alternativeMfaLink: null,
     $submitBtn: null,
     $errors: null,
 
@@ -232,7 +233,45 @@ import './login.scss';
     },
 
     showAlternativeMfaMethods: function (event) {
+      // get current authenticator class via data-authenticator
+      let currentAuthenticator = this.$mfaFormContainer
+        .find('#verifyContainer')
+        .attr('data-authenticator');
+      if (
+        currentAuthenticator === undefined ||
+        currentAuthenticator.length === 0
+      ) {
+        this.$alternativeMfaLink.hide();
+        this.showError('No alternative MFA methods available.');
+      }
+
+      let data = {
+        currentAuthenticator: currentAuthenticator,
+      };
+
+      // get available MFA methods, minus the one that's being shown
+      let alternativeMfaMethods = this.getAlternativeMfaOptions(data);
+      console.log(alternativeMfaMethods);
+
+      // list them by name with description?
+      // clicking on a method name swaps the form fields
       console.log('show other methods'); // todo: finish me
+    },
+
+    getAlternativeMfaOptions: function (data) {
+      Craft.sendActionRequest(
+        'POST',
+        'authentication/get-alternative-mfa-options',
+        {data}
+      )
+        .then((response) => {
+          console.log(response.data.alternativeOptions);
+          return response.data.alternativeOptions;
+        })
+        .catch(({response}) => {
+          this.showError(response.data.message);
+          return false;
+        });
     },
   });
 

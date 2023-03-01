@@ -9,6 +9,7 @@ namespace craft\base\authentication;
 
 use craft\base\Component;
 use craft\elements\User;
+use craft\helpers\Html;
 
 /**
  *
@@ -19,9 +20,14 @@ abstract class BaseAuthenticationType extends Component implements BaseAuthentic
     /**
      * @inheritdoc
      */
-    public function getFormHtml(User $user): string
+    public function getFormHtml(User $user, string $html = '', ?array $options = []): string
     {
-        return '';
+        return Html::tag('div', $html, [
+            'id' => 'verifyContainer',
+            'data' => [
+                'authenticator' => static::class,
+            ] + $options,
+        ]);
     }
 
     /**
