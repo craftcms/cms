@@ -1803,7 +1803,7 @@ div.btn.submit input {
 
 /* chevron buttons */
 .chevron-btns {
-  --chevron-width: 15px;
+  --chevron-width: calc(15rem / 16);
   display: flex;
   justify-content: flex-start;
 
