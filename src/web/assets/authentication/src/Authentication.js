@@ -1,7 +1,7 @@
 (function ($) {
   /** global: Craft */
   /** global: Garnish */
-  Craft.Authenticator = Garnish.Base.extend(
+  Craft.Authentication = Garnish.Base.extend(
     {
       $qrSecretContainer: null,
       $enableMfaCheckbox: null,
@@ -17,7 +17,7 @@
           'input[name="verificationCode"]'
         );
 
-        this.setSettings(settings, Craft.Authenticator.defaults);
+        this.setSettings(settings, Craft.Authentication.defaults);
 
         this.addListener(this.$enableMfaCheckbox, 'change', 'getQrCode');
         this.addListener(this.$verifyButton, 'click', 'verifyCode');
@@ -25,10 +25,11 @@
 
       verifyCode: function (ev) {
         const verificationCode = this.$verificationCodeInput.val();
+        console.log(verificationCode);
         if (verificationCode !== undefined && verificationCode.length > 0) {
           Craft.sendActionRequest('POST', this.settings.verifyAction, {
             data: {
-              code: verificationCode,
+              verificationCode: verificationCode,
             },
           })
             .then((response) => {
@@ -76,5 +77,5 @@
     }
   );
 
-  new Craft.Authenticator();
+  new Craft.Authentication();
 })(jQuery);

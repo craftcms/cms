@@ -8,6 +8,8 @@
 namespace craft\elements;
 
 use Craft;
+use craft\authentication\type\GoogleAuthenticator;
+use craft\base\authentication\BaseAuthenticationType;
 use craft\base\Element;
 use craft\base\NameTrait;
 use craft\db\Query;
@@ -1848,6 +1850,19 @@ class User extends Element implements IdentityInterface
         }
 
         return true;
+    }
+
+    // MFA-related
+    // -------------------------------------------------------------------------
+
+    /**
+     * Return default MFA method
+     *
+     * @return BaseAuthenticationType
+     */
+    public function getDefaultMfaMethod(): BaseAuthenticationType
+    {
+        return new GoogleAuthenticator();
     }
 
     /**

@@ -60,7 +60,8 @@ body {
   z-index: 1;
 }
 
-#remember-password {
+#remember-password,
+#alternative-mfa {
   display: none;
 }
 
@@ -85,6 +86,17 @@ body {
   }
 
   #remember-password {
+    display: block;
+  }
+}
+
+.mfa #login-form {
+  #forgot-password,
+  #remember-password {
+    display: none;
+  }
+
+  #alternative-mfa {
     display: block;
   }
 }
@@ -125,7 +137,8 @@ body {
 }
 
 #forgot-password,
-#remember-password {
+#remember-password,
+#alternative-mfa {
   font-size: 11px;
   color: var(--medium-text-color);
 }
@@ -133,7 +146,9 @@ body {
 #forgot-password:hover,
 #forgot-password:focus,
 #remember-password:hover,
-#remember-password:focus {
+#remember-password:focus,
+#alternative-mfa:hover,
+#alternative-mfa:focus {
   color: var(--link-color);
 }
 
@@ -155,8 +170,7 @@ body {
 
 #login.mfa {
   #login-form-top,
-  #login-form-bottom,
-  #login-form-extra {
+  #login-form-bottom {
     display: none;
   }
 

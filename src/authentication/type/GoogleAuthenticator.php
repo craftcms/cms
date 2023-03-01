@@ -20,9 +20,9 @@ use PragmaRX\Google2FA\Google2FA;
 class GoogleAuthenticator extends BaseAuthenticationType
 {
     /**
-     * @var string|null
+     * The key to store the authenticator secret in session, while setting up this method.
      */
-    private ?string $_secret = null;
+    public const AUTHENTICATOR_SECRET_SESSION_KEY = 'craft.authenticator.secret';
 
     /**
      * @inheritdoc
@@ -61,7 +61,7 @@ class GoogleAuthenticator extends BaseAuthenticationType
         ];
 
         // if secret is stored in the DB - show the verification code form only (it means they've finished the setup)
-        if ($this->_getStoredSecret($user->id)) {
+        if ($this->_getSecretFromDb($user->id)) {
             $html = Craft::$app->getView()->renderTemplate(
                 '_components/authentication/googleauthenticator/verification.twig',
                 $data
@@ -69,7 +69,7 @@ class GoogleAuthenticator extends BaseAuthenticationType
         } else {
             // otherwise show instructions, QR code and verification form
             $data['secret'] = $this->getSecret($user);
-            $data['qrCode'] = $this->generateQrCode($user);
+            $data['qrCode'] = $this->generateQrCode($user, $data['secret']);
 
             $html = Craft::$app->getView()->renderTemplate(
                 '_components/authentication/googleauthenticator/setup.twig',
@@ -78,54 +78,6 @@ class GoogleAuthenticator extends BaseAuthenticationType
         }
 
         return $html;
-    }
-
-    /**
-     * Get MFA secret key. If one doesn't exist, generate and store it in the DB.
-     *
-     * @param User $user
-     * @return string
-     */
-    public function getSecret(User $user): string
-    {
-        $google2fa = new Google2FA();
-        $secret = $this->_getStoredSecret($user->id);
-
-        if (empty($secret)) {
-            try {
-                $secret = $google2fa->generateSecretKey();
-                //$this->_storeSecret($user->id, $secret);
-            } catch (\Exception $e) {
-                // todo: log in a new log file????
-                $response['success'] = false;
-            }
-        }
-
-        $this->_secret = $secret;
-
-        return chunk_split($secret, 4, ' ');
-    }
-
-    /**
-     * Generate the QR code for initial setup of this MFA method
-     *
-     * @param User $user
-     * @return string
-     */
-    public function generateQrCode(User $user): string
-    {
-        $qrCodeUrl = (new Google2FA())->getQRCodeUrl(
-            Craft::$app->getSystemName(),
-            $user->email,
-            $this->_secret
-        );
-
-        $renderer = new ImageRenderer(
-            new RendererStyle(200),
-            new SvgImageBackEnd()
-        );
-
-        return (new Writer($renderer))->writeString($qrCodeUrl);
     }
 
     /**
@@ -140,12 +92,78 @@ class GoogleAuthenticator extends BaseAuthenticationType
      */
     public function verify(User $user, string $code): bool
     {
-        $secret = $this->_getStoredSecret($user->id);
+        // check if secret is stored, if not, we need to store it
+        $storedSecret = $this->_getSecretFromDb($user->id);
+        $session = Craft::$app->getSession();
+
+        if ($storedSecret === null) {
+            $secret = $session->get(self::AUTHENTICATOR_SECRET_SESSION_KEY);
+        } else {
+            $secret = $storedSecret;
+        }
+
         if ($secret === null) {
             return false;
         }
 
-        return (new Google2FA())->verifyKey($secret, $code);
+        // verify the code:
+        $verified = (new Google2FA())->verifyKey($secret, $code);
+
+        if ($verified && $storedSecret === null) {
+            $this->_storeSecretInDb($user->id, $secret);
+            $session->remove(self::AUTHENTICATOR_SECRET_SESSION_KEY);
+        }
+
+        return $verified;
+    }
+
+
+    // GoogleAuthenticator-specific methods
+    // -------------------------------------------------------------------------
+
+    /**
+     * Get MFA secret key. If one doesn't exist, generate and store it in the DB.
+     *
+     * @param User $user
+     * @return string
+     */
+    public function getSecret(User $user): string
+    {
+        $google2fa = new Google2FA();
+        $secret = $this->_getSecretFromDb($user->id);
+
+        if (empty($secret)) {
+            try {
+                $secret = $google2fa->generateSecretKey(); //todo: change to (32)
+                Craft::$app->getSession()->set(self::AUTHENTICATOR_SECRET_SESSION_KEY, $secret);
+            } catch (\Exception $e) {
+                // todo: log in a new log file????
+            }
+        }
+
+        return chunk_split($secret, 4, ' ');
+    }
+
+    /**
+     * Generate the QR code for initial setup of this MFA method
+     *
+     * @param User $user
+     * @return string
+     */
+    public function generateQrCode(User $user, string $secret): string
+    {
+        $qrCodeUrl = (new Google2FA())->getQRCodeUrl(
+            Craft::$app->getSystemName(),
+            $user->email,
+            $secret
+        );
+
+        $renderer = new ImageRenderer(
+            new RendererStyle(200),
+            new SvgImageBackEnd()
+        );
+
+        return (new Writer($renderer))->writeString($qrCodeUrl);
     }
 
     /**
@@ -154,7 +172,7 @@ class GoogleAuthenticator extends BaseAuthenticationType
      * @param int $userId
      * @return string|null
      */
-    private function _getStoredSecret(int $userId): ?string
+    private function _getSecretFromDb(int $userId): ?string
     {
         $record = AuthenticatorRecord::find()
             ->select(['mfaSecret'])
@@ -171,19 +189,19 @@ class GoogleAuthenticator extends BaseAuthenticationType
      * @param string $secret
      * @return void
      */
-//    private function _storeSecret(int $userId, string $secret): void
-//    {
-//        $record = AuthenticatorRecord::find()
-//            ->where(['userId' => $userId])
-//            ->one();
-//
-//        if (!$record) {
-//            $record = new AuthenticatorRecord();
-//            $record->userId = $userId;
-//        }
-//
-//        /** @var AuthenticatorRecord $record */
-//        $record->mfaSecret = $secret;
-//        $record->save();
-//    }
+    private function _storeSecretInDb(int $userId, string $secret): void
+    {
+        $record = AuthenticatorRecord::find()
+            ->where(['userId' => $userId])
+            ->one();
+
+        if (!$record) {
+            $record = new AuthenticatorRecord();
+            $record->userId = $userId;
+        }
+
+        /** @var AuthenticatorRecord $record */
+        $record->mfaSecret = $secret;
+        $record->save();
+    }
 }

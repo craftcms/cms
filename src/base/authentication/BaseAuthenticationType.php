@@ -19,7 +19,10 @@ abstract class BaseAuthenticationType extends Component implements BaseAuthentic
     /**
      * @inheritdoc
      */
-    abstract public function getFormHtml(User $user): string;
+    public function getFormHtml(User $user): string
+    {
+        return '';
+    }
 
     /**
      * @inheritdoc
@@ -27,5 +30,13 @@ abstract class BaseAuthenticationType extends Component implements BaseAuthentic
     public function getFields(): ?array
     {
         return null;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function verify(User $user, string $code): bool
+    {
+        return false;
     }
 }

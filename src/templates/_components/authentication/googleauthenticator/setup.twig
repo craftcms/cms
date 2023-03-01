@@ -1,7 +1,7 @@
 {% import '_includes/forms.twig' as forms %}
 
 {% if user is not defined %}
-    {% set mfaData = craft.app.authenticator.getDataForMfaLogin() %}
+    {% set mfaData = craft.app.authentication.getDataForMfaLogin() %}
     {% if mfaData == null %}
         {% set user = false %}
     {% else %}
@@ -17,7 +17,7 @@
     {% set fields = {'verificationCode' : 'Verification Code'} %}
 {% endif %}
 
-{% do view.registerAssetBundle("craft\\web\\assets\\authenticator\\AuthenticatorAsset") %}
+{% do view.registerAssetBundle("craft\\web\\assets\\authentication\\AuthenticationAsset") %}
 
 {% if showEnableCheckbox %}
     {{ forms.checkboxField({
@@ -29,11 +29,11 @@
     }) }}
 {% endif %}
 
-{#toggle: 'setup2fa'
-{% do view.registerDeltaName('setup2fa') %}
-{{ hiddenInput('setup2fa', '') }}#}
+{#toggle: 'setupMfa'
+{% do view.registerDeltaName('setupMfa') %}
+{{ hiddenInput('setupMfa', '') }}#}
 
-<div id="setup2fa" class="field">
+<div id="setupMfa" class="field">
     <h3>Step 1: Download an app.</h3>
     <p>Download a TOPT app, e.g. Google Authenticator, MS Authenticator, Authy, 1Password.</p>
 
@@ -67,9 +67,3 @@
     <h3>Step 4: Continuous use</h3>
     <p>Now every time you log in, you'll be asked to enter a verification code from the app.</p>
 </div>
-
-{% js %}
-    {% if showEnableCheckbox == false %}
-
-    {% endif %}
-{% endjs %}

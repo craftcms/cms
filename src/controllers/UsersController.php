@@ -235,8 +235,12 @@ class UsersController extends Controller
      * @throws Exception
      * @throws ServiceUnavailableHttpException
      */
-    public function actionVerifyMfa(): Response
+    public function actionVerifyMfa(): ?Response
     {
+        if (!$this->request->getIsPost()) {
+            return null;
+        }
+
         $verificationCode = Craft::$app->request->getRequiredBodyParam('verificationCode');
 
         if (empty($verificationCode)) {

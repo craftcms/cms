@@ -37,7 +37,7 @@ class Authenticator extends ActiveRecord
     public function rules(): array
     {
         return [
-            [['mfaCode'], 'string', 'max' => 32],
+            [['mfaSecret'], 'string', 'max' => 32],
         ];
     }
 

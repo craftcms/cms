@@ -28,6 +28,7 @@ import './login.scss';
       this.$forgotPasswordLink = $('#forgot-password');
       this.$rememberPasswordLink = $('#remember-password');
       this.$mfaFormContainer = $('#mfa-form');
+      this.$alternativeMfaLink = $('#alternative-mfa');
       this.$submitBtn = $('#submit');
       this.$errors = $('#login-errors');
 
@@ -43,6 +44,11 @@ import './login.scss';
       this.addListener(this.$passwordInput, 'input', 'onInput');
       this.addListener(this.$forgotPasswordLink, 'click', 'onSwitchForm');
       this.addListener(this.$rememberPasswordLink, 'click', 'onSwitchForm');
+      this.addListener(
+        this.$alternativeMfaLink,
+        'click',
+        'showAlternativeMfaMethods'
+      );
       this.addListener(this.$form, 'submit', 'onSubmit');
 
       // Focus first empty field in form
@@ -126,7 +132,7 @@ import './login.scss';
     },
 
     submitMfa: function () {
-      let data = [];
+      let data = {};
 
       this.$mfaFormContainer.find('input').each(function (index, element) {
         data[$(element).attr('name')] = $(element).val();
@@ -223,6 +229,10 @@ import './login.scss';
       this.$submitBtn.text(
         Craft.t('app', this.forgotPassword ? 'Reset Password' : 'Sign in')
       );
+    },
+
+    showAlternativeMfaMethods: function (event) {
+      console.log('show other methods'); // todo: finish me
     },
   });
 

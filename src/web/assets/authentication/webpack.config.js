@@ -5,6 +5,6 @@ const {getConfig} = require('@craftcms/webpack');
 module.exports = getConfig({
   context: __dirname,
   config: {
-    entry: {Authenticator: './Authenticator.js'},
+    entry: {Authentication: './Authentication.js'},
   },
 });

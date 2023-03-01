@@ -1,0 +1,20 @@
+{% import '_includes/forms.twig' as forms %}
+
+{{ forms.checkboxField({
+    label: 'Enable MFA'|t('app'),
+    name: 'requireMfa',
+    id: 'requireMfa',
+    instructions: 'Should Multi-Factor Authentication (MFA) be enabled.'|t('app'),
+    checked: user ? user.requireMfa : false,
+    toggle: 'setupMfa',
+}) }}
+
+{% do view.registerDeltaName('setupMfa') %}
+{#{{ hiddenInput('setupMfa', '') }}#}
+
+<div id="setupMfa">
+    List available MFA options??
+    {#{{ forms.radioGroupField({
+
+    }) }}#}
+</div>

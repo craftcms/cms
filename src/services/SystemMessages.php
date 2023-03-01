@@ -75,6 +75,12 @@ class SystemMessages extends Component
                 'body' => Craft::t('app', 'forgot_password_body'),
             ],
             [
+                'key' => 'mfa_code_email',
+                'heading' => Craft::t('app', 'mfa_code_email_heading'),
+                'subject' => Craft::t('app', 'mfa_code_email_subject'),
+                'body' => Craft::t('app', 'mfa_code_email_body'),
+            ],
+            [
                 'key' => 'test_email',
                 'heading' => Craft::t('app', 'test_email_heading'),
                 'subject' => Craft::t('app', 'test_email_subject'),

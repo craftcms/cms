@@ -143,6 +143,7 @@
                     }) }}
                 {% endif %}
 
+                {% include '_components/authentication/setup.twig' %}
             {% endif %}
         </div>
 
@@ -330,10 +331,6 @@
                 {% hook 'cp.users.edit.prefs' %}
             </div>
         {% endif %}
-
-        <div id="security" class="flex-fields hidden">
-            {% include 'users/_mfa' %}
-        </div>
 
         {# Give plugins a chance to add other things here #}
         {% hook "cp.users.edit.content" %}

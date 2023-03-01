@@ -52,7 +52,7 @@ class Mailer extends \yii\symfonymailer\Mailer
     /**
      * Composes a new email based on a given key.
      *
-     * Craft has four predefined email keys: account_activation, verify_new_email, forgot_password, and test_email.
+     * Craft has five predefined email keys: account_activation, verify_new_email, forgot_password, mfa_code_email and test_email.
      * Plugins can register additional email keys using the
      * [registerEmailMessages](http://craftcms.com/docs/plugins/hooks-reference#registerEmailMessages) hook, and
      * by providing the corresponding language strings.

@@ -8,7 +8,7 @@
 namespace craft\services;
 
 use Craft;
-use craft\authentication\type\GoogleAuthenticator;
+use craft\base\authentication\BaseAuthenticationType;
 use craft\elements\User;
 use craft\helpers\UrlHelper;
 use yii\base\Component;
@@ -27,6 +27,8 @@ class Authentication extends Component
      * @var string the session variable name used to store the identity of the user we're logging in.
      */
     public string $mfaParam = '__mfa';
+
+    private ?BaseAuthenticationType $_authenticator = null;
 
 
 //    public function mfaEnabled(User $user): bool
@@ -85,15 +87,17 @@ class Authentication extends Component
 
     public function getFormHtml(User $user): string
     {
-        // todo: get selected MFA type or return a default one - google authenticator
-        $authenticator = new GoogleAuthenticator();
-        return $authenticator->getFormHtml($user);
+        $this->_authenticator = $user->getDefaultMfaMethod();
+
+        return $this->_authenticator->getFormHtml($user);
     }
 
     public function verify(User $user, string $verificationCode): bool
     {
-        // todo: get selected MFA type or return a default one - google authenticator
-        $authenticator = new GoogleAuthenticator();
-        return $authenticator->verify($user, $verificationCode);
+        if ($this->_authenticator === null) {
+            $this->_authenticator = $user->getDefaultMfaMethod();
+        }
+
+        return $this->_authenticator->verify($user, $verificationCode);
     }
 }
