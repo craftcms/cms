@@ -76,16 +76,14 @@ class Cp
 
         $updatesService = Craft::$app->getUpdates();
         $cache = Craft::$app->getCache();
-        $licenseInfoCached = $cache->exists('licenseInfo');
+        $isInfoCached = $cache->exists('licenseInfo') && $updatesService->getIsUpdateInfoCached();
 
-        if (!$licenseInfoCached && $fetch) {
-            // Clear the update cache just in case we had that but not license info
-            $cache->delete($updatesService->cacheKey);
-            $updatesService->getUpdates();
-            $licenseInfoCached = true;
+        if (!$isInfoCached && $fetch) {
+            $updatesService->getUpdates(true);
+            $isInfoCached = true;
         }
 
-        if ($licenseInfoCached) {
+        if ($isInfoCached) {
             $allLicenseInfo = $cache->get('licenseInfo') ?: [];
             $pluginsService = Craft::$app->getPlugins();
             $canTestEditions = Craft::$app->getCanTestEditions();
