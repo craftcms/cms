@@ -13,6 +13,7 @@ use craft\behaviors\DraftBehavior;
 use craft\behaviors\RevisionBehavior;
 use craft\enums\LicenseKeyStatus;
 use craft\errors\InvalidHtmlTagException;
+use craft\errors\InvalidPluginException;
 use craft\events\RegisterCpAlertsEvent;
 use craft\web\twig\TemplateLoaderException;
 use craft\web\View;
@@ -63,108 +64,181 @@ class Cp
     public static function alerts(?string $path = null, bool $fetch = false): array
     {
         $alerts = [];
+        $resolvableLicenseAlerts = [];
+        $resolvableLicenseItems = [];
         $user = Craft::$app->getUser()->getIdentity();
         $generalConfig = Craft::$app->getConfig()->getGeneral();
+        $consoleUrl = rtrim(Craft::$app->getPluginStore()->craftIdEndpoint, '/');
 
         if (!$user) {
             return $alerts;
         }
 
         $updatesService = Craft::$app->getUpdates();
-        $canSettleUp = true;
-        $licenseAlerts = [];
+        $cache = Craft::$app->getCache();
+        $licenseInfoCached = $cache->exists('licenseInfo');
 
-        if ($updatesService->getIsUpdateInfoCached() || $fetch) {
-            // Fetch the updates regardless of whether we're on the Updates page or not, because the other alerts are
-            // relying on cached Craftnet info
+        if (!$licenseInfoCached && $fetch) {
+            // Clear the update cache just in case we had that but not license info
+            $cache->delete($updatesService->cacheKey);
             $updatesService->getUpdates();
+            $licenseInfoCached = true;
+        }
 
-            // Get the license key status
-            $licenseKeyStatus = Craft::$app->getCache()->get('licenseKeyStatus');
+        if ($licenseInfoCached) {
+            $allLicenseInfo = $cache->get('licenseInfo') ?: [];
+            $pluginsService = Craft::$app->getPlugins();
+            $canTestEditions = Craft::$app->getCanTestEditions();
 
-            if ($path !== 'plugin-store/upgrade-craft') {
-                // Invalid license?
-                if ($licenseKeyStatus === LicenseKeyStatus::Invalid) {
-                    $alerts[] = Craft::t('app', 'Your Craft license key is invalid.');
-                } elseif (Craft::$app->getHasWrongEdition()) {
-                    $message = Craft::t('app', 'You’re running Craft {edition} with a Craft {licensedEdition} license.', [
-                            'edition' => Craft::$app->getEditionName(),
-                            'licensedEdition' => Craft::$app->getLicensedEditionName(),
-                        ]) . ' ';
-                    if ($user->admin) {
-                        if ($generalConfig->allowAdminChanges) {
-                            $message .= '<a class="go" href="' . UrlHelper::url('plugin-store/upgrade-craft') . '">' . Craft::t('app', 'Resolve') . '</a>';
-                        } else {
-                            $message .= Craft::t('app', 'Please fix on an environment where administrative changes are allowed.');
-                        }
-                    } else {
-                        $message .= Craft::t('app', 'Please notify one of your site’s admins.');
-                    }
-
-                    $licenseAlerts[] = $message;
-                }
-            }
-
-            if ($licenseKeyStatus === LicenseKeyStatus::Astray) {
-                // todo: swap Console link with a Resolve button
-                $alerts[] = Craft::t('app', 'Your Craft license isn’t allowed to run version {version}.', [
-                        'version' => Craft::$app->getVersion(),
-                    ]) . ' Please renew it from <a href="https://console.craftcms.com">Craft Console</a>.';
-            }
-
-            // Any plugin issues?
-            if ($path != 'settings/plugins') {
-                $pluginsService = Craft::$app->getPlugins();
-                $issuePlugins = [];
-                foreach ($pluginsService->getAllPlugins() as $pluginHandle => $plugin) {
-                    if ($pluginsService->hasIssues($pluginHandle)) {
-                        $issuePlugins[] = [$plugin->name, $plugin->handle];
-                    }
-                }
-                if (!empty($issuePlugins)) {
-                    if (count($issuePlugins) === 1) {
-                        $message = Craft::t('app', 'There’s a licensing issue with the {name} plugin.', [
-                            'name' => reset($issuePlugins)[0],
-                        ]);
-                    } else {
-                        $message = Craft::t('app', '{num} plugins have licensing issues.', [
-                            'num' => count($issuePlugins),
-                        ]);
-                    }
-                    $message .= ' ';
-                    if ($user->admin) {
-                        if ($generalConfig->allowAdminChanges) {
-                            $message .= '<a class="go" href="' . UrlHelper::cpUrl('settings/plugins') . '">' . Craft::t('app', 'Resolve') . '</a>';
-                        } else {
-                            $message .= Craft::t('app', 'Please fix on an environment where administrative changes are allowed.');
-                        }
-                    } else {
-                        $message .= Craft::t('app', 'Please notify one of your site’s admins.');
-                    }
-
-                    $licenseAlerts[] = $message;
-
-                    // Is this reconcilable?
-                    foreach ($issuePlugins as [$pluginName, $pluginHandle]) {
-                        if ($pluginsService->getPluginLicenseKeyStatus($pluginHandle) !== LicenseKeyStatus::Trial) {
-                            $canSettleUp = false;
-                            break;
-                        }
-                    }
-                }
-            }
-
-            if (!empty($licenseAlerts)) {
-                if ($canSettleUp) {
-                    if ($path !== 'plugin-store/buy-all-trials') {
-                        $alerts[] = Craft::t('app', 'There are trial licenses that require payment.') . ' ' .
-                            Html::a(Craft::t('app', 'Buy now'), UrlHelper::cpUrl('plugin-store/buy-all-trials'), ['class' => 'go']);
-                    }
+            foreach ($allLicenseInfo as $handle => $licenseInfo) {
+                $isCraft = $handle === 'craft';
+                if ($isCraft) {
+                    $name = 'Craft CMS';
+                    $editions = ['solo', 'pro'];
+                    $currentEdition = Craft::$app->getEditionHandle();
+                    $currentEditionName = Craft::$app->getEditionName();
+                    $licenseEditionName = App::editionName(App::editionIdByHandle($licenseInfo['edition']));
+                    $version = Craft::$app->getVersion();
                 } else {
-                    array_push($alerts, ...$licenseAlerts);
+                    if (!str_starts_with($handle, 'plugin-')) {
+                        continue;
+                    }
+                    $handle = StringHelper::removeLeft($handle, 'plugin-');
+
+                    try {
+                        $pluginInfo = $pluginsService->getPluginInfo($handle);
+                    } catch (InvalidPluginException $e) {
+                        continue;
+                    }
+
+                    $plugin = $pluginsService->getPlugin($handle);
+                    if (!$plugin) {
+                        continue;
+                    }
+
+                    $name = $plugin->name;
+                    $editions = $plugin::editions();
+                    $currentEdition = $pluginInfo['edition'];
+                    $currentEditionName = ucfirst($currentEdition);
+                    $licenseEditionName = ucfirst($licenseInfo['edition']);
+                    $version = $pluginInfo['version'];
+                }
+
+                if ($licenseInfo['status'] === LicenseKeyStatus::Invalid) {
+                    // invalid license
+                    $alerts[] = Craft::t('app', 'The {name} license is invalid.', [
+                        'name' => $name,
+                    ]);
+                } elseif ($licenseInfo['status'] === LicenseKeyStatus::Trial && !$canTestEditions) {
+                    // no trials allowed
+                    $resolvableLicenseAlerts[] = Craft::t('app', '{name} requires purchase.', [
+                        'name' => $name,
+                    ]);
+                    $resolvableLicenseItems[] = [
+                        'type' => $isCraft ? 'cms-license' : 'plugin-license',
+                        'licenseId' => $licenseInfo['id'],
+                    ];
+                } elseif ($licenseInfo['status'] === LicenseKeyStatus::Mismatched) {
+                    if ($isCraft) {
+                        // wrong domain
+                        $licensedDomain = $cache->get('licensedDomain');
+                        $domainLink = Html::a($licensedDomain, "http://$licensedDomain", [
+                            'rel' => 'noopener',
+                            'target' => '_blank',
+                        ]);
+
+                        if (defined('CRAFT_LICENSE_KEY')) {
+                            $message = Craft::t('app', 'The Craft CMS license key in use belongs to {domain}', [
+                                'domain' => $domainLink,
+                            ]);
+                        } else {
+                            $keyPath = Craft::$app->getPath()->getLicenseKeyPath();
+
+                            // If the license key path starts with the root project path, trim the project path off
+                            $rootPath = Craft::getAlias('@root');
+                            if (strpos($keyPath, $rootPath . '/') === 0) {
+                                $keyPath = substr($keyPath, strlen($rootPath) + 1);
+                            }
+
+                            $message = Craft::t('app', 'The Craft CMS license located at {file} belongs to {domain}.', [
+                                'file' => $keyPath,
+                                'domain' => $domainLink,
+                            ]);
+                        }
+
+                        $learnMoreLink = Html::a(Craft::t('app', 'Learn more'), 'https://craftcms.com/support/resolving-mismatched-licenses', [
+                            'class' => 'go',
+                        ]);
+                        $alerts[] = "$message $learnMoreLink";
+                    } else {
+                        // wrong Craft install
+                        $alerts[] = Craft::t('app', 'The {name} license is attached to a different Craft CMS license. You can <a class="go" href="{detachUrl}">detach it in Craft Console</a> or <a class="go" href="{buyUrl}">buy a new license</a>.', [
+                            'name' => $name,
+                            'detachUrl' => "$consoleUrl/licenses/plugins/{$licenseInfo['id']}",
+                            'buyUrl' => $user->admin && $generalConfig->allowAdminChanges
+                                ? UrlHelper::cpUrl("plugin-store/buy/$handle/$currentEdition")
+                                : "https://plugins.craftcms.com/$handle",
+                        ]);
+                    }
+                } elseif ($licenseInfo['edition'] !== $currentEdition && !$canTestEditions) {
+                    // wrong edition
+                    $message = Craft::t('app', '{name} is licensed for the {licenseEdition} edition, but the {currentEdition} is installed.', [
+                        'name' => $name,
+                        'licenseEdition' => $licenseEditionName,
+                        'currentEdition' => $currentEditionName,
+                    ]);
+                    $currentEditionIdx = array_search($currentEdition, $editions);
+                    $licenseEditionIdx = array_search($licenseInfo['edition'], $editions);
+                    if ($currentEditionIdx !== false && $licenseEditionIdx !== false && $currentEditionIdx > $licenseEditionIdx) {
+                        $resolvableLicenseAlerts[] = $message;
+                        $resolvableLicenseItems[] = [
+                            'type' => $isCraft ? 'cms-edition' : 'plugin-edition',
+                            'edition' => $currentEdition,
+                            'licenseId' => $licenseInfo['id'],
+                        ];
+                    } else {
+                        if ($user->admin) {
+                            if ($generalConfig->allowAdminChanges) {
+                                $url = UrlHelper::cpUrl(sprintf('plugin-store/%s', $isCraft ? 'upgrade-craft' : $handle));
+                                $cta = Html::a(Craft::t('app', 'Resolve'), $url, ['class' => 'go']);
+                            } else {
+                                $cta = Craft::t('app', 'Please fix on an environment where administrative changes are allowed.');
+                            }
+                        } else {
+                            $cta = Craft::t('app', 'Please notify one of your site’s admins.');
+                        }
+                        $alerts[] = "$message $cta";
+                    }
+                } elseif ($licenseInfo['status'] === LicenseKeyStatus::Astray) {
+                    // updated too far
+                    $resolvableLicenseAlerts[] = Craft::t('app', '{name} isn’t licensed to run version {version}.', [
+                        'name' => $name,
+                        'version' => $version,
+                    ]);
+                    $resolvableLicenseItems[] = [
+                        'type' => $isCraft ? 'cms-renewal' : 'plugin-renewal',
+                        'licenseId' => $licenseInfo['id'],
+                    ];
                 }
             }
 
+            if (!empty($resolvableLicenseAlerts)) {
+                $cartUrl = UrlHelper::urlWithParams("$consoleUrl/cart/new", [
+                    'items' => $resolvableLicenseItems,
+                ]);
+                $alerts[] = [
+                    'content' => Html::tag('h2', Craft::t('app', 'Licensing Issues')) .
+                        Html::tag('p', Craft::t('app', 'The following licensing issues can be resolved with a single purchase on Craft Console.')) .
+                        Html::ul($resolvableLicenseAlerts, [
+                            'class' => 'errors',
+                        ]) .
+                        // can't use Html::a() because it's encoding &amp;'s, which is causing issues
+                        Html::tag('p', sprintf('<a class="go" href="%s">%s</a>', $cartUrl, Craft::t('app', 'Resolve now'))),
+                    'showIcon' => false,
+                ];
+            }
+
+            // Critical update available?
             if (
                 $path !== 'utilities/updates' &&
                 $user->can('utility:updates') &&
@@ -172,33 +246,6 @@ class Cp
             ) {
                 $alerts[] = Craft::t('app', 'A critical update is available.') .
                     ' <a class="go nowrap" href="' . UrlHelper::url('utilities/updates') . '">' . Craft::t('app', 'Go to Updates') . '</a>';
-            }
-
-            // Domain mismatch?
-            if ($licenseKeyStatus === LicenseKeyStatus::Mismatched) {
-                $licensedDomain = Craft::$app->getCache()->get('licensedDomain');
-                $domainLink = '<a href="http://' . $licensedDomain . '" rel="noopener" target="_blank">' . $licensedDomain . '</a>';
-
-                if (defined('CRAFT_LICENSE_KEY')) {
-                    $message = Craft::t('app', 'The license key in use belongs to {domain}', [
-                        'domain' => $domainLink,
-                    ]);
-                } else {
-                    $keyPath = Craft::$app->getPath()->getLicenseKeyPath();
-
-                    // If the license key path starts with the root project path, trim the project path off
-                    $rootPath = Craft::getAlias('@root');
-                    if (strpos($keyPath, $rootPath . '/') === 0) {
-                        $keyPath = substr($keyPath, strlen($rootPath) + 1);
-                    }
-
-                    $message = Craft::t('app', 'The license located at {file} belongs to {domain}.', [
-                        'file' => $keyPath,
-                        'domain' => $domainLink,
-                    ]);
-                }
-
-                $alerts[] = $message . ' <a class="go" href="https://craftcms.com/support/resolving-mismatched-licenses">' . Craft::t('app', 'Learn more') . '</a>';
             }
         }
 
@@ -232,20 +279,28 @@ class Cp
 
         // Inline CSS styles
         foreach ($alerts as $i => $alert) {
+            if (!is_array($alert)) {
+                $alert = [
+                    'content' => $alert,
+                    'showIcon' => true,
+                ];
+            }
+
             $offset = 0;
             while (true) {
                 try {
-                    $tagInfo = Html::parseTag($alert, $offset);
+                    $tagInfo = Html::parseTag($alert['content'], $offset);
                 } catch (InvalidHtmlTagException $e) {
                     break;
                 }
 
                 $newTagHtml = self::alertTagHtml($tagInfo);
-                $alert = substr($alert, 0, $tagInfo['start']) .
+                $alert['content'] = substr($alert['content'], 0, $tagInfo['start']) .
                     $newTagHtml .
-                    substr($alert, $tagInfo['end']);
+                    substr($alert['content'], $tagInfo['end']);
                 $offset = $tagInfo['start'] + strlen($newTagHtml);
             }
+
             $alerts[$i] = $alert;
         }
 
@@ -259,22 +314,30 @@ class Cp
         }
 
         $style = [];
-        if ($tagInfo['type'] === 'a') {
-            $style = array_merge($style, [
-                'color' => '#cf1124',
-                'text-decoration' => 'underline',
-            ]);
-
-            if (isset($tagInfo['attributes']['class']) && in_array('go', $tagInfo['attributes']['class'])) {
+        switch ($tagInfo['type']) {
+            case 'h2':
                 $style = array_merge($style, [
-                    'text-decoration' => 'none',
-                    'white-space' => 'nowrap',
-                    'border' => '1px solid #cf112480',
-                    'border-radius' => '4px',
-                    'padding' => '3px 5px',
-                    'margin' => '0 2px',
+                    'display' => 'block',
                 ]);
-            }
+                break;
+            case 'ul':
+            case 'p':
+                $style = array_merge($style, [
+                    'display' => 'block',
+                ]);
+                break;
+            case 'li':
+                $style = array_merge($style, [
+                    'display' => 'list-item',
+                ]);
+                break;
+            case 'a':
+                if (isset($tagInfo['attributes']['class']) && array_intersect(['go', 'btn'], $tagInfo['attributes']['class'])) {
+                    $style = array_merge($style, [
+                        'display' => 'inline-flex',
+                    ]);
+                }
+                break;
         }
 
         $childTagHtml = array_map(function(array $childTagInfo): string {

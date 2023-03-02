@@ -434,6 +434,18 @@ trait ApplicationTrait
     }
 
     /**
+     * Returns the handle of the Craft edition.
+     *
+     * @return string
+     * @since 3.8.0
+     */
+    public function getEditionHandle(): string
+    {
+        /** @var WebApplication|ConsoleApplication $this */
+        return App::editionHandle($this->getEdition());
+    }
+
+    /**
      * Returns the edition Craft is actually licensed to run in.
      *
      * @return int|null
@@ -441,13 +453,13 @@ trait ApplicationTrait
     public function getLicensedEdition()
     {
         /** @var WebApplication|ConsoleApplication $this */
-        $licensedEdition = $this->getCache()->get('licensedEdition');
+        $licenseInfo = $this->getCache()->get('licenseInfo') ?: [];
 
-        if ($licensedEdition !== false) {
-            return (int)$licensedEdition;
+        if (!isset($licenseInfo['craft']['edition'])) {
+            return null;
         }
 
-        return null;
+        return App::editionIdByHandle($licenseInfo['craft']['edition']);
     }
 
     /**
