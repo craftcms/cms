@@ -5,7 +5,7 @@
  * @license https://craftcms.github.io/license/
  */
 
-namespace craft\web\assets\authentication;
+namespace craft\web\assets\mfa;
 
 use craft\web\AssetBundle;
 use craft\web\assets\cp\CpAsset;
@@ -13,7 +13,7 @@ use craft\web\assets\cp\CpAsset;
 /**
  * Authentication bundle for MFA
  */
-class AuthenticationAsset extends AssetBundle
+class MfaAsset extends AssetBundle
 {
     /**
      * @inheritdoc
@@ -31,6 +31,6 @@ class AuthenticationAsset extends AssetBundle
      * @inheritdoc
      */
     public $js = [
-        'Authentication.js',
+        'mfa.js',
     ];
 }

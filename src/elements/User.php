@@ -1876,8 +1876,10 @@ class User extends Element implements IdentityInterface
 
         foreach ($options as $key => $option) {
             if ($option['config']['requiresSetup']) {
-                $option['isSetup'] = $this->isMfaOptionSetup($key);
-                //$option['setupForm'] = $mfaType::getFormHtml($user);
+                $mfaType = new $key();
+                if ($mfaType instanceof ConfigurableMfaInterface) {
+                    $options[$key]['config']['setupForm'] = $mfaType->getSetupFormHtml();
+                }
             }
         }
         return $options;
@@ -1897,7 +1899,7 @@ class User extends Element implements IdentityInterface
             return true;
         }
 
-        return $mfaType::isSetupForUser($this);
+        return $mfaType->isSetupForUser($this);
     }
 
     /**

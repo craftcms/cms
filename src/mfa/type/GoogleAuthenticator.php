@@ -38,13 +38,13 @@ class GoogleAuthenticator extends BaseMfaType implements ConfigurableMfaInterfac
      */
     public static function getDescription(): string
     {
-        return Craft::t('app', 'Authenticate via single use code provided by a third-party application line Google Authenticator.');
+        return Craft::t('app', 'Authenticate via single use code provided by a third-party application like Google Authenticator.');
     }
 
     /**
      * @inheritdoc
      */
-    public static function isSetupForUser(User $user): bool
+    public function isSetupForUser(User $user): bool
     {
         return $user->requireMfa && self::_getSecretFromDb($user->id) !== null;
     }
@@ -62,8 +62,13 @@ class GoogleAuthenticator extends BaseMfaType implements ConfigurableMfaInterfac
     /**
      * @inheritdoc
      */
-    public function getFormHtml(User $user, string $html = '', ?array $options = []): string
+    public function getInputHtml(string $html = '', array $options = []): string
     {
+        $user = Craft::$app->getMfa()->getUserForMfaLogin();
+        if ($user === null) {
+            return '';
+        }
+
         $data = [
             'user' => $user,
             'fields' => $this->getFields(),
@@ -76,31 +81,62 @@ class GoogleAuthenticator extends BaseMfaType implements ConfigurableMfaInterfac
                 $data
             );
         } else {
-            // otherwise show instructions, QR code and verification form
-            $data['secret'] = $this->getSecret($user);
-            $data['qrCode'] = $this->generateQrCode($user, $data['secret']);
-
-            $formHtml = Craft::$app->getView()->renderTemplate(
-                '_components/mfa/googleauthenticator/setup.twig',
-                $data + ['showEnableCheckbox' => false]
-            );
+            // otherwise show the setup form (instructions, QR code and verification input(s))
+            $formHtml = $this->getSetupFormHtml($html, $options);
         }
 
-        return parent::getFormHtml($user, $formHtml, $options);
+        return parent::getInputHtml($formHtml, $options);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getSetupFormHtml(string $html = '', array $options = []): string
+    {
+        $user = Craft::$app->getMfa()->getUserForMfaLogin();
+        if ($user === null) {
+            return '';
+        }
+
+        // otherwise show instructions, QR code and verification form
+        $data['secret'] = $this->getSecret($user);
+        $data['qrCode'] = $this->generateQrCode($user, $data['secret']);
+
+        return Craft::$app->getView()->renderTemplate(
+            '_components/mfa/googleauthenticator/setup.twig',
+            $data + ['optionClass' => self::class]
+        );
+    }
+
+    public function removeSetup(): bool
+    {
+        $userId = Craft::$app->getUser()->getId();
+
+        if ($userId === null) {
+            return false;
+        }
+
+        AuthenticatorRecord::deleteAll(['userId' => $userId]);
+
+        return true;
     }
 
     /**
      * Verify provided OTP (code)
      *
-     * @param User $user
      * @param array $data
      * @return bool
      * @throws \PragmaRX\Google2FA\Exceptions\IncompatibleWithGoogleAuthenticatorException
      * @throws \PragmaRX\Google2FA\Exceptions\InvalidCharactersException
      * @throws \PragmaRX\Google2FA\Exceptions\SecretKeyTooShortException
      */
-    public function verify(User $user, array $data): bool
+    public function verify(array $data): bool
     {
+        $user = Craft::$app->getMfa()->getUserForMfaLogin();
+        if ($user === null) {
+            return false;
+        }
+
         // check if secret is stored, if not, we need to store it
         $storedSecret = self::_getSecretFromDb($user->id);
         $session = Craft::$app->getSession();

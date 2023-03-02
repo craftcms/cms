@@ -11,15 +11,14 @@ import './login.scss';
     $rememberMeCheckbox: null,
     $forgotPasswordLink: null,
     $rememberPasswordLink: null,
-    $mfaFormContainer: null,
-    $alternativeMfaLink: null,
-    $alternativeMfaOptionsContainer: null,
     $submitBtn: null,
     $errors: null,
 
     forgotPassword: false,
     validateOnInput: false,
-    mfa: false,
+
+    mfaFlow: false,
+    mfa: null,
 
     init: function () {
       this.$loginDiv = $('#login');
@@ -29,9 +28,6 @@ import './login.scss';
       this.$rememberMeCheckbox = $('#rememberMe');
       this.$forgotPasswordLink = $('#forgot-password');
       this.$rememberPasswordLink = $('#remember-password');
-      this.$mfaFormContainer = $('#mfa-form');
-      this.$alternativeMfaLink = $('#alternative-mfa');
-      this.$alternativeMfaOptionsContainer = $('#alternative-mfa-options');
       this.$submitBtn = $('#submit');
       this.$errors = $('#login-errors');
 
@@ -43,15 +39,12 @@ import './login.scss';
         },
       });
 
+      this.mfa = new Craft.Mfa();
+
       this.addListener(this.$loginNameInput, 'input', 'onInput');
       this.addListener(this.$passwordInput, 'input', 'onInput');
       this.addListener(this.$forgotPasswordLink, 'click', 'onSwitchForm');
       this.addListener(this.$rememberPasswordLink, 'click', 'onSwitchForm');
-      this.addListener(
-        this.$alternativeMfaLink,
-        'click',
-        'onAlternativeMfaOption'
-      );
       this.addListener(this.$form, 'submit', 'onSubmit');
 
       // Focus first empty field in form
@@ -127,8 +120,8 @@ import './login.scss';
 
       if (this.forgotPassword) {
         this.submitForgotPassword();
-      } else if (this.mfa) {
-        this.submitMfa();
+      } else if (this.mfaFlow) {
+        this.mfa.submitMfa();
       } else {
         this.submitLogin();
       }
@@ -158,7 +151,8 @@ import './login.scss';
       Craft.sendActionRequest('POST', 'users/login', {data})
         .then((response) => {
           if (response.data.mfa !== undefined && response.data.mfa == true) {
-            this.showMfaForm(response.data.mfaForm);
+            this.mfaFlow = true;
+            this.mfa.showMfaForm(response.data.mfaForm, this.$loginDiv);
           } else {
             window.location.href = response.data.returnUrl;
           }
@@ -203,135 +197,6 @@ import './login.scss';
       this.$submitBtn.text(
         Craft.t('app', this.forgotPassword ? 'Reset Password' : 'Sign in')
       );
-    },
-
-    // MFA-related methods
-    // -------------------------------------------------------------------------
-    showMfaForm: function (mfaForm) {
-      this.mfa = true;
-      this.$mfaFormContainer.html('').append(mfaForm);
-      this.$loginDiv.addClass('mfa');
-      this.onSubmitResponse();
-    },
-
-    getCurrentMfaOption: function () {
-      let currentMethod = this.$mfaFormContainer
-        .find('#verifyContainer')
-        .attr('data-authenticator');
-
-      if (currentMethod === undefined) {
-        currentMethod = null;
-      }
-
-      return currentMethod;
-    },
-
-    submitMfa: function () {
-      let data = {
-        mfaFields: {},
-      };
-
-      this.$mfaFormContainer.find('input').each(function (index, element) {
-        data.mfaFields[$(element).attr('name')] = $(element).val();
-      });
-
-      data.currentMethod = this.getCurrentMfaOption();
-
-      Craft.sendActionRequest('POST', 'users/verify-mfa', {data})
-        .then((response) => {
-          window.location.href = response.data.returnUrl;
-        })
-        .catch(({response}) => {
-          Garnish.shake(this.$form, 'left');
-          this.onSubmitResponse();
-
-          // Add the error message
-          this.showError(response.data.message);
-        });
-
-      return false;
-    },
-
-    onAlternativeMfaOption: function (event) {
-      // get current authenticator class via data-authenticator
-      let currentMethod = this.getCurrentMfaOption();
-      if (currentMethod === null) {
-        this.$alternativeMfaLink.hide();
-        this.showError('No alternative MFA methods available.');
-      }
-
-      let data = {
-        currentMethod: currentMethod,
-      };
-
-      // get available MFA methods, minus the one that's being shown
-      this.getAlternativeMfaOptions(data);
-    },
-
-    getAlternativeMfaOptions: function (data) {
-      Craft.sendActionRequest('POST', 'mfa/get-alternative-mfa-options', {data})
-        .then((response) => {
-          if (response.data.alternativeOptions !== undefined) {
-            this.showAlternativeMfaOptions(response.data.alternativeOptions);
-          }
-        })
-        .catch(({response}) => {
-          this.showError(response.data.message);
-        });
-    },
-
-    showAlternativeMfaOptions: function (data) {
-      let alternativeOptions = Object.entries(data).map(([key, value]) => ({
-        key,
-        value,
-      }));
-      if (alternativeOptions.length > 0) {
-        alternativeOptions.forEach((option) => {
-          this.$alternativeMfaOptionsContainer.append(
-            '<li><button ' +
-              'class="alternative-mfa-option" ' +
-              'type="button" ' +
-              'value="' +
-              option.key +
-              '">' +
-              option.value.name +
-              '</button></li>'
-          );
-        });
-      }
-
-      // list them by name
-      this.$alternativeMfaLink
-        .hide()
-        .after(this.$alternativeMfaOptionsContainer);
-
-      // clicking on a method name swaps the form fields
-      this.addListener(
-        $('.alternative-mfa-option'),
-        'click',
-        'onSelectAlternativeMfaOption'
-      );
-    },
-
-    onSelectAlternativeMfaOption: function (event) {
-      const data = {
-        selectedMethod: $(event.currentTarget).attr('value'),
-      };
-
-      Craft.sendActionRequest('POST', 'mfa/load-alternative-mfa-option', {data})
-        .then((response) => {
-          console.log(response.data.mfaForm);
-          if (response.data.mfaForm !== undefined) {
-            this.$mfaFormContainer.html('').append(response.data.mfaForm);
-            this.$alternativeMfaOptionsContainer.html('');
-            this.$alternativeMfaLink.show();
-            this.onSubmitResponse();
-          }
-        })
-        .catch(({response}) => {
-          // console.log(response);
-          // this.showError(response.data.message);
-        });
     },
   });
 

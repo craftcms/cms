@@ -1,69 +1,55 @@
 {% import '_includes/forms.twig' as forms %}
 
 {% if user is not defined %}
-    {% set mfaData = craft.app.authentication.getDataForMfaLogin() %}
-    {% if mfaData == null %}
-        {% set user = false %}
-    {% else %}
-        {% set user = mfaData.user %}
-    {% endif %}
-{% endif %}
-
-{% if showEnableCheckbox is not defined %}
-    {% set showEnableCheckbox = true %}
+    {% set user = craft.app.mfa.getUserForMfaLogin() %}
 {% endif %}
 
 {% if fields is not defined %}
     {% set fields = {'verificationCode' : 'Verification Code'} %}
 {% endif %}
 
-
-
-{% if showEnableCheckbox %}
-    {{ forms.checkboxField({
-        label: 'Enable MFA'|t('app'),
-        name: 'requireMfa',
-        id: 'requireMfa',
-        instructions: 'Should Multi-Factor Authentication (MFA) be enabled.'|t('app'),
-        checked: user ? user.requireMfa : false
-    }) }}
+{% if optionClass is not defined %}
+    {% set optionClass = 'craft\\mfa\\type\\GoogleAuthenticator' %}
 {% endif %}
 
-{#toggle: 'setupMfa'
-{% do view.registerDeltaName('setupMfa') %}
-{{ hiddenInput('setupMfa', '') }}#}
+{% set isSetup = user.isMfaOptionSetup(optionClass) %}
 
-<div id="setupMfa" class="field">
-    <h3>Step 1: Download an app.</h3>
-    <p>Download a TOPT app, e.g. Google Authenticator, MS Authenticator, Authy, 1Password.</p>
+<div class="field">
+    {% if not isSetup %}
+        <h3>Step 1: Download an app.</h3>
+        <p>Download a TOPT app, e.g. Google Authenticator, MS Authenticator, Authy, 1Password.</p>
 
-    <h3>Step 2: Use the app to set up your connection.</h3>
-    <p>
-        To continue turning on the Two-Factor Authentication (2FA),
-        please use the app you just installed to scan the QR code
-        or enter the secret key shown below.
-    </p>
-    <div id="qrContainer">
-        {% if (qrCode is defined and qrCode is not empty) or (secret is defined and secret is not empty) %}
-            {% if secret is defined and secret is not empty %}
-                <div class="secret">
-                    Secret Key: {{ secret }}
-                </div>
+        <h3>Step 2: Use the app to set up your connection.</h3>
+        <p>
+            To continue turning on the Two-Factor Authentication (2FA),
+            please use the app you just installed to scan the QR code
+            or enter the secret key shown below.
+        </p>
+        <div id="qr-container">
+            {% if (qrCode is defined and qrCode is not empty) or (secret is defined and secret is not empty) %}
+                {% if qrCode is defined and qrCode is not empty %}
+                    <div class="qr-code">
+                        {{ qrCode|raw }}
+                    </div>
+                {% endif %}
+                {% if secret is defined and secret is not empty %}
+                    <div class="secret">
+                        Secret Key: {{ secret }}
+                    </div>
+                {% endif %}
+            {% else %}
+                <em>The QR code and secret key will show once you check the "Enable 2FA" checkbox.</em>
             {% endif %}
-            {% if qrCode is defined and qrCode is not empty %}
-                <div class="qrCode">QR Code:
-                    {{ qrCode|raw }}
-                </div>
-            {% endif %}
-        {% else %}
-            <em>The QR code and secret key will show once you check the "Enable 2FA" checkbox.</em>
-        {% endif %}
-    </div>
+        </div>
 
-    <h3>Step 3: Verify with the code from the app</h3>
-    <p>Please enter the code from the app to verify your setup. Please note that the code is time sensitive.</p>
-    {% include '_components/mfa/googleauthenticator/verification.twig' with {'fields' : fields} %}
+        <h3>Step 3: Verify with the code from the app</h3>
+        <p>Please enter the code from the app to verify your setup. Please note that the code is time sensitive.</p>
+        {% include '_components/mfa/googleauthenticator/verification.twig' with {'fields' : fields} %}
 
-    <h3>Step 4: Continuous use</h3>
-    <p>Now every time you log in, you'll be asked to enter a verification code from the app.</p>
+        <h3>Step 4: Continuous use</h3>
+        <p>Now every time you log in, you'll be asked to enter a verification code from the app.</p>
+    {% else %}
+        <h3>You're all set up</h3>
+        <button name="remove-setup" class="btn remove-setup">Remove setup</button>
+    {% endif %}
 </div>

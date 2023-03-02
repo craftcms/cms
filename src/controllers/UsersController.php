@@ -257,7 +257,7 @@ class UsersController extends Controller
         $user = $mfaData['user'];
         $duration = $mfaData['duration'];
 
-        $verified = $mfaService->verify($user, $mfaFields, $currentMethod);
+        $verified = $mfaService->verify($mfaFields, $currentMethod);
 
         if ($verified === false) {
             return $this->_handleLoginFailure(User::AUTH_INVALID_MFA_CODE, $user);
@@ -2169,7 +2169,7 @@ JS,
         if ($this->request->getAcceptsJson()) {
             $return = [
                 'mfa' => true,
-                'mfaForm' => $mfaService->getFormHtml($user),
+                'mfaForm' => $mfaService->getInputHtml(),
             ];
 
             if (Craft::$app->getConfig()->getGeneral()->enableCsrfProtection) {

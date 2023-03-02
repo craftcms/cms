@@ -70,19 +70,50 @@ class MfaController extends Controller
             return null;
         }
 
-        $data = Craft::$app->getMfa()->getDataForMfaLogin();
-        if ($data['user'] !== null) {
-            $mfaForm = (new $selectedMethod())->getFormHtml($data['user']);
+        $mfaForm = (new $selectedMethod())->getInputHtml();
 
-            if ($this->request->getAcceptsJson()) {
-                return $this->asSuccess(
-                    data: ['mfaForm' => $mfaForm],
-                );
+        if ($this->request->getAcceptsJson()) {
+            if (empty($mfaForm)) {
+                return $this->asFailure('Something went wrong. Please start again.');
             }
+
+            return $this->asSuccess(
+                data: ['mfaForm' => $mfaForm],
+            );
         }
 
         // todo: finish me
         return null;
+    }
+
+    public function actionRemoveSetup(): ?Response
+    {
+        if (!$this->request->getIsPost()) {
+            return null;
+        }
+
+        $user = Craft::$app->getUser()->getIdentity();
+
+        if ($user === null) {
+            return null;
+        }
+
+        $selectedMethod = Craft::$app->getRequest()->getRequiredBodyParam('selectedMethod');
+        if (empty($selectedMethod)) {
+            return null;
+        }
+
+        $success = (new $selectedMethod())->removeSetup();
+
+        if ($this->request->getAcceptsJson()) {
+            if ($success) {
+                return $this->asSuccess('removal done');
+            } else {
+                return $this->asFailure('removal not done');
+            }
+        }
+
+        return null; // todo: finish me
     }
 
     //    public function actionGetQrCode(): Response

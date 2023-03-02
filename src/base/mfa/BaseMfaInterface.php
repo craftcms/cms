@@ -7,8 +7,6 @@
 
 namespace craft\base\mfa;
 
-use craft\elements\User;
-
 interface BaseMfaInterface
 {
     /**
@@ -26,11 +24,13 @@ interface BaseMfaInterface
     public static function getDescription(): string;
 
     /**
-     * Get html for MFA verification form
+     * Get html for MFA verification inputs
      *
+     * @param string $html
+     * @param array $options
      * @return string
      */
-    public function getFormHtml(User $user): string;
+    public function getInputHtml(string $html = '', array $options = []): string;
 
     /**
      * Returns the array of field names used in the MFA verification form
@@ -42,9 +42,8 @@ interface BaseMfaInterface
     /**
      * Verify provided MFA code
      *
-     * @param User $user
      * @param array $data
      * @return bool
      */
-    public function verify(User $user, array $data): bool;
+    public function verify(array $data): bool;
 }

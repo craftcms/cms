@@ -63,7 +63,7 @@ class Mfa extends Component
     }
 
     /**
-     * Get data of the user we're logging in and duration from session
+     * Get user and duration data from session
      *
      * @return array|null
      * @throws Exception
@@ -89,6 +89,19 @@ class Mfa extends Component
         }
 
         return null;
+    }
+
+    /**
+     * Get the user we're logging in via MFA from session
+     * @return User|null
+     * @throws Exception
+     * @throws \craft\errors\MissingComponentException
+     */
+    public function getUserForMfaLogin(): ?User
+    {
+        $data = $this->getDataForMfaLogin();
+
+        return $data['user'] ?? null;
     }
 
     /**
@@ -125,26 +138,35 @@ class Mfa extends Component
     /**
      * Get html of the form for the MFA step
      *
-     * @param User $user
      * @return string
      */
-    public function getFormHtml(User $user): string
+    public function getInputHtml(): string
     {
+        $user = $this->getUserForMfaLogin();
+        if ($user === null) {
+            return '';
+        }
+
         $this->_authenticator = $user->getDefaultMfaOption();
 
-        return $this->_authenticator->getFormHtml($user);
+        return $this->_authenticator->getInputHtml();
     }
 
     /**
      * Verify MFA step
      *
-     * @param User $user
      * @param array $mfaFields
      * @param string|null $currentMethod
      * @return bool
      */
-    public function verify(User $user, array $mfaFields, ?string $currentMethod = ''): bool
+    public function verify(array $mfaFields, ?string $currentMethod = ''): bool
     {
+        $user = $this->getUserForMfaLogin();
+
+        if ($user === null) {
+            return false;
+        }
+
         if ($this->_authenticator === null) {
             $this->_authenticator = $user->getDefaultMfaOption();
         }
@@ -154,7 +176,7 @@ class Mfa extends Component
             $this->_authenticator = new $newAuthenticator();
         }
 
-        return $this->_authenticator->verify($user, $mfaFields);
+        return $this->_authenticator->verify($mfaFields);
     }
 
     /**
@@ -183,12 +205,14 @@ class Mfa extends Component
             $options = [
                 GoogleAuthenticator::class => [
                     'name' => GoogleAuthenticator::displayName(),
+                    'description' => GoogleAuthenticator::getDescription(),
                     'config' => [
                         'requiresSetup' => GoogleAuthenticator::$requiresSetup,
                     ],
                 ],
                 EmailCode::class => [
                     'name' => EmailCode::displayName(),
+                    'description' => EmailCode::getDescription(),
                     'config' => [
                         'requiresSetup' => EmailCode::$requiresSetup,
                     ],

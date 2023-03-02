@@ -53,8 +53,13 @@ class EmailCode extends BaseMfaType
     /**
      * @inheritdoc
      */
-    public function getFormHtml(User $user, string $html = '', ?array $options = []): string
+    public function getInputHtml(string $html = '', array $options = []): string
     {
+        $user = Craft::$app->getMfa()->getUserForMfaLogin();
+        if ($user === null) {
+            return '';
+        }
+
         $this->sendOtp($user);
 
         $data = [
@@ -67,18 +72,22 @@ class EmailCode extends BaseMfaType
             $data
         );
 
-        return parent::getFormHtml($user, $formHtml, $options);
+        return parent::getInputHtml($formHtml, $options);
     }
 
     /**
      * Verify OTP (code) sent via email
      *
-     * @param User $user
      * @param array $data
      * @return bool
      */
-    public function verify(User $user, array $data): bool
+    public function verify(array $data): bool
     {
+        $user = Craft::$app->getMfa()->getUserForMfaLogin();
+        if ($user === null) {
+            return false;
+        }
+
         $session = Craft::$app->getSession();
         $code = $data['verificationCode'];
 

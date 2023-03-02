@@ -7122,6 +7122,29 @@ body.sitepicker {
 }
 
 /* ----------------------------------------
+/* MFA-related
+/* ----------------------------------------*/
+
+#mfa-form {
+  margin-bottom: 1em;
+
+  .btn,
+  .secret {
+    margin-top: 1em;
+  }
+
+  .secret {
+  }
+}
+
+#mfa-setup {
+  .mfa-option {
+    @include padding-left($checkboxSize + 5);
+    margin-bottom: var(--row-gap);
+  }
+}
+
+/* ----------------------------------------
 /* IE hacks
 /* ----------------------------------------*/
 

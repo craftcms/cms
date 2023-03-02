@@ -1,39 +1,42 @@
+{% do view.registerAssetBundle("craft\\web\\assets\\mfa\\MfaAsset") %}
+{% do view.registerJs('new Craft.Mfa') %}
+
 {% import '_includes/forms.twig' as forms %}
 
 {{ forms.checkboxField({
     label: 'Enable MFA'|t('app'),
     name: 'requireMfa',
     id: 'requireMfa',
-    instructions: 'Should Multi-Factor Authentication (MFA) be enabled.'|t('app'),
+    instructions: 'Should Multi-Factor Authentication (MFA) be enabled for this user.'|t('app'),
     checked: user ? user.requireMfa : false,
-    toggle: 'setupMfa',
+    toggle: 'mfa-setup',
 }) }}
 
-{% do view.registerDeltaName('setupMfa') %}
-{#{{ hiddenInput('setupMfa', '') }}#}
+{% do view.registerDeltaName('mfa-setup') %}
 
-<div id="setupMfa">
+<div id="mfa-setup">
     {% set mfaOptions = user.getAllMfaOptionsWithConfig() %}
     {% if mfaOptions is empty %}
         <p>{{ 'No MFA options available.'|t('app') }}</p>
     {% else %}
-        {% set options = [] %}
-        {% set values = [] %}
-
         {% for key, option in mfaOptions %}
-            {% set options = options|merge([{
-                value: key,
-                label: option.name
-            }]) %}
+            {% set isSetup = option.config.requiresSetup == false or (option.config.requiresSetup and user.isMfaOptionSetup(key)) %}
 
-            {% if option.config.requiresSetup == false or (option.config.requiresSetup and user.isMfaOptionSetup(key)) %}
-                {% set values = values|merge([key]) %}
+            <div class="mfa-option">
+                <strong>{{ option.name }}</strong>
+                <div class="instructions">
+                    {{ option.description }}
+                </div>
+
+                {% if option.config.requiresSetup %}
+                    <div class="mfa-setup-form" data-mfa-option="{{ key }}">
+                        {{ option.config.setupForm|raw }}
+                    </div>
+                {% endif %}
+            </div>
+            {% if loop.last == false %}
+                <hr />
             {% endif %}
         {% endfor %}
-
-        {{ forms.checkboxGroup({
-            options: options,
-            values: values,
-        }) }}
     {% endif %}
 </div>

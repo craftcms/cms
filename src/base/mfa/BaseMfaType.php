@@ -8,7 +8,6 @@
 namespace craft\base\mfa;
 
 use craft\base\Component;
-use craft\elements\User;
 use craft\helpers\Html;
 
 /**
@@ -25,12 +24,12 @@ abstract class BaseMfaType extends Component implements BaseMfaInterface
     /**
      * @inheritdoc
      */
-    public function getFormHtml(User $user, string $html = '', ?array $options = []): string
+    public function getInputHtml(string $html = '', array $options = []): string
     {
         return Html::tag('div', $html, [
             'id' => 'verifyContainer',
             'data' => [
-                'authenticator' => static::class,
+                'mfa-option' => static::class,
             ] + $options,
         ]);
     }
@@ -46,7 +45,7 @@ abstract class BaseMfaType extends Component implements BaseMfaInterface
     /**
      * @inheritdoc
      */
-    public function verify(User $user, array $data): bool
+    public function verify(array $data): bool
     {
         return false;
     }

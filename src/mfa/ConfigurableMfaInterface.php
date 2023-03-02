@@ -17,5 +17,21 @@ interface ConfigurableMfaInterface
      * @param User $user
      * @return bool
      */
-    public static function isSetupForUser(User $user): bool;
+    public function isSetupForUser(User $user): bool;
+
+    /**
+     * Get html for MFA setup form
+     *
+     * @param string $html
+     * @param array $options
+     * @return string
+     */
+    public function getSetupFormHtml(string $html = '', array $options = []): string;
+
+    /**
+     * Remove all setup user has for this MFA option
+     *
+     * @return bool
+     */
+    public function removeSetup(): bool;
 }

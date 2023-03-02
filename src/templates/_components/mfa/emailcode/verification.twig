@@ -7,4 +7,10 @@
         'name': key,
         'placeholder': 'XXXX-XXXX'
     }) }}
+
+    {{ forms.submitButton({
+        class: 'mfa-verify',
+        label: 'Verify'|t('app'),
+        spinner: true,
+    }) }}
 {% endfor %}
