@@ -50,7 +50,7 @@ import './login.scss';
       this.addListener(
         this.$alternativeMfaLink,
         'click',
-        'onAlternativeMfaMethods'
+        'onAlternativeMfaOption'
       );
       this.addListener(this.$form, 'submit', 'onSubmit');
 
@@ -214,7 +214,7 @@ import './login.scss';
       this.onSubmitResponse();
     },
 
-    getCurrentMfaMethod: function () {
+    getCurrentMfaOption: function () {
       let currentMethod = this.$mfaFormContainer
         .find('#verifyContainer')
         .attr('data-authenticator');
@@ -235,7 +235,7 @@ import './login.scss';
         data.mfaFields[$(element).attr('name')] = $(element).val();
       });
 
-      data.currentMethod = this.getCurrentMfaMethod();
+      data.currentMethod = this.getCurrentMfaOption();
 
       Craft.sendActionRequest('POST', 'users/verify-mfa', {data})
         .then((response) => {
@@ -252,9 +252,9 @@ import './login.scss';
       return false;
     },
 
-    onAlternativeMfaMethods: function (event) {
+    onAlternativeMfaOption: function (event) {
       // get current authenticator class via data-authenticator
-      let currentMethod = this.getCurrentMfaMethod();
+      let currentMethod = this.getCurrentMfaOption();
       if (currentMethod === null) {
         this.$alternativeMfaLink.hide();
         this.showError('No alternative MFA methods available.');
@@ -298,7 +298,7 @@ import './login.scss';
               'value="' +
               option.key +
               '">' +
-              option.value +
+              option.value.name +
               '</button></li>'
           );
         });

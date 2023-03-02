@@ -15,6 +15,11 @@ use craft\helpers\StringHelper;
 class EmailCode extends BaseAuthenticationType
 {
     /**
+     * @inheritdoc
+     */
+    public static bool $requiresSetup = false;
+
+    /**
      * The key to store the authenticator secret in session, while setting up this method.
      */
     protected const EMAIL_CODE_SESSION_KEY = 'craft.email.code';
@@ -100,11 +105,15 @@ class EmailCode extends BaseAuthenticationType
     public function sendOtp(User $user): void
     {
         $code = $this->_setOtp();
-        $session = Craft::$app->getSession();
+//        $session = Craft::$app->getSession();
 
-        $message = Craft::$app->getMailer()
+        Craft::$app->getMailer()
             ->composeFromKey('mfa_code_email', ['code' => $code])
-            ->setTo($user);
+            ->setTo($user)
+            ->send();
+//        $message = Craft::$app->getMailer()
+//            ->composeFromKey('mfa_code_email', ['code' => $code])
+//            ->setTo($user);
 
         // todo: make messages show without the reload
 //        if ($message->send()) {

@@ -65,12 +65,11 @@ class Authentication extends Component
     /**
      * Get data of the user we're logging in and duration from session
      *
-     * @param bool $forget
      * @return array|null
      * @throws Exception
      * @throws \craft\errors\MissingComponentException
      */
-    public function getDataForMfaLogin(bool $forget = false): ?array
+    public function getDataForMfaLogin(): ?array
     {
         $data = Craft::$app->getSession()->get(self::MFA_USER_SESSION_KEY);
 
@@ -89,9 +88,6 @@ class Authentication extends Component
             return compact('user', 'duration');
         }
 
-        if ($forget) {
-            $this->removeDataForMfaLogin();
-        }
         return null;
     }
 
@@ -134,7 +130,7 @@ class Authentication extends Component
      */
     public function getFormHtml(User $user): string
     {
-        $this->_authenticator = $user->getDefaultMfaMethod();
+        $this->_authenticator = $user->getDefaultMfaOption();
 
         return $this->_authenticator->getFormHtml($user);
     }
@@ -150,7 +146,7 @@ class Authentication extends Component
     public function verify(User $user, array $mfaFields, ?string $currentMethod = ''): bool
     {
         if ($this->_authenticator === null) {
-            $this->_authenticator = $user->getDefaultMfaMethod();
+            $this->_authenticator = $user->getDefaultMfaOption();
         }
 
         $newAuthenticator = new $currentMethod();
@@ -161,6 +157,12 @@ class Authentication extends Component
         return $this->_authenticator->verify($user, $mfaFields);
     }
 
+    /**
+     * Returns a list of all available MFA options except the one passed in as current
+     *
+     * @param string $currentAuthenticator
+     * @return array
+     */
     public function getAlternativeMfaOptions(string $currentAuthenticator = ''): array
     {
         return array_filter($this->getAllMfaOptions(), function($option) use ($currentAuthenticator) {
@@ -168,16 +170,31 @@ class Authentication extends Component
         }, ARRAY_FILTER_USE_KEY);
     }
 
-    public function getAllMfaOptions(): array
+    /**
+     * Returns a list of all available MFA options
+     *
+     * @return array
+     */
+    public function getAllMfaOptions(bool $withConfig = false): array
     {
         if (!empty($this->_mfaOptions)) {
-            return $this->_mfaOptions;
+            $options = $this->_mfaOptions;
+        } else {
+            $options = [
+                GoogleAuthenticator::class => [
+                    'name' => GoogleAuthenticator::displayName(),
+                    'config' => [
+                        'requiresSetup' => GoogleAuthenticator::$requiresSetup,
+                    ],
+                ],
+                EmailCode::class => [
+                    'name' => EmailCode::displayName(),
+                    'config' => [
+                        'requiresSetup' => EmailCode::$requiresSetup,
+                    ],
+                ],
+            ];
         }
-
-        $options = [
-            GoogleAuthenticator::class => GoogleAuthenticator::displayName(),
-            EmailCode::class => EmailCode::displayName(),
-        ];
 
         $event = new MfaOptionEvent([
             'options' => $options,
@@ -185,6 +202,14 @@ class Authentication extends Component
 
         $this->trigger(self::EVENT_REGISTER_MFA_OPTIONS, $event);
 
-        return $this->_mfaOptions = $event->options;
+        $this->_mfaOptions = $event->options;
+
+        if (!$withConfig) {
+            foreach ($event->options as $key => $option) {
+                unset($event->options[$key]['config']);
+            }
+        }
+
+        return $event->options;
     }
 }

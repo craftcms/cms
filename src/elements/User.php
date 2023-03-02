@@ -8,6 +8,7 @@
 namespace craft\elements;
 
 use Craft;
+use craft\authentication\ConfigurableAuthenticationInterface;
 use craft\authentication\type\GoogleAuthenticator;
 use craft\base\authentication\BaseAuthenticationType;
 use craft\base\Element;
@@ -1860,9 +1861,38 @@ class User extends Element implements IdentityInterface
      *
      * @return BaseAuthenticationType
      */
-    public function getDefaultMfaMethod(): BaseAuthenticationType
+    public function getDefaultMfaOption(): BaseAuthenticationType
     {
         return new GoogleAuthenticator();
+    }
+    /**
+     * Return all available MFA methods
+     *
+     * @return array
+     */
+    public function getAllMfaOptionsWithConfig(): array
+    {
+        $options = Craft::$app->getAuthentication()->getAllMfaOptions(true);
+
+        foreach ($options as $key => $option) {
+            if ($option['config']['requiresSetup']) {
+                $mfaType = new $key();
+                $option['isSetup'] = $this->isMfaOptionSetup($mfaType);
+                //$option['setupForm'] = $mfaType::getFormHtml($user);
+            }
+        }
+        return $options;
+    }
+
+    /**
+     * Check if given MFA option is fully set up for the user
+     *
+     * @param ConfigurableAuthenticationInterface $mfaType
+     * @return bool
+     */
+    public function isMfaOptionSetup(ConfigurableAuthenticationInterface $mfaType): bool
+    {
+        return $mfaType::isSetupForUser($this);
     }
 
     /**

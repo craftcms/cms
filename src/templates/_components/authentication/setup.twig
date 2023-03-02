@@ -13,8 +13,27 @@
 {#{{ hiddenInput('setupMfa', '') }}#}
 
 <div id="setupMfa">
-    List available MFA options??
-    {#{{ forms.radioGroupField({
+    {% set mfaOptions = user.getAllMfaOptionsWithConfig() %}
+    {% if mfaOptions is empty %}
+        <p>{{ 'No MFA options available.'|t('app') }}</p>
+    {% else %}
+        {% set options = [] %}
+        {% set values = [] %}
 
-    }) }}#}
+        {% for key, option in mfaOptions %}
+            {% set options = options|merge([{
+                value: key,
+                label: option.name
+            }]) %}
+
+            {% if option.config.requiresSetup == false or (option.config.requiresSetup and user.isMfaOptionSetup(key)) %}
+                {% set values = values|merge([key]) %}
+            {% endif %}
+        {% endfor %}
+
+        {{ forms.checkboxGroup({
+            options: options,
+            values: values,
+        }) }}
+    {% endif %}
 </div>

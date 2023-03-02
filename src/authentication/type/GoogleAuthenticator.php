@@ -12,12 +12,13 @@ use BaconQrCode\Renderer\ImageRenderer;
 use BaconQrCode\Renderer\RendererStyle\RendererStyle;
 use BaconQrCode\Writer;
 use Craft;
+use craft\authentication\ConfigurableAuthenticationInterface;
 use craft\base\authentication\BaseAuthenticationType;
 use craft\elements\User;
 use craft\records\Authenticator as AuthenticatorRecord;
 use PragmaRX\Google2FA\Google2FA;
 
-class GoogleAuthenticator extends BaseAuthenticationType
+class GoogleAuthenticator extends BaseAuthenticationType implements ConfigurableAuthenticationInterface
 {
     /**
      * The key to store the authenticator secret in session, while setting up this method.
@@ -43,6 +44,14 @@ class GoogleAuthenticator extends BaseAuthenticationType
     /**
      * @inheritdoc
      */
+    public static function isSetupForUser(User $user): bool
+    {
+        return $user->requireMfa && self::_getSecretFromDb($user->id) !== null;
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function getFields(): ?array
     {
         return [
@@ -61,7 +70,7 @@ class GoogleAuthenticator extends BaseAuthenticationType
         ];
 
         // if secret is stored in the DB - show the verification code form only (it means they've finished the setup)
-        if ($this->_getSecretFromDb($user->id)) {
+        if (self::_getSecretFromDb($user->id)) {
             $formHtml = Craft::$app->getView()->renderTemplate(
                 '_components/authentication/googleauthenticator/verification.twig',
                 $data
@@ -93,7 +102,7 @@ class GoogleAuthenticator extends BaseAuthenticationType
     public function verify(User $user, array $data): bool
     {
         // check if secret is stored, if not, we need to store it
-        $storedSecret = $this->_getSecretFromDb($user->id);
+        $storedSecret = self::_getSecretFromDb($user->id);
         $session = Craft::$app->getSession();
 
         if ($storedSecret === null) {
@@ -135,7 +144,7 @@ class GoogleAuthenticator extends BaseAuthenticationType
     public function getSecret(User $user): string
     {
         $google2fa = new Google2FA();
-        $secret = $this->_getSecretFromDb($user->id);
+        $secret = self::_getSecretFromDb($user->id);
 
         if (empty($secret)) {
             try {
@@ -177,7 +186,7 @@ class GoogleAuthenticator extends BaseAuthenticationType
      * @param int $userId
      * @return string|null
      */
-    private function _getSecretFromDb(int $userId): ?string
+    private static function _getSecretFromDb(int $userId): ?string
     {
         $record = AuthenticatorRecord::find()
             ->select(['mfaSecret'])

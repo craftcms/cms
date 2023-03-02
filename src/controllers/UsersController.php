@@ -249,9 +249,9 @@ class UsersController extends Controller
         }
 
         $authenticationService = Craft::$app->getAuthentication();
-        $mfaData = $authenticationService->getDataForMfaLogin(true);
+        $mfaData = $authenticationService->getDataForMfaLogin();
         if ($mfaData === null) {
-            throw new Exception(Craft::t('app', 'User not found'));
+            throw new Exception(Craft::t('app', 'Please start again'));
         }
 
         $user = $mfaData['user'];

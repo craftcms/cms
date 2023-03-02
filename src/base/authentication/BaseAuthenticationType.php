@@ -18,6 +18,11 @@ use craft\helpers\Html;
 abstract class BaseAuthenticationType extends Component implements BaseAuthenticationInterface
 {
     /**
+     * @var bool
+     */
+    public static bool $requiresSetup = true;
+
+    /**
      * @inheritdoc
      */
     public function getFormHtml(User $user, string $html = '', ?array $options = []): string
