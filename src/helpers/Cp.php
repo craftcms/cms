@@ -133,8 +133,9 @@ class Cp
                         'name' => $name,
                     ]);
                     $resolvableLicenseItems[] = [
-                        'type' => $isCraft ? 'cms-license' : 'plugin-license',
+                        'type' => $isCraft ? 'cms-edition' : 'plugin-edition',
                         'licenseId' => $licenseInfo['id'],
+                        'edition' => $currentEdition,
                     ];
                 } elseif ($licenseInfo['status'] === LicenseKeyStatus::Mismatched) {
                     if ($isCraft) {
