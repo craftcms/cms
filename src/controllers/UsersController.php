@@ -241,10 +241,11 @@ class UsersController extends Controller
             return null;
         }
 
-        $verificationCode = Craft::$app->request->getRequiredBodyParam('verificationCode');
+        $mfaFields = Craft::$app->request->getRequiredBodyParam('mfaFields');
+        $currentMethod = Craft::$app->request->getRequiredBodyParam('currentMethod');
 
-        if (empty($verificationCode)) {
-            return $this->asFailure('Please provide a verification code');
+        if (empty($mfaFields)) {
+            return $this->asFailure('Please fill out the form');
         }
 
         $authenticationService = Craft::$app->getAuthentication();
@@ -256,7 +257,7 @@ class UsersController extends Controller
         $user = $mfaData['user'];
         $duration = $mfaData['duration'];
 
-        $verified = $authenticationService->verify($user, $verificationCode);
+        $verified = $authenticationService->verify($user, $mfaFields, $currentMethod);
 
         if ($verified === false) {
             return $this->_handleLoginFailure(User::AUTH_INVALID_MFA_CODE, $user);

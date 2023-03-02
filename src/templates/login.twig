@@ -2,7 +2,9 @@
 {% import '_includes/forms.twig' as forms %}
 {% set title = "Sign In"|t('app') %}
 {% set bodyClass = 'login' %}
+
 {% do view.registerAssetBundle("craft\\web\\assets\\login\\LoginAsset") %}
+
 
 {% set generalConfig = craft.app.config.general %}
 {% set username = generalConfig.rememberUsernameDuration ? craft.app.user.getRememberedUsername(): '' %}
@@ -103,6 +105,7 @@
                     <button id="forgot-password" type="button">{{ 'Forgot your password?'|t('app') }}</button>
                     <button id="remember-password" type="button">{{ 'Remember your password?'|t('app') }}</button>
                     <button id="alternative-mfa" type="button">{{ 'Alternative MFA method'|t('app') }}</button>
+                    <ul id="alternative-mfa-options"></ul>
                 </div>
             </form>
 

@@ -143,23 +143,29 @@ class Authentication extends Component
      * Verify MFA step
      *
      * @param User $user
-     * @param string $verificationCode
+     * @param array $mfaFields
+     * @param string|null $currentMethod
      * @return bool
      */
-    public function verify(User $user, string $verificationCode): bool
+    public function verify(User $user, array $mfaFields, ?string $currentMethod = ''): bool
     {
         if ($this->_authenticator === null) {
             $this->_authenticator = $user->getDefaultMfaMethod();
         }
 
-        return $this->_authenticator->verify($user, $verificationCode);
+        $newAuthenticator = new $currentMethod();
+        if (!empty($currentMethod) && $newAuthenticator instanceof BaseAuthenticationType) {
+            $this->_authenticator = new $newAuthenticator();
+        }
+
+        return $this->_authenticator->verify($user, $mfaFields);
     }
 
     public function getAlternativeMfaOptions(string $currentAuthenticator = ''): array
     {
         return array_filter($this->getAllMfaOptions(), function($option) use ($currentAuthenticator) {
             return $option !== $currentAuthenticator;
-        });
+        }, ARRAY_FILTER_USE_KEY);
     }
 
     public function getAllMfaOptions(): array
@@ -169,8 +175,8 @@ class Authentication extends Component
         }
 
         $options = [
-            GoogleAuthenticator::class,
-            EmailCode::class,
+            GoogleAuthenticator::class => GoogleAuthenticator::displayName(),
+            EmailCode::class => EmailCode::displayName(),
         ];
 
         $event = new MfaOptionEvent([

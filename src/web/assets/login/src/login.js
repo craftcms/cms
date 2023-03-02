@@ -13,6 +13,7 @@ import './login.scss';
     $rememberPasswordLink: null,
     $mfaFormContainer: null,
     $alternativeMfaLink: null,
+    $alternativeMfaOptionsContainer: null,
     $submitBtn: null,
     $errors: null,
 
@@ -30,6 +31,7 @@ import './login.scss';
       this.$rememberPasswordLink = $('#remember-password');
       this.$mfaFormContainer = $('#mfa-form');
       this.$alternativeMfaLink = $('#alternative-mfa');
+      this.$alternativeMfaOptionsContainer = $('#alternative-mfa-options');
       this.$submitBtn = $('#submit');
       this.$errors = $('#login-errors');
 
@@ -48,7 +50,7 @@ import './login.scss';
       this.addListener(
         this.$alternativeMfaLink,
         'click',
-        'showAlternativeMfaMethods'
+        'onAlternativeMfaMethods'
       );
       this.addListener(this.$form, 'submit', 'onSubmit');
 
@@ -132,28 +134,6 @@ import './login.scss';
       }
     },
 
-    submitMfa: function () {
-      let data = {};
-
-      this.$mfaFormContainer.find('input').each(function (index, element) {
-        data[$(element).attr('name')] = $(element).val();
-      });
-
-      Craft.sendActionRequest('POST', 'users/verify-mfa', {data})
-        .then((response) => {
-          window.location.href = response.data.returnUrl;
-        })
-        .catch(({response}) => {
-          Garnish.shake(this.$form, 'left');
-          this.onSubmitResponse();
-
-          // Add the error message
-          this.showError(response.data.message);
-        });
-
-      return false;
-    },
-
     submitForgotPassword: function () {
       var data = {
         loginName: this.$loginNameInput.val(),
@@ -194,13 +174,6 @@ import './login.scss';
       return false;
     },
 
-    showMfaForm: function (mfaForm) {
-      this.mfa = true;
-      this.$mfaFormContainer.append(mfaForm);
-      this.$loginDiv.addClass('mfa');
-      this.onSubmitResponse();
-    },
-
     onSubmitResponse: function () {
       this.$submitBtn.removeClass('loading');
     },
@@ -232,30 +205,67 @@ import './login.scss';
       );
     },
 
-    showAlternativeMfaMethods: function (event) {
-      // get current authenticator class via data-authenticator
-      let currentAuthenticator = this.$mfaFormContainer
+    // MFA-related methods
+    // -------------------------------------------------------------------------
+    showMfaForm: function (mfaForm) {
+      this.mfa = true;
+      this.$mfaFormContainer.html('').append(mfaForm);
+      this.$loginDiv.addClass('mfa');
+      this.onSubmitResponse();
+    },
+
+    getCurrentMfaMethod: function () {
+      let currentMethod = this.$mfaFormContainer
         .find('#verifyContainer')
         .attr('data-authenticator');
-      if (
-        currentAuthenticator === undefined ||
-        currentAuthenticator.length === 0
-      ) {
+
+      if (currentMethod === undefined) {
+        currentMethod = null;
+      }
+
+      return currentMethod;
+    },
+
+    submitMfa: function () {
+      let data = {
+        mfaFields: {},
+      };
+
+      this.$mfaFormContainer.find('input').each(function (index, element) {
+        data.mfaFields[$(element).attr('name')] = $(element).val();
+      });
+
+      data.currentMethod = this.getCurrentMfaMethod();
+
+      Craft.sendActionRequest('POST', 'users/verify-mfa', {data})
+        .then((response) => {
+          window.location.href = response.data.returnUrl;
+        })
+        .catch(({response}) => {
+          Garnish.shake(this.$form, 'left');
+          this.onSubmitResponse();
+
+          // Add the error message
+          this.showError(response.data.message);
+        });
+
+      return false;
+    },
+
+    onAlternativeMfaMethods: function (event) {
+      // get current authenticator class via data-authenticator
+      let currentMethod = this.getCurrentMfaMethod();
+      if (currentMethod === null) {
         this.$alternativeMfaLink.hide();
         this.showError('No alternative MFA methods available.');
       }
 
       let data = {
-        currentAuthenticator: currentAuthenticator,
+        currentMethod: currentMethod,
       };
 
       // get available MFA methods, minus the one that's being shown
-      let alternativeMfaMethods = this.getAlternativeMfaOptions(data);
-      console.log(alternativeMfaMethods);
-
-      // list them by name with description?
-      // clicking on a method name swaps the form fields
-      console.log('show other methods'); // todo: finish me
+      this.getAlternativeMfaOptions(data);
     },
 
     getAlternativeMfaOptions: function (data) {
@@ -265,12 +275,70 @@ import './login.scss';
         {data}
       )
         .then((response) => {
-          console.log(response.data.alternativeOptions);
-          return response.data.alternativeOptions;
+          if (response.data.alternativeOptions !== undefined) {
+            this.showAlternativeMfaOptions(response.data.alternativeOptions);
+          }
         })
         .catch(({response}) => {
           this.showError(response.data.message);
-          return false;
+        });
+    },
+
+    showAlternativeMfaOptions: function (data) {
+      let alternativeOptions = Object.entries(data).map(([key, value]) => ({
+        key,
+        value,
+      }));
+      if (alternativeOptions.length > 0) {
+        alternativeOptions.forEach((option) => {
+          this.$alternativeMfaOptionsContainer.append(
+            '<li><button ' +
+              'class="alternative-mfa-option" ' +
+              'type="button" ' +
+              'value="' +
+              option.key +
+              '">' +
+              option.value +
+              '</button></li>'
+          );
+        });
+      }
+
+      // list them by name
+      this.$alternativeMfaLink
+        .hide()
+        .after(this.$alternativeMfaOptionsContainer);
+
+      // clicking on a method name swaps the form fields
+      this.addListener(
+        $('.alternative-mfa-option'),
+        'click',
+        'onSelectAlternativeMfaOption'
+      );
+    },
+
+    onSelectAlternativeMfaOption: function (event) {
+      const data = {
+        selectedMethod: $(event.currentTarget).attr('value'),
+      };
+
+      Craft.sendActionRequest(
+        'POST',
+        'authentication/load-alternative-mfa-option',
+        {data}
+      )
+        .then((response) => {
+          console.log(response.data.mfaForm);
+          if (response.data.mfaForm !== undefined) {
+            this.$mfaFormContainer.html('').append(response.data.mfaForm);
+            this.$alternativeMfaOptionsContainer.html('');
+            this.$alternativeMfaLink.show();
+            this.onSubmitResponse();
+          }
+        })
+        .catch(({response}) => {
+          // console.log(response);
+          // this.showError(response.data.message);
         });
     },
   });

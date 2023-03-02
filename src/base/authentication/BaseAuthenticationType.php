@@ -41,7 +41,7 @@ abstract class BaseAuthenticationType extends Component implements BaseAuthentic
     /**
      * @inheritdoc
      */
-    public function verify(User $user, string $code): bool
+    public function verify(User $user, array $data): bool
     {
         return false;
     }

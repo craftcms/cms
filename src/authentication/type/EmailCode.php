@@ -41,7 +41,7 @@ class EmailCode extends BaseAuthenticationType
     public function getFields(): ?array
     {
         return [
-            'verificationCode' => Craft::t('app', 'Verification code'),
+            'verificationCode' => Craft::t('app', 'Emailed verification code'),
         ];
     }
 
@@ -50,6 +50,8 @@ class EmailCode extends BaseAuthenticationType
      */
     public function getFormHtml(User $user, string $html = '', ?array $options = []): string
     {
+        $this->sendOtp($user);
+
         $data = [
             'user' => $user,
             'fields' => $this->getFields(),
@@ -67,12 +69,13 @@ class EmailCode extends BaseAuthenticationType
      * Verify OTP (code) sent via email
      *
      * @param User $user
-     * @param string $code
+     * @param array $data
      * @return bool
      */
-    public function verify(User $user, string $code): bool
+    public function verify(User $user, array $data): bool
     {
         $session = Craft::$app->getSession();
+        $code = $data['verificationCode'];
 
         if ($code === $session->get(self::EMAIL_CODE_SESSION_KEY)) {
             $session->remove(self::EMAIL_CODE_SESSION_KEY);
@@ -104,11 +107,11 @@ class EmailCode extends BaseAuthenticationType
             ->setTo($user);
 
         // todo: make messages show without the reload
-        if ($message->send()) {
-            $session->setNotice(Craft::t('app', 'Verification email sent!'));
-        } else {
-            $session->setError(Craft::t('app', 'Failed to send verification email.'));
-        }
+//        if ($message->send()) {
+//            $session->setNotice(Craft::t('app', 'Verification email sent!'));
+//        } else {
+//            $session->setError(Craft::t('app', 'Failed to send verification email.'));
+//        }
     }
 
     /**

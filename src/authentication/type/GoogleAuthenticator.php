@@ -84,13 +84,13 @@ class GoogleAuthenticator extends BaseAuthenticationType
      * Verify provided OTP (code)
      *
      * @param User $user
-     * @param string $code
+     * @param array $data
      * @return bool
      * @throws \PragmaRX\Google2FA\Exceptions\IncompatibleWithGoogleAuthenticatorException
      * @throws \PragmaRX\Google2FA\Exceptions\InvalidCharactersException
      * @throws \PragmaRX\Google2FA\Exceptions\SecretKeyTooShortException
      */
-    public function verify(User $user, string $code): bool
+    public function verify(User $user, array $data): bool
     {
         // check if secret is stored, if not, we need to store it
         $storedSecret = $this->_getSecretFromDb($user->id);
@@ -103,6 +103,11 @@ class GoogleAuthenticator extends BaseAuthenticationType
         }
 
         if ($secret === null) {
+            return false;
+        }
+
+        $code = $data['verificationCode'];
+        if (empty($code)) {
             return false;
         }
 

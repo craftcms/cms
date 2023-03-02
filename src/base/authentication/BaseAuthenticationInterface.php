@@ -43,8 +43,8 @@ interface BaseAuthenticationInterface
      * Verify provided MFA code
      *
      * @param User $user
-     * @param string $verificationCode
+     * @param array $data
      * @return bool
      */
-    public function verify(User $user, string $verificationCode): bool;
+    public function verify(User $user, array $data): bool;
 }

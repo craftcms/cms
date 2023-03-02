@@ -143,12 +143,19 @@ body {
   color: var(--medium-text-color);
 }
 
+.alternative-mfa-options button {
+  font-size: 13px;
+  color: var(--medium-text-color);
+}
+
 #forgot-password:hover,
 #forgot-password:focus,
 #remember-password:hover,
 #remember-password:focus,
 #alternative-mfa:hover,
-#alternative-mfa:focus {
+#alternative-mfa:focus,
+.alternative-mfa-options button:hover,
+.alternative-mfa-options button:focus {
   color: var(--link-color);
 }
 
