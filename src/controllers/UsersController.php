@@ -219,9 +219,9 @@ class UsersController extends Controller
             $duration = $generalConfig->userSessionDuration;
         }
 
-        $authenticationService = Craft::$app->getAuthentication();
+        $mfaService = Craft::$app->getMfa();
         // if user requires MFA to login and we have their data stored in session, proceed to show the MFA step
-        if ($user->requireMfa && $authenticationService->getDataForMfaLogin() !== null) {
+        if ($user->requireMfa && $mfaService->getDataForMfaLogin() !== null) {
             return $this->_mfaStep($user);
         }
 
@@ -248,8 +248,8 @@ class UsersController extends Controller
             return $this->asFailure('Please fill out the form');
         }
 
-        $authenticationService = Craft::$app->getAuthentication();
-        $mfaData = $authenticationService->getDataForMfaLogin();
+        $mfaService = Craft::$app->getMfa();
+        $mfaData = $mfaService->getDataForMfaLogin();
         if ($mfaData === null) {
             throw new Exception(Craft::t('app', 'Please start again'));
         }
@@ -257,13 +257,13 @@ class UsersController extends Controller
         $user = $mfaData['user'];
         $duration = $mfaData['duration'];
 
-        $verified = $authenticationService->verify($user, $mfaFields, $currentMethod);
+        $verified = $mfaService->verify($user, $mfaFields, $currentMethod);
 
         if ($verified === false) {
             return $this->_handleLoginFailure(User::AUTH_INVALID_MFA_CODE, $user);
         }
 
-        $authenticationService->removeDataForMfaLogin();
+        $mfaService->removeDataForMfaLogin();
         return $this->_completeLogin($user, $duration);
     }
 
@@ -2162,14 +2162,14 @@ JS,
     private function _mfaStep(User $user): Response
     {
         // Get the return URL
-        $authenticationService = Craft::$app->getAuthentication();
-        $mfaUrl = $authenticationService->getMfaUrl(); // only used for non-ajax requests
+        $mfaService = Craft::$app->getMfa();
+        $mfaUrl = $mfaService->getMfaUrl(); // only used for non-ajax requests
 
         // If this was an Ajax request, just return success:true
         if ($this->request->getAcceptsJson()) {
             $return = [
                 'mfa' => true,
-                'mfaForm' => $authenticationService->getFormHtml($user),
+                'mfaForm' => $mfaService->getFormHtml($user),
             ];
 
             if (Craft::$app->getConfig()->getGeneral()->enableCsrfProtection) {

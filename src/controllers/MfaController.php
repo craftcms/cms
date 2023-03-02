@@ -19,7 +19,7 @@ use yii\web\Response;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.5.0
  */
-class AuthenticationController extends Controller
+class MfaController extends Controller
 {
     /**
      * @inheritdoc
@@ -39,7 +39,7 @@ class AuthenticationController extends Controller
         }
 
         $currentMethod = Craft::$app->getRequest()->getRequiredBodyParam('currentMethod');
-        $alternativeOptions = Craft::$app->getAuthentication()->getAlternativeMfaOptions($currentMethod);
+        $alternativeOptions = Craft::$app->getMfa()->getAlternativeMfaOptions($currentMethod);
 
         if ($this->request->getAcceptsJson()) {
             return $this->asSuccess(
@@ -70,7 +70,7 @@ class AuthenticationController extends Controller
             return null;
         }
 
-        $data = Craft::$app->getAuthentication()->getDataForMfaLogin();
+        $data = Craft::$app->getMfa()->getDataForMfaLogin();
         if ($data['user'] !== null) {
             $mfaForm = (new $selectedMethod())->getFormHtml($data['user']);
 
@@ -84,4 +84,38 @@ class AuthenticationController extends Controller
         // todo: finish me
         return null;
     }
+
+    //    public function actionGetQrCode(): Response
+//    {
+//
+//    }
+
+//    public function actionVerify(): Response
+//    {
+//        $verificationCode = Craft::$app->request->getRequiredBodyParam('verificationCode');
+//        if (empty($verificationCode)) {
+//            return $this->asFailure('Please provide a verification code');
+//        }
+//
+//        $authenticationService = Craft::$app->getMfa();
+//        $mfaData = $authenticationService->getDataForMfaLogin();
+//
+//        if ($mfaData === null) {
+//            throw new Exception(Craft::t('app', 'User not found'));
+//        }
+//
+//        $user = $mfaData['user'];
+//
+//        $verified = $authenticationService->verify($user, $verificationCode);
+//
+//        if ($verified === false) {
+//            return $this->asFailure(
+//                Craft::t('app', 'Could not verify.'),
+//            );
+//        }
+//
+//        return $this->asSuccess(
+//            Craft::t('app', 'Verified'),
+//        );
+//    }
 }

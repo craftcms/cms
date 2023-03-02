@@ -269,11 +269,7 @@ import './login.scss';
     },
 
     getAlternativeMfaOptions: function (data) {
-      Craft.sendActionRequest(
-        'POST',
-        'authentication/get-alternative-mfa-options',
-        {data}
-      )
+      Craft.sendActionRequest('POST', 'mfa/get-alternative-mfa-options', {data})
         .then((response) => {
           if (response.data.alternativeOptions !== undefined) {
             this.showAlternativeMfaOptions(response.data.alternativeOptions);
@@ -322,11 +318,7 @@ import './login.scss';
         selectedMethod: $(event.currentTarget).attr('value'),
       };
 
-      Craft.sendActionRequest(
-        'POST',
-        'authentication/load-alternative-mfa-option',
-        {data}
-      )
+      Craft.sendActionRequest('POST', 'mfa/load-alternative-mfa-option', {data})
         .then((response) => {
           console.log(response.data.mfaForm);
           if (response.data.mfaForm !== undefined) {

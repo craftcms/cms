@@ -5,11 +5,11 @@
  * @license https://craftcms.github.io/license/
  */
 
-namespace craft\base\authentication;
+namespace craft\base\mfa;
 
 use craft\elements\User;
 
-interface BaseAuthenticationInterface
+interface BaseMfaInterface
 {
     /**
      * Name of the MFA authentication method

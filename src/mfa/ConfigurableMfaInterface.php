@@ -5,11 +5,11 @@
  * @license https://craftcms.github.io/license/
  */
 
-namespace craft\authentication;
+namespace craft\mfa;
 
 use craft\elements\User;
 
-interface ConfigurableAuthenticationInterface
+interface ConfigurableMfaInterface
 {
     /**
      * Checks if given MFA method has been fully set up for user to use

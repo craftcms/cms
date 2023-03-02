@@ -8,23 +8,23 @@
 namespace craft\services;
 
 use Craft;
-use craft\authentication\type\EmailCode;
-use craft\authentication\type\GoogleAuthenticator;
-use craft\base\authentication\BaseAuthenticationType;
+use craft\base\mfa\BaseMfaType;
 use craft\elements\User;
 use craft\events\MfaOptionEvent;
 use craft\helpers\UrlHelper;
+use craft\mfa\type\EmailCode;
+use craft\mfa\type\GoogleAuthenticator;
 use yii\base\Component;
 use yii\base\Exception;
 
 /**
- * Authentication service.
- * An instance of the Authentiation service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getAuthentication()|`Craft::$app->authentication`]].
+ * Mfa service.
+ * An instance of the Mfa service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getMfa()|`Craft::$app->mfa`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.5.0
  */
-class Authentication extends Component
+class Mfa extends Component
 {
     public const EVENT_REGISTER_MFA_OPTIONS = 'registerMfaOptions';
 
@@ -34,9 +34,9 @@ class Authentication extends Component
     protected const MFA_USER_SESSION_KEY = 'craft.mfa.user';
 
     /**
-     * @var BaseAuthenticationType|null authenticator instance in use
+     * @var BaseMfaType|null authenticator instance in use
      */
-    private ?BaseAuthenticationType $_authenticator = null;
+    private ?BaseMfaType $_authenticator = null;
 
     /**
      * @var array $_mfaOptions all available MFA options
@@ -150,7 +150,7 @@ class Authentication extends Component
         }
 
         $newAuthenticator = new $currentMethod();
-        if (!empty($currentMethod) && $newAuthenticator instanceof BaseAuthenticationType) {
+        if (!empty($currentMethod) && $newAuthenticator instanceof BaseMfaType) {
             $this->_authenticator = new $newAuthenticator();
         }
 

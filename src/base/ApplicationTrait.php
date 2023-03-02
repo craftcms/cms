@@ -54,7 +54,6 @@ use craft\services\Announcements;
 use craft\services\Api;
 use craft\services\AssetIndexer;
 use craft\services\Assets;
-use craft\services\Authentication;
 use craft\services\Categories;
 use craft\services\Composer;
 use craft\services\Conditions;
@@ -74,6 +73,7 @@ use craft\services\Gql;
 use craft\services\Images;
 use craft\services\ImageTransforms;
 use craft\services\Matrix;
+use craft\services\Mfa;
 use craft\services\Path;
 use craft\services\Plugins;
 use craft\services\PluginStore;
@@ -128,7 +128,6 @@ use yii\web\ServerErrorHttpException;
  * @property-read AssetIndexer $assetIndexer The asset indexer service
  * @property-read AssetManager $assetManager The asset manager component
  * @property-read Assets $assets The assets service
- * @property-read Authentication $authentication The authentication service
  * @property-read Categories $categories The categories service
  * @property-read Composer $composer The Composer service
  * @property-read Conditions $conditions The conditions service
@@ -154,6 +153,7 @@ use yii\web\ServerErrorHttpException;
  * @property-read Locale $locale The Locale object for the target language
  * @property-read Mailer $mailer The mailer component
  * @property-read Matrix $matrix The matrix service
+ * @property-read Mfa $mfa The MFA service
  * @property-read MigrationManager $contentMigrator The content migration manager
  * @property-read MigrationManager $migrator The application’s migration manager
  * @property-read Mutex $mutex The application’s mutex service
@@ -927,14 +927,14 @@ trait ApplicationTrait
     }
 
     /**
-     * Returns the authentication service.
+     * Returns the MFA service.
      *
-     * @return Authentication The authentication service
+     * @return Mfa The MFA service
      */
-    public function getAuthentication(): Authentication
+    public function getMfa(): Mfa
     {
         /** @noinspection PhpIncompatibleReturnTypeInspection */
-        return $this->get('authentication');
+        return $this->get('mfa');
     }
 
     /**

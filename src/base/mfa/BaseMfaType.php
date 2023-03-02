@@ -5,7 +5,7 @@
  * @license https://craftcms.github.io/license/
  */
 
-namespace craft\base\authentication;
+namespace craft\base\mfa;
 
 use craft\base\Component;
 use craft\elements\User;
@@ -15,7 +15,7 @@ use craft\helpers\Html;
  *
  * @property-read null|array $fields
  */
-abstract class BaseAuthenticationType extends Component implements BaseAuthenticationInterface
+abstract class BaseMfaType extends Component implements BaseMfaInterface
 {
     /**
      * @var bool

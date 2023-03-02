@@ -26,8 +26,8 @@ return [
         'assetIndexer' => [
             'class' => craft\services\AssetIndexer::class,
         ],
-        'authentication' => [
-            'class' => craft\services\Authentication::class,
+        'mfa' => [
+            'class' => craft\services\Mfa::class,
         ],
         'categories' => [
             'class' => craft\services\Categories::class,

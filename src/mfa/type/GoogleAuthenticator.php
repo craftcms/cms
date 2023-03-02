@@ -5,20 +5,20 @@
  * @license https://craftcms.github.io/license/
  */
 
-namespace craft\authentication\type;
+namespace craft\mfa\type;
 
 use BaconQrCode\Renderer\Image\SvgImageBackEnd;
 use BaconQrCode\Renderer\ImageRenderer;
 use BaconQrCode\Renderer\RendererStyle\RendererStyle;
 use BaconQrCode\Writer;
 use Craft;
-use craft\authentication\ConfigurableAuthenticationInterface;
-use craft\base\authentication\BaseAuthenticationType;
+use craft\base\mfa\BaseMfaType;
 use craft\elements\User;
+use craft\mfa\ConfigurableMfaInterface;
 use craft\records\Authenticator as AuthenticatorRecord;
 use PragmaRX\Google2FA\Google2FA;
 
-class GoogleAuthenticator extends BaseAuthenticationType implements ConfigurableAuthenticationInterface
+class GoogleAuthenticator extends BaseMfaType implements ConfigurableMfaInterface
 {
     /**
      * The key to store the authenticator secret in session, while setting up this method.
@@ -72,7 +72,7 @@ class GoogleAuthenticator extends BaseAuthenticationType implements Configurable
         // if secret is stored in the DB - show the verification code form only (it means they've finished the setup)
         if (self::_getSecretFromDb($user->id)) {
             $formHtml = Craft::$app->getView()->renderTemplate(
-                '_components/authentication/googleauthenticator/verification.twig',
+                '_components/mfa/googleauthenticator/verification.twig',
                 $data
             );
         } else {
@@ -81,7 +81,7 @@ class GoogleAuthenticator extends BaseAuthenticationType implements Configurable
             $data['qrCode'] = $this->generateQrCode($user, $data['secret']);
 
             $formHtml = Craft::$app->getView()->renderTemplate(
-                '_components/authentication/googleauthenticator/setup.twig',
+                '_components/mfa/googleauthenticator/setup.twig',
                 $data + ['showEnableCheckbox' => false]
             );
         }

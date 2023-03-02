@@ -5,14 +5,14 @@
  * @license https://craftcms.github.io/license/
  */
 
-namespace craft\authentication\type;
+namespace craft\mfa\type;
 
 use Craft;
-use craft\base\authentication\BaseAuthenticationType;
+use craft\base\mfa\BaseMfaType;
 use craft\elements\User;
 use craft\helpers\StringHelper;
 
-class EmailCode extends BaseAuthenticationType
+class EmailCode extends BaseMfaType
 {
     /**
      * @inheritdoc
@@ -63,7 +63,7 @@ class EmailCode extends BaseAuthenticationType
         ];
 
         $formHtml = Craft::$app->getView()->renderTemplate(
-            '_components/authentication/emailcode/verification.twig',
+            '_components/mfa/emailcode/verification.twig',
             $data
         );
 

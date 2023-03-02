@@ -8,10 +8,8 @@
 namespace craft\elements;
 
 use Craft;
-use craft\authentication\ConfigurableAuthenticationInterface;
-use craft\authentication\type\GoogleAuthenticator;
-use craft\base\authentication\BaseAuthenticationType;
 use craft\base\Element;
+use craft\base\mfa\BaseMfaType;
 use craft\base\NameTrait;
 use craft\db\Query;
 use craft\db\Table;
@@ -36,6 +34,8 @@ use craft\helpers\StringHelper;
 use craft\helpers\UrlHelper;
 use craft\i18n\Formatter;
 use craft\i18n\Locale;
+use craft\mfa\ConfigurableMfaInterface;
+use craft\mfa\type\GoogleAuthenticator;
 use craft\models\FieldLayout;
 use craft\models\UserGroup;
 use craft\records\User as UserRecord;
@@ -1859,9 +1859,9 @@ class User extends Element implements IdentityInterface
     /**
      * Return default MFA method
      *
-     * @return BaseAuthenticationType
+     * @return BaseMfaType
      */
-    public function getDefaultMfaOption(): BaseAuthenticationType
+    public function getDefaultMfaOption(): BaseMfaType
     {
         return new GoogleAuthenticator();
     }
@@ -1872,12 +1872,11 @@ class User extends Element implements IdentityInterface
      */
     public function getAllMfaOptionsWithConfig(): array
     {
-        $options = Craft::$app->getAuthentication()->getAllMfaOptions(true);
+        $options = Craft::$app->getMfa()->getAllMfaOptions(true);
 
         foreach ($options as $key => $option) {
             if ($option['config']['requiresSetup']) {
-                $mfaType = new $key();
-                $option['isSetup'] = $this->isMfaOptionSetup($mfaType);
+                $option['isSetup'] = $this->isMfaOptionSetup($key);
                 //$option['setupForm'] = $mfaType::getFormHtml($user);
             }
         }
@@ -1887,11 +1886,17 @@ class User extends Element implements IdentityInterface
     /**
      * Check if given MFA option is fully set up for the user
      *
-     * @param ConfigurableAuthenticationInterface $mfaType
+     * @param string $mfaClass
      * @return bool
      */
-    public function isMfaOptionSetup(ConfigurableAuthenticationInterface $mfaType): bool
+    public function isMfaOptionSetup(string $mfaClass): bool
     {
+        $mfaType = new $mfaClass();
+
+        if (!($mfaType instanceof ConfigurableMfaInterface)) {
+            return true;
+        }
+
         return $mfaType::isSetupForUser($this);
     }
 
