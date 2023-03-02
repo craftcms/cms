@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - v3
+      - 3.8
   pull_request:
 permissions:
   contents: read
