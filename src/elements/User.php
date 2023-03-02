@@ -1861,7 +1861,7 @@ class User extends Element implements IdentityInterface
      *
      * @return BaseMfaType
      */
-    public function getDefaultMfaOption(): BaseMfaType
+    public function getDefaultMfaType(): BaseMfaType
     {
         return new GoogleAuthenticator();
     }
@@ -1870,9 +1870,9 @@ class User extends Element implements IdentityInterface
      *
      * @return array
      */
-    public function getAllMfaOptionsWithConfig(): array
+    public function getAllMfaTypesWithConfig(): array
     {
-        $options = Craft::$app->getMfa()->getAllMfaOptions(true);
+        $options = Craft::$app->getMfa()->getAllMfaTypes(true);
 
         foreach ($options as $key => $option) {
             if ($option['config']['requiresSetup']) {
@@ -1891,7 +1891,7 @@ class User extends Element implements IdentityInterface
      * @param string $mfaClass
      * @return bool
      */
-    public function isMfaOptionSetup(string $mfaClass): bool
+    public function isMfaTypeSetup(string $mfaClass): bool
     {
         $mfaType = new $mfaClass();
 

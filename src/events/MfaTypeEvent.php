@@ -10,15 +10,15 @@ namespace craft\events;
 use yii\base\Event;
 
 /**
- * MfaOptionEvent class.
+ * MfaTypeEvent class.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.5.0
  */
-class MfaOptionEvent extends Event
+class MfaTypeEvent extends Event
 {
     /**
-     * @var string[] List of registered MFA option classes.
+     * @var string[] List of registered MFA type classes.
      */
-    public array $options = [];
+    public array $types = [];
 }

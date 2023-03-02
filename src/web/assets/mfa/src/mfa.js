@@ -6,7 +6,7 @@
       $mfaLoginFormContainer: null,
       $mfaSetupFormContainer: null,
       $alternativeMfaLink: null,
-      $alternativeMfaOptionsContainer: null,
+      $alternativeMfaTypesContainer: null,
       $removeSetupButtons: null,
       $submitBtns: null,
       $errors: null,
@@ -15,7 +15,7 @@
         this.$mfaLoginFormContainer = $('#mfa-form');
         this.$mfaSetupFormContainer = $('#mfa-setup');
         this.$alternativeMfaLink = $('#alternative-mfa');
-        this.$alternativeMfaOptionsContainer = $('#alternative-mfa-options');
+        this.$alternativeMfaTypesContainer = $('#alternative-mfa-types');
         this.$errors = $('#login-errors');
 
         this.$submitBtns =
@@ -29,7 +29,7 @@
         this.addListener(
           this.$alternativeMfaLink,
           'click',
-          'onAlternativeMfaOption'
+          'onAlternativeMfaType'
         );
         this.addListener(this.$removeSetupButtons, 'click', 'onRemoveSetup');
         this.addListener(this.$submitBtns, 'click', 'onSetupBtnClick');
@@ -44,8 +44,8 @@
         this.onSubmitResponse($submitBtn);
       },
 
-      getCurrentMfaOption: function ($container) {
-        let currentMethod = $container.attr('data-mfa-option');
+      getCurrentMfaType: function ($container) {
+        let currentMethod = $container.attr('data-mfa-type');
 
         if (currentMethod === undefined) {
           currentMethod = null;
@@ -68,7 +68,7 @@
             data.mfaFields[$(element).attr('name')] = $(element).val();
           });
 
-        data.currentMethod = this.getCurrentMfaOption(
+        data.currentMethod = this.getCurrentMfaType(
           this.$mfaLoginFormContainer.find('#verifyContainer')
         );
 
@@ -88,7 +88,7 @@
       onRemoveSetup: function (ev) {
         ev.preventDefault();
 
-        let selectedMethod = this.getCurrentMfaOption(
+        let selectedMethod = this.getCurrentMfaType(
           $(ev.currentTarget).parents('.mfa-setup-form')
         );
 
@@ -126,7 +126,7 @@
           data.mfaFields[$(element).attr('name')] = $(element).val();
         });
 
-        data.currentMethod = this.getCurrentMfaOption($form);
+        data.currentMethod = this.getCurrentMfaType($form);
 
         console.log(data);
 
@@ -159,9 +159,9 @@
         this.$errors.empty();
       },
 
-      onAlternativeMfaOption: function (event) {
-        // get current authenticator class via data-mfa-option
-        let currentMethod = this.getCurrentMfaOption(
+      onAlternativeMfaType: function (event) {
+        // get current authenticator class via data-mfa-type
+        let currentMethod = this.getCurrentMfaType(
           this.$mfaLoginFormContainer.find('#verifyContainer')
         );
         if (currentMethod === null) {
@@ -174,16 +174,16 @@
         };
 
         // get available MFA methods, minus the one that's being shown
-        this.getAlternativeMfaOptions(data);
+        this.getAlternativeMfaTypes(data);
       },
 
-      getAlternativeMfaOptions: function (data) {
-        Craft.sendActionRequest('POST', 'mfa/get-alternative-mfa-options', {
+      getAlternativeMfaTypes: function (data) {
+        Craft.sendActionRequest('POST', 'mfa/get-alternative-mfa-types', {
           data,
         })
           .then((response) => {
-            if (response.data.alternativeOptions !== undefined) {
-              this.showAlternativeMfaOptions(response.data.alternativeOptions);
+            if (response.data.alternativeTypes !== undefined) {
+              this.showAlternativeMfaTypes(response.data.alternativeTypes);
             }
           })
           .catch(({response}) => {
@@ -191,21 +191,21 @@
           });
       },
 
-      showAlternativeMfaOptions: function (data) {
-        let alternativeOptions = Object.entries(data).map(([key, value]) => ({
+      showAlternativeMfaTypes: function (data) {
+        let alternativeTypes = Object.entries(data).map(([key, value]) => ({
           key,
           value,
         }));
-        if (alternativeOptions.length > 0) {
-          alternativeOptions.forEach((option) => {
-            this.$alternativeMfaOptionsContainer.append(
+        if (alternativeTypes.length > 0) {
+          alternativeTypes.forEach((type) => {
+            this.$alternativeMfaTypesContainer.append(
               '<li><button ' +
-                'class="alternative-mfa-option" ' +
+                'class="alternative-mfa-type" ' +
                 'type="button" ' +
                 'value="' +
-                option.key +
+                type.key +
                 '">' +
-                option.value.name +
+                type.value.name +
                 '</button></li>'
             );
           });
@@ -214,22 +214,22 @@
         // list them by name
         this.$alternativeMfaLink
           .hide()
-          .after(this.$alternativeMfaOptionsContainer);
+          .after(this.$alternativeMfaTypesContainer);
 
         // clicking on a method name swaps the form fields
         this.addListener(
-          $('.alternative-mfa-option'),
+          $('.alternative-mfa-type'),
           'click',
-          'onSelectAlternativeMfaOption'
+          'onSelectAlternativeMfaType'
         );
       },
 
-      onSelectAlternativeMfaOption: function (event) {
+      onSelectAlternativeMfaType: function (event) {
         const data = {
           selectedMethod: $(event.currentTarget).attr('value'),
         };
 
-        Craft.sendActionRequest('POST', 'mfa/load-alternative-mfa-option', {
+        Craft.sendActionRequest('POST', 'mfa/load-alternative-mfa-type', {
           data,
         })
           .then((response) => {
@@ -237,7 +237,7 @@
               this.$mfaLoginFormContainer
                 .html('')
                 .append(response.data.mfaForm);
-              this.$alternativeMfaOptionsContainer.html('');
+              this.$alternativeMfaTypesContainer.html('');
               this.$alternativeMfaLink.show();
               this.onSubmitResponse();
             }

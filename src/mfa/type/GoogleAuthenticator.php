@@ -104,7 +104,7 @@ class GoogleAuthenticator extends BaseMfaType implements ConfigurableMfaInterfac
 
         return Craft::$app->getView()->renderTemplate(
             '_components/mfa/googleauthenticator/setup.twig',
-            $data + ['optionClass' => self::class]
+            $data + ['typeClass' => self::class]
         );
     }
 

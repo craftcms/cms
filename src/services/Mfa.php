@@ -10,7 +10,7 @@ namespace craft\services;
 use Craft;
 use craft\base\mfa\BaseMfaType;
 use craft\elements\User;
-use craft\events\MfaOptionEvent;
+use craft\events\MfaTypeEvent;
 use craft\helpers\UrlHelper;
 use craft\mfa\type\EmailCode;
 use craft\mfa\type\GoogleAuthenticator;
@@ -26,7 +26,7 @@ use yii\base\Exception;
  */
 class Mfa extends Component
 {
-    public const EVENT_REGISTER_MFA_OPTIONS = 'registerMfaOptions';
+    public const EVENT_REGISTER_MFA_TYPES = 'registerMfaTypes';
 
     /**
      * @var string the session key used to store the id of the user we're logging in.
@@ -39,9 +39,9 @@ class Mfa extends Component
     private ?BaseMfaType $_authenticator = null;
 
     /**
-     * @var array $_mfaOptions all available MFA options
+     * @var array $_mfaTypes all available MFA types
      */
-    private array $_mfaOptions = [];
+    private array $_mfaTypes = [];
 
 
 //    public function mfaEnabled(User $user): bool
@@ -147,7 +147,7 @@ class Mfa extends Component
             return '';
         }
 
-        $this->_authenticator = $user->getDefaultMfaOption();
+        $this->_authenticator = $user->getDefaultMfaType();
 
         return $this->_authenticator->getInputHtml();
     }
@@ -168,7 +168,7 @@ class Mfa extends Component
         }
 
         if ($this->_authenticator === null) {
-            $this->_authenticator = $user->getDefaultMfaOption();
+            $this->_authenticator = $user->getDefaultMfaType();
         }
 
         $newAuthenticator = new $currentMethod();
@@ -180,29 +180,29 @@ class Mfa extends Component
     }
 
     /**
-     * Returns a list of all available MFA options except the one passed in as current
+     * Returns a list of all available MFA types except the one passed in as current
      *
      * @param string $currentAuthenticator
      * @return array
      */
-    public function getAlternativeMfaOptions(string $currentAuthenticator = ''): array
+    public function getAlternativeMfaTypes(string $currentAuthenticator = ''): array
     {
-        return array_filter($this->getAllMfaOptions(), function($option) use ($currentAuthenticator) {
-            return $option !== $currentAuthenticator;
+        return array_filter($this->getAllMfaTypes(), function($type) use ($currentAuthenticator) {
+            return $type !== $currentAuthenticator;
         }, ARRAY_FILTER_USE_KEY);
     }
 
     /**
-     * Returns a list of all available MFA options
+     * Returns a list of all available MFA types
      *
      * @return array
      */
-    public function getAllMfaOptions(bool $withConfig = false): array
+    public function getAllMfaTypes(bool $withConfig = false): array
     {
-        if (!empty($this->_mfaOptions)) {
-            $options = $this->_mfaOptions;
+        if (!empty($this->_mfaTypes)) {
+            $types = $this->_mfaTypes;
         } else {
-            $options = [
+            $types = [
                 GoogleAuthenticator::class => [
                     'name' => GoogleAuthenticator::displayName(),
                     'description' => GoogleAuthenticator::getDescription(),
@@ -220,20 +220,20 @@ class Mfa extends Component
             ];
         }
 
-        $event = new MfaOptionEvent([
-            'options' => $options,
+        $event = new MfaTypeEvent([
+            'types' => $types,
         ]);
 
-        $this->trigger(self::EVENT_REGISTER_MFA_OPTIONS, $event);
+        $this->trigger(self::EVENT_REGISTER_MFA_TYPES, $event);
 
-        $this->_mfaOptions = $event->options;
+        $this->_mfaTypes = $event->types;
 
         if (!$withConfig) {
-            foreach ($event->options as $key => $option) {
-                unset($event->options[$key]['config']);
+            foreach ($event->types as $key => $types) {
+                unset($event->types[$key]['config']);
             }
         }
 
-        return $event->options;
+        return $event->types;
     }
 }

@@ -15,21 +15,21 @@
 {% do view.registerDeltaName('mfa-setup') %}
 
 <div id="mfa-setup">
-    {% set mfaOptions = user.getAllMfaOptionsWithConfig() %}
-    {% if mfaOptions is empty %}
+    {% set mfaTypes = user.getAllMfaTypesWithConfig() %}
+    {% if mfaTypes is empty %}
         <p>{{ 'No MFA options available.'|t('app') }}</p>
     {% else %}
-        {% for key, option in mfaOptions %}
-            {% set isSetup = option.config.requiresSetup == false or (option.config.requiresSetup and user.isMfaOptionSetup(key)) %}
+        {% for key, option in mfaTypes %}
+            {% set isSetup = option.config.requiresSetup == false or (option.config.requiresSetup and user.isMfaTypeSetup(key)) %}
 
-            <div class="mfa-option">
+            <div class="mfa-type">
                 <strong>{{ option.name }}</strong>
                 <div class="instructions">
                     {{ option.description }}
                 </div>
 
                 {% if option.config.requiresSetup %}
-                    <div class="mfa-setup-form" data-mfa-option="{{ key }}">
+                    <div class="mfa-setup-form" data-mfa-type="{{ key }}">
                         {{ option.config.setupForm|raw }}
                     </div>
                 {% endif %}

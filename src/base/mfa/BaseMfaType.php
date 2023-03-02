@@ -29,7 +29,7 @@ abstract class BaseMfaType extends Component implements BaseMfaInterface
         return Html::tag('div', $html, [
             'id' => 'verifyContainer',
             'data' => [
-                'mfa-option' => static::class,
+                'mfa-type' => static::class,
             ] + $options,
         ]);
     }

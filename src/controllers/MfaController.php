@@ -27,23 +27,23 @@ class MfaController extends Controller
     protected array|bool|int $allowAnonymous = true;
 
     /**
-     * Get all available alternative MFA options for logging in.
+     * Get all available alternative MFA types for logging in.
      *
      * @return Response|null
      * @throws \yii\web\BadRequestHttpException
      */
-    public function actionGetAlternativeMfaOptions(): ?Response
+    public function actionGetAlternativeMfaTypes(): ?Response
     {
         if (!$this->request->getIsPost()) {
             return null;
         }
 
         $currentMethod = Craft::$app->getRequest()->getRequiredBodyParam('currentMethod');
-        $alternativeOptions = Craft::$app->getMfa()->getAlternativeMfaOptions($currentMethod);
+        $alternativeTypes = Craft::$app->getMfa()->getAlternativeMfaTypes($currentMethod);
 
         if ($this->request->getAcceptsJson()) {
             return $this->asSuccess(
-                data: ['alternativeOptions' => $alternativeOptions],
+                data: ['alternativeTypes' => $alternativeTypes],
             );
         }
 
@@ -52,14 +52,14 @@ class MfaController extends Controller
     }
 
     /**
-     * Return HTML for selected alternative MFA option
+     * Return HTML for selected alternative MFA type
      *
      * @return Response|null
      * @throws \craft\errors\MissingComponentException
      * @throws \yii\base\Exception
      * @throws \yii\web\BadRequestHttpException
      */
-    public function actionLoadAlternativeMfaOption(): ?Response
+    public function actionLoadAlternativeMfaType(): ?Response
     {
         if (!$this->request->getIsPost()) {
             return null;

@@ -143,7 +143,7 @@ body {
   color: var(--medium-text-color);
 }
 
-.alternative-mfa-options button {
+.alternative-mfa-types button {
   font-size: 13px;
   color: var(--medium-text-color);
 }
@@ -154,8 +154,8 @@ body {
 #remember-password:focus,
 #alternative-mfa:hover,
 #alternative-mfa:focus,
-.alternative-mfa-options button:hover,
-.alternative-mfa-options button:focus {
+.alternative-mfa-types button:hover,
+.alternative-mfa-types button:focus {
   color: var(--link-color);
 }
 

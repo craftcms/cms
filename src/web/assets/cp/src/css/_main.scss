@@ -7138,7 +7138,7 @@ body.sitepicker {
 }
 
 #mfa-setup {
-  .mfa-option {
+  .mfa-type {
     @include padding-left($checkboxSize + 5);
     margin-bottom: var(--row-gap);
   }

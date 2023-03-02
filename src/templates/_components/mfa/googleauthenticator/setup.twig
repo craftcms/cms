@@ -8,11 +8,11 @@
     {% set fields = {'verificationCode' : 'Verification Code'} %}
 {% endif %}
 
-{% if optionClass is not defined %}
-    {% set optionClass = 'craft\\mfa\\type\\GoogleAuthenticator' %}
+{% if typeClass is not defined %}
+    {% set typeClass = 'craft\\mfa\\type\\GoogleAuthenticator' %}
 {% endif %}
 
-{% set isSetup = user.isMfaOptionSetup(optionClass) %}
+{% set isSetup = user.isMfaTypeSetup(typeClass) %}
 
 <div class="field">
     {% if not isSetup %}
