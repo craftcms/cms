@@ -1099,6 +1099,7 @@ class UsersController extends Controller
                 'data' => [
                     'data' => [
                         'hint' => $locale->getLanguageID() !== $languageId ? $locale->getDisplayName() : false,
+                        'hintLangCode' => $locale->id,
                     ],
                 ],
             ], $appLocales);
@@ -1125,6 +1126,7 @@ class UsersController extends Controller
                 'data' => [
                     'data' => [
                         'hint' => $locale->getLanguageID() !== $languageId ? $locale->getDisplayName() : false,
+                        'hintLangCode' => $locale->id,
                     ],
                 ],
             ], $allLocales));

@@ -73,7 +73,13 @@
         }
         label += `<span>${Craft.escapeHtml(data.text)}</span>`;
         if (showHint && typeof data.hint === 'string' && data.hint !== '') {
-            label += `<span class="light">– ${Craft.escapeHtml(data.hint)}</span>`;
+            let langAttr = '';
+
+            if (typeof data.hintLangCode === 'string' && data.hintLangCode !== '') {
+                langAttr = `lang="${data.hintLangCode}"`;
+            }
+
+            label += `<span class="light" ${langAttr}>– ${Craft.escapeHtml(data.hint)}</span>`;
         }
         return `<div class="flex flex-nowrap">${label}</div>`;
     };
