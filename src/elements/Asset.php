@@ -783,7 +783,7 @@ class Asset extends Element
             return [$isPgsql ? 'ilike' : 'like', 'name', sprintf('%s%s%s',
                 $token->subLeft ? '%' : '',
                 $token->term,
-                $token->subRight ? '%' : '',
+                $token->subRight ? '%' : ''
             ), false];
         }
 
