@@ -121,7 +121,7 @@ import './login.scss';
       if (this.forgotPassword) {
         this.submitForgotPassword();
       } else if (this.mfaFlow) {
-        this.mfa.submitMfa();
+        this.mfa.submitLoginMfa();
       } else {
         this.submitLogin();
       }

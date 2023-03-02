@@ -16,7 +16,7 @@
         this.$mfaSetupFormContainer = $('#mfa-setup');
         this.$alternativeMfaLink = $('#alternative-mfa');
         this.$alternativeMfaOptionsContainer = $('#alternative-mfa-options');
-        this.$errors = $('#login-errors'); // todo: this will have to change
+        this.$errors = $('#login-errors');
 
         this.$submitBtns =
           this.$mfaSetupFormContainer.find('button.mfa-verify');
@@ -39,10 +39,9 @@
         this.$mfaLoginFormContainer.html('').append(mfaForm);
         $loginDiv.addClass('mfa');
         $('#login-form-buttons').hide();
+        const $submitBtn = this.$mfaLoginFormContainer.find('.submit');
 
-        // this.$submitBtn = this.$mfaFormContainer.find('#submit');
-
-        this.onSubmitResponse();
+        this.onSubmitResponse($submitBtn);
       },
 
       getCurrentMfaOption: function ($container) {
@@ -55,10 +54,9 @@
         return currentMethod;
       },
 
-      submitMfa: function (ev) {
-        ev.preventDefault();
-        console.log(this.$submitBtn);
-        this.$submitBtn.addClass('loading');
+      submitLoginMfa: function () {
+        const $submitBtn = this.$mfaLoginFormContainer.find('.submit');
+        $submitBtn.addClass('loading');
 
         let data = {
           mfaFields: {},
@@ -80,11 +78,85 @@
           })
           .catch(({response}) => {
             Garnish.shake(this.$form, 'left');
+            this.onSubmitResponse($submitBtn);
+
+            // Add the error message
+            this.showError(response.data.message);
+          });
+      },
+
+      onRemoveSetup: function (ev) {
+        ev.preventDefault();
+
+        let selectedMethod = this.getCurrentMfaOption(
+          $(ev.currentTarget).parents('.mfa-setup-form')
+        );
+
+        if (selectedMethod === undefined) {
+          selectedMethod = null;
+        }
+
+        let data = {
+          selectedMethod: selectedMethod,
+        };
+
+        Craft.sendActionRequest('POST', this.settings.removeSetup, {data})
+          .then((response) => {
+            $(ev.currentTarget).remove();
+            Craft.cp.displayNotice('MFA setup removed.');
+          })
+          .catch((e) => {
+            Craft.cp.displayError(e.response.data.message);
+          });
+      },
+
+      onSetupBtnClick: function (ev) {
+        ev.preventDefault();
+
+        const $form = $(ev.currentTarget).parents('.mfa-setup-form');
+        const $submitBtn = $form.find('.submit');
+
+        $submitBtn.addClass('loading');
+
+        let data = {
+          mfaFields: {},
+        };
+
+        $form.find('input').each(function (index, element) {
+          data.mfaFields[$(element).attr('name')] = $(element).val();
+        });
+
+        data.currentMethod = this.getCurrentMfaOption($form);
+
+        console.log(data);
+
+        Craft.sendActionRequest('POST', 'users/verify-mfa', {data})
+          .then((response) => {
+            $form.remove();
+            this.onSubmitResponse();
+          })
+          .catch(({response}) => {
             this.onSubmitResponse();
 
             // Add the error message
             this.showError(response.data.message);
           });
+      },
+
+      onSubmitResponse: function ($submitBtn) {
+        $submitBtn.removeClass('loading');
+      },
+
+      showError: function (error) {
+        this.clearErrors();
+
+        $('<p style="display: none;">' + error + '</p>')
+          .appendTo(this.$errors)
+          .velocity('fadeIn');
+      },
+
+      clearErrors: function () {
+        this.$errors.empty();
       },
 
       onAlternativeMfaOption: function (event) {
@@ -174,80 +246,6 @@
             // console.log(response);
             // this.showError(response.data.message);
           });
-      },
-
-      onRemoveSetup: function (ev) {
-        ev.preventDefault();
-
-        let selectedMethod = this.getCurrentMfaOption(
-          $(ev.currentTarget).parents('.mfa-setup-form')
-        );
-
-        if (selectedMethod === undefined) {
-          selectedMethod = null;
-        }
-
-        let data = {
-          selectedMethod: selectedMethod,
-        };
-
-        Craft.sendActionRequest('POST', this.settings.removeSetup, {data})
-          .then((response) => {
-            $(ev.currentTarget).remove();
-            Craft.cp.displayNotice('MFA setup removed.');
-          })
-          .catch((e) => {
-            Craft.cp.displayError(e.response.data.message);
-          });
-      },
-
-      onSetupBtnClick: function (ev) {
-        ev.preventDefault();
-
-        const $form = $(ev.currentTarget).parents('.mfa-setup-form');
-        this.$submitBtn = $form.find('.submit');
-
-        this.$submitBtn.addClass('loading');
-
-        let data = {
-          mfaFields: {},
-        };
-
-        $form.find('input').each(function (index, element) {
-          data.mfaFields[$(element).attr('name')] = $(element).val();
-        });
-
-        data.currentMethod = this.getCurrentMfaOption($form);
-
-        console.log(data);
-
-        Craft.sendActionRequest('POST', 'users/verify-mfa', {data})
-          .then((response) => {
-            $form.remove();
-            this.onSubmitResponse();
-          })
-          .catch(({response}) => {
-            this.onSubmitResponse();
-
-            // Add the error message
-            this.showError(response.data.message);
-          });
-      },
-
-      onSubmitResponse: function () {
-        this.$submitBtn.removeClass('loading');
-      },
-
-      showError: function (error) {
-        this.clearErrors();
-
-        $('<p style="display: none;">' + error + '</p>')
-          .appendTo(this.$errors)
-          .velocity('fadeIn');
-      },
-
-      clearErrors: function () {
-        this.$errors.empty();
       },
     },
     {
