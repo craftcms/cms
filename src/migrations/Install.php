@@ -16,7 +16,6 @@ use craft\db\Migration;
 use craft\db\Table;
 use craft\elements\Asset;
 use craft\elements\User;
-use craft\enums\LicenseKeyStatus;
 use craft\errors\InvalidPluginException;
 use craft\helpers\App;
 use craft\helpers\DateTimeHelper;

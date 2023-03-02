@@ -11,7 +11,6 @@ use Composer\Repository\PlatformRepository;
 use Craft;
 use craft\enums\LicenseKeyStatus;
 use craft\errors\InvalidLicenseKeyException;
-use craft\errors\InvalidPluginException;
 
 /**
  * Craftnet API helper.
