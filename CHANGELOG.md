@@ -11,6 +11,7 @@
 - Fixed a bug where localized relations could be moved to a newly-added site rather than copied, when applying project config changes. ([#12702](https://github.com/craftcms/cms/issues/12702))
 - Fixed a bug where element indexes’ “View” buttons could be inconsistently positioned in the toolbar.
 - Fixed a bug where element selector modal footers could hide the modal contents. ([#12708](https://github.com/craftcms/cms/issues/12708))
+- Fixed a bug where asset thumbnails weren’t respecting the `generateTransformsBeforePageLoad` config setting. ([#12750](https://github.com/craftcms/cms/issues/12750))
 
 ## 4.3.10 - 2023-02-17
 
