@@ -169,7 +169,10 @@ Craft.TagSelectInput = Craft.BaseElementSelectInput.extend(
         }
 
         // take allowSelfRelations into consideration too
-        if (this.settings.sourceElementId && !this.settings.allowSelfRelations) {
+        if (
+          this.settings.sourceElementId &&
+          !this.settings.allowSelfRelations
+        ) {
           excludeIds.push(this.settings.sourceElementId);
         }
 
