@@ -18,6 +18,7 @@
 - Improved element indexes’ “Export” buttons for screen readers. ([#12754](https://github.com/craftcms/cms/pull/12754))
 - Fixed a JavaScript error that occurred when opening an asset selector modal, preventing the index results from showing initially. ([#12755](https://github.com/craftcms/cms/issues/12755))
 - Fixed a bug where it wasn’t possible to vertically scroll element index filter HUDs. ([#12751](https://github.com/craftcms/cms/pull/12751))
+- Fixed a bug where the Asset Indexes utility wasn’t respecting `craft\utilities\AssetIndexes::EVENT_LIST_VOLUMES` when the “All” option was ticked. ([#12749](https://github.com/craftcms/cms/issues/12749))
 
 ## 4.4.0-beta.3 - 2023-02-25
 
