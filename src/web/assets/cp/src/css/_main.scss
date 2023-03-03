@@ -6277,7 +6277,7 @@ body.reduce-focus-visibility {
 
   &:not(.small) {
     box-sizing: border-box;
-    min-height: 34px;
+    min-height: calc(34rem / 16);
   }
 
   &.small {
@@ -6349,7 +6349,8 @@ body.reduce-focus-visibility {
 
     .filter-btn {
       position: absolute;
-      top: 4px;
+      top: 50%;
+      transform: translateY(-50%);
       @include right(4px);
       padding: 0 7px 4px;
       font-size: 14px;
@@ -6378,7 +6379,7 @@ body.reduce-focus-visibility {
     }
 
     .text {
-      @include padding-left(26px);
+      @include padding-left(calc(26rem / 16));
 
       &.clearable {
         @include padding-right(calc(30px + var(--touch-target-size)));
