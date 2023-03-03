@@ -1330,7 +1330,7 @@ return [
     'The file “{path}” does not appear to be an image.' => 'لا يظهر الملف “{path}” كصورة.',
     'The following <a href="{url}">aliases</a> are defined:' => 'تم تحديد <a href="{url}"> الأسماء المستعارة </a> التالية:',
     'The following items were not indexed.' => 'لم تتم فهرسة العناصر التالية.',
-    'The following licensing issues can be resolved with a single purchase on Craft Console.' => 'يمكن حال مشكلات الترخيص التالية بعملية شراء واحدة في Craft Console.',
+    'The following licensing issues can be resolved with a single purchase on Craft Console.' => 'يمكن حل مشكلات الترخيص التالية بعملية شراء واحدة في Craft Console.',
     'The following {items} could not be found. Should they be deleted from the index?' => 'تعذر العثور على {items} التالية. هل يجب حذفها من الفهرس؟',
     'The image format that transformed images should use.' => 'صيغة الصورة التي يجب أن تستخدمها الصوّر المحوّلة.',
     'The label text to display beside the lightswitch’s disabled state.' => 'نص التسمية المراد عرضه بجانب حالة تعطيل مفتاح الإضاءة.',
