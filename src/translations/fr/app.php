@@ -828,7 +828,7 @@ return [
     'Leave blank if the entry doesn’t have a URL' => 'Laissez vide si l’entrée n’a pas d’URL',
     'Leave it uninstalled' => 'Laissez-le non installé',
     'Let each entry choose which sites it should be saved to' => 'Laissez chaque entrée choisir dans quels sites elle devront être enregistrées',
-    'Letterbox' => 'Boîte aux lettres',
+    'Letterbox' => 'Panoramique',
     'Level' => 'Niveau',
     'License transferred.' => 'Licence transférée.',
     'License' => 'Licence',

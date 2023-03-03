@@ -1463,7 +1463,7 @@ return [
     'The filesystem doesn’t contain any files.' => 'لا يحتوي نظام الملفات على أي ملفات.',
     'The following <a href="{url}">aliases</a> are defined:' => 'تم تحديد <a href="{url}"> الأسماء المستعارة </a> التالية:',
     'The following items were not indexed.' => 'لم تتم فهرسة العناصر التالية.',
-    'The following licensing issues can be resolved with a single purchase on Craft Console.' => 'يمكن حال مشكلات الترخيص التالية بعملية شراء واحدة في Craft Console.',
+    'The following licensing issues can be resolved with a single purchase on Craft Console.' => 'يمكن حل مشكلات الترخيص التالية بعملية شراء واحدة في Craft Console.',
     'The following {items} could not be found or are empty. Should they be deleted from the index?' => 'لم يتم العثور على {items} التالية أو أنها فارغة. هل ينبغي حذفها من الفهرس؟',
     'The following {items} could not be found. Should they be deleted from the index?' => 'تعذر العثور على {items} التالية. هل يجب حذفها من الفهرس؟',
     'The image format that transformed images should use.' => 'صيغة الصورة التي يجب أن تستخدمها الصوّر المحوّلة.',
