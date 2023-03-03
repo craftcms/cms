@@ -71,7 +71,7 @@ use yii\web\IdentityInterface;
  * @property-read bool $isCurrent whether this is the current logged-in user
  * @property-read string|null $preferredLanguage the user’s preferred language
  * @property-read string|null $preferredLocale the user’s preferred formatting locale
- * @property-read bool $requireMfa whether user has MFA enabled
+ * @property bool $requireMfa whether user has MFA enabled
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
@@ -1752,6 +1752,7 @@ class User extends Element implements IdentityInterface
         $record->email = $this->email;
         $record->passwordResetRequired = $this->passwordResetRequired;
         $record->unverifiedEmail = $this->unverifiedEmail;
+        $record->requireMfa = $this->requireMfa;
 
         if ($changePassword = (isset($this->newPassword))) {
             $hash = Craft::$app->getSecurity()->hashPassword($this->newPassword);

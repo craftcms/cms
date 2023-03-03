@@ -1104,6 +1104,7 @@ class UsersController extends Controller
                     'currentPassword',
                     'passwordResetRequired',
                     'preferredLanguage',
+                    'requireMfa',
                 ];
 
                 foreach ($errors as $attribute => $error) {
@@ -1413,6 +1414,10 @@ JS,
 
         if ($canAdministrateUsers) {
             $user->passwordResetRequired = (bool)$this->request->getBodyParam('passwordResetRequired', $user->passwordResetRequired);
+        }
+
+        if ($isCurrentUser || $canAdministrateUsers) {
+            $user->requireMfa = (bool)$this->request->getBodyParam('requireMfa', $user->requireMfa);
         }
 
         // Is their admin status changing?
