@@ -21,6 +21,7 @@
 - Front-end Twig templates no longer automatically preload Single section entries. ([#12698](https://github.com/craftcms/cms/pull/12698))
 - Removed `craft\services\Entries::getSingleEntriesByHandle()`. ([#12698](https://github.com/craftcms/cms/pull/12698))
 - Fixed a JavaScript error that occurred when opening an asset selector modal, preventing the index results from showing initially. ([#12755](https://github.com/craftcms/cms/issues/12755))
+- Fixed a source path styling bug on Windows browsers. ([#12757](https://github.com/craftcms/cms/issues/12757))
 - Fixed a bug where it wasn’t possible to vertically scroll element index filter HUDs. ([#12751](https://github.com/craftcms/cms/pull/12751))
 - Fixed a bug where the Asset Indexes utility wasn’t respecting `craft\utilities\AssetIndexes::EVENT_LIST_VOLUMES` when the “All” option was ticked. ([#12749](https://github.com/craftcms/cms/issues/12749))
 
