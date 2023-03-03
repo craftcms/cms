@@ -272,6 +272,14 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
             $config['branchLimit'] = null;
         }
 
+        // remove settings that shouldn't be here
+        unset($config['allowMultipleSources'], $config['allowLimit'], $config['allowLargeThumbsView']);
+        if ($this->allowMultipleSources) {
+            unset($config['source']);
+        } else {
+            unset($config['sources']);
+        }
+
         parent::__construct($config);
     }
 
@@ -364,6 +372,14 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
     public function getSettings(): array
     {
         $settings = parent::getSettings();
+
+        // cleanup
+        unset($settings['allowMultipleSources'], $settings['allowLimit'], $settings['allowLargeThumbsView']);
+        if ($this->allowMultipleSources) {
+            unset($settings['source']);
+        } else {
+            unset($settings['sources']);
+        }
 
         if ($selectionCondition = $this->getSelectionCondition()) {
             $settings['selectionCondition'] = $selectionCondition->getConfig();

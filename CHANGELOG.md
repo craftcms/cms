@@ -22,6 +22,7 @@
 
 - Improved some element selector modals for screen readers. ([#12783](https://github.com/craftcms/cms/pull/12783))
 - Fixed a bug where search icons on element indexes weren’t hidden from screen readers. ([#12785](https://github.com/craftcms/cms/pull/12785))
+- Fixed a bug where Categories and Tags fields weren’t getting properly converted to Entries fields via the `entrify/categories` and `entrify/tags` commands.
 
 ## 4.4.0-beta.4 - 2023-03-02
 
