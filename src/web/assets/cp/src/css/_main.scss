@@ -1895,6 +1895,7 @@ div.btn.submit input {
       top: 0;
       height: 100%;
       width: calc(var(--ui-control-height) / 2);
+      box-sizing: border-box;
     }
 
     .chevron-left {
