@@ -64,6 +64,7 @@
                 }) }}
             {% endif %}
 
+            {% set fieldCheckboxes = [] %}
             {% set fieldsInput %}
                 {% set entryTypes = section.getEntryTypes() %}
                 {% for entryType in entryTypes %}
@@ -71,24 +72,23 @@
                     <div id="section{{ section.id }}-type{{ entryType.id }}"{% if not showEntryType %} class="hidden"{% endif %}>
                         {% for layoutElement in fieldsByEntryTypeId[entryType.id] ?? [] %}
                             {% set field = layoutElement.getField() %}
-                            <div>
-                                {{ forms.checkbox({
-                                    label: raw(field.name|e ~ (layoutElement.required ? '<span class="required"></span>')),
-                                    name: 'sections['~section.id~'][fields][]',
-                                    value: field.id,
-                                    checked: (layoutElement.required or field.id in widget.fields),
-                                    disabled: layoutElement.required
-                                }) }}
-                            </div>
+                            {% set fieldCheckboxes = fieldCheckboxes|merge([{
+                                label: raw(field.name|e ~ (layoutElement.required ? '<span class="required"></span>')),
+                                name: 'sections['~section.id~'][fields][]',
+                                value: field.id,
+                                checked: (layoutElement.required or field.id in widget.fields),
+                                disabled: layoutElement.required
+                            }]) %}
                         {% endfor %}
                     </div>
                 {% endfor %}
             {% endset %}
 
-            {{ forms.field({
+            {{ forms.checkboxGroupField({
                 label: "Fields"|t('app'),
-                instructions: "Which fields should be visible in the widget?"|t('app')
-            }, fieldsInput) }}
+                instructions: "Which fields should be visible in the widget?"|t('app'),
+                options: fieldCheckboxes,
+            }) }}
         </div>
     {% endfor %}
 
