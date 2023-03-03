@@ -150,7 +150,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       this.$statusMenuContainer = this.$statusMenuBtn.parent();
       this.$siteMenuBtn = this.$container.find('.sitemenubtn:first');
 
-      this.$searchContainer = this.$toolbar.find('.search:first');
+      this.$searchContainer = this.$toolbar.find('.search-container:first');
       this.$search = this.$searchContainer.children('input:first');
       this.$filterBtn = this.$searchContainer.children('.filter-btn:first');
       this.$clearSearchBtn = this.$searchContainer.children('.clear-btn:first');
