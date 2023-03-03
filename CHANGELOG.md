@@ -4,11 +4,29 @@
 
 - Fixed a bug where `craft\events\RegisterElementSourcesEvent::$context` wasn’t always set to `modal` when defining the available element sources for an element selection modal.
 - Fixed a styling bug where multi-line checkbox labels within the Customize Sources modal and View menu weren’t wrapping properly. ([#12717](https://github.com/craftcms/cms/issues/12717))
+- Fixed a bug where asset thumbnails within collapsed Matrix blocks weren’t loading when the block was expanded. ([#12720](https://github.com/craftcms/cms/issues/12720))
 - Fixed a bug where user activation/verification/reset-password URLs could be root-relative, if the `@web` alias was explicitly set to a root-relative URL.
 - Fixed a PHP error that could occur if an options field’s condition rule wasn’t configured with any values. ([#12713](https://github.com/craftcms/cms/pull/12713))
 - Fixed a bug where control panel notifications weren’t being announced to screen readers. ([#12714](https://github.com/craftcms/cms/pull/12714))
 - Fixed a bug where localized relations could be moved to a newly-added site rather than copied, when applying project config changes. ([#12702](https://github.com/craftcms/cms/issues/12702))
 - Fixed a bug where element indexes’ “View” buttons could be inconsistently positioned in the toolbar.
+- Fixed a bug where element selector modal footers could hide the modal contents. ([#12708](https://github.com/craftcms/cms/issues/12708))
+- Fixed a bug where asset thumbnails weren’t respecting the `generateTransformsBeforePageLoad` config setting. ([#12750](https://github.com/craftcms/cms/issues/12750))
+
+## Unreleased (4.4)
+
+- Fixed a JavaScript error that occurred when opening an asset selector modal, preventing the index results from showing initially. ([#12755](https://github.com/craftcms/cms/issues/12755))
+
+## 4.4.0-beta.3 - 2023-02-25
+
+- Improved element index pages for screen readers. ([#12731](https://github.com/craftcms/cms/pull/12731))
+- `craft\helpers\App::env()` now returns `null` if the original value was `'null'`. ([#12742](https://github.com/craftcms/cms/pull/12742))
+- Fixed a bug where it was possible to move a folder into its parent folder. ([#12738](https://github.com/craftcms/cms/issues/12738))
+- Fixed a bug where Dropdown and Multi-select fields could overflow their containers. ([#12728](https://github.com/craftcms/cms/issues/12728))
+- Fixed a bug where Dropdown and Multi-select fields’ menus weren’t visible in Live Preview. ([#12728](https://github.com/craftcms/cms/issues/12728))
+- Fixed a bug where the `svg()` Twig function wasn’t working when an asset was passed in. ([#12733](https://github.com/craftcms/cms/issues/12733))
+- Fixed a bug where transforms’ `format` settings weren’t always respected if `generateTransformsBeforePageLoad` was enabled. ([#12729](https://github.com/craftcms/cms/issues/12729))
+- Fixed an Imager X compatibility bug. ([#12737](https://github.com/craftcms/cms/issues/12737))
 
 ## 4.4.0-beta.2 - 2023-02-22
 
@@ -76,7 +94,7 @@
 - Added the `base64_decode` and `base64_encode` Twig filters. ([#12696](https://github.com/craftcms/cms/discussions/12696))
 - The `dump()` Twig function now utilizes `Craft::dump()`, and no longer requires Dev Mode to be active. ([#12486](https://github.com/craftcms/cms/pull/12486), [#12479](https://github.com/craftcms/cms/discussions/12479))
 - The `{% dd %}` Twig tag can now output the entire `context` array, if no variable is passed to it. ([#12486](https://github.com/craftcms/cms/pull/12486))
-- Added the `revesionNotes` field to elements queried via GraphQL. ([#12610](https://github.com/craftcms/cms/issues/12610))
+- Added the `revisionNotes` field to elements queried via GraphQL. ([#12610](https://github.com/craftcms/cms/issues/12610))
 - Added `ancestors` and `descendants` fields to categories queried via GraphQL. ([#12427](https://github.com/craftcms/cms/issues/12427))
 - Added `craft\elements\Asset::getFormat()` and the `format` field for assets queried via GraphQL. ([#12398](https://github.com/craftcms/cms/pull/12398), [#12521](https://github.com/craftcms/cms/pull/12521))
 - `Craft::dump()`, `Craft::dd()`, the `dump()` Twig function, and the `{% dd %}` Twig tag now use Symfony’s VarDumper. ([#12479](https://github.com/craftcms/cms/discussions/12479))

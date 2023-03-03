@@ -59,10 +59,17 @@ class MoveAssets extends ElementAction
     },
     activate: function(\$selectedItems) {
       const [\$folders, \$assets] = groupItems(\$selectedItems);
-      const folderIds = \$folders.toArray().map((item) => {
+      const selectedFolderIds = \$folders.toArray().map((item) => {
         return parseInt($(item).find('.element:first').data('folder-id'));
       });
-      const assetIds = \$assets.toArray().map((item) => {
+      const disabledFolderIds = selectedFolderIds.slice();
+      if (Craft.elementIndex.sourcePath.length) {
+        const currentFolder = Craft.elementIndex.sourcePath[Craft.elementIndex.sourcePath.length - 1];
+        if (currentFolder.folderId) {
+          disabledFolderIds.push(currentFolder.folderId);
+        }
+      }
+      const selectedAssetIds = \$assets.toArray().map((item) => {
         return parseInt($(item).data('id'));
       });
 
@@ -71,15 +78,15 @@ class MoveAssets extends ElementAction
         showTitle: true,
         modalTitle: Craft.t('app', 'Move to'),
         selectBtnLabel: Craft.t('app', 'Move'),
+        disabledFolderIds: disabledFolderIds,
         indexSettings: {
           defaultSource: Craft.elementIndex.sourceKey,
           defaultSourcePath: Craft.elementIndex.sourcePath,
-          disabledFolderIds: folderIds,
         },
         onSelect: ([targetFolder]) => {
           const mover = new Craft.AssetMover();
-          mover.moveFolders(folderIds, targetFolder.folderId).then((totalFoldersMoved) => {
-            mover.moveAssets(assetIds, targetFolder.folderId).then((totalAssetsMoved) => {
+          mover.moveFolders(selectedFolderIds, targetFolder.folderId).then((totalFoldersMoved) => {
+            mover.moveAssets(selectedAssetIds, targetFolder.folderId).then((totalAssetsMoved) => {
               const totalItemsMoved = totalFoldersMoved + totalAssetsMoved;
               if (totalItemsMoved) {
                 Craft.cp.displayNotice(Craft.t('app', '{totalItems, plural, =1{Item} other{Items}} moved.', {

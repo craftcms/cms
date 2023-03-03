@@ -913,7 +913,10 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       return $ul;
     },
 
-    onSourcePathChange: function () {},
+    onSourcePathChange: function () {
+      this.settings.onSourcePathChange();
+      this.trigger('sourcePathChange');
+    },
 
     selectSourcePathStep: function (num) {
       this.sourcePath = this.sourcePath.slice(0, num + 1);
@@ -3131,6 +3134,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       onSelectSite: $.noop,
       onUpdateElements: $.noop,
       onSelectionChange: $.noop,
+      onSourcePathChange: $.noop,
       onEnableElements: $.noop,
       onDisableElements: $.noop,
       onAfterAction: $.noop,
