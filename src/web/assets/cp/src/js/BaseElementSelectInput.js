@@ -11,8 +11,6 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
     modal: null,
     elementEditor: null,
 
-    fieldLabel: null,
-
     $container: null,
     $form: null,
     $elementsContainer: null,
@@ -68,7 +66,6 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
 
       this.$container = this.getContainer();
       this.$form = this.$container.closest('form');
-      this.fieldLabel = this.getFieldLabel();
 
       // Store a reference to this class
       this.$container.data('elementSelect', this);
@@ -98,13 +95,6 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
 
     getContainer: function () {
       return $('#' + this.settings.id);
-    },
-
-    getFieldLabel: function () {
-      if (!this.$container) return;
-
-      const $fieldset = this.$container.closest('fieldset');
-      return $fieldset.find('legend').first().data('label');
     },
 
     getElementsContainer: function () {
@@ -498,9 +488,7 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
           onSelect: this.onModalSelect.bind(this),
           onHide: this.onModalHide.bind(this),
           triggerElement: this.$addElementBtn,
-          modalTitle: Craft.t('app', 'Select {element}', {
-            element: this.fieldLabel,
-          }),
+          modalTitle: Craft.t('app', 'Choose'),
         },
         this.settings.modalSettings
       );
