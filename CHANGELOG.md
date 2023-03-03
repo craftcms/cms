@@ -14,7 +14,7 @@
 
 ## Unreleased (4.4)
 
-- fixed a JavaScript error that occurred when opening an asset selector modal, preventing the index results from showing initially. ([#12755](https://github.com/craftcms/cms/issues/12755))
+- Fixed a JavaScript error that occurred when opening an asset selector modal, preventing the index results from showing initially. ([#12755](https://github.com/craftcms/cms/issues/12755))
 
 ## 4.4.0-beta.3 - 2023-02-25
 
