@@ -21,6 +21,7 @@
 ## Unreleased (4.4)
 
 - Improved some element selector modals for screen readers. ([#12783](https://github.com/craftcms/cms/pull/12783))
+- Fixed a bug where search icons on element indexes weren’t hidden from screen readers. ([#12785](https://github.com/craftcms/cms/pull/12785))
 
 ## 4.4.0-beta.4 - 2023-03-02
 
