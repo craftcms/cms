@@ -27,6 +27,7 @@
 - Fixed a source path styling bug on Windows browsers. ([#12757](https://github.com/craftcms/cms/issues/12757))
 - Fixed a bug where it wasn’t possible to vertically scroll element index filter HUDs. ([#12751](https://github.com/craftcms/cms/pull/12751))
 - Fixed a bug where the Asset Indexes utility wasn’t respecting `craft\utilities\AssetIndexes::EVENT_LIST_VOLUMES` when the “All” option was ticked. ([#12749](https://github.com/craftcms/cms/issues/12749))
+- Fixed a bug where translated locale names within users’ “Language” and “Formatting Locale” preference menus didn’t have `lang` attributes. ([#12773](https://github.com/craftcms/cms/pull/12773))
 
 ## 4.4.0-beta.3 - 2023-02-25
 
