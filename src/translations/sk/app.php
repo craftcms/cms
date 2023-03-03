@@ -1330,7 +1330,7 @@ return [
     'The file “{path}” does not appear to be an image.' => 'Zdá sa, že súbor {path} nie je obrázok.',
     'The following <a href="{url}">aliases</a> are defined:' => 'Nadefinované sú nasledujúce <a href="{url}">aliasy</a>:',
     'The following items were not indexed.' => 'Nasledujúce položky neboli indexované.',
-    'The following licensing issues can be resolved with a single purchase on Craft Console.' => 'Nasledujúce problémy s licenciou sa dajú vyriešiť jedným nákupom v Craft Console.',
+    'The following licensing issues can be resolved with a single purchase on Craft Console.' => 'Nasledujúce problémy s licenciou sa dajú vyriešiť jednorazovým nákupom v Craft Console.',
     'The following {items} could not be found. Should they be deleted from the index?' => 'Nasledujúce {items} neboli nájdené. Majú byť z indexu odstránené?',
     'The image format that transformed images should use.' => 'Formát obrázka, ktorý majú používať transformované obrázky.',
     'The label text to display beside the lightswitch’s disabled state.' => 'Text štítku, ktorý sa zobrazí vedľa vypnutého stavu prepínača.',
