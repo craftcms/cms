@@ -132,11 +132,12 @@ class Cp
                     $resolvableLicenseAlerts[] = Craft::t('app', '{name} requires purchase.', [
                         'name' => $name,
                     ]);
-                    $resolvableLicenseItems[] = [
+                    $resolvableLicenseItems[] = array_filter([
                         'type' => $isCraft ? 'cms-edition' : 'plugin-edition',
+                        'plugin' => !$isCraft ? $handle : null,
                         'licenseId' => $licenseInfo['id'],
                         'edition' => $currentEdition,
-                    ];
+                    ]);
                 } elseif ($licenseInfo['status'] === LicenseKeyStatus::Mismatched) {
                     if ($isCraft) {
                         // wrong domain
@@ -214,10 +215,11 @@ class Cp
                         'name' => $name,
                         'version' => $version,
                     ]);
-                    $resolvableLicenseItems[] = [
+                    $resolvableLicenseItems[] = array_filter([
                         'type' => $isCraft ? 'cms-renewal' : 'plugin-renewal',
+                        'plugin' => !$isCraft ? $handle : null,
                         'licenseId' => $licenseInfo['id'],
-                    ];
+                    ]);
                 }
             }
 
