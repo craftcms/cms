@@ -771,7 +771,7 @@ return [
     'License transferred.' => 'لایسنس انتقال داده شد.',
     'License' => 'لایسنس',
     'Licensed' => 'دارای لایسنس',
-    'Licensing Issues' => 'مسائل مربوط به مجوز',
+    'Licensing Issues' => 'مشکل مربوط به مجوز',
     'Lightswitch' => 'کلید روشن و خاموش',
     'Limit the number of selectable category branches.' => 'محدود کردن تعداد شاخه های دسته بندی قابل انتخاب.',
     'Limit the number of selectable {type}.' => 'محدود کردن تعداد {type}ی قابل انتخاب.',

@@ -771,7 +771,7 @@ return [
     'License transferred.' => 'Licencia transferida',
     'License' => 'Licencia',
     'Licensed' => 'Con licencia',
-    'Licensing Issues' => 'Problemas de licencia',
+    'Licensing Issues' => 'Problemas de licencias',
     'Lightswitch' => 'Lightswitch',
     'Limit the number of selectable category branches.' => 'Limita el número de ramas de categoría seleccionables.',
     'Limit the number of selectable {type}.' => 'Limita el número de {type} seleccionables.',
