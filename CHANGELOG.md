@@ -5,6 +5,7 @@
 - Fixed a styling bug where multi-line checkbox labels within the Customize Sources modal weren’t wrapping properly. ([#12717](https://github.com/craftcms/cms/issues/12717))
 - Fixed a bug where asset thumbnails within collapsed Matrix blocks weren’t loading when the block was expanded. ([#12720](https://github.com/craftcms/cms/issues/12720))
 - Fixed a bug where custom fields’ database columns would get deleted when applying project config changes, if the field type wasn’t present. ([#12760](https://github.com/craftcms/cms/issues/12760))
+- Fixed a bug where Assets, Categories, and Tags fields weren’t respecting their “Allow self relations” settings. ([#12769](https://github.com/craftcms/cms/issues/12769))
 - Fixed an XSS vulnerability.
 
 ## 3.7.67 - 2023-02-17
