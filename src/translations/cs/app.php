@@ -218,7 +218,7 @@ return [
     'Bytes' => 'Bytů',
     'Cache remote images' => 'Ukládat vzdálené obrázky do mezipaměti',
     'Caches' => 'Cache',
-    'Can be dismissed?' => 'Může být zahozeno?',
+    'Can be dismissed?' => 'Může být ignorováno?',
     'Can contain Markdown formatting.' => 'Může obsahovat formátování Markdown.',
     'Cancel' => 'Zrušit',
     'Cannot find the indexing session, or there’s nothing to review.' => 'Nelze najít relaci indexování nebo není co revidovat.',
