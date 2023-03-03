@@ -3650,6 +3650,7 @@ const FilterHud = Garnish.HUD.extend({
 
         this.$hud.find('.condition-container').on('htmx:load', () => {
           this.setReady();
+          this.updateSizeAndPosition(true);
         });
         this.setFocus();
       })
@@ -3694,14 +3695,24 @@ const FilterHud = Garnish.HUD.extend({
   },
 
   updateSizeAndPositionInternal: function () {
-    // const searchOffset = this.elementIndex.$searchContainer.offset();
     const searchOffset =
       this.elementIndex.$searchContainer[0].getBoundingClientRect();
+
+    // Ensure HUD is scrollable if content falls off-screen
+    const windowHeight = Garnish.$win.height();
+    let hudHeight;
+    const availableSpace = windowHeight - searchOffset.bottom;
+
+    if (this.$body.height() > availableSpace) {
+      hudHeight = windowHeight - searchOffset.bottom - 10;
+    }
 
     this.$hud.css({
       width: this.elementIndex.$searchContainer.outerWidth() - 2,
       top: searchOffset.top + this.elementIndex.$searchContainer.outerHeight(),
       left: searchOffset.left + 1,
+      height: hudHeight ? `${hudHeight}px` : 'unset',
+      overflowY: hudHeight ? 'scroll' : 'unset',
     });
   },
 
