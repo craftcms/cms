@@ -12,6 +12,7 @@
 - Fixed a bug where element indexes’ “View” buttons could be inconsistently positioned in the toolbar.
 - Fixed a bug where element selector modal footers could hide the modal contents. ([#12708](https://github.com/craftcms/cms/issues/12708))
 - Fixed a bug where asset thumbnails weren’t respecting the `generateTransformsBeforePageLoad` config setting. ([#12750](https://github.com/craftcms/cms/issues/12750))
+- Fixed a bug where soft hyphens, non-breaking spaces, zero-width characters, invisible times characters, and invisible separators weren’t getting stripped from sanitized asset filenames. ([#12759](https://github.com/craftcms/cms/pull/12759))
 
 ## 4.3.10 - 2023-02-17
 
