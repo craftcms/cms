@@ -2024,11 +2024,15 @@ div.btn.submit input {
       @include margin-right(0);
     }
 
+    .chevron-right,
     .chevron-left {
       position: absolute;
       top: 0;
-      width: 0;
-      height: 0;
+      height: 100%;
+      width: calc(var(--ui-control-height) / 2);
+    }
+
+    .chevron-left {
       @include left(0);
       border-top: calc(var(--ui-control-height) / 2) solid
         var(--ui-control-bg-color);
@@ -2041,7 +2045,7 @@ div.btn.submit input {
         content: '';
         font-size: 0;
         position: absolute;
-        top: 0;
+        bottom: 0;
         @include right(0);
         border-bottom: calc(var(--ui-control-height) / 2) solid
           var(--ui-control-bg-color);
@@ -2052,8 +2056,6 @@ div.btn.submit input {
     }
 
     .chevron-right {
-      position: absolute;
-      top: 0;
       @include right(0);
       border-top: calc(var(--ui-control-height) / 2) solid transparent;
       border-bottom: calc(var(--ui-control-height) / 2) solid transparent;
@@ -4464,7 +4466,7 @@ $min2ColWidth: 400px;
 }
 
 .modal,
-.hud .body {
+.hud {
   @include modal;
 }
 
