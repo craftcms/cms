@@ -12,6 +12,10 @@
 - Fixed a bug where element indexes’ “View” buttons could be inconsistently positioned in the toolbar.
 - Fixed a bug where element selector modal footers could hide the modal contents. ([#12708](https://github.com/craftcms/cms/issues/12708))
 
+## Unreleased (4.4)
+
+- fixed a JavaScript error that occurred when opening an asset selector modal, preventing the index results from showing initially. ([#12755](https://github.com/craftcms/cms/issues/12755))
+
 ## 4.4.0-beta.3 - 2023-02-25
 
 - Improved element index pages for screen readers. ([#12731](https://github.com/craftcms/cms/pull/12731))
