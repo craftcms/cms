@@ -248,6 +248,11 @@ class FileHelper extends \yii\helpers\FileHelper
         // Replace any control characters in the name with a space.
         $filename = preg_replace("/\\x{00a0}/iu", ' ', $filename);
 
+        // https://github.com/craftcms/cms/issues/12741
+        // Remove soft hyphens (00ad), no break (0083), zero width non-joiner (200c),
+        // zero width joiner (200d), invisible times (2062), invisible comma (2063) in the name
+        $filename = preg_replace('/\\x{00ad}|\\x{0083}|\\x{200c}|\\x{200d}|\\x{2062}|\\x{2063}/iu', '', $filename);
+
         // Strip any characters not allowed.
         $filename = str_replace($disallowedChars, '', strip_tags($filename));
 
