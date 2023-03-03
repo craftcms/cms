@@ -229,12 +229,14 @@
     $('#mode input').change(function() {
         const value = $(this).val();
 
-        if (['crop', 'fit'].includes(value)) {
+        // Crop mode requires a default focal point:
+        if (value == 'crop') {
             $('#position-container').removeClass('hidden');
         } else {
             $('#position-container').addClass('hidden');
         }
 
+        // Letterbox mode requires a position, as well:
         if (value == 'letterbox') {
             $('#fill-color').removeClass('hidden')
             $('#letterbox-position-container').removeClass('hidden')
