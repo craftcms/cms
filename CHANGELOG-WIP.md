@@ -35,6 +35,7 @@
 - Asset preview modals now show videos’ alt text. ([#12637](https://github.com/craftcms/cms/pull/12637))
 - Improved element indexes’ “Export” buttons for screen readers. ([#12754](https://github.com/craftcms/cms/pull/12754))
 - Improved Quick Post widgets’ “Fields” settings for screen readers. ([#12772](https://github.com/craftcms/cms/pull/12772))
+- Improved some element selector modals for screen readers. ([#12783](https://github.com/craftcms/cms/pull/12783))
 - Fixed a bug where it wasn’t possible to vertically scroll element index filter HUDs. ([#12751](https://github.com/craftcms/cms/pull/12751))
 - Fixed a bug where translated locale names within users’ “Language” and “Formatting Locale” preference menus didn’t have `lang` attributes. ([#12773](https://github.com/craftcms/cms/pull/12773))
 

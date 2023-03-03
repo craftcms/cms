@@ -24,6 +24,10 @@
     class: ['elementselect']|merge((class ?? [])|explodeClass),
 }|merge(containerAttributes ?? [], recursive=true) %}
 
+{% set modalSettings = {
+    modalTitle: selectionLabel ?? 'Choose'|t('app'),
+}|merge(modalSettings ?? [], recursive=true) %}
+
 {%- if block('attr') is defined %}
     {%- set containerAttributes = containerAttributes|merge(('<div ' ~ block('attr') ~ '>')|parseAttr, recursive=true) %}
 {% endif %}
