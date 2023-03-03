@@ -1247,7 +1247,7 @@ return [
     'SVG file recommended. The logo will be displayed at {size} wide.' => 'File SVG consigliato. Il logo verrà mostrato con larghezza {size}.',
     'Same as asset filesystem' => 'Uguale al file system di risorse',
     'Same as language' => 'Uguale alla lingua',
-    'Savable' => 'Salvabile',
+    'Savable' => 'Contenuti salvabili',
     'Save and add another' => 'Salva e aggiungi un altro',
     'Save and continue editing' => 'Salva e continua modifiche',
     'Save and edit entry types' => 'Salva e modifica i tipo di articolo',
