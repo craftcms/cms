@@ -7,7 +7,7 @@
 - Fixed a bug where custom fields’ database columns would get deleted when applying project config changes, if the field type wasn’t present. ([#12760](https://github.com/craftcms/cms/issues/12760))
 - Fixed an XSS vulnerability.
 
-## Unreleased (3.8)
+## 3.8.0-beta.3 - 2023-03-02
 
 - Fixed a JavaScript error that occurred when opening an asset selector modal, preventing the index results from showing initially. ([#12755](https://github.com/craftcms/cms/issues/12755))
 - Fixed a source path styling bug on Windows browsers. ([#12757](https://github.com/craftcms/cms/issues/12757))
