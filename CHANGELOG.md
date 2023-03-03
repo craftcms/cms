@@ -10,6 +10,7 @@
 ## Unreleased (3.8)
 
 - Fixed a JavaScript error that occurred when opening an asset selector modal, preventing the index results from showing initially. ([#12755](https://github.com/craftcms/cms/issues/12755))
+- Fixed a source path styling bug on Windows browsers. ([#12757](https://github.com/craftcms/cms/issues/12757))
 
 ## 3.8.0-beta.2 - 2023-02-25
 
