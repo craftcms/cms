@@ -8,7 +8,6 @@
 namespace craft\web\twig;
 
 use Craft;
-use craft\web\twig\nodevisitors\SinglePreloader;
 use Twig\Extension\AbstractExtension;
 use Twig\Extension\GlobalsInterface;
 
@@ -30,15 +29,5 @@ class GlobalsExtension extends AbstractExtension implements GlobalsInterface
             $globals[$globalSet->handle] = $globalSet;
         }
         return $globals;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getNodeVisitors()
-    {
-        return [
-            new SinglePreloader(),
-        ];
     }
 }
