@@ -617,6 +617,10 @@ trait ApplicationTrait
      */
     public function getCanTestEditions(): bool
     {
+        if (App::env('CRAFT_NO_TRIALS')) {
+            return false;
+        }
+
         if (!$this instanceof WebApplication) {
             return false;
         }

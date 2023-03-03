@@ -33,6 +33,8 @@
 - Improved bulk element action triggers on element index pages. ([#12415](https://github.com/craftcms/cms/pull/12415))
 - Improved the color contrast of element indexes. ([#12213](https://github.com/craftcms/cms/pull/12213))
 - Asset preview modals now show videos’ alt text. ([#12637](https://github.com/craftcms/cms/pull/12637))
+- Improved element indexes’ “Export” buttons for screen readers. ([#12754](https://github.com/craftcms/cms/pull/12754))
+- Fixed a bug where it wasn’t possible to vertically scroll element index filter HUDs. ([#12751](https://github.com/craftcms/cms/pull/12751))
 
 ### Administration
 - Conditional layout components are now identified using a condition icon within field layout designers. ([#12250](https://github.com/craftcms/cms/issues/12250))
@@ -61,7 +63,7 @@
 - Added the `base64_decode` and `base64_encode` Twig filters. ([#12696](https://github.com/craftcms/cms/discussions/12696))
 - The `dump()` Twig function now utilizes `Craft::dump()`, and no longer requires Dev Mode to be active. ([#12486](https://github.com/craftcms/cms/pull/12486), [#12479](https://github.com/craftcms/cms/discussions/12479))
 - The `{% dd %}` Twig tag can now output the entire `context` array, if no variable is passed to it. ([#12486](https://github.com/craftcms/cms/pull/12486))
-- Added the `revesionNotes` field to elements queried via GraphQL. ([#12610](https://github.com/craftcms/cms/issues/12610))
+- Added the `revisionNotes` field to elements queried via GraphQL. ([#12610](https://github.com/craftcms/cms/issues/12610))
 - Added `ancestors` and `descendants` fields to categories queried via GraphQL. ([#12427](https://github.com/craftcms/cms/issues/12427))
 - Added `craft\elements\Asset::getFormat()` and the `format` field for assets queried via GraphQL. ([#12398](https://github.com/craftcms/cms/pull/12398), [#12521](https://github.com/craftcms/cms/pull/12521))
 - `Craft::dump()`, `Craft::dd()`, the `dump()` Twig function, and the `{% dd %}` Twig tag now use Symfony’s VarDumper. ([#12479](https://github.com/craftcms/cms/discussions/12479))
