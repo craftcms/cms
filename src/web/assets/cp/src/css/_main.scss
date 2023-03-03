@@ -6332,6 +6332,16 @@ body.reduce-focus-visibility {
     }
   }
 
+  .texticon-icon {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    @include left(9px);
+  }
+
   .clear-btn {
     position: absolute;
     top: calc(

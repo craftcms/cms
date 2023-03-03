@@ -884,16 +884,6 @@ li.breadcrumb-toggle-wrapper {
     opacity: 0.8;
   }
 
-  .search__icon {
-    position: absolute;
-    top: 50%;
-    transform: translateY(-50%);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    @include left(9px);
-  }
-
   .text {
     border-radius: var(--large-border-radius);
 
