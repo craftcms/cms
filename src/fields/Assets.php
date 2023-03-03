@@ -567,39 +567,39 @@ class Assets extends BaseRelationField
                     $this->_uploadedDataFiles = null;
                 }
             }
-        }
 
-        // Are there any related assets?
-        /** @var AssetQuery $query */
-        /** @var Asset[] $assets */
-        $assets = $query->all();
+            // Are there any related assets?
+            /** @var AssetQuery $query */
+            /** @var Asset[] $assets */
+            $assets = $query->all();
 
-        if (!empty($assets)) {
-            // Only enforce the single upload folder setting for canonical elements
-            if ($this->useSingleFolder && $isCanonical) {
-                $targetFolderId = $getTargetFolderId();
-                $assetsToMove = ArrayHelper::where($assets, function(Asset $asset) use ($targetFolderId) {
-                    return $asset->folderId != $targetFolderId;
-                });
-            } else {
-                // Find the files with temp sources and just move those.
-                $assetsToMove = $assetsService->createTempAssetQuery()
-                    ->id(ArrayHelper::getColumn($assets, 'id'))
-                    ->all();
-            }
+            if (!empty($assets)) {
+                // Only enforce the single upload folder setting for canonical elements
+                if ($this->useSingleFolder && $isCanonical) {
+                    $targetFolderId = $getTargetFolderId();
+                    $assetsToMove = ArrayHelper::where($assets, function(Asset $asset) use ($targetFolderId) {
+                        return $asset->folderId != $targetFolderId;
+                    });
+                } else {
+                    // Find the files with temp sources and just move those.
+                    $assetsToMove = $assetsService->createTempAssetQuery()
+                        ->id(ArrayHelper::getColumn($assets, 'id'))
+                        ->all();
+                }
 
-            if (!empty($assetsToMove)) {
-                $folder = $assetsService->getFolderById($getTargetFolderId());
+                if (!empty($assetsToMove)) {
+                    $folder = $assetsService->getFolderById($getTargetFolderId());
 
-                // Resolve all conflicts by keeping both
-                foreach ($assetsToMove as $asset) {
-                    $asset->avoidFilenameConflicts = true;
-                    try {
-                        $assetsService->moveAsset($asset, $folder);
-                    } catch (VolumeObjectNotFoundException $e) {
-                        // Don't freak out about that.
-                        Craft::warning('Couldn’t move asset because the file doesn’t exist: ' . $e->getMessage());
-                        Craft::$app->getErrorHandler()->logException($e);
+                    // Resolve all conflicts by keeping both
+                    foreach ($assetsToMove as $asset) {
+                        $asset->avoidFilenameConflicts = true;
+                        try {
+                            $assetsService->moveAsset($asset, $folder);
+                        } catch (VolumeObjectNotFoundException $e) {
+                            // Don't freak out about that.
+                            Craft::warning('Couldn’t move asset because the file doesn’t exist: ' . $e->getMessage());
+                            Craft::$app->getErrorHandler()->logException($e);
+                        }
                     }
                 }
             }
