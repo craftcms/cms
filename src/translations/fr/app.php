@@ -1761,7 +1761,7 @@ return [
     '{id} – {name}' => '{id} – {name}',
     '{name} folder' => 'Dossier {name}',
     '{name} has been added, but an error occurred when installing it.' => '{name} a été ajouté, mais une erreur est survenue lors de son installation.',
-    '{name} is licensed for the {licenseEdition} edition, but the {currentEdition} is installed.' => '{name} est sous licence pour l\'édition {licenseEdition}, mais l\'édition {currentEdition} est installée.',
+    '{name} is licensed for the {licenseEdition} edition, but the {currentEdition} edition is installed.' => '{name} is licensed for the {licenseEdition} edition, but the {currentEdition} edition is installed.',
     '{name} isn’t licensed to run version {version}.' => '{name} n\'a pas de licence pour exécuter la version {version}.',
     '{name} requires purchase.' => '{name} nécessite un achat.',
     '{name} should be at least {value}.' => '{name} doit être au moins {value}.',
