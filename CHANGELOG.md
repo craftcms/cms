@@ -21,6 +21,11 @@
 ## Unreleased (4.4)
 
 - Improved some element selector modals for screen readers. ([#12783](https://github.com/craftcms/cms/pull/12783))
+- Front-end Twig templates (once again) automatically preload Single section entries. ([#12698](https://github.com/craftcms/cms/pull/12787))
+- Added `craft\helpers\Template::fallback()`.
+- Added `craft\helpers\Template::fallbackExists()`.
+- Added `craft\helpers\Template::preloadSingles()`.
+- Added `craft\services\Entries::getSingleEntriesByHandle()`. ([#12698](https://github.com/craftcms/cms/pull/12787))
 - Fixed a bug where search icons on element indexes weren’t hidden from screen readers. ([#12785](https://github.com/craftcms/cms/pull/12785))
 - Fixed a bug where Categories and Tags fields weren’t getting properly converted to Entries fields via the `entrify/categories` and `entrify/tags` commands.
 
