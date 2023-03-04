@@ -1761,7 +1761,7 @@ return [
     '{id} – {name}' => '{id} – {name}',
     '{name} folder' => '{name} 폴더',
     '{name} has been added, but an error occurred when installing it.' => '{name}이(가) 추가되었으나 설치 시 오류가 발생했습니다.',
-    '{name} is licensed for the {licenseEdition} edition, but the {currentEdition} is installed.' => '{name}은(는) {licenseEdition} 버전에 대한 라이선스가 부여되었지만 {currentEdition}이(가) 설치되었습니다.',
+    '{name} is licensed for the {licenseEdition} edition, but the {currentEdition} edition is installed.' => '{name} is licensed for the {licenseEdition} edition, but the {currentEdition} edition is installed.',
     '{name} isn’t licensed to run version {version}.' => '{name}은(는) {version} 버전을 실행할 수 있는 라이선스가 없습니다.',
     '{name} requires purchase.' => '{name}에는 구매가 필요합니다.',
     '{name} should be at least {value}.' => '{name}은(는) 최소 {value} 이상이어야 합니다.',
