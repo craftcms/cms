@@ -1763,7 +1763,7 @@ Gratulacje! Craft z powodzeniem może wysyłać e-maile. Zostały użyte poniżs
     '{id} – {name}' => '{id} – {name}',
     '{name} folder' => 'Folder {name}',
     '{name} has been added, but an error occurred when installing it.' => 'Dodano {name}, ale przy instalowaniu wystąpił błąd.',
-    '{name} is licensed for the {licenseEdition} edition, but the {currentEdition} is installed.' => '{name} ma licencję na wersję {licenseEdition}, ale zainstalowana jest wersja {currentEdition}.',
+    '{name} is licensed for the {licenseEdition} edition, but the {currentEdition} edition is installed.' => '{name} is licensed for the {licenseEdition} edition, but the {currentEdition} edition is installed.',
     '{name} isn’t licensed to run version {version}.' => '{name} nie ma licencji na uruchamianie wersji {version}.',
     '{name} requires purchase.' => '{name} wymaga zakupu.',
     '{name} should be at least {value}.' => '{name} musi mieć wartość co najmniej {value}.',
