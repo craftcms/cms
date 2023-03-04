@@ -1761,7 +1761,7 @@ return [
     '{id} – {name}' => '{id} – {name}',
     '{name} folder' => 'Carpeta {name}',
     '{name} has been added, but an error occurred when installing it.' => '{name} se ha añadido, pero se produjo un error durante la instalación.',
-    '{name} is licensed for the {licenseEdition} edition, but the {currentEdition} is installed.' => '{name} tiene autorización bajo licencia para la edición {licenseEdition}, pero {currentEdition} está instalada.',
+    '{name} is licensed for the {licenseEdition} edition, but the {currentEdition} edition is installed.' => '{name} is licensed for the {licenseEdition} edition, but the {currentEdition} edition is installed.',
     '{name} isn’t licensed to run version {version}.' => '{name} no tiene autorización bajo licencia para utilizar la versión {version}.',
     '{name} requires purchase.' => '{name} requiere comprarse.',
     '{name} should be at least {value}.' => '{name} debería tener al menos {value}.',

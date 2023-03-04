@@ -1761,7 +1761,7 @@ return [
     '{id} – {name}' => '{id} – {name}',
     '{name} folder' => '{name} 文件夹',
     '{name} has been added, but an error occurred when installing it.' => '{name} 已添加，但在安装时出现错误。',
-    '{name} is licensed for the {licenseEdition} edition, but the {currentEdition} is installed.' => '{name} 已获得 {licenseEdition} 版本的许可，但安装的是 {currentEdition}。',
+    '{name} is licensed for the {licenseEdition} edition, but the {currentEdition} edition is installed.' => '{name} is licensed for the {licenseEdition} edition, but the {currentEdition} edition is installed.',
     '{name} isn’t licensed to run version {version}.' => '{name} 未获得运行版本 {version} 的许可。',
     '{name} requires purchase.' => '{name} 需要购买。',
     '{name} should be at least {value}.' => '{name} 至少应为 {value}。',

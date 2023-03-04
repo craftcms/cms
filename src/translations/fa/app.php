@@ -1761,7 +1761,7 @@ return [
     '{id} – {name}' => '{id} – {name}',
     '{name} folder' => '{name} پوشه',
     '{name} has been added, but an error occurred when installing it.' => '{name} اضافه شده است اما یک خطا در هنگام نصب آن اتفاق افتاد.',
-    '{name} is licensed for the {licenseEdition} edition, but the {currentEdition} is installed.' => '{name} برای نسخه {licenseEdition} مجوز دارد ولی {currentEdition} نصب شده است.',
+    '{name} is licensed for the {licenseEdition} edition, but the {currentEdition} edition is installed.' => '{name} is licensed for the {licenseEdition} edition, but the {currentEdition} edition is installed.',
     '{name} isn’t licensed to run version {version}.' => '{name} برای اجرای نسخه {version} مجوز ندارد.',
     '{name} requires purchase.' => '{name} نیازمند خرید است.',
     '{name} should be at least {value}.' => '{name} باید حداقل {value} باشد.',

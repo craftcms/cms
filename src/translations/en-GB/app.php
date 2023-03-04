@@ -1761,7 +1761,7 @@ return [
     '{id} – {name}' => '{id} – {name}',
     '{name} folder' => '{name} folder',
     '{name} has been added, but an error occurred when installing it.' => '{name} has been added, but an error occurred when installing it.',
-    '{name} is licensed for the {licenseEdition} edition, but the {currentEdition} is installed.' => '{name} is licensed for the {licenseEdition} edition, but the {currentEdition} is installed.',
+    '{name} is licensed for the {licenseEdition} edition, but the {currentEdition} edition is installed.' => '{name} is licensed for the {licenseEdition} edition, but the {currentEdition} edition is installed.',
     '{name} isn’t licensed to run version {version}.' => '{name} isn’t licensed to run version {version}.',
     '{name} requires purchase.' => '{name} requires purchase.',
     '{name} should be at least {value}.' => '{name} should be at least {value}.',
