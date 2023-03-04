@@ -1782,7 +1782,7 @@ return [
     'Whether remotely-stored images should be downloaded and stored locally, to speed up transform generation.' => '변환 생성 속도를 높이기 위해 원격으로 저장한 이미지를 다운로드하여 로컬에 저장해야 하는지 여부입니다.',
     'Whether the site menu should be shown for {type} selection modals.' => '{type} 선택 모달에 대한 사이트 메뉴가 표시되어야 하는지 여부입니다.',
     'Whether the structure of the related {type} should be maintained.' => '관련 {type}의 구조를 유지해야 하는지 여부입니다.',
-    'Whether this can be dismissed by a user and not shown again.' => '사용자가 이 항목을 취소하고 다시 표시하지 않을 수 있는지 여부입니다.',
+    'Whether this can be dismissed by a user and not shown again.' => '사용자가 해제하고 다시 표시하지 않을 수 있는지 여부입니다.',
     'Whether to show files that the user doesn’t have permission to view, per the “View files uploaded by other users” permission.' => '"다른 사용자가 업로드한 파일 보기" 권한에 따라, 사용자에게 보기 권한이 없는 파일을 표시할지 여부입니다.',
     'Whether to show volumes that the user doesn’t have permission to view.' => '사용자에게 보기 권한이 없는 볼륨을 표시할지 여부입니다.',
     'Whether validation errors on the related {type} should prevent the source element from being saved.' => '관련 {type}의 유효화 오류가 소스 요소의 저장을 방해해야 하는지 확인합니다.',
