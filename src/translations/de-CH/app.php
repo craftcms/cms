@@ -1763,7 +1763,7 @@ Glückwunsch! Craft konnte erfolgreich eine E-Mail versenden. Hier sind die von 
     '{id} – {name}' => '{id} – {name}',
     '{name} folder' => '{name}-Ordner',
     '{name} has been added, but an error occurred when installing it.' => '{name} wurde hinzugefügt, aber während der Installation ist ein Fehler aufgetreten.',
-    '{name} is licensed for the {licenseEdition} edition, but the {currentEdition} is installed.' => '{name} ist für {licenseEdition} lizensiert, aber {currentEdition} ist installiert.',
+    '{name} is licensed for the {licenseEdition} edition, but the {currentEdition} edition is installed.' => '{name} is licensed for the {licenseEdition} edition, but the {currentEdition} edition is installed.',
     '{name} isn’t licensed to run version {version}.' => '{name} ist nicht lizensiert, um Version {version} auszuführen.',
     '{name} requires purchase.' => '{name} erfordert einen Kauf.',
     '{name} should be at least {value}.' => '{name} sollte mindestens {value} sein.',
