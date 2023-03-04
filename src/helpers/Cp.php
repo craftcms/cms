@@ -182,7 +182,7 @@ class Cp
                     }
                 } elseif ($licenseInfo['edition'] !== $currentEdition && !$canTestEditions) {
                     // wrong edition
-                    $message = Craft::t('app', '{name} is licensed for the {licenseEdition} edition, but the {currentEdition} is installed.', [
+                    $message = Craft::t('app', '{name} is licensed for the {licenseEdition} edition, but the {currentEdition} edition is installed.', [
                         'name' => $name,
                         'licenseEdition' => $licenseEditionName,
                         'currentEdition' => $currentEditionName,
