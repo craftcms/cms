@@ -58,6 +58,7 @@
 
 ### Development
 - Added the “Letterbox” (`letterbox`) image transform mode. ([#8848](https://github.com/craftcms/cms/discussions/8848), [#12214](https://github.com/craftcms/cms/pull/12214))
+- Added the `preloadSingles` config setting, which causes front-end Twig templates to automatically preload Single section entries which are referenced in the template. ([#12698](https://github.com/craftcms/cms/pull/12787))
 - Control panel-defined image transforms now have an “Allow Upscaling” setting, which will initially be set to the `upscaleImages` config setting for existing transforms. ([#12214](https://github.com/craftcms/cms/pull/12214))
 - Template-defined image transforms can now have an `upscale` setting. The `upscaleImages` config setting will be used by default if not set. ([#12214](https://github.com/craftcms/cms/pull/12214))
 - Added the `exec` command, which executes an individual PHP statement and outputs the result. ([#12528](https://github.com/craftcms/cms/pull/12528))
@@ -121,6 +122,9 @@
 - Added `craft\helpers\ImageTransforms::generateTransform()`.
 - Added `craft\helpers\ImageTransforms::parseTransformString()`.
 - Added `craft\helpers\StringHelper::toHandle()`.
+- Added `craft\helpers\Template::fallback()`.
+- Added `craft\helpers\Template::fallbackExists()`.
+- Added `craft\helpers\Template::preloadSingles()`.
 - Added `craft\image\Raster::scaleToFitAndFill()`.
 - Added `craft\image\Raster::setFill()`.
 - Added `craft\imagetransforms\FallbackTransformer`.
@@ -138,6 +142,7 @@
 - Added `craft\services\Elements::deleteElementsForSite()`.
 - Added `craft\services\Elements::EVENT_AFTER_DELETE_FOR_SITE`. ([#12354](https://github.com/craftcms/cms/issues/12354))
 - Added `craft\services\Elements::EVENT_BEFORE_DELETE_FOR_SITE`. ([#12354](https://github.com/craftcms/cms/issues/12354))
+- Added `craft\services\Entries::getSingleEntriesByHandle()`. ([#12698](https://github.com/craftcms/cms/pull/12787))
 - Added `craft\services\Fields::getFieldsByType()`. ([#12381](https://github.com/craftcms/cms/discussions/12381))
 - Added `craft\services\Path::getImageTransformsPath()`.
 - Added `craft\services\Search::normalizeSearchQuery()`.
