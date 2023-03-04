@@ -833,7 +833,7 @@ return [
     'License transferred.' => 'Lizenz übertragen.',
     'License' => 'Lizenz',
     'Licensed' => 'Lizenziert',
-    'Licensing Issues' => 'Lizenzierungsprobleme',
+    'Licensing Issues' => 'Probleme mit der Lizenz',
     'Lightswitch' => 'Lichtschalter',
     'Limit the number of selectable {type} branches.' => 'Anzahl auswählbarer {type}-Verzweigungen begrenzen.',
     'Limit' => 'Begrenzung',
