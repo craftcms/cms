@@ -1330,7 +1330,7 @@ return [
     'The file “{path}” does not appear to be an image.' => '“{path}” 파일은 이미지가 아닌 것 같습니다.',
     'The following <a href="{url}">aliases</a> are defined:' => '다음 <a href="{url}">별칭</a>이 정의되어 있습니다:',
     'The following items were not indexed.' => '다음 항목은 인덱싱되지 않았습니다.',
-    'The following licensing issues can be resolved with a single purchase on Craft Console.' => '다음 라이선스 문제는 Craft 콘솔에서 한 번 구입하면 해결됩니다.',
+    'The following licensing issues can be resolved with a single purchase on Craft Console.' => '다음 라이선스 문제는 Craft 콘솔에서 하나를 구입하면 해결됩니다.',
     'The following {items} could not be found. Should they be deleted from the index?' => '다음 {items}(을)를 찾을 수 없습니다. 인덱스에서 삭제할까요?',
     'The image format that transformed images should use.' => '이미지를 변형시킨 이미지 형식은 사용해야 합니다.',
     'The label text to display beside the lightswitch’s disabled state.' => '라이트스위치의 비활성 상태 옆에 표시되는 라벨 텍스트입니다.',
