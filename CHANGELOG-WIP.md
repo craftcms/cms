@@ -41,6 +41,7 @@
 - Fixed a bug where search icons on element indexes weren’t hidden from screen readers. ([#12785](https://github.com/craftcms/cms/pull/12785))
 
 ### Administration
+- Most licensing isuses are now consolidated into a single control panel alert, with a button to resolve them all with a single purchase on Craft Console. ([#12768](https://github.com/craftcms/cms/pull/12768))
 - Conditional layout components are now identified using a condition icon within field layout designers. ([#12250](https://github.com/craftcms/cms/issues/12250))
 - All CLI commands now support an `--isolated` option, which ensures the command is run in isolation. ([#12337](https://github.com/craftcms/cms/discussions/12337), [#12350](https://github.com/craftcms/cms/pull/12350))
 - Added the `entrify/categories`, `entrify/tags`, and `entrify/global-set` commands, for converting categories, tags, and global sets to entries. ([#12689](https://github.com/craftcms/cms/pull/12689), [#9781](https://github.com/craftcms/cms/discussions/9781))
@@ -83,6 +84,7 @@
 - Element source definitions can now include a `defaultSourcePath` key.
 - Element custom field validation now respects the list of attributes passed to `validate()`.
 - Improving IDE autocompletion for chained query param calls. ([#12656](https://github.com/craftcms/cms/pull/12656))
+- Added `craft\base\ApplicationTrait::getEditionHandle()`.
 - Added `craft\base\BaseFsInterface`. ([#12709](https://github.com/craftcms/cms/pull/12709))
 - Added `craft\base\Batchable`.
 - Added `craft\base\Element::cpRevisionsUrl()`.
