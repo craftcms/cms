@@ -20,8 +20,8 @@
 
 ## Unreleased (4.4)
 
+- Added the `preloadSingles` config setting, which causes front-end Twig templates to automatically preload Single section entries which are referenced in the template. ([#12698](https://github.com/craftcms/cms/pull/12787))
 - Improved some element selector modals for screen readers. ([#12783](https://github.com/craftcms/cms/pull/12783))
-- Front-end Twig templates (once again) automatically preload Single section entries. ([#12698](https://github.com/craftcms/cms/pull/12787))
 - Added `craft\helpers\Template::fallback()`.
 - Added `craft\helpers\Template::fallbackExists()`.
 - Added `craft\helpers\Template::preloadSingles()`.
