@@ -1763,7 +1763,7 @@ Gratulerer! Craft var i stand til å sende e-post. Her er innstillingene du beny
     '{id} – {name}' => '{id} – {name}',
     '{name} folder' => 'Mappen {name}',
     '{name} has been added, but an error occurred when installing it.' => '{name} har blitt lagt til, men det oppstod en feil under installering.',
-    '{name} is licensed for the {licenseEdition} edition, but the {currentEdition} is installed.' => '{name} har lisens for versjonen {licenseEdition}, men {currentEdition} er installert.',
+    '{name} is licensed for the {licenseEdition} edition, but the {currentEdition} edition is installed.' => '{name} is licensed for the {licenseEdition} edition, but the {currentEdition} edition is installed.',
     '{name} isn’t licensed to run version {version}.' => '{name} har ikke lisens til å kjøpre versjon {version}.',
     '{name} requires purchase.' => '{name} krever kjøp.',
     '{name} should be at least {value}.' => '{name} må være minst {value}.',
