@@ -1957,7 +1957,7 @@ Congratulazioni! Craft ti ha inviato una email con successo. Ecco le impostazion
     '{first}-{last} of {total}' => '{first}–{last} di {total}',
     '{name} folder' => 'Cartella {name}',
     '{name} has been added, but an error occurred when installing it.' => '{name} è stato aggiunto, ma si è verificato un errore durante l\'installazione.',
-    '{name} is licensed for the {licenseEdition} edition, but the {currentEdition} is installed.' => '{name} è dotata di licenza per l\'edizione {licenseEdition}, ma è installata l\'edizione {currentEdition}.',
+    '{name} is licensed for the {licenseEdition} edition, but the {currentEdition} edition is installed.' => '{name} is licensed for the {licenseEdition} edition, but the {currentEdition} edition is installed.',
     '{name} isn’t licensed to run version {version}.' => '{name} è privo di licenza per eseguire la versione {version}.',
     '{name} requires purchase.' => '{name} richiede l\'acquisto.',
     '{name} should be at least {value}.' => '{name} deve essere almeno {value}.',

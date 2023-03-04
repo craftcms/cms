@@ -1955,7 +1955,7 @@ return [
     '{first}-{last} of {total}' => '{first}–{last}/{total}',
     '{name} folder' => '{name}フォルダ',
     '{name} has been added, but an error occurred when installing it.' => '{name}が追加されましたが、インストール時にエラーが発生しました。',
-    '{name} is licensed for the {licenseEdition} edition, but the {currentEdition} is installed.' => '{name}は{licenseEdition}エディション用のライセンスですが、{currentEdition}がインストールされています。',
+    '{name} is licensed for the {licenseEdition} edition, but the {currentEdition} edition is installed.' => '{name} is licensed for the {licenseEdition} edition, but the {currentEdition} edition is installed.',
     '{name} isn’t licensed to run version {version}.' => '{name}はバージョン{version}を実行するためのライセンスではありません。',
     '{name} requires purchase.' => '{name}には購入が必要です。',
     '{name} should be at least {value}.' => '{name}は{value}以上である必要があります。',

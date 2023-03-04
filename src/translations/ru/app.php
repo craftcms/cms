@@ -1955,7 +1955,7 @@ return [
     '{first}-{last} of {total}' => '{first}–{last} из {total}',
     '{name} folder' => 'Папка {name}',
     '{name} has been added, but an error occurred when installing it.' => '{name} добавлено, однако при установке возникла ошибка.',
-    '{name} is licensed for the {licenseEdition} edition, but the {currentEdition} is installed.' => 'Лицензия на {name} относится к версии {licenseEdition}, однако установлена версия {currentEdition}.',
+    '{name} is licensed for the {licenseEdition} edition, but the {currentEdition} edition is installed.' => '{name} is licensed for the {licenseEdition} edition, but the {currentEdition} edition is installed.',
     '{name} isn’t licensed to run version {version}.' => 'Лицензия на {name} не допускает работу с версией {version}.',
     '{name} requires purchase.' => 'Для работы с {name} необходимо приобрести лицензию.',
     '{name} should be at least {value}.' => '{name} должно быть не менее {value}.',

@@ -1959,7 +1959,7 @@ Köszönjük, hogy regsiztráltál, a felhasználói filókod aktiváláshoz kat
     '{first}-{last} of {total}' => '{first}–{last} / {total}',
     '{name} folder' => '{name} mappa',
     '{name} has been added, but an error occurred when installing it.' => 'A(z) {name} hozzá lett adva, de a telepítésekor hiba történt.',
-    '{name} is licensed for the {licenseEdition} edition, but the {currentEdition} is installed.' => '{name} licence {licenseEdition} kiadásra vonatkozik, de {currentEdition} van telepítve.',
+    '{name} is licensed for the {licenseEdition} edition, but the {currentEdition} edition is installed.' => '{name} is licensed for the {licenseEdition} edition, but the {currentEdition} edition is installed.',
     '{name} isn’t licensed to run version {version}.' => '{name} licence nem vonatkozik a {version} verzió futtatására.',
     '{name} requires purchase.' => '{name} vásárláshoz kötött.',
     '{name} should be at least {value}.' => '{name} legalább {value} legyen.',

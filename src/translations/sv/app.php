@@ -1955,7 +1955,7 @@ return [
     '{first}-{last} of {total}' => '{first}–{last} av {total}',
     '{name} folder' => 'Mappen {name}',
     '{name} has been added, but an error occurred when installing it.' => '{name} har lagts till men ett fel inträffade vid installation.',
-    '{name} is licensed for the {licenseEdition} edition, but the {currentEdition} is installed.' => '{name} har licens för utgåvan {licenseEdition}, men {currentEdition} är installerad.',
+    '{name} is licensed for the {licenseEdition} edition, but the {currentEdition} edition is installed.' => '{name} is licensed for the {licenseEdition} edition, but the {currentEdition} edition is installed.',
     '{name} isn’t licensed to run version {version}.' => '{name} har inte licens för att köra version {version}.',
     '{name} requires purchase.' => '{name} kräver köp.',
     '{name} should be at least {value}.' => '{name} ska vara minst {value}.',

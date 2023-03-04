@@ -1957,7 +1957,7 @@ Gratulujeme, Craftu se podařilo odeslat email.Byla pro to použita následujíc
     '{first}-{last} of {total}' => '{first}–{last} z {total}',
     '{name} folder' => 'Složka {name}',
     '{name} has been added, but an error occurred when installing it.' => '{name} byl přidán, ale při jeho instalaci došlo k chybě.',
-    '{name} is licensed for the {licenseEdition} edition, but the {currentEdition} is installed.' => 'Licence pro {name} se vztahuje na edici {licenceEdition}, ale nainstalována je edice {currentEdition}.',
+    '{name} is licensed for the {licenseEdition} edition, but the {currentEdition} edition is installed.' => '{name} is licensed for the {licenseEdition} edition, but the {currentEdition} edition is installed.',
     '{name} isn’t licensed to run version {version}.' => 'Licence pro {name} se nevztahuje na verzi {version}.',
     '{name} requires purchase.' => '{name} vyžaduje zakoupení.',
     '{name} should be at least {value}.' => '{name} by mělo být alespoň {value}.',

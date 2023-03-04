@@ -1955,7 +1955,7 @@ return [
     '{first}-{last} of {total}' => '{first}–{last} van {total}',
     '{name} folder' => '{name}-map',
     '{name} has been added, but an error occurred when installing it.' => '{name} is toegevoegd, maar er is een fout opgetreden tijdens de installatie.',
-    '{name} is licensed for the {licenseEdition} edition, but the {currentEdition} is installed.' => '{name} is gelicentieerd voor de {licenseEdition}-editie, maar de {currentEdition} is geïnstalleerd.',
+    '{name} is licensed for the {licenseEdition} edition, but the {currentEdition} edition is installed.' => '{name} is licensed for the {licenseEdition} edition, but the {currentEdition} edition is installed.',
     '{name} isn’t licensed to run version {version}.' => '{name} is niet gelicentieerd voor het uitvoeren van versie {version}.',
     '{name} requires purchase.' => '{name} vereist een aankoop.',
     '{name} should be at least {value}.' => '{name} moet minimaal {value} lang zijn.',
