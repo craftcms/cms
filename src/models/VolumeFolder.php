@@ -114,7 +114,7 @@ class VolumeFolder extends Model
 
         $volume = $this->getVolume();
         $userSession = Craft::$app->getUser();
-        $canCreate = $userSession->checkPermission("createFoldersInVolume:$volume->uid");
+        $canCreate = $userSession->checkPermission("createFolders:$volume->uid");
 
         $info = [
             'uri' => sprintf('assets/%s%s', $volume->handle, $this->path ? sprintf('/%s', trim($this->path, '/')) : ''),
@@ -133,9 +133,9 @@ class VolumeFolder extends Model
                 'handle' => $volume->handle,
             ];
         } else {
-            $canRename = $canCreate & $userSession->checkPermission("deleteFilesAndFoldersInVolume:$volume->uid");
-            $canDelete = $userSession->checkPermission("deletePeerFilesInVolume:$volume->uid");
-            $canMove = $canDelete && $userSession->checkPermission("editPeerFilesInVolume:$volume->uid");
+            $canRename = $canCreate & $userSession->checkPermission("deleteAssets:$volume->uid");
+            $canDelete = $userSession->checkPermission("deletePeerAssets:$volume->uid");
+            $canMove = $canDelete && $userSession->checkPermission("savePeerAssets:$volume->uid");
 
             $info += [
                 'label' => Html::encode($this->name),

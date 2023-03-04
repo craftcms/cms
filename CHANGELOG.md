@@ -23,6 +23,8 @@
 - Improved some element selector modals for screen readers. ([#12783](https://github.com/craftcms/cms/pull/12783))
 - Fixed a bug where search icons on element indexes weren’t hidden from screen readers. ([#12785](https://github.com/craftcms/cms/pull/12785))
 - Fixed a bug where Categories and Tags fields weren’t getting properly converted to Entries fields via the `entrify/categories` and `entrify/tags` commands.
+- Fixed a bug where folder actions in asset indexes weren’t available to non-admin users. ([#12790](https://github.com/craftcms/cms/issues/12790))
+- Fixed a bug where assets weren’t movable in asset indexes, for non-admin users.
 
 ## 4.4.0-beta.4 - 2023-03-02
 

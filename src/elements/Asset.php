@@ -2882,8 +2882,8 @@ JS;
             $userSession = Craft::$app->getUser();
 
             if (
-                $userSession->checkPermission("editPeerFilesInVolume:$volume->uid") &&
-                $userSession->checkPermission("deletePeerFilesInVolume:$volume->uid")
+                $userSession->checkPermission("savePeerAssets:$volume->uid") &&
+                $userSession->checkPermission("deletePeerAssets:$volume->uid")
             ) {
                 $attributes['data']['movable'] = true;
             }
