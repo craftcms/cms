@@ -1761,7 +1761,7 @@ return [
     '{id} – {name}' => '{id} – {name}',
     '{name} folder' => 'โฟลเดอร์ {name}',
     '{name} has been added, but an error occurred when installing it.' => '{name} has been added, but an error occurred when installing it.',
-    '{name} is licensed for the {licenseEdition} edition, but the {currentEdition} is installed.' => '{name} เป็นใบอนุญาตสำหรับรุ่น {licenseEdition} แต่มีการติดตั้ง {currentEdition} อยู่ในขณะนี้',
+    '{name} is licensed for the {licenseEdition} edition, but the {currentEdition} edition is installed.' => '{name} is licensed for the {licenseEdition} edition, but the {currentEdition} edition is installed.',
     '{name} isn’t licensed to run version {version}.' => '{name} ไม่ได้รับอนุญาตให้เรียกใช้เวอร์ชัน {version}',
     '{name} requires purchase.' => '{name} จำเป็นต้องซื้อ',
     '{name} should be at least {value}.' => '{name} should be at least {value}.',
