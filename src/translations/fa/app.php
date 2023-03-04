@@ -833,7 +833,7 @@ return [
     'License transferred.' => 'لایسنس انتقال داده شد.',
     'License' => 'لایسنس',
     'Licensed' => 'دارای لایسنس',
-    'Licensing Issues' => 'مسائل مربوط به مجوز',
+    'Licensing Issues' => 'مشکل مربوط به مجوز',
     'Lightswitch' => 'کلید روشن و خاموش',
     'Limit the number of selectable {type} branches.' => 'تعداد شاخه های قابل انتخاب {type} را محدود کنید.',
     'Limit' => 'محدویت',
