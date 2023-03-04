@@ -16,7 +16,6 @@ use craft\db\Migration;
 use craft\db\Table;
 use craft\elements\Asset;
 use craft\elements\User;
-use craft\enums\LicenseKeyStatus;
 use craft\errors\InvalidPluginException;
 use craft\helpers\App;
 use craft\helpers\DateTimeHelper;
@@ -482,15 +481,6 @@ class Install extends Migration
             'handle' => $this->string()->notNull(),
             'version' => $this->string()->notNull(),
             'schemaVersion' => $this->string()->notNull(),
-            'licenseKeyStatus' => $this->enum('licenseKeyStatus', [
-                LicenseKeyStatus::Valid,
-                LicenseKeyStatus::Trial,
-                LicenseKeyStatus::Invalid,
-                LicenseKeyStatus::Mismatched,
-                LicenseKeyStatus::Astray,
-                LicenseKeyStatus::Unknown,
-            ])->notNull()->defaultValue(LicenseKeyStatus::Unknown),
-            'licensedEdition' => $this->string(),
             'installDate' => $this->dateTime()->notNull(),
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
