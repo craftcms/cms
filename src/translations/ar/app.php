@@ -1761,7 +1761,7 @@ return [
     '{id} – {name}' => '{id} – {name}',
     '{name} folder' => 'المجلد {name}',
     '{name} has been added, but an error occurred when installing it.' => 'تمت إضافة {name}، لكن حدث خطأ عند تثبيته.',
-    '{name} is licensed for the {licenseEdition} edition, but the {currentEdition} is installed.' => '{name} مرخَّص للإصدار {licenseEdition}، لكن الإصدار {currentEdition} مثبَّت.',
+    '{name} is licensed for the {licenseEdition} edition, but the {currentEdition} edition is installed.' => '{name} is licensed for the {licenseEdition} edition, but the {currentEdition} edition is installed.',
     '{name} isn’t licensed to run version {version}.' => '{name} غير مرخَّص لتشغيل الإصدار {version}.',
     '{name} requires purchase.' => '{name} يتطلب الشراء.',
     '{name} should be at least {value}.' => '{name} يجب أن يكون {value} على الأقل.',
