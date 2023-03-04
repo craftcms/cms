@@ -4,7 +4,15 @@
 - Fixed a bug where `craft\events\RegisterElementSourcesEvent::$context` wasn’t always set to `modal` when defining the available element sources for an element selection modal.
 - Fixed a styling bug where multi-line checkbox labels within the Customize Sources modal weren’t wrapping properly. ([#12717](https://github.com/craftcms/cms/issues/12717))
 - Fixed a bug where asset thumbnails within collapsed Matrix blocks weren’t loading when the block was expanded. ([#12720](https://github.com/craftcms/cms/issues/12720))
+- Fixed a bug where custom fields’ database columns would get deleted when applying project config changes, if the field type wasn’t present. ([#12760](https://github.com/craftcms/cms/issues/12760))
+- Fixed a bug where Assets, Categories, and Tags fields weren’t respecting their “Allow self relations” settings. ([#12769](https://github.com/craftcms/cms/issues/12769))
+- Fixed a bug where dynamically-generated entry titles weren’t always generated with the site’s formatting locale in place. ([12780](https://github.com/craftcms/cms/issues/12780))
 - Fixed an XSS vulnerability.
+
+## 3.8.0-beta.3 - 2023-03-02
+
+- Fixed a JavaScript error that occurred when opening an asset selector modal, preventing the index results from showing initially. ([#12755](https://github.com/craftcms/cms/issues/12755))
+- Fixed a source path styling bug on Windows browsers. ([#12757](https://github.com/craftcms/cms/issues/12757))
 
 ## 3.8.0-beta.2 - 2023-02-25
 

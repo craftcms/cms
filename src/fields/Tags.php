@@ -107,6 +107,7 @@ class Tags extends BaseRelationField
                     'targetSiteId' => $this->targetSiteId($element),
                     'sourceElementId' => $element !== null ? $element->id : null,
                     'selectionLabel' => $this->selectionLabel ? Craft::t('site', $this->selectionLabel) : static::defaultSelectionLabel(),
+                    'allowSelfRelations' => (bool)$this->allowSelfRelations,
                 ]);
         }
 

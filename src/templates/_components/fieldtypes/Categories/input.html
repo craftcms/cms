@@ -35,7 +35,8 @@
             branchLimit: {{ branchLimit ?: 'null' }},
             showSiteMenu: {{ (showSiteMenu ?? false)|json_encode|raw }},
             modalStorageKey: "{{ storageKey|e('js') }}",
-            selectionLabel: "{{ selectionLabel|e('js') }}"
+            selectionLabel: "{{ selectionLabel|e('js') }}",
+            allowSelfRelations: {{ (allowSelfRelations ?? false)|json_encode|raw }},
         });
     {% endjs %}
 {% endif %}
