@@ -1761,7 +1761,7 @@ return [
     '{id} – {name}' => '{id} – {name}',
     '{name} folder' => 'Pasta {name}',
     '{name} has been added, but an error occurred when installing it.' => '{name} foi adicionado, mas ocorreu um erro ao instalá-lo.',
-    '{name} is licensed for the {licenseEdition} edition, but the {currentEdition} is installed.' => '{name} tem licença para {licenseEdition}, mas {currentEdition} é o que está instalado.',
+    '{name} is licensed for the {licenseEdition} edition, but the {currentEdition} edition is installed.' => '{name} is licensed for the {licenseEdition} edition, but the {currentEdition} edition is installed.',
     '{name} isn’t licensed to run version {version}.' => '{name} não tem licença para executar a versão {version}.',
     '{name} requires purchase.' => '{name} requer compra.',
     '{name} should be at least {value}.' => '{name} deve ser pelo menos {value}.',
