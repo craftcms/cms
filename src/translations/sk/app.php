@@ -1761,7 +1761,7 @@ return [
     '{id} – {name}' => '{id} – {name}',
     '{name} folder' => 'Priečinok {name}',
     '{name} has been added, but an error occurred when installing it.' => 'Bola pridaná položka {name}, ale pri jej inštalácii sa vyskytla chyba.',
-    '{name} is licensed for the {licenseEdition} edition, but the {currentEdition} is installed.' => '{name} má licenciu na edíciu {licenseEdition}, ale je nainštalovaná edícia {currentEdition}.',
+    '{name} is licensed for the {licenseEdition} edition, but the {currentEdition} edition is installed.' => '{name} is licensed for the {licenseEdition} edition, but the {currentEdition} edition is installed.',
     '{name} isn’t licensed to run version {version}.' => '{name} nemá licenciu na spustenie verzie {version}.',
     '{name} requires purchase.' => '{name} vyžaduje nákup.',
     '{name} should be at least {value}.' => '{name} musí byť minimálne {value}.',
