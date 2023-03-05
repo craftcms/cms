@@ -23,6 +23,7 @@
 - Tip and Warning field layout UI elements can now be marked as dismissible, giving authors the ability to hide them. ([#12188](https://github.com/craftcms/cms/discussions/12188))
 - All assets now get thumbnails in the control panel, even if they don’t have a transform filesystem with a base URL. ([#12531](https://github.com/craftcms/cms/issues/12531))
 - Dropdown and Multi-select fields now use Selectize. ([#8403](https://github.com/craftcms/cms/discussions/8403))
+- Improved the styling of bulk element action triggers. ([#12793](https://github.com/craftcms/cms/pull/12793))
 
 ### Accessibility
 - Improved the announcement menu for screen readers. ([#12361](https://github.com/craftcms/cms/pull/12361))
