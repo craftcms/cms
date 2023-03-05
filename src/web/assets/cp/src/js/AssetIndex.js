@@ -51,7 +51,15 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
               }),
           dropTargets: () => {
             // volume sources
-            let $dropTargets = this.$visibleSources.filter('[data-folder-id]');
+            let $dropTargets = $(
+              this.$visibleSources
+                .toArray()
+                .filter(
+                  (source) =>
+                    Garnish.hasAttr(source, 'data-folder-id') &&
+                    Garnish.hasAttr(source, 'data-can-move-peer-files-to')
+                )
+            );
             if (this.sourcePath.length <= 1) {
               // exclude the current source since we're already at the root of it
               $dropTargets = $dropTargets.not(this.$source);
@@ -611,10 +619,18 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
       }
 
       if (this.itemDrag) {
-        if (!append) {
+        const currentFolder = this.sourcePath[this.sourcePath.length - 1];
+        const canMoveSubItems = !!(
+          currentFolder &&
+          currentFolder.folderId &&
+          currentFolder.canMoveSubItems
+        );
+        if (!canMoveSubItems || !append) {
           this.itemDrag.removeAllItems();
         }
-        this.itemDrag.addItems(this._findDraggableItems($newElements));
+        if (canMoveSubItems) {
+          this.itemDrag.addItems(this._findDraggableItems($newElements));
+        }
       }
     },
 
