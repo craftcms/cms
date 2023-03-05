@@ -12,6 +12,8 @@
 ## Unreleased (3.8)
 
 - Reintroduced asset/folder drag-and-drop. ([#12792](https://github.com/craftcms/cms/pull/12792))
+- Most licensing isuses are now consolidated into a single control panel alert, with a button to resolve them all with a single purchase on Craft Console. ([#12768](https://github.com/craftcms/cms/pull/12768))
+- Added `craft\base\ApplicationTrait::getEditionHandle()`.
 
 ## 3.8.0-beta.3 - 2023-03-02
 
