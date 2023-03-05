@@ -2752,16 +2752,16 @@ $elementInnerSpacing: 5px;
   &.sel,
   li.sel &,
   li.active-drop-target & {
-    background-color: var(--light-sel-color) !important;
+    --link-color: var(--white);
+    --ui-control-color: var(--white);
+    @include custom-color-focus-ring(hsl(var(--light-focus-hsl)));
+    color: var(--white);
+    background-color: var(--dark-sel-color) !important;
   }
 
   &.sel,
   li.sel & {
     cursor: default;
-
-    &:focus {
-      background-color: darken($lightSelColor, 5%) !important;
-    }
 
     &.hasthumb {
       .elementthumb {
