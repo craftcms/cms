@@ -32,8 +32,8 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
         this.itemDrag = new Garnish.DragDrop({
           activeDropTargetClass: 'sel',
           minMouseDist: 10,
-          helperMouseOffset: 10,
           hideDraggee: false,
+          moveHelperToCursor: true,
           activeDropTargetClass: 'active-drop-target',
           handle: (item) => $(item).closest('tr,li'),
           filter: () => {
@@ -42,11 +42,13 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
             return this._findDraggableItems(this.view.getSelectedElements());
           },
           helper: ($item, index) =>
-            $item.addClass('drag-helper').css({
-              opacity: Math.max(0.9 - 0.05 * index, 0),
-              width: '',
-              height: '',
-            }),
+            $('<div class="offset-drag-helper"/>')
+              .append($item)
+              .css({
+                opacity: Math.max(0.9 - 0.05 * index, 0),
+                width: '',
+                height: '',
+              }),
           dropTargets: () => {
             // volume sources
             let $dropTargets = this.$visibleSources.filter('[data-folder-id]');

@@ -166,6 +166,11 @@ fieldset:last-child,
   box-sizing: border-box;
 }
 
+.offset-drag-helper {
+  @include margin(-50px, 0, 0, -50px);
+  @include padding(60px, 0, 0, 60px);
+}
+
 img {
   max-width: 100%;
 }
@@ -427,16 +432,14 @@ a {
   }
 }
 
-body:not(.dragging) a:hover {
+a:hover {
   text-decoration: underline;
 }
 
 a.sel,
 li.sel a {
-  body:not(.dragging) & {
-    cursor: default !important;
-  }
-  text-decoration: none !important;
+  cursor: default !important;
+  text-decoration: none;
 }
 
 .go:after {
@@ -680,7 +683,7 @@ a.fieldtoggle {
   margin: 14px 0;
   @include padding-left(12px);
   color: var(--text-color);
-  text-decoration: none !important;
+  text-decoration: none;
 }
 
 a.fieldtoggle:before {
@@ -995,9 +998,8 @@ td.right {
   width: 1em;
   height: 1.375em;
   text-align: center;
-  overflow: hidden;
-
   cursor: pointer;
+  overflow: hidden;
 
   &:before {
     @include icon;
@@ -1121,7 +1123,6 @@ td.right {
   border: solid var(--hairline-color);
   border-width: 1px 0;
   user-select: none;
-
   cursor: default;
 
   & + .customize-sources-item {
@@ -1420,7 +1421,6 @@ ul.icons {
   color: currentColor;
   font-size: inherit;
   background-color: var(--ui-control-bg-color);
-  text-decoration: none !important;
 
   &:not([aria-current]) {
     cursor: pointer;
@@ -1439,7 +1439,7 @@ ul.icons {
 
     &:hover,
     &:active {
-      text-decoration: underline !important;
+      text-decoration: underline;
     }
   }
 
@@ -1476,7 +1476,7 @@ ul.icons {
   }
 
   &:hover {
-    text-decoration: none !important;
+    text-decoration: none;
   }
 
   &[data-icon]:not(:empty):not(.btn-empty):before,
@@ -2588,7 +2588,7 @@ table {
         --selected-bg-color: var(--dark-sel-color);
 
         &:not(.disabled) {
-          body:not(.dragging) &:hover {
+          &:hover {
             th,
             td {
               background-color: var(--hover-bg-color);
@@ -2609,7 +2609,7 @@ table {
             th,
             td {
               color: var(--white);
-              background-color: var(--selected-bg-color) !important;
+              background-color: var(--selected-bg-color);
             }
           }
         }
@@ -2714,12 +2714,10 @@ table {
   @include shadow;
 }
 
-body:not(.dragging) {
-  .datatablesorthelper,
-  .datatablesorthelper .element,
-  .datatablesorthelper a {
-    cursor: move !important;
-  }
+.datatablesorthelper,
+.datatablesorthelper .element,
+.datatablesorthelper a {
+  cursor: move !important;
 }
 
 .datatablesorthelper tr:first-child th,
@@ -2789,10 +2787,9 @@ $elementInnerSpacing: 5px;
     }
   }
 
-  &.drag-helper {
+  .offset-drag-helper & {
     background-color: var(--gray-050);
-    box-shadow: 0 0 0 1px transparentize($darkSelColor, 0.9),
-      0 6px 4px -4px transparentize($darkSelColor, 0.8);
+    @include shadow;
   }
 
   &.hasthumb {
@@ -3135,7 +3132,7 @@ $checkboxPadding: $checkboxSize + 4;
       @include margin(0, 1px, 1px, 0);
       max-width: 226px;
 
-      body:not(.dragging) &:hover {
+      &:hover {
         .element {
           background-color: var(--gray-050);
         }
