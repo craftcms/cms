@@ -115,12 +115,15 @@ class VolumeFolder extends Model
         $volume = $this->getVolume();
         $userSession = Craft::$app->getUser();
         $canCreate = $userSession->checkPermission("createFolders:$volume->uid");
+        $canDelete = $userSession->checkPermission("deletePeerAssets:$volume->uid");
+        $canMove = $canDelete && $userSession->checkPermission("savePeerAssets:$volume->uid");
 
         $info = [
             'uri' => sprintf('assets/%s%s', $volume->handle, $this->path ? sprintf('/%s', trim($this->path, '/')) : ''),
             'folderId' => (int)$this->id,
             'hasChildren' => $this->getHasChildren(),
             'canCreate' => $canCreate,
+            'canMoveSubItems' => $canMove,
         ];
 
         // Is this a root folder?
@@ -134,8 +137,6 @@ class VolumeFolder extends Model
             ];
         } else {
             $canRename = $canCreate & $userSession->checkPermission("deleteAssets:$volume->uid");
-            $canDelete = $userSession->checkPermission("deletePeerAssets:$volume->uid");
-            $canMove = $canDelete && $userSession->checkPermission("savePeerAssets:$volume->uid");
 
             $info += [
                 'label' => Html::encode($this->name),

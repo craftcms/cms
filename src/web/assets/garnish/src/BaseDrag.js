@@ -189,9 +189,7 @@ export default Base.extend(
     addItems: function (items) {
       items = $.makeArray(items);
 
-      for (var i = 0; i < items.length; i++) {
-        var item = items[i];
-
+      for (const item of items) {
         // Make sure this element doesn't belong to another dragger
         if ($.data(item, 'drag')) {
           console.warn('Element was added to more than one dragger');
@@ -202,7 +200,9 @@ export default Base.extend(
         $.data(item, 'drag', this);
 
         // Add the listener
-        this.addListener(item, 'mousedown', '_handleMouseDown');
+        this.addListener(this._getItemHandle(item), 'mousedown', (ev) => {
+          this._handleMouseDown(ev, item);
+        });
       }
 
       this.$items = this.$items.add(items);
@@ -292,7 +292,7 @@ export default Base.extend(
     /**
      * Handle Mouse Down
      */
-    _handleMouseDown: function (ev) {
+    _handleMouseDown: function (ev, item) {
       // Ignore right clicks
       if (ev.which !== Garnish.PRIMARY_CLICK) {
         return;
@@ -304,18 +304,10 @@ export default Base.extend(
       }
 
       // Ignore if they didn't actually click on the handle
-      var $target = $(ev.target),
-        $handle = this._getItemHandle(ev.currentTarget);
-
-      if (!$target.is($handle) && !$target.closest($handle).length) {
-        return;
-      }
+      var $target = $(ev.target);
 
       // Make sure the target isn't a button (unless the button is the handle)
-      if (
-        ev.currentTarget !== ev.target &&
-        this.settings.ignoreHandleSelector
-      ) {
+      if (item !== ev.target && this.settings.ignoreHandleSelector) {
         if (
           $target.is(this.settings.ignoreHandleSelector) ||
           $target.closest(this.settings.ignoreHandleSelector).length
@@ -332,7 +324,7 @@ export default Base.extend(
       }
 
       // Capture the target
-      this.$targetItem = $(ev.currentTarget);
+      this.$targetItem = $(item);
 
       // Capture the current mouse position
       this.mousedownX = this.mouseX = ev.pageX;
@@ -395,7 +387,10 @@ export default Base.extend(
           this.realMouseY
         );
 
-        if (this._handleMouseMove._mouseDist >= Garnish.BaseDrag.minMouseDist) {
+        if (
+          this._handleMouseMove._mouseDist >= this.settings.minMouseDist ??
+          Garnish.BaseDrag.minMouseDist
+        ) {
           this.startDragging();
         }
       }
@@ -464,6 +459,7 @@ export default Base.extend(
     windowScrollTargetSize: 25,
 
     defaults: {
+      minMouseDist: null,
       handle: null,
       axis: null,
       ignoreHandleSelector: 'input, textarea, button, select, .btn',

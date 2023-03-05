@@ -21,6 +21,7 @@
 ## Unreleased (4.4)
 
 - Added the `preloadSingles` config setting, which causes front-end Twig templates to automatically preload Single section entries which are referenced in the template. ([#12698](https://github.com/craftcms/cms/pull/12787))
+- Reintroduced asset/folder drag-and-drop. ([#12792](https://github.com/craftcms/cms/pull/12792))
 - Improved some element selector modals for screen readers. ([#12783](https://github.com/craftcms/cms/pull/12783))
 - Added `craft\helpers\Template::fallback()`.
 - Added `craft\helpers\Template::fallbackExists()`.

@@ -30,9 +30,12 @@ html {
 
 body {
   min-height: 100vh;
-}
 
-body {
+  &.dragging * {
+    cursor: move !important;
+    cursor: grabbing !important;
+  }
+
   :focus {
     outline-style: solid;
     outline-color: transparent;
@@ -266,7 +269,7 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
   li {
     &:not(.has-subnav) > a.sel {
       color: var(--gray-800);
-      background-color: var(--gray-100);
+      background-color: var(--gray-100) !important;
       opacity: 1;
 
       .icon {
@@ -1408,15 +1411,19 @@ li.breadcrumb-toggle-wrapper {
           background-color: var(--gray-100);
         }
 
-        &.sel {
+        &.sel,
+        &.active-drop-target {
           cursor: default;
-          background-color: var(--gray-500);
-          @include light-on-dark-text;
+          background-color: var(--gray-500) !important;
 
           &,
           & + .toggle {
             color: var(--white);
           }
+        }
+
+        &.sel {
+          @include light-on-dark-text;
         }
       }
 
