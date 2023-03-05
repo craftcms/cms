@@ -2842,6 +2842,8 @@ Craft.BaseElementIndex = Garnish.Base.extend(
             .data('action', action)
             .append(action.trigger);
 
+          $form.find('.btn').addClass('secondary');
+
           this.addListener($form, 'submit', '_handleActionTriggerSubmit');
           triggers.push($form);
         } else {
@@ -2860,7 +2862,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
         $btn = $('<button/>', {
           type: 'button',
-          class: 'btn menubtn',
+          class: 'btn secondary menubtn',
           'data-icon': 'settings',
           title: Craft.t('app', 'Actions'),
         }).appendTo($menuTrigger);
