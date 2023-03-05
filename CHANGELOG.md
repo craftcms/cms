@@ -18,7 +18,7 @@
 - Fixed a bug where Assets, Categories, and Tags fields weren’t respecting their “Allow self relations” settings. ([#12769](https://github.com/craftcms/cms/issues/12769))
 - Fixed a bug where dynamically-generated entry titles weren’t always generated with the site’s formatting locale in place. ([12780](https://github.com/craftcms/cms/issues/12780))
 
-## Unreleased (4.4)
+## 4.4.0-beta.6 - 2023-03-05
 
 - Fixed a SQL error that occurred when updating on PostgreSQL. ([#12768](https://github.com/craftcms/cms/pull/12768))
 - Fixed a PHP error that occurred when rendering a template with a null-coalescing operator (`??`) when the `preloadSingles` config setting was enabled. ([#12698](https://github.com/craftcms/cms/pull/12787))
