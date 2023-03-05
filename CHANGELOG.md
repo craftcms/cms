@@ -21,6 +21,7 @@
 ## Unreleased (4.4)
 
 - Fixed a SQL error that occurred when updating on PostgreSQL. ([#12768](https://github.com/craftcms/cms/pull/12768))
+- Fixed a PHP error that occurred when rendering a template with a null-coalescing operator (`??`) when the `preloadSingles` config setting was enabled. ([#12698](https://github.com/craftcms/cms/pull/12787))
 
 ## 4.4.0-beta.5 - 2023-03-05
 

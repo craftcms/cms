@@ -62,7 +62,7 @@ class FallbackNameExpression extends NameExpression
                 ->string($name)
                 ->raw(sprintf(') ? %s::fallback(', Template::class))
                 ->string($name)
-                ->raw(') : null)');
+                ->raw(') : null))');
         } else {
             $compiler
                 ->raw('(isset($context[')
