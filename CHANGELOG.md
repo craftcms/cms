@@ -9,6 +9,10 @@
 - Fixed a bug where dynamically-generated entry titles weren’t always generated with the site’s formatting locale in place. ([12780](https://github.com/craftcms/cms/issues/12780))
 - Fixed an XSS vulnerability.
 
+## Unreleased (3.8)
+
+- Reintroduced asset/folder drag-and-drop. ([#12792](https://github.com/craftcms/cms/pull/12792))
+
 ## 3.8.0-beta.3 - 2023-03-02
 
 - Fixed a JavaScript error that occurred when opening an asset selector modal, preventing the index results from showing initially. ([#12755](https://github.com/craftcms/cms/issues/12755))
