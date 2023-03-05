@@ -9,7 +9,7 @@
 - Fixed a bug where dynamically-generated entry titles weren’t always generated with the site’s formatting locale in place. ([12780](https://github.com/craftcms/cms/issues/12780))
 - Fixed an XSS vulnerability.
 
-## Unreleased (3.8)
+## 3.8.0-beta.5 - 2023-03-05
 
 - Fixed a SQL error that occurred when updating on PostgreSQL. ([#12768](https://github.com/craftcms/cms/pull/12768))
 
