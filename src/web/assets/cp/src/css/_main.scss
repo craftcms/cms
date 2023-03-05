@@ -2640,7 +2640,7 @@ table {
       }
     }
 
-    tr.sel + tr.sel {
+    tr.sel:not(.draggee) + tr.sel:not(.draggee) {
       th,
       td {
         border-top-color: var(--gray-300);
