@@ -20,10 +20,12 @@
 
 ## Unreleased (4.4)
 
-- Added the `preloadSingles` config setting, which causes front-end Twig templates to automatically preload Single section entries which are referenced in the template. ([#12698](https://github.com/craftcms/cms/pull/12787))
 - Reintroduced asset/folder drag-and-drop. ([#12792](https://github.com/craftcms/cms/pull/12792))
+- Most licensing isuses are now consolidated into a single control panel alert, with a button to resolve them all with a single purchase on Craft Console. ([#12768](https://github.com/craftcms/cms/pull/12768))
 - Improved some element selector modals for screen readers. ([#12783](https://github.com/craftcms/cms/pull/12783))
 - Improved the styling of bulk element action triggers. ([#12793](https://github.com/craftcms/cms/pull/12793))
+- Added the `preloadSingles` config setting, which causes front-end Twig templates to automatically preload Single section entries which are referenced in the template. ([#12698](https://github.com/craftcms/cms/pull/12787))
+- Added `craft\base\ApplicationTrait::getEditionHandle()`.
 - Added `craft\helpers\Template::fallback()`.
 - Added `craft\helpers\Template::fallbackExists()`.
 - Added `craft\helpers\Template::preloadSingles()`.
