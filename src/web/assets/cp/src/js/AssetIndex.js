@@ -17,6 +17,9 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
     promptHandler: null,
     progressBar: null,
 
+    $listedFolders: null,
+    itemDrag: null,
+
     _uploadTotalFiles: 0,
     _uploadFileProgress: {},
     _currentUploaderSettings: {},
@@ -26,6 +29,108 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
       this.base(elementType, $container, settings);
 
       if (this.settings.context === 'index') {
+        this.itemDrag = new Garnish.DragDrop({
+          activeDropTargetClass: 'sel',
+          minMouseDist: 10,
+          helperMouseOffset: 10,
+          hideDraggee: false,
+          activeDropTargetClass: 'active-drop-target',
+          handle: (item) => $(item).closest('tr,li'),
+          filter: () => {
+            const $container = this.itemDrag.$targetItem.closest('tr,li');
+            this.view.elementSelect.selectItem($container);
+            return this._findDraggableItems(this.view.getSelectedElements());
+          },
+          helper: ($item, index) =>
+            $item.addClass('drag-helper').css({
+              opacity: Math.max(0.9 - 0.05 * index, 0),
+              width: '',
+              height: '',
+            }),
+          dropTargets: () => {
+            // volume sources
+            let $dropTargets = this.$visibleSources.filter('[data-folder-id]');
+            if (this.sourcePath.length <= 1) {
+              // exclude the current source since we're already at the root of it
+              $dropTargets = $dropTargets.not(this.$source);
+            } else {
+              // parent folders in the source path
+              for (let i = 0; i < this.sourcePath.length - 1; i++) {
+                const step = this.sourcePath[i];
+                if (step.folderId) {
+                  $dropTargets = $dropTargets.add(step.$btn);
+                }
+              }
+            }
+            // folders in the elements listing
+            if (this.$listedFolders) {
+              $dropTargets = $dropTargets
+                .add(
+                  this.$listedFolders
+                    .filter('[data-folder-id]')
+                    .closest('tr,li')
+                )
+                .not(this.view.getSelectedElements());
+            }
+            return $dropTargets;
+          },
+          onDragStart: () => {
+            Garnish.$bod.addClass('dragging');
+            this.itemDrag.$draggee.closest('tr,li').addClass('draggee');
+          },
+          onDragStop: () => {
+            Garnish.$bod.removeClass('dragging');
+
+            const $draggee = this.itemDrag.$draggee;
+            const targetFolderId = this._targetFolderId(
+              this.itemDrag.$activeDropTarget
+            );
+
+            if (!targetFolderId) {
+              $draggee.closest('tr,li').removeClass('draggee');
+              this.itemDrag.returnHelpersToDraggees();
+              return;
+            }
+
+            this.itemDrag.fadeOutHelpers();
+
+            const $folders = $draggee.filter('[data-is-folder]');
+            const $assets = $draggee.not($folders);
+            const folderIds = $folders.toArray().map((item) => {
+              return parseInt($(item).data('folder-id'));
+            });
+            const assetIds = $assets.toArray().map((item) => {
+              return parseInt($(item).data('id'));
+            });
+
+            const mover = new Craft.AssetMover();
+            mover
+              .moveFolders(folderIds, targetFolderId)
+              .then((totalFoldersMoved) => {
+                mover
+                  .moveAssets(assetIds, targetFolderId)
+                  .then((totalAssetsMoved) => {
+                    const totalItemsMoved =
+                      totalFoldersMoved + totalAssetsMoved;
+                    if (totalItemsMoved) {
+                      Craft.cp.displayNotice(
+                        Craft.t(
+                          'app',
+                          '{totalItems, plural, =1{Item} other{Items}} moved.',
+                          {
+                            totalItems: totalItemsMoved,
+                          }
+                        )
+                      );
+                      Craft.elementIndex.updateElements(true);
+                    } else {
+                      $draggee.closest('tr,li').removeClass('draggee');
+                    }
+                  });
+              });
+          },
+        });
+
         this.addListener(Garnish.$win, 'resize,scroll', '_positionProgressBar');
       } else {
         this.addListener(this.$main, 'scroll', '_positionProgressBar');
@@ -37,6 +142,37 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
           );
         }
       }
+    },
+
+    _findDraggableItems: function ($items) {
+      return $(
+        $items
+          .toArray()
+          .map((item) => $(item).find('.element:first')[0])
+          .filter((item) => item && Garnish.hasAttr(item, 'data-movable'))
+      );
+    },
+
+    _targetFolderId: function ($dropTarget) {
+      if (!$dropTarget || !$dropTarget.length) {
+        return false;
+      }
+
+      // source?
+      if ($dropTarget.is(this.$visibleSources)) {
+        return $dropTarget.data('folder-id');
+      }
+
+      // source path step?
+      for (let i = 0; i < this.sourcePath.length - 1; i++) {
+        const step = this.sourcePath[i];
+        if ($dropTarget.is(step.$btn)) {
+          return step.folderId;
+        }
+      }
+
+      // folder in the element listing?
+      return $dropTarget.find('.element:first').data('folder-id') || false;
     },
 
     afterInit: function () {
@@ -134,6 +270,11 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
           this.uploader.setParams({
             folderId: currentFolder.folderId,
           });
+
+          // will the user be allowed to move items in this folder?
+          const canMoveSubItems = !!currentFolder.canMoveSubItems;
+          this.settings.selectable = canMoveSubItems;
+          this.settings.multiSelect = canMoveSubItems;
         }
       }
 
@@ -429,9 +570,9 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
       this.addListener(this.$elements, 'keydown', this._onKeyDown.bind(this));
       this.view.elementSelect.on('focusItem', this._onElementFocus.bind(this));
 
-      const $folders = $newElements.find('.element[data-is-folder]');
-      for (let i = 0; i < $folders.length; i++) {
-        const $folder = $folders.eq(i);
+      this.$listedFolders = $newElements.find('.element[data-is-folder]');
+      for (let i = 0; i < this.$listedFolders.length; i++) {
+        const $folder = this.$listedFolders.eq(i);
         const $label = $folder.find('.label');
         const folderId = parseInt($folder.data('folder-id'));
         const folderName = $label.text();
@@ -465,6 +606,13 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
             });
           });
         }
+      }
+
+      if (this.itemDrag) {
+        if (!append) {
+          this.itemDrag.removeAllItems();
+        }
+        this.itemDrag.addItems(this._findDraggableItems($newElements));
       }
     },
 

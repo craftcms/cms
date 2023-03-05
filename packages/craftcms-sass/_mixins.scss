@@ -527,7 +527,7 @@ $radioSize: 16px;
   margin: 0 -14px;
   padding: 10px 14px;
   color: $menuOptionColor;
-  text-decoration: none;
+  text-decoration: none !important;
   white-space: nowrap;
 }
 

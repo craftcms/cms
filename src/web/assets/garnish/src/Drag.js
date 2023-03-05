@@ -136,7 +136,7 @@ export default BaseDrag.extend(
       } else if (this.settings.collapseDraggees) {
         this.$targetItem.css('visibility', 'hidden');
         this.$draggee.not(this.$targetItem).hide();
-      } else {
+      } else if (this.settings.hideDraggee) {
         this.$draggee.css('visibility', 'hidden');
       }
     },
@@ -166,7 +166,7 @@ export default BaseDrag.extend(
 
       if (this.settings.removeDraggee || this.settings.collapseDraggees) {
         $newDraggee.hide();
-      } else {
+      } else if (this.settings.hideDraggee) {
         $newDraggee.css('visibility', 'hidden');
       }
     },
@@ -216,14 +216,20 @@ export default BaseDrag.extend(
     /**
      * Returns the helper’s target X position
      */
-    getHelperTargetX: function () {
+    getHelperTargetX: function (real) {
+      if (!real && this.settings.helperMouseOffset !== null) {
+        return this.mouseX + this.settings.helperMouseOffset;
+      }
       return this.mouseX - this.mouseOffsetX;
     },
 
     /**
      * Returns the helper’s target Y position
      */
-    getHelperTargetY: function () {
+    getHelperTargetY: function (real) {
+      if (!real && this.settings.helperMouseOffset !== null) {
+        return this.mouseY + this.settings.helperMouseOffset;
+      }
       return this.mouseY - this.mouseOffsetY;
     },
 
@@ -239,7 +245,7 @@ export default BaseDrag.extend(
 
         $draggee.css({
           display: this.draggeeDisplay,
-          visibility: 'hidden',
+          visibility: this.settings.hideDraggee ? 'hidden' : '',
         });
 
         var draggeeOffset = $draggee.offset();
@@ -277,8 +283,8 @@ export default BaseDrag.extend(
     /**
      * Creates a helper.
      */
-    _createHelper: function (i) {
-      var $draggee = this.$draggee.eq(i),
+    _createHelper: function (index) {
+      var $draggee = this.$draggee.eq(index),
         $draggeeHelper = $draggee.clone().addClass('draghelper');
 
       if (this.settings.copyDraggeeInputValuesToHelper) {
@@ -295,7 +301,7 @@ export default BaseDrag.extend(
 
       if (this.settings.helper) {
         if (typeof this.settings.helper === 'function') {
-          $draggeeHelper = this.settings.helper($draggeeHelper);
+          $draggeeHelper = this.settings.helper($draggeeHelper, index);
         } else {
           $draggeeHelper = $(this.settings.helper).append($draggeeHelper);
         }
@@ -303,17 +309,20 @@ export default BaseDrag.extend(
 
       $draggeeHelper.appendTo(Garnish.$bod);
 
-      var helperPos = this._getHelperTarget(i);
+      const helperPos = this._getHelperTarget(index, true);
 
       $draggeeHelper.css({
         position: 'absolute',
         top: helperPos.top,
         left: helperPos.left,
-        zIndex: this.settings.helperBaseZindex + this.$draggee.length - i,
-        opacity: this.settings.helperOpacity,
+        zIndex: this.settings.helperBaseZindex + this.$draggee.length - index,
       });
 
-      this.helperPositions[i] = {
+      if (this.settings.helperOpacity != 1) {
+        $draggeeHelper.css('opacity', this.settings.helperOpacity);
+      }
+
+      this.helperPositions[index] = {
         top: helperPos.top,
         left: helperPos.left,
       };
@@ -379,10 +388,11 @@ export default BaseDrag.extend(
     /**
      * Get the helper position for a draggee helper
      */
-    _getHelperTarget: function (i) {
+    _getHelperTarget: function (index, real) {
       return {
-        left: this.getHelperTargetX() + this.settings.helperSpacingX * i,
-        top: this.getHelperTargetY() + this.settings.helperSpacingY * i,
+        left:
+          this.getHelperTargetX(real) + this.settings.helperSpacingX * index,
+        top: this.getHelperTargetY(real) + this.settings.helperSpacingY * index,
       };
     },
 
@@ -394,7 +404,7 @@ export default BaseDrag.extend(
 
       this.helpers = null;
 
-      this.$draggee.show().css('visibility', 'inherit');
+      this.$draggee.show().css('visibility', '');
 
       this.onReturnHelpersToDraggees();
 
@@ -407,11 +417,13 @@ export default BaseDrag.extend(
       singleHelper: false,
       collapseDraggees: false,
       removeDraggee: false,
+      hideDraggee: true,
       copyDraggeeInputValuesToHelper: false,
       helperOpacity: 1,
+      helperMouseOffset: null,
       helper: null,
       helperBaseZindex: 1000,
-      helperLagBase: 1,
+      helperLagBase: 3,
       helperLagIncrementDividend: 1.5,
       helperSpacingX: 5,
       helperSpacingY: 5,

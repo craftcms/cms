@@ -411,14 +411,16 @@ a {
   }
 }
 
-a:hover {
+body:not(.dragging) a:hover {
   text-decoration: underline;
 }
 
 a.sel,
 li.sel a {
-  cursor: default !important;
-  text-decoration: none;
+  body:not(.dragging) & {
+    cursor: default !important;
+  }
+  text-decoration: none !important;
 }
 
 .go:after {
@@ -581,7 +583,7 @@ a.fieldtoggle {
   margin: 14px 0;
   @include padding-left(12px);
   color: $textColor;
-  text-decoration: none;
+  text-decoration: none !important;
 }
 
 a.fieldtoggle:before {
@@ -904,8 +906,9 @@ td.right {
   width: 1em;
   height: 1.375em;
   text-align: center;
-  cursor: pointer;
   overflow: hidden;
+
+  cursor: pointer;
 
   &:before {
     @include icon;
@@ -974,8 +977,11 @@ td.right {
     margin: 14px -24px 4px;
     @include padding(7px, 14px, 7px, 24px);
     color: $lightTextColor !important;
-    transition: color linear 100ms;
-    cursor: pointer;
+
+    body:not(.dragging) & {
+      transition: color linear 100ms;
+      cursor: pointer;
+    }
 
     .icon {
       @include margin-right(4px);
@@ -1041,6 +1047,7 @@ td.right {
   border: solid $hairlineColor;
   border-width: 1px 0;
   user-select: none;
+
   cursor: default;
 }
 
@@ -1279,6 +1286,7 @@ ul.icons {
   color: var(--text-color);
   font-size: inherit;
   background-color: var(--ui-control-bg-color);
+  text-decoration: none !important;
 
   &:not([aria-current]) {
     cursor: pointer;
@@ -1297,7 +1305,7 @@ ul.icons {
 
     &:hover,
     &:active {
-      text-decoration: underline;
+      text-decoration: underline !important;
     }
   }
 
@@ -1324,7 +1332,7 @@ ul.icons {
   }
 
   &:hover {
-    text-decoration: none;
+    text-decoration: none !important;
   }
 
   &[data-icon]:not(:empty):before,
@@ -1812,12 +1820,16 @@ div.btn.submit input {
     border-radius: 0;
     background-color: transparent;
 
-    &.current-step {
+    &.current-step,
+    &.active-drop-target {
       --text-color: #{$white};
       --ui-control-color: #{$white};
       --ui-control-bg-color: #{$grey500};
       --ui-control-hover-bg-color: #{darken($grey500, 5%)};
       --ui-control-active-bg-color: #{darken($grey500, 10%)};
+    }
+
+    &.current-step {
       --focus-ring: #{0 0 0 1px $blue300,
         0 0 0 3px transparentize($blue300, 0.3)};
       @include light-on-dark-text;
@@ -2355,7 +2367,7 @@ table {
       th {
         white-space: nowrap;
 
-        &.orderable:not(.ordered):hover {
+        body:not(.dragging) &.orderable:not(.ordered):hover {
           background-color: $grey100;
         }
 
@@ -2401,7 +2413,7 @@ table {
     tbody {
       tr {
         &:not(.disabled) {
-          &:hover {
+          body:not(.dragging) &:hover {
             th,
             td {
               background-color: $grey050;
@@ -2416,7 +2428,7 @@ table {
           &.sel {
             th,
             td {
-              background-color: $lightSelColor;
+              background-color: $lightSelColor !important;
             }
           }
         }
@@ -2514,10 +2526,12 @@ table {
   @include shadow;
 }
 
-.datatablesorthelper,
-.datatablesorthelper .element,
-.datatablesorthelper a {
-  cursor: move !important;
+body:not(.dragging) {
+  .datatablesorthelper,
+  .datatablesorthelper .element,
+  .datatablesorthelper a {
+    cursor: move !important;
+  }
 }
 
 .datatablesorthelper tr:first-child th,
@@ -2570,6 +2584,12 @@ $elementInnerSpacing: 5px;
         }
       }
     }
+  }
+
+  &.drag-helper {
+    background-color: $grey050;
+    box-shadow: 0 0 0 1px transparentize($darkSelColor, 0.9),
+      0 6px 4px -4px transparentize($darkSelColor, 0.8);
   }
 
   &.hasthumb {
@@ -2857,6 +2877,23 @@ $checkboxPadding: $checkboxSize + 4;
     }
   }
 
+  .tableview tr.active-drop-target th,
+  .tableview tr.active-drop-target td,
+  .thumbsview li.active-drop-target {
+    background-color: #{darken($grey500, 10%)} !important;
+
+    &,
+    a {
+      color: $white;
+    }
+  }
+
+  .tableview tr.draggee th,
+  .tableview tr.draggee td,
+  .thumbsview li.draggee {
+    opacity: 0.25;
+  }
+
   // table views
   .tableview {
     .move {
@@ -2891,7 +2928,7 @@ $checkboxPadding: $checkboxSize + 4;
       position: relative;
       @include margin(0, 1px, 1px, 0);
 
-      &:hover {
+      body:not(.dragging) &:hover {
         .element {
           background-color: $grey050;
         }
