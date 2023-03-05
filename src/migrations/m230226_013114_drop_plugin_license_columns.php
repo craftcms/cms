@@ -19,7 +19,7 @@ class m230226_013114_drop_plugin_license_columns extends Migration
     {
         if ($this->db->columnExists(Table::PLUGINS, 'licenseKeyStatus')) {
             if ($this->db->getIsPgsql()) {
-                $this->execute(sprintf('alter table %s drop constraint {{%plugins_licenseKeyStatus_check}}', Table::PLUGINS));
+                $this->execute(sprintf('alter table %s drop constraint %s', Table::PLUGINS, '{{%plugins_licenseKeyStatus_check}}'));
             }
             $this->dropColumn(Table::PLUGINS, 'licenseKeyStatus');
         }
