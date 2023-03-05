@@ -24,9 +24,12 @@ html {
 
 body {
   min-height: 100vh;
-}
 
-body {
+  &.dragging * {
+    cursor: move !important;
+    cursor: grabbing !important;
+  }
+
   :focus {
     outline-style: solid;
     outline-color: transparent;
@@ -960,6 +963,12 @@ li.breadcrumb-toggle-wrapper {
           @include pane;
           background-color: $grey050;
         }
+        &.active-drop-target {
+          background-color: #{darken($grey500, 10%)} !important;
+          color: $white;
+          @include light-on-dark-text;
+          cursor: default;
+        }
       }
     }
   }
@@ -1401,15 +1410,23 @@ li.breadcrumb-toggle-wrapper {
       position: relative;
 
       &:not(.has-subnav) > a {
-        transition: background-color linear 100ms;
-
         &:hover {
           text-decoration: none;
-          background-color: $grey100;
         }
 
         &.sel {
           cursor: default;
+        }
+      }
+
+      body:not(.dragging) &:not(.has-subnav) > a {
+        transition: background-color linear 100ms;
+
+        &:hover {
+          background-color: $grey100;
+        }
+
+        &.sel {
           background-color: $grey200;
         }
       }
