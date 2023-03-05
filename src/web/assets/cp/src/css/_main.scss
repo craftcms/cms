@@ -150,6 +150,11 @@ fieldset:last-child,
   box-sizing: border-box;
 }
 
+.offset-drag-helper {
+  @include margin(-50px, 0, 0, -50px);
+  @include padding(60px, 0, 0, 60px);
+}
+
 img {
   max-width: 100%;
 }
@@ -411,16 +416,14 @@ a {
   }
 }
 
-body:not(.dragging) a:hover {
+a:hover {
   text-decoration: underline;
 }
 
 a.sel,
 li.sel a {
-  body:not(.dragging) & {
-    cursor: default !important;
-  }
-  text-decoration: none !important;
+  cursor: default !important;
+  text-decoration: none;
 }
 
 .go:after {
@@ -583,7 +586,7 @@ a.fieldtoggle {
   margin: 14px 0;
   @include padding-left(12px);
   color: $textColor;
-  text-decoration: none !important;
+  text-decoration: none;
 }
 
 a.fieldtoggle:before {
@@ -906,9 +909,8 @@ td.right {
   width: 1em;
   height: 1.375em;
   text-align: center;
-  overflow: hidden;
-
   cursor: pointer;
+  overflow: hidden;
 
   &:before {
     @include icon;
@@ -977,11 +979,8 @@ td.right {
     margin: 14px -24px 4px;
     @include padding(7px, 14px, 7px, 24px);
     color: $lightTextColor !important;
-
-    body:not(.dragging) & {
-      transition: color linear 100ms;
-      cursor: pointer;
-    }
+    transition: color linear 100ms;
+    cursor: pointer;
 
     .icon {
       @include margin-right(4px);
@@ -1047,7 +1046,6 @@ td.right {
   border: solid $hairlineColor;
   border-width: 1px 0;
   user-select: none;
-
   cursor: default;
 }
 
@@ -1286,7 +1284,6 @@ ul.icons {
   color: var(--text-color);
   font-size: inherit;
   background-color: var(--ui-control-bg-color);
-  text-decoration: none !important;
 
   &:not([aria-current]) {
     cursor: pointer;
@@ -1305,7 +1302,7 @@ ul.icons {
 
     &:hover,
     &:active {
-      text-decoration: underline !important;
+      text-decoration: underline;
     }
   }
 
@@ -1332,7 +1329,7 @@ ul.icons {
   }
 
   &:hover {
-    text-decoration: none !important;
+    text-decoration: none;
   }
 
   &[data-icon]:not(:empty):before,
@@ -2367,7 +2364,7 @@ table {
       th {
         white-space: nowrap;
 
-        body:not(.dragging) &.orderable:not(.ordered):hover {
+        &.orderable:not(.ordered):hover {
           background-color: $grey100;
         }
 
@@ -2413,7 +2410,7 @@ table {
     tbody {
       tr {
         &:not(.disabled) {
-          body:not(.dragging) &:hover {
+          &:hover {
             th,
             td {
               background-color: $grey050;
@@ -2428,7 +2425,7 @@ table {
           &.sel {
             th,
             td {
-              background-color: $lightSelColor !important;
+              background-color: $lightSelColor;
             }
           }
         }
@@ -2526,12 +2523,10 @@ table {
   @include shadow;
 }
 
-body:not(.dragging) {
-  .datatablesorthelper,
-  .datatablesorthelper .element,
-  .datatablesorthelper a {
-    cursor: move !important;
-  }
+.datatablesorthelper,
+.datatablesorthelper .element,
+.datatablesorthelper a {
+  cursor: move !important;
 }
 
 .datatablesorthelper tr:first-child th,
@@ -2586,10 +2581,9 @@ $elementInnerSpacing: 5px;
     }
   }
 
-  &.drag-helper {
+  .offset-drag-helper & {
     background-color: $grey050;
-    box-shadow: 0 0 0 1px transparentize($darkSelColor, 0.9),
-      0 6px 4px -4px transparentize($darkSelColor, 0.8);
+    @include shadow;
   }
 
   &.hasthumb {
@@ -2928,7 +2922,7 @@ $checkboxPadding: $checkboxSize + 4;
       position: relative;
       @include margin(0, 1px, 1px, 0);
 
-      body:not(.dragging) &:hover {
+      &:hover {
         .element {
           background-color: $grey050;
         }

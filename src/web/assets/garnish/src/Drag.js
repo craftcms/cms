@@ -217,8 +217,8 @@ export default BaseDrag.extend(
      * Returns the helper’s target X position
      */
     getHelperTargetX: function (real) {
-      if (!real && this.settings.helperMouseOffset !== null) {
-        return this.mouseX + this.settings.helperMouseOffset;
+      if (!real && this.settings.moveHelperToCursor) {
+        return this.mouseX;
       }
       return this.mouseX - this.mouseOffsetX;
     },
@@ -227,8 +227,8 @@ export default BaseDrag.extend(
      * Returns the helper’s target Y position
      */
     getHelperTargetY: function (real) {
-      if (!real && this.settings.helperMouseOffset !== null) {
-        return this.mouseY + this.settings.helperMouseOffset;
+      if (!real && this.settings.moveHelperToCursor) {
+        return this.mouseY;
       }
       return this.mouseY - this.mouseOffsetY;
     },
@@ -420,7 +420,7 @@ export default BaseDrag.extend(
       hideDraggee: true,
       copyDraggeeInputValuesToHelper: false,
       helperOpacity: 1,
-      helperMouseOffset: null,
+      moveHelperToCursor: false,
       helper: null,
       helperBaseZindex: 1000,
       helperLagBase: 3,
