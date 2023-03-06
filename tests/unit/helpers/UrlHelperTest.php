@@ -283,7 +283,7 @@ class UrlHelperTest extends TestCase
             ['foo%5Bbar%5D=baz', ['foo[bar]' => 'baz']],
             ['foo%5Bbar%5D=baz', ['foo' => ['bar' => 'baz']]],
             ['foo=bar%2Bbaz', ['foo' => 'bar+baz']],
-            ['foo&2Bbar=baz', ['foo+bar' => 'baz']],
+            ['foo%2Bbar=baz', ['foo+bar' => 'baz']],
             ['foo=bar%5Bbaz%5D', ['foo' => 'bar[baz]']],
             ['foo=%7Bbar%7D', ['foo' => '{bar}']],
             ['foo%5B1%5D=bar', ['foo[1]' => 'bar']],
