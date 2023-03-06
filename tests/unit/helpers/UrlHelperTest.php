@@ -568,6 +568,8 @@ class UrlHelperTest extends TestCase
             ['http://example.test?foo=bar+baz', 'http://example.test?foo=bar+baz'],
             ['http://example.test?foo=bar+baz#hash', 'http://example.test?foo=bar baz#hash'],
             ['http://example.test?foo=bar%2Bbaz#hash', 'http://example.test?foo=bar%2Bbaz#hash'],
+            ['http://example.test?foo[0]=bar#hash', 'http://example.test?foo%5B0%5D=bar#hash'],
+            ['http://example.test?foo[0]=bar&amp;foo[1]=baz#hash', 'http://example.test?foo%5B0%5D=bar&amp;foo%5B1%5D=baz#hash'],
         ];
     }
 
