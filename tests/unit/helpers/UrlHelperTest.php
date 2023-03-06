@@ -279,15 +279,15 @@ class UrlHelperTest extends TestCase
             ['foo=0', ['foo' => false]],
             ['foo=1', ['foo' => true]],
             ['foo=1&bar=2', ['foo' => 1, 'bar' => 2]],
-            ['foo[0]=1&foo[1]=2', ['foo' => [1, 2]]],
-            ['foo[bar]=baz', ['foo[bar]' => 'baz']],
-            ['foo[bar]=baz', ['foo' => ['bar' => 'baz']]],
+            ['foo%5B0%5D=1&foo%5B1%5D=2', ['foo' => [1, 2]]],
+            ['foo%5Bbar%5D=baz', ['foo[bar]' => 'baz']],
+            ['foo%5Bbar%5D=baz', ['foo' => ['bar' => 'baz']]],
             ['foo=bar%2Bbaz', ['foo' => 'bar+baz']],
-            ['foo+bar=baz', ['foo+bar' => 'baz']],
+            ['foo%2Bbar=baz', ['foo+bar' => 'baz']],
             ['foo=bar%5Bbaz%5D', ['foo' => 'bar[baz]']],
             ['foo={bar}', ['foo' => '{bar}']],
-            ['foo[1]=bar', ['foo[1]' => 'bar']],
-            ['foo[1][bar]=1&foo[1][baz]=2', ['foo[1][bar]' => 1, 'foo[1][baz]' => 2]],
+            ['foo%5B1%5D=bar', ['foo[1]' => 'bar']],
+            ['foo%5B1%5D%5Bbar%5D=1&foo%5B1%5D%5Bbaz%5D=2', ['foo[1][bar]' => 1, 'foo[1][baz]' => 2]],
         ];
     }
 
@@ -568,6 +568,8 @@ class UrlHelperTest extends TestCase
             ['http://example.test?foo=bar+baz', 'http://example.test?foo=bar+baz'],
             ['http://example.test?foo=bar+baz#hash', 'http://example.test?foo=bar baz#hash'],
             ['http://example.test?foo=bar%2Bbaz#hash', 'http://example.test?foo=bar%2Bbaz#hash'],
+            ['http://example.test?foo%5B0%5D=bar%2Bbaz#hash', 'http://example.test?foo[0]=bar%2Bbaz#hash'],
+            ['http://example.test?foo%5B0%5D=bar&foo%5B1%5D=baz#hash', 'http://example.test?foo[0]=bar&foo[1]=baz#hash'],
         ];
     }
 
@@ -639,7 +641,7 @@ class UrlHelperTest extends TestCase
         return [
             ['{siteUrl}endpoint', 'endpoint'],
             // https://github.com/craftcms/cms/issues/4778
-            ['{siteUrl}endpoint?param1=x&param2[0]=y&param2[1]=z', 'endpoint', 'param1=x&param2[]=y&param2[]=z'],
+            ['{siteUrl}endpoint?param1=x&param2%5B0%5D=y&param2%5B1%5D=z', 'endpoint', 'param1=x&param2%5B%5D=y&param2%5B%5D=z'],
         ];
     }
 
