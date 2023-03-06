@@ -12,13 +12,12 @@ use BaconQrCode\Renderer\ImageRenderer;
 use BaconQrCode\Renderer\RendererStyle\RendererStyle;
 use BaconQrCode\Writer;
 use Craft;
-use craft\base\mfa\BaseMfaType;
 use craft\elements\User;
-use craft\mfa\ConfigurableMfaInterface;
+use craft\mfa\ConfigurableMfaType;
 use craft\records\Authenticator as AuthenticatorRecord;
 use PragmaRX\Google2FA\Google2FA;
 
-class GoogleAuthenticator extends BaseMfaType implements ConfigurableMfaInterface
+class GoogleAuthenticator extends ConfigurableMfaType
 {
     /**
      * The key to store the authenticator secret in session, while setting up this method.
@@ -82,7 +81,7 @@ class GoogleAuthenticator extends BaseMfaType implements ConfigurableMfaInterfac
             );
         } else {
             // otherwise show the setup form (instructions, QR code and verification input(s))
-            $formHtml = $this->getSetupFormHtml($html, $options);
+            $formHtml = $this->getSetupFormHtml('',false, $user);
         }
 
         return parent::getInputHtml($formHtml, $options);
@@ -91,9 +90,12 @@ class GoogleAuthenticator extends BaseMfaType implements ConfigurableMfaInterfac
     /**
      * @inheritdoc
      */
-    public function getSetupFormHtml(string $html = '', array $options = []): string
+    public function getSetupFormHtml(string $html = '', bool $withInto = false, ?User $user = null): string
     {
-        $user = Craft::$app->getMfa()->getUserForMfaLogin();
+        if ($user === null) {
+            $user = Craft::$app->getMfa()->getUserForMfaLogin();
+        }
+
         if ($user === null) {
             return '';
         }
@@ -101,11 +103,21 @@ class GoogleAuthenticator extends BaseMfaType implements ConfigurableMfaInterfac
         // otherwise show instructions, QR code and verification form
         $data['secret'] = $this->getSecret($user);
         $data['qrCode'] = $this->generateQrCode($user, $data['secret']);
+        $data['user'] = $user;
+        $data['withIntro'] = $withInto;
+        $data['typeClass'] = self::class;
 
-        return Craft::$app->getView()->renderTemplate(
+        if ($withInto) {
+            $data['typeName'] = self::displayName();
+            $data['typeDescription'] = self::getDescription();
+        }
+
+        $html = Craft::$app->getView()->renderTemplate(
             '_components/mfa/googleauthenticator/setup.twig',
             $data + ['typeClass' => self::class]
         );
+
+        return parent::getSetupFormHtml($html, $withInto, $user);
     }
 
     public function removeSetup(): bool

@@ -7,9 +7,12 @@
       $mfaSetupFormContainer: null,
       $alternativeMfaLink: null,
       $alternativeMfaTypesContainer: null,
-      $removeSetupButtons: null,
-      $submitBtns: null,
+      $viewSetupBtns: null,
       $errors: null,
+
+      $slideout: null,
+      $removeSetupButton: null,
+      $verifyButton: null,
 
       init: function (settings) {
         this.$mfaLoginFormContainer = $('#mfa-form');
@@ -17,11 +20,8 @@
         this.$alternativeMfaLink = $('#alternative-mfa');
         this.$alternativeMfaTypesContainer = $('#alternative-mfa-types');
         this.$errors = $('#login-errors');
-
-        this.$submitBtns =
-          this.$mfaSetupFormContainer.find('button.mfa-verify');
-        this.$removeSetupButtons = this.$mfaSetupFormContainer.find(
-          'button.remove-setup'
+        this.$viewSetupBtns = this.$mfaSetupFormContainer.find(
+          'button.mfa-setup-form'
         );
 
         this.setSettings(settings, Craft.Mfa.defaults);
@@ -31,8 +31,7 @@
           'click',
           'onAlternativeMfaType'
         );
-        this.addListener(this.$removeSetupButtons, 'click', 'onRemoveSetup');
-        this.addListener(this.$submitBtns, 'click', 'onSetupBtnClick');
+        this.addListener(this.$viewSetupBtns, 'click', 'onViewSetupBtnClick');
       },
 
       showMfaForm: function (mfaForm, $loginDiv) {
@@ -77,9 +76,37 @@
             window.location.href = response.data.returnUrl;
           })
           .catch(({response}) => {
-            Garnish.shake(this.$form, 'left');
             this.onSubmitResponse($submitBtn);
 
+            // Add the error message
+            this.showError(response.data.message);
+          });
+      },
+
+      onViewSetupBtnClick: function (ev) {
+        ev.preventDefault();
+
+        const data = {
+          selectedMethod: this.getCurrentMfaType($(ev.currentTarget)),
+        };
+
+        Craft.sendActionRequest('POST', 'mfa/setup-slideout-html', {data})
+          .then((response) => {
+            this.slideout = new Craft.Slideout(response.data.html);
+
+            this.$removeSetupButton =
+              this.slideout.$container.find('#mfa-remove-setup');
+            this.addListener(this.$removeSetupButton, 'click', 'onRemoveSetup');
+
+            this.$verifyButton = this.slideout.$container.find('#mfa-verify');
+            this.addListener(this.$verifyButton, 'click', 'onVerify');
+
+            this.slideout.on('close', (ev) => {
+              this.$removeSetupButton = null;
+              this.slideout = null;
+            });
+          })
+          .catch(({response}) => {
             // Add the error message
             this.showError(response.data.message);
           });
@@ -88,9 +115,7 @@
       onRemoveSetup: function (ev) {
         ev.preventDefault();
 
-        let selectedMethod = this.getCurrentMfaType(
-          $(ev.currentTarget).parents('.mfa-setup-form')
-        );
+        let selectedMethod = this.getCurrentMfaType(this.slideout.$container);
 
         if (selectedMethod === undefined) {
           selectedMethod = null;
@@ -107,14 +132,16 @@
           })
           .catch((e) => {
             Craft.cp.displayError(e.response.data.message);
+          })
+          .finally(() => {
+            this.slideout.close();
           });
       },
 
-      onSetupBtnClick: function (ev) {
+      onVerify: function (ev) {
         ev.preventDefault();
 
-        const $form = $(ev.currentTarget).parents('.mfa-setup-form');
-        const $submitBtn = $form.find('.submit');
+        const $submitBtn = this.slideout.$container.find('#mfa-verify');
 
         $submitBtn.addClass('loading');
 
@@ -122,21 +149,21 @@
           mfaFields: {},
         };
 
-        $form.find('input').each(function (index, element) {
+        this.slideout.$container.find('input').each(function (index, element) {
           data.mfaFields[$(element).attr('name')] = $(element).val();
         });
 
-        data.currentMethod = this.getCurrentMfaType($form);
+        data.currentMethod = this.getCurrentMfaType(this.slideout.$container);
 
         console.log(data);
 
         Craft.sendActionRequest('POST', 'users/verify-mfa', {data})
           .then((response) => {
-            $form.remove();
-            this.onSubmitResponse();
+            this.onSubmitResponse($submitBtn);
+            this.slideout.close();
           })
           .catch(({response}) => {
-            this.onSubmitResponse();
+            this.onSubmitResponse($submitBtn);
 
             // Add the error message
             this.showError(response.data.message);

@@ -9,34 +9,35 @@
     id: 'requireMfa',
     instructions: 'Should Multi-Factor Authentication (MFA) be enabled for this user.'|t('app'),
     checked: user ? user.requireMfa : false,
-    toggle: 'mfa-setup',
+    toggle: (user.id == currentUser.id) ? 'mfa-setup' : false,
 }) }}
 
-{% do view.registerDeltaName('mfa-setup') %}
+{% if user.id == currentUser.id %}
+    {% do view.registerDeltaName('mfa-setup') %}
 
-<div id="mfa-setup">
-    {% set mfaTypes = user.getAllMfaTypesWithConfig() %}
-    {% if mfaTypes is empty %}
-        <p>{{ 'No MFA options available.'|t('app') }}</p>
-    {% else %}
-        {% for key, option in mfaTypes %}
-            {% set isSetup = option.config.requiresSetup == false or (option.config.requiresSetup and user.isMfaTypeSetup(key)) %}
 
-            <div class="mfa-type">
-                <strong>{{ option.name }}</strong>
-                <div class="instructions">
-                    {{ option.description }}
-                </div>
+    <div id="mfa-setup">
+        {% set mfaTypes = craft.app.mfa.getAllMfaTypes(true) %}
+        {% if mfaTypes is empty %}
+            <p>{{ 'No MFA options available.'|t('app') }}</p>
+        {% else %}
+            {% for key, option in mfaTypes %}
+                {% set isSetup = option.config.requiresSetup == false or (option.config.requiresSetup and user.isMfaTypeSetup(key)) %}
 
-                {% if option.config.requiresSetup %}
-                    <div class="mfa-setup-form" data-mfa-type="{{ key }}">
-                        {{ option.config.setupForm|raw }}
+                <div class="mfa-type">
+                    <strong>{{ option.name }}</strong>
+                    <div class="instructions">
+                        {{ option.description }}
                     </div>
+
+                    {% if option.config.requiresSetup %}
+                        <button class="btn mfa-setup-form" data-mfa-type="{{ key }}">View Setup</button>
+                    {% endif %}
+                </div>
+                {% if loop.last == false %}
+                    <hr />
                 {% endif %}
-            </div>
-            {% if loop.last == false %}
-                <hr />
-            {% endif %}
-        {% endfor %}
-    {% endif %}
-</div>
+            {% endfor %}
+        {% endif %}
+    </div>
+{% endif %}

@@ -1,20 +1,28 @@
 {% import '_includes/forms.twig' as forms %}
 
-{% if user is not defined %}
+{% if user is not defined or user is empty %}
     {% set user = craft.app.mfa.getUserForMfaLogin() %}
 {% endif %}
 
-{% if fields is not defined %}
+{% if fields is not defined or fields is empty %}
     {% set fields = {'verificationCode' : 'Verification Code'} %}
 {% endif %}
 
-{% if typeClass is not defined %}
+{% if typeClass is not defined or typeClass is empty %}
     {% set typeClass = 'craft\\mfa\\type\\GoogleAuthenticator' %}
 {% endif %}
 
 {% set isSetup = user.isMfaTypeSetup(typeClass) %}
 
 <div class="field">
+    {% if withIntro is defined and withIntro == true %}
+        {% if typeName is defined and typeName is not empty %}
+            <h1>{{ typeName }}</h1>
+        {% endif %}
+        {% if typeDescription is defined and typeDescription is not empty %}
+            <p>{{ typeDescription }}</p>
+        {% endif %}
+    {% endif %}
     {% if not isSetup %}
         <h3>Step 1: Download an app.</h3>
         <p>Download a TOPT app, e.g. Google Authenticator, MS Authenticator, Authy, 1Password.</p>
@@ -50,6 +58,6 @@
         <p>Now every time you log in, you'll be asked to enter a verification code from the app.</p>
     {% else %}
         <h3>You're all set up</h3>
-        <button name="remove-setup" class="btn remove-setup">Remove setup</button>
+        <button id="mfa-remove-setup" name="remove-setup" class="btn">Remove setup</button>
     {% endif %}
 </div>

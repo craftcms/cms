@@ -23,10 +23,11 @@ interface ConfigurableMfaInterface
      * Get html for MFA setup form
      *
      * @param string $html
-     * @param array $options
+     * @param bool $withInto
+     * @param User|null $user
      * @return string
      */
-    public function getSetupFormHtml(string $html = '', array $options = []): string;
+    public function getSetupFormHtml(string $html = '', bool $withInto = false, ?User $user = null): string;
 
     /**
      * Remove all setup user has for this MFA option

@@ -8,7 +8,9 @@
 namespace craft\controllers;
 
 use Craft;
+use craft\mfa\ConfigurableMfaInterface;
 use craft\web\Controller;
+use yii\base\Exception;
 use yii\web\Response;
 
 /** @noinspection ClassOverridesFieldOfSuperClassInspection */
@@ -114,6 +116,44 @@ class MfaController extends Controller
         }
 
         return null; // todo: finish me
+    }
+
+    public function actionSaveSetup(): ?Response
+    {
+        return $this->asSuccess('all good');
+    }
+
+    /**
+     * Returns MFA setup HTML for the slideout. Only triggered when editing your own account
+     *
+     * @return Response|null
+     * @throws \Throwable
+     */
+    public function actionSetupSlideoutHtml(): ?Response
+    {
+        if (!$this->request->getIsPost() || !$this->request->getIsAjax()) {
+            return null;
+        }
+
+        $user = Craft::$app->getUser()->getIdentity();
+
+        if ($user === null) {
+            return null;
+        }
+
+        $selectedMethod = Craft::$app->getRequest()->getRequiredBodyParam('selectedMethod');
+        if (empty($selectedMethod)) {
+            return null;
+        }
+
+        $mfaType = new $selectedMethod();
+        if (!($mfaType instanceof ConfigurableMfaInterface)) {
+            throw new Exception('asd');
+        }
+
+        $html = $mfaType->getSetupFormHtml('',true, $user);
+
+        return $this->asJson(['html' => $html]);
     }
 
     //    public function actionGetQrCode(): Response

@@ -1871,20 +1871,20 @@ class User extends Element implements IdentityInterface
      *
      * @return array
      */
-    public function getAllMfaTypesWithConfig(): array
-    {
-        $options = Craft::$app->getMfa()->getAllMfaTypes(true);
-
-        foreach ($options as $key => $option) {
-            if ($option['config']['requiresSetup']) {
-                $mfaType = new $key();
-                if ($mfaType instanceof ConfigurableMfaInterface) {
-                    $options[$key]['config']['setupForm'] = $mfaType->getSetupFormHtml();
-                }
-            }
-        }
-        return $options;
-    }
+//    public function getAllMfaTypesWithConfig(): array
+//    {
+//        $options = Craft::$app->getMfa()->getAllMfaTypes(true);
+//
+//        foreach ($options as $key => $option) {
+//            if ($option['config']['requiresSetup']) {
+//                $mfaType = new $key();
+//                if ($mfaType instanceof ConfigurableMfaInterface) {
+//                    $options[$key]['config']['setupForm'] = $mfaType->getSetupFormHtml();
+//                }
+//            }
+//        }
+//        return $options;
+//    }
 
     /**
      * Check if given MFA option is fully set up for the user
