@@ -158,7 +158,7 @@ class CpScreenResponseFormatter extends Component implements ResponseFormatterIn
                 'saveShortcutRedirect' => $behavior->saveShortcutRedirectUrl,
                 'contentNotice' => $notice,
                 'content' => $content,
-                'details' => $sidebar,
+                'sidebar' => $sidebar,
             ],
             'templateMode' => View::TEMPLATE_MODE_CP,
         ]);
