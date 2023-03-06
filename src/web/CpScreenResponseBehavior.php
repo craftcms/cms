@@ -176,6 +176,13 @@ class CpScreenResponseBehavior extends Behavior
     public $sidebar = null;
 
     /**
+     * @var string|callable|null The details HTML.
+     * @see details()
+     * @see detailsTemplate()
+     */
+    public $details = null;
+
+    /**
      * @var string|callable|null The content notice HTML.
      * @see notice()
      * @see noticeTemplate()
@@ -565,6 +572,32 @@ class CpScreenResponseBehavior extends Behavior
     public function sidebarTemplate(string $template, array $variables = []): Response
     {
         return $this->sidebar(
+            fn() => Craft::$app->getView()->renderTemplate($template, $variables, View::TEMPLATE_MODE_CP)
+        );
+    }
+
+    /**
+     * Sets the details HTML.
+     *
+     * @param callable|string|null $value
+     * @return Response
+     */
+    public function details(callable|string|null $value): Response
+    {
+        $this->details = $value;
+        return $this->owner;
+    }
+
+    /**
+     * Sets a template that should be used to render the details HTML.
+     *
+     * @param string $template
+     * @param array $variables
+     * @return Response
+     */
+    public function detailsTemplate(string $template, array $variables = []): Response
+    {
+        return $this->details(
             fn() => Craft::$app->getView()->renderTemplate($template, $variables, View::TEMPLATE_MODE_CP)
         );
     }
