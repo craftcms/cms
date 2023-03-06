@@ -1140,11 +1140,12 @@ class Asset extends Element
      */
     public function getFieldLayout()
     {
-        if (($fieldLayout = parent::getFieldLayout()) !== null) {
+        // fix for https://github.com/craftcms/cms/issues/12695
+        $volume = $this->getVolume();
+        if (!($volume instanceof Temp) && ($fieldLayout = parent::getFieldLayout()) !== null) {
             return $fieldLayout;
         }
 
-        $volume = $this->getVolume();
         return $volume->getFieldLayout();
     }
 
