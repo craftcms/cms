@@ -279,15 +279,15 @@ class UrlHelperTest extends TestCase
             ['foo=0', ['foo' => false]],
             ['foo=1', ['foo' => true]],
             ['foo=1&bar=2', ['foo' => 1, 'bar' => 2]],
-            ['foo[0]=1&foo[1]=2', ['foo' => [1, 2]]],
-            ['foo[bar]=baz', ['foo[bar]' => 'baz']],
-            ['foo[bar]=baz', ['foo' => ['bar' => 'baz']]],
+            ['foo%5B0%5D=1&foo%5B1%5D=2', ['foo' => [1, 2]]],
+            ['foo%5Bbar%5D=baz', ['foo[bar]' => 'baz']],
+            ['foo%5Bbar%5D=baz', ['foo' => ['bar' => 'baz']]],
             ['foo=bar%2Bbaz', ['foo' => 'bar+baz']],
             ['foo+bar=baz', ['foo+bar' => 'baz']],
             ['foo=bar%5Bbaz%5D', ['foo' => 'bar[baz]']],
             ['foo={bar}', ['foo' => '{bar}']],
-            ['foo[1]=bar', ['foo[1]' => 'bar']],
-            ['foo[1][bar]=1&foo[1][baz]=2', ['foo[1][bar]' => 1, 'foo[1][baz]' => 2]],
+            ['foo%5B1%5D=bar', ['foo[1]' => 'bar']],
+            ['foo%5B1%5D%5Bbar%5D=1&foo%5B1%5D%5Bbaz%5D=2', ['foo[1][bar]' => 1, 'foo[1][baz]' => 2]],
         ];
     }
 
