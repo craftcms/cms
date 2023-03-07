@@ -23,6 +23,7 @@
 
 - Fixed a bug where the first three folder icons listed in asset indexes were getting linked along with the folder label. ([#12802](https://github.com/craftcms/cms/issues/12802))
 - FDixed a styling issue with asset search inputs. ([#12807](https://github.com/craftcms/cms/issues/12807))
+- Fixed a bug where the focused table row wasn’t getting grayed out when navigating to a subfodlder in asset indexes. ([#12810](https://github.com/craftcms/cms/issues/12810))
 
 ## 4.4.0-beta.6 - 2023-03-05
 
