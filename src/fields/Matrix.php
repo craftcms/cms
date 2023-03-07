@@ -1074,8 +1074,8 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
             $value = $element->getFieldValue($this->handle);
             if ($value instanceof MatrixBlockQuery) {
                 $this->_populateQuery($value, $element);
+                $value->clearCachedResult();
             }
-            $value->clearCachedResult();
         }
 
         parent::afterElementPropagate($element, $isNew);
