@@ -1,26 +1,5 @@
 # Release Notes for Craft CMS 4
 
-## Unreleased
-
-- Fixed a bug where `craft\events\RegisterElementSourcesEvent::$context` wasn’t always set to `modal` when defining the available element sources for an element selection modal.
-- Fixed a styling bug where multi-line checkbox labels within the Customize Sources modal and View menu weren’t wrapping properly. ([#12717](https://github.com/craftcms/cms/issues/12717))
-- Fixed a bug where asset thumbnails within collapsed Matrix blocks weren’t loading when the block was expanded. ([#12720](https://github.com/craftcms/cms/issues/12720))
-- Fixed a bug where user activation/verification/reset-password URLs could be root-relative, if the `@web` alias was explicitly set to a root-relative URL.
-- Fixed a PHP error that could occur if an options field’s condition rule wasn’t configured with any values. ([#12713](https://github.com/craftcms/cms/pull/12713))
-- Fixed a bug where control panel notifications weren’t being announced to screen readers. ([#12714](https://github.com/craftcms/cms/pull/12714))
-- Fixed a bug where localized relations could be moved to a newly-added site rather than copied, when applying project config changes. ([#12702](https://github.com/craftcms/cms/issues/12702))
-- Fixed a bug where element indexes’ “View” buttons could be inconsistently positioned in the toolbar.
-- Fixed a bug where element selector modal footers could hide the modal contents. ([#12708](https://github.com/craftcms/cms/issues/12708))
-- Fixed a bug where asset thumbnails weren’t respecting the `generateTransformsBeforePageLoad` config setting. ([#12750](https://github.com/craftcms/cms/issues/12750))
-- Fixed a bug where soft hyphens, non-breaking spaces, zero-width characters, invisible times characters, and invisible separators weren’t getting stripped from sanitized asset filenames. ([#12741](https://github.com/craftcms/cms/issues/12741), [#12759](https://github.com/craftcms/cms/pull/12759))
-- Fixed a bug where custom fields’ database columns would get deleted when applying project config changes, if the field type wasn’t present. ([#12760](https://github.com/craftcms/cms/issues/12760))
-- Fixed an error that could occur if a non-numeric value was entered into an image transform’s Width or Height settings. ([#12776](https://github.com/craftcms/cms/pull/12776))
-- Fixed a bug where Assets, Categories, and Tags fields weren’t respecting their “Allow self relations” settings. ([#12769](https://github.com/craftcms/cms/issues/12769))
-- Fixed a bug where dynamically-generated entry titles weren’t always generated with the site’s formatting locale in place. ([12780](https://github.com/craftcms/cms/issues/12780))
-- Fixed a bug where element titles weren’t getting a pointer cursor or underlines on hover, when selected on an element index page.
-- Fixed a bug where it wasn’t possible to close modals that were opened by a custom select menu via the `<kbd>Esc</kbd>` key. ([#12814](https://github.com/craftcms/cms/pull/12814))
-- Fixed an error that could occur when saving an element with an eager-loaded Matrix field. ([#12815](https://github.com/craftcms/cms/issues/12815))
-
 ## Unreleased (4.4)
 
 - Fixed a bug where the first three folder icons listed in asset indexes were getting linked along with the folder label. ([#12802](https://github.com/craftcms/cms/issues/12802))
@@ -261,6 +240,28 @@
 - Fixed a database deadlock error that could occur when updating a relation or structure position for an element that was simultaneously being saved. ([#9905](https://github.com/craftcms/cms/issues/9905))
 - Fixed a bug where element query `select()` and `orderBy()` params could resolve element extension table column names to custom field columns, if a custom field had a conflicting handle. ([#12652](https://github.com/craftcms/cms/issues/12652))
 - Fixed a bug where it was possible to activate inactive users with non-unique emails. ([#12431](https://github.com/craftcms/cms/issues/12431), [#12712](https://github.com/craftcms/cms/pull/12712))
+
+## 4.3.11 - 2023-03-07
+
+- Fixed a bug where `craft\events\RegisterElementSourcesEvent::$context` wasn’t always set to `modal` when defining the available element sources for an element selection modal.
+- Fixed a styling bug where multi-line checkbox labels within the Customize Sources modal and View menu weren’t wrapping properly. ([#12717](https://github.com/craftcms/cms/issues/12717))
+- Fixed a bug where asset thumbnails within collapsed Matrix blocks weren’t loading when the block was expanded. ([#12720](https://github.com/craftcms/cms/issues/12720))
+- Fixed a bug where user activation/verification/reset-password URLs could be root-relative, if the `@web` alias was explicitly set to a root-relative URL.
+- Fixed a PHP error that could occur if an options field’s condition rule wasn’t configured with any values. ([#12713](https://github.com/craftcms/cms/pull/12713))
+- Fixed a bug where control panel notifications weren’t being announced to screen readers. ([#12714](https://github.com/craftcms/cms/pull/12714))
+- Fixed a bug where localized relations could be moved to a newly-added site rather than copied, when applying project config changes. ([#12702](https://github.com/craftcms/cms/issues/12702))
+- Fixed a bug where element indexes’ “View” buttons could be inconsistently positioned in the toolbar.
+- Fixed a bug where element selector modal footers could hide the modal contents. ([#12708](https://github.com/craftcms/cms/issues/12708))
+- Fixed a bug where asset thumbnails weren’t respecting the `generateTransformsBeforePageLoad` config setting. ([#12750](https://github.com/craftcms/cms/issues/12750))
+- Fixed a bug where soft hyphens, non-breaking spaces, zero-width characters, invisible times characters, and invisible separators weren’t getting stripped from sanitized asset filenames. ([#12741](https://github.com/craftcms/cms/issues/12741), [#12759](https://github.com/craftcms/cms/pull/12759))
+- Fixed a bug where custom fields’ database columns would get deleted when applying project config changes, if the field type wasn’t present. ([#12760](https://github.com/craftcms/cms/issues/12760))
+- Fixed an error that could occur if a non-numeric value was entered into an image transform’s Width or Height settings. ([#12776](https://github.com/craftcms/cms/pull/12776))
+- Fixed a bug where Assets, Categories, and Tags fields weren’t respecting their “Allow self relations” settings. ([#12769](https://github.com/craftcms/cms/issues/12769))
+- Fixed a bug where dynamically-generated entry titles weren’t always generated with the site’s formatting locale in place. ([12780](https://github.com/craftcms/cms/issues/12780))
+- Fixed a bug where element titles weren’t getting a pointer cursor or underlines on hover, when selected on an element index page.
+- Fixed a bug where it wasn’t possible to close modals that were opened by a custom select menu via the `<kbd>Esc</kbd>` key. ([#12814](https://github.com/craftcms/cms/pull/12814))
+- Fixed an error that could occur when saving an element with an eager-loaded Matrix field. ([#12815](https://github.com/craftcms/cms/issues/12815))
+- Fixed a bug where the “send to Developer Support” links within the Craft Support widget weren’t working. ([#12822](https://github.com/craftcms/cms/issues/12822))
 
 ## 4.3.10 - 2023-02-17
 
