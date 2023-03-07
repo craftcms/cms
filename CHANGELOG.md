@@ -18,6 +18,8 @@
 - Fixed a bug where Assets, Categories, and Tags fields weren’t respecting their “Allow self relations” settings. ([#12769](https://github.com/craftcms/cms/issues/12769))
 - Fixed a bug where dynamically-generated entry titles weren’t always generated with the site’s formatting locale in place. ([12780](https://github.com/craftcms/cms/issues/12780))
 - Fixed a bug where element titles weren’t getting a pointer cursor or underlines on hover, when selected on an element index page.
+- Fixed a bug where it wasn’t possible to close modals that were opened by a custom select menu via the `<kbd>Esc</kbd>` key. ([#12814](https://github.com/craftcms/cms/pull/12814))
+- Fixed an error that could occur when saving an element with an eager-loaded Matrix field. ([#12815](https://github.com/craftcms/cms/issues/12815))
 
 ## Unreleased (4.4)
 
