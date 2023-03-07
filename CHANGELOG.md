@@ -19,6 +19,10 @@
 - Fixed a bug where dynamically-generated entry titles weren’t always generated with the site’s formatting locale in place. ([12780](https://github.com/craftcms/cms/issues/12780))
 - Fixed a bug where element titles weren’t getting a pointer cursor or underlines on hover, when selected on an element index page.
 
+## Unreleased (4.4)
+
+- Fixed a bug where the first three folder icons listed in asset indexes were getting linked along with the folder label. ([#12802](https://github.com/craftcms/cms/issues/12802))
+
 ## 4.4.0-beta.6 - 2023-03-05
 
 - Fixed a SQL error that occurred when updating on PostgreSQL. ([#12768](https://github.com/craftcms/cms/pull/12768))
