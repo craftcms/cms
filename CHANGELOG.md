@@ -25,6 +25,7 @@
 - Fixed a styling issue with asset search inputs. ([#12807](https://github.com/craftcms/cms/issues/12807))
 - Fixed a bug where the focused table row wasn’t getting grayed out when navigating to a subfodlder in asset indexes. ([#12810](https://github.com/craftcms/cms/issues/12810))
 - Fixed a bug where the Asset Indexes utility wasn’t handling folders deleted in the index properly. ([#12791](https://github.com/craftcms/cms/issues/12791), [#12811](https://github.com/craftcms/cms/pull/12811))
+- Fixed a SQL error that occurred when deleting a section, entry type, category group, or tag group, on PostgreSQL.
 
 ## 4.4.0-beta.6 - 2023-03-05
 
