@@ -1514,7 +1514,7 @@ return [
     'The {name} license is invalid.' => 'Lisensen {name} er ugyldig.',
     'The “From” name Craft CMS will use when sending email.' => 'Avsendernavnet Craft CMS bruker ved sending av e-post.',
     'There are no available plugins.' => 'Ingen utvidelser tilgjengelig.',
-    'There are trial licenses that require payment.' => 'Det finnes prøversjonslisenser som må betales.',
+    'There are trial licenses that require payment.' => 'Det finnes prøveversjonslisenser som må betales.',
     'There aren’t any pending project config changes to apply.' => 'Det finnes ingen ventende endringer i prosjektkonfigurasjonen.',
     'There was a problem activating the user.' => 'Det oppsto et problem med å aktivere brukeren.',
     'There was a problem deactivating the user.' => 'Det oppsto et problem med å deaktivere brukeren.',
