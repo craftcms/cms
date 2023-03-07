@@ -11,8 +11,20 @@
 <?php if (empty($panel->data)): ?>
     <p>No variables were dumped on this request.</p>
 <?php else: ?>
-    <?php foreach ($panel->data as [$file, $line, $dump]): ?>
-        <h3><code><?= $file ?>:<?= $line ?></code></h3>
-        <?= $dump ?>
-    <?php endforeach; ?>
+    <table class="table table-striped table-bordered">
+        <thead>
+            <tr>
+                <th style="width: 200px">Template + Line</th>
+                <th>Content</th>
+            </tr>
+        </thead>
+        <tbody>
+            <?php foreach ($panel->data as $i => [$file, $line, $dump]): ?>
+                <tr>
+                    <td><code><?= $file ?>:<?= $line ?></code></td>
+                    <td><?= $dump ?></td>
+                </tr>
+            <?php endforeach; ?>
+        </tbody>
+    </table>
 <?php endif; ?>
