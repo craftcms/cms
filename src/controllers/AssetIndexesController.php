@@ -10,11 +10,15 @@ namespace craft\controllers;
 use Craft;
 use craft\elements\Asset;
 use craft\errors\AssetException;
+use craft\events\ListVolumesEvent;
+use craft\helpers\ArrayHelper;
 use craft\helpers\Json;
 use craft\i18n\Locale;
 use craft\models\AssetIndexingSession;
+use craft\utilities\AssetIndexes;
 use craft\web\Controller;
 use Throwable;
+use yii\base\Event;
 use yii\web\BadRequestHttpException;
 use yii\web\Response;
 
@@ -56,6 +60,15 @@ class AssetIndexesController extends Controller
 
         if (empty($volumes)) {
             return $this->asFailure(Craft::t('app', 'No volumes specified.'));
+        }
+        
+        // Fire a 'listVolumes' event
+        $event = new ListVolumesEvent([
+            'volumes' => Craft::$app->getVolumes()->getAllVolumes(),
+        ]);
+        Event::trigger(AssetIndexes::class, AssetIndexes::EVENT_LIST_VOLUMES, $event);
+        if (!empty(array_diff($volumes, ArrayHelper::getColumn($event->volumes, 'id')))) {
+            return $this->asFailure(Craft::t('app', 'Illegal value for volume id is received.'));
         }
 
         $indexingSession = Craft::$app->getAssetIndexer()->startIndexingSession($volumes, $cacheRemoteImages, $listEmptyFolders);
