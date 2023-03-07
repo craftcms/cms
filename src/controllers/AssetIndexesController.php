@@ -205,7 +205,8 @@ class AssetIndexesController extends Controller
         $deleteFiles = Craft::$app->getRequest()->getBodyParam('deleteAsset', []);
 
         if (!empty($deleteFolders)) {
-            Craft::$app->getAssets()->deleteFoldersByIds($deleteFolders, false);
+            // if listEmptyFolders was set to true, delete the directories too, so that they don't pop back up on next indexing
+            Craft::$app->getAssets()->deleteFoldersByIds($deleteFolders, $session->listEmptyFolders);
         }
 
         if (!empty($deleteFiles)) {
