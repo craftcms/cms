@@ -1811,6 +1811,9 @@ Craft.BaseElementIndex = Garnish.Base.extend(
     setIndexBusy: function () {
       this.$elements.addClass('busy');
       this.isIndexBusy = true;
+      if (document.activeElement) {
+        document.activeElement.blur();
+      }
     },
 
     setIndexAvailable: function () {
