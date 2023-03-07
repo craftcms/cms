@@ -799,7 +799,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
             }
         }
 
-        if (!$allBlocksValidate) {
+        if (!$allBlocksValidate && $value instanceof MatrixBlockQuery) {
             // Just in case the blocks weren't already cached
             $value->setCachedResult($blocks);
         }
@@ -1074,8 +1074,8 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
             $value = $element->getFieldValue($this->handle);
             if ($value instanceof MatrixBlockQuery) {
                 $this->_populateQuery($value, $element);
+                $value->clearCachedResult();
             }
-            $value->clearCachedResult();
         }
 
         parent::afterElementPropagate($element, $isNew);
