@@ -1013,6 +1013,7 @@ class Html extends \yii\helpers\Html
      * should be namespaced to avoid conflicts with other elements in the DOM.
      * By default the SVG will only be namespaced if an asset or markup is passed in.
      * @return string
+     * @since 4.3.0
      */
     public static function svg(Asset|string $svg, ?bool $sanitize = null, ?bool $namespace = null): string
     {
