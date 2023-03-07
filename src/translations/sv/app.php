@@ -1782,7 +1782,7 @@ return [
     '{step, number} of {total, number}' => '{step, number} av {total, number}',
     '{title} ({site})' => '{title} ({site})',
     '{total, number} {total, plural, =1{{item}} other{{items}}}' => '{total, number} {total, plural, =1{{item}} other{{items}}}',
-    '{totalItems, plural, =1{Item} other{Items}} moved.' => '{totalItems, plural, =1{artikel} other{artiklar}} har flyttats.',
+    '{totalItems, plural, =1{Item} other{Items}} moved.' => '{totalItems, plural, =1{objekt} other{objekt}} har flyttats.',
     '{total} jobs' => '{total} jobb',
     '{total} updates available!' => '{total} uppdateringar tillgängliga!',
     '{type} Settings' => '{type}-inställningar',
