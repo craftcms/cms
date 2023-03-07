@@ -341,8 +341,8 @@ class Assets extends Component
      *
      * @param array $volumeIds
      * @param array $additionalCriteria additional criteria for filtering the tree
-     * @deprecated in 4.4.0
      * @return array
+     * @deprecated in 4.4.0d
      */
     public function getFolderTreeByVolumeIds(array $volumeIds, array $additionalCriteria = []): array
     {
@@ -1064,7 +1064,6 @@ class Assets extends Component
      *
      * @param VolumeFolder[] $folders
      * @return array
-     * @deprecated in 4.4.0
      */
     private function _getFolderTreeByFolders(array $folders): array
     {
