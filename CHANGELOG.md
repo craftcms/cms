@@ -20,6 +20,7 @@
 - Fixed a bug where element titles weren’t getting a pointer cursor or underlines on hover, when selected on an element index page.
 - Fixed a bug where it wasn’t possible to close modals that were opened by a custom select menu via the `<kbd>Esc</kbd>` key. ([#12814](https://github.com/craftcms/cms/pull/12814))
 - Fixed an error that could occur when saving an element with an eager-loaded Matrix field. ([#12815](https://github.com/craftcms/cms/issues/12815))
+- Fixed a bug where the “send to Developer Support” links within the Craft Support widget weren’t working. ([#12822](https://github.com/craftcms/cms/issues/12822))
 
 ## 4.3.10 - 2023-02-17
 
