@@ -41,6 +41,9 @@
 - Added `Craft.BaseElementSelectorModal::getIndexSettings()`.
 - Added `Craft.BaseElementSelectorModal::hasSelection()`.
 - Added `Craft.VolumeFolderSelectorModal`.
+- Deprecated `craft\helpers\Assets::sortFolderTree()`.
+- Deprecated `craft\services\Assets::getFolderTreeByFolderId()`.
+- Deprecated `craft\services\Assets::getFolderTreeByVolumeIds`.
 - The custom `activate` jQuery event will now trigger when the <kbd>Return</kbd> key is pressed.
 - The custom `activate` jQuery event will no longer trigger for <kbd>Ctrl</kbd>/<kbd>Command</kbd>-clicks.
 

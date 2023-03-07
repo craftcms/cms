@@ -10,6 +10,12 @@
 - Fixed a bug where element titles weren’t getting a pointer cursor or underlines on hover, when selected on an element index page.
 - Fixed an XSS vulnerability.
 
+## Unreleased (3.8)
+- Fixed a bug where it wasn’t possible to search in subfolders from asset indexes, at the root of each volume. ([#12808](https://github.com/craftcms/cms/issues/12808))
+- Deprecated `craft\helpers\Assets::sortFolderTree()`.
+- Deprecated `craft\services\Assets::getFolderTreeByFolderId()`.
+- Deprecated `craft\services\Assets::getFolderTreeByVolumeIds`.
+
 ## 3.8.0-beta.5 - 2023-03-05
 
 - Fixed a SQL error that occurred when updating on PostgreSQL. ([#12768](https://github.com/craftcms/cms/pull/12768))

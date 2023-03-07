@@ -272,6 +272,7 @@ class Assets
      * Sorts a folder tree by the volume sort order.
      *
      * @param VolumeFolder[] &$tree array passed by reference of the sortable folders.
+     * @deprecated in 3.8.0
      */
     public static function sortFolderTree(array &$tree)
     {

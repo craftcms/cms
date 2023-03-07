@@ -288,21 +288,20 @@ class Asset extends Element
      */
     protected static function defineSources(string $context = null): array
     {
-        $volumes = Craft::$app->getVolumes();
-
-        if ($context === 'index') {
-            $sourceIds = $volumes->getViewableVolumeIds();
-        } else {
-            $sourceIds = $volumes->getAllVolumeIds();
-        }
-
-        $tree = Craft::$app->getAssets()->getFolderTreeByVolumeIds($sourceIds, [
-            'parentId' => ':empty:',
-        ]);
         $sources = [];
 
-        foreach ($tree as $folder) {
-            $sources[] = self::_assembleSourceInfoForFolder($folder, Craft::$app->getUser()->getIdentity());
+        if ($context === 'index') {
+            $volumeIds = Craft::$app->getVolumes()->getViewableVolumeIds();
+        } else {
+            $volumeIds = Craft::$app->getVolumes()->getAllVolumeIds();
+        }
+
+        $assetsService = Craft::$app->getAssets();
+        $user = Craft::$app->getUser()->getIdentity();
+
+        foreach ($volumeIds as $volumeId) {
+            $folder = $assetsService->getRootFolderByVolumeId($volumeId);
+            $sources[] = self::_assembleSourceInfoForFolder($folder, $user);
         }
 
         // Add the Temporary Uploads location, if that's not set to a real volume
