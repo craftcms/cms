@@ -2831,6 +2831,16 @@ $checkboxPadding: $checkboxSize + 4;
           @include left($baseElementSidePadding);
         }
       }
+
+      &.sel {
+        a {
+          cursor: pointer !important;
+
+          &:hover {
+            text-decoration: underline;
+          }
+        }
+      }
     }
   }
 }
