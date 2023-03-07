@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 4
 
-## Unreleased
+## 4.3.11 - 2023-03-07
 
 - Fixed a bug where `craft\events\RegisterElementSourcesEvent::$context` wasn’t always set to `modal` when defining the available element sources for an element selection modal.
 - Fixed a styling bug where multi-line checkbox labels within the Customize Sources modal and View menu weren’t wrapping properly. ([#12717](https://github.com/craftcms/cms/issues/12717))
