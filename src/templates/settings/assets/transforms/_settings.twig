@@ -1,6 +1,6 @@
-{% extends "_layouts/cp" %}
+{% extends '_layouts/cp.twig' %}
 
-{% import "_includes/forms" as forms %}
+{% import '_includes/forms.twig' as forms %}
 
 {% set crumbs = [
     { label: "Settings"|t('app'), url: url('settings') },
@@ -101,12 +101,12 @@
             errors: (transform is defined ? transform.getErrors('height') : null),
         }) }}
 
-        {% embed '_includes/forms/field' with {
+        {% embed '_includes/forms/field.twig' with {
             label: 'Quality'|t('app'),
             errors: (transform is defined ? transform.getErrors('quality') : null),
         } %}
             {% block input %}
-                {% import '_includes/forms' as forms %}
+                {% import '_includes/forms.twig' as forms %}
                 <div class="flex flex-nowrap">
                     <div>
                         {{ forms.select({

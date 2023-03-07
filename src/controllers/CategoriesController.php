@@ -481,42 +481,6 @@ class CategoriesController extends Controller
     }
 
     /**
-     * Displays a category.
-     *
-     * @param Category $category
-     * @return Response
-     * @throws ServerErrorHttpException if the category doesn't have a URL for the site it's configured with, or if the category's site ID is invalid
-     */
-    private function _showCategory(Category $category): Response
-    {
-        $categoryGroupSiteSettings = $category->getGroup()->getSiteSettings();
-
-        if (!isset($categoryGroupSiteSettings[$category->siteId]) || !$categoryGroupSiteSettings[$category->siteId]->hasUrls) {
-            throw new ServerErrorHttpException('The category ' . $category->id . ' doesn’t have a URL for the site ' . $category->siteId . '.');
-        }
-
-        $site = Craft::$app->getSites()->getSiteById($category->siteId, true);
-
-        if (!$site) {
-            throw new ServerErrorHttpException('Invalid site ID: ' . $category->siteId);
-        }
-
-        Craft::$app->language = $site->language;
-        Craft::$app->set('locale', Craft::$app->getI18n()->getLocaleById($site->language));
-
-        // Have this category override any freshly queried categories with the same ID/site
-        if ($category->id) {
-            Craft::$app->getElements()->setPlaceholderElement($category);
-        }
-
-        $this->getView()->getTwig()->disableStrictVariables();
-
-        return $this->renderTemplate($categoryGroupSiteSettings[$category->siteId]->template, [
-            'category' => $category,
-        ]);
-    }
-
-    /**
      * Returns the HTML for a Categories field input, based on a given list of selected category IDs.
      *
      * @return Response

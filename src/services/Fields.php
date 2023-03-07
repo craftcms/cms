@@ -1648,7 +1648,8 @@ class Fields extends Component
             // Drop any unneeded columns for this field
             $db->getSchema()->refresh();
 
-            if (!$isNewField) {
+            // don't drop the field content column if the field is missing
+            if (!$isNewField && $class !== MissingField::class) {
                 $this->_dropOldFieldColumns($oldHandle, $oldColumnSuffix, $newColumns);
 
                 if ($data['handle'] !== $oldHandle || ($data['columnSuffix'] ?? null) !== $oldColumnSuffix) {
