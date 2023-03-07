@@ -6386,7 +6386,7 @@ body.reduce-focus-visibility {
 
   .texticon-icon {
     position: absolute;
-    top: 50%;
+    top: calc((34rem / 16) / 2);
     transform: translateY(-50%);
     display: flex;
     justify-content: center;
@@ -6411,7 +6411,7 @@ body.reduce-focus-visibility {
 
     .filter-btn {
       position: absolute;
-      top: 50%;
+      top: calc((34rem / 16) / 2);
       transform: translateY(-50%);
       @include right(4px);
       padding: 0 7px 4px;
