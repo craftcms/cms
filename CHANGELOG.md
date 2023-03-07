@@ -1,15 +1,5 @@
 # Release Notes for Craft CMS 3.x
 
-## Unreleased
-- Fixed a bug where `craft\events\RegisterElementSourcesEvent::$context` wasn’t always set to `modal` when defining the available element sources for an element selection modal.
-- Fixed a styling bug where multi-line checkbox labels within the Customize Sources modal weren’t wrapping properly. ([#12717](https://github.com/craftcms/cms/issues/12717))
-- Fixed a bug where asset thumbnails within collapsed Matrix blocks weren’t loading when the block was expanded. ([#12720](https://github.com/craftcms/cms/issues/12720))
-- Fixed a bug where custom fields’ database columns would get deleted when applying project config changes, if the field type wasn’t present. ([#12760](https://github.com/craftcms/cms/issues/12760))
-- Fixed a bug where Assets, Categories, and Tags fields weren’t respecting their “Allow self relations” settings. ([#12769](https://github.com/craftcms/cms/issues/12769))
-- Fixed a bug where dynamically-generated entry titles weren’t always generated with the site’s formatting locale in place. ([12780](https://github.com/craftcms/cms/issues/12780))
-- Fixed a bug where element titles weren’t getting a pointer cursor or underlines on hover, when selected on an element index page.
-- Fixed an XSS vulnerability.
-
 ## Unreleased (3.8)
 - Fixed a bug where it wasn’t possible to search in subfolders from asset indexes, at the root of each volume. ([#12808](https://github.com/craftcms/cms/issues/12808))
 - Fixed a bug where the focused table row wasn’t getting grayed out when navigating to a subfodlder in asset indexes. ([#12810](https://github.com/craftcms/cms/issues/12810))
@@ -79,6 +69,18 @@
 
 ### System
 - Fixed a database deadlock error that could occur when updating a relation or structure position for an element that was simultaneously being saved. ([#9905](https://github.com/craftcms/cms/issues/9905))
+
+## 3.7.68 - 2023-03-07
+
+- Fixed a bug where `craft\events\RegisterElementSourcesEvent::$context` wasn’t always set to `modal` when defining the available element sources for an element selection modal.
+- Fixed a styling bug where multi-line checkbox labels within the Customize Sources modal weren’t wrapping properly. ([#12717](https://github.com/craftcms/cms/issues/12717))
+- Fixed a bug where asset thumbnails within collapsed Matrix blocks weren’t loading when the block was expanded. ([#12720](https://github.com/craftcms/cms/issues/12720))
+- Fixed a bug where custom fields’ database columns would get deleted when applying project config changes, if the field type wasn’t present. ([#12760](https://github.com/craftcms/cms/issues/12760))
+- Fixed a bug where Assets, Categories, and Tags fields weren’t respecting their “Allow self relations” settings. ([#12769](https://github.com/craftcms/cms/issues/12769))
+- Fixed a bug where dynamically-generated entry titles weren’t always generated with the site’s formatting locale in place. ([12780](https://github.com/craftcms/cms/issues/12780))
+- Fixed a bug where element titles weren’t getting a pointer cursor or underlines on hover, when selected on an element index page.
+- Fixed a bug where it wasn’t possible to close modals that were opened by a custom select menu via the `<kbd>Esc</kbd>` key. ([#12814](https://github.com/craftcms/cms/pull/12814))
+- Fixed an XSS vulnerability.
 
 ## 3.7.67 - 2023-02-17
 

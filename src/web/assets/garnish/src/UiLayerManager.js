@@ -54,11 +54,39 @@ export default Base.extend({
     return this;
   },
 
-  removeLayer: function () {
+  removeLayer: function (layer) {
     if (this.layer === 0) {
       throw 'Can’t remove the base layer.';
     }
-    this.layers.pop();
+
+    if (layer) {
+      const layerIndex = this.getLayerIndex(layer);
+      if (layerIndex) {
+        this.removeLayerAtIndex(layerIndex);
+      }
+    } else {
+      this.layers.pop();
+      this.trigger('removeLayer');
+      return this;
+    }
+  },
+
+  getLayerIndex: function (layer) {
+    const $layer = $(layer);
+    let layerIndex;
+
+    $(this.layers).each(function (index) {
+      if (this.$container.get(0) === $(layer).get(0)) {
+        layerIndex = index;
+        return false;
+      }
+    });
+
+    return layerIndex;
+  },
+
+  removeLayerAtIndex: function (index) {
+    this.layers.splice(index, 1);
     this.trigger('removeLayer');
     return this;
   },
