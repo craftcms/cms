@@ -388,8 +388,8 @@ export default Base.extend(
         );
 
         if (
-          this._handleMouseMove._mouseDist >= this.settings.minMouseDist ??
-          Garnish.BaseDrag.minMouseDist
+          this._handleMouseMove._mouseDist >=
+          (this.settings.minMouseDist ?? Garnish.BaseDrag.minMouseDist)
         ) {
           this.startDragging();
         }
