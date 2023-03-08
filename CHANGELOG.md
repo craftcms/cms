@@ -3,6 +3,7 @@
 ## Unreleased (3.8)
 - Fixed a bug where it wasn’t possible to search in subfolders from asset indexes, at the root of each volume. ([#12808](https://github.com/craftcms/cms/issues/12808))
 - Fixed a bug where the focused table row wasn’t getting grayed out when navigating to a subfodlder in asset indexes. ([#12810](https://github.com/craftcms/cms/issues/12810))
+- Fixed a bug where it wasn’t always possible to select elements within relational fields on Chromium-based browsers on Windows 10. ([#12801](https://github.com/craftcms/cms/issues/12801))
 - Deprecated `craft\helpers\Assets::sortFolderTree()`.
 - Deprecated `craft\services\Assets::getFolderTreeByFolderId()`.
 - Deprecated `craft\services\Assets::getFolderTreeByVolumeIds`.
