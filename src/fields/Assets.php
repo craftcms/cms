@@ -710,7 +710,6 @@ class Assets extends BaseRelationField
             $uploadVolume &&
             Craft::$app->getUser()->checkPermission("saveAssetInVolume:$uploadVolume->uid")
         );
-        $variables['defaultFieldLayoutId'] = $uploadVolume->fieldLayoutId ?? null;
         $variables['defaultUploadLocation'] = $this->_defaultUploadLocation;
 
         return $variables;

@@ -83,9 +83,6 @@ Craft.AssetSelectInput = Craft.BaseElementSelectInput.extend({
    */
   createElementEditor: function ($element) {
     return this.base($element, {
-      params: {
-        defaultFieldLayoutId: this.settings.defaultFieldLayoutId,
-      },
       input: this,
     });
   },

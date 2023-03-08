@@ -1144,8 +1144,7 @@ class Asset extends Element
             return $fieldLayout;
         }
 
-        $volume = $this->getVolume();
-        return $volume->getFieldLayout();
+        return $this->getVolume()->getFieldLayout();
     }
 
     /**
@@ -1813,18 +1812,6 @@ class Asset extends Element
         ];
 
         return implode("\n", $components);
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getEditorHtml(): string
-    {
-        if (!$this->fieldLayoutId) {
-            $this->fieldLayoutId = Craft::$app->getRequest()->getBodyParam('defaultFieldLayoutId');
-        }
-
-        return parent::getEditorHtml();
     }
 
     /**
