@@ -385,7 +385,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
     },
 
     handleResize: function () {
-      if (this.sourcePath.length) {
+      if (this.sourcePath.length && this.settings.showSourcePath) {
         this._updateSourcePathVisibility();
       }
     },
