@@ -7062,6 +7062,10 @@ ul.errors li {
     &.autosuggest__results-item--highlighted {
       @include menu-option-active-styles;
       cursor: pointer;
+
+      .light {
+        color: $grey100 !important;
+      }
     }
   }
 }
