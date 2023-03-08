@@ -1,42 +1,18 @@
 # Release Notes for Craft CMS 3.x
 
-## 3.8.0-beta.6 - 2023-03-07
-
-- Fixed a bug where it wasn’t possible to search in subfolders from asset indexes, at the root of each volume. ([#12808](https://github.com/craftcms/cms/issues/12808))
-- Fixed a bug where the focused table row wasn’t getting grayed out when navigating to a subfodlder in asset indexes. ([#12810](https://github.com/craftcms/cms/issues/12810))
-- Fixed a bug where it wasn’t always possible to select elements within relational fields on Chromium-based browsers on Windows 10. ([#12801](https://github.com/craftcms/cms/issues/12801))
-- Deprecated `craft\helpers\Assets::sortFolderTree()`.
-- Deprecated `craft\services\Assets::getFolderTreeByFolderId()`.
-- Deprecated `craft\services\Assets::getFolderTreeByVolumeIds`.
-
-## 3.8.0-beta.5 - 2023-03-05
-
-- Fixed a SQL error that occurred when updating on PostgreSQL. ([#12768](https://github.com/craftcms/cms/pull/12768))
-
-## 3.8.0-beta.4 - 2023-03-05
-
-- Reintroduced asset/folder drag-and-drop. ([#12792](https://github.com/craftcms/cms/pull/12792))
-- Most licensing isuses are now consolidated into a single control panel alert, with a button to resolve them all with a single purchase on Craft Console. ([#12768](https://github.com/craftcms/cms/pull/12768))
-- Added `craft\base\ApplicationTrait::getEditionHandle()`.
-
-## 3.8.0-beta.3 - 2023-03-02
-
-- Fixed a JavaScript error that occurred when opening an asset selector modal, preventing the index results from showing initially. ([#12755](https://github.com/craftcms/cms/issues/12755))
-- Fixed a source path styling bug on Windows browsers. ([#12757](https://github.com/craftcms/cms/issues/12757))
-
-## 3.8.0-beta.2 - 2023-02-25
-
-- Fixed a bug where it was possible to move a folder into its parent folder. ([#12738](https://github.com/craftcms/cms/issues/12738))
-
-## 3.8.0-beta.1 - 2023-02-22
+## 3.8.0 - 2023-03-08
 
 ### Content Management
 - Volume subfolders are now displayed within the element listing pane on asset indexes, rather than as nested sources in the sidebar. ([#12558](https://github.com/craftcms/cms/pull/12558), [#9171](https://github.com/craftcms/cms/discussions/9171), [#5809](https://github.com/craftcms/cms/issues/5809))
 - Asset indexes now display the current subfolder path above the element listing. ([#12558](https://github.com/craftcms/cms/pull/12558))
+- Assets and folders can now be drag-and-dropped simultaneously. ([#12792](https://github.com/craftcms/cms/pull/12792))
+- Reduced the likelihood of accidentally triggering an asset drag operation. ([#12792](https://github.com/craftcms/cms/pull/12792))
+- Reduced the likelihood of accidentally dropping dragged assets/folders on an unintended target. ([#12792](https://github.com/craftcms/cms/pull/12792))
 - It’s now possible to move volume folders and assets to a new location via a new “Move…” bulk element action, rather than via drag-and-drop interactions. ([#12558](https://github.com/craftcms/cms/pull/12558))
 - It’s now possible to sort asset indexes by image width and height. ([#12653](https://github.com/craftcms/cms/pull/12653))
 
 ### Administration
+- Most licensing isuses are now consolidated into a single control panel alert, with a button to resolve them all with a single purchase on Craft Console. ([#12768](https://github.com/craftcms/cms/pull/12768))
 - Added the `users/unlock` console command. ([#12345](https://github.com/craftcms/cms/discussions/12345))
 - The `utils/prune-revisions` console command now has a `--section` option. ([#8783](https://github.com/craftcms/cms/discussions/8783))
 
@@ -47,6 +23,7 @@
 ### Extensibility
 - Added support for private plugins. ([#12716](https://github.com/craftcms/cms/pull/12716), [#8908](https://github.com/craftcms/cms/discussions/8908))
 - Element source definitions can now include a `defaultSourcePath` key.
+- Added `craft\base\ApplicationTrait::getEditionHandle()`.
 - Added `craft\base\Element::indexElements()`.
 - Added `craft\base\ElementInterface::findSource()`.
 - Added `craft\base\ElementInterface::indexElementCount()`.
@@ -66,6 +43,9 @@
 - Added `Craft.BaseElementSelectorModal::getIndexSettings()`.
 - Added `Craft.BaseElementSelectorModal::hasSelection()`.
 - Added `Craft.VolumeFolderSelectorModal`.
+- Deprecated `craft\helpers\Assets::sortFolderTree()`.
+- Deprecated `craft\services\Assets::getFolderTreeByFolderId()`.
+- Deprecated `craft\services\Assets::getFolderTreeByVolumeIds`.
 - The custom `activate` jQuery event will now trigger when the <kbd>Return</kbd> key is pressed.
 - The custom `activate` jQuery event will no longer trigger for <kbd>Ctrl</kbd>/<kbd>Command</kbd>-clicks.
 
