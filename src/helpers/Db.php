@@ -445,14 +445,18 @@ class Db
     }
 
     /**
-     * Escapes commas and asterisks in a string so they are not treated as special characters in
-     * [[Db::parseParam()]].
+     * Escapes commas, asterisks, and colons in a string, so they are not treated as special characters in
+     * [[parseParam()]].
      *
      * @param string $value The param value.
      * @return string The escaped param value.
      */
     public static function escapeParam(string $value): string
     {
+        if (in_array(strtolower($value), [':empty:', 'not :empty:', ':notempty:'])) {
+            return "\\$value";
+        }
+
         $value = preg_replace('/(?<!\\\)[,*]/', '\\\$0', $value);
 
         // If the value starts with an operator, escape that too.
@@ -467,7 +471,29 @@ class Db
     }
 
     /**
-     * Escapes commas in a string so the value doesn’t get interpreted as an array by [[Db::parseParam()]].
+     * Unescapes commas, asterisks, and colons added to a string via [[escapeParam()]].
+     *
+     * @param string $value The param value.
+     * @return string The escaped param value.
+     * @since 4.4.0
+     */
+    public static function unescapeParam(string $value): string
+    {
+        $value = preg_replace('/\\\([,*:])/', '$1', $value);
+
+        // If the value starts with an escaped operator, unescape that too.
+        foreach (self::$_operators as $operator) {
+            if (stripos($value, "\\$operator") === 0) {
+                $value = ltrim($value, '\\');
+                break;
+            }
+        }
+
+        return $value;
+    }
+
+    /**
+     * Escapes commas in a string so the value doesn’t get interpreted as an array by [[parseParam()]].
      *
      * @param string $value The param value.
      * @return string The escaped param value.
@@ -612,8 +638,12 @@ class Db
                     $like = false;
                 }
 
-                // Unescape any asterisks
-                $val = str_replace('\*', '*', $val);
+                // Unescape any asterisks and :empty:/:notempty:
+                if (in_array(strtolower($val), ['\\:empty:', '\\:notempty:', '\\not :empty:'])) {
+                    $val = ltrim($val, '\\');
+                } else {
+                    $val = str_replace('\*', '*', $val);
+                }
 
                 if ($like) {
                     if ($caseInsensitive) {
@@ -1850,5 +1880,25 @@ class Db
         }
 
         return null;
+    }
+
+    /**
+     * Returns a table name with curly brackets and percent sign removed.
+     *
+     * @param string $name
+     * @return string
+     * @since 4.4.0
+     */
+    public static function rawTableShortName(string $name): string
+    {
+        // Based on Schema::getRawTableName(),
+        // except we drop the % rather than replacing it with the table alias
+        if (str_contains($name, '{{')) {
+            $name = preg_replace('/\\{\\{(.*?)\\}\\}/', '\1', $name);
+            // % could technically not be anywhere in the string
+            return str_replace('%', '', $name);
+        }
+
+        return $name;
     }
 }

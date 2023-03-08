@@ -48,10 +48,12 @@
 {% if showSiteMenu %}
     {% include "_elements/sitemenu" %}
 {% endif %}
-<div class="flex-grow texticon search icon has-filter-btn">
+<div class="search-container flex-grow texticon has-filter-btn">
+    <span class="texticon-icon search icon" aria-hidden="true"></span>
     {{ text({
         class: 'clearable',
         placeholder: "Search"|t('app'),
+        value: craft.app.request.getParam('search'),
         inputAttributes: {
             aria: {
                 label: 'Search'|t('app'),

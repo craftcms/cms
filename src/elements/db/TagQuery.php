@@ -176,7 +176,7 @@ class TagQuery extends ElementQuery
     {
         $this->_normalizeGroupId();
 
-        $this->joinElementTable('tags');
+        $this->joinElementTable(Table::TAGS);
 
         $this->query->select([
             'tags.groupId',

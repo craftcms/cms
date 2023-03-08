@@ -7,7 +7,6 @@
 
 namespace craft\validators;
 
-use Craft;
 use yii\base\UnknownPropertyException;
 use yii\validators\RegularExpressionValidator;
 
@@ -30,6 +29,10 @@ class ColorValidator extends RegularExpressionValidator
         // lowercase
         $color = strtolower($color);
 
+        if ($color === 'transparent') {
+            return $color;
+        }
+
         // make sure it starts with a #
         if ($color[0] !== '#') {
             $color = '#' . $color;
@@ -46,18 +49,7 @@ class ColorValidator extends RegularExpressionValidator
     /**
      * @inheritdoc
      */
-    public $pattern = '/^#[0-9a-f]{6}$/';
-
-    /**
-     * @inheritdoc
-     */
-    public function init(): void
-    {
-        if (!isset($this->message)) {
-            $this->message = Craft::t('app', '{attribute} isn’t a valid hex color value.');
-        }
-        parent::init();
-    }
+    public $pattern = '/^(?:#[0-9a-f]{6}|transparent)$/';
 
     /**
      * @inheritdoc

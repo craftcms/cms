@@ -1,7 +1,8 @@
 /** global: Craft */
 /** global: Garnish */
 /**
- * Category Select input
+ * Category select input
+ * @deprecated in 4.3.0. Use Craft.BaseElementSelectInput instead.
  */
 Craft.CategorySelectInput = Craft.BaseElementSelectInput.extend({
   setSettings: function () {

@@ -129,19 +129,28 @@ abstract class BaseField extends FieldLayoutElement
         $innerHtml = '';
 
         $label = $this->selectorLabel();
-        $requiredHtml = $this->required ? Html::tag('div', '', [
-            'class' => 'fld-required-indicator',
-            'title' => Craft::t('app', 'This field is required'),
-            'aria' => ['label' => Craft::t('app', 'This field is required')],
-            'data' => ['icon' => 'asterisk'],
-        ]) : '';
+        $indicatorHtml =
+            ($this->required ? Html::tag('div', '', [
+                'class' => ['fld-indicator'],
+                'title' => Craft::t('app', 'This field is required'),
+                'aria' => ['label' => Craft::t('app', 'This field is required')],
+                'data' => ['icon' => 'asterisk'],
+                'role' => 'img',
+            ]) : '') .
+            ($this->hasConditions() ? Html::tag('div', '', [
+                'class' => ['fld-indicator'],
+                'title' => Craft::t('app', 'This field is conditional'),
+                'aria' => ['label' => Craft::t('app', 'This field is conditional')],
+                'data' => ['icon' => 'condition'],
+                'role' => 'img',
+            ]) : '');
 
         if ($label !== null) {
             $label = Html::encode($label);
             $innerHtml .= Html::tag('div',
                 Html::tag('h4', $label, [
                     'title' => $label,
-                ]) . $requiredHtml, [
+                ]) . $indicatorHtml, [
                     'class' => 'fld-element-label',
                 ]);
         }
@@ -150,7 +159,7 @@ abstract class BaseField extends FieldLayoutElement
             Html::tag('div', $this->attribute(), [
                 'class' => ['smalltext', 'light', 'code'],
                 'title' => $this->attribute(),
-            ]) . ($label === null ? $requiredHtml : ''), [
+            ]) . ($label === null ? $indicatorHtml : ''), [
                 'class' => 'fld-attribute',
             ]);
 

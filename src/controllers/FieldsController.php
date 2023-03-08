@@ -400,6 +400,7 @@ JS;
 
         return $this->asJson([
             'config' => $tab->toArray(),
+            'hasConditions' => $tab->hasConditions(),
         ]);
     }
 

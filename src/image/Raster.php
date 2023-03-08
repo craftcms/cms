@@ -24,6 +24,7 @@ use Imagine\Image\Box;
 use Imagine\Image\BoxInterface;
 use Imagine\Image\ImageInterface;
 use Imagine\Image\Metadata\ExifMetadataReader;
+use Imagine\Image\Palette\Color\ColorInterface;
 use Imagine\Image\Palette\RGB;
 use Imagine\Image\Point;
 use Imagine\Imagick\Imagine as ImagickImagine;
@@ -59,9 +60,9 @@ class Raster extends Image
     private int $_quality = 0;
 
     /**
-     * @var AbstractImage|null
+     * @var ImageInterface|null
      */
-    private ?AbstractImage $_image = null;
+    private ?ImageInterface $_image = null;
 
     /**
      * @var AbstractImagine|null
@@ -77,6 +78,11 @@ class Raster extends Image
      * @var Font|null
      */
     private ?Font $_font = null;
+
+    /**
+     * @var ColorInterface|null
+     */
+    private ?ColorInterface $_fill = null;
 
     /**
      * @inheritdoc
@@ -234,16 +240,75 @@ class Raster extends Image
     /**
      * @inheritdoc
      */
-    public function scaleToFit(?int $targetWidth, ?int $targetHeight, bool $scaleIfSmaller = true): self
+    public function scaleToFit(?int $targetWidth, ?int $targetHeight, bool $scaleIfSmaller = null): self
     {
         $this->normalizeDimensions($targetWidth, $targetHeight);
 
-        $scaleIfSmaller = $scaleIfSmaller && Craft::$app->getConfig()->getGeneral()->upscaleImages;
+        $scaleIfSmaller = $scaleIfSmaller ?? Craft::$app->getConfig()->getGeneral()->upscaleImages;
 
         if ($scaleIfSmaller || $this->getWidth() > $targetWidth || $this->getHeight() > $targetHeight) {
             $factor = max($this->getWidth() / $targetWidth, $this->getHeight() / $targetHeight);
             $this->resize(round($this->getWidth() / $factor), round($this->getHeight() / $factor));
         }
+
+        return $this;
+    }
+
+    /**
+     * Scales an image to the target size and fills empty pixels with color.
+     *
+     * @param int|null $targetWidth
+     * @param int|null $targetHeight
+     * @param string|null $fill
+     * @param string|array $position
+     * @param bool|null $upscale
+     * @return Raster
+     * @since 4.4.0
+     */
+    public function scaleToFitAndFill(?int $targetWidth, ?int $targetHeight, string $fill = null, string|array $position = 'center-center', bool $upscale = null): static
+    {
+        $upscale = $upscale ?? Craft::$app->getConfig()->getGeneral()->upscaleImages;
+
+        $this->normalizeDimensions($targetWidth, $targetHeight);
+        $this->scaleToFit($targetWidth, $targetHeight, $upscale);
+        $this->setFill($fill);
+
+        $box = new Box($targetWidth, $targetHeight);
+        $canvas = $this->_instance->create($box, $this->_fill);
+
+        [$verticalPosition, $horizontalPosition] = explode('-', $position);
+
+        $y = match ($verticalPosition) {
+            'top' => 0,
+            'bottom' => ($box->getHeight() - $this->getHeight()),
+            default => ($box->getHeight() - $this->getHeight()) / 2,
+        };
+
+        $x = match ($horizontalPosition) {
+            'left' => 0,
+            'right' => ($box->getWidth() - $this->getWidth()),
+            default => ($box->getWidth() - $this->getWidth()) / 2,
+        };
+
+        $point = new Point($x, $y);
+
+        if ($this->_isAnimated) {
+            $canvas->layers()->remove(0);
+            $this->_image->layers()->coalesce();
+
+            foreach ($this->_image->layers() as $layer) {
+                $newLayer = $this->_instance->create($box, $this->_fill);
+                $newLayer->paste($layer, $point);
+                $canvas->layers()->add($newLayer);
+
+                // Hopefully this doesn't take _too_ long, but it might
+                $this->heartbeat();
+            }
+        } else {
+            $canvas->paste($this->_image, $point);
+        }
+
+        $this->_image = $canvas;
 
         return $this;
     }
@@ -454,6 +519,25 @@ class Raster extends Image
     public function setInterlace(string $interlace): self
     {
         $this->_image->interlace($interlace);
+
+        return $this;
+    }
+
+    /**
+     * Sets the fill color based on the image's palette.
+     *
+     * @param string $fill Hex color of the fill.
+     * @return $this Self reference
+     * @since 4.4.0
+     */
+    public function setFill(string $fill = null): self
+    {
+        $fill = $fill ?? 'transparent';
+        if ($fill === 'transparent') {
+            $this->_fill = $this->_image->palette()->color('#ffffff', 0);
+        } else {
+            $this->_fill = $this->_image->palette()->color($fill);
+        }
 
         return $this;
     }
