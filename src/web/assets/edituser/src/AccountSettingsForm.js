@@ -62,6 +62,9 @@ import './account.scss';
             });
           })
           .catch(({response}) => {
+            Craft.cp.displayError(response.data.message);
+          })
+          .finally(() => {
             this.$actionBtn.removeClass('loading');
           });
       },

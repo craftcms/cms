@@ -49,7 +49,11 @@ use yii\helpers\Console;
  */
 class MigrateController extends BaseMigrateController
 {
-    use ControllerTrait;
+    use ControllerTrait {
+        ControllerTrait::init as private traitInit;
+        ControllerTrait::options as private traitOptions;
+        ControllerTrait::beforeAction as private traitBeforeAction;
+    }
     use BackupTrait;
 
     /**
@@ -122,8 +126,7 @@ class MigrateController extends BaseMigrateController
      */
     public function init(): void
     {
-        parent::init();
-        $this->checkTty();
+        $this->traitInit();
 
         $this->templateFile = Craft::getAlias('@app/updates/migration.php.template');
     }
@@ -137,12 +140,12 @@ class MigrateController extends BaseMigrateController
      * Note that the values setting via options are not available
      * until [[beforeAction()]] is being called.
      *
-     * @param string $actionID the action id of the current request
+     * @param string $actionID the action ID of the current request
      * @return string[] the names of the options valid for the action
      */
     public function options($actionID): array
     {
-        $options = parent::options($actionID);
+        $options = $this->traitOptions($actionID);
 
         // Remove options we end up overriding
         ArrayHelper::removeValue($options, 'migrationPath');
@@ -176,11 +179,6 @@ class MigrateController extends BaseMigrateController
      */
     public function beforeAction($action): bool
     {
-        // Make sure this isn't a root user
-        if (!$this->checkRootUser()) {
-            return false;
-        }
-
         if ($action->id !== 'all') {
             if ($this->plugin) {
                 $this->track = "plugin:$this->plugin";
@@ -213,7 +211,7 @@ class MigrateController extends BaseMigrateController
             $projectConfig->regenerateExternalConfig();
         }
 
-        if (!parent::beforeAction($action)) {
+        if (!$this->traitBeforeAction($action)) {
             return false;
         }
 

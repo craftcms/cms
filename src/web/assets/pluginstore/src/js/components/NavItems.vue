@@ -45,7 +45,7 @@
             @click="$emit('itemClick')"
           >
             <c-icon icon="world" class="tw-w-6 tw-h-6" />
-            Craft Console
+            Craft Consolebuild
           </a>
         </li>
       </ul>

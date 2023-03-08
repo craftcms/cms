@@ -31,6 +31,14 @@
         on: true,
     }) }}
 
+    {{ forms.lightswitchField({
+        name: 'listEmptyFolders',
+        label: 'List empty folders'|t('app'),
+        class: 'volume-selector',
+        instructions: 'Whether empty folders should be listed for deletion.'|t('app'),
+        on: false,
+    }) }}
+
     <div class="buttons">
         <button type="submit" class="btn submit">{{ 'Update asset indexes'|t('app') }}</button>
         <div class="utility-status"></div>
@@ -49,6 +57,7 @@
             totalEntries: {{ session.totalEntries }},
             processedEntries: {{ session.processedEntries }},
             actionRequired: {{ session.actionRequired + 0 }},
+            processIfRootEmpty: {{ session.processIfRootEmpty + 0 }},
             skippedEntries: [],
             missingEntries: [],
             dateCreated: "{{ session.dateCreated|date(dateFormat) }}",
@@ -72,7 +81,14 @@
 
         const data = {
             'cacheImages': !!$('input[name=cacheImages]').val(),
-            'volumes': $(ev.target).find('.checkbox-select input:checked:enabled').map(function(){return $(this).val();}).get()
+            'listEmptyFolders': !!$('input[name=listEmptyFolders]').val(),
+            // get all selected volume ids; don't rely on '*' because of the new EVENT_LIST_VOLUMES event
+            'volumes': $(ev.target).find('.checkbox-select input:checked').map(function(){
+                let val = $(this).val();
+                if (val !== '*') {
+                    return val;
+                }
+            }).get()
         };
 
         $submitButton.addClass('disabled').after('<div class="spinner"></div>');

@@ -132,6 +132,12 @@ class ImageHelperTest extends TestCase
             'fit12' => [240, 160, 360, 240, 240, 240, 'fit', false],
             'fit13' => [160, 240, 240, 360, 240, 240, 'fit', true],
             'fit14' => [240, 160, 360, 240, 240, 240, 'fit', true],
+
+            'fill no upscale' => [100, 200, 100, 200, 200, 400, 'fit', false],
+            'fill differing ratios' => [300, 400, 300, 400, 400, 400, 'fit', false],
+            'fill with upscale' => [200, 400, 100, 200, 200, 400, 'fit', true],
+
+            'crop with fill' => [200, 400, 400, 800, 200, 400, 'crop', true],
         ];
     }
 

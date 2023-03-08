@@ -8,15 +8,16 @@
 namespace craft\queue\jobs;
 
 use Craft;
+use craft\base\Batchable;
+use craft\base\Element;
 use craft\base\ElementInterface;
 use craft\console\controllers\ResaveController;
-use craft\elements\db\ElementQuery;
-use craft\elements\db\ElementQueryInterface;
-use craft\events\BatchElementActionEvent;
+use craft\db\QueryBatcher;
+use craft\errors\InvalidElementException;
 use craft\helpers\ElementHelper;
 use craft\i18n\Translation;
-use craft\queue\BaseJob;
-use craft\services\Elements;
+use craft\queue\BaseBatchedJob;
+use Throwable;
 
 /**
  * ResaveElements job
@@ -24,7 +25,7 @@ use craft\services\Elements;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
-class ResaveElements extends BaseJob
+class ResaveElements extends BaseBatchedJob
 {
     /**
      * @var string The element type that should be resaved
@@ -70,35 +71,49 @@ class ResaveElements extends BaseJob
     /**
      * @inheritdoc
      */
-    public function execute($queue): void
+    protected function loadData(): Batchable
     {
-        /** @var ElementQuery $query */
-        $query = $this->_query();
-        $total = $query->count();
-        if ($query->limit) {
-            $total = min($total, $query->limit);
+        /** @var string|ElementInterface $elementType */
+        /** @phpstan-var class-string<ElementInterface>|ElementInterface $elementType */
+        $elementType = $this->elementType;
+        $query = $elementType::find()
+            ->orderBy(['elements.id' => SORT_ASC]);
+
+        if (!empty($this->criteria)) {
+            Craft::configure($query, $this->criteria);
         }
-        $elementsService = Craft::$app->getElements();
 
-        $to = isset($this->set) ? ResaveController::normalizeTo($this->to) : null;
-        $callback = function(BatchElementActionEvent $e) use ($queue, $query, $total, $to) {
-            if ($e->query === $query) {
-                $this->setProgress($queue, ($e->position - 1) / $total, Translation::prep('app', '{step, number} of {total, number}', [
-                    'step' => $e->position,
-                    'total' => $total,
-                ]));
+        return new QueryBatcher($query);
+    }
 
-                $element = $e->element;
+    /**
+     * @inheritdoc
+     */
+    protected function processItem(mixed $item): void
+    {
+        // Make sure the element was queried with its content
+        /** @var ElementInterface $item */
+        if ($item::hasContent() && $item->contentId === null) {
+            throw new InvalidElementException($item, "Skipped resaving {$item->getUiLabel()} ($item->id) because it wasn’t loaded with its content.");
+        }
 
-                if (isset($this->set) && (!$this->ifEmpty || ElementHelper::isAttributeEmpty($element, $this->set))) {
-                    $element->{$this->set} = $to($element);
-                }
-            }
-        };
 
-        $elementsService->on(Elements::EVENT_BEFORE_RESAVE_ELEMENT, $callback);
-        $elementsService->resaveElements($query, false, true, $this->updateSearchIndex, $this->touch);
-        $elementsService->off(Elements::EVENT_BEFORE_RESAVE_ELEMENT, $callback);
+        $item->setScenario(Element::SCENARIO_ESSENTIALS);
+        $item->resaving = true;
+
+        if (isset($this->set) && (!$this->ifEmpty || ElementHelper::isAttributeEmpty($item, $this->set))) {
+            $to = ResaveController::normalizeTo($this->to);
+            $item->{$this->set} = $to($item);
+        }
+
+        try {
+            Craft::$app->getElements()->saveElement($item,
+                updateSearchIndex: $this->updateSearchIndex,
+                forceTouch: $this->touch,
+            );
+        } catch (Throwable $e) {
+            Craft::$app->getErrorHandler()->logException($e);
+        }
     }
 
     /**
@@ -106,31 +121,11 @@ class ResaveElements extends BaseJob
      */
     protected function defaultDescription(): ?string
     {
-        /** @var ElementQuery $query */
-        $query = $this->_query();
-        /** @var ElementInterface $elementType */
-        $elementType = $query->elementType;
-        return Translation::prep('app', 'Resaving {type}', [
-            'type' => $elementType::pluralLowerDisplayName(),
-        ]);
-    }
-
-    /**
-     * Returns the element query based on the criteria.
-     *
-     * @return ElementQueryInterface
-     */
-    private function _query(): ElementQueryInterface
-    {
         /** @var string|ElementInterface $elementType */
         /** @phpstan-var class-string<ElementInterface>|ElementInterface $elementType */
         $elementType = $this->elementType;
-        $query = $elementType::find();
-
-        if (!empty($this->criteria)) {
-            Craft::configure($query, $this->criteria);
-        }
-
-        return $query;
+        return Translation::prep('app', 'Resaving {type}', [
+            'type' => $elementType::pluralLowerDisplayName(),
+        ]);
     }
 }
