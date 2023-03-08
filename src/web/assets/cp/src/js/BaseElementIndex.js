@@ -2354,6 +2354,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         params: params,
         selectable: selectable,
         multiSelect: this.actions || this.settings.multiSelect,
+        canSelectElement: this.settings.canSelectElement,
         checkboxMode: !!this.actions,
         onSelectionChange: this._handleSelectionChange.bind(this),
       });
@@ -2671,6 +2672,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       disabledElementIds: [],
       selectable: false,
       multiSelect: false,
+      canSelectElement: null,
       buttonContainer: null,
       hideSidebar: false,
       toolbarSelector: '.toolbar:first',
