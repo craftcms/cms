@@ -145,7 +145,7 @@
 - Added `craft\base\ElementInterface::getUiLabelPath()`.
 - Added `craft\base\ElementInterface::indexElementCount()`.
 - Added `craft\base\ElementInterface::setUiLabelPath()`.
-- Added `craft\base\Event`, which provides a `once()` static method for registering an event handler that will only be triggered up to once time.
+- Added `craft\base\Event`, which provides a `once()` static method for registering an event handler that will only be triggered up to one time.
 - Added `craft\console\ControllerTrait::beforeAction()`.
 - Added `craft\console\ControllerTrait::failure()`.
 - Added `craft\console\ControllerTrait::init()`.
@@ -181,7 +181,7 @@
 - Added `craft\models\TagGroup::$dateDeleted`.
 - Added `craft\models\VolumeFolder::getHasChildren()`.
 - Added `craft\models\VolumeFolder::setHasChildren()`.
-- Added `craft\queue\BaseBatchableJob`. ([#12638](https://github.com/craftcms/cms/pull/12638))
+- Added `craft\queue\BaseBatchedJob`. ([#12638](https://github.com/craftcms/cms/pull/12638))
 - Added `craft\queue\jobs\GenerateImageTransform`. ([#12340](https://github.com/craftcms/cms/pull/12340))
 - Added `craft\services\Assets::createFolderQuery()`.
 - Added `craft\services\Assets::foldersExist()`.
