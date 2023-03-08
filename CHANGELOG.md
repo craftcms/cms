@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 4
 
-## Unreleased (4.4)
+## 4.4.0-beta.7 - 2023-03-07
 
 - Fixed a bug where the first three folder icons listed in asset indexes were getting linked along with the folder label. ([#12802](https://github.com/craftcms/cms/issues/12802))
 - Fixed a styling issue with asset search inputs. ([#12807](https://github.com/craftcms/cms/issues/12807))
