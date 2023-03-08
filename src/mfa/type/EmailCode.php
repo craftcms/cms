@@ -37,7 +37,7 @@ class EmailCode extends BaseMfaType
      */
     public static function getDescription(): string
     {
-        return Craft::t('app', 'Authenticate via single use code provided sent to your email address.');
+        return Craft::t('app', 'Authenticate via single use code sent to your email address.');
     }
 
     /**
@@ -46,7 +46,7 @@ class EmailCode extends BaseMfaType
     public function getFields(): ?array
     {
         return [
-            'verificationCode' => Craft::t('app', 'Emailed verification code'),
+            'verificationCode' => Craft::t('app', 'Verification code'),
         ];
     }
 

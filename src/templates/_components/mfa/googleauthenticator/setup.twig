@@ -24,14 +24,12 @@
         {% endif %}
     {% endif %}
     {% if not isSetup %}
-        <h3>Step 1: Download an app.</h3>
-        <p>Download a TOPT app, e.g. Google Authenticator, MS Authenticator, Authy, 1Password.</p>
+        <h3>{{ 'Step {number}:'|t('app', {number: 1}) }} {{ 'Download an app.'|t('app') }}</h3>
+        <p>{{ 'Download a TOPT app, e.g. Google Authenticator, MS Authenticator, Authy, 1Password.'|t('app') }}</p>
 
-        <h3>Step 2: Use the app to set up your connection.</h3>
+        <h3>{{ 'Step {number}:'|t('app', {number: 2}) }} {{ 'Use the app to set up your connection.'|t('app') }}</h3>
         <p>
-            To continue turning on the Two-Factor Authentication (2FA),
-            please use the app you just installed to scan the QR code
-            or enter the secret key shown below.
+            {{ 'To continue turning on the Multi-Factor Authentication (MFA), please use the app you just installed to scan the QR code or enter the secret key shown below.'|t('app') }}
         </p>
         <div id="qr-container">
             {% if (qrCode is defined and qrCode is not empty) or (secret is defined and secret is not empty) %}
@@ -42,22 +40,20 @@
                 {% endif %}
                 {% if secret is defined and secret is not empty %}
                     <div class="secret">
-                        Secret Key: {{ secret }}
+                        {{ 'Secret Key' }}: {{ secret }}
                     </div>
                 {% endif %}
-            {% else %}
-                <em>The QR code and secret key will show once you check the "Enable 2FA" checkbox.</em>
             {% endif %}
         </div>
 
-        <h3>Step 3: Verify with the code from the app</h3>
-        <p>Please enter the code from the app to verify your setup. Please note that the code is time sensitive.</p>
+        <h3>{{ 'Step {number}:'|t('app', {number: 3}) }} {{ 'Verify with the code from the app.'|t('app') }}</h3>
+        <p>{{ 'Please enter the code from the app to verify your setup. Please note that the code is time sensitive.'|t('app') }}</p>
         {% include '_components/mfa/googleauthenticator/verification.twig' with {'fields' : fields} %}
 
-        <h3>Step 4: Continuous use</h3>
-        <p>Now every time you log in, you'll be asked to enter a verification code from the app.</p>
+        <h3>{{ 'Step {number}:'|t('app', {number: 4}) }} {{ 'Continuous use'|t('app') }}</h3>
+        <p>{{ 'Now every time you log in, you’ll be asked to enter a verification code from the app.'|t('app') }}</p>
     {% else %}
-        <h3>You're all set up</h3>
-        <button id="mfa-remove-setup" name="remove-setup" class="btn">Remove setup</button>
+        <h3>{{ 'You’re all set up.'|t('app') }}</h3>
+        <button id="mfa-remove-setup" name="remove-setup" class="btn">{{ 'Remove setup'|t('app') }}</button>
     {% endif %}
 </div>

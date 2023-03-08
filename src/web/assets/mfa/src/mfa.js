@@ -12,6 +12,7 @@
 
       $slideout: null,
       $removeSetupButton: null,
+      $closeButton: null,
       $verifyButton: null,
 
       init: function (settings) {
@@ -19,9 +20,8 @@
         this.$mfaSetupFormContainer = $('#mfa-setup');
         this.$alternativeMfaLink = $('#alternative-mfa');
         this.$alternativeMfaTypesContainer = $('#alternative-mfa-types');
-        this.$errors = $('#login-errors');
         this.$viewSetupBtns = this.$mfaSetupFormContainer.find(
-          'button.mfa-setup-form'
+          'button.mfa-view-setup'
         );
 
         this.setSettings(settings, Craft.Mfa.defaults);
@@ -94,11 +94,14 @@
           .then((response) => {
             this.slideout = new Craft.Slideout(response.data.html);
 
+            this.$errors = this.slideout.$container.find('.so-notice');
+            this.$closeButton = this.slideout.$container.find('button.close');
+            this.$verifyButton = this.slideout.$container.find('#mfa-verify');
             this.$removeSetupButton =
               this.slideout.$container.find('#mfa-remove-setup');
-            this.addListener(this.$removeSetupButton, 'click', 'onRemoveSetup');
 
-            this.$verifyButton = this.slideout.$container.find('#mfa-verify');
+            this.addListener(this.$removeSetupButton, 'click', 'onRemoveSetup');
+            this.addListener(this.$closeButton, 'click', 'onClickClose');
             this.addListener(this.$verifyButton, 'click', 'onVerify');
 
             this.slideout.on('close', (ev) => {
@@ -108,27 +111,33 @@
           })
           .catch(({response}) => {
             // Add the error message
-            this.showError(response.data.message);
+            Craft.cp.displayError(response.data.message);
           });
+      },
+
+      onClickClose: function (ev) {
+        this.slideout.close();
       },
 
       onRemoveSetup: function (ev) {
         ev.preventDefault();
 
-        let selectedMethod = this.getCurrentMfaType(this.slideout.$container);
+        let currentMethod = this.getCurrentMfaType(
+          this.slideout.$container.find('#mfa-setup-form')
+        );
 
-        if (selectedMethod === undefined) {
-          selectedMethod = null;
+        if (currentMethod === undefined) {
+          currentMethod = null;
         }
 
         let data = {
-          selectedMethod: selectedMethod,
+          currentMethod: currentMethod,
         };
 
         Craft.sendActionRequest('POST', this.settings.removeSetup, {data})
           .then((response) => {
             $(ev.currentTarget).remove();
-            Craft.cp.displayNotice('MFA setup removed.');
+            Craft.cp.displayNotice(Craft.t('app', 'MFA setup removed.'));
           })
           .catch((e) => {
             Craft.cp.displayError(e.response.data.message);
@@ -153,13 +162,14 @@
           data.mfaFields[$(element).attr('name')] = $(element).val();
         });
 
-        data.currentMethod = this.getCurrentMfaType(this.slideout.$container);
+        data.currentMethod = this.getCurrentMfaType(
+          this.slideout.$container.find('#mfa-setup-form')
+        );
 
-        console.log(data);
-
-        Craft.sendActionRequest('POST', 'users/verify-mfa', {data})
+        Craft.sendActionRequest('POST', 'mfa/save-setup', {data})
           .then((response) => {
             this.onSubmitResponse($submitBtn);
+            Craft.cp.displayNotice(Craft.t('app', 'MFA settings saved.'));
             this.slideout.close();
           })
           .catch(({response}) => {
@@ -167,6 +177,7 @@
 
             // Add the error message
             this.showError(response.data.message);
+            Craft.cp.displayError(response.data.message);
           });
       },
 
@@ -177,7 +188,7 @@
       showError: function (error) {
         this.clearErrors();
 
-        $('<p style="display: none;">' + error + '</p>')
+        $('<p class="error" style="display: none;">' + error + '</p>')
           .appendTo(this.$errors)
           .velocity('fadeIn');
       },
@@ -193,7 +204,9 @@
         );
         if (currentMethod === null) {
           this.$alternativeMfaLink.hide();
-          this.showError('No alternative MFA methods available.');
+          this.showError(
+            Craft.t('app', 'No alternative MFA methods available.')
+          );
         }
 
         let data = {

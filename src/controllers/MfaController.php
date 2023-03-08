@@ -49,7 +49,7 @@ class MfaController extends Controller
             );
         }
 
-        // todo: finish me
+        // todo: finish me for non-ajax?
         return null;
     }
 
@@ -76,7 +76,7 @@ class MfaController extends Controller
 
         if ($this->request->getAcceptsJson()) {
             if (empty($mfaForm)) {
-                return $this->asFailure('Something went wrong. Please start again.');
+                return $this->asFailure(Craft::t('app', 'Something went wrong. Please start again.'));
             }
 
             return $this->asSuccess(
@@ -84,7 +84,7 @@ class MfaController extends Controller
             );
         }
 
-        // todo: finish me
+        // todo: finish me for non ajax?
         return null;
     }
 
@@ -100,27 +100,51 @@ class MfaController extends Controller
             return null;
         }
 
-        $selectedMethod = Craft::$app->getRequest()->getRequiredBodyParam('selectedMethod');
-        if (empty($selectedMethod)) {
+        $currentMethod = Craft::$app->getRequest()->getRequiredBodyParam('currentMethod');
+        if (empty($currentMethod)) {
             return null;
         }
 
-        $success = (new $selectedMethod())->removeSetup();
+        $success = (new $currentMethod())->removeSetup();
 
         if ($this->request->getAcceptsJson()) {
             if ($success) {
-                return $this->asSuccess('removal done');
+                return $this->asSuccess(Craft::t('app', 'Setup removed.'));
             } else {
-                return $this->asFailure('removal not done');
+                return $this->asFailure(Craft::t('app', 'Something went wrong.'));
             }
         }
 
-        return null; // todo: finish me
+        return null; // todo: finish me for non ajax?
     }
 
     public function actionSaveSetup(): ?Response
     {
-        return $this->asSuccess('all good');
+        if (!$this->request->getIsPost()) {
+            return null;
+        }
+
+        $mfaFields = Craft::$app->request->getRequiredBodyParam('mfaFields');
+        $currentMethod = Craft::$app->request->getRequiredBodyParam('currentMethod');
+
+        if (empty($mfaFields)) {
+            return $this->asFailure(Craft::t('app', 'Please fill out the form.'));
+        }
+
+        if ($currentMethod === null) {
+            return $this->asFailure(Craft::t('app', 'Something went wrong.'));
+        }
+
+        $mfaService = Craft::$app->getMfa();
+        $user = Craft::$app->getUser()->getIdentity();
+
+        $verified = $mfaService->verify($mfaFields, $currentMethod);
+
+        if ($verified === false) {
+            return $this->asFailure(Craft::t('app', 'Unable to verify.'));
+        }
+
+        return $this->asSuccess(Craft::t('app', 'Setup saved.'));
     }
 
     /**
@@ -148,45 +172,11 @@ class MfaController extends Controller
 
         $mfaType = new $selectedMethod();
         if (!($mfaType instanceof ConfigurableMfaInterface)) {
-            throw new Exception('asd');
+            throw new Exception('This MFA type can’t be configured.');
         }
 
         $html = $mfaType->getSetupFormHtml('',true, $user);
 
         return $this->asJson(['html' => $html]);
     }
-
-    //    public function actionGetQrCode(): Response
-//    {
-//
-//    }
-
-//    public function actionVerify(): Response
-//    {
-//        $verificationCode = Craft::$app->request->getRequiredBodyParam('verificationCode');
-//        if (empty($verificationCode)) {
-//            return $this->asFailure('Please provide a verification code');
-//        }
-//
-//        $authenticationService = Craft::$app->getMfa();
-//        $mfaData = $authenticationService->getDataForMfaLogin();
-//
-//        if ($mfaData === null) {
-//            throw new Exception(Craft::t('app', 'User not found'));
-//        }
-//
-//        $user = $mfaData['user'];
-//
-//        $verified = $authenticationService->verify($user, $verificationCode);
-//
-//        if ($verified === false) {
-//            return $this->asFailure(
-//                Craft::t('app', 'Could not verify.'),
-//            );
-//        }
-//
-//        return $this->asSuccess(
-//            Craft::t('app', 'Verified'),
-//        );
-//    }
 }

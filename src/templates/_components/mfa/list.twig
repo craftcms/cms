@@ -31,7 +31,7 @@
                     </div>
 
                     {% if option.config.requiresSetup %}
-                        <button class="btn mfa-setup-form" data-mfa-type="{{ key }}">View Setup</button>
+                        <button class="btn mfa-view-setup" data-mfa-type="{{ key }}">{{ 'View setup'|t('app') }}</button>
                     {% endif %}
                 </div>
                 {% if loop.last == false %}

@@ -7,6 +7,7 @@
 
 namespace craft\mfa;
 
+use Craft;
 use craft\base\mfa\BaseMfaType;
 use craft\elements\User;
 use craft\helpers\Html;
@@ -21,11 +22,21 @@ abstract class ConfigurableMfaType extends BaseMfaType implements ConfigurableMf
      */
     public function getSetupFormHtml(string $html = '', bool $withInto = false, ?User $user = null): string
     {
-        return Html::tag('div', $html, [
+        $form = Html::tag('div', $html, [
+            'class' => 'so-body',
             'id' => 'mfa-setup-form',
             'data' => [
                 'mfa-type' => static::class,
             ],
         ]);
+
+        if ($withInto) {
+            $view = Craft::$app->getView();
+            $footer = $view->renderTemplate('_components/mfa/slideout-footer.twig');
+
+            $form .= $footer;
+        }
+
+        return $form;
     }
 }

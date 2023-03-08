@@ -245,13 +245,17 @@ class UsersController extends Controller
         $currentMethod = Craft::$app->request->getRequiredBodyParam('currentMethod');
 
         if (empty($mfaFields)) {
-            return $this->asFailure('Please fill out the form');
+            return $this->asFailure(Craft::t('app', 'Please fill out the form.'));
+        }
+
+        if ($currentMethod === null) {
+            return $this->asFailure(Craft::t('app', 'Something went wrong.'));
         }
 
         $mfaService = Craft::$app->getMfa();
         $mfaData = $mfaService->getDataForMfaLogin();
         if ($mfaData === null) {
-            throw new Exception(Craft::t('app', 'Please start again'));
+            throw new Exception(Craft::t('app', 'Please start again.'));
         }
 
         $user = $mfaData['user'];

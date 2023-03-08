@@ -34,9 +34,9 @@ class Mfa extends Component
     protected const MFA_USER_SESSION_KEY = 'craft.mfa.user';
 
     /**
-     * @var BaseMfaType|null authenticator instance in use
+     * @var BaseMfaType|null MFA Type instance in use
      */
-    private ?BaseMfaType $_authenticator = null;
+    private ?BaseMfaType $_mfaType = null;
 
     /**
      * @var array $_mfaTypes all available MFA types
@@ -82,7 +82,7 @@ class Mfa extends Component
             $user = User::findOne(['id' => $userId]);
 
             if ($user === null) {
-                throw new Exception(Craft::t('app', 'Can`t find the user.'));
+                throw new Exception('Can’t find the user.'); //todo: what about user enumeration? or is it too far down?
             }
 
             return compact('user', 'duration');
@@ -117,6 +117,7 @@ class Mfa extends Component
 
     /**
      * Get MFA step URL - used for non-ajax requests only?
+     * TODO: do we need it?
      *
      * @param ?string $default
      * @return string
@@ -147,19 +148,19 @@ class Mfa extends Component
             return '';
         }
 
-        $this->_authenticator = $user->getDefaultMfaType();
+        $this->_mfaType = $user->getDefaultMfaType();
 
-        return $this->_authenticator->getInputHtml();
+        return $this->_mfaType->getInputHtml();
     }
 
     /**
      * Verify MFA step
      *
      * @param array $mfaFields
-     * @param string|null $currentMethod
+     * @param string $currentMethod
      * @return bool
      */
-    public function verify(array $mfaFields, ?string $currentMethod = ''): bool
+    public function verify(array $mfaFields, string $currentMethod): bool
     {
         $user = $this->getUserForMfaLogin();
 
@@ -167,16 +168,23 @@ class Mfa extends Component
             return false;
         }
 
-        if ($this->_authenticator === null) {
-            $this->_authenticator = $user->getDefaultMfaType();
+        if ($this->_mfaType === null) {
+            $this->_mfaType = $user->getDefaultMfaType();
         }
 
-        $newAuthenticator = new $currentMethod();
-        if (!empty($currentMethod) && $newAuthenticator instanceof BaseMfaType) {
-            $this->_authenticator = new $newAuthenticator();
+        if (empty($currentMethod)) {
+            throw new Exception('MFA method not specified.');
         }
 
-        return $this->_authenticator->verify($mfaFields);
+        $mfaType = new $currentMethod();
+
+        if (!($mfaType instanceof BaseMfaType)) {
+            throw new Exception('MFA Type needs to be an instance of ' . BaseMfaType::class);
+        }
+
+        $this->_mfaType = new $mfaType();
+
+        return $this->_mfaType->verify($mfaFields);
     }
 
     /**
