@@ -125,6 +125,7 @@ class Craft extends Yii
 
         if (Craft::$app instanceof WebApplication) {
             $dumper = new HtmlDumper();
+            $dumper->setTheme('light');
         } else {
             $dumper = new CliDumper();
             $dumper->setColors(Craft::$app->controller instanceof Controller && Craft::$app->controller->isColorEnabled());
