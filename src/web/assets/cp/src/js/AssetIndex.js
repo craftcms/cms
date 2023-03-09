@@ -371,6 +371,17 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
       this.base();
     },
 
+    getViewSettings: function () {
+      const settings = {};
+
+      if (this.settings.context === 'index') {
+        // Allow folders to be selected
+        settings.canSelectElement = () => true;
+      }
+
+      return settings;
+    },
+
     getViewParams: function () {
       const data = Object.assign(this.base(), {
         showFolders: this.settings.showFolders,
