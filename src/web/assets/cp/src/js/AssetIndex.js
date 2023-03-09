@@ -277,14 +277,18 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
       if (!this.settings.foldersOnly && this.sourcePath.length) {
         const currentFolder = this.sourcePath[this.sourcePath.length - 1];
         if (currentFolder.folderId) {
-          this.uploader.setParams({
-            folderId: currentFolder.folderId,
-          });
+          if (this.uploader) {
+            this.uploader.setParams({
+              folderId: currentFolder.folderId,
+            });
+          }
 
           // will the user be allowed to move items in this folder?
           const canMoveSubItems = !!currentFolder.canMoveSubItems;
-          this.settings.selectable = canMoveSubItems;
-          this.settings.multiSelect = canMoveSubItems;
+          this.settings.selectable =
+            this.settings.selectable || canMoveSubItems;
+          this.settings.multiSelect =
+            this.settings.multiSelect || canMoveSubItems;
         }
       }
 
