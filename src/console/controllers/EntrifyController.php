@@ -104,6 +104,7 @@ class EntrifyController extends Controller
             return ExitCode::UNSPECIFIED_ERROR;
         }
 
+        $projectConfigService = Craft::$app->getProjectConfig();
         $projectConfigChanged = false;
 
         if (
@@ -128,7 +129,7 @@ class EntrifyController extends Controller
         } catch (InvalidConfigException $e) {
             $this->stderr($e->getMessage() . PHP_EOL, Console::FG_RED);
             if ($projectConfigChanged) {
-                $this->_updateProjectConfig();
+                $projectConfigService->saveModifiedConfigData();
             }
             return ExitCode::UNSPECIFIED_ERROR;
         }
@@ -220,7 +221,6 @@ class EntrifyController extends Controller
 
         $this->success('Categories converted.');
 
-        $projectConfigService = Craft::$app->getProjectConfig();
         if (!$projectConfigService->readOnly) {
             if (!$categoryGroup->dateDeleted && $this->confirm("Delete the “{$categoryGroup}” category group?", true)) {
                 $this->do('Deleting category group', function() use ($categoryGroup) {
@@ -282,6 +282,7 @@ class EntrifyController extends Controller
             return ExitCode::UNSPECIFIED_ERROR;
         }
 
+        $projectConfigService = Craft::$app->getProjectConfig();
         $projectConfigChanged = false;
 
         if (
@@ -306,7 +307,7 @@ class EntrifyController extends Controller
         } catch (InvalidConfigException $e) {
             $this->stderr($e->getMessage() . PHP_EOL, Console::FG_RED);
             if ($projectConfigChanged) {
-                $this->_updateProjectConfig();
+                $projectConfigService->saveModifiedConfigData();
             }
             return ExitCode::UNSPECIFIED_ERROR;
         }
@@ -359,7 +360,6 @@ class EntrifyController extends Controller
 
         $this->success('Tags converted.');
 
-        $projectConfigService = Craft::$app->getProjectConfig();
         if (!$projectConfigService->readOnly) {
             if (!$tagGroup->dateDeleted && $this->confirm("Delete the “{$tagGroup}” tag group?", true)) {
                 $this->do('Deleting tag group', function() use ($tagGroup) {
@@ -443,7 +443,7 @@ class EntrifyController extends Controller
         } catch (InvalidConfigException $e) {
             $this->stderr($e->getMessage() . PHP_EOL, Console::FG_RED);
             if ($projectConfigChanged) {
-                $this->_updateProjectConfig();
+                Craft::$app->getProjectConfig()->saveModifiedConfigData();
             }
             return ExitCode::UNSPECIFIED_ERROR;
         }
@@ -632,18 +632,5 @@ Run this command on other environments immediately after deploying these changes
 $command
 ```
 MD);
-    }
-
-    /**
-     * Trigger saving changes in the PC.
-     * It's a safeguard in case we return early because of an exception
-     * @link https://github.com/craftcms/cms/issues/12842
-     *
-     * @return void
-     * @throws \yii\base\ErrorException
-     */
-    private function _updateProjectConfig(): void
-    {
-        Craft::$app->getProjectConfig()->saveModifiedConfigData();
     }
 }
