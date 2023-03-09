@@ -21,6 +21,7 @@ use craft\helpers\StringHelper;
 use craft\models\FieldLayout;
 use craft\models\TagGroup;
 use craft\records\TagGroup as TagGroupRecord;
+use DateTime;
 use Throwable;
 use yii\base\Component;
 
@@ -100,24 +101,31 @@ class Tags extends Component
     {
         if (!isset($this->_tagGroups)) {
             $groups = [];
+            /** @var TagGroupRecord[] $records */
             $records = TagGroupRecord::find()
                 ->orderBy(['name' => SORT_ASC])
                 ->all();
 
             foreach ($records as $record) {
-                $groups[] = new TagGroup($record->toArray([
-                    'id',
-                    'name',
-                    'handle',
-                    'fieldLayoutId',
-                    'uid',
-                ]));
+                $groups[] = $this->_createTagGroupFromRecord($record);
             }
 
             $this->_tagGroups = new MemoizableArray($groups);
         }
 
         return $this->_tagGroups;
+    }
+
+    private function _createTagGroupFromRecord(TagGroupRecord $record): TagGroup
+    {
+        return new TagGroup($record->toArray([
+            'id',
+            'name',
+            'handle',
+            'fieldLayoutId',
+            'dateDeleted',
+            'uid',
+        ]));
     }
 
     /**
@@ -167,11 +175,25 @@ class Tags extends Component
      * Gets a group by its handle.
      *
      * @param string $groupHandle
+     * @param bool $withTrashed
      * @return TagGroup|null
      */
-    public function getTagGroupByHandle(string $groupHandle): ?TagGroup
+    public function getTagGroupByHandle(string $groupHandle, bool $withTrashed = false): ?TagGroup
     {
-        return $this->_tagGroups()->firstWhere('handle', $groupHandle, true);
+        /** @var TagGroup|null $group */
+        $group = $this->_tagGroups()->firstWhere('handle', $groupHandle, true);
+
+        if (!$group && $withTrashed) {
+            /** @var TagGroupRecord|null $record */
+            $record = TagGroupRecord::findWithTrashed()
+                ->andWhere(['handle' => $groupHandle])
+                ->one();
+            if ($record) {
+                $group = $this->_createTagGroupFromRecord($record);
+            }
+        }
+
+        return $group;
     }
 
     /**
@@ -362,16 +384,40 @@ class Tags extends Component
         $transaction = Craft::$app->getDb()->beginTransaction();
         try {
             // Delete the tags
-            /** @var Tag[] $tags */
-            $tags = Tag::find()
-                ->groupId($tagGroupRecord->id)
-                ->status(null)
-                ->all();
-            $elementsService = Craft::$app->getElements();
+            $elementsTable = Table::ELEMENTS;
+            $tagsTable = Table::TAGS;
+            $now = Db::prepareDateForDb(new DateTime());
+            $db = Craft::$app->getDb();
 
-            foreach ($tags as $tag) {
-                $tag->deletedWithGroup = true;
-                $elementsService->deleteElement($tag);
+            $conditionSql = <<<SQL
+[[tags.groupId]] = $tagGroup->id AND
+[[tags.id]] = [[elements.id]] AND
+[[elements.canonicalId]] IS NULL AND
+[[elements.revisionId]] IS NULL AND
+[[elements.dateDeleted]] IS NULL
+SQL;
+
+            if ($db->getIsMysql()) {
+                $db->createCommand(<<<SQL
+UPDATE $elementsTable [[elements]], $tagsTable [[tags]] 
+SET [[elements.dateDeleted]] = '$now',
+  [[tags.deletedWithGroup]] = 1
+WHERE $conditionSql
+SQL)->execute();
+            } else {
+                // Not possible to update two tables simultaneously with Postgres
+                $db->createCommand(<<<SQL
+UPDATE $tagsTable [[tags]]
+SET [[deletedWithGroup]] = TRUE
+FROM $elementsTable [[elements]]
+WHERE $conditionSql
+SQL)->execute();
+                $db->createCommand(<<<SQL
+UPDATE $elementsTable [[elements]]
+SET [[dateDeleted]] = '$now'
+FROM $tagsTable [[tags]]
+WHERE $conditionSql
+SQL)->execute();
             }
 
             // Delete the field layout

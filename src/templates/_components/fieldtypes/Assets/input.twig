@@ -51,6 +51,8 @@
     elementType: elementType,
     sources: sources,
     condition: condition ? condition.getConfig() : null,
+    referenceElementId: referenceElement.id ?? null,
+    referenceElementSiteId: referenceElement.siteId ?? null,
     criteria: criteria,
     sourceElementId: sourceElementId,
     viewMode: viewMode,
@@ -61,10 +63,17 @@
     canUpload: canUpload,
     defaultFieldLayoutId: defaultFieldLayoutId,
     modalSettings: {
-        hideSidebar: hideSidebar,
-        defaultSource: defaultUploadLocation
+        hideSidebar: hideSidebar ?? false,
+        defaultSource: defaultSource ?? null,
+        defaultSourcePath: defaultSourcePath ?? null,
+        showSourcePath: showSourcePath ?? true,
+        indexSettings: {
+            showFolders: showFolders ?? true,
+        },
+        modalTitle: selectionLabel,
     },
     describedBy: (describedBy ?? false) ? describedBy|split(' ')|map(id => id|namespaceInputId)|join(' ') : null,
+    allowSelfRelations: allowSelfRelations ?? false,
 } %}
 
 {% js %}

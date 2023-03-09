@@ -12,6 +12,7 @@ use craft\base\ElementInterface;
 use craft\base\SortableFieldInterface;
 use craft\fields\data\SingleOptionFieldData;
 use craft\helpers\ArrayHelper;
+use craft\helpers\Cp;
 
 /**
  * Dropdown represents a Dropdown field.
@@ -48,7 +49,7 @@ class Dropdown extends BaseOptionsField implements SortableFieldInterface
     protected function inputHtml(mixed $value, ?ElementInterface $element = null): string
     {
         /** @var SingleOptionFieldData $value */
-        $options = $this->translatedOptions(true);
+        $options = $this->translatedOptions(true, $value, $element);
 
         if (!$value->valid) {
             Craft::$app->getView()->setInitialDeltaValue($this->handle, $this->encodeValue($value->value));
@@ -62,7 +63,7 @@ class Dropdown extends BaseOptionsField implements SortableFieldInterface
             }
         }
 
-        return Craft::$app->getView()->renderTemplate('_includes/forms/select.twig', [
+        return Cp::selectizeHtml([
             'id' => $this->getInputId(),
             'describedBy' => $this->describedBy,
             'name' => $this->handle,

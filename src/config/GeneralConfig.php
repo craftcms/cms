@@ -1278,7 +1278,7 @@ class GeneralConfig extends BaseConfig
     public array $extraNameSuffixes = [];
 
     /**
-     * @var string|false The string to use to separate words when uploading Assets. If set to `false`, spaces will be left alone.
+     * @var string|false The string to use to separate words when uploading assets. If set to `false`, spaces will be left alone.
      *
      * ::: code
      * ```php Static Config
@@ -1999,6 +1999,30 @@ class GeneralConfig extends BaseConfig
      * @group GraphQL
      */
     public bool $prefixGqlRootTypes = true;
+
+    /**
+     * @var bool Whether Single section entries should be preloaded for Twig templates.
+     *
+     * When enabled, Craft will make an educated guess on which Singles should be preloaded for each template based on
+     * the variable names that are referenced.
+     *
+     * ::: warning
+     * You will need to clear your compiled templates from the Caches utility before this setting will take effect.
+     * :::
+     *
+     * ::: code
+     * ```php Static Config
+     * ->preloadSingles()
+     * ```
+     * ```shell Environment Override
+     * CRAFT_PRELOAD_SINGLES=true
+     * ```
+     * :::
+     *
+     * @group System
+     * @since 4.4.0
+     */
+    public bool $preloadSingles = false;
 
     /**
      * @var bool Whether CMYK should be preserved as the colorspace when manipulating images.
@@ -2848,7 +2872,7 @@ class GeneralConfig extends BaseConfig
     public array $trustedHosts = ['any'];
 
     /**
-     * @var bool Whether images should be upscaled if the provided transform size is larger than the image.
+     * @var bool Whether image transforms should allow upscaling by default, for images that are smaller than the transform dimensions.
      *
      * ::: code
      * ```php Static Config
@@ -4415,7 +4439,7 @@ class GeneralConfig extends BaseConfig
     }
 
     /**
-     * The string to use to separate words when uploading Assets. If set to `false`, spaces will be left alone.
+     * The string to use to separate words when uploading assets. If set to `false`, spaces will be left alone.
      *
      * ```php
      * ->filenameWordSeparator(false)
@@ -5211,6 +5235,37 @@ class GeneralConfig extends BaseConfig
     public function prefixGqlRootTypes(bool $value = true): self
     {
         $this->prefixGqlRootTypes = $value;
+        return $this;
+    }
+
+    /**
+     * Whether Single section entries should be preloaded for Twig templates.
+     *
+     * When enabled, Craft will make an educated guess on which Singles should be preloaded for each template based on
+     * the variable names that are referenced.
+     *
+     * ::: warning
+     * You will need to clear your compiled templates from the Caches utility before this setting will take effect.
+     * :::
+     *
+     * ::: code
+     * ```php Static Config
+     * ->preloadSingles()
+     * ```
+     * ```shell Environment Override
+     * CRAFT_PRELOAD_SINGLES=true
+     * ```
+     * :::
+     *
+     * @group System
+     * @param bool $value
+     * @return self
+     * @see $preloadSingles
+     * @since 4.4.0
+     */
+    public function preloadSingles(bool$value = true): self
+    {
+        $this->preloadSingles = $value;
         return $this;
     }
 
@@ -6195,7 +6250,7 @@ class GeneralConfig extends BaseConfig
     }
 
     /**
-     * Whether images should be upscaled if the provided transform size is larger than the image.
+     * Whether image transforms should allow upscaling by default, for images that are smaller than the transform dimensions.
      *
      * ```php
      * ->upscaleImages(false)

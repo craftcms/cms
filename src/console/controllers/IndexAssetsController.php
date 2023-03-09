@@ -235,6 +235,16 @@ class IndexAssetsController extends Controller
             $this->stdout(PHP_EOL);
         }
 
+        if (!empty($missingFolders)) {
+            $totalMissing = count($missingFolders);
+            $this->stdout(($totalMissing === 1 ? 'One missing folder:' : "$totalMissing missing folders:") . PHP_EOL, Console::FG_YELLOW);
+            foreach ($missingFolders as $folderId => $folderPath) {
+                $this->stdout("- $folderPath ($folderId)");
+                $this->stdout(PHP_EOL);
+            }
+            $this->stdout(PHP_EOL);
+        }
+
         $remainingMissingFiles = $missingFiles;
 
         if ($maybes && $this->interactive && $this->confirm('Fix asset locations?')) {
