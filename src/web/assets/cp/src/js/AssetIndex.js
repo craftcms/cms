@@ -864,7 +864,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
             const sourcePath = this.sourcePath.slice();
             sourcePath[sourcePath.length - 1].label = response.data.newName;
             sourcePath[sourcePath.length - 1].uri =
-              sourcePath[sourcePath.length - 1].uri +
+              sourcePath[sourcePath.length - 2].uri +
               `/${response.data.newName}`;
             this.sourcePath = sourcePath;
           } else if (response.data.error) {
