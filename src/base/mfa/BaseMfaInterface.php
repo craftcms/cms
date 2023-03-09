@@ -33,6 +33,13 @@ interface BaseMfaInterface
     public function getInputHtml(string $html = '', array $options = []): string;
 
     /**
+     * Returns all the fields with an additional namespace key
+     *
+     * @return array
+     */
+    public function getNamespacedFields(): array;
+
+    /**
      * Returns the array of field names used in the MFA verification form
      *
      * @return array|null

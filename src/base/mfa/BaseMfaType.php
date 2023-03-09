@@ -22,6 +22,32 @@ abstract class BaseMfaType extends Component implements BaseMfaInterface
     public static bool $requiresSetup = true;
 
     /**
+     * @var string
+     */
+    private string $_fieldsNamespace = 'mfaFields';
+
+    /**
+     * @inheritdoc
+     */
+    public function getNamespacedFields(): array
+    {
+        $fields = $this->getFields();
+        $namespacedFields = [];
+
+        if (!empty($fields)) {
+            foreach ($fields as $key => $value) {
+                $namespacedFields[] = [
+                    'key' => $key,
+                    'label' => $value,
+                    'namespacedKey' => $this->_fieldsNamespace . '[' . $key . ']',
+                ];
+            }
+        }
+
+        return $namespacedFields;
+    }
+
+    /**
      * @inheritdoc
      */
     public function getInputHtml(string $html = '', array $options = []): string

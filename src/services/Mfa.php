@@ -11,7 +11,6 @@ use Craft;
 use craft\base\mfa\BaseMfaType;
 use craft\elements\User;
 use craft\events\MfaTypeEvent;
-use craft\helpers\UrlHelper;
 use craft\mfa\type\EmailCode;
 use craft\mfa\type\GoogleAuthenticator;
 use yii\base\Component;
@@ -113,27 +112,6 @@ class Mfa extends Component
     public function removeDataForMfaLogin(): void
     {
         Craft::$app->getSession()->remove(self::MFA_USER_SESSION_KEY);
-    }
-
-    /**
-     * Get MFA step URL - used for non-ajax requests only?
-     * TODO: do we need it?
-     *
-     * @param ?string $default
-     * @return string
-     */
-    public function getMfaUrl(string $default = null): string
-    {
-        if ($default !== null) {
-            $url = UrlHelper::cpUrl($default);
-        } else {
-            $url = UrlHelper::cpUrl('mfa');
-        }
-        //Craft::$app->getConfig()->getGeneral()->mfaUrl
-        // Strip out any tags that may have gotten in there by accident
-        // i.e. if there was a {siteUrl} tag in the Site URL setting, but no matching environment variable,
-        // so they ended up on something like http://example.com/%7BsiteUrl%7D/some/path
-        return str_replace(['{', '}'], '', $url);
     }
 
     /**

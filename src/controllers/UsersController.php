@@ -223,7 +223,7 @@ class UsersController extends Controller
         $mfaService = Craft::$app->getMfa();
         // if user requires MFA to login and we have their data stored in session, proceed to show the MFA step
         if ($user->requireMfa && $mfaService->getDataForMfaLogin() !== null) {
-            return $this->_mfaStep($user);
+            return $this->_mfaStep();
         }
 
         return $this->_completeLogin($user, $duration);
@@ -2206,17 +2206,17 @@ JS,
         );
     }
 
-    private function _mfaStep(User $user): Response
+    private function _mfaStep(): Response
     {
         // Get the return URL
         $mfaService = Craft::$app->getMfa();
-        $mfaUrl = $mfaService->getMfaUrl(); // only used for non-ajax requests
+        $mfaForm = $mfaService->getInputHtml();
 
         // If this was an Ajax request, just return success:true
         if ($this->request->getAcceptsJson()) {
             $return = [
                 'mfa' => true,
-                'mfaForm' => $mfaService->getInputHtml(),
+                'mfaForm' => $mfaForm,
             ];
 
             if (Craft::$app->getConfig()->getGeneral()->enableCsrfProtection) {
@@ -2226,7 +2226,10 @@ JS,
             return $this->asSuccess(data: $return);
         }
 
-        return $this->redirectToPostedUrl(null, $mfaUrl); // todo: should this render a template instead??
+        return $this->renderTemplate('login', [
+            'mfa' => true,
+            'mfaForm' => $mfaForm,
+        ], View::TEMPLATE_MODE_SITE); // todo: should this render a template instead??
     }
 
     /**

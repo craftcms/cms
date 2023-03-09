@@ -1,17 +1,22 @@
 {% import '_includes/forms.twig' as forms %}
 
-{% for key,label in fields %}
+{{ forms.hidden({
+    'name': 'currentMethod',
+    'value': currentMethod
+}) }}
+
+{% for field in fields %}
     {{ forms.textField({
-        'label': label,
-        'id': key,
-        'name': key,
+        'label': field.label,
+        'id': field.key,
+        'name': field.namespacedKey,
         'placeholder': 'XXXXXX'
     }) }}
-
-    {{ forms.submitButton({
-        id: 'mfa-verify',
-        class: 'mfa-verify',
-        label: 'Verify'|t('app'),
-        spinner: true,
-    }) }}
 {% endfor %}
+
+{{ forms.submitButton({
+    id: 'mfa-verify',
+    class: 'mfa-verify',
+    label: 'Verify'|t('app'),
+    spinner: true,
+}) }}

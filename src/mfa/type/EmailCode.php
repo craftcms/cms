@@ -11,6 +11,7 @@ use Craft;
 use craft\base\mfa\BaseMfaType;
 use craft\elements\User;
 use craft\helpers\StringHelper;
+use craft\web\View;
 
 class EmailCode extends BaseMfaType
 {
@@ -64,10 +65,13 @@ class EmailCode extends BaseMfaType
 
         $data = [
             'user' => $user,
-            'fields' => $this->getFields(),
+            'fields' => $this->getNamespacedFields(),
+            'currentMethod' => self::class,
         ];
 
-        $formHtml = Craft::$app->getView()->renderTemplate(
+        $view = Craft::$app->getView();
+        $view->templateMode = View::TEMPLATE_MODE_CP;
+        $formHtml = $view->renderTemplate(
             '_components/mfa/emailcode/verification.twig',
             $data
         );

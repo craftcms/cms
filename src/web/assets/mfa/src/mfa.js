@@ -59,17 +59,17 @@
 
         let data = {
           mfaFields: {},
+          currentMethod: null,
         };
 
-        this.$mfaLoginFormContainer
-          .find('input')
-          .each(function (index, element) {
-            data.mfaFields[$(element).attr('name')] = $(element).val();
-          });
-
-        data.currentMethod = this.getCurrentMfaType(
-          this.$mfaLoginFormContainer.find('#verifyContainer')
+        data.mfaFields = this._getMfaFields(this.$mfaLoginFormContainer);
+        data.currentMethod = this._getCurrentMethodInput(
+          this.$mfaLoginFormContainer
         );
+
+        // data.currentMethod = this.getCurrentMfaType(
+        //   this.$mfaLoginFormContainer.find('#verifyContainer')
+        // );
 
         Craft.sendActionRequest('POST', 'users/verify-mfa', {data})
           .then((response) => {
@@ -156,15 +156,15 @@
 
         let data = {
           mfaFields: {},
+          currentMethod: null,
         };
 
-        this.slideout.$container.find('input').each(function (index, element) {
-          data.mfaFields[$(element).attr('name')] = $(element).val();
-        });
+        data.mfaFields = this._getMfaFields(this.slideout);
+        data.currentMethod = this._getCurrentMethodInput(this.slideout);
 
-        data.currentMethod = this.getCurrentMfaType(
-          this.slideout.$container.find('#mfa-setup-form')
-        );
+        // data.currentMethod = this.getCurrentMfaType(
+        //   this.slideout.$container.find('#mfa-setup-form')
+        // );
 
         Craft.sendActionRequest('POST', 'mfa/save-setup', {data})
           .then((response) => {
@@ -286,6 +286,23 @@
             // console.log(response);
             // this.showError(response.data.message);
           });
+      },
+
+      _getMfaFields: function ($container) {
+        let mfaFields = {};
+
+        $container
+          .find('input[name^="mfaField[')
+          .each(function (index, element) {
+            let name = $(element).attr('id');
+            mfaFields[name] = $(element).val();
+          });
+
+        return mfaFields;
+      },
+
+      _getCurrentMethodInput: function ($container) {
+        return $container.find('input[name="currentMethod"').val();
       },
     },
     {
