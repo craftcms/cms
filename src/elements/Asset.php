@@ -2873,6 +2873,7 @@ JS;
                 'data' => [
                     'is-folder' => true,
                     'folder-id' => $this->folderId,
+                    'folder-name' => $this->title,
                     'source-path' => Json::encode($this->sourcePath),
                     'has-children' => Craft::$app->getAssets()->foldersExist(['parentId' => $this->folderId]),
                 ],

@@ -277,14 +277,18 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
       if (!this.settings.foldersOnly && this.sourcePath.length) {
         const currentFolder = this.sourcePath[this.sourcePath.length - 1];
         if (currentFolder.folderId) {
-          this.uploader.setParams({
-            folderId: currentFolder.folderId,
-          });
+          if (this.uploader) {
+            this.uploader.setParams({
+              folderId: currentFolder.folderId,
+            });
+          }
 
           // will the user be allowed to move items in this folder?
           const canMoveSubItems = !!currentFolder.canMoveSubItems;
-          this.settings.selectable = canMoveSubItems;
-          this.settings.multiSelect = canMoveSubItems;
+          this.settings.selectable =
+            this.settings.selectable || canMoveSubItems;
+          this.settings.multiSelect =
+            this.settings.multiSelect || canMoveSubItems;
         }
       }
 
@@ -369,6 +373,17 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
       }
 
       this.base();
+    },
+
+    getViewSettings: function () {
+      const settings = {};
+
+      if (this.settings.context === 'index') {
+        // Allow folders to be selected
+        settings.canSelectElement = () => true;
+      }
+
+      return settings;
     },
 
     getViewParams: function () {
@@ -584,12 +599,14 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
       this.addListener(this.$elements, 'keydown', this._onKeyDown.bind(this));
       this.view.elementSelect.on('focusItem', this._onElementFocus.bind(this));
 
-      this.$listedFolders = $newElements.find('.element[data-is-folder]');
+      this.$listedFolders = $newElements.find(
+        '.element[data-is-folder][data-folder-name]'
+      );
       for (let i = 0; i < this.$listedFolders.length; i++) {
         const $folder = this.$listedFolders.eq(i);
         const $label = $folder.find('.label');
         const folderId = parseInt($folder.data('folder-id'));
-        const folderName = $folder.attr('title');
+        const folderName = $folder.data('folder-name');
         const label = Craft.t('app', '{name} folder', {
           name: folderName,
         });
@@ -840,12 +857,14 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
           const sourcePath = this.sourcePath.slice();
           sourcePath[sourcePath.length - 1].label = response.data.newName;
           sourcePath[sourcePath.length - 1].uri =
-            sourcePath[sourcePath.length - 1].uri + `/${response.data.newName}`;
+            sourcePath[sourcePath.length - 2].uri + `/${response.data.newName}`;
           this.sourcePath = sourcePath;
         })
         .catch(({response}) => {
-          this.setIndexAvailable();
           alert(response.data.message);
+        })
+        .finally(() => {
+          this.setIndexAvailable();
         });
     },
 

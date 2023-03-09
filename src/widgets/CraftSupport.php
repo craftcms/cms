@@ -83,11 +83,7 @@ class CraftSupport extends Widget
         }
 
         $db = Craft::$app->getDb();
-        if ($db->getIsMysql()) {
-            $dbDriver = 'MySQL';
-        } else {
-            $dbDriver = 'PostgreSQL';
-        }
+        $dbDriver = $db->getDriverLabel();
 
         $imagesService = Craft::$app->getImages();
         if ($imagesService->getIsGd()) {
