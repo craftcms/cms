@@ -93,6 +93,8 @@ Craft.BaseElementIndex = Garnish.Base.extend(
     activeViewMenu: null,
     filterHuds: null,
 
+    _activeElement: null,
+
     get viewMode() {
       if (this._viewMode === 'structure' && !this.canSortByStructure()) {
         return 'table';
@@ -2218,7 +2220,13 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       this.$elements.addClass('busy');
       this.$updateSpinner.appendTo(this.$elements);
       this.isIndexBusy = true;
-      if (document.activeElement) {
+
+      // Blur the active element, if it's within the element listing pane
+      if (
+        document.activeElement &&
+        this.$elements[0].contains(document.activeElement)
+      ) {
+        this._activeElement = document.activeElement;
         document.activeElement.blur();
       }
     },
@@ -2227,6 +2235,21 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       this.$elements.removeClass('busy');
       this.$updateSpinner.remove();
       this.isIndexBusy = false;
+
+      // Refocus the previously-focused element
+      if (this._activeElement) {
+        if (
+          !document.activeElement ||
+          document.activeElement === document.body
+        ) {
+          if (document.body.contains(this._activeElement)) {
+            this._activeElement.focus();
+          } else if (this._activeElement.id) {
+            $(`#${this._activeElement.id}`).focus();
+          }
+        }
+        this._activeElement = null;
+      }
     },
 
     createCustomizeSourcesModal: function () {
@@ -2558,9 +2581,6 @@ Craft.BaseElementIndex = Garnish.Base.extend(
             null;
       }
 
-      // Capture the focused element, in case it's about to get removed from the DOM
-      const activeElement = document.activeElement;
-
       // Update the count text
       // -------------------------------------------------------------
 
@@ -2756,17 +2776,6 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       );
 
       this.view = this.createView(this.getSelectedViewMode(), settings);
-
-      // Refocus the previously-focused element
-      // -------------------------------------------------------------
-
-      if (
-        activeElement &&
-        activeElement.id &&
-        !document.body.contains(activeElement)
-      ) {
-        $(`#${activeElement.id}`).focus();
-      }
 
       // Auto-select elements
       // -------------------------------------------------------------
