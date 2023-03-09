@@ -1372,7 +1372,7 @@ class Entry extends Element implements ExpirableElementInterface
             /** @var static|DraftBehavior $this */
             return (
                 $this->creatorId === $user->id ||
-                $user->can("deletePeerEntries:$section->uid")
+                $user->can("deletePeerEntryDrafts:$section->uid")
             );
         }
 

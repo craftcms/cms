@@ -1,5 +1,22 @@
 # Release Notes for Craft CMS 4
 
+## 4.4.1 - 2023-03-09
+
+- Fixed a bug where it wasn’t possible to select subfolders on the Assets index page. ([#12802](https://github.com/craftcms/cms/issues/12802))
+- Fixed a bug where element index search inputs were losing focus when the element listing was updated. ([#12846](https://github.com/craftcms/cms/issues/12846))
+- Fixed a bug where the database driver was being referenced as “MySQL” when using MariaDB. ([#12827](https://github.com/craftcms/cms/issues/12827))
+- Fixed a bug where users weren’t able to select assets within Assets fields, if they didn’t have full permissions for the volume. ([#12851](https://github.com/craftcms/cms/issues/12851))
+- Fixed a bug where the Assets index page’s URL would get updated incorrectly when renaming a subfolder.
+- Fixed a bug where non-admin users weren’t able to view Single section entries. ([#12838](https://github.com/craftcms/cms/issues/12838))
+- Fixed an error that could occur when saving an element with eager-loaded relations. ([#12839](https://github.com/craftcms/cms/issues/12839))
+- Fixed a bug where Customize Sources modals weren’t showing source headings with no subsequent sources. ([#12840](https://github.com/craftcms/cms/issues/12840))
+- Fixed a bug where `entrify` commands could leave the database and project config data in inconsistent states, if aborted prematurely. ([#12850](https://github.com/craftcms/cms/pull/12850))
+- Fixed a bug where the `entrify/global-set` command wasn’t always suggesting the command to run on other environments.
+- Fixed a bug where the Assets index page would appear to keep loading indefinitely after renaming a subfolder.
+- Fixed a bug where folders within asset indexes were getting the current site name appended to them, on multi-site installs. ([#12852](https://github.com/craftcms/cms/issues/12852))
+- Fixed a SQL error that could occur when updating to Craft 4.4 on PostgreSQL. ([#12855](https://github.com/craftcms/cms/issues/12855))
+- Added `craft\db\Connection::getDriverLabel()`.
+
 ## 4.4.0 - 2023-03-08
 
 ### Content Management
