@@ -952,8 +952,14 @@ class EntryQuery extends ElementQuery
         foreach (Craft::$app->getSections()->getAllSections() as $section) {
             if ($user->can("$peerPermissionPrefix:$section->uid")) {
                 $fullyAuthorizedSectionIds[] = $section->id;
-            } elseif ($section->type !== Section::TYPE_SINGLE && $user->can("$permissionPrefix:$section->uid")) {
-                $partiallyAuthorizedSectionIds[] = $section->id;
+            } elseif ($user->can("$permissionPrefix:$section->uid")) {
+                if ($section->type !== Section::TYPE_SINGLE) {
+                    $partiallyAuthorizedSectionIds[] = $section->id;
+                } else {
+                    // if this partial authorisation is for a single, treat it as fully authorised (as pre 4.4)
+                    // as singles don't have peer permissions for viewEntries
+                    $fullyAuthorizedSectionIds[] = $section->id;
+                }
             } else {
                 $unauthorizedSectionIds[] = $section->id;
             }
