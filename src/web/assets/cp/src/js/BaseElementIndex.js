@@ -1036,6 +1036,13 @@ Craft.BaseElementIndex = Garnish.Base.extend(
     },
 
     /**
+     * Returns any additional settings that should be passed to the view instance.
+     */
+    getViewSettings: function () {
+      return {};
+    },
+
+    /**
      * Returns the data that should be passed to the elementIndex/getElements controller action
      * when loading elements.
      */
@@ -2342,22 +2349,26 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       // -------------------------------------------------------------
 
       // Should we make the view selectable?
-      var selectable = this.actions || this.settings.selectable;
+      const selectable = this.actions || this.settings.selectable;
+      const settings = Object.assign(
+        {
+          context: this.settings.context,
+          batchSize:
+            this.settings.context !== 'index' ||
+            this.getSelectedSortAttribute() === 'structure'
+              ? this.settings.batchSize
+              : null,
+          params: params,
+          selectable: selectable,
+          multiSelect: this.actions || this.settings.multiSelect,
+          canSelectElement: this.settings.canSelectElement,
+          checkboxMode: !!this.actions,
+          onSelectionChange: this._handleSelectionChange.bind(this),
+        },
+        this.getViewSettings()
+      );
 
-      this.view = this.createView(this.getSelectedViewMode(), {
-        context: this.settings.context,
-        batchSize:
-          this.settings.context !== 'index' ||
-          this.getSelectedSortAttribute() === 'structure'
-            ? this.settings.batchSize
-            : null,
-        params: params,
-        selectable: selectable,
-        multiSelect: this.actions || this.settings.multiSelect,
-        canSelectElement: this.settings.canSelectElement,
-        checkboxMode: !!this.actions,
-        onSelectionChange: this._handleSelectionChange.bind(this),
-      });
+      this.view = this.createView(this.getSelectedViewMode(), settings);
 
       // Auto-select elements
       // -------------------------------------------------------------

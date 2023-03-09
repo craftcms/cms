@@ -1,5 +1,9 @@
 # Release Notes for Craft CMS 3.x
 
+## Unreleased
+
+- Fixed a bug where it wasn’t possible to select subfolders on the Assets index page. ([#12802](https://github.com/craftcms/cms/issues/12802))
+
 ## 3.8.0 - 2023-03-08
 
 ### Content Management
