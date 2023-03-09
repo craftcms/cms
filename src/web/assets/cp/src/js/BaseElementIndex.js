@@ -88,6 +88,8 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
     _cancelToken: null,
 
+    _activeElement: null,
+
     /**
      * Constructor
      */
@@ -1818,7 +1820,13 @@ Craft.BaseElementIndex = Garnish.Base.extend(
     setIndexBusy: function () {
       this.$elements.addClass('busy');
       this.isIndexBusy = true;
-      if (document.activeElement) {
+
+      // Blur the active element, if it's within the element listing pane
+      if (
+        document.activeElement &&
+        this.$elements[0].contains(document.activeElement)
+      ) {
+        this._activeElement = document.activeElement;
         document.activeElement.blur();
       }
     },
@@ -1826,6 +1834,21 @@ Craft.BaseElementIndex = Garnish.Base.extend(
     setIndexAvailable: function () {
       this.$elements.removeClass('busy');
       this.isIndexBusy = false;
+
+      // Refocus the previously-focused element
+      if (this._activeElement) {
+        if (
+          !document.activeElement ||
+          document.activeElement === document.body
+        ) {
+          if (document.body.contains(this._activeElement)) {
+            this._activeElement.focus();
+          } else if (this._activeElement.id) {
+            $(`#${this._activeElement.id}`).focus();
+          }
+        }
+        this._activeElement = null;
+      }
     },
 
     createCustomizeSourcesModal: function () {
