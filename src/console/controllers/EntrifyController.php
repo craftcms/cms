@@ -448,7 +448,12 @@ class EntrifyController extends Controller
             return ExitCode::UNSPECIFIED_ERROR;
         }
 
-        $this->do("Converting “{$globalSet->name}”", function() use ($section, $entryType, $globalSet) {
+        $this->do("Converting “{$globalSet->name}”", function() use (
+            $section,
+            $entryType,
+            $globalSet,
+            &$projectConfigChanged,
+        ) {
             if (!$globalSet->dateDeleted) {
                 Craft::$app->getGlobals()->deleteSet($globalSet);
                 $projectConfigChanged = true;
