@@ -599,12 +599,14 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
       this.addListener(this.$elements, 'keydown', this._onKeyDown.bind(this));
       this.view.elementSelect.on('focusItem', this._onElementFocus.bind(this));
 
-      this.$listedFolders = $newElements.find('.element[data-is-folder]');
+      this.$listedFolders = $newElements.find(
+        '.element[data-is-folder][data-folder-name]'
+      );
       for (let i = 0; i < this.$listedFolders.length; i++) {
         const $folder = this.$listedFolders.eq(i);
         const $label = $folder.find('.label');
         const folderId = parseInt($folder.data('folder-id'));
-        const folderName = $folder.attr('title');
+        const folderName = $folder.data('folder-name');
         const label = Craft.t('app', '{name} folder', {
           name: folderName,
         });

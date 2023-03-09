@@ -13,6 +13,7 @@
 - Fixed a bug where `entrify` commands could leave the database and project config data in inconsistent states, if aborted prematurely. ([#12850](https://github.com/craftcms/cms/pull/12850))
 - Fixed a bug where the `entrify/global-set` command wasn’t always suggesting the command to run on other environments.
 - Fixed a bug where the Assets index page would appear to keep loading indefinitely after renaming a subfolder.
+- Fixed a bug where folders within asset indexes were getting the current site name appended to them, on multi-site installs. ([#12852](https://github.com/craftcms/cms/issues/12852))
 - Added `craft\db\Connection::getDriverLabel()`.
 
 ## 4.4.0 - 2023-03-08
