@@ -127,6 +127,9 @@ class EntrifyController extends Controller
             $author = $this->_author();
         } catch (InvalidConfigException $e) {
             $this->stderr($e->getMessage() . PHP_EOL, Console::FG_RED);
+            if ($projectConfigChanged) {
+                $this->_updateProjectConfig();
+            }
             return ExitCode::UNSPECIFIED_ERROR;
         }
 
@@ -302,6 +305,9 @@ class EntrifyController extends Controller
             $author = $this->_author();
         } catch (InvalidConfigException $e) {
             $this->stderr($e->getMessage() . PHP_EOL, Console::FG_RED);
+            if ($projectConfigChanged) {
+                $this->_updateProjectConfig();
+            }
             return ExitCode::UNSPECIFIED_ERROR;
         }
 
@@ -436,6 +442,9 @@ class EntrifyController extends Controller
             $entryType = $this->_entryType();
         } catch (InvalidConfigException $e) {
             $this->stderr($e->getMessage() . PHP_EOL, Console::FG_RED);
+            if ($projectConfigChanged) {
+                $this->_updateProjectConfig();
+            }
             return ExitCode::UNSPECIFIED_ERROR;
         }
 
@@ -623,5 +632,18 @@ Run this command on other environments immediately after deploying these changes
 $command
 ```
 MD);
+    }
+
+    /**
+     * Trigger saving changes in the PC.
+     * It's a safeguard in case we return early because of an exception
+     * @link https://github.com/craftcms/cms/issues/12842
+     *
+     * @return void
+     * @throws \yii\base\ErrorException
+     */
+    private function _updateProjectConfig(): void
+    {
+        Craft::$app->getProjectConfig()->saveModifiedConfigData();
     }
 }
