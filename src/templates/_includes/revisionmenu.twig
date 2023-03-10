@@ -144,7 +144,7 @@
 
                                             {% tag 'option' with {
                                                 class: site.id not in editableSiteIds ? 'hidden' : null,
-                                                selected: isSelected ?? null,
+                                                selected: isSelected,
                                                 data: {
                                                     href: url,
                                                     'site-id': site.id,
@@ -170,26 +170,19 @@
                                     {% set currentRevisionEditTime = currentRevision.dateCreated ?? element.dateUpdated %}
                                     {% set currentRevisionCreator = currentRevision ? currentRevision.getCreator() %}
                                     {% set isSelected = not isDraft and not isRevision %}
-                                    {% tag 'li' with {
-                                        class: [
-                                            'current-revision',
-                                            isSelected ? 'sel' : null,
-                                        ]|filter,
-                                    } %}
-                                        {% tag 'a' with {
-                                            class: isSelected ? 'sel' : false,
+                                    {% tag 'option' with {
+                                        selected: isSelected,
+                                        data: {
                                             href: cpEditUrl,
-                                        } %}
-                                            {{ 'Current'|t('app') }}
-                                            <div class="smalltext">
-                                                {{ currentRevisionCreator ? 'Saved {timestamp} by {creator}'|t('app', {
-                                                    timestamp: currentRevisionEditTime|timestamp('short', withPreposition=true),
-                                                    creator: currentRevisionCreator.name,
-                                                }) : 'Last saved {timestamp}'|t('app', {
-                                                    timestamp: currentRevisionEditTime|timestamp('short', withPreposition=true),
-                                                }) }}
-                                            </div>
-                                        {% endtag %}
+                                        }
+                                    } %}
+                                        {{ 'Current'|t('app') }} -
+                                            {{ currentRevisionCreator ? 'Saved {timestamp} by {creator}'|t('app', {
+                                                timestamp: currentRevisionEditTime|timestamp('short', withPreposition=true),
+                                                creator: currentRevisionCreator.name,
+                                            }) : 'Last saved {timestamp}'|t('app', {
+                                                timestamp: currentRevisionEditTime|timestamp('short', withPreposition=true),
+                                            }) }}
                                     {% endtag %}
                                 </optgroup>
                             {% endif %}
