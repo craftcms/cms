@@ -69,12 +69,37 @@
 {% set showMenu = editableSiteIds|length > 1 or showRevisions %}
 
 <div class="context-btngroup btngroup">
-    {% tag 'label' with {
-        class: 'visually-hidden',
-        id: 'context-label',
-    } %}
-        {{ 'Context'|t('app') }}
-    {% endtag %}
+    {% if showSiteLabel or showRevisionLabel %}
+        <div class="context-indicator">
+        {%- if showSiteLabel %}
+            <div class="context-block">
+                <div class="context-block__name">
+                    <span data-icon="world" aria-label="{{ 'Site'|t('app') }}"></span>
+                </div>
+                <div class="context-block__value">{{- originalElement.getSite().name|t('site') }}</div>
+            </div>
+        {%- endif %}
+        {%- if showRevisionLabel -%}
+            <div class="context-block">
+                <div class="context-block__name">
+                    <span data-icon="edit" aria-label="{{ 'Version'|t('app') }}"></span>
+                </div>
+                <div class="context-block__value">
+                    {%- if isDraft %}
+                        {{- element.getDraftName() }}
+                    {%- elseif isRevision %}
+                        {{- element.getRevisionLabel() }}
+                    {%- else %}
+                        {{- 'Current'|t('app') }}
+                        {%- if isProvisionalDraft -%}
+                            <span> — {{ 'Edited'|t('app') }}</span>
+                        {%- endif %}
+                    {%- endif -%}
+                </div>
+            </div>
+        {%- endif -%}
+        </div>
+    {% endif %}
     {% tag 'button' with {
         type: 'button',
         class: [
@@ -85,7 +110,7 @@
             showMenu ? 'menubtn' : 'disabled',
         ],
         data: {
-            icon: showSiteLabel ? 'world' : null,
+            icon: 'refresh',
             'disclosure-trigger': true,
         },
         aria: {
@@ -93,26 +118,8 @@
             controls: 'revision-menu',
         }
     } %}
-        {%- if showSiteLabel %}
-            {{- originalElement.getSite().name|t('site') }}
-        {%- endif %}
-        {%- if showSiteLabel and showRevisionLabel %} – {% endif %}
-        {%- if showRevisionLabel -%}
-            <span class="revision-label">
-                {%- if isDraft %}
-                    {{- element.getDraftName() }}
-                {%- elseif isRevision %}
-                    {{- element.getRevisionLabel() }}
-                {%- else %}
-                    {{- 'Current'|t('app') }}
-                    {%- if isProvisionalDraft -%}
-                        <span> — {{ 'Edited'|t('app') }}</span>
-                    {%- endif %}
-                {%- endif -%}
-            </span>
-        {%- endif -%}
+        Switch version
     {% endtag %}
-
     <div id="revision-menu" class="revision-menu menu padded{% if not showMenu %} hidden{% endif %}" data-disclosure-menu>
         {% set enabledSiteIds = element.id ? craft.app.elements.getEnabledSiteIdsForElement(element.id) : [] %}
         {% set siteGroups = craft.app.sites.getAllGroups() %}

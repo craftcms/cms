@@ -467,6 +467,43 @@ button {
   background-color: transparentize($grey200, 0.5) !important;
 }
 
+.context-btngroup {
+  gap: var(--s);
+}
+
+.context-indicator {
+  --border-color: var(--gray-700);
+  display: flex;
+  border: 1px solid var(--border-color);
+  border-radius: var(--large-border-radius);
+
+  .context-block {
+    display: flex;
+  }
+
+  .context-block__name,
+  .context-block__value {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: var(--ui-control-height);
+  }
+
+  .context-block__name {
+    background-color: var(--border-color);
+    color: var(--white);
+    width: 2rem;
+
+    [data-icon] {
+      display: flex;
+    }
+  }
+
+  .context-block__value {
+    padding: 0 0.3rem;
+  }
+}
+
 /* status icons */
 .checkmark-icon,
 .alert-icon {
