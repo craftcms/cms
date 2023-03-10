@@ -93,6 +93,8 @@ Craft.BaseElementIndex = Garnish.Base.extend(
     activeViewMenu: null,
     filterHuds: null,
 
+    _activeElement: null,
+
     get viewMode() {
       if (this._viewMode === 'structure' && !this.canSortByStructure()) {
         return 'table';
@@ -1190,6 +1192,13 @@ Craft.BaseElementIndex = Garnish.Base.extend(
     },
 
     /**
+     * Returns any additional settings that should be passed to the view instance.
+     */
+    getViewSettings: function () {
+      return {};
+    },
+
+    /**
      * Returns the data that should be passed to the elementIndex/getElements controller action
      * when loading elements.
      */
@@ -2211,7 +2220,13 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       this.$elements.addClass('busy');
       this.$updateSpinner.appendTo(this.$elements);
       this.isIndexBusy = true;
-      if (document.activeElement) {
+
+      // Blur the active element, if it's within the element listing pane
+      if (
+        document.activeElement &&
+        this.$elements[0].contains(document.activeElement)
+      ) {
+        this._activeElement = document.activeElement;
         document.activeElement.blur();
       }
     },
@@ -2220,6 +2235,21 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       this.$elements.removeClass('busy');
       this.$updateSpinner.remove();
       this.isIndexBusy = false;
+
+      // Refocus the previously-focused element
+      if (this._activeElement) {
+        if (
+          !document.activeElement ||
+          document.activeElement === document.body
+        ) {
+          if (document.body.contains(this._activeElement)) {
+            this._activeElement.focus();
+          } else if (this._activeElement.id) {
+            $(`#${this._activeElement.id}`).focus();
+          }
+        }
+        this._activeElement = null;
+      }
     },
 
     createCustomizeSourcesModal: function () {
@@ -2551,9 +2581,6 @@ Craft.BaseElementIndex = Garnish.Base.extend(
             null;
       }
 
-      // Capture the focused element, in case it's about to get removed from the DOM
-      const activeElement = document.activeElement;
-
       // Update the count text
       // -------------------------------------------------------------
 
@@ -2730,32 +2757,25 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       // -------------------------------------------------------------
 
       // Should we make the view selectable?
-      var selectable = this.actions || this.settings.selectable;
+      const selectable = this.actions || this.settings.selectable;
+      const settings = Object.assign(
+        {
+          context: this.settings.context,
+          batchSize:
+            this.settings.context !== 'index' || this.viewMode === 'structure'
+              ? this.settings.batchSize
+              : null,
+          params: params,
+          selectable: selectable,
+          multiSelect: this.actions || this.settings.multiSelect,
+          canSelectElement: this.settings.canSelectElement,
+          checkboxMode: !!this.actions,
+          onSelectionChange: this._handleSelectionChange.bind(this),
+        },
+        this.getViewSettings()
+      );
 
-      this.view = this.createView(this.getSelectedViewMode(), {
-        context: this.settings.context,
-        batchSize:
-          this.settings.context !== 'index' || this.viewMode === 'structure'
-            ? this.settings.batchSize
-            : null,
-        params: params,
-        selectable: selectable,
-        multiSelect: this.actions || this.settings.multiSelect,
-        canSelectElement: this.settings.canSelectElement,
-        checkboxMode: !!this.actions,
-        onSelectionChange: this._handleSelectionChange.bind(this),
-      });
-
-      // Refocus the previously-focused element
-      // -------------------------------------------------------------
-
-      if (
-        activeElement &&
-        activeElement.id &&
-        !document.body.contains(activeElement)
-      ) {
-        $(`#${activeElement.id}`).focus();
-      }
+      this.view = this.createView(this.getSelectedViewMode(), settings);
 
       // Auto-select elements
       // -------------------------------------------------------------

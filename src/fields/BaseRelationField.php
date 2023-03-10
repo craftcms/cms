@@ -774,7 +774,13 @@ JS, [
         /** @var ElementQuery|Collection $value */
         $titles = [];
 
-        foreach ($this->_all($value, $element)->all() as $relatedElement) {
+        if ($value instanceof Collection) {
+            $value = $value->all();
+        } else {
+            $value = $this->_all($value, $element)->all();
+        }
+
+        foreach ($value as $relatedElement) {
             $titles[] = (string)$relatedElement;
         }
 

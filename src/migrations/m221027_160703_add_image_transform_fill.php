@@ -6,7 +6,6 @@ use Craft;
 use craft\db\Migration;
 use craft\db\Table;
 use craft\services\ProjectConfig;
-use yii\db\Exception;
 
 /**
  * m221027_160703_add_image_transform_fill migration.
@@ -24,7 +23,10 @@ class m221027_160703_add_image_transform_fill extends Migration
 
         $modeOptions = ['stretch', 'fit', 'crop', 'letterbox'];
         if ($this->db->getIsPgsql()) {
-            // Manually construct the SQL for Postgres
+            // imagetransforms used to be assettransforms, so try dropping the constraint with both table names
+            $this->execute(sprintf('alter table %s drop constraint if exists %s', Table::IMAGETRANSFORMS, '{{%imagetransforms_mode_check}}'));
+            $this->execute(sprintf('alter table %s drop constraint if exists %s', Table::IMAGETRANSFORMS, '{{%assettransforms_mode_check}}'));
+
             $check = '[[mode]] in (';
             foreach ($modeOptions as $i => $value) {
                 if ($i !== 0) {
@@ -33,19 +35,7 @@ class m221027_160703_add_image_transform_fill extends Migration
                 $check .= $this->db->quoteValue($value);
             }
             $check .= ')';
-            $tryConstraints = [
-                '{{%imagetransforms_mode_check}}',
-                '{{%assettransforms_mode_check}}',
-            ];
-            foreach ($tryConstraints as $constraint) {
-                try {
-                    $sql = sprintf('alter table %s drop constraint %s, add check (%s)', Table::IMAGETRANSFORMS, $constraint, $check);
-                    $this->execute($sql);
-                    break;
-                } catch (Exception) {
-                    // try the next one...
-                }
-            }
+            $this->execute(sprintf('alter table %s add check (%s)', Table::IMAGETRANSFORMS, $check));
         } else {
             $this->alterColumn(Table::IMAGETRANSFORMS, 'mode', $this->enum('mode', $modeOptions)->notNull()->defaultValue('crop'));
         }
