@@ -504,6 +504,20 @@ button {
   }
 }
 
+.revision-menu__fields {
+  display: grid;
+  gap: var(--s);
+}
+
+.revision-menu__field {
+  display: grid;
+  gap: var(--s);
+
+  select {
+    width: 100%;
+  }
+}
+
 /* status icons */
 .checkmark-icon,
 .alert-icon {

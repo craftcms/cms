@@ -126,38 +126,84 @@
 
             {% set enabledSiteIds = element.id ? craft.app.elements.getEnabledSiteIdsForElement(element.id) : [] %}
             {% set siteGroups = craft.app.sites.getAllGroups() %}
-            <label for="site-select">{{ 'Site'|t('app') }}</label>
-            <select id="site-select">
-                {% for group in siteGroups %}
-                    {% set groupSites = group.getSites() %}
-                    {% if groupSites|length %}
-                        {% set groupIsVisible = canEditMultipleSites and groupSites|column('id')|intersect(editableSiteIds)|length %}
-                        <div class="site-group{% if not groupIsVisible %} hidden{% endif %}">
-                            {% if siteGroups|length > 1 %}<h6 cass="padded">{{ group.name|t('site') }}</h6>{% endif %}
-                            <ul class="padded">
-                                {% for site in groupSites %}
-                                    {% set status = element.enabled and site.id in enabledSiteIds ? 'enabled' : 'disabled' %}
-                                    {% set isSelected = site.id == originalElement.siteId %}
-                                    {% set url = url(baseUrl, { site: site.handle }) %}
 
-                                    {% tag 'option' with {
-                                        class: site.id not in editableSiteIds ? 'hidden' : null,
-                                        selected: isSelected ?? null,
-                                        data: {
-                                            href: url,
-                                            'site-id': site.id,
-                                        }
+            <div class="revision-menu__fields">
+                <div class="revision-menu__field">
+                    <label for="site-select">{{ 'Site'|t('app') }}</label>
+                    <div class="select">
+                        <select id="site-select">
+                            {% for group in siteGroups %}
+                                {% set groupSites = group.getSites() %}
+                                {% if groupSites|length %}
+                                    {% set groupIsVisible = canEditMultipleSites and groupSites|column('id')|intersect(editableSiteIds)|length %}
+                                    <optgroup label="{{ group.name|t('site') }}" class="site-group{% if not groupIsVisible %} hidden{% endif %}">
+                                        {% for site in groupSites %}
+                                            {% set status = element.enabled and site.id in enabledSiteIds ? 'enabled' : 'disabled' %}
+                                            {% set isSelected = site.id == originalElement.siteId %}
+                                            {% set url = url(baseUrl, { site: site.handle }) %}
+
+                                            {% tag 'option' with {
+                                                class: site.id not in editableSiteIds ? 'hidden' : null,
+                                                selected: isSelected ?? null,
+                                                data: {
+                                                    href: url,
+                                                    'site-id': site.id,
+                                                }
+                                            } %}
+                                                {{ site.name|t('site') }} ({{ status }})
+                                            {% endtag %}
+                                        {% endfor %}
+                                    </optgroup>
+                                {% endif %}
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+
+                <div class="revision-menu__field">
+                    <label for="version-select">{{ 'Version'|t('app') }}</label>
+                    <div class="select">
+                        <select id="version-select">
+                            {% if showRevisions %}
+                                <optgroup label="Revisions" class="padded revision-group-current">
+                                    {% set currentRevision = element.getCurrentRevision() %}
+                                    {% set currentRevisionEditTime = currentRevision.dateCreated ?? element.dateUpdated %}
+                                    {% set currentRevisionCreator = currentRevision ? currentRevision.getCreator() %}
+                                    {% set isSelected = not isDraft and not isRevision %}
+                                    {% tag 'li' with {
+                                        class: [
+                                            'current-revision',
+                                            isSelected ? 'sel' : null,
+                                        ]|filter,
                                     } %}
-                                        {{ site.name|t('site') }} ({{ status }})
+                                        {% tag 'a' with {
+                                            class: isSelected ? 'sel' : false,
+                                            href: cpEditUrl,
+                                        } %}
+                                            {{ 'Current'|t('app') }}
+                                            <div class="smalltext">
+                                                {{ currentRevisionCreator ? 'Saved {timestamp} by {creator}'|t('app', {
+                                                    timestamp: currentRevisionEditTime|timestamp('short', withPreposition=true),
+                                                    creator: currentRevisionCreator.name,
+                                                }) : 'Last saved {timestamp}'|t('app', {
+                                                    timestamp: currentRevisionEditTime|timestamp('short', withPreposition=true),
+                                                }) }}
+                                            </div>
+                                        {% endtag %}
                                     {% endtag %}
-                                {% endfor %}
-                            </ul>
-                        </div>
+                                </optgroup>
+                            {% endif %}
+                        </select>
+                    </div>
+                    {% if hasMoreRevisions %}
+                        {{ tag('a', {
+                            href: url(revisionsPageUrl),
+                            class: 'go',
+                            text: 'View all revisions'|t('app'),
+                        }) }}
                     {% endif %}
-                {% endfor %}
-            </select>
-
-            <label>{{ 'Revision'|t('app') }}</label>
+                </div>
+            </div>
         </fieldset>
 
 
