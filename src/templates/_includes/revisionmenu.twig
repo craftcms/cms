@@ -86,9 +86,11 @@
         ],
         data: {
             icon: showSiteLabel ? 'world' : null,
+            'disclosure-trigger': true,
         },
         aria: {
             'labelledby': 'context-label',
+            controls: 'revision-menu',
         }
     } %}
         {%- if showSiteLabel %}
@@ -111,7 +113,7 @@
         {%- endif -%}
     {% endtag %}
 
-    <div class="revision-menu menu padded{% if not showMenu %} hidden{% endif %}">
+    <div id="revision-menu" class="revision-menu menu padded{% if not showMenu %} hidden{% endif %}" data-disclosure-menu>
         {% set enabledSiteIds = element.id ? craft.app.elements.getEnabledSiteIdsForElement(element.id) : [] %}
         {% set siteGroups = craft.app.sites.getAllGroups() %}
         {% for group in siteGroups %}
