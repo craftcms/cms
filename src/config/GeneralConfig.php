@@ -1563,6 +1563,20 @@ class GeneralConfig extends BaseConfig
     public bool $limitAutoSlugsToAscii = false;
 
     /**
+     * @var array Custom locale aliases, which will be included when fetching all known locales.
+     *
+     * Each locale alias should be defined as an array with the following keys:
+     *
+     * - `id`: The alias locale ID
+     * - `aliasOf`: The original locale ID
+     * - `displayName`: The locale alias’s display name _(optional)_
+     *
+     * @since 5.0.0
+     * @group System
+     */
+    public array $localeAliases = [];
+
+    /**
      * @var mixed The URI Craft should use for user login on the front end.
      *
      * This can be set to `false` to disable front-end login.
@@ -4727,6 +4741,26 @@ class GeneralConfig extends BaseConfig
     public function limitAutoSlugsToAscii(bool $value = true): self
     {
         $this->limitAutoSlugsToAscii = $value;
+        return $this;
+    }
+
+    /**
+     * Custom locale aliases, which will be included when fetching all known locales.
+     *
+     * Each item in the array should have a key that defines the custom locale ID, and its value should be set
+     * to an array with the following keys:
+     *
+     * - `aliasOf`: The original locale ID
+     * - `displayName`: The locale alias’s display name _(optional)_
+     *
+     * @param array $value
+     * @return self
+     * @group System
+     * @since 5.0.0
+     */
+    public function localeAliases(array $value): self
+    {
+        $this->localeAliases = $value;
         return $this;
     }
 
