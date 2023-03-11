@@ -102,6 +102,10 @@ use craft\web\Request as WebRequest;
 use craft\web\User as UserSession;
 use craft\web\View;
 use Illuminate\Support\Collection;
+use Symfony\Component\VarDumper\Caster\ReflectionCaster;
+use Symfony\Component\VarDumper\Cloner\VarCloner;
+use Symfony\Component\VarDumper\Dumper\AbstractDumper;
+use Symfony\Component\VarDumper\VarDumper;
 use Yii;
 use yii\base\Application;
 use yii\base\ErrorHandler;
@@ -1042,6 +1046,18 @@ trait ApplicationTrait
     }
 
     /**
+     * Returns the variable dumper.
+     *
+     * @return AbstractDumper
+     * @since 4.4.2
+     */
+    public function getDumper(): AbstractDumper
+    {
+        /** @noinspection PhpIncompatibleReturnTypeInspection */
+        return $this->get('dumper');
+    }
+
+    /**
      * Returns the element indexes service.
      *
      * @return ElementSources The element indexes service
@@ -1496,6 +1512,13 @@ trait ApplicationTrait
         if ($this instanceof WebApplication && $request->getIsCpRequest()) {
             $this->getResponse()->setNoCacheHeaders();
         }
+
+        // Register the variable dumper
+        VarDumper::setHandler(function($var) {
+            $cloner = new VarCloner();
+            $cloner->addCasters(ReflectionCaster::UNSET_CLOSURE_FILE_INFO);
+            $this->getDumper()->dump($cloner->cloneVar($var));
+        });
     }
 
     /**
