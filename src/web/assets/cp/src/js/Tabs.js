@@ -134,8 +134,9 @@ Craft.Tabs = Garnish.Base.extend({
 
     $('#content').trigger('scroll');
 
-    if ($tab.parents('.slideout-container').length > 0) {
-      $('.slideout-container .so-content').trigger('scroll');
+    const $slideoutContainer = $tab.closest('.slideout-container');
+    if ($slideoutContainer.length) {
+      $slideoutContainer.find('.so-content').trigger('scroll');
     }
   },
 
