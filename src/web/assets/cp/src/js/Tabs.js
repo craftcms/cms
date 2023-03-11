@@ -133,6 +133,11 @@ Craft.Tabs = Garnish.Base.extend({
     });
 
     $('#content').trigger('scroll');
+
+    const $slideoutContainer = $tab.closest('.slideout-container');
+    if ($slideoutContainer.length) {
+      $slideoutContainer.find('.so-content').trigger('scroll');
+    }
   },
 
   deselectTab: function () {
