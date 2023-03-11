@@ -6,6 +6,7 @@
 - Variable dumps now use a light theme for web requests by default. ([#12857](https://github.com/craftcms/cms/pull/12857))
 - Added the `dumper` application component and `craft\base\ApplicationTrait::getDumper()`. ([#12869](https://github.com/craftcms/cms/pull/12869))
 - Fixed a bug where multi-value field inputs would be considered modified even if they weren’t, if the field type’s `isValueEmpty()` method returned `true`. ([#12858](https://github.com/craftcms/cms/issues/12858))
+- Fixed a bug where asset thumbanils within secondary slideout tabs weren’t loading immediately. ([#12859](https://github.com/craftcms/cms/issues/12859))
 
 ## 4.4.1 - 2023-03-09
 
