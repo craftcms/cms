@@ -515,7 +515,7 @@ class MatrixBlockQuery extends ElementQuery
             throw new InvalidConfigException('Invalid ownerId param value');
         }
 
-        $this->joinElementTable('matrixblocks');
+        $this->joinElementTable(Table::MATRIXBLOCKS);
 
         // Join in the matrixblocks_owners table
         $ownersCondition = [

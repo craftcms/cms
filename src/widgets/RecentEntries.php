@@ -178,12 +178,12 @@ class RecentEntries extends Widget
         /** @var Entry[] */
         return Entry::find()
             ->sectionId($targetSectionId)
-            ->editable(true)
+            ->editable()
             ->status(null)
             ->siteId($targetSiteId)
             ->limit($this->limit ?: 100)
             ->with(['author'])
-            ->orderBy('elements.dateCreated desc')
+            ->orderBy(['dateCreated' => SORT_DESC])
             ->all();
     }
 

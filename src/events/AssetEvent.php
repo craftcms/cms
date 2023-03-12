@@ -18,7 +18,7 @@ use craft\elements\Asset;
 class AssetEvent extends CancelableEvent
 {
     /**
-     * @var Asset The asset model associated with the event.
+     * @var Asset The asset associated with the event.
      */
     public Asset $asset;
 

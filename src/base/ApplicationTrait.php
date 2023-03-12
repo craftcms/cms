@@ -102,6 +102,10 @@ use craft\web\Request as WebRequest;
 use craft\web\User as UserSession;
 use craft\web\View;
 use Illuminate\Support\Collection;
+use Symfony\Component\VarDumper\Caster\ReflectionCaster;
+use Symfony\Component\VarDumper\Cloner\VarCloner;
+use Symfony\Component\VarDumper\Dumper\AbstractDumper;
+use Symfony\Component\VarDumper\VarDumper;
 use Yii;
 use yii\base\Application;
 use yii\base\ErrorHandler;
@@ -498,19 +502,31 @@ trait ApplicationTrait
     }
 
     /**
+     * Returns the handle of the Craft edition.
+     *
+     * @return string
+     * @since 4.4.0
+     */
+    public function getEditionHandle(): string
+    {
+        /** @var WebApplication|ConsoleApplication $this */
+        return App::editionHandle($this->getEdition());
+    }
+
+    /**
      * Returns the edition Craft is actually licensed to run in.
      *
      * @return int|null
      */
     public function getLicensedEdition(): ?int
     {
-        $licensedEdition = $this->getCache()->get('licensedEdition');
+        $licenseInfo = $this->getCache()->get('licenseInfo') ?: [];
 
-        if ($licensedEdition !== false) {
-            return (int)$licensedEdition;
+        if (!isset($licenseInfo['craft']['edition'])) {
+            return null;
         }
 
-        return null;
+        return App::editionIdByHandle($licenseInfo['craft']['edition']);
     }
 
     /**
@@ -617,6 +633,10 @@ trait ApplicationTrait
      */
     public function getCanTestEditions(): bool
     {
+        if (App::env('CRAFT_NO_TRIALS')) {
+            return false;
+        }
+
         if (!$this instanceof WebApplication) {
             return false;
         }
@@ -1023,6 +1043,18 @@ trait ApplicationTrait
     {
         /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->get('drafts');
+    }
+
+    /**
+     * Returns the variable dumper.
+     *
+     * @return AbstractDumper
+     * @since 4.4.2
+     */
+    public function getDumper(): AbstractDumper
+    {
+        /** @noinspection PhpIncompatibleReturnTypeInspection */
+        return $this->get('dumper');
     }
 
     /**
@@ -1480,6 +1512,13 @@ trait ApplicationTrait
         if ($this instanceof WebApplication && $request->getIsCpRequest()) {
             $this->getResponse()->setNoCacheHeaders();
         }
+
+        // Register the variable dumper
+        VarDumper::setHandler(function($var) {
+            $cloner = new VarCloner();
+            $cloner->addCasters(ReflectionCaster::UNSET_CLOSURE_FILE_INFO);
+            $this->getDumper()->dump($cloner->cloneVar($var));
+        });
     }
 
     /**

@@ -9,6 +9,7 @@ namespace craft\base;
 
 use craft\behaviors\CustomFieldBehavior;
 use craft\elements\conditions\ElementConditionInterface;
+use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\User;
 use craft\errors\InvalidFieldException;
@@ -298,6 +299,16 @@ interface ElementInterface extends ComponentInterface
     public static function sources(string $context): array;
 
     /**
+     * Returns a source definition by a given source key/path and context.
+     *
+     * @param string $sourceKey
+     * @param string|null $context
+     * @return array|null
+     * @since 4.4.0
+     */
+    public static function findSource(string $sourceKey, ?string $context = null): ?array;
+
+    /**
      * Returns all of the field layouts associated with elements from the given source.
      *
      * This is used to determine which custom fields should be included in the element index sort menu,
@@ -386,6 +397,16 @@ interface ElementInterface extends ComponentInterface
      * @return string The element index HTML
      */
     public static function indexHtml(ElementQueryInterface $elementQuery, ?array $disabledElementIds, array $viewState, ?string $sourceKey, ?string $context, bool $includeContainer, bool $showCheckboxes): string;
+
+    /**
+     * Returns the total number of elements that will be shown on an element index, for the given element query.
+     *
+     * @param ElementQueryInterface $elementQuery
+     * @param string|null $sourceKey
+     * @return int
+     * @since 4.4.0
+     */
+    public static function indexElementCount(ElementQueryInterface $elementQuery, ?string $sourceKey): int;
 
     /**
      * Returns the sort options for the element type.
@@ -503,7 +524,7 @@ interface ElementInterface extends ComponentInterface
     /**
      * Returns the GraphQL type name by an element’s context.
      *
-     * @param mixed $context The element’s context, such as a Volume, Entry Type or Matrix Block Type.
+     * @param mixed $context The element’s context, such as a volume, entry type or Matrix block type.
      * @return string
      * @since 3.3.0
      */
@@ -521,7 +542,7 @@ interface ElementInterface extends ComponentInterface
     /**
      * Returns the GraphQL scopes required by element’s context.
      *
-     * @param mixed $context The element’s context, such as a Volume, Entry Type or Matrix Block Type.
+     * @param mixed $context The element’s context, such as a volume, entry type or Matrix block type.
      * @return array
      * @since 3.3.0
      */
@@ -738,6 +759,22 @@ interface ElementInterface extends ComponentInterface
     public function setUiLabel(?string $label): void;
 
     /**
+     * Returns any path segment labels that should be prepended to the element’s UI label.
+     *
+     * @return string[]
+     * @since 4.4.0
+     */
+    public function getUiLabelPath(): array;
+
+    /**
+     * Defines any path segment labels that should be prepended to the element’s UI label.
+     *
+     * @param string[] $path
+     * @since 4.4.0
+     */
+    public function setUiLabelPath(array $path): void;
+
+    /**
      * Returns the reference string to this element.
      *
      * @return string|null
@@ -858,6 +895,14 @@ interface ElementInterface extends ComponentInterface
      * @since 4.0.0
      */
     public function getPostEditUrl(): ?string;
+
+    /**
+     * Returns the element’s revisions index URL in the control panel.
+     *
+     * @return string|null
+     * @since 4.4.0
+     */
+    public function getCpRevisionsUrl(): ?string;
 
     /**
      * Returns additional buttons that should be shown at the top of the element’s edit page.

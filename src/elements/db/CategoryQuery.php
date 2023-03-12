@@ -202,7 +202,7 @@ class CategoryQuery extends ElementQuery
             return false;
         }
 
-        $this->joinElementTable('categories');
+        $this->joinElementTable(Table::CATEGORIES);
 
         $this->query->select([
             'categories.groupId',

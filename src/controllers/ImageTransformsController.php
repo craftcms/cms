@@ -10,6 +10,7 @@ namespace craft\controllers;
 use Craft;
 use craft\helpers\Image;
 use craft\models\ImageTransform;
+use craft\validators\ColorValidator;
 use craft\web\assets\edittransform\EditTransformAsset;
 use craft\web\Controller;
 use yii\web\NotFoundHttpException;
@@ -126,13 +127,15 @@ class ImageTransformsController extends Controller
         $transform->id = $this->request->getBodyParam('transformId');
         $transform->name = $this->request->getBodyParam('name');
         $transform->handle = $this->request->getBodyParam('handle');
-        $transform->width = $this->request->getBodyParam('width') ?: null;
-        $transform->height = $this->request->getBodyParam('height') ?: null;
+        $transform->width = (int)$this->request->getBodyParam('width') ?: null;
+        $transform->height = (int)$this->request->getBodyParam('height') ?: null;
         $transform->mode = $this->request->getBodyParam('mode');
         $transform->position = $this->request->getBodyParam('position');
         $transform->quality = $this->request->getBodyParam('quality') ?: null;
         $transform->interlace = $this->request->getBodyParam('interlace');
         $transform->format = $this->request->getBodyParam('format');
+        $transform->fill = $this->request->getBodyParam('fill') ?: null;
+        $transform->upscale = $this->request->getBodyParam('upscale', $transform->upscale);
 
         if (empty($transform->format)) {
             $transform->format = null;
@@ -154,6 +157,10 @@ class ImageTransformsController extends Controller
         if (!empty($transform->format) && !Image::isWebSafe($transform->format)) {
             $this->setFailFlash(Craft::t('app', 'That is not an allowed format.'));
             $errors = true;
+        }
+
+        if ($transform->mode === 'letterbox') {
+            $transform->fill = $transform->fill ? ColorValidator::normalizeColor($transform->fill) : 'transparent';
         }
 
         if (!$errors) {

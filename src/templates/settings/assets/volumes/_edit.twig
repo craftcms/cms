@@ -1,4 +1,4 @@
-{% import "_includes/forms" as forms %}
+{% import '_includes/forms.twig' as forms %}
 
 
 {% if not isNewVolume %}{{ hiddenInput('volumeId', volume.id) }}{% endif %}
@@ -10,7 +10,6 @@
     name: 'name',
     value: volume.name,
     errors: volume.getErrors('name'),
-    autofocus: true,
     required: true,
 }) }}
 

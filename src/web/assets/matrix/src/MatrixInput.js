@@ -813,6 +813,7 @@
         () => {
           this.$previewContainer.html('');
           this.$container.height('auto');
+          this.$container.trigger('scroll');
         }
       );
 
