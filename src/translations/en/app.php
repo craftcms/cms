@@ -1735,6 +1735,7 @@ return [
     'week' => 'week',
     'weeks' => 'weeks',
     'yesterday' => 'yesterday',
+    '{attribute} cannot contain a forward slash.' => '{attribute} cannot contain a forward slash.',
     '{attribute} cannot contain emoji.' => '{attribute} cannot contain emoji.',
     '{attribute} cannot contain spaces.' => '{attribute} cannot contain spaces.',
     '{attribute} cannot start with the {setting} config setting.' => '{attribute} cannot start with the {setting} config setting.',

@@ -83,6 +83,11 @@ class SlugValidator extends Validator
                 $this->addError($model, $attribute, Craft::t('yii', '{attribute} cannot be blank.'));
             }
         }
+
+        // Don't allow slugs to contain any forward slashes
+        if (str_contains($slug, '/')) {
+            $this->addError($model, $attribute, Craft::t('app', '{attribute} cannot contain a forward slash.'));
+        }
     }
 
     /**
