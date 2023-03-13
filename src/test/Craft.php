@@ -140,7 +140,7 @@ class Craft extends Yii2
     /**
      * @inheritdoc
      */
-    public function _afterSuite()
+    public function _afterSuite(): void
     {
         parent::_afterSuite();
 
