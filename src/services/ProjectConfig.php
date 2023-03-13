@@ -2064,31 +2064,11 @@ class ProjectConfig extends Component
      */
     private function _getTransformData(): array
     {
-        $transformRows = (new Query())
-            ->select([
-                'name',
-                'handle',
-                'mode',
-                'position',
-                'width',
-                'height',
-                'format',
-                'quality',
-                'interlace',
-                'uid',
-            ])
-            ->from([Table::IMAGETRANSFORMS])
-            ->indexBy('uid')
-            ->all();
-
-        foreach ($transformRows as &$row) {
-            unset($row['uid']);
-            $row['width'] = (int)$row['width'] ?: null;
-            $row['height'] = (int)$row['height'] ?: null;
-            $row['quality'] = (int)$row['quality'] ?: null;
+        $data = [];
+        foreach (Craft::$app->getImageTransforms()->getAllTransforms() as $transform) {
+            $data[$transform->uid] = $transform->getConfig();
         }
-
-        return $transformRows;
+        return $data;
     }
 
     /**
