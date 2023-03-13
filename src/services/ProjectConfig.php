@@ -31,6 +31,7 @@ use yii\base\Application;
 use yii\base\Component;
 use yii\base\ErrorException;
 use yii\base\Exception;
+use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
 use yii\base\NotSupportedException;
 use yii\caching\ExpressionDependency;
@@ -1865,7 +1866,11 @@ class ProjectConfig extends Component
         foreach ($sourceConfigs as &$elementTypeConfigs) {
             foreach ($elementTypeConfigs as &$config) {
                 if ($config['type'] === ElementSources::TYPE_CUSTOM && isset($config['condition'])) {
-                    $config['condition'] = $conditionsService->createCondition($config['condition'])->getConfig();
+                    try {
+                        $config['condition'] = $conditionsService->createCondition($config['condition'])->getConfig();
+                    } catch (InvalidArgumentException) {
+                        // Ignore it
+                    }
                 }
             }
         }
