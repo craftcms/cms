@@ -165,7 +165,7 @@
                     <div class="select">
                         <select id="version-select">
                             {% if showRevisions %}
-                                <optgroup label="Revisions" class="padded revision-group-current">
+                                <optgroup label="Revisions">
                                     {% set currentRevision = element.getCurrentRevision() %}
                                     {% set currentRevisionEditTime = currentRevision.dateCreated ?? element.dateUpdated %}
                                     {% set currentRevisionCreator = currentRevision ? currentRevision.getCreator() %}
@@ -184,6 +184,29 @@
                                                 timestamp: currentRevisionEditTime|timestamp('short', withPreposition=true),
                                             }) }}
                                     {% endtag %}
+
+                                    {# All other revisions #}
+                                    {% if revisions %}
+                                        {% for revision in revisions %}
+                                            {% set url = url(cpEditUrl, baseParams|merge({ revisionId: revision.revisionId })) %}
+                                            {% set creator = revision.getCreator() %}
+                                            {% set isSelected = revision.revisionId == element.revisionId %}
+                                            {% tag 'option' with {
+                                                selected: isSelected,
+                                                data: {
+                                                    href: url,
+                                                }
+                                            } %}
+                                                {{ revision.getRevisionLabel() }} -
+                                                {{ creator ? 'Saved {timestamp} by {creator}'|t('app', {
+                                                    timestamp: revision.dateCreated|timestamp('short', withPreposition=true),
+                                                    creator: creator.name,
+                                                }) : 'Saved {timestamp}'|t('app', {
+                                                    timestamp: revision.dateCreated|timestamp('short', withPreposition=true),
+                                                }) }}
+                                            {% endtag %}
+                                        {% endfor %}
+                                    {% endif %}
                                 </optgroup>
                             {% endif %}
                         </select>
@@ -235,7 +258,7 @@
             {% endif %}
         {% endfor %}
 
-        {% if showRevisions %}
+        {% if showRevisions %} {# MOVED #}
             <hr class="revision-hr{% if not canEditMultipleSites %} hidden{% endif %}">
             <ul class="padded revision-group-current">
                 {% set currentRevision = element.getCurrentRevision() %}
