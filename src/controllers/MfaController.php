@@ -10,6 +10,7 @@ namespace craft\controllers;
 use Craft;
 use craft\mfa\ConfigurableMfaInterface;
 use craft\web\Controller;
+use craft\web\View;
 use yii\base\Exception;
 use yii\web\Response;
 
@@ -31,7 +32,7 @@ class MfaController extends Controller
     /**
      * Get all available alternative MFA types for logging in.
      *
-     * @return Response|null
+     * @return ?Response
      * @throws \yii\web\BadRequestHttpException
      */
     public function actionGetAlternativeMfaTypes(): ?Response
@@ -40,7 +41,7 @@ class MfaController extends Controller
             return null;
         }
 
-        $currentMethod = Craft::$app->getRequest()->getRequiredBodyParam('currentMethod');
+        $currentMethod = Craft::$app->getRequest()->getBodyParam('currentMethod');
         $alternativeTypes = Craft::$app->getMfa()->getAlternativeMfaTypes($currentMethod);
 
         if ($this->request->getAcceptsJson()) {
@@ -49,8 +50,11 @@ class MfaController extends Controller
             );
         }
 
-        // todo: finish me for non-ajax?
-        return null;
+        $template = Craft::$app->getRequest()->getBodyParam('template');
+
+        return $this->renderTemplate($template, [
+            'alternativeTypes' => $alternativeTypes,
+        ], View::TEMPLATE_MODE_SITE);
     }
 
     /**
@@ -84,8 +88,12 @@ class MfaController extends Controller
             );
         }
 
-        // todo: finish me for non ajax?
-        return null;
+        $template = Craft::$app->getRequest()->getBodyParam('template');
+
+        return $this->renderTemplate($template, [
+            'mfa' => true,
+            'mfaForm' => $mfaForm,
+        ], View::TEMPLATE_MODE_SITE);
     }
 
     public function actionRemoveSetup(): ?Response
@@ -115,9 +123,23 @@ class MfaController extends Controller
             }
         }
 
-        return null; // todo: finish me for non ajax?
+        if ($success) {
+            $this->setSuccessFlash(Craft::t('app', 'Setup removed.'));
+        } else {
+            $this->setFailFlash(Craft::t('app', 'Something went wrong.'));
+        }
+
+        return $this->redirectToPostedUrl();
     }
 
+    /**
+     * Save MFA type setup
+     *
+     * @return Response|null
+     * @throws Exception
+     * @throws \Throwable
+     * @throws \yii\web\BadRequestHttpException
+     */
     public function actionSaveSetup(): ?Response
     {
         if (!$this->request->getIsPost()) {
@@ -140,11 +162,21 @@ class MfaController extends Controller
 
         $verified = $mfaService->verify($mfaFields, $currentMethod);
 
-        if ($verified === false) {
-            return $this->asFailure(Craft::t('app', 'Unable to verify.'));
+        if ($this->request->getAcceptsJson()) {
+            if ($verified === false) {
+                return $this->asFailure(Craft::t('app', 'Unable to verify.'));
+            }
+
+            return $this->asSuccess(Craft::t('app', 'Setup saved.'));
         }
 
-        return $this->asSuccess(Craft::t('app', 'Setup saved.'));
+        if ($verified === false) {
+            $this->setFailFlash(Craft::t('app', 'Unable to verify.'));
+        } else {
+            $this->setSuccessFlash(Craft::t('app', 'Setup saved.'));
+        }
+
+        return $this->redirectToPostedUrl();
     }
 
     /**

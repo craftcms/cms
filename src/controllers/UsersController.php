@@ -30,6 +30,7 @@ use craft\helpers\FileHelper;
 use craft\helpers\Html;
 use craft\helpers\Image;
 use craft\helpers\Session;
+use craft\helpers\Template;
 use craft\helpers\UrlHelper;
 use craft\helpers\User as UserHelper;
 use craft\i18n\Locale;
@@ -221,8 +222,10 @@ class UsersController extends Controller
         }
 
         $mfaService = Craft::$app->getMfa();
+        $mfaService->storeDataForMfaLogin($user, $duration);
+
         // if user requires MFA to login and we have their data stored in session, proceed to show the MFA step
-        if ($user->requireMfa && $mfaService->getDataForMfaLogin() !== null) {
+        if ($user->requireMfa) {
             return $this->_mfaStep();
         }
 
@@ -2226,7 +2229,9 @@ JS,
             return $this->asSuccess(data: $return);
         }
 
-        return $this->renderTemplate('login', [
+        $template = Craft::$app->getRequest()->getBodyParam('template');
+
+        return $this->renderTemplate($template, [
             'mfa' => true,
             'mfaForm' => $mfaForm,
         ], View::TEMPLATE_MODE_SITE); // todo: should this render a template instead??

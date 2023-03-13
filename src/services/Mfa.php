@@ -168,13 +168,13 @@ class Mfa extends Component
     /**
      * Returns a list of all available MFA types except the one passed in as current
      *
-     * @param string $currentAuthenticator
+     * @param ?string $currentMethod
      * @return array
      */
-    public function getAlternativeMfaTypes(string $currentAuthenticator = ''): array
+    public function getAlternativeMfaTypes(?string $currentMethod = null): array
     {
-        return array_filter($this->getAllMfaTypes(), function($type) use ($currentAuthenticator) {
-            return $type !== $currentAuthenticator;
+        return array_filter($this->getAllMfaTypes(), function($type) use ($currentMethod) {
+            return $type !== $currentMethod;
         }, ARRAY_FILTER_USE_KEY);
     }
 

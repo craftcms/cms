@@ -18,5 +18,5 @@
     id: 'mfa-verify',
     class: 'mfa-verify',
     label: 'Verify'|t('app'),
-    spinner: true,
+    spinner: craft.app.request.isCpRequest(),
 }) }}

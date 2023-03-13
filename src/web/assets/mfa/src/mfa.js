@@ -29,7 +29,7 @@
         this.addListener(
           this.$alternativeMfaLink,
           'click',
-          'onAlternativeMfaType'
+          'onAlternativeMfaTypeClick'
         );
         this.addListener(this.$viewSetupBtns, 'click', 'onViewSetupBtnClick');
       },
@@ -197,7 +197,7 @@
         this.$errors.empty();
       },
 
-      onAlternativeMfaType: function (event) {
+      onAlternativeMfaTypeClick: function (event) {
         // get current authenticator class via data-mfa-type
         let currentMethod = this.getCurrentMfaType(
           this.$mfaLoginFormContainer.find('#verifyContainer')
@@ -292,7 +292,7 @@
         let mfaFields = {};
 
         $container
-          .find('input[name^="mfaField[')
+          .find('input[name^="mfaFields[')
           .each(function (index, element) {
             let name = $(element).attr('id');
             mfaFields[name] = $(element).val();

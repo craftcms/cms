@@ -105,11 +105,14 @@ class GoogleAuthenticator extends ConfigurableMfaType
         }
 
         // otherwise show instructions, QR code and verification form
-        $data['secret'] = $this->getSecret($user);
+        $data = [
+            'secret' => $this->getSecret($user),
+            'user' => $user,
+            'fields' => $this->getNamespacedFields(),
+            'withIntro' => $withInto,
+            'currentMethod' => self::class,
+        ];
         $data['qrCode'] = $this->generateQrCode($user, $data['secret']);
-        $data['user'] = $user;
-        $data['withIntro'] = $withInto;
-        $data['typeClass'] = self::class;
 
         if ($withInto) {
             $data['typeName'] = self::displayName();
@@ -118,7 +121,8 @@ class GoogleAuthenticator extends ConfigurableMfaType
 
         $html = Craft::$app->getView()->renderTemplate(
             '_components/mfa/googleauthenticator/setup.twig',
-            $data + ['typeClass' => self::class]
+            $data,
+            View::TEMPLATE_MODE_CP
         );
 
         return parent::getSetupFormHtml($html, $withInto, $user);

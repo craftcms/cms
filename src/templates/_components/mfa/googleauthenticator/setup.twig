@@ -8,11 +8,11 @@
     {% set fields = {'verificationCode' : 'Verification Code'} %}
 {% endif %}
 
-{% if typeClass is not defined or typeClass is empty %}
-    {% set typeClass = 'craft\\mfa\\type\\GoogleAuthenticator' %}
+{% if currentMethod is not defined or currentMethod is empty %}
+    {% set currentMethod = 'craft\\mfa\\type\\GoogleAuthenticator' %}
 {% endif %}
 
-{% set isSetup = user.isMfaTypeSetup(typeClass) %}
+{% set isSetup = user.isMfaTypeSetup(currentMethod) %}
 
 <div class="field">
     {% if withIntro is defined and withIntro == true %}
@@ -48,7 +48,11 @@
 
         <h3>{{ 'Step {number}:'|t('app', {number: 3}) }} {{ 'Verify with the code from the app.'|t('app') }}</h3>
         <p>{{ 'Please enter the code from the app to verify your setup. Please note that the code is time sensitive.'|t('app') }}</p>
-        {% include '_components/mfa/googleauthenticator/verification.twig' with {'fields' : fields} %}
+        {% include '_components/mfa/googleauthenticator/verification.twig' with {
+            'user': user,
+            'fields' : fields,
+            'currentMethod' : currentMethod
+        } %}
 
         <h3>{{ 'Step {number}:'|t('app', {number: 4}) }} {{ 'Continuous use'|t('app') }}</h3>
         <p>{{ 'Now every time you log in, you’ll be asked to enter a verification code from the app.'|t('app') }}</p>
