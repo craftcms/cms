@@ -71,10 +71,11 @@ class EmailCode extends BaseMfaType
         ];
 
         $view = Craft::$app->getView();
-        $view->templateMode = View::TEMPLATE_MODE_CP;
         $formHtml = $view->renderTemplate(
+
             '_components/mfa/emailcode/verification.twig',
-            $data
+            $data,
+            View::TEMPLATE_MODE_CP
         );
 
         return parent::getInputHtml($formHtml, $options);
@@ -120,22 +121,17 @@ class EmailCode extends BaseMfaType
     public function sendOtp(User $user): void
     {
         $code = $this->_setOtp();
-//        $session = Craft::$app->getSession();
+        $session = Craft::$app->getSession();
 
-        Craft::$app->getMailer()
+        $message = Craft::$app->getMailer()
             ->composeFromKey('mfa_code_email', ['code' => $code])
-            ->setTo($user)
-            ->send();
-//        $message = Craft::$app->getMailer()
-//            ->composeFromKey('mfa_code_email', ['code' => $code])
-//            ->setTo($user);
+            ->setTo($user);
 
-        // todo: make messages show without the reload
-//        if ($message->send()) {
-//            $session->setNotice(Craft::t('app', 'Verification email sent!'));
-//        } else {
-//            $session->setError(Craft::t('app', 'Failed to send verification email.'));
-//        }
+        if ($message->send()) {
+            $session->setFlash('verificationCodeSent', Craft::t('app', 'Verification email sent!'));
+        } else {
+            $session->setFlash('verificationCodeSent', Craft::t('app', 'Failed to send verification email.'));
+        }
     }
 
     /**

@@ -96,6 +96,13 @@ class MfaController extends Controller
         ], View::TEMPLATE_MODE_SITE);
     }
 
+    /**
+     * Remove MFA Type setup from the database
+     *
+     * @return Response|null
+     * @throws \Throwable
+     * @throws \yii\web\BadRequestHttpException
+     */
     public function actionRemoveSetup(): ?Response
     {
         if (!$this->request->getIsPost()) {

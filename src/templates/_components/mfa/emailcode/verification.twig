@@ -1,5 +1,9 @@
 {% import '_includes/forms.twig' as forms %}
 
+{% if craft.app.session.hasFlash('verificationCodeSent') %}
+    <p class="notice">{{ craft.app.session.getFlash('verificationCodeSent') }}</p>
+{% endif %}
+
 {{ forms.hidden({
     'name': 'currentMethod',
     'value': currentMethod
