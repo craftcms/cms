@@ -459,7 +459,7 @@ class Category extends Element
         $path = "categories/$group->handle";
 
         if ($this->id) {
-            $path .= "/$this->id" . ($this->slug ? "-$this->slug" : '');
+            $path .= "/$this->id" . ($this->slug ? sprintf('-%s', str_replace('/', '-', $this->slug)) : '');
         } else {
             $path .= '/new';
         }

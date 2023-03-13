@@ -1327,7 +1327,7 @@ class Entry extends Element
 
         // The slug *might* not be set if this is a Draft and they've deleted it for whatever reason
         $path = 'entries/' . $section->handle . '/' . $this->getCanonicalId() .
-            ($this->slug && strpos($this->slug, '__') !== 0 ? '-' . $this->slug : '');
+            ($this->slug && strpos($this->slug, '__') !== 0 ? sprintf('-%s', str_replace('/', '-', $this->slug)) : '');
 
         $params = [];
         if (Craft::$app->getIsMultiSite()) {
