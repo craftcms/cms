@@ -9,6 +9,8 @@
 - Fixed a bug where multi-value field inputs would be considered modified even if they weren’t, if the field type’s `isValueEmpty()` method returned `true`. ([#12858](https://github.com/craftcms/cms/issues/12858))
 - Fixed a bug where asset thumbnails within secondary slideout tabs weren’t loading immediately. ([#12859](https://github.com/craftcms/cms/issues/12859))
 - Fixed a bug where rebuilding the project config would lose track of image transforms’ `fill` and `upscale` settings. ([#12879](https://github.com/craftcms/cms/issues/12879))
+- Fixed a bug where blank Dropdown options weren’t showing up in the Selectize menu. ([#12880](https://github.com/craftcms/cms/issues/12880))
+- Fixed a bug where it was possible to save a Dropdown field without a value, even if the field didn’t have any blank options. ([#12880](https://github.com/craftcms/cms/issues/12880))
 - Added `craft\models\ImageTransform::getConfig()`.
 
 ## 4.4.1 - 2023-03-09
