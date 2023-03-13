@@ -35,7 +35,7 @@ class MfaController extends Controller
      * @return ?Response
      * @throws \yii\web\BadRequestHttpException
      */
-    public function actionGetAlternativeMfaTypes(): ?Response
+    public function actionFetchAlternativeMfaTypes(): ?Response
     {
         if (!$this->request->getIsPost()) {
             return null;

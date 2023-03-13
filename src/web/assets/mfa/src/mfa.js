@@ -39,6 +39,7 @@
         $loginDiv.addClass('mfa');
         $('#login-form-buttons').hide();
         const $submitBtn = this.$mfaLoginFormContainer.find('.submit');
+        this.$errors = $('#login-errors');
 
         this.onSubmitResponse($submitBtn);
       },
@@ -67,10 +68,6 @@
           this.$mfaLoginFormContainer
         );
 
-        // data.currentMethod = this.getCurrentMfaType(
-        //   this.$mfaLoginFormContainer.find('#verifyContainer')
-        // );
-
         Craft.sendActionRequest('POST', 'users/verify-mfa', {data})
           .then((response) => {
             window.location.href = response.data.returnUrl;
@@ -90,7 +87,7 @@
           selectedMethod: this.getCurrentMfaType($(ev.currentTarget)),
         };
 
-        Craft.sendActionRequest('POST', 'mfa/setup-slideout-html', {data})
+        Craft.sendActionRequest('POST', this.settings.setupSlideoutHtml, {data})
           .then((response) => {
             this.slideout = new Craft.Slideout(response.data.html);
 
@@ -159,14 +156,12 @@
           currentMethod: null,
         };
 
-        data.mfaFields = this._getMfaFields(this.slideout);
-        data.currentMethod = this._getCurrentMethodInput(this.slideout);
+        data.mfaFields = this._getMfaFields(this.slideout.$container);
+        data.currentMethod = this._getCurrentMethodInput(
+          this.slideout.$container
+        );
 
-        // data.currentMethod = this.getCurrentMfaType(
-        //   this.slideout.$container.find('#mfa-setup-form')
-        // );
-
-        Craft.sendActionRequest('POST', 'mfa/save-setup', {data})
+        Craft.sendActionRequest('POST', this.settings.saveSetup, {data})
           .then((response) => {
             this.onSubmitResponse($submitBtn);
             Craft.cp.displayNotice(Craft.t('app', 'MFA settings saved.'));
@@ -218,9 +213,13 @@
       },
 
       getAlternativeMfaTypes: function (data) {
-        Craft.sendActionRequest('POST', 'mfa/get-alternative-mfa-types', {
-          data,
-        })
+        Craft.sendActionRequest(
+          'POST',
+          this.settings.fetchAlternativeMfaTypes,
+          {
+            data,
+          }
+        )
           .then((response) => {
             if (response.data.alternativeTypes !== undefined) {
               this.showAlternativeMfaTypes(response.data.alternativeTypes);
@@ -269,7 +268,7 @@
           selectedMethod: $(event.currentTarget).attr('value'),
         };
 
-        Craft.sendActionRequest('POST', 'mfa/load-alternative-mfa-type', {
+        Craft.sendActionRequest('POST', this.settings.loadAlternativeMfaType, {
           data,
         })
           .then((response) => {
@@ -283,8 +282,7 @@
             }
           })
           .catch(({response}) => {
-            // console.log(response);
-            // this.showError(response.data.message);
+            this.showError(response.data.message);
           });
       },
 
@@ -307,6 +305,10 @@
     },
     {
       defaults: {
+        fetchAlternativeMfaTypes: 'mfa/fetch-alternative-mfa-types',
+        loadAlternativeMfaType: 'mfa/load-alternative-mfa-type',
+        setupSlideoutHtml: 'mfa/setup-slideout-html',
+        saveSetup: 'mfa/save-setup',
         removeSetup: 'mfa/remove-setup',
       },
     }
