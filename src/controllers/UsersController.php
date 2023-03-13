@@ -257,7 +257,7 @@ class UsersController extends Controller
         }
 
         $mfaService = Craft::$app->getMfa();
-        $mfaData = $mfaService->getDataForMfaLogin();
+        $mfaData = $mfaService->getMfaDataFromSession();
         if ($mfaData === null) {
             throw new Exception(Craft::t('app', 'Please start again.'));
         }
@@ -271,7 +271,7 @@ class UsersController extends Controller
             return $this->_handleLoginFailure(User::AUTH_INVALID_MFA_CODE, $user);
         }
 
-        $mfaService->removeDataForMfaLogin();
+        $mfaService->removeMfaDataFromSession();
         return $this->_completeLogin($user, $duration);
     }
 
@@ -2234,7 +2234,7 @@ JS,
         return $this->renderTemplate($template, [
             'mfa' => true,
             'mfaForm' => $mfaForm,
-        ], View::TEMPLATE_MODE_SITE); // todo: should this render a template instead??
+        ], View::TEMPLATE_MODE_SITE);
     }
 
     /**

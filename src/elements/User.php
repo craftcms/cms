@@ -1852,27 +1852,9 @@ class User extends Element implements IdentityInterface
      */
     public function getDefaultMfaType(): BaseMfaType
     {
+        // todo: add an event to change this?
         return new GoogleAuthenticator();
     }
-    /**
-     * Return all available MFA methods
-     *
-     * @return array
-     */
-//    public function getAllMfaTypesWithConfig(): array
-//    {
-//        $options = Craft::$app->getMfa()->getAllMfaTypes(true);
-//
-//        foreach ($options as $key => $option) {
-//            if ($option['config']['requiresSetup']) {
-//                $mfaType = new $key();
-//                if ($mfaType instanceof ConfigurableMfaInterface) {
-//                    $options[$key]['config']['setupForm'] = $mfaType->getSetupFormHtml();
-//                }
-//            }
-//        }
-//        return $options;
-//    }
 
     /**
      * Check if given MFA option is fully set up for the user

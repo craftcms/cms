@@ -158,7 +158,6 @@ class MfaController extends Controller
         }
 
         $mfaService = Craft::$app->getMfa();
-        $user = Craft::$app->getUser()->getIdentity();
 
         $verified = $mfaService->verify($mfaFields, $currentMethod);
 

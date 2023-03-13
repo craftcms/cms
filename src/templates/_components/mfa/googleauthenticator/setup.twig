@@ -1,7 +1,11 @@
 {% import '_includes/forms.twig' as forms %}
 
 {% if user is not defined or user is empty %}
-    {% set user = craft.app.mfa.getUserForMfaLogin() %}
+    {% if currentUser is defined and currentUser is not empty %}
+        {% set user = currentUser %}
+    {% else %}
+        {% set user = craft.app.mfa.getMfaUserFromSession() %}
+    {% endif %}
 {% endif %}
 
 {% if fields is not defined or fields is empty %}

@@ -56,7 +56,8 @@ class EmailCode extends BaseMfaType
      */
     public function getInputHtml(string $html = '', array $options = []): string
     {
-        $user = Craft::$app->getMfa()->getUserForMfaLogin();
+        $user = Craft::$app->getMfa()->getUserForMfa();
+
         if ($user === null) {
             return '';
         }
@@ -87,7 +88,8 @@ class EmailCode extends BaseMfaType
      */
     public function verify(array $data): bool
     {
-        $user = Craft::$app->getMfa()->getUserForMfaLogin();
+        $user = Craft::$app->getMfa()->getUserForMfa();
+
         if ($user === null) {
             return false;
         }
@@ -95,7 +97,7 @@ class EmailCode extends BaseMfaType
         $session = Craft::$app->getSession();
         $code = $data['verificationCode'];
 
-        if ($code === $session->get(self::EMAIL_CODE_SESSION_KEY)) {
+        if (strtolower($code) === strtolower($session->get(self::EMAIL_CODE_SESSION_KEY))) {
             $session->remove(self::EMAIL_CODE_SESSION_KEY);
 
             return true;

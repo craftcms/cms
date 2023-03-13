@@ -68,7 +68,7 @@ class Mfa extends Component
      * @throws Exception
      * @throws \craft\errors\MissingComponentException
      */
-    public function getDataForMfaLogin(): ?array
+    public function getMfaDataFromSession(): ?array
     {
         $data = Craft::$app->getSession()->get(self::MFA_USER_SESSION_KEY);
 
@@ -92,13 +92,14 @@ class Mfa extends Component
 
     /**
      * Get the user we're logging in via MFA from session
+     *
      * @return User|null
      * @throws Exception
      * @throws \craft\errors\MissingComponentException
      */
-    public function getUserForMfaLogin(): ?User
+    public function getMfaUserFromSession(): ?User
     {
-        $data = $this->getDataForMfaLogin();
+        $data = $this->getMfaDataFromSession();
 
         return $data['user'] ?? null;
     }
@@ -109,7 +110,7 @@ class Mfa extends Component
      * @return void
      * @throws \craft\errors\MissingComponentException
      */
-    public function removeDataForMfaLogin(): void
+    public function removeMfaDataFromSession(): void
     {
         Craft::$app->getSession()->remove(self::MFA_USER_SESSION_KEY);
     }
@@ -121,7 +122,8 @@ class Mfa extends Component
      */
     public function getInputHtml(): string
     {
-        $user = $this->getUserForMfaLogin();
+        $user = $this->getUserForMfa();
+
         if ($user === null) {
             return '';
         }
@@ -140,7 +142,7 @@ class Mfa extends Component
      */
     public function verify(array $mfaFields, string $currentMethod): bool
     {
-        $user = $this->getUserForMfaLogin();
+        $user = $this->getUserForMfa();
 
         if ($user === null) {
             return false;
@@ -221,5 +223,28 @@ class Mfa extends Component
         }
 
         return $event->types;
+    }
+
+    /**
+     * Get user for MFA login.
+     * First try to get the logged in user (used e.g. when changing a setup).
+     * Then try to get one from the session.
+     *
+     * @return User|null
+     * @throws \Throwable
+     * @throws \craft\errors\MissingComponentException
+     * @throws \yii\base\Exception
+     */
+    public function getUserForMfa(): ?User
+    {
+        // first let's check if user is logged in; if yes, this is run via a setup action from their profile
+        $user = Craft::$app->getUser()->getIdentity();
+
+        if ($user === null) {
+            // then try to get data from session
+            $user = Craft::$app->getMfa()->getMfaUserFromSession();
+        }
+
+        return $user;
     }
 }

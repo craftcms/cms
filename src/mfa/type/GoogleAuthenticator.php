@@ -64,7 +64,8 @@ class GoogleAuthenticator extends ConfigurableMfaType
      */
     public function getInputHtml(string $html = '', array $options = []): string
     {
-        $user = Craft::$app->getMfa()->getUserForMfaLogin();
+        $user = Craft::$app->getMfa()->getUserForMfa();
+
         if ($user === null) {
             return '';
         }
@@ -97,7 +98,7 @@ class GoogleAuthenticator extends ConfigurableMfaType
     public function getSetupFormHtml(string $html = '', bool $withInto = false, ?User $user = null): string
     {
         if ($user === null) {
-            $user = Craft::$app->getMfa()->getUserForMfaLogin();
+            $user = Craft::$app->getMfa()->getUserForMfa();
         }
 
         if ($user === null) {
@@ -152,7 +153,8 @@ class GoogleAuthenticator extends ConfigurableMfaType
      */
     public function verify(array $data): bool
     {
-        $user = Craft::$app->getMfa()->getUserForMfaLogin();
+        $user = Craft::$app->getMfa()->getUserForMfa();
+
         if ($user === null) {
             return false;
         }
