@@ -1868,7 +1868,7 @@ class ProjectConfig extends Component
                 if ($config['type'] === ElementSources::TYPE_CUSTOM && isset($config['condition'])) {
                     try {
                         $config['condition'] = $conditionsService->createCondition($config['condition'])->getConfig();
-                    } catch (InvalidArgumentException) {
+                    } catch (InvalidArgumentException|InvalidConfigException) {
                         // Ignore it
                     }
                 }
