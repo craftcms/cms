@@ -34,6 +34,9 @@ use craft\helpers\Session;
 use craft\i18n\Formatter;
 use craft\i18n\I18N;
 use craft\i18n\Locale;
+use craft\markdown\GithubMarkdown;
+use craft\markdown\Markdown;
+use craft\markdown\MarkdownExtra;
 use craft\models\FieldLayout;
 use craft\models\Info;
 use craft\queue\Queue;
@@ -64,6 +67,7 @@ use yii\caching\Cache;
 use yii\db\ColumnSchemaBuilder;
 use yii\db\Exception as DbException;
 use yii\db\Expression;
+use yii\helpers\Markdown as MarkdownHelper;
 use yii\mutex\Mutex;
 use yii\web\ServerErrorHttpException;
 
@@ -1484,6 +1488,20 @@ trait ApplicationTrait
         // Prevent browser caching if this is a control panel request
         if ($request->getIsCpRequest()) {
             $this->getResponse()->setNoCacheHeaders();
+        }
+
+        // Use our own Markdown parser classes
+        $flavors = [
+            'original' => Markdown::class,
+            'gfm' => GithubMarkdown::class,
+            'gfm-comment' => GithubMarkdown::class,
+            'extra' => MarkdownExtra::class,
+        ];
+
+        foreach ($flavors as $flavor => $class) {
+            if (isset(MarkdownHelper::$flavors[$flavor])) {
+                MarkdownHelper::$flavors[$flavor]['class'] = $class;
+            }
         }
     }
 
