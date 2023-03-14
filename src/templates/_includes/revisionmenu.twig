@@ -143,6 +143,7 @@
                                             selected: isSelected,
                                             data: {
                                                 href: url,
+                                                'element-id': element.id,
                                                 'site-id': site.id,
                                             }
                                         } %}
@@ -158,7 +159,7 @@
 
             <div class="revision-menu__field">
                 <label for="version-select">{{ 'Version'|t('app') }}</label>
-                <div class="select">
+                <div id="version-select-wrapper" class="select">
                     <select id="version-select">
                         {% if showRevisions %}
                             <optgroup label="Revisions">

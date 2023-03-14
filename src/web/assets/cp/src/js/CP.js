@@ -563,18 +563,27 @@ Craft.CP = Garnish.Base.extend(
       Garnish.$bod.toggleClass('showing-sidebar');
     },
 
+    updateRevisionSelect: function (url) {
+      const loadParam = `${url} #version-select`;
+
+      console.log(loadParam);
+      $('#version-select-wrapper').load(loadParam);
+    },
+
     initContextMenu: function () {
       const $contextMenu = this.$revisionBtn.data('trigger').$container;
       const $siteSelect = $contextMenu.find('#site-select');
-      const $revisionSelect = $contextMenu.find('#version-select');
       const $submit = $contextMenu.find('.revision-menu__submit');
 
       this.addListener($siteSelect, 'change', (event) => {
-        console.log('change site');
+        const $selected = $siteSelect.find(':selected');
+
+        this.updateRevisionSelect($selected.data('href'));
       });
 
       this.addListener($submit, 'click', (event) => {
-        const $selected = $revisionSelect.find(':selected');
+        const $form = $(event.target).closest('.revision-menu__form');
+        const $selected = $form.find('#version-select :selected');
         const url = $selected.data('href');
         window.location.href = url;
       });
