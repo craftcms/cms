@@ -12,8 +12,6 @@ Craft.ElementEditor = Garnish.Base.extend(
     $contentContainer: null,
     $revisionBtn: null,
     $revisionLabel: null,
-    $contextContainer: null,
-    $revisionForm: null,
     $spinner: null,
     $expandSiteStatusesBtn: null,
     $statusIcon: null,
@@ -105,24 +103,6 @@ Craft.ElementEditor = Garnish.Base.extend(
       this.$revisionBtn = this.$container.find('.context-btn');
       this.$revisionLabel = this.$container.find('.revision-label');
       this.$previewBtn = this.$container.find('.preview-btn');
-
-      if (this.$revisionBtn.length) {
-        this.$contextContainer = this.$revisionBtn.data('trigger').$container;
-        this.$siteSelect = this.$contextContainer.find('#site-select');
-        this.$revisionSubmit = this.$contextContainer.find(
-          '.revision-menu__submit'
-        );
-
-        this.addListener(this.$siteSelect, 'change', (event) => {
-          console.log('change site');
-        });
-
-        this.addListener(this.$revisionSubmit, 'click', (event) => {
-          const $selected = $('#version-select :selected');
-          const url = $selected.data('href');
-          window.location.href = url;
-        });
-      }
 
       const $spinnerContainer = this.isFullPage
         ? $('#page-title')

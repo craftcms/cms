@@ -30,6 +30,8 @@ Craft.CP = Garnish.Base.extend(
     $sidebar: null,
     $contentContainer: null,
     $edition: null,
+    $revisionBtn: null,
+    $revisionContainer: null,
 
     $confirmUnloadForms: null,
     $deltaForms: null,
@@ -89,6 +91,7 @@ Craft.CP = Garnish.Base.extend(
       this.$sidebar = $('#sidebar');
       this.$contentContainer = $('#content-container');
       this.$collapsibleTables = $('table.collapsible');
+      this.$revisionBtn = this.$mainContainer.find('.context-btn');
 
       this.isMobile = Garnish.isMobileBrowser();
 
@@ -134,6 +137,11 @@ Craft.CP = Garnish.Base.extend(
         // Wait a frame before initializing any confirm-unload forms,
         // so other JS that runs on ready() has a chance to initialize
         Garnish.requestAnimationFrame(this.initSpecialForms.bind(this));
+
+        // Revision Menu
+        if (this.$revisionBtn.length) {
+          this.initContextMenu();
+        }
       });
 
       // Alerts
@@ -555,7 +563,22 @@ Craft.CP = Garnish.Base.extend(
       Garnish.$bod.toggleClass('showing-sidebar');
     },
 
-    initContextMenu: function () {},
+    initContextMenu: function () {
+      const $contextMenu = this.$revisionBtn.data('trigger').$container;
+      const $siteSelect = $contextMenu.find('#site-select');
+      const $revisionSelect = $contextMenu.find('#version-select');
+      const $submit = $contextMenu.find('.revision-menu__submit');
+
+      this.addListener($siteSelect, 'change', (event) => {
+        console.log('change site');
+      });
+
+      this.addListener($submit, 'click', (event) => {
+        const $selected = $revisionSelect.find(':selected');
+        const url = $selected.data('href');
+        window.location.href = url;
+      });
+    },
 
     initTabs: function () {
       if (this.tabManager) {
