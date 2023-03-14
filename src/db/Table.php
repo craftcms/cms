@@ -95,6 +95,8 @@ abstract class Table
     public const USERS = '{{%users}}';
     public const VOLUMEFOLDERS = '{{%volumefolders}}';
     public const VOLUMES = '{{%volumes}}';
+    /** @since 4.5.0 */
+    public const WEBAUTHN = '{{%webauthn}}';
     public const WIDGETS = '{{%widgets}}';
     public const SEARCHINDEX = '{{%searchindex}}';
 }

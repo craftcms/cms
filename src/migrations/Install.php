@@ -781,6 +781,16 @@ class Install extends Migration
             'dateDeleted' => $this->dateTime()->null(),
             'uid' => $this->uid(),
         ]);
+        $this->createTable(Table::WEBAUTHN, [
+            'id' => $this->primaryKey(),
+            'userId' => $this->integer()->notNull(),
+            'credentialId' => $this->string()->defaultValue(null),
+            'credential' => $this->text()->defaultValue(null),
+            'credentialName' => $this->string()->defaultValue(null),
+            'dateLastUsed' => $this->dateTime()->defaultValue(null),
+            'dateCreated' => $this->dateTime()->notNull(),
+            'dateUpdated' => $this->dateTime()->notNull(),
+        ]);
         $this->createTable(Table::WIDGETS, [
             'id' => $this->primaryKey(),
             'userId' => $this->integer()->notNull(),
@@ -1072,6 +1082,7 @@ class Install extends Migration
         $this->addForeignKey(null, Table::VOLUMEFOLDERS, ['parentId'], Table::VOLUMEFOLDERS, ['id'], 'CASCADE', null);
         $this->addForeignKey(null, Table::VOLUMEFOLDERS, ['volumeId'], Table::VOLUMES, ['id'], 'CASCADE', null);
         $this->addForeignKey(null, Table::VOLUMES, ['fieldLayoutId'], Table::FIELDLAYOUTS, ['id'], 'SET NULL', null);
+        $this->addForeignKey(null, Table::WEBAUTHN, ['userId'], Table::USERS, ['id'], 'CASCADE', null);
         $this->addForeignKey(null, Table::WIDGETS, ['userId'], Table::USERS, ['id'], 'CASCADE', null);
     }
 

@@ -1,0 +1,38 @@
+{% import '_includes/forms.twig' as forms %}
+{% do view.registerJs('new Craft.WebAuthn') %}
+
+{% if user is not defined or user is empty %}
+    {% if currentUser is defined and currentUser is not empty %}
+        {% set user = currentUser %}
+    {% endif %}
+{% endif %}
+
+{% if fields is not defined or fields is empty %}
+    {% set fields = {'credentialResponse' : ''} %}
+{% endif %}
+
+{% if currentMethod is not defined or currentMethod is empty %}
+    {% set currentMethod = 'craft\\mfa\\type\\WebAuthn' %}
+{% endif %}
+
+<div class="field">
+    {% if withIntro is defined and withIntro == true %}
+        {% if typeName is defined and typeName is not empty %}
+            <h1>{{ typeName }}</h1>
+        {% endif %}
+        {% if typeDescription is defined and typeDescription is not empty %}
+            <p>{{ typeDescription }}</p>
+        {% endif %}
+    {% endif %}
+    <h3>{{ 'Manage your security keys'|t('app') }}</h3>
+    {# get all security keys for the user #}
+    {# if there aren't any, show a message #}
+    {# otherwise show the table of keys #}
+    {#<button id="mfa-remove-setup" name="remove-setup" class="btn">{{ 'Remove setup'|t('app') }}</button>#}
+
+    {{ forms.button({
+        name: 'addSecurityKey',
+        id: 'add-security-key',
+        label: 'Add a security key'|t('app')
+    }) }}
+</div>

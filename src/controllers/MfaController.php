@@ -9,6 +9,7 @@ namespace craft\controllers;
 
 use Craft;
 use craft\mfa\ConfigurableMfaInterface;
+use craft\mfa\type\WebAuthn;
 use craft\web\Controller;
 use craft\web\View;
 use yii\base\Exception;
@@ -216,5 +217,39 @@ class MfaController extends Controller
         $html = $mfaType->getSetupFormHtml('',true, $user);
 
         return $this->asJson(['html' => $html]);
+    }
+
+    // WebAuthn methods
+    ////////////////////////////////////////////////////////////////////////////
+
+    public function actionGenerateRegistrationOptions(): Response
+    {
+        $this->requireAcceptsJson();
+        $this->requirePostRequest();
+        $this->requireLogin();
+        $this->requireElevatedSession();
+
+        $user = Craft::$app->getUser()->getIdentity();
+
+        $webAuthn = new WebAuthn();
+        $options = $webAuthn->getCredentialCreationOptions($user, true);
+
+        return $this->asJson(['registrationOptions' => $options]);
+    }
+
+    public function actionVerifyRegistration(): Response
+    {
+        $this->requireAcceptsJson();
+        $this->requirePostRequest();
+        $this->requireLogin();
+        $this->requireElevatedSession();
+
+        $user = Craft::$app->getUser()->getIdentity();
+        $credentials = Craft::$app->getRequest()->getRequiredBodyParam('credentials');
+
+        $webAuthn = new WebAuthn();
+        $verified = $webAuthn->verifyRegistrationResponse($user, $credentials);
+
+        return $this->asJson(['verified' => $verified]);
     }
 }

@@ -13,6 +13,7 @@ use craft\elements\User;
 use craft\events\MfaTypeEvent;
 use craft\mfa\type\EmailCode;
 use craft\mfa\type\GoogleAuthenticator;
+use craft\mfa\type\WebAuthn;
 use yii\base\Component;
 use yii\base\Exception;
 
@@ -203,6 +204,13 @@ class Mfa extends Component
                     'description' => EmailCode::getDescription(),
                     'config' => [
                         'requiresSetup' => EmailCode::$requiresSetup,
+                    ],
+                ],
+                WebAuthn::class => [
+                    'name' => WebAuthn::displayName(),
+                    'description' => WebAuthn::getDescription(),
+                    'config' => [
+                        'requiresSetup' => WebAuthn::$requiresSetup,
                     ],
                 ],
             ];

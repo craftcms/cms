@@ -16,11 +16,14 @@ use yii\db\ActiveQueryInterface;
  *
  * @property int $id ID
  * @property int $userId Volume ID
- * @property string $mfaSecret MFA secret
+ * @property string $credentialId MFA secret
+ * @property string $credential MFA secret
+ * @property string $credentialName MFA secret
+ * @property string $dateLastUsed MFA secret
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.5.0
  */
-class Authenticator extends ActiveRecord
+class WebAuthn extends ActiveRecord
 {
     /**
      * @inheritdoc
@@ -28,7 +31,7 @@ class Authenticator extends ActiveRecord
      */
     public static function tableName(): string
     {
-        return Table::AUTHENTICATOR;
+        return Table::WEBAUTHN;
     }
 
     /**
@@ -37,8 +40,7 @@ class Authenticator extends ActiveRecord
     public function rules(): array
     {
         return [
-            [['userId', 'mfaSecret'], 'required'],
-            [['mfaSecret'], 'string', 'max' => 32],
+            [['userId', 'credentialId', 'credential', 'credentialName'], 'required'],
         ];
     }
 
