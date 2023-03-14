@@ -555,6 +555,8 @@ Craft.CP = Garnish.Base.extend(
       Garnish.$bod.toggleClass('showing-sidebar');
     },
 
+    initContextMenu: function () {},
+
     initTabs: function () {
       if (this.tabManager) {
         this.tabManager.destroy();

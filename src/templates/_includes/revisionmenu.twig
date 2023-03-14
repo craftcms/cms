@@ -123,7 +123,7 @@
     <div id="revision-menu" class="revision-menu menu padded{% if not showMenu %} hidden{% endif %}" data-disclosure-menu>
         {% set enabledSiteIds = element.id ? craft.app.elements.getEnabledSiteIdsForElement(element.id) : [] %}
         {% set siteGroups = craft.app.sites.getAllGroups() %}
-        <div class="revision-menu__fields">
+        <div class="revision-menu__fields revision-menu__form">
             <div class="revision-menu__field">
                 <label for="site-select">{{ 'Site'|t('app') }}</label>
                 <div class="select">
@@ -241,6 +241,8 @@
                     }) }}
                 {% endif %}
             </div>
+
+            <button class="btn submit revision-menu__submit">Go</button>
         </div>
 
 
