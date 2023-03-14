@@ -4,7 +4,7 @@
 
 - Fixed a bug where it wasn’t always possible to access entry or category edit pages if the `slugWordSeparator` config setting was set to `/`. ([#12871](https://github.com/craftcms/cms/issues/12871))
 - Fixed a bug where `craft\helpers\Html::parseTagAttribute()` wasn’t decoding attribute values, which could lead to double-encoded attributes, e.g. when using the `|attr` filter. ([#12887](https://github.com/craftcms/cms/issues/12887))
-- Fixed an XSS vulnerability.
+- Fixed XSS vulnerabilities.
 - Fixed an SSRF vulnerability.
 
 ## 3.8.1 - 2023-03-09

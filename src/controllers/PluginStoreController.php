@@ -10,13 +10,10 @@ namespace craft\controllers;
 use Craft;
 use craft\helpers\App;
 use craft\helpers\Json;
-use craft\helpers\Session;
 use craft\helpers\UrlHelper;
 use craft\web\assets\pluginstore\PluginStoreAsset;
-use craft\web\assets\pluginstoreoauth\PluginStoreOauthAsset;
 use craft\web\Controller;
 use craft\web\View;
-use craftcms\oauth2\client\provider\CraftId;
 use yii\web\BadRequestHttpException;
 use yii\web\Response;
 
@@ -76,147 +73,6 @@ JS;
         $view->registerAssetBundle(PluginStoreAsset::class);
 
         return $this->renderTemplate('plugin-store/_index');
-    }
-
-    /**
-     * Connect to console.craftcms.com.
-     *
-     * @param string|null $redirectUrl
-     *
-     * @return Response
-     */
-    public function actionConnect(string $redirectUrl = null): Response
-    {
-        $callbackUrl = UrlHelper::cpUrl('plugin-store/callback');
-
-        $provider = new CraftId([
-            'oauthEndpointUrl' => Craft::$app->getPluginStore()->craftOauthEndpoint,
-            'apiEndpointUrl' => Craft::$app->getPluginStore()->craftApiEndpoint,
-            'clientId' => Craft::$app->getPluginStore()->craftIdOauthClientId,
-            'redirectUri' => $callbackUrl,
-        ]);
-
-        if (!$redirectUrl) {
-            $redirect = $this->request->getPathInfo();
-            $redirectUrl = UrlHelper::url($redirect);
-        }
-
-        Session::set('pluginStoreConnectRedirectUrl', $redirectUrl);
-
-        $authorizationUrl = $provider->getAuthorizationUrl([
-            'scope' => [
-                'purchasePlugins',
-                'existingPlugins',
-                'transferPluginLicense',
-                'deassociatePluginLicense',
-            ],
-            'response_type' => 'token',
-        ]);
-
-        return $this->redirect($authorizationUrl);
-    }
-
-    /**
-     * Disconnect from console.craftcms.com.
-     *
-     * @return Response
-     * @throws BadRequestHttpException
-     */
-    public function actionDisconnect(): Response
-    {
-        $token = Craft::$app->getPluginStore()->getToken();
-
-        // Revoke token
-        $client = Craft::createGuzzleClient();
-
-        try {
-            $url = Craft::$app->getPluginStore()->craftIdEndpoint . '/oauth/revoke';
-            $options = ['query' => ['accessToken' => $token->accessToken]];
-            $client->request('GET', $url, $options);
-            $this->setSuccessFlash('Disconnected from console.craftcms.com.');
-        } catch (\Exception $e) {
-            Craft::error('Couldn’t revoke token: ' . $e->getMessage());
-            $this->setFailFlash('Disconnected from console.craftcms.com with errors, check the logs.');
-        }
-
-        Craft::$app->getPluginStore()->deleteToken();
-
-        // Redirect
-        return $this->redirectToPostedUrl();
-    }
-
-    /**
-     * OAuth callback.
-     *
-     * @return Response
-     * @throws \yii\base\InvalidConfigException
-     */
-    public function actionCallback(): Response
-    {
-        $view = $this->getView();
-
-        $view->registerAssetBundle(PluginStoreOauthAsset::class);
-
-        $redirectUrl = Session::get('pluginStoreConnectRedirectUrl');
-
-        $options = [
-            'redirectUrl' => $redirectUrl,
-            'error' => $this->request->getParam('error'),
-            'message' => $this->request->getParam('message'),
-        ];
-
-        $this->getView()->registerJs('new Craft.PluginStoreOauthCallback(' . Json::encode($options) . ');');
-
-        return $this->renderTemplate('plugin-store/_special/oauth/callback');
-    }
-
-    /**
-     * OAuth modal callback.
-     *
-     * @return Response
-     */
-    public function actionModalCallback(): Response
-    {
-        $craftIdAccessToken = $this->getCraftIdAccessToken();
-
-        return $this->renderTemplate('plugin-store/_special/oauth/modal-callback', [
-            'craftIdAccessToken' => $craftIdAccessToken,
-        ]);
-    }
-
-    /**
-     * Saves a token.
-     *
-     * @return Response
-     * @throws BadRequestHttpException
-     */
-    public function actionSaveToken(): Response
-    {
-        $this->requireAcceptsJson();
-        $this->requirePostRequest();
-
-        try {
-            $token_type = $this->request->getParam('token_type');
-            $access_token = $this->request->getParam('access_token');
-            $expires_in = $this->request->getParam('expires_in');
-
-            $token = [
-                'access_token' => $access_token,
-                'token_type' => $token_type,
-                'expires_in' => $expires_in,
-            ];
-
-            Craft::$app->getPluginStore()->saveToken($token);
-
-            $this->setSuccessFlash(Craft::t('app', 'Connected to craftcms.com.'));
-
-            return $this->asJson([
-                'success' => true,
-                'redirect' => UrlHelper::cpUrl('plugin-store/account'),
-            ]);
-        } catch (\Exception $e) {
-            return $this->asErrorJson($e->getMessage());
-        }
     }
 
     /**
