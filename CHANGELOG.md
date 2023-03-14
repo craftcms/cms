@@ -3,6 +3,7 @@
 ## Unreleased
 
 - Fixed a bug where it wasn’t always possible to access entry or category edit pages if the `slugWordSeparator` config setting was set to `/`. ([#12871](https://github.com/craftcms/cms/issues/12871))
+- Removed `craft\controllers\PluginStoreController::actionConnect()`, `craft\controllers\PluginStoreController::actionDisconnect()`, `craft\controllers\PluginStoreController::actionCallback()`, `craft\controllers\PluginStoreController::actionModalCallback()`, `craft\controllers\PluginStoreController::actionSaveToken()`, and `craft\web\assets\pluginstoreoauth\PluginStoreOauthAsset`.
 
 ## 3.8.1 - 2023-03-09
 
