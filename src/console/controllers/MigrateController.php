@@ -215,7 +215,7 @@ class MigrateController extends BaseMigrateController
                 return false;
             }
         } catch (InvalidConfigException $e) {
-            return true;
+            // migrations folder not created, but we don't mind.
         }
 
         return true;
