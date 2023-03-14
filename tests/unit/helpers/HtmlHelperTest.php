@@ -416,6 +416,8 @@ class HtmlHelperTest extends TestCase
             [['data' => ['foo' => true]], '<div data-foo>'],
             [['class' => ['foo', 'bar']], '<div class="foo bar">'],
             [['style' => ['color' => 'black', 'background' => 'red']], '<div style="color: black; background: red">'],
+            // https://github.com/craftcms/cms/issues/12887
+            [['class' => ['[&[disabled]]:opacity-50']], '<button class="[&amp;[disabled]]:opacity-50"></button>'],
             [false, '<div'],
             [false, '<div x-foo=">'],
             [false, "<div x-foo='>"],
@@ -447,6 +449,8 @@ class HtmlHelperTest extends TestCase
             // https://github.com/craftcms/cms/issues/7234
             ['<div>', '<div class="foo">', ['class' => false]],
             ['<div>', '<div style="background: red">', ['style' => false]],
+            // https://github.com/craftcms/cms/issues/12887
+            ['<button class="[&amp;[disabled]]:opacity-50" disabled></button>', '<button class="[&amp;[disabled]]:opacity-50"></button>', ['disabled' => true]],
         ];
     }
 

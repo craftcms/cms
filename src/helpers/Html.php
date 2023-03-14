@@ -408,11 +408,11 @@ class Html extends \yii\helpers\Html
 
                 $offset += strlen($m[0]);
                 if (isset($m[1]) && $m[1] !== '') {
-                    $value = $m[1];
+                    $value = static::decode($m[1]);
                 }
             } elseif (preg_match('/[^\s>]+/A', $html, $m, 0, $offset)) {
                 $offset += strlen($m[0]);
-                $value = $m[0];
+                $value = static::decode($m[0]);
             }
         }
 

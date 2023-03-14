@@ -51,14 +51,16 @@ class Dropdown extends BaseOptionsField implements SortableFieldInterface
         /** @var SingleOptionFieldData $value */
         $options = $this->translatedOptions(true, $value, $element);
 
+        $hasBlankOption = ArrayHelper::contains($options, function($option) {
+            return isset($option['value']) && $option['value'] === '';
+        });
+
         if (!$value->valid) {
             Craft::$app->getView()->setInitialDeltaValue($this->handle, $this->encodeValue($value->value));
             $value = null;
 
             // Add a blank option to the beginning if one doesn't already exist
-            if (!ArrayHelper::contains($options, function($option) {
-                return isset($option['value']) && $option['value'] === '';
-            })) {
+            if (!$hasBlankOption) {
                 array_unshift($options, ['label' => '', 'value' => '']);
             }
         }
@@ -69,6 +71,9 @@ class Dropdown extends BaseOptionsField implements SortableFieldInterface
             'name' => $this->handle,
             'value' => $this->encodeValue($value),
             'options' => $options,
+            'selectizeOptions' => [
+                'allowEmptyOption' => $hasBlankOption,
+            ],
         ]);
     }
 

@@ -46,6 +46,9 @@ use craft\i18n\Formatter;
 use craft\i18n\I18N;
 use craft\i18n\Locale;
 use craft\mail\Mailer;
+use craft\markdown\GithubMarkdown;
+use craft\markdown\Markdown;
+use craft\markdown\MarkdownExtra;
 use craft\models\FieldLayout;
 use craft\models\Info;
 use craft\queue\QueueInterface;
@@ -102,6 +105,10 @@ use craft\web\Request as WebRequest;
 use craft\web\User as UserSession;
 use craft\web\View;
 use Illuminate\Support\Collection;
+use Symfony\Component\VarDumper\Caster\ReflectionCaster;
+use Symfony\Component\VarDumper\Cloner\VarCloner;
+use Symfony\Component\VarDumper\Dumper\AbstractDumper;
+use Symfony\Component\VarDumper\VarDumper;
 use Yii;
 use yii\base\Application;
 use yii\base\ErrorHandler;
@@ -112,6 +119,7 @@ use yii\caching\Cache;
 use yii\db\ColumnSchemaBuilder;
 use yii\db\Exception as DbException;
 use yii\db\Expression;
+use yii\helpers\Markdown as MarkdownHelper;
 use yii\mutex\Mutex;
 use yii\queue\Queue;
 use yii\web\ServerErrorHttpException;
@@ -1042,6 +1050,18 @@ trait ApplicationTrait
     }
 
     /**
+     * Returns the variable dumper.
+     *
+     * @return AbstractDumper
+     * @since 4.4.2
+     */
+    public function getDumper(): AbstractDumper
+    {
+        /** @noinspection PhpIncompatibleReturnTypeInspection */
+        return $this->get('dumper');
+    }
+
+    /**
      * Returns the element indexes service.
      *
      * @return ElementSources The element indexes service
@@ -1495,6 +1515,27 @@ trait ApplicationTrait
         // Prevent browser caching if this is a control panel request
         if ($this instanceof WebApplication && $request->getIsCpRequest()) {
             $this->getResponse()->setNoCacheHeaders();
+        }
+
+        // Register the variable dumper
+        VarDumper::setHandler(function($var) {
+            $cloner = new VarCloner();
+            $cloner->addCasters(ReflectionCaster::UNSET_CLOSURE_FILE_INFO);
+            $this->getDumper()->dump($cloner->cloneVar($var));
+        });
+
+        // Use our own Markdown parser classes
+        $flavors = [
+            'original' => Markdown::class,
+            'gfm' => GithubMarkdown::class,
+            'gfm-comment' => GithubMarkdown::class,
+            'extra' => MarkdownExtra::class,
+        ];
+
+        foreach ($flavors as $flavor => $class) {
+            if (isset(MarkdownHelper::$flavors[$flavor])) {
+                MarkdownHelper::$flavors[$flavor]['class'] = $class;
+            }
         }
     }
 
