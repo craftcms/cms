@@ -4,6 +4,7 @@
 
 - Added `craft\helpers\FileHelper::uniqueName()`.
 - Fixed an error that occurred when uploading an asset with a filename over 250 characters long. ([#12889](https://github.com/craftcms/cms/issues/12889))
+- Fixed a bug where private plugins’ control panel templates weren’t directly accessible by URL.
 
 ## 4.4.2 - 2023-03-14
 
