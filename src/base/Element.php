@@ -2393,7 +2393,11 @@ abstract class Element extends Component implements ElementInterface
                 $field = $layoutElement->getField();
                 $attribute = "field:$field->handle";
 
-                if (isset($this->_attributeNames) && !isset($this->_attributeNames[$attribute])) {
+                // https://github.com/craftcms/commerce/issues/3109
+                if (isset($this->_attributeNames) &&
+                    !isset($this->_attributeNames[$attribute]) &&
+                    !isset($this->_attributeNames[$field->handle])
+                ) {
                     continue;
                 }
 
