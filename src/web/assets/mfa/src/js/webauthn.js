@@ -8,6 +8,7 @@ import {startRegistration} from '@simplewebauthn/browser';
     {
       $addSecurityKeyBtn: null,
       $errors: null,
+      $statusContainer: null,
       slideout: null,
 
       init: function (slideout, settings) {
@@ -16,9 +17,13 @@ import {startRegistration} from '@simplewebauthn/browser';
         this.setSettings(settings, Craft.WebAuthn.defaults);
         this.$addSecurityKeyBtn = $('#add-security-key');
         this.$errors = this.slideout.$container.find('.so-notice');
+        this.$statusContainer =
+          this.slideout.$container.find('#webauthn-status');
 
         if (!browserSupportsWebAuthn()) {
-          Craft.cp.displayError('This browser does not support WebAuth.');
+          Craft.cp.displayError(
+            Craft.t('app', 'This browser does not support WebAuth.')
+          );
           this.$addSecurityKeyBtn.disable();
         }
 
@@ -32,7 +37,7 @@ import {startRegistration} from '@simplewebauthn/browser';
       onAddSecurityKeyBtn: function (ev) {
         console.log('clicked btn');
         if (!$(ev.currentTarget).hasClass('disabled')) {
-          //this.setStatus(Craft.t('app', 'Waiting for elevated session'));
+          this.showStatus(Craft.t('app', 'Waiting for elevated session'));
           Craft.elevatedSessionManager.requireElevatedSession(
             this.startWebAuthRegistration.bind(this),
             this.failedElevation.bind(this)
@@ -41,11 +46,12 @@ import {startRegistration} from '@simplewebauthn/browser';
       },
 
       failedElevation: function () {
-        console.log('not elevated from funct');
+        this.clearStatus();
       },
 
       startWebAuthRegistration: function () {
-        console.log('elevated funct - start reg');
+        this.clearStatus();
+
         // GET registration options from the endpoint that calls
         Craft.sendActionRequest(
           'POST',
@@ -54,33 +60,30 @@ import {startRegistration} from '@simplewebauthn/browser';
           .then((response) => {
             const registrationOptions = response.data.registrationOptions;
             try {
+              this.showStatus(Craft.t('app', 'Starting registration'));
               startRegistration(registrationOptions)
                 .then((regResponse) => {
                   this.verifyWebAuthnRegistration(regResponse);
                 })
-                .catch(({response}) => {
-                  // todo: handle me
-                  console.log(response);
+                .catch((regResponseError) => {
+                  this.showStatus(
+                    Craft.t('app', 'Registration failed:') +
+                      ' ' +
+                      regResponseError.message,
+                    'error'
+                  );
                 });
             } catch (error) {
-              // Some basic error handling
-              if (error.name === 'InvalidStateError') {
-                Craft.cp.displayError(
-                  'Error: Authenticator was probably already registered by user'
-                );
-              } else {
-                Craft.cp.displayError(error);
-              }
-              throw error;
+              this.showStatus(error, 'error');
             }
           })
           .catch(({response}) => {
-            // todo: handle me
-            console.log(response);
+            this.showStatus(response.data.message, 'error');
           });
       },
 
       verifyWebAuthnRegistration: function (startRegistrationResponse) {
+        this.showStatus(Craft.t('app', 'Starting verification'));
         let data = {
           credentials: JSON.stringify(startRegistrationResponse),
         };
@@ -90,6 +93,7 @@ import {startRegistration} from '@simplewebauthn/browser';
           data,
         })
           .then((response) => {
+            this.clearStatus();
             // Show UI appropriate for the `verified` status
             if (response.data.verified) {
               Craft.cp.displaySuccess('Success!');
@@ -98,14 +102,26 @@ import {startRegistration} from '@simplewebauthn/browser';
                 this.init(this.slideout); //reinitialise
               }
             } else {
-              Craft.cp.displayError('Something went wrong!');
-              console.log(response);
+              this.showStatus('Something went wrong!', 'error');
             }
           })
           .catch(({response}) => {
-            // todo: handle me
-            console.log(response);
+            this.showStatus(response.data.message, 'error');
           });
+      },
+
+      showStatus: function (message, type) {
+        //Craft.cp.displayError(message);
+        if (type == 'error') {
+          this.$statusContainer.addClass('error');
+        } else {
+          this.$statusContainer.removeClass('error');
+        }
+        this.$statusContainer.text(message);
+      },
+
+      clearStatus: function () {
+        this.$statusContainer.text('');
       },
     },
     {

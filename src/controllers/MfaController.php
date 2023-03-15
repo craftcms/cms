@@ -222,6 +222,14 @@ class MfaController extends Controller
     // WebAuthn methods
     ////////////////////////////////////////////////////////////////////////////
 
+    /**
+     * Generate & return the Public Key Credential Options for WebAuthn Registration
+     *
+     * @return Response
+     * @throws \Throwable
+     * @throws \yii\web\BadRequestHttpException
+     * @throws \yii\web\ForbiddenHttpException
+     */
     public function actionGenerateRegistrationOptions(): Response
     {
         $this->requireAcceptsJson();
@@ -237,6 +245,14 @@ class MfaController extends Controller
         return $this->asJson(['registrationOptions' => $options]);
     }
 
+    /**
+     * Verify the WebAuthn Registration Response and return the result + updated html markup for the slideout
+     *
+     * @return Response
+     * @throws \Throwable
+     * @throws \yii\web\BadRequestHttpException
+     * @throws \yii\web\ForbiddenHttpException
+     */
     public function actionVerifyRegistration(): Response
     {
         $this->requireAcceptsJson();

@@ -57,6 +57,10 @@
     {{ forms.button({
         name: 'addSecurityKey',
         id: 'add-security-key',
-        label: 'Add a security key'|t('app')
+        label: 'Add a security key'|t('app'),
+        role: 'button',
+        spinner: craft.app.request.isCpRequest(),
     }) }}
+
+    <div id="webauthn-status" class="notice"></div>
 </div>
