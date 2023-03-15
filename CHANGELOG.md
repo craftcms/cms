@@ -3,6 +3,7 @@
 ## Unreleased
 
 - Customize Sources modals no longer hide when the <kbd>Esc</kbd> key is pressed on the surrounding area is clicked on. ([#12895](https://github.com/craftcms/cms/issues/12895))
+- Sections created via `entrify` commands no longer get a “Primary entry page” preview target by default, unless it was sourced from a category group with URLs. ([#12897](https://github.com/craftcms/cms/issues/12897))
 - Added `craft\helpers\FileHelper::uniqueName()`.
 - Fixed an error that occurred when uploading an asset with a filename over 250 characters long. ([#12889](https://github.com/craftcms/cms/issues/12889))
 - Fixed a bug where private plugins’ control panel templates weren’t directly accessible by URL.
