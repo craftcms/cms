@@ -7,6 +7,7 @@
 
 namespace craft\events;
 
+use craft\base\ElementInterface;
 use craft\elements\User;
 use yii\base\Event;
 
@@ -31,12 +32,21 @@ class AuthorizationCheckEvent extends Event
     }
 
     /**
+     * @var ElementInterface|null The element being authorized.
+     *
+     * This will only be set if the event was triggered from [[\craft\services\Elements]].
+     *
+     * @since 4.3.0
+     */
+    public ?ElementInterface $element = null;
+
+    /**
      * @var User The user to be authorized.
      */
     public User $user;
 
     /**
-     * @var bool Whether the user is authorized.
+     * @var bool|null Whether the user is authorized.
      */
-    public bool $authorized = false;
+    public ?bool $authorized = false;
 }

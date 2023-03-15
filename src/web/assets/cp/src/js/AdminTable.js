@@ -34,6 +34,15 @@ Craft.AdminTable = Garnish.Base.extend(
 
       this.$deleteBtns = this.$table.find('.delete:not(.disabled)');
       this.addListener(this.$deleteBtns, 'click', 'handleDeleteBtnClick');
+      this.addListener(this.$deleteBtns, 'keydown', (event) => {
+        if (
+          event.keyCode === Garnish.SPACE_KEY ||
+          event.keyCode === Garnish.RETURN_KEY
+        ) {
+          event.preventDefault();
+          this.handleDeleteBtnClick(event);
+        }
+      });
 
       this.updateUI();
     },

@@ -52,20 +52,21 @@ class AssetIndexesController extends Controller
         $request = Craft::$app->getRequest();
         $volumes = (array)$request->getRequiredBodyParam('volumes');
         $cacheRemoteImages = (bool)$request->getBodyParam('cacheImages', false);
+        $listEmptyFolders = (bool)$request->getBodyParam('listEmptyFolders', false);
 
         if (empty($volumes)) {
             return $this->asFailure(Craft::t('app', 'No volumes specified.'));
         }
 
-        $indexingSession = Craft::$app->getAssetIndexer()->startIndexingSession($volumes, $cacheRemoteImages);
+        $indexingSession = Craft::$app->getAssetIndexer()->startIndexingSession($volumes, $cacheRemoteImages, $listEmptyFolders);
         $sessionData = $this->prepareSessionData($indexingSession);
 
         $data = ['session' => $sessionData];
         $error = null;
 
-        if ($indexingSession->totalEntries === 0) {
+        if ($indexingSession->totalEntries === 0 && !$indexingSession->processIfRootEmpty) {
             $data['stop'] = $indexingSession->id;
-            $error = Craft::t('app', 'Nothing to index.');
+            $error = Craft::t('app', 'The filesystem doesn’t contain any files.');
             Craft::$app->getAssetIndexer()->stopIndexingSession($indexingSession);
         }
 
@@ -204,7 +205,8 @@ class AssetIndexesController extends Controller
         $deleteFiles = Craft::$app->getRequest()->getBodyParam('deleteAsset', []);
 
         if (!empty($deleteFolders)) {
-            Craft::$app->getAssets()->deleteFoldersByIds($deleteFolders, false);
+            // if listEmptyFolders was set to true, delete the directories too, so that they don't pop back up on next indexing
+            Craft::$app->getAssets()->deleteFoldersByIds($deleteFolders, $session->listEmptyFolders);
         }
 
         if (!empty($deleteFiles)) {

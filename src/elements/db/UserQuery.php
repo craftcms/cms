@@ -675,9 +675,10 @@ class UserQuery extends ElementQuery
      *
      * | Value | Fetches users…
      * | - | -
-     * | `'>= 2018-04-01'` | that last logged-in on or after 2018-04-01.
-     * | `'< 2018-05-01'` | that last logged-in before 2018-05-01
-     * | `['and', '>= 2018-04-04', '< 2018-05-01']` | that last logged-in between 2018-04-01 and 2018-05-01.
+     * | `'>= 2018-04-01'` | that last logged in on or after 2018-04-01.
+     * | `'< 2018-05-01'` | that last logged in before 2018-05-01.
+     * | `['and', '>= 2018-04-04', '< 2018-05-01']` | that last logged in between 2018-04-01 and 2018-05-01.
+     * | `now`/`today`/`tomorrow`/`yesterday` | that last logged in at midnight of the specified relative date.
      *
      * ---
      *
@@ -795,7 +796,7 @@ class UserQuery extends ElementQuery
             return false;
         }
 
-        $this->joinElementTable('users');
+        $this->joinElementTable(Table::USERS);
 
         $this->query->select([
             'users.photoId',

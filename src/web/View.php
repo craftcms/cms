@@ -8,6 +8,7 @@
 namespace craft\web;
 
 use Craft;
+use craft\events\CreateTwigEvent;
 use craft\events\RegisterTemplateRootsEvent;
 use craft\events\TemplateEvent;
 use craft\helpers\App;
@@ -21,13 +22,13 @@ use craft\web\twig\CpExtension;
 use craft\web\twig\Environment;
 use craft\web\twig\Extension;
 use craft\web\twig\GlobalsExtension;
+use craft\web\twig\SinglePreloaderExtension;
 use craft\web\twig\TemplateLoader;
 use Throwable;
 use Twig\Error\LoaderError as TwigLoaderError;
 use Twig\Error\RuntimeError as TwigRuntimeError;
 use Twig\Error\SyntaxError as TwigSyntaxError;
 use Twig\Extension\CoreExtension;
-use Twig\Extension\DebugExtension;
 use Twig\Extension\ExtensionInterface;
 use Twig\Extension\StringLoaderExtension;
 use Twig\Template as TwigTemplate;
@@ -57,6 +58,13 @@ use yii\web\AssetBundle as YiiAssetBundle;
  */
 class View extends \yii\web\View
 {
+    /**
+     * @event CreateTwigEvent The event that is triggered when a Twig environment is created.
+     * @see createTwig()
+     * @since 4.3.0
+     */
+    public const EVENT_AFTER_CREATE_TWIG = 'afterCreateTwig';
+
     /**
      * @event RegisterTemplateRootsEvent The event that is triggered when registering control panel template roots
      */
@@ -248,6 +256,13 @@ class View extends \yii\web\View
     private array $_jsFileBuffers = [];
 
     /**
+     * @var array
+     * @see startHtmlBuffer()
+     * @see clearHtmlBuffer()
+     */
+    private array $_htmlBuffers = [];
+
+    /**
      * @var array|null the registered generic `<script>` code blocks
      * @see registerScript()
      */
@@ -257,7 +272,7 @@ class View extends \yii\web\View
      * @var array the registered generic HTML code blocks
      * @see registerHtml()
      */
-    private array $_html;
+    private array $_html = [];
 
     /**
      * @var callable[][]
@@ -340,10 +355,10 @@ class View extends \yii\web\View
             $twig->addExtension(new CpExtension());
         } elseif (Craft::$app->getIsInstalled()) {
             $twig->addExtension(new GlobalsExtension());
-        }
 
-        if (App::devMode()) {
-            $twig->addExtension(new DebugExtension());
+            if (Craft::$app->getConfig()->getGeneral()->preloadSingles) {
+                $twig->addExtension(new SinglePreloaderExtension());
+            }
         }
 
         // Add plugin-supplied extensions
@@ -355,6 +370,14 @@ class View extends \yii\web\View
         /** @var CoreExtension $core */
         $core = $twig->getExtension(CoreExtension::class);
         $core->setTimezone(Craft::$app->getTimeZone());
+
+        // Fire a afterCreateTwig event
+        if ($this->hasEventHandlers(self::EVENT_AFTER_CREATE_TWIG)) {
+            $this->trigger(self::EVENT_AFTER_CREATE_TWIG, new CreateTwigEvent([
+                'templateMode' => $this->_templateMode ?? self::TEMPLATE_MODE_SITE,
+                'twig' => $twig,
+            ]));
+        }
 
         return $twig;
     }
@@ -1137,6 +1160,35 @@ class View extends \yii\web\View
     }
 
     /**
+     * Starts a buffer for any html tags registered with [[registerHtml()]].
+     *
+     * @since 4.3.0
+     */
+    public function startHtmlBuffer(): void
+    {
+        $this->_htmlBuffers[] = $this->_html;
+        $this->_html = [];
+    }
+
+    /**
+     * Clears and ends a buffer started via [[startHtmlBuffer()]], returning any html tags that were registered
+     * while the buffer was active.
+     *
+     * @return array|false The html that was registered while the buffer was active or `false` if there wasn't an active buffer.
+     * @since 4.3.0
+     */
+    public function clearHtmlBuffer(): array|false
+    {
+        if (empty($this->_htmlBuffers)) {
+            return false;
+        }
+
+        $bufferedHtml = $this->_html;
+        $this->_html = array_pop($this->_htmlBuffers);
+        return $bufferedHtml;
+    }
+
+    /**
      * @inheritdoc
      */
     public function registerJsFile($url, $options = [], $key = null): void
@@ -1462,7 +1514,7 @@ JS;
         // Update everything
         if ($templateMode == self::TEMPLATE_MODE_CP) {
             $this->setTemplatesPath(Craft::$app->getPath()->getCpTemplatesPath());
-            $this->_defaultTemplateExtensions = ['html', 'twig'];
+            $this->_defaultTemplateExtensions = ['twig', 'html'];
             $this->_indexTemplateFilenames = ['index'];
         } else {
             $this->setTemplatesPath(Craft::$app->getPath()->getSiteTemplatesPath());
@@ -1555,8 +1607,11 @@ JS;
 
             $oldNamespace = $this->getNamespace();
             $this->setNamespace($this->namespaceInputName($namespace));
-            $response = $this->namespaceInputs($html(), $namespace, $otherAttributes, $withClasses);
-            $this->setNamespace($oldNamespace);
+            try {
+                $response = $this->namespaceInputs($html(), $namespace, $otherAttributes, $withClasses);
+            } finally {
+                $this->setNamespace($oldNamespace);
+            }
             return $response;
         }
 

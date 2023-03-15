@@ -1,4 +1,4 @@
-{% extends 'settings/sections/_layout' %}
+{% extends 'settings/sections/_layout.twig' %}
 {% set selectedTab = 'settings' %}
 {% set fullPageForm = true %}
 {% set formActions = [
@@ -10,7 +10,7 @@
     },
 ] %}
 
-{% import "_includes/forms" as forms %}
+{% import '_includes/forms.twig' as forms %}
 
 {% set headlessMode = craft.app.config.general.headlessMode %}
 
@@ -38,7 +38,6 @@
         name: 'name',
         value: section.name,
         errors: section.getErrors('name'),
-        autofocus: true,
         required: true,
     }) }}
 
@@ -90,7 +89,7 @@
         {% set siteRows = siteRows|merge({
             (site.handle): {
                 heading: site.name|t('site')|e,
-                enabled: include('_includes/forms/lightswitch', {
+                enabled: include('_includes/forms/lightswitch.twig', {
                     name: 'sites['~site.handle~'][enabled]',
                     on: brandNewSection or siteSettings,
                     value: site.id,

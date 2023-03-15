@@ -33,7 +33,7 @@ class Checkboxes extends BaseOptionsField
      */
     public static function valueType(): string
     {
-        return MultiOptionsFieldData::class;
+        return sprintf('\\%s', MultiOptionsFieldData::class);
     }
 
     /**
@@ -59,11 +59,11 @@ class Checkboxes extends BaseOptionsField
             Craft::$app->getView()->setInitialDeltaValue($this->handle, null);
         }
 
-        return Craft::$app->getView()->renderTemplate('_includes/forms/checkboxGroup', [
+        return Craft::$app->getView()->renderTemplate('_includes/forms/checkboxGroup.twig', [
             'describedBy' => $this->describedBy,
             'name' => $this->handle,
             'values' => $this->encodeValue($value),
-            'options' => $this->translatedOptions(true),
+            'options' => $this->translatedOptions(true, $value, $element),
         ]);
     }
 

@@ -1680,7 +1680,7 @@ class StringHelper extends \yii\helpers\StringHelper
     }
 
     /**
-     * Converts an object to its string representation. If the object is an array, will glue the array elements togeter
+     * Converts an object to its string representation. If the object is an array, will glue the array elements together
      * with the $glue param. Otherwise will cast the object to a string.
      *
      * @param mixed $object The object to convert to a string.
@@ -1789,6 +1789,33 @@ class StringHelper extends \yii\helpers\StringHelper
 
         // Split on the words and return
         return static::splitOnWords($str);
+    }
+
+    /**
+     * Returns a handle-safe version of a string.
+     *
+     * @param string $str
+     * @return string
+     * @since 4.4.0
+     */
+    public static function toHandle(string $str): string
+    {
+        // Remove HTML tags
+        $handle = static::stripHtml($str);
+
+        // Remove inner-word punctuation
+        $handle = preg_replace('/[\'"‘’“”\[\]\(\)\{\}:]/', '', $handle);
+    
+        // Make it lowercase
+        $handle = static::toLowerCase($handle);
+    
+        // Convert extended ASCII characters to basic ASCII
+        $handle = static::toAscii($handle);
+
+        // Handle must start with a letter
+        $handle = preg_replace('/^[^a-z]+/', '', $handle);
+
+        return static::toCamelCase($handle);
     }
 
     /**

@@ -73,7 +73,8 @@
         }
         label += `<span>${Craft.escapeHtml(data.text)}</span>`;
         if (showHint && typeof data.hint === 'string' && data.hint !== '') {
-            label += `<span class="light">– ${Craft.escapeHtml(data.hint)}</span>`;
+            const langAttr = data.hintLang ? ` lang="${data.hintLang}"` : '';
+            label += `<span class="light"${langAttr}>– ${Craft.escapeHtml(data.hint)}</span>`;
         }
         return `<div class="flex flex-nowrap">${label}</div>`;
     };
@@ -135,6 +136,19 @@
             },
         },
         onChange: onChange,
+        onInitialize: function () {
+            // Copy all ARIA attributes from initial select to selectize
+            var s = this;
+            var attrs = {}
+            var initialSelect = $(this.$input)[0];
+            $(initialSelect.attributes).filter(function (index, attribute) {
+                return /^aria-/.test(attribute.name);
+            })
+            .each(function (index, attribute) {
+                attrs[attribute.name] = attribute.value;
+            });
+            $(this.$control_input).attr(attrs);
+        }
     }, {{ selectizeOptions|json_encode|raw }}));
 
     onChange();

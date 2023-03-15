@@ -16,6 +16,7 @@ $sidebarZIndex: 100;
 $detailsWidth: 350px;
 $minFullUiWidth: 1200px;
 $minXlUiWidth: 1536px;
+$minDesktopWidth: 600px;
 $minHorizontalUiWidth: $minFullUiWidth - $sidebarWidth;
 
 // Colors
@@ -29,9 +30,12 @@ html {
 
 body {
   min-height: 100vh;
-}
 
-body {
+  &.dragging * {
+    cursor: move !important;
+    cursor: grabbing !important;
+  }
+
   :focus {
     outline-style: solid;
     outline-color: transparent;
@@ -113,43 +117,20 @@ $sidebarLinkSecondaryColor: var(--gray-200);
 
   a {
     color: $sidebarLinkStaticColor;
-    transition: color linear 100ms;
     text-decoration: none;
   }
 
   & > a,
   *:not(.has-subnav) > a {
-    transition: background-color linear 100ms;
-
     &[href] {
-      &:hover,
-      &.active,
-      &:active {
-        color: var(--white);
-      }
-
       &:not(.sel):hover {
         background-color: darken($grey800, 5%);
-        transition: none;
-
-        .icon {
-          opacity: 1;
-        }
-      }
-
-      &.active,
-      &:active {
-        background-color: darken($grey800, 10%);
       }
     }
 
     &:not([href]) {
       cursor: default;
       background-color: transparent;
-    }
-
-    .icon {
-      transition: opacity linear 100ms;
     }
   }
 
@@ -261,7 +242,6 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
 
       &#job-icon-hover {
         opacity: 0;
-        transition: opacity linear 100ms;
       }
     }
   }
@@ -288,8 +268,8 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
 
   li {
     &:not(.has-subnav) > a.sel {
-      color: var(--white);
-      background-color: var(--gray-900);
+      color: var(--gray-800);
+      background-color: var(--gray-100) !important;
       opacity: 1;
 
       .icon {
@@ -314,24 +294,6 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
         @include margin-left(5px);
         @include icon;
         content: 'external';
-      }
-
-      &:active .icon {
-        opacity: 1;
-      }
-
-      .icon {
-        opacity: 0.5;
-
-        &.icon-mask {
-          svg {
-            @include svg-mask(var(--white));
-          }
-
-          span[data-icon] {
-            color: var(--white);
-          }
-        }
       }
 
       .label {
@@ -398,22 +360,21 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
   border: 1px solid var(--gray-600);
   border-radius: 3px;
   display: inline-flex;
-  height: 20px;
+  height: toRem(20);
   box-sizing: content-box;
   font-size: 11px;
 
   & > .edition-name,
   & > .edition-trial {
-    padding: 6px 7px 5px;
+    padding: toRem(6, 7, 5);
     line-height: var(--s);
   }
 
   & > .edition-name {
     font-weight: 600;
     letter-spacing: 1.7px;
-    padding-right: 5px;
+    padding-right: toRem(5);
     text-transform: uppercase;
-    transition: color linear 100ms;
   }
 
   & > .edition-trial {
@@ -427,7 +388,6 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
     letter-spacing: 1px;
     @include padding-right(7px);
     text-transform: lowercase;
-    transition: background linear 100ms;
 
     &:before {
       display: block;
@@ -438,7 +398,6 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
       width: 0;
       height: 0;
       border-style: solid;
-      transition: border-color linear 100ms;
 
       body.ltr & {
         left: -10px;
@@ -473,15 +432,20 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
 #alerts {
   position: relative; // to keep it above #global-header's shadow
   background-color: var(--red-050);
-  border-left: 5px solid var(--error-color);
-  padding: 11px 0;
-  text-align: center;
+  border-left: 6px solid var(--error-color);
   color: var(--error-color);
 
-  li {
-    padding: 4px var(--xl);
+  & > li {
+    padding: 10px 24px;
+    box-shadow: inset 0 -1px 0 0 var(--red-100);
 
-    a {
+    a.btn,
+    a.go {
+      display: inline-flex;
+      align-items: center;
+    }
+
+    a:not(.btn) {
       color: var(--error-color);
       text-decoration: underline;
 
@@ -490,16 +454,17 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
         white-space: nowrap;
         border: 1px solid transparentize($errorColor, 0.5);
         border-radius: var(--medium-border-radius);
-        padding: 3px 5px;
+        padding: 4px 5px;
         margin: 0 2px;
 
         &:after {
           color: var(--error-color);
+          font-size: 15px;
+          margin-top: 1px;
         }
 
         &:hover {
           border-color: var(--error-color);
-          transition: border-color linear 100ms;
         }
       }
     }
@@ -530,7 +495,7 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
   width: 36px;
   height: 50px;
   line-height: 26px;
-  color: var(--gray-300);
+  color: currentColor;
   text-align: center;
   @include margin-left(-10px);
 
@@ -652,7 +617,7 @@ li.breadcrumb-toggle-wrapper {
   &:active,
   &.active {
     svg {
-      @include svg-mask(var(--link-color));
+      @include svg-mask(var(--ui-control-active-color));
     }
   }
 }
@@ -684,12 +649,7 @@ li.breadcrumb-toggle-wrapper {
       }
     }
 
-    h2 {
-      position: relative;
-      margin: 0 0 3px;
-    }
-
-    &.unread h2:after {
+    &.unread .announcement__heading:after {
       content: '';
       display: block;
       position: absolute;
@@ -704,6 +664,16 @@ li.breadcrumb-toggle-wrapper {
     p {
       margin: 0;
     }
+  }
+
+  .announcement__header {
+    display: grid;
+  }
+
+  .announcement__heading {
+    position: relative;
+    margin: 0 0 3px;
+    order: 1;
   }
 }
 
@@ -894,9 +864,6 @@ li.breadcrumb-toggle-wrapper {
     margin-top: 0;
     margin-bottom: 0;
     min-width: 0;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
   }
 
   .buttons,
@@ -916,11 +883,7 @@ li.breadcrumb-toggle-wrapper {
 #toolbar {
   flex: 1;
   align-items: flex-start;
-
-  .btn,
-  .text {
-    color: darken($inputColor, 20%);
-  }
+  justify-content: space-between;
 
   .icon:before,
   .texticon:before,
@@ -964,6 +927,18 @@ li.breadcrumb-toggle-wrapper {
   }
 }
 
+#action-buttons {
+  @media only screen and (max-width: 400px) {
+    .btngroup .btn:first-child {
+      flex-basis: 100%;
+    }
+  }
+
+  @media only screen and (max-width: $minHorizontalUiWidth - 1px) {
+    margin-top: 10px;
+  }
+}
+
 #main-content {
   display: flex;
   flex-direction: row;
@@ -986,7 +961,10 @@ li.breadcrumb-toggle-wrapper {
   flex: 0 0 $sidebarWidth;
   width: $sidebarWidth;
   box-sizing: border-box;
-  @include margin-left(calc(var(--xl) * -1));
+
+  @media only screen and (min-width: $minFullUiWidth) {
+    @include margin-left(calc(var(--xl) * -1));
+  }
 }
 
 #sidebar {
@@ -1013,14 +991,11 @@ li.breadcrumb-toggle-wrapper {
         &:focus {
           z-index: 1;
         }
+
         &:not(.sel) {
           &:hover {
             background-color: var(--gray-200);
           }
-        }
-        &.sel {
-          @include pane;
-          background-color: var(--gray-050);
         }
       }
     }
@@ -1074,16 +1049,37 @@ li.breadcrumb-toggle-wrapper {
 }
 
 #footer {
+  position: sticky;
+  bottom: 0;
   z-index: 1;
-  margin: 25px calc(var(--xl) * -1) calc(var(--xl) * -1); // 1px extra on top is intentional
+  margin: 25px calc((var(--xl) * -1) + 2px) calc((var(--xl) * -1) + 2px); // 1px extra on top is intentional
   padding: var(--s) var(--xl);
   background-color: var(--gray-050);
-  border-radius: 0 0 var(--large-border-radius) var(--large-border-radius);
+  border-radius: var(--small-border-radius);
   box-sizing: border-box;
   min-height: 50px;
 
   &:empty {
     display: none;
+  }
+
+  &.stuck {
+    border-radius: 0;
+
+    @supports (backdrop-filter: blur(10px)) {
+      & {
+        background-color: transparentize($grey100, 0.25);
+        backdrop-filter: blur(10px);
+      }
+    }
+  }
+
+  .has-debug-toolbar & {
+    transition: padding linear 100ms;
+
+    &.stuck {
+      padding-bottom: 52px;
+    }
   }
 
   & > *,
@@ -1131,6 +1127,7 @@ li.breadcrumb-toggle-wrapper {
           & > .status-badge {
             border-top-left-radius: var(--large-border-radius);
           }
+
           border-top-right-radius: var(--large-border-radius);
         }
 
@@ -1139,6 +1136,7 @@ li.breadcrumb-toggle-wrapper {
           & > .status-badge {
             border-bottom-left-radius: var(--large-border-radius);
           }
+
           border-bottom-right-radius: var(--large-border-radius);
         }
       }
@@ -1345,9 +1343,13 @@ li.breadcrumb-toggle-wrapper {
 
   .heading {
     position: relative;
-    margin: var(--m) var(--xl) 2px;
+    margin: 0 var(--xl);
 
-    span {
+    &:not(:first-child) {
+      margin-top: var(--m);
+    }
+
+    & > span {
       display: inline-block;
       position: relative;
       z-index: 1;
@@ -1357,6 +1359,10 @@ li.breadcrumb-toggle-wrapper {
       color: var(--medium-text-color);
       font-size: 11px;
       font-weight: bold;
+    }
+
+    & > ul {
+      margin: 2px calc(var(--xl) * -1);
     }
   }
 
@@ -1373,16 +1379,23 @@ li.breadcrumb-toggle-wrapper {
   nav {
     padding: 0 var(--s);
 
-    & > ul > li {
-      @include nav-level(0);
-      & > ul > li {
-        @include nav-level(1);
-        & > ul > li {
-          @include nav-level(2);
-          & > ul > li {
-            @include nav-level(3);
-            & > ul > li {
-              @include nav-level(4);
+    & > ul {
+      & > li:not(.heading),
+      & > li.heading > ul > li {
+        @include nav-level(0);
+
+        & > ul.nested > li {
+          @include nav-level(1);
+
+          & > ul.nested > li {
+            @include nav-level(2);
+
+            & > ul.nested > li {
+              @include nav-level(3);
+
+              & > ul.nested > li {
+                @include nav-level(4);
+              }
             }
           }
         }
@@ -1393,16 +1406,24 @@ li.breadcrumb-toggle-wrapper {
       position: relative;
 
       &:not(.has-subnav) > a {
-        transition: background-color linear 100ms;
-
-        &:hover {
+        &:not(.sel):hover {
           text-decoration: none;
           background-color: var(--gray-100);
         }
 
-        &.sel {
+        &.sel,
+        &.active-drop-target {
           cursor: default;
-          background-color: var(--gray-200);
+          background-color: var(--gray-500) !important;
+
+          &,
+          & + .toggle {
+            color: var(--white);
+          }
+        }
+
+        &.sel {
+          @include light-on-dark-text;
         }
       }
 
@@ -1427,18 +1448,19 @@ li.breadcrumb-toggle-wrapper {
         .icon {
           @include margin-right(10px);
           flex-shrink: 1;
-          width: 18px;
-          height: 18px;
+          width: toRem(18);
+          height: toRem(18);
           word-break: normal;
           transition: margin-left linear 150ms, margin-right linear 150ms;
+          opacity: 0.85;
 
           &.icon-mask {
             svg {
-              @include svg-mask(var(--ui-control-color));
+              @include svg-mask(currentColor);
             }
 
             span[data-icon] {
-              color: var(--ui-control-color);
+              color: currentColor;
             }
           }
 
@@ -1487,8 +1509,11 @@ li.breadcrumb-toggle-wrapper {
         display: none;
       }
 
-      &.expanded > ul {
-        display: block;
+      &.heading,
+      &.expanded {
+        & > ul {
+          display: block;
+        }
       }
     }
   }
@@ -1582,8 +1607,8 @@ li.breadcrumb-toggle-wrapper {
         }
       }
 
-      // 2 cols for 500 - 1535px
-      @media only screen and (min-width: 500px) and (max-width: $minXlUiWidth - 1px) {
+      // 2 cols for 600 - 1535px
+      @media only screen and (min-width: $minDesktopWidth) and (max-width: $minXlUiWidth - 1px) {
         &.width-25,
         &.width-50 {
           width: 50%;
@@ -1597,8 +1622,8 @@ li.breadcrumb-toggle-wrapper {
   & > :not(h2):not(hr):not(.line-break) {
     &,
     &:last-child {
-      // 2 cols for >= 1536px
-      @media only screen and (min-width: $minXlUiWidth) {
+      // 2 cols for >= 1200
+      @media only screen and (min-width: $minDesktopWidth * 2) {
         &.width-25,
         &.width-50 {
           width: 50%;

@@ -9,6 +9,7 @@ namespace craft\web;
 
 use Craft;
 use craft\base\ModelInterface;
+use craft\elements\User;
 use yii\base\Action;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
@@ -81,8 +82,6 @@ abstract class Controller extends \yii\web\Controller
                 }
             }
             $this->allowAnonymous = $normalized;
-        } elseif (!is_int($this->allowAnonymous)) {
-            throw new InvalidConfigException('Invalid $allowAnonymous value');
         }
 
         parent::init();
@@ -173,6 +172,19 @@ abstract class Controller extends \yii\web\Controller
         }
 
         return true;
+    }
+
+    /**
+     * Returns the currently logged-in user.
+     *
+     * @param bool $autoRenew
+     * @return User|null
+     * @see \yii\web\User::getIdentity()
+     * @since 4.3.0
+     */
+    public static function currentUser(bool $autoRenew = true): ?User
+    {
+        return Craft::$app->getUser()->getIdentity($autoRenew);
     }
 
     /**

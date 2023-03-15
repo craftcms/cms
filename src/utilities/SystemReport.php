@@ -83,7 +83,7 @@ class SystemReport extends Utility
         }
         ksort($aliases);
 
-        return Craft::$app->getView()->renderTemplate('_components/utilities/SystemReport', [
+        return Craft::$app->getView()->renderTemplate('_components/utilities/SystemReport.twig', [
             'appInfo' => self::_appInfo(),
             'plugins' => Craft::$app->getPlugins()->getAllPlugins(),
             'modules' => $modules,
@@ -149,14 +149,9 @@ class SystemReport extends Utility
     private static function _dbDriver(): string
     {
         $db = Craft::$app->getDb();
-
-        if ($db->getIsMysql()) {
-            $driverName = 'MySQL';
-        } else {
-            $driverName = 'PostgreSQL';
-        }
-
-        return $driverName . ' ' . App::normalizeVersion($db->getSchema()->getServerVersion());
+        $label = $db->getDriverLabel();
+        $version = App::normalizeVersion($db->getSchema()->getServerVersion());
+        return "$label $version";
     }
 
     /**

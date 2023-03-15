@@ -9,6 +9,7 @@ namespace craft\elements\actions;
 
 use Craft;
 use craft\base\ElementAction;
+use craft\base\ElementInterface;
 
 /**
  * NewChild represents a New Child element action.
@@ -36,10 +37,16 @@ class NewChild extends ElementAction
     /**
      * @inheritdoc
      */
-    public function init(): void
+    public function setElementType(string $elementType): void
     {
+        /** @var string|ElementInterface $elementType */
+        /** @phpstan-var class-string<ElementInterface> $elementType */
+        parent::setElementType($elementType);
+
         if (!isset($this->label)) {
-            $this->label = Craft::t('app', 'New child');
+            $this->label = Craft::t('app', 'Create a new child {type}', [
+                'type' => $elementType::lowerDisplayName(),
+            ]);
         }
     }
 
@@ -60,7 +67,7 @@ class NewChild extends ElementAction
 (() => {
     let trigger = new Craft.ElementActionTrigger({
         type: $type,
-        batch: false,
+        bulk: false,
         validateSelection: \$selectedItems => !$maxLevels || $maxLevels > \$selectedItems.find('.element').data('level'),
         activate: \$selectedItems => {
             const url = Craft.getUrl($newChildUrl, 'parentId=' + \$selectedItems.find('.element').data('id'));

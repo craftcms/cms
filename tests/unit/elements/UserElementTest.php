@@ -11,6 +11,7 @@ use Craft;
 use craft\db\Query;
 use craft\db\Table;
 use craft\elements\User;
+use craft\errors\InvalidElementException;
 use craft\helpers\Session;
 use craft\helpers\StringHelper;
 use craft\services\Users;
@@ -79,6 +80,42 @@ class UserElementTest extends TestCase
         );
 
         $this->tester->deleteElement($user);
+    }
+
+    public function testActivationValidation(): void
+    {
+        $user = new User([
+            'active' => false,
+            'email' => 'unverifemail@email.com',
+            'username' => 'unverifusername',
+        ]);
+
+        $this->tester->saveElement($user);
+
+        $user->username = $this->activeUser->username;
+        $user->email = $this->activeUser->email;
+
+        $activated = Craft::$app->getUsers()->activateUser($user);
+        self::assertFalse($activated);
+        self::assertTrue($user->hasErrors('username'));
+        self::assertTrue($user->hasErrors('email'));
+
+        try {
+            Craft::$app->getUsers()->getActivationUrl($user);
+        } catch (InvalidElementException $e) {
+            // catching so we can clean up after
+        }
+
+        self::assertInstanceOf(InvalidElementException::class, $e ?? null);
+
+        $this->tester->deleteElement($user);
+    }
+
+    public function testUserStatusChange(): void
+    {
+        $this->activeUser->active = false;
+        $this->expectException(Exception::class);
+        $this->tester->saveElement($this->activeUser);
     }
 
     /**

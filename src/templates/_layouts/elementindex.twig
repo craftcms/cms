@@ -1,4 +1,4 @@
-{% extends "_layouts/cp" %}
+{% extends '_layouts/cp.twig' %}
 
 {% set elementInstance = craft.app.elements.createElement(elementType) %}
 {% set title = title ?? elementInstance.pluralDisplayName() %}
@@ -29,12 +29,7 @@
             {% include "_elements/sources" %}
         </nav>
 
-        {% if currentUser.admin and craft.app.config.general.allowAdminChanges %}
-            <button class="customize-sources" type="button">
-                <span class="settings icon"></span>
-                <span class="label">{{ 'Customize'|t('app') }}</span>
-            </button>
-        {% endif %}
+        <div id="source-actions" class="buttons"></div>
     {% endif %}
 {% endblock %}
 
@@ -47,7 +42,7 @@
 
 
 {% block content %}
-    <div class="main">
+    <div class="main element-index">
         <a class="skip-link btn" href="#footer">{{ 'Skip to {title}'|t('app', { title: 'Footer'|t }) }}</a>
         <div class="elements busy">
             <div class="update-spinner spinner spinner-absolute"></div>
@@ -58,8 +53,11 @@
 
 {% block footer %}
     <div id="count-spinner" class="spinner small hidden"></div>
-    <div id="count-container" class="light flex-grow">&nbsp;</div>
-    <button type="button" id="export-btn" class="btn hidden" aria-expanded="false">{{ 'Export…'|t('app') }}</button>
+    <div id="count-container" class="light">&nbsp;</div>
+    <div id="actions-container" class="flex"></div>
+    <div id="export-container">
+        <button type="button" id="export-btn" class="btn hidden" aria-expanded="false">{{ 'Export…'|t('app') }}</button>
+    </div>
 {% endblock %}
 
 
@@ -71,6 +69,8 @@
         storageKey: 'elementindex.{{ elementType|e("js") }}',
         criteria: Craft.defaultIndexCriteria,
         toolbarSelector: '#toolbar',
+        defaultSource: {{ (defaultSource ?? null)|json_encode|raw }},
+        defaultSourcePath: {{ (defaultSourcePath ?? null)|json_encode|raw }},
         canHaveDrafts: {{ (canHaveDrafts ?? false) ? 'true' : 'false' }},
     });
 {% endblock %}

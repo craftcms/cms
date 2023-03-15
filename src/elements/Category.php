@@ -17,7 +17,6 @@ use craft\elements\actions\Delete;
 use craft\elements\actions\Duplicate;
 use craft\elements\actions\NewChild;
 use craft\elements\actions\Restore;
-use craft\elements\actions\SetStatus;
 use craft\elements\conditions\categories\CategoryCondition;
 use craft\elements\conditions\ElementConditionInterface;
 use craft\elements\db\CategoryQuery;
@@ -242,7 +241,7 @@ class Category extends Element
 
         // Get the group we need to check permissions on
         if (preg_match('/^group:(\d+)$/', $source, $matches)) {
-            $group = Craft::$app->getCategories()->getGroupById($matches[1]);
+            $group = Craft::$app->getCategories()->getGroupById((int)$matches[1]);
         } elseif (preg_match('/^group:(.+)$/', $source, $matches)) {
             $group = Craft::$app->getCategories()->getGroupByUid($matches[1]);
         } else {
@@ -254,9 +253,6 @@ class Category extends Element
         $elementsService = Craft::$app->getElements();
 
         if ($group) {
-            // Set Status
-            $actions[] = SetStatus::class;
-
             // New Child
             if ($group->maxLevels != 1) {
                 $newChildUrl = 'categories/' . $group->handle . '/new';
@@ -267,7 +263,6 @@ class Category extends Element
 
                 $actions[] = $elementsService->createAction([
                     'type' => NewChild::class,
-                    'label' => Craft::t('app', 'Create a new child category'),
                     'maxLevels' => $group->maxLevels,
                     'newChildUrl' => $newChildUrl,
                 ]);
@@ -295,14 +290,17 @@ class Category extends Element
         }
 
         // Restore
-        $actions[] = $elementsService->createAction([
-            'type' => Restore::class,
-            'successMessage' => Craft::t('app', 'Categories restored.'),
-            'partialSuccessMessage' => Craft::t('app', 'Some categories restored.'),
-            'failMessage' => Craft::t('app', 'Categories not restored.'),
-        ]);
+        $actions[] = Restore::class;
 
         return $actions;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    protected static function includeSetStatusAction(): bool
+    {
+        return true;
     }
 
     /**
@@ -316,21 +314,15 @@ class Category extends Element
             'uri' => Craft::t('app', 'URI'),
             [
                 'label' => Craft::t('app', 'Date Created'),
-                'orderBy' => 'elements.dateCreated',
-                'attribute' => 'dateCreated',
+                'orderBy' => 'dateCreated',
                 'defaultDir' => 'desc',
             ],
             [
                 'label' => Craft::t('app', 'Date Updated'),
-                'orderBy' => 'elements.dateUpdated',
-                'attribute' => 'dateUpdated',
+                'orderBy' => 'dateUpdated',
                 'defaultDir' => 'desc',
             ],
-            [
-                'label' => Craft::t('app', 'ID'),
-                'orderBy' => 'elements.id',
-                'attribute' => 'id',
-            ],
+            'id ' => Craft::t('app', 'ID'),
         ];
     }
 
@@ -340,6 +332,8 @@ class Category extends Element
     protected static function defineTableAttributes(): array
     {
         return [
+            'ancestors' => ['label' => Craft::t('app', 'Ancestors')],
+            'parent' => ['label' => Craft::t('app', 'Parent')],
             'slug' => ['label' => Craft::t('app', 'Slug')],
             'uri' => ['label' => Craft::t('app', 'URI')],
             'link' => ['label' => Craft::t('app', 'Link'), 'icon' => 'world'],
@@ -532,7 +526,12 @@ class Category extends Element
      */
     public function canDuplicate(User $user): bool
     {
-        return true;
+        if (parent::canDuplicate($user)) {
+            return true;
+        }
+
+        $group = $this->getGroup();
+        return $user->can("saveCategories:$group->uid");
     }
 
     /**
@@ -577,7 +576,7 @@ class Category extends Element
 
         // Ignore homepage/temp slugs
         if ($this->slug && !str_starts_with($this->slug, '__')) {
-            $path .= "-$this->slug";
+            $path .= sprintf('-%s', str_replace('/', '-', $this->slug));
         }
 
         return UrlHelper::cpUrl($path);
@@ -588,8 +587,7 @@ class Category extends Element
      */
     public function getPostEditUrl(): ?string
     {
-        $group = $this->getGroup();
-        return UrlHelper::cpUrl("categories/$group->handle");
+        return UrlHelper::cpUrl('categories');
     }
 
     /**
@@ -610,9 +608,11 @@ class Category extends Element
             ],
         ];
 
+        $elementsService = Craft::$app->getElements();
         $user = Craft::$app->getUser()->getIdentity();
+
         foreach ($this->getCanonical()->getAncestors()->all() as $ancestor) {
-            if ($ancestor->canView($user)) {
+            if ($elementsService->canView($ancestor, $user)) {
                 $crumbs[] = [
                     'label' => $ancestor->title,
                     'url' => $ancestor->getCpEditUrl(),
@@ -673,6 +673,7 @@ class Category extends Element
                 'limit' => 1,
                 'elements' => $parent ? [$parent] : [],
                 'disabled' => $static,
+                'describedBy' => 'parentId-label',
             ]);
         })();
 

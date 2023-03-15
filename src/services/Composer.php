@@ -73,9 +73,16 @@ class Composer extends Component
      */
     public function getJsonPath(): string
     {
-        $jsonPath = defined('CRAFT_COMPOSER_PATH') ? CRAFT_COMPOSER_PATH : Craft::getAlias('@root/composer.json');
+        if (defined('CRAFT_COMPOSER_PATH')) {
+            if (!is_file(CRAFT_COMPOSER_PATH)) {
+                throw new Exception(sprintf('No Composer config found at CRAFT_COMPOSER_PATH (%s).', CRAFT_COMPOSER_PATH));
+            }
+            return CRAFT_COMPOSER_PATH;
+        }
+
+        $jsonPath = Craft::getAlias('@root/composer.json');
         if (!is_file($jsonPath)) {
-            throw new Exception('Could not locate your composer.json file.');
+            throw new Exception("No Composer config found at $jsonPath.");
         }
         return $jsonPath;
     }
@@ -517,7 +524,8 @@ class Composer extends Component
     protected function createComposer(IOInterface $io, string $jsonPath, bool $prepForUpdate = true): \Composer\Composer
     {
         $config = $this->composerConfig($io, $jsonPath, $prepForUpdate);
-        $composer = Factory::create($io, $config);
+        // Bypass Factory::create()'s insistence on setting $disablePlugins to 'local'
+        $composer = (new Factory())->createComposer($io, $config);
         $lockFile = pathinfo($jsonPath, PATHINFO_EXTENSION) === 'json'
             ? substr($jsonPath, 0, -4) . 'lock'
             : $jsonPath . '.lock';

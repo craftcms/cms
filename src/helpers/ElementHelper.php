@@ -17,7 +17,10 @@ use craft\db\Query;
 use craft\db\Table;
 use craft\errors\OperationAbortedException;
 use craft\fieldlayoutelements\CustomField;
+use craft\i18n\Locale;
 use craft\services\ElementSources;
+use DateTime;
+use Throwable;
 use yii\base\Exception;
 
 /**
@@ -348,7 +351,7 @@ class ElementHelper
     {
         $user = Craft::$app->getUser()->getIdentity();
 
-        if ($element->canView($user)) {
+        if ($user && Craft::$app->getElements()->canView($element, $user)) {
             if (!Craft::$app->getIsMultiSite()) {
                 return true;
             }
@@ -374,7 +377,7 @@ class ElementHelper
         $siteIds = [];
         $user = Craft::$app->getUser()->getIdentity();
 
-        if ($element->canView($user)) {
+        if ($user && Craft::$app->getElements()->canView($element, $user)) {
             if (Craft::$app->getIsMultiSite()) {
                 foreach (static::supportedSitesForElement($element) as $siteInfo) {
                     if ($user->can(sprintf('editSite:%s', $siteInfo['siteUid']))) {
@@ -596,6 +599,16 @@ class ElementHelper
             $sources = $source['nested'] ?? [];
         }
 
+        if (!str_starts_with($sourceKey, 'custom:')) {
+            // Let the element get involved
+            /** @var string|ElementInterface $elementType */
+            $source = $elementType::findSource($sourceKey, $context);
+            if ($source) {
+                $source['type'] = ElementSources::TYPE_NATIVE;
+                return $source;
+            }
+        }
+
         return null;
     }
 
@@ -704,5 +717,45 @@ class ElementHelper
         }
 
         return empty($element->$attribute);
+    }
+
+    /**
+     * Returns the HTML for a given attribute value, to be shown in an element index view.
+     *
+     * @param mixed $value The field value
+     * @return string
+     * @since 4.3.0
+     */
+    public static function attributeHtml(mixed $value): string
+    {
+        if ($value instanceof DateTime) {
+            $formatter = Craft::$app->getFormatter();
+            return Html::tag('span', $formatter->asTimestamp($value, Locale::LENGTH_SHORT), [
+                'title' => $formatter->asDatetime($value, Locale::LENGTH_SHORT),
+            ]);
+        }
+
+        if (is_bool($value)) {
+            if (!$value) {
+                return '';
+            }
+
+            return Html::tag('span', '', [
+                'class' => 'checkbox-icon',
+                'role' => 'img',
+                'title' => Craft::t('app', 'Enabled'),
+                'aria' => [
+                    'label' => Craft::t('app', 'Enabled'),
+                ],
+            ]);
+        }
+
+        try {
+            $value = (string)$value;
+        } catch (Throwable) {
+            return '';
+        }
+
+        return Html::encode(StringHelper::stripHtml($value));
     }
 }

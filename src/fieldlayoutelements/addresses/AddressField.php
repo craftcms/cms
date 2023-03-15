@@ -65,7 +65,7 @@ class AddressField extends BaseField
     /**
      * @inheritdoc
      */
-    protected function inputHtml(ElementInterface $element = null, bool $static = false): ?string
+    public function formHtml(ElementInterface $element = null, bool $static = false): ?string
     {
         if (!$element instanceof Address) {
             throw new InvalidArgumentException('AddressField can only be used in address field layouts.');
@@ -75,8 +75,6 @@ class AddressField extends BaseField
 
         $view->registerJsWithVars(fn($namespace) => <<<JS
 (() => {
-    const container = $('#' + Craft.namespaceId('address-field', $namespace)).find('> .input');
-
     const initFields = (values) => {
         const fields = {};
         const fieldNames = [
@@ -128,7 +126,13 @@ class AddressField extends BaseField
                         Object.fromEntries(hotFieldNames.map(name => [name, hotValues[name] || null]))
                     );
                     const activeElementId = document.activeElement ? document.activeElement.id : null;
-                    container.html(response.data.fieldsHtml);
+                    const \$addressFields = $(
+                        Object.entries(fields)
+                            .filter(([name]) => name !== 'countryCode')
+                            .map(([, \$field]) => \$field.closest('.field')[0])
+                    );
+                    \$addressFields.eq(0).replaceWith(response.data.fieldsHtml);
+                    \$addressFields.remove();
                     initFields(values);
                     Craft.appendHeadHtml(response.data.headHtml);
                     Craft.appendBodyHtml(response.data.bodyHtml);
@@ -152,5 +156,14 @@ JS, [
         ]);
 
         return Cp::addressFieldsHtml($element);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    protected function inputHtml(?ElementInterface $element = null, bool $static = false): ?string
+    {
+        // Not actually needed since we're overriding formHtml()
+        return null;
     }
 }

@@ -34,7 +34,7 @@ use yii\db\Exception as DbException;
  * @property bool $supportsMb4 Whether the database supports 4+ byte characters.
  * @method MysqlQueryBuilder|PgsqlQueryBuilder getQueryBuilder() Returns the query builder for the current DB connection.
  * @method MysqlSchema|PgsqlSchema getSchema() Returns the schema information for the database opened by this connection.
- * @method TableSchema getTableSchema($name, $refresh = false) Obtains the schema information for the named table.
+ * @method TableSchema|null getTableSchema($name, $refresh = false) Obtains the schema information for the named table.
  * @method Command createCommand($sql = null, $params = []) Creates a command for execution.
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
@@ -91,6 +91,26 @@ class Connection extends \yii\db\Connection
     public function getIsPgsql(): bool
     {
         return $this->getDriverName() === Connection::DRIVER_PGSQL;
+    }
+
+    /**
+     * Returns the human-facing driver label (MySQL, MariaDB, or PostgreSQL).
+     *
+     * @return string
+     * @since 4.4.1
+     */
+    public function getDriverLabel(): string
+    {
+        if ($this->getIsMysql()) {
+            // Actually MariaDB though?
+            if (StringHelper::contains($this->getSchema()->getServerVersion(), 'mariadb', false)) {
+                return 'MariaDB';
+            }
+
+            return 'MySQL';
+        }
+
+        return 'PostgreSQL';
     }
 
     /**

@@ -39,7 +39,7 @@ Craft.TableElementIndexView = Craft.BaseElementIndexView.extend({
     // Create the Structure Table Sorter
     if (
       this.elementIndex.settings.context === 'index' &&
-      this.elementIndex.getSelectedSortAttribute() === 'structure' &&
+      this.elementIndex.viewMode === 'structure' &&
       Garnish.hasAttr(this.$table, 'data-structure-id')
     ) {
       this.structureTableSort = new Craft.StructureTableSorter(
@@ -51,7 +51,7 @@ Craft.TableElementIndexView = Craft.BaseElementIndexView.extend({
     }
 
     // Handle expand/collapse toggles for Structures
-    if (this.elementIndex.getSelectedSortAttribute() === 'structure') {
+    if (this.elementIndex.viewMode === 'structure') {
       this.addListener(this.$elementContainer, 'click', function (ev) {
         var $target = $(ev.target);
 
@@ -109,7 +109,15 @@ Craft.TableElementIndexView = Craft.BaseElementIndexView.extend({
   },
 
   initTableHeaders: function () {
-    const selectedSortAttr = this.elementIndex.getSelectedSortAttribute();
+    let selectedSortAttr, selectedSortDir;
+    if (this.elementIndex.viewMode === 'structure') {
+      selectedSortAttr = 'structure';
+      selectedSortDir = 'asc';
+    } else {
+      [selectedSortAttr, selectedSortDir] =
+        this.elementIndex.getSortAttributeAndDirection();
+    }
+
     const $tableHeaders = this.$table
       .children('thead')
       .children()
@@ -123,14 +131,12 @@ Craft.TableElementIndexView = Craft.BaseElementIndexView.extend({
       // Is this the selected sort attribute?
       if (attr === selectedSortAttr) {
         this.$selectedSortHeader = $header;
-        const selectedSortDir = this.elementIndex.getSelectedSortDirection();
         sortValue = selectedSortDir === 'asc' ? 'ascending' : 'descending';
         $header.addClass('ordered ' + selectedSortDir);
         this.makeColumnSortable($header, true);
       } else {
         // Is this attribute sortable?
-        const $sortAttribute = this.elementIndex.getSortAttributeOption(attr);
-        if ($sortAttribute.length) {
+        if (this.elementIndex.getSortOption(attr)) {
           this.makeColumnSortable($header);
         }
       }
@@ -410,7 +416,10 @@ Craft.TableElementIndexView = Craft.BaseElementIndexView.extend({
     var selectedSortDir = this.elementIndex.getSelectedSortDirection(),
       newSortDir = selectedSortDir === 'asc' ? 'desc' : 'asc';
 
-    this.elementIndex.setSortDirection(newSortDir);
+    // In case it's actually the structure view
+    this.elementIndex.selectViewMode('table');
+
+    this.elementIndex.setSelectedSortDirection(newSortDir);
     this._handleSortHeaderClick(ev, $header);
   },
 
@@ -423,7 +432,10 @@ Craft.TableElementIndexView = Craft.BaseElementIndexView.extend({
 
     var attr = $header.attr('data-attribute');
 
-    this.elementIndex.setSortAttribute(attr);
+    // In case it's actually the structure view
+    this.elementIndex.selectViewMode('table');
+
+    this.elementIndex.setSelectedSortAttribute(attr);
     this._handleSortHeaderClick(ev, $header);
   },
 
@@ -433,7 +445,6 @@ Craft.TableElementIndexView = Craft.BaseElementIndexView.extend({
     }
 
     $header.addClass('ordered loading');
-    this.elementIndex.storeSortAttributeAndDirection();
     this.elementIndex.updateElements();
 
     // No need for two spinners
@@ -441,22 +452,31 @@ Craft.TableElementIndexView = Craft.BaseElementIndexView.extend({
   },
 
   _updateScreenReaderStatus: function () {
-    const attribute = this.elementIndex.getSelectedSortAttribute();
-    const direction =
-      this.elementIndex.getSelectedSortDirection() === 'asc'
+    let attr, dir;
+    if (this.elementIndex.viewMode === 'structure') {
+      attr = 'structure';
+      dir = 'asc';
+    } else {
+      [attr, dir] = this.elementIndex.getSortAttributeAndDirection();
+    }
+
+    const attrLabel = this.elementIndex.getSortLabel(attr);
+    if (!attrLabel) {
+      return;
+    }
+
+    const dirLabel =
+      dir === 'asc'
         ? Craft.t('app', 'Ascending')
         : Craft.t('app', 'Descending');
-    const label = this.elementIndex.getSortLabel(attribute);
-
-    if (!attribute && !direction && !label) return;
 
     const message = Craft.t(
       'app',
       'Table {name} sorted by {attribute}, {direction}',
       {
         name: this.$table.attr('data-name'),
-        attribute: label,
-        direction: direction,
+        attribute: attrLabel,
+        direction: dirLabel,
       }
     );
 

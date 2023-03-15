@@ -206,7 +206,7 @@ class Plugin extends Module implements PluginInterface
         /** @var Controller $controller */
         $controller = Craft::$app->controller;
 
-        return $controller->renderTemplate('settings/plugins/_settings', [
+        return $controller->renderTemplate('settings/plugins/_settings.twig', [
             'plugin' => $this,
             'settingsHtml' => $settingsHtml,
         ]);

@@ -75,6 +75,6 @@ JS;
             [$version, $allPlugins],
         ]);
 
-        return $view->renderTemplate('_components/utilities/Upgrade');
+        return $view->renderTemplate('_components/utilities/Upgrade.twig');
     }
 }

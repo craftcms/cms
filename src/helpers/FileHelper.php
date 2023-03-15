@@ -8,6 +8,7 @@
 namespace craft\helpers;
 
 use Craft;
+use craft\errors\SiteNotFoundException;
 use FilesystemIterator;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
@@ -64,6 +65,83 @@ class FileHelper extends \yii\helpers\FileHelper
         }
 
         return $path;
+    }
+
+    /**
+     * Returns a relative path based on a source location or the current working directory.
+     *
+     * @param string $to The target path.
+     * @param string|null $from The source location. Defaults to the current working directory.
+     * @param string $ds the directory separator to be used in the normalized result. Defaults to `DIRECTORY_SEPARATOR`.
+     * @return string The relative path if possible, or an absolute path if the directory is not contained within `$from`.
+     * @since 4.3.5
+     */
+    public static function relativePath(
+        string $to,
+        ?string $from = null,
+        string $ds = DIRECTORY_SEPARATOR,
+    ): string {
+        $to = static::absolutePath($to, ds: $ds);
+
+        if ($from === null) {
+            $from = FileHelper::normalizePath(getcwd(), $ds);
+        } else {
+            $from = static::absolutePath($from, ds: $ds);
+        }
+
+        if ($from === $to) {
+            return '.';
+        }
+
+        if (!str_starts_with($to . $ds, $from . $ds)) {
+            return $to;
+        }
+
+        return substr($to, strlen($from) + 1);
+    }
+
+    /**
+     * Returns an absolute path based on a source location or the current working directory.
+     *
+     * @param string $to The target path.
+     * @param string|null $from The source location. Defaults to the current working directory.
+     * @param string $ds the directory separator to be used in the normalized result. Defaults to `DIRECTORY_SEPARATOR`.
+     * @return string
+     * @since 4.3.5
+     */
+    public static function absolutePath(
+        string $to,
+        ?string $from = null,
+        string $ds = DIRECTORY_SEPARATOR,
+    ): string {
+        $to = static::normalizePath($to, $ds);
+
+        // Already absolute?
+        if (str_starts_with($to, $ds)) {
+            return $to;
+        }
+
+        if ($from === null) {
+            $from = FileHelper::normalizePath(getcwd(), $ds);
+        } else {
+            $from = static::absolutePath($from, ds: $ds);
+        }
+
+        return $from . $ds . $to;
+    }
+
+    /**
+     * Returns whether the given path is within another path.
+     *
+     * @param string $path the path to check
+     * @param string $parentPath the parent path that `$path` should be within
+     * @return bool
+     */
+    public static function isWithin(string $path, string $parentPath): bool
+    {
+        $path = static::absolutePath($path, ds: '/');
+        $parentPath = static::absolutePath($parentPath, ds: '/');
+        return $path !== $parentPath && str_starts_with("$path/", "$parentPath/");
     }
 
     /**
@@ -170,6 +248,11 @@ class FileHelper extends \yii\helpers\FileHelper
         // Replace any control characters in the name with a space.
         $filename = preg_replace("/\\x{00a0}/iu", ' ', $filename);
 
+        // https://github.com/craftcms/cms/issues/12741
+        // Remove soft hyphens (00ad), no break (0083), zero width non-joiner (200c),
+        // zero width joiner (200d), invisible times (2062), invisible comma (2063) in the name
+        $filename = preg_replace('/\\x{00ad}|\\x{0083}|\\x{200c}|\\x{200d}|\\x{2062}|\\x{2063}/iu', '', $filename);
+
         // Strip any characters not allowed.
         $filename = str_replace($disallowedChars, '', strip_tags($filename));
 
@@ -181,7 +264,17 @@ class FileHelper extends \yii\helpers\FileHelper
         // Nuke any trailing or leading .-_
         $filename = trim($filename, '.-_');
 
-        $filename = $asciiOnly ? StringHelper::toAscii($filename) : $filename;
+        if ($asciiOnly) {
+            try {
+                // Always use the primary site language, so file paths/names are normalized
+                // to ASCII consistently regardless of who is logged in.
+                $language = Craft::$app->getSites()->getPrimarySite()->language;
+            } catch (SiteNotFoundException $e) {
+                $language = Craft::$app->language;
+            }
+
+            $filename = StringHelper::toAscii($filename, $language);
+        }
 
         if ($separator !== null) {
             $qSeparator = preg_quote($separator, '/');
@@ -492,6 +585,41 @@ class FileHelper extends \yii\helpers\FileHelper
             }
         }
         closedir($handle);
+    }
+
+    /**
+     * Traverses up the filesystem looking for the closest file to the given directory.
+     *
+     * @param string $dir the directory at or above which the file will be looked for
+     * @param array $options options for file searching. See [[findFiles()]].
+     * @return string|null the closest matching file
+     * @throws InvalidArgumentException if the directory is invalid
+     * @since 4.3.5
+     */
+    public static function findClosestFile(string $dir, array $options = []): ?string
+    {
+        $options['recursive'] = false;
+        $dir = static::absolutePath($dir, ds: '/');
+        while (true) {
+            $exists = file_exists($dir);
+            try {
+                $files = static::findFiles($dir, $options);
+            } catch (InvalidArgumentException $e) {
+                if ($exists) {
+                    return null;
+                }
+                throw $e;
+            }
+
+            if (!empty($files)) {
+                return reset($files);
+            }
+            $parent = dirname($dir);
+            if ($parent === $dir) {
+                return null;
+            }
+            $dir = $parent;
+        }
     }
 
     /**

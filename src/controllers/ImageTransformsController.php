@@ -10,6 +10,7 @@ namespace craft\controllers;
 use Craft;
 use craft\helpers\Image;
 use craft\models\ImageTransform;
+use craft\validators\ColorValidator;
 use craft\web\assets\edittransform\EditTransformAsset;
 use craft\web\Controller;
 use yii\web\NotFoundHttpException;
@@ -48,7 +49,7 @@ class ImageTransformsController extends Controller
         $variables['transforms'] = Craft::$app->getImageTransforms()->getAllTransforms();
         $variables['modes'] = ImageTransform::modes();
 
-        return $this->renderTemplate('settings/assets/transforms/_index', $variables);
+        return $this->renderTemplate('settings/assets/transforms/_index.twig', $variables);
     }
 
     /**
@@ -81,10 +82,35 @@ class ImageTransformsController extends Controller
             $title = Craft::t('app', 'Create a new image transform');
         }
 
-        return $this->renderTemplate('settings/assets/transforms/_settings', [
+        $qualityPickerOptions = [
+            ['label' => Craft::t('app', 'Low'), 'value' => 10],
+            ['label' => Craft::t('app', 'Medium'), 'value' => 30],
+            ['label' => Craft::t('app', 'High'), 'value' => 60],
+            ['label' => Craft::t('app', 'Very High'), 'value' => 80],
+            ['label' => Craft::t('app', 'Maximum'), 'value' => 100],
+        ];
+
+        if ($transform->quality) {
+            // Default to Low, even if quality is < 10
+            $qualityPickerValue = 10;
+            foreach ($qualityPickerOptions as $option) {
+                if ($transform->quality >= $option['value']) {
+                    $qualityPickerValue = $option['value'];
+                } else {
+                    break;
+                }
+            }
+        } else {
+            // Auto
+            $qualityPickerValue = 0;
+        }
+
+        return $this->renderTemplate('settings/assets/transforms/_settings.twig', [
             'handle' => $transformHandle,
             'transform' => $transform,
             'title' => $title,
+            'qualityPickerOptions' => $qualityPickerOptions,
+            'qualityPickerValue' => $qualityPickerValue,
         ]);
     }
 
@@ -101,13 +127,15 @@ class ImageTransformsController extends Controller
         $transform->id = $this->request->getBodyParam('transformId');
         $transform->name = $this->request->getBodyParam('name');
         $transform->handle = $this->request->getBodyParam('handle');
-        $transform->width = $this->request->getBodyParam('width') ?: null;
-        $transform->height = $this->request->getBodyParam('height') ?: null;
+        $transform->width = (int)$this->request->getBodyParam('width') ?: null;
+        $transform->height = (int)$this->request->getBodyParam('height') ?: null;
         $transform->mode = $this->request->getBodyParam('mode');
         $transform->position = $this->request->getBodyParam('position');
-        $transform->quality = $this->request->getBodyParam('quality');
+        $transform->quality = $this->request->getBodyParam('quality') ?: null;
         $transform->interlace = $this->request->getBodyParam('interlace');
         $transform->format = $this->request->getBodyParam('format');
+        $transform->fill = $this->request->getBodyParam('fill') ?: null;
+        $transform->upscale = $this->request->getBodyParam('upscale', $transform->upscale);
 
         if (empty($transform->format)) {
             $transform->format = null;
@@ -121,18 +149,18 @@ class ImageTransformsController extends Controller
             $errors = true;
         }
 
-        if (!empty($transform->quality) && (!is_numeric($transform->quality) || $transform->quality > 100 || $transform->quality < 1)) {
+        if ($transform->quality && ($transform->quality > 100 || $transform->quality < 1)) {
             $this->setFailFlash(Craft::t('app', 'Quality must be a number between 1 and 100 (included).'));
             $errors = true;
         }
 
-        if (empty($transform->quality)) {
-            $transform->quality = null;
-        }
-
-        if (!empty($transform->format) && !in_array($transform->format, Image::webSafeFormats(), true)) {
+        if (!empty($transform->format) && !Image::isWebSafe($transform->format)) {
             $this->setFailFlash(Craft::t('app', 'That is not an allowed format.'));
             $errors = true;
+        }
+
+        if ($transform->mode === 'letterbox') {
+            $transform->fill = $transform->fill ? ColorValidator::normalizeColor($transform->fill) : 'transparent';
         }
 
         if (!$errors) {

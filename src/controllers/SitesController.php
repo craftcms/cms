@@ -82,7 +82,7 @@ class SitesController extends Controller
             'Delete {site}',
         ]);
 
-        return $this->renderTemplate('settings/sites/index', compact(
+        return $this->renderTemplate('settings/sites/index.twig', compact(
             'crumbs',
             'allGroups',
             'group',
@@ -278,7 +278,7 @@ class SitesController extends Controller
             ];
         }
 
-        return $this->renderTemplate('settings/sites/_edit', [
+        return $this->renderTemplate('settings/sites/_edit.twig', [
             'brandNewSite' => $brandNewSite,
             'title' => $title,
             'crumbs' => $crumbs,

@@ -81,6 +81,7 @@ $vendorPath = $findConfigPath('--vendorPath', 'CRAFT_VENDOR_PATH') ?? dirname(__
 $rootPath = $findConfigPath('--basePath', 'CRAFT_BASE_PATH') ?? dirname($vendorPath);
 
 // By default the remaining directories will be in the base directory
+$dotenvPath = $findConfigPath('--dotenvPath', 'CRAFT_DOTENV_PATH') ?? "$rootPath/.env";
 $configPath = $findConfigPath('--configPath', 'CRAFT_CONFIG_PATH') ?? "$rootPath/config";
 $contentMigrationsPath = $findConfigPath('--contentMigrationsPath', 'CRAFT_CONTENT_MIGRATIONS_PATH') ?? "$rootPath/migrations";
 $storagePath = $findConfigPath('--storagePath', 'CRAFT_STORAGE_PATH') ?? "$rootPath/storage";
@@ -189,23 +190,35 @@ defined('CURLOPT_TIMEOUT_MS') || define('CURLOPT_TIMEOUT_MS', 155);
 defined('CURLOPT_CONNECTTIMEOUT_MS') || define('CURLOPT_CONNECTTIMEOUT_MS', 156);
 
 // Load the files
-$cmsPath = $vendorPath . DIRECTORY_SEPARATOR . 'craftcms' . DIRECTORY_SEPARATOR . 'cms';
+$cmsPath = dirname(__DIR__);
 $libPath = $cmsPath . DIRECTORY_SEPARATOR . 'lib';
 $srcPath = $cmsPath . DIRECTORY_SEPARATOR . 'src';
 require $libPath . DIRECTORY_SEPARATOR . 'yii2' . DIRECTORY_SEPARATOR . 'Yii.php';
 require $srcPath . DIRECTORY_SEPARATOR . 'Craft.php';
 
 // Set aliases
+Craft::setAlias('@craftcms', $cmsPath);
 Craft::setAlias('@root', $rootPath);
 Craft::setAlias('@lib', $libPath);
 Craft::setAlias('@craft', $srcPath);
 Craft::setAlias('@appicons', $srcPath . DIRECTORY_SEPARATOR . 'icons');
+Craft::setAlias('@dotenv', $dotenvPath);
 Craft::setAlias('@config', $configPath);
 Craft::setAlias('@contentMigrations', $contentMigrationsPath);
 Craft::setAlias('@storage', $storagePath);
 Craft::setAlias('@templates', $templatesPath);
 Craft::setAlias('@translations', $translationsPath);
 Craft::setAlias('@tests', $testsPath);
+
+$webUrl = App::env('CRAFT_WEB_URL');
+if ($webUrl) {
+    Craft::setAlias('@web', $webUrl);
+}
+
+$webRoot = App::env('CRAFT_WEB_ROOT');
+if ($webRoot) {
+    Craft::setAlias('@webroot', $webRoot);
+}
 
 // Set any custom aliases
 $customAliases = $generalConfig['aliases'] ?? $generalConfig['environmentVariables'] ?? null;

@@ -71,7 +71,7 @@ class Updates extends Widget
         }
 
         if ($cached) {
-            return $view->renderTemplate('_components/widgets/Updates/body',
+            return $view->renderTemplate('_components/widgets/Updates/body.twig',
                 [
                     'total' => Craft::$app->getUpdates()->getTotalAvailableUpdates(),
                 ]);

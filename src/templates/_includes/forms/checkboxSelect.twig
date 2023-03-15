@@ -29,6 +29,8 @@
                 autofocus: (autofocus ?? false) and not craft.app.request.isMobileBrowser(true),
             } only %}
         </div>
+    {%- elseif name is defined and (name|length < 3 or name|slice(-2) != '[]') %}
+        {{- hiddenInput(name, '') }}
     {%- endif %}
     {%- for key, option in options %}
         {%- if option is not iterable %}

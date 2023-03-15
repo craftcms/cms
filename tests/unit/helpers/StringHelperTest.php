@@ -1445,6 +1445,16 @@ class StringHelperTest extends TestCase
     }
 
     /**
+     * @dataProvider toHandleDataProvider
+     * @param string $expected
+     * @param string $str
+     */
+    public function testToHandle(string $expected, string $str)
+    {
+        self::assertSame($expected, StringHelper::toHandle($str));
+    }
+
+    /**
      * @dataProvider trimDataProvider
      * @param string $expected
      * @param string $string
@@ -2138,6 +2148,20 @@ class StringHelperTest extends TestCase
             ['😘', '😘'],
             ['22 ALPHAN NUMERIC', '22 AlphaN Numeric'],
             ['!@#$%  ^&*()', '!@#$%  ^&*()'],
+        ];
+    }
+
+    /**
+     * @return array
+     */
+    public function toHandleDataProvider(): array
+    {
+        return [
+            ['foo', 'FOO'],
+            ['fooBar', 'FOO BAR'],
+            ['fooBar', 'Fo’o Bar'],
+            ['fooBarBaz', 'Foo Ba’r   Baz'],
+            ['fooBar', '0 Foo Bar'],
         ];
     }
 

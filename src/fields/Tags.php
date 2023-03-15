@@ -11,6 +11,7 @@ use Craft;
 use craft\base\ElementInterface;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\db\TagQuery;
+use craft\elements\ElementCollection;
 use craft\elements\Tag;
 use craft\gql\arguments\elements\Tag as TagArguments;
 use craft\gql\interfaces\elements\Tag as TagInterface;
@@ -59,7 +60,7 @@ class Tags extends BaseRelationField
      */
     public static function valueType(): string
     {
-        return TagQuery::class;
+        return sprintf('\\%s|\\%s<\\%s>', TagQuery::class, ElementCollection::class, Tag::class);
     }
 
     /**
@@ -98,16 +99,18 @@ class Tags extends BaseRelationField
         $tagGroup = $this->_getTagGroup();
 
         if ($tagGroup) {
-            return Craft::$app->getView()->renderTemplate('_components/fieldtypes/Tags/input',
+            return Craft::$app->getView()->renderTemplate('_components/fieldtypes/Tags/input.twig',
                 [
                     'elementType' => static::elementType(),
                     'id' => $this->getInputId(),
+                    'describedBy' => $this->describedBy,
                     'name' => $this->handle,
                     'elements' => $value,
                     'tagGroupId' => $tagGroup->id,
                     'targetSiteId' => $this->targetSiteId($element),
                     'sourceElementId' => $element?->id,
                     'selectionLabel' => $this->selectionLabel ? Craft::t('site', $this->selectionLabel) : static::defaultSelectionLabel(),
+                    'allowSelfRelations' => (bool)$this->allowSelfRelations,
                 ]);
         }
 

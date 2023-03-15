@@ -49,13 +49,13 @@ class FsController extends Controller
         $variables = [];
         $variables['filesystems'] = Craft::$app->getFs()->getAllFilesystems();
 
-        return $this->renderTemplate('settings/filesystems/_index', $variables);
+        return $this->renderTemplate('settings/filesystems/_index.twig', $variables);
     }
 
     /**
      * Edit a filesystem.
      *
-     * @param string|null $handle The filesystem’s hnadle, if editing an existing filesystem.
+     * @param string|null $handle The filesystem’s handle, if editing an existing filesystem.
      * @param Fs|null $filesystem The filesystem being edited, if there were any validation errors.
      * @return Response
      * @throws ForbiddenHttpException if the user is not an admin
@@ -112,7 +112,7 @@ class FsController extends Controller
             ->addCrumb(Craft::t('app', 'Filesystems'), 'settings/filesystems')
             ->action('fs/save')
             ->redirectUrl('settings/filesystems')
-            ->contentTemplate('settings/filesystems/_edit', [
+            ->contentTemplate('settings/filesystems/_edit.twig', [
                 'oldHandle' => $handle,
                 'filesystem' => $filesystem,
                 'fsOptions' => $fsOptions,

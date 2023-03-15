@@ -23,6 +23,10 @@
   background-image: url(images/fit.jpg);
 }
 
+#mode label#mode-letterbox {
+  background-image: url(images/letterbox.jpg);
+}
+
 #mode label#mode-stretch {
   background-image: url(images/stretch.jpg);
 }
@@ -43,5 +47,8 @@
   }
   #mode label#mode-stretch {
     background-image: url(images/stretch_2x.jpg);
+  }
+  #mode label#mode-letterbox {
+    background-image: url(images/letterbox_2x.jpg);
   }
 }

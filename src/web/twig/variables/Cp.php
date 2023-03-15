@@ -152,7 +152,7 @@ class Cp extends Component
     }
 
     /**
-     * Returns the Craft ID account URL.
+     * Returns the Craft Console account URL.
      *
      * @return string
      */
@@ -485,7 +485,7 @@ class Cp extends Component
     public function areAlertsCached(): bool
     {
         // The license key status gets cached on each Craftnet request
-        return (Craft::$app->getCache()->get('licenseKeyStatus') !== false);
+        return (Craft::$app->getCache()->get('licenseInfo') !== false);
     }
 
     /**

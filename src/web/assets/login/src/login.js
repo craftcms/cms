@@ -26,6 +26,10 @@ import './login.scss';
       this.$submitBtn = $('#submit');
       this.$errors = $('#login-errors');
 
+      this.$submitBtn = new Garnish.MultiFunctionBtn(this.$submitBtn, {
+        changeButtonText: true,
+      });
+
       new Craft.PasswordInput(this.$passwordInput, {
         onToggleInput: ($newPasswordInput) => {
           this.removeListener(this.$passwordInput, 'input');
@@ -107,7 +111,7 @@ import './login.scss';
         return;
       }
 
-      this.$submitBtn.addClass('loading');
+      this.$submitBtn.busyEvent();
 
       this.clearErrors();
 
@@ -141,6 +145,7 @@ import './login.scss';
 
       Craft.sendActionRequest('POST', 'users/login', {data})
         .then((response) => {
+          this.$submitBtn.successEvent();
           window.location.href = response.data.returnUrl;
         })
         .catch(({response}) => {
@@ -155,7 +160,7 @@ import './login.scss';
     },
 
     onSubmitResponse: function () {
-      this.$submitBtn.removeClass('loading');
+      this.$submitBtn.failureEvent();
     },
 
     showError: function (error) {

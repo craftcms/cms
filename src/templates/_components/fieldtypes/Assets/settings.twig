@@ -1,10 +1,10 @@
-{% extends "_components/fieldtypes/elementfieldsettings" %}
-{% import "_includes/forms" as forms %}
+{% extends '_components/fieldtypes/elementfieldsettings.twig' %}
+{% import '_includes/forms.twig' as forms %}
 
 {% macro uploadLocationField(config) %}
-    {% embed '_includes/forms/field' with config %}
+    {% embed '_includes/forms/field.twig' with config %}
         {% block input %}
-            {% import '_includes/forms' as forms %}
+            {% import '_includes/forms.twig' as forms %}
             <div class="flex flex-nowrap">
                 <div>
                     {{ forms.select({

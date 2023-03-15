@@ -14,6 +14,8 @@ use craft\base\FieldLayoutElement;
 use craft\behaviors\DraftBehavior;
 use craft\elements\Address;
 use craft\enums\LicenseKeyStatus;
+use craft\errors\InvalidHtmlTagException;
+use craft\errors\InvalidPluginException;
 use craft\events\DefineElementInnerHtmlEvent;
 use craft\events\RegisterCpAlertsEvent;
 use craft\fieldlayoutelements\BaseField;
@@ -82,101 +84,182 @@ class Cp
     public static function alerts(?string $path = null, bool $fetch = false): array
     {
         $alerts = [];
+        $resolvableLicenseAlerts = [];
+        $resolvableLicenseItems = [];
         $user = Craft::$app->getUser()->getIdentity();
         $generalConfig = Craft::$app->getConfig()->getGeneral();
+        $consoleUrl = rtrim(Craft::$app->getPluginStore()->craftIdEndpoint, '/');
 
         if (!$user) {
             return $alerts;
         }
 
         $updatesService = Craft::$app->getUpdates();
-        $canSettleUp = true;
-        $licenseAlerts = [];
+        $cache = Craft::$app->getCache();
+        $isInfoCached = $cache->exists('licenseInfo') && $updatesService->getIsUpdateInfoCached();
 
-        if ($updatesService->getIsUpdateInfoCached() || $fetch) {
-            // Fetch the updates regardless of whether we're on the Updates page or not, because the other alerts are
-            // relying on cached Craftnet info
-            $updatesService->getUpdates();
+        if (!$isInfoCached && $fetch) {
+            $updatesService->getUpdates(true);
+            $isInfoCached = true;
+        }
 
-            // Get the license key status
-            $licenseKeyStatus = Craft::$app->getCache()->get('licenseKeyStatus');
+        if ($isInfoCached) {
+            $allLicenseInfo = $cache->get('licenseInfo') ?: [];
+            $pluginsService = Craft::$app->getPlugins();
+            $canTestEditions = Craft::$app->getCanTestEditions();
 
-            if ($path !== 'plugin-store/upgrade-craft') {
-                // Invalid license?
-                if ($licenseKeyStatus === LicenseKeyStatus::Invalid) {
-                    $alerts[] = Craft::t('app', 'Your Craft license key is invalid.');
-                } elseif (Craft::$app->getHasWrongEdition()) {
-                    $message = Craft::t('app', 'You’re running Craft {edition} with a Craft {licensedEdition} license.', [
-                            'edition' => Craft::$app->getEditionName(),
-                            'licensedEdition' => Craft::$app->getLicensedEditionName(),
-                        ]) . ' ';
-                    if ($user->admin) {
-                        if ($generalConfig->allowAdminChanges) {
-                            $message .= '<a class="go" href="' . UrlHelper::url('plugin-store/upgrade-craft') . '">' . Craft::t('app', 'Resolve') . '</a>';
-                        } else {
-                            $message .= Craft::t('app', 'Please fix on an environment where administrative changes are allowed.');
-                        }
-                    } else {
-                        $message .= Craft::t('app', 'Please notify one of your site’s admins.');
-                    }
-
-                    $licenseAlerts[] = $message;
-                }
-            }
-
-            // Any plugin issues?
-            if ($path != 'settings/plugins') {
-                $pluginsService = Craft::$app->getPlugins();
-                $issuePlugins = [];
-                foreach ($pluginsService->getAllPlugins() as $pluginHandle => $plugin) {
-                    if ($pluginsService->hasIssues($pluginHandle)) {
-                        $issuePlugins[] = [$plugin->name, $plugin->handle];
-                    }
-                }
-                if (!empty($issuePlugins)) {
-                    if (count($issuePlugins) === 1) {
-                        $message = Craft::t('app', 'There’s a licensing issue with the {name} plugin.', [
-                            'name' => reset($issuePlugins)[0],
-                        ]);
-                    } else {
-                        $message = Craft::t('app', '{num} plugins have licensing issues.', [
-                            'num' => count($issuePlugins),
-                        ]);
-                    }
-                    $message .= ' ';
-                    if ($user->admin) {
-                        if ($generalConfig->allowAdminChanges) {
-                            $message .= '<a class="go" href="' . UrlHelper::cpUrl('settings/plugins') . '">' . Craft::t('app', 'Resolve') . '</a>';
-                        } else {
-                            $message .= Craft::t('app', 'Please fix on an environment where administrative changes are allowed.');
-                        }
-                    } else {
-                        $message .= Craft::t('app', 'Please notify one of your site’s admins.');
-                    }
-
-                    $licenseAlerts[] = $message;
-
-                    // Is this reconcilable?
-                    foreach ($issuePlugins as [$pluginName, $pluginHandle]) {
-                        if ($pluginsService->getPluginLicenseKeyStatus($pluginHandle) !== LicenseKeyStatus::Trial) {
-                            $canSettleUp = false;
-                            break;
-                        }
-                    }
-                }
-            }
-
-            if (!empty($licenseAlerts)) {
-                if ($canSettleUp) {
-                    if ($path !== 'plugin-store/buy-all-trials') {
-                        $alerts[] = Craft::t('app', 'There are trial licenses that require payment.') . ' ' .
-                            Html::a(Craft::t('app', 'Buy now'), UrlHelper::cpUrl('plugin-store/buy-all-trials'), ['class' => 'go']);
-                    }
+            foreach ($allLicenseInfo as $handle => $licenseInfo) {
+                $isCraft = $handle === 'craft';
+                if ($isCraft) {
+                    $name = 'Craft CMS';
+                    $editions = ['solo', 'pro'];
+                    $currentEdition = Craft::$app->getEditionHandle();
+                    $currentEditionName = Craft::$app->getEditionName();
+                    $licenseEditionName = App::editionName(App::editionIdByHandle($licenseInfo['edition']));
+                    $version = Craft::$app->getVersion();
                 } else {
-                    array_push($alerts, ...$licenseAlerts);
+                    if (!str_starts_with($handle, 'plugin-')) {
+                        continue;
+                    }
+                    $handle = StringHelper::removeLeft($handle, 'plugin-');
+
+                    try {
+                        $pluginInfo = $pluginsService->getPluginInfo($handle);
+                    } catch (InvalidPluginException $e) {
+                        continue;
+                    }
+
+                    $plugin = $pluginsService->getPlugin($handle);
+                    if (!$plugin) {
+                        continue;
+                    }
+
+                    $name = $plugin->name;
+                    $editions = $plugin::editions();
+                    $currentEdition = $pluginInfo['edition'];
+                    $currentEditionName = ucfirst($currentEdition);
+                    $licenseEditionName = ucfirst($licenseInfo['edition']);
+                    $version = $pluginInfo['version'];
+                }
+
+                if ($licenseInfo['status'] === LicenseKeyStatus::Invalid) {
+                    // invalid license
+                    $alerts[] = Craft::t('app', 'The {name} license is invalid.', [
+                        'name' => $name,
+                    ]);
+                } elseif ($licenseInfo['status'] === LicenseKeyStatus::Trial && !$canTestEditions) {
+                    // no trials allowed
+                    $resolvableLicenseAlerts[] = Craft::t('app', '{name} requires purchase.', [
+                        'name' => $name,
+                    ]);
+                    $resolvableLicenseItems[] = array_filter([
+                        'type' => $isCraft ? 'cms-edition' : 'plugin-edition',
+                        'plugin' => !$isCraft ? $handle : null,
+                        'licenseId' => $licenseInfo['id'],
+                        'edition' => $currentEdition,
+                    ]);
+                } elseif ($licenseInfo['status'] === LicenseKeyStatus::Mismatched) {
+                    if ($isCraft) {
+                        // wrong domain
+                        $licensedDomain = $cache->get('licensedDomain');
+                        $domainLink = Html::a($licensedDomain, "http://$licensedDomain", [
+                            'rel' => 'noopener',
+                            'target' => '_blank',
+                        ]);
+
+                        if (defined('CRAFT_LICENSE_KEY')) {
+                            $message = Craft::t('app', 'The Craft CMS license key in use belongs to {domain}', [
+                                'domain' => $domainLink,
+                            ]);
+                        } else {
+                            $keyPath = Craft::$app->getPath()->getLicenseKeyPath();
+
+                            // If the license key path starts with the root project path, trim the project path off
+                            $rootPath = Craft::getAlias('@root');
+                            if (strpos($keyPath, $rootPath . '/') === 0) {
+                                $keyPath = substr($keyPath, strlen($rootPath) + 1);
+                            }
+
+                            $message = Craft::t('app', 'The Craft CMS license located at {file} belongs to {domain}.', [
+                                'file' => $keyPath,
+                                'domain' => $domainLink,
+                            ]);
+                        }
+
+                        $learnMoreLink = Html::a(Craft::t('app', 'Learn more'), 'https://craftcms.com/support/resolving-mismatched-licenses', [
+                            'class' => 'go',
+                        ]);
+                        $alerts[] = "$message $learnMoreLink";
+                    } else {
+                        // wrong Craft install
+                        $alerts[] = Craft::t('app', 'The {name} license is attached to a different Craft CMS license. You can <a class="go" href="{detachUrl}">detach it in Craft Console</a> or <a class="go" href="{buyUrl}">buy a new license</a>.', [
+                            'name' => $name,
+                            'detachUrl' => "$consoleUrl/licenses/plugins/{$licenseInfo['id']}",
+                            'buyUrl' => $user->admin && $generalConfig->allowAdminChanges
+                                ? UrlHelper::cpUrl("plugin-store/buy/$handle/$currentEdition")
+                                : "https://plugins.craftcms.com/$handle",
+                        ]);
+                    }
+                } elseif ($licenseInfo['edition'] !== $currentEdition && !$canTestEditions) {
+                    // wrong edition
+                    $message = Craft::t('app', '{name} is licensed for the {licenseEdition} edition, but the {currentEdition} edition is installed.', [
+                        'name' => $name,
+                        'licenseEdition' => $licenseEditionName,
+                        'currentEdition' => $currentEditionName,
+                    ]);
+                    $currentEditionIdx = array_search($currentEdition, $editions);
+                    $licenseEditionIdx = array_search($licenseInfo['edition'], $editions);
+                    if ($currentEditionIdx !== false && $licenseEditionIdx !== false && $currentEditionIdx > $licenseEditionIdx) {
+                        $resolvableLicenseAlerts[] = $message;
+                        $resolvableLicenseItems[] = [
+                            'type' => $isCraft ? 'cms-edition' : 'plugin-edition',
+                            'edition' => $currentEdition,
+                            'licenseId' => $licenseInfo['id'],
+                        ];
+                    } else {
+                        if ($user->admin) {
+                            if ($generalConfig->allowAdminChanges) {
+                                $url = UrlHelper::cpUrl(sprintf('plugin-store/%s', $isCraft ? 'upgrade-craft' : $handle));
+                                $cta = Html::a(Craft::t('app', 'Resolve'), $url, ['class' => 'go']);
+                            } else {
+                                $cta = Craft::t('app', 'Please fix on an environment where administrative changes are allowed.');
+                            }
+                        } else {
+                            $cta = Craft::t('app', 'Please notify one of your site’s admins.');
+                        }
+                        $alerts[] = "$message $cta";
+                    }
+                } elseif ($licenseInfo['status'] === LicenseKeyStatus::Astray) {
+                    // updated too far
+                    $resolvableLicenseAlerts[] = Craft::t('app', '{name} isn’t licensed to run version {version}.', [
+                        'name' => $name,
+                        'version' => $version,
+                    ]);
+                    $resolvableLicenseItems[] = array_filter([
+                        'type' => $isCraft ? 'cms-renewal' : 'plugin-renewal',
+                        'plugin' => !$isCraft ? $handle : null,
+                        'licenseId' => $licenseInfo['id'],
+                    ]);
                 }
             }
 
+            if (!empty($resolvableLicenseAlerts)) {
+                $cartUrl = UrlHelper::urlWithParams("$consoleUrl/cart/new", [
+                    'items' => $resolvableLicenseItems,
+                ]);
+                $alerts[] = [
+                    'content' => Html::tag('h2', Craft::t('app', 'Licensing Issues')) .
+                        Html::tag('p', Craft::t('app', 'The following licensing issues can be resolved with a single purchase on Craft Console.')) .
+                        Html::ul($resolvableLicenseAlerts, [
+                            'class' => 'errors',
+                        ]) .
+                        // can't use Html::a() because it's encoding &amp;'s, which is causing issues
+                        Html::tag('p', sprintf('<a class="go" href="%s">%s</a>', $cartUrl, Craft::t('app', 'Resolve now'))),
+                    'showIcon' => false,
+                ];
+            }
+
+            // Critical update available?
             if (
                 $path !== 'utilities/updates' &&
                 $user->can('utility:updates') &&
@@ -184,33 +267,6 @@ class Cp
             ) {
                 $alerts[] = Craft::t('app', 'A critical update is available.') .
                     ' <a class="go nowrap" href="' . UrlHelper::url('utilities/updates') . '">' . Craft::t('app', 'Go to Updates') . '</a>';
-            }
-
-            // Domain mismatch?
-            if ($licenseKeyStatus === LicenseKeyStatus::Mismatched) {
-                $licensedDomain = Craft::$app->getCache()->get('licensedDomain');
-                $domainLink = '<a href="http://' . $licensedDomain . '" rel="noopener" target="_blank">' . $licensedDomain . '</a>';
-
-                if (defined('CRAFT_LICENSE_KEY')) {
-                    $message = Craft::t('app', 'The license key in use belongs to {domain}', [
-                        'domain' => $domainLink,
-                    ]);
-                } else {
-                    $keyPath = Craft::$app->getPath()->getLicenseKeyPath();
-
-                    // If the license key path starts with the root project path, trim the project path off
-                    $rootPath = Craft::getAlias('@root');
-                    if (str_starts_with($keyPath, $rootPath . '/')) {
-                        $keyPath = substr($keyPath, strlen($rootPath) + 1);
-                    }
-
-                    $message = Craft::t('app', 'The license located at {file} belongs to {domain}.', [
-                        'file' => $keyPath,
-                        'domain' => $domainLink,
-                    ]);
-                }
-
-                $alerts[] = $message . ' <a class="go" href="https://craftcms.com/support/resolving-mismatched-licenses">' . Craft::t('app', 'Learn more') . '</a>';
             }
         }
 
@@ -240,7 +296,81 @@ class Cp
         // Give plugins a chance to add their own alerts
         $event = new RegisterCpAlertsEvent();
         Event::trigger(self::class, self::EVENT_REGISTER_ALERTS, $event);
-        return array_merge($alerts, $event->alerts);
+        $alerts = array_merge($alerts, $event->alerts);
+
+        // Inline CSS styles
+        foreach ($alerts as $i => $alert) {
+            if (!is_array($alert)) {
+                $alert = [
+                    'content' => $alert,
+                    'showIcon' => true,
+                ];
+            }
+
+            $offset = 0;
+            while (true) {
+                try {
+                    $tagInfo = Html::parseTag($alert['content'], $offset);
+                } catch (InvalidHtmlTagException $e) {
+                    break;
+                }
+
+                $newTagHtml = self::alertTagHtml($tagInfo);
+                $alert['content'] = substr($alert['content'], 0, $tagInfo['start']) .
+                    $newTagHtml .
+                    substr($alert['content'], $tagInfo['end']);
+                $offset = $tagInfo['start'] + strlen($newTagHtml);
+            }
+
+            $alerts[$i] = $alert;
+        }
+
+        return $alerts;
+    }
+
+    private static function alertTagHtml(array $tagInfo): string
+    {
+        if ($tagInfo['type'] === 'text') {
+            return $tagInfo['value'];
+        }
+
+        $style = [];
+        switch ($tagInfo['type']) {
+            case 'h2':
+                $style = array_merge($style, [
+                    'display' => 'block',
+                ]);
+                break;
+            case 'ul':
+            case 'p':
+                $style = array_merge($style, [
+                    'display' => 'block',
+                ]);
+                break;
+            case 'li':
+                $style = array_merge($style, [
+                    'display' => 'list-item',
+                ]);
+                break;
+            case 'a':
+                if (isset($tagInfo['attributes']['class']) && array_intersect(['go', 'btn'], $tagInfo['attributes']['class'])) {
+                    $style = array_merge($style, [
+                        'display' => 'inline-flex',
+                    ]);
+                }
+                break;
+        }
+
+        $childTagHtml = array_map(function(array $childTagInfo): string {
+            return self::alertTagHtml($childTagInfo);
+        }, $tagInfo['children'] ?? []);
+
+        return trim(static::renderTemplate('_layouts/components/tag.twig', [
+            'type' => $tagInfo['type'],
+            'attributes' => $tagInfo['attributes'] ?? [],
+            'style' => $style,
+            'content' => implode('', $childTagHtml),
+        ]));
     }
 
     /**
@@ -272,7 +402,6 @@ class Cp
         bool $autoReload = true,
     ): string {
         $isDraft = $element->getIsDraft();
-        $isRevision = !$isDraft && $element->getIsRevision();
         $label = $element->getUiLabel();
         $showStatus = $showStatus && ($isDraft || $element::hasStatuses());
 
@@ -310,11 +439,20 @@ class Cp
             $imgHtml = '';
         }
 
+        $title = '';
+        foreach ($element->getUiLabelPath() as $segment) {
+            $title .= "$segment → ";
+        }
+        $title .= $label;
+        if (Craft::$app->getIsMultiSite()) {
+            $title .= sprintf(' - %s', Craft::t('site', $element->getSite()->getName()));
+        }
+
         $attributes = ArrayHelper::merge(
             Html::normalizeTagAttributes($element->getHtmlAttributes($context)),
             [
                 'class' => ['element', $size],
-                'title' => $label . (Craft::$app->getIsMultiSite() ? ' – ' . Craft::t('site', $element->getSite()->getName()) : ''),
+                'title' => $title,
                 'data' => array_filter([
                     'type' => get_class($element),
                     'id' => $element->id,
@@ -353,19 +491,22 @@ class Cp
             $attributes['class'][] = 'hasthumb';
         }
 
+        $elementsService = Craft::$app->getElements();
         $user = Craft::$app->getUser()->getIdentity();
 
-        if ($user) {
-            if ($element->canView($user)) {
-                $attributes['data']['editable'] = true;
-            }
+        if ($user && $elementsService->canView($element, $user)) {
+            $attributes['data']['editable'] = true;
 
             if ($context === 'index') {
-                if ($element->canSave($user)) {
+                if ($elementsService->canSave($element, $user)) {
                     $attributes['data']['savable'] = true;
                 }
 
-                if ($element->canDelete($user)) {
+                if ($elementsService->canDuplicate($element, $user)) {
+                    $attributes['data']['duplicatable'] = true;
+                }
+
+                if ($elementsService->canDelete($element, $user)) {
                     $attributes['data']['deletable'] = true;
                 }
             }
@@ -390,36 +531,19 @@ class Cp
                 ]);
         }
 
-        if ($showStatus) {
-            if ($isDraft) {
-                $innerHtml .= Html::tag('span', '', [
-                    'class' => ['icon'],
-                    'aria' => [
-                        'hidden' => 'true',
-                    ],
-                    'data' => [
-                        'icon' => 'draft',
-                    ],
-                ]);
-            } else {
-                $status = !$isRevision ? $element->getStatus() : null;
-                $innerHtml .= Html::tag('span', '', [
-                    'class' => array_filter([
-                        'status',
-                        $status,
-                        $status ? ($element::statuses()[$status]['color'] ?? null) : null,
-                    ]),
-                ]);
-            }
-        }
-
         $innerHtml .= $imgHtml;
 
         if ($showLabel) {
             $innerHtml .= '<div class="label">';
             $innerHtml .= '<span class="title">';
 
-            $encodedLabel = Html::encode($label);
+            $encodedLabel = '';
+
+            foreach ($element->getUiLabelPath() as $segment) {
+                $encodedLabel .= Html::tag('span', Html::encode($segment), ['class' => 'segment']);
+            }
+
+            $encodedLabel .= Html::encode($label);
 
             if ($showDraftName && $isDraft && !$element->getIsUnpublishedDraft()) {
                 /** @var DraftBehavior|ElementInterface $element */
@@ -430,16 +554,57 @@ class Cp
 
             // Should we make the element a link?
             if (
+                $user &&
                 $context === 'index' &&
                 !$element->trashed &&
-                ($cpEditUrl = $element->getCpEditUrl())
+                ($cpEditUrl = $element->getCpEditUrl()) &&
+                $elementsService->canView($element, $user)
             ) {
                 $innerHtml .= Html::a($encodedLabel, $cpEditUrl);
             } else {
                 $innerHtml .= $encodedLabel;
             }
 
+            if ($element->hasErrors()) {
+                $innerHtml .= Html::tag('span', '', [
+                    'data' => [
+                        'icon' => 'alert',
+                    ],
+                    'aria' => [
+                        'label' => Craft::t('app', 'Error'),
+                    ],
+                    'role' => 'img',
+                ]);
+            }
+
             $innerHtml .= '</span></div>';
+        }
+
+        if ($showStatus) {
+            if ($isDraft) {
+                $innerHtml .= Html::tag('span', '', [
+                    'data' => ['icon' => 'draft'],
+                    'class' => 'icon',
+                    'role' => 'img',
+                    'aria' => [
+                        'label' => sprintf('%s %s', Craft::t('app', 'Status:'), Craft::t('app', 'Draft')),
+                    ],
+                ]);
+            } else {
+                $status = $element->getStatus();
+                $statusDef = $element::statuses()[$status] ?? null;
+                $innerHtml .= Html::tag('span', '', [
+                    'class' => array_filter([
+                        'status',
+                        $status,
+                        $statusDef['color'] ?? null,
+                    ]),
+                    'role' => 'img',
+                    'aria' => [
+                        'label' => sprintf('%s %s', Craft::t('app', 'Status:'), $statusDef['label'] ?? $statusDef ?? ucfirst($status)),
+                    ],
+                ]);
+            }
         }
 
         // Allow plugins to modify the inner HTML
@@ -528,9 +693,19 @@ class Cp
         $errors = $config['errors'] ?? null;
         $status = $config['status'] ?? null;
 
+        $fieldset = $config['fieldset'] ?? false;
+        $fieldId = $config['fieldId'] ?? "$id-field";
+        $label = $config['fieldLabel'] ?? $config['label'] ?? null;
+
+        if ($label === '__blank__') {
+            $label = null;
+        }
+
+        $siteId = Craft::$app->getIsMultiSite() && isset($config['siteId']) ? (int)$config['siteId'] : null;
+
         if (str_starts_with($input, 'template:')) {
             // Set labelledBy and describedBy values in case the input template supports it
-            if (!isset($config['labelledBy'])) {
+            if (!isset($config['labelledBy']) && $label) {
                 $config['labelledBy'] = $labelId;
             }
             if (!isset($config['describedBy'])) {
@@ -546,16 +721,6 @@ class Cp
 
             $input = static::renderTemplate(substr($input, 9), $config);
         }
-
-        $fieldset = $config['fieldset'] ?? false;
-        $fieldId = $config['fieldId'] ?? "$id-field";
-        $label = $config['fieldLabel'] ?? $config['label'] ?? null;
-
-        if ($label === '__blank__') {
-            $label = null;
-        }
-
-        $siteId = Craft::$app->getIsMultiSite() && isset($config['siteId']) ? (int)$config['siteId'] : null;
 
         if ($siteId) {
             $site = Craft::$app->getSites()->getSiteById($siteId);
@@ -590,19 +755,37 @@ class Cp
             ])
             : '';
 
-        $labelHtml = $label . (
-            $required
-                ? Html::tag('span', Craft::t('app', 'Required'), [
-                    'class' => ['visually-hidden'],
-                ]) .
-                Html::tag('span', '', [
-                    'class' => ['required'],
-                    'aria' => [
-                        'hidden' => 'true',
-                    ],
-                ])
-                : ''
-            );
+        if ($label) {
+            $labelHtml = $label . (
+                    ($required
+                        ? Html::tag('span', Craft::t('app', 'Required'), [
+                            'class' => ['visually-hidden'],
+                        ]) .
+                        Html::tag('span', '', [
+                            'class' => ['required'],
+                            'aria' => [
+                                'hidden' => 'true',
+                            ],
+                        ])
+                        : '') .
+                    ($translatable
+                        ? Html::tag('span', '', [
+                            'class' => ['t9n-indicator'],
+                            'title' => $config['translationDescription'] ?? Craft::t('app', 'This field is translatable.'),
+                            'data' => [
+                                'icon' => 'language',
+                            ],
+                            'aria' => [
+                                'label' => $config['translationDescription'] ?? Craft::t('app', 'This field is translatable.'),
+                            ],
+                            'role' => 'img',
+                        ])
+                        : '')
+                );
+        } else {
+            $labelHtml = '';
+        }
+
 
         $containerTag = $fieldset ? 'fieldset' : 'div';
 
@@ -650,28 +833,10 @@ class Cp
                             ],
                         ], $config['labelAttributes'] ?? []))
                         : '') .
-                    ($translatable
-                        ? Html::beginTag('div', [
-                            'class' => ['t9n-indicator'],
-                            'title' => $config['translationDescription'] ?? Craft::t('app', 'This field is translatable.'),
-                        ]) .
-                        Html::tag('span', '', [
-                            'data' => [
-                                'icon' => 'language',
-                            ],
-                            'aria' => [
-                                'hidden' => 'true',
-                            ],
-                        ]) .
-                        Html::tag('span', $config['translationDescription'] ?? Craft::t('app', 'This field is translatable.'), [
-                            'class' => 'visually-hidden',
-                        ]) .
-                        Html::endTag('div')
-                        : '') .
                     ($showAttribute
                         ? Html::tag('div', '', [
                             'class' => ['flex-grow'],
-                        ]) . static::renderTemplate('_includes/forms/copytextbtn', [
+                        ]) . static::renderTemplate('_includes/forms/copytextbtn.twig', [
                             'id' => "$id-attribute",
                             'class' => ['code', 'small', 'light'],
                             'value' => $config['attribute'],
@@ -696,7 +861,7 @@ class Cp
             self::_noticeHtml($tipId, 'notice', Craft::t('app', 'Tip:'), $tip) .
             self::_noticeHtml($warningId, 'warning', Craft::t('app', 'Warning:'), $warning) .
             ($errors
-                ? static::renderTemplate('_includes/forms/errorList', [
+                ? static::renderTemplate('_includes/forms/errorList.twig', [
                     'id' => $errorsId,
                     'errors' => $errors,
                 ])
@@ -759,7 +924,7 @@ class Cp
         // Don't pass along `label` since it's ambiguous
         unset($config['label']);
 
-        return static::fieldHtml('template:_includes/forms/checkbox', $config);
+        return static::fieldHtml('template:_includes/forms/checkbox.twig', $config);
     }
 
     /**
@@ -774,7 +939,7 @@ class Cp
     {
         $config['id'] = $config['id'] ?? 'checkboxselect' . mt_rand();
         $config['fieldset'] = true;
-        return static::fieldHtml('template:_includes/forms/checkboxSelect', $config);
+        return static::fieldHtml('template:_includes/forms/checkboxSelect.twig', $config);
     }
 
     /**
@@ -789,7 +954,7 @@ class Cp
     {
         $config['id'] = $config['id'] ?? 'color' . mt_rand();
         $config['fieldset'] = true;
-        return static::fieldHtml('template:_includes/forms/color', $config);
+        return static::fieldHtml('template:_includes/forms/color.twig', $config);
     }
 
     /**
@@ -803,7 +968,7 @@ class Cp
     public static function editableTableFieldHtml(array $config): string
     {
         $config['id'] = $config['id'] ?? 'editabletable' . mt_rand();
-        return static::fieldHtml('template:_includes/forms/editableTable', $config);
+        return static::fieldHtml('template:_includes/forms/editableTable.twig', $config);
     }
 
     /**
@@ -816,7 +981,7 @@ class Cp
      */
     public static function lightswitchHtml(array $config): string
     {
-        return static::renderTemplate('_includes/forms/lightswitch', $config);
+        return static::renderTemplate('_includes/forms/lightswitch.twig', $config);
     }
 
     /**
@@ -838,7 +1003,7 @@ class Cp
         $config['fieldLabel'] = $config['fieldLabel'] ?? $config['label'] ?? null;
         unset($config['label']);
 
-        return static::fieldHtml('template:_includes/forms/lightswitch', $config);
+        return static::fieldHtml('template:_includes/forms/lightswitch.twig', $config);
     }
 
     /**
@@ -850,7 +1015,7 @@ class Cp
      */
     public static function selectHtml(array $config): string
     {
-        return static::renderTemplate('_includes/forms/select', $config);
+        return static::renderTemplate('_includes/forms/select.twig', $config);
     }
 
     /**
@@ -864,7 +1029,7 @@ class Cp
     public static function selectFieldHtml(array $config): string
     {
         $config['id'] = $config['id'] ?? 'select' . mt_rand();
-        return static::fieldHtml('template:_includes/forms/select', $config);
+        return static::fieldHtml('template:_includes/forms/select.twig', $config);
     }
 
     /**
@@ -876,7 +1041,7 @@ class Cp
      */
     public static function selectizeHtml(array $config): string
     {
-        return static::renderTemplate('_includes/forms/selectize', $config);
+        return static::renderTemplate('_includes/forms/selectize.twig', $config);
     }
 
     /**
@@ -890,7 +1055,7 @@ class Cp
     public static function selectizeFieldHtml(array $config): string
     {
         $config['id'] = $config['id'] ?? 'selectize' . mt_rand();
-        return static::fieldHtml('template:_includes/forms/selectize', $config);
+        return static::fieldHtml('template:_includes/forms/selectize.twig', $config);
     }
 
     /**
@@ -902,7 +1067,7 @@ class Cp
      */
     public static function multiSelectHtml(array $config): string
     {
-        return static::renderTemplate('_includes/forms/multiselect', $config);
+        return static::renderTemplate('_includes/forms/multiselect.twig', $config);
     }
 
     /**
@@ -916,7 +1081,7 @@ class Cp
     public static function multiSelectFieldHtml(array $config): string
     {
         $config['id'] = $config['id'] ?? 'multiselect' . mt_rand();
-        return static::fieldHtml('template:_includes/forms/multiselect', $config);
+        return static::fieldHtml('template:_includes/forms/multiselect.twig', $config);
     }
 
     /**
@@ -929,7 +1094,7 @@ class Cp
      */
     public static function textHtml(array $config): string
     {
-        return static::renderTemplate('_includes/forms/text', $config);
+        return static::renderTemplate('_includes/forms/text.twig', $config);
     }
 
     /**
@@ -943,7 +1108,7 @@ class Cp
     public static function textFieldHtml(array $config): string
     {
         $config['id'] = $config['id'] ?? 'text' . mt_rand();
-        return static::fieldHtml('template:_includes/forms/text', $config);
+        return static::fieldHtml('template:_includes/forms/text.twig', $config);
     }
 
     /**
@@ -956,7 +1121,7 @@ class Cp
      */
     public static function textareaHtml(array $config): string
     {
-        return static::renderTemplate('_includes/forms/textarea', $config);
+        return static::renderTemplate('_includes/forms/textarea.twig', $config);
     }
 
     /**
@@ -970,7 +1135,7 @@ class Cp
     public static function textareaFieldHtml(array $config): string
     {
         $config['id'] = $config['id'] ?? 'textarea' . mt_rand();
-        return static::fieldHtml('template:_includes/forms/textarea', $config);
+        return static::fieldHtml('template:_includes/forms/textarea.twig', $config);
     }
 
     /**
@@ -983,7 +1148,7 @@ class Cp
      */
     public static function dateHtml(array $config): string
     {
-        return static::renderTemplate('_includes/forms/date', $config);
+        return static::renderTemplate('_includes/forms/date.twig', $config);
     }
 
     /**
@@ -997,7 +1162,7 @@ class Cp
     public static function dateFieldHtml(array $config): string
     {
         $config['id'] = $config['id'] ?? 'date' . mt_rand();
-        return static::fieldHtml('template:_includes/forms/date', $config);
+        return static::fieldHtml('template:_includes/forms/date.twig', $config);
     }
 
     /**
@@ -1010,7 +1175,7 @@ class Cp
      */
     public static function timeHtml(array $config): string
     {
-        return static::renderTemplate('_includes/forms/time', $config);
+        return static::renderTemplate('_includes/forms/time.twig', $config);
     }
 
     /**
@@ -1024,7 +1189,7 @@ class Cp
     public static function timeFieldHtml(array $config): string
     {
         $config['id'] = $config['id'] ?? 'time' . mt_rand();
-        return static::fieldHtml('template:_includes/forms/time', $config);
+        return static::fieldHtml('template:_includes/forms/time.twig', $config);
     }
 
     /**
@@ -1037,8 +1202,11 @@ class Cp
      */
     public static function dateTimeFieldHtml(array $config): string
     {
-        $config['id'] = $config['id'] ?? 'datetime' . mt_rand();
-        return static::fieldHtml('template:_includes/forms/datetime', $config);
+        $config += [
+            'id' => 'datetime' . mt_rand(),
+            'fieldset' => true,
+        ];
+        return static::fieldHtml('template:_includes/forms/datetime.twig', $config);
     }
 
     /**
@@ -1051,7 +1219,7 @@ class Cp
      */
     public static function elementSelectHtml(array $config): string
     {
-        return static::renderTemplate('_includes/forms/elementSelect', $config);
+        return static::renderTemplate('_includes/forms/elementSelect.twig', $config);
     }
 
     /**
@@ -1065,7 +1233,7 @@ class Cp
     public static function elementSelectFieldHtml(array $config): string
     {
         $config['id'] = $config['id'] ?? 'elementselect' . mt_rand();
-        return static::fieldHtml('template:_includes/forms/elementSelect', $config);
+        return static::fieldHtml('template:_includes/forms/elementSelect.twig', $config);
     }
 
     /**
@@ -1102,7 +1270,7 @@ class Cp
             }
         }
 
-        return static::fieldHtml('template:_includes/forms/autosuggest', $config);
+        return static::fieldHtml('template:_includes/forms/autosuggest.twig', $config);
     }
 
     /**
@@ -1169,7 +1337,7 @@ JS, [
             'name' => null,
         ];
 
-        $canDelete = $address->canDelete(Craft::$app->getUser()->getIdentity());
+        $canDelete = Craft::$app->getElements()->canDelete($address);
         $actionMenuId = sprintf('address-card-action-menu-%s', mt_rand());
 
         return
@@ -1259,8 +1427,6 @@ JS, [
      */
     public static function addressFieldsHtml(Address $address): string
     {
-        $formatRepo = Craft::$app->getAddresses()->getAddressFormatRepository()->get($address->countryCode);
-
         $requiredFields = [];
         $scenario = $address->getScenario();
         $address->setScenario(Element::SCENARIO_LIVE);
@@ -1277,27 +1443,32 @@ JS, [
             }
         }
 
+        $addressesService = Craft::$app->getAddresses();
         $visibleFields = array_flip(array_merge(
-                $formatRepo->getUsedFields(),
-                $formatRepo->getUsedSubdivisionFields(),
+                $addressesService->getUsedFields($address->countryCode),
+                $addressesService->getUsedSubdivisionFields($address->countryCode),
             )) + $requiredFields;
 
         return
             static::textFieldHtml([
+                'status' => $address->getAttributeStatus('addressLine1'),
                 'label' => $address->getAttributeLabel('addressLine1'),
                 'id' => 'addressLine1',
                 'name' => 'addressLine1',
                 'value' => $address->addressLine1,
                 'required' => isset($requiredFields['addressLine1']),
                 'errors' => $address->getErrors('addressLine1'),
+                'autocomplete' => 'address-line1',
             ]) .
             static::textFieldHtml([
+                'status' => $address->getAttributeStatus('addressLine2'),
                 'label' => $address->getAttributeLabel('addressLine2'),
                 'id' => 'addressLine2',
                 'name' => 'addressLine2',
                 'value' => $address->addressLine2,
                 'required' => isset($requiredFields['addressLine2']),
                 'errors' => $address->getErrors('addressLine2'),
+                'autocomplete' => 'address-line2',
             ]) .
             self::_subdivisionField(
                 $address,
@@ -1323,32 +1494,33 @@ JS, [
                 [$address->countryCode, $address->administrativeArea, $address->locality],
                 false,
             ) .
-            Html::beginTag('div', ['class' => 'flex-fields']) .
             static::textFieldHtml([
                 'fieldClass' => array_filter([
                     'width-50',
                     !isset($visibleFields['postalCode']) ? 'hidden' : null,
                 ]),
+                'status' => $address->getAttributeStatus('postalCode'),
                 'label' => $address->getAttributeLabel('postalCode'),
                 'id' => 'postalCode',
                 'name' => 'postalCode',
                 'value' => $address->postalCode,
                 'required' => isset($requiredFields['postalCode']),
                 'errors' => $address->getErrors('postalCode'),
+                'autocomplete' => 'postal-code',
             ]) .
             static::textFieldHtml([
                 'fieldClass' => array_filter([
                     'width-50',
                     !isset($visibleFields['sortingCode']) ? 'hidden' : null,
                 ]),
+                'status' => $address->getAttributeStatus('sortingCode'),
                 'label' => $address->getAttributeLabel('sortingCode'),
                 'id' => 'sortingCode',
                 'name' => 'sortingCode',
                 'value' => $address->sortingCode,
                 'required' => isset($requiredFields['sortingCode']),
                 'errors' => $address->getErrors('sortingCode'),
-            ]) .
-            Html::endTag('div'); // .flex-fields
+            ]);
     }
 
     private static function _subdivisionField(
@@ -1398,6 +1570,7 @@ JS, [
 
             return static::selectizeFieldHtml([
                 'fieldClass' => !$visible ? 'hidden' : null,
+                'status' => $address->getAttributeStatus($name),
                 'label' => $address->getAttributeLabel($name),
                 'id' => $name,
                 'name' => $name,
@@ -1411,6 +1584,7 @@ JS, [
         // No preconfigured subdivisions for the given parents, so just output a text input
         return static::textFieldHtml([
             'fieldClass' => !$visible ? 'hidden' : null,
+            'status' => $address->getAttributeStatus($name),
             'label' => $address->getAttributeLabel($name),
             'id' => $name,
             'name' => $name,
@@ -1537,29 +1711,23 @@ JS;
             Html::endTag('div') . // .fld-workspace
             Html::beginTag('div', ['class' => 'fld-sidebar']) .
             ($config['customizableUi']
-                ? Html::beginTag('div', [
-                    'role' => 'listbox',
-                    'class' => ['btngroup', 'small', 'fullwidth'],
+                ? Html::beginTag('section', [
+                    'class' => ['btngroup', 'btngroup--exclusive', 'small', 'fullwidth'],
                     'aria' => ['label' => Craft::t('app', 'Layout element types')],
-                    'tabindex' => '0',
                 ]) .
                 Html::button(Craft::t('app', 'Fields'), [
-                    'role' => 'option',
                     'type' => 'button',
                     'class' => ['btn', 'small', 'active'],
-                    'aria' => ['selected' => 'true'],
+                    'aria' => ['pressed' => 'true'],
                     'data' => ['library' => 'field'],
-                    'tabindex' => '-1',
                 ]) .
                 Html::button(Craft::t('app', 'UI Elements'), [
-                    'role' => 'option',
                     'type' => 'button',
                     'class' => ['btn', 'small'],
-                    'aria' => ['selected' => 'false'],
+                    'aria' => ['pressed' => 'false'],
                     'data' => ['library' => 'ui'],
-                    'tabindex' => '-1',
                 ]) .
-                Html::endTag('div') // .btngroup
+                Html::endTag('section') // .btngroup
                 : '') .
             Html::beginTag('div', ['class' => 'fld-field-library']) .
             Html::beginTag('div', ['class' => ['texticon', 'search', 'icon', 'clearable']]) .
@@ -1619,7 +1787,16 @@ JS;
                     $customizable ? 'draggable' : null,
                 ]),
             ]) .
-            Html::tag('span', Html::encode($tab->name)) .
+            Html::beginTag('span') .
+            Html::encode($tab->name) .
+            ($tab->hasConditions() ? Html::tag('div', '', [
+                'class' => ['fld-indicator'],
+                'title' => Craft::t('app', 'This tab is conditional'),
+                'aria' => ['label' => Craft::t('app', 'This tab is conditional')],
+                'data' => ['icon' => 'condition'],
+                'role' => 'img',
+            ]) : '') .
+            Html::endTag('span') .
             ($customizable
                 ? Html::a('', null, [
                     'role' => 'button',
@@ -1688,7 +1865,6 @@ JS;
             'class' => array_filter([
                 'fld-element',
                 $forLibrary ? 'unused' : null,
-                !$forLibrary && $element->hasConditions() ? 'has-conditions' : null,
             ]),
             'data' => [
                 'uid' => !$forLibrary ? $element->uid : false,

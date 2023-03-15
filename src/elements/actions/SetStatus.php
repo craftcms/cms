@@ -65,7 +65,7 @@ class SetStatus extends ElementAction
 })();
 JS, [static::class]);
 
-        return Craft::$app->getView()->renderTemplate('_components/elementactions/SetStatus/trigger');
+        return Craft::$app->getView()->renderTemplate('_components/elementactions/SetStatus/trigger.twig');
     }
 
     /**

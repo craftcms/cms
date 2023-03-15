@@ -233,6 +233,14 @@ Craft.ui = {
         config
       )
     ).appendTo($body);
+
+    const $label = $body.find('label');
+
+    // Provide accessible name for modal dialog
+    if ($label.length > 0 && $label.attr('id')) {
+      $container.attr('aria-labelledby', $label.attr('id'));
+    }
+
     let modal = new Garnish.Modal($container, {
       closeOtherModals: false,
     });
@@ -1050,11 +1058,10 @@ Craft.ui = {
   },
 
   createField: function (input, config) {
-    var label =
-        config.label && config.label !== '__blank__' ? config.label : null,
-      siteId = Craft.isMultiSite && config.siteId ? config.siteId : null;
+    const label =
+      config.label && config.label !== '__blank__' ? config.label : null;
 
-    var $field = $(config.fieldset ? '<fieldset/>' : '<div/>', {
+    const $field = $(config.fieldset ? '<fieldset/>' : '<div/>', {
       class: 'field',
       id: config.fieldId || (config.id ? config.id + '-field' : null),
     });
@@ -1067,17 +1074,25 @@ Craft.ui = {
       $field.addClass(config.fieldClass);
     }
 
-    if (label) {
-      var $heading = $('<div class="heading"/>').appendTo($field);
+    if (label && config.fieldset) {
+      $('<legend/>', {
+        text: label,
+        class: 'visually-hidden',
+        'data-label': label,
+      }).appendTo($field);
+    }
 
-      var $label = $(config.fieldset ? '<legend/>' : '<label/>', {
+    if (label) {
+      const $heading = $('<div class="heading"/>').appendTo($field);
+
+      $(config.fieldset ? '<legend/>' : '<label/>', {
         id:
           config.labelId ||
           (config.id
             ? `${config.id}-${config.fieldset ? 'legend' : 'label'}`
             : null),
         class: config.required ? 'required' : null,
-        for: !config.fieldset && config.id,
+        for: (!config.fieldset && config.id) || null,
         text: label,
       }).appendTo($heading);
     }

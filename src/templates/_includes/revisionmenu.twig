@@ -4,7 +4,7 @@
     Only an existing element should be passed to this.
 #}
 
-{% import "_includes/forms" as forms %}
+{% import '_includes/forms.twig' as forms %}
 
 {% set showDrafts = showDrafts ?? false %}
 {% set drafts = element.id and showDrafts ? element.find()
@@ -13,19 +13,25 @@
     .status(null)
     .orderBy({dateUpdated: SORT_DESC})
     .with(['draftCreator'])
-    .all()|filter(d => d.canView(currentUser)) : [] %}
+    .all()|filter(d => canView(d)) : [] %}
 
 {% set maxRevisions = craft.app.config.general.maxRevisions %}
+{% set hasMoreRevisions = false %}
+{% set revisionsPageUrl = null %}
 {% if element.id and (not maxRevisions or maxRevisions > 1) %}
-    {% set revisions = element.find()
+    {% set revisionsQuery = element.find()
         .revisionOf(element.getCanonicalId())
         .siteId(element.siteId)
         .status(null)
         .offset(1)
         .limit(maxRevisions ? min(maxRevisions - 1, 10) : 10)
         .orderBy({dateCreated: SORT_DESC})
-        .with(['revisionCreator'])
-        .all() %}
+        .with(['revisionCreator']) %}
+    {% set revisions = revisionsQuery.all() %}
+    {% set revisionsPageUrl = element.getCpRevisionsUrl() %}
+    {% if revisionsPageUrl %}
+        {% set hasMoreRevisions = (revisionsQuery.count() - 1) > revisions|length %}
+    {% endif %}
 {% else %}
     {% set revisions = [] %}
 {% endif %}
@@ -228,6 +234,18 @@
                     {% endtag %}
                 {% endfor %}
             </ul>
+            {% if hasMoreRevisions %}
+                <hr>
+                <ul>
+                    <li>
+                        {{ tag('a', {
+                            href: url(revisionsPageUrl),
+                            class: 'go',
+                            text: 'View all revisions'|t('app'),
+                        }) }}
+                    </li>
+                </ul>
+            {% endif %}
         {% endif %}
     </div>
 </div>

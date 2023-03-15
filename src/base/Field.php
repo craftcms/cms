@@ -281,31 +281,44 @@ abstract class Field extends SavableComponent implements FieldInterface
                 'archived',
                 'attributeLabel',
                 'attributes',
+                'awaitingFieldValues',
                 'behavior',
                 'behaviors',
                 'canSetProperties',
                 'canonical',
                 'children',
+                'contentId',
                 'contentTable',
                 'dateCreated',
+                'dateDeleted',
+                'dateLastMerged',
                 'dateUpdated',
                 'descendants',
+                'draftId',
+                'duplicateOf',
                 'enabled',
                 'enabledForSite',
                 'error',
-                'errors',
                 'errorSummary',
+                'errors',
+                'fieldLayoutId',
                 'fieldValue',
                 'fieldValues',
+                'firstSave',
+                'hardDelete',
                 'hasMethods',
                 'id',
+                'isNewForSite',
+                'isProvisionalDraft',
                 'language',
                 'level',
-                'localized',
                 'lft',
                 'link',
                 'localized',
+                'localized',
+                'mergingCanonicalChanges',
                 'name', // global set-specific
+                'newSiteIds',
                 'next',
                 'nextSibling',
                 'owner',
@@ -314,18 +327,29 @@ abstract class Field extends SavableComponent implements FieldInterface
                 'postDate', // entry-specific
                 'prev',
                 'prevSibling',
+                'previewing',
+                'propagateAll',
+                'propagating',
                 'ref',
+                'resaving',
+                'revisionId',
                 'rgt',
                 'root',
                 'scenario',
                 'searchScore',
                 'siblings',
                 'site',
+                'siteId',
+                'siteSettingsId',
                 'slug',
                 'sortOrder',
                 'status',
+                'structureId',
+                'tempId',
                 'title',
+                'trashed',
                 'uid',
+                'updatingFromDerivative',
                 'uri',
                 'url',
                 'username', // user-specific
@@ -571,9 +595,7 @@ abstract class Field extends SavableComponent implements FieldInterface
      */
     public function getTableAttributeHtml(mixed $value, ElementInterface $element): string
     {
-        $value = (string)$value;
-
-        return Html::encode(StringHelper::stripHtml($value));
+        return ElementHelper::attributeHtml($value);
     }
 
     /**
@@ -594,7 +616,7 @@ abstract class Field extends SavableComponent implements FieldInterface
 
         return [
             'label' => Craft::t('site', $this->name),
-            'orderBy' => [$column, 'elements.id'],
+            'orderBy' => [$column, 'id'],
             'attribute' => "field:$this->uid",
         ];
     }

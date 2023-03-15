@@ -52,13 +52,13 @@ class SectionsController extends Controller
     {
         $variables['sections'] = Craft::$app->getSections()->getAllSections();
 
-        return $this->renderTemplate('settings/sections/_index', $variables);
+        return $this->renderTemplate('settings/sections/_index.twig', $variables);
     }
 
     /**
      * Edit a section.
      *
-     * @param int|null $sectionId The section’s id, if any.
+     * @param int|null $sectionId The section’s ID, if any.
      * @param Section|null $section The section being edited, if there were any validation errors.
      * @return Response
      * @throws NotFoundHttpException if the requested section cannot be found
@@ -105,7 +105,7 @@ class SectionsController extends Controller
 
         $this->getView()->registerAssetBundle(EditSectionAsset::class);
 
-        return $this->renderTemplate('settings/sections/_edit', $variables);
+        return $this->renderTemplate('settings/sections/_edit.twig', $variables);
     }
 
     /**
@@ -225,7 +225,7 @@ class SectionsController extends Controller
         $title = Craft::t('app', '{section} Entry Types',
             ['section' => Craft::t('site', $section->name)]);
 
-        return $this->renderTemplate('settings/sections/_entrytypes/index', [
+        return $this->renderTemplate('settings/sections/_entrytypes/index.twig', [
             'sectionId' => $sectionId,
             'section' => $section,
             'title' => $title,
@@ -293,7 +293,7 @@ class SectionsController extends Controller
             ],
         ];
 
-        return $this->renderTemplate('settings/sections/_entrytypes/edit', [
+        return $this->renderTemplate('settings/sections/_entrytypes/edit.twig', [
             'sectionId' => $sectionId,
             'section' => $section,
             'entryTypeId' => $entryTypeId,

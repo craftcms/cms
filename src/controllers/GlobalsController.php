@@ -174,7 +174,7 @@ class GlobalsController extends Controller
         ]);
 
         // Render the template!
-        return $this->renderTemplate('globals/_edit', [
+        return $this->renderTemplate('globals/_edit.twig', [
             'bodyClass' => 'edit-global-set',
             'editableGlobalSets' => $editableGlobalSets,
             'globalSet' => $globalSet,

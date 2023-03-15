@@ -88,7 +88,7 @@ class TextareaField extends BaseNativeField
      */
     protected function inputHtml(?ElementInterface $element = null, bool $static = false): ?string
     {
-        return Craft::$app->getView()->renderTemplate('_includes/forms/textarea', [
+        return Craft::$app->getView()->renderTemplate('_includes/forms/textarea.twig', [
             'class' => $this->class,
             'id' => $this->id(),
             'describedBy' => $this->describedBy($element, $static),

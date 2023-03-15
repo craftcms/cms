@@ -20,6 +20,7 @@ use craft\db\Table as DbTable;
 use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\db\MatrixBlockQuery;
+use craft\elements\ElementCollection;
 use craft\elements\MatrixBlock;
 use craft\events\BlockTypesEvent;
 use craft\fieldlayoutelements\CustomField;
@@ -97,7 +98,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
      */
     public static function valueType(): string
     {
-        return MatrixBlockQuery::class;
+        return sprintf('\\%s|\\%s<\\%s>', MatrixBlockQuery::class, ElementCollection::class, MatrixBlock::class);
     }
 
     /**
@@ -480,7 +481,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
             }
         }
 
-        return $view->renderTemplate('_components/fieldtypes/Matrix/settings',
+        return $view->renderTemplate('_components/fieldtypes/Matrix/settings.twig',
             [
                 'matrixField' => $this,
                 'fieldTypes' => $fieldTypeOptions,
@@ -735,7 +736,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
 
         $view->registerJs($js);
 
-        return $view->renderTemplate('_components/fieldtypes/Matrix/input',
+        return $view->renderTemplate('_components/fieldtypes/Matrix/input.twig',
             [
                 'id' => $id,
                 'name' => $this->handle,
@@ -863,7 +864,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
 
         $id = StringHelper::randomString();
 
-        return Craft::$app->getView()->renderTemplate('_components/fieldtypes/Matrix/input', [
+        return Craft::$app->getView()->renderTemplate('_components/fieldtypes/Matrix/input.twig', [
             'id' => $id,
             'name' => $id,
             'blockTypes' => $this->getBlockTypes(),
@@ -1073,8 +1074,8 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
             $value = $element->getFieldValue($this->handle);
             if ($value instanceof MatrixBlockQuery) {
                 $this->_populateQuery($value, $element);
+                $value->clearCachedResult();
             }
-            $value->clearCachedResult();
         }
 
         parent::afterElementPropagate($element, $isNew);

@@ -83,11 +83,7 @@ class CraftSupport extends Widget
         }
 
         $db = Craft::$app->getDb();
-        if ($db->getIsMysql()) {
-            $dbDriver = 'MySQL';
-        } else {
-            $dbDriver = 'PostgreSQL';
-        }
+        $dbDriver = $db->getDriverLabel();
 
         $imagesService = Craft::$app->getImages();
         if ($imagesService->getIsGd()) {
@@ -141,7 +137,7 @@ JS;
         // Only show the DB backup option if DB backups haven't been disabled
         $showBackupOption = (Craft::$app->getConfig()->getGeneral()->backupCommand !== false);
 
-        return $view->renderTemplate('_components/widgets/CraftSupport/body', [
+        return $view->renderTemplate('_components/widgets/CraftSupport/body.twig', [
             'widget' => $this,
             'buoeyIcon' => file_get_contents($iconsDir . '/buoey.svg'),
             'bullhornIcon' => file_get_contents($iconsDir . '/bullhorn.svg'),

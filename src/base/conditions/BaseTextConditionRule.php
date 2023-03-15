@@ -29,6 +29,11 @@ abstract class BaseTextConditionRule extends BaseConditionRule
     /**
      * @inheritdoc
      */
+    protected bool $reloadOnOperatorChange = true;
+
+    /**
+     * @inheritdoc
+     */
     public function getConfig(): array
     {
         return array_merge(parent::getConfig(), [
@@ -48,6 +53,8 @@ abstract class BaseTextConditionRule extends BaseConditionRule
             self::OPERATOR_BEGINS_WITH,
             self::OPERATOR_ENDS_WITH,
             self::OPERATOR_CONTAINS,
+            self::OPERATOR_NOT_EMPTY,
+            self::OPERATOR_EMPTY,
         ];
     }
 
@@ -66,16 +73,31 @@ abstract class BaseTextConditionRule extends BaseConditionRule
      */
     protected function inputHtml(): string
     {
+        // don't show the value input if the condition checks for empty/notempty
+        if ($this->operator === self::OPERATOR_EMPTY || $this->operator === self::OPERATOR_NOT_EMPTY) {
+            return '';
+        }
         return
             Html::hiddenLabel(Html::encode($this->getLabel()), 'value') .
-            Cp::textHtml([
-                'type' => $this->inputType(),
-                'id' => 'value',
-                'name' => 'value',
-                'value' => $this->value,
-                'autocomplete' => false,
-                'class' => 'flex-grow flex-shrink',
-            ]);
+            Cp::textHtml($this->inputOptions());
+    }
+
+    /**
+     * Returns the input options that should be used.
+     *
+     * @return array
+     * @since 4.3.0
+     */
+    protected function inputOptions(): array
+    {
+        return [
+            'type' => $this->inputType(),
+            'id' => 'value',
+            'name' => 'value',
+            'value' => $this->value,
+            'autocomplete' => false,
+            'class' => 'flex-grow flex-shrink',
+        ];
     }
 
     /**
@@ -95,6 +117,13 @@ abstract class BaseTextConditionRule extends BaseConditionRule
      */
     protected function paramValue(): ?string
     {
+        switch ($this->operator) {
+            case self::OPERATOR_EMPTY:
+                return ':empty:';
+            case self::OPERATOR_NOT_EMPTY:
+                return 'not :empty:';
+        }
+
         if ($this->value === '') {
             return null;
         }
@@ -117,6 +146,13 @@ abstract class BaseTextConditionRule extends BaseConditionRule
      */
     protected function matchValue(mixed $value): bool
     {
+        switch ($this->operator) {
+            case self::OPERATOR_EMPTY:
+                return !$value;
+            case self::OPERATOR_NOT_EMPTY:
+                return (bool)$value;
+        }
+
         if ($this->value === '') {
             return true;
         }

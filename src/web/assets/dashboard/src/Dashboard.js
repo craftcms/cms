@@ -9,6 +9,7 @@ import './dashboard.scss';
   Craft.Dashboard = Garnish.Base.extend({
     $grid: null,
     $widgetManagerBtn: null,
+    $newWidgetBtn: null,
 
     widgetTypes: null,
     grid: null,
@@ -22,15 +23,28 @@ import './dashboard.scss';
       this.widgets = {};
 
       this.$widgetManagerBtn = $('#widgetManagerBtn');
+      this.$newWidgetBtn = $('#newwidgetmenubtn');
 
       this.addListener(this.$widgetManagerBtn, 'click', 'showWidgetManager');
 
       Garnish.$doc.ready(() => {
         this.$grid = $('#dashboard-grid');
         this.grid = this.$grid.data('grid');
-        $('#newwidgetmenubtn')
-          .data('menubtn')
-          .menu.on('optionselect', this.handleNewWidgetOptionSelect.bind(this));
+
+        this.addListener('#new-widget-menu a', 'click', (event) => {
+          event.preventDefault();
+          this.handleNewWidgetOptionSelect(event);
+        });
+
+        this.addListener('#new-widget-menu a', 'keydown', (event) => {
+          if (
+            event.keyCode === Garnish.SPACE_KEY ||
+            event.keyCode === Garnish.RETURN_KEY
+          ) {
+            event.preventDefault();
+            this.handleNewWidgetOptionSelect(event);
+          }
+        });
       });
     },
 
@@ -47,7 +61,8 @@ import './dashboard.scss';
     },
 
     handleNewWidgetOptionSelect: function (e) {
-      const $option = $(e.selectedOption);
+      this.$newWidgetBtn.data('trigger').hide();
+      const $option = $(e.target);
       this.createWidget($option.data('type'), $option.data('name'));
     },
 
@@ -213,7 +228,9 @@ import './dashboard.scss';
               '</p>'
           ).appendTo($form),
           $table = $(
-            '<table class="data' + (!$widgets.length ? ' hidden' : '') + '"/>'
+            '<table class="data' +
+              (!$widgets.length ? ' hidden' : '') +
+              '" role="presentation"/>'
           ).appendTo($form),
           $tbody = $('<tbody/>').appendTo($table);
 
@@ -232,10 +249,14 @@ import './dashboard.scss';
         this.widgetManager = new Garnish.HUD(this.$widgetManagerBtn, $form, {
           hudClass: 'hud widgetmanagerhud',
           onShow: () => {
-            this.$widgetManagerBtn.addClass('active');
+            this.$widgetManagerBtn
+              .addClass('active')
+              .attr('aria-expanded', 'true');
           },
           onHide: () => {
-            this.$widgetManagerBtn.removeClass('active');
+            this.$widgetManagerBtn
+              .removeClass('active')
+              .attr('aria-expanded', 'false');
           },
         });
 
@@ -661,9 +682,13 @@ import './dashboard.scss';
           '<td class="widgetmanagerhud-col-move thin"><a class="move icon" title="' +
           Craft.t('app', 'Reorder') +
           '" role="button"></a></td>' +
-          '<td class="thin"><a class="delete icon" title="' +
+          '<td class="thin"><a class="delete icon" tabindex="0" type="button" title="' +
           Craft.t('app', 'Delete') +
-          '" role="button"></a></td>' +
+          '" role="button" aria-label="' +
+          Craft.t('app', 'Delete') +
+          '" aria-describedby="' +
+          this.getWidgetLabelId() +
+          '"></a></td>' +
           '</tr>'
       );
 

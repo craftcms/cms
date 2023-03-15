@@ -9,9 +9,11 @@ namespace craft\utilities;
 
 use Craft;
 use craft\base\Utility;
+use craft\events\ListVolumesEvent;
 use craft\helpers\Html;
 use craft\i18n\Locale;
 use craft\web\assets\assetindexes\AssetIndexesAsset;
+use yii\base\Event;
 
 /**
  * AssetIndexes represents a AssetIndexes dashboard widget.
@@ -21,6 +23,12 @@ use craft\web\assets\assetindexes\AssetIndexesAsset;
  */
 class AssetIndexes extends Utility
 {
+    /**
+     * @event ListVolumesEvent The event that is triggered when listing the available volumes to index.
+     * @since 4.4.0
+     */
+    public const EVENT_LIST_VOLUMES = 'listVolumes';
+
     /**
      * @inheritdoc
      */
@@ -50,10 +58,15 @@ class AssetIndexes extends Utility
      */
     public static function contentHtml(): string
     {
-        $volumes = Craft::$app->getVolumes()->getAllVolumes();
+        // Fire a 'listVolumes' event
+        $event = new ListVolumesEvent([
+            'volumes' => Craft::$app->getVolumes()->getAllVolumes(),
+        ]);
+        Event::trigger(self::class, self::EVENT_LIST_VOLUMES, $event,);
+
         $volumeOptions = [];
 
-        foreach ($volumes as $volume) {
+        foreach ($event->volumes as $volume) {
             $volumeOptions[] = [
                 'label' => Html::encode($volume->name),
                 'value' => $volume->id,
@@ -61,7 +74,7 @@ class AssetIndexes extends Utility
         }
 
         $view = Craft::$app->getView();
-        $checkboxSelectHtml = $view->renderTemplate('_includes/forms/checkboxSelect', [
+        $checkboxSelectHtml = $view->renderTemplate('_includes/forms/checkboxSelect.twig', [
             'class' => 'first',
             'name' => 'volumes',
             'options' => $volumeOptions,
@@ -74,7 +87,7 @@ class AssetIndexes extends Utility
 
         $existingIndexingSessions = Craft::$app->getAssetIndexer()->getExistingIndexingSessions();
 
-        return $view->renderTemplate('_components/utilities/AssetIndexes', [
+        return $view->renderTemplate('_components/utilities/AssetIndexes.twig', [
             'existingSessions' => $existingIndexingSessions,
             'checkboxSelectHtml' => $checkboxSelectHtml,
             'dateFormat' => $dateFormat,

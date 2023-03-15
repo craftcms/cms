@@ -1,4 +1,4 @@
-{% extends "_layouts/cp" %}
+{% extends '_layouts/cp.twig' %}
 {% set fullPageForm = true %}
 {% set formActions = [
     {
@@ -18,7 +18,7 @@
     },
 ]|filter %}
 
-{% import "_includes/forms" as forms %}
+{% import '_includes/forms.twig' as forms %}
 
 {% block content %}
     {{ actionInput('fields/save-field') }}
@@ -47,7 +47,6 @@
         value: field.name,
         errors: field.getErrors('name'),
         required: true,
-        autofocus: true
     }) }}
 
     {{ forms.textField({

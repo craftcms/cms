@@ -19,6 +19,13 @@
 {% if not hasOuterContainer %}<div class="datetimewrapper">{% endif %}
 
 {% tag 'div' with containerAttributes %}
+    {% if not isMobile %}
+        {% set formatRefId = "#{id}-format" %}
+        {% set describedBy = [formatRefId, describedBy ?? null]|filter|join(' ') %}
+        <span id="{{ formatRefId }}" class="visually-hidden">
+            {{ craft.app.getFormattingLocale().getTimeFormat('short', 'human') }}
+        </span>
+    {% endif %}
     {%- include "_includes/forms/text" with {
         type: isMobile ? 'time' : 'text',
         class: isMobile and not value ? 'empty-value' : false,
