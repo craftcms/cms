@@ -248,8 +248,13 @@ class MfaController extends Controller
         $credentials = Craft::$app->getRequest()->getRequiredBodyParam('credentials');
 
         $webAuthn = new WebAuthn();
-        $verified = $webAuthn->verifyRegistrationResponse($user, $credentials);
+        if ($webAuthn->verifyRegistrationResponse($user, $credentials)) {
+            $data['verified'] = true;
+            $data['html'] = $webAuthn->getSetupFormHtml('',true, $user);
+        } else {
+            $data['verified'] = false;
+        }
 
-        return $this->asJson(['verified' => $verified]);
+        return $this->asJson($data);
     }
 }

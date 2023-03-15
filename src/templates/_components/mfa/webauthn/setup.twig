@@ -25,9 +25,33 @@
         {% endif %}
     {% endif %}
     <h3>{{ 'Manage your security keys'|t('app') }}</h3>
-    {# get all security keys for the user #}
-    {# if there aren't any, show a message #}
-    {# otherwise show the table of keys #}
+    {# if there aren't any security keys, show a message #}
+    {% if credentials is not defined or credentials is defined and credentials is empty %}
+        <p class="zilch">No keys found.</p>
+    {% else %}
+        {# otherwise show the table of keys #}
+        <div class="tableview">
+            <table class="data fullwidth" id="webauthn-security-keys">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <td>Date Last Used</td>
+                        <td></td>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for credential in credentials %}
+                        <tr>
+                            <td>{{ loop.index }}</td>
+                            <td>{{ credential.dateLastUsed|date('Y-m-d') }}</td>
+                            <td><a href="#" class="delete icon" role="delete" title="Delete"></a></td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% endif %}
+
     {#<button id="mfa-remove-setup" name="remove-setup" class="btn">{{ 'Remove setup'|t('app') }}</button>#}
 
     {{ forms.button({

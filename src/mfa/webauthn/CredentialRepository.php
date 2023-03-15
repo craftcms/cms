@@ -59,7 +59,7 @@ class CredentialRepository implements PublicKeyCredentialSourceRepository
     {
         $publicKeyCredentialId = $publicKeyCredentialSource->getPublicKeyCredentialId();
         $record = $this->_findByCredentialId($publicKeyCredentialId);
-        // The credential gets re-saved on use. Allow setting userId and credentialId only for new credentials.
+
         if (!$record) {
             $record = new WebAuthn();
             $record->userId = Craft::$app->getUser()->getIdentity()?->id;

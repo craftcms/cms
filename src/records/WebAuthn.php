@@ -40,7 +40,7 @@ class WebAuthn extends ActiveRecord
     public function rules(): array
     {
         return [
-            [['userId', 'credentialId', 'credential', 'credentialName'], 'required'],
+            [['userId', 'credentialId', 'credential'], 'required'],
         ];
     }
 

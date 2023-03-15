@@ -16,6 +16,7 @@ use craft\mfa\webauthn\CredentialRepository;
 use craft\records\WebAuthn as WebAuthnRecord;
 use craft\web\twig\variables\Rebrand;
 use craft\web\View;
+use GuzzleHttp\Psr7\ServerRequest;
 use Webauthn\PublicKeyCredentialCreationOptions;
 use Webauthn\PublicKeyCredentialOptions;
 use Webauthn\PublicKeyCredentialRpEntity;
@@ -103,6 +104,9 @@ class WebAuthn extends ConfigurableMfaType
             $data['typeDescription'] = self::getDescription();
         }
 
+        $credentials = WebAuthnRecord::find()->select(['dateLastUsed'])->where(['userId' => $user->id])->all();
+        $data['credentials'] = $credentials;
+
         $html = Craft::$app->getView()->renderTemplate(
             '_components/mfa/webauthn/setup.twig',
             $data,
@@ -186,17 +190,41 @@ class WebAuthn extends ConfigurableMfaType
         return PublicKeyCredentialCreationOptions::createFromArray(Json::decodeIfJson($credentialOptions));
     }
 
+    /**
+     * Verify WebAuthn registration response
+     *
+     * @param User $user
+     * @param string $credentials
+     * @return bool
+     */
     public function verifyRegistrationResponse(User $user, string $credentials): bool
     {
         $options = $this->getCredentialCreationOptions($user);
 
-//        $verifiedCredentials = $this->getWebauthnServer()->loadAndCheckAttestationResponse(
-//            Json::encode($credentials),
-//            $options,
-//            Craft::$app->getRequest()->asPsr7(),
-//        );
-        //$credentialRepository->saveNamedCredentialSource($credentials);
-        return false;
+        $credentialRepository = new CredentialRepository();
+
+        $request = Craft::$app->getRequest();
+        $psrServerRequest = new ServerRequest(
+            $request->getMethod(),
+            $request->getFullUri(),
+            $request->getHeaders()->toArray(),
+            $request->getRawBody()
+        );
+
+        try {
+            $verifiedCredentials = $this->getWebauthnServer()->loadAndCheckAttestationResponse(
+                $credentials,
+                /** @phpstan-ignore-next-line */
+                $options,
+                $psrServerRequest,
+            );
+        } catch (\Exception) {
+            return false;
+        }
+
+        $credentialRepository->saveCredentialSource($verifiedCredentials);
+
+        return true;
     }
 
     public function getRelyingPartyEntity(): PublicKeyCredentialRpEntity

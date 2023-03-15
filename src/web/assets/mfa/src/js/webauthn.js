@@ -11,6 +11,7 @@ import {startRegistration} from '@simplewebauthn/browser';
       slideout: null,
 
       init: function (slideout, settings) {
+        console.log('init');
         this.slideout = slideout;
         this.setSettings(settings, Craft.WebAuthn.defaults);
         this.$addSecurityKeyBtn = $('#add-security-key');
@@ -29,6 +30,7 @@ import {startRegistration} from '@simplewebauthn/browser';
       },
 
       onAddSecurityKeyBtn: function (ev) {
+        console.log('clicked btn');
         if (!$(ev.currentTarget).hasClass('disabled')) {
           //this.setStatus(Craft.t('app', 'Waiting for elevated session'));
           Craft.elevatedSessionManager.requireElevatedSession(
@@ -51,15 +53,15 @@ import {startRegistration} from '@simplewebauthn/browser';
         )
           .then((response) => {
             const registrationOptions = response.data.registrationOptions;
-            let startRegistrationResponse;
             try {
-              startRegistrationResponse =
-                startRegistration(registrationOptions);
-
-              startRegistrationResponse.then((regResponse) => {
-                console.log('start response');
-                this.verifyWebAuthnRegistration(regResponse);
-              });
+              startRegistration(registrationOptions)
+                .then((regResponse) => {
+                  this.verifyWebAuthnRegistration(regResponse);
+                })
+                .catch(({response}) => {
+                  // todo: handle me
+                  console.log(response);
+                });
             } catch (error) {
               // Some basic error handling
               if (error.name === 'InvalidStateError') {
@@ -79,13 +81,9 @@ import {startRegistration} from '@simplewebauthn/browser';
       },
 
       verifyWebAuthnRegistration: function (startRegistrationResponse) {
-        console.log('verifyWebAuthnRegistration');
-        console.log(startRegistrationResponse);
         let data = {
           credentials: JSON.stringify(startRegistrationResponse),
         };
-
-        console.log(data);
 
         // POST the response to the endpoint
         Craft.sendActionRequest('POST', this.settings.verifyRegistration, {
@@ -95,6 +93,10 @@ import {startRegistration} from '@simplewebauthn/browser';
             // Show UI appropriate for the `verified` status
             if (response.data.verified) {
               Craft.cp.displaySuccess('Success!');
+              if (response.data.html) {
+                this.slideout.$container.html(response.data.html);
+                this.init(this.slideout); //reinitialise
+              }
             } else {
               Craft.cp.displayError('Something went wrong!');
               console.log(response);

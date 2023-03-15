@@ -31,7 +31,15 @@
                     </div>
 
                     {% if option.config.requiresSetup %}
-                        <button class="btn mfa-view-setup" data-mfa-type="{{ key }}">{{ 'View setup'|t('app') }}</button>
+                        {{ forms.button({
+                            class: 'mfa-view-setup',
+                            label: 'View setup'|t('app'),
+                            spinner: craft.app.request.isCpRequest(),
+                            type: 'button',
+                            attributes: {
+                                'data-mfa-type': key
+                            }
+                        }) }}
                     {% endif %}
                 </div>
                 {% if loop.last == false %}
