@@ -790,6 +790,7 @@ class Install extends Migration
             'dateLastUsed' => $this->dateTime()->defaultValue(null),
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
+            'uid' => $this->uid(),
         ]);
         $this->createTable(Table::WIDGETS, [
             'id' => $this->primaryKey(),

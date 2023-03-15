@@ -83,10 +83,12 @@ import {browserSupportsWebAuthn} from '@simplewebauthn/browser';
       },
 
       onViewSetupBtnClick: function (ev) {
+        const $button = $(ev.currentTarget);
+        $button.disable();
         ev.preventDefault();
 
         const data = {
-          selectedMethod: this.getCurrentMfaType($(ev.currentTarget)),
+          selectedMethod: this.getCurrentMfaType($button),
         };
 
         Craft.sendActionRequest('POST', this.settings.setupSlideoutHtml, {data})
@@ -115,11 +117,13 @@ import {browserSupportsWebAuthn} from '@simplewebauthn/browser';
             this.slideout.on('close', (ev) => {
               this.$removeSetupButton = null;
               this.slideout = null;
+              $button.enable();
             });
           })
           .catch(({response}) => {
             // Add the error message
             Craft.cp.displayError(response.data.message);
+            $button.enable();
           });
       },
 
@@ -142,17 +146,23 @@ import {browserSupportsWebAuthn} from '@simplewebauthn/browser';
           currentMethod: currentMethod,
         };
 
-        Craft.sendActionRequest('POST', this.settings.removeSetup, {data})
-          .then((response) => {
-            $(ev.currentTarget).remove();
-            Craft.cp.displayNotice(Craft.t('app', 'MFA setup removed.'));
-          })
-          .catch((e) => {
-            Craft.cp.displayError(e.response.data.message);
-          })
-          .finally(() => {
-            this.slideout.close();
-          });
+        const confirmed = confirm(
+          Craft.t('app', 'Are you sure you want to delete this setup?')
+        );
+
+        if (confirmed) {
+          Craft.sendActionRequest('POST', this.settings.removeSetup, {data})
+            .then((response) => {
+              $(ev.currentTarget).remove();
+              Craft.cp.displayNotice(Craft.t('app', 'MFA setup removed.'));
+            })
+            .catch((e) => {
+              Craft.cp.displayError(e.response.data.message);
+            })
+            .finally(() => {
+              this.slideout.close();
+            });
+        }
       },
 
       onVerify: function (ev) {

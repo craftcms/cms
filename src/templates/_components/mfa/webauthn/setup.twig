@@ -35,6 +35,7 @@
                 <thead>
                     <tr>
                         <th>#</th>
+                        <td>Name</td>
                         <td>Date Last Used</td>
                         <td></td>
                     </tr>
@@ -43,16 +44,15 @@
                     {% for credential in credentials %}
                         <tr>
                             <td>{{ loop.index }}</td>
-                            <td>{{ credential.dateLastUsed|date('Y-m-d') }}</td>
-                            <td><a href="#" class="delete icon" role="delete" title="Delete"></a></td>
+                            <td data-name="credentialName">{{ credential.credentialName }}</td>
+                            <td>{{ credential.dateLastUsed|date('Y-m-d H:i:s') }}</td>
+                            <td><a href="#" class="delete icon" role="button" title="Delete" data-uid="{{ credential.uid }}"></a></td>
                         </tr>
                     {% endfor %}
                 </tbody>
             </table>
         </div>
     {% endif %}
-
-    {#<button id="mfa-remove-setup" name="remove-setup" class="btn">{{ 'Remove setup'|t('app') }}</button>#}
 
     {{ forms.button({
         name: 'addSecurityKey',
@@ -61,6 +61,4 @@
         role: 'button',
         spinner: craft.app.request.isCpRequest(),
     }) }}
-
-    <div id="webauthn-status" class="notice"></div>
 </div>

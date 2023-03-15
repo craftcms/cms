@@ -53,9 +53,14 @@ class CredentialRepository implements PublicKeyCredentialSourceRepository
     }
 
     /**
-     * @inheritdoc
+     * Save credential source with name
+     *
+     * @param PublicKeyCredentialSource $publicKeyCredentialSource
+     * @param string|null $credentialName
+     * @return void
+     * @throws \Throwable
      */
-    public function saveCredentialSource(PublicKeyCredentialSource $publicKeyCredentialSource): void
+    public function savedNamedCredentialSource(PublicKeyCredentialSource $publicKeyCredentialSource, ?string $credentialName = null): void
     {
         $publicKeyCredentialId = $publicKeyCredentialSource->getPublicKeyCredentialId();
         $record = $this->_findByCredentialId($publicKeyCredentialId);
@@ -63,13 +68,21 @@ class CredentialRepository implements PublicKeyCredentialSourceRepository
         if (!$record) {
             $record = new WebAuthn();
             $record->userId = Craft::$app->getUser()->getIdentity()?->id;
-            //$record->name = !empty($credentialName) ? $credentialName : Craft::t('app', 'Secure credentials');
+            $record->credentialName = !empty($credentialName) ? $credentialName : Craft::t('app', 'Secure credentials');
             $record->credentialId = Base64Url::encode($publicKeyCredentialId);
         }
 
         $record->dateLastUsed = Db::prepareDateForDb(DateTimeHelper::currentTimeStamp());
         $record->credential = Json::encode($publicKeyCredentialSource);
         $record->save();
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function saveCredentialSource(PublicKeyCredentialSource $publicKeyCredentialSource): void
+    {
+        $this->savedNamedCredentialSource($publicKeyCredentialSource);
     }
 
     /**

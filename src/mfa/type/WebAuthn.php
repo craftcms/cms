@@ -104,7 +104,10 @@ class WebAuthn extends ConfigurableMfaType
             $data['typeDescription'] = self::getDescription();
         }
 
-        $credentials = WebAuthnRecord::find()->select(['dateLastUsed'])->where(['userId' => $user->id])->all();
+        $credentials = WebAuthnRecord::find()
+            ->select(['credentialName', 'dateLastUsed', 'uid'])
+            ->where(['userId' => $user->id])
+            ->all();
         $data['credentials'] = $credentials;
 
         $html = Craft::$app->getView()->renderTemplate(
@@ -116,11 +119,25 @@ class WebAuthn extends ConfigurableMfaType
         return parent::getSetupFormHtml($html, $withInto, $user);
     }
 
+    /**
+     * @inheritdoc
+     */
     public function removeSetup(): bool
     {
-        // TODO: write me
-
         return true;
+    }
+
+    /**
+     * Delete WebAuthn Security key by UID
+     *
+     * @param string $uid
+     * @return bool
+     * @throws \Throwable
+     * @throws \yii\db\StaleObjectException
+     */
+    public function deleteSecurityKey(User $user, string $uid): bool
+    {
+        return WebAuthnRecord::findOne(['userId' => $user->id, 'uid' => $uid])->delete();
     }
 
     /**
@@ -195,9 +212,10 @@ class WebAuthn extends ConfigurableMfaType
      *
      * @param User $user
      * @param string $credentials
+     * @param ?string $credentialName
      * @return bool
      */
-    public function verifyRegistrationResponse(User $user, string $credentials): bool
+    public function verifyRegistrationResponse(User $user, string $credentials, ?string $credentialName = null): bool
     {
         $options = $this->getCredentialCreationOptions($user);
 
@@ -222,7 +240,7 @@ class WebAuthn extends ConfigurableMfaType
             return false;
         }
 
-        $credentialRepository->saveCredentialSource($verifiedCredentials);
+        $credentialRepository->savedNamedCredentialSource($verifiedCredentials, $credentialName);
 
         return true;
     }

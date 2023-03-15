@@ -262,9 +262,10 @@ class MfaController extends Controller
 
         $user = Craft::$app->getUser()->getIdentity();
         $credentials = Craft::$app->getRequest()->getRequiredBodyParam('credentials');
+        $credentialName = Craft::$app->getRequest()->getBodyParam('credentialName');
 
         $webAuthn = new WebAuthn();
-        if ($webAuthn->verifyRegistrationResponse($user, $credentials)) {
+        if ($webAuthn->verifyRegistrationResponse($user, $credentials, $credentialName)) {
             $data['verified'] = true;
             $data['html'] = $webAuthn->getSetupFormHtml('',true, $user);
         } else {
@@ -272,5 +273,32 @@ class MfaController extends Controller
         }
 
         return $this->asJson($data);
+    }
+
+    /**
+     * Process deleting a security key request
+     *
+     * @return Response
+     * @throws \Throwable
+     * @throws \yii\db\StaleObjectException
+     * @throws \yii\web\BadRequestHttpException
+     */
+    public function actionDeleteSecurityKey(): Response
+    {
+        $this->requireAcceptsJson();
+        $this->requirePostRequest();
+        $this->requireLogin();
+
+        $user = Craft::$app->getUser()->getIdentity();
+        $uid = Craft::$app->getRequest()->getRequiredBodyParam('uid');
+
+        $webAuthn = new WebAuthn();
+        if (!$webAuthn->deleteSecurityKey($user, $uid)) {
+            return $this->asFailure('Something went wrong.');
+        }
+
+        $data['html'] = $webAuthn->getSetupFormHtml('',true, $user);
+
+        return $this->asSuccess('Security key removed.', $data);
     }
 }

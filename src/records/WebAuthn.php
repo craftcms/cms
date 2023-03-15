@@ -16,10 +16,11 @@ use yii\db\ActiveQueryInterface;
  *
  * @property int $id ID
  * @property int $userId Volume ID
- * @property string $credentialId MFA secret
- * @property string $credential MFA secret
- * @property string $credentialName MFA secret
- * @property string $dateLastUsed MFA secret
+ * @property string $credentialId Credential ID
+ * @property string $credential Credential JSON
+ * @property string $credentialName Name of the credential
+ * @property string $dateLastUsed Date last used
+ * @property string $uid uid
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.5.0
  */

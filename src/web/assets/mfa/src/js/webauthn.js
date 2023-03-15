@@ -7,8 +7,8 @@ import {startRegistration} from '@simplewebauthn/browser';
   Craft.WebAuthn = Garnish.Base.extend(
     {
       $addSecurityKeyBtn: null,
-      $errors: null,
-      $statusContainer: null,
+      $noticeContainer: null,
+      $keysTable: null,
       slideout: null,
 
       init: function (slideout, settings) {
@@ -16,9 +16,10 @@ import {startRegistration} from '@simplewebauthn/browser';
         this.slideout = slideout;
         this.setSettings(settings, Craft.WebAuthn.defaults);
         this.$addSecurityKeyBtn = $('#add-security-key');
-        this.$errors = this.slideout.$container.find('.so-notice');
-        this.$statusContainer =
-          this.slideout.$container.find('#webauthn-status');
+        this.$noticeContainer = this.slideout.$container.find('.so-notice');
+        this.$keysTable = this.slideout.$container.find(
+          '#webauthn-security-keys'
+        );
 
         if (!browserSupportsWebAuthn()) {
           Craft.cp.displayError(
@@ -32,10 +33,17 @@ import {startRegistration} from '@simplewebauthn/browser';
           'click',
           'onAddSecurityKeyBtn'
         );
+
+        if (this.$keysTable !== null) {
+          this.addListener(
+            this.$keysTable.find('.delete'),
+            'click',
+            'onDeleteSecurityKey'
+          );
+        }
       },
 
       onAddSecurityKeyBtn: function (ev) {
-        console.log('clicked btn');
         if (!$(ev.currentTarget).hasClass('disabled')) {
           this.showStatus(Craft.t('app', 'Waiting for elevated session'));
           Craft.elevatedSessionManager.requireElevatedSession(
@@ -61,9 +69,14 @@ import {startRegistration} from '@simplewebauthn/browser';
             const registrationOptions = response.data.registrationOptions;
             try {
               this.showStatus(Craft.t('app', 'Starting registration'));
+              const credentialName = Craft.escapeHtml(
+                prompt(
+                  Craft.t('app', 'Please enter a name for the security key')
+                )
+              );
               startRegistration(registrationOptions)
                 .then((regResponse) => {
-                  this.verifyWebAuthnRegistration(regResponse);
+                  this.verifyWebAuthnRegistration(regResponse, credentialName);
                 })
                 .catch((regResponseError) => {
                   this.showStatus(
@@ -82,10 +95,14 @@ import {startRegistration} from '@simplewebauthn/browser';
           });
       },
 
-      verifyWebAuthnRegistration: function (startRegistrationResponse) {
+      verifyWebAuthnRegistration: function (
+        startRegistrationResponse,
+        credentialName
+      ) {
         this.showStatus(Craft.t('app', 'Starting verification'));
         let data = {
           credentials: JSON.stringify(startRegistrationResponse),
+          credentialName: credentialName,
         };
 
         // POST the response to the endpoint
@@ -96,7 +113,7 @@ import {startRegistration} from '@simplewebauthn/browser';
             this.clearStatus();
             // Show UI appropriate for the `verified` status
             if (response.data.verified) {
-              Craft.cp.displaySuccess('Success!');
+              Craft.cp.displaySuccess('Security key registered.');
               if (response.data.html) {
                 this.slideout.$container.html(response.data.html);
                 this.init(this.slideout); //reinitialise
@@ -110,24 +127,63 @@ import {startRegistration} from '@simplewebauthn/browser';
           });
       },
 
+      onDeleteSecurityKey: function (ev) {
+        ev.preventDefault();
+
+        const $uid = $(ev.currentTarget).attr('data-uid');
+        const credentialName = $(ev.currentTarget)
+          .parents('tr')
+          .find('[data-name="credentialName"]')
+          .text();
+
+        let data = {
+          uid: $uid,
+        };
+
+        const confirmed = confirm(
+          Craft.t(
+            'app',
+            'Are you sure you want to delete ‘{credentialName}‘ security key?',
+            {credentialName: credentialName}
+          )
+        );
+
+        if ($uid !== undefined && confirmed) {
+          Craft.sendActionRequest('POST', this.settings.deleteSecurityKey, {
+            data,
+          })
+            .then((response) => {
+              Craft.cp.displaySuccess(response.data.message);
+              if (response.data.html) {
+                this.slideout.$container.html(response.data.html);
+                this.init(this.slideout); //reinitialise
+              }
+            })
+            .catch(({response}) => {
+              this.showStatus(response.data.message, 'error');
+            });
+        }
+      },
+
       showStatus: function (message, type) {
         //Craft.cp.displayError(message);
         if (type == 'error') {
-          this.$statusContainer.addClass('error');
+          this.$noticeContainer.addClass('error');
         } else {
-          this.$statusContainer.removeClass('error');
+          this.$noticeContainer.removeClass('error');
         }
-        this.$statusContainer.text(message);
+        this.$noticeContainer.text(message);
       },
 
       clearStatus: function () {
-        this.$statusContainer.text('');
+        this.$noticeContainer.text('');
       },
     },
     {
       defaults: {
         generateRegistrationOptions: 'mfa/generate-registration-options',
         verifyRegistration: 'mfa/verify-registration',
+        deleteSecurityKey: 'mfa/delete-security-key',
       },
     }
   );

@@ -26,6 +26,7 @@ class m230314_111234_add_webauthn_table extends Migration
             'dateLastUsed' => $this->dateTime()->defaultValue(null),
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
+            'uid' => $this->uid(),
         ]);
 
         $this->addForeignKey(null, Table::WEBAUTHN, ['userId'], Table::USERS, ['id'], 'CASCADE', null);
