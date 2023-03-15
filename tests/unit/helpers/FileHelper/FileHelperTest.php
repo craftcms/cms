@@ -8,6 +8,7 @@
 namespace crafttests\unit\helpers\FileHelper;
 
 use craft\helpers\FileHelper;
+use craft\helpers\StringHelper;
 use craft\test\TestCase;
 use UnitTester;
 use yii\base\ErrorException;
@@ -284,6 +285,18 @@ class FileHelperTest extends TestCase
     }
 
     /**
+     * @dataProvider uniqueNameDataProvider
+     *
+     * @param string $expectedPattern
+     * @param string $baseName
+     */
+    public function testUniqueName(string $expectedPattern, string $baseName): void
+    {
+        $expectedPattern = str_replace('{id}', '[\w\.]{23}', $expectedPattern);
+        self::assertRegExp("/^$expectedPattern$/", FileHelper::uniqueName($baseName));
+    }
+
+    /**
      * @return array
      */
     public function normalizePathDataProvider(): array
@@ -464,6 +477,22 @@ class FileHelperTest extends TestCase
                 false,
                 __DIR__ . '/sandbox/singlefile/nonexistent',
             ],
+        ];
+    }
+
+    /**
+     * @return array
+     */
+    public function uniqueNameDataProvider(): array
+    {
+        $bigStr = StringHelper::randomString(300);
+
+        return [
+            ['{id}', ''],
+            ['foo{id}', 'foo'],
+            ['{id}.ext', '.ext'],
+            ['foo{id}.ext', 'foo.ext'],
+            [sprintf('%s{id}.ext', substr($bigStr, 0, 228)), "$bigStr.ext"],
         ];
     }
 

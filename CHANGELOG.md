@@ -1,5 +1,10 @@
 # Release Notes for Craft CMS 4
 
+## Unreleased
+
+- Added `craft\helpers\FileHelper::uniqueName()`.
+- Fixed an error that occurred when uploading an asset with a filename over 250 characters long. ([#12889](https://github.com/craftcms/cms/issues/12889))
+
 ## 4.4.2 - 2023-03-14
 
 - The `entrify/categories` and `entrify/global-set` commands now update user permissions for the new sections. ([#12849](https://github.com/craftcms/cms/discussions/12849))
