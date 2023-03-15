@@ -8,6 +8,7 @@
 - Fixed an error that occurred when uploading an asset with a filename over 250 characters long. ([#12889](https://github.com/craftcms/cms/issues/12889))
 - Fixed an error that could occur when preparing licensing alerts, if any licenses were invalid. ([#12899](https://github.com/craftcms/cms/issues/12899))
 - Fixed a bug where private plugins’ control panel templates weren’t directly accessible by URL.
+- Fixed a bug where element selector modals were persisting parts of their state in the query string. ([#12900](https://github.com/craftcms/cms/issues/12900))
 
 ## 4.4.2 - 2023-03-14
 
