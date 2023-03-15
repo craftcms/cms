@@ -295,6 +295,10 @@ Craft.CpScreenSlideout = Craft.Slideout.extend(
         this.namespace = data.namespace;
         this.$content.html(data.content);
 
+        if (data.submitButtonLabel) {
+          this.$saveBtn.text(data.submitButtonLabel);
+        }
+
         this.updateTabs(data.tabs);
 
         if (data.formAttributes) {

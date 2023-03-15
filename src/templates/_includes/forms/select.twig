@@ -26,7 +26,7 @@
     disabled: disabled ?? false,
     aria: {
         describedby: describedBy ?? false,
-        labelledby: labelledBy ?? false,
+        labelledby: (inputAttributes.aria.label ?? false) ? false : (labelledBy ?? false),
     },
     data: {
         'target-prefix': (toggle ?? false) ? (targetPrefix ?? '') : false,

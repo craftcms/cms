@@ -8,6 +8,7 @@
 namespace craft\helpers;
 
 use Craft;
+use craft\base\BaseFsInterface;
 use craft\base\FsInterface;
 use craft\base\LocalFsInterface;
 use craft\elements\Asset;
@@ -77,25 +78,31 @@ class Assets
     }
 
     /**
-     * Generates a URL for a given Assets file on a filesystem.
+     * Generates the URL for an asset.
      *
-     * @param FsInterface $fs
+     * @param BaseFsInterface $fs
      * @param Asset $asset
      * @param string|null $uri Asset URI to use. Defaults to the filename.
      * @param DateTime|null $dateUpdated last datetime the target of the url was updated, if known
      * @return string
-     * @throws InvalidConfigException
+     * @throws InvalidConfigException if the asset doesn’t have a filename.
      */
-    public static function generateUrl(FsInterface $fs, Asset $asset, ?string $uri = null, ?DateTime $dateUpdated = null): string
+    public static function generateUrl(BaseFsInterface $fs, Asset $asset, ?string $uri = null, ?DateTime $dateUpdated = null): string
     {
-        $revParams = self::revParams($asset, $dateUpdated);
         $pathParts = explode('/', $asset->folderPath . ($uri ?? $asset->getFilename()));
         $path = implode('/', array_map('rawurlencode', $pathParts));
-        return UrlHelper::urlWithParams($fs->getRootUrl() . $path, $revParams);
+        $rootUrl = $fs->getRootUrl() ?? '';
+        $url = ($rootUrl !== '' ? StringHelper::ensureRight($rootUrl, '/') : '') . $path;
+
+        if (Craft::$app->getConfig()->getGeneral()->revAssetUrls) {
+            return self::revUrl($url, $asset, $dateUpdated);
+        }
+
+        return $url;
     }
 
     /**
-     * Revisions the query parameters that should be appended to asset URLs, per the `revAssetUrls` config setting.
+     * Returns revision query parameters that should be appended to as asset URL.
      *
      * @param Asset $asset
      * @param DateTime|null $dateUpdated
@@ -104,10 +111,6 @@ class Assets
      */
     public static function revParams(Asset $asset, ?DateTime $dateUpdated = null): array
     {
-        if (!Craft::$app->getConfig()->getGeneral()->revAssetUrls) {
-            return [];
-        }
-
         /** @var DateTime $dateModified */
         $dateModified = max($asset->dateModified, $dateUpdated ?? null);
         $v = $dateModified->getTimestamp();
@@ -121,6 +124,42 @@ class Assets
     }
 
     /**
+     * Appends revision parameters to a URL.
+     *
+     * @param string $url
+     * @param Asset $asset
+     * @param DateTime|null $dateUpdated
+     * @param bool $fsOnly Only append a revision param if the URL begins with the asset’s filesystem URL
+     * @return string
+     * @since 4.3.7
+     */
+    public static function revUrl(string $url, Asset $asset, ?DateTime $dateUpdated = null, bool $fsOnly = false): string
+    {
+        if ($fsOnly) {
+            $volume = $asset->getVolume();
+            $fs = $volume->getFs();
+            $fss = [$fs];
+            $transformFs = $volume->getTransformFs();
+            if ($transformFs !== $fs) {
+                $fss[] = $transformFs;
+            }
+            $matchingFs = ArrayHelper::contains($fss, function(FsInterface $fs) use ($url): bool {
+                if (!$fs->hasUrls) {
+                    return false;
+                }
+                $baseUrl = $fs->getRootUrl();
+                return $baseUrl !== null && StringHelper::startsWith($url, StringHelper::ensureRight($baseUrl, '/'));
+            });
+            if (!$matchingFs) {
+                return $url;
+            }
+        }
+
+        $revParams = static::revParams($asset, $dateUpdated);
+        return UrlHelper::urlWithParams($url, $revParams);
+    }
+
+    /**
      * Get appendix for a URL based on its Source caching settings.
      *
      * @param Asset $asset
@@ -130,8 +169,12 @@ class Assets
      */
     public static function urlAppendix(Asset $asset, ?DateTime $dateUpdated = null): string
     {
+        if (!Craft::$app->getConfig()->getGeneral()->revAssetUrls) {
+            return '';
+        }
+
         $revParams = self::revParams($asset, $dateUpdated);
-        return $revParams ? sprintf('?%s', UrlHelper::buildQuery($revParams)) : '';
+        return sprintf('?%s', UrlHelper::buildQuery($revParams));
     }
 
     /**
@@ -206,12 +249,12 @@ class Assets
     }
 
     /**
-     * Mirror a folder structure on a Volume.
+     * Mirrors a folder structure on a volume.
      *
      * @param VolumeFolder $sourceParentFolder Folder who's children folder structure should be mirrored.
      * @param VolumeFolder $destinationFolder The destination folder
-     * @param array $targetTreeMap map of relative path => existing folder id
-     * @return array map of original folder id => new folder id
+     * @param array $targetTreeMap map of relative path => existing folder ID
+     * @return array map of original folder ID => new folder ID
      */
     public static function mirrorFolderStructure(VolumeFolder $sourceParentFolder, VolumeFolder $destinationFolder, array $targetTreeMap = []): array
     {
@@ -245,11 +288,11 @@ class Assets
     }
 
     /**
-     * Create an Asset transfer list based on a list of Assets and an array of
-     * changing folder ids.
+     * Create an asset transfer list based on a list of assets and an array of
+     * changing folder IDs.
      *
      * @param array $assets List of assets
-     * @param array $folderIdChanges A map of folder id changes
+     * @param array $folderIdChanges A map of folder ID changes
      * @return array
      */
     public static function fileTransferList(array $assets, array $folderIdChanges): array
@@ -288,9 +331,10 @@ class Assets
     }
 
     /**
-     * Sorts a folder tree by Volume sort order.
+     * Sorts a folder tree by the volume sort order.
      *
      * @param VolumeFolder[] $tree array passed by reference of the sortable folders.
+     * @deprecated in 4.4.0
      */
     public static function sortFolderTree(array &$tree): void
     {
@@ -510,6 +554,8 @@ class Assets
                         'avif',
                         'bmp',
                         'gif',
+                        'heic',
+                        'heif',
                         'jfif',
                         'jp2',
                         'jpe',
@@ -587,6 +633,7 @@ class Assets
                         'avi',
                         'fla',
                         'flv',
+                        'hevc',
                         'm1s',
                         'm2s',
                         'm2t',
@@ -644,7 +691,7 @@ class Assets
     }
 
     /**
-     * Return an image path to use in Image Editor for an Asset by id and size.
+     * Return an image path to use in the Image Editor for an asset by its ID and size.
      *
      * @param int $assetId
      * @param int $size
@@ -799,14 +846,14 @@ class Assets
     /**
      * Save a file from a filesystem locally.
      *
-     * @param FsInterface $fs
+     * @param BaseFsInterface $fs
      * @param string $uriPath
      * @param string $localPath
      * @return int
      * @throws FsException
      * @since 4.0.0
      */
-    public static function downloadFile(FsInterface $fs, string $uriPath, string $localPath): int
+    public static function downloadFile(BaseFsInterface $fs, string $uriPath, string $localPath): int
     {
         $stream = $fs->getFileStream($uriPath);
         $outputStream = fopen($localPath, 'wb');
@@ -842,6 +889,10 @@ class Assets
      */
     public static function iconPath(string $extension): string
     {
+        if (!preg_match('/^\w+$/', $extension)) {
+            throw new InvalidArgumentException("$extension isn’t a valid file extension.");
+        }
+
         $path = sprintf('%s%s%s.svg', Craft::$app->getPath()->getAssetsIconsPath(), DIRECTORY_SEPARATOR, strtolower($extension));
 
         if (file_exists($path)) {

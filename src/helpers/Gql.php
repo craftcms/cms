@@ -383,7 +383,7 @@ class Gql
     }
 
     /**
-     * Prepare arguments intended for Asset transforms.
+     * Prepare arguments intended for asset transforms.
      *
      * @param array $arguments
      * @return array|string
@@ -444,7 +444,7 @@ class Gql
     }
 
     /**
-     * Get a list of all allowed sites by Schema\
+     * Get a list of all allowed sites by Schema.
      *
      * @param GqlSchema|null $schema
      * @return Site[]

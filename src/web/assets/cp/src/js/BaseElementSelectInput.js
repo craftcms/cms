@@ -11,8 +11,6 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
     modal: null,
     elementEditor: null,
 
-    fieldLabel: null,
-
     $container: null,
     $form: null,
     $elementsContainer: null,
@@ -68,7 +66,6 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
 
       this.$container = this.getContainer();
       this.$form = this.$container.closest('form');
-      this.fieldLabel = this.getFieldLabel();
 
       // Store a reference to this class
       this.$container.data('elementSelect', this);
@@ -98,13 +95,6 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
 
     getContainer: function () {
       return $('#' + this.settings.id);
-    },
-
-    getFieldLabel: function () {
-      if (!this.$container) return;
-
-      const $fieldset = this.$container.closest('fieldset');
-      return $fieldset.find('legend').first().data('label');
     },
 
     getElementsContainer: function () {
@@ -488,6 +478,8 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
           storageKey: this.modalStorageKey,
           sources: this.settings.sources,
           condition: this.settings.condition,
+          referenceElementId: this.settings.referenceElementId,
+          referenceElementSiteId: this.settings.referenceElementSiteId,
           criteria: this.settings.criteria,
           multiSelect: this.settings.limit != 1,
           hideOnSelect: !this.settings.maintainHierarchy,
@@ -496,9 +488,7 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
           onSelect: this.onModalSelect.bind(this),
           onHide: this.onModalHide.bind(this),
           triggerElement: this.$addElementBtn,
-          modalTitle: Craft.t('app', 'Select {element}', {
-            element: this.fieldLabel,
-          }),
+          modalTitle: Craft.t('app', 'Choose'),
         },
         this.settings.modalSettings
       );
@@ -547,6 +537,17 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
     },
 
     onModalHide: function () {
+      // If the modal has a condition and a reference element, recreate it each time it’s opened
+      // in case something about the edited element is going to affect the condition
+      if (
+        this.modal &&
+        this.settings.condition &&
+        this.settings.referenceElementId
+      ) {
+        this.modal.destroy();
+        this.modal = null;
+      }
+
       // If can add more elements, do default behavior of focus on "Add" button
       if (this.canAddMoreElements()) return;
 
@@ -775,6 +776,8 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
       elementType: null,
       sources: null,
       condition: null,
+      referenceElementId: null,
+      referenceElementSiteId: null,
       criteria: {},
       allowSelfRelations: false,
       sourceElementId: null,

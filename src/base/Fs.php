@@ -30,9 +30,7 @@ abstract class Fs extends SavableComponent implements FsInterface
     public const VISIBILITY_PUBLIC = 'public';
 
     /**
-     * Return the root URL for a filesystem or `null` if the filesystem does not have any.
-     *
-     * @return string|null
+     * @inheritdoc
      */
     public function getRootUrl(): ?string
     {
@@ -41,7 +39,11 @@ abstract class Fs extends SavableComponent implements FsInterface
         }
 
         $url = App::parseEnv($this->url);
-        return $url ? rtrim($url, '/') . '/' : null;
+        if (is_string($url)) {
+            $url = rtrim($url, '/');
+        }
+
+        return $url ? "$url/" : null;
     }
 
     /**

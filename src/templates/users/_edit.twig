@@ -1,4 +1,4 @@
-{% extends "_layouts/cp" %}
+{% extends '_layouts/cp.twig' %}
 
 {% if CraftEdition == CraftPro and currentUser.can('editUsers') %}
     {% set crumbs = [
@@ -6,7 +6,7 @@
     ] %}
 {% endif %}
 
-{% import "_includes/forms" as forms %}
+{% import '_includes/forms.twig' as forms %}
 
 {% do view.registerAssetBundle("craft\\web\\assets\\fileupload\\FileUploadAsset") %}
 {% do view.setIsDeltaRegistrationActive(true) %}
@@ -49,6 +49,7 @@
             </div>
         </div>
     {% endif %}
+
 {% endblock %}
 
 {% block content %}
@@ -76,7 +77,7 @@
                 {{ forms.field({
                     label: "Photo"|t('app'),
                     id: 'photo'
-                }, include('users/_photo', {user: user}, with_context = false)) }}
+                }, include('users/_photo.twig', {user: user}, with_context = false)) }}
             {% endif %}
 
             {% if isNewUser %}
@@ -158,7 +159,7 @@
                         {% do view.registerDeltaName('groups') %}
                         {% set assignableGroups = craft.app.userGroups.getAssignableGroups(user) %}
 
-                        {% embed '_includes/forms/field' with {
+                        {% embed '_includes/forms/field.twig' with {
                             fieldId: 'user-groups',
                         } %}
                             {% block input %}
@@ -347,7 +348,6 @@
                     <h5 class="heading">{{ "Status"|t('app') }}</h5>
                     <div class="value flex">
                         <div class="flex-grow"><span class="status {{ user.getStatus() }}"></span> {{ statusLabel }}</div>
-
                         {% if actions|length %}
                             <div>
                                 {{ forms.button({
@@ -370,18 +370,18 @@
                                         <ul>
                                             {% for actionItem in actionList %}
                                                 <li>
-                                                  {{ tag('a', {
-                                                      id: actionItem.id ?? false,
-                                                      class: [
-                                                          (actionItem.action ?? false) ? 'formsubmit',
-                                                          (actionItem.destructive ?? false) ? 'error',
-                                                      ]|filter,
-                                                      data: {
-                                                          action: actionItem.action ?? false,
-                                                          confirm: actionItem.confirm ?? false,
-                                                      },
-                                                      text: actionItem.label,
-                                                  }) }}
+                                                    {{ tag('a', {
+                                                        id: actionItem.id ?? false,
+                                                        class: [
+                                                            (actionItem.action ?? false) ? 'formsubmit',
+                                                            (actionItem.destructive ?? false) ? 'error',
+                                                        ]|filter,
+                                                        data: {
+                                                            action: actionItem.action ?? false,
+                                                            confirm: actionItem.confirm ?? false,
+                                                        },
+                                                        text: actionItem.label,
+                                                    }) }}
                                                 </li>
                                             {% endfor %}
                                         </ul>

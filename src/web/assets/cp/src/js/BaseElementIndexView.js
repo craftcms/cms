@@ -49,7 +49,11 @@ Craft.BaseElementIndexView = Garnish.Base.extend(
       if (this.settings.selectable) {
         this.elementSelect = new Garnish.Select(
           this.$elementContainer,
-          $elements.filter(':not(.disabled)'),
+          $(
+            $elements
+              .toArray()
+              .filter((element) => this.canSelectElement($(element)))
+          ),
           {
             multi: this.settings.multiSelect,
             vertical: this.isVerticalList(),
@@ -105,16 +109,9 @@ Craft.BaseElementIndexView = Garnish.Base.extend(
         if (!this.elementIndex.trashed) {
           this.addListener(
             this.$elementContainer,
-            'dblclick',
+            'dblclick,taphold',
             this._handleElementEditing
           );
-          if ($.isTouchCapable()) {
-            this.addListener(
-              this.$elementContainer,
-              'taphold',
-              this._handleElementEditing
-            );
-          }
         }
       }
 
@@ -133,6 +130,16 @@ Craft.BaseElementIndexView = Garnish.Base.extend(
         this.addListener(this.$scroller, 'scroll', 'maybeLoadMore');
         this.maybeLoadMore();
       }
+    },
+
+    canSelectElement: function ($element) {
+      if ($element.hasClass('disabled')) {
+        return false;
+      }
+      if (this.settings.canSelectElement) {
+        return this.settings.canSelectElement($element);
+      }
+      return !!$element.data('id');
     },
 
     getElementContainer: function () {
@@ -214,6 +221,10 @@ Craft.BaseElementIndexView = Garnish.Base.extend(
 
     deselectAllElements: function () {
       this.elementSelect.deselectAll();
+    },
+
+    getElementCheckbox: function (element) {
+      return $(element).find('[role="checkbox"]');
     },
 
     isVerticalList: function () {
@@ -344,6 +355,17 @@ Craft.BaseElementIndexView = Garnish.Base.extend(
     onSelectionChange: function () {
       this.settings.onSelectionChange();
       this.trigger('selectionChange');
+
+      // Update checkboxes
+      if (this.settings.checkboxMode) {
+        const $items = this.elementSelect.$items.each((index, item) => {
+          if (this.elementSelect.isSelected(item)) {
+            this.getElementCheckbox(item).attr('aria-checked', 'true');
+          } else {
+            this.getElementCheckbox(item).attr('aria-checked', 'false');
+          }
+        });
+      }
     },
 
     disable: function () {
@@ -385,6 +407,7 @@ Craft.BaseElementIndexView = Garnish.Base.extend(
       params: null,
       selectable: false,
       multiSelect: false,
+      canSelectElement: null,
       checkboxMode: false,
       loadMoreElementsAction: 'element-indexes/get-more-elements',
       onAppendElements: $.noop,

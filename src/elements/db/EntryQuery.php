@@ -831,7 +831,7 @@ class EntryQuery extends ElementQuery
             return false;
         }
 
-        $this->joinElementTable('entries');
+        $this->joinElementTable(Table::ENTRIES);
 
         $this->query->select([
             'entries.sectionId',
@@ -950,12 +950,21 @@ class EntryQuery extends ElementQuery
         $unauthorizedSectionIds = [];
 
         foreach (Craft::$app->getSections()->getAllSections() as $section) {
-            if ($user->can("$peerPermissionPrefix:$section->uid")) {
-                $fullyAuthorizedSectionIds[] = $section->id;
-            } elseif ($section->type !== Section::TYPE_SINGLE && $user->can("$permissionPrefix:$section->uid")) {
-                $partiallyAuthorizedSectionIds[] = $section->id;
+            if ($section->type === Section::TYPE_SINGLE) {
+                // Singles don't have peer permissions
+                if ($user->can("$permissionPrefix:$section->uid")) {
+                    $fullyAuthorizedSectionIds[] = $section->id;
+                } else {
+                    $unauthorizedSectionIds[] = $section->id;
+                }
             } else {
-                $unauthorizedSectionIds[] = $section->id;
+                if ($user->can("$peerPermissionPrefix:$section->uid")) {
+                    $fullyAuthorizedSectionIds[] = $section->id;
+                } elseif ($user->can("$permissionPrefix:$section->uid")) {
+                    $partiallyAuthorizedSectionIds[] = $section->id;
+                } else {
+                    $unauthorizedSectionIds[] = $section->id;
+                }
             }
         }
 

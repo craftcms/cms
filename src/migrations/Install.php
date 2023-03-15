@@ -16,7 +16,6 @@ use craft\db\Migration;
 use craft\db\Table;
 use craft\elements\Asset;
 use craft\elements\User;
-use craft\enums\LicenseKeyStatus;
 use craft\errors\InvalidPluginException;
 use craft\helpers\App;
 use craft\helpers\DateTimeHelper;
@@ -112,7 +111,7 @@ class Install extends Migration
             'longitude' => $this->string(),
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
-            'PRIMARY KEY(id)',
+            'PRIMARY KEY([[id]])',
         ]);
         $this->createTable(Table::ANNOUNCEMENTS, [
             'id' => $this->primaryKey(),
@@ -146,8 +145,10 @@ class Install extends Migration
             'totalEntries' => $this->integer(),
             'processedEntries' => $this->integer()->notNull()->defaultValue(0),
             'cacheRemoteImages' => $this->boolean(),
+            'listEmptyFolders' => $this->boolean()->defaultValue(false),
             'isCli' => $this->boolean()->defaultValue(false),
             'actionRequired' => $this->boolean()->defaultValue(false),
+            'processIfRootEmpty' => $this->boolean()->defaultValue(false),
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
             'uid' => $this->uid(),
@@ -190,13 +191,15 @@ class Install extends Migration
             'id' => $this->primaryKey(),
             'name' => $this->string()->notNull(),
             'handle' => $this->string()->notNull(),
-            'mode' => $this->enum('mode', ['stretch', 'fit', 'crop'])->notNull()->defaultValue('crop'),
+            'mode' => $this->enum('mode', ['stretch', 'fit', 'crop', 'letterbox'])->notNull()->defaultValue('crop'),
             'position' => $this->enum('position', ['top-left', 'top-center', 'top-right', 'center-left', 'center-center', 'center-right', 'bottom-left', 'bottom-center', 'bottom-right'])->notNull()->defaultValue('center-center'),
             'width' => $this->integer()->unsigned(),
             'height' => $this->integer()->unsigned(),
             'format' => $this->string(),
             'quality' => $this->integer(),
             'interlace' => $this->enum('interlace', ['none', 'line', 'plane', 'partition'])->notNull()->defaultValue('none'),
+            'fill' => $this->string(11)->null(),
+            'upscale' => $this->boolean()->notNull()->defaultValue(true),
             'parameterChangeTime' => $this->dateTime(),
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
@@ -514,15 +517,6 @@ class Install extends Migration
             'handle' => $this->string()->notNull(),
             'version' => $this->string()->notNull(),
             'schemaVersion' => $this->string()->notNull(),
-            'licenseKeyStatus' => $this->enum('licenseKeyStatus', [
-                LicenseKeyStatus::Valid,
-                LicenseKeyStatus::Trial,
-                LicenseKeyStatus::Invalid,
-                LicenseKeyStatus::Mismatched,
-                LicenseKeyStatus::Astray,
-                LicenseKeyStatus::Unknown,
-            ])->notNull()->defaultValue(LicenseKeyStatus::Unknown),
-            'licensedEdition' => $this->string(),
             'installDate' => $this->dateTime()->notNull(),
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),

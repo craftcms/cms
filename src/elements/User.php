@@ -362,21 +362,15 @@ class User extends Element implements IdentityInterface
                 ],
                 [
                     'label' => Craft::t('app', 'Date Created'),
-                    'orderBy' => 'elements.dateCreated',
-                    'attribute' => 'dateCreated',
+                    'orderBy' => 'dateCreated',
                     'defaultDir' => 'desc',
                 ],
                 [
                     'label' => Craft::t('app', 'Date Updated'),
-                    'orderBy' => 'elements.dateUpdated',
-                    'attribute' => 'dateUpdated',
+                    'orderBy' => 'dateUpdated',
                     'defaultDir' => 'desc',
                 ],
-                [
-                    'label' => Craft::t('app', 'ID'),
-                    'orderBy' => 'elements.id',
-                    'attribute' => 'id',
-                ],
+                'id' => Craft::t('app', 'ID'),
             ];
         } else {
             $attributes = [
@@ -392,21 +386,15 @@ class User extends Element implements IdentityInterface
                 ],
                 [
                     'label' => Craft::t('app', 'Date Created'),
-                    'orderBy' => 'elements.dateCreated',
-                    'attribute' => 'dateCreated',
+                    'orderBy' => 'dateCreated',
                     'defaultDir' => 'desc',
                 ],
                 [
                     'label' => Craft::t('app', 'Date Updated'),
-                    'orderBy' => 'elements.dateUpdated',
-                    'attribute' => 'dateUpdated',
+                    'orderBy' => 'dateUpdated',
                     'defaultDir' => 'desc',
                 ],
-                [
-                    'label' => Craft::t('app', 'ID'),
-                    'orderBy' => 'elements.id',
-                    'attribute' => 'id',
-                ],
+                'id' => Craft::t('app', 'ID'),
             ];
         }
 
@@ -560,7 +548,7 @@ class User extends Element implements IdentityInterface
     }
 
     /**
-     * @var int|null Photo asset id
+     * @var int|null Photo asset ID
      */
     public ?int $photoId = null;
 
@@ -1622,6 +1610,17 @@ class User extends Element implements IdentityInterface
         ]);
     }
 
+    /**
+     * @inheritdoc
+     */
+    protected function statusFieldHtml(): string
+    {
+        return '';
+    }
+
+    /**
+     * @inheritdoc
+     */
     protected function metadata(): array
     {
         $formatter = Craft::$app->getFormatter();

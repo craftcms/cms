@@ -37,6 +37,7 @@ use craft\queue\jobs\ResaveElements;
 use craft\records\EntryType as EntryTypeRecord;
 use craft\records\Section as SectionRecord;
 use craft\records\Section_SiteSettings as Section_SiteSettingsRecord;
+use DateTime;
 use Throwable;
 use yii\base\Component;
 use yii\base\Exception;
@@ -864,15 +865,33 @@ class Sections extends Component
         try {
             // All entries *should* be deleted by now via their entry types, but loop through all the sites in case
             // there are any lingering entries from unsupported sites
-            $entryQuery = Entry::find()
-                ->sectionId($sectionRecord->id)
-                ->status(null);
-            $elementsService = Craft::$app->getElements();
-            foreach (Craft::$app->getSites()->getAllSiteIds() as $siteId) {
-                foreach (Db::each($entryQuery->siteId($siteId)) as $entry) {
-                    /** @var Entry $entry */
-                    $elementsService->deleteElement($entry);
-                }
+            $elementsTable = Table::ELEMENTS;
+            $entriesTable = Table::ENTRIES;
+            $now = Db::prepareDateForDb(new DateTime());
+            $db = Craft::$app->getDb();
+
+            $conditionSql = <<<SQL
+[[entries.sectionId]] = $section->id AND
+[[elements.canonicalId]] IS NULL AND
+[[elements.revisionId]] IS NULL AND
+[[elements.dateDeleted]] IS NULL
+SQL;
+
+
+            if ($db->getIsMysql()) {
+                $db->createCommand(<<<SQL
+UPDATE $elementsTable [[elements]]
+INNER JOIN $entriesTable [[entries]] ON [[entries.id]] = [[elements.id]]
+SET [[elements.dateDeleted]] = '$now'
+WHERE $conditionSql
+SQL)->execute();
+            } else {
+                $db->createCommand(<<<SQL
+UPDATE $elementsTable [[elements]]
+SET [[dateDeleted]] = '$now'
+FROM $entriesTable [[entries]]
+WHERE [[entries.id]] = [[elements.id]] AND $conditionSql
+SQL)->execute();
             }
 
             // Delete the structure
@@ -1334,21 +1353,41 @@ class Sections extends Component
         $transaction = Craft::$app->getDb()->beginTransaction();
 
         try {
-            // Delete the entries, including unpublished drafts
-            // (loop through all the sites in case there are any lingering entries from unsupported sites
-            $entryQuery = Entry::find()
-                ->typeId($entryTypeRecord->id)
-                ->status(null)
-                ->drafts(null)
-                ->draftOf(false);
+            // Delete the entries
+            $elementsTable = Table::ELEMENTS;
+            $entriesTable = Table::ENTRIES;
+            $now = Db::prepareDateForDb(new DateTime());
+            $db = Craft::$app->getDb();
 
-            $elementsService = Craft::$app->getElements();
-            foreach (Craft::$app->getSites()->getAllSiteIds() as $siteId) {
-                foreach (Db::each($entryQuery->siteId($siteId)) as $entry) {
-                    /** @var Entry $entry */
-                    $entry->deletedWithEntryType = true;
-                    $elementsService->deleteElement($entry);
-                }
+            $conditionSql = <<<SQL
+[[entries.typeId]] = $entryType->id AND
+[[entries.id]] = [[elements.id]] AND
+[[elements.canonicalId]] IS NULL AND
+[[elements.revisionId]] IS NULL AND
+[[elements.dateDeleted]] IS NULL
+SQL;
+
+            if ($db->getIsMysql()) {
+                $db->createCommand(<<<SQL
+UPDATE $elementsTable [[elements]], $entriesTable [[entries]] 
+SET [[elements.dateDeleted]] = '$now',
+  [[entries.deletedWithEntryType]] = 1
+WHERE $conditionSql
+SQL)->execute();
+            } else {
+                // Not possible to update two tables simultaneously with Postgres
+                $db->createCommand(<<<SQL
+UPDATE $entriesTable [[entries]]
+SET [[deletedWithEntryType]] = TRUE
+FROM $elementsTable [[elements]]
+WHERE $conditionSql
+SQL)->execute();
+                $db->createCommand(<<<SQL
+UPDATE $elementsTable [[elements]]
+SET [[dateDeleted]] = '$now'
+FROM $entriesTable [[entries]]
+WHERE $conditionSql
+SQL)->execute();
             }
 
             // Delete the field layout
@@ -1551,7 +1590,7 @@ class Sections extends Component
             ->site('*')
             ->unique()
             ->status(null)
-            ->orderBy(['elements.id' => SORT_ASC])
+            ->orderBy(['id' => SORT_ASC])
             ->withStructure(false);
 
         $structuresService = Craft::$app->getStructures();

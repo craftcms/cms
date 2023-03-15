@@ -59,6 +59,7 @@ Craft.Preview = Garnish.Base.extend(
 
     iframeHeight: null,
     scrollTop: null,
+    scrollLeft: null,
 
     dragger: null,
     dragStartEditorWidth: null,
@@ -85,7 +86,6 @@ Craft.Preview = Garnish.Base.extend(
         'LivePreview.editorWidth',
         Craft.Preview.defaultEditorWidth
       );
-      this.setAnimationDuration();
 
       Craft.Preview.instances.push(this);
     },
@@ -119,16 +119,11 @@ Craft.Preview = Garnish.Base.extend(
       this._editorWidthInPx = inPx;
     },
 
-    setAnimationDuration: function () {
-      this.animationDuration = Garnish.prefersReducedMotion() ? 0 : 'slow';
-    },
-
     open: function () {
       if (this.isActive) {
         return;
       }
 
-      this.setAnimationDuration();
       this.isActive = true;
       this.trigger('beforeOpen');
 
@@ -462,15 +457,22 @@ Craft.Preview = Garnish.Base.extend(
       this.$editorContainer
         .show()
         .velocity('stop')
-        .animateLeft(0, this.animationDuration, () => {
-          this.trigger('slideIn');
-          Garnish.$win.trigger('resize');
-        });
+        .animateLeft(
+          0,
+          Garnish.getUserPreferredAnimationDuration(this.animationDuration),
+          () => {
+            this.trigger('slideIn');
+            Garnish.$win.trigger('resize');
+          }
+        );
 
       this.$previewContainer
         .show()
         .velocity('stop')
-        .animateRight(0, this.animationDuration);
+        .animateRight(
+          0,
+          Garnish.getUserPreferredAnimationDuration(this.animationDuration)
+        );
 
       this.isVisible = true;
 
@@ -488,7 +490,6 @@ Craft.Preview = Garnish.Base.extend(
         return;
       }
 
-      this.setAnimationDuration();
       this.trigger('beforeClose');
 
       $('html').removeClass('noscroll');
@@ -510,20 +511,28 @@ Craft.Preview = Garnish.Base.extend(
 
       this.$editorContainer
         .velocity('stop')
-        .animateLeft(-this.editorWidthInPx, this.animationDuration, () => {
-          for (var i = 0; i < this.fields.length; i++) {
-            this.fields[i].$newClone.remove();
+        .animateLeft(
+          -this.editorWidthInPx,
+          Garnish.getUserPreferredAnimationDuration(this.animationDuration),
+          () => {
+            for (var i = 0; i < this.fields.length; i++) {
+              this.fields[i].$newClone.remove();
+            }
+            this.$editorContainer.hide();
+            this.trigger('slideOut');
           }
-          this.$editorContainer.hide();
-          this.trigger('slideOut');
-        });
+        );
 
       this.$previewContainer
         .velocity('stop')
-        .animateRight(-this.getIframeWidth(), this.animationDuration, () => {
-          this.$iframeContainer.removeClass('lp-iframe-container--rotating');
-          this.$previewContainer.hide();
-        });
+        .animateRight(
+          -this.getIframeWidth(),
+          Garnish.getUserPreferredAnimationDuration(this.animationDuration),
+          () => {
+            this.$iframeContainer.removeClass('lp-iframe-container--rotating');
+            this.$previewContainer.hide();
+          }
+        );
 
       this.elementEditor.off('update', this._updateIframeProxy);
 
@@ -615,16 +624,22 @@ Craft.Preview = Garnish.Base.extend(
           let sameHost;
           if (resetScroll) {
             this.scrollTop = null;
+            this.scrollLeft = null;
           } else if (this.iframeLoaded && this.$iframe) {
             if (this._useIframeResizer()) {
               this.iframeHeight = this.$iframe.height();
               this.scrollTop = this.$iframeContainer.scrollTop();
+              this.scrollLeft = this.$iframeContainer.scrollLeft();
             } else {
               sameHost = Craft.isSameHost(url);
               if (sameHost && this.$iframe[0].contentWindow) {
                 this.scrollTop = $(
                   this.$iframe[0].contentWindow.document
                 ).scrollTop();
+
+                this.scrollLeft = $(
+                  this.$iframe[0].contentWindow.document
+                ).scrollLeft();
               }
             }
           }
@@ -649,6 +664,7 @@ Craft.Preview = Garnish.Base.extend(
             if (!resetScroll && this.iframeHeight !== null) {
               $iframe.height(this.iframeHeight);
               this.$iframeContainer.scrollTop(this.scrollTop);
+              this.$iframeContainer.scrollLeft(this.scrollLeft);
             }
 
             iFrameResize(
@@ -661,6 +677,7 @@ Craft.Preview = Garnish.Base.extend(
                     this.iframeLoaded = true;
                     this.iframeHeight = null;
                     this.scrollTop = null;
+                    this.scrollLeft = null;
                     iframe.scrolling = 'no';
                   },
                 },
@@ -671,8 +688,18 @@ Craft.Preview = Garnish.Base.extend(
           } else {
             $iframe.on('load', () => {
               this.iframeLoaded = true;
-              if (!resetScroll && sameHost && this.scrollTop !== null) {
-                $($iframe[0].contentWindow.document).scrollTop(this.scrollTop);
+              if (!resetScroll && sameHost) {
+                if (this.scrollTop !== null) {
+                  $($iframe[0].contentWindow.document).scrollTop(
+                    this.scrollTop
+                  );
+                }
+
+                if (this.scrollLeft !== null) {
+                  $($iframe[0].contentWindow.document).scrollLeft(
+                    this.scrollLeft
+                  );
+                }
               }
             });
           }

@@ -304,14 +304,8 @@ class Request extends \yii\web\Request
             }
         }
 
-        if ($this->_isCpRequest) {
-            // Force 'p' pageTrigger
-            // (all that really matters is that it doesn't have a trailing slash, but whatever.)
-            $this->generalConfig->pageTrigger = 'p';
-        }
-
         // Is this a paginated request?
-        $pageTrigger = $this->generalConfig->getPageTrigger();
+        $pageTrigger = $this->_isCpRequest ? 'p' : $this->generalConfig->getPageTrigger();
 
         // Is this query string-based pagination?
         if (str_starts_with($pageTrigger, '?')) {

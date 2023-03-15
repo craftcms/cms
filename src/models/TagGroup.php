@@ -14,6 +14,7 @@ use craft\elements\Tag;
 use craft\records\TagGroup as TagGroupRecord;
 use craft\validators\HandleValidator;
 use craft\validators\UniqueValidator;
+use DateTime;
 
 /**
  * TagGroup model.
@@ -48,6 +49,12 @@ class TagGroup extends Model
      * @var string|null Field layout ID
      */
     public ?string $uid = null;
+
+    /**
+     * @var DateTime|null The date that the tag group was trashed
+     * @since 4.4.0
+     */
+    public ?DateTime $dateDeleted = null;
 
     /**
      * @inheritdoc

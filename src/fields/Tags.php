@@ -60,7 +60,7 @@ class Tags extends BaseRelationField
      */
     public static function valueType(): string
     {
-        return sprintf('%s|%s<%s>', TagQuery::class, ElementCollection::class, Tag::class);
+        return sprintf('\\%s|\\%s<\\%s>', TagQuery::class, ElementCollection::class, Tag::class);
     }
 
     /**
@@ -110,6 +110,7 @@ class Tags extends BaseRelationField
                     'targetSiteId' => $this->targetSiteId($element),
                     'sourceElementId' => $element?->id,
                     'selectionLabel' => $this->selectionLabel ? Craft::t('site', $this->selectionLabel) : static::defaultSelectionLabel(),
+                    'allowSelfRelations' => (bool)$this->allowSelfRelations,
                 ]);
         }
 

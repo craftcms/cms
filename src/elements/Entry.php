@@ -9,11 +9,9 @@ namespace craft\elements;
 
 use Craft;
 use craft\base\Element;
-use craft\base\ElementInterface;
 use craft\base\ExpirableElementInterface;
 use craft\base\Field;
 use craft\behaviors\DraftBehavior;
-use craft\behaviors\RevisionBehavior;
 use craft\controllers\ElementIndexesController;
 use craft\db\Connection;
 use craft\db\FixedOrderExpression;
@@ -32,6 +30,7 @@ use craft\elements\db\ElementQueryInterface;
 use craft\elements\db\EntryQuery;
 use craft\errors\UnsupportedSiteException;
 use craft\events\DefineEntryTypesEvent;
+use craft\events\ElementCriteriaEvent;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Cp;
 use craft\helpers\DateTimeHelper;
@@ -80,6 +79,13 @@ class Entry extends Element implements ExpirableElementInterface
      * @since 3.6.0
      */
     public const EVENT_DEFINE_ENTRY_TYPES = 'defineEntryTypes';
+
+    /**
+     * @event ElementCriteriaEvent The event that is triggered when defining the parent selection criteria.
+     * @see _parentOptionCriteria()
+     * @since 4.4.0
+     */
+    public const EVENT_DEFINE_PARENT_SELECTION_CRITERIA = 'defineParentSelectionCriteria';
 
     /**
      * @inheritdoc
@@ -495,21 +501,15 @@ class Entry extends Element implements ExpirableElementInterface
             ],
             [
                 'label' => Craft::t('app', 'Date Created'),
-                'orderBy' => 'elements.dateCreated',
-                'attribute' => 'dateCreated',
+                'orderBy' => 'dateCreated',
                 'defaultDir' => 'desc',
             ],
             [
                 'label' => Craft::t('app', 'Date Updated'),
-                'orderBy' => 'elements.dateUpdated',
-                'attribute' => 'dateUpdated',
+                'orderBy' => 'dateUpdated',
                 'defaultDir' => 'desc',
             ],
-            [
-                'label' => Craft::t('app', 'ID'),
-                'orderBy' => 'elements.id',
-                'attribute' => 'id',
-            ],
+            'id' => Craft::t('app', 'ID'),
         ];
     }
 
@@ -523,6 +523,8 @@ class Entry extends Element implements ExpirableElementInterface
             'type' => ['label' => Craft::t('app', 'Entry Type')],
             'author' => ['label' => Craft::t('app', 'Author')],
             'slug' => ['label' => Craft::t('app', 'Slug')],
+            'ancestors' => ['label' => Craft::t('app', 'Ancestors')],
+            'parent' => ['label' => Craft::t('app', 'Parent')],
             'uri' => ['label' => Craft::t('app', 'URI')],
             'postDate' => ['label' => Craft::t('app', 'Post Date')],
             'expiryDate' => ['label' => Craft::t('app', 'Expiry Date')],
@@ -636,15 +638,6 @@ class Entry extends Element implements ExpirableElementInterface
         switch ($attribute) {
             case 'author':
                 $elementQuery->andWith(['author', ['status' => null]]);
-                break;
-            case 'revisionNotes':
-                $elementQuery->andWith('currentRevision');
-                break;
-            case 'revisionCreator':
-                $elementQuery->andWith('currentRevision.revisionCreator');
-                break;
-            case 'drafts':
-                $elementQuery->andWith(['drafts', ['status' => null, 'orderBy' => ['dateUpdated' => SORT_DESC]]]);
                 break;
             default:
                 parent::prepElementQueryForTableAttribute($elementQuery, $attribute);
@@ -1379,7 +1372,7 @@ class Entry extends Element implements ExpirableElementInterface
             /** @var static|DraftBehavior $this */
             return (
                 $this->creatorId === $user->id ||
-                $user->can("deletePeerEntries:$section->uid")
+                $user->can("deletePeerEntryDrafts:$section->uid")
             );
         }
 
@@ -1429,10 +1422,10 @@ class Entry extends Element implements ExpirableElementInterface
 
         // Ignore homepage/temp slugs
         if ($this->slug && !str_starts_with($this->slug, '__')) {
-            $path .= "-$this->slug";
+            $path .= sprintf('-%s', str_replace('/', '-', $this->slug));
         }
 
-        return UrlHelper::cpUrl($path);
+        return $path;
     }
 
     /**
@@ -1441,6 +1434,14 @@ class Entry extends Element implements ExpirableElementInterface
     public function getPostEditUrl(): ?string
     {
         return UrlHelper::cpUrl('entries');
+    }
+
+    /**
+     * @inheritdoc
+     */
+    protected function cpRevisionsUrl(): ?string
+    {
+        return sprintf('%s/revisions', $this->cpEditUrl());
     }
 
     /**
@@ -1520,60 +1521,17 @@ class Entry extends Element implements ExpirableElementInterface
             case 'author':
                 $author = $this->getAuthor();
                 return $author ? Cp::elementHtml($author) : '';
-
             case 'section':
                 return Html::encode(Craft::t('site', $this->getSection()->name));
-
             case 'type':
                 try {
                     return Html::encode(Craft::t('site', $this->getType()->name));
                 } catch (InvalidConfigException) {
                     return Craft::t('app', 'Unknown');
                 }
-
-            case 'revisionNotes':
-                /** @var Entry|null $revision */
-                $revision = $this->getCurrentRevision();
-                if (!$revision) {
-                    return '';
-                }
-                /** @var RevisionBehavior|null $behavior */
-                $behavior = $revision->getBehavior('revision');
-                if (!$behavior) {
-                    return '';
-                }
-                return Html::encode($behavior->revisionNotes);
-
-            case 'revisionCreator':
-                /** @var Entry|null $revision */
-                $revision = $this->getCurrentRevision();
-                if (!$revision) {
-                    return '';
-                }
-                /** @var RevisionBehavior|null $behavior */
-                $behavior = $revision->getBehavior('revision');
-                if (!$behavior) {
-                    return '';
-                }
-                $creator = $behavior->getCreator();
-                return $creator ? Cp::elementHtml($creator) : '';
-
-            case 'drafts':
-                if (!$this->hasEagerLoadedElements('drafts')) {
-                    return '';
-                }
-
-                $drafts = $this->getEagerLoadedElements('drafts')->all();
-
-                foreach ($drafts as $draft) {
-                    /** @var ElementInterface|DraftBehavior $draft */
-                    $draft->setUiLabel($draft->draftName);
-                }
-
-                return Cp::elementPreviewHtml($drafts, Cp::ELEMENT_SIZE_SMALL, true, false, true, false);
+            default:
+                return parent::tableAttributeHtml($attribute);
         }
-
-        return parent::tableAttributeHtml($attribute);
     }
 
     /**
@@ -1762,6 +1720,15 @@ EOD;
             $parentOptionCriteria['level'] = sprintf('<=%s', $section->maxLevels - $depth);
         }
 
+        if ($this->hasEventHandlers(self::EVENT_DEFINE_PARENT_SELECTION_CRITERIA)) {
+            // Fire a defineParentSelectionCriteria event
+            $event = new ElementCriteriaEvent([
+                'criteria' => $parentOptionCriteria,
+            ]);
+            $this->trigger(self::EVENT_DEFINE_PARENT_SELECTION_CRITERIA, $event);
+            return $event->criteria;
+        }
+
         return $parentOptionCriteria;
     }
 
@@ -1778,12 +1745,20 @@ EOD;
             Craft::$app->getLocale();
             // Set Craft to the entry’s site’s language, in case the title format has any static translations
             $language = Craft::$app->language;
-            Craft::$app->language = $this->getSite()->language;
+            $locale = Craft::$app->getLocale();
+            $formattingLocale = Craft::$app->getFormattingLocale();
+            $site = $this->getSite();
+            $tempLocale = Craft::$app->getI18n()->getLocaleById($site->language);
+            Craft::$app->language = $site->language;
+            Craft::$app->set('locale', $tempLocale);
+            Craft::$app->set('formattingLocale', $tempLocale);
             $title = Craft::$app->getView()->renderObjectTemplate($entryType->titleFormat, $this);
             if ($title !== '') {
                 $this->title = $title;
             }
             Craft::$app->language = $language;
+            Craft::$app->set('locale', $locale);
+            Craft::$app->set('formattingLocale', $formattingLocale);
         }
     }
 

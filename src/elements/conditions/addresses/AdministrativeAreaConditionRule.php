@@ -117,6 +117,7 @@ class AdministrativeAreaConditionRule extends BaseMultiSelectConditionRule imple
 $('#$namespacedId').selectize({
     plugins: ['remove_button'],
     create: true, // Must allow creation since administrive area field on addresses could be free text input
+    dropdownParent: 'body',
     onDropdownClose: () => {
         htmx.trigger(htmx.find('#$namespacedId'), 'change');
     },

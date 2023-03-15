@@ -11,11 +11,14 @@ use craft\console\controllers\ResaveController;
 use craft\events\DefineConsoleActionsEvent;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Console;
+use craft\helpers\FileHelper;
+use craft\helpers\Json;
 use craft\helpers\StringHelper;
 use ReflectionFunction;
 use ReflectionFunctionAbstract;
 use ReflectionMethod;
 use Seld\CliPrompt\CliPrompt;
+use Throwable;
 use yii\base\Action;
 use yii\base\InvalidConfigException;
 use yii\console\Controller as YiiController;
@@ -425,5 +428,85 @@ class Controller extends YiiController
         ];
 
         Console::table($headers, $data, $options);
+    }
+
+    /**
+     * Performs an action with descriptive output.
+     *
+     * @param string $description The action description. Supports Markdown formatting.
+     * @param callable $action The action callable
+     * @param bool $withDuration Whether to output the action duration upon completion
+     * @since 4.3.5
+     */
+    public function do(string $description, callable $action, bool $withDuration = false): void
+    {
+        $this->stdout(' → ', Console::FG_GREY);
+        $this->stdout($this->markdownToAnsi($description));
+        $this->stdout(' … ', Console::FG_GREY);
+
+        if ($withDuration) {
+            $time = microtime(true);
+        }
+
+        try {
+            $action();
+        } catch (Throwable $e) {
+            $this->stdout('✕' . PHP_EOL, Console::FG_RED, Console::BOLD);
+            $this->stdout("   Error: {$e->getMessage()}" . PHP_EOL, Console::FG_RED);
+            throw $e;
+        }
+
+        $this->stdout('✓', Console::FG_GREEN, Console::BOLD);
+        if ($withDuration) {
+            $this->stdout(sprintf(' (time: %.3fs', microtime(true) - $time), Console::FG_GREY);
+        }
+        $this->stdout(PHP_EOL);
+    }
+
+    /**
+     * Creates a directory, and outputs to the console.
+     *
+     * @param string $path The path to the directory
+     * @since 4.3.5
+     */
+    public function createDirectory(string $path): void
+    {
+        $path = FileHelper::relativePath($path);
+        $this->do(
+            sprintf('Creating %s', $this->ansiFormat("$path/", Console::FG_CYAN)),
+            function() use ($path) {
+                FileHelper::createDirectory($path);
+            },
+        );
+    }
+
+    /**
+     * Writes contents to a file, and outputs to the console.
+     *
+     * @param string $file The path to the file to write to
+     * @param string $contents The file contents
+     * @param array $options Options for [[FileHelper::writeToFile()]]
+     * @since 4.3.5
+     */
+    public function writeToFile(string $file, string $contents, array $options = []): void
+    {
+        $file = FileHelper::relativePath($file);
+        $description = file_exists($file) ? "Updating `$file`" : "Creating `$file`";
+        $this->do($description, function() use ($file, $contents, $options) {
+            FileHelper::writeToFile($file, $contents, $options);
+        });
+    }
+
+    /**
+     * JSON-encodes a value and writes it to a file.
+     *
+     * @param string $file The path to the file to write to
+     * @param mixed $value The value to be JSON-encoded and written out
+     * @since 4.3.5
+     */
+    public function writeJson(string $file, mixed $value): void
+    {
+        $json = Json::encode($value, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT) . "\n";
+        $this->writeToFile($file, "$json\n");
     }
 }

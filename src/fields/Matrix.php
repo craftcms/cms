@@ -98,7 +98,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
      */
     public static function valueType(): string
     {
-        return sprintf('%s|%s<%s>', MatrixBlockQuery::class, ElementCollection::class, MatrixBlock::class);
+        return sprintf('\\%s|\\%s<\\%s>', MatrixBlockQuery::class, ElementCollection::class, MatrixBlock::class);
     }
 
     /**
@@ -1074,8 +1074,8 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
             $value = $element->getFieldValue($this->handle);
             if ($value instanceof MatrixBlockQuery) {
                 $this->_populateQuery($value, $element);
+                $value->clearCachedResult();
             }
-            $value->clearCachedResult();
         }
 
         parent::afterElementPropagate($element, $isNew);

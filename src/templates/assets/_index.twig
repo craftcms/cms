@@ -1,0 +1,6 @@
+{% extends '_layouts/elementindex.twig' %}
+{% set title = "Assets"|t('app') %}
+{% set elementType = 'craft\\elements\\Asset' %}
+
+{% do view.registerAssetBundle("craft\\web\\assets\\fileupload\\FileUploadAsset") %}
+{% do view.registerAssetBundle("craft\\web\\assets\\prismjs\\PrismJsAsset") %}

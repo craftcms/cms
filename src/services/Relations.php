@@ -45,12 +45,12 @@ class Relations extends Component
         $targetIds = array_flip(array_values(array_unique(array_filter($targetIds))));
 
         // Get the current relations
-        $oldRelationConditions = ['fieldId' => $field->id, 'sourceId' => $source->id];
+        $oldRelationCondition = ['fieldId' => $field->id, 'sourceId' => $source->id];
 
         if ($field->localizeRelations) {
-            $oldRelationConditions = [
+            $oldRelationCondition = [
                 'and',
-                $oldRelationConditions,
+                $oldRelationCondition,
                 ['or', ['sourceSiteId' => null], ['sourceSiteId' => $source->siteId]],
             ];
         }
@@ -60,7 +60,7 @@ class Relations extends Component
         $oldRelations = (new Query())
             ->select(['id', 'sourceSiteId', 'targetId', 'sortOrder'])
             ->from([Table::RELATIONS])
-            ->where($oldRelationConditions)
+            ->where($oldRelationCondition)
             ->all($db);
 
         /** @var Command[] $updateCommands */
@@ -74,7 +74,9 @@ class Relations extends Component
             if (isset($targetIds[$relation['targetId']])) {
                 // Anything to update?
                 $sortOrder = $targetIds[$relation['targetId']] + 1;
-                if ($relation['sourceSiteId'] != $sourceSiteId || $relation['sortOrder'] != $sortOrder) {
+                // only update relations if the source is not being propagated
+                // https://github.com/craftcms/cms/issues/12702
+                if ((!$source->propagating && $relation['sourceSiteId'] != $sourceSiteId) || $relation['sortOrder'] != $sortOrder) {
                     $updateCommands[] = $db->createCommand()->update(Table::RELATIONS, [
                         'sourceSiteId' => $sourceSiteId,
                         'sortOrder' => $sortOrder,

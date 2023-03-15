@@ -408,11 +408,11 @@ class Html extends \yii\helpers\Html
 
                 $offset += strlen($m[0]);
                 if (isset($m[1]) && $m[1] !== '') {
-                    $value = $m[1];
+                    $value = static::decode($m[1]);
                 }
             } elseif (preg_match('/[^\s>]+/A', $html, $m, 0, $offset)) {
                 $offset += strlen($m[0]);
-                $value = $m[0];
+                $value = static::decode($m[0]);
             }
         }
 
@@ -1007,12 +1007,13 @@ class Html extends \yii\helpers\Html
      *
      * @param string|Asset $svg An SVG asset, a file path, or raw SVG markup
      * @param bool|null $sanitize Whether the SVG should be sanitized of potentially
-     * malicious scripts. By default the SVG will only be sanitized if an asset
+     * malicious scripts. By default, the SVG will only be sanitized if an asset
      * or markup is passed in. (File paths are assumed to be safe.)
      * @param bool|null $namespace Whether class names and IDs within the SVG
      * should be namespaced to avoid conflicts with other elements in the DOM.
-     * By default the SVG will only be namespaced if an asset or markup is passed in.
+     * By default, the SVG will only be namespaced if an asset or markup is passed in.
      * @return string
+     * @since 4.3.0
      */
     public static function svg(Asset|string $svg, ?bool $sanitize = null, ?bool $namespace = null): string
     {

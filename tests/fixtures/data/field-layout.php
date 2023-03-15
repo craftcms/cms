@@ -5,6 +5,7 @@
  * @license https://craftcms.github.io/license/
  */
 
+use craft\fields\Entries;
 use craft\fields\Matrix;
 use craft\fields\Number;
 use craft\fields\PlainText;
@@ -142,6 +143,77 @@ return [
                             ],
                         ],
                         'required' => true,
+                    ],
+                ],
+            ],
+        ],
+    ],
+    [
+        'uid' => 'field-layout-1001----------------uid',
+        'type' => 'field_layout_with_matrix_with_relational_field',
+        'tabs' => [
+            [
+                'name' => 'Tab 1',
+                'fields' => [
+                    // MATRIX FIELD
+                    [
+                        'uid' => 'field-1003-----------------------uid',
+                        'name' => 'Matrix 2',
+                        'handle' => 'matrixSecond',
+                        'type' => Matrix::class,
+                        'blockTypes' => [
+                            'new1' => [
+                                'name' => 'A Block',
+                                'handle' => 'aBlock',
+                                'fields' => [
+                                    'new1' => [
+                                        'type' => PlainText::class,
+                                        'name' => 'First Subfield',
+                                        'handle' => 'firstSubfield',
+                                        'columnSuffix' => 'aaaaaaaa',
+                                        'instructions' => '',
+                                        'required' => false,
+                                        'typesettings' => [
+                                            'multiline' => '',
+                                        ],
+                                    ],
+                                ],
+                            ],
+                            'new2' => [
+                                'name' => 'B Block',
+                                'handle' => 'bBlock',
+                                'fields' => [
+                                    'new1' => [
+                                        'type' => Entries::class,
+                                        'name' => 'Entries Subfield',
+                                        'handle' => 'entriesSubfield',
+                                        'required' => false,
+                                    ],
+                                ],
+                            ],
+                        ],
+                        'required' => false,
+                    ],
+
+                    // PLAIN TEXT FIELD TWO
+                    [
+                        'uid' => 'field-1004-----------------------uid',
+                        'name' => 'Plain Text Field2',
+                        'handle' => 'plainTextField2',
+                        'type' => PlainText::class,
+                        'required' => false,
+                    ],
+
+                    // An entries field
+                    [
+                        'uid' => 'field-1005-----------------------uid',
+                        'name' => 'Related Entry',
+                        'handle' => 'relatedEntry',
+                        'type' => Entries::class,
+                        'sources' => [
+                            'section:section-1000---------------------uid',
+                        ],
+                        'required' => false,
                     ],
                 ],
             ],

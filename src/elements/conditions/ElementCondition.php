@@ -9,6 +9,7 @@ use craft\base\ElementInterface;
 use craft\elements\db\ElementQueryInterface;
 use craft\errors\InvalidTypeException;
 use craft\fields\conditions\FieldConditionRuleInterface;
+use yii\base\InvalidConfigException;
 
 /**
  * ElementCondition provides an element condition.
@@ -47,6 +48,13 @@ class ElementCondition extends BaseCondition implements ElementConditionInterfac
     public array $queryParams = [];
 
     /**
+     * @var ElementInterface|null The element that this condition is being executed in reference to, if any.
+     *
+     * @since 4.4.0
+     */
+    public ?ElementInterface $referenceElement = null;
+
+    /**
      * Constructor.
      *
      * @param string|null $elementType
@@ -55,6 +63,13 @@ class ElementCondition extends BaseCondition implements ElementConditionInterfac
      */
     public function __construct(?string $elementType = null, array $config = [])
     {
+        if (
+            $elementType !== null &&
+            (!class_exists($elementType) || !is_subclass_of($elementType, ElementInterface::class))
+        ) {
+            throw new InvalidConfigException("Invalid element type: $elementType");
+        }
+
         $this->elementType = $elementType;
         parent::__construct($config);
     }
@@ -103,15 +118,15 @@ class ElementCondition extends BaseCondition implements ElementConditionInterfac
             SlugConditionRule::class,
         ];
 
-        if (Craft::$app->getIsMultiSite()) {
+        /** @var string|ElementInterface|null $elementType */
+        /** @phpstan-var class-string<ElementInterface>|ElementInterface|null $elementType */
+        $elementType = $this->elementType;
+
+        if (Craft::$app->getIsMultiSite() && (!$elementType || $elementType::isLocalized())) {
             $types[] = SiteConditionRule::class;
         }
 
-        if ($this->elementType !== null) {
-            /** @var string|ElementInterface $elementType */
-            /** @phpstan-var class-string<ElementInterface>|ElementInterface $elementType */
-            $elementType = $this->elementType;
-
+        if ($elementType !== null) {
             if ($elementType::hasUris()) {
                 $types[] = HasUrlConditionRule::class;
                 $types[] = UriConditionRule::class;

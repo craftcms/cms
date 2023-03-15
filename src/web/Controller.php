@@ -82,8 +82,6 @@ abstract class Controller extends \yii\web\Controller
                 }
             }
             $this->allowAnonymous = $normalized;
-        } elseif (!is_int($this->allowAnonymous)) {
-            throw new InvalidConfigException('Invalid $allowAnonymous value');
         }
 
         parent::init();
@@ -180,7 +178,7 @@ abstract class Controller extends \yii\web\Controller
      * Returns the currently logged-in user.
      *
      * @param bool $autoRenew
-     * @return ?User
+     * @return User|null
      * @see \yii\web\User::getIdentity()
      * @since 4.3.0
      */

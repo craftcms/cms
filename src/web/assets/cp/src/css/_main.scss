@@ -4,10 +4,26 @@
 @mixin checkered-bg($size) {
   // h/t https://gist.github.com/dfrankland/f6fed3e3ccc42e3de482b324126f9542
   $halfSize: $size * 0.5;
-  background-image: linear-gradient(45deg, var(--gray-100) 25%, transparent 25%),
-    linear-gradient(135deg, var(--gray-100) 25%, transparent 25%),
-    linear-gradient(45deg, transparent 75%, var(--gray-100) 75%),
-    linear-gradient(135deg, transparent 75%, var(--gray-100) 75%);
+  background-image: linear-gradient(
+      45deg,
+      #{transparentize($grey300, 0.75)} 25%,
+      transparent 25%
+    ),
+    linear-gradient(
+      135deg,
+      #{transparentize($grey300, 0.75)} 25%,
+      transparent 25%
+    ),
+    linear-gradient(
+      45deg,
+      transparent 75%,
+      #{transparentize($grey300, 0.75)} 75%
+    ),
+    linear-gradient(
+      135deg,
+      transparent 75%,
+      #{transparentize($grey300, 0.75)} 75%
+    );
   background-size: $size $size;
   background-position: 0 0, $halfSize 0, $halfSize -#{$halfSize}, 0 $halfSize;
 }
@@ -52,6 +68,11 @@
   --ui-control-color: var(--gray-550);
   --ui-control-hover-color: var(--gray-600);
   --ui-control-active-color: var(--gray-700);
+  --ui-control-bg-color: #{transparentize($inputColor, 0.75)};
+  --ui-control-hover-bg-color: #{transparentize($inputColor, 0.7)};
+  --ui-control-active-bg-color: #{transparentize($inputColor, 0.5)};
+  --ui-control-border-radius: var(--large-border-radius);
+  --ui-control-height: calc((34rem / 16)); // 1rem == 16px
   --icon-opacity: 0.8;
   --light-focus-hsl: #{hue($lightFocusColor)}, #{saturation($lightFocusColor)},
     #{lightness($lightFocusColor)};
@@ -143,6 +164,11 @@ fieldset:last-child,
 
 .draghelper {
   box-sizing: border-box;
+}
+
+.offset-drag-helper {
+  @include margin(-50px, 0, 0, -50px);
+  @include padding(60px, 0, 0, 60px);
 }
 
 img {
@@ -396,6 +422,10 @@ pre code {
 a {
   color: var(--link-color);
   cursor: pointer;
+
+  &[aria-current] {
+    cursor: default;
+  }
 
   body.underline-links & {
     text-decoration: underline;
@@ -1085,13 +1115,13 @@ td.right {
 }
 
 .customize-sources-item {
+  --selected-item-color: var(--white);
   display: flex;
   width: calc(100% - 1px);
   box-sizing: border-box;
   align-items: center;
   position: relative;
   margin-top: -1px;
-  padding: 8px 14px;
   background-color: var(--gray-100);
   border: solid var(--hairline-color);
   border-width: 1px 0;
@@ -1109,15 +1139,15 @@ td.right {
   }
 
   &.sel {
-    background-color: var(--gray-200);
+    @include light-focus-ring;
+    --ui-control-color: var(--selected-item-color);
+    background-color: var(--dark-sel-color);
+    color: var(--selected-item-color);
     z-index: 1;
   }
 
   .label {
     flex: 1;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
   }
 
   &.heading {
@@ -1127,15 +1157,45 @@ td.right {
       font-size: 12px;
       font-weight: bold;
     }
-  }
 
-  .move {
-    @include margin-left(7px);
+    &.sel .label {
+      color: var(--selected-item-color);
+    }
   }
 }
 
-.customize-sources-table-column .move {
-  @include margin-right(10px);
+.customize-sources-item__move {
+  position: absolute;
+  top: 50%;
+  @include right(0);
+  transform: translate(-50%, -50%);
+  justify-content: center;
+  align-items: center;
+
+  &.icon {
+    display: flex;
+    text-decoration: none;
+  }
+}
+
+.customize-sources-item__btn {
+  padding: 8px 14px;
+  @include padding-right(30px);
+  margin: 3px;
+}
+
+.customize-sources-table-column {
+  display: flex;
+  align-items: start;
+  align-content: stretch;
+  margin-bottom: 4px;
+
+  .move {
+    margin-top: -3px;
+    @include margin-right(10px);
+    position: relative;
+    z-index: 1;
+  }
 }
 
 ul.path {
@@ -1353,18 +1413,21 @@ ul.icons {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  border-radius: var(--large-border-radius);
+  border-radius: var(--ui-control-border-radius);
   padding: 7px 14px;
   border: none;
   text-align: center;
   white-space: nowrap;
   user-select: none;
-  cursor: pointer;
   box-sizing: border-box;
   appearance: none;
   color: currentColor;
   font-size: inherit;
-  background-color: transparentize($inputColor, 0.75);
+  background-color: var(--ui-control-bg-color);
+
+  &:not([aria-current]) {
+    cursor: pointer;
+  }
 
   &.chromeless {
     background-color: transparent;
@@ -1390,16 +1453,18 @@ ul.icons {
     text-align: left;
   }
 
-  &:not(.disabled):not(.loading):not(.dashed):not([aria-disabled]) {
+  &:not(.disabled):not(.loading):not(.dashed):not([aria-disabled]):not(
+      [aria-current]
+    ) {
     &:focus,
     &.focus,
     &:hover {
-      background-color: transparentize($inputColor, 0.7);
+      --ui-control-bg-color: var(--ui-control-hover-bg-color);
     }
 
     &:active,
     &.active {
-      background-color: transparentize($inputColor, 0.6);
+      --ui-control-bg-color: var(--ui-control-active-bg-color);
     }
   }
 
@@ -1441,6 +1506,15 @@ ul.icons {
   div.checkbox {
     margin-top: 2px;
   }
+
+  [data-icon] {
+    margin-top: -2px;
+    @include margin-right(4px);
+
+    &.light:before {
+      color: var(--gray-300);
+    }
+  }
 }
 
 .disabled {
@@ -1454,7 +1528,7 @@ ul.icons {
 
 .btn,
 .spinner {
-  height: 34px;
+  height: var(--ui-control-height);
 }
 
 .btn[data-icon-after]:not(:empty):not(.btn-empty):after,
@@ -1886,6 +1960,174 @@ div.btn.submit input {
   }
 }
 
+/* chevron buttons */
+.chevron-btns {
+  display: flex;
+  justify-content: flex-start;
+
+  .btn {
+    position: relative;
+    padding: 0;
+    border-radius: 0;
+    background-color: transparent;
+
+    &.current-step,
+    &.active-drop-target {
+      color: var(--white);
+      --text-color: var(--white);
+      --ui-control-color: var(--white);
+      --ui-control-bg-color: var(--gray-500);
+      --ui-control-hover-bg-color: #{darken($grey500, 5%)};
+      --ui-control-active-bg-color: #{darken($grey500, 10%)};
+    }
+
+    &.current-step {
+      @include light-on-dark-text;
+      @include light-focus-ring;
+    }
+
+    &:focus {
+      z-index: 1;
+      box-shadow: none;
+
+      .label {
+        z-index: 1;
+        box-shadow: var(--focus-ring);
+      }
+
+      .reduce-focus-visibility &:not(:focus-visible) .label {
+        box-shadow: none;
+      }
+    }
+
+    .reduce-focus-visibility &:focus-visible .label {
+      box-shadow: var(--focus-ring);
+    }
+
+    &:not(.has-action-menu) {
+      @include padding-right(calc(var(--ui-control-height) / 2));
+      @include margin-right(2.8px);
+
+      &:not(.current-step[data-disclosure-trigger]) .btn-body {
+        @include padding-right(5px);
+      }
+    }
+
+    &.current-step[data-disclosure-trigger] .btn-body {
+      @include padding-left(8px);
+
+      .label {
+        padding: 3px;
+
+        &:after {
+          @include angle;
+          position: relative;
+        }
+      }
+    }
+
+    .btn-body {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      height: var(--ui-control-height);
+      background-color: var(--ui-control-bg-color);
+
+      [data-icon] {
+        --ui-control-height: calc((13rem / 16)); // 1rem == 16px
+        text-align: center;
+        @include margin-right(0);
+      }
+    }
+
+    .label {
+      display: inline-flex;
+      align-items: center;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    &.has-action-menu .btn-body {
+      @include padding-right(1px);
+      @include margin-right(0);
+    }
+
+    .chevron-right,
+    .chevron-left {
+      position: absolute;
+      top: 0;
+      height: 100%;
+      width: calc(var(--ui-control-height) / 2);
+    }
+
+    .chevron-left {
+      @include left(0);
+      border-top: calc(var(--ui-control-height) / 2) solid
+        var(--ui-control-bg-color);
+      @include border-left(
+        calc(var(--ui-control-height) / 2) solid transparent
+      );
+
+      &:after {
+        display: block;
+        content: '';
+        font-size: 0;
+        position: absolute;
+        bottom: 0;
+        @include right(0);
+        border-bottom: calc(var(--ui-control-height) / 2) solid
+          var(--ui-control-bg-color);
+        @include border-left(
+          calc(var(--ui-control-height) / 2) solid transparent
+        );
+      }
+    }
+
+    .chevron-right {
+      @include right(0);
+      border-top: calc(var(--ui-control-height) / 2) solid transparent;
+      border-bottom: calc(var(--ui-control-height) / 2) solid transparent;
+      @include border-left(
+        calc(var(--ui-control-height) / 2) solid var(--ui-control-bg-color)
+      );
+    }
+  }
+
+  ol {
+    position: relative;
+    @include padding-left(0);
+    list-style-type: none;
+    display: flex;
+
+    li {
+      &.first-step .btn {
+        .btn-body {
+          @include padding-left(14px);
+          @include border-radius(
+            var(--ui-control-border-radius),
+            0,
+            0,
+            var(--ui-control-border-radius)
+          );
+        }
+
+        .chevron-left {
+          display: none;
+        }
+      }
+
+      &:not(.first-step) .btn {
+        @include margin-left(calc(-1 * (var(--ui-control-height) / 2)));
+        @include padding-left(calc(var(--ui-control-height) / 2));
+
+        .btn-body {
+          @include padding-left(7px);
+        }
+      }
+    }
+  }
+}
+
 /* color inputs */
 .color-input-container {
   position: relative;
@@ -2171,7 +2413,7 @@ h2 + .actions {
 /* ----------------------------------------*/
 
 .tablepane {
-  margin: -24px -24px -12px;
+  margin: -22px -22px -10px;
   overflow-x: auto;
 
   table.data {
@@ -2259,10 +2501,12 @@ table {
         th,
         td {
           &:first-child {
-            @include border-top-left-radius(var(--large-border-radius));
+            @include border-top-left-radius(var(--small-border-radius));
+            @include border-bottom-left-radius(var(--small-border-radius));
           }
           &:last-child {
-            @include border-top-right-radius(var(--large-border-radius));
+            @include border-top-right-radius(var(--small-border-radius));
+            @include border-bottom-right-radius(var(--small-border-radius));
           }
         }
       }
@@ -2291,7 +2535,7 @@ table {
           padding-left: 0;
           padding-right: 0;
 
-          &:not(.ordered):hover {
+          body:not(.dragging) &:not(.ordered):hover {
             background-color: var(--gray-100);
           }
 
@@ -2343,11 +2587,14 @@ table {
 
     tbody {
       tr {
+        --hover-bg-color: var(--gray-050);
+        --selected-bg-color: var(--dark-sel-color);
+
         &:not(.disabled) {
           &:hover {
             th,
             td {
-              background-color: var(--gray-050);
+              background-color: var(--hover-bg-color);
             }
           }
 
@@ -2356,10 +2603,16 @@ table {
             z-index: 1;
           }
 
-          &.sel {
+          &.sel,
+          &.active-drop-target {
+            --link-color: var(--white);
+            --ui-control-color: var(--white);
+            @include custom-color-focus-ring(hsl(var(--light-focus-hsl)));
+
             th,
             td {
-              background-color: var(--light-sel-color);
+              color: var(--white);
+              background-color: var(--selected-bg-color);
             }
           }
         }
@@ -2387,6 +2640,13 @@ table {
       th,
       td {
         border-top: 1px solid transparent;
+      }
+    }
+
+    tr.sel:not(.draggee) + tr.sel:not(.draggee) {
+      th,
+      td {
+        border-top-color: var(--gray-300);
       }
     }
   }
@@ -2452,8 +2712,7 @@ table {
 }
 
 .datatablesorthelper,
-.editabletablesorthelper,
-.thumbviewhelper {
+.editabletablesorthelper {
   background-color: var(--white);
   @include shadow;
 }
@@ -2488,19 +2747,38 @@ $elementInnerSpacing: 5px;
   font-weight: normal;
   border-radius: var(--small-border-radius);
 
+  .label {
+    .segment:after {
+      display: inline-flex !important;
+      position: relative;
+      top: -2px;
+      @include margin(0, 5px, 0, 2px);
+      @include angle(right, var(--light-text-color), 1px);
+
+      .sel & {
+        @include angle(right, var(--white), 1px);
+      }
+    }
+  }
+
   &:focus,
   li:focus & {
     background-color: var(--gray-050);
   }
 
   &.sel,
-  li.sel & {
-    background-color: var(--light-sel-color) !important;
-    cursor: default;
+  li.sel &,
+  li.active-drop-target & {
+    --link-color: var(--white);
+    --ui-control-color: var(--white);
+    @include custom-color-focus-ring(hsl(var(--light-focus-hsl)));
+    color: var(--white);
+    background-color: var(--dark-sel-color) !important;
+  }
 
-    &:focus {
-      background-color: darken($lightSelColor, 5%) !important;
-    }
+  &.sel,
+  li.sel & {
+    cursor: default;
 
     &.hasthumb {
       .elementthumb {
@@ -2510,6 +2788,11 @@ $elementInnerSpacing: 5px;
         }
       }
     }
+  }
+
+  .offset-drag-helper & {
+    background-color: var(--gray-050);
+    @include shadow;
   }
 
   &.hasthumb {
@@ -2632,8 +2915,8 @@ $elementInnerSpacing: 5px;
 
     .elementthumb:not(:empty) {
       top: $baseElementSidePadding;
-      @include left($baseElementSidePadding);
-      width: $largeThumbSize;
+      @include left(0);
+      width: 100%;
       height: $largeThumbSize;
 
       &.checkered img {
@@ -2685,6 +2968,71 @@ $elementInnerSpacing: 5px;
 
 $checkboxPadding: $checkboxSize + 4;
 
+.element-index {
+  .source-path {
+    background-color: var(--gray-050);
+    border-radius: 3px;
+    --ui-control-bg-color: var(--light-sel-color);
+    --ui-control-hover-bg-color: #{darken($lightSelColor, 5%)};
+    --ui-control-active-bg-color: #{darken($lightSelColor, 10%)};
+
+    .chevron-btns {
+      display: inline-flex;
+      position: relative;
+      background: $white;
+      --ui-control-height: calc((30rem / 16)); // 1rem == 16px
+
+      &:before {
+        display: block;
+        content: '';
+        font-size: 0;
+        position: absolute;
+        top: 0;
+        width: 0;
+        height: 0;
+        @include right(0);
+        border-top: calc(var(--ui-control-height) / 2) solid $grey050;
+        @include border-left(
+          calc(var(--ui-control-height) / 2) solid transparent
+        );
+      }
+
+      &:after {
+        display: block;
+        content: '';
+        font-size: 0;
+        position: absolute;
+        top: calc(var(--ui-control-height) / 2);
+        @include right(0);
+        border-bottom: calc(var(--ui-control-height) / 2) solid $grey050;
+        @include border-left(
+          calc(var(--ui-control-height) / 2) solid transparent
+        );
+      }
+
+      .btn {
+        --ui-control-border-radius: 3px;
+      }
+    }
+
+    .btn.settings {
+      box-shadow: 0 0 0 2px var(--white);
+    }
+  }
+
+  &.main {
+    .source-path {
+      margin: -22px -22px 24px;
+    }
+  }
+
+  .elementselectormodal & {
+    .source-path {
+      margin-bottom: 2px;
+    }
+  }
+}
+
 .elements {
   position: relative;
 
@@ -2716,10 +3064,11 @@ $checkboxPadding: $checkboxSize + 4;
   }
 
   .header {
-    margin: -24px -24px 24px;
+    margin: -22px -22px 24px;
     padding: 14px 24px;
     background-color: var(--gray-050);
     box-shadow: none;
+    border-radius: var(--small-border-radius);
 
     &:after {
       content: '';
@@ -2732,6 +3081,12 @@ $checkboxPadding: $checkboxSize + 4;
         @include margin-right($elementInnerSpacing);
       }
     }
+  }
+
+  .tableview tr.draggee th,
+  .tableview tr.draggee td,
+  .thumbsview li.draggee {
+    opacity: 0.25;
   }
 
   // table views
@@ -2763,19 +3118,14 @@ $checkboxPadding: $checkboxSize + 4;
     .move + .toggle {
       @include margin-left(calc(var(--touch-target-size) * -2));
     }
+
+    .enabled-label {
+      margin-left: var(--xs);
+    }
   }
 
   // thumbs views
   .thumbsview {
-    @include margin(
-      -$baseElementSidePadding,
-      -$baseElementSidePadding - 1px,
-      -$baseElementSidePadding - 1px,
-      -$baseElementSidePadding
-    );
-    width: calc(
-      100% + #{$baseElementSidePadding + $baseElementSidePadding + 1px}
-    );
     display: grid;
     gap: 5px;
     grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
@@ -2783,6 +3133,7 @@ $checkboxPadding: $checkboxSize + 4;
     li {
       position: relative;
       @include margin(0, 1px, 1px, 0);
+      max-width: 226px;
 
       &:hover {
         .element {
@@ -2792,10 +3143,6 @@ $checkboxPadding: $checkboxSize + 4;
 
       .element.large.hasthumb {
         width: unset;
-
-        .elementthumb:not(:empty) {
-          width: 100%;
-        }
       }
 
       &.has-checkbox {
@@ -2827,6 +3174,16 @@ $checkboxPadding: $checkboxSize + 4;
           @include left($baseElementSidePadding);
         }
       }
+
+      &.sel {
+        a {
+          cursor: pointer !important;
+
+          &:hover {
+            text-decoration: underline;
+          }
+        }
+      }
     }
   }
 }
@@ -2837,18 +3194,6 @@ $checkboxPadding: $checkboxSize + 4;
     position: absolute;
     bottom: 0;
     @include right(-24px);
-  }
-}
-
-.thumbviewhelper {
-  margin: -7px;
-  padding: 7px;
-
-  .thumbsview {
-    &,
-    li {
-      margin: 0 !important;
-    }
   }
 }
 
@@ -3035,6 +3380,18 @@ $checkboxPadding: $checkboxSize + 4;
 
   .flex {
     padding-top: 7px;
+  }
+
+  .structure ul {
+    @include margin-left(12px);
+
+    li {
+      background-position: 0 2px !important;
+
+      .element {
+        margin: 0;
+      }
+    }
   }
 }
 
@@ -4102,8 +4459,8 @@ $min2ColWidth: 400px;
     }
   }
 
-  & > .field:not(:first-child),
-  & > .flex-fields + .field {
+  & > .field:not(:first-child):not(.first-child),
+  & > .flex-fields + .field:not(.first-child) {
     border-top: 1px solid var(--hairline-color);
   }
 
@@ -4164,7 +4521,7 @@ $min2ColWidth: 400px;
 }
 
 .modal,
-.hud .body {
+.hud {
   @include modal;
 }
 
@@ -4755,6 +5112,12 @@ $min2ColWidth: 400px;
   padding-bottom: 50px;
   user-select: none;
 
+  .header {
+    padding-top: 14px;
+    padding-bottom: 14px;
+    text-align: center;
+  }
+
   .body {
     position: relative;
     height: 100%;
@@ -4914,8 +5277,18 @@ $min2ColWidth: 400px;
   }
 }
 
-.element-index-view-menu-table-column .icon.move {
-  @include margin-right(10px);
+.element-index-view-menu-table-column {
+  display: flex;
+  align-items: start;
+  align-content: stretch;
+  margin-bottom: 4px;
+
+  .icon.move {
+    margin-top: -3px;
+    @include margin-right(10px);
+    position: relative;
+    z-index: 1;
+  }
 }
 
 /* sort fields */
@@ -5128,6 +5501,30 @@ $min2ColWidth: 400px;
 }
 
 /* ----------------------------------------
+/*  Alternative Text
+/* ----------------------------------------*/
+.video-transcript {
+  background-color: var(--gray-050);
+  overflow-y: scroll;
+  font-size: 1rem;
+  position: relative;
+
+  @include focus-styles {
+    // Unset default
+    box-shadow: none;
+    color: var(--white);
+    background-color: var(--gray-800);
+  }
+}
+
+.video-transcript__inner {
+  margin-left: auto;
+  margin-right: auto;
+  max-width: 550px;
+  padding: var(--xl);
+}
+
+/* ----------------------------------------
 /*  Menus
 /* ----------------------------------------*/
 
@@ -5196,6 +5593,12 @@ $min2ColWidth: 400px;
           @include alignleft;
         }
 
+        &.flex {
+          [data-icon] {
+            margin-top: -2px;
+          }
+        }
+
         &.sel {
           cursor: default;
         }
@@ -5237,6 +5640,10 @@ $min2ColWidth: 400px;
   hr {
     margin: 5px -14px;
   }
+
+  .go:after {
+    color: inherit;
+  }
 }
 
 .menubtn,
@@ -5255,7 +5662,6 @@ $min2ColWidth: 400px;
 .menu:not(.menu--disclosure) ul li a:not(.sel):not(.disabled):hover,
 .menu:not(.menu--disclosure):not(:hover) ul li a:not(.disabled).hover {
   @include menu-option-active-styles;
-
   --text-color: var(--white);
   --light-text-color: var(--gray-100);
   --ui-control-color: var(--gray-050);
@@ -5696,7 +6102,7 @@ div.checkbox {
   position: relative;
   @include padding-left($checkboxSize + 5);
   line-height: 16px;
-  height: 16px;
+  min-height: 16px;
   cursor: pointer;
 
   .info {
@@ -5782,12 +6188,21 @@ body.reduce-focus-visibility {
   }
 }
 
-.checkbox-icon:before {
-  @include icon;
-  line-height: var(--checkbox-size);
-  color: var(--enabled-color);
-  content: 'check';
-  font-size: 15px;
+.checkbox-icon {
+  display: inline-flex;
+  padding: 3px;
+  background-color: var(--enabled-color);
+  color: var(--white);
+  border-radius: var(--small-border-radius);
+
+  &:before {
+    --checkbox-size: 14px;
+    --icon-opacity: 1;
+    @include icon;
+    content: 'check';
+    line-height: var(--checkbox-size);
+    font-size: var(--checkbox-size);
+  }
 }
 
 .monaco-mouse-cursor-text {
@@ -5923,7 +6338,7 @@ body.reduce-focus-visibility {
 
   &:not(.small) {
     box-sizing: border-box;
-    min-height: 34px;
+    min-height: calc(34rem / 16);
   }
 
   &.small {
@@ -5978,6 +6393,16 @@ body.reduce-focus-visibility {
     }
   }
 
+  .texticon-icon {
+    position: absolute;
+    top: calc((34rem / 16) / 2);
+    transform: translateY(-50%);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    @include left(9px);
+  }
+
   .clear-btn {
     position: absolute;
     top: calc(
@@ -5995,7 +6420,8 @@ body.reduce-focus-visibility {
 
     .filter-btn {
       position: absolute;
-      top: 4px;
+      top: calc((34rem / 16) / 2);
+      transform: translateY(-50%);
       @include right(4px);
       padding: 0 7px 4px;
       font-size: 14px;
@@ -6024,7 +6450,7 @@ body.reduce-focus-visibility {
     }
 
     .text {
-      @include padding-left(26px);
+      @include padding-left(calc(26rem / 16));
 
       &.clearable {
         @include padding-right(calc(30px + var(--touch-target-size)));
@@ -6282,7 +6708,7 @@ tr.indexingSession td.progress div.progressContainer div.progressInfo {
 
 body .selectize-dropdown {
   border: none;
-  z-index: 100;
+  z-index: 101;
 }
 
 /* single select styles */
@@ -6291,7 +6717,7 @@ body .selectize-dropdown {
   height: 34px;
 
   &:not(.fullwidth) {
-    width: 25em;
+    max-width: 25em;
   }
 }
 
@@ -6645,6 +7071,10 @@ ul.errors li {
     &.autosuggest__results-item--highlighted {
       @include menu-option-active-styles;
       cursor: pointer;
+
+      .light {
+        color: $grey100 !important;
+      }
     }
   }
 }
@@ -7037,15 +7467,6 @@ $titlebarBorderRadius: calc(var(--large-border-radius) - 1px);
   position: absolute;
   top: 0;
   @include right(5px);
-}
-
-.categoriesfield {
-  position: relative;
-  min-height: 30px;
-}
-
-.categoriesfield .structure ul {
-  @include margin-left(12px);
 }
 
 /* site pickers */

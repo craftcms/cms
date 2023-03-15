@@ -39,7 +39,7 @@
 └────────────────────────────────────────────────────────────────────────────────────┘
 #}
 
-{% extends "_layouts/basecp" %}
+{% extends '_layouts/basecp.twig' %}
 
 {# The control panel only supports queue components that implement QueueInterface #}
 {% set queue = craft.app.queue %}
@@ -151,7 +151,8 @@
                 <div class="flex">
                     {% include '_layouts/components/crumbs' %}
                     <div class="flex-grow"></div>
-                    <button type="button" id="announcements-btn" class="btn hidden" aria-label="{{ 'What’s New'|t('app') }}" title="{{ 'What’s New'|t('app') }}">
+                    <button type="button" id="announcements-btn" class="btn hidden" title="{{ 'What’s New'|t('app') }}">
+                        <span class="visually-hidden">{{ 'What’s New'|t('app') }}</span>
                         {{ svg('@app/icons/gift.svg') }}
                     </button>
 
@@ -275,7 +276,7 @@
 
                                     {# footer #}
                                     {% if footer %}
-                                        <div id="footer" class="flex">
+                                        <div id="footer" class="flex flex-justify">
                                             {{ footer|raw }}
                                         </div>
                                     {% endif %}

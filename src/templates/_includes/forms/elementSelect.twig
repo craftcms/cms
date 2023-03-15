@@ -24,15 +24,19 @@
     class: ['elementselect']|merge((class ?? [])|explodeClass),
 }|merge(containerAttributes ?? [], recursive=true) %}
 
+{% set modalSettings = {
+    modalTitle: selectionLabel ?? 'Choose'|t('app'),
+}|merge(modalSettings ?? [], recursive=true) %}
+
 {%- if block('attr') is defined %}
     {%- set containerAttributes = containerAttributes|merge(('<div ' ~ block('attr') ~ '>')|parseAttr, recursive=true) %}
 {% endif %}
 
 {% tag 'div' with containerAttributes %}
     {% if maintainHierarchy %}
-        {{ include('_elements/structurelist', { elements, id })}}
+        {{ include('_elements/structurelist.twig', { elements, id })}}
     {% else %}
-        {{ include('_elements/list', { elements, viewMode, disabled }) }}
+        {{ include('_elements/list.twig', { elements, viewMode, disabled }) }}
     {% endif %}
 
     <div class="flex flex-nowrap">
@@ -64,6 +68,8 @@
         elementType: elementType,
         sources: sources,
         condition: condition ? condition.getConfig() : null,
+        referenceElementId: referenceElement.id ?? null,
+        referenceElementSiteId: referenceElement.siteId ?? null,
         criteria: criteria,
         allowSelfRelations: allowSelfRelations ?? false,
         maintainHierarchy: maintainHierarchy,
