@@ -1909,7 +1909,7 @@ class Asset extends Element
      */
     public function getCopyOfFile(): string
     {
-        $tempFilename = uniqid(pathinfo($this->filename, PATHINFO_FILENAME), true) . '.' . $this->getExtension();
+        $tempFilename = FileHelper::uniqueName($this->filename);
         $tempPath = Craft::$app->getPath()->getTempPath() . DIRECTORY_SEPARATOR . $tempFilename;
         $this->getVolume()->saveFileLocally($this->getPath(), $tempPath);
 
