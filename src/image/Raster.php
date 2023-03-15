@@ -269,6 +269,7 @@ class Raster extends Image
     {
         $upscale = $upscale ?? Craft::$app->getConfig()->getGeneral()->upscaleImages;
 
+        $this->normalizeDimensions($targetWidth, $targetHeight);
         $this->scaleToFit($targetWidth, $targetHeight, $upscale);
         $this->setFill($fill);
 

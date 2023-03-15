@@ -22,6 +22,7 @@ use craft\web\twig\CpExtension;
 use craft\web\twig\Environment;
 use craft\web\twig\Extension;
 use craft\web\twig\GlobalsExtension;
+use craft\web\twig\SinglePreloaderExtension;
 use craft\web\twig\TemplateLoader;
 use Throwable;
 use Twig\Error\LoaderError as TwigLoaderError;
@@ -354,6 +355,10 @@ class View extends \yii\web\View
             $twig->addExtension(new CpExtension());
         } elseif (Craft::$app->getIsInstalled()) {
             $twig->addExtension(new GlobalsExtension());
+
+            if (Craft::$app->getConfig()->getGeneral()->preloadSingles) {
+                $twig->addExtension(new SinglePreloaderExtension());
+            }
         }
 
         // Add plugin-supplied extensions

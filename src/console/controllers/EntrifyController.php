@@ -104,6 +104,7 @@ class EntrifyController extends Controller
             return ExitCode::UNSPECIFIED_ERROR;
         }
 
+        $projectConfigService = Craft::$app->getProjectConfig();
         $projectConfigChanged = false;
 
         if (
@@ -127,6 +128,9 @@ class EntrifyController extends Controller
             $author = $this->_author();
         } catch (InvalidConfigException $e) {
             $this->stderr($e->getMessage() . PHP_EOL, Console::FG_RED);
+            if ($projectConfigChanged) {
+                $projectConfigService->saveModifiedConfigData();
+            }
             return ExitCode::UNSPECIFIED_ERROR;
         }
 
@@ -217,7 +221,6 @@ class EntrifyController extends Controller
 
         $this->success('Categories converted.');
 
-        $projectConfigService = Craft::$app->getProjectConfig();
         if (!$projectConfigService->readOnly) {
             if (!$categoryGroup->dateDeleted && $this->confirm("Delete the “{$categoryGroup}” category group?", true)) {
                 $this->do('Deleting category group', function() use ($categoryGroup) {
@@ -236,9 +239,16 @@ class EntrifyController extends Controller
                 $this->stdout(sprintf("Found %s relating to the “{$categoryGroup->name}” category group.\n", $total === 1 ? 'one Categories field' : "$total Categories fields"));
                 if ($this->confirm($total === 1 ? 'Convert it to an Entries field?' : 'Convert them to Entries fields?', true)) {
                     foreach ($fields as [$path, $config]) {
-                        $this->do(sprintf('Converting %s', ($config['name'] ?? null) ? "“{$config['name']}”" : 'Categories filed'), function() use ($projectConfigService, $path, $config) {
+                        $this->do(sprintf('Converting %s', ($config['name'] ?? null) ? "“{$config['name']}”" : 'Categories filed'), function() use ($section, $projectConfigService, $path, $config) {
                             $config['type'] = Entries::class;
                             $config['settings']['maintainHierarchy'] = $config['settings']['maintainHierarchy'] ?? true;
+                            $config['settings']['sources'] = ["section:$section->uid"];
+                            unset(
+                                $config['settings']['source'],
+                                $config['settings']['allowMultipleSources'],
+                                $config['settings']['allowLimit'],
+                                $config['settings']['allowLargeThumbsView'],
+                            );
                             $projectConfigService->set($path, $config);
                         });
                     }
@@ -272,6 +282,7 @@ class EntrifyController extends Controller
             return ExitCode::UNSPECIFIED_ERROR;
         }
 
+        $projectConfigService = Craft::$app->getProjectConfig();
         $projectConfigChanged = false;
 
         if (
@@ -295,6 +306,9 @@ class EntrifyController extends Controller
             $author = $this->_author();
         } catch (InvalidConfigException $e) {
             $this->stderr($e->getMessage() . PHP_EOL, Console::FG_RED);
+            if ($projectConfigChanged) {
+                $projectConfigService->saveModifiedConfigData();
+            }
             return ExitCode::UNSPECIFIED_ERROR;
         }
 
@@ -346,7 +360,6 @@ class EntrifyController extends Controller
 
         $this->success('Tags converted.');
 
-        $projectConfigService = Craft::$app->getProjectConfig();
         if (!$projectConfigService->readOnly) {
             if (!$tagGroup->dateDeleted && $this->confirm("Delete the “{$tagGroup}” tag group?", true)) {
                 $this->do('Deleting tag group', function() use ($tagGroup) {
@@ -365,8 +378,15 @@ class EntrifyController extends Controller
                 $this->stdout(sprintf("Found %s relating to the “{$tagGroup->name}” tag group.\n", $total === 1 ? 'one Tags field' : "$total Tags fields"));
                 if ($this->confirm($total === 1 ? 'Convert it to an Entries field?' : 'Convert them to Entries fields?', true)) {
                     foreach ($fields as [$path, $config]) {
-                        $this->do(sprintf('Converting %s', ($config['name'] ?? null) ? "“{$config['name']}”" : 'Tags filed'), function() use ($projectConfigService, $path, $config) {
+                        $this->do(sprintf('Converting %s', ($config['name'] ?? null) ? "“{$config['name']}”" : 'Tags filed'), function() use ($section, $projectConfigService, $path, $config) {
                             $config['type'] = Entries::class;
+                            $config['settings']['sources'] = ["section:$section->uid"];
+                            unset(
+                                $config['settings']['source'],
+                                $config['settings']['allowMultipleSources'],
+                                $config['settings']['allowLimit'],
+                                $config['settings']['allowLargeThumbsView'],
+                            );
                             $projectConfigService->set($path, $config);
                         });
                     }
@@ -422,10 +442,18 @@ class EntrifyController extends Controller
             $entryType = $this->_entryType();
         } catch (InvalidConfigException $e) {
             $this->stderr($e->getMessage() . PHP_EOL, Console::FG_RED);
+            if ($projectConfigChanged) {
+                Craft::$app->getProjectConfig()->saveModifiedConfigData();
+            }
             return ExitCode::UNSPECIFIED_ERROR;
         }
 
-        $this->do("Converting “{$globalSet->name}”", function() use ($section, $entryType, $globalSet) {
+        $this->do("Converting “{$globalSet->name}”", function() use (
+            $section,
+            $entryType,
+            $globalSet,
+            &$projectConfigChanged,
+        ) {
             if (!$globalSet->dateDeleted) {
                 Craft::$app->getGlobals()->deleteSet($globalSet);
                 $projectConfigChanged = true;

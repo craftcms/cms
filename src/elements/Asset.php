@@ -1916,9 +1916,10 @@ JS;
             return $url;
         }
 
-        if (!$volume->getFs()->hasUrls) {
-            return null;
-        }
+        // todo: uncomment for v5. Currently Imager X is relying on a relative URL being returned
+        //if (!$volume->getFs()->hasUrls) {
+        //    return null;
+        //}
 
         return Html::encodeSpaces(Assets::generateUrl($volume, $this));
     }
@@ -2872,6 +2873,7 @@ JS;
                 'data' => [
                     'is-folder' => true,
                     'folder-id' => $this->folderId,
+                    'folder-name' => $this->title,
                     'source-path' => Json::encode($this->sourcePath),
                     'has-children' => Craft::$app->getAssets()->foldersExist(['parentId' => $this->folderId]),
                 ],
@@ -2881,8 +2883,8 @@ JS;
             $userSession = Craft::$app->getUser();
 
             if (
-                $userSession->checkPermission("editPeerFilesInVolume:$volume->uid") &&
-                $userSession->checkPermission("deletePeerFilesInVolume:$volume->uid")
+                $userSession->checkPermission("savePeerAssets:$volume->uid") &&
+                $userSession->checkPermission("deletePeerAssets:$volume->uid")
             ) {
                 $attributes['data']['movable'] = true;
             }

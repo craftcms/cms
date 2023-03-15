@@ -597,32 +597,36 @@ class Categories extends Component
             $now = Db::prepareDateForDb(new DateTime());
             $db = Craft::$app->getDb();
 
+            $conditionSql = <<<SQL
+[[categories.groupId]] = $group->id AND
+[[categories.id]] = [[elements.id]] AND
+[[elements.canonicalId]] IS NULL AND
+[[elements.revisionId]] IS NULL AND
+[[elements.dateDeleted]] IS NULL
+SQL;
+
             if ($db->getIsMysql()) {
-                $sql = <<<SQL
+                $db->createCommand(<<<SQL
 UPDATE $elementsTable [[elements]], $categoriesTable [[categories]] 
 SET [[elements.dateDeleted]] = '$now',
   [[categories.deletedWithGroup]] = 1
-WHERE [[categories.groupId]] = $group->id AND
-  [[categories.id]] = [[elements.id]] AND
-  [[elements.canonicalId]] IS NULL AND
-  [[elements.revisionId]] IS NULL AND
-  [[elements.dateDeleted]] IS NULL
-SQL;
+WHERE $conditionSql
+SQL)->execute();
             } else {
-                $sql = <<<SQL
+                // Not possible to update two tables simultaneously with Postgres
+                $db->createCommand(<<<SQL
+UPDATE $categoriesTable [[categories]]
+SET [[deletedWithGroup]] = TRUE
+FROM $elementsTable [[elements]]
+WHERE $conditionSql
+SQL)->execute();
+                $db->createCommand(<<<SQL
 UPDATE $elementsTable
-SET [[elements.dateDeleted]] = '$now',
-  [[categories.deletedWithGroup]] = TRUE
-FROM $categoriesTable
-WHERE [[categories.groupId]] = $group->id AND
-  [[categories.id]] = [[elements.id]] AND
-  [[elements.canonicalId]] IS NULL AND
-  [[elements.revisionId]] IS NULL AND
-  [[elements.dateDeleted]] IS NULL
-SQL;
+SET [[dateDeleted]] = '$now'
+FROM $categoriesTable [[categories]]
+WHERE $conditionSql
+SQL)->execute();
             }
-
-            $db->createCommand($sql)->execute();
 
             // Delete the structure
             Craft::$app->getStructures()->deleteStructureById($categoryGroupRecord->structureId);

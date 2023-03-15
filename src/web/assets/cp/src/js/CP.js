@@ -1001,13 +1001,21 @@ Craft.CP = Garnish.Base.extend(
       if (Garnish.isArray(alerts) && alerts.length) {
         this.$alerts = $('<ul id="alerts"/>').prependTo($('#page-container'));
 
-        for (var i = 0; i < alerts.length; i++) {
-          $(
-            `<li><span data-icon="alert" aria-label="${Craft.t(
+        for (let alert of alerts) {
+          if (!$.isPlainObject(alert)) {
+            alert = {
+              content: alert,
+              showIcon: true,
+            };
+          }
+          let content = alert.content;
+          if (alert.showIcon) {
+            content = `<span data-icon="alert" aria-label="${Craft.t(
               'app',
               'Error'
-            )}"></span> ${alerts[i]}</li>`
-          ).appendTo(this.$alerts);
+            )}"></span> ${content}`;
+          }
+          $(`<li>${content}</li>`).appendTo(this.$alerts);
         }
 
         var height = this.$alerts.outerHeight();

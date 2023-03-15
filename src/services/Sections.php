@@ -870,30 +870,29 @@ class Sections extends Component
             $now = Db::prepareDateForDb(new DateTime());
             $db = Craft::$app->getDb();
 
-            if ($db->getIsMysql()) {
-                $sql = <<<SQL
-UPDATE $elementsTable [[elements]], $entriesTable [[sections]] 
-SET [[elements.dateDeleted]] = '$now'
-WHERE [[sections.sectionId]] = $section->id AND
-  [[sections.id]] = [[elements.id]] AND
-  [[elements.canonicalId]] IS NULL AND
-  [[elements.revisionId]] IS NULL AND
-  [[elements.dateDeleted]] IS NULL
+            $conditionSql = <<<SQL
+[[entries.sectionId]] = $section->id AND
+[[elements.canonicalId]] IS NULL AND
+[[elements.revisionId]] IS NULL AND
+[[elements.dateDeleted]] IS NULL
 SQL;
-            } else {
-                $sql = <<<SQL
-UPDATE $elementsTable
-SET [[elements.dateDeleted]] = '$now'
-FROM $entriesTable
-WHERE [[sections.sectionId]] = $section->id AND
-  [[sections.id]] = [[elements.id]] AND
-  [[elements.canonicalId]] IS NULL AND
-  [[elements.revisionId]] IS NULL AND
-  [[elements.dateDeleted]] IS NULL
-SQL;
-            }
 
-            $db->createCommand($sql)->execute();
+
+            if ($db->getIsMysql()) {
+                $db->createCommand(<<<SQL
+UPDATE $elementsTable [[elements]]
+INNER JOIN $entriesTable [[entries]] ON [[entries.id]] = [[elements.id]]
+SET [[elements.dateDeleted]] = '$now'
+WHERE $conditionSql
+SQL)->execute();
+            } else {
+                $db->createCommand(<<<SQL
+UPDATE $elementsTable [[elements]]
+SET [[dateDeleted]] = '$now'
+FROM $entriesTable [[entries]]
+WHERE [[entries.id]] = [[elements.id]] AND $conditionSql
+SQL)->execute();
+            }
 
             // Delete the structure
             if ($sectionRecord->structureId) {
@@ -1360,32 +1359,36 @@ SQL;
             $now = Db::prepareDateForDb(new DateTime());
             $db = Craft::$app->getDb();
 
+            $conditionSql = <<<SQL
+[[entries.typeId]] = $entryType->id AND
+[[entries.id]] = [[elements.id]] AND
+[[elements.canonicalId]] IS NULL AND
+[[elements.revisionId]] IS NULL AND
+[[elements.dateDeleted]] IS NULL
+SQL;
+
             if ($db->getIsMysql()) {
-                $sql = <<<SQL
+                $db->createCommand(<<<SQL
 UPDATE $elementsTable [[elements]], $entriesTable [[entries]] 
 SET [[elements.dateDeleted]] = '$now',
   [[entries.deletedWithEntryType]] = 1
-WHERE [[entries.typeId]] = $entryType->id AND
-  [[entries.id]] = [[elements.id]] AND
-  [[elements.canonicalId]] IS NULL AND
-  [[elements.revisionId]] IS NULL AND
-  [[elements.dateDeleted]] IS NULL
-SQL;
+WHERE $conditionSql
+SQL)->execute();
             } else {
-                $sql = <<<SQL
-UPDATE $elementsTable
-SET [[elements.dateDeleted]] = '$now',
-  [[entries.deletedWithEntryType]] = TRUE
-FROM $entriesTable
-WHERE [[entries.typeId]] = $entryType->id AND
-  [[entries.id]] = [[elements.id]] AND
-  [[elements.canonicalId]] IS NULL AND
-  [[elements.revisionId]] IS NULL AND
-  [[elements.dateDeleted]] IS NULL
-SQL;
+                // Not possible to update two tables simultaneously with Postgres
+                $db->createCommand(<<<SQL
+UPDATE $entriesTable [[entries]]
+SET [[deletedWithEntryType]] = TRUE
+FROM $elementsTable [[elements]]
+WHERE $conditionSql
+SQL)->execute();
+                $db->createCommand(<<<SQL
+UPDATE $elementsTable [[elements]]
+SET [[dateDeleted]] = '$now'
+FROM $entriesTable [[entries]]
+WHERE $conditionSql
+SQL)->execute();
             }
-
-            $db->createCommand($sql)->execute();
 
             // Delete the field layout
             if ($entryTypeRecord->fieldLayoutId) {

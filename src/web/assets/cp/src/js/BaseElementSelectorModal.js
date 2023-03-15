@@ -419,7 +419,13 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend(
           function (ev, touchData) {
             // Make sure the touch targets are the same
             // (they may be different if Command/Ctrl/Shift-clicking on multiple elements quickly)
-            if (touchData.firstTap.target === touchData.secondTap.target) {
+            // and make sure the element is actually selectable
+            if (
+              touchData.firstTap.target === touchData.secondTap.target &&
+              this.elementIndex.view.elementSelect.getItemIndex(
+                touchData.firstTap.target
+              ) != -1
+            ) {
               this.selectElements();
             }
           }
@@ -447,7 +453,16 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend(
           selectable: true,
           multiSelect: this.settings.multiSelect,
           buttonContainer: this.$secondaryButtons,
-          onSelectionChange: this.onSelectionChange.bind(this),
+          onSelectionChange: () => {
+            if (this.elementIndex) {
+              this.onSelectionChange();
+            }
+          },
+          onSourcePathChange: () => {
+            if (this.elementIndex) {
+              this.onSelectionChange();
+            }
+          },
           onSelectSource: this.onSelectSource.bind(this),
           hideSidebar: this.settings.hideSidebar,
           defaultSiteId: this.settings.defaultSiteId,
