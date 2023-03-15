@@ -890,44 +890,6 @@ JS, [
         return $html;
     }
 
-    /**
-     * Returns array of <li> items for error given handle
-     *
-     * @param array $allErrors
-     * @param string $handle
-     * @param string|null $label
-     * @return array
-     */
-    private function _prepErrorsSummaryList(array $allErrors, string $handle, ?string $label = null): array
-    {
-        $errorsList = [];
-        if (isset($allErrors[$handle])) {
-            foreach ($allErrors[$handle] as $error) {
-                $errorItem = Html::beginTag('li');
-
-                // get name of the field; wrap that name in the error message in a span
-                if (!empty($label) && str_contains($error, $label)) {
-                    $error = str_replace($label, "<span>$label</span>", $error);
-                }
-
-                // this is true in case of e.g. cross site validation error
-                if (preg_match('/^\s?\<a /', $error)) {
-                    $errorItem .= $error;
-                } else {
-                    $errorItem .= Html::a(Craft::t('app', $error), '#', [
-                        'data-field-error-key' => $handle,
-                    ]);
-                }
-
-                $errorItem .= Html::endTag('li');
-
-                $errorsList[$handle][] = $errorItem;
-            }
-        }
-
-        return $errorsList;
-    }
-
     private function _editorSidebar(
         ElementInterface $element,
         bool $mergedCanonicalChanges,
