@@ -75,7 +75,7 @@ class UserElementTest extends TestCase
 
         $this->activeUser->validateUnverifiedEmail('unverifiedEmail', [], $validator);
         self::assertSame(
-            ['unverifiedEmail' => ['Email "unverifemail@email.com" has already been taken.']],
+            ['unverifiedEmail' => ['*Email* "unverifemail@email.com" has already been taken.']],
             $this->activeUser->getErrors()
         );
 
