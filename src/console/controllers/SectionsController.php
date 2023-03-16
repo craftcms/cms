@@ -114,6 +114,9 @@ class SectionsController extends Controller
             return null;
         };
 
+        $saveEntryType = false;
+        $sourceFieldLayout = null;
+
         if ($this->fromCategoryGroup) {
             $categoryGroup = Craft::$app->getCategories()->getGroupByHandle($this->fromCategoryGroup);
             if (!$categoryGroup) {
@@ -134,6 +137,7 @@ class SectionsController extends Controller
             ));
             $section->maxLevels = $categoryGroup->maxLevels;
             $sourceFieldLayout = $categoryGroup->getFieldLayout();
+            $saveEntryType = true;
         } elseif ($this->fromTagGroup) {
             $tagGroup = Craft::$app->getTags()->getTagGroupByHandle($this->fromTagGroup);
             if (!$tagGroup) {
@@ -144,6 +148,7 @@ class SectionsController extends Controller
             $section->handle = $getDefaultAttribute('handle', $tagGroup->handle);
             $section->type = Section::TYPE_CHANNEL;
             $sourceFieldLayout = $tagGroup->getFieldLayout();
+            $saveEntryType = true;
         } elseif ($this->fromGlobalSet) {
             $globalSet = Craft::$app->getGlobals()->getSetByHandle($this->fromGlobalSet);
             if (!$globalSet) {
@@ -154,6 +159,7 @@ class SectionsController extends Controller
             $section->handle = $getDefaultAttribute('handle', $globalSet->handle);
             $section->type = Section::TYPE_SINGLE;
             $sourceFieldLayout = $globalSet->getFieldLayout();
+            $saveEntryType = true;
         }
 
         $section->name = $this->prompt('Section name:', [
@@ -206,17 +212,33 @@ class SectionsController extends Controller
             }
         });
 
-        if (isset($sourceFieldLayout)) {
-            $this->do('Saving the entry type', function() use ($section, $sourceFieldLayout) {
-                $fieldLayout = FieldLayout::createFromConfig($sourceFieldLayout->getConfig());
-                foreach ($fieldLayout->getTabs() as $tab) {
-                    $tab->uid = StringHelper::UUID();
-                    foreach ($tab->getElements() as $element) {
-                        $element->uid = StringHelper::UUID();
+        $entryType = $section->getEntryTypes()[0];
+        $entryTypeName = $this->prompt('Initial entry type name:', [
+            'default' => $entryType->name,
+        ]);
+        $entryTypeHandle = $this->prompt('Initial entry type handle:', [
+            'default' => $entryTypeName !== $entryType->name ? StringHelper::toHandle($entryTypeName) : $entryType->handle,
+        ]);
+
+        if ($entryTypeName !== $entryType->name || $entryTypeHandle !== $entryType->handle) {
+            $entryType->name = $entryTypeName;
+            $entryType->handle = $entryTypeHandle;
+            $saveEntryType = true;
+        }
+
+        if ($saveEntryType) {
+            $this->do('Saving the entry type', function() use ($entryType, $sourceFieldLayout) {
+                if ($sourceFieldLayout) {
+                    $fieldLayout = FieldLayout::createFromConfig($sourceFieldLayout->getConfig());
+                    foreach ($fieldLayout->getTabs() as $tab) {
+                        $tab->uid = StringHelper::UUID();
+                        foreach ($tab->getElements() as $element) {
+                            $element->uid = StringHelper::UUID();
+                        }
                     }
+                    $entryType->setFieldLayout($fieldLayout);
                 }
-                $entryType = $section->getEntryTypes()[0];
-                $entryType->setFieldLayout($fieldLayout);
+
                 Craft::$app->getSections()->saveEntryType($entryType);
             });
         }
