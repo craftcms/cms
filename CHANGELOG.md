@@ -1,5 +1,9 @@
 # Release Notes for Craft CMS 4
 
+## Unreleased
+
+- Fixed an error that could occur when rebuilding the project config, if there were any custom source definitions for element types that weren’t Composer-installed. ([#12881](https://github.com/craftcms/cms/issues/12881))
+
 ## 4.4.3 - 2023-03-16
 
 - Customize Sources modals no longer hide when the <kbd>Esc</kbd> key is pressed on the surrounding area is clicked on. ([#12895](https://github.com/craftcms/cms/issues/12895))
@@ -15,7 +19,6 @@
 - Fixed a bug where multi-edition plugins weren’t showing their edition labels within the Plugin Store cart. ([#12910](https://github.com/craftcms/cms/issues/12910))
 - Fixed a bug where private plugins’ control panel templates weren’t directly accessible by URL.
 - Fixed a bug where element selector modals were persisting parts of their state in the query string. ([#12900](https://github.com/craftcms/cms/issues/12900))
-- Fixed an error that could occur when rebuilding the project config, if there were any custom source definitions for element types that weren’t Composer-installed. ([#12881](https://github.com/craftcms/cms/issues/12881))
 - Fixed a PHP error that occurred if a field type stored enum values. ([#12297](https://github.com/craftcms/cms/issues/12297))
 - Fixed an error that could occur when generating transforms for images stored in Google Cloud Storage. ([#12878](https://github.com/craftcms/cms/issues/12878))
 - Fixed a bug where some unicode characters were getting removed by LitEmoji. ([#12905](https://github.com/craftcms/cms/issues/12905))
@@ -33,7 +36,6 @@
 - Fixed a bug where rebuilding the project config would lose track of image transforms’ `fill` and `upscale` settings. ([#12879](https://github.com/craftcms/cms/issues/12879))
 - Fixed a bug where blank Dropdown options weren’t showing up in the Selectize menu. ([#12880](https://github.com/craftcms/cms/issues/12880))
 - Fixed a bug where it was possible to save a Dropdown field without a value, even if the field didn’t have any blank options. ([#12880](https://github.com/craftcms/cms/issues/12880))
-- Fixed an error that could occur when rebuilding the project config, if there were any custom source definitions for element types that weren’t Composer-installed. ([#12881](https://github.com/craftcms/cms/issues/12881))
 - Fixed a bug where element action triggers weren’t centered for element sources that don’t define any exporters. ([#12885](https://github.com/craftcms/cms/issues/12885))
 - Fixed an error that could occur when generating a transform URL for an image in the temp folder.
 - Fixed XSS vulnerabilities.
