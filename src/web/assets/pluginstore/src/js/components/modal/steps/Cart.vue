@@ -39,7 +39,7 @@
                   <div
                     class="tw-border-t tw-border-solid tw-border-gray-200 tw-flex tw-justify-between tw-py-4"
                   >
-                    <div class="expiry-date">
+                    <div class="expiry-date flex flex-nowrap">
                       <template
                         v-if="
                           item.lineItem.purchasable.type === 'cms-edition' ||
