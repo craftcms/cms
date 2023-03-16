@@ -6,6 +6,8 @@
 - Sections created via `entrify` commands no longer get a “Primary entry page” preview target by default, unless it was sourced from a category group with URLs. ([#12897](https://github.com/craftcms/cms/issues/12897))
 - `entrify` commands and the `sections/create` command now prompt for the initial entry type name and handle. ([#12894](https://github.com/craftcms/cms/discussions/12894))
 - Added `craft\helpers\FileHelper::uniqueName()`.
+- Added `craft\helpers\StringHelper::emojiToShortcodes()`.
+- Added `craft\helpers\StringHelper::shortcodesToEmoji()`.
 - Fixed an error that occurred when uploading an asset with a filename over 250 characters long. ([#12889](https://github.com/craftcms/cms/issues/12889))
 - Fixed an error that could occur when preparing licensing alerts, if any licenses were invalid. ([#12899](https://github.com/craftcms/cms/issues/12899))
 - Fixed a bug where it wasn’t possible to drag nested Neo blocks. ([#12896](https://github.com/craftcms/cms/issues/12896))
@@ -15,6 +17,7 @@
 - Fixed an error that could occur when rebuilding the project config, if there were any custom source definitions for element types that weren’t Composer-installed. ([#12881](https://github.com/craftcms/cms/issues/12881))
 - Fixed a PHP error that occurred if a field type stored enum values. ([#12297](https://github.com/craftcms/cms/issues/12297))
 - Fixed an error that could occur when generating transforms for images stored in Google Cloud Storage. ([#12878](https://github.com/craftcms/cms/issues/12878))
+- Fixed a bug where some unicode characters were getting removed by LitEmoji. ([#12905](https://github.com/craftcms/cms/issues/12905))
 
 ## 4.4.2 - 2023-03-14
 
