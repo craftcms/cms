@@ -1516,7 +1516,8 @@ li.breadcrumb-toggle-wrapper {
 }
 
 /* flexbox field layouts */
-#content :not(.meta) > .flex-fields {
+#content :not(.meta) > .flex-fields,
+.draghelper.drag-in-content .flex-fields {
   display: flex;
   flex-wrap: wrap;
   align-content: flex-start;
