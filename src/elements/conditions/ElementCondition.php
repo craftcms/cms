@@ -9,6 +9,7 @@ use craft\base\ElementInterface;
 use craft\elements\db\ElementQueryInterface;
 use craft\errors\InvalidTypeException;
 use craft\fields\conditions\FieldConditionRuleInterface;
+use craft\helpers\ArrayHelper;
 use yii\base\InvalidConfigException;
 
 /**
@@ -63,23 +64,17 @@ class ElementCondition extends BaseCondition implements ElementConditionInterfac
      */
     public function __construct(?string $elementType = null, array $config = [])
     {
-        $this->elementType = $elementType;
-        parent::__construct($config);
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function init(): void
-    {
-        parent::init();
+        $elementType = $elementType ?? ArrayHelper::remove($config, 'elementType');
 
         if (
-            $this->elementType !== null &&
-            (!class_exists($this->elementType) || !is_subclass_of($this->elementType, ElementInterface::class))
+            $elementType !== null &&
+            (!class_exists($elementType) || !is_subclass_of($elementType, ElementInterface::class))
         ) {
-            throw new InvalidConfigException("Invalid element type: $this->elementType");
+            throw new InvalidConfigException("Invalid element type: $elementType");
         }
+
+        $this->elementType = $elementType;
+        parent::__construct($config);
     }
 
     /**
