@@ -8,6 +8,7 @@
 - Fixed an error that could occur when preparing licensing alerts, if any licenses were invalid. ([#12899](https://github.com/craftcms/cms/issues/12899))
 - Fixed a bug where it wasn’t possible to drag nested Neo blocks. ([#12896](https://github.com/craftcms/cms/issues/12896))
 - Fixed a bug where fields with reduced widths in Matrix blocks were becoming full-width while dragged. ([#12909](https://github.com/craftcms/cms/issues/12909))
+- Fixed a bug where multi-edition plugins weren’t showing their edition labels within the Plugin Store cart. ([#12910](https://github.com/craftcms/cms/issues/12910))
 
 ## 3.8.2 - 2023-03-14
 
