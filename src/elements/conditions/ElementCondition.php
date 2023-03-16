@@ -63,15 +63,23 @@ class ElementCondition extends BaseCondition implements ElementConditionInterfac
      */
     public function __construct(?string $elementType = null, array $config = [])
     {
-        if (
-            $elementType !== null &&
-            (!class_exists($elementType) || !is_subclass_of($elementType, ElementInterface::class))
-        ) {
-            throw new InvalidConfigException("Invalid element type: $elementType");
-        }
-
         $this->elementType = $elementType;
         parent::__construct($config);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function init(): void
+    {
+        parent::init();
+
+        if (
+            $this->elementType !== null &&
+            (!class_exists($this->elementType) || !is_subclass_of($this->elementType, ElementInterface::class))
+        ) {
+            throw new InvalidConfigException("Invalid element type: $this->elementType");
+        }
     }
 
     /**

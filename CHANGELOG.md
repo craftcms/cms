@@ -9,6 +9,7 @@
 - Fixed an error that could occur when preparing licensing alerts, if any licenses were invalid. ([#12899](https://github.com/craftcms/cms/issues/12899))
 - Fixed a bug where private plugins’ control panel templates weren’t directly accessible by URL.
 - Fixed a bug where element selector modals were persisting parts of their state in the query string. ([#12900](https://github.com/craftcms/cms/issues/12900))
+- Fixed an error that could occur when rebuilding the project config, if there were any custom source definitions for element types that weren’t Composer-installed. ([#12881](https://github.com/craftcms/cms/issues/12881))
 
 ## 4.4.2 - 2023-03-14
 
