@@ -114,7 +114,7 @@
             'disclosure-trigger': true,
         },
         aria: {
-            'labelledby': 'context-label',
+            label: 'Switch version',
             controls: 'revision-menu',
         }
     } %}
@@ -124,6 +124,7 @@
         {% set enabledSiteIds = element.id ? craft.app.elements.getEnabledSiteIdsForElement(element.id) : [] %}
         {% set siteGroups = craft.app.sites.getAllGroups() %}
         <div class="revision-menu__form">
+            <div class="visually-hidden" role="status"></div>
             <div class="revision-menu__field">
                 <div class="revision-menu__field-inner">
                     <label for="site-select">{{ 'Site'|t('app') }}</label>
@@ -252,142 +253,5 @@
 
             <button class="btn submit revision-menu__submit">Go</button>
         </div>
-
-
-        {% set enabledSiteIds = element.id ? craft.app.elements.getEnabledSiteIdsForElement(element.id) : [] %}
-        {% set siteGroups = craft.app.sites.getAllGroups() %}
-        {% for group in siteGroups %}
-            {% set groupSites = group.getSites() %}
-            {% if groupSites|length %}
-                {% set groupIsVisible = canEditMultipleSites and groupSites|column('id')|intersect(editableSiteIds)|length %}
-                <div class="site-group{% if not groupIsVisible %} hidden{% endif %}">
-                    {% if siteGroups|length > 1 %}<h6 cass="padded">{{ group.name|t('site') }}</h6>{% endif %}
-                    <ul class="padded">
-                        {% for site in groupSites %}
-                            {% set status = element.enabled and site.id in enabledSiteIds ? 'enabled' : 'disabled' %}
-                            {% set isSelected = site.id == originalElement.siteId %}
-                            {% tag 'li' with {
-                                class: [
-                                    site.id not in editableSiteIds ? 'hidden' : null,
-                                    isSelected ? 'sel' : null,
-                                ]|filter,
-                            } %}
-                                {% if isSelected %}
-                                    <a class="site-option sel">
-                                        <div class="status {{ status }}"></div>{{ site.name|t('site') }}
-                                    </a>
-                                {% else %}
-                                    {% set url = url(baseUrl, { site: site.handle }) %}
-                                    <a class="site-option" href="{{ url }}" data-site-id="{{ site.id }}">
-                                        <div class="status {{ status }}"></div>{{ site.name|t('site') }}
-                                    </a>
-                                {% endif %}
-                            {% endtag %}
-                        {% endfor %}
-                    </ul>
-                </div>
-            {% endif %}
-        {% endfor %}
-
-        {% if showRevisions %} {# MOVED #}
-            <hr class="revision-hr{% if not canEditMultipleSites %} hidden{% endif %}">
-            <ul class="padded revision-group-current">
-                {% set currentRevision = element.getCurrentRevision() %}
-                {% set currentRevisionEditTime = currentRevision.dateCreated ?? element.dateUpdated %}
-                {% set currentRevisionCreator = currentRevision ? currentRevision.getCreator() %}
-                {% set isSelected = not isDraft and not isRevision %}
-                {% tag 'li' with {
-                    class: [
-                        'current-revision',
-                        isSelected ? 'sel' : null,
-                    ]|filter,
-                } %}
-                    {% tag 'a' with {
-                        class: isSelected ? 'sel' : false,
-                        href: cpEditUrl,
-                    } %}
-                        {{ 'Current'|t('app') }}
-                        <div class="smalltext">
-                            {{ currentRevisionCreator ? 'Saved {timestamp} by {creator}'|t('app', {
-                                timestamp: currentRevisionEditTime|timestamp('short', withPreposition=true),
-                                creator: currentRevisionCreator.name,
-                            }) : 'Last saved {timestamp}'|t('app', {
-                                timestamp: currentRevisionEditTime|timestamp('short', withPreposition=true),
-                            }) }}
-                        </div>
-                    {% endtag %}
-                {% endtag %}
-            </ul>
-        {% endif %}
-
-        {% if drafts %}
-            <h6 class="padded">{{ "Drafts"|t('app') }}</h6>
-            <ul class="padded revision-group-drafts">
-                {% for draft in drafts %}
-                    {% set url = url(cpEditUrl, baseParams|merge({ draftId: draft.draftId })) %}
-                    {% set creator = draft.getCreator() %}
-                    {% set isSelected = draft.draftId == element.draftId %}
-                    {% tag 'li' with {
-                        class: isSelected ? 'sel' : false,
-                    } %}
-                        {% tag 'a' with {
-                            class: isSelected ? 'sel' : false,
-                            href: url,
-                        } %}
-                            <div class="draft-name">{{ draft.draftName }}</div>
-                            <div class="draft-meta smalltext">
-                                {{ creator ? 'Saved {timestamp} by {creator}'|t('app', {
-                                    timestamp: draft.dateUpdated|timestamp('short', withPreposition=true),
-                                    creator: creator.name,
-                                }) : 'Saved {timestamp}'|t('app', {
-                                    timestamp: draft.dateUpdated|timestamp('short', withPreposition=true),
-                                }) }}
-                            </div>
-                        {% endtag %}
-                    {% endtag %}
-                {% endfor %}
-            </ul>
-        {% endif %}
-
-        {% if revisions %}
-            <h6 class="padded">{{ "Recent Revisions"|t('app') }}</h6>
-            <ul class="revision-group-revisions padded">
-                {% for revision in revisions %}
-                    {% set url = url(cpEditUrl, baseParams|merge({ revisionId: revision.revisionId })) %}
-                    {% set creator = revision.getCreator() %}
-                    {% set isSelected = revision.revisionId == element.revisionId %}
-                    {% tag 'li' with {
-                        class: isSelected ? 'sel' : false,
-                    } %}
-                        {% tag 'a' with {
-                            class: isSelected ? 'sel' : false,
-                            href: url,
-                        } %}
-                            {{ revision.getRevisionLabel() }}
-                            <div class="smalltext">
-                                {{ creator ? 'Saved {timestamp} by {creator}'|t('app', {
-                                    timestamp: revision.dateCreated|timestamp('short', withPreposition=true),
-                                    creator: creator.name,
-                                }) : 'Saved {timestamp}'|t('app', {
-                                    timestamp: revision.dateCreated|timestamp('short', withPreposition=true),
-                                }) }}
-                            </div>
-                        {% endtag %}
-                    {% endtag %}
-                {% endfor %}
-            </ul>
-            {% if hasMoreRevisions %}
-                <hr>
-                <ul>
-                    <li>
-                        {{ tag('a', {
-                            href: url(revisionsPageUrl),
-                            class: 'go',
-                            text: 'View all revisions'|t('app'),
-                        }) }}
-                    </li>
-                </ul>
-            {% endif %}
-        {% endif %}
     </div>
 </div>

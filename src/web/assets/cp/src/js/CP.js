@@ -574,6 +574,7 @@ Craft.CP = Garnish.Base.extend(
       );
       const $loadingSpinner = $revisionField.find('.spinner');
       const $revisionSelect = $revisionField.find('#revision-select');
+      const $liveRegion = this.$contextMenu.find('[role="status"]');
 
       // Activate loading visual
       $revisionFieldInner.addClass('disabled');
@@ -588,11 +589,18 @@ Craft.CP = Garnish.Base.extend(
         'aria-disabled': true,
       });
 
+      // Update screen reader message
+      $liveRegion.text('Loading');
+
       $(revisionFieldSelector).load(loadParam, () => {
         $revisionFieldInner.removeClass('disabled');
         $revisionField.append(
           '<div class="spinner spinner-absolute hidden"></div>'
         );
+        $liveRegion.text('Loading complete');
+        setTimeout(() => {
+          $liveRegion.empty();
+        }, 3000);
       });
     },
 
