@@ -1552,6 +1552,28 @@ class StringHelperTest extends TestCase
     }
 
     /**
+     * @dataProvider emojiToShortcodesDataProvider
+     *
+     * @param string $expected
+     * @param string $str
+     */
+    public function testEmojiToShortcodes(string $expected, string $str)
+    {
+        self::assertSame($expected, StringHelper::emojiToShortcodes($str));
+    }
+
+    /**
+     * @dataProvider shortcodesToEmojiDataProvider
+     *
+     * @param string $expected
+     * @param string $str
+     */
+    public function testShortcodesToEmoji(string $expected, string $str)
+    {
+        self::assertSame($expected, StringHelper::shortcodesToEmoji($str));
+    }
+
+    /**
      * @return array
      */
     public function substrDataDataProvider(): array
@@ -4184,6 +4206,28 @@ class StringHelperTest extends TestCase
         return [
             ['userName', 'userName'],
             ['aaa@äö.ee', 'aaa@xn--4ca0b.ee'],
+        ];
+    }
+
+    /**
+     * @return array
+     */
+    public function emojiToShortcodesDataProvider(): array
+    {
+        return [
+            ['Baby you light my :fire:! :smiley:', 'Baby you light my 🔥! 😃'],
+            ['Test — em – en - dashes :hand_with_index_and_middle_fingers_crossed:', 'Test — em – en - dashes 🤞'],
+        ];
+    }
+
+    /**
+     * @return array
+     */
+    public function shortcodesToEmojiDataProvider(): array
+    {
+        return [
+            ['Baby you light my 🔥! 😃', 'Baby you light my :fire:! :smiley:'],
+            ['Test — em – en - dashes 🤞', 'Test — em – en - dashes :hand_with_index_and_middle_fingers_crossed:'],
         ];
     }
 }
