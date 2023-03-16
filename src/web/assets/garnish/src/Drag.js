@@ -291,7 +291,7 @@ export default BaseDrag.extend(
         $draggeeHelper.addClass('drag-in-content');
       }
       if ($draggee.parents('.slideout-container').length) {
-        $draggeeHelper.addClass('drag-in-sidebar');
+        $draggeeHelper.addClass('drag-in-slideout');
       }
 
       if (this.settings.copyDraggeeInputValuesToHelper) {
