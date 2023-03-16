@@ -504,12 +504,16 @@ button {
   }
 }
 
-.revision-menu__fields {
+.revision-menu__form {
   display: grid;
   gap: var(--s);
 }
 
 .revision-menu__field {
+  position: relative;
+}
+
+.revision-menu__field-inner {
   display: grid;
   gap: var(--s);
 

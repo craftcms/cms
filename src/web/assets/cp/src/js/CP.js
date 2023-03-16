@@ -15,6 +15,7 @@ Craft.CP = Garnish.Base.extend(
     $globalContainer: null,
     $mainContainer: null,
     $alerts: null,
+    $contextMenu: null,
     $crumbs: null,
     $breadcrumbList: null,
     $breadcrumbItems: null,
@@ -564,16 +565,41 @@ Craft.CP = Garnish.Base.extend(
     },
 
     updateRevisionSelect: function (url) {
-      const loadParam = `${url} #version-select`;
+      const revisionFieldSelector = '#revision-field';
+      const loadParam = `${url} #revision-field-inner`;
+      const $allRevisionsLink = this.$contextMenu.find('#revision-link');
+      const $revisionField = this.$contextMenu.find('#revision-field');
+      const $revisionFieldInner = this.$contextMenu.find(
+        '#revision-field-inner'
+      );
+      const $loadingSpinner = $revisionField.find('.spinner');
+      const $revisionSelect = $revisionField.find('#revision-select');
 
-      console.log(loadParam);
-      $('#version-select-wrapper').load(loadParam);
+      // Activate loading visual
+      $revisionFieldInner.addClass('disabled');
+      $loadingSpinner.removeClass('hidden');
+
+      // Disable current field
+      $revisionSelect.attr('aria-disabled', 'true');
+
+      // Disable revision link
+      $allRevisionsLink.removeAttr('href').attr({
+        role: 'link',
+        'aria-disabled': true,
+      });
+
+      $(revisionFieldSelector).load(loadParam, () => {
+        $revisionFieldInner.removeClass('disabled');
+        $revisionField.append(
+          '<div class="spinner spinner-absolute hidden"></div>'
+        );
+      });
     },
 
     initContextMenu: function () {
-      const $contextMenu = this.$revisionBtn.data('trigger').$container;
-      const $siteSelect = $contextMenu.find('#site-select');
-      const $submit = $contextMenu.find('.revision-menu__submit');
+      this.$contextMenu = this.$revisionBtn.data('trigger').$container;
+      const $siteSelect = this.$contextMenu.find('#site-select');
+      const $submit = this.$contextMenu.find('.revision-menu__submit');
 
       this.addListener($siteSelect, 'change', (event) => {
         const $selected = $siteSelect.find(':selected');
@@ -583,7 +609,7 @@ Craft.CP = Garnish.Base.extend(
 
       this.addListener($submit, 'click', (event) => {
         const $form = $(event.target).closest('.revision-menu__form');
-        const $selected = $form.find('#version-select :selected');
+        const $selected = $form.find('#revision-select :selected');
         const url = $selected.data('href');
         window.location.href = url;
       });
