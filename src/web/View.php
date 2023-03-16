@@ -725,7 +725,7 @@ class View extends \yii\web\View
      *
      * @param string $name The name of the template.
      * @param string|null $templateMode The template mode to use.
-     * @param bool $publicOnly Whether to only look for public templates (template paths that don’t start with the private template triger).
+     * @param bool $publicOnly Whether to only look for public templates (template paths that don’t start with the private template trigger).
      * @return bool Whether the template exists.
      * @throws Exception
      */
@@ -808,7 +808,7 @@ class View extends \yii\web\View
      *
      * @param string $name The name of the template.
      * @param string|null $templateMode The template mode to use.
-     * @param bool $publicOnly Whether to only look for public templates (template paths that don’t start with the private template triger).
+     * @param bool $publicOnly Whether to only look for public templates (template paths that don’t start with the private template trigger).
      * @return string|false The path to the template if it exists, or `false`.
      * @throws TwigLoaderError
      */
@@ -832,7 +832,7 @@ class View extends \yii\web\View
      * Finds a template on the file system and returns its path.
      *
      * @param string $name The name of the template.
-     * @param bool $publicOnly Whether to only look for public templates (template paths that don’t start with the private template triger).
+     * @param bool $publicOnly Whether to only look for public templates (template paths that don’t start with the private template trigger).
      * @return string|false The path to the template if it exists, or `false`.
      * @throws TwigLoaderError
      */
@@ -2062,7 +2062,7 @@ JS;
      *
      * @param string $basePath The base path to be looking in.
      * @param string $name The name of the template to be looking for.
-     * @param bool $publicOnly Whether to only look for public templates (template paths that don’t start with the private template triger).
+     * @param bool $publicOnly Whether to only look for public templates (template paths that don’t start with the private template trigger).
      * @return string|null The matching file path, or `null`.
      */
     private function _resolveTemplate(string $basePath, string $name, bool $publicOnly): ?string
