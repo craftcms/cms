@@ -11,7 +11,6 @@ Craft.AssetSelectInput = Craft.BaseElementSelectInput.extend({
 
   init: function () {
     this.base.apply(this, arguments);
-
     if (this.settings.canUpload) {
       this._attachUploader();
     }
@@ -268,38 +267,32 @@ Craft.AssetSelectInput = Craft.BaseElementSelectInput.extend({
    * On a file being uploaded.
    */
   _onUploadComplete: function (event, data) {
-    if (data.result.error) {
-      alert(data.result.error);
-      this.progressBar.hideProgressBar();
-      this.$container.removeClass('uploading');
-    } else {
-      var parameters = {
-        elementId: data.result.assetId,
-        siteId: this.settings.criteria.siteId,
-        thumbSize: this.settings.viewMode,
-      };
+    var parameters = {
+      elementId: data.result.assetId,
+      siteId: this.settings.criteria.siteId,
+      thumbSize: this.settings.viewMode,
+    };
 
-      Craft.sendActionRequest('POST', 'elements/get-element-html', {
-        data: parameters,
+    Craft.sendActionRequest('POST', 'elements/get-element-html', {
+      data: parameters,
+    })
+      .then((response) => {
+        var html = $(response.data.html);
+        Craft.appendHeadHtml(response.data.headHtml);
+        this.selectUploadedFile(Craft.getElementInfo(html));
+
+        // Last file
+        if (this.uploader.isLastUpload()) {
+          this.progressBar.hideProgressBar();
+          this.$container.removeClass('uploading');
+          this.$container.trigger('change');
+        }
       })
-        .then((response) => {
-          var html = $(response.data.html);
-          Craft.appendHeadHtml(response.data.headHtml);
-          this.selectUploadedFile(Craft.getElementInfo(html));
+      .catch(({response}) => {
+        alert(response.data.message);
+      });
 
-          // Last file
-          if (this.uploader.isLastUpload()) {
-            this.progressBar.hideProgressBar();
-            this.$container.removeClass('uploading');
-            this.$container.trigger('change');
-          }
-        })
-        .catch(({response}) => {
-          alert(response.data.message);
-        });
-
-      Craft.cp.runQueue();
-    }
+    Craft.cp.runQueue();
   },
 
   /**
@@ -307,12 +300,18 @@ Craft.AssetSelectInput = Craft.BaseElementSelectInput.extend({
    */
   _onUploadFailure: function (event, data) {
     const response = data.response();
-    let {message, filename} = response?.jqXHR?.responseJSON || {};
+    let {message, filename, errors = {}} = response?.jqXHR?.responseJSON || {};
+
+    let errorMessages = errors ? Object.values(errors).flat() : [];
 
     if (!message) {
-      message = filename
-        ? Craft.t('app', 'Upload failed for “{filename}”.', {filename})
-        : Craft.t('app', 'Upload failed.');
+      if (errorMessages.length) {
+        message = errorMessages.join('\n');
+      } else if (filename) {
+        message = Craft.t('app', 'Upload failed for “{filename}”.', {filename});
+      } else {
+        message = Craft.t('app', 'Upload failed.');
+      }
     }
 
     alert(message);

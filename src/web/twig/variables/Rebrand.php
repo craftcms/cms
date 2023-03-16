@@ -70,7 +70,7 @@ class Rebrand
     }
 
     /**
-     * Returns the logo'sw Image variable, or null if a logo hasn't been uploaded.
+     * Returns the logo variable, or null if a logo hasn't been uploaded.
      *
      * @return Image|null
      */
@@ -80,7 +80,7 @@ class Rebrand
     }
 
     /**
-     * Returns the icons variable, or null if a site icon hasn't been uploaded.
+     * Returns the icon variable, or null if a site icon hasn't been uploaded.
      *
      * @return Image|null
      */
@@ -116,7 +116,7 @@ class Rebrand
     }
 
     /**
-     * Returns the path to a rebrand image by type or false if it hasn't ben uploaded.
+     * Returns the path to a rebrand image by type or false if it hasn't been uploaded.
      *
      * @param string $type logo or image.
      * @return string|false
