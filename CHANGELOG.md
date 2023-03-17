@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Input autofocussing has been reintroduced thorughout the control panel. ([#12921](https://github.com/craftcms/cms/discussions/12921))
 - The `|json_encode` Twig filter now calls `craft\helpers\Json::encode()` internally, improving error handling. ([#12919](https://github.com/craftcms/cms/issues/12919))
 - Fixed a JavaScript error that occurred when resolving an asset move conflict. ([#12920](https://github.com/craftcms/cms/issues/12920))
 - Fixed an error that could occur when rebuilding the project config, if there were any custom source definitions for element types that weren’t Composer-installed. ([#12881](https://github.com/craftcms/cms/issues/12881))
