@@ -28,12 +28,13 @@ Craft.AssetMover = Garnish.Base.extend({
       ],
       handleConflictChoice: function (prompt) {
         const params = {
-          folderId: prompt.params.folderId,
+          folderId: prompt.request.params.folderId,
           assetId: prompt.assetId,
         };
         switch (prompt.choice) {
           case 'replace':
             params.force = true;
+            break;
           case 'keepBoth':
             params.filename = prompt.suggestedFilename;
             break;
