@@ -293,13 +293,13 @@ class Table extends Field
         $view->registerAssetBundle(TimepickerAsset::class);
         $view->registerAssetBundle(TableSettingsAsset::class);
         $view->registerJs('new Craft.TableFieldSettings(' .
-            Json::encode($view->namespaceInputName('columns'), JSON_UNESCAPED_UNICODE) . ', ' .
-            Json::encode($view->namespaceInputName('defaults'), JSON_UNESCAPED_UNICODE) . ', ' .
-            Json::encode($this->columns, JSON_UNESCAPED_UNICODE) . ', ' .
-            Json::encode($this->defaults, JSON_UNESCAPED_UNICODE) . ', ' .
-            Json::encode($columnSettings, JSON_UNESCAPED_UNICODE) . ', ' .
-            Json::encode($dropdownSettingsHtml, JSON_UNESCAPED_UNICODE) . ', ' .
-            Json::encode($dropdownSettingsCols, JSON_UNESCAPED_UNICODE) .
+            Json::encode($view->namespaceInputName('columns')) . ', ' .
+            Json::encode($view->namespaceInputName('defaults')) . ', ' .
+            Json::encode($this->columns) . ', ' .
+            Json::encode($this->defaults) . ', ' .
+            Json::encode($columnSettings) . ', ' .
+            Json::encode($dropdownSettingsHtml) . ', ' .
+            Json::encode($dropdownSettingsCols) .
             ');');
 
         $columnsField = $view->renderTemplate('_components/fieldtypes/Table/columntable', [
