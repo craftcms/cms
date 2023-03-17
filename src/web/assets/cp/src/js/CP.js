@@ -564,7 +564,7 @@ Craft.CP = Garnish.Base.extend(
       Garnish.$bod.toggleClass('showing-sidebar');
     },
 
-    updateRevisionSelect: function (url) {
+    updateRevisionForm: function (url) {
       const revisionFieldSelector = '#revision-field';
       const loadParam = `${url} #revision-field-inner`;
       const $allRevisionsLink = this.$contextMenu.find('#revision-link');
@@ -612,7 +612,7 @@ Craft.CP = Garnish.Base.extend(
       this.addListener($siteSelect, 'change', (event) => {
         const $selected = $siteSelect.find(':selected');
 
-        this.updateRevisionSelect($selected.data('href'));
+        this.updateRevisionForm($selected.data('href'));
       });
 
       this.addListener($submit, 'click', (event) => {

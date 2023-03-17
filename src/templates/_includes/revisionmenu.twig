@@ -74,7 +74,7 @@
         {%- if showSiteLabel %}
             <div class="context-block">
                 <div class="context-block__name">
-                    <span data-icon="world" aria-label="{{ 'Site'|t('app') }}"></span>
+                    <span data-icon="world" role="img" aria-label="{{ 'Site'|t('app') }}"></span>
                 </div>
                 <div class="context-block__value">{{- originalElement.getSite().name|t('site') }}</div>
             </div>
@@ -82,7 +82,7 @@
         {%- if showRevisionLabel -%}
             <div class="context-block">
                 <div class="context-block__name">
-                    <span data-icon="edit" aria-label="{{ 'Version'|t('app') }}"></span>
+                    <span data-icon="edit" role="img" aria-label="{{ 'Version'|t('app') }}"></span>
                 </div>
                 <div class="context-block__value">
                     {%- if isDraft %}
@@ -114,11 +114,11 @@
             'disclosure-trigger': true,
         },
         aria: {
-            label: 'Switch version',
+            label: 'Switch version'|t('app'),
             controls: 'revision-menu',
         }
     } %}
-        Switch version
+        {{ 'Switch version'|t('app') }}
     {% endtag %}
     <div id="revision-menu" class="revision-menu menu padded{% if not showMenu %} hidden{% endif %}" data-disclosure-menu>
         {% set enabledSiteIds = element.id ? craft.app.elements.getEnabledSiteIdsForElement(element.id) : [] %}
@@ -134,7 +134,7 @@
                                 {% set groupSites = group.getSites() %}
                                 {% if groupSites|length %}
                                     {% set groupIsVisible = canEditMultipleSites and groupSites|column('id')|intersect(editableSiteIds)|length %}
-                                    <optgroup label="{{ group.name|t('site') }}" class="site-group{% if not groupIsVisible %} hidden{% endif %}">
+                                    <optgroup label="{{ group.name|t('site') }}" class="{% if not groupIsVisible %}hidden{% endif %}">
                                         {% for site in groupSites %}
                                             {% set status = element.enabled and site.id in enabledSiteIds ? 'enabled' : 'disabled' %}
                                             {% set isSelected = site.id == originalElement.siteId %}
@@ -166,7 +166,7 @@
                     <div class="select">
                         <select id="revision-select">
                             {% if showRevisions %}
-                                <optgroup label="Revisions">
+                                <optgroup label="{{ 'Revisions'|t('app') }}">
                                     {% set currentRevision = element.getCurrentRevision() %}
                                     {% set currentRevisionEditTime = currentRevision.dateCreated ?? element.dateUpdated %}
                                     {% set currentRevisionCreator = currentRevision ? currentRevision.getCreator() %}
@@ -244,14 +244,17 @@
                             href: url(revisionsPageUrl),
                             class: 'go',
                             text: 'View all revisions'|t('app'),
+                            aria: {
+                                label: 'View all revisions'|t('app'),
+                            }
                         }) }}
                     {% endif %}
                 </div>
 
-                <div class="spinner spinner-absolute hidden"></div>
+                <div class="spinner spinner-absolute hidden" aria-hidden="true"></div>
             </div>
 
-            <button class="btn submit revision-menu__submit">Go</button>
+            <button class="btn submit revision-menu__submit">{{ 'Go'|t('app') }}</button>
         </div>
     </div>
 </div>
