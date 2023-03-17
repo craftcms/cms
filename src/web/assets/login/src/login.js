@@ -11,14 +11,18 @@ import './login.scss';
     $rememberMeCheckbox: null,
     $forgotPasswordLink: null,
     $rememberPasswordLink: null,
+    $alternativeLoginLink: null,
     $submitBtn: null,
     $errors: null,
 
     forgotPassword: false,
+    loginWithPassword: false,
     validateOnInput: false,
 
     mfaFlow: false,
     mfa: null,
+
+    webauthn: null,
 
     init: function () {
       this.$loginDiv = $('#login');
@@ -28,6 +32,7 @@ import './login.scss';
       this.$rememberMeCheckbox = $('#rememberMe');
       this.$forgotPasswordLink = $('#forgot-password');
       this.$rememberPasswordLink = $('#remember-password');
+      this.$alternativeLoginLink = $('#alternative-login');
       this.$submitBtn = $('#submit');
       this.$errors = $('#login-errors');
 
@@ -43,12 +48,21 @@ import './login.scss';
         },
       });
 
-      this.mfa = new Craft.Mfa();
+      if (!this.loginWithPassword) {
+        this.$passwordInput.hide();
+        this.$forgotPasswordLink.hide();
+        this.webauthn = new Craft.WebAuthnLogin();
+      }
 
       this.addListener(this.$loginNameInput, 'input', 'onInput');
       this.addListener(this.$passwordInput, 'input', 'onInput');
       this.addListener(this.$forgotPasswordLink, 'click', 'onSwitchForm');
       this.addListener(this.$rememberPasswordLink, 'click', 'onSwitchForm');
+      this.addListener(
+        this.$alternativeLoginLink,
+        'click',
+        'onAlternativeLoginLink'
+      );
       this.addListener(this.$form, 'submit', 'onSubmit');
 
       // Focus first empty field in form
@@ -74,7 +88,7 @@ import './login.scss';
         return Craft.t('app', 'Invalid email.');
       }
 
-      if (!this.forgotPassword) {
+      if (!this.forgotPassword && this.loginWithPassword) {
         const passwordLength = this.$passwordInput.val().length;
         if (passwordLength < window.minPasswordLength) {
           return Craft.t(
@@ -124,8 +138,10 @@ import './login.scss';
 
       if (this.forgotPassword) {
         this.submitForgotPassword();
+      } else if (!this.loginWithPassword) {
+        this.webauthn.submitLogin();
       } else if (this.mfaFlow) {
-        this.mfa.submitLoginMfa();
+        this.mfa.submitMfaCode();
       } else {
         this.submitLogin();
       }
@@ -156,6 +172,7 @@ import './login.scss';
         .then((response) => {
           if (response.data.mfa !== undefined && response.data.mfa == true) {
             this.mfaFlow = true;
+            this.$alternativeLoginLink.remove();
             this.mfa.showMfaForm(response.data.mfaForm, this.$loginDiv);
           } else {
             this.$submitBtn.successEvent();
@@ -199,9 +216,31 @@ import './login.scss';
       this.forgotPassword = !this.forgotPassword;
 
       this.$form.toggleClass('reset-password', this.forgotPassword);
-      this.$submitBtn.text(
+      this.$submitBtn.$btn.text(
         Craft.t('app', this.forgotPassword ? 'Reset Password' : 'Sign in')
       );
+    },
+
+    onAlternativeLoginLink: function (event) {
+      if (!Garnish.isMobileBrowser()) {
+        this.$loginNameInput.trigger('focus');
+      }
+
+      this.clearErrors();
+
+      this.loginWithPassword = !this.loginWithPassword;
+
+      this.$passwordInput.toggle();
+      this.$forgotPasswordLink.toggle();
+
+      if (this.loginWithPassword) {
+        this.$submitBtn.$btn.text('Sign in');
+        this.$alternativeLoginLink.text('Use a security key to login');
+        this.mfa = new Craft.Mfa();
+      } else {
+        this.$submitBtn.$btn.text('Sign in using a security key');
+        this.$alternativeLoginLink.text('Use a password to login');
+      }
     },
   });
 

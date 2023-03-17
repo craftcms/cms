@@ -129,6 +129,8 @@ body {
 
 #login-form-extra {
   display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
   justify-content: center;
 }
 
@@ -138,9 +140,11 @@ body {
 
 #forgot-password,
 #remember-password,
-#alternative-mfa {
+#alternative-mfa,
+#alternative-login {
   font-size: 11px;
   color: var(--medium-text-color);
+  width: 100%;
 }
 
 .alternative-mfa-types button {
@@ -155,7 +159,9 @@ body {
 #alternative-mfa:hover,
 #alternative-mfa:focus,
 .alternative-mfa-types button:hover,
-.alternative-mfa-types button:focus {
+.alternative-mfa-types button:focus,
+#alternative-login:hover,
+#alternative-login:focus {
   color: var(--link-color);
 }
 

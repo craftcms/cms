@@ -4,7 +4,7 @@ import {startRegistration} from '@simplewebauthn/browser';
 (function ($) {
   /** global: Craft */
   /** global: Garnish */
-  Craft.WebAuthn = Garnish.Base.extend(
+  Craft.WebAuthnSetup = Garnish.Base.extend(
     {
       $addSecurityKeyBtn: null,
       $noticeContainer: null,
@@ -14,7 +14,7 @@ import {startRegistration} from '@simplewebauthn/browser';
       init: function (slideout, settings) {
         console.log('init');
         this.slideout = slideout;
-        this.setSettings(settings, Craft.WebAuthn.defaults);
+        this.setSettings(settings, Craft.WebAuthnSetup.defaults);
         this.$addSecurityKeyBtn = $('#add-security-key');
         this.$noticeContainer = this.slideout.$container.find('.so-notice');
         this.$keysTable = this.slideout.$container.find(

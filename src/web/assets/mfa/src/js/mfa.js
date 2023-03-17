@@ -56,7 +56,7 @@ import {browserSupportsWebAuthn} from '@simplewebauthn/browser';
         return currentMethod;
       },
 
-      submitLoginMfa: function () {
+      submitMfaCode: function () {
         const $submitBtn = this.$mfaLoginFormContainer.find('.submit');
         $submitBtn.addClass('loading');
 

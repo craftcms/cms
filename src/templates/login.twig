@@ -96,7 +96,7 @@
                 <div id="login-form-buttons" class="buttons">
                     {{ forms.submitButton({
                         id: 'submit',
-                        label: 'Sign in'|t('app'),
+                        label: 'Sign in using a security key'|t('app'),
                         spinner: true,
                         busyMessage: 'Signing in'|t('app'),
                         successMessage: 'Signed in'|t('app'),
@@ -106,6 +106,7 @@
                 </div>
 
                 <div id="login-form-extra">
+                    <button id="alternative-login" type="button">{{ 'Use password to login'|t('app') }}</button>
                     <button id="forgot-password" type="button">{{ 'Forgot your password?'|t('app') }}</button>
                     <button id="remember-password" type="button">{{ 'Remember your password?'|t('app') }}</button>
                     <button id="alternative-mfa" type="button">{{ 'Alternative MFA methods'|t('app') }}</button>
