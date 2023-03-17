@@ -31,6 +31,15 @@ class Json extends \yii\helpers\Json
     }
 
     /**
+     * @inheritdoc
+     * @param int $options The encoding options. `JSON_UNESCAPED_UNICODE` is used by default.
+     */
+    public static function encode($value, $options = JSON_UNESCAPED_UNICODE)
+    {
+        return parent::encode($value, $options);
+    }
+
+    /**
      * Decodes the given JSON string into a PHP data structure, only if the string is valid JSON.
      *
      * @param mixed $str The string to be decoded, if it's valid JSON.
