@@ -113,7 +113,9 @@ import {startRegistration} from '@simplewebauthn/browser';
             this.clearStatus();
             // Show UI appropriate for the `verified` status
             if (response.data.verified) {
-              Craft.cp.displaySuccess('Security key registered.');
+              Craft.cp.displaySuccess(
+                Craft.t('app', 'Security key registered.')
+              );
               if (response.data.html) {
                 this.slideout.$container.html(response.data.html);
                 this.init(this.slideout); //reinitialise

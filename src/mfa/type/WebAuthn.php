@@ -19,8 +19,9 @@ use craft\web\View;
 use GuzzleHttp\Psr7\ServerRequest;
 use Webauthn\PublicKeyCredentialCreationOptions;
 use Webauthn\PublicKeyCredentialOptions;
+use Webauthn\PublicKeyCredentialRequestOptions;
 use Webauthn\PublicKeyCredentialRpEntity;
-use Webauthn\PublicKeyCredentialSource as CredentialSource;
+use Webauthn\PublicKeyCredentialSource;
 use Webauthn\PublicKeyCredentialUserEntity;
 use Webauthn\Server;
 
@@ -141,18 +142,13 @@ class WebAuthn extends ConfigurableMfaType
     }
 
     /**
-     * Verify provided OTP (code)
+     * @inheritdoc
      *
      * @param array $data
      * @return bool
-     * @throws \PragmaRX\Google2FA\Exceptions\IncompatibleWithGoogleAuthenticatorException
-     * @throws \PragmaRX\Google2FA\Exceptions\InvalidCharactersException
-     * @throws \PragmaRX\Google2FA\Exceptions\SecretKeyTooShortException
      */
     public function verify(array $data): bool
     {
-        // TODO: write me
-
         return false;
     }
 
@@ -190,7 +186,7 @@ class WebAuthn extends ConfigurableMfaType
             $userEntity = $this->getUserEntity($user);
 
             $excludeCredentials = array_map(
-                static fn(CredentialSource $credential) => $credential->getPublicKeyCredentialDescriptor(),
+                static fn(PublicKeyCredentialSource $credential) => $credential->getPublicKeyCredentialDescriptor(),
                 Craft::createObject(CredentialRepository::class)->findAllForUserEntity($userEntity));
 
             $credentialOptions = Json::encode(
@@ -208,7 +204,7 @@ class WebAuthn extends ConfigurableMfaType
     }
 
     /**
-     * Verify WebAuthn registration response
+     * Verify WebAuthn registration response & save to DB
      *
      * @param User $user
      * @param string $credentials
@@ -218,8 +214,6 @@ class WebAuthn extends ConfigurableMfaType
     public function verifyRegistrationResponse(User $user, string $credentials, ?string $credentialName = null): bool
     {
         $options = $this->getCredentialCreationOptions($user);
-
-        $credentialRepository = new CredentialRepository();
 
         $request = Craft::$app->getRequest();
         $psrServerRequest = new ServerRequest(
@@ -240,7 +234,64 @@ class WebAuthn extends ConfigurableMfaType
             return false;
         }
 
+        $credentialRepository = new CredentialRepository();
         $credentialRepository->savedNamedCredentialSource($verifiedCredentials, $credentialName);
+
+        return true;
+    }
+
+
+
+    /**
+     * Get the credential creation options.
+     *
+     * @param User $user The user for which to get the credential request options.
+     *
+     * @return PublicKeyCredentialOptions | null
+     */
+    public function generateCredentialRequestOptions(User $user): ?PublicKeyCredentialOptions
+    {
+        if (Craft::$app->getEdition() !== Craft::Pro) {
+            return null;
+        }
+
+        $server = $this->getWebauthnServer();
+        $userEntity = $this->getUserEntity($user);
+        $allowedCredentials = array_map(
+            static fn(PublicKeyCredentialSource $credential) => $credential->getPublicKeyCredentialDescriptor(),
+            Craft::createObject(CredentialRepository::class)->findAllForUserEntity($userEntity));
+
+        return $server->generatePublicKeyCredentialRequestOptions(null, $allowedCredentials);
+    }
+
+    /**
+     * Verify WebAuthn authentication response
+     *
+     * @param User $user
+     * @param PublicKeyCredentialRequestOptions $authenticationOptions
+     * @param string $credentials
+     * @return bool
+     */
+    public function verifyAuthenticationResponse(User $user, PublicKeyCredentialRequestOptions $authenticationOptions, string $credentials): bool
+    {
+        $request = Craft::$app->getRequest();
+        $psrServerRequest = new ServerRequest(
+            $request->getMethod(),
+            $request->getFullUri(),
+            $request->getHeaders()->toArray(),
+            $request->getRawBody()
+        );
+
+        try {
+            $this->getWebauthnServer()->loadAndCheckAssertionResponse(
+                $credentials,
+                $authenticationOptions,
+                $this->getUserEntity($user),
+                $psrServerRequest,
+            );
+        } catch (\Exception $e) {
+            return false;
+        }
 
         return true;
     }
@@ -265,6 +316,12 @@ class WebAuthn extends ConfigurableMfaType
         return PublicKeyCredentialRpEntity::createFromArray($data);
     }
 
+    /**
+     * Get PublicKeyCredentialUserEntity based on User
+     *
+     * @param User $user
+     * @return PublicKeyCredentialUserEntity
+     */
     public function getUserEntity(User $user): PublicKeyCredentialUserEntity
     {
         $data = [

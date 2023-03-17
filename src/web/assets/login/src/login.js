@@ -1,4 +1,6 @@
 import './login.scss';
+import {browserSupportsWebAuthn} from '@simplewebauthn/browser';
+import {startAuthentication} from '@simplewebauthn/browser';
 
 (function ($) {
   /** global: Craft */
@@ -22,7 +24,7 @@ import './login.scss';
     mfaFlow: false,
     mfa: null,
 
-    webauthn: null,
+    //webauthn: null,
 
     init: function () {
       this.$loginDiv = $('#login');
@@ -32,7 +34,6 @@ import './login.scss';
       this.$rememberMeCheckbox = $('#rememberMe');
       this.$forgotPasswordLink = $('#forgot-password');
       this.$rememberPasswordLink = $('#remember-password');
-      this.$alternativeLoginLink = $('#alternative-login');
       this.$submitBtn = $('#submit');
       this.$errors = $('#login-errors');
 
@@ -48,10 +49,24 @@ import './login.scss';
         },
       });
 
+      if (!browserSupportsWebAuthn()) {
+        this.loginWithPassword = true;
+      }
+
       if (!this.loginWithPassword) {
         this.$passwordInput.hide();
         this.$forgotPasswordLink.hide();
-        this.webauthn = new Craft.WebAuthnLogin();
+        this.$submitBtn.$btn.text(
+          Craft.t('app', 'Sign in using a security key')
+        );
+
+        $('#login-form-extra').prepend(
+          '<button id="alternative-login" type="button">' +
+            Craft.t('app', 'Use password to login') +
+            '</button>'
+        );
+        this.$alternativeLoginLink = $('#alternative-login');
+        //this.webauthn = new Craft.WebAuthnLogin();
       }
 
       this.addListener(this.$loginNameInput, 'input', 'onInput');
@@ -139,7 +154,7 @@ import './login.scss';
       if (this.forgotPassword) {
         this.submitForgotPassword();
       } else if (!this.loginWithPassword) {
-        this.webauthn.submitLogin();
+        this.startWebauthnLogin();
       } else if (this.mfaFlow) {
         this.mfa.submitMfaCode();
       } else {
@@ -157,6 +172,76 @@ import './login.scss';
           new MessageSentModal();
         })
         .catch(({response}) => {
+          this.showError(response.data.message);
+        });
+    },
+
+    startWebauthnLogin: function () {
+      this.clearErrors();
+
+      var data = {
+        loginName: this.$loginNameInput.val(),
+        rememberMe: this.$rememberMeCheckbox.prop('checked') ? 'y' : '',
+      };
+
+      Craft.sendActionRequest('POST', 'users/start-webauthn-login', {data})
+        .then((response) => {
+          const authenticationOptions = response.data.authenticationOptions;
+          const userId = response.data.userId;
+          const duration = response.data.duration;
+
+          try {
+            startAuthentication(authenticationOptions)
+              .then((authResponse) => {
+                this.verifyWebAuthnLogin(
+                  authenticationOptions,
+                  authResponse,
+                  userId,
+                  duration
+                );
+              })
+              .catch((authResponseError) => {
+                this.onSubmitResponse();
+
+                // Add the error message
+                this.showError(authResponseError);
+              });
+          } catch (error) {
+            this.onSubmitResponse();
+
+            // Add the error message
+            this.showError(error);
+          }
+        })
+        .catch(({response}) => {
+          this.onSubmitResponse();
+
+          // Add the error message
+          this.showError(response.data.message);
+        });
+    },
+
+    verifyWebAuthnLogin: function (
+      authenticationOptions,
+      authResponse,
+      userId,
+      duration
+    ) {
+      let data = {
+        userId: userId,
+        authenticationOptions: JSON.stringify(authenticationOptions),
+        authResponse: JSON.stringify(authResponse),
+        duration: duration,
+      };
+
+      Craft.sendActionRequest('POST', 'users/webauthn-login', {data})
+        .then((response) => {
+          window.location.href = response.data.returnUrl;
+        })
+        .catch(({response}) => {
+          this.onSubmitResponse();
+
+          // Add the error message
           this.showError(response.data.message);
         });
     },
@@ -235,11 +320,17 @@ import './login.scss';
 
       if (this.loginWithPassword) {
         this.$submitBtn.$btn.text('Sign in');
-        this.$alternativeLoginLink.text('Use a security key to login');
+        this.$alternativeLoginLink.text(
+          Craft.t('app', 'Use a security key to login')
+        );
         this.mfa = new Craft.Mfa();
       } else {
-        this.$submitBtn.$btn.text('Sign in using a security key');
-        this.$alternativeLoginLink.text('Use a password to login');
+        this.$submitBtn.$btn.text(
+          Craft.t('app', 'Sign in using a security key')
+        );
+        this.$alternativeLoginLink.text(
+          Craft.t('app', 'Use a password to login')
+        );
       }
     },
   });

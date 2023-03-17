@@ -294,11 +294,11 @@ class MfaController extends Controller
 
         $webAuthn = new WebAuthn();
         if (!$webAuthn->deleteSecurityKey($user, $uid)) {
-            return $this->asFailure('Something went wrong.');
+            return $this->asFailure(Craft::t('app', 'Something went wrong.'));
         }
 
         $data['html'] = $webAuthn->getSetupFormHtml('',true, $user);
 
-        return $this->asSuccess('Security key removed.', $data);
+        return $this->asSuccess(Craft::t('app', 'Security key removed.'), $data);
     }
 }

@@ -63,6 +63,9 @@ class User
             case UserElement::AUTH_INVALID_MFA_CODE:
                 $message = Craft::t('app', 'Couldn’t verify the code.');
                 break;
+            case UserElement::AUTH_WEBAUTHN_NOT_SETUP:
+                $message = Craft::t('app', 'Please use password to login and then setup your secure keys via my account.');
+                break;
             default:
                 if (Craft::$app->getConfig()->getGeneral()->useEmailAsUsername) {
                     $message = Craft::t('app', 'Invalid email or password.');

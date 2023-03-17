@@ -103,7 +103,7 @@ import {browserSupportsWebAuthn} from '@simplewebauthn/browser';
               data.selectedMethod === 'craft\\mfa\\type\\WebAuthn' &&
               browserSupportsWebAuthn()
             ) {
-              new Craft.WebAuthn(this.slideout);
+              new Craft.WebAuthnSetup(this.slideout);
             }
 
             this.$verifyButton = this.slideout.$container.find('#mfa-verify');

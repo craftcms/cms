@@ -36,6 +36,7 @@ use craft\i18n\Formatter;
 use craft\i18n\Locale;
 use craft\mfa\ConfigurableMfaInterface;
 use craft\mfa\type\GoogleAuthenticator;
+use craft\mfa\type\WebAuthn;
 use craft\models\FieldLayout;
 use craft\models\UserGroup;
 use craft\records\User as UserRecord;
@@ -47,6 +48,7 @@ use DateInterval;
 use DateTime;
 use DateTimeZone;
 use Throwable;
+use Webauthn\PublicKeyCredentialRequestOptions;
 use yii\base\ErrorHandler;
 use yii\base\Exception;
 use yii\base\InvalidArgumentException;
@@ -127,6 +129,7 @@ class User extends Element implements IdentityInterface
     public const AUTH_NO_CP_OFFLINE_ACCESS = 'no_cp_offline_access';
     public const AUTH_NO_SITE_OFFLINE_ACCESS = 'no_site_offline_access';
     public const AUTH_INVALID_MFA_CODE = 'invalid_mfa_code';
+    public const AUTH_WEBAUTHN_NOT_SETUP = 'webauthn_not_setup';
 
     // Validation scenarios
     // -------------------------------------------------------------------------
@@ -1062,6 +1065,57 @@ class User extends Element implements IdentityInterface
     }
 
     /**
+     * Determines whether the user is allowed to be logged in with a security key.
+     *
+     * @param string $authenticationOptions
+     * @param string $authResponse
+     * @return bool
+     * @since 4.5.0
+     */
+    public function authenticateWebAuthn(string $authenticationOptions, string $authResponse): bool
+    {
+        $this->authError = null;
+
+//        // Fire a 'beforeAuthenticate' event
+//        $event = new AuthenticateUserEvent([
+//            'password' => $password,
+//        ]);
+//        $this->trigger(self::EVENT_BEFORE_AUTHENTICATE, $event);
+
+        $optionsArray = PublicKeyCredentialRequestOptions::createFromArray(Json::decodeIfJson($authenticationOptions));
+        /** @phpstan-ignore-next-line */
+        if (empty($optionsArray->getAllowCredentials())) {
+            $this->authError = User::AUTH_WEBAUTHN_NOT_SETUP;
+        }
+
+        if (!isset($this->authError) /*&& $event->performAuthentication*/) {
+            $webAuthn = new WebAuthn();
+            // Validate the security key
+            try {
+                /** @phpstan-ignore-next-line */
+                $keyValid = $webAuthn->verifyAuthenticationResponse($this, $optionsArray, $authResponse);
+            } catch (InvalidArgumentException) {
+                $keyValid = false;
+            }
+
+            if ($keyValid) {
+                $this->authError = $this->_getAuthError();
+            } else {
+                Craft::$app->getUsers()->handleInvalidLogin($this);
+                // Was that one bad password too many?
+                if ($this->locked && !Craft::$app->getConfig()->getGeneral()->preventUserEnumeration) {
+                    // Will set the authError to either AccountCooldown or AccountLocked
+                    $this->authError = $this->_getAuthError();
+                } else {
+                    $this->authError = self::AUTH_INVALID_CREDENTIALS;
+                }
+            }
+        }
+
+        return !isset($this->authError);
+    }
+
+    /**
      * Returns the reference string to this element.
      *
      * @return string|null
@@ -1897,7 +1951,7 @@ class User extends Element implements IdentityInterface
     }
 
     /**
-     * Returns the [[authError]] value for [[authenticate()]]
+     * Returns the [[authError]] value for [[authenticate()]] and [[authenticateWebAuthn()]]
      *
      * @return null|string
      */

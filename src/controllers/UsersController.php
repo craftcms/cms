@@ -34,6 +34,7 @@ use craft\helpers\Template;
 use craft\helpers\UrlHelper;
 use craft\helpers\User as UserHelper;
 use craft\i18n\Locale;
+use craft\mfa\type\WebAuthn;
 use craft\models\UserGroup;
 use craft\services\Users;
 use craft\web\Application;
@@ -155,6 +156,8 @@ class UsersController extends Controller
         'session-info' => self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE,
         'login' => self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE,
         'verify-mfa' => self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE,
+        'start-webauthn-login' => self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE,
+        'webauthn-login' => self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE,
         'logout' => self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE,
         'impersonate-with-token' => self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE,
         'save-user' => self::ALLOW_ANONYMOUS_LIVE,
@@ -179,7 +182,39 @@ class UsersController extends Controller
     }
 
     /**
-     * Displays the login template, and handles login post requests.
+     * Get common login data for logging in via password and security key (WebAuthn)
+     *
+     * @return array|Response
+     * @throws BadRequestHttpException
+     * @throws ServiceUnavailableHttpException
+     * @since 4.5.0
+     */
+    private function _getLoginData(): array|Response
+    {
+        $loginName = $this->request->getRequiredBodyParam('loginName');
+        $rememberMe = (bool)$this->request->getBodyParam('rememberMe');
+
+        $user = $this->_findLoginUser($loginName);
+
+        if (!$user || $user->password === null) {
+            // Delay again to match $user->authenticate()'s delay
+            Craft::$app->getSecurity()->validatePassword('p@ss1w0rd', '$2y$13$nj9aiBeb7RfEfYP3Cum6Revyu14QelGGxwcnFUKXIrQUitSodEPRi');
+            return $this->_handleLoginFailure(User::AUTH_INVALID_CREDENTIALS);
+        }
+
+        // Get the session duration
+        $generalConfig = Craft::$app->getConfig()->getGeneral();
+        if ($rememberMe && $generalConfig->rememberedUserSessionDuration !== 0) {
+            $duration = $generalConfig->rememberedUserSessionDuration;
+        } else {
+            $duration = $generalConfig->userSessionDuration;
+        }
+
+        return compact('user', 'duration');
+    }
+
+    /**
+     * Displays the login template, and handles login post requests for logging in with a password.
      *
      * @return Response|null
      * @throws BadRequestHttpException
@@ -196,36 +231,25 @@ class UsersController extends Controller
             return null;
         }
 
-        $loginName = $this->request->getRequiredBodyParam('loginName');
-        $password = $this->request->getRequiredBodyParam('password');
-        $rememberMe = (bool)$this->request->getBodyParam('rememberMe');
-
-        $user = $this->_findLoginUser($loginName);
-
-        if (!$user || $user->password === null) {
-            // Delay again to match $user->authenticate()'s delay
-            Craft::$app->getSecurity()->validatePassword('p@ss1w0rd', '$2y$13$nj9aiBeb7RfEfYP3Cum6Revyu14QelGGxwcnFUKXIrQUitSodEPRi');
-            return $this->_handleLoginFailure(User::AUTH_INVALID_CREDENTIALS);
+        $loginData = $this->_getLoginData();
+        if ($loginData instanceof Response) {
+            return $loginData;
         }
+
+        $user = $loginData['user'];
+        $duration = $loginData['duration'];
+        $password = $this->request->getRequiredBodyParam('password');
 
         // Did they submit a valid password, and is the user capable of being logged-in?
         if (!$user->authenticate($password)) {
             return $this->_handleLoginFailure($user->authError, $user);
         }
 
-        // Get the session duration
-        $generalConfig = Craft::$app->getConfig()->getGeneral();
-        if ($rememberMe && $generalConfig->rememberedUserSessionDuration !== 0) {
-            $duration = $generalConfig->rememberedUserSessionDuration;
-        } else {
-            $duration = $generalConfig->userSessionDuration;
-        }
-
-        $mfaService = Craft::$app->getMfa();
-        $mfaService->storeDataForMfaLogin($user, $duration);
-
         // if user requires MFA to login and we have their data stored in session, proceed to show the MFA step
         if ($user->requireMfa) {
+            $mfaService = Craft::$app->getMfa();
+            $mfaService->storeDataForMfaLogin($user, $duration);
+
             return $this->_mfaStep();
         }
 
@@ -234,10 +258,12 @@ class UsersController extends Controller
 
     /**
      * Verify MFA code
-     * @return Response
+     *
+     * @return Response|null
      * @throws BadRequestHttpException
      * @throws Exception
      * @throws ServiceUnavailableHttpException
+     * @since 4.5.0
      */
     public function actionVerifyMfa(): ?Response
     {
@@ -276,14 +302,82 @@ class UsersController extends Controller
     }
 
     /**
-     * Finish logging user in
+     * Start logging in via WebAuthn - get credential request options for user
+     *
+     * @return Response
+     * @throws ServiceUnavailableHttpException
+     * @since 4.5.0
+     */
+    public function actionStartWebauthnLogin(): Response
+    {
+        $this->requirePostRequest();
+        $this->requireAcceptsJson();
+
+        $loginData = $this->_getLoginData();
+        if ($loginData instanceof Response) {
+            return $loginData;
+        }
+
+        $user = $loginData['user'];
+        $duration = $loginData['duration'];
+
+        if ($user === null || $duration === null) {
+            $this->asFailure('Something went wrong.');
+        }
+
+        $webAuthn = new WebAuthn();
+        $options = $webAuthn->generateCredentialRequestOptions($user);
+
+        if ($options == null) {
+            $this->asFailure('Something went wrong.');
+        }
+
+        return $this->asJson(['authenticationOptions' => $options, 'userId' => $user->id, 'duration' => $duration]);
+    }
+
+    /**
+     * Handles verification and authentication for logging in via WebAuthn
+     *
+     * @return Response|null
+     * @throws ServiceUnavailableHttpException
+     * @since 4.5.0
+     */
+    public function actionWebauthnLogin(): ?Response
+    {
+        $this->requirePostRequest();
+        $this->requireAcceptsJson();
+
+        $request = Craft::$app->getRequest();
+        $duration = $request->getRequiredBodyParam('duration');
+        $userId = $request->getRequiredBodyParam('userId');
+        $authResponse = $request->getRequiredBodyParam('authResponse');
+        $authenticationOptions = $request->getRequiredBodyParam('authenticationOptions');
+
+        $user = User::findOne(['id' => $userId]);
+
+        if ($user === null) {
+            return null;
+        }
+
+        // Did they submit a valid security key, and is the user capable of being logged-in?
+        if (!$user->authenticateWebAuthn($authenticationOptions, $authResponse)) {
+            return $this->_handleLoginFailure($user->authError, $user);
+        }
+
+        return $this->_completeLogin($user, $duration);
+    }
+
+    /**
+     * Finish logging user in.
+     * Used for logging in with a password (with and without MFA) and via WebAuthn
      *
      * @param User $user
      * @param int $duration
-     * @return Response|null
+     * @return Response
      * @throws ServiceUnavailableHttpException
+     * @since 4.5.0
      */
-    private function _completeLogin(User $user, int $duration)
+    private function _completeLogin(User $user, int $duration): Response
     {
         $userSession = Craft::$app->getUser();
 
@@ -688,14 +782,14 @@ class UsersController extends Controller
 
         if (!Craft::$app->getElements()->saveElement($user)) {
             return $this->asFailure(
-                    Craft::t('app', 'Couldn’t update password.'),
-                    $user->getErrors('newPassword'),
-                ) ?? $this->_renderSetPasswordTemplate([
-                    'errors' => $user->getErrors('newPassword'),
-                    'code' => $code,
-                    'id' => $uid,
-                    'newUser' => !$user->password,
-                ]);
+                Craft::t('app', 'Couldn’t update password.'),
+                $user->getErrors('newPassword'),
+            ) ?? $this->_renderSetPasswordTemplate([
+                'errors' => $user->getErrors('newPassword'),
+                'code' => $code,
+                'id' => $uid,
+                'newUser' => !$user->password,
+            ]);
         }
 
         // If they're pending, try to activate them, and maybe treat this as an activation request

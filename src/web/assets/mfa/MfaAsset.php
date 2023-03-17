@@ -47,6 +47,15 @@ class MfaAsset extends AssetBundle
                 'MFA settings saved.',
                 'MFA setup removed.',
                 'No alternative MFA methods available.',
+                'Registration failed:',
+                'Security key registered.',
+                'Sign in using a security key',
+                'Starting registration',
+                'Starting verification',
+                'This browser does not support WebAuth.',
+                'Use a password to login',
+                'Use a security key to login',
+                'Waiting for elevated session',
             ]);
         }
     }
