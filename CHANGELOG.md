@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- The `|json_encode` Twig filter now calls `craft\helpers\Json::encode()` internally, improving error handling. ([#12919](https://github.com/craftcms/cms/issues/12919))
 - Fixed an error that could occur when rebuilding the project config, if there were any custom source definitions for element types that weren’t Composer-installed. ([#12881](https://github.com/craftcms/cms/issues/12881))
 
 ## 4.4.3 - 2023-03-16
