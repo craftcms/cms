@@ -2,6 +2,7 @@
 
 {%- set id = id ?? field.getInputId() %}
 {%- set descriptionId = descriptionId ?? "#{id}-desc" %}
+{%- set placeholder = field.defaultValue is not empty ? 'Default: {default}'|t('app', {default: field.defaultValue}) : false %}
 {%- set prefix = field.prefix ?? false %}
 {%- set suffix = field.suffix ?? false %}
 {%- set hasPrefix = prefix is not same as(false) %}
@@ -36,6 +37,7 @@
             inputmode: field.decimals ? 'decimal' : 'numeric',
             size: field.size,
             describedBy: [describedBy ?? null, hasPrefix or hasSuffix ? descriptionId : null]|filter|join(' ') ?: false,
+            placeholder: placeholder,
         }) }}
     </div>
     {% if hasSuffix %}

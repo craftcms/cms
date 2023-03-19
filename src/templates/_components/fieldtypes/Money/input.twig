@@ -1,5 +1,7 @@
 {% import '_includes/forms' as forms %}
 
+{%- set placeholder = field.defaultValue is not empty ? 'Default: {default}'|t('app', {default: field.defaultValue}) : false %}
+
 {{ forms.money({
     id: id ?? field.getInputId(),
     name: field.handle,
@@ -11,4 +13,5 @@
     decimals: decimals,
     size: field.size,
     describedBy: field.describedBy,
+    placeholder: placeholder,
 }) }}
