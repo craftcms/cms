@@ -45,7 +45,7 @@ class WebAuthn extends ConfigurableMfaType
      */
     public static function getDescription(): string
     {
-        return Craft::t('app', 'You can set up and manage your security keys from your account page.');
+        return Craft::t('app', 'Faster login with WebAuthn (e.g. TouchID, FaceID and Yubikey). You can set up and manage your security keys from your account page.');
     }
 
     /**
@@ -57,7 +57,7 @@ class WebAuthn extends ConfigurableMfaType
             return false;
         }
 
-        return $user->getRequireMfa() && WebAuthnRecord::findOne(['userId' => $user->id]) !== null;
+        return $user->isMfaRequired() && WebAuthnRecord::findOne(['userId' => $user->id]) !== null;
     }
 
     /**

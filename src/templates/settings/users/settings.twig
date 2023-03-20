@@ -126,6 +126,28 @@
             </div>
         {% endif %}
 
+        {% set requireMfa = settings.requireMfa|default([]) %}
+        {% set groups = {'all': 'All users'|t('app'), 'admin': 'Admin'|t('app')} %}
+        {% for group in craft.app.userGroups.getAllGroups() %}
+            {% set key = group.handle %}
+            {% set groups = groups|merge({(group.handle): group.name}) %}
+        {% endfor %}
+
+        <h3>{{ 'Require 2FA'|t('app') }}</h3>
+        <ul>
+            {% for groupHandle, groupName in groups %}
+                <li>
+                    {{ forms.checkboxField({
+                        label: groupName,
+                        name: 'requireMfa[]',
+                        value: groupHandle,
+                        checked: groupHandle in requireMfa,
+                    }) }}
+                </li>
+            {% endfor %}
+        </ul>
+
+
         <div class="buttons">
             <button type="submit" class="btn submit">{{ 'Save'|t('app') }}</button>
         </div>

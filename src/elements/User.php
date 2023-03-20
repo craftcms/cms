@@ -40,6 +40,7 @@ use craft\mfa\type\WebAuthn;
 use craft\models\FieldLayout;
 use craft\models\UserGroup;
 use craft\records\User as UserRecord;
+use craft\services\ProjectConfig;
 use craft\validators\DateTimeValidator;
 use craft\validators\UniqueValidator;
 use craft\validators\UsernameValidator;
@@ -1120,9 +1121,30 @@ class User extends Element implements IdentityInterface
      *
      * @return bool
      */
-    public function getRequireMfa()
+    public function isMfaRequired()
     {
-        return $this->requireMfa;
+        if ($this->requireMfa) {
+            return true;
+        }
+
+        $requireMfa = Craft::$app->getProjectConfig()->get(ProjectConfig::PATH_USERS)['requireMfa'] ?? [];
+
+        if (in_array('all', $requireMfa, true)) {
+            return true;
+        }
+
+        if ($this->admin && in_array('admin', $requireMfa, true)) {
+            return true;
+        }
+
+        $userGroups = $this->getGroups();
+        foreach ($userGroups as $userGroup) {
+            if (in_array($userGroup->handle, $requireMfa, true)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**

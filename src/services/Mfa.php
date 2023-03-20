@@ -149,10 +149,6 @@ class Mfa extends Component
             return false;
         }
 
-        if ($this->_mfaType === null) {
-            $this->_mfaType = $user->getDefaultMfaType();
-        }
-
         if (empty($currentMethod)) {
             throw new Exception('MFA method not specified.');
         }
@@ -177,7 +173,7 @@ class Mfa extends Component
     public function getAlternativeMfaTypes(?string $currentMethod = null): array
     {
         return array_filter($this->getAllMfaTypes(), function($type) use ($currentMethod) {
-            return $type !== $currentMethod;
+            return $type !== $currentMethod && $type !== WebAuthn::class;
         }, ARRAY_FILTER_USE_KEY);
     }
 

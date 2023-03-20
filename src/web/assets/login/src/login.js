@@ -184,6 +184,7 @@ import {startAuthentication} from '@simplewebauthn/browser';
             this.$forgotPasswordLink.show();
             this.$rememberMeCheckbox.parents('.field').show();
             this.$submitBtn.$btn.text(Craft.t('app', 'Sign in'));
+            this.mfa = new Craft.Mfa();
           }
         })
         .catch(({response}) => {
@@ -292,7 +293,9 @@ import {startAuthentication} from '@simplewebauthn/browser';
         .then((response) => {
           if (response.data.mfa !== undefined && response.data.mfa == true) {
             this.mfaFlow = true;
-            this.$alternativeLoginLink.remove();
+            if (this.$alternativeLoginLink !== null) {
+              this.$alternativeLoginLink.remove();
+            }
             this.mfa.showMfaForm(response.data.mfaForm, this.$loginDiv);
           } else {
             this.$submitBtn.successEvent();

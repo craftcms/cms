@@ -271,7 +271,7 @@ class UsersController extends Controller
         }
 
         // if user requires MFA to login and we have their data stored in session, proceed to show the MFA step
-        if ($user->getRequireMfa()) {
+        if ($user->isMfaRequired()) {
             $mfaService = Craft::$app->getMfa();
             $mfaService->storeDataForMfaLogin($user, $duration);
 

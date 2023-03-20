@@ -6,9 +6,9 @@ use craft\db\Migration;
 use craft\db\Table;
 
 /**
- * m230224_133309_add_authenticator_table migration.
+ * m230314_110309_add_authenticator_table migration.
  */
-class m230224_133309_add_authenticator_table extends Migration
+class m230314_110309_add_authenticator_table extends Migration
 {
     /**
      * @inheritdoc

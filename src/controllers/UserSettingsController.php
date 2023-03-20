@@ -144,6 +144,8 @@ class UserSettingsController extends Controller
             $settings['defaultGroup'] = $this->request->getBodyParam('defaultGroup');
         }
 
+        $settings['requireMfa'] = $this->request->getBodyParam('requireMfa');
+
         $projectConfig->set('users', $settings, 'Update user settings');
 
         $this->setSuccessFlash(Craft::t('app', 'User settings saved.'));
