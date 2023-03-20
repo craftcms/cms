@@ -34,7 +34,7 @@
     "accounting": "^0.4.1",
     "axios": "^0.27.2",
     "blueimp-file-upload": "^10.31.0",
-    "d3": "^4.11.0",
+    "d3": "^7.8.2",
     "d3-format": "^1.4.4",
     "d3-time-format": "^2.2.3",
     "element-resize-detector": "^1.2.4",
