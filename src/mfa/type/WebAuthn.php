@@ -65,9 +65,7 @@ class WebAuthn extends ConfigurableMfaType
      */
     public function getFields(): ?array
     {
-        return [
-            'credentialResponse' => '',
-        ];
+        return [];
     }
 
     /**
@@ -75,8 +73,7 @@ class WebAuthn extends ConfigurableMfaType
      */
     public function getInputHtml(string $html = '', array $options = []): string
     {
-        // TODO: write me
-        return parent::getInputHtml($html, $options);
+        return '';
     }
 
     /**
@@ -92,7 +89,7 @@ class WebAuthn extends ConfigurableMfaType
             return '';
         }
 
-        // otherwise show instructions, QR code and verification form
+        // otherwise show keys table and setup button
         $data = [
             'user' => $user,
             'fields' => $this->getNamespacedFields(),
@@ -138,7 +135,7 @@ class WebAuthn extends ConfigurableMfaType
      */
     public function deleteSecurityKey(User $user, string $uid): bool
     {
-        return WebAuthnRecord::findOne(['userId' => $user->id, 'uid' => $uid])->delete();
+        return WebAuthnRecord::findOne(['userId' => $user->id, 'uid' => $uid])?->delete();
     }
 
     /**
@@ -214,14 +211,8 @@ class WebAuthn extends ConfigurableMfaType
     public function verifyRegistrationResponse(User $user, string $credentials, ?string $credentialName = null): bool
     {
         $options = $this->getCredentialCreationOptions($user);
-
-        $request = Craft::$app->getRequest();
-        $psrServerRequest = new ServerRequest(
-            $request->getMethod(),
-            $request->getFullUri(),
-            $request->getHeaders()->toArray(),
-            $request->getRawBody()
-        );
+        
+        $psrServerRequest = $this->getPsrServerRequest();
 
         try {
             $verifiedCredentials = $this->getWebauthnServer()->loadAndCheckAttestationResponse(
@@ -274,13 +265,7 @@ class WebAuthn extends ConfigurableMfaType
      */
     public function verifyAuthenticationResponse(User $user, PublicKeyCredentialRequestOptions $authenticationOptions, string $credentials): bool
     {
-        $request = Craft::$app->getRequest();
-        $psrServerRequest = new ServerRequest(
-            $request->getMethod(),
-            $request->getFullUri(),
-            $request->getHeaders()->toArray(),
-            $request->getRawBody()
-        );
+        $psrServerRequest = $this->getPsrServerRequest();
 
         try {
             $this->getWebauthnServer()->loadAndCheckAssertionResponse(
@@ -337,5 +322,22 @@ class WebAuthn extends ConfigurableMfaType
 //        }
 
         return PublicKeyCredentialUserEntity::createFromArray($data);
+    }
+
+    /**
+     * Get server request in a format that WebAuthn expects
+     *
+     * @return ServerRequest
+     */
+    protected function getPsrServerRequest(): ServerRequest
+    {
+        $request = Craft::$app->getRequest();
+
+        return new ServerRequest(
+            $request->getMethod(),
+            $request->getFullUri(),
+            $request->getHeaders()->toArray(),
+            $request->getRawBody()
+        );
     }
 }
