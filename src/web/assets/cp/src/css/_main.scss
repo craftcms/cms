@@ -476,6 +476,7 @@ button {
   display: flex;
   border: 1px solid var(--border-color);
   border-radius: var(--large-border-radius);
+  min-height: var(--ui-control-height);
 
   .context-block {
     display: flex;
@@ -486,7 +487,6 @@ button {
     display: flex;
     justify-content: center;
     align-items: center;
-    min-height: var(--ui-control-height);
   }
 
   .context-block__name {
@@ -559,48 +559,15 @@ button {
 }
 
 .menu.revision-menu {
-  padding: 10px 24px;
+  padding: 18px 24px 20px;
 
-  hr {
-    margin: 10px -24px;
+  label {
+    font-weight: var(--font-weight-bold);
+    color: var(--medium-dark-text-color);
   }
 
-  ul {
-    li {
-      &.sel {
-        margin: 0 -14px;
-        padding: 0 14px;
-        background: var(--gray-050);
-        border-radius: var(--large-border-radius);
-
-        .edited-desc {
-          display: flex;
-          align-items: center;
-          @include margin-left(10px);
-          border-top: 1px solid var(--hairline-color);
-          padding: 10px 0;
-          color: var(--light-text-color);
-          white-space: normal;
-
-          p {
-            margin: 0;
-          }
-
-          .btn {
-            @include margin-left(14px);
-          }
-        }
-      }
-
-      a {
-        padding-top: 7px;
-        border-radius: var(--large-border-radius);
-      }
-    }
-  }
-
-  .extralight {
-    margin-top: 2px;
+  .submit {
+    margin-top: var(--s);
   }
 }
 
