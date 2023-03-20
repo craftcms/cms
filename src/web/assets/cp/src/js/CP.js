@@ -16,6 +16,7 @@ Craft.CP = Garnish.Base.extend(
     $mainContainer: null,
     $alerts: null,
     $contextMenu: null,
+    $contextSubmit: null,
     $crumbs: null,
     $breadcrumbList: null,
     $breadcrumbItems: null,
@@ -580,8 +581,9 @@ Craft.CP = Garnish.Base.extend(
       $revisionFieldInner.addClass('disabled');
       $loadingSpinner.removeClass('hidden');
 
-      // Disable current field
+      // Disable current field and submit btn
       $revisionSelect.attr('aria-disabled', 'true');
+      this.$contextSubmit.attr('aria-disabled', 'true').addClass('disabled');
 
       // Disable revision link
       $allRevisionsLink.removeAttr('href').attr({
@@ -590,14 +592,23 @@ Craft.CP = Garnish.Base.extend(
       });
 
       // Update screen reader message
-      $liveRegion.text('Loading');
+      $liveRegion.text(Craft.t('app', 'Loading'));
 
       $(revisionFieldSelector).load(loadParam, () => {
+        // Check to see if focus was on select element
+        if (Garnish.getFocusedElement().length === 0) {
+          // Refocus newly added select
+          this.$contextMenu.find('#revision-select').trigger('focus');
+        }
+
+        this.$contextSubmit
+          .attr('aria-disabled', 'false')
+          .removeClass('disabled');
         $revisionFieldInner.removeClass('disabled');
         $revisionField.append(
-          '<div class="spinner spinner-absolute hidden"></div>'
+          '<div class="spinner spinner-absolute hidden" aria-hidden="true"></div>'
         );
-        $liveRegion.text('Loading complete');
+        $liveRegion.text(Craft.t('app', 'Success'));
         setTimeout(() => {
           $liveRegion.empty();
         }, 3000);
@@ -606,16 +617,17 @@ Craft.CP = Garnish.Base.extend(
 
     initContextMenu: function () {
       this.$contextMenu = this.$revisionBtn.data('trigger').$container;
+      this.$contextSubmit = this.$contextMenu.find('.revision-menu__submit');
       const $siteSelect = this.$contextMenu.find('#site-select');
-      const $submit = this.$contextMenu.find('.revision-menu__submit');
 
       this.addListener($siteSelect, 'change', (event) => {
         const $selected = $siteSelect.find(':selected');
-
         this.updateRevisionForm($selected.data('href'));
       });
 
-      this.addListener($submit, 'click', (event) => {
+      this.addListener(this.$contextSubmit, 'click', (event) => {
+        if ($(event.target).attr('aria-disabled') === 'true') return;
+
         const $form = $(event.target).closest('.revision-menu__form');
         const $selected = $form.find('#revision-select :selected');
         const url = $selected.data('href');
