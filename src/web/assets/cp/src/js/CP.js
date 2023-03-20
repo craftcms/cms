@@ -620,6 +620,14 @@ Craft.CP = Garnish.Base.extend(
       this.$contextSubmit = this.$contextMenu.find('.revision-menu__submit');
       const $siteSelect = this.$contextMenu.find('#site-select');
 
+      // If all optgroups are hidden in site select, hide the field
+      const hideSiteSelect =
+        $siteSelect.find('optgroup:not(.hidden)').length === 0;
+
+      if (hideSiteSelect) {
+        $siteSelect.closest('.revision-menu__field').addClass('hidden');
+      }
+
       this.addListener($siteSelect, 'change', (event) => {
         const $selected = $siteSelect.find(':selected');
         this.updateRevisionForm($selected.data('href'));
