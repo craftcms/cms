@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 4
 
-## Unreleased
+## 4.4.4 - 2023-03-20
 
 - Input autofocussing has been reintroduced throughout the control panel. ([#12921](https://github.com/craftcms/cms/discussions/12921))
 - The `|json_encode` Twig filter now calls `craft\helpers\Json::encode()` internally, improving error handling. ([#12919](https://github.com/craftcms/cms/issues/12919))
