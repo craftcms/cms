@@ -293,6 +293,11 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         }
       });
 
+      // Auto-focus the Search box
+      if (!Garnish.isMobileBrowser(true)) {
+        this.$search.trigger('focus');
+      }
+
       // View menus
       this.viewMenus = {};
 

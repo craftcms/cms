@@ -42,12 +42,12 @@ Craft.Tabs = Garnish.Base.extend({
         this.addListener($a, 'keydown', (ev) => {
           if ([Garnish.SPACE_KEY, Garnish.RETURN_KEY].includes(ev.keyCode)) {
             ev.preventDefault();
-            this.selectTab(ev.currentTarget, true);
+            this.selectTab(ev.currentTarget);
           }
         });
         this.addListener($a, 'click', (ev) => {
           ev.preventDefault();
-          this.selectTab(ev.currentTarget, true);
+          this.selectTab(ev.currentTarget);
         });
       }
 
@@ -108,7 +108,7 @@ Craft.Tabs = Garnish.Base.extend({
     });
   },
 
-  selectTab: function (tab, focusTab = false) {
+  selectTab: function (tab, focusTab = true) {
     const $tab = this._getTab(tab);
 
     if ($tab[0] === this.$selectedTab[0]) {

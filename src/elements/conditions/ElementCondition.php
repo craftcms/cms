@@ -9,7 +9,6 @@ use craft\base\ElementInterface;
 use craft\elements\db\ElementQueryInterface;
 use craft\errors\InvalidTypeException;
 use craft\fields\conditions\FieldConditionRuleInterface;
-use craft\helpers\ArrayHelper;
 use yii\base\InvalidConfigException;
 
 /**
@@ -64,7 +63,8 @@ class ElementCondition extends BaseCondition implements ElementConditionInterfac
      */
     public function __construct(?string $elementType = null, array $config = [])
     {
-        $elementType = $elementType ?? ArrayHelper::remove($config, 'elementType');
+        $elementType = $elementType ?? $config['elementType'] ?? $config['attributes']['elementType'] ?? null;
+        unset($config['elementType'], $config['attributes']['elementType']);
 
         if (
             $elementType !== null &&
