@@ -8,8 +8,9 @@
     name: 'requireMfa',
     id: 'requireMfa',
     instructions: 'Should Multi-Factor Authentication (MFA) be enabled for this user.'|t('app'),
-    checked: user ? user.requireMfa : false,
+    checked: user ? user.isMfaRequired() : false,
     toggle: (user.id == currentUser.id) ? 'mfa-setup' : false,
+    disabled: user.canTurnOffMfa() == false
 }) }}
 
 {% if user.id == currentUser.id %}
@@ -19,7 +20,7 @@
     <div id="mfa-setup">
         {% set mfaTypes = craft.app.mfa.getAllMfaTypes(true) %}
         {% if mfaTypes is empty %}
-            <p>{{ 'No MFA options available.'|t('app') }}</p>
+            <p class="zilch">{{ 'No MFA options available.'|t('app') }}</p>
         {% else %}
             {% for key, option in mfaTypes %}
                 {% set isSetup = option.config.requiresSetup == false or (option.config.requiresSetup and user.isMfaTypeSetup(key)) %}

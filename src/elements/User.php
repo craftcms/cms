@@ -1129,22 +1129,53 @@ class User extends Element implements IdentityInterface
 
         $requireMfa = Craft::$app->getProjectConfig()->get(ProjectConfig::PATH_USERS)['requireMfa'] ?? [];
 
-        if (in_array('all', $requireMfa, true)) {
-            return true;
-        }
-
-        if ($this->admin && in_array('admin', $requireMfa, true)) {
-            return true;
-        }
-
-        $userGroups = $this->getGroups();
-        foreach ($userGroups as $userGroup) {
-            if (in_array($userGroup->handle, $requireMfa, true)) {
+        if (!is_array($requireMfa)) {
+            if ($requireMfa === 'all') {
                 return true;
+            }
+        } else {
+            if ($this->admin && in_array('admin', $requireMfa, true)) {
+                return true;
+            }
+
+            $userGroups = $this->getGroups();
+            foreach ($userGroups as $userGroup) {
+                if (in_array($userGroup->handle, $requireMfa, true)) {
+                    return true;
+                }
             }
         }
 
         return false;
+    }
+
+    /**
+     * Whether user can turn off MFA requirement. This can only happen if it's not enforced on a group level.
+     *
+     * @return bool
+     */
+    public function canTurnOffMfa(): bool
+    {
+        $requireMfa = Craft::$app->getProjectConfig()->get(ProjectConfig::PATH_USERS)['requireMfa'] ?? [];
+
+        if (!is_array($requireMfa)) {
+            if ($requireMfa === 'all') {
+                return false;
+            }
+        } else {
+            if ($this->admin && in_array('admin', $requireMfa, true)) {
+                return false;
+            }
+
+            $userGroups = $this->getGroups();
+            foreach ($userGroups as $userGroup) {
+                if (in_array($userGroup->handle, $requireMfa, true)) {
+                    return false;
+                }
+            }
+        }
+
+        return true;
     }
 
     /**
