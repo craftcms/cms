@@ -386,7 +386,14 @@ class ImageTransformer extends Component implements ImageTransformerInterface, E
             Craft::$app->getErrorHandler()->logException($e);
         }
 
-        fclose($stream);
+        // when Google Cloud Storage is done with the $stream, it's no longer recognised as a valid resource
+        // it comes back with type=Unknown and then causes fclose to trigger an error:
+        // TypeError: fclose(): supplied resource is not a valid stream resource
+        // https://github.com/craftcms/cms/issues/12878
+        if (is_resource($stream)) {
+            fclose($stream);
+        }
+
         FileHelper::unlink($tempPath);
     }
 
