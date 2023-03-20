@@ -19,12 +19,11 @@ import {startAuthentication} from '@simplewebauthn/browser';
 
     forgotPassword: false,
     loginWithPassword: false,
+    loginWithSecurityKey: false,
     validateOnInput: false,
 
     mfaFlow: false,
     mfa: null,
-
-    //webauthn: null,
 
     init: function () {
       this.$loginDiv = $('#login');
@@ -53,31 +52,17 @@ import {startAuthentication} from '@simplewebauthn/browser';
         this.loginWithPassword = true;
       }
 
-      if (!this.loginWithPassword) {
+      if (!this.loginWithPassword && !this.loginWithSecurityKey) {
         this.$passwordInput.hide();
         this.$forgotPasswordLink.hide();
-        this.$submitBtn.$btn.text(
-          Craft.t('app', 'Sign in using a security key')
-        );
-
-        $('#login-form-extra').prepend(
-          '<button id="alternative-login" type="button">' +
-            Craft.t('app', 'Use password to login') +
-            '</button>'
-        );
-        this.$alternativeLoginLink = $('#alternative-login');
-        //this.webauthn = new Craft.WebAuthnLogin();
+        this.$rememberMeCheckbox.parents('.field').hide();
+        this.$submitBtn.$btn.text(Craft.t('app', 'Continue'));
       }
 
       this.addListener(this.$loginNameInput, 'input', 'onInput');
       this.addListener(this.$passwordInput, 'input', 'onInput');
       this.addListener(this.$forgotPasswordLink, 'click', 'onSwitchForm');
       this.addListener(this.$rememberPasswordLink, 'click', 'onSwitchForm');
-      this.addListener(
-        this.$alternativeLoginLink,
-        'click',
-        'onAlternativeLoginLink'
-      );
       this.addListener(this.$form, 'submit', 'onSubmit');
 
       // Focus first empty field in form
@@ -153,13 +138,63 @@ import {startAuthentication} from '@simplewebauthn/browser';
 
       if (this.forgotPassword) {
         this.submitForgotPassword();
-      } else if (!this.loginWithPassword) {
+      } else if (this.loginWithSecurityKey) {
         this.startWebauthnLogin();
       } else if (this.mfaFlow) {
         this.mfa.submitMfaCode();
-      } else {
+      } else if (this.loginWithPassword) {
         this.submitLogin();
+      } else {
+        this.submitFindUser();
       }
+    },
+
+    submitFindUser: function () {
+      var data = {
+        loginName: this.$loginNameInput.val(),
+      };
+
+      Craft.sendActionRequest('POST', 'users/get-user-for-login', {data})
+        .then((response) => {
+          if (
+            browserSupportsWebAuthn() &&
+            response.data.hasSecurityKeys !== undefined &&
+            response.data.hasSecurityKeys == true
+          ) {
+            this.loginWithSecurityKey = true;
+            this.$rememberMeCheckbox.parents('.field').show();
+            this.$submitBtn.$btn.text(
+              Craft.t('app', 'Sign in with a security key')
+            );
+
+            $('#login-form-extra').prepend(
+              '<button id="alternative-login" type="button" class="btn">' +
+                Craft.t('app', 'Use password to login') +
+                '</button>'
+            );
+            this.$alternativeLoginLink = $('#alternative-login');
+            this.addListener(
+              this.$alternativeLoginLink,
+              'click',
+              'onAlternativeLoginLink'
+            );
+          } else {
+            this.loginWithPassword = true;
+            this.$passwordInput.show();
+            this.$forgotPasswordLink.show();
+            this.$rememberMeCheckbox.parents('.field').show();
+            this.$submitBtn.$btn.text(Craft.t('app', 'Sign in'));
+          }
+        })
+        .catch(({response}) => {
+          Garnish.shake(this.$form, 'left');
+          this.onSubmitResponse();
+
+          // Add the error message
+          this.showError(response.data.message);
+        });
+
+      return false;
     },
 
     submitForgotPassword: function () {
@@ -314,6 +349,7 @@ import {startAuthentication} from '@simplewebauthn/browser';
       this.clearErrors();
 
       this.loginWithPassword = !this.loginWithPassword;
+      this.loginWithSecurityKey = !this.loginWithSecurityKey;
 
       this.$passwordInput.toggle();
       this.$forgotPasswordLink.toggle();
@@ -324,7 +360,7 @@ import {startAuthentication} from '@simplewebauthn/browser';
           Craft.t('app', 'Use a security key to login')
         );
         this.mfa = new Craft.Mfa();
-      } else {
+      } else if (this.loginWithSecurityKey) {
         this.$submitBtn.$btn.text(
           Craft.t('app', 'Sign in using a security key')
         );

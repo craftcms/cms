@@ -1116,6 +1116,16 @@ class User extends Element implements IdentityInterface
     }
 
     /**
+     * Return whether user is required to use MFA to login
+     *
+     * @return bool
+     */
+    public function getRequireMfa()
+    {
+        return $this->requireMfa;
+    }
+
+    /**
      * Returns the reference string to this element.
      *
      * @return string|null

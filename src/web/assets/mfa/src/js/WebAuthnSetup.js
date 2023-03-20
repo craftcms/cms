@@ -12,7 +12,6 @@ import {startRegistration} from '@simplewebauthn/browser';
       slideout: null,
 
       init: function (slideout, settings) {
-        console.log('init');
         this.slideout = slideout;
         this.setSettings(settings, Craft.WebAuthnSetup.defaults);
         this.$addSecurityKeyBtn = $('#add-security-key');

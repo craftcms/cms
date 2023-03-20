@@ -154,6 +154,7 @@ class UsersController extends Controller
     protected array|bool|int $allowAnonymous = [
         'get-remaining-session-time' => self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE,
         'session-info' => self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE,
+        'get-user-for-login' => self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE,
         'login' => self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE,
         'verify-mfa' => self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE,
         'start-webauthn-login' => self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE,
@@ -214,6 +215,30 @@ class UsersController extends Controller
     }
 
     /**
+     * Get User for Login
+     *
+     * @return Response|null
+     * @throws BadRequestHttpException
+     */
+    public function actionGetUserForLogin(): ?Response
+    {
+        $loginName = $this->request->getRequiredBodyParam('loginName');
+
+        $user = $this->_findLoginUser($loginName);
+
+        if (!$user || $user->password === null) {
+            return $this->asJson([
+                'hasSecurityKeys' => false,
+            ]);
+        }
+
+        // does user have security key set up or should we only show the password field
+        return $this->asJson([
+            'hasSecurityKeys' => $user->isMfaTypeSetup(WebAuthn::class),
+        ]);
+    }
+
+    /**
      * Displays the login template, and handles login post requests for logging in with a password.
      *
      * @return Response|null
@@ -246,7 +271,7 @@ class UsersController extends Controller
         }
 
         // if user requires MFA to login and we have their data stored in session, proceed to show the MFA step
-        if ($user->requireMfa) {
+        if ($user->getRequireMfa()) {
             $mfaService = Craft::$app->getMfa();
             $mfaService->storeDataForMfaLogin($user, $duration);
 

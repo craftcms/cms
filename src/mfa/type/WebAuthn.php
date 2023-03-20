@@ -57,7 +57,7 @@ class WebAuthn extends ConfigurableMfaType
             return false;
         }
 
-        return $user->requireMfa && WebAuthnRecord::findOne(['userId' => $user->id]) !== null;
+        return $user->getRequireMfa() && WebAuthnRecord::findOne(['userId' => $user->id]) !== null;
     }
 
     /**
