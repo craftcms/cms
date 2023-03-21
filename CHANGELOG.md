@@ -3,6 +3,7 @@
 ## Unreleased
 
 - Fixed a bug where relation data was getting deleted when running garbage collection on PostgreSQL. ([#9905](https://github.com/craftcms/cms/issues/9905))
+- Fixed a bug where Lightswitch fields’ “OFF Label” and “ON Label” settings weren’t getting translated. ([#12942](https://github.com/craftcms/cms/issues/12942))
 - Updated svg-sanitizer to 0.16. ([#12943](https://github.com/craftcms/cms/issues/12943))
 
 ## 3.8.4 - 2023-03-20
