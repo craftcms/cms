@@ -1,12 +1,23 @@
 # Release Notes for Craft CMS 4
 
-## Unreleased
+## 4.4.5 - 2023-03-21
+
+- Fixed a bug where relation data was getting deleted when running garbage collection on PostgreSQL. ([#9905](https://github.com/craftcms/cms/issues/9905))
+- Fixed a bug where Lightswitch fields’ “OFF Label” and “ON Label” settings weren’t getting translated. ([#12942](https://github.com/craftcms/cms/issues/12942))
+- Fixed a bug where `craft\events\DefineUserContentSummaryEvent::$userId` was never set for `craft\controllers\EVENT_DEFINE_CONTENT_SUMMARY` events. ([#12944](https://github.com/craftcms/cms/issues/12944))
+- Fixed a bug where element edit pages weren’t displaying layout tabs that didn’t have a unique name. ([#12928](https://github.com/craftcms/cms/issues/12928))
+- Fixed a bug where the `CRAFT_LOG_PHP_ERRORS` constant/environment variable wasn’t being respected when set to `false`. ([#12862](https://github.com/craftcms/cms/issues/12862))
+- Fixed a bug where the `entrify/categories` command wasn’t converting disabled categories. ([#12945](https://github.com/craftcms/cms/issues/12945))
+- Updated svg-sanitizer to 0.16. ([#12943](https://github.com/craftcms/cms/issues/12943))
+
+## 4.4.4 - 2023-03-20
 
 - Input autofocussing has been reintroduced throughout the control panel. ([#12921](https://github.com/craftcms/cms/discussions/12921))
 - The `|json_encode` Twig filter now calls `craft\helpers\Json::encode()` internally, improving error handling. ([#12919](https://github.com/craftcms/cms/issues/12919))
 - `craft\helpers\Json::encode()` no longer sets the `JSON_UNESCAPED_SLASHES` flag by default.
 - Fixed a JavaScript error that occurred when resolving an asset move conflict. ([#12920](https://github.com/craftcms/cms/issues/12920))
 - Fixed a bug where volume subfolders were being shown when viewing soft-deleted assets. ([#12927](https://github.com/craftcms/cms/issues/12927))
+- Fixed a bug where structure data was getting deleted when running garbage collection on PostgreSQL. ([#12925](https://github.com/craftcms/cms/issues/12925))
 - Fixed an error that could occur when rebuilding the project config, if there were any custom source definitions for element types that weren’t Composer-installed. ([#12881](https://github.com/craftcms/cms/issues/12881))
 - Fixed an XSS vulnerability.
 
