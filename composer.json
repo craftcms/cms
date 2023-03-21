@@ -38,7 +38,7 @@
     "craftcms/server-check": "~1.2.0",
     "creocoder/yii2-nested-sets": "~0.9.0",
     "elvanto/litemoji": "^3.0.1",
-    "enshrined/svg-sanitize": "~0.15.2",
+    "enshrined/svg-sanitize": "~0.16.0",
     "guzzlehttp/guzzle": "^6.5.5|^7.2.0",
     "laminas/laminas-feed": "~2.12.3|^2.13.1",
     "league/flysystem": "^1.1.4",
