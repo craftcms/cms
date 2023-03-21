@@ -90,7 +90,8 @@ class UniqueValidator extends YiiUniqueValidator
                             $currentFilter($query);
                             $query->andWhere($pkFilter);
                         };
-                    } else if (is_array($this->filter) || is_string($this->filter)) {
+                    } else {
+                        // If it isn't a closure then `filter` will be an array or string
                         $filter[] = $this->filter;
                     }
 
