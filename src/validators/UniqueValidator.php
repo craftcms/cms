@@ -58,7 +58,7 @@ class UniqueValidator extends YiiUniqueValidator
             }
 
             $exists = false;
-            $filter = ['and'];
+            $pkFilter = ['and'];
             $tableName = Craft::$app->getDb()->getSchema()->getRawTableName($targetClass::tableName());
 
             foreach ($pkMap as $k => $v) {
@@ -72,12 +72,23 @@ class UniqueValidator extends YiiUniqueValidator
 
                 if ($model->$pkAttribute) {
                     $exists = true;
-                    $filter[] = ['not', ["$tableName.$pkColumn" => $model->$pkAttribute]];
+                    $pkFilter[] = ['not', ["$tableName.$pkColumn" => $model->$pkAttribute]];
                 }
             }
 
             if ($exists) {
-                $this->filter = $filter;
+                if ($this->filter) {
+                    $filter = ['and', $pkFilter];
+
+                    // @TODO figure out if there is a way to support closures
+                    if (is_array($this->filter) || is_string($this->filter)) {
+                        $filter[] = $this->filter;
+                    }
+
+                    $this->filter = $filter;
+                } else {
+                    $this->filter = $pkFilter;
+                }
             }
         }
 
