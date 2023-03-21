@@ -914,7 +914,7 @@ class GeneralConfig extends BaseConfig
      * This can also be set to `'*'` to disable **all** plugins.
      *
      * ```php
-     * ->disabledPlugins'('*')
+     * ->disabledPlugins('*')
      * ```
      *
      * ::: warning

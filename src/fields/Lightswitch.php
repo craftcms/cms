@@ -133,8 +133,8 @@ class Lightswitch extends Field implements PreviewableFieldInterface, SortableFi
             'describedBy' => $this->describedBy,
             'name' => $this->handle,
             'on' => (bool)$value,
-            'onLabel' => $this->onLabel,
-            'offLabel' => $this->offLabel,
+            'onLabel' => Craft::t('site', $this->onLabel),
+            'offLabel' => Craft::t('site', $this->offLabel),
         ]);
     }
 
