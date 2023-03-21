@@ -467,8 +467,8 @@ button {
   background-color: transparentize($grey200, 0.5) !important;
 }
 
-.context-btngroup {
-  gap: var(--s);
+.context-btn {
+  @include margin-left(var(--s));
 }
 
 .context-indicator {
