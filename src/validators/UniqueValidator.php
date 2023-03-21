@@ -12,7 +12,6 @@ use craft\helpers\StringHelper;
 use yii\base\Model;
 use yii\db\ActiveQueryInterface;
 use yii\db\ActiveRecord;
-use yii\db\Query;
 use yii\validators\UniqueValidator as YiiUniqueValidator;
 
 /**
