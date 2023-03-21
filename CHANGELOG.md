@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 4
 
-## Unreleased
+## 4.4.5 - 2023-03-21
 
 - Fixed a bug where relation data was getting deleted when running garbage collection on PostgreSQL. ([#9905](https://github.com/craftcms/cms/issues/9905))
 - Fixed a bug where Lightswitch fields’ “OFF Label” and “ON Label” settings weren’t getting translated. ([#12942](https://github.com/craftcms/cms/issues/12942))
