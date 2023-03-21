@@ -1,5 +1,9 @@
 # Release Notes for Craft CMS 4
 
+## Unreleased
+
+- Fixed a bug where element edit pages weren’t displaying layout tabs that didn’t have a unique name. ([#12928](https://github.com/craftcms/cms/issues/12928))
+
 ## 4.4.4 - 2023-03-20
 
 - Input autofocussing has been reintroduced throughout the control panel. ([#12921](https://github.com/craftcms/cms/discussions/12921))
