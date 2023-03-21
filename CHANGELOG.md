@@ -3,6 +3,7 @@
 ## Unreleased
 
 - Fixed a bug where element edit pages weren’t displaying layout tabs that didn’t have a unique name. ([#12928](https://github.com/craftcms/cms/issues/12928))
+- Fixed a bug where the `CRAFT_LOG_PHP_ERRORS` constant/environment variable wasn’t being respected when set to `false`. ([#12862](https://github.com/craftcms/cms/issues/12862))
 
 ## 4.4.4 - 2023-03-20
 
