@@ -10,7 +10,9 @@ namespace craft\validators;
 use Craft;
 use craft\helpers\StringHelper;
 use yii\base\Model;
+use yii\db\ActiveQueryInterface;
 use yii\db\ActiveRecord;
+use yii\db\Query;
 use yii\validators\UniqueValidator as YiiUniqueValidator;
 
 /**
@@ -80,8 +82,15 @@ class UniqueValidator extends YiiUniqueValidator
                 if ($this->filter) {
                     $filter = ['and', $pkFilter];
 
-                    // @TODO figure out if there is a way to support closures
-                    if (is_array($this->filter) || is_string($this->filter)) {
+                    if ($this->filter instanceof \Closure) {
+                        $currentFilter = $this->filter;
+
+                        // Wrap the closure in another closure that will add the PK filter
+                        $filter = function(ActiveQueryInterface $query) use ($currentFilter, $pkFilter) {
+                            $currentFilter($query);
+                            $query->andWhere($pkFilter);
+                        };
+                    } else if (is_array($this->filter) || is_string($this->filter)) {
                         $filter[] = $this->filter;
                     }
 

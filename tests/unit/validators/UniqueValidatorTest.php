@@ -12,6 +12,7 @@ use craft\records\UserGroup as UserGroupRecord;
 use craft\test\TestCase;
 use craft\validators\UniqueValidator;
 use crafttests\fixtures\UserGroupsFixture;
+use yii\db\ActiveQueryInterface;
 
 /**
  * Class UniqueValidatorTest.
@@ -39,14 +40,20 @@ class UniqueValidatorTest extends TestCase
     /**
      * @dataProvider uniqueValidatorValidateDataProvider
      * @param string $attribute
+     * @param int|null $id
      * @param array $config
      * @param bool $mustValidate
+     * @param array $modelConfig
      */
     public function testValidation(string $attribute, ?int $id = null, array $config = [], bool $mustValidate = true, array $modelConfig = []): void
     {
         $uniqueValidator = new UniqueValidator($config);
         if ($id) {
             $model = \Craft::$app->getUserGroups()->getGroupById($id);
+
+            if (!empty($modelConfig)) {
+                $model->setAttributes($modelConfig);
+            }
         } else {
             $model = new UserGroup($modelConfig);
         }
@@ -67,10 +74,16 @@ class UniqueValidatorTest extends TestCase
     {
         return [
             'existing' => ['handle', 1000, ['targetClass' => UserGroupRecord::class], true],
-            'new-unique' => ['name', null, ['targetClass' => UserGroupRecord::class], true, ['name' => 'Test', 'handle' => 'test']],
-            'new-not-unique' => ['name', null, ['targetClass' => UserGroupRecord::class], false, ['name' => 'Group 1', 'handle' => 'group1']],
+            'unique' => ['handle', 1000, ['targetClass' => UserGroupRecord::class], true, ['handle' => 'group99']],
+            'not-unique' => ['handle', 1000, ['targetClass' => UserGroupRecord::class], false, ['handle' => 'group2']],
+            'new-unique' => ['handle', null, ['targetClass' => UserGroupRecord::class], true, ['handle' => 'group99']],
+            'new-not-unique' => ['handle', null, ['targetClass' => UserGroupRecord::class], false, ['handle' => 'group1']],
+
             // Add extra filter to make sure it passes validation
-            'new-not-unique-extra-filter' => ['name', null, ['targetClass' => UserGroupRecord::class, 'filter' => ['not', ['description' => null]]], true, ['name' => 'Group 1', 'handle' => 'group1']],
+            'not-unique-extra-filter' => ['handle', 1000, ['targetClass' => UserGroupRecord::class, 'filter' => ['not', ['description' => null]]], true, ['handle' => 'group2']],
+            'not-unique-closure-filter' => ['handle', 1000, ['targetClass' => UserGroupRecord::class, 'filter' => fn(ActiveQueryInterface $query) => $query->andWhere(['not', ['description' => null]])], true, ['handle' => 'group2']],
+            'new-not-unique-extra-filter' => ['handle', null, ['targetClass' => UserGroupRecord::class, 'filter' => ['not', ['description' => null]]], true, ['handle' => 'group2']],
+            'new-not-unique-closure-filter' => ['handle', null, ['targetClass' => UserGroupRecord::class, 'filter' => fn(ActiveQueryInterface $query) => $query->andWhere(['not', ['description' => null]])], true, ['handle' => 'group2']],
         ];
     }
 
