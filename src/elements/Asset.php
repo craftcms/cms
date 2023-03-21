@@ -2222,7 +2222,7 @@ JS;
      */
     public function getCopyOfFile(): string
     {
-        $tempFilename = uniqid(pathinfo($this->_filename, PATHINFO_FILENAME), true) . '.' . $this->getExtension();
+        $tempFilename = FileHelper::uniqueName($this->_filename);
         $tempPath = Craft::$app->getPath()->getTempPath() . DIRECTORY_SEPARATOR . $tempFilename;
         Assets::downloadFile($this->getVolume(), $this->getPath(), $tempPath);
 

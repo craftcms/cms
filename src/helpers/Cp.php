@@ -115,7 +115,7 @@ class Cp
                     $editions = ['solo', 'pro'];
                     $currentEdition = Craft::$app->getEditionHandle();
                     $currentEditionName = Craft::$app->getEditionName();
-                    $licenseEditionName = App::editionName(App::editionIdByHandle($licenseInfo['edition']));
+                    $licenseEditionName = App::editionName(App::editionIdByHandle($licenseInfo['edition'] ?? 'solo'));
                     $version = Craft::$app->getVersion();
                 } else {
                     if (!str_starts_with($handle, 'plugin-')) {
@@ -138,7 +138,7 @@ class Cp
                     $editions = $plugin::editions();
                     $currentEdition = $pluginInfo['edition'];
                     $currentEditionName = ucfirst($currentEdition);
-                    $licenseEditionName = ucfirst($licenseInfo['edition']);
+                    $licenseEditionName = ucfirst($licenseInfo['edition'] ?? 'standard');
                     $version = $pluginInfo['version'];
                 }
 
