@@ -145,7 +145,7 @@ if (!App::isStreamLog()) {
 }
 
 // Log errors to storage/logs/phperrors.log or php://stderr
-if (App::parseBooleanEnv('$CRAFT_LOG_PHP_ERRORS') === null || App::parseBooleanEnv('$CRAFT_LOG_PHP_ERRORS') === true) {
+if (App::parseBooleanEnv('$CRAFT_LOG_PHP_ERRORS') !== false) {
     ini_set('log_errors', '1');
 
     if (App::isStreamLog()) {
