@@ -1,5 +1,9 @@
 # Release Notes for Craft CMS 3.x
 
+## Unreleased
+
+- Fixed a bug where relation data was getting deleted when running garbage collection on PostgreSQL. ([#9905](https://github.com/craftcms/cms/issues/9905))
+
 ## 3.8.4 - 2023-03-20
 
 - The `|json_encode` Twig filter now calls `craft\helpers\Json::encode()` internally, improving error handling. ([#12919](https://github.com/craftcms/cms/issues/12919))

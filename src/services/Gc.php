@@ -364,7 +364,9 @@ SQL;
 DELETE FROM $relationsTable
 USING $relationsTable [[r]]
 LEFT JOIN $elementsTable [[e]] ON [[e.id]] = [[r.targetId]]
-WHERE [[e.id]] IS NULL
+WHERE
+  $relationsTable.[[id]] = [[r.id]] AND
+  [[e.id]] IS NULL
 SQL;
         }
 
@@ -390,8 +392,10 @@ SQL;
 DELETE FROM $structureElementsTable
 USING $structureElementsTable [[se]]
 LEFT JOIN $elementsTable [[e]] ON [[e.id]] = [[se.elementId]]
-WHERE $structureElementsTable.[[id]] = [[se.id]] AND
-  [[se.elementId]] IS NOT NULL AND [[e.id]] IS NULL
+WHERE
+  $structureElementsTable.[[id]] = [[se.id]] AND
+  [[se.elementId]] IS NOT NULL AND
+  [[e.id]] IS NULL
 SQL;
         }
 
