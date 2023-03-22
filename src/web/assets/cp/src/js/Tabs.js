@@ -94,7 +94,7 @@ Craft.Tabs = Garnish.Base.extend({
       this.updateMenuBtn();
     });
 
-    const $options = this.menu.find('a');
+    const $options = this.getMenuOptions();
     this.addListener($options, 'activate', (ev) => {
       const $option = $(ev.currentTarget);
 
@@ -110,7 +110,7 @@ Craft.Tabs = Garnish.Base.extend({
     });
   },
 
-  getOptions: function () {
+  getMenuOptions: function () {
     return this.menu.find('a');
   },
 
@@ -131,8 +131,8 @@ Craft.Tabs = Garnish.Base.extend({
 
     this.scrollToTab($tab);
 
-    this.getOptions().removeClass('sel').removeAttr('aria-current');
-    this.getOptions()
+    this.getMenuOptions().removeClass('sel').removeAttr('aria-current');
+    this.getMenuOptions()
       .filter(`[data-id="${$tab.data('id')}"]`)
       .addClass('sel')
       .attr('aria-current', 'true');
