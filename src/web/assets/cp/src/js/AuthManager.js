@@ -1,3 +1,5 @@
+import {browserSupportsWebAuthn} from '@simplewebauthn/browser';
+
 /** global: Craft */
 /** global: Garnish */
 /**
@@ -22,6 +24,12 @@ Craft.AuthManager = Garnish.Base.extend(
     $loginErrorPara: null,
 
     submitLoginIfLoggedOut: false,
+
+    loginWithPassword: true,
+    loginWithSecurityKey: false,
+    mfaFlow: false,
+    mfa: null,
+    $alternativeLoginLink: null,
 
     /**
      * Init
@@ -107,7 +115,15 @@ Craft.AuthManager = Garnish.Base.extend(
         } else {
           if (this.showingLoginModal) {
             if (this.submitLoginIfLoggedOut) {
-              this.submitLogin();
+              if (this.loginWithSecurityKey) {
+                this.webauthnLogin();
+              } else if (this.loginWithPassword) {
+                if (this.mfaFlow == true) {
+                  this.mfaLogin();
+                } else {
+                  this.submitLogin();
+                }
+              }
             }
           } else {
             // Show the login modal
@@ -264,15 +280,30 @@ Craft.AuthManager = Garnish.Base.extend(
       this.showingLoginModal = true;
 
       if (!this.loginModal) {
+        if (Craft.requireMfa) {
+          if (Craft.userHasSecurityKeys && browserSupportsWebAuthn()) {
+            this.loginWithPassword = false;
+            this.loginWithSecurityKey = true;
+          } else {
+            this.loginWithPassword = true;
+            this.loginWithSecurityKey = false;
+          }
+          this.mfaFlow = false;
+          this.mfa = null;
+        }
+
         var $form = $('<form id="loginmodal" class="modal alert fitted"/>'),
           $body = $(
             '<div class="body"><h2>' +
               Craft.t('app', 'Your session has ended.') +
               '</h2><p>' +
-              Craft.t('app', 'Enter your password to log back in.') +
+              Craft.t('app', 'Log back in.') +
               '</p></div>'
           ).appendTo($form),
           $inputContainer = $('<div class="inputcontainer">').appendTo($body),
+          $additionalActionsContainer = $(
+            '<div class="login-form-extra"/>'
+          ).appendTo($body),
           $inputsFlexContainer = $('<div class="flex"/>').appendTo(
             $inputContainer
           ),
@@ -289,6 +320,7 @@ Craft.AuthManager = Garnish.Base.extend(
             Craft.t('app', 'Password') +
             '"/>'
         ).appendTo($passwordWrapper);
+
         this.$loginBtn = Craft.ui
           .createSubmitButton({
             class: 'disabled',
@@ -297,6 +329,36 @@ Craft.AuthManager = Garnish.Base.extend(
           })
           .attr('aria-disabled', 'true')
           .appendTo($buttonContainer);
+
+        this.$loginBtn = new Garnish.MultiFunctionBtn(this.$loginBtn, {
+          changeButtonText: false,
+        });
+
+        $('<div id="mfa-form"/>').insertAfter($inputContainer);
+
+        if (this.loginWithSecurityKey) {
+          this.$loginBtn.$btnLabel.text(
+            Craft.t('app', 'Sign in with a security key')
+          );
+          this.$loginBtn.$btn
+            .removeClass('disabled')
+            .attr('aria-disabled', 'false');
+          this.$passwordInput.parents('.flex-grow').hide();
+
+          this.$alternativeLoginLink = Craft.ui
+            .createButton({
+              label: Craft.t('app', 'Use password to login'),
+              type: 'button',
+            })
+            .appendTo($additionalActionsContainer);
+
+          this.addListener(
+            this.$alternativeLoginLink,
+            'click',
+            'onAlternativeLoginLink'
+          );
+        }
+
         this.$loginErrorPara = $('<p class="error"/>').appendTo($body);
 
         this.loginModal = new Garnish.Modal($form, {
@@ -335,6 +397,34 @@ Craft.AuthManager = Garnish.Base.extend(
       }
     },
 
+    onAlternativeLoginLink: function () {
+      this.clearLoginError();
+
+      this.loginWithPassword = !this.loginWithPassword;
+      this.loginWithSecurityKey = !this.loginWithSecurityKey;
+
+      this.$passwordInput.val('');
+      this.$passwordInput.parents('.flex-grow').toggle();
+
+      if (this.loginWithPassword) {
+        this.$loginBtn.$btnLabel.text(Craft.t('app', 'Sign in'));
+        this.$loginBtn.$btn.attr('aria-disabled', 'true').addClass('disabled');
+        this.$alternativeLoginLink.text(
+          Craft.t('app', 'Use a security key to login')
+        );
+      } else if (this.loginWithSecurityKey) {
+        this.$loginBtn.$btnLabel.text(
+          Craft.t('app', 'Sign in using a security key')
+        );
+        this.$loginBtn.$btn
+          .attr('aria-disabled', 'false')
+          .removeClass('disabled');
+        this.$alternativeLoginLink.text(
+          Craft.t('app', 'Use a password to login')
+        );
+      }
+    },
+
     /**
      * Hides the login modal.
      */
@@ -347,6 +437,9 @@ Craft.AuthManager = Garnish.Base.extend(
         } else {
           this.loginModal.hide();
         }
+        // reset the modal
+        this.loginModal.destroy();
+        this.loginModal = null;
       }
     },
 
@@ -371,12 +464,12 @@ Craft.AuthManager = Garnish.Base.extend(
 
     validatePassword: function () {
       if (this.$passwordInput.val().length >= 6) {
-        this.$loginBtn.removeClass('disabled');
-        this.$loginBtn.removeAttr('aria-disabled');
+        this.$loginBtn.$btn.removeClass('disabled');
+        this.$loginBtn.$btn.removeAttr('aria-disabled');
         return true;
       } else {
-        this.$loginBtn.addClass('disabled');
-        this.$loginBtn.attr('aria-disabled', 'true');
+        this.$loginBtn.$btn.addClass('disabled');
+        this.$loginBtn.$btn.attr('aria-disabled', 'true');
         return false;
       }
     },
@@ -386,22 +479,66 @@ Craft.AuthManager = Garnish.Base.extend(
         ev.preventDefault();
       }
 
-      if (this.validatePassword()) {
-        this.$loginBtn.addClass('loading');
-        this.clearLoginError();
-
+      if (
+        (this.loginWithPassword && this.validatePassword()) ||
+        this.loginWithSecurityKey
+      ) {
         if (typeof Craft.csrfTokenValue !== 'undefined') {
           // Check the auth status one last time before sending this off,
           // in case the user has already logged back in from another window/tab
           this.submitLoginIfLoggedOut = true;
           this.checkRemainingSessionTime();
         } else {
-          this.submitLogin();
+          if (this.loginWithSecurityKey) {
+            this.webauthnLogin();
+          } else if (this.mfaFlow) {
+            this.mfaLogin();
+          } else if (this.loginWithPassword) {
+            this.submitLogin();
+          }
         }
       }
     },
 
+    webauthnLogin: function () {
+      this.clearLoginError();
+      this.$loginBtn.busyEvent();
+
+      var data = {
+        loginName: Craft.username,
+      };
+
+      new Craft.MfaLogin.startWebauthnLogin(data, true)
+        .then((response) => {
+          this.closeModal();
+        })
+        .catch((response) => {
+          this.showLoginError(response.error);
+        });
+    },
+
+    mfaLogin: function () {
+      this.clearLoginError();
+
+      var $mfaLoginContainer = $('#mfa-form');
+      var $submitBtn = $mfaLoginContainer.find('#mfa-verify');
+      $submitBtn.addClass('loading');
+
+      new Craft.MfaLogin.submitMfaCode($mfaLoginContainer, true)
+        .then((response) => {
+          this.closeModal();
+        })
+        .catch((response) => {
+          this.showLoginError(response.error);
+        })
+        .finally(() => {
+          $submitBtn.removeClass('loading');
+        });
+    },
+
     submitLogin: function () {
+      this.clearLoginError();
+      this.$loginBtn.busyEvent();
       var data = {
         loginName: Craft.username,
         password: this.$passwordInput.val(),
@@ -409,12 +546,20 @@ Craft.AuthManager = Garnish.Base.extend(
 
       Craft.sendActionRequest('POST', 'users/login', {data})
         .then((response) => {
-          this.$loginBtn.removeClass('loading');
-          this.hideLoginModal();
-          this.checkRemainingSessionTime();
+          if (response.data.mfa !== undefined && response.data.mfa == true) {
+            this.mfaFlow = true;
+            this.mfa = new Craft.Mfa();
+            if (this.$alternativeLoginLink !== null) {
+              this.$alternativeLoginLink.remove();
+            }
+            $('.inputcontainer').remove();
+            this.mfa.showMfaForm(response.data.mfaForm, $('#loginmodal'));
+            this.loginModal.updateSizeAndPosition();
+          } else {
+            this.closeModal();
+          }
         })
         .catch(({response}) => {
-          this.$loginBtn.removeClass('loading');
           this.showLoginError(response.data.message || null);
           Garnish.shake(this.loginModal.$container);
 
@@ -425,6 +570,8 @@ Craft.AuthManager = Garnish.Base.extend(
     },
 
     showLoginError: function (error) {
+      this.$loginBtn.failureEvent();
+
       if (error === null || typeof error === 'undefined') {
         error = Craft.t('app', 'A server error occurred.');
       }
@@ -435,6 +582,12 @@ Craft.AuthManager = Garnish.Base.extend(
 
     clearLoginError: function () {
       this.showLoginError('');
+    },
+
+    closeModal: function () {
+      this.$loginBtn.successEvent();
+      this.hideLoginModal();
+      this.checkRemainingSessionTime();
     },
   },
   {

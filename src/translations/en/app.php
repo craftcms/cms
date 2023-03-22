@@ -866,6 +866,7 @@ return [
     'Location' => 'Location',
     'Locations that should be available for previewing entries in this section.' => 'Locations that should be available for previewing entries in this section.',
     'Locked' => 'Locked',
+    'Log back in.' => 'Log back in.',
     'Login Page Logo' => 'Login Page Logo',
     'Login fail count' => 'Login fail count',
     'Longitude' => 'Longitude',

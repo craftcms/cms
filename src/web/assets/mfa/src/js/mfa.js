@@ -56,32 +56,6 @@ import {browserSupportsWebAuthn} from '@simplewebauthn/browser';
         return currentMethod;
       },
 
-      submitMfaCode: function () {
-        const $submitBtn = this.$mfaLoginFormContainer.find('.submit');
-        $submitBtn.addClass('loading');
-
-        let data = {
-          mfaFields: {},
-          currentMethod: null,
-        };
-
-        data.mfaFields = this._getMfaFields(this.$mfaLoginFormContainer);
-        data.currentMethod = this._getCurrentMethodInput(
-          this.$mfaLoginFormContainer
-        );
-
-        Craft.sendActionRequest('POST', 'users/verify-mfa', {data})
-          .then((response) => {
-            window.location.href = response.data.returnUrl;
-          })
-          .catch(({response}) => {
-            this.onSubmitResponse($submitBtn);
-
-            // Add the error message
-            this.showError(response.data.message);
-          });
-      },
-
       onViewSetupBtnClick: function (ev) {
         const $button = $(ev.currentTarget);
         $button.disable();
@@ -201,16 +175,20 @@ import {browserSupportsWebAuthn} from '@simplewebauthn/browser';
         $submitBtn.removeClass('loading');
       },
 
-      showError: function (error) {
+      showError: function (error, $errorsContainer = null) {
         this.clearErrors();
 
         $('<p class="error" style="display: none;">' + error + '</p>')
-          .appendTo(this.$errors)
+          .appendTo($errorsContainer !== null ? $errorsContainer : this.$errors)
           .velocity('fadeIn');
       },
 
-      clearErrors: function () {
-        this.$errors.empty();
+      clearErrors: function ($errorsContainer = null) {
+        if ($errorsContainer !== null) {
+          $errorsContainer.empty();
+        } else {
+          this.$errors.empty();
+        }
       },
 
       onAlternativeMfaTypeClick: function (event) {

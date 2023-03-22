@@ -3,7 +3,6 @@
 {% set title = "Sign In"|t('app') %}
 {% set bodyClass = 'login' %}
 
-{% do view.registerAssetBundle("craft\\web\\assets\\mfa\\MfaAsset") %}
 {% do view.registerAssetBundle("craft\\web\\assets\\login\\LoginAsset") %}
 
 {% set generalConfig = craft.app.config.general %}

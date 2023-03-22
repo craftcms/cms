@@ -347,14 +347,14 @@ class UsersController extends Controller
         $duration = $loginData['duration'];
 
         if ($user === null || $duration === null) {
-            $this->asFailure('Something went wrong.');
+            return $this->asFailure('Something went wrong.');
         }
 
         $webAuthn = new WebAuthn();
         $options = $webAuthn->generateCredentialRequestOptions($user);
 
         if ($options == null) {
-            $this->asFailure('Something went wrong.');
+            return $this->asFailure('Something went wrong.');
         }
 
         return $this->asJson(['authenticationOptions' => $options, 'userId' => $user->id, 'duration' => $duration]);

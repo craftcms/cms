@@ -20,6 +20,7 @@ use craft\helpers\Json;
 use craft\helpers\StringHelper;
 use craft\helpers\UrlHelper;
 use craft\i18n\Locale;
+use craft\mfa\type\WebAuthn;
 use craft\models\Section;
 use craft\services\Sites;
 use craft\web\AssetBundle;
@@ -216,6 +217,7 @@ JS;
             'License transferred.',
             'Limit',
             'Loading',
+            'Log back in.',
             'Make not required',
             'Make required',
             'Matrix block could not be added. Maximum number of blocks reached.',
@@ -481,11 +483,13 @@ JS;
             'primarySiteLanguage' => $primarySite->language ?? null,
             'publishableSections' => $upToDate ? $this->_publishableSections($currentUser) : [],
             'remainingSessionTime' => !in_array($request->getSegment(1), ['updates', 'manualupdate'], true) ? $userSession->getRemainingSessionTime() : 0,
+            'requireMfa' => $currentUser->isMfaRequired(),
             'runQueueAutomatically' => $generalConfig->runQueueAutomatically,
             'siteId' => $upToDate ? (Cp::requestedSite()->id ?? $sitesService->getCurrentSite()->id) : null,
             'sites' => $this->_sites($sitesService),
             'siteToken' => $generalConfig->siteToken,
             'slugWordSeparator' => $generalConfig->slugWordSeparator,
+            'userHasSecurityKeys' => $currentUser->isMfaTypeSetup(WebAuthn::class),
             'userIsAdmin' => $currentUser->admin,
             'username' => $currentUser->username,
         ];

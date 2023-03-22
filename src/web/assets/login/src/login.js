@@ -1,6 +1,5 @@
 import './login.scss';
 import {browserSupportsWebAuthn} from '@simplewebauthn/browser';
-import {startAuthentication} from '@simplewebauthn/browser';
 
 (function ($) {
   /** global: Craft */
@@ -56,7 +55,7 @@ import {startAuthentication} from '@simplewebauthn/browser';
         this.$passwordInput.hide();
         this.$forgotPasswordLink.hide();
         this.$rememberMeCheckbox.parents('.field').hide();
-        this.$submitBtn.$btn.text(Craft.t('app', 'Continue'));
+        this.$submitBtn.updateMessages(Craft.t('app', 'Continue'));
       }
 
       this.addListener(this.$loginNameInput, 'input', 'onInput');
@@ -139,9 +138,9 @@ import {startAuthentication} from '@simplewebauthn/browser';
       if (this.forgotPassword) {
         this.submitForgotPassword();
       } else if (this.loginWithSecurityKey) {
-        this.startWebauthnLogin();
+        this.webauthnLogin();
       } else if (this.mfaFlow) {
-        this.mfa.submitMfaCode();
+        this.submitMfaCode();
       } else if (this.loginWithPassword) {
         this.submitLogin();
       } else {
@@ -163,36 +162,39 @@ import {startAuthentication} from '@simplewebauthn/browser';
           ) {
             this.loginWithSecurityKey = true;
             this.$rememberMeCheckbox.parents('.field').show();
-            this.$submitBtn.$btn.text(
+            this.$submitBtn.updateMessages(
               Craft.t('app', 'Sign in with a security key')
             );
 
-            $('#login-form-extra').prepend(
-              '<button id="alternative-login" type="button" class="btn">' +
-                Craft.t('app', 'Use password to login') +
-                '</button>'
-            );
-            this.$alternativeLoginLink = $('#alternative-login');
-            this.addListener(
-              this.$alternativeLoginLink,
-              'click',
-              'onAlternativeLoginLink'
-            );
+            if (this.$alternativeLoginLink === null) {
+              $('#login-form-extra')
+                .remove('#alternative-login')
+                .prepend(
+                  '<button id="alternative-login" type="button" class="btn">' +
+                    Craft.t('app', 'Use password to login') +
+                    '</button>'
+                );
+              this.$alternativeLoginLink = $('#alternative-login');
+              this.addListener(
+                this.$alternativeLoginLink,
+                'click',
+                'onAlternativeLoginLink'
+              );
+            }
           } else {
             this.loginWithPassword = true;
             this.$passwordInput.show();
             this.$forgotPasswordLink.show();
             this.$rememberMeCheckbox.parents('.field').show();
-            this.$submitBtn.$btn.text(Craft.t('app', 'Sign in'));
+            this.$submitBtn.updateMessages(Craft.t('app', 'Sign in'));
             this.mfa = new Craft.Mfa();
           }
         })
         .catch(({response}) => {
-          Garnish.shake(this.$form, 'left');
-          this.onSubmitResponse();
-
-          // Add the error message
-          this.showError(response.data.message);
+          this.processFailure(response.data.message);
+        })
+        .finally(() => {
+          this.$submitBtn.endBusyState();
         });
 
       return false;
@@ -212,77 +214,45 @@ import {startAuthentication} from '@simplewebauthn/browser';
         });
     },
 
-    startWebauthnLogin: function () {
+    webauthnLogin: function () {
       this.clearErrors();
+      this.$submitBtn.busyEvent();
 
       var data = {
         loginName: this.$loginNameInput.val(),
         rememberMe: this.$rememberMeCheckbox.prop('checked') ? 'y' : '',
       };
 
-      Craft.sendActionRequest('POST', 'users/start-webauthn-login', {data})
+      new Craft.MfaLogin.startWebauthnLogin(data, false)
         .then((response) => {
-          const authenticationOptions = response.data.authenticationOptions;
-          const userId = response.data.userId;
-          const duration = response.data.duration;
-
-          try {
-            startAuthentication(authenticationOptions)
-              .then((authResponse) => {
-                this.verifyWebAuthnLogin(
-                  authenticationOptions,
-                  authResponse,
-                  userId,
-                  duration
-                );
-              })
-              .catch((authResponseError) => {
-                this.onSubmitResponse();
-
-                // Add the error message
-                this.showError(authResponseError);
-              });
-          } catch (error) {
-            this.onSubmitResponse();
-
-            // Add the error message
-            this.showError(error);
+          this.$submitBtn.successEvent();
+          if (response.returnUrl != undefined) {
+            window.location.href = response.returnUrl;
           }
         })
-        .catch(({response}) => {
-          this.onSubmitResponse();
-
-          // Add the error message
-          this.showError(response.data.message);
+        .catch((response) => {
+          this.processFailure(response.error);
         });
     },
 
-    verifyWebAuthnLogin: function (
-      authenticationOptions,
-      authResponse,
-      userId,
-      duration
-    ) {
-      let data = {
-        userId: userId,
-        authenticationOptions: JSON.stringify(authenticationOptions),
-        authResponse: JSON.stringify(authResponse),
-        duration: duration,
-      };
+    submitMfaCode: function () {
+      this.clearErrors();
+      this.$submitBtn.busyEvent();
 
-      Craft.sendActionRequest('POST', 'users/webauthn-login', {data})
+      new Craft.MfaLogin.submitMfaCode($('#mfa-form'), false)
         .then((response) => {
-          window.location.href = response.data.returnUrl;
+          this.$submitBtn.successEvent();
+          window.location.href = response.returnUrl;
         })
-        .catch(({response}) => {
-          this.onSubmitResponse();
-
-          // Add the error message
-          this.showError(response.data.message);
+        .catch((response) => {
+          this.processFailure(response.message);
         });
     },
 
     submitLogin: function () {
+      this.clearErrors();
+      this.$submitBtn.busyEvent();
+
       var data = {
         loginName: this.$loginNameInput.val(),
         password: this.$passwordInput.val(),
@@ -297,20 +267,26 @@ import {startAuthentication} from '@simplewebauthn/browser';
               this.$alternativeLoginLink.remove();
             }
             this.mfa.showMfaForm(response.data.mfaForm, this.$loginDiv);
+            this.$submitBtn.endBusyState();
           } else {
             this.$submitBtn.successEvent();
             window.location.href = response.data.returnUrl;
           }
         })
         .catch(({response}) => {
-          Garnish.shake(this.$form, 'left');
-          this.onSubmitResponse();
-
-          // Add the error message
-          this.showError(response.data.message);
+          this.processFailure(response.data.message);
         });
 
       return false;
+    },
+
+    processFailure: function (error) {
+      Garnish.shake(this.$form, 'left');
+      this.onSubmitResponse();
+
+      // Add the error message
+      this.showError(error);
+      this.$submitBtn.failureEvent();
     },
 
     onSubmitResponse: function () {
@@ -339,7 +315,7 @@ import {startAuthentication} from '@simplewebauthn/browser';
       this.forgotPassword = !this.forgotPassword;
 
       this.$form.toggleClass('reset-password', this.forgotPassword);
-      this.$submitBtn.$btn.text(
+      this.$submitBtn.updateMessages(
         Craft.t('app', this.forgotPassword ? 'Reset Password' : 'Sign in')
       );
     },
@@ -358,13 +334,13 @@ import {startAuthentication} from '@simplewebauthn/browser';
       this.$forgotPasswordLink.toggle();
 
       if (this.loginWithPassword) {
-        this.$submitBtn.$btn.text('Sign in');
+        this.$submitBtn.updateMessages(Craft.t('app', 'Sign in'));
         this.$alternativeLoginLink.text(
           Craft.t('app', 'Use a security key to login')
         );
         this.mfa = new Craft.Mfa();
       } else if (this.loginWithSecurityKey) {
-        this.$submitBtn.$btn.text(
+        this.$submitBtn.updateMessages(
           Craft.t('app', 'Sign in using a security key')
         );
         this.$alternativeLoginLink.text(

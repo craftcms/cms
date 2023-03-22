@@ -5434,6 +5434,14 @@ $min2ColWidth: 400px;
 #logoutwarningmodal,
 #loginmodal {
   z-index: 101;
+
+  #mfa-form {
+    .field {
+      display: inline-block;
+      margin: 0;
+      width: 75%;
+    }
+  }
 }
 
 .prompt {
