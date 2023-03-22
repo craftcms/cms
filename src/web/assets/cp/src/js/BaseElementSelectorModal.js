@@ -147,9 +147,7 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend(
     selectElements: function () {
       if (this.hasSelection()) {
         // TODO: This code shouldn't know about views' elementSelect objects
-        if (this.elementSelect) {
-          this.elementIndex.view.elementSelect.clearMouseUpTimeout();
-        }
+        this.elementIndex.view.elementSelect.clearMouseUpTimeout();
 
         var $selectedElements = this.elementIndex.getSelectedElements(),
           elementInfo = this.getElementInfo($selectedElements);
