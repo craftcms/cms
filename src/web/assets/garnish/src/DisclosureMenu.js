@@ -46,6 +46,7 @@ export default Base.extend(
       this.$container = $('#' + triggerId);
 
       this.$trigger.data('trigger', this);
+      this.$container.data('trigger', this);
 
       // Get and store expanded state from trigger
       var expanded = this.$trigger.attr('aria-expanded');
