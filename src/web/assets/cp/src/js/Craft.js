@@ -2189,6 +2189,8 @@ $.extend(Craft, {
    * @param {boolean} [options.retainScroll] Whether the scroll position should be stored and reapplied on the next page load
    */
   submitForm: function ($form, options) {
+    console.log($form);
+    return;
     if (typeof options === 'undefined') {
       options = {};
     }
@@ -2581,7 +2583,7 @@ $.extend($.fn, {
 
   formsubmit: function () {
     // Secondary form submit buttons
-    return this.on('click', function (ev) {
+    return this.on('activate', function (ev) {
       let $btn = $(ev.currentTarget);
       let params = $btn.data('params') || {};
       if ($btn.data('param')) {
