@@ -855,6 +855,38 @@ class Extension extends AbstractExtension implements GlobalsInterface
             return strtr($str, $search);
         }
 
+        // if search is an array, and replace is provided
+        if (is_array($search) && $replace !== null) {
+            // go through each search item
+            foreach ($search as $i => $searchItem) {
+                // if it's a regex, use preg_replace
+                if (preg_match('/^\/.+\/[a-zA-Z]*$/', $searchItem)) {
+                    if (is_array($replace)) {
+                        if (isset($replace[$i])) {
+                            $str = preg_replace($searchItem, $replace[$i], $str);
+                        } else {
+                            $str = preg_replace($searchItem, end($replace), $str);
+                        }
+                    } else {
+                        $str = preg_replace($searchItem, $replace, $str);
+                    }
+                } else {
+                    // otherwise use str_replace
+                    if (is_array($replace)) {
+                        if (isset($replace[$i])) {
+                            $str = str_replace($searchItem, $replace[$i], $str);
+                        } else {
+                            $str = str_replace($searchItem, end($replace), $str);
+                        }
+                    } else {
+                        $str = str_replace($searchItem, $replace, $str);
+                    }
+                }
+            }
+
+            return $str;
+        }
+
         // Is this a regular expression?
         if (preg_match('/^\/.+\/[a-zA-Z]*$/', $search)) {
             return preg_replace($search, $replace, $str);
