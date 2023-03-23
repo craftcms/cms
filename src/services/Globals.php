@@ -298,6 +298,7 @@ class Globals extends Component
             ]));
         }
 
+        $globalSet->setScenario(GlobalSet::SCENARIO_SAVE_SET);
         // Don't validate required custom fields
         if ($runValidation && !$globalSet->validate()) {
             Craft::info('Global set not saved due to validation error.', __METHOD__);
