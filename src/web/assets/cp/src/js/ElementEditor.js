@@ -1464,16 +1464,18 @@ Craft.ElementEditor = Garnish.Base.extend(
 
             // Make the first tab visible if no others are
             if (!$allTabContainers.filter(':not(.hidden)').length) {
-              $allTabContainers.first().removeClass('hidden');
+              if (this.isFullPage) {
+                Craft.cp.selectTab($allTabContainers.first());
+              }
             }
 
             this.settings.visibleLayoutElements = visibleLayoutElements;
 
             // Update the tabs
             if (this.isFullPage) {
-              Craft.cp.updateTabs(response.data.tabs);
+              Craft.cp.updateTabs(response.data.tabs, selectedTabId);
             } else {
-              this.slideout.updateTabs(response.data.tabs);
+              this.slideout.updateTabs(response.data.tabs, selectedTabId);
             }
 
             Craft.appendHeadHtml(response.data.headHtml);

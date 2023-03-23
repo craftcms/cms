@@ -612,7 +612,7 @@ Craft.CP = Garnish.Base.extend(
       });
     },
 
-    updateTabs: function (tabs) {
+    updateTabs: function (tabs, selectedTabId) {
       if (tabs) {
         const $tabContainer = $(tabs).attr('id', 'tabs');
         if (this.tabManager) {
@@ -620,7 +620,24 @@ Craft.CP = Garnish.Base.extend(
         } else {
           $tabContainer.appendTo(this.$contentHeader);
         }
+
+        // get the new selected tab ID before initialising what came from tabs param
+        let newSelectedTabId = this.tabManager.$selectedTab.data('id');
+
         this.initTabs();
+
+        // if selected tab was passed on and it's different to the newly selected one
+        // (this can be triggered by changing value of a field and while it's autosaving
+        // switch to another tab)
+        if (selectedTabId && newSelectedTabId !== selectedTabId) {
+          const $newSelectedTab = this.tabManager.$tabs.filter(
+            `[data-id="${newSelectedTabId}"]`
+          );
+          // switch to the new selected tab
+          if ($newSelectedTab.length) {
+            this.tabManager.selectTab($newSelectedTab);
+          }
+        }
       } else if (this.tabManager) {
         if (this.tabManager.$container.siblings().length) {
           this.tabManager.$container.remove();
