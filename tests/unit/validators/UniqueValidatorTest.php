@@ -19,7 +19,7 @@ use yii\db\ActiveQueryInterface;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
- * @since 4.4.x
+ * @since 4.5.0
  */
 class UniqueValidatorTest extends TestCase
 {
