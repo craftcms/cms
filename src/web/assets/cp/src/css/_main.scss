@@ -3126,7 +3126,7 @@ $checkboxPadding: $checkboxSize + 4;
       --border-style: 1px solid var(--ui-control-color);
       position: absolute;
       width: var(--graphic-width);
-      left: var(--left-base);
+      @include left(var(--left-base));
       top: 50%;
       transform: translateY(-50%);
       height: 1.5rem;
