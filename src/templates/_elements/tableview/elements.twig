@@ -47,9 +47,13 @@
 
                     {%- if structure and element.level > 1 %}
                         {% set left = craft.app.locale.getOrientation() == 'ltr' ? 'left' : 'right' %}
+                        {% set styles = [] %}
                         {% if element.level > 2 %}
                             {% set multiplier = element.level - 2 %}
-                            {% set leftValue = "#{left}: calc(var(--left-base) + (#{multiplier} * var(--graphic-width)));" %}
+                            {% set styles = styles|merge(["#{left}: calc(var(--left-base) + (#{multiplier} * var(--graphic-width)));"]) %}
+                        {% endif %}
+                        {% if structureEditable and totalDescendants %}
+                            {% set styles = styles|merge(["width: calc(var(--graphic-width) - 14px);"]) %}
                         {% endif %}
                         {% set levelAlt = 'Level {num}'|t('app', {
                             num: element.level,
@@ -58,7 +62,7 @@
                             class: 'structure-graphic',
                             role: 'img',
                             title: levelAlt,
-                            style: leftValue ?? null,
+                            style: styles|length ? styles|join(' ') : null,
                             aria: {
                                 label: levelAlt,
                             }
