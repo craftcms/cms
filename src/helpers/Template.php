@@ -16,6 +16,8 @@ use craft\web\View;
 use Twig\Environment;
 use Twig\Error\RuntimeError;
 use Twig\Markup;
+use Twig\Node\Expression\NameExpression;
+use Twig\Node\Node;
 use Twig\Source;
 use Twig\Template as TwigTemplate;
 use Twig\TemplateWrapper;
@@ -61,6 +63,18 @@ class Template
      * @see fallback()
      */
     private static array $_fallbacks = [];
+
+    /**
+     * Defines a fallback variable.
+     *
+     * @param string $name
+     * @param mixed $value
+     * @since 4.5.0
+     */
+    public static function setFallback(string $name, mixed $value): void
+    {
+        self::$_fallbacks[$name] = $value;
+    }
 
     /**
      * Returns whether a fallback variable has been defined.
@@ -384,5 +398,22 @@ class Template
     public static function preloadSingles(array $handles): void
     {
         self::$_fallbacks += Craft::$app->getEntries()->getSingleEntriesByHandle($handles);
+    }
+
+    /**
+     * Returns whether a given template node is a template variable expression.
+     *
+     * @return bool
+     * @since 4.5.0
+     */
+    public static function isVariableExpression(Node $node): bool
+    {
+        return (
+            get_class($node) === NameExpression::class &&
+            $node->hasAttribute('name') &&
+            /** @phpstan-ignore-next-line */
+            !$node->isSpecial() &&
+            !$node->getAttribute('always_defined')
+        );
     }
 }

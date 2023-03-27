@@ -52,6 +52,7 @@ use craft\web\twig\tokenparsers\RequireEditionTokenParser;
 use craft\web\twig\tokenparsers\RequireGuestTokenParser;
 use craft\web\twig\tokenparsers\RequireLoginTokenParser;
 use craft\web\twig\tokenparsers\RequirePermissionTokenParser;
+use craft\web\twig\tokenparsers\SetTokenParser;
 use craft\web\twig\tokenparsers\SwitchTokenParser;
 use craft\web\twig\tokenparsers\TagTokenParser;
 use craft\web\twig\variables\CraftVariable;
@@ -157,6 +158,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
                 'allowOptions' => true,
                 'defaultPosition' => View::POS_END,
             ]),
+            new SetTokenParser(),
             new NamespaceTokenParser(),
             new NavTokenParser(),
             new PaginateTokenParser(),
