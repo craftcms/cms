@@ -3121,12 +3121,15 @@ $checkboxPadding: $checkboxSize + 4;
     }
 
     .structure-graphic {
+      --left-base: 12px;
+      --graphic-width: 50px;
       --border-style: 1px solid var(--ui-control-color);
-      width: 50px;
       position: absolute;
-      left: 12px;
-      top: 14px;
-      height: calc(20rem / 16);
+      width: var(--graphic-width);
+      left: var(--left-base);
+      top: 50%;
+      transform: translateY(-50%);
+      height: 1.5rem;
 
       &::before {
         @include border-left(var(--border-style));

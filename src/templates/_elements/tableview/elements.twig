@@ -46,6 +46,11 @@
                     } -%}
 
                     {%- if structure and element.level > 1 %}
+                        {% set left = craft.app.locale.getOrientation() == 'ltr' ? 'left' : 'right' %}
+                        {% if element.level > 2 %}
+                            {% set multiplier = element.level - 2 %}
+                            {% set leftValue = "#{left}: calc(var(--left-base) + (#{multiplier} * var(--graphic-width)));" %}
+                        {% endif %}
                         {% set levelAlt = 'Level {num}'|t('app', {
                             num: element.level,
                         }) %}
@@ -53,6 +58,7 @@
                             class: 'structure-graphic',
                             role: 'img',
                             title: levelAlt,
+                            style: leftValue ?? null,
                             aria: {
                                 label: levelAlt,
                             }
