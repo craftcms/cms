@@ -830,6 +830,7 @@ return [
     'Let each entry choose which sites it should be saved to' => 'Let each entry choose which sites it should be saved to',
     'Letterbox' => 'Letterbox',
     'Level' => 'Level',
+    'Level {num}' => 'Level {num}',
     'License transferred.' => 'License transferred.',
     'License' => 'License',
     'Licensed' => 'Licensed',

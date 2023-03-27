@@ -44,6 +44,20 @@
                     {%- include '_elements/element' with {
                         autoReload: false,
                     } -%}
+
+                    {%- if structure and element.level > 1 %}
+                        {% set levelAlt = 'Level {num}'|t('app', {
+                            num: element.level,
+                        }) %}
+                        {{ tag('span', {
+                            class: 'structure-graphic',
+                            role: 'img',
+                            title: levelAlt,
+                            aria: {
+                                label: levelAlt,
+                            }
+                        }) }}
+                    {% endif  %}
                 </th>
             {% else %}
                 <td data-title="{{ attribute[1].label }}" data-attr="{{ attribute[0] }}">
