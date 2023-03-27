@@ -2584,14 +2584,13 @@ table {
 
     tbody {
       tr {
-        --hover-bg-color: var(--gray-050);
-        --selected-bg-color: var(--dark-sel-color);
+        --row-bg-color: var(--white);
 
         &:not(.disabled) {
           &:hover {
             th,
             td {
-              background-color: var(--hover-bg-color);
+              --row-bg-color: var(--gray-050);
             }
           }
 
@@ -2608,8 +2607,8 @@ table {
 
             th,
             td {
+              --row-bg-color: var(--dark-sel-color);
               color: var(--white);
-              background-color: var(--selected-bg-color);
             }
           }
         }
@@ -2620,6 +2619,7 @@ table {
         padding-top: 7px;
         padding-bottom: 7px;
         background-clip: padding-box;
+        background-color: var(--row-bg-color);
       }
 
       td {
@@ -3118,6 +3118,34 @@ $checkboxPadding: $checkboxSize + 4;
 
     .enabled-label {
       margin-left: var(--xs);
+    }
+
+    .structure-graphic {
+      --border-style: 1px solid var(--ui-control-color);
+      width: 50px;
+      position: absolute;
+      left: 12px;
+      top: 14px;
+      height: calc(20rem / 16);
+
+      &::before {
+        @include border-left(var(--border-style));
+        border-bottom: var(--border-style);
+        position: absolute;
+        content: '';
+        top: 0;
+        height: 50%;
+        width: 100%;
+      }
+
+      &::after {
+        position: absolute;
+        content: '';
+        top: 0;
+        height: 50%;
+        width: 100%;
+        background-image: linear-gradient(var(--row-bg-color), transparent);
+      }
     }
   }
 
