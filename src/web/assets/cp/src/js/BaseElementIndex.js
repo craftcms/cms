@@ -1829,6 +1829,19 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         this._activeElement = document.activeElement;
         document.activeElement.blur();
       }
+
+      let contentContainerHeight = $('#content-container').height();
+      let windowHeight = window.innerHeight;
+      let positionTop = 50;
+      if (contentContainerHeight > windowHeight) {
+        positionTop =
+          Math.floor($(document).scrollTop() + windowHeight / 2) - 100;
+        positionTop = Math.floor((positionTop / contentContainerHeight) * 100);
+      }
+      document.documentElement.style.setProperty(
+        '--elements-busy-background-position',
+        '50% ' + positionTop + '%'
+      );
     },
 
     setIndexAvailable: function () {
