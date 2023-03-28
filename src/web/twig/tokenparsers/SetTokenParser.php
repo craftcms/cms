@@ -7,8 +7,8 @@
 
 namespace craft\web\twig\tokenparsers;
 
-use craft\web\twig\nodes\AssignGlobalExpression;
-use craft\web\twig\nodes\SetGlobalNode;
+use craft\web\twig\nodes\SetFallbackExpression;
+use craft\web\twig\nodes\SetFallbackNode;
 use Twig\Error\SyntaxError;
 use Twig\Lexer;
 use Twig\Node\Expression\AssignNameExpression;
@@ -57,7 +57,7 @@ class SetTokenParser extends AbstractTokenParser
         if ($global) {
             // Swap AssignNameExpression nodes with AssignGlobalExpression nodes
             $names = new Node(array_map(
-                fn(AssignNameExpression $node) => new AssignGlobalExpression($node->getAttribute('name'), $node->getTemplateLine()),
+                fn(AssignNameExpression $node) => new SetFallbackExpression($node->getAttribute('name'), $node->getTemplateLine()),
                 iterator_to_array($names),
             ));
         }
@@ -86,7 +86,7 @@ class SetTokenParser extends AbstractTokenParser
         }
 
         if ($global) {
-            return new SetGlobalNode($capture, $names, $values, $lineno, $this->getTag());
+            return new SetFallbackNode($capture, $names, $values, $lineno, $this->getTag());
         }
 
         return new SetNode($capture, $names, $values, $lineno, $this->getTag());

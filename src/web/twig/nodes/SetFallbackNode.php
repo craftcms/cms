@@ -12,12 +12,12 @@ use Twig\Compiler;
 use Twig\Node\SetNode;
 
 /**
- * Class SetGlobalNode
+ * Class SetFallbackNode
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.5.0
  */
-class SetGlobalNode extends SetNode
+class SetFallbackNode extends SetNode
 {
     /**
      * @inheritdoc
@@ -27,11 +27,11 @@ class SetGlobalNode extends SetNode
         parent::compile($compiler);
 
         $compiler
-            ->write("foreach (\$_tmpGlobals as \$_tmpGlobalName => \$_tmpGlobalValue) {\n")
+            ->write("foreach (\$_fallbacks as \$_fallbackName => \$_fallbackValue) {\n")
             ->indent()
-            ->write(sprintf("%s::setFallback(\$_tmpGlobalName, \$_tmpGlobalValue);\n", Template::class))
+            ->write(sprintf("%s::setFallback(\$_fallbackName, \$_fallbackValue);\n", Template::class))
             ->outdent()
             ->write("}\n")
-            ->write("unset(\$_tmpGlobals, \$_tmpGlobalName, \$_tmpGlobalValue);\n");
+            ->write("unset(\$_fallbacks, \$_fallbackName, \$_fallbackValue);\n");
     }
 }

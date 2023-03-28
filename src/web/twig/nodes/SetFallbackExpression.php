@@ -11,17 +11,17 @@ use Twig\Compiler;
 use Twig\Node\Expression\NameExpression;
 
 /**
- * Class AssignGlobalExpression
+ * Class SetFallbackExpression
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.5.0
  */
-class AssignGlobalExpression extends NameExpression
+class SetFallbackExpression extends NameExpression
 {
     public function compile(Compiler $compiler): void
     {
         $compiler
-            ->raw('$_tmpGlobals[')
+            ->raw('$_fallbacks[')
             ->string($this->getAttribute('name'))
             ->raw(']')
         ;
