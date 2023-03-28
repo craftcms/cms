@@ -288,7 +288,6 @@ class WebAuthn extends ConfigurableMfaType
             'id' => Craft::$app->getRequest()->getHostName(),
         ];
 
-        // todo: uncomment once it's working
 //        $rebrand = new Rebrand();
 //        if (Craft::$app->getEdition() === Craft::Pro && ($rebrand->isIconUploaded() || $rebrand->isLogoUploaded())) {
 //            if ($rebrand->isIconUploaded()) {
@@ -315,7 +314,6 @@ class WebAuthn extends ConfigurableMfaType
             'displayName' => $user->friendlyName,
         ];
 
-        // todo: uncomment once it's working
 //        $photo = $user->getPhoto();
 //        if ($photo !== null) {
 //            $data['icon'] = $photo->getDataUrl();
