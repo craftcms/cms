@@ -93,6 +93,8 @@ Craft.BaseElementIndex = Garnish.Base.extend(
     activeViewMenu: null,
     filterHuds: null,
 
+    _activeElement: null,
+
     get viewMode() {
       if (this._viewMode === 'structure' && !this.canSortByStructure()) {
         return 'table';
@@ -301,7 +303,8 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       // Set the default status
       // ---------------------------------------------------------------------
 
-      const queryParams = Craft.getQueryParams();
+      const queryParams =
+        this.settings.context === 'index' ? Craft.getQueryParams() : {};
 
       if (queryParams.status) {
         let selector;
@@ -1190,6 +1193,13 @@ Craft.BaseElementIndex = Garnish.Base.extend(
     },
 
     /**
+     * Returns any additional settings that should be passed to the view instance.
+     */
+    getViewSettings: function () {
+      return {};
+    },
+
+    /**
      * Returns the data that should be passed to the elementIndex/getElements controller action
      * when loading elements.
      */
@@ -1350,7 +1360,9 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         this.searchText !==
         (this.searchText = this.searching ? this.$search.val() : null)
       ) {
-        Craft.setQueryParam('search', this.$search.val());
+        if (this.settings.context === 'index') {
+          Craft.setQueryParam('search', this.$search.val());
+        }
         this.updateElements();
       }
     },
@@ -1629,8 +1641,10 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         this.activeViewMenu.updateSortField();
       }
 
-      // Update the query string
-      Craft.setQueryParam('sort', `${attr}-${dir}`);
+      if (this.settings.context === 'index') {
+        // Update the query string
+        Craft.setQueryParam('sort', `${attr}-${dir}`);
+      }
     },
 
     /**
@@ -1747,7 +1761,9 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         // Clear the search value without causing it to update elements
         this.searchText = null;
         this.$search.val('');
-        Craft.setQueryParam('search', null);
+        if (this.settings.context === 'index') {
+          Craft.setQueryParam('search', null);
+        }
         this.stopSearching();
       }
 
@@ -2211,7 +2227,13 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       this.$elements.addClass('busy');
       this.$updateSpinner.appendTo(this.$elements);
       this.isIndexBusy = true;
-      if (document.activeElement) {
+
+      // Blur the active element, if it's within the element listing pane
+      if (
+        document.activeElement &&
+        this.$elements[0].contains(document.activeElement)
+      ) {
+        this._activeElement = document.activeElement;
         document.activeElement.blur();
       }
     },
@@ -2220,11 +2242,28 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       this.$elements.removeClass('busy');
       this.$updateSpinner.remove();
       this.isIndexBusy = false;
+
+      // Refocus the previously-focused element
+      if (this._activeElement) {
+        if (
+          !document.activeElement ||
+          document.activeElement === document.body
+        ) {
+          if (document.body.contains(this._activeElement)) {
+            this._activeElement.focus();
+          } else if (this._activeElement.id) {
+            $(`#${this._activeElement.id}`).focus();
+          }
+        }
+        this._activeElement = null;
+      }
     },
 
     createCustomizeSourcesModal: function () {
       // Recreate it each time
       var modal = new Craft.CustomizeSourcesModal(this, {
+        hideOnEsc: false,
+        hideOnShadeClick: false,
         onHide: function () {
           modal.destroy();
         },
@@ -2361,7 +2400,10 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         this.activeViewMenu.updateSortField();
       }
 
-      Craft.setQueryParam('status', queryParam);
+      if (this.settings.context === 'index') {
+        Craft.setQueryParam('status', queryParam);
+      }
+
       this.updateElements();
     },
 
@@ -2551,9 +2593,6 @@ Craft.BaseElementIndex = Garnish.Base.extend(
             null;
       }
 
-      // Capture the focused element, in case it's about to get removed from the DOM
-      const activeElement = document.activeElement;
-
       // Update the count text
       // -------------------------------------------------------------
 
@@ -2730,32 +2769,25 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       // -------------------------------------------------------------
 
       // Should we make the view selectable?
-      var selectable = this.actions || this.settings.selectable;
+      const selectable = this.actions || this.settings.selectable;
+      const settings = Object.assign(
+        {
+          context: this.settings.context,
+          batchSize:
+            this.settings.context !== 'index' || this.viewMode === 'structure'
+              ? this.settings.batchSize
+              : null,
+          params: params,
+          selectable: selectable,
+          multiSelect: this.actions || this.settings.multiSelect,
+          canSelectElement: this.settings.canSelectElement,
+          checkboxMode: !!this.actions,
+          onSelectionChange: this._handleSelectionChange.bind(this),
+        },
+        this.getViewSettings()
+      );
 
-      this.view = this.createView(this.getSelectedViewMode(), {
-        context: this.settings.context,
-        batchSize:
-          this.settings.context !== 'index' || this.viewMode === 'structure'
-            ? this.settings.batchSize
-            : null,
-        params: params,
-        selectable: selectable,
-        multiSelect: this.actions || this.settings.multiSelect,
-        canSelectElement: this.settings.canSelectElement,
-        checkboxMode: !!this.actions,
-        onSelectionChange: this._handleSelectionChange.bind(this),
-      });
-
-      // Refocus the previously-focused element
-      // -------------------------------------------------------------
-
-      if (
-        activeElement &&
-        activeElement.id &&
-        !document.body.contains(activeElement)
-      ) {
-        $(`#${activeElement.id}`).focus();
-      }
+      this.view = this.createView(this.getSelectedViewMode(), settings);
 
       // Auto-select elements
       // -------------------------------------------------------------

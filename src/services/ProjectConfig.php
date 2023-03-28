@@ -31,6 +31,7 @@ use yii\base\Application;
 use yii\base\Component;
 use yii\base\ErrorException;
 use yii\base\Exception;
+use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
 use yii\base\NotSupportedException;
 use yii\caching\ExpressionDependency;
@@ -1865,7 +1866,11 @@ class ProjectConfig extends Component
         foreach ($sourceConfigs as &$elementTypeConfigs) {
             foreach ($elementTypeConfigs as &$config) {
                 if ($config['type'] === ElementSources::TYPE_CUSTOM && isset($config['condition'])) {
-                    $config['condition'] = $conditionsService->createCondition($config['condition'])->getConfig();
+                    try {
+                        $config['condition'] = $conditionsService->createCondition($config['condition'])->getConfig();
+                    } catch (InvalidArgumentException|InvalidConfigException) {
+                        // Ignore it
+                    }
                 }
             }
         }
@@ -2064,31 +2069,11 @@ class ProjectConfig extends Component
      */
     private function _getTransformData(): array
     {
-        $transformRows = (new Query())
-            ->select([
-                'name',
-                'handle',
-                'mode',
-                'position',
-                'width',
-                'height',
-                'format',
-                'quality',
-                'interlace',
-                'uid',
-            ])
-            ->from([Table::IMAGETRANSFORMS])
-            ->indexBy('uid')
-            ->all();
-
-        foreach ($transformRows as &$row) {
-            unset($row['uid']);
-            $row['width'] = (int)$row['width'] ?: null;
-            $row['height'] = (int)$row['height'] ?: null;
-            $row['quality'] = (int)$row['quality'] ?: null;
+        $data = [];
+        foreach (Craft::$app->getImageTransforms()->getAllTransforms() as $transform) {
+            $data[$transform->uid] = $transform->getConfig();
         }
-
-        return $transformRows;
+        return $data;
     }
 
     /**

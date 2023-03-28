@@ -275,18 +275,14 @@ class Volume extends Model implements BaseFsInterface
     public function getTransformFs(): FsInterface
     {
         if (!isset($this->_transformFs)) {
-            $handle = $this->getTransformFsHandle() ?? $this->getFsHandle();
-
-            if ($handle === null) {
-                throw new InvalidConfigException('Missing filesystem handle');
+            $handle = $this->getTransformFsHandle();
+            if (!$handle) {
+                return $this->getFs();
             }
-
             $fs = Craft::$app->getFs()->getFilesystemByHandle($handle);
-
             if (!$fs) {
                 throw new InvalidConfigException("Invalid filesystem handle: $handle");
             }
-
             $this->_transformFs = $fs;
         }
 

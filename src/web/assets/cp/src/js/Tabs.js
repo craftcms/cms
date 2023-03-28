@@ -108,7 +108,7 @@ Craft.Tabs = Garnish.Base.extend({
     });
   },
 
-  selectTab: function (tab, focusTab = false) {
+  selectTab: function (tab, focusTab = true) {
     const $tab = this._getTab(tab);
 
     if ($tab[0] === this.$selectedTab[0]) {
@@ -133,6 +133,11 @@ Craft.Tabs = Garnish.Base.extend({
     });
 
     $('#content').trigger('scroll');
+
+    const $slideoutContainer = $tab.closest('.slideout-container');
+    if ($slideoutContainer.length) {
+      $slideoutContainer.find('.so-content').trigger('scroll');
+    }
   },
 
   deselectTab: function () {

@@ -117,7 +117,10 @@ class FileHelper extends \yii\helpers\FileHelper
         $to = static::normalizePath($to, $ds);
 
         // Already absolute?
-        if (str_starts_with($to, $ds)) {
+        if (
+            str_starts_with($to, $ds) ||
+            preg_match(sprintf('/^[A-Z]:%s/', preg_quote($ds, '/')), $to)
+        ) {
             return $to;
         }
 
@@ -895,5 +898,27 @@ class FileHelper extends \yii\helpers\FileHelper
                 self::unlink($source);
             }
         }
+    }
+
+    /**
+     * Returns a unique version of a filename with `uniqid()`, ensuring the result is at most 255 characters.
+     *
+     * @param string $baseName The original filename, or just a file extension prefixed with a `.`.
+     * @return string
+     * @since 4.4.3
+     */
+    public static function uniqueName(string $baseName)
+    {
+        $name = pathinfo($baseName, PATHINFO_FILENAME);
+        $ext = pathinfo($baseName, PATHINFO_EXTENSION);
+        if ($ext !== '') {
+            $ext = ".$ext";
+        }
+        $extLength = strlen($ext);
+        $maxLength = 232; // 255 - 23 (entropy chars)
+        if (strlen($name) + $extLength > $maxLength) {
+            $name = substr($name, 0, $maxLength - $extLength);
+        }
+        return uniqid($name, true) . $ext;
     }
 }
