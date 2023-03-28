@@ -64,9 +64,15 @@ class RenameFile extends ElementAction
 
             Craft.elementIndex.setIndexBusy();
 
+            let currentFolderId = Craft.elementIndex.\$source.data('folder-id');
+            const currentFolder = Craft.elementIndex.sourcePath[Craft.elementIndex.sourcePath.length - 1];
+            if (currentFolder && currentFolder.folderId) {
+              currentFolderId = currentFolder.folderId;
+            }
+            
             var data = {
                 assetId:   assetId,
-                folderId: Craft.elementIndex.\$source.data('folder-id'),
+                folderId: currentFolderId,
                 filename: newName
             };
 
