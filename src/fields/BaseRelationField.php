@@ -815,7 +815,7 @@ JS, [
             "<div class='elements" . ($size === Cp::ELEMENT_SIZE_LARGE ? ' flex-row flex-wrap' : '') . "'>";
 
         foreach ($value as $relatedElement) {
-            $html .= Cp::elementHtml($relatedElement, 'index', $size);
+            $html .= Cp::elementHtml($relatedElement, size: $size);
         }
 
         $html .= '</div></div>';
