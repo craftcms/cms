@@ -709,13 +709,17 @@ class Assets extends BaseRelationField
         if ($this->useSingleFolder) {
             $variables['showSourcePath'] = false;
         } else {
-            $uploadFolder = $this->_uploadFolder($element, false);
-            if ($uploadFolder->volumeId) {
-                $folders = $this->_folderWithAncestors($uploadFolder);
-                $variables['defaultSource'] = $this->_sourceKeyByFolder($folders[0]);
-                $variables['defaultSourcePath'] = array_map(function(VolumeFolder $folder) {
-                    return $folder->getSourcePathInfo();
-                }, $folders);
+            // before setting the defaults, check if user has access to view the volume
+            // @link https://github.com/craftcms/cms/issues/13006
+            if (Craft::$app->getUser()->checkPermission("viewVolume:$uploadVolume->uid")) {
+                $uploadFolder = $this->_uploadFolder($element, false);
+                if ($uploadFolder->volumeId) {
+                    $folders = $this->_folderWithAncestors($uploadFolder);
+                    $variables['defaultSource'] = $this->_sourceKeyByFolder($folders[0]);
+                    $variables['defaultSourcePath'] = array_map(function(VolumeFolder $folder) {
+                        return $folder->getSourcePathInfo();
+                    }, $folders);
+                }
             }
         }
 
