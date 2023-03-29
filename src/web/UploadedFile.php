@@ -91,7 +91,7 @@ class UploadedFile extends \yii\web\UploadedFile
             return false;
         }
 
-        $tempFilename = uniqid(pathinfo($this->name, PATHINFO_FILENAME), true) . '.' . pathinfo($this->name, PATHINFO_EXTENSION);
+        $tempFilename = FileHelper::uniqueName($this->name);
         $tempPath = Craft::$app->getPath()->getTempPath() . DIRECTORY_SEPARATOR . $tempFilename;
 
         if (!$this->saveAs($tempPath, $deleteTempFile)) {

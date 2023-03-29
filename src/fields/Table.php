@@ -17,6 +17,7 @@ use craft\gql\types\TableRow;
 use craft\helpers\Cp;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Json;
+use craft\helpers\StringHelper;
 use craft\validators\ColorValidator;
 use craft\validators\HandleValidator;
 use craft\validators\UrlValidator;
@@ -25,7 +26,6 @@ use craft\web\assets\timepicker\TimepickerAsset;
 use DateTime;
 use GraphQL\Type\Definition\InputObjectType;
 use GraphQL\Type\Definition\Type;
-use LitEmoji\LitEmoji;
 use yii\db\Schema;
 use yii\validators\EmailValidator;
 
@@ -310,13 +310,13 @@ class Table extends Field
         $view->registerAssetBundle(TimepickerAsset::class);
         $view->registerAssetBundle(TableSettingsAsset::class);
         $view->registerJs('new Craft.TableFieldSettings(' .
-            Json::encode($view->namespaceInputName('columns'), JSON_UNESCAPED_UNICODE) . ', ' .
-            Json::encode($view->namespaceInputName('defaults'), JSON_UNESCAPED_UNICODE) . ', ' .
-            Json::encode($this->columns, JSON_UNESCAPED_UNICODE) . ', ' .
-            Json::encode($this->defaults ?? [], JSON_UNESCAPED_UNICODE) . ', ' .
-            Json::encode($columnSettings, JSON_UNESCAPED_UNICODE) . ', ' .
-            Json::encode($dropdownSettingsHtml, JSON_UNESCAPED_UNICODE) . ', ' .
-            Json::encode($dropdownSettingsCols, JSON_UNESCAPED_UNICODE) .
+            Json::encode($view->namespaceInputName('columns')) . ', ' .
+            Json::encode($view->namespaceInputName('defaults')) . ', ' .
+            Json::encode($this->columns) . ', ' .
+            Json::encode($this->defaults ?? []) . ', ' .
+            Json::encode($columnSettings) . ', ' .
+            Json::encode($dropdownSettingsHtml) . ', ' .
+            Json::encode($dropdownSettingsCols) .
             ');');
 
         $columnsField = $view->renderTemplate('_components/fieldtypes/Table/columntable.twig', [
@@ -448,7 +448,7 @@ class Table extends Field
                 $value = $row[$colId];
 
                 if (is_string($value) && in_array($this->columns[$colId]['type'], ['singleline', 'multiline'], true)) {
-                    $value = LitEmoji::unicodeToShortcode($value);
+                    $value = StringHelper::emojiToShortcodes($value);
                 }
 
                 $serializedRow[$colId] = parent::serializeValue($value ?? null);
@@ -558,7 +558,7 @@ class Table extends Field
             case 'multiline':
             case 'singleline':
                 if ($value !== null) {
-                    $value = LitEmoji::shortcodeToUnicode($value);
+                    $value = StringHelper::shortcodesToEmoji($value);
                     return trim(preg_replace('/\R/u', "\n", $value));
                 }
                 // no break

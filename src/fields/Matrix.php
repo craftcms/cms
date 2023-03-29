@@ -398,8 +398,8 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
         $placeholderKey = StringHelper::randomString(10);
         $view->registerJs(
             'new Craft.MatrixConfigurator(' .
-            Json::encode($fieldTypeInfo, JSON_UNESCAPED_UNICODE) . ', ' .
-            Json::encode($view->getNamespace(), JSON_UNESCAPED_UNICODE) . ', ' .
+            Json::encode($fieldTypeInfo) . ', ' .
+            Json::encode($view->getNamespace()) . ', ' .
             Json::encode($view->namespaceInputName("blockTypes[__BLOCK_TYPE_{$placeholderKey}__][fields][__FIELD_{$placeholderKey}__][typesettings]")) . ', ' .
             Json::encode($placeholderKey) .
             ');'
@@ -720,7 +720,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
 
         $js = 'var matrixInput = new Craft.MatrixInput(' .
             '"' . $view->namespaceInputId($id) . '", ' .
-            Json::encode($blockTypeInfo, JSON_UNESCAPED_UNICODE) . ', ' .
+            Json::encode($blockTypeInfo) . ', ' .
             '"' . $view->namespaceInputName($this->handle) . '", ' .
             Json::encode($settings) .
             ');';
