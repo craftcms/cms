@@ -13,6 +13,7 @@
 - The `|replace` Twig filter now supports passing in a hash with regular expression keys. ([#12956](https://github.com/craftcms/cms/issues/12956))
 
 ### Extensibility
+- `craft\validators\UniqueValidator` now supports setting an additional filter via the `filter` property. ([#12941](https://github.com/craftcms/cms/pull/12941))
 - Deprecated `craft\helpers\UrlHelper::buildQuery()`. `http_build_query()` should be used instead.
 
 ### System
