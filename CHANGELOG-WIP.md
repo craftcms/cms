@@ -10,6 +10,7 @@
 ### Administration
 
 ### Development
+- The `|replace` Twig filter now supports passing in a hash with regular expression keys. ([#12956](https://github.com/craftcms/cms/issues/12956))
 
 ### Extensibility
 - Deprecated `craft\helpers\UrlHelper::buildQuery()`. `http_build_query()` should be used instead.
