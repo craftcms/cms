@@ -27,6 +27,14 @@ use yii\base\InvalidConfigException;
  */
 class GlobalSet extends Element
 {
+    // Validation scenarios
+    // -------------------------------------------------------------------------
+
+    /**
+     * @since 4.4.6
+     */
+    public const SCENARIO_SAVE_SET = 'saveSet';
+
     /**
      * @inheritdoc
      */
@@ -241,6 +249,17 @@ class GlobalSet extends Element
         ];
 
         return $rules;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function scenarios(): array
+    {
+        $scenarios = parent::scenarios();
+        $scenarios[self::SCENARIO_SAVE_SET] = $scenarios[self::SCENARIO_DEFAULT];
+
+        return $scenarios;
     }
 
     /**
