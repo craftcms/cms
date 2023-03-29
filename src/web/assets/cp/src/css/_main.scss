@@ -4099,6 +4099,12 @@ ul.tree,
 
   .menubtn {
     margin: 0 var(--xl);
+
+    &.error {
+      span[data-icon] {
+        margin-right: 2px;
+      }
+    }
   }
 }
 
