@@ -148,7 +148,8 @@ class EntrifyController extends Controller
         $this->stdout(PHP_EOL);
 
         $categoryQuery = Category::find()
-            ->group($categoryGroup);
+            ->group($categoryGroup)
+            ->status(null);
 
         if ($categoryGroup->dateDeleted) {
             $categoryQuery
@@ -335,7 +336,8 @@ class EntrifyController extends Controller
         }
 
         $tagQuery = Tag::find()
-            ->group($tagGroup);
+            ->group($tagGroup)
+            ->status(null);
 
         if ($tagGroup->dateDeleted) {
             $tagQuery
