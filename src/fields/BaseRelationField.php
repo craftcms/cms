@@ -273,7 +273,7 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
         }
 
         // remove settings that shouldn't be here
-        unset($config['allowMultipleSources'], $config['allowLimit'], $config['allowLargeThumbsView']);
+        unset($config['allowMultipleSources'], $config['allowLimit'], $config['allowLargeThumbsView'], $config['sortable']);
         if ($this->allowMultipleSources) {
             unset($config['source']);
         } else {
@@ -374,7 +374,7 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
         $settings = parent::getSettings();
 
         // cleanup
-        unset($settings['allowMultipleSources'], $settings['allowLimit'], $settings['allowLargeThumbsView']);
+        unset($settings['allowMultipleSources'], $settings['allowLimit'], $settings['allowLargeThumbsView'], $settings['sortable']);
         if ($this->allowMultipleSources) {
             unset($settings['source']);
         } else {
@@ -582,7 +582,7 @@ JS, [
                 ]
             );
 
-            if ($this->sortable) {
+            if ($this->sortable && !$this->maintainHierarchy) {
                 $query->orderBy(['relations.sortOrder' => SORT_ASC]);
             }
 
@@ -1251,7 +1251,7 @@ JS;
             'limit' => $this->allowLimit ? $this->maxRelations : null,
             'viewMode' => $this->viewMode(),
             'selectionLabel' => $this->selectionLabel ? Craft::t('site', $this->selectionLabel) : static::defaultSelectionLabel(),
-            'sortable' => $this->sortable,
+            'sortable' => $this->sortable && !$this->maintainHierarchy,
             'prevalidate' => $this->validateRelatedElements,
             'modalSettings' => [
                 'defaultSiteId' => $element->siteId ?? null,
