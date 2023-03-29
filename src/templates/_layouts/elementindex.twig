@@ -31,7 +31,8 @@
             html: 'Skip to {title}'|t('app', {title: title}),
         }) }}
 
-        <nav aria-label="{{ 'Sources'|t('app') }}">
+        <nav aria-labelledby="source-heading">
+            <h2 id="source-heading" class="visually-hidden">{{ 'Sources'|t('app') }}</h2>
             {% include "_elements/sources" %}
         </nav>
 

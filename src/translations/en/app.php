@@ -890,6 +890,7 @@ return [
     'Message saved.' => 'Message saved.',
     'Message sent successfully.' => 'Message sent successfully.',
     'Message' => 'Message',
+    'Metadata' => 'Metadata',
     'Migrations' => 'Migrations',
     'Min Blocks' => 'Min Blocks',
     'Min Date' => 'Min Date',
