@@ -58,10 +58,14 @@
         title: 'List all tabs'|t('app'),
         aria: {
             label: 'List all tabs'|t('app'),
+            controls: 'tab-menu',
         },
+        data: {
+            'disclosure-trigger': true,
+        }
     }) }}
-    <div class="menu">
-        <ul class="padded" role="listbox">
+    <div id="tab-menu" class="menu menu--disclosure">
+        <ul class="padded">
             {% for containerId, tab in tabs %}
                 <li>
                     {% tag 'a' with {
@@ -70,6 +74,7 @@
                         data: {
                             id: containerId,
                         },
+                        tabindex: '0',
                     } %}
                         {{ tab.label }}
                         {% if 'error' in tab.class %}
