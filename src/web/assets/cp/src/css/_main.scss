@@ -6709,6 +6709,7 @@ body .selectize-dropdown {
 
   &:not(.fullwidth) {
     max-width: 25em;
+    min-width: 10em;
   }
 }
 
@@ -6789,16 +6790,6 @@ body .selectize-dropdown-content {
   .option {
     min-height: 18px;
   }
-}
-
-body .selectize-dropdown-content > div[data-value='new']:before {
-  @include icon;
-  content: 'plus';
-  margin-right: 5px;
-}
-
-body .selectize-dropdown-content > div[data-value='new']:after {
-  content: '…';
 }
 
 body .selectize-dropdown [data-selectable],

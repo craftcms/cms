@@ -14,6 +14,8 @@
 
 {% macro sourceLink(key, source, isTopLevel, elementType, baseSortOptions, tableColumns) %}
     {{ tag('a', {
+        role: 'button',
+        tabindex: '0',
         data: {
             key: key,
             'has-thumbs': (source.hasThumbs ?? false) ? true : false,
@@ -27,6 +29,7 @@
                         defaultDir: option.defaultDir ?? 'asc'
                     })|values)
                 : false,
+            'source-item': true,
             'table-col-opts': isTopLevel
                 ? tableColumns
                     |merge(craft.app.elementSources.getSourceTableAttributes(elementType, key))
