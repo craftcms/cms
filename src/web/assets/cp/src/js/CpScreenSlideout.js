@@ -350,10 +350,8 @@ Craft.CpScreenSlideout = Craft.Slideout.extend(
       });
     },
 
-    updateTabs: function (tabs, selectedTabId) {
-      let newSelectedTabId = null;
+    updateTabs: function (tabs) {
       if (this.tabManager) {
-        newSelectedTabId = this.tabManager.$selectedTab.data('id');
         this.tabManager.destroy();
         this.tabManager = null;
         this.$tabContainer.html('');
@@ -374,29 +372,6 @@ Craft.CpScreenSlideout = Craft.Slideout.extend(
           Garnish.$win.trigger('resize');
           this.$body.trigger('scroll');
         });
-
-        // if selected tab was passed on and it's different to the newly selected one
-        // (this can be triggered by changing value of a field and while it's autosaving
-        // switch to another tab)
-        if (
-          selectedTabId &&
-          newSelectedTabId !== null &&
-          newSelectedTabId !== selectedTabId
-        ) {
-          const $newSelectedTab = this.tabManager.$tabs.filter(
-            `[data-id="${newSelectedTabId}"]`
-          );
-
-          // if it exists
-          if ($newSelectedTab.length) {
-            // switch to the new selected tab
-            this.tabManager.selectTab($newSelectedTab);
-          } else {
-            // otherwise, switch to the first one
-            // (e.g. if selected tab is conditionally hidden once autosave is done)
-            this.tabManager.selectTab(this.tabManager.$tabs.first());
-          }
-        }
       }
     },
 

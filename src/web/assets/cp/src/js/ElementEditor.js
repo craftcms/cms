@@ -1216,6 +1216,11 @@ Craft.ElementEditor = Garnish.Base.extend(
           data: preparedData,
         })
           .then((response) => {
+            // capture the new selected tab ID, in case it just changed
+            const newSelectedTabId = this.$contentContainer
+              .children('[data-layout-tab]:not(.hidden)')
+              .data('id');
+
             this._afterSaveDraft();
 
             const createdProvisionalDraft = !this.settings.draftId;
@@ -1472,10 +1477,27 @@ Craft.ElementEditor = Garnish.Base.extend(
             this.settings.visibleLayoutElements = visibleLayoutElements;
 
             // Update the tabs
+            let tabManager;
             if (this.isFullPage) {
-              Craft.cp.updateTabs(response.data.tabs, selectedTabId);
+              Craft.cp.updateTabs(response.data.tabs);
+              tabManager = Craft.cp.tabManager;
             } else {
-              this.slideout.updateTabs(response.data.tabs, selectedTabId);
+              this.slideout.updateTabs(response.data.tabs);
+              tabManager = this.slideout.tabManager;
+            }
+
+            // was a new tab selected after the autosave request was kicked off?
+            if (
+              selectedTabId &&
+              newSelectedTabId &&
+              selectedTabId !== newSelectedTabId
+            ) {
+              const $newSelectedTab = tabManager.$tabs.filter(
+                `[data-id="${newSelectedTabId}"]`
+              );
+              if ($newSelectedTab.length) {
+                tabManager.selectTab($newSelectedTab);
+              }
             }
 
             Craft.appendHeadHtml(response.data.headHtml);
