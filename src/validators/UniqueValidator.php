@@ -79,22 +79,18 @@ class UniqueValidator extends YiiUniqueValidator
 
             if ($exists) {
                 if ($this->filter) {
-                    $filter = ['and', $pkFilter];
-
-                    if ($this->filter instanceof \Closure) {
+                    if (is_callable($this->filter)) {
                         $currentFilter = $this->filter;
 
                         // Wrap the closure in another closure that will add the PK filter
-                        $filter = function(ActiveQueryInterface $query) use ($currentFilter, $pkFilter) {
+                        $this->filter = function(ActiveQueryInterface $query) use ($currentFilter, $pkFilter) {
                             $currentFilter($query);
                             $query->andWhere($pkFilter);
                         };
                     } else {
                         // If it isn't a closure then `filter` will be an array or string
-                        $filter[] = $this->filter;
+                        $this->filter = ['and', $this->filter, $pkFilter];
                     }
-
-                    $this->filter = $filter;
                 } else {
                     $this->filter = $pkFilter;
                 }
