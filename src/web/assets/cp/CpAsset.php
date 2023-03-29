@@ -202,7 +202,6 @@ JS;
             'Handle',
             'Heading',
             'Height unit',
-            'Hide nested sources',
             'Hide sidebar',
             'Hide',
             'Incorrect password.',

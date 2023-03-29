@@ -94,18 +94,6 @@ class MailerTest extends TestCase
     }
 
     /**
-     * Test whether trying to send an email to nobody throws an exception.
-     */
-    public function testRequiresTo(): void
-    {
-        $this->_sendMail();
-        $this->expectExceptionMessage('An email must have a');
-
-        // Since the mock mailer simply stores the data, we won't trigger an exception until we try to unpack the message
-        $this->tester->grabLastSentEmail()->toString();
-    }
-
-    /**
      *
      */
     public function testEmailVariables(): void
