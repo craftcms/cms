@@ -30,6 +30,9 @@ class GlobalSet extends Element
     // Validation scenarios
     // -------------------------------------------------------------------------
 
+    /**
+     * @since 4.4.6
+     */
     public const SCENARIO_SAVE_SET = 'saveSet';
 
     /**
