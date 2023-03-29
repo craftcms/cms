@@ -10,6 +10,7 @@
 })) %}
 
 {% tag 'div' with containerAttributes %}
+    {% set tabsHaveErrors = false %}
     {% tag 'div'  with {
         class: 'scrollable',
         role: 'tablist',
@@ -47,14 +48,15 @@
                                 class: 'visually-hidden',
                             }) }}
                         {% endtag %}
+                        {% set tabsHaveErrors = true %}
                     {% endif %}
                 {% endtag %}
             {% endtag %}
         {% endfor %}
     {%  endtag %}
-    {{ tag('button', {
+    {% tag 'button' with {
         type: 'button',
-        class: 'btn menubtn hidden',
+        class: 'btn menubtn hidden' ~ (tabsHaveErrors ? ' error' : ''),
         title: 'List all tabs'|t('app'),
         aria: {
             label: 'List all tabs'|t('app'),
@@ -63,13 +65,21 @@
         data: {
             'disclosure-trigger': true,
         }
-    }) }}
+    } %}
+        {% if tabsHaveErrors %}
+            {{ tag('span', {
+                data: {
+                    icon: 'alert',
+                }
+            }) }}
+        {% endif %}
+    {% endtag %}
     <div id="tab-menu" class="menu menu--disclosure">
         <ul class="padded">
             {% for containerId, tab in tabs %}
                 <li>
                     {% tag 'a' with {
-                        class: tab.selected ? 'sel' : null,
+                        class: (tab.selected ? 'sel' : null) ~ ('error' in tab.class ? ' error' : null),
                         href: tab.url,
                         data: {
                             id: containerId,
