@@ -633,18 +633,16 @@ class Asset extends Element
             }
         }
 
-        // if it's a 'foldersOnly' request - just return folders
-        if (self::isFolderIndex()) {
+        // if it's a 'foldersOnly' request, or we have enough folders to hit the query limit,
+        // return the folders directly
+        if (
+            self::isFolderIndex() ||
+            count($assets) == $elementQuery->limit
+        ) {
             return $assets;
         }
 
-        // if we have enough folders to hit the query limit - return them
-        // there's no room for any assets
-        if (count($assets) === $elementQuery->limit) {
-            return $assets;
-        }
-
-        // otherwise will up the rest of the limit with assets
+        // otherwise merge in the resulting assets
         return array_merge($assets, $elementQuery->all());
     }
 
