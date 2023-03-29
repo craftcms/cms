@@ -1487,7 +1487,7 @@ class Elements extends Component
 
         // Clone any field values that are objects
         foreach ($mainClone->getFieldValues() as $handle => $value) {
-            if (is_object($value) && (!class_exists(UnitEnum::class) || !$value instanceof UnitEnum)) {
+            if (is_object($value) && (!interface_exists(UnitEnum::class) || !$value instanceof UnitEnum)) {
                 $mainClone->setFieldValue($handle, clone $value);
             }
         }
@@ -1607,7 +1607,7 @@ class Elements extends Component
 
                     // Clone any field values that are objects
                     foreach ($siteClone->getFieldValues() as $handle => $value) {
-                        if (is_object($value) && (!class_exists(UnitEnum::class) || !$value instanceof UnitEnum)) {
+                        if (is_object($value) && (!interface_exists(UnitEnum::class) || !$value instanceof UnitEnum)) {
                             $siteClone->setFieldValue($handle, clone $value);
                         }
                     }

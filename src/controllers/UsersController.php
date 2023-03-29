@@ -1796,9 +1796,15 @@ JS,
     {
         $this->requirePostRequest();
 
-        $userIds = $this->request->getRequiredBodyParam('userId');
+        $userId = $this->request->getRequiredBodyParam('userId');
 
-        if ($userIds !== (string)static::currentUser()->id) {
+        if (is_array($userId)) {
+            $userId = array_map(fn($id) => (int)$id, $userId);
+        } else {
+            $userId = (int)$userId;
+        }
+
+        if ($userId !== static::currentUser()?->id) {
             $this->requirePermission('deleteUsers');
         }
 
@@ -1807,7 +1813,7 @@ JS,
         foreach (Craft::$app->getSections()->getAllSections() as $section) {
             $entryCount = Entry::find()
                 ->sectionId($section->id)
-                ->authorId($userIds)
+                ->authorId($userId)
                 ->site('*')
                 ->unique()
                 ->status(null)
@@ -1823,6 +1829,7 @@ JS,
 
         // Fire a 'defineUserContentSummary' event
         $event = new DefineUserContentSummaryEvent([
+            'userId' => $userId,
             'contentSummary' => $summary,
         ]);
         $this->trigger(self::EVENT_DEFINE_CONTENT_SUMMARY, $event);
