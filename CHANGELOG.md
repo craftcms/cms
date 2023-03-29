@@ -3,6 +3,7 @@
 ## Unreleased
 
 - Fixed a bug where Assets fields weren’t respecting their View Mode setting when viewing entry revisions. ([#12948](https://github.com/craftcms/cms/issues/12948))
+- Fixed a bug where some relational fields were showing duplicate selected relations. ([#12949](https://github.com/craftcms/cms/issues/12949))
 
 ## 3.8.5 - 2023-03-21
 
