@@ -1469,9 +1469,7 @@ Craft.ElementEditor = Garnish.Base.extend(
 
             // Make the first tab visible if no others are
             if (!$allTabContainers.filter(':not(.hidden)').length) {
-              if (this.isFullPage) {
-                Craft.cp.selectTab($allTabContainers.first());
-              }
+              $allTabContainers.first().removeClass('hidden');
             }
 
             this.settings.visibleLayoutElements = visibleLayoutElements;
