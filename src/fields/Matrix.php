@@ -726,7 +726,14 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
             ');';
 
         // Safe to create the default blocks?
-        if ($createDefaultBlocks) {
+        if ($createDefaultBlocks && count($value) < $this->minBlocks) {
+            // @link https://github.com/craftcms/cms/issues/12973
+            // for matrix fields with minBlocks set Craft.MatrixInput.addBlock() is called before new Craft.ElementEditor(),
+            // so when we get our initialSerializedValue() for the ElementEditor,
+            // the matrix block is already there which means the field is reported as not changed since the init
+            // and so not passed to PHP for save
+            $view->setInitialDeltaValue($this->handle, null);
+
             $blockTypeJs = Json::encode($blockTypes[0]->handle);
             for ($i = count($value); $i < $this->minBlocks; $i++) {
                 $js .= "\nmatrixInput.addBlock($blockTypeJs, null, false);";
