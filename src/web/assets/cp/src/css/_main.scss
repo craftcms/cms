@@ -3758,6 +3758,16 @@ ul.tree,
 
   .menubtn {
     @include margin-left(32px);
+
+    &.error {
+      &:after {
+        border-color: $red600;
+      }
+
+      span[data-icon] {
+        margin-right: 2px;
+      }
+    }
   }
 }
 
