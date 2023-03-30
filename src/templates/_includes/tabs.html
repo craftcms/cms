@@ -10,6 +10,7 @@
 
 {% tag 'nav' with containerAttributes %}
     <ul class="scrollable">
+        {% set tabsHaveErrors = false %}
         {% for tabId, tab in tabs %}
             <li data-id="{{ tabId }}">
                 {% tag 'a' with {
@@ -31,25 +32,34 @@
                                 icon: 'alert',
                             }
                         }) }}
+                        {% set tabsHaveErrors = true %}
                     {% endif %}
                 {% endtag %}
             </li>
         {% endfor %}
     </ul>
-    {{ tag('button', {
+    {% tag 'button' with {
         type: 'button',
-        class: 'btn menubtn hidden',
+        class: 'btn menubtn hidden' ~ (tabsHaveErrors ? ' error' : ''),
         title: 'List all tabs'|t('app'),
         aria: {
             label: 'List all tabs'|t('app'),
         },
-    }) }}
+    } %}
+        {% if tabsHaveErrors %}
+            {{ tag('span', {
+                data: {
+                    icon: 'alert',
+                }
+            }) }}
+        {% endif %}
+    {% endtag %}
     <div class="menu">
         <ul class="padded" role="listbox">
             {% for tabId, tab in tabs %}
                 <li>
                     {% tag 'a' with {
-                        class: tab.selected ? 'sel' : null,
+                        class: (tab.selected ? 'sel' : null) ~ ('error' in tab.class ? ' error' : null),
                         href: tab.url,
                         data: {
                             id: tabId,
