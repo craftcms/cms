@@ -1321,7 +1321,9 @@ Craft.ui = {
   findTabAnchorForField: function ($container, $body, namespace) {
     namespace = this._getPreppedNamespace(namespace);
 
-    var fieldTabDiv = $container.parents(`div[id^=${namespace}tab--]`);
+    var fieldTabDiv = $container.parents(
+      `div[id^=${namespace}tab][role="tabpanel"]`
+    );
     var fieldTabAnchor = $body
       .find('[role="tablist"]')
       .find('a[href="#' + fieldTabDiv.attr('id') + '"]');
