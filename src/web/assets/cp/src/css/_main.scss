@@ -72,6 +72,7 @@
     #{lightness($darkFocusColor)};
   --focus-ring: 0 0 0 1px hsl(var(--dark-focus-hsl)),
     0 0 0 3px hsla(var(--dark-focus-hsl), 0.7);
+  --elements-busy-background-position: 50% 50%;
 }
 
 body,
@@ -2846,7 +2847,7 @@ $checkboxPadding: $checkboxSize + 4;
       width: calc(100% + #{24 + 24}px);
       height: 100%;
       background: transparentize($white, 0.25) url(../images/spinner.gif)
-        no-repeat 50% 50%;
+        no-repeat var(--elements-busy-background-position);
       border-radius: $largeBorderRadius;
     }
   }
@@ -3757,6 +3758,16 @@ ul.tree,
 
   .menubtn {
     @include margin-left(32px);
+
+    &.error {
+      &:after {
+        border-color: $red600;
+      }
+
+      span[data-icon] {
+        margin-right: 2px;
+      }
+    }
   }
 }
 
