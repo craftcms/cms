@@ -3,6 +3,7 @@
 ## Unreleased
 
 - Content tab menus now reveal when a tab contains validation errors, and invalid tabs’ menu options get the same warning icon treatment as inline tabs do. ([#12971](https://github.com/craftcms/cms/issues/12971))
+- Selectize menus now expand upwards when there’s not ample space below them. ([#12976](https://github.com/craftcms/cms/issues/12976))
 - Fixed a bug where Assets fields weren’t respecting their View Mode setting when viewing entry revisions. ([#12948](https://github.com/craftcms/cms/issues/12948))
 - Fixed a bug where asset pagination was broken when there was more than 100 subfolders. ([#12969](https://github.com/craftcms/cms/issues/12969))
 - Fixed a bug where `craft\helpers\FileHelper::absolutePath()` wasn’t treating Windows file paths beginning drive letters as absolute. ([craftcms/generator#16](https://github.com/craftcms/generator/issues/16))
