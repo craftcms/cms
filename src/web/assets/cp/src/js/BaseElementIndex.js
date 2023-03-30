@@ -2241,6 +2241,25 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         this._activeElement = document.activeElement;
         document.activeElement.blur();
       }
+
+      let elementsHeight = this.$elements.height();
+      let windowHeight = window.innerHeight;
+      let scrollTop = $(document).scrollTop();
+
+      if (this.settings.context == 'modal') {
+        windowHeight = this.$elements.parents('.modal').height();
+        scrollTop = this.$elements.scrollParent().scrollTop();
+      }
+
+      if (elementsHeight > windowHeight) {
+        let positionTop = Math.floor(scrollTop + windowHeight / 2) - 100;
+        positionTop = Math.floor((positionTop / elementsHeight) * 100);
+
+        document.documentElement.style.setProperty(
+          '--elements-busy-top-position',
+          positionTop + '%'
+        );
+      }
     },
 
     setIndexAvailable: function () {
