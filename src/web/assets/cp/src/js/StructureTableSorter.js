@@ -241,8 +241,12 @@ Craft.StructureTableSorter = Garnish.DragSort.extend(
             oldLevel = $draggee.data('level'),
             newLevel = oldLevel + levelDiff,
             padding = this._basePadding + this._getLevelIndent(newLevel);
-
-          let $structureGraphic = $draggee.find('.structure-graphic');
+          const $structureTextAlternative = $draggee.find(
+            '[data-text-alternative]'
+          );
+          const altText = Craft.t('app', 'Level {num}', {
+            num: newLevel,
+          });
 
           $draggee.data('level', newLevel);
           $draggee.find('.element').data('level', newLevel);
@@ -250,36 +254,8 @@ Craft.StructureTableSorter = Garnish.DragSort.extend(
             .children('[data-titlecell]:first')
             .css('padding-' + Craft.left, padding);
 
-          // Remove level indicator if necessary
-          if (newLevel === 1) {
-            $structureGraphic.remove();
-          } else {
-            const structureGraphicWidth =
-              this._getStructureGraphicWidth(newLevel);
-            const structureGraphicPosition =
-              this._getStructureGraphicPosition(newLevel);
-
-            // Create structure graphic
-            if ($structureGraphic.length === 0) {
-              $structureGraphic = $('<span/>').attr({
-                class: 'structure-graphic',
-                role: 'img',
-                'aria-label': Craft.t('app', 'Level {num}', {
-                  num: newLevel,
-                }),
-              });
-
-              $draggee
-                .children('[data-titlecell]:first')
-                .append($structureGraphic);
-            } else {
-              // Adjust position
-              console.log(structureGraphicPosition);
-              $structureGraphic.css({
-                [Craft.left]: structureGraphicPosition,
-              });
-            }
-          }
+          // Update text alternative
+          $structureTextAlternative.text(altText);
         }
 
         this._positionChanged = true;
@@ -543,24 +519,6 @@ Craft.StructureTableSorter = Garnish.DragSort.extend(
      */
     _getLevelIndent: function (level) {
       return (level - 1) * Craft.StructureTableSorter.LEVEL_INDENT;
-    },
-
-    _getStructureGraphicWidth: function (level) {
-      let width = 0;
-      return width;
-    },
-
-    _getStructureGraphicPosition: function (level) {
-      let position = 0;
-
-      if (level > 2) {
-        const multiplier = level - 2;
-        position = `calc(var(--left-base) + (${multiplier} * var(--graphic-width)))`;
-      } else {
-        position = 'var(--left-base)';
-      }
-
-      return position;
     },
 
     /**
