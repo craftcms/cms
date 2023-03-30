@@ -1581,7 +1581,8 @@ body.underline-links .errors-summary {
 /* flexbox field layouts */
 #content :not(.meta) > .flex-fields,
 #content > .flex-fields,
-.so-content .flex-fields {
+.so-content .flex-fields,
+.draghelper .flex-fields {
   --row-gap: var(--xl);
   display: flex;
   flex-wrap: wrap;
@@ -1634,7 +1635,8 @@ body.underline-links .errors-summary {
 }
 
 #content :not(.meta) > .flex-fields,
-#content > .flex-fields {
+#content > .flex-fields,
+.draghelper.drag-in-content .flex-fields {
   & > :not(h2):not(hr):not(.line-break) {
     &,
     &:last-child {
@@ -1662,7 +1664,8 @@ body.underline-links .errors-summary {
   }
 }
 
-.so-content .flex-fields {
+.so-content .flex-fields,
+.draghelper.drag-in-slideout .flex-fields {
   & > :not(h2):not(hr):not(.line-break) {
     &,
     &:last-child {

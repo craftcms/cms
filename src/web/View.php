@@ -196,6 +196,11 @@ class View extends \yii\web\View
     private array $_indexTemplateFilenames;
 
     /**
+     * @var string
+     */
+    private string $_privateTemplateTrigger;
+
+    /**
      * @var string|null
      */
     private ?string $_namespace = null;
@@ -720,28 +725,18 @@ class View extends \yii\web\View
      *
      * @param string $name The name of the template.
      * @param string|null $templateMode The template mode to use.
+     * @param bool $publicOnly Whether to only look for public templates (template paths that don’t start with the private template trigger).
      * @return bool Whether the template exists.
      * @throws Exception
      */
-    public function doesTemplateExist(string $name, ?string $templateMode = null): bool
+    public function doesTemplateExist(string $name, ?string $templateMode = null, bool $publicOnly = false): bool
     {
-        if ($templateMode === null) {
-            $templateMode = $this->getTemplateMode();
-        }
-
-        $oldTemplateMode = $this->getTemplateMode();
-        $this->setTemplateMode($templateMode);
-
         try {
-            $templateExists = ($this->resolveTemplate($name) !== false);
+            return ($this->resolveTemplate($name, $templateMode, $publicOnly) !== false);
         } catch (TwigLoaderError) {
             // _validateTemplateName() had an issue with it
-            $templateExists = false;
+            return false;
         }
-
-        $this->setTemplateMode($oldTemplateMode);
-
-        return $templateExists;
     }
 
     /**
@@ -813,22 +808,23 @@ class View extends \yii\web\View
      *
      * @param string $name The name of the template.
      * @param string|null $templateMode The template mode to use.
+     * @param bool $publicOnly Whether to only look for public templates (template paths that don’t start with the private template trigger).
      * @return string|false The path to the template if it exists, or `false`.
      * @throws TwigLoaderError
      */
-    public function resolveTemplate(string $name, ?string $templateMode = null): string|false
+    public function resolveTemplate(string $name, ?string $templateMode = null, bool $publicOnly = false): string|false
     {
-        if ($templateMode === null) {
-            $templateMode = $this->getTemplateMode();
+        if ($templateMode !== null) {
+            $oldTemplateMode = $this->getTemplateMode();
+            $this->setTemplateMode($templateMode);
         }
 
-        $oldTemplateMode = $this->getTemplateMode();
-        $this->setTemplateMode($templateMode);
-
         try {
-            return $this->_resolveTemplateInternal($name);
+            return $this->_resolveTemplateInternal($name, $publicOnly);
         } finally {
-            $this->setTemplateMode($oldTemplateMode);
+            if (isset($oldTemplateMode)) {
+                $this->setTemplateMode($oldTemplateMode);
+            }
         }
     }
 
@@ -836,10 +832,11 @@ class View extends \yii\web\View
      * Finds a template on the file system and returns its path.
      *
      * @param string $name The name of the template.
+     * @param bool $publicOnly Whether to only look for public templates (template paths that don’t start with the private template trigger).
      * @return string|false The path to the template if it exists, or `false`.
      * @throws TwigLoaderError
      */
-    private function _resolveTemplateInternal(string $name): string|false
+    private function _resolveTemplateInternal(string $name, bool $publicOnly): string|false
     {
         // Normalize the template name
         $name = trim(preg_replace('#/{2,}#', '/', str_replace('\\', '/', StringHelper::convertToUtf8($name))), '/');
@@ -869,7 +866,7 @@ class View extends \yii\web\View
         $basePaths[] = $this->_templatesPath;
 
         foreach ($basePaths as $basePath) {
-            if (($path = $this->_resolveTemplate($basePath, $name)) !== null) {
+            if (($path = $this->_resolveTemplate($basePath, $name, $publicOnly)) !== null) {
                 return $this->_templatePaths[$key] = $path;
             }
         }
@@ -890,7 +887,7 @@ class View extends \yii\web\View
                 if ($templateRoot === '' || strncasecmp($templateRoot . '/', $name . '/', $templateRootLen + 1) === 0) {
                     $subName = $templateRoot === '' ? $name : (strlen($name) === $templateRootLen ? '' : substr($name, $templateRootLen + 1));
                     foreach ($basePaths as $basePath) {
-                        if (($path = $this->_resolveTemplate($basePath, $subName)) !== null) {
+                        if (($path = $this->_resolveTemplate($basePath, $subName, $publicOnly)) !== null) {
                             return $this->_templatePaths[$key] = $path;
                         }
                     }
@@ -1516,11 +1513,13 @@ JS;
             $this->setTemplatesPath(Craft::$app->getPath()->getCpTemplatesPath());
             $this->_defaultTemplateExtensions = ['twig', 'html'];
             $this->_indexTemplateFilenames = ['index'];
+            $this->_privateTemplateTrigger = '_';
         } else {
             $this->setTemplatesPath(Craft::$app->getPath()->getSiteTemplatesPath());
             $generalConfig = Craft::$app->getConfig()->getGeneral();
             $this->_defaultTemplateExtensions = $generalConfig->defaultTemplateExtensions;
             $this->_indexTemplateFilenames = $generalConfig->indexTemplateFilenames;
+            $this->_privateTemplateTrigger = $generalConfig->privateTemplateTrigger;
         }
     }
 
@@ -2063,9 +2062,10 @@ JS;
      *
      * @param string $basePath The base path to be looking in.
      * @param string $name The name of the template to be looking for.
+     * @param bool $publicOnly Whether to only look for public templates (template paths that don’t start with the private template trigger).
      * @return string|null The matching file path, or `null`.
      */
-    private function _resolveTemplate(string $basePath, string $name): ?string
+    private function _resolveTemplate(string $basePath, string $name, bool $publicOnly): ?string
     {
         // Normalize the path and name
         $basePath = FileHelper::normalizePath($basePath);
@@ -2073,6 +2073,10 @@ JS;
 
         // $name could be an empty string (e.g. to load the homepage template)
         if ($name !== '') {
+            if ($publicOnly && preg_match(sprintf('/(^|\/)%s/', preg_quote($this->_privateTemplateTrigger, '/')), $name)) {
+                return null;
+            }
+
             // Maybe $name is already the full file path
             $testPath = $basePath . DIRECTORY_SEPARATOR . $name;
 

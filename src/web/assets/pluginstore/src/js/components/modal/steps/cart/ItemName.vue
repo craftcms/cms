@@ -10,7 +10,7 @@
     <template v-else-if="item.lineItem.purchasable.type === 'plugin-edition'">
       <strong>{{ item.plugin.name }}</strong>
       <edition-badge
-        v-if="item.plugin.editions > 1"
+        v-if="item.plugin.editions.length > 1"
         :name="item.lineItem.purchasable.name"
       ></edition-badge>
     </template>

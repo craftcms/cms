@@ -347,7 +347,8 @@ export default Base.extend(
         }
 
         if (typeof this.settings.handle === 'string') {
-          return $(this.settings.handle, item);
+          // https://github.com/craftcms/cms/issues/12896
+          return $(this.settings.handle, item).first();
         }
 
         if (typeof this.settings.handle === 'function') {
