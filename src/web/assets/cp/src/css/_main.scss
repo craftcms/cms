@@ -2584,13 +2584,14 @@ table {
 
     tbody {
       tr {
-        --row-bg-color: var(--white);
+        --hover-bg-color: var(--gray-050);
+        --selected-bg-color: var(--dark-sel-color);
 
         &:not(.disabled) {
           &:hover {
             th,
             td {
-              --row-bg-color: var(--gray-050);
+              background-color: var(--hover-bg-color);
             }
           }
 
@@ -2607,8 +2608,8 @@ table {
 
             th,
             td {
-              --row-bg-color: var(--dark-sel-color);
               color: var(--white);
+              background-color: var(--selected-bg-color);
             }
           }
         }
@@ -2619,7 +2620,6 @@ table {
         padding-top: 7px;
         padding-bottom: 7px;
         background-clip: padding-box;
-        background-color: var(--row-bg-color);
       }
 
       td {
