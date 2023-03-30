@@ -558,6 +558,16 @@ Craft.CpScreenSlideout = Craft.Slideout.extend(
         if ($field) {
           Craft.ui.addErrorsToField($field, fieldErrors);
           this.fieldsWithErrors.push($field);
+
+          var $tabMenuBtn = this.tabManager.$menuBtn;
+          if ($tabMenuBtn.length) {
+            if ($tabMenuBtn.hasClass('error') == false) {
+              $tabMenuBtn.addClass('error');
+              $('<span/>', {
+                'data-icon': 'alert',
+              }).appendTo($tabMenuBtn);
+            }
+          }
           // mark the tab as having errors
           var $fieldTabAnchor = Craft.ui.findTabAnchorForField(
             $field,
@@ -588,6 +598,14 @@ Craft.CpScreenSlideout = Craft.Slideout.extend(
         Craft.ui.clearErrorsFromField($field);
       });
       Craft.ui.clearErrorsSummary(this.$body);
+      // clear error indicator from tabs dropdown menu
+      var $tabMenuBtn = this.tabManager.$menuBtn;
+      if ($tabMenuBtn.length) {
+        if ($tabMenuBtn.hasClass('error')) {
+          $tabMenuBtn.removeClass('error');
+          $tabMenuBtn.find('span[data-icon="alert"]').remove();
+        }
+      }
     },
 
     /**
