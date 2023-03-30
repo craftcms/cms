@@ -6,6 +6,7 @@
 - Fixed a bug where Assets fields weren’t respecting their View Mode setting when viewing entry revisions. ([#12948](https://github.com/craftcms/cms/issues/12948))
 - Fixed a bug where some relational fields were showing duplicate selected relations. ([#12949](https://github.com/craftcms/cms/issues/12949))
 - Fixed a bug where asset pagination was broken when there was more than 100 subfolders. ([#12969](https://github.com/craftcms/cms/issues/12969))
+- Fixed a bug where entry index pages’ “Revision Notes” and “Last Edited By” columns weren’t getting populated for disabled entries. ([#12981](https://github.com/craftcms/cms/issues/12981))
 
 ## 3.8.5 - 2023-03-21
 
