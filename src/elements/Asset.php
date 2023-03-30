@@ -688,11 +688,17 @@ class Asset extends Element
             }
         }
 
-        if (!self::isFolderIndex()) {
-            $assets = array_merge($assets, $elementQuery->all());
+        // if it's a 'foldersOnly' request, or we have enough folders to hit the query limit,
+        // return the folders directly
+        if (
+            self::isFolderIndex() ||
+            count($assets) === (int)$elementQuery->limit
+        ) {
+            return $assets;
         }
 
-        return $assets;
+        // otherwise merge in the resulting assets
+        return array_merge($assets, $elementQuery->all());
     }
 
     /**
