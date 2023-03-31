@@ -578,7 +578,7 @@ class Request extends \yii\web\Request
      * Returns whether the request has a valid site token.
      *
      * @return bool
-     * @since 3.8.9
+     * @since 3.8.6
      */
     public function hasValidSiteToken(): bool
     {
