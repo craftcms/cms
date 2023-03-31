@@ -11,6 +11,7 @@
 
 ### Development
 - The `|replace` Twig filter now supports passing in a hash with regular expression keys. ([#12956](https://github.com/craftcms/cms/issues/12956))
+- Elements now include custom field values when being iterated over, and when being merged. ([#13009](https://github.com/craftcms/cms/issues/13009))
 
 ### Extensibility
 - Added `craft\web\CpScreenResponseBehavior::$pageSidebar`, `pageSidebar()`, and `pageSidebarTemplate()`. ([#13019](https://github.com/craftcms/cms/pull/13019), [#12795](https://github.com/craftcms/cms/issues/12795))

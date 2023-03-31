@@ -7,6 +7,7 @@
 
 namespace craft\base;
 
+use ArrayIterator;
 use Craft;
 use craft\behaviors\CustomFieldBehavior;
 use craft\behaviors\DraftBehavior;
@@ -75,6 +76,7 @@ use craft\web\UploadedFile;
 use DateTime;
 use Illuminate\Support\Collection;
 use Throwable;
+use Traversable;
 use Twig\Markup;
 use UnitEnum;
 use yii\base\ErrorHandler;
@@ -2281,6 +2283,26 @@ abstract class Element extends Component implements ElementInterface
             'site',
             'totalDescendants',
         ];
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getIterator(): Traversable
+    {
+        $attributes = $this->getAttributes();
+
+        // Include custom fields
+        if (static::hasContent() && ($fieldLayout = $this->getFieldLayout()) !== null) {
+            foreach ($fieldLayout->getCustomFieldElements() as $layoutElement) {
+                $field = $layoutElement->getField();
+                if (!isset($attributes[$field->handle])) {
+                    $attributes[$field->handle] = $this->getFieldValue($field->handle);
+                }
+            }
+        }
+
+        return new ArrayIterator($attributes);
     }
 
     /**
