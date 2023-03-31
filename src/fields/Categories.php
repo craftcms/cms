@@ -72,11 +72,6 @@ class Categories extends BaseRelationField
     /**
      * @inheritdoc
      */
-    protected bool $sortable = false;
-
-    /**
-     * @inheritdoc
-     */
     public function __construct(array $config = [])
     {
         // allow categories to limit selection if `maintainHierarchy` isn't checked

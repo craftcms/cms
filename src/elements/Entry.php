@@ -1372,7 +1372,7 @@ class Entry extends Element implements ExpirableElementInterface
             /** @var static|DraftBehavior $this */
             return (
                 $this->creatorId === $user->id ||
-                $user->can("deletePeerEntries:$section->uid")
+                $user->can("deletePeerEntryDrafts:$section->uid")
             );
         }
 
@@ -1422,7 +1422,7 @@ class Entry extends Element implements ExpirableElementInterface
 
         // Ignore homepage/temp slugs
         if ($this->slug && !str_starts_with($this->slug, '__')) {
-            $path .= "-$this->slug";
+            $path .= sprintf('-%s', str_replace('/', '-', $this->slug));
         }
 
         return $path;
@@ -1745,12 +1745,20 @@ EOD;
             Craft::$app->getLocale();
             // Set Craft to the entry’s site’s language, in case the title format has any static translations
             $language = Craft::$app->language;
-            Craft::$app->language = $this->getSite()->language;
+            $locale = Craft::$app->getLocale();
+            $formattingLocale = Craft::$app->getFormattingLocale();
+            $site = $this->getSite();
+            $tempLocale = Craft::$app->getI18n()->getLocaleById($site->language);
+            Craft::$app->language = $site->language;
+            Craft::$app->set('locale', $tempLocale);
+            Craft::$app->set('formattingLocale', $tempLocale);
             $title = Craft::$app->getView()->renderObjectTemplate($entryType->titleFormat, $this);
             if ($title !== '') {
                 $this->title = $title;
             }
             Craft::$app->language = $language;
+            Craft::$app->set('locale', $locale);
+            Craft::$app->set('formattingLocale', $formattingLocale);
         }
     }
 

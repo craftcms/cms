@@ -93,6 +93,8 @@ Craft.BaseElementIndex = Garnish.Base.extend(
     activeViewMenu: null,
     filterHuds: null,
 
+    _activeElement: null,
+
     get viewMode() {
       if (this._viewMode === 'structure' && !this.canSortByStructure()) {
         return 'table';
@@ -150,7 +152,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       this.$statusMenuContainer = this.$statusMenuBtn.parent();
       this.$siteMenuBtn = this.$container.find('.sitemenubtn:first');
 
-      this.$searchContainer = this.$toolbar.find('.search:first');
+      this.$searchContainer = this.$toolbar.find('.search-container:first');
       this.$search = this.$searchContainer.children('input:first');
       this.$filterBtn = this.$searchContainer.children('.filter-btn:first');
       this.$clearSearchBtn = this.$searchContainer.children('.clear-btn:first');
@@ -291,6 +293,11 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         }
       });
 
+      // Auto-focus the Search box
+      if (!Garnish.isMobileBrowser(true)) {
+        this.$search.trigger('focus');
+      }
+
       // View menus
       this.viewMenus = {};
 
@@ -301,7 +308,8 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       // Set the default status
       // ---------------------------------------------------------------------
 
-      const queryParams = Craft.getQueryParams();
+      const queryParams =
+        this.settings.context === 'index' ? Craft.getQueryParams() : {};
 
       if (queryParams.status) {
         let selector;
@@ -385,7 +393,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
     },
 
     handleResize: function () {
-      if (this.sourcePath.length) {
+      if (this.sourcePath.length && this.settings.showSourcePath) {
         this._updateSourcePathVisibility();
       }
     },
@@ -913,7 +921,10 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       return $ul;
     },
 
-    onSourcePathChange: function () {},
+    onSourcePathChange: function () {
+      this.settings.onSourcePathChange();
+      this.trigger('sourcePathChange');
+    },
 
     selectSourcePathStep: function (num) {
       this.sourcePath = this.sourcePath.slice(0, num + 1);
@@ -1187,6 +1198,13 @@ Craft.BaseElementIndex = Garnish.Base.extend(
     },
 
     /**
+     * Returns any additional settings that should be passed to the view instance.
+     */
+    getViewSettings: function () {
+      return {};
+    },
+
+    /**
      * Returns the data that should be passed to the elementIndex/getElements controller action
      * when loading elements.
      */
@@ -1347,7 +1365,9 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         this.searchText !==
         (this.searchText = this.searching ? this.$search.val() : null)
       ) {
-        Craft.setQueryParam('search', this.$search.val());
+        if (this.settings.context === 'index') {
+          Craft.setQueryParam('search', this.$search.val());
+        }
         this.updateElements();
       }
     },
@@ -1626,8 +1646,10 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         this.activeViewMenu.updateSortField();
       }
 
-      // Update the query string
-      Craft.setQueryParam('sort', `${attr}-${dir}`);
+      if (this.settings.context === 'index') {
+        // Update the query string
+        Craft.setQueryParam('sort', `${attr}-${dir}`);
+      }
     },
 
     /**
@@ -1744,7 +1766,9 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         // Clear the search value without causing it to update elements
         this.searchText = null;
         this.$search.val('');
-        Craft.setQueryParam('search', null);
+        if (this.settings.context === 'index') {
+          Craft.setQueryParam('search', null);
+        }
         this.stopSearching();
       }
 
@@ -1783,13 +1807,9 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       if (this.sourceViewModes.length > 1) {
         this.$viewModeBtnContainer = $(
           '<section class="btngroup btngroup--exclusive"/>'
-        ).attr('aria-label', Craft.t('app', 'View'));
-
-        if (this.activeViewMenu) {
-          this.$viewModeBtnContainer.insertBefore(this.activeViewMenu.$trigger);
-        } else {
-          this.$viewModeBtnContainer.appendTo(this.$toolbar);
-        }
+        )
+          .attr('aria-label', Craft.t('app', 'View'))
+          .insertAfter(this.$searchContainer);
 
         for (var i = 0; i < this.sourceViewModes.length; i++) {
           let sourceViewMode = this.sourceViewModes[i];
@@ -2212,17 +2232,62 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       this.$elements.addClass('busy');
       this.$updateSpinner.appendTo(this.$elements);
       this.isIndexBusy = true;
+
+      // Blur the active element, if it's within the element listing pane
+      if (
+        document.activeElement &&
+        this.$elements[0].contains(document.activeElement)
+      ) {
+        this._activeElement = document.activeElement;
+        document.activeElement.blur();
+      }
+
+      let elementsHeight = this.$elements.height();
+      let windowHeight = window.innerHeight;
+      let scrollTop = $(document).scrollTop();
+
+      if (this.settings.context == 'modal') {
+        windowHeight = this.$elements.parents('.modal').height();
+        scrollTop = this.$elements.scrollParent().scrollTop();
+      }
+
+      if (elementsHeight > windowHeight) {
+        let positionTop = Math.floor(scrollTop + windowHeight / 2) - 100;
+        positionTop = Math.floor((positionTop / elementsHeight) * 100);
+
+        document.documentElement.style.setProperty(
+          '--elements-busy-top-position',
+          positionTop + '%'
+        );
+      }
     },
 
     setIndexAvailable: function () {
       this.$elements.removeClass('busy');
       this.$updateSpinner.remove();
       this.isIndexBusy = false;
+
+      // Refocus the previously-focused element
+      if (this._activeElement) {
+        if (
+          !document.activeElement ||
+          document.activeElement === document.body
+        ) {
+          if (document.body.contains(this._activeElement)) {
+            this._activeElement.focus();
+          } else if (this._activeElement.id) {
+            $(`#${this._activeElement.id}`).focus();
+          }
+        }
+        this._activeElement = null;
+      }
     },
 
     createCustomizeSourcesModal: function () {
       // Recreate it each time
       var modal = new Craft.CustomizeSourcesModal(this, {
+        hideOnEsc: false,
+        hideOnShadeClick: false,
         onHide: function () {
           modal.destroy();
         },
@@ -2359,7 +2424,10 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         this.activeViewMenu.updateSortField();
       }
 
-      Craft.setQueryParam('status', queryParam);
+      if (this.settings.context === 'index') {
+        Craft.setQueryParam('status', queryParam);
+      }
+
       this.updateElements();
     },
 
@@ -2549,9 +2617,6 @@ Craft.BaseElementIndex = Garnish.Base.extend(
             null;
       }
 
-      // Capture the focused element, in case it's about to get removed from the DOM
-      const activeElement = document.activeElement;
-
       // Update the count text
       // -------------------------------------------------------------
 
@@ -2728,31 +2793,25 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       // -------------------------------------------------------------
 
       // Should we make the view selectable?
-      var selectable = this.actions || this.settings.selectable;
+      const selectable = this.actions || this.settings.selectable;
+      const settings = Object.assign(
+        {
+          context: this.settings.context,
+          batchSize:
+            this.settings.context !== 'index' || this.viewMode === 'structure'
+              ? this.settings.batchSize
+              : null,
+          params: params,
+          selectable: selectable,
+          multiSelect: this.actions || this.settings.multiSelect,
+          canSelectElement: this.settings.canSelectElement,
+          checkboxMode: !!this.actions,
+          onSelectionChange: this._handleSelectionChange.bind(this),
+        },
+        this.getViewSettings()
+      );
 
-      this.view = this.createView(this.getSelectedViewMode(), {
-        context: this.settings.context,
-        batchSize:
-          this.settings.context !== 'index' || this.viewMode === 'structure'
-            ? this.settings.batchSize
-            : null,
-        params: params,
-        selectable: selectable,
-        multiSelect: this.actions || this.settings.multiSelect,
-        checkboxMode: !!this.actions,
-        onSelectionChange: this._handleSelectionChange.bind(this),
-      });
-
-      // Refocus the previously-focused element
-      // -------------------------------------------------------------
-
-      if (
-        activeElement &&
-        activeElement.id &&
-        !document.body.contains(activeElement)
-      ) {
-        $(`#${activeElement.id}`).focus();
-      }
+      this.view = this.createView(this.getSelectedViewMode(), settings);
 
       // Auto-select elements
       // -------------------------------------------------------------
@@ -2843,6 +2902,8 @@ Craft.BaseElementIndex = Garnish.Base.extend(
             .data('action', action)
             .append(action.trigger);
 
+          $form.find('.btn').addClass('secondary');
+
           this.addListener($form, 'submit', '_handleActionTriggerSubmit');
           triggers.push($form);
         } else {
@@ -2861,7 +2922,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
         $btn = $('<button/>', {
           type: 'button',
-          class: 'btn menubtn',
+          class: 'btn secondary menubtn',
           'data-icon': 'settings',
           title: Craft.t('app', 'Actions'),
         }).appendTo($menuTrigger);
@@ -2976,6 +3037,8 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         })
         .appendTo($form);
 
+      const $exportSubmit = new Garnish.MultiFunctionBtn($submitBtn);
+
       var hud = new Garnish.HUD(this.$exportBtn, $form);
 
       hud.on('hide', () => {
@@ -2992,7 +3055,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         }
 
         submitting = true;
-        $submitBtn.addClass('loading');
+        $exportSubmit.busyEvent();
 
         var params = this.getViewParams();
         delete params.criteria.offset;
@@ -3027,7 +3090,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
           })
           .finally(() => {
             submitting = false;
-            $submitBtn.removeClass('loading');
+            $exportSubmit.successEvent();
           });
       });
     },
@@ -3114,6 +3177,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       disabledElementIds: [],
       selectable: false,
       multiSelect: false,
+      canSelectElement: null,
       buttonContainer: null,
       hideSidebar: false,
       toolbarSelector: '.toolbar:first',
@@ -3135,6 +3199,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       onSelectSite: $.noop,
       onUpdateElements: $.noop,
       onSelectionChange: $.noop,
+      onSourcePathChange: $.noop,
       onEnableElements: $.noop,
       onDisableElements: $.noop,
       onAfterAction: $.noop,
@@ -3648,6 +3713,7 @@ const FilterHud = Garnish.HUD.extend({
 
         this.$hud.find('.condition-container').on('htmx:load', () => {
           this.setReady();
+          this.updateSizeAndPosition(true);
         });
         this.setFocus();
       })
@@ -3692,14 +3758,24 @@ const FilterHud = Garnish.HUD.extend({
   },
 
   updateSizeAndPositionInternal: function () {
-    // const searchOffset = this.elementIndex.$searchContainer.offset();
     const searchOffset =
       this.elementIndex.$searchContainer[0].getBoundingClientRect();
+
+    // Ensure HUD is scrollable if content falls off-screen
+    const windowHeight = Garnish.$win.height();
+    let hudHeight;
+    const availableSpace = windowHeight - searchOffset.bottom;
+
+    if (this.$body.height() > availableSpace) {
+      hudHeight = windowHeight - searchOffset.bottom - 10;
+    }
 
     this.$hud.css({
       width: this.elementIndex.$searchContainer.outerWidth() - 2,
       top: searchOffset.top + this.elementIndex.$searchContainer.outerHeight(),
       left: searchOffset.left + 1,
+      height: hudHeight ? `${hudHeight}px` : 'unset',
+      overflowY: hudHeight ? 'scroll' : 'unset',
     });
   },
 

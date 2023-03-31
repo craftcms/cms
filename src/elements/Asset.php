@@ -688,11 +688,17 @@ class Asset extends Element
             }
         }
 
-        if (!self::isFolderIndex()) {
-            $assets = array_merge($assets, $elementQuery->all());
+        // if it's a 'foldersOnly' request, or we have enough folders to hit the query limit,
+        // return the folders directly
+        if (
+            self::isFolderIndex() ||
+            count($assets) === (int)$elementQuery->limit
+        ) {
+            return $assets;
         }
 
-        return $assets;
+        // otherwise merge in the resulting assets
+        return array_merge($assets, $elementQuery->all());
     }
 
     /**
@@ -1916,9 +1922,10 @@ JS;
             return $url;
         }
 
-        if (!$volume->getFs()->hasUrls) {
-            return null;
-        }
+        // todo: uncomment for v5. Currently Imager X is relying on a relative URL being returned
+        //if (!$volume->getFs()->hasUrls) {
+        //    return null;
+        //}
 
         return Html::encodeSpaces(Assets::generateUrl($volume, $this));
     }
@@ -2226,7 +2233,7 @@ JS;
      */
     public function getCopyOfFile(): string
     {
-        $tempFilename = uniqid(pathinfo($this->_filename, PATHINFO_FILENAME), true) . '.' . $this->getExtension();
+        $tempFilename = FileHelper::uniqueName($this->_filename);
         $tempPath = Craft::$app->getPath()->getTempPath() . DIRECTORY_SEPARATOR . $tempFilename;
         Assets::downloadFile($this->getVolume(), $this->getPath(), $tempPath);
 
@@ -2242,7 +2249,7 @@ JS;
      */
     public function getStream()
     {
-        return $this->_volume->getFileStream($this->getPath());
+        return $this->getVolume()->getFileStream($this->getPath());
     }
 
     /**
@@ -2851,7 +2858,7 @@ JS;
     public function afterDelete(): void
     {
         if (!$this->keepFileOnDelete) {
-            $this->_volume->deleteFile($this->getPath());
+            $this->getVolume()->deleteFile($this->getPath());
         }
 
         Craft::$app->getImageTransforms()->deleteAllTransformData($this);
@@ -2877,6 +2884,7 @@ JS;
                 'data' => [
                     'is-folder' => true,
                     'folder-id' => $this->folderId,
+                    'folder-name' => $this->title,
                     'source-path' => Json::encode($this->sourcePath),
                     'has-children' => Craft::$app->getAssets()->foldersExist(['parentId' => $this->folderId]),
                 ],
@@ -2886,8 +2894,8 @@ JS;
             $userSession = Craft::$app->getUser();
 
             if (
-                $userSession->checkPermission("editPeerFilesInVolume:$volume->uid") &&
-                $userSession->checkPermission("deletePeerFilesInVolume:$volume->uid")
+                $userSession->checkPermission("savePeerAssets:$volume->uid") &&
+                $userSession->checkPermission("deletePeerAssets:$volume->uid")
             ) {
                 $attributes['data']['movable'] = true;
             }

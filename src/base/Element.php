@@ -1591,7 +1591,7 @@ abstract class Element extends Component implements ElementInterface
         return [
             'elementType' => static::class,
             'map' => $map,
-            'criteria' => ['revisions' => true],
+            'criteria' => ['revisions' => true, 'status' => null],
         ];
     }
 
@@ -2119,7 +2119,7 @@ abstract class Element extends Component implements ElementInterface
         // If this is a field, make sure the value has been normalized before returning the CustomFieldBehavior value
         if ($this->fieldByHandle($name) !== null) {
             $value = $this->getFieldValue($name);
-            if (is_object($value) && (!class_exists(UnitEnum::class) || !$value instanceof UnitEnum)) {
+            if (is_object($value) && (!interface_exists(UnitEnum::class) || !$value instanceof UnitEnum)) {
                 $value = clone $value;
             }
             return $value;
@@ -4636,7 +4636,8 @@ abstract class Element extends Component implements ElementInterface
 
         $metaFieldsHtml = $this->metaFieldsHtml($static);
         if ($metaFieldsHtml !== '') {
-            $components[] = Html::tag('div', $metaFieldsHtml, ['class' => 'meta']);
+            $components[] = Html::tag('div', $metaFieldsHtml, ['class' => 'meta']) .
+                Html::tag('h2', Craft::t('app', 'Metadata'), ['class' => 'visually-hidden']);
         }
 
         if (!$static && static::hasStatuses()) {

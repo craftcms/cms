@@ -441,7 +441,11 @@ class AssetIndexer extends Component
                 ->leftJoin(['e' => Table::ELEMENTS], '[[e.id]] = [[a.id]]')
                 ->where(['a.volumeId' => $volumeId])
                 ->andWhere(['like', 'f.path', "$path%", false])
-                ->andWhere(['e.dateDeleted' => null])
+                ->andWhere([
+                    'or',
+                    ['e.dateDeleted' => null],
+                    ['a.keptFile' => 1],
+                ])
                 ->count();
 
             if ($hasAssets == 0) {

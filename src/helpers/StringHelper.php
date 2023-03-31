@@ -10,6 +10,7 @@ namespace craft\helpers;
 use Craft;
 use HTMLPurifier_Config;
 use IteratorAggregate;
+use LitEmoji\LitEmoji;
 use Normalizer;
 use Stringy\Stringy as BaseStringy;
 use voku\helper\ASCII;
@@ -1943,5 +1944,38 @@ class StringHelper extends \yii\helpers\StringHelper
         }
 
         return $combined;
+    }
+
+    /**
+     * Converts emoji to shortcodes.
+     *
+     * @param string $str
+     * @return string
+     * @since 4.4.3
+     */
+    public static function emojiToShortcodes(string $str): string
+    {
+        // Add delimiters around all 4-byte chars
+        $dl = '__MB4_DL__';
+        $dr = '__MB4_DR__';
+        $str = static::replaceMb4($str, fn($char) => sprintf('%s%s%s', $dl, $char, $dr));
+
+        // Strip out consecutive delimiters
+        $str = str_replace(sprintf('%s%s', $dr, $dl), '', $str);
+
+        // Replace all 4-byte sequences individually
+        return preg_replace_callback("/$dl(.+?)$dr/", fn($m) => LitEmoji::unicodeToShortcode($m[1]), $str);
+    }
+
+    /**
+     * Converts shortcodes to emoji.
+     *
+     * @param string $str
+     * @return string
+     * @since 4.4.3
+     */
+    public static function shortcodesToEmoji(string $str): string
+    {
+        return LitEmoji::shortcodeToUnicode($str);
     }
 }

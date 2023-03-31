@@ -389,32 +389,36 @@ class Tags extends Component
             $now = Db::prepareDateForDb(new DateTime());
             $db = Craft::$app->getDb();
 
+            $conditionSql = <<<SQL
+[[tags.groupId]] = $tagGroup->id AND
+[[tags.id]] = [[elements.id]] AND
+[[elements.canonicalId]] IS NULL AND
+[[elements.revisionId]] IS NULL AND
+[[elements.dateDeleted]] IS NULL
+SQL;
+
             if ($db->getIsMysql()) {
-                $sql = <<<SQL
+                $db->createCommand(<<<SQL
 UPDATE $elementsTable [[elements]], $tagsTable [[tags]] 
 SET [[elements.dateDeleted]] = '$now',
   [[tags.deletedWithGroup]] = 1
-WHERE [[tags.groupId]] = $tagGroup->id AND
-  [[tags.id]] = [[elements.id]] AND
-  [[elements.canonicalId]] IS NULL AND
-  [[elements.revisionId]] IS NULL AND
-  [[elements.dateDeleted]] IS NULL
-SQL;
+WHERE $conditionSql
+SQL)->execute();
             } else {
-                $sql = <<<SQL
-UPDATE $elementsTable
-SET [[elements.dateDeleted]] = '$now',
-  [[tags.deletedWithGroup]] = TRUE
-FROM $tagsTable
-WHERE [[tags.groupId]] = $tagGroup->id AND
-  [[tags.id]] = [[elements.id]] AND
-  [[elements.canonicalId]] IS NULL AND
-  [[elements.revisionId]] IS NULL AND
-  [[elements.dateDeleted]] IS NULL
-SQL;
+                // Not possible to update two tables simultaneously with Postgres
+                $db->createCommand(<<<SQL
+UPDATE $tagsTable [[tags]]
+SET [[deletedWithGroup]] = TRUE
+FROM $elementsTable [[elements]]
+WHERE $conditionSql
+SQL)->execute();
+                $db->createCommand(<<<SQL
+UPDATE $elementsTable [[elements]]
+SET [[dateDeleted]] = '$now'
+FROM $tagsTable [[tags]]
+WHERE $conditionSql
+SQL)->execute();
             }
-
-            $db->createCommand($sql)->execute();
 
             // Delete the field layout
             if ($tagGroupRecord->fieldLayoutId) {
