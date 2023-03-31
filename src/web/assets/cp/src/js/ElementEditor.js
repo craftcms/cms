@@ -1494,7 +1494,12 @@ Craft.ElementEditor = Garnish.Base.extend(
                 `[data-id="${newSelectedTabId}"]`
               );
               if ($newSelectedTab.length) {
+                // if the new tab is visible - switch to it
                 tabManager.selectTab($newSelectedTab);
+              } else {
+                // if the new tab is not visible (e.g. hidden by a condition)
+                // switch to the first tab
+                tabManager.selectTab(tabManager.$tabs.first());
               }
             }
 
