@@ -21,3 +21,6 @@
 ### System
 - All generated URL param characters are now properly encoded. ([#12796](https://github.com/craftcms/cms/issues/12796))
 - `migrate` commands besides `migrate/create` no longer create the migration directory if it doesn’t exist yet. ([#12732](https://github.com/craftcms/cms/pull/12732))
+- Dropdown and Radio Buttons fields now use smart `content` table column lengths, based on their longest option value’s length. ([#13025](https://github.com/craftcms/cms/pull/13025), [#12954](https://github.com/craftcms/cms/issues/12954))
+- When `content` table columns are resized, if any existing values are too long, all column data is now backed up into a new table, and the overflowing values are set to `null`. ([#13025](https://github.com/craftcms/cms/pull/13025))
+- When `content` table columns are renamed, if an existing column with the same name already exists, the original column data is now backed up into a new table and then deleted from the `content` table. ([#13025](https://github.com/craftcms/cms/pull/13025))
