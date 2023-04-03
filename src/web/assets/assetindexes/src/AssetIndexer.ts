@@ -678,13 +678,15 @@ class AssetIndexingSession {
         this.getSessionId() +
         '">'
     );
-    $tr.append(
-      '<td><ul><li>' +
-        Object.values(this.indexingSessionData.indexedVolumes).join(
-          '</li><li>'
-        ) +
-        '</li></ul></td>'
-    );
+    const $td = $('<td/>').appendTo($tr);
+    const $ul = $('<ul/>').appendTo($td);
+    for (const volume of Object.values(
+      this.indexingSessionData.indexedVolumes
+    )) {
+      $('<li/>', {
+        text: volume,
+      }).appendTo($ul);
+    }
     $tr.append('<td>' + this.indexingSessionData.dateCreated + '</td>');
 
     const $progressCell = $(

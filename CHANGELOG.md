@@ -18,6 +18,7 @@
 - Fixed a bug where automatically-added Matrix blocks (per the field’s Min Blocks setting) were getting discarded if no changes were made to them. ([#12973](https://github.com/craftcms/cms/issues/12973))
 - Fixed an error that could occur when installing Craft with an existing project config, if any image transforms were defined that didn’t specify the `upscale` property.
 - Fixed a bug where nested folders in asset search results weren’t showing their relative path.
+- Fixed an XSS vulnerability.
 
 ## 4.4.5 - 2023-03-21
 
