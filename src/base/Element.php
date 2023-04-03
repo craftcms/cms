@@ -7,6 +7,7 @@
 
 namespace craft\base;
 
+use ArrayIterator;
 use Craft;
 use craft\behaviors\CustomFieldBehavior;
 use craft\behaviors\DraftBehavior;
@@ -75,6 +76,7 @@ use craft\web\UploadedFile;
 use DateTime;
 use Illuminate\Support\Collection;
 use Throwable;
+use Traversable;
 use Twig\Markup;
 use UnitEnum;
 use yii\base\ErrorHandler;
@@ -2286,6 +2288,26 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
+    public function getIterator(): Traversable
+    {
+        $attributes = $this->getAttributes();
+
+        // Include custom fields
+        if (static::hasContent() && ($fieldLayout = $this->getFieldLayout()) !== null) {
+            foreach ($fieldLayout->getCustomFieldElements() as $layoutElement) {
+                $field = $layoutElement->getField();
+                if (!isset($attributes[$field->handle])) {
+                    $attributes[$field->handle] = $this->getFieldValue($field->handle);
+                }
+            }
+        }
+
+        return new ArrayIterator($attributes);
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function getAttributeLabel($attribute): string
     {
         // Is this the "field:handle" syntax?
@@ -3903,7 +3925,7 @@ abstract class Element extends Component implements ElementInterface
      */
     public function setDirtyAttributes(array $names, bool $merge = true): void
     {
-        if ($merge) {
+        if ($merge && !empty($this->_dirtyAttributes)) {
             $this->_dirtyAttributes = array_merge($this->_dirtyAttributes, array_flip($names));
         } else {
             $this->_dirtyAttributes = array_flip($names);
@@ -4012,6 +4034,27 @@ abstract class Element extends Component implements ElementInterface
         // If the field value was previously eager-loaded, undo that
         unset($this->_eagerLoadedElements[$fieldHandle]);
         unset($this->_eagerLoadedElementCounts[$fieldHandle]);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function setFieldValueFromRequest(string $fieldHandle, mixed $value): void
+    {
+        $field = $this->fieldByHandle($fieldHandle);
+
+        if (!$field) {
+            throw new InvalidFieldException($fieldHandle);
+        }
+
+        // Normalize it now in case the system language changes later
+        // (we'll do this with the value directly rather than using setFieldValue() + normalizeFieldValue(),
+        // because it's slightly more efficient, and to workaround an infinite loop bug caused by Matrix
+        // needing to render an object template on the owner element during normalization, which would in turn
+        // cause the Matrix field value to be (re-)normalized based on the POST data, and on and on...)
+        $value = $field->normalizeValueFromRequest($value, $this);
+        $this->setFieldValue($field->handle, $value);
+        $this->_normalizedFieldValues[$field->handle] = true;
     }
 
     /**
@@ -4127,6 +4170,20 @@ abstract class Element extends Component implements ElementInterface
     }
 
     /**
+     * @inheritdoc
+     */
+    public function setDirtyFields(array $fieldHandles, bool $merge = true): void
+    {
+        if ($merge && !empty($this->_dirtyFields)) {
+            $this->_dirtyFields = array_merge($this->_dirtyFields, array_flip($fieldHandles));
+        } else {
+            $this->_dirtyFields = array_flip($fieldHandles);
+        }
+
+        $this->_allDirty = false;
+    }
+
+    /**
      * Returns whether all fields and attributes should be considered dirty.
      *
      * @return bool
@@ -4194,14 +4251,7 @@ abstract class Element extends Component implements ElementInterface
                     continue;
                 }
 
-                // Normalize it now in case the system language changes later
-                // (we'll do this with the value directly rather than using setFieldValue() + normalizeFieldValue(),
-                // because it's slightly more efficient and to workaround an infinite loop bug caused by Matrix
-                // needing to render an object template on the owner element during normalization, which would in turn
-                // cause the Matrix field value to be (re-)normalized based on the POST data, and on and on...)
-                $value = $field->normalizeValue($value, $this);
-                $this->setFieldValue($field->handle, $value);
-                $this->_normalizedFieldValues[$field->handle] = true;
+                $this->setFieldValueFromRequest($field->handle, $value);
             }
         } while ($processedAnyFields);
     }
