@@ -9,12 +9,15 @@
 - Fixed a bug where asset pagination was broken when there was more than 100 subfolders. ([#12969](https://github.com/craftcms/cms/issues/12969))
 - Fixed a bug where entry index pages’ “Revision Notes” and “Last Edited By” columns weren’t getting populated for disabled entries. ([#12981](https://github.com/craftcms/cms/issues/12981))
 - Fixed a bug where assets were getting relocated to the root volume folder when renamed. ([#12995](https://github.com/craftcms/cms/issues/12995))
+- Fixed a bug where it wasn’t possible to preview entries on another domain when the system was offline. ([#12979](https://github.com/craftcms/cms/issues/12979))
 - Fixed a bug where `craft\helpers\FileHelper::absolutePath()` wasn’t treating Windows file paths beginning drive letters as absolute. ([craftcms/generator#16](https://github.com/craftcms/generator/issues/16))
 - Fixed a bug where it wasn’t possible to sort Categories fields with “Maintain hierarchy” disabled. ([#10560](https://github.com/craftcms/cms/discussions/10560))
 - Fixed a bug where selectize inputs didn’t have a minimum width. ([#12950](https://github.com/craftcms/cms/issues/12950))
 - Fixed a bug where the wrong tab would appear to be initially selected after an autosave, if the selected tab had changed during the autosave. ([#12960](https://github.com/craftcms/cms/issues/12960))
 - Fixed a bug where it wasn’t possible to add a Dropdown field without a blank option to a global set. ([#12965](https://github.com/craftcms/cms/issues/12965))
 - Fixed a bug where automatically-added Matrix blocks (per the field’s Min Blocks setting) were getting discarded if no changes were made to them. ([#12973](https://github.com/craftcms/cms/issues/12973))
+- Fixed an error that could occur when installing Craft with an existing project config, if any image transforms were defined that didn’t specify the `upscale` property.
+- Fixed a bug where nested folders in asset search results weren’t showing their relative path.
 
 ## 4.4.5 - 2023-03-21
 

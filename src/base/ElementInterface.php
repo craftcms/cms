@@ -1383,6 +1383,16 @@ interface ElementInterface extends ComponentInterface
     public function getDirtyFields(): array;
 
     /**
+     * Sets the list of dirty field handles.
+     *
+     * @param string[] $fieldHandles
+     * @param bool $merge Whether these fields should be merged with existing dirty fields
+     * @see getDirtyFields()
+     * @since 4.5.0
+     */
+    public function setDirtyFields(array $fieldHandles, bool $merge = true): void;
+
+    /**
      * Marks all fields and attributes as dirty.
      *
      * @since 3.4.10

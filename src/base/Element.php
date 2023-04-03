@@ -7,6 +7,7 @@
 
 namespace craft\base;
 
+use ArrayIterator;
 use Craft;
 use craft\behaviors\CustomFieldBehavior;
 use craft\behaviors\DraftBehavior;
@@ -75,6 +76,7 @@ use craft\web\UploadedFile;
 use DateTime;
 use Illuminate\Support\Collection;
 use Throwable;
+use Traversable;
 use Twig\Markup;
 use UnitEnum;
 use yii\base\ErrorHandler;
@@ -2286,6 +2288,26 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
+    public function getIterator(): Traversable
+    {
+        $attributes = $this->getAttributes();
+
+        // Include custom fields
+        if (static::hasContent() && ($fieldLayout = $this->getFieldLayout()) !== null) {
+            foreach ($fieldLayout->getCustomFieldElements() as $layoutElement) {
+                $field = $layoutElement->getField();
+                if (!isset($attributes[$field->handle])) {
+                    $attributes[$field->handle] = $this->getFieldValue($field->handle);
+                }
+            }
+        }
+
+        return new ArrayIterator($attributes);
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function getAttributeLabel($attribute): string
     {
         // Is this the "field:handle" syntax?
@@ -3903,7 +3925,7 @@ abstract class Element extends Component implements ElementInterface
      */
     public function setDirtyAttributes(array $names, bool $merge = true): void
     {
-        if ($merge) {
+        if ($merge && !empty($this->_dirtyAttributes)) {
             $this->_dirtyAttributes = array_merge($this->_dirtyAttributes, array_flip($names));
         } else {
             $this->_dirtyAttributes = array_flip($names);
@@ -4124,6 +4146,20 @@ abstract class Element extends Component implements ElementInterface
         }
 
         return array_keys($this->_dirtyFields);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function setDirtyFields(array $fieldHandles, bool $merge = true): void
+    {
+        if ($merge && !empty($this->_dirtyFields)) {
+            $this->_dirtyFields = array_merge($this->_dirtyFields, array_flip($fieldHandles));
+        } else {
+            $this->_dirtyFields = array_flip($fieldHandles);
+        }
+
+        $this->_allDirty = false;
     }
 
     /**
