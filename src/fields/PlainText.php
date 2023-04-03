@@ -197,8 +197,24 @@ class PlainText extends Field implements PreviewableFieldInterface, SortableFiel
      */
     public function normalizeValue(mixed $value, ?ElementInterface $element = null): mixed
     {
+        return $this->_normalizeValueInternal($value, $element, false);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function normalizeValueFromRequest(mixed $value, ?ElementInterface $element = null): mixed
+    {
+        return $this->_normalizeValueInternal($value, $element, true);
+    }
+
+    private function _normalizeValueInternal(mixed $value, ?ElementInterface $element, bool $fromRequest): mixed
+    {
         if ($value !== null) {
-            $value = StringHelper::shortcodesToEmoji($value);
+            if (!$fromRequest) {
+                $value = StringHelper::unescapeShortcodes(StringHelper::shortcodesToEmoji($value));
+            }
+
             $value = trim(preg_replace('/\R/u', "\n", $value));
         }
 
@@ -214,6 +230,7 @@ class PlainText extends Field implements PreviewableFieldInterface, SortableFiel
             'name' => $this->handle,
             'value' => $value,
             'field' => $this,
+            'placeholder' => $this->placeholder !== null ? Craft::t('site', StringHelper::unescapeShortcodes($this->placeholder)) : null,
             'orientation' => $this->getOrientation($element),
         ]);
     }
@@ -238,7 +255,7 @@ class PlainText extends Field implements PreviewableFieldInterface, SortableFiel
     public function serializeValue(mixed $value, ?ElementInterface $element = null): mixed
     {
         if ($value !== null) {
-            $value = StringHelper::emojiToShortcodes($value);
+            $value = StringHelper::emojiToShortcodes(StringHelper::escapeShortcodes($value));
         }
         return $value;
     }
