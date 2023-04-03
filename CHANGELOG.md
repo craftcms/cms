@@ -16,6 +16,7 @@
 - Fixed a bug where the wrong tab would appear to be initially selected after an autosave, if the selected tab had changed during the autosave. ([#12960](https://github.com/craftcms/cms/issues/12960))
 - Fixed a bug where it wasn’t possible to add a Dropdown field without a blank option to a global set. ([#12965](https://github.com/craftcms/cms/issues/12965))
 - Fixed a bug where automatically-added Matrix blocks (per the field’s Min Blocks setting) were getting discarded if no changes were made to them. ([#12973](https://github.com/craftcms/cms/issues/12973))
+- Fixed an error that could occur when installing Craft with an existing project config, if any image transforms were defined that didn’t specify the `upscale` property.
 
 ## 4.4.5 - 2023-03-21
 
