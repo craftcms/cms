@@ -1329,6 +1329,16 @@ interface ElementInterface extends ComponentInterface
     public function setFieldValue(string $fieldHandle, mixed $value): void;
 
     /**
+     * Sets the value for a given field. The value should have originated from post data.
+     *
+     * @param string $fieldHandle The field handle whose value needs to be set
+     * @param mixed $value The value to set on the field
+     * @throws InvalidFieldException if `$fieldHandle` is an invalid field handle
+     * @since 4.5.0
+     */
+    public function setFieldValueFromRequest(string $fieldHandle, mixed $value): void;
+
+    /**
      * Returns the field handles that have been updated on the canonical element since the last time it was
      * merged into this element.
      *

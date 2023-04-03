@@ -4039,6 +4039,27 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
+    public function setFieldValueFromRequest(string $fieldHandle, mixed $value): void
+    {
+        $field = $this->fieldByHandle($fieldHandle);
+
+        if (!$field) {
+            throw new InvalidFieldException($fieldHandle);
+        }
+
+        // Normalize it now in case the system language changes later
+        // (we'll do this with the value directly rather than using setFieldValue() + normalizeFieldValue(),
+        // because it's slightly more efficient, and to workaround an infinite loop bug caused by Matrix
+        // needing to render an object template on the owner element during normalization, which would in turn
+        // cause the Matrix field value to be (re-)normalized based on the POST data, and on and on...)
+        $value = $field->normalizeValueFromRequest($value, $this);
+        $this->setFieldValue($field->handle, $value);
+        $this->_normalizedFieldValues[$field->handle] = true;
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function getOutdatedFields(): array
     {
         return array_keys($this->_outdatedFields());
@@ -4230,14 +4251,7 @@ abstract class Element extends Component implements ElementInterface
                     continue;
                 }
 
-                // Normalize it now in case the system language changes later
-                // (we'll do this with the value directly rather than using setFieldValue() + normalizeFieldValue(),
-                // because it's slightly more efficient and to workaround an infinite loop bug caused by Matrix
-                // needing to render an object template on the owner element during normalization, which would in turn
-                // cause the Matrix field value to be (re-)normalized based on the POST data, and on and on...)
-                $value = $field->normalizeValue($value, $this);
-                $this->setFieldValue($field->handle, $value);
-                $this->_normalizedFieldValues[$field->handle] = true;
+                $this->setFieldValueFromRequest($field->handle, $value);
             }
         } while ($processedAnyFields);
     }
