@@ -19,6 +19,15 @@ body {
   &.mfa {
     width: auto;
     max-width: 600px;
+
+    #login-logo {
+      max-width: 50%;
+      margin: 0 auto;
+    }
+
+    .qr-code svg {
+      margin: 0 auto;
+    }
   }
 }
 
