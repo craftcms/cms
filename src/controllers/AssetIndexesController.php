@@ -8,14 +8,12 @@
 namespace craft\controllers;
 
 use Craft;
-use craft\base\Event;
 use craft\elements\Asset;
 use craft\errors\AssetException;
-use craft\events\ListVolumesEvent;
-use craft\helpers\ArrayHelper;
 use craft\helpers\Json;
 use craft\i18n\Locale;
 use craft\models\AssetIndexingSession;
+use craft\models\Volume;
 use craft\utilities\AssetIndexes;
 use craft\web\Controller;
 use Throwable;
@@ -54,30 +52,20 @@ class AssetIndexesController extends Controller
     public function actionStartIndexing(): Response
     {
         $request = Craft::$app->getRequest();
-        $volumes = (array)$request->getRequiredBodyParam('volumes');
+        $volumeIds = (array)$request->getRequiredBodyParam('volumes');
         $cacheRemoteImages = (bool)$request->getBodyParam('cacheImages', false);
         $listEmptyFolders = (bool)$request->getBodyParam('listEmptyFolders', false);
 
-        if (empty($volumes)) {
+        // Typecast volume IDs and filter out any disallowed volumes
+        $volumeIds = array_map(fn($volumeId) => (int)$volumeId, $volumeIds);
+        $allowedVolumeIds = array_map(fn(Volume $volume) => $volume->id, AssetIndexes::volumes());
+        $volumeIds = array_intersect($volumeIds, $allowedVolumeIds);
+
+        if (empty($volumeIds)) {
             return $this->asFailure(Craft::t('app', 'No volumes specified.'));
         }
 
-        // Fire a 'listVolumes' event
-        $event = new ListVolumesEvent([
-            'volumes' => Craft::$app->getVolumes()->getAllVolumes(),
-        ]);
-        Event::trigger(AssetIndexes::class, AssetIndexes::EVENT_LIST_VOLUMES, $event);
-
-        // list of volumes passed from the request, cross-referenced against the list of volumes "allowed" via the event
-        $allowedVolumes = array_filter($volumes, function($volumeId) use ($event) {
-            return in_array($volumeId, ArrayHelper::getColumn($event->volumes, 'id'));
-        });
-
-        if (count($volumes) !== count($allowedVolumes)) {
-            return $this->asFailure(Craft::t('app', 'Selected volumes don’t match the allowed list.'));
-        }
-
-        $indexingSession = Craft::$app->getAssetIndexer()->startIndexingSession($volumes, $cacheRemoteImages, $listEmptyFolders);
+        $indexingSession = Craft::$app->getAssetIndexer()->startIndexingSession($volumeIds, $cacheRemoteImages, $listEmptyFolders);
         $sessionData = $this->prepareSessionData($indexingSession);
 
         $data = ['session' => $sessionData];
