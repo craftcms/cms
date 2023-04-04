@@ -90,7 +90,7 @@ class Categories extends BaseRelationField
      */
     public function normalizeValue(mixed $value, ?ElementInterface $element = null): mixed
     {
-        if (is_array($value)) {
+        if (is_array($value) && $this->maintainHierarchy) {
             /** @var Category[] $categories */
             $categories = Category::find()
                 ->siteId($this->targetSiteId($element))
