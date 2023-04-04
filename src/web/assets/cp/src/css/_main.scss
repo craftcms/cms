@@ -85,6 +85,7 @@
   --inner-focus-ring: inset 0 0 0 1px hsl(var(--dark-focus-hsl)),
     inset 0 0 0 3px hsla(var(--dark-focus-hsl), 0.7);
   --touch-target-size: 24px; /* Minimum recommended touch target size */
+  --elements-busy-top-position: calc(50% - var(--size, 20px) / 2);
 }
 
 body,
@@ -1798,7 +1799,7 @@ ul.icons {
     position: absolute;
     width: var(--size, 20px);
     height: var(--size, 20px);
-    top: calc(50% - var(--size, 20px) / 2);
+    top: var(--elements-busy-top-position);
     left: calc(50% - var(--size, 20px) / 2);
   }
 }
@@ -4099,6 +4100,12 @@ ul.tree,
 
   .menubtn {
     margin: 0 var(--xl);
+
+    &.error {
+      span[data-icon] {
+        margin-right: 2px;
+      }
+    }
   }
 }
 
@@ -6709,6 +6716,7 @@ body .selectize-dropdown {
 
   &:not(.fullwidth) {
     max-width: 25em;
+    min-width: 10em;
   }
 }
 

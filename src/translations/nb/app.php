@@ -850,6 +850,7 @@ return [
     'Loading' => 'Laster',
     'Local Folder' => 'Lokal mappe',
     'Local copies of remote images, generated thumbnails' => 'Lokale kopier av eksterne bilder, genererte miniatyrbilder',
+    'Local volumes cannot be located within system directories.' => 'Local volumes cannot be located within system directories.',
     'Localizing relations' => 'Relasjoner mellom oversettelser',
     'Location' => 'Plassering',
     'Locations that should be available for previewing entries in this section.' => 'Plasseringer som bør være tilgjengelig for forhåndsvisning av oppføringer i denne seksjonen.',

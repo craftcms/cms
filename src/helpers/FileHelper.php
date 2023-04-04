@@ -117,7 +117,10 @@ class FileHelper extends \yii\helpers\FileHelper
         $to = static::normalizePath($to, $ds);
 
         // Already absolute?
-        if (str_starts_with($to, $ds)) {
+        if (
+            str_starts_with($to, $ds) ||
+            preg_match(sprintf('/^[A-Z]:%s/', preg_quote($ds, '/')), $to)
+        ) {
             return $to;
         }
 
@@ -249,9 +252,11 @@ class FileHelper extends \yii\helpers\FileHelper
         $filename = preg_replace("/\\x{00a0}/iu", ' ', $filename);
 
         // https://github.com/craftcms/cms/issues/12741
-        // Remove soft hyphens (00ad), no break (0083), zero width non-joiner (200c),
-        // zero width joiner (200d), invisible times (2062), invisible comma (2063) in the name
-        $filename = preg_replace('/\\x{00ad}|\\x{0083}|\\x{200c}|\\x{200d}|\\x{2062}|\\x{2063}/iu', '', $filename);
+        // Remove soft hyphens (00ad), no break (0083),
+        // zero width space (200b), zero width non-joiner (200c), zero width joiner (200d),
+        // invisible times (2062), invisible comma (2063), invisible plus (2064),
+        // zero width non-brak space (feff) in the name
+        $filename = preg_replace('/\\x{00ad}|\\x{0083}|\\x{200b}|\\x{200c}|\\x{200d}|\\x{2062}|\\x{2063}|\\x{2064}|\\x{feff}/iu', '', $filename);
 
         // Strip any characters not allowed.
         $filename = str_replace($disallowedChars, '', strip_tags($filename));
