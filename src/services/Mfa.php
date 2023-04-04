@@ -82,7 +82,7 @@ class Mfa extends Component
             $user = User::findOne(['id' => $userId]);
 
             if ($user === null) {
-                throw new Exception('Can’t find the user.'); //todo: what about user enumeration? or is it too far down?
+                throw new Exception(Craft::t('app', 'Something went wrong. Please start again.'));
             }
 
             return compact('user', 'duration');

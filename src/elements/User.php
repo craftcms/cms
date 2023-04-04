@@ -35,7 +35,6 @@ use craft\helpers\UrlHelper;
 use craft\i18n\Formatter;
 use craft\i18n\Locale;
 use craft\mfa\ConfigurableMfaInterface;
-use craft\mfa\type\GoogleAuthenticator;
 use craft\mfa\type\WebAuthn;
 use craft\models\FieldLayout;
 use craft\models\UserGroup;
@@ -54,6 +53,7 @@ use yii\base\ErrorHandler;
 use yii\base\Exception;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
+use yii\base\InvalidValueException;
 use yii\base\NotSupportedException;
 use yii\validators\InlineValidator;
 use yii\validators\Validator;
@@ -1969,8 +1969,13 @@ class User extends Element implements IdentityInterface
      */
     public function getDefaultMfaType(): BaseMfaType
     {
-        // todo: add an event to change this?
-        return new GoogleAuthenticator();
+        $allMfaTypes = Craft::$app->getMfa()->getAllMfaTypes();
+
+        if (empty($allMfaTypes)) {
+            throw new InvalidValueException('No registered MFA types.');
+        }
+
+        return new (array_keys($allMfaTypes)[0]);
     }
 
     /**

@@ -206,10 +206,10 @@ class GoogleAuthenticator extends ConfigurableMfaType
 
         if (empty($secret)) {
             try {
-                $secret = $google2fa->generateSecretKey(); //todo: change to (32)
+                $secret = $google2fa->generateSecretKey(32);
                 Craft::$app->getSession()->set(self::AUTHENTICATOR_SECRET_SESSION_KEY, $secret);
             } catch (\Exception $e) {
-                // todo: log in a new log file????
+                Craft::$app->getErrorHandler()->logException($e);
             }
         }
 
