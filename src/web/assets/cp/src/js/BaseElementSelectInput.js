@@ -340,7 +340,7 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
           })
           .catch(({response}) => {
             if (response && response.data && response.data.message) {
-              alert(response.data.message);
+              Craft.cp.displayError(response.data.message);
             } else {
               Craft.cp.displayError();
             }
