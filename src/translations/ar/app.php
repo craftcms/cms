@@ -850,6 +850,7 @@ return [
     'Loading' => 'جار التحميل',
     'Local Folder' => 'المجلد المحلي',
     'Local copies of remote images, generated thumbnails' => 'نسخ محلية من الصور عن بعد، والصور المصغرة التي تم إنشاؤها',
+    'Local volumes cannot be located within system directories.' => 'لا يمكن وضع وحدات التخزين المحلية داخل أدلة النظام.',
     'Localizing relations' => 'إضفاء الطابع اللغوي على العلاقات',
     'Location' => 'الموقع',
     'Locations that should be available for previewing entries in this section.' => 'المواقع التي يجب أن تكون متاحة لمعاينة الإدخالات في هذا القسم.',

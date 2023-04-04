@@ -1,11 +1,15 @@
 # Release Notes for Craft CMS 4
 
-## Unreleased
+## 4.4.6 - 2023-04-04
 
 - Content tab menus now reveal when a tab contains validation errors, and invalid tabs’ menu options get the same warning icon treatment as inline tabs do. ([#12971](https://github.com/craftcms/cms/issues/12971))
 - Selectize menus now expand upwards when there’s not ample space below them. ([#12976](https://github.com/craftcms/cms/issues/12976))
 - Element index bulk action spinners are now centered on the viewport. ([#12972](https://github.com/craftcms/cms/issues/12972))
 - All control panel errors are new presented via error notifications rather than browser alerts. ([#13024](https://github.com/craftcms/cms/issues/13024))
+- The `up` command now sets its default `--isolated` option value to `true`, and no longer creates a redundant mutex lock.
+- Added `craft\base\Element::EVENT_BEFORE_DEFINE_URL`. ([#13018](https://github.com/craftcms/cms/issues/13018))
+- Added `craft\utilities\AssetIndexes::volumes()`.
+- `craft\controllers\AssetIndexesController::actionStartIndexing()` now cross-references the selected volumes with those allowed by `craft\utilities\AssetIndexes::EVENT_LIST_VOLUMES` event handlers. ([#13039](https://github.com/craftcms/cms/pull/13039), [#12819](https://github.com/craftcms/cms/pull/12819))
 - Fixed a bug where Assets fields weren’t respecting their View Mode setting when viewing entry revisions. ([#12948](https://github.com/craftcms/cms/issues/12948))
 - Fixed a bug where asset pagination was broken when there was more than 100 subfolders. ([#12969](https://github.com/craftcms/cms/issues/12969))
 - Fixed a bug where entry index pages’ “Revision Notes” and “Last Edited By” columns weren’t getting populated for disabled entries. ([#12981](https://github.com/craftcms/cms/issues/12981))
@@ -13,6 +17,8 @@
 - Fixed a bug where it wasn’t possible to preview entries on another domain when the system was offline. ([#12979](https://github.com/craftcms/cms/issues/12979))
 - Fixed a bug where users were able to access volumes they didn’t have permission to view via Assets fields. ([#13006](https://github.com/craftcms/cms/issues/13006))
 - Fixed a bug where zero-width spaces, invisible plus signs, and byte order marks weren’t getting stripped from sanitized asset filenames. ([#13022](https://github.com/craftcms/cms/issues/13022))
+- Fixed a bug where the Plugin Store wasn’t accurately reporting installed plugins’ license statuses. ([#12986](https://github.com/craftcms/cms/issues/12986))
+- Fixed a bug where the Plugin Store wasn’t handling 403 API responses for cart operations properly, once a cart had been handed off to Craft Console and assigned to an organization. ([#12916](https://github.com/craftcms/cms/issues/12916))
 - Fixed a bug where `craft\helpers\FileHelper::absolutePath()` wasn’t treating Windows file paths beginning drive letters as absolute. ([craftcms/generator#16](https://github.com/craftcms/generator/issues/16))
 - Fixed a bug where it wasn’t possible to sort Categories fields with “Maintain hierarchy” disabled. ([#10560](https://github.com/craftcms/cms/discussions/10560))
 - Fixed a bug where selectize inputs didn’t have a minimum width. ([#12950](https://github.com/craftcms/cms/issues/12950))
@@ -21,6 +27,8 @@
 - Fixed a bug where automatically-added Matrix blocks (per the field’s Min Blocks setting) were getting discarded if no changes were made to them. ([#12973](https://github.com/craftcms/cms/issues/12973))
 - Fixed an error that could occur when installing Craft with an existing project config, if any image transforms were defined that didn’t specify the `upscale` property.
 - Fixed a bug where nested folders in asset search results weren’t showing their relative path.
+- Fixed a bug where admin tables’ default delete icon title text wasn’t getting translated. ([#13030](https://github.com/craftcms/cms/issues/13030))
+- Fixed a bug where it was possible to save a Local filesystem pointed at a system directory (e.g. the `templates/` or `vendor/` folders), which mitigates a potential RCE vulnerability.
 - Fixed XSS vulnerabilities.
 
 ## 4.4.5 - 2023-03-21

@@ -850,6 +850,7 @@ return [
     'Loading' => 'בטעינה',
     'Local Folder' => 'תיקייה מקומית',
     'Local copies of remote images, generated thumbnails' => 'עותקים מקומיים של תמונות מרוחקות, תמונות ממוזערות שנוצרו',
+    'Local volumes cannot be located within system directories.' => 'אמצעי אחסון מקומיים לא יכולים להימצא בתוך ספריות המערכת.',
     'Localizing relations' => 'לוקליזציה של קשרים',
     'Location' => 'מיקום',
     'Locations that should be available for previewing entries in this section.' => 'מיקומים שצריכים להיות זמינים לתצוגה מקדימה של רשומות בסקשן הזה.',

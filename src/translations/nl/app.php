@@ -850,6 +850,7 @@ return [
     'Loading' => 'Laden',
     'Local Folder' => 'Lokale Map',
     'Local copies of remote images, generated thumbnails' => 'Lokale kopieën van externe afbeeldingen, gegenereerde miniaturen',
+    'Local volumes cannot be located within system directories.' => 'Lokale volumes mogen zich niet in systeemmappen bevinden.',
     'Localizing relations' => 'Lokaliseren van relaties',
     'Location' => 'Locatie',
     'Locations that should be available for previewing entries in this section.' => 'Locaties die beschikbaar moeten zijn voor het bekijken van items in deze sectie.',

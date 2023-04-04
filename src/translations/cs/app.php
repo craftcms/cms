@@ -850,6 +850,7 @@ return [
     'Loading' => 'Nahrává se',
     'Local Folder' => 'Lokální adresář',
     'Local copies of remote images, generated thumbnails' => 'Lokální kopie vzdálených obrázků, generované miniatury',
+    'Local volumes cannot be located within system directories.' => 'Místní svazky nelze umístit do systémových adresářů.',
     'Localizing relations' => 'Lokalizuji vazby',
     'Location' => 'Lokace',
     'Locations that should be available for previewing entries in this section.' => 'Místa, která by měla být k dispozici pro náhled záznamů v této části.',
