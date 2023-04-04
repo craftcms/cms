@@ -187,7 +187,7 @@ export class AssetIndexer {
     this._currentConnectionCount--;
     this._updateCurrentIndexingSession();
 
-    alert(responseData.message);
+    Craft.cp.displayError(responseData.message);
 
     if (responseData.stop) {
       this.discardIndexingSession(responseData.stop);
