@@ -6,6 +6,7 @@
 - Selectize menus now expand upwards when there’s not ample space below them. ([#12976](https://github.com/craftcms/cms/issues/12976))
 - Element index bulk action spinners are now centered on the viewport. ([#12972](https://github.com/craftcms/cms/issues/12972))
 - All control panel errors are new presented via error notifications rather than browser alerts. ([#13024](https://github.com/craftcms/cms/issues/13024))
+- Added `craft\base\Element::EVENT_BEFORE_DEFINE_URL`. ([#13018](https://github.com/craftcms/cms/issues/13018))
 - Added `craft\utilities\AssetIndexes::volumes()`.
 - `craft\controllers\AssetIndexesController::actionStartIndexing()` now cross-references the selected volumes with those allowed by `craft\utilities\AssetIndexes::EVENT_LIST_VOLUMES` event handlers. ([#13039](https://github.com/craftcms/cms/pull/13039), [#12819](https://github.com/craftcms/cms/pull/12819))
 - Fixed a bug where Assets fields weren’t respecting their View Mode setting when viewing entry revisions. ([#12948](https://github.com/craftcms/cms/issues/12948))
