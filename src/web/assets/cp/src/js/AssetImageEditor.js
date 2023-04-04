@@ -111,6 +111,13 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
         text: Craft.t('app', 'Cancel'),
       }).appendTo(this.$buttons);
 
+      this.$testBtn = Craft.ui
+        .createCopyTextBtn({
+          value: 'textHandle',
+          class: 'code small light',
+        })
+        .appendTo(this.$buttons);
+
       if (this.settings.allowSavingAsNew) {
         this.$saveBtn = Craft.ui
           .createButton({
