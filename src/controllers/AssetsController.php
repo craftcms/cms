@@ -313,8 +313,7 @@ class AssetsController extends Controller
 
         // In case of error, let user know about it.
         if (!$result) {
-            $errors = $asset->getFirstErrors();
-            return $this->asFailure(implode("\n", $errors));
+            return $this->asModelFailure($asset);
         }
 
         if ($selectionCondition) {
@@ -333,10 +332,7 @@ class AssetsController extends Controller
                 $asset->setScenario(Asset::SCENARIO_MOVE);
 
                 if (!$elementsService->saveElement($asset)) {
-                    $errors = $asset->getFirstErrors();
-                    return $this->asJson([
-                        'error' => $this->asFailure(implode("\n", $errors)),
-                    ]);
+                    return $this->asModelFailure($asset);
                 }
             }
         }
@@ -673,9 +669,7 @@ class AssetsController extends Controller
             ]);
         }
 
-        return $this->asSuccess(data: [
-            'success' => true,
-        ]);
+        return $this->asSuccess();
     }
 
     /**
@@ -796,7 +790,6 @@ class AssetsController extends Controller
         $newFolder = $assets->getFolderById($newFolderId);
 
         return $this->asSuccess(data: [
-            'success' => true,
             'transferList' => $fileTransferList,
             'newFolderUid' => $newFolder->uid,
             'newFolderId' => $newFolderId,

@@ -219,15 +219,29 @@ Craft.AssetMover = Garnish.Base.extend({
           data: request.params,
         })
           .then((response) => {
-            responses.push(Object.assign({}, response.data, {request}));
-            if (response.data.success && request.onSuccess) {
+            responses.push(
+              Object.assign(
+                {
+                  success: true,
+                },
+                response.data,
+                {request}
+              )
+            );
+            if (request.onSuccess) {
               request.onSuccess(response.data);
             }
           })
           .catch((failure) => {
             if (failure.response && failure.response.data) {
               responses.push(
-                Object.assign({}, failure.response.data, {request})
+                Object.assign(
+                  {
+                    success: false,
+                  },
+                  failure.response.data,
+                  {request}
+                )
               );
             }
           })
