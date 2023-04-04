@@ -94,7 +94,9 @@
 
                   for (var i = 0; i < response.errors[attribute].length; i++) {
                     var error = response.errors[attribute][i];
-                    $('<li>' + error + '</li>').appendTo(this.$errorList);
+                    $('<li/>', {
+                      text: error,
+                    }).appendTo(this.$errorList);
                   }
                 }
               }

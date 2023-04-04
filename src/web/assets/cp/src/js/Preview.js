@@ -477,7 +477,7 @@ Craft.Preview = Garnish.Base.extend(
 
       this.isVisible = true;
 
-      Garnish.uiLayerManager.addLayer(this.$sidebar);
+      Garnish.uiLayerManager.addLayer(this.$previewHeader);
       Garnish.uiLayerManager.registerShortcut(Garnish.ESC_KEY, () => {
         this.close();
       });
