@@ -24,6 +24,7 @@
 - Fixed an error that could occur when installing Craft with an existing project config, if any image transforms were defined that didn’t specify the `upscale` property.
 - Fixed a bug where nested folders in asset search results weren’t showing their relative path.
 - Fixed a bug where admin tables’ default delete icon title text wasn’t getting translated. ([#13030](https://github.com/craftcms/cms/issues/13030))
+- Fixed a bug where it was possible to save a Local filesystem pointed at a system directory (e.g. the `templates/` or `vendor/` folders).
 - Fixed XSS vulnerabilities.
 
 ## 4.4.5 - 2023-03-21
