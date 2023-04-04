@@ -1,5 +1,9 @@
 # Release Notes for Craft CMS 4
 
+## 4.4.6.1 - 2023-04-04
+
+- Fixed a bug where Categories fields weren’t retaining custom sort orders when “Maintain hierarchy” was disabled. ([#10560](https://github.com/craftcms/cms/discussions/10560))
+
 ## 4.4.6 - 2023-04-04
 
 - Content tab menus now reveal when a tab contains validation errors, and invalid tabs’ menu options get the same warning icon treatment as inline tabs do. ([#12971](https://github.com/craftcms/cms/issues/12971))
