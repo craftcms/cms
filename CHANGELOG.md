@@ -11,6 +11,7 @@
 - Fixed a JavaScript error that occurred when closing a disclosure menu within Live Preview. ([#12992](https://github.com/craftcms/cms/issues/12992))
 - Fixed a bug where assets were getting relocated to the root volume folder when renamed. ([#12995](https://github.com/craftcms/cms/issues/12995))
 - Fixed a bug where it wasn’t possible to preview entries on another domain when the system was offline. ([#12979](https://github.com/craftcms/cms/issues/12979))
+- Fixed a bug where users were able to access volumes they didn’t have permission to view via Assets fields. ([#13006](https://github.com/craftcms/cms/issues/13006))
 - Fixed an XSS vulnerability.
 
 ## 3.8.5 - 2023-03-21
