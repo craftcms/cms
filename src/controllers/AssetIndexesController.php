@@ -8,11 +8,15 @@
 namespace craft\controllers;
 
 use Craft;
+use craft\base\Event;
 use craft\elements\Asset;
 use craft\errors\AssetException;
+use craft\events\ListVolumesEvent;
+use craft\helpers\ArrayHelper;
 use craft\helpers\Json;
 use craft\i18n\Locale;
 use craft\models\AssetIndexingSession;
+use craft\utilities\AssetIndexes;
 use craft\web\Controller;
 use Throwable;
 use yii\web\BadRequestHttpException;
@@ -56,6 +60,21 @@ class AssetIndexesController extends Controller
 
         if (empty($volumes)) {
             return $this->asFailure(Craft::t('app', 'No volumes specified.'));
+        }
+
+        // Fire a 'listVolumes' event
+        $event = new ListVolumesEvent([
+            'volumes' => Craft::$app->getVolumes()->getAllVolumes(),
+        ]);
+        Event::trigger(AssetIndexes::class, AssetIndexes::EVENT_LIST_VOLUMES, $event);
+
+        // list of volumes passed from the request, cross-referenced against the list of volumes "allowed" via the event
+        $allowedVolumes = array_filter($volumes, function($volumeId) use ($event) {
+            return in_array($volumeId, ArrayHelper::getColumn($event->volumes, 'id'));
+        });
+
+        if (count($volumes) !== count($allowedVolumes)) {
+            return $this->asFailure(Craft::t('app', 'Selected volumes don’t match the allowed list.'));
         }
 
         $indexingSession = Craft::$app->getAssetIndexer()->startIndexingSession($volumes, $cacheRemoteImages, $listEmptyFolders);
