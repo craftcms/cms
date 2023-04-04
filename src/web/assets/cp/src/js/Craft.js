@@ -2588,7 +2588,9 @@ $.extend($.fn, {
         params[$btn.data('param')] = $btn.data('value');
       }
 
-      let $anchor = $btn.closest('.menu--disclosure').data('trigger').$trigger;
+      const $anchor = $btn.closest('.menu--disclosure').length
+        ? $btn.closest('.menu--disclosure').data('trigger').$trigger
+        : $btn;
       let $form = $anchor.attr('data-form')
         ? $('#' + $anchor.attr('data-form'))
         : $anchor.closest('form');
