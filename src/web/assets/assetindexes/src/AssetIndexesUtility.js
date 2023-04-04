@@ -125,7 +125,7 @@
               this.updateProgressBar();
 
               if (response && response.error) {
-                alert(response.error);
+                Craft.cp.displayError(response.error);
               }
 
               if (this.completedActions == this.totalActions) {

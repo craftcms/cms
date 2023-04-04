@@ -4,6 +4,7 @@
 
 - Content tab menus now reveal when a tab contains validation errors, and invalid tabs’ menu options get the same warning icon treatment as inline tabs do. ([#12971](https://github.com/craftcms/cms/issues/12971))
 - Element index bulk action spinners are now centered on the viewport. ([#12972](https://github.com/craftcms/cms/issues/12972))
+- All control panel errors are new presented via error notifications rather than browser alerts. ([#13024](https://github.com/craftcms/cms/issues/13024))
 - Fixed a bug where Assets fields weren’t respecting their View Mode setting when viewing entry revisions. ([#12948](https://github.com/craftcms/cms/issues/12948))
 - Fixed a bug where some relational fields were showing duplicate selected relations. ([#12949](https://github.com/craftcms/cms/issues/12949))
 - Fixed a bug where asset pagination was broken when there was more than 100 subfolders. ([#12969](https://github.com/craftcms/cms/issues/12969))

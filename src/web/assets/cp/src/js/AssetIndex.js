@@ -465,15 +465,19 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 
         Craft.cp.runQueue();
       } else {
+        let message;
         if (response.error) {
-          alert(
-            Craft.t('app', 'Upload failed. The error message was: “{error}”', {
+          message = Craft.t(
+            'app',
+            'Upload failed. The error message was: “{error}”',
+            {
               error: response.error,
-            })
+            }
           );
         } else {
-          alert(Craft.t('app', 'Upload failed for {filename}.', {filename}));
+          message = Craft.t('app', 'Upload failed for {filename}.', {filename});
         }
+        Craft.cp.displayError(message);
       }
     },
 
@@ -482,7 +486,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
      */
     _onUploadFailure: function (event, data) {
       if (data.jqXHR.responseJSON.error) {
-        alert(data.jqXHR.responseJSON.error);
+        Craft.cp.displayError(data.jqXHR.responseJSON.error);
         this.progressBar.hideProgressBar();
         this.setIndexAvailable();
       }
@@ -530,7 +534,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
           if (textStatus === 'success' && data.assetId) {
             this.selectElementAfterUpdate(data.assetId);
           } else if (data.error) {
-            alert(data.error);
+            Craft.cp.displayError(data.error);
           }
           parameterIndex++;
           this.progressBar.incrementProcessedItemCount(1);
@@ -790,7 +794,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
             }
 
             if (textStatus === 'success' && data.error) {
-              alert(data.error);
+              Craft.cp.displayError(data.error);
             }
           }
         );
@@ -829,7 +833,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
             }
 
             if (textStatus === 'success' && data.error) {
-              alert(data.error);
+              Craft.cp.displayError(data.error);
             }
           }
         );
@@ -868,7 +872,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
               `/${response.data.newName}`;
             this.sourcePath = sourcePath;
           } else if (response.data.error) {
-            alert(response.data.error);
+            Craft.cp.displayError(response.data.error);
           }
         })
         .finally(() => {
