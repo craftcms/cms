@@ -850,6 +850,7 @@ return [
     'Loading' => 'Nahrávanie',
     'Local Folder' => 'Lokálny Adresár',
     'Local copies of remote images, generated thumbnails' => 'Miestne kópie vzdialených obrazov, vygenerované miniatúry',
+    'Local volumes cannot be located within system directories.' => 'Miestne zväzky nemôžu byť umiestnené v systémových adresároch.',
     'Localizing relations' => 'Vzťahy spojené s lokalizáciou',
     'Location' => 'Poloha',
     'Locations that should be available for previewing entries in this section.' => 'Umiestnenia, ktoré majú byť dostupné pre náhľad záznamov v tejto sekcii.',

@@ -850,6 +850,7 @@ return [
     'Loading' => 'Wird geladen',
     'Local Folder' => 'Lokaler Ordner',
     'Local copies of remote images, generated thumbnails' => 'Lokale Kopien von externen Bildern, generierte Vorschaubilder',
+    'Local volumes cannot be located within system directories.' => 'Lokale Volumen können sich nicht innerhalb von Systemverzeichnissen befinden.',
     'Localizing relations' => 'Relationen lokalisieren',
     'Location' => 'Standort',
     'Locations that should be available for previewing entries in this section.' => 'Orte, die für die Vorschau der Einträge in dieser Sektion verfügbar sein sollen.',
