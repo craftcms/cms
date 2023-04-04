@@ -15,6 +15,7 @@
 - Fixed a bug where users were able to access volumes they didn’t have permission to view via Assets fields. ([#13006](https://github.com/craftcms/cms/issues/13006))
 - Fixed a bug where soft hyphens, non-breaking spaces, zero-width characters, invisible characters, and byte order marks weren’t getting stripped from sanitized asset filenames. ([#13029](https://github.com/craftcms/cms/pull/13029))
 - Fixed a bug where the Plugin Store wasn’t accurately reporting installed plugins’ license statuses. ([#12986](https://github.com/craftcms/cms/issues/12986))
+- Fixed a bug where the Plugin Store wasn’t handling 403 API responses for cart operations properly, once a cart had been handed off to Craft Console and assigned to an organization. ([#12916](https://github.com/craftcms/cms/issues/12916))
 - Fixed an XSS vulnerability.
 
 ## 3.8.5 - 2023-03-21
