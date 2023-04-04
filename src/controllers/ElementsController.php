@@ -389,13 +389,13 @@ class ElementsController extends Controller
             ->editUrl($element->getCpEditUrl())
             ->docTitle($docTitle)
             ->title($title)
-            ->contextMenu(fn() => $this->_contextMenu(
+            ->contextMenuHtml(fn() => $this->_contextMenu(
                 $element,
                 $isMultiSiteElement,
                 $isUnpublishedDraft,
                 $propSiteIds
             ))
-            ->additionalButtons(fn() => $this->_additionalButtons(
+            ->additionalButtonsHtml(fn() => $this->_additionalButtons(
                 $element,
                 $canonical,
                 $isRevision,
@@ -408,7 +408,7 @@ class ElementsController extends Controller
                 $isUnpublishedDraft,
                 $isDraft
             ))
-            ->notice($element->isProvisionalDraft ? fn() => $this->_draftNotice() : null)
+            ->noticeHtml($element->isProvisionalDraft ? fn() => $this->_draftNotice() : null)
             ->prepareScreen(
                 fn(Response $response, string $containerId) => $this->_prepareEditor(
                     $element,
@@ -805,8 +805,8 @@ class ElementsController extends Controller
         /** @var Response|CpScreenResponseBehavior $response */
         $response
             ->tabs($form?->getTabMenu() ?? [])
-            ->content($contentFn($form))
-            ->sidebar($sidebarFn($form));
+            ->contentHtml($contentFn($form))
+            ->metaSidebarHtml($sidebarFn($form));
 
         if ($canSave && !$element->getIsRevision()) {
             $this->view->registerJsWithVars(fn($settingsJs) => <<<JS
