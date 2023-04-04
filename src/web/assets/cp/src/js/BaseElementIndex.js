@@ -601,7 +601,16 @@ Craft.BaseElementIndex = Garnish.Base.extend(
      * @returns {Object[]|null}
      */
     getDefaultSourcePath: function () {
-      return this.settings.defaultSourcePath;
+      // @link https://github.com/craftcms/cms/issues/13006
+      if (
+        this.settings.defaultSourcePath !== null &&
+        this.settings.defaultSourcePath[0] !== undefined &&
+        this.settings.defaultSourcePath[0].canView === true
+      ) {
+        return this.settings.defaultSourcePath;
+      } else {
+        return null;
+      }
     },
 
     getDefaultExpandedSources: function () {
