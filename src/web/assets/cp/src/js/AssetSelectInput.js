@@ -178,7 +178,7 @@ Craft.AssetSelectInput = Craft.BaseElementSelectInput.extend({
 
     Craft.postActionRequest('elements/get-element-html', parameters, (data) => {
       if (data.error) {
-        alert(data.error);
+        Craft.cp.displayError(data.error);
       } else {
         var $existing = this.$elements.filter('[data-id="' + elementId + '"]');
         $existing
@@ -254,7 +254,7 @@ Craft.AssetSelectInput = Craft.BaseElementSelectInput.extend({
    */
   _onUploadComplete: function (event, data) {
     if (data.result.error) {
-      alert(data.result.error);
+      Craft.cp.displayError(data.result.error);
       this.progressBar.hideProgressBar();
       this.$container.removeClass('uploading');
     } else {
@@ -269,7 +269,7 @@ Craft.AssetSelectInput = Craft.BaseElementSelectInput.extend({
         parameters,
         (data) => {
           if (data.error) {
-            alert(data.error);
+            Craft.cp.displayError(data.error);
           } else {
             var html = $(data.html);
             Craft.appendHeadHtml(data.headHtml);
@@ -297,7 +297,7 @@ Craft.AssetSelectInput = Craft.BaseElementSelectInput.extend({
    */
   _onUploadFailure: function (event, data) {
     if (data.jqXHR.responseJSON.error) {
-      alert(data.jqXHR.responseJSON.error);
+      Craft.cp.displayError(data.jqXHR.responseJSON.error);
       this.progressBar.hideProgressBar();
       this.$container.removeClass('uploading');
     }
