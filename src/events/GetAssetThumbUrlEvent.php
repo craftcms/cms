@@ -20,7 +20,7 @@ use yii\base\Event;
 class GetAssetThumbUrlEvent extends Event
 {
     /**
-     * @var Asset The Asset which the thumbnail should be for.
+     * @var Asset The asset which the thumbnail should be for.
      */
     public $asset;
 
@@ -46,7 +46,7 @@ class GetAssetThumbUrlEvent extends Event
     public $generate;
 
     /**
-     * @var string|null Url to requested Asset that should be used instead.
+     * @var string|null The URL to the requested asset that should be used instead.
      */
     public $url;
 }

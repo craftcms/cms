@@ -34,6 +34,9 @@ use craft\helpers\Session;
 use craft\i18n\Formatter;
 use craft\i18n\I18N;
 use craft\i18n\Locale;
+use craft\markdown\GithubMarkdown;
+use craft\markdown\Markdown;
+use craft\markdown\MarkdownExtra;
 use craft\models\FieldLayout;
 use craft\models\Info;
 use craft\queue\Queue;
@@ -64,6 +67,7 @@ use yii\caching\Cache;
 use yii\db\ColumnSchemaBuilder;
 use yii\db\Exception as DbException;
 use yii\db\Expression;
+use yii\helpers\Markdown as MarkdownHelper;
 use yii\mutex\Mutex;
 use yii\web\ServerErrorHttpException;
 
@@ -434,6 +438,18 @@ trait ApplicationTrait
     }
 
     /**
+     * Returns the handle of the Craft edition.
+     *
+     * @return string
+     * @since 3.8.0
+     */
+    public function getEditionHandle(): string
+    {
+        /** @var WebApplication|ConsoleApplication $this */
+        return App::editionHandle($this->getEdition());
+    }
+
+    /**
      * Returns the edition Craft is actually licensed to run in.
      *
      * @return int|null
@@ -441,13 +457,13 @@ trait ApplicationTrait
     public function getLicensedEdition()
     {
         /** @var WebApplication|ConsoleApplication $this */
-        $licensedEdition = $this->getCache()->get('licensedEdition');
+        $licenseInfo = $this->getCache()->get('licenseInfo') ?: [];
 
-        if ($licensedEdition !== false) {
-            return (int)$licensedEdition;
+        if (!isset($licenseInfo['craft']['edition'])) {
+            return null;
         }
 
-        return null;
+        return App::editionIdByHandle($licenseInfo['craft']['edition']);
     }
 
     /**
@@ -560,6 +576,10 @@ trait ApplicationTrait
     public function getCanTestEditions(): bool
     {
         /** @var WebApplication|ConsoleApplication $this */
+        if (App::env('CRAFT_NO_TRIALS')) {
+            return false;
+        }
+
         $request = $this->getRequest();
         if ($request->getIsConsoleRequest()) {
             return false;
@@ -1468,6 +1488,20 @@ trait ApplicationTrait
         // Prevent browser caching if this is a control panel request
         if ($request->getIsCpRequest()) {
             $this->getResponse()->setNoCacheHeaders();
+        }
+
+        // Use our own Markdown parser classes
+        $flavors = [
+            'original' => Markdown::class,
+            'gfm' => GithubMarkdown::class,
+            'gfm-comment' => GithubMarkdown::class,
+            'extra' => MarkdownExtra::class,
+        ];
+
+        foreach ($flavors as $flavor => $class) {
+            if (isset(MarkdownHelper::$flavors[$flavor])) {
+                MarkdownHelper::$flavors[$flavor]['class'] = $class;
+            }
         }
     }
 

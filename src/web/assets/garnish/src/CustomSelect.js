@@ -227,7 +227,7 @@ export default Base.extend(
         }.bind(this)
       );
 
-      Garnish.uiLayerManager.removeLayer();
+      Garnish.uiLayerManager.removeLayer(this.$container);
       this.removeListener(Garnish.$scrollContainer, 'scroll');
       this.visible = false;
       this.trigger('hide');

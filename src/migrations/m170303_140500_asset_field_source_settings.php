@@ -19,7 +19,7 @@ class m170303_140500_asset_field_source_settings extends Migration
     public function safeUp()
     {
         echo "    > Converting the field setting format \n";
-        // Convert the field setting from volume id to folder:XX
+        // Convert the field setting from volume ID to folder:XX
         $fields = (new Query())
             ->select(['id', 'settings'])
             ->from([Table::FIELDS])
@@ -38,7 +38,7 @@ class m170303_140500_asset_field_source_settings extends Migration
                 ->andWhere(['volumeId' => $volumeId])
                 ->scalar($this->db);
 
-            // If the folder does not exist, set an invalid id to trigger field error when viewing
+            // If the folder does not exist, set an invalid ID to trigger field error when viewing
             return $folderId ? 'folder:' . $folderId : 'folder:0';
         };
 

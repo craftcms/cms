@@ -563,7 +563,7 @@
     enablePreview: enablePreview,
     previewTargets: previewTargets,
     previewToken: previewTargets ? craft.app.security.generateRandomString() : null,
-    siteToken: not element.getSite().enabled ? element.siteId|hash,
+    siteToken: (not craft.app.isLive or not element.getSite().enabled) ? element.siteId|hash,
 } %}
 {% js %}
     window.draftEditor = new Craft.DraftEditor({{ settings|json_encode|raw }});

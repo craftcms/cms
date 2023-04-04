@@ -585,7 +585,7 @@ class ElementHelper
             }
 
             if ($source === null) {
-                return null;
+                break;
             }
 
             // Is that the end of the path?
@@ -602,7 +602,8 @@ class ElementHelper
             $sources = $source['nested'] ?? [];
         }
 
-        return null;
+        // Let the element get involved
+        return $elementType::findSource($sourceKey, $context);
     }
 
     /**

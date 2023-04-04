@@ -146,7 +146,7 @@ class m160804_110002_userphotos_to_assets extends Migration
     /**
      * Create the user photo volume.
      *
-     * @return int volume id
+     * @return int volume ID
      */
     private function _createUserphotoVolume(): int
     {
@@ -230,8 +230,8 @@ class m160804_110002_userphotos_to_assets extends Migration
     }
 
     /**
-     * Convert matching user photos to Assets in a Volume and add that information
-     * to the array passed in.
+     * Convert matching user photos to assets in a volume and add that information
+     * to the passed-in array.
      *
      * @param int $volumeId
      * @param array $userList

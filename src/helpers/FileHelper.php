@@ -162,6 +162,13 @@ class FileHelper extends \yii\helpers\FileHelper
         // Replace any control characters in the name with a space.
         $filename = preg_replace("/\\x{00a0}/iu", ' ', $filename);
 
+        // https://github.com/craftcms/cms/issues/12741
+        // Remove soft hyphens (00ad), no break (0083),
+        // zero width space (200b), zero width non-joiner (200c), zero width joiner (200d),
+        // invisible times (2062), invisible comma (2063), invisible plus (2064),
+        // zero width non-brak space (feff) in the name
+        $filename = preg_replace('/\\x{00ad}|\\x{0083}|\\x{200b}|\\x{200c}|\\x{200d}|\\x{2062}|\\x{2063}|\\x{2064}|\\x{feff}/iu', '', $filename);
+
         // Strip any characters not allowed.
         $filename = str_replace($disallowedChars, '', strip_tags($filename));
 
@@ -755,5 +762,27 @@ class FileHelper extends \yii\helpers\FileHelper
         }
 
         return $extension;
+    }
+
+    /**
+     * Returns a unique version of a filename with `uniqid()`, ensuring the result is at most 255 characters.
+     *
+     * @param string $baseName The original filename, or just a file extension prefixed with a `.`.
+     * @return string
+     * @since 3.8.3
+     */
+    public static function uniqueName(string $baseName)
+    {
+        $name = pathinfo($baseName, PATHINFO_FILENAME);
+        $ext = pathinfo($baseName, PATHINFO_EXTENSION);
+        if ($ext !== '') {
+            $ext = ".$ext";
+        }
+        $extLength = strlen($ext);
+        $maxLength = 232; // 255 - 23 (entropy chars)
+        if (strlen($name) + $extLength > $maxLength) {
+            $name = substr($name, 0, $maxLength - $extLength);
+        }
+        return uniqid($name, true) . $ext;
     }
 }

@@ -15,7 +15,6 @@ use craft\helpers\Component;
 use craft\helpers\FileHelper;
 use craft\helpers\Json;
 use craft\helpers\StringHelper;
-use craft\i18n\Locale;
 use craft\models\CraftSupport;
 use craft\web\assets\dashboard\DashboardAsset;
 use craft\web\Controller;
@@ -24,7 +23,6 @@ use GuzzleHttp\RequestOptions;
 use Symfony\Component\Yaml\Yaml;
 use Throwable;
 use yii\base\Exception;
-use yii\base\InvalidArgumentException;
 use yii\web\BadRequestHttpException;
 use yii\web\Response;
 use ZipArchive;
@@ -269,40 +267,9 @@ class DashboardController extends Controller
     {
         $this->requireAcceptsJson();
 
-        $formatter = Craft::$app->getFormatter();
-
-        $url = $this->request->getRequiredParam('url');
-        $limit = $this->request->getParam('limit');
-
-        $feed = Craft::$app->getFeeds()->getFeed($url);
-
-        $locale = null;
-        if ($feed['language'] !== null) {
-            try {
-                $locale = new Locale($feed['language']);
-            } catch (InvalidArgumentException $e) {
-            }
-        }
-        if ($locale === null) {
-            $locale = new Locale('en-US');
-        }
-
-
-        if ($limit) {
-            $feed['items'] = array_slice($feed['items'], 0, $limit);
-        }
-
-        foreach ($feed['items'] as &$item) {
-            if ($item['date'] !== null) {
-                $item['date'] = $formatter->asTimestamp($item['date'], Locale::LENGTH_SHORT);
-            } else {
-                unset($item['date']);
-            }
-        }
-
         return $this->asJson([
-            'dir' => $locale->getOrientation(),
-            'items' => $feed['items'],
+            'dir' => 'ltr',
+            'items' => [],
         ]);
     }
 

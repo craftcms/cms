@@ -412,7 +412,7 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
             return $value;
         }
 
-        /** @var ElementInterface $class */
+        /** @var ElementInterface|string $class */
         $class = static::elementType();
         /** @var ElementQuery $query */
         $query = $class::find()
@@ -446,7 +446,7 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
             }
 
             if (!$this->allowMultipleSources && $this->source) {
-                $source = ElementHelper::findSource($class, $this->source);
+                $source = ElementHelper::findSource($class, $this->source, 'field');
 
                 // Does the source specify any criteria attributes?
                 if (isset($source['criteria'])) {
@@ -622,12 +622,19 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
             return '<p class="light">' . Craft::t('app', 'Nothing selected.') . '</p>';
         }
 
+        $size = Cp::ELEMENT_SIZE_SMALL;
+        $viewMode = $this->viewMode();
+        if ($viewMode == 'large') {
+            $size = Cp::ELEMENT_SIZE_LARGE;
+        }
+
         $view = Craft::$app->getView();
         $id = $this->getInputId();
-        $html = "<div id='{$id}' class='elementselect'><div class='elements'>";
+        $html = "<div id='$id' class='elementselect'>" .
+            "<div class='elements" . ($size === Cp::ELEMENT_SIZE_LARGE ? ' flex-row flex-wrap' : '') . "'>";
 
         foreach ($value as $relatedElement) {
-            $html .= Cp::elementHtml($relatedElement);
+            $html .= Cp::elementHtml($relatedElement, 'index', $size);
         }
 
         $html .= '</div></div>';

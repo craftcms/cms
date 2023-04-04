@@ -24,7 +24,7 @@ class ExecuteGqlQueryEvent extends Event
     public $accessToken;
 
     /**
-     * @var int The id of the schema used for this request.
+     * @var int The ID of the schema used for this request.
      * @since 3.4.0
      */
     public $schemaId;

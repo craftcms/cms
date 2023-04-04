@@ -420,6 +420,19 @@ abstract class Migration extends \yii\db\Migration
     }
 
     /**
+     * Builds and executes a SQL statement for dropping a foreign key, if it exists.
+     *
+     * @param string $table the table whose index is to be dropped. The name will be properly quoted by the method.
+     * @param string|string[] $columns the column(s) that are included in the index. If there are multiple columns, please separate them
+     * by commas or use an array.
+     * @since 3.8.0
+     */
+    public function dropForeignKeyIfExists(string $table, $columns): void
+    {
+        MigrationHelper::dropForeignKeyIfExists($table, $columns, $this);
+    }
+
+    /**
      * Creates and executes a SQL statement for soft-deleting a row.
      *
      * @param string $table The table to be updated.

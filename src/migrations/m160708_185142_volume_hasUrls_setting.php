@@ -21,7 +21,7 @@ class m160708_185142_volume_hasUrls_setting extends Migration
             $this->addColumn(Table::VOLUMES, 'hasUrls', $this->boolean()->after('type')->defaultValue(false));
         }
 
-        // Update all Volumes and move the setting from settings column to it's own field
+        // Update all volumes and move the setting from settings column to its own field
         $volumes = (new Query())
             ->select(['id', 'settings'])
             ->from([Table::VOLUMES])

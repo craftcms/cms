@@ -148,14 +148,9 @@ class SystemReport extends Utility
     private static function _dbDriver(): string
     {
         $db = Craft::$app->getDb();
-
-        if ($db->getIsMysql()) {
-            $driverName = 'MySQL';
-        } else {
-            $driverName = 'PostgreSQL';
-        }
-
-        return $driverName . ' ' . App::normalizeVersion($db->getSchema()->getServerVersion());
+        $label = $db->getDriverLabel();
+        $version = App::normalizeVersion($db->getSchema()->getServerVersion());
+        return "$label $version";
     }
 
     /**

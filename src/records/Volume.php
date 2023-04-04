@@ -20,7 +20,7 @@ use yii\db\ActiveQueryInterface;
  * @property string $name Name
  * @property string $handle Handle
  * @property string $type Type
- * @property bool $hasUrls Whether Volume has URLs
+ * @property bool $hasUrls Whether the volume has URLs
  * @property string $url URL
  * @property string $titleTranslationMethod
  * @property string|null $titleTranslationKeyFormat

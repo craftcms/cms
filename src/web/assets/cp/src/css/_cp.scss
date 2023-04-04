@@ -24,9 +24,12 @@ html {
 
 body {
   min-height: 100vh;
-}
 
-body {
+  &.dragging * {
+    cursor: move !important;
+    cursor: grabbing !important;
+  }
+
   :focus {
     outline-style: solid;
     outline-color: transparent;
@@ -464,15 +467,20 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
 #alerts {
   position: relative; // to keep it above #global-header's shadow
   background-color: $red050;
-  border-left: 5px solid $errorColor;
-  padding: 11px 0;
-  text-align: center;
+  border-left: 6px solid $errorColor;
   color: $errorColor;
 
-  li {
-    padding: 4px 24px;
+  & > li {
+    padding: 10px 24px;
+    box-shadow: inset 0 -1px 0 0 $red100;
 
-    a {
+    a.btn,
+    a.go {
+      display: inline-flex;
+      align-items: center;
+    }
+
+    a:not(.btn) {
       color: $errorColor;
       text-decoration: underline;
 
@@ -481,11 +489,13 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
         white-space: nowrap;
         border: 1px solid transparentize($errorColor, 0.5);
         border-radius: $mediumBorderRadius;
-        padding: 3px 5px;
+        padding: 4px 7px;
         margin: 0 2px;
 
         &:after {
           color: $errorColor;
+          font-size: 15px;
+          margin-top: 1px;
         }
 
         &:hover {
@@ -953,6 +963,12 @@ li.breadcrumb-toggle-wrapper {
           @include pane;
           background-color: $grey050;
         }
+        &.active-drop-target {
+          background-color: #{darken($grey500, 10%)} !important;
+          color: $white;
+          @include light-on-dark-text;
+          cursor: default;
+        }
       }
     }
   }
@@ -998,10 +1014,10 @@ li.breadcrumb-toggle-wrapper {
 
 #footer {
   z-index: 1;
-  margin: 25px -24px -24px; // 1px extra on top is intentional
+  margin: 25px -22px -22px; // 1px extra on top is intentional
   padding: 10px 24px;
   background-color: $grey050;
-  border-radius: 0 0 $largeBorderRadius $largeBorderRadius;
+  border-radius: $smallBorderRadius;
 
   &:empty {
     display: none;
@@ -1500,7 +1516,8 @@ li.breadcrumb-toggle-wrapper {
 }
 
 /* flexbox field layouts */
-#content :not(.meta) > .flex-fields {
+#content :not(.meta) > .flex-fields,
+.draghelper.drag-in-content .flex-fields {
   display: flex;
   flex-wrap: wrap;
   align-content: flex-start;

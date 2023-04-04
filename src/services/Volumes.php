@@ -65,17 +65,17 @@ class Volumes extends Component
     const EVENT_REGISTER_VOLUME_TYPES = 'registerVolumeTypes';
 
     /**
-     * @event VolumeEvent The event that is triggered before an Asset volume is saved.
+     * @event VolumeEvent The event that is triggered before a volume is saved.
      */
     const EVENT_BEFORE_SAVE_VOLUME = 'beforeSaveVolume';
 
     /**
-     * @event VolumeEvent The event that is triggered after an Asset volume is saved.
+     * @event VolumeEvent The event that is triggered after a volume is saved.
      */
     const EVENT_AFTER_SAVE_VOLUME = 'afterSaveVolume';
 
     /**
-     * @event VolumeEvent The event that is triggered before an Asset volume is deleted.
+     * @event VolumeEvent The event that is triggered before a volume is deleted.
      */
     const EVENT_BEFORE_DELETE_VOLUME = 'beforeDeleteVolume';
 
@@ -86,7 +86,7 @@ class Volumes extends Component
     const EVENT_BEFORE_APPLY_VOLUME_DELETE = 'beforeApplyVolumeDelete';
 
     /**
-     * @event VolumeEvent The event that is triggered after a Asset volume is deleted.
+     * @event VolumeEvent The event that is triggered after a volume is deleted.
      */
     const EVENT_AFTER_DELETE_VOLUME = 'afterDeleteVolume';
 

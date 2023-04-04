@@ -18,7 +18,7 @@ class m151002_095935_volume_cache_settings extends Migration
      */
     public function safeUp()
     {
-        // Update how cache settings are stored for S3 and Google Cloud Volumes.
+        // Update how cache settings are stored for S3 and Google Cloud volumes.
         $volumes = (new Query())
             ->select(['id', 'settings'])
             ->from([Table::VOLUMES])

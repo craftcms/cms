@@ -498,7 +498,7 @@ class User extends Element implements IdentityInterface
     public $username;
 
     /**
-     * @var int|null Photo asset id
+     * @var int|null Photo asset ID
      */
     public $photoId;
 

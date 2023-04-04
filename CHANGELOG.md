@@ -1,10 +1,126 @@
 # Release Notes for Craft CMS 3.x
 
-## Unreleased
+## 3.8.6 - 2023-04-04
+
+- Content tab menus now reveal when a tab contains validation errors, and invalid tabs’ menu options get the same warning icon treatment as inline tabs do. ([#12971](https://github.com/craftcms/cms/issues/12971))
+- Element index bulk action spinners are now centered on the viewport. ([#12972](https://github.com/craftcms/cms/issues/12972))
+- All control panel errors are new presented via error notifications rather than browser alerts. ([#13024](https://github.com/craftcms/cms/issues/13024))
+- Fixed a bug where Assets fields weren’t respecting their View Mode setting when viewing entry revisions. ([#12948](https://github.com/craftcms/cms/issues/12948))
+- Fixed a bug where some relational fields were showing duplicate selected relations. ([#12949](https://github.com/craftcms/cms/issues/12949))
+- Fixed a bug where asset pagination was broken when there was more than 100 subfolders. ([#12969](https://github.com/craftcms/cms/issues/12969))
+- Fixed a bug where entry index pages’ “Revision Notes” and “Last Edited By” columns weren’t getting populated for disabled entries. ([#12981](https://github.com/craftcms/cms/issues/12981))
+- Fixed a JavaScript error that occurred when closing a disclosure menu within Live Preview. ([#12992](https://github.com/craftcms/cms/issues/12992))
+- Fixed a bug where assets were getting relocated to the root volume folder when renamed. ([#12995](https://github.com/craftcms/cms/issues/12995))
+- Fixed a bug where it wasn’t possible to preview entries on another domain when the system was offline. ([#12979](https://github.com/craftcms/cms/issues/12979))
+- Fixed a bug where users were able to access volumes they didn’t have permission to view via Assets fields. ([#13006](https://github.com/craftcms/cms/issues/13006))
+- Fixed a bug where soft hyphens, non-breaking spaces, zero-width characters, invisible characters, and byte order marks weren’t getting stripped from sanitized asset filenames. ([#13029](https://github.com/craftcms/cms/pull/13029))
+- Fixed a bug where the Plugin Store wasn’t accurately reporting installed plugins’ license statuses. ([#12986](https://github.com/craftcms/cms/issues/12986))
+- Fixed a bug where the Plugin Store wasn’t handling 403 API responses for cart operations properly, once a cart had been handed off to Craft Console and assigned to an organization. ([#12916](https://github.com/craftcms/cms/issues/12916))
+- Fixed an XSS vulnerability.
+
+## 3.8.5 - 2023-03-21
+
+- Fixed a bug where relation data was getting deleted when running garbage collection on PostgreSQL. ([#9905](https://github.com/craftcms/cms/issues/9905))
+- Fixed a bug where Lightswitch fields’ “OFF Label” and “ON Label” settings weren’t getting translated. ([#12942](https://github.com/craftcms/cms/issues/12942))
+- Fixed a bug where `craft\events\DefineUserContentSummaryEvent::$userId` was never set for `craft\controllers\EVENT_DEFINE_CONTENT_SUMMARY` events. ([#12944](https://github.com/craftcms/cms/issues/12944))
+- Updated svg-sanitizer to 0.16. ([#12943](https://github.com/craftcms/cms/issues/12943))
+
+## 3.8.4 - 2023-03-20
+
+- The `|json_encode` Twig filter now calls `craft\helpers\Json::encode()` internally, improving error handling. ([#12919](https://github.com/craftcms/cms/issues/12919))
+- `craft\helpers\Json::encode()` no longer sets the `JSON_UNESCAPED_SLASHES` flag by default.
+- Fixed a JavaScript error that occurred when resolving an asset move conflict. ([#12920](https://github.com/craftcms/cms/issues/12920))
+- Fixed a bug where volume subfolders were being shown when viewing soft-deleted assets. ([#12927](https://github.com/craftcms/cms/issues/12927))
+- Fixed a bug where structure data was getting deleted when running garbage collection on PostgreSQL. ([#12925](https://github.com/craftcms/cms/issues/12925))
+
+## 3.8.3 - 2023-03-16
+
+- Customize Sources modals no longer hide when the <kbd>Esc</kbd> key is pressed on the surrounding area is clicked on. ([#12895](https://github.com/craftcms/cms/issues/12895))
+- Added `craft\helpers\FileHelper::uniqueName()`.
+- Fixed an error that occurred when uploading an asset with a filename over 250 characters long. ([#12889](https://github.com/craftcms/cms/issues/12889))
+- Fixed an error that could occur when preparing licensing alerts, if any licenses were invalid. ([#12899](https://github.com/craftcms/cms/issues/12899))
+- Fixed a bug where it wasn’t possible to drag nested Neo blocks. ([#12896](https://github.com/craftcms/cms/issues/12896))
+- Fixed a bug where fields with reduced widths in Matrix blocks were becoming full-width while dragged. ([#12909](https://github.com/craftcms/cms/issues/12909))
+- Fixed a bug where multi-edition plugins weren’t showing their edition labels within the Plugin Store cart. ([#12910](https://github.com/craftcms/cms/issues/12910))
+
+## 3.8.2 - 2023-03-14
+
+- Fixed a bug where it wasn’t always possible to access entry or category edit pages if the `slugWordSeparator` config setting was set to `/`. ([#12871](https://github.com/craftcms/cms/issues/12871))
+- Fixed a bug where `craft\helpers\Html::parseTagAttribute()` wasn’t decoding attribute values, which could lead to double-encoded attributes, e.g. when using the `|attr` filter. ([#12887](https://github.com/craftcms/cms/issues/12887))
+- Fixed XSS vulnerabilities.
+- Fixed an SSRF vulnerability.
+
+## 3.8.1 - 2023-03-09
+
+- Fixed a bug where it wasn’t possible to select subfolders on the Assets index page. ([#12802](https://github.com/craftcms/cms/issues/12802))
+- Fixed a bug where element index search inputs were losing focus when the element listing was updated. ([#12846](https://github.com/craftcms/cms/issues/12846))
+- Fixed a bug where the database driver was being referenced as “MySQL” when using MariaDB. ([#12827](https://github.com/craftcms/cms/issues/12827))
+- Fixed a bug where users weren’t able to select assets within Assets fields, if they didn’t have full permissions for the volume. ([#12851](https://github.com/craftcms/cms/issues/12851))
+- Fixed a bug where the Assets index page’s URL would get updated incorrectly when renaming a subfolder.
+- Added `craft\db\Connection::getDriverLabel()`.
+
+## 3.8.0 - 2023-03-08
+
+### Content Management
+- Volume subfolders are now displayed within the element listing pane on asset indexes, rather than as nested sources in the sidebar. ([#12558](https://github.com/craftcms/cms/pull/12558), [#9171](https://github.com/craftcms/cms/discussions/9171), [#5809](https://github.com/craftcms/cms/issues/5809))
+- Asset indexes now display the current subfolder path above the element listing. ([#12558](https://github.com/craftcms/cms/pull/12558))
+- Assets and folders can now be drag-and-dropped simultaneously. ([#12792](https://github.com/craftcms/cms/pull/12792))
+- Reduced the likelihood of accidentally triggering an asset drag operation. ([#12792](https://github.com/craftcms/cms/pull/12792))
+- Reduced the likelihood of accidentally dropping dragged assets/folders on an unintended target. ([#12792](https://github.com/craftcms/cms/pull/12792))
+- It’s now possible to move volume folders and assets to a new location via a new “Move…” bulk element action, rather than via drag-and-drop interactions. ([#12558](https://github.com/craftcms/cms/pull/12558))
+- It’s now possible to sort asset indexes by image width and height. ([#12653](https://github.com/craftcms/cms/pull/12653))
+
+### Administration
+- Most licensing isuses are now consolidated into a single control panel alert, with a button to resolve them all with a single purchase on Craft Console. ([#12768](https://github.com/craftcms/cms/pull/12768))
+- Added the `users/unlock` console command. ([#12345](https://github.com/craftcms/cms/discussions/12345))
+- The `utils/prune-revisions` console command now has a `--section` option. ([#8783](https://github.com/craftcms/cms/discussions/8783))
+
+### Development
+- Added the `revisionNotes` field to elements queried via GraphQL. ([#12610](https://github.com/craftcms/cms/issues/12610))
+- `craft\elements\Asset::getMimeType()` now has a `$transform` argument, and assets’ `mimeType` GraphQL fields now support a `@transform` directive. ([#12269](https://github.com/craftcms/cms/discussions/12269), [#12397](https://github.com/craftcms/cms/pull/12397), [#12522](https://github.com/craftcms/cms/pull/12522))
+
+### Extensibility
+- Added support for private plugins. ([#12716](https://github.com/craftcms/cms/pull/12716), [#8908](https://github.com/craftcms/cms/discussions/8908))
+- Element source definitions can now include a `defaultSourcePath` key.
+- Added `craft\base\ApplicationTrait::getEditionHandle()`.
+- Added `craft\base\Element::indexElements()`.
+- Added `craft\base\ElementInterface::findSource()`.
+- Added `craft\base\ElementInterface::indexElementCount()`.
+- Added `craft\db\Migration::dropForeignKeyIfExists()`.
+- Added `craft\models\VolumeFolder::getHasChildren()`.
+- Added `craft\models\VolumeFolder::setHasChildren()`.
+- Added `craft\services\Assets::createFolderQuery()`.
+- Added `craft\services\Assets::foldersExist()`.
+- Added `craft\services\Search::normalizeSearchQuery()`.
+- Added `Craft.AssetMover`.
+- Added `Craft.BaseElementIndex::getSourcePathActionLabel()`.
+- Added `Craft.BaseElementIndex::getSourcePathActions()`.
+- Added `Craft.BaseElementIndex::getSourcePathLabel()`.
+- Added `Craft.BaseElementIndex::onSourcePathChange()`.
+- Added `Craft.BaseElementIndex::sourcePath`.
+- Added `Craft.BaseElementSelectorModal::getElementIndexParams()`.
+- Added `Craft.BaseElementSelectorModal::getIndexSettings()`.
+- Added `Craft.BaseElementSelectorModal::hasSelection()`.
+- Added `Craft.VolumeFolderSelectorModal`.
+- Deprecated `craft\helpers\Assets::sortFolderTree()`.
+- Deprecated `craft\services\Assets::getFolderTreeByFolderId()`.
+- Deprecated `craft\services\Assets::getFolderTreeByVolumeIds`.
+- The custom `activate` jQuery event will now trigger when the <kbd>Return</kbd> key is pressed.
+- The custom `activate` jQuery event will no longer trigger for <kbd>Ctrl</kbd>/<kbd>Command</kbd>-clicks.
+
+### System
+- Fixed a database deadlock error that could occur when updating a relation or structure position for an element that was simultaneously being saved. ([#9905](https://github.com/craftcms/cms/issues/9905))
+
+## 3.7.68 - 2023-03-07
+
 - Fixed a bug where `craft\events\RegisterElementSourcesEvent::$context` wasn’t always set to `modal` when defining the available element sources for an element selection modal.
 - Fixed a styling bug where multi-line checkbox labels within the Customize Sources modal weren’t wrapping properly. ([#12717](https://github.com/craftcms/cms/issues/12717))
 - Fixed a bug where asset thumbnails within collapsed Matrix blocks weren’t loading when the block was expanded. ([#12720](https://github.com/craftcms/cms/issues/12720))
 - Fixed a bug where custom fields’ database columns would get deleted when applying project config changes, if the field type wasn’t present. ([#12760](https://github.com/craftcms/cms/issues/12760))
+- Fixed a bug where Assets, Categories, and Tags fields weren’t respecting their “Allow self relations” settings. ([#12769](https://github.com/craftcms/cms/issues/12769))
+- Fixed a bug where dynamically-generated entry titles weren’t always generated with the site’s formatting locale in place. ([12780](https://github.com/craftcms/cms/issues/12780))
+- Fixed a bug where element titles weren’t getting a pointer cursor or underlines on hover, when selected on an element index page.
+- Fixed a bug where it wasn’t possible to close modals that were opened by a custom select menu via the `<kbd>Esc</kbd>` key. ([#12814](https://github.com/craftcms/cms/pull/12814))
 - Fixed an XSS vulnerability.
 
 ## 3.7.67 - 2023-02-17

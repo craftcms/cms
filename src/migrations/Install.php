@@ -16,7 +16,6 @@ use craft\db\Migration;
 use craft\db\Table;
 use craft\elements\Asset;
 use craft\elements\User;
-use craft\enums\LicenseKeyStatus;
 use craft\errors\InvalidPluginException;
 use craft\helpers\App;
 use craft\helpers\DateTimeHelper;
@@ -482,15 +481,6 @@ class Install extends Migration
             'handle' => $this->string()->notNull(),
             'version' => $this->string()->notNull(),
             'schemaVersion' => $this->string()->notNull(),
-            'licenseKeyStatus' => $this->enum('licenseKeyStatus', [
-                LicenseKeyStatus::Valid,
-                LicenseKeyStatus::Trial,
-                LicenseKeyStatus::Invalid,
-                LicenseKeyStatus::Mismatched,
-                LicenseKeyStatus::Astray,
-                LicenseKeyStatus::Unknown,
-            ])->notNull()->defaultValue(LicenseKeyStatus::Unknown),
-            'licensedEdition' => $this->string(),
             'installDate' => $this->dateTime()->notNull(),
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
@@ -1034,7 +1024,6 @@ class Install extends Migration
         $this->addForeignKey(null, Table::RELATIONS, ['fieldId'], Table::FIELDS, ['id'], 'CASCADE', null);
         $this->addForeignKey(null, Table::RELATIONS, ['sourceId'], Table::ELEMENTS, ['id'], 'CASCADE', null);
         $this->addForeignKey(null, Table::RELATIONS, ['sourceSiteId'], Table::SITES, ['id'], 'CASCADE', 'CASCADE');
-        $this->addForeignKey(null, Table::RELATIONS, ['targetId'], Table::ELEMENTS, ['id'], 'CASCADE', null);
         $this->addForeignKey(null, Table::REVISIONS, ['creatorId'], Table::USERS, ['id'], 'SET NULL', null);
         $this->addForeignKey(null, Table::REVISIONS, ['sourceId'], Table::ELEMENTS, ['id'], 'CASCADE', null);
         $this->addForeignKey(null, Table::SECTIONS, ['structureId'], Table::STRUCTURES, ['id'], 'SET NULL', null);
@@ -1043,7 +1032,6 @@ class Install extends Migration
         $this->addForeignKey(null, Table::SESSIONS, ['userId'], Table::USERS, ['id'], 'CASCADE', null);
         $this->addForeignKey(null, Table::SHUNNEDMESSAGES, ['userId'], Table::USERS, ['id'], 'CASCADE', null);
         $this->addForeignKey(null, Table::SITES, ['groupId'], Table::SITEGROUPS, ['id'], 'CASCADE', null);
-        $this->addForeignKey(null, Table::STRUCTUREELEMENTS, ['elementId'], Table::ELEMENTS, ['id'], 'CASCADE', null);
         $this->addForeignKey(null, Table::STRUCTUREELEMENTS, ['structureId'], Table::STRUCTURES, ['id'], 'CASCADE', null);
         $this->addForeignKey(null, Table::TAGGROUPS, ['fieldLayoutId'], Table::FIELDLAYOUTS, ['id'], 'SET NULL', null);
         $this->addForeignKey(null, Table::TAGS, ['groupId'], Table::TAGGROUPS, ['id'], 'CASCADE', null);

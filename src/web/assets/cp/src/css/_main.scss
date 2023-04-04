@@ -60,6 +60,10 @@
   --ui-control-color: #{$grey400};
   --ui-control-hover-color: #{$grey500};
   --ui-control-active-color: #{$grey600};
+  --ui-control-bg-color: #{transparentize($inputColor, 0.75)};
+  --ui-control-hover-bg-color: #{transparentize($inputColor, 0.7)};
+  --ui-control-active-bg-color: #{transparentize($inputColor, 0.5)};
+  --ui-control-height: calc((34rem / 16)); // 1rem == 16px
   --light-focus-hsl: #{hue($lightFocusColor)}, #{saturation($lightFocusColor)},
     #{lightness($lightFocusColor)};
   --medium-focus-hsl: #{hue($mediumFocusColor)},
@@ -68,6 +72,7 @@
     #{lightness($darkFocusColor)};
   --focus-ring: 0 0 0 1px hsl(var(--dark-focus-hsl)),
     0 0 0 3px hsla(var(--dark-focus-hsl), 0.7);
+  --elements-busy-background-position: 50% 50%;
 }
 
 body,
@@ -144,6 +149,11 @@ fieldset:last-child,
 
 .draghelper {
   box-sizing: border-box;
+}
+
+.offset-drag-helper {
+  @include margin(-50px, 0, 0, -50px);
+  @include padding(60px, 0, 0, 60px);
 }
 
 img {
@@ -397,6 +407,10 @@ pre code {
 a {
   color: $linkColor;
   cursor: pointer;
+
+  &[aria-current] {
+    cursor: default;
+  }
 
   body.underline-links & {
     text-decoration: underline;
@@ -1075,7 +1089,7 @@ td.right {
 
 .customize-sources-table-column {
   display: flex;
-  align-items: start;
+  align-items: flex-start;
   align-content: stretch;
   margin-bottom: 4px;
 
@@ -1255,22 +1269,26 @@ ul.icons {
   --ui-control-color: #{$grey600};
   --ui-control-hover-color: #{$grey700};
   --ui-control-active-color: #{$grey800};
+  --ui-control-border-radius: #{$largeBorderRadius};
 
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  border-radius: $largeBorderRadius;
+  border-radius: var(--ui-control-border-radius);
   padding: 7px 14px;
   border: none;
   text-align: center;
   white-space: nowrap;
   user-select: none;
-  cursor: pointer;
   box-sizing: border-box;
   appearance: none;
-  color: $textColor;
+  color: var(--text-color);
   font-size: inherit;
-  background-color: transparentize($inputColor, 0.75);
+  background-color: var(--ui-control-bg-color);
+
+  &:not([aria-current]) {
+    cursor: pointer;
+  }
 
   &.chromeless {
     background-color: transparent;
@@ -1289,22 +1307,16 @@ ul.icons {
     }
   }
 
-  &:not(.disabled) {
+  &:not(.disabled):not([aria-current]) {
     &:focus,
     &.focus,
     &:hover {
-      background-color: transparentize($inputColor, 0.7);
+      --ui-control-bg-color: var(--ui-control-hover-bg-color);
     }
 
     &:active,
     &.active {
-      background-color: transparentize($inputColor, 0.5);
-
-      &:focus,
-      &.focus,
-      .btngroup:focus & {
-        background-color: transparentize($inputColor, 0.4);
-      }
+      --ui-control-bg-color: var(--ui-control-active-bg-color);
     }
   }
 
@@ -1331,6 +1343,15 @@ ul.icons {
   div.checkbox {
     margin-top: 2px;
   }
+
+  [data-icon] {
+    margin-top: -2px;
+    @include margin-right(4px);
+
+    &.light:before {
+      color: $grey300;
+    }
+  }
 }
 
 .disabled {
@@ -1344,7 +1365,7 @@ ul.icons {
 
 .btn,
 .spinner {
-  height: 34px;
+  height: var(--ui-control-height);
 }
 
 .btn[data-icon-after]:not(:empty):after,
@@ -1786,6 +1807,175 @@ div.btn.submit input {
   }
 }
 
+/* chevron buttons */
+.chevron-btns {
+  display: flex;
+  justify-content: flex-start;
+
+  .btn {
+    position: relative;
+    padding: 0;
+    border-radius: 0;
+    background-color: transparent;
+
+    &.current-step,
+    &.active-drop-target {
+      --text-color: #{$white};
+      --ui-control-color: #{$white};
+      --ui-control-bg-color: #{$grey500};
+      --ui-control-hover-bg-color: #{darken($grey500, 5%)};
+      --ui-control-active-bg-color: #{darken($grey500, 10%)};
+    }
+
+    &.current-step {
+      --focus-ring: #{0 0 0 1px $blue300,
+        0 0 0 3px transparentize($blue300, 0.3)};
+      @include light-on-dark-text;
+    }
+
+    &:focus {
+      z-index: 1;
+      box-shadow: none;
+
+      .label {
+        z-index: 1;
+        box-shadow: var(--focus-ring);
+      }
+
+      .reduce-focus-visibility &:not(:focus-visible) .label {
+        box-shadow: none;
+      }
+    }
+
+    .reduce-focus-visibility &:focus-visible .label {
+      box-shadow: var(--focus-ring);
+    }
+
+    &:not(.has-action-menu) {
+      @include padding-right(calc(var(--ui-control-height) / 2));
+      @include margin-right(2.8px);
+
+      &:not(.current-step[data-disclosure-trigger]) .btn-body {
+        @include padding-right(5px);
+      }
+    }
+
+    &.current-step[data-disclosure-trigger] .btn-body {
+      @include padding-left(8px);
+
+      .label {
+        padding: 3px;
+
+        &:after {
+          @include angle;
+          position: relative;
+        }
+      }
+    }
+
+    .btn-body {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      height: var(--ui-control-height);
+      background-color: var(--ui-control-bg-color);
+
+      [data-icon] {
+        --ui-control-height: calc((13rem / 16)); // 1rem == 16px
+        text-align: center;
+        @include margin-right(0);
+      }
+    }
+
+    .label {
+      display: inline-flex;
+      align-items: center;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    &.has-action-menu .btn-body {
+      @include padding-right(1px);
+      @include margin-right(0);
+    }
+
+    .chevron-right,
+    .chevron-left {
+      position: absolute;
+      top: 0;
+      height: 100%;
+      width: calc(var(--ui-control-height) / 2);
+      box-sizing: border-box;
+    }
+
+    .chevron-left {
+      @include left(0);
+      border-top: calc(var(--ui-control-height) / 2) solid
+        var(--ui-control-bg-color);
+      @include border-left(
+        calc(var(--ui-control-height) / 2) solid transparent
+      );
+
+      &:after {
+        display: block;
+        content: '';
+        font-size: 0;
+        position: absolute;
+        bottom: 0;
+        @include right(0);
+        border-bottom: calc(var(--ui-control-height) / 2) solid
+          var(--ui-control-bg-color);
+        @include border-left(
+          calc(var(--ui-control-height) / 2) solid transparent
+        );
+      }
+    }
+
+    .chevron-right {
+      @include right(0);
+      border-top: calc(var(--ui-control-height) / 2) solid transparent;
+      border-bottom: calc(var(--ui-control-height) / 2) solid transparent;
+      @include border-left(
+        calc(var(--ui-control-height) / 2) solid var(--ui-control-bg-color)
+      );
+    }
+  }
+
+  ol {
+    position: relative;
+    @include padding-left(0);
+    list-style-type: none;
+    display: flex;
+
+    li {
+      &.first-step .btn {
+        .btn-body {
+          @include padding-left(14px);
+          @include border-radius(
+            var(--ui-control-border-radius),
+            0,
+            0,
+            var(--ui-control-border-radius)
+          );
+        }
+
+        .chevron-left {
+          display: none;
+        }
+      }
+
+      &:not(.first-step) .btn {
+        @include margin-left(calc(-1 * (var(--ui-control-height) / 2)));
+        @include padding-left(calc(var(--ui-control-height) / 2));
+
+        .btn-body {
+          @include padding-left(7px);
+        }
+      }
+    }
+  }
+}
+
 /* color inputs */
 .color-input-container {
   position: relative;
@@ -2066,7 +2256,7 @@ h2 + .actions {
 /* ----------------------------------------*/
 
 .tablepane {
-  margin: -24px -24px -12px;
+  margin: -22px -22px -10px;
   overflow-x: auto;
 
   table.data {
@@ -2151,10 +2341,12 @@ table {
         th,
         td {
           &:first-child {
-            @include border-top-left-radius($largeBorderRadius);
+            @include border-top-left-radius($smallBorderRadius);
+            @include border-bottom-left-radius($smallBorderRadius);
           }
           &:last-child {
-            @include border-top-right-radius($largeBorderRadius);
+            @include border-top-right-radius($smallBorderRadius);
+            @include border-bottom-right-radius($smallBorderRadius);
           }
         }
       }
@@ -2327,8 +2519,7 @@ table {
 }
 
 .datatablesorthelper,
-.editabletablesorthelper,
-.thumbviewhelper {
+.editabletablesorthelper {
   background-color: $white;
   @include shadow;
 }
@@ -2389,6 +2580,11 @@ $elementInnerSpacing: 5px;
         }
       }
     }
+  }
+
+  .offset-drag-helper & {
+    background-color: $grey050;
+    @include shadow;
   }
 
   &.hasthumb {
@@ -2570,6 +2766,71 @@ $elementInnerSpacing: 5px;
 
 $checkboxPadding: $checkboxSize + 4;
 
+.element-index {
+  .source-path {
+    background-color: $grey050;
+    border-radius: 3px;
+    --ui-control-bg-color: #{$lightSelColor};
+    --ui-control-hover-bg-color: #{darken($lightSelColor, 5%)};
+    --ui-control-active-bg-color: #{darken($lightSelColor, 10%)};
+
+    .chevron-btns {
+      display: inline-flex;
+      position: relative;
+      background: $white;
+      --ui-control-height: calc((30rem / 16)); // 1rem == 16px
+
+      &:before {
+        display: block;
+        content: '';
+        font-size: 0;
+        position: absolute;
+        top: 0;
+        width: 0;
+        height: 0;
+        @include right(0);
+        border-top: calc(var(--ui-control-height) / 2) solid $grey050;
+        @include border-left(
+          calc(var(--ui-control-height) / 2) solid transparent
+        );
+      }
+
+      &:after {
+        display: block;
+        content: '';
+        font-size: 0;
+        position: absolute;
+        top: calc(var(--ui-control-height) / 2);
+        @include right(0);
+        border-bottom: calc(var(--ui-control-height) / 2) solid $grey050;
+        @include border-left(
+          calc(var(--ui-control-height) / 2) solid transparent
+        );
+      }
+
+      .btn {
+        --ui-control-border-radius: 3px;
+      }
+    }
+
+    .btn.settings {
+      box-shadow: 0 0 0 2px $white;
+    }
+  }
+
+  &.main {
+    .source-path {
+      margin: -22px -22px 24px;
+    }
+  }
+
+  .elementselectormodal & {
+    .source-path {
+      margin-bottom: 2px;
+    }
+  }
+}
+
 .elements {
   position: relative;
 
@@ -2586,16 +2847,17 @@ $checkboxPadding: $checkboxSize + 4;
       width: calc(100% + #{24 + 24}px);
       height: 100%;
       background: transparentize($white, 0.25) url(../images/spinner.gif)
-        no-repeat 50% 50%;
+        no-repeat var(--elements-busy-background-position);
       border-radius: $largeBorderRadius;
     }
   }
 
   .header {
-    margin: -24px -24px 24px;
+    margin: -22px -22px 24px;
     padding: 14px 24px;
     background-color: $grey050;
     box-shadow: none;
+    border-radius: 3px;
 
     &:after {
       content: '';
@@ -2608,6 +2870,23 @@ $checkboxPadding: $checkboxSize + 4;
         @include margin-right($elementInnerSpacing);
       }
     }
+  }
+
+  .tableview tr.active-drop-target th,
+  .tableview tr.active-drop-target td,
+  .thumbsview li.active-drop-target {
+    background-color: #{darken($grey500, 10%)} !important;
+
+    &,
+    a {
+      color: $white;
+    }
+  }
+
+  .tableview tr.draggee th,
+  .tableview tr.draggee td,
+  .thumbsview li.draggee {
+    opacity: 0.25;
   }
 
   // table views
@@ -2636,15 +2915,6 @@ $checkboxPadding: $checkboxSize + 4;
 
   // thumbs views
   .thumbsview {
-    @include margin(
-      -$baseElementSidePadding,
-      -$baseElementSidePadding - 1px,
-      -$baseElementSidePadding - 1px,
-      -$baseElementSidePadding
-    );
-    width: calc(
-      100% + #{$baseElementSidePadding + $baseElementSidePadding + 1px}
-    );
     display: flex;
     flex-direction: row;
     flex-wrap: wrap;
@@ -2688,6 +2958,16 @@ $checkboxPadding: $checkboxSize + 4;
           @include left($baseElementSidePadding);
         }
       }
+
+      &.sel {
+        a {
+          cursor: pointer !important;
+
+          &:hover {
+            text-decoration: underline;
+          }
+        }
+      }
     }
   }
 }
@@ -2698,18 +2978,6 @@ $checkboxPadding: $checkboxSize + 4;
     position: absolute;
     bottom: 0;
     @include right(-24px);
-  }
-}
-
-.thumbviewhelper {
-  margin: -7px;
-  padding: 7px;
-
-  .thumbsview {
-    &,
-    li {
-      margin: 0 !important;
-    }
   }
 }
 
@@ -3490,6 +3758,16 @@ ul.tree,
 
   .menubtn {
     @include margin-left(32px);
+
+    &.error {
+      &:after {
+        border-color: $red600;
+      }
+
+      span[data-icon] {
+        margin-right: 2px;
+      }
+    }
   }
 }
 
@@ -4282,6 +4560,12 @@ ul.tree,
   padding-bottom: 62px;
   user-select: none;
 
+  .header {
+    padding-top: 14px;
+    padding-bottom: 14px;
+    text-align: center;
+  }
+
   .body {
     position: relative;
     height: 100%;
@@ -4527,6 +4811,12 @@ ul.tree,
 
         &:not(.flex) {
           display: block !important;
+        }
+
+        &.flex {
+          [data-icon] {
+            margin-top: -2px;
+          }
         }
 
         &.sel {

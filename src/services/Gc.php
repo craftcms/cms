@@ -104,6 +104,8 @@ class Gc extends Component
 
         $this->_deleteOrphanedDraftsAndRevisions();
         $this->_deleteOrphanedSearchIndexes();
+        $this->_deleteOrphanedRelations();
+        $this->_deleteOrphanedStructureElements();
 
         // Fire a 'run' event
         if ($this->hasEventHandlers(self::EVENT_RUN)) {
@@ -341,6 +343,63 @@ SQL;
     {
         $this->_stdout('    > deleting orphaned search indexes ... ');
         Craft::$app->getSearch()->deleteOrphanedIndexes();
+        $this->_stdout("done\n", Console::FG_GREEN);
+    }
+
+    private function _deleteOrphanedRelations(): void
+    {
+        $this->_stdout('    > deleting orphaned relations ... ');
+        $db = Craft::$app->getDb();
+        $relationsTable = Table::RELATIONS;
+        $elementsTable = Table::ELEMENTS;
+
+        if ($db->getIsMysql()) {
+            $sql = <<<SQL
+DELETE [[r]].* FROM $relationsTable [[r]]
+LEFT JOIN $elementsTable [[e]] ON [[e.id]] = [[r.targetId]]
+WHERE [[e.id]] IS NULL
+SQL;
+        } else {
+            $sql = <<<SQL
+DELETE FROM $relationsTable
+USING $relationsTable [[r]]
+LEFT JOIN $elementsTable [[e]] ON [[e.id]] = [[r.targetId]]
+WHERE
+  $relationsTable.[[id]] = [[r.id]] AND
+  [[e.id]] IS NULL
+SQL;
+        }
+
+        $db->createCommand($sql)->execute();
+        $this->_stdout("done\n", Console::FG_GREEN);
+    }
+
+    private function _deleteOrphanedStructureElements(): void
+    {
+        $this->_stdout('    > deleting orphaned structure elements ... ');
+        $db = Craft::$app->getDb();
+        $structureElementsTable = Table::STRUCTUREELEMENTS;
+        $elementsTable = Table::ELEMENTS;
+
+        if ($db->getIsMysql()) {
+            $sql = <<<SQL
+DELETE [[se]].* FROM $structureElementsTable [[se]]
+LEFT JOIN $elementsTable [[e]] ON [[e.id]] = [[se.elementId]]
+WHERE [[se.elementId]] IS NOT NULL AND [[e.id]] IS NULL
+SQL;
+        } else {
+            $sql = <<<SQL
+DELETE FROM $structureElementsTable
+USING $structureElementsTable [[se]]
+LEFT JOIN $elementsTable [[e]] ON [[e.id]] = [[se.elementId]]
+WHERE
+  $structureElementsTable.[[id]] = [[se.id]] AND
+  [[se.elementId]] IS NOT NULL AND
+  [[e.id]] IS NULL
+SQL;
+        }
+
+        $db->createCommand($sql)->execute();
         $this->_stdout("done\n", Console::FG_GREEN);
     }
 

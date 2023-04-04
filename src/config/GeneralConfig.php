@@ -288,12 +288,13 @@ class GeneralConfig extends BaseObject
      * When set to `null` (default), Craft will run `mysqldump` or `pg_dump`, provided that those libraries are in the `$PATH` variable
      * for the system user running the web server.
      *
-     * You may provide your own command optionally using several tokens Craft will swap out at runtime:
+     * You may provide your own command, which can include several tokens Craft will substitute at runtime:
      *
-     * - `{path}` - the target backup file path
+     * - `{file}` - the target backup file path
      * - `{port}` - the current database port
      * - `{server}` - the current database hostname
-     * - `{user}` - the user to connect to the database
+     * - `{user}` - user that was used to connect to the database
+     * - `{password}` - password for the specified `{user}`
      * - `{database}` - the current database name
      * - `{schema}` - the current database schema (if any)
      *
@@ -748,7 +749,7 @@ class GeneralConfig extends BaseObject
     public $extraFileKinds = [];
 
     /**
-     * @var string|bool The string to use to separate words when uploading Assets. If set to `false`, spaces will be left alone.
+     * @var string|bool The string to use to separate words when uploading assets. If set to `false`, spaces will be left alone.
      * @group Assets
      */
     public $filenameWordSeparator = '-';

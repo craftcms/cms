@@ -19,7 +19,7 @@ use yii\base\Event;
 class AssetThumbEvent extends Event
 {
     /**
-     * @var Asset The Asset a thumbnail was requested for
+     * @var Asset The asset a thumbnail was requested for
      */
     public $asset;
 

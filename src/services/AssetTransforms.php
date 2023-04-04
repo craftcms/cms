@@ -73,7 +73,7 @@ class AssetTransforms extends Component
     const EVENT_AFTER_DELETE_ASSET_TRANSFORM = 'afterDeleteAssetTransform';
 
     /**
-     * @event GenerateTransformEvent The event that is triggered when a transform is being generated for an Asset.
+     * @event GenerateTransformEvent The event that is triggered when a transform is being generated for an asset.
      */
     const EVENT_GENERATE_TRANSFORM = 'generateTransform';
 
@@ -991,7 +991,7 @@ class AssetTransforms extends Component
     }
 
     /**
-     * Get a transform index model by a row id.
+     * Returns a transform index model by its ID.
      *
      * @param int $transformId
      * @return AssetTransformIndex|null
@@ -1006,7 +1006,7 @@ class AssetTransforms extends Component
     }
 
     /**
-     * Get a transform index model by a row id.
+     * Returns a transform index model by an asset ID and transform handle.
      *
      * @param int $assetId
      * @param string $transformHandle
@@ -1052,7 +1052,7 @@ class AssetTransforms extends Component
     }
 
     /**
-     * Delete transform records by an Asset id
+     * Deletes transform records by an asset ID.
      *
      * @param int $assetId
      */
@@ -1219,7 +1219,7 @@ class AssetTransforms extends Component
     }
 
     /**
-     * Detect the auto web-safe format for the Asset. Returns null, if the Asset is not an image.
+     * Detect the auto web-safe format for as asset. Returns `null` if the asset is not an image.
      *
      * @param Asset $asset
      * @return mixed|string
@@ -1272,7 +1272,7 @@ class AssetTransforms extends Component
     }
 
     /**
-     * Return a subfolder used by the Transform Index for the Asset.
+     * Returns a subfolder used by the transform index for an asset.
      *
      * @param Asset $asset
      * @param AssetTransformIndex $index
@@ -1290,7 +1290,7 @@ class AssetTransforms extends Component
     }
 
     /**
-     * Return the filename used by the Transform Index for the Asset.
+     * Returns the filename used by the transform index for an asset.
      *
      * @param Asset $asset
      * @param AssetTransformIndex $index
@@ -1332,7 +1332,7 @@ class AssetTransforms extends Component
     }
 
     /**
-     * Delete *ALL* transform data (including thumbs and sources) associated with the Asset.
+     * Deletes all transform data (including thumbs and sources) associated with an asset.
      *
      * @param Asset $asset
      */
@@ -1350,7 +1350,7 @@ class AssetTransforms extends Component
     }
 
     /**
-     * Delete all the generated thumbnails for the Asset.
+     * Deletes all the generated thumbnails for an asset.
      *
      * @param Asset $asset
      */
@@ -1380,7 +1380,7 @@ class AssetTransforms extends Component
     }
 
     /**
-     * Delete created transforms for an Asset.
+     * Deletes transforms for an asset.
      *
      * @param Asset $asset
      * @throws VolumeException if something went very wrong when deleting a transform
@@ -1413,7 +1413,7 @@ class AssetTransforms extends Component
     }
 
     /**
-     * Get an array of AssetTransformIndex models for all created transforms for an Asset.
+     * Returns an array of [[AssetTransformIndex]] objects for all created transforms for an asset.
      *
      * @param Asset $asset
      * @return array
@@ -1541,7 +1541,7 @@ class AssetTransforms extends Component
     }
 
     /**
-     * Create a transform for the Asset by the transform index.
+     * Creates a transform for an asset by a transform index object.
      *
      * @param Asset $asset
      * @param AssetTransformIndex $index

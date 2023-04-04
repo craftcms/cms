@@ -108,6 +108,26 @@ class Connection extends \yii\db\Connection
     }
 
     /**
+     * Returns the human-facing driver label (MySQL, MariaDB, or PostgreSQL).
+     *
+     * @return string
+     * @since 3.8.1
+     */
+    public function getDriverLabel(): string
+    {
+        if ($this->getIsMysql()) {
+            // Actually MariaDB though?
+            if (StringHelper::contains($this->getSchema()->getServerVersion(), 'mariadb', false)) {
+                return 'MariaDB';
+            }
+
+            return 'MySQL';
+        }
+
+        return 'PostgreSQL';
+    }
+
+    /**
      * Returns the version of the DB.
      *
      * @return string

@@ -96,7 +96,7 @@ class CpAsset extends AssetBundle
         }
 
         // Define the Craft object
-        $craftJson = Json::encode($this->_craftData(), JSON_UNESCAPED_UNICODE);
+        $craftJson = Json::encode($this->_craftData());
         $js = <<<JS
 window.Craft = {$craftJson};
 JS;
@@ -119,6 +119,8 @@ JS;
             'Are you sure you want to delete “{name}”?',
             'Are you sure you want to discard your changes?',
             'Are you sure you want to transfer your license to this domain?',
+            'Assets',
+            'Breadcrumbs',
             'Buy {name}',
             'Cancel',
             'Choose a user',
@@ -165,6 +167,10 @@ JS;
             'Export',
             'Export…',
             'Failed',
+            'Folder actions',
+            'Folder created.',
+            'Folder deleted.',
+            'Folder renamed.',
             'Format',
             'From {date}',
             'From',
@@ -190,11 +196,14 @@ JS;
             'Make required',
             'Matrix block could not be added. Maximum number of blocks reached.',
             'Merge the folder (any conflicting files will be replaced)',
+            'More items',
             'More',
             'More…',
             'Move down',
+            'Move folder',
             'Move to the left',
             'Move to the right',
+            'Move to',
             'Move up',
             'Move',
             'Name',
@@ -277,6 +286,7 @@ JS;
             'Upload failed for {filename}',
             'Upload files',
             'View',
+            'Volume path',
             'Warning',
             'What do you want to do with their content?',
             'What do you want to do?',
@@ -298,8 +308,10 @@ JS;
             '{ctrl}C to copy.',
             '{first, number}-{last, number} of {total, number} {total, plural, =1{{item}} other{{items}}}',
             '{first}-{last} of {total}',
+            '{name} folder',
             '{num, number} {num, plural, =1{Available Update} other{Available Updates}}',
             '{total, number} {total, plural, =1{{item}} other{{items}}}',
+            '{totalItems, plural, =1{Item} other{Items}} moved.',
             '{type} saved.',
             '“{name}” deleted.',
         ]);

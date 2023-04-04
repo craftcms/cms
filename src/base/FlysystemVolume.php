@@ -1,6 +1,6 @@
 <?php
 /**
- * The base class for all asset Volumes. All Volume types must extend this class.
+ * The base class for all asset volumes. All volume types must extend this class.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
@@ -349,7 +349,7 @@ abstract class FlysystemVolume extends Volume
     }
 
     /**
-     * Invalidate a CDN path on the Volume.
+     * Invalidate a CDN path on the volume.
      *
      * @param string $path the path to invalidate
      * @return bool
@@ -360,7 +360,7 @@ abstract class FlysystemVolume extends Volume
     }
 
     /**
-     * Returns the visibility setting for the Volume.
+     * Returns the visibility setting for the volume.
      *
      * @return string
      */

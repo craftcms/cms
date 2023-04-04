@@ -18,7 +18,7 @@ class m151005_142750_volume_s3_storage_settings extends Migration
      */
     public function safeUp()
     {
-        // Update AWS S3 Volumes to have information about storage class.
+        // Update AWS S3 volumes to have information about storage class.
         $volumes = (new Query())
             ->select(['id', 'settings'])
             ->from([Table::VOLUMES])

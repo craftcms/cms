@@ -865,7 +865,7 @@ class Locale extends BaseObject
      * Returns the locale ID.
      *
      * @return string
-     * @deprecated in 3.0.0. Use id instead.
+     * @deprecated in 3.0.0. Use [[id]] instead.
      */
     public function getId(): string
     {

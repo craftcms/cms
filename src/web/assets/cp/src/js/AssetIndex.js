@@ -12,53 +12,134 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
     $uploadButton: null,
     $uploadInput: null,
     $progressBar: null,
-    $folders: null,
 
     uploader: null,
     promptHandler: null,
     progressBar: null,
 
+    $listedFolders: null,
+    itemDrag: null,
+
     _uploadTotalFiles: 0,
     _uploadFileProgress: {},
     _currentUploaderSettings: {},
 
-    _assetDrag: null,
-    _folderDrag: null,
-    _expandDropTargetFolderTimeout: null,
-    _tempExpandedFolders: [],
-
-    _fileConflictTemplate: {
-      choices: [
-        {value: 'keepBoth', title: Craft.t('app', 'Keep both')},
-        {value: 'replace', title: Craft.t('app', 'Replace it')},
-      ],
-    },
-    _folderConflictTemplate: {
-      choices: [
-        {
-          value: 'replace',
-          title: Craft.t(
-            'app',
-            'Replace the folder (all existing files will be deleted)'
-          ),
-        },
-        {
-          value: 'merge',
-          title: Craft.t(
-            'app',
-            'Merge the folder (any conflicting files will be replaced)'
-          ),
-        },
-      ],
-    },
-
     init: function (elementType, $container, settings) {
+      settings = Object.assign({}, Craft.AssetIndex.defaults, settings);
       this.base(elementType, $container, settings);
 
       if (this.settings.context === 'index') {
-        if (!this._folderDrag) {
-          this._initIndexPageMode();
-        }
+        this.itemDrag = new Garnish.DragDrop({
+          activeDropTargetClass: 'sel',
+          minMouseDist: 10,
+          hideDraggee: false,
+          moveHelperToCursor: true,
+          activeDropTargetClass: 'active-drop-target',
+          handle: (item) => $(item).closest('tr,li'),
+          filter: () => {
+            const $container = this.itemDrag.$targetItem.closest('tr,li');
+            this.view.elementSelect.selectItem($container);
+            return this._findDraggableItems(this.view.getSelectedElements());
+          },
+          helper: ($item, index) =>
+            $('<div class="offset-drag-helper"/>')
+              .append($item)
+              .css({
+                opacity: Math.max(0.9 - 0.05 * index, 0),
+                width: '',
+                height: '',
+              }),
+          dropTargets: () => {
+            // volume sources
+            let $dropTargets = $(
+              this.$visibleSources
+                .toArray()
+                .filter(
+                  (source) =>
+                    Garnish.hasAttr(source, 'data-folder-id') &&
+                    Garnish.hasAttr(source, 'data-can-move-peer-files-to')
+                )
+            );
+            if (this.sourcePath.length <= 1) {
+              // exclude the current source since we're already at the root of it
+              $dropTargets = $dropTargets.not(this.$source);
+            } else {
+              // parent folders in the source path
+              for (let i = 0; i < this.sourcePath.length - 1; i++) {
+                const step = this.sourcePath[i];
+                if (step.folderId) {
+                  $dropTargets = $dropTargets.add(step.$btn);
+                }
+              }
+            }
+            // folders in the elements listing
+            if (this.$listedFolders) {
+              $dropTargets = $dropTargets
+                .add(
+                  this.$listedFolders
+                    .filter('[data-folder-id]')
+                    .closest('tr,li')
+                )
+                .not(this.view.getSelectedElements());
+            }
+            return $dropTargets;
+          },
+          onDragStart: () => {
+            Garnish.$bod.addClass('dragging');
+            this.itemDrag.$draggee.closest('tr,li').addClass('draggee');
+          },
+          onDragStop: () => {
+            Garnish.$bod.removeClass('dragging');
+
+            const $draggee = this.itemDrag.$draggee;
+            const targetFolderId = this._targetFolderId(
+              this.itemDrag.$activeDropTarget
+            );
+
+            if (!targetFolderId) {
+              $draggee.closest('tr,li').removeClass('draggee');
+              this.itemDrag.returnHelpersToDraggees();
+              return;
+            }
+
+            this.itemDrag.fadeOutHelpers();
+
+            const $folders = $draggee.filter('[data-is-folder]');
+            const $assets = $draggee.not($folders);
+            const folderIds = $folders.toArray().map((item) => {
+              return parseInt($(item).data('folder-id'));
+            });
+            const assetIds = $assets.toArray().map((item) => {
+              return parseInt($(item).data('id'));
+            });
+
+            const mover = new Craft.AssetMover();
+            mover
+              .moveFolders(folderIds, targetFolderId)
+              .then((totalFoldersMoved) => {
+                mover
+                  .moveAssets(assetIds, targetFolderId)
+                  .then((totalAssetsMoved) => {
+                    const totalItemsMoved =
+                      totalFoldersMoved + totalAssetsMoved;
+                    if (totalItemsMoved) {
+                      Craft.cp.displayNotice(
+                        Craft.t(
+                          'app',
+                          '{totalItems, plural, =1{Item} other{Items}} moved.',
+                          {
+                            totalItems: totalItemsMoved,
+                          }
+                        )
+                      );
+                      Craft.elementIndex.updateElements(true);
+                    } else {
+                      $draggee.closest('tr,li').removeClass('draggee');
+                    }
+                  });
+              });
+          },
+        });
 
         this.addListener(Garnish.$win, 'resize,scroll', '_positionProgressBar');
       } else {
@@ -73,644 +154,43 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
       }
     },
 
-    initSources: function () {
-      if (this.settings.context === 'index' && !this._folderDrag) {
-        this._initIndexPageMode();
-      }
-
-      return this.base();
+    _findDraggableItems: function ($items) {
+      return $(
+        $items
+          .toArray()
+          .map((item) => $(item).find('.element:first')[0])
+          .filter((item) => item && Garnish.hasAttr(item, 'data-movable'))
+      );
     },
 
-    initSource: function ($source) {
-      this.base($source);
+    _targetFolderId: function ($dropTarget) {
+      if (!$dropTarget || !$dropTarget.length) {
+        return false;
+      }
 
-      this._createFolderContextMenu($source);
+      // source?
+      if ($dropTarget.is(this.$visibleSources)) {
+        return $dropTarget.data('folder-id');
+      }
 
-      if (this.settings.context === 'index') {
-        if (this._folderDrag && this._getSourceLevel($source) > 1) {
-          if ($source.data('folder-id')) {
-            this._folderDrag.addItems($source.parent());
-          }
-        }
-
-        if (this._assetDrag) {
-          this._assetDrag.updateDropTargets();
+      // source path step?
+      for (let i = 0; i < this.sourcePath.length - 1; i++) {
+        const step = this.sourcePath[i];
+        if ($dropTarget.is(step.$btn)) {
+          return step.folderId;
         }
       }
+
+      // folder in the element listing?
+      return $dropTarget.find('.element:first').data('folder-id') || false;
     },
 
-    deinitSource: function ($source) {
-      this.base($source);
-
-      // Does this source have a context menu?
-      var contextMenu = $source.data('contextmenu');
-
-      if (contextMenu) {
-        contextMenu.destroy();
+    afterInit: function () {
+      if (!this.settings.foldersOnly) {
+        this.initForFiles();
       }
 
-      if (this.settings.context === 'index') {
-        if (this._folderDrag && this._getSourceLevel($source) > 1) {
-          this._folderDrag.removeItems($source.parent());
-        }
-
-        if (this._assetDrag) {
-          this._assetDrag.updateDropTargets();
-        }
-      }
-    },
-
-    _getSourceLevel: function ($source) {
-      return $source.parentsUntil('nav', 'ul').length;
-    },
-
-    /**
-     * Initialize the index page-specific features
-     */
-    _initIndexPageMode: function () {
-      if (this._folderDrag) {
-        return;
-      }
-
-      // Make the elements selectable
-      this.settings.selectable = true;
-      this.settings.multiSelect = true;
-
-      // Asset dragging
-      // ---------------------------------------------------------------------
-
-      this._assetDrag = new Garnish.DragDrop({
-        activeDropTargetClass: 'sel',
-        helperOpacity: 0.75,
-        filter: () =>
-          this.view.getSelectedElements().has('div.element[data-movable]'),
-        helper: ($file) => this._getFileDragHelper($file),
-        dropTargets: () => {
-          // Which data attribute should we be checking?
-          var attr;
-          if (
-            this._assetDrag.$draggee &&
-            this._assetDrag.$draggee.has('.element[data-peer-file]').length
-          ) {
-            attr = 'data-can-move-peer-files-to';
-          } else {
-            attr = 'data-can-move-to';
-          }
-
-          var targets = [];
-
-          for (var i = 0; i < this.$sources.length; i++) {
-            // Make sure it's a volume folder
-            var $source = this.$sources.eq(i);
-            if (Garnish.hasAttr($source, attr)) {
-              targets.push($source);
-            }
-          }
-
-          return targets;
-        },
-
-        onDragStart: this._onDragStart.bind(this),
-        onDropTargetChange: this._onDropTargetChange.bind(this),
-        onDragStop: this._onFileDragStop.bind(this),
-        helperBaseZindex: 800,
-      });
-
-      // Folder dragging
-      // ---------------------------------------------------------------------
-
-      this._folderDrag = new Garnish.DragDrop({
-        activeDropTargetClass: 'sel',
-        helperOpacity: 0.75,
-
-        helper: ($draggeeHelper) => {
-          var $helperSidebar = $('<div class="sidebar drag-helper"/>'),
-            $helperNav = $('<nav/>').appendTo($helperSidebar),
-            $helperUl = $('<ul/>').appendTo($helperNav);
-
-          $draggeeHelper.appendTo($helperUl).removeClass('expanded');
-          $draggeeHelper.children('a').addClass('sel');
-
-          // Match the style
-          $draggeeHelper.css({
-            'padding-top': this._folderDrag.$draggee.css('padding-top'),
-            'padding-right': this._folderDrag.$draggee.css('padding-right'),
-            'padding-bottom': this._folderDrag.$draggee.css('padding-bottom'),
-            'padding-left': this._folderDrag.$draggee.css('padding-left'),
-          });
-
-          return $helperSidebar;
-        },
-
-        dropTargets: () => {
-          var targets = [];
-
-          // Tag the dragged folder and it's subfolders
-          var draggedSourceIds = [];
-          this._folderDrag.$draggee.find('a[data-key]').each(function () {
-            draggedSourceIds.push($(this).data('key'));
-          });
-
-          for (var i = 0; i < this.$sources.length; i++) {
-            // Make sure it's a volume folder and not one of the dragged folders
-            var $source = this.$sources.eq(i),
-              key = $source.data('key');
-
-            if (!this._getFolderUidFromSourceKey(key)) {
-              continue;
-            }
-
-            if (!Craft.inArray(key, draggedSourceIds)) {
-              targets.push($source);
-            }
-          }
-
-          return targets;
-        },
-
-        onDragStart: this._onDragStart.bind(this),
-        onDropTargetChange: this._onDropTargetChange.bind(this),
-        onDragStop: this._onFolderDragStop.bind(this),
-      });
-    },
-
-    /**
-     * On file drag stop
-     */
-    _onFileDragStop: function () {
-      if (
-        this._assetDrag.$activeDropTarget &&
-        this._assetDrag.$activeDropTarget[0] !== this.$source[0]
-      ) {
-        // Keep it selected
-        var originatingSource = this.$source;
-
-        var targetFolderId =
-            this._assetDrag.$activeDropTarget.data('folder-id'),
-          originalAssetIds = [];
-
-        // For each file, prepare array data.
-        for (var i = 0; i < this._assetDrag.$draggee.length; i++) {
-          var originalAssetId = Craft.getElementInfo(
-            this._assetDrag.$draggee[i]
-          ).id;
-
-          originalAssetIds.push(originalAssetId);
-        }
-
-        // Are any files actually getting moved?
-        if (originalAssetIds.length) {
-          this.setIndexBusy();
-
-          this._positionProgressBar();
-          this.progressBar.resetProgressBar();
-          this.progressBar.setItemCount(originalAssetIds.length);
-          this.progressBar.showProgressBar();
-
-          // For each file to move a separate request
-          var parameterArray = [];
-          for (i = 0; i < originalAssetIds.length; i++) {
-            parameterArray.push({
-              action: 'assets/move-asset',
-              params: {
-                assetId: originalAssetIds[i],
-                folderId: targetFolderId,
-              },
-            });
-          }
-
-          // Define the callback for when all file moves are complete
-          var onMoveFinish = (responseArray) => {
-            this.promptHandler.resetPrompts();
-
-            // Loop trough all the responses
-            for (var i = 0; i < responseArray.length; i++) {
-              var response = responseArray[i];
-
-              // Push prompt into prompt array
-              if (response.conflict) {
-                this.promptHandler.addPrompt({
-                  assetId: response.assetId,
-                  suggestedFilename: response.suggestedFilename,
-                  prompt: {
-                    message: response.conflict,
-                    choices: this._fileConflictTemplate.choices,
-                  },
-                });
-              }
-
-              if (response.error) {
-                alert(response.error);
-              }
-            }
-
-            this.setIndexAvailable();
-            this.progressBar.hideProgressBar();
-            var reloadIndex = false;
-
-            var performAfterMoveActions = function () {
-              // Select original source
-              this.sourceSelect.selectItem(originatingSource);
-
-              // Make sure we use the correct offset when fetching the next page
-              this._totalVisible -= this._assetDrag.$draggee.length;
-
-              // And remove the elements that have been moved away
-              for (var i = 0; i < originalAssetIds.length; i++) {
-                $('[data-id=' + originalAssetIds[i] + ']').remove();
-              }
-
-              this.view.deselectAllElements();
-              this._collapseExtraExpandedFolders(targetFolderId);
-
-              if (reloadIndex) {
-                this.updateElements();
-              }
-            };
-
-            if (this.promptHandler.getPromptCount()) {
-              // Define callback for completing all prompts
-              var promptCallback = (returnData) => {
-                var newParameterArray = [];
-
-                // Loop trough all returned data and prepare a new request array
-                for (var i = 0; i < returnData.length; i++) {
-                  if (returnData[i].choice === 'cancel') {
-                    reloadIndex = true;
-                    continue;
-                  }
-
-                  if (returnData[i].choice === 'keepBoth') {
-                    newParameterArray.push({
-                      action: 'assets/move-asset',
-                      params: {
-                        folderId: targetFolderId,
-                        assetId: returnData[i].assetId,
-                        filename: returnData[i].suggestedFilename,
-                      },
-                    });
-                  }
-
-                  if (returnData[i].choice === 'replace') {
-                    newParameterArray.push({
-                      action: 'assets/move-asset',
-                      params: {
-                        folderId: targetFolderId,
-                        assetId: returnData[i].assetId,
-                        force: true,
-                      },
-                    });
-                  }
-                }
-
-                // Nothing to do, carry on
-                if (newParameterArray.length === 0) {
-                  performAfterMoveActions.apply(this);
-                } else {
-                  // Start working
-                  this.setIndexBusy();
-                  this.progressBar.resetProgressBar();
-                  this.progressBar.setItemCount(
-                    this.promptHandler.getPromptCount()
-                  );
-                  this.progressBar.showProgressBar();
-
-                  // Move conflicting files again with resolutions now
-                  this._performBatchRequests(newParameterArray, onMoveFinish);
-                }
-              };
-
-              this._assetDrag.fadeOutHelpers();
-              this.promptHandler.showBatchPrompts(promptCallback);
-            } else {
-              performAfterMoveActions.apply(this);
-              this._assetDrag.fadeOutHelpers();
-            }
-          };
-
-          // Initiate the file move with the built array, index of 0 and callback to use when done
-          this._performBatchRequests(parameterArray, onMoveFinish);
-
-          // Skip returning dragees
-          return;
-        }
-      } else {
-        // Add the .sel class back on the selected source
-        this.$source.addClass('sel');
-
-        this._collapseExtraExpandedFolders();
-      }
-
-      this._assetDrag.returnHelpersToDraggees();
-    },
-
-    /**
-     * On folder drag stop
-     */
-    _onFolderDragStop: function () {
-      // Only move if we have a valid target and we're not trying to move into our direct parent
-      if (
-        this._folderDrag.$activeDropTarget &&
-        this._folderDrag.$activeDropTarget
-          .siblings('ul')
-          .children('li')
-          .filter(this._folderDrag.$draggee).length === 0
-      ) {
-        var targetFolderId =
-          this._folderDrag.$activeDropTarget.data('folder-id');
-
-        this._collapseExtraExpandedFolders(targetFolderId);
-
-        // Get the old folder IDs, and sort them so that we're moving the most-nested folders first
-        var folderIds = [];
-        const folderIdsToDelete = [];
-
-        for (var i = 0; i < this._folderDrag.$draggee.length; i++) {
-          var $a = this._folderDrag.$draggee.eq(i).children('a'),
-            folderId = $a.data('folder-id');
-
-          // Make sure it's not already in the target folder and use this single folder Id.
-          if (folderId != targetFolderId) {
-            folderIds.push(folderId);
-            break;
-          }
-        }
-
-        if (folderIds.length) {
-          folderIds.sort();
-          folderIds.reverse();
-
-          this.setIndexBusy();
-          this._positionProgressBar();
-          this.progressBar.resetProgressBar();
-          this.progressBar.setItemCount(folderIds.length);
-          this.progressBar.showProgressBar();
-
-          var parameterArray = [];
-
-          for (i = 0; i < folderIds.length; i++) {
-            parameterArray.push({
-              action: 'assets/move-folder',
-              params: {
-                folderId: folderIds[i],
-                parentId: targetFolderId,
-              },
-            });
-          }
-
-          // Increment, so to avoid displaying folder files that are being moved
-          this.requestId++;
-
-          /*
-                   Here's the rundown:
-                   1) Send all the folders being moved
-                   2) Get results:
-                   a) For all conflicting, receive prompts and resolve them to get:
-                   b) For all valid move operations: by now server has created the needed folders
-                   in target destination. Server returns an array of file move operations
-                   c) server also returns a list of all the folder id changes
-                   d) and the data-id of node to be removed, in case of conflict
-                   e) and a list of folders to delete after the move
-                   3) From data in 2) build a large file move operation array
-                   4) Create a request loop based on this, so we can display progress bar
-                   5) when done, delete all the folders and perform other maintenance
-                   6) Champagne
-                   */
-
-          // This will hold the final list of files to move
-          var fileMoveList = [];
-
-          var newSourceKey = '';
-
-          var onMoveFinish = (responseArray) => {
-            this.promptHandler.resetPrompts();
-
-            // Loop trough all the responses
-            for (var i = 0; i < responseArray.length; i++) {
-              const data = responseArray[i];
-
-              // If successful and have data, then update
-              if (data.success) {
-                if (data.transferList) {
-                  fileMoveList.push(...data.transferList);
-                }
-
-                if (data.newFolderId) {
-                  newSourceKey =
-                    this._folderDrag.$activeDropTarget.data('key') +
-                    '/folder:' +
-                    data.newFolderUid;
-                }
-
-                folderIdsToDelete.push(data.request.params.folderId);
-              }
-
-              // Push prompt into prompt array
-              if (data.conflict) {
-                data.prompt = {
-                  message: data.conflict,
-                  choices: this._folderConflictTemplate.choices,
-                };
-
-                this.promptHandler.addPrompt(data);
-              }
-
-              if (data.error) {
-                alert(data.error);
-              }
-            }
-
-            if (this.promptHandler.getPromptCount()) {
-              // Define callback for completing all prompts
-              var promptCallback = (returnData) => {
-                this.promptHandler.resetPrompts();
-
-                var newParameterArray = [];
-
-                var params = {};
-                // Loop trough all returned data and prepare a new request array
-                for (var i = 0; i < returnData.length; i++) {
-                  const data = returnData[i];
-
-                  if (data.choice === 'cancel') {
-                    continue;
-                  }
-
-                  if (data.choice === 'replace') {
-                    params.force = true;
-                  }
-
-                  if (data.choice === 'merge') {
-                    params.merge = true;
-                  }
-
-                  params.folderId = data.folderId;
-                  params.parentId = data.parentId;
-
-                  newParameterArray.push({
-                    action: 'assets/move-folder',
-                    params: params,
-                  });
-                }
-
-                // Start working on them lists, baby
-                if (newParameterArray.length === 0) {
-                  this._performActualFolderMove(
-                    fileMoveList,
-                    folderIdsToDelete,
-                    newSourceKey
-                  );
-                } else {
-                  // Start working
-                  this.setIndexBusy();
-                  this.progressBar.resetProgressBar();
-                  this.progressBar.setItemCount(
-                    this.promptHandler.getPromptCount()
-                  );
-                  this.progressBar.showProgressBar();
-
-                  this._performBatchRequests(newParameterArray, onMoveFinish);
-                }
-              };
-
-              this.promptHandler.showBatchPrompts(promptCallback);
-
-              this.setIndexAvailable();
-              this.progressBar.hideProgressBar();
-            } else {
-              this._performActualFolderMove(
-                fileMoveList,
-                folderIdsToDelete,
-                newSourceKey
-              );
-            }
-          };
-
-          // Initiate the folder move with the built array, index of 0 and callback to use when done
-          this._performBatchRequests(parameterArray, onMoveFinish);
-
-          // Skip returning dragees until we get the Ajax response
-          return;
-        }
-      } else {
-        // Add the .sel class back on the selected source
-        this.$source.addClass('sel');
-
-        this._collapseExtraExpandedFolders();
-      }
-
-      this._folderDrag.returnHelpersToDraggees();
-    },
-
-    /**
-     * Really move the folder. Like really. For real.
-     */
-    _performActualFolderMove: function (
-      fileMoveList,
-      folderDeleteList,
-      newSourceKey
-    ) {
-      this.setIndexBusy();
-      this.progressBar.resetProgressBar();
-      this.progressBar.setItemCount(1);
-      this.progressBar.showProgressBar();
-
-      var moveCallback = (folderDeleteList) => {
-        if (!folderDeleteList.length) {
-          this.setIndexAvailable();
-          this.progressBar.hideProgressBar();
-          this._folderDrag.returnHelpersToDraggees();
-          if (newSourceKey) {
-            this.setInstanceState('selectedSource', newSourceKey);
-          }
-          this.refreshSources();
-          return;
-        }
-
-        // Delete the old folders
-        var counter = 0;
-        var limit = folderDeleteList.length;
-        for (var i = 0; i < folderDeleteList.length; i++) {
-          // When all folders are deleted, reload the sources.
-          Craft.postActionRequest(
-            'assets/delete-folder',
-            {folderId: folderDeleteList[i]},
-            () => {
-              if (++counter === limit) {
-                this.setIndexAvailable();
-                this.progressBar.hideProgressBar();
-                this._folderDrag.returnHelpersToDraggees();
-                if (newSourceKey) {
-                  this.setInstanceState('selectedSource', newSourceKey);
-                }
-                this.refreshSources();
-              }
-            }
-          );
-        }
-      };
-
-      if (fileMoveList.length > 0) {
-        var parameterArray = [];
-
-        for (var i = 0; i < fileMoveList.length; i++) {
-          parameterArray.push({
-            action: 'assets/move-asset',
-            params: fileMoveList[i],
-          });
-        }
-        this._performBatchRequests(parameterArray, function () {
-          moveCallback(folderDeleteList);
-        });
-      } else {
-        moveCallback(folderDeleteList);
-      }
-    },
-
-    /**
-     * Returns the root level source for a source.
-     *
-     * @param $source
-     * @returns {*}
-     * @private
-     */
-    _getRootSource: function ($source) {
-      var $parent;
-      while (($parent = this._getParentSource($source)) && $parent.length) {
-        $source = $parent;
-      }
-      return $source;
-    },
-
-    /**
-     * Get parent source for a source.
-     *
-     * @param $source
-     * @returns {*}
-     * @private
-     */
-    _getParentSource: function ($source) {
-      if (this._getSourceLevel($source) > 1) {
-        return $source.parent().parent().siblings('a');
-      }
-    },
-
-    _selectSourceByFolderId: function (targetFolderId) {
-      var $targetSource = this._getSourceByKey(targetFolderId);
-
-      // Make sure that all the parent sources are expanded and this source is visible.
-      var $parentSources = $targetSource.parent().parents('li');
-
-      for (var i = 0; i < $parentSources.length; i++) {
-        var $parentSource = $($parentSources[i]);
-
-        if (!$parentSource.hasClass('expanded')) {
-          $parentSource.children('.toggle').trigger('click');
-        }
-      }
-
-      this.selectSource($targetSource);
-      this.updateElements();
+      this.base();
     },
 
     /**
@@ -718,7 +198,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
      *
      * @private
      */
-    afterInit: function () {
+    initForFiles: function () {
       if (!this.$uploadButton) {
         this.$uploadButton = $('<button/>', {
           type: 'button',
@@ -737,7 +217,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
       }
 
       this.promptHandler = new Craft.PromptHandler();
-      this.progressBar = new Craft.ProgressBar(this.$main, true);
+      this.progressBar = new Craft.ProgressBar(this.$main, false);
 
       var options = {
         url: Craft.getActionUrl('assets/upload'),
@@ -775,99 +255,52 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
             .trigger('click');
         }
       });
-
-      this.base();
-    },
-
-    getDefaultSourceKey: function () {
-      // Did they request a specific volume in the URL?
-      if (
-        this.settings.context === 'index' &&
-        typeof window.defaultSource !== 'undefined'
-      ) {
-        let defaultSourceParts = window.defaultSource.split('/');
-        let volumeSource = this.$sources.toArray().find((s) => {
-          return $(s).data('volume-handle') === defaultSourceParts[0];
-        });
-        if (volumeSource) {
-          let $source = $(volumeSource);
-
-          for (let i = 1; i < defaultSourceParts.length; i++) {
-            // does $source have a subfolder with this path name?
-            let subfolderSource = this._getChildSources($source)
-              .toArray()
-              .find((s) => {
-                return $('> .label', s).text() === defaultSourceParts[i];
-              });
-            if (!subfolderSource) {
-              break;
-            }
-            this._expandSource($source);
-            $source = $(subfolderSource);
-          }
-
-          return $source.data('key');
-        }
-      }
-
-      return this.base();
     },
 
     onSelectSource: function () {
-      var $source = this._getSourceByKey(this.sourceKey);
-      var folderId = $source.data('folder-id');
-
-      if (folderId && Garnish.hasAttr(this.$source, 'data-can-upload')) {
-        this.uploader.setParams({
-          folderId: this.$source.attr('data-folder-id'),
-        });
-        this.$uploadButton.removeClass('disabled');
-      } else {
-        this.$uploadButton.addClass('disabled');
-      }
-
-      // Update the URL if we're on the Assets index
-      if ($source.length && this.settings.context === 'index') {
-        this._updateUrl($source);
+      if (!this.settings.foldersOnly) {
+        const folderId = this.$source.data('folder-id');
+        if (folderId && Garnish.hasAttr(this.$source, 'data-can-upload')) {
+          this.uploader.setParams({
+            folderId: this.$source.attr('data-folder-id'),
+          });
+          this.$uploadButton.removeClass('disabled');
+        } else {
+          this.$uploadButton.addClass('disabled');
+        }
       }
 
       this.base();
     },
 
-    _updateUrl: function ($source) {
-      if (typeof history === 'undefined') {
-        return;
+    onSourcePathChange: function () {
+      if (!this.settings.foldersOnly && this.sourcePath.length) {
+        const currentFolder = this.sourcePath[this.sourcePath.length - 1];
+        if (currentFolder.folderId) {
+          if (this.uploader) {
+            this.uploader.setParams({
+              folderId: currentFolder.folderId,
+            });
+          }
+
+          // will the user be allowed to move items in this folder?
+          const canMoveSubItems = !!currentFolder.canMoveSubItems;
+          this.settings.selectable =
+            this.settings.selectable || canMoveSubItems;
+          this.settings.multiSelect =
+            this.settings.multiSelect || canMoveSubItems;
+        }
       }
 
-      // Find all the subfolder sources. At the end, $thisSource will be the root volume source
-      let nestedSources = [];
-      let $thisSource = $source;
-      let $parent;
-      while (($parent = this._getParentSource($thisSource)) && $parent.length) {
-        nestedSources.unshift($thisSource);
-        $thisSource = $parent;
-      }
-
-      let uri = 'assets';
-      if ($thisSource.data('volume-handle')) {
-        uri += '/' + $thisSource.data('volume-handle');
-        nestedSources.forEach(($s) => {
-          uri += '/' + $s.children('.label').text();
-        });
-      }
-
-      history.replaceState({}, '', Craft.getUrl(uri));
-    },
-
-    _getFolderUidFromSourceKey: function (sourceKey) {
-      var m = sourceKey.match(/\bfolder:([0-9a-f\-]+)$/);
-
-      return m ? m[1] : null;
+      this.base();
     },
 
     startSearching: function () {
       // Does this source have subfolders?
-      if (!this.settings.hideSidebar && this.$source.siblings('ul').length) {
+      if (
+        !this.settings.hideSidebar &&
+        this.sourcePath[this.sourcePath.length - 1].hasChildren
+      ) {
         if (this.$includeSubfoldersContainer === null) {
           var id =
             'includeSubfolders-' + Math.floor(Math.random() * 1000000000);
@@ -935,8 +368,22 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
       this.base();
     },
 
+    getViewSettings: function () {
+      const settings = {};
+
+      if (this.settings.context === 'index') {
+        // Allow folders to be selected
+        settings.canSelectElement = () => true;
+      }
+
+      return settings;
+    },
+
     getViewParams: function () {
-      var data = this.base();
+      const data = Object.assign(this.base(), {
+        showFolders: this.settings.showFolders && !this.trashed,
+        foldersOnly: this.settings.foldersOnly,
+      });
 
       if (
         this.showingIncludeSubfoldersCheckbox &&
@@ -1007,7 +454,10 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
             message: Craft.t('app', response.conflict, {
               file: response.filename,
             }),
-            choices: this._fileConflictTemplate.choices,
+            choices: [
+              {value: 'keepBoth', title: Craft.t('app', 'Keep both')},
+              {value: 'replace', title: Craft.t('app', 'Replace it')},
+            ],
           };
 
           this.promptHandler.addPrompt(response);
@@ -1015,15 +465,19 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 
         Craft.cp.runQueue();
       } else {
+        let message;
         if (response.error) {
-          alert(
-            Craft.t('app', 'Upload failed. The error message was: “{error}”', {
+          message = Craft.t(
+            'app',
+            'Upload failed. The error message was: “{error}”',
+            {
               error: response.error,
-            })
+            }
           );
         } else {
-          alert(Craft.t('app', 'Upload failed for {filename}.', {filename}));
+          message = Craft.t('app', 'Upload failed for {filename}.', {filename});
         }
+        Craft.cp.displayError(message);
       }
     },
 
@@ -1032,7 +486,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
      */
     _onUploadFailure: function (event, data) {
       if (data.jqXHR.responseJSON.error) {
-        alert(data.jqXHR.responseJSON.error);
+        Craft.cp.displayError(data.jqXHR.responseJSON.error);
         this.progressBar.hideProgressBar();
         this.setIndexAvailable();
       }
@@ -1080,7 +534,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
           if (textStatus === 'success' && data.assetId) {
             this.selectElementAfterUpdate(data.assetId);
           } else if (data.error) {
-            alert(data.error);
+            Craft.cp.displayError(data.error);
           }
           parameterIndex++;
           this.progressBar.incrementProcessedItemCount(1);
@@ -1141,19 +595,62 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
      * @private
      */
     _onUpdateElements: function (append, $newElements) {
-      if (this.settings.context === 'index') {
-        if (!append) {
-          this._assetDrag.removeAllItems();
-        }
-
-        this._assetDrag.addItems($newElements.has('div.element[data-movable]'));
-      }
-
-      this.base(append, $newElements);
-
       this.removeListener(this.$elements, 'keydown');
       this.addListener(this.$elements, 'keydown', this._onKeyDown.bind(this));
       this.view.elementSelect.on('focusItem', this._onElementFocus.bind(this));
+
+      this.$listedFolders = $newElements.find('.element[data-is-folder]');
+      for (let i = 0; i < this.$listedFolders.length; i++) {
+        const $folder = this.$listedFolders.eq(i);
+        const $label = $folder.find('.label');
+        const folderId = parseInt($folder.data('folder-id'));
+        const folderName = $label.text();
+        const label = Craft.t('app', '{name} folder', {
+          name: folderName,
+        });
+        if (this.settings.disabledFolderIds.includes(folderId)) {
+          $label.attr('aria-label', label);
+          $newElements.has($folder).addClass('disabled');
+          continue;
+        }
+        const sourcePath = $folder.data('source-path');
+        if (sourcePath) {
+          const $a = $('<a/>', {
+            href: Craft.getCpUrl(sourcePath[sourcePath.length - 1].uri),
+            text: folderName,
+            role: 'button',
+            'aria-label': label,
+          });
+          $label.empty().append($a);
+          this.addListener($a, 'activate', (ev) => {
+            this.sourcePath = sourcePath;
+            this.clearSearch(false);
+            this.updateElements().then(() => {
+              const firstFocusableEl = this.$elements.find(
+                ':focusable:not(.selectallcontainer)'
+              )[0];
+              if (firstFocusableEl) {
+                firstFocusableEl.focus();
+              }
+            });
+          });
+        }
+      }
+
+      if (this.itemDrag) {
+        const currentFolder = this.sourcePath[this.sourcePath.length - 1];
+        const canMoveSubItems = !!(
+          currentFolder &&
+          currentFolder.folderId &&
+          currentFolder.canMoveSubItems
+        );
+        if (!canMoveSubItems || !append) {
+          this.itemDrag.removeAllItems();
+        }
+        if (canMoveSubItems) {
+          this.itemDrag.addItems(this._findDraggableItems($newElements));
+        }
+      }
     },
 
     /**
@@ -1190,7 +687,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
     },
 
     /**
-     * Load the preview for an Asset element
+     * Load the preview for an asset
      * @private
      */
     _loadPreview: function ($element) {
@@ -1209,216 +706,77 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
     },
 
     /**
-     * On Drag Start
+     * @returns {string}
      */
-    _onDragStart: function () {
-      this._tempExpandedFolders = [];
+    getSourcePathLabel: function () {
+      return Craft.t('app', 'Volume path');
     },
 
     /**
-     * Get File Drag Helper
+     * @returns {string}
      */
-    _getFileDragHelper: function ($element) {
-      var currentView = this.getSelectedSourceState('mode');
-      var $outerContainer;
-      var $innerContainer;
+    getSourcePathActionLabel: function () {
+      return Craft.t('app', 'Folder actions');
+    },
 
-      switch (currentView) {
-        case 'table': {
-          $outerContainer = $(
-            '<div class="elements datatablesorthelper"/>'
-          ).appendTo(Garnish.$bod);
-          $innerContainer = $('<div class="tableview"/>').appendTo(
-            $outerContainer
-          );
-          var $table = $('<table class="data"/>').appendTo($innerContainer);
-          var $tbody = $('<tbody/>').appendTo($table);
+    getSourcePathActions: function () {
+      const actions = [];
+      const currentFolder = this.sourcePath[this.sourcePath.length - 1];
 
-          $element.appendTo($tbody);
-
-          // Copy the column widths
-          this._$firstRowCells = this.view.$table
-            .children('tbody')
-            .children('tr:first')
-            .children();
-          var $helperCells = $element.children();
-
-          for (var i = 0; i < $helperCells.length; i++) {
-            // Hard-set the cell widths
-            var $helperCell = $($helperCells[i]);
-
-            // Skip the checkbox cell
-            if ($helperCell.hasClass('checkbox-cell')) {
-              $helperCell.remove();
-              $outerContainer.css('margin-' + Craft.left, 19); // 26 - 7
-              continue;
-            }
-
-            var $firstRowCell = $(this._$firstRowCells[i]),
-              width = $firstRowCell.width();
-
-            $firstRowCell.width(width);
-            $helperCell.width(width);
-          }
-
-          return $outerContainer;
-        }
-        case 'thumbs': {
-          $outerContainer = $(
-            '<div class="elements thumbviewhelper"/>'
-          ).appendTo(Garnish.$bod);
-          $innerContainer = $('<ul class="thumbsview"/>').appendTo(
-            $outerContainer
-          );
-
-          $element.appendTo($innerContainer);
-
-          return $outerContainer;
-        }
+      if (currentFolder.canCreate) {
+        actions.push({
+          label: Craft.t('app', 'New subfolder'),
+          onSelect: () => {
+            this._createSubfolder();
+          },
+        });
       }
 
-      return $();
-    },
-
-    /**
-     * On Drop Target Change
-     */
-    _onDropTargetChange: function ($dropTarget) {
-      clearTimeout(this._expandDropTargetFolderTimeout);
-
-      if ($dropTarget) {
-        var folderId = $dropTarget.data('folder-id');
-
-        if (folderId) {
-          this.dropTargetFolder = this._getSourceByKey(folderId);
+      if (this.settings.context === 'index') {
+        if (currentFolder.canRename) {
+          actions.push({
+            label: Craft.t('app', 'Rename folder'),
+            onSelect: () => {
+              this._renameFolder();
+            },
+          });
 
           if (
-            this._hasSubfolders(this.dropTargetFolder) &&
-            !this._isExpanded(this.dropTargetFolder)
+            currentFolder.canMove &&
+            this.getMoveTargetSourceKeys(true).length
           ) {
-            this._expandDropTargetFolderTimeout = setTimeout(
-              this._expandFolder.bind(this),
-              500
-            );
+            actions.push({
+              label: Craft.t('app', 'Move folder'),
+              onSelect: () => {
+                this._moveFolder();
+              },
+            });
           }
-        } else {
-          this.dropTargetFolder = null;
+
+          if (currentFolder.canDelete) {
+            actions.push({
+              label: Craft.t('app', 'Delete folder'),
+              destructive: true,
+              onSelect: () => {
+                this._deleteFolder();
+              },
+            });
+          }
         }
       }
 
-      if ($dropTarget && $dropTarget[0] !== this.$source[0]) {
-        // Temporarily remove the .sel class on the active source
-        this.$source.removeClass('sel');
-      } else {
-        this.$source.addClass('sel');
-      }
+      return actions;
     },
 
-    /**
-     * Collapse Extra Expanded Folders
-     */
-    _collapseExtraExpandedFolders: function (dropTargetFolderId) {
-      clearTimeout(this._expandDropTargetFolderTimeout);
-
-      // If a source ID is passed in, exclude its parents
-      var $excludedSources;
-
-      if (dropTargetFolderId) {
-        $excludedSources = this._getSourceByKey(dropTargetFolderId)
-          .parents('li')
-          .children('a');
-      }
-
-      for (var i = this._tempExpandedFolders.length - 1; i >= 0; i--) {
-        var $source = this._tempExpandedFolders[i];
-
-        // Check the parent list, if a source id is passed in
-        if (
-          typeof $excludedSources === 'undefined' ||
-          $excludedSources.filter('[data-key="' + $source.data('key') + '"]')
-            .length === 0
-        ) {
-          this._collapseFolder($source);
-          this._tempExpandedFolders.splice(i, 1);
-        }
-      }
-    },
-
-    _getSourceByKey: function (key) {
-      return this.$sources.filter('[data-key$="' + key + '"]');
-    },
-
-    _hasSubfolders: function ($source) {
-      return $source.siblings('ul').find('li').length;
-    },
-
-    _isExpanded: function ($source) {
-      return $source.parent('li').hasClass('expanded');
-    },
-
-    _expandFolder: function () {
-      // Collapse any temp-expanded drop targets that aren't parents of this one
-      this._collapseExtraExpandedFolders(
-        this.dropTargetFolder.data('folder-id')
-      );
-
-      this.dropTargetFolder.siblings('.toggle').trigger('click');
-
-      // Keep a record of that
-      this._tempExpandedFolders.push(this.dropTargetFolder);
-    },
-
-    _collapseFolder: function ($source) {
-      if ($source.parent().hasClass('expanded')) {
-        $source.siblings('.toggle').trigger('click');
-      }
-    },
-
-    _createFolderContextMenu: function ($source) {
-      // Make sure it's a volume folder
-      if (!this._getFolderUidFromSourceKey($source.data('key'))) {
-        return;
-      }
-
-      var menuOptions = [
-        {
-          label: Craft.t('app', 'New subfolder'),
-          onClick: () => {
-            this._createSubfolder($source);
-          },
-        },
-      ];
-
-      // For all folders that are not top folders
-      if (
-        this.settings.context === 'index' &&
-        this._getSourceLevel($source) > 1
-      ) {
-        menuOptions.push({
-          label: Craft.t('app', 'Rename folder'),
-          onClick: () => {
-            this._renameFolder($source);
-          },
-        });
-        menuOptions.push({
-          label: Craft.t('app', 'Delete folder'),
-          onClick: () => {
-            this._deleteFolder($source);
-          },
-        });
-      }
-
-      new Garnish.ContextMenu($source, menuOptions, {menuClass: 'menu'});
-    },
-
-    _createSubfolder: function ($parentFolder) {
-      var subfolderName = prompt(
+    _createSubfolder: function () {
+      const currentFolder = this.sourcePath[this.sourcePath.length - 1];
+      const subfolderName = prompt(
         Craft.t('app', 'Enter the name of the folder')
       );
 
       if (subfolderName) {
-        var params = {
-          parentId: $parentFolder.data('folder-id'),
+        const params = {
+          parentId: currentFolder.folderId,
           folderName: subfolderName,
         };
 
@@ -1431,57 +789,30 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
             this.setIndexAvailable();
 
             if (textStatus === 'success' && data.success) {
-              this._prepareParentForChildren($parentFolder);
-
-              var $subfolder = $(
-                '<li>' +
-                  `<a data-key="${$parentFolder.data('key')}/folder:${
-                    data.folderUid
-                  }" data-default-sort="${$parentFolder.data(
-                    'default-sort'
-                  )}"` +
-                  (Garnish.hasAttr($parentFolder, 'data-has-thumbs')
-                    ? ' data-has-thumbs'
-                    : '') +
-                  ` data-folder-id="${data.folderId}"` +
-                  (Garnish.hasAttr($parentFolder, 'data-can-upload')
-                    ? ' data-can-upload'
-                    : '') +
-                  (Garnish.hasAttr($parentFolder, 'data-can-move-to')
-                    ? ' data-can-move-to'
-                    : '') +
-                  (Garnish.hasAttr($parentFolder, 'data-can-move-peer-files-to')
-                    ? ' data-can-move-peer-files-to'
-                    : '') +
-                  '>' +
-                  `<span class="label">${data.folderName}</span>` +
-                  '</a>' +
-                  '</li>'
-              );
-
-              var $a = $subfolder.children('a:first');
-              this._appendSubfolder($parentFolder, $subfolder);
-              this.initSource($a);
+              Craft.cp.displayNotice(Craft.t('app', 'Folder created.'));
+              this.updateElements(true);
             }
 
             if (textStatus === 'success' && data.error) {
-              alert(data.error);
+              Craft.cp.displayError(data.error);
             }
           }
         );
       }
     },
 
-    _deleteFolder: function ($targetFolder) {
+    _deleteFolder: function () {
+      const currentFolder = this.sourcePath[this.sourcePath.length - 1];
+
       if (
         confirm(
           Craft.t('app', 'Really delete folder “{folder}”?', {
-            folder: $.trim($targetFolder.text()),
+            folder: currentFolder.label,
           })
         )
       ) {
-        var params = {
-          folderId: $targetFolder.data('folder-id'),
+        const params = {
+          folderId: currentFolder.folderId,
         };
 
         this.setIndexBusy();
@@ -1493,17 +824,16 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
             this.setIndexAvailable();
 
             if (textStatus === 'success' && data.success) {
-              var $parentFolder = this._getParentSource($targetFolder);
-
-              // Remove folder and any trace from its parent, if needed
-              this.deinitSource($targetFolder);
-
-              $targetFolder.parent().remove();
-              this._cleanUpTree($parentFolder);
+              Craft.cp.displayNotice(Craft.t('app', 'Folder deleted.'));
+              this.sourcePath = this.sourcePath.slice(
+                0,
+                this.sourcePath.length - 1
+              );
+              this.updateElements();
             }
 
             if (textStatus === 'success' && data.error) {
-              alert(data.error);
+              Craft.cp.displayError(data.error);
             }
           }
         );
@@ -1513,12 +843,14 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
     /**
      * Rename
      */
-    _renameFolder: function ($source) {
-      const $label = $source.children('.label');
-      const oldName = Craft.trim($label.text());
-      const newName = prompt(Craft.t('app', 'Rename folder'), oldName);
+    _renameFolder: function () {
+      const currentFolder = this.sourcePath[this.sourcePath.length - 1];
+      const newName = prompt(
+        Craft.t('app', 'Rename folder'),
+        currentFolder.label
+      );
 
-      if (!newName || newName === oldName) {
+      if (!newName || newName === currentFolder.label) {
         return;
       }
 
@@ -1526,25 +858,21 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 
       Craft.sendActionRequest('POST', 'assets/rename-folder', {
         data: {
-          folderId: $source.data('folder-id'),
+          folderId: currentFolder.folderId,
           newName: newName,
         },
       })
         .then((response) => {
           if (response.data.success) {
-            $label.text(response.data.newName);
-
-            // Is this the selected source?
-            if ($source.data('key') === this.$source.data('key')) {
-              this.updateElements();
-
-              // Update the URL if we're on the Assets index
-              if (this.settings.context === 'index') {
-                this._updateUrl($source);
-              }
-            }
+            Craft.cp.displayNotice(Craft.t('app', 'Folder renamed.'));
+            const sourcePath = this.sourcePath.slice();
+            sourcePath[sourcePath.length - 1].label = response.data.newName;
+            sourcePath[sourcePath.length - 1].uri =
+              sourcePath[sourcePath.length - 2].uri +
+              `/${response.data.newName}`;
+            this.sourcePath = sourcePath;
           } else if (response.data.error) {
-            alert(response.data.error);
+            Craft.cp.displayError(response.data.error);
           }
         })
         .finally(() => {
@@ -1552,67 +880,76 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
         });
     },
 
-    /**
-     * Prepare a source folder for children folder.
-     *
-     * @param $parentFolder
-     * @private
-     */
-    _prepareParentForChildren: function ($parentFolder) {
-      if (!this._hasSubfolders($parentFolder)) {
-        $parentFolder
-          .parent()
-          .addClass('expanded')
-          .append('<div class="toggle"></div><ul></ul>');
-        this.initSourceToggle($parentFolder);
-      }
+    getMoveTargetSourceKeys: function (peerFiles) {
+      const attr = peerFiles
+        ? 'data-can-move-peer-files-to'
+        : 'data-can-move-to';
+      return this.$sources
+        .toArray()
+        .filter((source) => {
+          const volumeHandle = $(source).data('volume-handle');
+          return (
+            volumeHandle &&
+            volumeHandle !== 'temp' &&
+            Garnish.hasAttr(source, attr)
+          );
+        })
+        .map((source) => $(source).data('key'));
     },
 
-    /**
-     * Appends a subfolder to the parent folder at the correct spot.
-     *
-     * @param $parentFolder
-     * @param $subfolder
-     * @private
-     */
-    _appendSubfolder: function ($parentFolder, $subfolder) {
-      var $subfolderList = $parentFolder.siblings('ul'),
-        $existingChildren = $subfolderList.children('li'),
-        subfolderLabel = $.trim($subfolder.children('a:first').text()),
-        folderInserted = false;
+    _moveFolder: function () {
+      const currentFolder = this.sourcePath[this.sourcePath.length - 1];
+      const parentFolder = this.sourcePath[this.sourcePath.length - 2];
 
-      for (var i = 0; i < $existingChildren.length; i++) {
-        var $existingChild = $($existingChildren[i]);
-
-        if (
-          $.trim($existingChild.children('a:first').text()) > subfolderLabel
-        ) {
-          $existingChild.before($subfolder);
-          folderInserted = true;
-          break;
-        }
+      const disabledFolderIds = [currentFolder.folderId];
+      if (parentFolder) {
+        disabledFolderIds.push(parentFolder.folderId);
       }
 
-      if (!folderInserted) {
-        $parentFolder.siblings('ul').append($subfolder);
-      }
-    },
-
-    _cleanUpTree: function ($parentFolder) {
-      if (
-        $parentFolder !== null &&
-        $parentFolder.siblings('ul').children('li').length === 0
-      ) {
-        this.deinitSourceToggle($parentFolder);
-        $parentFolder.siblings('ul').remove();
-        $parentFolder.siblings('.toggle').remove();
-        $parentFolder.parent().removeClass('expanded');
-      }
+      new Craft.VolumeFolderSelectorModal({
+        sources: this.getMoveTargetSourceKeys(true),
+        showTitle: true,
+        modalTitle: Craft.t('app', 'Move to'),
+        selectBtnLabel: Craft.t('app', 'Move'),
+        disabledFolderIds: disabledFolderIds,
+        indexSettings: {
+          defaultSource: this.sourceKey,
+          defaultSourcePath: this.sourcePath.slice(
+            0,
+            this.sourcePath.length - 1
+          ),
+        },
+        onSelect: ([targetFolder]) => {
+          this.$sourcePathActionsBtn.focus();
+          const mover = new Craft.AssetMover();
+          mover
+            .moveFolders([currentFolder.folderId], targetFolder.folderId)
+            .then((totalFoldersMoved) => {
+              if (totalFoldersMoved) {
+                Craft.cp.displayNotice(
+                  Craft.t(
+                    'app',
+                    '{totalItems, plural, =1{Item} other{Items}} moved.',
+                    {
+                      totalItems: totalFoldersMoved,
+                    }
+                  )
+                );
+                this.sourcePath = this.sourcePath.slice(
+                  0,
+                  this.sourcePath.length - 1
+                );
+                this.clearSearch(false);
+                this.updateElements();
+              }
+            });
+        },
+      });
     },
 
     _positionProgressBar: function () {
       if (!this.progressBar) {
-        this.progressBar = new Craft.ProgressBar(this.$main, false);
+        this.progressBar = new Craft.ProgressBar(this.$main, true);
       }
 
       var $container = $(),
@@ -1645,38 +982,14 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
         top: offset,
       });
     },
-
-    _performBatchRequests: function (parameterArray, finalCallback) {
-      const responseArray = [];
-      let activeRequests = parameterArray.length;
-
-      while (parameterArray.length) {
-        const parameters = parameterArray.shift();
-        Craft.sendActionRequest('POST', parameters.action, {
-          data: parameters.params,
-        })
-          .then((response) => {
-            responseArray.push(
-              Object.assign({}, response.data, {
-                request: parameters,
-              })
-            );
-          })
-          .finally(() => {
-            this.progressBar.incrementProcessedItemCount(1);
-            this.progressBar.updateProgressBar();
-
-            // Was that the last one?
-            if (--activeRequests === 0) {
-              // If assets were just merged we should get the reference tags updated right away
-              Craft.cp.runQueue();
-              finalCallback(responseArray);
-            }
-          });
-      }
-    },
   },
-  {}
+  {
+    defaults: {
+      showFolders: true,
+      foldersOnly: false,
+      disabledFolderIds: [],
+    },
+  }
 );
 
 // Register it!
