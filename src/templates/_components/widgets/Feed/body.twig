@@ -6,7 +6,7 @@
             {% if item.permalink ?? false %}
                 {{ links.externalLink({
                     link: item.permalink,
-                    text: item.title,
+                    text: 'Test',
                 }) }}
                 {% if item.date ?? false %}
                     {{ tag('span', {

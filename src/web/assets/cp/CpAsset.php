@@ -101,7 +101,7 @@ class CpAsset extends AssetBundle
         }
 
         // Define the Craft object
-        $craftJson = Json::encode($this->_craftData(), JSON_UNESCAPED_UNICODE);
+        $craftJson = Json::encode($this->_craftData());
         $js = <<<JS
 window.Craft = $craftJson;
 JS;
@@ -202,7 +202,6 @@ JS;
             'Handle',
             'Heading',
             'Height unit',
-            'Hide nested sources',
             'Hide sidebar',
             'Hide',
             'Incorrect password.',
@@ -213,6 +212,7 @@ JS;
             'Keep them',
             'Label',
             'Landscape',
+            'Level {num}',
             'License transferred.',
             'Limit',
             'Loading',

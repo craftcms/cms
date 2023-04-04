@@ -289,7 +289,7 @@ Craft.AssetSelectInput = Craft.BaseElementSelectInput.extend({
         }
       })
       .catch(({response}) => {
-        alert(response.data.message);
+        Craft.cp.displayError(response.data.message);
       });
 
     Craft.cp.runQueue();
@@ -314,7 +314,7 @@ Craft.AssetSelectInput = Craft.BaseElementSelectInput.extend({
       }
     }
 
-    alert(message);
+    Craft.cp.displayError(message);
     this.progressBar.hideProgressBar();
     this.$container.removeClass('uploading');
   },

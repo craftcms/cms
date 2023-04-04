@@ -140,10 +140,10 @@ class CpScreenResponseBehavior extends Behavior
      *
      * This will only be used by full-page screens.
      *
-     * @see contextMenu()
+     * @see contextMenuHtml()
      * @see contextMenuTemplate()
      */
-    public $contextMenu = null;
+    public $contextMenuHtml = null;
 
     /**
      * @var string|null The submit button label.
@@ -156,31 +156,39 @@ class CpScreenResponseBehavior extends Behavior
      *
      * This will only be used by full-page screens.
      *
-     * @see additionalButtons()
+     * @see additionalButtonsHtml()
      * @see additionalButtonsTemplate()
      */
-    public $additionalButtons = null;
+    public $additionalButtonsHtml = null;
 
     /**
      * @var string|callable|null The content HTML.
-     * @see content()
+     * @see contentHtml()
      * @see contentTemplate()
      */
-    public $content = null;
+    public $contentHtml = null;
 
     /**
-     * @var string|callable|null The sidebar HTML.
-     * @see sidebar()
-     * @see sidebarTemplate()
+     * @var string|callable|null The right-hand meta sidebar HTML.
+     * @see metaSidebarHtml()
+     * @see metaSidebarTemplate()
      */
-    public $sidebar = null;
+    public $metaSidebarHtml = null;
+
+    /**
+     * @var string|callable|null The left-hand page sidebar HTML (only used by full-page screens).
+     * @see pageSidebarHtml()
+     * @see pageSidebarTemplate()
+     * @since 4.5.0
+     */
+    public $pageSidebarHtml = null;
 
     /**
      * @var string|callable|null The content notice HTML.
-     * @see notice()
+     * @see noticeHtml()
      * @see noticeTemplate()
      */
-    public $notice = null;
+    public $noticeHtml = null;
 
     /**
      * Sets a callable that will be called before other properties are added to the screen.
@@ -453,9 +461,9 @@ class CpScreenResponseBehavior extends Behavior
      * @param callable|string|null $value
      * @return Response
      */
-    public function contextMenu(callable|string|null $value): Response
+    public function contextMenuHtml(callable|string|null $value): Response
     {
-        $this->contextMenu = $value;
+        $this->contextMenuHtml = $value;
         return $this->owner;
     }
 
@@ -470,7 +478,7 @@ class CpScreenResponseBehavior extends Behavior
      */
     public function contextMenuTemplate(string $template, array $variables = []): Response
     {
-        return $this->contextMenu(
+        return $this->contextMenuHtml(
             fn() => Craft::$app->getView()->renderTemplate($template, $variables, View::TEMPLATE_MODE_CP)
         );
     }
@@ -495,9 +503,9 @@ class CpScreenResponseBehavior extends Behavior
      * @param callable|string|null $value
      * @return Response
      */
-    public function additionalButtons(callable|string|null $value): Response
+    public function additionalButtonsHtml(callable|string|null $value): Response
     {
-        $this->additionalButtons = $value;
+        $this->additionalButtonsHtml = $value;
         return $this->owner;
     }
 
@@ -512,7 +520,7 @@ class CpScreenResponseBehavior extends Behavior
      */
     public function additionalButtonsTemplate(string $template, array $variables = []): Response
     {
-        return $this->additionalButtons(
+        return $this->additionalButtonsHtml(
             fn() => Craft::$app->getView()->renderTemplate($template, $variables, View::TEMPLATE_MODE_CP)
         );
     }
@@ -523,9 +531,9 @@ class CpScreenResponseBehavior extends Behavior
      * @param callable|string|null $value
      * @return Response
      */
-    public function content(callable|string|null $value): Response
+    public function contentHtml(callable|string|null $value): Response
     {
-        $this->content = $value;
+        $this->contentHtml = $value;
         return $this->owner;
     }
 
@@ -538,33 +546,61 @@ class CpScreenResponseBehavior extends Behavior
      */
     public function contentTemplate(string $template, array $variables = []): Response
     {
-        return $this->content(
+        return $this->contentHtml(
             fn() => Craft::$app->getView()->renderTemplate($template, $variables, View::TEMPLATE_MODE_CP)
         );
     }
 
     /**
-     * Sets the sidebar HTML.
+     * Sets the right-hand meta sidebar HTML.
      *
      * @param callable|string|null $value
      * @return Response
      */
-    public function sidebar(callable|string|null $value): Response
+    public function metaSidebarHtml(callable|string|null $value): Response
     {
-        $this->sidebar = $value;
+        $this->metaSidebarHtml = $value;
         return $this->owner;
     }
 
     /**
-     * Sets a template that should be used to render the sidebar HTML.
+     * Sets a template that should be used to render the right-hand meta sidebar HTML.
      *
      * @param string $template
      * @param array $variables
      * @return Response
      */
-    public function sidebarTemplate(string $template, array $variables = []): Response
+    public function metaSidebarTemplate(string $template, array $variables = []): Response
     {
-        return $this->sidebar(
+        return $this->metaSidebarHtml(
+            fn() => Craft::$app->getView()->renderTemplate($template, $variables, View::TEMPLATE_MODE_CP)
+        );
+    }
+
+    /**
+     * Sets the left-hand page sidebar HTML (only used by full-page screens).
+     *
+     * @param callable|string|null $value
+     * @return Response
+     * @since 4.5.0
+     */
+    public function pageSidebarHtml(callable|string|null $value): Response
+    {
+        $this->pageSidebarHtml = $value;
+        return $this->owner;
+    }
+
+    /**
+     * Sets a template that should be used to render the left-hand page sidebar HTML (only used by full-page screens).
+     *
+     * @param string $template
+     * @param array $variables
+     * @return Response
+     * @since 4.5.0
+     */
+    public function pageSidebarTemplate(string $template, array $variables = []): Response
+    {
+        return $this->pageSidebarHtml(
             fn() => Craft::$app->getView()->renderTemplate($template, $variables, View::TEMPLATE_MODE_CP)
         );
     }
@@ -575,9 +611,9 @@ class CpScreenResponseBehavior extends Behavior
      * @param callable|string|null $value
      * @return Response
      */
-    public function notice(callable|string|null $value): Response
+    public function noticeHtml(callable|string|null $value): Response
     {
-        $this->notice = $value;
+        $this->noticeHtml = $value;
         return $this->owner;
     }
 
@@ -590,7 +626,7 @@ class CpScreenResponseBehavior extends Behavior
      */
     public function noticeTemplate(string $template, array $variables = []): Response
     {
-        return $this->notice(
+        return $this->noticeHtml(
             fn() => Craft::$app->getView()->renderTemplate($template, $variables, View::TEMPLATE_MODE_CP)
         );
     }

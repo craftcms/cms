@@ -143,7 +143,7 @@ Craft.ImageUpload = Garnish.Base.extend(
         }
       }
 
-      alert(message);
+      Craft.cp.displayError(message);
       this.progressBar.hideProgressBar();
       this.$container.removeClass('uploading');
     },

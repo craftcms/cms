@@ -429,12 +429,13 @@ class GeneralConfig extends BaseConfig
      * When set to `null` (default), Craft will run `mysqldump` or `pg_dump`, provided that those libraries are in the `$PATH` variable
      * for the system user running the web server.
      *
-     * You may provide your own command optionally using several tokens Craft will swap out at runtime:
+     * You may provide your own command, which can include several tokens Craft will substitute at runtime:
      *
-     * - `{path}` - the target backup file path
+     * - `{file}` - the target backup file path
      * - `{port}` - the current database port
      * - `{server}` - the current database hostname
-     * - `{user}` - the user to connect to the database
+     * - `{user}` - user that was used to connect to the database
+     * - `{password}` - password for the specified `{user}`
      * - `{database}` - the current database name
      * - `{schema}` - the current database schema (if any)
      *
@@ -807,16 +808,16 @@ class GeneralConfig extends BaseConfig
      *
      * ::: code
      * ```php Static Config
-     * ->defaultTemplateExtensions(['html', 'twig', 'txt'])
+     * ->defaultTemplateExtensions(['twig', 'html', 'txt'])
      * ```
      * ```shell Environment Override
-     * CRAFT_DEFAULT_TEMPLATE_EXTENSIONS=html,twig,txt
+     * CRAFT_DEFAULT_TEMPLATE_EXTENSIONS=twig,html,txt
      * ```
      * :::
      *
      * @group System
      */
-    public array $defaultTemplateExtensions = ['html', 'twig'];
+    public array $defaultTemplateExtensions = ['twig', 'html'];
 
     /**
      * @var mixed The default amount of time tokens can be used before expiring.
@@ -914,7 +915,7 @@ class GeneralConfig extends BaseConfig
      * This can also be set to `'*'` to disable **all** plugins.
      *
      * ```php
-     * ->disabledPlugins'('*')
+     * ->disabledPlugins('*')
      * ```
      *
      * ::: warning
@@ -1561,6 +1562,20 @@ class GeneralConfig extends BaseConfig
      * @group System
      */
     public bool $limitAutoSlugsToAscii = false;
+
+    /**
+     * @var array Custom locale aliases, which will be included when fetching all known locales.
+     *
+     * Each locale alias should be defined as an array with the following keys:
+     *
+     * - `id`: The alias locale ID
+     * - `aliasOf`: The original locale ID
+     * - `displayName`: The locale alias’s display name _(optional)_
+     *
+     * @since 5.0.0
+     * @group System
+     */
+    public array $localeAliases = [];
 
     /**
      * @var mixed The URI Craft should use for user login on the front end.
@@ -3444,12 +3459,13 @@ class GeneralConfig extends BaseConfig
      * When set to `null` (default), Craft will run `mysqldump` or `pg_dump`, provided that those libraries are in the `$PATH` variable
      * for the system user running the web server.
      *
-     * You may provide your own command optionally using several tokens Craft will swap out at runtime:
+     * You may provide your own command, which can include several tokens Craft will substitute at runtime:
      *
-     * - `{path}` - the target backup file path
+     * - `{file}` - the target backup file path
      * - `{port}` - the current database port
      * - `{server}` - the current database hostname
-     * - `{user}` - the user to connect to the database
+     * - `{user}` - user that was used to connect to the database
+     * - `{password}` - password for the specified `{user}`
      * - `{database}` - the current database name
      * - `{schema}` - the current database schema (if any)
      *
@@ -3890,7 +3906,7 @@ class GeneralConfig extends BaseConfig
      * The template file extensions Craft will look for when matching a template path to a file on the front end.
      *
      * ```php
-     * ->defaultTemplateExtensions(['html', 'twig', 'txt'])
+     * ->defaultTemplateExtensions(['twig', 'html', 'txt'])
      * ```
      *
      * @group System
@@ -4751,6 +4767,26 @@ class GeneralConfig extends BaseConfig
     public function limitAutoSlugsToAscii(bool $value = true): self
     {
         $this->limitAutoSlugsToAscii = $value;
+        return $this;
+    }
+
+    /**
+     * Custom locale aliases, which will be included when fetching all known locales.
+     *
+     * Each item in the array should have a key that defines the custom locale ID, and its value should be set
+     * to an array with the following keys:
+     *
+     * - `aliasOf`: The original locale ID
+     * - `displayName`: The locale alias’s display name _(optional)_
+     *
+     * @param array $value
+     * @return self
+     * @group System
+     * @since 5.0.0
+     */
+    public function localeAliases(array $value): self
+    {
+        $this->localeAliases = $value;
         return $this;
     }
 

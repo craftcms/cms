@@ -19,11 +19,11 @@
     "issues": "https://github.com/craftcms/cms/issues?state=open",
     "forum": "https://craftcms.stackexchange.com/",
     "source": "https://github.com/craftcms/cms",
-    "docs": "https://docs.craftcms.com/v3/",
+    "docs": "https://craftcms.com/docs/5.x/",
     "rss": "https://github.com/craftcms/cms/releases.atom"
   },
   "require": {
-    "php": "^8.0.2",
+    "php": "^8.1",
     "ext-bcmath": "*",
     "ext-curl": "*",
     "ext-dom": "*",
@@ -40,8 +40,8 @@
     "craftcms/plugin-installer": "~1.6.0",
     "craftcms/server-check": "~2.1.2",
     "creocoder/yii2-nested-sets": "~0.9.0",
-    "elvanto/litemoji": "^4.3.0",
-    "enshrined/svg-sanitize": "~0.15.0",
+    "elvanto/litemoji": "~4.3.0",
+    "enshrined/svg-sanitize": "~0.16.0",
     "guzzlehttp/guzzle": "^7.2.0",
     "illuminate/collections": "^9.1.0",
     "league/oauth2-client": "^2.6.0",
@@ -113,7 +113,7 @@
   "config": {
     "sort-packages": true,
     "platform": {
-      "php": "8.0.2"
+      "php": "8.1"
     },
     "allow-plugins": {
       "yiisoft/yii2-composer": true,

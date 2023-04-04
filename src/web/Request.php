@@ -574,6 +574,21 @@ class Request extends \yii\web\Request
     }
 
     /**
+     * Returns whether the request has a valid site token.
+     *
+     * @return bool
+     * @since 4.4.6
+     */
+    public function hasValidSiteToken(): bool
+    {
+        try {
+            return $this->_validateSiteToken() !== null;
+        } catch (BadRequestHttpException $e) {
+            return false;
+        }
+    }
+
+    /**
      * Returns whether the control panel was requested.
      *
      * The result depends on whether the first segment in the URI matches the
@@ -1443,18 +1458,8 @@ class Request extends \yii\web\Request
     private function _requestedSite(?int &$siteScore = null): Site
     {
         // Was a site token provided?
-        $siteId = $this->getQueryParam($this->generalConfig->siteToken)
-            ?? $this->getHeaders()->get('X-Craft-Site-Token')
-            ?? false;
-        if ($siteId) {
-            $siteId = Craft::$app->getSecurity()->validateData($siteId);
-            if (!is_numeric($siteId)) {
-                throw new BadRequestHttpException('Invalid site token');
-            }
-            $site = $this->sites->getSiteById((int)$siteId, true);
-            if (!$site) {
-                throw new BadRequestHttpException('Invalid site ID: ' . $siteId);
-            }
+        $site = $this->_validateSiteToken();
+        if ($site !== null) {
             return $site;
         }
 
@@ -1474,6 +1479,27 @@ class Request extends \yii\web\Request
         $first = ArrayHelper::firstKey($scores);
         $siteScore = reset($scores);
         return $sites[$first];
+    }
+
+    /**
+     * @return Site|null
+     * @throws BadRequestHttpException
+     */
+    private function _validateSiteToken(): ?Site
+    {
+        $siteToken = $this->getSiteToken();
+        if ($siteToken === null) {
+            return null;
+        }
+        $siteId = Craft::$app->getSecurity()->validateData($siteToken);
+        if (!is_numeric($siteId)) {
+            throw new BadRequestHttpException('Invalid site token');
+        }
+        $site = $this->sites->getSiteById((int)$siteId, true);
+        if (!$site) {
+            throw new BadRequestHttpException('Invalid site ID: ' . $siteId);
+        }
+        return $site;
     }
 
     /**

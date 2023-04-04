@@ -388,7 +388,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 
     getViewParams: function () {
       const data = Object.assign(this.base(), {
-        showFolders: this.settings.showFolders,
+        showFolders: this.settings.showFolders && !this.trashed,
         foldersOnly: this.settings.foldersOnly,
       });
 
@@ -495,7 +495,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
         }
       }
 
-      alert(message);
+      Craft.cp.displayError(message);
     },
 
     /**
@@ -554,7 +554,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
           followupAlways();
         };
         const followupFailure = (data) => {
-          alert(data.message);
+          Craft.cp.displayError(data.message);
           followupAlways();
         };
 
@@ -616,6 +616,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
       for (let i = 0; i < this.$listedFolders.length; i++) {
         const $folder = this.$listedFolders.eq(i);
         const $label = $folder.find('.label');
+        const $title = $label.find('.title');
         const folderId = parseInt($folder.data('folder-id'));
         const folderName = $folder.data('folder-name');
         const label = Craft.t('app', '{name} folder', {
@@ -630,7 +631,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
         if (sourcePath) {
           const $a = $('<a/>', {
             href: Craft.getCpUrl(sourcePath[sourcePath.length - 1].uri),
-            text: folderName,
+            html: $title.html(),
             role: 'button',
             'aria-label': label,
           });
@@ -803,7 +804,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
           })
           .catch(({response}) => {
             this.setIndexAvailable();
-            alert(response.data.message);
+            Craft.cp.displayError(response.data.message);
           });
       }
     },
@@ -836,7 +837,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
           })
           .catch(({response}) => {
             this.setIndexAvailable();
-            alert(response.data.message);
+            Craft.cp.displayError(response.data.message);
           });
       }
     },
@@ -872,7 +873,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
           this.sourcePath = sourcePath;
         })
         .catch(({response}) => {
-          alert(response.data.message);
+          Craft.cp.displayError(response.data.message);
         })
         .finally(() => {
           this.setIndexAvailable();

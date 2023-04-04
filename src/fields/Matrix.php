@@ -22,6 +22,7 @@ use craft\elements\db\ElementQueryInterface;
 use craft\elements\db\MatrixBlockQuery;
 use craft\elements\ElementCollection;
 use craft\elements\MatrixBlock;
+use craft\errors\InvalidFieldException;
 use craft\events\BlockTypesEvent;
 use craft\fieldlayoutelements\CustomField;
 use craft\fields\conditions\EmptyFieldConditionRule;
@@ -36,7 +37,6 @@ use craft\helpers\Gql;
 use craft\helpers\Json;
 use craft\helpers\Queue;
 use craft\helpers\StringHelper;
-use craft\i18n\Locale;
 use craft\i18n\Translation;
 use craft\models\FieldLayoutTab;
 use craft\models\MatrixBlockType;
@@ -399,8 +399,8 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
         $placeholderKey = StringHelper::randomString(10);
         $view->registerJs(
             'new Craft.MatrixConfigurator(' .
-            Json::encode($fieldTypeInfo, JSON_UNESCAPED_UNICODE) . ', ' .
-            Json::encode($view->getNamespace(), JSON_UNESCAPED_UNICODE) . ', ' .
+            Json::encode($fieldTypeInfo) . ', ' .
+            Json::encode($view->getNamespace()) . ', ' .
             Json::encode($view->namespaceInputName("blockTypes[__BLOCK_TYPE_{$placeholderKey}__][fields][__FIELD_{$placeholderKey}__][typesettings]")) . ', ' .
             Json::encode($placeholderKey) .
             ');'
@@ -495,6 +495,19 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
      */
     public function normalizeValue(mixed $value, ?ElementInterface $element = null): mixed
     {
+        return $this->_normalizeValueInternal($value, $element, false);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function normalizeValueFromRequest(mixed $value, ?ElementInterface $element = null): mixed
+    {
+        return $this->_normalizeValueInternal($value, $element, true);
+    }
+
+    private function _normalizeValueInternal(mixed $value, ?ElementInterface $element, bool $fromRequest): mixed
+    {
         if ($value instanceof ElementQueryInterface) {
             return $value;
         }
@@ -507,7 +520,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
         if ($value === '') {
             $query->setCachedResult([]);
         } elseif ($element && is_array($value)) {
-            $query->setCachedResult($this->_createBlocksFromSerializedData($value, $element));
+            $query->setCachedResult($this->_createBlocksFromSerializedData($value, $element, $fromRequest));
         }
 
         return $query;
@@ -657,7 +670,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
                     'group' => Craft::t('site', $element->getSite()->getGroup()->getName()),
                 ]);
             case self::PROPAGATION_METHOD_LANGUAGE:
-                $language = (new Locale($element->getSite()->language))
+                $language = Craft::$app->getI18n()->getLocaleById($element->getSite()->language)
                     ->getDisplayName(Craft::$app->language);
                 return Craft::t('app', 'Blocks will be saved across all {language}-language sites.', [
                     'language' => $language,
@@ -721,13 +734,20 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
 
         $js = 'var matrixInput = new Craft.MatrixInput(' .
             '"' . $view->namespaceInputId($id) . '", ' .
-            Json::encode($blockTypeInfo, JSON_UNESCAPED_UNICODE) . ', ' .
+            Json::encode($blockTypeInfo) . ', ' .
             '"' . $view->namespaceInputName($this->handle) . '", ' .
             Json::encode($settings) .
             ');';
 
         // Safe to create the default blocks?
-        if ($createDefaultBlocks) {
+        if ($createDefaultBlocks && count($value) < $this->minBlocks) {
+            // @link https://github.com/craftcms/cms/issues/12973
+            // for matrix fields with minBlocks set Craft.MatrixInput.addBlock() is called before new Craft.ElementEditor(),
+            // so when we get our initialSerializedValue() for the ElementEditor,
+            // the matrix block is already there which means the field is reported as not changed since the init
+            // and so not passed to PHP for save
+            $view->setInitialDeltaValue($this->handle, null);
+
             $blockTypeJs = Json::encode($blockTypes[0]->handle);
             for ($i = count($value); $i < $this->minBlocks; $i++) {
                 $js .= "\nmatrixInput.addBlock($blockTypeJs, null, false);";
@@ -1229,9 +1249,10 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
      *
      * @param array $value The raw field value
      * @param ElementInterface $element The element the field is associated with
+     * @param bool $fromRequest Whether the data came from the request post data
      * @return MatrixBlock[]
      */
-    private function _createBlocksFromSerializedData(array $value, ElementInterface $element): array
+    private function _createBlocksFromSerializedData(array $value, ElementInterface $element, bool $fromRequest): array
     {
         // Get the possible block types for this field
         /** @var MatrixBlockType[] $blockTypes */
@@ -1352,7 +1373,16 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
             }
 
             if (isset($blockData['fields'])) {
-                $block->setFieldValues($blockData['fields']);
+                foreach ($blockData['fields'] as $fieldHandle => $fieldValue) {
+                    try {
+                        if ($fromRequest) {
+                            $block->setFieldValueFromRequest($fieldHandle, $fieldValue);
+                        } else {
+                            $block->setFieldValue($fieldHandle, $fieldValue);
+                        }
+                    } catch (InvalidFieldException) {
+                    }
+                }
             }
 
             // Set the prev/next blocks
