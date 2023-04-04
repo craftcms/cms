@@ -19,7 +19,7 @@
     "issues": "https://github.com/craftcms/cms/issues?state=open",
     "forum": "https://craftcms.stackexchange.com/",
     "source": "https://github.com/craftcms/cms",
-    "docs": "https://docs.craftcms.com/v3/",
+    "docs": "https://craftcms.com/docs/4.x/",
     "rss": "https://github.com/craftcms/cms/releases.atom"
   },
   "require": {
@@ -40,7 +40,7 @@
     "craftcms/plugin-installer": "~1.6.0",
     "craftcms/server-check": "~2.1.2",
     "creocoder/yii2-nested-sets": "~0.9.0",
-    "elvanto/litemoji": "^4.3.0",
+    "elvanto/litemoji": "~4.3.0",
     "enshrined/svg-sanitize": "~0.16.0",
     "guzzlehttp/guzzle": "^7.2.0",
     "illuminate/collections": "^9.1.0",

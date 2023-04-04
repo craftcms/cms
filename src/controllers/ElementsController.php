@@ -437,7 +437,7 @@ class ElementsController extends Controller
                         'revisionId' => $element->revisionId,
                         'siteId' => $element->siteId,
                         'siteStatuses' => $siteStatuses,
-                        'siteToken' => !$element->getSite()->enabled ? $security->hashData((string)$element->siteId) : null,
+                        'siteToken' => (!Craft::$app->getIsLive() || !$element->getSite()->enabled) ? $security->hashData((string)$element->siteId) : null,
                         'visibleLayoutElements' => $form ? $form->getVisibleElements() : [],
                     ]
                 )
