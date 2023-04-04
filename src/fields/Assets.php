@@ -565,7 +565,9 @@ class Assets extends BaseRelationField
                     $this->_uploadedDataFiles = null;
                 }
             }
+        }
 
+        if (!$element->propagating || $this->localizeRelations) {
             // Are there any related assets?
             /** @var AssetQuery $query */
             /** @var Asset[] $assets */
