@@ -58,7 +58,7 @@
                   });
                 } else if (response.errors) {
                   var errors = this.flattenErrors(response.errors);
-                  alert(
+                  Craft.cp.displayError(
                     Craft.t('app', 'Could not create the group:') +
                       '\n\n' +
                       errors.join('\n')
@@ -92,7 +92,7 @@
                   Craft.cp.displayNotice(Craft.t('app', 'Group renamed.'));
                 } else if (response.errors) {
                   var errors = this.flattenErrors(response.errors);
-                  alert(
+                  Craft.cp.displayError(
                     Craft.t('app', 'Could not rename the group:') +
                       '\n\n' +
                       errors.join('\n')

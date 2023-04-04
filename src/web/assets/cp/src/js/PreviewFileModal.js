@@ -185,8 +185,7 @@ Craft.PreviewFileModal = Garnish.Modal.extend(
               Craft.appendHeadHtml(response.headHtml);
               Craft.appendFootHtml(response.footHtml);
             } else {
-              alert(response.error);
-
+              Craft.cp.displayError(response.error);
               this.hide();
             }
           }

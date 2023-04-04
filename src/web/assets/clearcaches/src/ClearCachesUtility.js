@@ -59,7 +59,7 @@
               params,
               (response, textStatus) => {
                 if (response && response.error) {
-                  alert(response.error);
+                  Craft.cp.displayError(response.error);
                 }
 
                 progressBar.setProgressPercentage(100);
