@@ -484,7 +484,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
           : Craft.t('app', 'Upload failed.');
       }
 
-      alert(message);
+      Craft.cp.displayError(message);
     },
 
     /**
@@ -543,7 +543,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
           followupAlways();
         };
         const followupFailure = (data) => {
-          alert(data.message);
+          Craft.cp.displayError(data.message);
           followupAlways();
         };
 
@@ -793,7 +793,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
           })
           .catch(({response}) => {
             this.setIndexAvailable();
-            alert(response.data.message);
+            Craft.cp.displayError(response.data.message);
           });
       }
     },
@@ -826,7 +826,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
           })
           .catch(({response}) => {
             this.setIndexAvailable();
-            alert(response.data.message);
+            Craft.cp.displayError(response.data.message);
           });
       }
     },
@@ -862,7 +862,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
           this.sourcePath = sourcePath;
         })
         .catch(({response}) => {
-          alert(response.data.message);
+          Craft.cp.displayError(response.data.message);
         })
         .finally(() => {
           this.setIndexAvailable();

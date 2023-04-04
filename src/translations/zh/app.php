@@ -850,6 +850,7 @@ return [
     'Loading' => '正在加载',
     'Local Folder' => '本地文件夹',
     'Local copies of remote images, generated thumbnails' => '远程图像、生成的缩略图的本地副本',
+    'Local volumes cannot be located within system directories.' => '本地存储卷不能位于系统目录中。',
     'Localizing relations' => '正在确定关系',
     'Location' => '位置',
     'Locations that should be available for previewing entries in this section.' => '应当可以用于预览此版块中条目的地点。',

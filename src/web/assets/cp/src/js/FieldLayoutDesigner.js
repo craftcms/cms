@@ -427,7 +427,7 @@ Craft.FieldLayoutDesigner.Tab = Garnish.Base.extend({
 
   applySettings: function () {
     if (!this.slideout.$container.find('[name$="[name]"]').val()) {
-      alert(Craft.t('app', 'You must specify a tab name.'));
+      Craft.cp.displayError(Craft.t('app', 'You must specify a tab name.'));
       return;
     }
 

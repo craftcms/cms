@@ -850,6 +850,7 @@ return [
     'Loading' => 'Läser in',
     'Local Folder' => 'Lokal mapp',
     'Local copies of remote images, generated thumbnails' => 'Lokala kopior av fjärrbilder, genererade miniatyrer',
+    'Local volumes cannot be located within system directories.' => 'Lokala volymer kan inte placeras inne i systemmappar.',
     'Localizing relations' => 'Lokaliserar förbindelser',
     'Location' => 'Plats',
     'Locations that should be available for previewing entries in this section.' => 'Platser som ska vara tillgängliga för att förhandsvisa inlägg i denna sektion.',

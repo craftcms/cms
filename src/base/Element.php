@@ -546,6 +546,40 @@ abstract class Element extends Component implements ElementInterface
     public const EVENT_DEFINE_KEYWORDS = 'defineKeywords';
 
     /**
+     * @event DefineUrlEvent The event that is triggered before defining the element’s URL.
+     *
+     * It can be used to provide a custom URL, completely bypassing the default URL generation.
+     *
+     * ```php
+     * use craft\base\Element;
+     * use craft\elements\Entry;
+     * use craft\events\DefineUrlEvent;
+     * use craft\helpers\UrlHelper;
+     * use yii\base\Event;
+     *
+     * Event::on(
+     *     Entry::class,
+     *     Element::EVENT_BEFORE_DEFINE_URL,
+     *     function(DefineUrlEvent $e
+     * ) {
+     *     // @var Entry $entry
+     *     $entry = $e->sender;
+     *
+     *     $event->url = '...';
+     * });
+     * ```
+     *
+     * To prevent the element from getting a URL, ensure `$event->url` is set to `null`,
+     * and set `$event->handled` to `true`.
+     *
+     * Note that [[EVENT_DEFINE_URL]] will still be called regardless of what happens with this event.
+     *
+     * @since 4.4.6
+     * @see getUrl()
+     */
+    public const EVENT_BEFORE_DEFINE_URL = 'beforeDefineUrl';
+
+    /**
      * @event DefineUrlEvent The event that is triggered when defining the element’s URL.
      *
      * ```php
@@ -571,6 +605,9 @@ abstract class Element extends Component implements ElementInterface
      *     }
      * });
      * ```
+     *
+     * To prevent the element from getting a URL, ensure `$event->url` is set to `null`,
+     * and set `$event->handled` to `true`.
      *
      * @since 4.3.0
      * @see getUrl()
@@ -2926,11 +2963,15 @@ abstract class Element extends Component implements ElementInterface
      */
     public function getUrl(): ?string
     {
-        if (isset($this->uri)) {
+        // Give plugins/modules a chance to provide a custom URL
+        $event = new DefineUrlEvent();
+        $this->trigger(self::EVENT_BEFORE_DEFINE_URL, $event);
+        $url = $event->url;
+
+        // If DefineAssetUrlEvent::$url is set to null, only respect that if $handled is true
+        if ($url === null && !$event->handled && isset($this->uri)) {
             $path = $this->getIsHomepage() ? '' : $this->uri;
             $url = UrlHelper::siteUrl($path, null, null, $this->siteId);
-        } else {
-            $url = null;
         }
 
         // Give plugins/modules a chance to customize it

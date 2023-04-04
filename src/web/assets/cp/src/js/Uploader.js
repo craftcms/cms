@@ -164,7 +164,7 @@ Craft.Uploader = Garnish.Base.extend(
           kinds: this.allowedKinds.join(', '),
         });
         this._rejectedFiles.type = [];
-        alert(str);
+        Craft.cp.displayError(str);
       }
 
       if (this._rejectedFiles.size.length) {
@@ -181,7 +181,7 @@ Craft.Uploader = Garnish.Base.extend(
           size: this.humanFileSize(Craft.maxUploadSize),
         });
         this._rejectedFiles.size = [];
-        alert(str);
+        Craft.cp.displayError(str);
       }
 
       if (this._rejectedFiles.limit.length) {
@@ -197,7 +197,7 @@ Craft.Uploader = Garnish.Base.extend(
           files: this._rejectedFiles.limit.join(', '),
         });
         this._rejectedFiles.limit = [];
-        alert(str);
+        Craft.cp.displayError(str);
       }
     },
 
