@@ -4,6 +4,7 @@
 
 - Content tab menus now reveal when a tab contains validation errors, and invalid tabs’ menu options get the same warning icon treatment as inline tabs do. ([#12971](https://github.com/craftcms/cms/issues/12971))
 - Element index bulk action spinners are now centered on the viewport. ([#12972](https://github.com/craftcms/cms/issues/12972))
+- All control panel errors are new presented via error notifications rather than browser alerts. ([#13024](https://github.com/craftcms/cms/issues/13024))
 - Fixed a bug where Assets fields weren’t respecting their View Mode setting when viewing entry revisions. ([#12948](https://github.com/craftcms/cms/issues/12948))
 - Fixed a bug where some relational fields were showing duplicate selected relations. ([#12949](https://github.com/craftcms/cms/issues/12949))
 - Fixed a bug where asset pagination was broken when there was more than 100 subfolders. ([#12969](https://github.com/craftcms/cms/issues/12969))
@@ -12,6 +13,8 @@
 - Fixed a bug where assets were getting relocated to the root volume folder when renamed. ([#12995](https://github.com/craftcms/cms/issues/12995))
 - Fixed a bug where it wasn’t possible to preview entries on another domain when the system was offline. ([#12979](https://github.com/craftcms/cms/issues/12979))
 - Fixed a bug where users were able to access volumes they didn’t have permission to view via Assets fields. ([#13006](https://github.com/craftcms/cms/issues/13006))
+- Fixed a bug where soft hyphens, non-breaking spaces, zero-width characters, invisible characters, and byte order marks weren’t getting stripped from sanitized asset filenames. ([#13029](https://github.com/craftcms/cms/pull/13029))
+- Fixed a bug where the Plugin Store wasn’t accurately reporting installed plugins’ license statuses. ([#12986](https://github.com/craftcms/cms/issues/12986))
 - Fixed an XSS vulnerability.
 
 ## 3.8.5 - 2023-03-21
