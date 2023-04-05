@@ -3,6 +3,7 @@
 ## Unreleased
 
 - Fixed a bug where the Entries index page was listing unpublished drafts created by other users, even if the current user didn’t have permission to edit them.
+- `craft\web\View::renderObjectTemplate()` now trims the returned template output.
 
 ## 3.8.6 - 2023-04-04
 
