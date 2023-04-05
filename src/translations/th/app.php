@@ -850,6 +850,7 @@ return [
     'Loading' => 'Loading',
     'Local Folder' => 'Local Folder',
     'Local copies of remote images, generated thumbnails' => 'Local copies of remote images, generated thumbnails',
+    'Local volumes cannot be located within system directories.' => 'Local volumes cannot be located within system directories.',
     'Localizing relations' => 'Localizing relations',
     'Location' => 'Location',
     'Locations that should be available for previewing entries in this section.' => 'Locations that should be available for previewing entries in this section.',

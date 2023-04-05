@@ -19,7 +19,7 @@
     "issues": "https://github.com/craftcms/cms/issues?state=open",
     "forum": "https://craftcms.stackexchange.com/",
     "source": "https://github.com/craftcms/cms",
-    "docs": "https://docs.craftcms.com/v3/",
+    "docs": "https://craftcms.com/docs/4.x/",
     "rss": "https://github.com/craftcms/cms/releases.atom"
   },
   "require": {

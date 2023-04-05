@@ -31,6 +31,11 @@ class UpController extends Controller
     /**
      * @inheritdoc
      */
+    public bool $isolated = true;
+
+    /**
+     * @inheritdoc
+     */
     public function options($actionID): array
     {
         return array_merge(parent::options($actionID), [
@@ -45,15 +50,6 @@ class UpController extends Controller
      */
     public function actionIndex(): int
     {
-        $lockName = 'craft-up';
-        $mutex = Craft::$app->getMutex();
-        $this->stdout('🔒 Acquiring lock ... ');
-        if (!$mutex->acquire($lockName) && !$this->force) {
-            $this->stderr("Couldn’t acquire a mutex lock. Run again with --force to bypass.\n", Console::FG_RED);
-            return ExitCode::UNAVAILABLE;
-        }
-        $this->stdout("done\n\n", Console::FG_GREEN);
-
         try {
             $pendingChanges = Craft::$app->getProjectConfig()->areChangesPending();
 
@@ -82,13 +78,6 @@ class UpController extends Controller
                 throw $e;
             }
             return ExitCode::UNSPECIFIED_ERROR;
-        } finally {
-            $this->stdout("🔓 Releasing lock ... ");
-            if ($mutex->release($lockName)) {
-                $this->stdout("done\n", Console::FG_GREEN);
-            } else {
-                $this->stderr("Couldn’t release lock.\n");
-            }
         }
 
         return ExitCode::OK;

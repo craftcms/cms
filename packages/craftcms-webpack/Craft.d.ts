@@ -21,6 +21,7 @@ declare var Craft: {
   initUiElements($container: JQuery): void;
   expandPostArray(arr: object): any;
   Preview: any;
+  cp: any;
 };
 
 declare var Garnish: any;

@@ -314,7 +314,7 @@ class ImageTransform extends Model
             'name' => $this->name,
             'position' => $this->position,
             'quality' => $this->quality,
-            'upscale' => $this->upscale,
+            'upscale' => $this->upscale ?? Craft::$app->getConfig()->getGeneral()->upscaleImages,
             'width' => $this->width,
         ];
     }

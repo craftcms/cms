@@ -72,11 +72,6 @@ class Categories extends BaseRelationField
     /**
      * @inheritdoc
      */
-    protected bool $sortable = false;
-
-    /**
-     * @inheritdoc
-     */
     public function __construct(array $config = [])
     {
         // allow categories to limit selection if `maintainHierarchy` isn't checked
@@ -95,7 +90,7 @@ class Categories extends BaseRelationField
      */
     public function normalizeValue(mixed $value, ?ElementInterface $element = null): mixed
     {
-        if (is_array($value)) {
+        if (is_array($value) && $this->maintainHierarchy) {
             /** @var Category[] $categories */
             $categories = Category::find()
                 ->siteId($this->targetSiteId($element))

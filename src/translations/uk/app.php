@@ -850,6 +850,7 @@ return [
     'Loading' => 'Завантаження',
     'Local Folder' => 'Локальна папка',
     'Local copies of remote images, generated thumbnails' => 'Локальні копії віддалених зображень, створені ескізи',
+    'Local volumes cannot be located within system directories.' => 'Не вдалося знайти локальні томи в системних каталогах.',
     'Localizing relations' => 'Локалізація взаємозв\'язків',
     'Location' => 'Розташування',
     'Locations that should be available for previewing entries in this section.' => 'Розташування, в яких має бути доступний перегляд записів із цього розділу.',

@@ -110,7 +110,7 @@ Craft.ImageUpload = Garnish.Base.extend(
      */
     _onUploadComplete: function (event, data) {
       if (data.result.error) {
-        alert(data.result.error);
+        Craft.cp.displayError(data.result.error);
       } else {
         var html = $(data.result.html);
         this.refreshImage(data.result);
@@ -136,7 +136,7 @@ Craft.ImageUpload = Garnish.Base.extend(
           : Craft.t('app', 'Upload failed.');
       }
 
-      alert(message);
+      Craft.cp.displayError(message);
       this.progressBar.hideProgressBar();
       this.$container.removeClass('uploading');
     },
