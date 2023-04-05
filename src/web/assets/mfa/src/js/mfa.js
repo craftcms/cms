@@ -87,6 +87,11 @@ import {browserSupportsWebAuthn} from '@simplewebauthn/browser';
             this.addListener(this.$removeSetupButton, 'click', 'onRemoveSetup');
             this.addListener(this.$closeButton, 'click', 'onClickClose');
             this.addListener(this.$verifyButton, 'click', 'onVerify');
+            this.addListener(this.slideout.$container, 'keypress', (ev) => {
+              if (ev.keyCode === Garnish.RETURN_KEY) {
+                this.$verifyButton.trigger('click');
+              }
+            });
 
             this.slideout.on('close', (ev) => {
               this.$removeSetupButton = null;
