@@ -536,6 +536,10 @@ TWIG;
 
             // Test basic arrays
             ['foo=bar', 'foo={foo}', ['foo' => 'bar']],
+
+            // Make sure resulting templates are trimmed
+            ['foo', ' foo ', $model],
+            ['Example Param', ' {exampleParam}', $model],
         ];
     }
 

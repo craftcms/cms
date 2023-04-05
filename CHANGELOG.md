@@ -1,5 +1,10 @@
 # Release Notes for Craft CMS 4
 
+## Unreleased
+
+- Fixed a bug where users were “View other users’ drafts” section permissions weren’t being enforced for unpublished drafts.
+- `craft\web\View::renderObjectTemplate()` now trims the returned template output.
+
 ## 4.4.6.1 - 2023-04-04
 
 - Fixed a bug where Categories fields weren’t retaining custom sort orders when “Maintain hierarchy” was disabled. ([#10560](https://github.com/craftcms/cms/discussions/10560))
