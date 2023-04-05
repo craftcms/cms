@@ -1,5 +1,9 @@
 # Release Notes for Craft CMS 3.x
 
+## Unreleased
+
+- Fixed a bug where the Entries index page was listing unpublished drafts created by other users, even if the current user didn’t have permission to edit them.
+
 ## 3.8.6 - 2023-04-04
 
 - Content tab menus now reveal when a tab contains validation errors, and invalid tabs’ menu options get the same warning icon treatment as inline tabs do. ([#12971](https://github.com/craftcms/cms/issues/12971))
