@@ -5,6 +5,7 @@
 - Fixed a bug where users were “View other users’ drafts” section permissions weren’t being enforced for unpublished drafts.
 - Fixed a bug where element editors were showing provisional changes, even if the user didn’t have permission to save them.
 - `craft\web\View::renderObjectTemplate()` now trims the returned template output.
+- Fixed XSS vulnerabilities.
 
 ## 4.4.6.1 - 2023-04-04
 
