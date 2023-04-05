@@ -3,6 +3,7 @@
 ## Unreleased
 
 - Fixed a bug where users were “View other users’ drafts” section permissions weren’t being enforced for unpublished drafts.
+- `craft\web\View::renderObjectTemplate()` now trims the returned template output.
 
 ## 4.4.6.1 - 2023-04-04
 
