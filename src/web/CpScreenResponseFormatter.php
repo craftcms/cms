@@ -120,6 +120,7 @@ class CpScreenResponseFormatter extends Component implements ResponseFormatterIn
         $notice = is_callable($behavior->notice) ? call_user_func($behavior->notice) : $behavior->notice;
         $content = is_callable($behavior->content) ? call_user_func($behavior->content) : ($behavior->content ?? '');
         $sidebar = is_callable($behavior->sidebar) ? call_user_func($behavior->sidebar) : $behavior->sidebar;
+        $pageSidebar = is_callable($behavior->pageSidebar) ? call_user_func($behavior->pageSidebar) : $behavior->pageSidebar;
 
         if ($behavior->action) {
             $content .= Html::actionInput($behavior->action, [
@@ -159,6 +160,7 @@ class CpScreenResponseFormatter extends Component implements ResponseFormatterIn
                 'contentNotice' => $notice,
                 'content' => $content,
                 'details' => $sidebar,
+                'sidebar' => $pageSidebar,
             ],
             'templateMode' => View::TEMPLATE_MODE_CP,
         ]);

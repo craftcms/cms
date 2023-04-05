@@ -213,6 +213,7 @@ JS;
             'Keep them',
             'Label',
             'Landscape',
+            'Level {num}',
             'License transferred.',
             'Limit',
             'Loading',
