@@ -1570,7 +1570,7 @@ return [
     'This update requires PHP {v1}, but your environment is currently running PHP {v2}.' => 'This update requires PHP {v1}, but your environment is currently running PHP {v2}.',
     'This week' => 'This week',
     'This year' => 'This year',
-    'This {element} doesn’t have any visible fields defined in the field layout.' => 'This {element} doesn’t have any visible fields defined in the field layout.',
+    'This {element} doesn’t have any visible fields in the field layout.' => 'This {element} doesn’t have any visible fields in the field layout.',
     'This {type} doesn’t have revisions.' => 'This {type} doesn’t have revisions.',
     'Time Zone' => 'Time Zone',
     'Time fields are better suited for managing Time-only values.' => 'Time fields are better suited for managing Time-only values.',
