@@ -1629,7 +1629,7 @@ JS, [
                         ->one();
                 }
 
-                if (!isset($element)) {
+                if (!isset($element) || !$this->_canSave($element, $user)) {
                     $element = $elementType::find()
                         ->id($elementId)
                         ->siteId($siteId)
