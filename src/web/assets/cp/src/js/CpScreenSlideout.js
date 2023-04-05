@@ -277,6 +277,14 @@ Craft.CpScreenSlideout = Craft.Slideout.extend(
       return new Promise((resolve) => {
         this.namespace = data.namespace;
         this.$content.html(data.content);
+        // https://github.com/craftcms/cms/issues/13053
+        // if there are no visible fields in the content, and the sidebar is not showing - show it
+        if (
+          this.$content.find('.no-visible-fields').length > 0 &&
+          !this.showingSidebar
+        ) {
+          this.showSidebar();
+        }
 
         if (data.submitButtonLabel) {
           this.$saveBtn.text(data.submitButtonLabel);

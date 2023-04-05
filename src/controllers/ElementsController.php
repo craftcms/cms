@@ -829,6 +829,17 @@ JS, [
         $components = [];
 
         if ($form) {
+            // @link https://github.com/craftcms/cms/issues/13053
+            if (empty($form->getVisibleElements())) {
+                $components[] = Html::tag('p',
+                    Craft::t(
+                        'app',
+                        'This {element} doesn’t have any visible fields defined in the field layout.',
+                        ['element' => $element->lowerDisplayName()]
+                    ), [
+                    'class' => 'zilch no-visible-fields',
+                ]);
+            }
             $components[] = $form->render();
         }
 
