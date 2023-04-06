@@ -86,9 +86,10 @@ class ImageTransformer extends Component implements ImageTransformerInterface, E
         $index = $this->getTransformIndex($asset, $imageTransform);
         $uri = str_replace('\\', '/', $this->getTransformBasePath($asset)) . $this->getTransformUri($asset, $index);
 
-        // If it's a local filesystem, double-check that the transform exists
-        if ($fs instanceof LocalFsInterface && $index->fileExists && !$fs->fileExists($uri)) {
-            $index->fileExists = false;
+        // If it's a local filesystem, make sure `fileExists` is accurate
+        if ($fs instanceof LocalFsInterface && $index->fileExists !== $fs->fileExists($uri)) {
+            // Flip it and save it
+            $index->fileExists = !$index->fileExists;
             $this->storeTransformIndexData($index);
         }
 

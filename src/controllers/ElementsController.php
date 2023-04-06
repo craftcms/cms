@@ -361,22 +361,7 @@ class ElementsController extends Controller
 
         // Site statuses
         if ($canEditMultipleSites) {
-            if ($element->enabled && $element->id) {
-                $siteStatusesQuery = $element::find()
-                    ->drafts($isDraft)
-                    ->provisionalDrafts($element->isProvisionalDraft)
-                    ->revisions($isRevision)
-                    ->id($element->id)
-                    ->siteId($propEditableSiteIds)
-                    ->status(null)
-                    ->asArray()
-                    ->select(['elements_sites.siteId', 'elements_sites.enabled']);
-                $siteStatuses = array_map(fn($enabled) => (bool)$enabled, $siteStatusesQuery->pairs());
-            } else {
-                // If the element isn't saved yet, assume other sites will share its current status
-                $defaultStatus = !$element->id && $element->enabled && $enabledForSite;
-                $siteStatuses = array_combine($propEditableSiteIds, array_map(fn() => $defaultStatus, $propEditableSiteIds));
-            }
+            $siteStatuses = ElementHelper::siteStatusesForElement($element, true);
         } else {
             $siteStatuses = [
                 $element->siteId => $element->enabled,
