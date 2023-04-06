@@ -8,6 +8,7 @@
 - `craft\elements\Asset::EVENT_BEFORE_DEFINE_URL` now sends a `craft\events\DefineAssetUrlEvent` object, rather than `craft\events\DefineUrlEvent`. ([#13018](https://github.com/craftcms/cms/issues/13018))
 - `craft\web\View::renderObjectTemplate()` now trims the returned template output.
 - Fixed a bug where users were “View other users’ drafts” section permissions weren’t being enforced for unpublished drafts.
+- Fixed a bug where Matrix fields weren’t counting disabled blocks when enforcing their Min Blocks settings. ([#13059](https://github.com/craftcms/cms/issues/13059))
 - Fixed a bug where element editors were showing provisional changes, even if the user didn’t have permission to save them.
 - Fixed a bug where the control panel could be inaccessible if a mutex lock couldn’t be acquired for the queue. ([#13052](https://github.com/craftcms/cms/issues/13052))
 - Fixed XSS vulnerabilities.
