@@ -913,21 +913,19 @@ EOD;
         if ($acquireLock) {
             $channel = $this->channel();
             $mutexName = sprintf('%s::%s', __CLASS__, $channel);
-            if ($this->mutex->acquire($mutexName, $timeout ?? $this->mutexTimeout)) {
-                $this->_locked = true;
-            } else {
+            if (!$this->mutex->acquire($mutexName, $timeout ?? $this->mutexTimeout)) {
                 if ($throwException) {
                     throw new Exception("Could not acquire a mutex lock for the queue ($channel).");
                 }
-                $acquireLock = false;
+                return;
             }
+            $this->_locked = true;
         }
 
         try {
             $callback();
         } finally {
             if ($acquireLock) {
-                /** @phpstan-ignore-next-line */
                 $this->mutex->release($mutexName);
                 $this->_locked = false;
             }
