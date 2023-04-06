@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- The image transformer now verifies that transforms don’t exist if the index record is missing, before queuing up the transform generation, for local filesystems. ([#13052](https://github.com/craftcms/cms/issues/13052))
 - `craft\elements\Asset::EVENT_BEFORE_DEFINE_URL` now sends a `craft\events\DefineAssetUrlEvent` object, rather than `craft\events\DefineUrlEvent`. ([#13018](https://github.com/craftcms/cms/issues/13018))
 - `craft\web\View::renderObjectTemplate()` now trims the returned template output.
 - Fixed a bug where users were “View other users’ drafts” section permissions weren’t being enforced for unpublished drafts.
