@@ -368,7 +368,7 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
     public function getHasWaitingJobs(): bool
     {
         // Move expired messages into waiting list
-        $this->_moveExpired();
+        $this->_moveExpired(0, false);
 
         return $this->db->usePrimary(function() {
             return $this->_createWaitingJobQuery()->exists($this->db);
@@ -381,7 +381,7 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
     public function getHasReservedJobs(): bool
     {
         // Move expired messages into waiting list
-        $this->_moveExpired();
+        $this->_moveExpired(0, false);
 
         return $this->db->usePrimary(function() {
             return $this->_createReservedJobQuery()->exists($this->db);
@@ -396,7 +396,7 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
     public function getTotalWaiting(): int
     {
         // Move expired messages into waiting list
-        $this->_moveExpired();
+        $this->_moveExpired(0, false);
 
         return $this->db->usePrimary(function() {
             return $this->_createWaitingJobQuery()->count('*', $this->db);
@@ -411,7 +411,7 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
     public function getTotalDelayed(): int
     {
         // Move expired messages into waiting list
-        $this->_moveExpired();
+        $this->_moveExpired(0, false);
 
         return $this->db->usePrimary(function() {
             return $this->_createDelayedJobQuery()->count('*', $this->db);
@@ -426,7 +426,7 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
     public function getTotalReserved(): int
     {
         // Move expired messages into waiting list
-        $this->_moveExpired();
+        $this->_moveExpired(0, false);
 
         return $this->db->usePrimary(function() {
             return $this->_createReservedJobQuery()->count('*', $this->db);
@@ -441,7 +441,7 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
     public function getTotalFailed(): int
     {
         // Move expired messages into waiting list
-        $this->_moveExpired();
+        $this->_moveExpired(0, false);
 
         return $this->db->usePrimary(function() {
             return $this->_createFailedJobQuery()->count('*', $this->db);
@@ -500,7 +500,7 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
     public function getJobInfo(?int $limit = null): array
     {
         // Move expired messages into waiting list
-        $this->_moveExpired();
+        $this->_moveExpired(0, false);
 
         $query = $this->_createJobQuery();
 
@@ -767,8 +767,11 @@ EOD;
 
     /**
      * Moves expired messages into waiting list.
+     *
+     * @param int|null $mutexTimeout
+     * @param bool $throwMutexException
      */
-    private function _moveExpired(): void
+    private function _moveExpired(?int $mutexTimeout = null, bool $throwMutexException = true): void
     {
         if ($this->_reserveTime !== time()) {
             $this->_lock(function() {
@@ -799,7 +802,7 @@ EOD;
                         'progressLabel' => null,
                     ], ['id' => $expiredIds], [], false, $this->db);
                 }
-            });
+            }, $mutexTimeout, $throwMutexException);
         }
     }
 
@@ -899,25 +902,33 @@ EOD;
      * Acquires a lock and then executes the provided callback
      *
      * @param callable $callback
+     * @param int|null $timeout
+     * @param bool $throwException
      * @throws Exception
      */
-    private function _lock(callable $callback): void
+    private function _lock(callable $callback, ?int $timeout = null, bool $throwException = true): void
     {
         $acquireLock = !$this->_locked;
 
         if ($acquireLock) {
             $channel = $this->channel();
-            if (!$this->mutex->acquire(__CLASS__ . "::$channel", $this->mutexTimeout)) {
-                throw new Exception("Could not acquire a mutex lock for the queue ($channel).");
+            $mutexName = sprintf('%s::%s', __CLASS__, $channel);
+            if ($this->mutex->acquire($mutexName, $timeout ?? $this->mutexTimeout)) {
+                $this->_locked = true;
+            } else {
+                if ($throwException) {
+                    throw new Exception("Could not acquire a mutex lock for the queue ($channel).");
+                }
+                $acquireLock = false;
             }
-            $this->_locked = true;
         }
 
         try {
             $callback();
         } finally {
             if ($acquireLock) {
-                $this->mutex->release(__CLASS__ . "::$channel");
+                /** @phpstan-ignore-next-line */
+                $this->mutex->release($mutexName);
                 $this->_locked = false;
             }
         }
