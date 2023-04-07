@@ -1838,6 +1838,60 @@ class GeneralConfig extends BaseObject
         // Normalize size settings
         $this->maxUploadFileSize = ConfigHelper::sizeInBytes($this->maxUploadFileSize);
 
+        // Normalize boolean settings
+        $this->addTrailingSlashesToUrls = $this->_normalizeBoolValue($this->addTrailingSlashesToUrls);
+        $this->allowAdminChanges = $this->_normalizeBoolValue($this->allowAdminChanges);
+        $this->allowUpdates = $this->_normalizeBoolValue($this->allowUpdates);
+        $this->allowSimilarTags = $this->_normalizeBoolValue($this->allowSimilarTags);
+        $this->allowUppercaseInSlug = $this->_normalizeBoolValue($this->allowUppercaseInSlug);
+        $this->autoLoginAfterAccountActivation = $this->_normalizeBoolValue($this->autoLoginAfterAccountActivation);
+        $this->autosaveDrafts = $this->_normalizeBoolValue($this->autosaveDrafts);
+        $this->backupOnUpdate = $this->_normalizeBoolValue($this->backupOnUpdate);
+        $this->convertFilenamesToAscii = $this->_normalizeBoolValue($this->convertFilenamesToAscii);
+        $this->deferPublicRegistrationPassword = $this->_normalizeBoolValue($this->deferPublicRegistrationPassword);
+        $this->devMode = $this->_normalizeBoolValue($this->devMode);
+        $this->disallowRobots = $this->_normalizeBoolValue($this->disallowRobots);
+        $this->disableGraphqlTransformDirective = $this->_normalizeBoolValue($this->disableGraphqlTransformDirective);
+        $this->enableBasicHttpAuth = $this->_normalizeBoolValue($this->enableBasicHttpAuth);
+        $this->enableCsrfCookie = $this->_normalizeBoolValue($this->enableCsrfCookie);
+        $this->enableGraphqlIntrospection = $this->_normalizeBoolValue($this->enableGraphqlIntrospection);
+        $this->enableGql = $this->_normalizeBoolValue($this->enableGql);
+        $this->enableCsrfProtection = $this->_normalizeBoolValue($this->enableCsrfProtection);
+        $this->enableGraphqlCaching = $this->_normalizeBoolValue($this->enableGraphqlCaching);
+        $this->setGraphqlDatesToSystemTimeZone = $this->_normalizeBoolValue($this->setGraphqlDatesToSystemTimeZone);
+        $this->enableTemplateCaching = $this->_normalizeBoolValue($this->enableTemplateCaching);
+        $this->generateTransformsBeforePageLoad = $this->_normalizeBoolValue($this->generateTransformsBeforePageLoad);
+        $this->headlessMode = $this->_normalizeBoolValue($this->headlessMode);
+        $this->limitAutoSlugsToAscii = $this->_normalizeBoolValue($this->limitAutoSlugsToAscii);
+        $this->omitScriptNameInUrls = $this->_normalizeBoolValue($this->omitScriptNameInUrls);
+        $this->optimizeImageFilesize = $this->_normalizeBoolValue($this->optimizeImageFilesize);
+        $this->prefixGqlRootTypes = $this->_normalizeBoolValue($this->prefixGqlRootTypes);
+        $this->preserveCmykColorspace = $this->_normalizeBoolValue($this->preserveCmykColorspace);
+        $this->preserveExifData = $this->_normalizeBoolValue($this->preserveExifData);
+        $this->preserveImageColorProfiles = $this->_normalizeBoolValue($this->preserveImageColorProfiles);
+        $this->preventUserEnumeration = $this->_normalizeBoolValue($this->preventUserEnumeration);
+        $this->rasterizeSvgThumbs = $this->_normalizeBoolValue($this->rasterizeSvgThumbs);
+        $this->requireMatchingUserAgentForSession = $this->_normalizeBoolValue($this->requireMatchingUserAgentForSession);
+        $this->requireUserAgentAndIpForSession = $this->_normalizeBoolValue($this->requireUserAgentAndIpForSession);
+        $this->revAssetUrls = $this->_normalizeBoolValue($this->revAssetUrls);
+        $this->rotateImagesOnUploadByExifData = $this->_normalizeBoolValue($this->rotateImagesOnUploadByExifData);
+        $this->runQueueAutomatically = $this->_normalizeBoolValue($this->runQueueAutomatically);
+        $this->sanitizeCpImageUploads = $this->_normalizeBoolValue($this->sanitizeCpImageUploads);
+        $this->sanitizeSvgUploads = $this->_normalizeBoolValue($this->sanitizeSvgUploads);
+        $this->sendContentLengthHeader = $this->_normalizeBoolValue($this->sendContentLengthHeader);
+        $this->sendPoweredByHeader = $this->_normalizeBoolValue($this->sendPoweredByHeader);
+        $this->storeUserIps = $this->_normalizeBoolValue($this->storeUserIps);
+        $this->suppressTemplateErrors = $this->_normalizeBoolValue($this->suppressTemplateErrors);
+        $this->transformGifs = $this->_normalizeBoolValue($this->transformGifs);
+        $this->transformSvgs = $this->_normalizeBoolValue($this->transformSvgs);
+        $this->translationDebugOutput = $this->_normalizeBoolValue($this->translationDebugOutput);
+        $this->upscaleImages = $this->_normalizeBoolValue($this->upscaleImages);
+        $this->useCompressedJs = $this->_normalizeBoolValue($this->useCompressedJs);
+        $this->useEmailAsUsername = $this->_normalizeBoolValue($this->useEmailAsUsername);
+        $this->useIframeResizer = $this->_normalizeBoolValue($this->useIframeResizer);
+        $this->usePathInfo = $this->_normalizeBoolValue($this->usePathInfo);
+        $this->useProjectConfigFile = $this->_normalizeBoolValue($this->useProjectConfigFile);
+
         // Normalize the default control panel language
         if ($this->defaultCpLanguage !== null) {
             try {
@@ -2091,5 +2145,21 @@ class GeneralConfig extends BaseObject
             }
         }
         return $to;
+    }
+
+    private function _normalizeBoolValue($value)
+    {
+        if (is_string($value)) {
+            switch (strtolower($value)) {
+                case 'true':
+                    return true;
+                case 'false':
+                    return false;
+                case 'null':
+                    return null;
+            }
+        }
+
+        return $value;
     }
 }
