@@ -92,11 +92,6 @@ $environment = App::cliOption('--env', true)
     ?? $_SERVER['SERVER_NAME']
     ?? null;
 
-// Set CRAFT_ENVIRONMENT in case anything is calling getenv() instead of Craft::$app->env
-if ($environment !== null && getenv('CRAFT_ENVIRONMENT') === false) {
-    putenv("CRAFT_ENVIRONMENT=$environment");
-}
-
 // Validate the paths
 // -----------------------------------------------------------------------------
 
