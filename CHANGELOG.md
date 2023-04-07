@@ -4,6 +4,8 @@
 
 - The image transformer now verifies that transforms don’t exist if the index record is missing, before queuing up the transform generation, for local filesystems. ([#13052](https://github.com/craftcms/cms/issues/13052))
 - Added the `--propagate-to` and `--set-enabled-for-site` options to the `resave/entries` command.
+- Craft’s bootstrap script now checks for an `ENVIRONMENT` environment variable, as a fallback if `CRAFT_ENVIRONMENT` isn’t defined.
+- Craft’s bootstrap script now defines a `CRAFT_ENVIRONMENT` environment variable, as a safety measure for plugins that may be checking for it rather than `Craft::$app->env`.
 - Added `craft\helpers\ElementHelper::siteStatusesForElement()`.
 - `craft\elements\Asset::EVENT_BEFORE_DEFINE_URL` now sends a `craft\events\DefineAssetUrlEvent` object, rather than `craft\events\DefineUrlEvent`. ([#13018](https://github.com/craftcms/cms/issues/13018))
 - `craft\web\View::renderObjectTemplate()` now trims the returned template output.

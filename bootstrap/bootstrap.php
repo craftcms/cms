@@ -24,10 +24,6 @@ if (!isset($appType) || ($appType !== 'web' && $appType !== 'console')) {
     throw new Exception('$appType must be set to "web" or "console".');
 }
 
-$findConfig = function($cliName, $envName) {
-    return App::cliOption($cliName, true) ?? App::env($envName);
-};
-
 $createFolder = function($path) {
     // Code borrowed from Io...
     if (!is_dir($path)) {
@@ -45,8 +41,8 @@ $createFolder = function($path) {
     }
 };
 
-$findConfigPath = function($cliName, $envName) use ($findConfig, $createFolder) {
-    $path = $findConfig($cliName, $envName);
+$findConfigPath = function($cliName, $envName) use ($createFolder) {
+    $path = App::cliOption($cliName, true) ?? App::env($envName);
     if (!$path) {
         return null;
     }
@@ -90,7 +86,16 @@ $translationsPath = $findConfigPath('--translationsPath', 'CRAFT_TRANSLATIONS_PA
 $testsPath = $findConfigPath('--testsPath', 'CRAFT_TESTS_PATH') ?? "$rootPath/tests";
 
 // Set the environment
-$environment = $findConfig('--env', 'CRAFT_ENVIRONMENT') ?? $_SERVER['SERVER_NAME'] ?? null;
+$environment = App::cliOption('--env', true)
+    ?? App::env('CRAFT_ENVIRONMENT')
+    ?? App::env('ENVIRONMENT')
+    ?? $_SERVER['SERVER_NAME']
+    ?? null;
+
+// Set CRAFT_ENVIRONMENT in case anything is calling getenv() instead of Craft::$app->env
+if ($environment !== null && getenv('CRAFT_ENVIRONMENT') === false) {
+    putenv("CRAFT_ENVIRONMENT=$environment");
+}
 
 // Validate the paths
 // -----------------------------------------------------------------------------
