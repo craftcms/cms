@@ -1257,6 +1257,8 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
                 ->fieldId($this->id)
                 ->ownerId($element->id)
                 ->siteId($element->siteId)
+                ->drafts(null)
+                ->revisions(null)
                 ->status(null)
                 ->indexBy('id')
                 ->all();
