@@ -800,7 +800,13 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
     {
         /** @var MatrixBlockQuery|Collection $value */
         $value = $element->getFieldValue($this->handle);
-        $blocks = $value->all();
+
+        if ($value instanceof MatrixBlockQuery) {
+            $blocks = $value->getCachedResult() ?? (clone $value)->status(null)->limit(null)->all();
+        } else {
+            $blocks = $value->all();
+        }
+
         $allBlocksValidate = true;
         $scenario = $element->getScenario();
 
@@ -1265,6 +1271,8 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
                 ->fieldId($this->id)
                 ->ownerId($element->id)
                 ->siteId($element->siteId)
+                ->drafts(null)
+                ->revisions(null)
                 ->status(null)
                 ->indexBy('id')
                 ->all();

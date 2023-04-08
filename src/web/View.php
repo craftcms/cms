@@ -21,6 +21,7 @@ use craft\helpers\StringHelper;
 use craft\web\twig\CpExtension;
 use craft\web\twig\Environment;
 use craft\web\twig\Extension;
+use craft\web\twig\FeExtension;
 use craft\web\twig\GlobalsExtension;
 use craft\web\twig\SinglePreloaderExtension;
 use craft\web\twig\TemplateLoader;
@@ -359,6 +360,7 @@ class View extends \yii\web\View
         if ($this->_templateMode === self::TEMPLATE_MODE_CP) {
             $twig->addExtension(new CpExtension());
         } elseif (Craft::$app->getIsInstalled()) {
+            $twig->addExtension(new FeExtension());
             $twig->addExtension(new GlobalsExtension());
 
             if (Craft::$app->getConfig()->getGeneral()->preloadSingles) {
@@ -580,7 +582,7 @@ class View extends \yii\web\View
     {
         // If there are no dynamic tags, just return the template
         if (!str_contains($template, '{')) {
-            return $template;
+            return trim($template);
         }
 
         $oldTemplateMode = $this->templateMode;
@@ -636,7 +638,7 @@ class View extends \yii\web\View
             // Render it!
             /** @var TwigTemplate $templateObj */
             $templateObj = $this->_objectTemplates[$cacheKey];
-            return $templateObj->render($variables);
+            return trim($templateObj->render($variables));
         } finally {
             $this->_renderingTemplate = $lastRenderingTemplate;
             $twig->setDefaultEscaperStrategy();

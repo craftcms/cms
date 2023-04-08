@@ -90,6 +90,7 @@ class CpScreenResponseFormatter extends Component implements ResponseFormatterIn
             'title' => $behavior->title,
             'notice' => $notice,
             'tabs' => $tabs,
+            'bodyClass' => $behavior->slideoutBodyClass,
             'formAttributes' => $behavior->formAttributes,
             'action' => $behavior->action,
             'submitButtonLabel' => $behavior->submitButtonLabel,
