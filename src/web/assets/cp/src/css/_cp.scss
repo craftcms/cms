@@ -277,6 +277,10 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
   padding-bottom: 24px;
   overflow: visible;
 
+  body.has-debug-toolbar & {
+    padding-bottom: 66px;
+  }
+
   li {
     &:not(.has-subnav) > a.sel {
       color: $white;
