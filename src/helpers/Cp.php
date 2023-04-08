@@ -1610,7 +1610,10 @@ JS, [
             'customizableUi' => true,
         ];
 
-        $tabs = array_filter($fieldLayout->getTabs(), fn(FieldLayoutTab $tab) => !empty($tab->getElements()));
+        $tabs = array_values(array_filter(
+            $fieldLayout->getTabs(),
+            fn(FieldLayoutTab $tab) => !empty($tab->getElements())
+        ));
 
         if (!$config['customizableTabs']) {
             $tab = array_shift($tabs) ?? new FieldLayoutTab([
