@@ -366,6 +366,10 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
   flex-direction: column;
   align-items: center;
   padding: 14px 14px 24px;
+
+  body.has-debug-toolbar & {
+    padding-bottom: 66px;
+  }
 }
 
 #app-info {
