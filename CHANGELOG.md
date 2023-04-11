@@ -4,9 +4,9 @@
 
 - Improved the control panel styling when the Debug Toolbar is enabled.
 - Boolean config settings that are set to the strings `'true'`, `'false'`, or `'null'` are now converted to `true`, `false`, and `null`. ([#13063](https://github.com/craftcms/cms/issues/13063))
+- `craft\web\View::renderObjectTemplate()` now trims the returned template output.
 - Fixed a bug where the Entries index page was listing unpublished drafts created by other users, even if the current user didn’t have permission to edit them.
 - Fixed a bug where Matrix fields weren’t counting disabled blocks when enforcing their Min Blocks settings. ([#13059](https://github.com/craftcms/cms/issues/13059))
-- `craft\web\View::renderObjectTemplate()` now trims the returned template output.
 
 ## 3.8.6 - 2023-04-04
 
