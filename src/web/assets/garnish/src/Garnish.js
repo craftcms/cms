@@ -79,7 +79,7 @@ Garnish = $.extend(Garnish, {
   X_AXIS: 'x',
   Y_AXIS: 'y',
 
-  FX_DURATION: 100,
+  FX_DURATION: 200,
 
   // Node types
   TEXT_NODE: 3,
