@@ -1527,7 +1527,9 @@ JS,
             $user->email = $user->unverifiedEmail;
 
             if ($isNewUser) {
-                // when sending activation email, use the same scenario as when sending the reset password email
+                // when sending activation email on creating user,
+                // use the default scenario (same as when sending the reset password email)
+                // so that we don't validate conditionally required content
                 // @link https://github.com/craftcms/cms/issues/13060
                 $user->setScenario(User::SCENARIO_DEFAULT);
                 // Send the activation email
@@ -1702,6 +1704,10 @@ JS,
         }
 
         try {
+            // when sending activation email after user was created,
+            // use the live scenario, because we want to validate
+            // conditionally required content
+            $user->setScenario(User::SCENARIO_LIVE);
             $emailSent = Craft::$app->getUsers()->sendActivationEmail($user);
         } catch (InvalidElementException) {
             $emailSent = false;
