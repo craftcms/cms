@@ -455,7 +455,7 @@ class Application extends \yii\web\Application
                 'deprecated' => DeprecatedPanel::class,
                 'profiling' => ProfilingPanel::class,
                 'db' => DbPanel::class,
-                'assets' => AssetPanel::class,
+                'asset' => AssetPanel::class,
                 'mail' => MailPanel::class,
             ],
         ]);

@@ -794,7 +794,12 @@ class UsersController extends Controller
     public function actionEditUser(mixed $userId = null, ?User $user = null, ?array $errors = null): Response
     {
         if (!empty($errors)) {
-            $this->setFailFlash(implode(', ', reset($errors)));
+            $firstError = reset($errors);
+            if (is_array($firstError)) {
+                $this->setFailFlash(implode(', ', $firstError));
+            } else {
+                $this->setFailFlash($firstError);
+            }
         }
 
         // Determine which user account we're editing
