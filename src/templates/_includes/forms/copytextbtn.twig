@@ -9,26 +9,28 @@
     tabindex: '0',
 } %}
 
-{{ input('text', null, value, {
-    class: 'visually-hidden',
-    readonly: true,
-    size: value|length,
-    tabindex: '-1',
-    aria: {
-        hidden: 'true',
-    },
-}) }}
-{% tag 'div' with attributes %}
-    {{ tag('span', {
-        class: 'copytextbtn__value',
-        text: value,
-    }) }}
-    {{ tag('span', {
+<div class="copytextbtn-wrapper">
+    {{ input('text', null, value, {
         class: 'visually-hidden',
-        text: 'Copy to clipboard'|t('app'),
+        readonly: true,
+        size: value|length,
+        tabindex: '-1',
+        aria: {
+            hidden: 'true',
+        },
     }) }}
-    <span class="copytextbtn__icon" data-icon="clipboard" aria-hidden="true"></span>
-{% endtag %}
+    {% tag 'div' with attributes %}
+        {{ tag('span', {
+            class: 'copytextbtn__value',
+            text: value,
+        }) }}
+        {{ tag('span', {
+            class: 'visually-hidden',
+            text: 'Copy to clipboard'|t('app'),
+        }) }}
+        <span class="copytextbtn__icon" data-icon="clipboard" aria-hidden="true"></span>
+    {% endtag %}
+</div>
 
 {% js %}
     {% block js %}
