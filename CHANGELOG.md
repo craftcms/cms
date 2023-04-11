@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 3.x
 
-## Unreleased
+## 3.8.7 - 2023-04-11
 
 - Improved the control panel styling when the Debug Toolbar is enabled.
 - Boolean config settings that are set to the strings `'true'`, `'false'`, or `'null'` are now converted to `true`, `false`, and `null`. ([#13063](https://github.com/craftcms/cms/issues/13063))
