@@ -7,6 +7,7 @@
 - `craft\web\View::renderObjectTemplate()` now trims the returned template output.
 - Fixed a bug where the Entries index page was listing unpublished drafts created by other users, even if the current user didn’t have permission to edit them.
 - Fixed a bug where Matrix fields weren’t counting disabled blocks when enforcing their Min Blocks settings. ([#13059](https://github.com/craftcms/cms/issues/13059))
+- Fixed a bug where volume folder modals’ sidebars and content were being cut off. ([#13074](https://github.com/craftcms/cms/issues/13074))
 
 ## 3.8.6 - 2023-04-04
 
