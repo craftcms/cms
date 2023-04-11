@@ -1527,6 +1527,9 @@ JS,
             $user->email = $user->unverifiedEmail;
 
             if ($isNewUser) {
+                // when sending activation email, use the same scenario as when sending the reset password email
+                // @link https://github.com/craftcms/cms/issues/13060
+                $user->setScenario(User::SCENARIO_DEFAULT);
                 // Send the activation email
                 Craft::$app->getUsers()->sendActivationEmail($user);
             } else {
