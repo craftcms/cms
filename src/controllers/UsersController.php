@@ -1713,9 +1713,17 @@ JS,
             );
         }
 
-        return $emailSent ?
-            $this->asSuccess(Craft::t('app', 'Activation email sent.')) :
-            $this->asFailure(Craft::t('app', 'Couldn’t send activation email. Check your email settings.'));
+        if ($this->request->getAcceptsJson()) {
+            return $emailSent ?
+                $this->asSuccess(Craft::t('app', 'Activation email sent.')) :
+                $this->asFailure(Craft::t('app', 'Couldn’t send activation email. Check your email settings.'));
+        }
+
+        $emailSent ?
+            $this->setSuccessFlash(Craft::t('app', 'Activation email sent.')) :
+            $this->setFailFlash(Craft::t('app', 'Couldn’t send activation email. Check your email settings.'));
+
+        return $this->redirectToPostedUrl($user);
     }
 
     /**
