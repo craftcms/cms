@@ -16,6 +16,7 @@
 - Fixed a bug where it wasn’t possible to update a Matrix block on a revision without a new block ID being assigned. ([#13064](https://github.com/craftcms/cms/discussions/13064))
 - Fixed a JavaScript error that could occur on field layout designers, if any tabs didn’t have any elements. ([#13062](https://github.com/craftcms/cms/issues/13062))
 - Fixed a bug where selecting an image with a transform within an asset selector modal wasn’t ever resolving.
+- Fixed a PHP error that could occur if there was a problem sending a password-reset email. ([#13070](https://github.com/craftcms/cms/pull/13070))
 - Fixed XSS vulnerabilities.
 - Updated yii2-debug to 2.1.22. ([#13058](https://github.com/craftcms/cms/issues/13058))
 
