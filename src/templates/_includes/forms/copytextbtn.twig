@@ -43,7 +43,6 @@
                 $input[0].setSelectionRange(0, 0);
                 $btn.focus();
             };
-            $btn.on('click', copyValue);
             $btn.on('activate', ev => {
                 copyValue();
                 ev.preventDefault();
