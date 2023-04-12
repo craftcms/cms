@@ -929,8 +929,13 @@ class Assets extends BaseRelationField
                 return Craft::t('app', 'Asset Location');
             };
         } else {
-            $sourceKey = $this->defaultUploadLocationSource;
-            $subpath = $this->defaultUploadLocationSubpath;
+            if (in_array($this->defaultUploadLocationSource, $this->sources)) {
+                $sourceKey = $this->defaultUploadLocationSource;
+                $subpath = $this->defaultUploadLocationSubpath;
+            } else {
+                $sourceKey = reset($this->sources);
+                $subpath = '';
+            }
             $settingName = function() {
                 return Craft::t('app', 'Default Asset Location');
             };
