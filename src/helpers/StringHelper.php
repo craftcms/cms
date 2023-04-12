@@ -10,6 +10,7 @@ namespace craft\helpers;
 use Craft;
 use HTMLPurifier_Config;
 use IteratorAggregate;
+use LitEmoji\LitEmoji;
 use Normalizer;
 use Stringy\Stringy as BaseStringy;
 use voku\helper\ASCII;
@@ -37,6 +38,12 @@ class StringHelper extends \yii\helpers\StringHelper
      * @see asciiCharMap()
      */
     private static array $_asciiCharMaps;
+
+    /**
+     * @var string[]|false
+     * @see escapeShortcodes()
+     */
+    private static array|false $_shortcodeEscapeMap;
 
     /**
      * Gets the substring after the first occurrence of a separator.
@@ -1943,5 +1950,89 @@ class StringHelper extends \yii\helpers\StringHelper
         }
 
         return $combined;
+    }
+
+    /**
+     * Converts emoji to shortcodes.
+     *
+     * @param string $str
+     * @return string
+     * @since 4.4.3
+     */
+    public static function emojiToShortcodes(string $str): string
+    {
+        // Add delimiters around all 4-byte chars
+        $dl = '__MB4_DL__';
+        $dr = '__MB4_DR__';
+        $str = static::replaceMb4($str, fn($char) => sprintf('%s%s%s', $dl, $char, $dr));
+
+        // Strip out consecutive delimiters
+        $str = str_replace(sprintf('%s%s', $dr, $dl), '', $str);
+
+        // Replace all 4-byte sequences individually
+        return preg_replace_callback("/$dl(.+?)$dr/", fn($m) => LitEmoji::unicodeToShortcode($m[1]), $str);
+    }
+
+    /**
+     * Converts shortcodes to emoji.
+     *
+     * @param string $str
+     * @return string
+     * @since 4.4.3
+     */
+    public static function shortcodesToEmoji(string $str): string
+    {
+        return LitEmoji::shortcodeToUnicode($str);
+    }
+
+    /**
+     * Escapes shortcodes.
+     *
+     * @param string $str
+     * @return string
+     * @since 4.5.0
+     */
+    public static function escapeShortcodes(string $str): string
+    {
+        $map = self::shortcodeEscapeMap();
+        if ($map === false) {
+            return $str;
+        }
+        return str_replace(array_keys($map), $map, $str);
+    }
+
+    /**
+     * Unscapes shortcodes.
+     *
+     * @param string $str
+     * @return string
+     * @since 4.5.0
+     */
+    public static function unescapeShortcodes(string $str): string
+    {
+        $map = self::shortcodeEscapeMap();
+        if ($map === false) {
+            return $str;
+        }
+        return str_replace($map, array_keys($map), $str);
+    }
+
+    private static function shortcodeEscapeMap(): array|false
+    {
+        if (!isset(self::$_shortcodeEscapeMap)) {
+            $path = Craft::$app->getPath()->getVendorPath() . '/elvanto/litemoji/src/shortcodes-array.php';
+            if (file_exists($path)) {
+                $shortcodes = array_keys(require $path);
+                self::$_shortcodeEscapeMap = array_combine(
+                    array_map(fn(string $shortcode) => ":$shortcode:", $shortcodes),
+                    array_map(fn(string $shortcode) => "\\:$shortcode\\:", $shortcodes),
+                );
+            } else {
+                Craft::warning('Unable to escape shortcodes: shortcodes-array.php doesn’t exist at the expected location.');
+                self::$_shortcodeEscapeMap = false;
+            }
+        }
+
+        return self::$_shortcodeEscapeMap;
     }
 }

@@ -4,10 +4,26 @@
 @mixin checkered-bg($size) {
   // h/t https://gist.github.com/dfrankland/f6fed3e3ccc42e3de482b324126f9542
   $halfSize: $size * 0.5;
-  background-image: linear-gradient(45deg, var(--gray-100) 25%, transparent 25%),
-    linear-gradient(135deg, var(--gray-100) 25%, transparent 25%),
-    linear-gradient(45deg, transparent 75%, var(--gray-100) 75%),
-    linear-gradient(135deg, transparent 75%, var(--gray-100) 75%);
+  background-image: linear-gradient(
+      45deg,
+      #{transparentize($grey300, 0.75)} 25%,
+      transparent 25%
+    ),
+    linear-gradient(
+      135deg,
+      #{transparentize($grey300, 0.75)} 25%,
+      transparent 25%
+    ),
+    linear-gradient(
+      45deg,
+      transparent 75%,
+      #{transparentize($grey300, 0.75)} 75%
+    ),
+    linear-gradient(
+      135deg,
+      transparent 75%,
+      #{transparentize($grey300, 0.75)} 75%
+    );
   background-size: $size $size;
   background-position: 0 0, $halfSize 0, $halfSize -#{$halfSize}, 0 $halfSize;
 }
@@ -69,6 +85,7 @@
   --inner-focus-ring: inset 0 0 0 1px hsl(var(--dark-focus-hsl)),
     inset 0 0 0 3px hsla(var(--dark-focus-hsl), 0.7);
   --touch-target-size: 24px; /* Minimum recommended touch target size */
+  --elements-busy-top-position: calc(50% - var(--size, 20px) / 2);
 }
 
 body,
@@ -148,6 +165,11 @@ fieldset:last-child,
 
 .draghelper {
   box-sizing: border-box;
+}
+
+.offset-drag-helper {
+  @include margin(-50px, 0, 0, -50px);
+  @include padding(60px, 0, 0, 60px);
 }
 
 img {
@@ -1160,8 +1182,18 @@ td.right {
   margin: 3px;
 }
 
-.customize-sources-table-column .move {
-  @include margin-right(10px);
+.customize-sources-table-column {
+  display: flex;
+  align-items: flex-start;
+  align-content: stretch;
+  margin-bottom: 4px;
+
+  .move {
+    margin-top: -3px;
+    @include margin-right(10px);
+    position: relative;
+    z-index: 1;
+  }
 }
 
 ul.path {
@@ -1767,7 +1799,7 @@ ul.icons {
     position: absolute;
     width: var(--size, 20px);
     height: var(--size, 20px);
-    top: calc(50% - var(--size, 20px) / 2);
+    top: var(--elements-busy-top-position);
     left: calc(50% - var(--size, 20px) / 2);
   }
 }
@@ -1937,13 +1969,17 @@ div.btn.submit input {
     border-radius: 0;
     background-color: transparent;
 
-    &.current-step {
+    &.current-step,
+    &.active-drop-target {
       color: var(--white);
       --text-color: var(--white);
       --ui-control-color: var(--white);
       --ui-control-bg-color: var(--gray-500);
       --ui-control-hover-bg-color: #{darken($grey500, 5%)};
       --ui-control-active-bg-color: #{darken($grey500, 10%)};
+    }
+
+    &.current-step {
       @include light-on-dark-text;
       @include light-focus-ring;
     }
@@ -2014,11 +2050,15 @@ div.btn.submit input {
       @include margin-right(0);
     }
 
+    .chevron-right,
     .chevron-left {
       position: absolute;
       top: 0;
-      width: 0;
-      height: 0;
+      height: 100%;
+      width: calc(var(--ui-control-height) / 2);
+    }
+
+    .chevron-left {
       @include left(0);
       border-top: calc(var(--ui-control-height) / 2) solid
         var(--ui-control-bg-color);
@@ -2031,7 +2071,7 @@ div.btn.submit input {
         content: '';
         font-size: 0;
         position: absolute;
-        top: 0;
+        bottom: 0;
         @include right(0);
         border-bottom: calc(var(--ui-control-height) / 2) solid
           var(--ui-control-bg-color);
@@ -2042,8 +2082,6 @@ div.btn.submit input {
     }
 
     .chevron-right {
-      position: absolute;
-      top: 0;
       @include right(0);
       border-top: calc(var(--ui-control-height) / 2) solid transparent;
       border-bottom: calc(var(--ui-control-height) / 2) solid transparent;
@@ -2495,7 +2533,7 @@ table {
           padding-left: 0;
           padding-right: 0;
 
-          &:not(.ordered):hover {
+          body:not(.dragging) &:not(.ordered):hover {
             background-color: var(--gray-100);
           }
 
@@ -2563,7 +2601,8 @@ table {
             z-index: 1;
           }
 
-          &.sel {
+          &.sel,
+          &.active-drop-target {
             --link-color: var(--white);
             --ui-control-color: var(--white);
             @include custom-color-focus-ring(hsl(var(--light-focus-hsl)));
@@ -2602,7 +2641,7 @@ table {
       }
     }
 
-    tr.sel + tr.sel {
+    tr.sel:not(.draggee) + tr.sel:not(.draggee) {
       th,
       td {
         border-top-color: var(--gray-300);
@@ -2726,13 +2765,18 @@ $elementInnerSpacing: 5px;
   }
 
   &.sel,
-  li.sel & {
-    background-color: var(--light-sel-color) !important;
-    cursor: default;
+  li.sel &,
+  li.active-drop-target & {
+    --link-color: var(--white);
+    --ui-control-color: var(--white);
+    @include custom-color-focus-ring(hsl(var(--light-focus-hsl)));
+    color: var(--white);
+    background-color: var(--dark-sel-color) !important;
+  }
 
-    &:focus {
-      background-color: darken($lightSelColor, 5%) !important;
-    }
+  &.sel,
+  li.sel & {
+    cursor: default;
 
     &.hasthumb {
       .elementthumb {
@@ -2742,6 +2786,11 @@ $elementInnerSpacing: 5px;
         }
       }
     }
+  }
+
+  .offset-drag-helper & {
+    background-color: var(--gray-050);
+    @include shadow;
   }
 
   &.hasthumb {
@@ -3032,6 +3081,12 @@ $checkboxPadding: $checkboxSize + 4;
     }
   }
 
+  .tableview tr.draggee th,
+  .tableview tr.draggee td,
+  .thumbsview li.draggee {
+    opacity: 0.25;
+  }
+
   // table views
   .tableview {
     .move,
@@ -3115,6 +3170,16 @@ $checkboxPadding: $checkboxSize + 4;
           top: $baseElementSidePadding + $largeThumbSize + $elementInnerSpacing +
             (20px - $checkboxSize) * 0.5;
           @include left($baseElementSidePadding);
+        }
+      }
+
+      &.sel {
+        a {
+          cursor: pointer !important;
+
+          &:hover {
+            text-decoration: underline;
+          }
         }
       }
     }
@@ -4035,6 +4100,12 @@ ul.tree,
 
   .menubtn {
     margin: 0 var(--xl);
+
+    &.error {
+      span[data-icon] {
+        margin-right: 2px;
+      }
+    }
   }
 }
 
@@ -4392,8 +4463,8 @@ $min2ColWidth: 400px;
     }
   }
 
-  & > .field:not(:first-child),
-  & > .flex-fields + .field {
+  & > .field:not(:first-child):not(.first-child),
+  & > .flex-fields + .field:not(.first-child) {
     border-top: 1px solid var(--hairline-color);
   }
 
@@ -4454,7 +4525,7 @@ $min2ColWidth: 400px;
 }
 
 .modal,
-.hud .body {
+.hud {
   @include modal;
 }
 
@@ -4547,29 +4618,22 @@ $min2ColWidth: 400px;
   & > .so-body {
     flex: 1;
     margin: -24px var(--neg-padding) 0;
-    padding: 24px var(--padding);
     overflow: hidden auto;
     position: relative;
 
+    &.so-full-details,
     & > .so-sidebar {
-      position: absolute;
-      top: 0;
-      @include pane();
-      width: 350px;
-      height: 100%;
-      max-width: 100%;
+      background-color: var(--gray-100) !important;
+    }
+
+    &:not(.so-full-details) {
+      padding: 24px var(--padding);
+    }
+
+    & > .so-sidebar,
+    &.so-full-details > .so-content > .details {
       box-sizing: border-box;
       padding: 0 var(--padding) var(--spacing);
-      background-color: var(--gray-100);
-      overflow: hidden auto;
-      z-index: 1;
-
-      body.ltr & {
-        transition: right linear 250ms;
-      }
-      body.rtl & {
-        transition: left linear 250ms;
-      }
 
       & > .preview-thumb-container {
         margin: 0 var(--neg-padding);
@@ -4605,6 +4669,24 @@ $min2ColWidth: 400px;
       .notes {
         padding-top: var(--m);
         padding-bottom: var(--m);
+      }
+    }
+
+    & > .so-sidebar {
+      position: absolute;
+      top: 0;
+      @include pane();
+      width: 350px;
+      height: 100%;
+      max-width: 100%;
+      overflow: hidden auto;
+      z-index: 1;
+
+      body.ltr & {
+        transition: right linear 250ms;
+      }
+      body.rtl & {
+        transition: left linear 250ms;
       }
     }
   }
@@ -5204,8 +5286,18 @@ $min2ColWidth: 400px;
   }
 }
 
-.element-index-view-menu-table-column .icon.move {
-  @include margin-right(10px);
+.element-index-view-menu-table-column {
+  display: flex;
+  align-items: start;
+  align-content: stretch;
+  margin-bottom: 4px;
+
+  .icon.move {
+    margin-top: -3px;
+    @include margin-right(10px);
+    position: relative;
+    z-index: 1;
+  }
 }
 
 /* sort fields */
@@ -6026,7 +6118,7 @@ div.checkbox {
   position: relative;
   @include padding-left($checkboxSize + 5);
   line-height: 16px;
-  height: 16px;
+  min-height: 16px;
   cursor: pointer;
 
   .info {
@@ -6262,7 +6354,7 @@ body.reduce-focus-visibility {
 
   &:not(.small) {
     box-sizing: border-box;
-    min-height: 34px;
+    min-height: calc(34rem / 16);
   }
 
   &.small {
@@ -6317,6 +6409,16 @@ body.reduce-focus-visibility {
     }
   }
 
+  .texticon-icon {
+    position: absolute;
+    top: calc((34rem / 16) / 2);
+    transform: translateY(-50%);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    @include left(9px);
+  }
+
   .clear-btn {
     position: absolute;
     top: calc(
@@ -6334,7 +6436,8 @@ body.reduce-focus-visibility {
 
     .filter-btn {
       position: absolute;
-      top: 4px;
+      top: calc((34rem / 16) / 2);
+      transform: translateY(-50%);
       @include right(4px);
       padding: 0 7px 4px;
       font-size: 14px;
@@ -6363,7 +6466,7 @@ body.reduce-focus-visibility {
     }
 
     .text {
-      @include padding-left(26px);
+      @include padding-left(calc(26rem / 16));
 
       &.clearable {
         @include padding-right(calc(30px + var(--touch-target-size)));
@@ -6621,7 +6724,7 @@ tr.indexingSession td.progress div.progressContainer div.progressInfo {
 
 body .selectize-dropdown {
   border: none;
-  z-index: 100;
+  z-index: 101;
 }
 
 /* single select styles */
@@ -6630,7 +6733,8 @@ body .selectize-dropdown {
   height: 34px;
 
   &:not(.fullwidth) {
-    width: 25em;
+    max-width: 25em;
+    min-width: 10em;
   }
 }
 
@@ -6984,6 +7088,10 @@ ul.errors li {
     &.autosuggest__results-item--highlighted {
       @include menu-option-active-styles;
       cursor: pointer;
+
+      .light {
+        color: $grey100 !important;
+      }
     }
   }
 }

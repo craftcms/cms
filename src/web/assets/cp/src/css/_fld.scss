@@ -280,11 +280,6 @@ $gridColor: hsl(212, 50%, 95%);
   }
 }
 
-body.dragging {
-  cursor: move !important;
-  cursor: grabbing !important;
-}
-
 .fld-hr,
 .fld-br {
   display: flex;

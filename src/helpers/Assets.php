@@ -8,6 +8,7 @@
 namespace craft\helpers;
 
 use Craft;
+use craft\base\BaseFsInterface;
 use craft\base\FsInterface;
 use craft\base\LocalFsInterface;
 use craft\elements\Asset;
@@ -79,14 +80,14 @@ class Assets
     /**
      * Generates the URL for an asset.
      *
-     * @param FsInterface $fs
+     * @param BaseFsInterface $fs
      * @param Asset $asset
      * @param string|null $uri Asset URI to use. Defaults to the filename.
      * @param DateTime|null $dateUpdated last datetime the target of the url was updated, if known
      * @return string
      * @throws InvalidConfigException if the asset doesn’t have a filename.
      */
-    public static function generateUrl(FsInterface $fs, Asset $asset, ?string $uri = null, ?DateTime $dateUpdated = null): string
+    public static function generateUrl(BaseFsInterface $fs, Asset $asset, ?string $uri = null, ?DateTime $dateUpdated = null): string
     {
         $pathParts = explode('/', $asset->folderPath . ($uri ?? $asset->getFilename()));
         $path = implode('/', array_map('rawurlencode', $pathParts));
@@ -173,7 +174,7 @@ class Assets
         }
 
         $revParams = self::revParams($asset, $dateUpdated);
-        return sprintf('?%s', UrlHelper::buildQuery($revParams));
+        return sprintf('?%s', http_build_query($revParams));
     }
 
     /**
@@ -244,16 +245,22 @@ class Assets
      */
     public static function filename2Title(string $filename): string
     {
-        return StringHelper::upperCaseFirst(implode(' ', StringHelper::toWords($filename, false, true)));
+        $title = StringHelper::upperCaseFirst(implode(' ', StringHelper::toWords($filename, false, true)));
+
+        if (strlen($title) > 255) {
+            $title = rtrim(substr($title, 255), ' ');
+        }
+
+        return $title;
     }
 
     /**
-     * Mirror a folder structure on a Volume.
+     * Mirrors a folder structure on a volume.
      *
      * @param VolumeFolder $sourceParentFolder Folder who's children folder structure should be mirrored.
      * @param VolumeFolder $destinationFolder The destination folder
-     * @param array $targetTreeMap map of relative path => existing folder id
-     * @return array map of original folder id => new folder id
+     * @param array $targetTreeMap map of relative path => existing folder ID
+     * @return array map of original folder ID => new folder ID
      */
     public static function mirrorFolderStructure(VolumeFolder $sourceParentFolder, VolumeFolder $destinationFolder, array $targetTreeMap = []): array
     {
@@ -287,11 +294,11 @@ class Assets
     }
 
     /**
-     * Create an Asset transfer list based on a list of Assets and an array of
-     * changing folder ids.
+     * Create an asset transfer list based on a list of assets and an array of
+     * changing folder IDs.
      *
      * @param array $assets List of assets
-     * @param array $folderIdChanges A map of folder id changes
+     * @param array $folderIdChanges A map of folder ID changes
      * @return array
      */
     public static function fileTransferList(array $assets, array $folderIdChanges): array
@@ -330,7 +337,7 @@ class Assets
     }
 
     /**
-     * Sorts a folder tree by Volume sort order.
+     * Sorts a folder tree by the volume sort order.
      *
      * @param VolumeFolder[] $tree array passed by reference of the sortable folders.
      * @deprecated in 4.4.0
@@ -690,7 +697,7 @@ class Assets
     }
 
     /**
-     * Return an image path to use in Image Editor for an Asset by id and size.
+     * Return an image path to use in the Image Editor for an asset by its ID and size.
      *
      * @param int $assetId
      * @param int $size
@@ -845,14 +852,14 @@ class Assets
     /**
      * Save a file from a filesystem locally.
      *
-     * @param FsInterface $fs
+     * @param BaseFsInterface $fs
      * @param string $uriPath
      * @param string $localPath
      * @return int
      * @throws FsException
      * @since 4.0.0
      */
-    public static function downloadFile(FsInterface $fs, string $uriPath, string $localPath): int
+    public static function downloadFile(BaseFsInterface $fs, string $uriPath, string $localPath): int
     {
         $stream = $fs->getFileStream($uriPath);
         $outputStream = fopen($localPath, 'wb');

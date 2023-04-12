@@ -524,7 +524,7 @@ interface ElementInterface extends ComponentInterface
     /**
      * Returns the GraphQL type name by an element’s context.
      *
-     * @param mixed $context The element’s context, such as a Volume, Entry Type or Matrix Block Type.
+     * @param mixed $context The element’s context, such as a volume, entry type or Matrix block type.
      * @return string
      * @since 3.3.0
      */
@@ -542,7 +542,7 @@ interface ElementInterface extends ComponentInterface
     /**
      * Returns the GraphQL scopes required by element’s context.
      *
-     * @param mixed $context The element’s context, such as a Volume, Entry Type or Matrix Block Type.
+     * @param mixed $context The element’s context, such as a volume, entry type or Matrix block type.
      * @return array
      * @since 3.3.0
      */
@@ -1329,6 +1329,16 @@ interface ElementInterface extends ComponentInterface
     public function setFieldValue(string $fieldHandle, mixed $value): void;
 
     /**
+     * Sets the value for a given field. The value should have originated from post data.
+     *
+     * @param string $fieldHandle The field handle whose value needs to be set
+     * @param mixed $value The value to set on the field
+     * @throws InvalidFieldException if `$fieldHandle` is an invalid field handle
+     * @since 4.5.0
+     */
+    public function setFieldValueFromRequest(string $fieldHandle, mixed $value): void;
+
+    /**
      * Returns the field handles that have been updated on the canonical element since the last time it was
      * merged into this element.
      *
@@ -1381,6 +1391,16 @@ interface ElementInterface extends ComponentInterface
      * @since 3.4.0
      */
     public function getDirtyFields(): array;
+
+    /**
+     * Sets the list of dirty field handles.
+     *
+     * @param string[] $fieldHandles
+     * @param bool $merge Whether these fields should be merged with existing dirty fields
+     * @see getDirtyFields()
+     * @since 4.5.0
+     */
+    public function setDirtyFields(array $fieldHandles, bool $merge = true): void;
 
     /**
      * Marks all fields and attributes as dirty.

@@ -113,6 +113,24 @@ class ImageTransform extends Model
     /**
      * @inheritdoc
      */
+    public function __construct($config = [])
+    {
+        if (isset($config['width']) && !$config['width']) {
+            unset($config['width']);
+        }
+        if (isset($config['height']) && !$config['height']) {
+            unset($config['height']);
+        }
+        if (isset($config['quality']) && !$config['quality']) {
+            unset($config['quality']);
+        }
+
+        parent::__construct($config);
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function init(): void
     {
         parent::init();
@@ -276,5 +294,28 @@ class ImageTransform extends Model
         }
 
         $this->transformer = $transformer;
+    }
+
+    /**
+     * Returns the transform’s config.
+     *
+     * @return array
+     * @since 4.4.2
+     */
+    public function getConfig(): array
+    {
+        return [
+            'fill' => $this->fill,
+            'format' => $this->format,
+            'handle' => $this->handle,
+            'height' => $this->height,
+            'interlace' => $this->interlace,
+            'mode' => $this->mode,
+            'name' => $this->name,
+            'position' => $this->position,
+            'quality' => $this->quality,
+            'upscale' => $this->upscale ?? Craft::$app->getConfig()->getGeneral()->upscaleImages,
+            'width' => $this->width,
+        ];
     }
 }

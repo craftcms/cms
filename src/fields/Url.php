@@ -114,7 +114,7 @@ class Url extends Field implements PreviewableFieldInterface, CopyableFieldInter
      */
     public function getContentColumnType(): string
     {
-        return Schema::TYPE_STRING . "($this->maxLength)";
+        return sprintf('%s(%s)', Schema::TYPE_STRING, $this->maxLength);
     }
 
     /**

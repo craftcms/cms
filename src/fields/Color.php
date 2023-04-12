@@ -53,7 +53,7 @@ class Color extends Field implements PreviewableFieldInterface, CopyableFieldInt
      */
     public function getContentColumnType(): string
     {
-        return Schema::TYPE_STRING . '(7)';
+        return sprintf('%s(7)', Schema::TYPE_CHAR);
     }
 
     /** @inheritdoc */

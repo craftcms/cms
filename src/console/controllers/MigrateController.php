@@ -140,7 +140,7 @@ class MigrateController extends BaseMigrateController
      * Note that the values setting via options are not available
      * until [[beforeAction()]] is being called.
      *
-     * @param string $actionID the action id of the current request
+     * @param string $actionID the action ID of the current request
      * @return string[] the names of the options valid for the action
      */
     public function options($actionID): array
@@ -202,7 +202,6 @@ class MigrateController extends BaseMigrateController
             }
 
             $this->migrationPath = $this->getMigrator()->migrationPath;
-            FileHelper::createDirectory($this->migrationPath);
         }
 
         // Make sure that the project config YAML exists in case any migrations need to check incoming YAML values
@@ -211,8 +210,12 @@ class MigrateController extends BaseMigrateController
             $projectConfig->regenerateExternalConfig();
         }
 
-        if (!$this->traitBeforeAction($action)) {
-            return false;
+        try {
+            if (!$this->traitBeforeAction($action)) {
+                return false;
+            }
+        } catch (InvalidConfigException $e) {
+            // migrations folder not created, but we don't mind.
         }
 
         return true;

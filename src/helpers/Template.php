@@ -22,6 +22,7 @@ use Twig\TemplateWrapper;
 use yii\base\BaseObject;
 use yii\base\InvalidConfigException;
 use yii\base\UnknownMethodException;
+use yii\base\UnknownPropertyException;
 use yii\db\Query;
 use yii\db\QueryInterface;
 use function twig_get_attribute;
@@ -53,6 +54,40 @@ class Template
      * @see endProfile()
      */
     private static array $_profileCounters;
+
+    /**
+     * @var array Dynamically-defined fallback variables
+     * @see fallbackExists()
+     * @see fallback()
+     */
+    private static array $_fallbacks = [];
+
+    /**
+     * Returns whether a fallback variable has been defined.
+     *
+     * @param string $name
+     * @return bool
+     * @since 4.4.0
+     */
+    public static function fallbackExists(string $name): bool
+    {
+        return isset(self::$_fallbacks[$name]);
+    }
+
+    /**
+     * Provides dynamically-defined fallback variable’s value.
+     *
+     * @param string $name
+     * @throws UnknownPropertyException if `$name` isn’t defined as a fallback variable.
+     * @since 4.4.0
+     */
+    public static function fallback(string $name): mixed
+    {
+        if (!static::fallbackExists($name)) {
+            throw new UnknownPropertyException("$name is not defined as a fallback template variable.");
+        }
+        return self::$_fallbacks[$name];
+    }
 
     /**
      * Returns the attribute value for a given array/object.
@@ -341,16 +376,13 @@ class Template
     }
 
     /**
-     * Preloads Single section entries into the given context.
+     * Preloads Single section entries as fallback values for [[fallbackValue()]]
      *
-     * @param array $context
      * @param string[] $handles
      * @since 4.4.0
      */
-    public static function preloadSingles(array &$context, array $handles): void
+    public static function preloadSingles(array $handles): void
     {
-        // Filter out any handles that are already defined variables in the context
-        $handles = array_diff($handles, array_keys($context));
-        $context += Craft::$app->getEntries()->getSingleEntriesByHandle($handles);
+        self::$_fallbacks += Craft::$app->getEntries()->getSingleEntriesByHandle($handles);
     }
 }

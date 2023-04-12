@@ -16,13 +16,9 @@ use craft\helpers\FileHelper;
 use craft\helpers\StringHelper;
 use GuzzleHttp\Client;
 use Symfony\Component\VarDumper\Cloner\VarCloner;
-use Symfony\Component\VarDumper\Dumper\CliDumper;
-use Symfony\Component\VarDumper\Dumper\HtmlDumper;
 use yii\base\ExitException;
-use yii\console\Controller;
 use yii\db\Expression;
 use yii\helpers\VarDumper;
-use yii\web\Application as WebApplication;
 use yii\web\Request;
 use function GuzzleHttp\default_user_agent;
 
@@ -123,14 +119,8 @@ class Craft extends Yii
             return $return ? ob_get_clean() : null;
         }
 
-        if (Craft::$app instanceof WebApplication) {
-            $dumper = new HtmlDumper();
-        } else {
-            $dumper = new CliDumper();
-            $dumper->setColors(Craft::$app->controller instanceof Controller && Craft::$app->controller->isColorEnabled());
-        }
-
-        return $dumper->dump((new VarCloner())->cloneVar($var)->withMaxDepth($depth), $return ? true : null);
+        $data = (new VarCloner())->cloneVar($var)->withMaxDepth($depth);
+        return Craft::$app->getDumper()->dump($data, $return ? true : null);
     }
 
     /**
@@ -169,11 +159,11 @@ class Craft extends Yii
             $generalConfig = static::$app->getConfig()->getGeneral();
 
             if ($generalConfig->useSecureCookies === 'auto') {
-                if ($request === null) {
-                    $request = static::$app->getRequest();
-                }
+                $request = $request ?? static::$app->getRequest();
 
-                $generalConfig->useSecureCookies = $request->getIsSecureConnection();
+                if (!$request->getIsConsoleRequest()) {
+                    $generalConfig->useSecureCookies = $request->getIsSecureConnection();
+                }
             }
 
             self::$_baseCookieConfig = [

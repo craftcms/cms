@@ -16,7 +16,7 @@ use craft\base\SortableFieldInterface;
 use craft\fields\conditions\TextFieldConditionRule;
 use craft\helpers\Db;
 use craft\helpers\ElementHelper;
-use LitEmoji\LitEmoji;
+use craft\helpers\StringHelper;
 use yii\db\Schema;
 
 /**
@@ -118,7 +118,7 @@ class PlainText extends Field implements PreviewableFieldInterface, SortableFiel
         parent::init();
 
         if (isset($this->placeholder)) {
-            $this->placeholder = LitEmoji::shortcodeToUnicode($this->placeholder);
+            $this->placeholder = StringHelper::shortcodesToEmoji($this->placeholder);
         }
     }
 
@@ -129,7 +129,7 @@ class PlainText extends Field implements PreviewableFieldInterface, SortableFiel
     {
         $settings = parent::getSettings();
         if (isset($settings['placeholder'])) {
-            $settings['placeholder'] = LitEmoji::unicodeToShortcode($settings['placeholder']);
+            $settings['placeholder'] = StringHelper::emojiToShortcodes($settings['placeholder']);
         }
         return $settings;
     }
@@ -199,8 +199,24 @@ class PlainText extends Field implements PreviewableFieldInterface, SortableFiel
      */
     public function normalizeValue(mixed $value, ?ElementInterface $element = null): mixed
     {
+        return $this->_normalizeValueInternal($value, $element, false);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function normalizeValueFromRequest(mixed $value, ?ElementInterface $element = null): mixed
+    {
+        return $this->_normalizeValueInternal($value, $element, true);
+    }
+
+    private function _normalizeValueInternal(mixed $value, ?ElementInterface $element, bool $fromRequest): mixed
+    {
         if ($value !== null) {
-            $value = LitEmoji::shortcodeToUnicode($value);
+            if (!$fromRequest) {
+                $value = StringHelper::unescapeShortcodes(StringHelper::shortcodesToEmoji($value));
+            }
+
             $value = trim(preg_replace('/\R/u', "\n", $value));
         }
 
@@ -216,6 +232,7 @@ class PlainText extends Field implements PreviewableFieldInterface, SortableFiel
             'name' => $this->handle,
             'value' => $value,
             'field' => $this,
+            'placeholder' => $this->placeholder !== null ? Craft::t('site', StringHelper::unescapeShortcodes($this->placeholder)) : null,
             'orientation' => $this->getOrientation($element),
         ]);
     }
@@ -240,7 +257,7 @@ class PlainText extends Field implements PreviewableFieldInterface, SortableFiel
     public function serializeValue(mixed $value, ?ElementInterface $element = null): mixed
     {
         if ($value !== null) {
-            $value = LitEmoji::unicodeToShortcode($value);
+            $value = StringHelper::emojiToShortcodes(StringHelper::escapeShortcodes($value));
         }
         return $value;
     }
@@ -250,8 +267,7 @@ class PlainText extends Field implements PreviewableFieldInterface, SortableFiel
      */
     protected function searchKeywords(mixed $value, ElementInterface $element): string
     {
-        $value = (string)$value;
-        return LitEmoji::unicodeToShortcode($value);
+        return StringHelper::emojiToShortcodes((string)$value);
     }
 
     /**

@@ -131,9 +131,7 @@ class Assets extends Component
     }
 
     /**
-     * Replace an Asset's file.
-     *
-     * Replace an Asset's file by it's id, a local file and the filename to use.
+     * Replace an asset's file.
      *
      * @param Asset $asset
      * @param string $pathOnServer
@@ -169,10 +167,10 @@ class Assets extends Component
     }
 
     /**
-     * Move or rename an Asset.
+     * Move or rename an asset.
      *
      * @param Asset $asset The asset whose file should be renamed
-     * @param VolumeFolder $folder The Volume Folder to move the Asset to.
+     * @param VolumeFolder $folder The volume folder to move the asset to.
      * @param string $filename The new filename
      * @return bool Whether the asset was renamed successfully
      */
@@ -200,7 +198,7 @@ class Assets extends Component
     }
 
     /**
-     * Save an Asset folder.
+     * Save a volume folder.
      *
      * @param VolumeFolder $folder
      * @throws FsObjectExistsException if a folder already exists with such a name
@@ -229,13 +227,13 @@ class Assets extends Component
         $volume = $parent->getVolume();
         $path = rtrim($folder->path, '/');
 
-        $volume->getFs()->createDirectory($path);
+        $volume->createDirectory($path);
 
         $this->storeFolderRecord($folder);
     }
 
     /**
-     * Rename a folder by it's id.
+     * Renames a folder by its ID.
      *
      * @param int $folderId
      * @param string $newName
@@ -275,7 +273,7 @@ class Assets extends Component
 
         $volume = $folder->getVolume();
 
-        $volume->getFs()->renameDirectory(rtrim($folder->path, '/'), $newName);
+        $volume->renameDirectory(rtrim($folder->path, '/'), $newName);
         $descendantFolders = $this->getAllDescendantFolders($folder);
 
         foreach ($descendantFolders as $descendantFolder) {
@@ -309,7 +307,7 @@ class Assets extends Component
             if ($folder && $deleteDir) {
                 $volume = $folder->getVolume();
                 try {
-                    $volume->getFs()->deleteDirectory($folder->path);
+                    $volume->deleteDirectory($folder->path);
                 } catch (VolumeException $exception) {
                     Craft::$app->getErrorHandler()->logException($exception);
                     // Carry on.
@@ -343,8 +341,8 @@ class Assets extends Component
      *
      * @param array $volumeIds
      * @param array $additionalCriteria additional criteria for filtering the tree
-     * @deprecated in 4.4.0
      * @return array
+     * @deprecated in 4.4.0d
      */
     public function getFolderTreeByVolumeIds(array $volumeIds, array $additionalCriteria = []): array
     {
@@ -377,7 +375,7 @@ class Assets extends Component
     }
 
     /**
-     * Get the folder tree for Assets by a folder id.
+     * Returns the folder tree for assets by a folder ID.
      *
      * @param int $folderId
      * @return array
@@ -656,7 +654,7 @@ class Assets extends Component
             'mode' => 'crop',
         ]);
 
-        $url = $asset->getUrl($transform, false);
+        $url = $asset->getUrl($transform);
 
         if (!$url) {
             // Try again with the fallback transformer
@@ -748,8 +746,20 @@ class Assets extends Component
         // A potentially conflicting filename is one that shares the same stem and extension
 
         // Check for potentially conflicting files in index.
-        $baseFileName = pathinfo($originalFilename, PATHINFO_FILENAME);
         $extension = pathinfo($originalFilename, PATHINFO_EXTENSION);
+
+        $buildFilename = function(string $name, string $suffix = '') use ($extension) {
+            $maxLength = 255 - strlen($suffix);
+            if ($extension !== '') {
+                $maxLength -= strlen($extension) + 1;
+            }
+            if (strlen($name) > $maxLength) {
+                $name = substr($name, 0, $maxLength);
+            }
+            return $name . $suffix;
+        };
+
+        $baseFileName = $buildFilename(pathinfo($originalFilename, PATHINFO_FILENAME));
 
         $dbFileList = (new Query())
             ->select(['assets.filename'])
@@ -770,7 +780,7 @@ class Assets extends Component
 
         // Check whether a filename we'd want to use does not exist
         $canUse = static function($filenameToTest) use ($potentialConflicts, $volume, $folder) {
-            return !isset($potentialConflicts[mb_strtolower($filenameToTest)]) && !$volume->getFs()->fileExists($folder->path . $filenameToTest);
+            return !isset($potentialConflicts[mb_strtolower($filenameToTest)]) && !$volume->fileExists($folder->path . $filenameToTest);
         };
 
         if ($canUse($originalFilename)) {
@@ -782,18 +792,18 @@ class Assets extends Component
             $base = $baseFileName;
         } else {
             $timestamp = DateTimeHelper::currentUTCDateTime()->format('Y-m-d-His');
-            $base = $baseFileName . '_' . $timestamp;
+            $base = $buildFilename($baseFileName, '_' . $timestamp);
         }
 
         // Append a random string at the end too, to avoid race-conditions
-        $base .= '_' . StringHelper::randomString(4);
+        $base = $buildFilename($base, sprintf('_%s', StringHelper::randomString(4)));
 
         $increment = 0;
 
         while (true) {
             // Add the increment (if > 0) and keep the full filename w/ increment & extension from going over 255 chars
-            $suffix = ($increment ? "_$increment" : '') . ".$extension";
-            $newFilename = substr($base, 0, 255 - mb_strlen($suffix)) . $suffix;
+            $suffix = $increment ? "_$increment" : '';
+            $newFilename = $buildFilename($base, $suffix) . ($extension !== '' ? ".$extension" : '');
 
             if ($canUse($newFilename)) {
                 break;
@@ -812,11 +822,11 @@ class Assets extends Component
     }
 
     /**
-     * Ensure a folder entry exists in the DB for the full path and return it's id. Depending on the use, it's possible to also ensure a physical folder exists.
+     * Ensures a folder entry exists in the DB for the full path and return its ID. Depending on the use, it's possible to also ensure a physical folder exists.
      *
      * @param string $fullPath The path to ensure the folder exists at.
      * @param Volume $volume
-     * @param bool $justRecord If set to false, will also make sure the physical folder exists on Volume.
+     * @param bool $justRecord If set to false, will also make sure the physical folder exists on the volume.
      * @return VolumeFolder
      * @throws VolumeException if something went catastrophically wrong creating the folder.
      */
@@ -853,7 +863,7 @@ class Assets extends Component
 
                 // Ensure a physical folder exists, if needed.
                 if (!$justRecord) {
-                    $volume->getFs()->createDirectory($path);
+                    $volume->createDirectory($path);
                 }
 
                 // Set the variables for next iteration.
@@ -1066,7 +1076,6 @@ class Assets extends Component
      *
      * @param VolumeFolder[] $folders
      * @return array
-     * @deprecated in 4.4.0
      */
     private function _getFolderTreeByFolders(array $folders): array
     {

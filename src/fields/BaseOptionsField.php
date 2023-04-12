@@ -24,6 +24,7 @@ use craft\helpers\ArrayHelper;
 use craft\helpers\Cp;
 use craft\helpers\Db;
 use craft\helpers\ElementHelper;
+use craft\helpers\Html;
 use craft\helpers\Json;
 use craft\helpers\StringHelper;
 use GraphQL\Type\Definition\Type;
@@ -47,6 +48,12 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
      * @var array The available options
      */
     public array $options;
+
+    /**
+     * @var string|null The type of database column the field should have in the content table
+     * @since 4.5.0
+     */
+    public ?string $columnType = null;
 
     /**
      * @var bool Whether the field should support multiple selections
@@ -90,6 +97,17 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
         }
         $config['options'] = $options;
 
+        if (!$this->multi) {
+            if (($config['columnType'] ?? null) === 'auto') {
+                $config['columnType'] = null;
+            }
+
+            // Default columnType to string for existing fields
+            if (isset($config['id']) && !array_key_exists('columnType', $config)) {
+                $config['columnType'] = Schema::TYPE_STRING;
+            }
+        }
+
         parent::__construct($config);
     }
 
@@ -101,6 +119,10 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
         $attributes = parent::settingsAttributes();
         $attributes[] = 'options';
 
+        if (!$this->multi) {
+            $attributes[] = 'columnType';
+        }
+
         return $attributes;
     }
 
@@ -111,6 +133,17 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
     {
         $rules = parent::defineRules();
         $rules[] = ['options', 'validateOptions'];
+
+        if (!$this->multi) {
+            $rules[] = [
+                'columnType',
+                'in',
+                'range' => [null, Schema::TYPE_STRING],
+                'strict' => true,
+                'skipOnEmpty' => false,
+            ];
+        }
+
         return $rules;
     }
 
@@ -181,7 +214,12 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
             return Db::getTextualColumnTypeByContentLength($length + 1);
         }
 
-        return Schema::TYPE_STRING;
+        if (isset($this->columnType)) {
+            return $this->columnType;
+        }
+
+        $maxLength = max([1, ...array_map(fn(array $option) => strlen($option['value']), $this->options())]);
+        return $maxLength === 1 ? Schema::TYPE_CHAR : sprintf('%s(%s)', Schema::TYPE_STRING, $maxLength);
     }
 
     /**
@@ -229,7 +267,7 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
             $rows[] = $option;
         }
 
-        return Cp::editableTableFieldHtml([
+        $html = Cp::editableTableFieldHtml([
             'label' => $this->optionsSettingLabel(),
             'instructions' => Craft::t('app', 'Define the available options.'),
             'id' => 'options',
@@ -242,6 +280,33 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
             'rows' => $rows,
             'errors' => $this->getErrors('options'),
         ]);
+
+        if (!$this->multi) {
+            $html .= Html::tag('hr') .
+                Html::a(Craft::t('app', 'Advanced'), options: [
+                    'class' => 'fieldtoggle',
+                    'data' => ['target' => 'advanced'],
+                ]) .
+                Html::beginTag('div', [
+                    'id' => 'advanced',
+                    'class' => 'hidden',
+                ]) .
+                Cp::selectFieldHtml([
+                    'label' => Craft::t('app', 'Column Type'),
+                    'id' => 'column-type',
+                    'name' => 'columnType',
+                    'instructions' => Craft::t('app', 'The type of column this field should get in the database.'),
+                    'options' => [
+                        ['value' => 'auto', 'label' => Craft::t('app', 'Automatic')],
+                        ['value' => Schema::TYPE_STRING, 'label' => 'varchar'],
+                    ],
+                    'value' => $this->columnType ?? 'auto',
+                    'warning' => ($this->columnType && $this->id) ? Craft::t('app', 'Changing this may result in data loss.') : null,
+                ]) .
+                Html::endTag('div');
+        }
+
+        return $html;
     }
 
     /**
@@ -401,7 +466,13 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
         }
 
         return [
-            ['in', 'range' => $range, 'allowArray' => $this->multi],
+            [
+                'in',
+                'range' => $range,
+                'allowArray' => $this->multi,
+                // Don't allow saving invalid blank values via Selectize
+                'skipOnEmpty' => !($this instanceof Dropdown && Craft::$app->getRequest()->getIsCpRequest()),
+            ],
         ];
     }
 

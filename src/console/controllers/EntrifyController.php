@@ -10,6 +10,7 @@ namespace craft\console\controllers;
 use Craft;
 use craft\base\Event;
 use craft\console\Controller;
+use craft\db\Query;
 use craft\db\Table;
 use craft\elements\Category;
 use craft\elements\Entry;
@@ -104,7 +105,9 @@ class EntrifyController extends Controller
             return ExitCode::UNSPECIFIED_ERROR;
         }
 
+        $projectConfigService = Craft::$app->getProjectConfig();
         $projectConfigChanged = false;
+        $sectionCreated = false;
 
         if (
             !isset($this->section) &&
@@ -119,6 +122,7 @@ class EntrifyController extends Controller
                 'fromCategoryGroup' => $categoryGroup->handle,
             ]);
             $projectConfigChanged = true;
+            $sectionCreated = true;
         }
 
         try {
@@ -127,6 +131,9 @@ class EntrifyController extends Controller
             $author = $this->_author();
         } catch (InvalidConfigException $e) {
             $this->stderr($e->getMessage() . PHP_EOL, Console::FG_RED);
+            if ($projectConfigChanged) {
+                $projectConfigService->saveModifiedConfigData();
+            }
             return ExitCode::UNSPECIFIED_ERROR;
         }
 
@@ -141,7 +148,8 @@ class EntrifyController extends Controller
         $this->stdout(PHP_EOL);
 
         $categoryQuery = Category::find()
-            ->group($categoryGroup);
+            ->group($categoryGroup)
+            ->status(null);
 
         if ($categoryGroup->dateDeleted) {
             $categoryQuery
@@ -217,7 +225,25 @@ class EntrifyController extends Controller
 
         $this->success('Categories converted.');
 
-        $projectConfigService = Craft::$app->getProjectConfig();
+        $this->_updateUserPermissions([
+            "viewCategories:$categoryGroup->uid" => [
+                "viewEntries:$section->uid",
+                "viewPeerEntries:$section->uid",
+            ],
+            "saveCategories:$categoryGroup->uid" => [
+                "createEntries:$section->uid",
+                "saveEntries:$section->uid",
+                "savePeerEntries:$section->uid",
+            ],
+            "deleteCategories:$categoryGroup->uid" => [
+                "deleteEntries:$section->uid",
+                "deletePeerEntries:$section->uid",
+            ],
+            "viewPeerCategoryDrafts:$categoryGroup->uid" => "viewPeerEntryDrafts:$section->uid",
+            "savePeerCategoryDrafts:$categoryGroup->uid" => "savePeerEntryDrafts:$section->uid",
+            "deletePeerCategoryDrafts:$categoryGroup->uid" => "deletePeerEntryDrafts:$section->uid",
+        ], $sectionCreated);
+
         if (!$projectConfigService->readOnly) {
             if (!$categoryGroup->dateDeleted && $this->confirm("Delete the “{$categoryGroup}” category group?", true)) {
                 $this->do('Deleting category group', function() use ($categoryGroup) {
@@ -236,9 +262,16 @@ class EntrifyController extends Controller
                 $this->stdout(sprintf("Found %s relating to the “{$categoryGroup->name}” category group.\n", $total === 1 ? 'one Categories field' : "$total Categories fields"));
                 if ($this->confirm($total === 1 ? 'Convert it to an Entries field?' : 'Convert them to Entries fields?', true)) {
                     foreach ($fields as [$path, $config]) {
-                        $this->do(sprintf('Converting %s', ($config['name'] ?? null) ? "“{$config['name']}”" : 'Categories filed'), function() use ($projectConfigService, $path, $config) {
+                        $this->do(sprintf('Converting %s', ($config['name'] ?? null) ? "“{$config['name']}”" : 'Categories filed'), function() use ($section, $projectConfigService, $path, $config) {
                             $config['type'] = Entries::class;
                             $config['settings']['maintainHierarchy'] = $config['settings']['maintainHierarchy'] ?? true;
+                            $config['settings']['sources'] = ["section:$section->uid"];
+                            unset(
+                                $config['settings']['source'],
+                                $config['settings']['allowMultipleSources'],
+                                $config['settings']['allowLimit'],
+                                $config['settings']['allowLargeThumbsView'],
+                            );
                             $projectConfigService->set($path, $config);
                         });
                     }
@@ -272,6 +305,7 @@ class EntrifyController extends Controller
             return ExitCode::UNSPECIFIED_ERROR;
         }
 
+        $projectConfigService = Craft::$app->getProjectConfig();
         $projectConfigChanged = false;
 
         if (
@@ -295,11 +329,15 @@ class EntrifyController extends Controller
             $author = $this->_author();
         } catch (InvalidConfigException $e) {
             $this->stderr($e->getMessage() . PHP_EOL, Console::FG_RED);
+            if ($projectConfigChanged) {
+                $projectConfigService->saveModifiedConfigData();
+            }
             return ExitCode::UNSPECIFIED_ERROR;
         }
 
         $tagQuery = Tag::find()
-            ->group($tagGroup);
+            ->group($tagGroup)
+            ->status(null);
 
         if ($tagGroup->dateDeleted) {
             $tagQuery
@@ -346,7 +384,6 @@ class EntrifyController extends Controller
 
         $this->success('Tags converted.');
 
-        $projectConfigService = Craft::$app->getProjectConfig();
         if (!$projectConfigService->readOnly) {
             if (!$tagGroup->dateDeleted && $this->confirm("Delete the “{$tagGroup}” tag group?", true)) {
                 $this->do('Deleting tag group', function() use ($tagGroup) {
@@ -365,8 +402,15 @@ class EntrifyController extends Controller
                 $this->stdout(sprintf("Found %s relating to the “{$tagGroup->name}” tag group.\n", $total === 1 ? 'one Tags field' : "$total Tags fields"));
                 if ($this->confirm($total === 1 ? 'Convert it to an Entries field?' : 'Convert them to Entries fields?', true)) {
                     foreach ($fields as [$path, $config]) {
-                        $this->do(sprintf('Converting %s', ($config['name'] ?? null) ? "“{$config['name']}”" : 'Tags filed'), function() use ($projectConfigService, $path, $config) {
+                        $this->do(sprintf('Converting %s', ($config['name'] ?? null) ? "“{$config['name']}”" : 'Tags filed'), function() use ($section, $projectConfigService, $path, $config) {
                             $config['type'] = Entries::class;
+                            $config['settings']['sources'] = ["section:$section->uid"];
+                            unset(
+                                $config['settings']['source'],
+                                $config['settings']['allowMultipleSources'],
+                                $config['settings']['allowLimit'],
+                                $config['settings']['allowLargeThumbsView'],
+                            );
                             $projectConfigService->set($path, $config);
                         });
                     }
@@ -401,6 +445,7 @@ class EntrifyController extends Controller
         }
 
         $projectConfigChanged = false;
+        $sectionCreated = false;
 
         if (
             !isset($this->section) &&
@@ -415,6 +460,7 @@ class EntrifyController extends Controller
                 'fromGlobalSet' => $globalSet->handle,
             ]);
             $projectConfigChanged = true;
+            $sectionCreated = true;
         }
 
         try {
@@ -422,10 +468,18 @@ class EntrifyController extends Controller
             $entryType = $this->_entryType();
         } catch (InvalidConfigException $e) {
             $this->stderr($e->getMessage() . PHP_EOL, Console::FG_RED);
+            if ($projectConfigChanged) {
+                Craft::$app->getProjectConfig()->saveModifiedConfigData();
+            }
             return ExitCode::UNSPECIFIED_ERROR;
         }
 
-        $this->do("Converting “{$globalSet->name}”", function() use ($section, $entryType, $globalSet) {
+        $this->do("Converting “{$globalSet->name}”", function() use (
+            $section,
+            $entryType,
+            $globalSet,
+            &$projectConfigChanged,
+        ) {
             if (!$globalSet->dateDeleted) {
                 Craft::$app->getGlobals()->deleteSet($globalSet);
                 $projectConfigChanged = true;
@@ -470,6 +524,16 @@ class EntrifyController extends Controller
         });
 
         $this->success('Global set converted.');
+
+        $this->_updateUserPermissions([
+            "editGlobalSet:$globalSet->uid" => [
+                "viewEntries:$section->uid",
+                "saveEntries:$section->uid",
+                "viewPeerEntryDrafts:$section->uid",
+                "savePeerEntryDrafts:$section->uid",
+                "deletePeerEntryDrafts:$section->uid",
+            ],
+        ], $sectionCreated);
 
         if ($projectConfigChanged) {
             $this->_deployTip('global-set', $globalSet->handle);
@@ -571,6 +635,77 @@ class EntrifyController extends Controller
         }
 
         return $this->_author;
+    }
+
+    private function _updateUserPermissions(array $map, $updateUserGroups): void
+    {
+        // Normalize the permission map
+        $map = array_combine(
+            array_map('strtolower', array_keys($map)),
+            array_map(fn($newPermissions) => array_map('strtolower', (array)$newPermissions), $map)
+        );
+
+        $this->do('Updating user permissions', function() use ($map, $updateUserGroups) {
+            foreach ($map as $oldPermission => $newPermissions) {
+                $userIds = (new Query())
+                    ->select(['upu.userId'])
+                    ->from(['upu' => Table::USERPERMISSIONS_USERS])
+                    ->innerJoin(['up' => Table::USERPERMISSIONS], '[[up.id]] = [[upu.permissionId]]')
+                    ->where(['up.name' => $oldPermission])
+                    ->column();
+
+                $userIds = array_unique($userIds);
+
+                if (!empty($userIds)) {
+                    $insert = [];
+
+                    foreach ($newPermissions as $newPermission) {
+                        $newPermissionId = (new Query())
+                            ->select('id')
+                            ->from(Table::USERPERMISSIONS)
+                            ->where(['name' => $newPermission])
+                            ->scalar();
+
+                        if (!$newPermissionId) {
+                            Db::insert(Table::USERPERMISSIONS, [
+                                'name' => $newPermission,
+                            ]);
+                            $newPermissionId = Craft::$app->getDb()->getLastInsertID(Table::USERPERMISSIONS);
+                        }
+
+                        foreach ($userIds as $userId) {
+                            $insert[] = [$newPermissionId, $userId];
+                        }
+                    }
+
+                    Db::batchInsert(Table::USERPERMISSIONS_USERS, ['permissionId', 'userId'], $insert);
+                }
+            }
+
+            if ($updateUserGroups) {
+                $projectConfig = Craft::$app->getProjectConfig();
+
+                foreach ($projectConfig->get('users.groups') ?? [] as $uid => $group) {
+                    $groupPermissions = array_flip($group['permissions'] ?? []);
+                    $changed = false;
+
+                    foreach ($map as $oldPermission => $newPermissions) {
+                        if (isset($groupPermissions[$oldPermission])) {
+                            foreach ($newPermissions as $newPermission) {
+                                $groupPermissions[$newPermission] = true;
+                            }
+                            $changed = true;
+                        }
+                    }
+
+                    if ($changed) {
+                        $projectConfig->set("users.groups.$uid.permissions", array_keys($groupPermissions));
+                    }
+                }
+            }
+        });
+
+        $this->stdout(PHP_EOL);
     }
 
     private function _findInProjectConfig(ProjectConfig $projectConfigService, callable $check): array

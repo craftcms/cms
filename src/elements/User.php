@@ -548,7 +548,7 @@ class User extends Element implements IdentityInterface
     }
 
     /**
-     * @var int|null Photo asset id
+     * @var int|null Photo asset ID
      */
     public ?int $photoId = null;
 

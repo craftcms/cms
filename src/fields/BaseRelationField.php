@@ -273,6 +273,14 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
             $config['branchLimit'] = null;
         }
 
+        // remove settings that shouldn't be here
+        unset($config['allowMultipleSources'], $config['allowLimit'], $config['allowLargeThumbsView'], $config['sortable']);
+        if ($this->allowMultipleSources) {
+            unset($config['source']);
+        } else {
+            unset($config['sources']);
+        }
+
         parent::__construct($config);
     }
 
@@ -365,6 +373,14 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
     public function getSettings(): array
     {
         $settings = parent::getSettings();
+
+        // cleanup
+        unset($settings['allowMultipleSources'], $settings['allowLimit'], $settings['allowLargeThumbsView'], $settings['sortable']);
+        if ($this->allowMultipleSources) {
+            unset($settings['source']);
+        } else {
+            unset($settings['sources']);
+        }
 
         if ($selectionCondition = $this->getSelectionCondition()) {
             $settings['selectionCondition'] = $selectionCondition->getConfig();
@@ -567,7 +583,7 @@ JS, [
                 ]
             );
 
-            if ($this->sortable) {
+            if ($this->sortable && !$this->maintainHierarchy) {
                 $query->orderBy(['relations.sortOrder' => SORT_ASC]);
             }
 
@@ -759,7 +775,13 @@ JS, [
         /** @var ElementQuery|Collection $value */
         $titles = [];
 
-        foreach ($this->_all($value, $element)->all() as $relatedElement) {
+        if ($value instanceof Collection) {
+            $value = $value->all();
+        } else {
+            $value = $this->_all($value, $element)->all();
+        }
+
+        foreach ($value as $relatedElement) {
             $titles[] = (string)$relatedElement;
         }
 
@@ -782,12 +804,19 @@ JS, [
             return '<p class="light">' . Craft::t('app', 'Nothing selected.') . '</p>';
         }
 
+        $size = Cp::ELEMENT_SIZE_SMALL;
+        $viewMode = $this->viewMode();
+        if ($viewMode == 'large') {
+            $size = Cp::ELEMENT_SIZE_LARGE;
+        }
+
         $view = Craft::$app->getView();
         $id = $this->getInputId();
-        $html = "<div id='$id' class='elementselect'><div class='elements'>";
+        $html = "<div id='$id' class='elementselect'>" .
+            "<div class='elements" . ($size === Cp::ELEMENT_SIZE_LARGE ? ' flex-row flex-wrap' : '') . "'>";
 
         foreach ($value as $relatedElement) {
-            $html .= Cp::elementHtml($relatedElement);
+            $html .= Cp::elementHtml($relatedElement, size: $size);
         }
 
         $html .= '</div></div>';
@@ -1231,7 +1260,7 @@ JS;
             'limit' => $this->allowLimit ? $this->maxRelations : null,
             'viewMode' => $this->viewMode(),
             'selectionLabel' => $this->selectionLabel ? Craft::t('site', $this->selectionLabel) : static::defaultSelectionLabel(),
-            'sortable' => $this->sortable,
+            'sortable' => $this->sortable && !$this->maintainHierarchy,
             'prevalidate' => $this->validateRelatedElements,
             'modalSettings' => [
                 'defaultSiteId' => $element->siteId ?? null,

@@ -276,6 +276,11 @@ Craft.CpScreenSlideout = Craft.Slideout.extend(
     update: function (data) {
       return new Promise((resolve) => {
         this.namespace = data.namespace;
+
+        if (data.bodyClass) {
+          this.$body.addClass(data.bodyClass);
+        }
+
         this.$content.html(data.content);
 
         if (data.submitButtonLabel) {

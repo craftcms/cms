@@ -207,7 +207,7 @@ import './CraftSupportWidget.scss';
         this.$searchSubmit = this.$searchForm.find('.submit:first');
         this.addListener(this.$searchForm, 'submit', 'handleSearchFormSubmit');
         this.addListener(
-          this.$searchForm.find('> p > a'),
+          this.$searchForm.find('.cs-button-wrapper > p > a'),
           'click',
           'handleSupportLinkClick'
         );

@@ -70,8 +70,10 @@
         indexSettings: {
             showFolders: showFolders ?? true,
         },
+        modalTitle: selectionLabel,
     },
     describedBy: (describedBy ?? false) ? describedBy|split(' ')|map(id => id|namespaceInputId)|join(' ') : null,
+    allowSelfRelations: allowSelfRelations ?? false,
 } %}
 
 {% js %}
