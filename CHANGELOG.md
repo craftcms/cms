@@ -1,5 +1,9 @@
 # Release Notes for Craft CMS 4
 
+## Unreleased
+
+- Fixed an error that could occur when running tests. ([#13076](https://github.com/craftcms/cms/issues/13076))
+
 ## 4.4.7 - 2023-04-11
 
 - Improved the control panel styling when the Debug Toolbar is enabled.
