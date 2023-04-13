@@ -168,8 +168,17 @@ fieldset:last-child,
 }
 
 .offset-drag-helper {
-  @include margin(-50px, 0, 0, -50px);
-  @include padding(60px, 0, 0, 60px);
+  transition: margin linear 200ms, padding linear 200ms;
+}
+
+body.dragging.ltr .offset-drag-helper {
+  margin: -50px 0 0 -50px;
+  padding: 60px 0 0 60px;
+}
+
+body.dragging.rtl .offset-drag-helper {
+  margin: -50px -50px 0 0;
+  padding: 60px 60px 0 0;
 }
 
 img {
@@ -5114,6 +5123,10 @@ $min2ColWidth: 400px;
     padding-top: 14px;
     padding-bottom: 14px;
     text-align: center;
+
+    & + .body {
+      height: calc(100% - 48px) !important;
+    }
   }
 
   .body {
@@ -5428,7 +5441,7 @@ $min2ColWidth: 400px;
 /* logout warning/login/elevated session modals */
 .logoutwarningmodalshade,
 .loginmodalshade {
-  z-index: 101;
+  z-index: 1001;
 }
 
 #logoutwarningmodal,
@@ -5440,7 +5453,7 @@ $min2ColWidth: 400px;
 
 #logoutwarningmodal,
 #loginmodal {
-  z-index: 101;
+  z-index: 1001;
 }
 
 .prompt {

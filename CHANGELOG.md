@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- Fixed an error that could occur when running tests. ([#13076](https://github.com/craftcms/cms/issues/13076))
+
+## 4.4.7 - 2023-04-11
+
 - Improved the control panel styling when the Debug Toolbar is enabled.
 - The image transformer now verifies that transforms don’t exist if the index record is missing, before queuing up the transform generation, for local filesystems. ([#13052](https://github.com/craftcms/cms/issues/13052))
 - Added the `--propagate-to` and `--set-enabled-for-site` options to the `resave/entries` command.
@@ -11,10 +15,14 @@
 - `craft\web\View::renderObjectTemplate()` now trims the returned template output.
 - Fixed a bug where users were “View other users’ drafts” section permissions weren’t being enforced for unpublished drafts.
 - Fixed a bug where Matrix fields weren’t counting disabled blocks when enforcing their Min Blocks settings. ([#13059](https://github.com/craftcms/cms/issues/13059))
+- Fixed a bug where volume folder modals’ sidebars and content were being cut off. ([#13074](https://github.com/craftcms/cms/issues/13074))
 - Fixed a bug where element editors were showing provisional changes, even if the user didn’t have permission to save them.
 - Fixed a bug where the control panel could be inaccessible if a mutex lock couldn’t be acquired for the queue. ([#13052](https://github.com/craftcms/cms/issues/13052))
 - Fixed a bug where it wasn’t possible to update a Matrix block on a revision without a new block ID being assigned. ([#13064](https://github.com/craftcms/cms/discussions/13064))
 - Fixed a JavaScript error that could occur on field layout designers, if any tabs didn’t have any elements. ([#13062](https://github.com/craftcms/cms/issues/13062))
+- Fixed a bug where selecting an image with a transform within an asset selector modal wasn’t ever resolving.
+- Fixed a PHP error that could occur if there was a problem sending a password-reset email. ([#13070](https://github.com/craftcms/cms/pull/13070))
+- Fixed a bug where users’ User Groups and Permissions settings were getting cleared in the UI when sending an activation email, if the email failed to send. ([#13061](https://github.com/craftcms/cms/issues/13061))
 - Fixed XSS vulnerabilities.
 - Updated yii2-debug to 2.1.22. ([#13058](https://github.com/craftcms/cms/issues/13058))
 
