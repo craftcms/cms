@@ -529,7 +529,11 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       if (
         this.settings.defaultSourcePath !== null &&
         this.settings.defaultSourcePath[0] !== undefined &&
-        this.settings.defaultSourcePath[0].canView === true
+        this.settings.defaultSourcePath[0].canView === true &&
+        ((this.sourcePath.length > 0 &&
+          this.sourcePath[0].handle ===
+            this.settings.defaultSourcePath[0].handle) ||
+          this.sourcePath.length === 0)
       ) {
         return this.settings.defaultSourcePath;
       } else {
