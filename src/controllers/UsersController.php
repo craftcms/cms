@@ -1398,6 +1398,8 @@ JS,
             }
         }
 
+        $oldGroupIds = ArrayHelper::getColumn($user->getGroups(), 'id');
+
         // If this is public registration and it's a Pro version,
         // set the default group on the user, so that any content
         // based on user group condition can be validated and saved against them
@@ -1407,6 +1409,25 @@ JS,
                 $group = Craft::$app->userGroups->getGroupByUid($defaultGroupUid);
                 if ($group) {
                     $user->setGroups([$group]);
+                }
+            }
+        } else {
+            if (Craft::$app->getEdition() === Craft::Pro && $currentUser) {
+                // Fire an 'afterBeforeGroupsAndPermissions' event
+                if ($this->hasEventHandlers(self::EVENT_BEFORE_ASSIGN_GROUPS_AND_PERMISSIONS)) {
+                    $this->trigger(self::EVENT_BEFORE_ASSIGN_GROUPS_AND_PERMISSIONS, new UserEvent([
+                        'user' => $user,
+                    ]));
+                }
+
+                // Assign user groups if the current user is allowed to do that
+                $this->_saveUserGroups($user, $currentUser, $oldGroupIds, false);
+
+                // Fire an 'afterAssignGroupsAndPermissions' event
+                if ($this->hasEventHandlers(self::EVENT_AFTER_ASSIGN_GROUPS_AND_PERMISSIONS)) {
+                    $this->trigger(self::EVENT_AFTER_ASSIGN_GROUPS_AND_PERMISSIONS, new UserEvent([
+                        'user' => $user,
+                    ]));
                 }
             }
         }
@@ -1504,23 +1525,9 @@ JS,
                 // Assign them to the default user group
                 Craft::$app->getUsers()->assignUserToDefaultGroup($user);
             } elseif ($currentUser) {
-                // Fire an 'afterBeforeGroupsAndPermissions' event
-                if ($this->hasEventHandlers(self::EVENT_BEFORE_ASSIGN_GROUPS_AND_PERMISSIONS)) {
-                    $this->trigger(self::EVENT_BEFORE_ASSIGN_GROUPS_AND_PERMISSIONS, new UserEvent([
-                        'user' => $user,
-                    ]));
-                }
-
                 // Assign user groups and permissions if the current user is allowed to do that
                 $this->_saveUserPermissions($user, $currentUser);
-                $this->_saveUserGroups($user, $currentUser);
-
-                // Fire an 'afterAssignGroupsAndPermissions' event
-                if ($this->hasEventHandlers(self::EVENT_AFTER_ASSIGN_GROUPS_AND_PERMISSIONS)) {
-                    $this->trigger(self::EVENT_AFTER_ASSIGN_GROUPS_AND_PERMISSIONS, new UserEvent([
-                        'user' => $user,
-                    ]));
-                }
+                $this->_saveUserGroups($user, $currentUser, $oldGroupIds);
             }
         }
 
@@ -1532,11 +1539,6 @@ JS,
             $user->email = $user->unverifiedEmail;
 
             if ($isNewUser) {
-                // when sending activation email on creating user,
-                // use the default scenario (same as when sending the reset password email)
-                // so that we don't validate conditionally required content
-                // @link https://github.com/craftcms/cms/issues/13060
-                $user->setScenario(User::SCENARIO_DEFAULT);
                 // Send the activation email
                 Craft::$app->getUsers()->sendActivationEmail($user);
             } else {
@@ -1709,10 +1711,6 @@ JS,
         }
 
         try {
-            // when sending activation email after user was created,
-            // use the live scenario, because we want to validate
-            // conditionally required content
-            $user->setScenario(User::SCENARIO_LIVE);
             $emailSent = Craft::$app->getUsers()->sendActivationEmail($user);
         } catch (InvalidElementException) {
             $emailSent = false;
@@ -2384,13 +2382,15 @@ JS,
     }
 
     /**
-     * Saves user groups on a user.
+     * Sets user groups on a user and optionally saves them too.
      *
      * @param User $user
      * @param User $currentUser
+     * @param array $oldGroupIds
+     * @param bool $assign
      * @throws ForbiddenHttpException if the user account doesn't have permission to assign the attempted groups
      */
-    private function _saveUserGroups(User $user, User $currentUser): void
+    private function _saveUserGroups(User $user, User $currentUser, array $oldGroupIds = [], bool $assign = true): void
     {
         $groupIds = $this->request->getBodyParam('groups');
 
@@ -2406,7 +2406,6 @@ JS,
         $allGroups = ArrayHelper::index(Craft::$app->getUserGroups()->getAllGroups(), 'id');
 
         // See if there are any new groups in here
-        $oldGroupIds = ArrayHelper::getColumn($user->getGroups(), 'id');
         $hasNewGroups = false;
         $newGroups = [];
 
@@ -2427,7 +2426,10 @@ JS,
             $this->requireElevatedSession();
         }
 
-        Craft::$app->getUsers()->assignUserToGroups($user->id, $groupIds);
+        if ($assign) {
+            Craft::$app->getUsers()->assignUserToGroups($user->id, $groupIds);
+        }
+
         $user->setGroups($newGroups);
     }
 

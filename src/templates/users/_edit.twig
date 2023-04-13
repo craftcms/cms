@@ -98,6 +98,7 @@
                 {{ forms.checkboxField({
                     label: 'Send an activation email now'|t('app'),
                     name: 'sendActivationEmail',
+                    checked: (user.hasErrors() and craft.app.request.getBodyParam('sendActivationEmail')),
                 }) }}
 
             {% elseif user.getIsCurrent() or canAdministrateUsers %}
