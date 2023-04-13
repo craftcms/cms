@@ -124,7 +124,7 @@ class ResaveController extends Controller
     public ?string $site = null;
 
     /**
-     * @var string|int[]|null The site handle to propagate entries to.
+     * @var string|int[]|null The comma separated site handles to propagate entries to.
      *
      * When this is set, the entry will *only* be saved for this site.
      *
@@ -279,7 +279,7 @@ class ResaveController extends Controller
             foreach ($siteHandles as $siteHandle) {
                 $site = $sitesService->getSiteByHandle($siteHandle, true);
                 if (!$site) {
-                    $this->stderr("Invalid site handle: $siteHandle");
+                    $this->stderr("Invalid site handle: $siteHandle" . PHP_EOL, Console::FG_RED);
                     return false;
                 }
                 $this->propagateTo[] = $site->id;
