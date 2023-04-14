@@ -2437,17 +2437,12 @@ class Elements extends Component
                 foreach ($tokensByType as $refType => $tokensByName) {
                     // Get the elements, indexed by their ref value
                     $refNames = array_keys($tokensByName);
-                    $elementQuery = $this->createElementQuery($elementType)
-                        ->siteId($siteId)
-                        ->status(null);
+                    $elements = $this->_getElementsForRefs($elementType, $siteId, $refType, $refNames);
 
-                    if ($refType === 'id') {
-                        $elementQuery->id($refNames);
-                    } else {
-                        $elementQuery->ref($refNames);
+                    // make reference tags after entrification work
+                    if (empty($elements) && in_array($elementType, [Category::class, Tag::class, GlobalSet::class])) {
+                        $elements = $this->_getElementsForRefs(Entry::class, $siteId, $refType, $refNames);
                     }
-
-                    $elements = ArrayHelper::index($elementQuery->all(), $refType);
 
                     // Now append new token search/replace strings
                     foreach ($tokensByName as $refName => $tokens) {
@@ -3428,6 +3423,30 @@ SQL;
 
             $db->createCommand($sql, $params)->execute();
         }
+    }
+
+    /**
+     * Returns elements for given reference tags.
+     *
+     * @param string $elementType
+     * @param int $siteId
+     * @param string $refType
+     * @param array $refNames
+     * @return array
+     */
+    private function _getElementsForRefs(string $elementType, mixed $siteId, mixed $refType, array $refNames): array
+    {
+        $elementQuery = $this->createElementQuery($elementType)
+            ->siteId($siteId)
+            ->status(null);
+
+        if ($refType === 'id') {
+            $elementQuery->id($refNames);
+        } else {
+            $elementQuery->ref($refNames);
+        }
+
+        return ArrayHelper::index($elementQuery->all(), $refType);
     }
 
     /**
