@@ -760,11 +760,27 @@ class Html extends \yii\helpers\Html
     private static function _escapeTextareas(string &$html): array
     {
         $markers = [];
-        $html = preg_replace_callback('/(<textarea\b[^>]*>)(.*?)(<\/textarea>)/is', function(array $matches) use (&$markers) {
+        $data = preg_replace_callback('/(<textarea\b[^>]*>)(.*?)(<\/textarea>)/is', function(array $matches) use (&$markers) {
             $marker = '{marker:' . StringHelper::randomString() . '}';
             $markers[$marker] = $matches[2];
             return $matches[1] . $marker . $matches[3];
         }, $html);
+
+        // this can be null if the pcre.backtrack_limit is reached
+        // https://github.com/craftcms/cms/issues/13083
+        if ($data !== null) {
+            /* @phpstan-var $data string */
+            $html = $data;
+        } else {
+            preg_match('/(.*?)(<textarea\b[^>]*>)/is', $html, $matches);
+            $start = $matches[0];
+            preg_match('/(<\/textarea>.*)/is', $html, $matches);
+            $end = $matches[0];
+            $marker = '{marker:' . StringHelper::randomString() . '}';
+            $markers[$marker] = str_replace([$start, $end], '', $html);
+            $html = $start . $marker . $end;
+        }
+
         return $markers;
     }
 
