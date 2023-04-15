@@ -1,5 +1,9 @@
 # Release Notes for Craft CMS 4
 
+## 4.4.7.1 - 2023-04-15
+
+- Locked the Yii 2 PSR Log Target library to 1.1.3 to avoid a PHP error that occurs on 1.1.4.
+
 ## 4.4.7 - 2023-04-11
 
 - Improved the control panel styling when the Debug Toolbar is enabled.

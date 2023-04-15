@@ -49,7 +49,7 @@
     "moneyphp/money": "^4.0",
     "monolog/monolog": "^2.3",
     "pixelandtonic/imagine": "~1.3.3.1",
-    "samdark/yii2-psr-log-target": "^1.1",
+    "samdark/yii2-psr-log-target": "1.1.3",
     "seld/cli-prompt": "^1.0.4",
     "symfony/http-client": "^6.0.3",
     "symfony/var-dumper": "^5.0|^6.0",
