@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 4
 
-## Unreleased
+## 3.8.7 - 2023-04-11
 
 - `craft\services\Elements::propagateElements()` now returns the element in the target site.
 - Fixed an error that could occur when running tests. ([#13076](https://github.com/craftcms/cms/issues/13076))
