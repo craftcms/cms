@@ -43,10 +43,10 @@ interface ProviderInterface extends SavableComponentInterface
     /**
      * @return string|null The site login HTML
      */
-    public function siteLoginHtml(): string | null;
+    public function getSiteLoginHtml(): string | null;
 
     /**
      * @return string|null The admin login HTML
      */
-    public function cpLoginHtml(): string | null;
+    public function getCpLoginHtml(): string | null;
 }

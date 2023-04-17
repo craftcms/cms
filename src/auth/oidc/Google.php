@@ -10,6 +10,7 @@ namespace craft\auth\oidc;
 use Craft;
 use craft\elements\User;
 use craft\errors\AuthFailedException;
+use craft\helpers\Html;
 use craft\helpers\UrlHelper;
 use League\OAuth2\Client\Provider\Exception\IdentityProviderException;
 use League\OAuth2\Client\Provider\Google as GoogleProvider;
@@ -18,9 +19,6 @@ use yii\base\Exception;
 
 class Google extends AbstractOpenIdConnectProvider
 {
-    const SITE_LOGIN_TEMPLATE = 'auth/oidc/google/site-login';
-    const CP_LOGIN_TEMPLATE = 'auth/oidc/google/cp-login';
-
     /**
      * @var string If set, this will be sent to google as the "access_type" parameter.
      * @link https://developers.google.com/identity/protocols/OpenIDConnect#authenticationuriparameters
@@ -150,12 +148,10 @@ class Google extends AbstractOpenIdConnectProvider
 
     protected function getUser(GoogleUser $providerUser): User
     {
-        $providerUser = Craft::$app->getUsers()->getUserByUsernameOrEmail(
-            $providerUser->getEmail()
-        );
+        $user = $this->findUser($providerUser);
 
-        if (!empty($providerUser)) {
-            return $providerUser;
+        if (!empty($user)) {
+            return $user;
         }
 
         throw new Exception('Todo - Create new user');
@@ -165,16 +161,16 @@ class Google extends AbstractOpenIdConnectProvider
     /**
      * @inheritdoc
      */
-    public function siteLoginHtml(): string
+    public function getSiteLoginHtml(?string $label = "Login via Google", ?string $url = null): string
     {
-        return $this->renderLoginHtml(self::SITE_LOGIN_TEMPLATE);
+        return Html::a($label, $url ?: UrlHelper::actionUrl('auth/login', ['provider' => $this->handle]));
     }
 
     /**
      * @inheritdoc
      */
-    public function cpLoginHtml(): string
+    public function getCpLoginHtml(?string $label = "Login via Google", ?string $url = null): string
     {
-        return $this->renderLoginHtml(self::CP_LOGIN_TEMPLATE);
+        return Html::a($label, $url ?: UrlHelper::actionUrl('auth/login', ['provider' => $this->handle] ));
     }
 }

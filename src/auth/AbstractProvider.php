@@ -20,12 +20,12 @@ abstract class AbstractProvider extends SavableComponent implements ProviderInte
 {
     use AuthProviderTrait;
 
-    public function siteLoginHtml(): string|null
+    public function getSiteLoginHtml(): string|null
     {
         return null;
     }
 
-    public function cpLoginHtml(): string|null
+    public function getCpLoginHtml(): string|null
     {
         return null;
     }
