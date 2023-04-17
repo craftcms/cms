@@ -124,7 +124,7 @@ class ResaveController extends Controller
     public ?string $site = null;
 
     /**
-     * @var string|int[]|null The comma separated site handles to propagate entries to.
+     * @var string|int[]|null Comma-separated site handles to propagate entries to.
      *
      * When this is set, the entry will *only* be saved for this site.
      *
