@@ -14,7 +14,7 @@
 {% set requireEmailVerification = craft.app.projectConfig.get('users.requireEmailVerification') ?? true %}
 {% set canAdministrateUsers = currentUser.can('administrateUsers') %}
 
-{% if craft.app.request.isPost %}
+{% if craft.app.request.getActionSegments() == ['users', 'save-user'] %}
     {% set currentGroupIds = craft.app.request.getBodyParam('groups') ?: [] %}
 {% else %}
     {% set currentGroupIds = user.getGroups()|column('id') %}

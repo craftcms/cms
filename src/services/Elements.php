@@ -61,6 +61,7 @@ use craft\validators\HandleValidator;
 use craft\validators\SlugValidator;
 use craft\web\Application;
 use DateTime;
+use Illuminate\Support\Collection;
 use Throwable;
 use UnitEnum;
 use yii\base\Behavior;
@@ -1162,6 +1163,20 @@ class Elements extends Component
         // "Duplicate" the derivative element with the canonical element’s ID, UID, and content ID
         $canonical = $element->getCanonical();
 
+        $changedAttributes = (new Query())
+            ->select(['siteId', 'attribute', 'propagated', 'userId'])
+            ->from([Table::CHANGEDATTRIBUTES])
+            ->where(['elementId' => $element->id])
+            ->all();
+
+        $changedFields = (new Query())
+            ->select(['siteId', 'fieldId', 'propagated', 'userId'])
+            ->from([Table::CHANGEDFIELDS])
+            ->where(['elementId' => $element->id])
+            ->all();
+
+        $fieldsService = Craft::$app->getFields();
+
         $newAttributes += [
             'id' => $canonical->id,
             'uid' => $canonical->uid,
@@ -1175,27 +1190,24 @@ class Elements extends Component
             'revisionId' => null,
             'isProvisionalDraft' => false,
             'updatingFromDerivative' => true,
+            'dirtyAttributes' => Collection::make($changedAttributes)
+                ->where('siteId', $element->siteId)
+                ->pluck('attribute')
+                ->all(),
+            'dirtyFields' => Collection::make($changedFields)
+                ->where('siteId', $element->siteId)
+                ->map(fn(array $field) => $fieldsService->getFieldById($field['fieldId'])?->handle)
+                ->filter()
+                ->all(),
         ];
 
         $updatedCanonical = $this->duplicateElement($element, $newAttributes);
 
-        $attributes = (new Query())
-            ->select(['siteId', 'attribute', 'propagated', 'userId'])
-            ->from([Table::CHANGEDATTRIBUTES])
-            ->where(['elementId' => $element->id])
-            ->all();
-
-        $fields = (new Query())
-            ->select(['siteId', 'fieldId', 'propagated', 'userId'])
-            ->from([Table::CHANGEDFIELDS])
-            ->where(['elementId' => $element->id])
-            ->all();
-
-        Craft::$app->on(Application::EVENT_AFTER_REQUEST, function() use ($canonical, $updatedCanonical, $attributes, $fields) {
+        Craft::$app->on(Application::EVENT_AFTER_REQUEST, function() use ($canonical, $updatedCanonical, $changedAttributes, $changedFields) {
             // Update change tracking for the canonical element
             $timestamp = Db::prepareDateForDb($updatedCanonical->dateUpdated);
 
-            foreach ($attributes as $attribute) {
+            foreach ($changedAttributes as $attribute) {
                 Db::upsert(Table::CHANGEDATTRIBUTES, [
                     'elementId' => $canonical->id,
                     'siteId' => $attribute['siteId'],
@@ -1206,7 +1218,7 @@ class Elements extends Component
                 ]);
             }
 
-            foreach ($fields as $field) {
+            foreach ($changedFields as $field) {
                 Db::upsert(Table::CHANGEDFIELDS, [
                     'elementId' => $canonical->id,
                     'siteId' => $field['siteId'],
@@ -1354,13 +1366,6 @@ class Elements extends Component
                 /** @var ElementInterface $element */
                 $position++;
 
-                $element->setScenario(Element::SCENARIO_ESSENTIALS);
-                $supportedSites = ArrayHelper::index(ElementHelper::supportedSitesForElement($element), 'siteId');
-                $supportedSiteIds = array_keys($supportedSites);
-                $elementSiteIds = $siteIds !== null ? array_intersect($siteIds, $supportedSiteIds) : $supportedSiteIds;
-                /** @var string|ElementInterface $elementType */
-                $elementType = get_class($element);
-
                 // Fire a 'beforePropagateElement' event
                 if ($this->hasEventHandlers(self::EVENT_BEFORE_PROPAGATE_ELEMENT)) {
                     $this->trigger(self::EVENT_BEFORE_PROPAGATE_ELEMENT, new BatchElementActionEvent([
@@ -1369,6 +1374,13 @@ class Elements extends Component
                         'position' => $position,
                     ]));
                 }
+
+                $element->setScenario(Element::SCENARIO_ESSENTIALS);
+                $supportedSites = ArrayHelper::index(ElementHelper::supportedSitesForElement($element), 'siteId');
+                $supportedSiteIds = array_keys($supportedSites);
+                $elementSiteIds = $siteIds !== null ? array_intersect($siteIds, $supportedSiteIds) : $supportedSiteIds;
+                /** @var string|ElementInterface $elementType */
+                $elementType = get_class($element);
 
                 $e = null;
                 try {
@@ -1485,12 +1497,14 @@ class Elements extends Component
             throw new UnsupportedSiteException($element, $mainClone->siteId, 'Attempting to duplicate an element in an unsupported site.');
         }
 
-        // Clone any field values that are objects
+        // Clone any field values that are objects (without affecting the dirty fields)
+        $dirtyFields = $mainClone->getDirtyFields();
         foreach ($mainClone->getFieldValues() as $handle => $value) {
             if (is_object($value) && (!interface_exists(UnitEnum::class) || !$value instanceof UnitEnum)) {
                 $mainClone->setFieldValue($handle, clone $value);
             }
         }
+        $mainClone->setDirtyFields($dirtyFields, false);
 
         // If we are duplicating a draft as another draft, create a new draft row
         if ($mainClone->draftId && $mainClone->draftId === $element->draftId) {
@@ -2853,17 +2867,23 @@ class Elements extends Component
      * @param int $siteId The site ID that the element should be propagated to
      * @param ElementInterface|false|null $siteElement The element loaded for the propagated site (only pass this if you
      * already had a reason to load it). Set to `false` if it is known to not exist yet.
+     * @return ElementInterface The element in the target site
      * @throws Exception if the element couldn't be propagated
      * @throws UnsupportedSiteException if the element doesn’t support `$siteId`
      * @since 3.0.13
      */
-    public function propagateElement(ElementInterface $element, int $siteId, ElementInterface|false|null $siteElement = null): void
-    {
+    public function propagateElement(
+        ElementInterface $element,
+        int $siteId,
+        ElementInterface|false|null $siteElement = null,
+    ): ElementInterface {
         $supportedSites = ArrayHelper::index(ElementHelper::supportedSitesForElement($element), 'siteId');
-        $this->_propagateElement($element, $supportedSites, $siteId, $siteElement);
+        $siteElement = $this->_propagateElement($element, $supportedSites, $siteId, $siteElement);
 
         // Clear caches
         $this->invalidateCachesForElement($element);
+
+        return $siteElement;
     }
 
     /**
@@ -3282,6 +3302,7 @@ class Elements extends Component
      * @param array $supportedSites The element’s supported site info, indexed by site ID
      * @param int $siteId The site ID being propagated to
      * @param ElementInterface|false|null $siteElement The element loaded for the propagated site
+     * @return ElementInterface The element in the target site
      * @throws Exception if the element couldn't be propagated
      */
     private function _propagateElement(
@@ -3289,7 +3310,7 @@ class Elements extends Component
         array $supportedSites,
         int $siteId,
         ElementInterface|false|null $siteElement = null,
-    ) {
+    ): ElementInterface {
         // Make sure the element actually supports the site it's being saved in
         if (!isset($supportedSites[$siteId])) {
             throw new UnsupportedSiteException($element, $siteId, 'Attempting to propagate an element to an unsupported site.');
@@ -3381,6 +3402,8 @@ class Elements extends Component
             Craft::error($error);
             throw new Exception('Couldn’t propagate element to other site.');
         }
+
+        return $siteElement;
     }
 
     /**

@@ -850,6 +850,7 @@ return [
     'Loading' => 'Caricamento',
     'Local Folder' => 'Cartella locale',
     'Local copies of remote images, generated thumbnails' => 'Copie locali di immagini remote, anteprime generate',
+    'Local volumes cannot be located within system directories.' => 'I volumi locali non possono trovarsi nelle directory di sistema.',
     'Localizing relations' => 'Localizzazione delle relazioni',
     'Location' => 'Directory',
     'Locations that should be available for previewing entries in this section.' => 'Posizioni che dovrebbero essere disponibili per l\'anteprima degli articoli in questa sezione.',

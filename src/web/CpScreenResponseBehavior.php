@@ -81,6 +81,12 @@ class CpScreenResponseBehavior extends Behavior
     public array $tabs = [];
 
     /**
+     * @var string|null Class that should be added to the slideout body.
+     * @since 4.5.0
+     */
+    public ?string $slideoutBodyClass = null;
+
+    /**
      * @var array Custom attributes to add to the `<main>` tag.
      *
      * See [[\yii\helpers\BaseHtml::renderTagAttributes()]] for supported attribute syntaxes.

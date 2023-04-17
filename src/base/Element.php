@@ -7,6 +7,7 @@
 
 namespace craft\base;
 
+use ArrayIterator;
 use Craft;
 use craft\behaviors\CustomFieldBehavior;
 use craft\behaviors\DraftBehavior;
@@ -75,6 +76,7 @@ use craft\web\UploadedFile;
 use DateTime;
 use Illuminate\Support\Collection;
 use Throwable;
+use Traversable;
 use Twig\Markup;
 use UnitEnum;
 use yii\base\ErrorHandler;
@@ -544,6 +546,40 @@ abstract class Element extends Component implements ElementInterface
     public const EVENT_DEFINE_KEYWORDS = 'defineKeywords';
 
     /**
+     * @event DefineUrlEvent The event that is triggered before defining the element’s URL.
+     *
+     * It can be used to provide a custom URL, completely bypassing the default URL generation.
+     *
+     * ```php
+     * use craft\base\Element;
+     * use craft\elements\Entry;
+     * use craft\events\DefineUrlEvent;
+     * use craft\helpers\UrlHelper;
+     * use yii\base\Event;
+     *
+     * Event::on(
+     *     Entry::class,
+     *     Element::EVENT_BEFORE_DEFINE_URL,
+     *     function(DefineUrlEvent $e
+     * ) {
+     *     // @var Entry $entry
+     *     $entry = $e->sender;
+     *
+     *     $event->url = '...';
+     * });
+     * ```
+     *
+     * To prevent the element from getting a URL, ensure `$event->url` is set to `null`,
+     * and set `$event->handled` to `true`.
+     *
+     * Note that [[EVENT_DEFINE_URL]] will still be called regardless of what happens with this event.
+     *
+     * @since 4.4.6
+     * @see getUrl()
+     */
+    public const EVENT_BEFORE_DEFINE_URL = 'beforeDefineUrl';
+
+    /**
      * @event DefineUrlEvent The event that is triggered when defining the element’s URL.
      *
      * ```php
@@ -569,6 +605,9 @@ abstract class Element extends Component implements ElementInterface
      *     }
      * });
      * ```
+     *
+     * To prevent the element from getting a URL, ensure `$event->url` is set to `null`,
+     * and set `$event->handled` to `true`.
      *
      * @since 4.3.0
      * @see getUrl()
@@ -2286,6 +2325,26 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
+    public function getIterator(): Traversable
+    {
+        $attributes = $this->getAttributes();
+
+        // Include custom fields
+        if (static::hasContent() && ($fieldLayout = $this->getFieldLayout()) !== null) {
+            foreach ($fieldLayout->getCustomFieldElements() as $layoutElement) {
+                $field = $layoutElement->getField();
+                if (!isset($attributes[$field->handle])) {
+                    $attributes[$field->handle] = $this->getFieldValue($field->handle);
+                }
+            }
+        }
+
+        return new ArrayIterator($attributes);
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function getAttributeLabel($attribute): string
     {
         // Is this the "field:handle" syntax?
@@ -2904,11 +2963,15 @@ abstract class Element extends Component implements ElementInterface
      */
     public function getUrl(): ?string
     {
-        if (isset($this->uri)) {
+        // Give plugins/modules a chance to provide a custom URL
+        $event = new DefineUrlEvent();
+        $this->trigger(self::EVENT_BEFORE_DEFINE_URL, $event);
+        $url = $event->url;
+
+        // If DefineAssetUrlEvent::$url is set to null, only respect that if $handled is true
+        if ($url === null && !$event->handled && isset($this->uri)) {
             $path = $this->getIsHomepage() ? '' : $this->uri;
             $url = UrlHelper::siteUrl($path, null, null, $this->siteId);
-        } else {
-            $url = null;
         }
 
         // Give plugins/modules a chance to customize it
@@ -3307,13 +3370,10 @@ abstract class Element extends Component implements ElementInterface
     public function setEnabledForSite(array|bool $enabledForSite): void
     {
         if (is_array($enabledForSite)) {
-            foreach ($enabledForSite as &$value) {
-                $value = (bool)$value;
-            }
+            $this->_enabledForSite = array_map(fn($value) => (bool)$value, $enabledForSite);
         } else {
-            $enabledForSite = (bool)$enabledForSite;
+            $this->_enabledForSite = $enabledForSite;
         }
-        $this->_enabledForSite = $enabledForSite;
     }
 
     /**
@@ -3903,7 +3963,7 @@ abstract class Element extends Component implements ElementInterface
      */
     public function setDirtyAttributes(array $names, bool $merge = true): void
     {
-        if ($merge) {
+        if ($merge && !empty($this->_dirtyAttributes)) {
             $this->_dirtyAttributes = array_merge($this->_dirtyAttributes, array_flip($names));
         } else {
             $this->_dirtyAttributes = array_flip($names);
@@ -4012,6 +4072,27 @@ abstract class Element extends Component implements ElementInterface
         // If the field value was previously eager-loaded, undo that
         unset($this->_eagerLoadedElements[$fieldHandle]);
         unset($this->_eagerLoadedElementCounts[$fieldHandle]);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function setFieldValueFromRequest(string $fieldHandle, mixed $value): void
+    {
+        $field = $this->fieldByHandle($fieldHandle);
+
+        if (!$field) {
+            throw new InvalidFieldException($fieldHandle);
+        }
+
+        // Normalize it now in case the system language changes later
+        // (we'll do this with the value directly rather than using setFieldValue() + normalizeFieldValue(),
+        // because it's slightly more efficient, and to workaround an infinite loop bug caused by Matrix
+        // needing to render an object template on the owner element during normalization, which would in turn
+        // cause the Matrix field value to be (re-)normalized based on the POST data, and on and on...)
+        $value = $field->normalizeValueFromRequest($value, $this);
+        $this->setFieldValue($field->handle, $value);
+        $this->_normalizedFieldValues[$field->handle] = true;
     }
 
     /**
@@ -4127,6 +4208,20 @@ abstract class Element extends Component implements ElementInterface
     }
 
     /**
+     * @inheritdoc
+     */
+    public function setDirtyFields(array $fieldHandles, bool $merge = true): void
+    {
+        if ($merge && !empty($this->_dirtyFields)) {
+            $this->_dirtyFields = array_merge($this->_dirtyFields, array_flip($fieldHandles));
+        } else {
+            $this->_dirtyFields = array_flip($fieldHandles);
+        }
+
+        $this->_allDirty = false;
+    }
+
+    /**
      * Returns whether all fields and attributes should be considered dirty.
      *
      * @return bool
@@ -4194,14 +4289,7 @@ abstract class Element extends Component implements ElementInterface
                     continue;
                 }
 
-                // Normalize it now in case the system language changes later
-                // (we'll do this with the value directly rather than using setFieldValue() + normalizeFieldValue(),
-                // because it's slightly more efficient and to workaround an infinite loop bug caused by Matrix
-                // needing to render an object template on the owner element during normalization, which would in turn
-                // cause the Matrix field value to be (re-)normalized based on the POST data, and on and on...)
-                $value = $field->normalizeValue($value, $this);
-                $this->setFieldValue($field->handle, $value);
-                $this->_normalizedFieldValues[$field->handle] = true;
+                $this->setFieldValueFromRequest($field->handle, $value);
             }
         } while ($processedAnyFields);
     }
@@ -4782,6 +4870,7 @@ JS,
      */
     protected function notesFieldHtml(): string
     {
+        // todo: this should accept a $static arg
         /** @var static|DraftBehavior $this */
         return Cp::textareaFieldHtml([
             'label' => Craft::t('app', 'Notes about your changes'),

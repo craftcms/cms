@@ -140,6 +140,13 @@ class Asset extends Element
     public const EVENT_AFTER_GENERATE_TRANSFORM = 'afterGenerateTransform';
 
     /**
+     * @event DefineAssetUrlEvent The event that is triggered before defining the asset’s URL.
+     * @see getUrl()
+     * @since 4.4.7
+     */
+    public const EVENT_BEFORE_DEFINE_URL = 'beforeDefineUrl';
+
+    /**
      * @event DefineAssetUrlEvent The event that is triggered when defining the asset’s URL.
      * @see getUrl()
      * @since 4.0.0
@@ -1533,7 +1540,7 @@ JS;
                 'width' => $this->getWidth(),
                 'height' => $this->getHeight(),
                 'srcset' => $sizes ? $this->getSrcset($sizes) : false,
-                'alt' => $this->alt ?? false,
+                'alt' => $this->getThumbAlt(),
             ]);
         } else {
             $img = null;
@@ -1827,7 +1834,18 @@ JS;
             return null;
         }
 
-        $url = $this->_url($transform, $immediately);
+        // Give plugins/modules a chance to provide a custom URL
+        $event = new DefineAssetUrlEvent([
+            'transform' => $transform,
+            'asset' => $this,
+        ]);
+        $this->trigger(self::EVENT_BEFORE_DEFINE_URL, $event);
+        $url = $event->url;
+
+        // If DefineAssetUrlEvent::$url is set to null, only respect that if $handled is true
+        if ($url === null && !$event->handled) {
+            $url = $this->_url($transform, $immediately);
+        }
 
         // Give plugins/modules a chance to customize it
         if ($this->hasEventHandlers(self::EVENT_DEFINE_URL)) {
@@ -1957,6 +1975,11 @@ JS;
             return null;
         }
 
+        $extension = $this->getExtension();
+        if (!Image::canManipulateAsImage($extension)) {
+            return $extension;
+        }
+
         return $this->alt;
     }
 
@@ -1998,7 +2021,7 @@ JS;
         return Html::tag('img', '', [
             'sizes' => "{$thumbSizes[0][0]}px",
             'srcset' => implode(', ', $srcsets),
-            'alt' => $this->alt ?? $this->title,
+            'alt' => $this->getThumbAlt(),
         ]);
     }
 

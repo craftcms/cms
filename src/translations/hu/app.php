@@ -850,6 +850,7 @@ return [
     'Loading' => 'Betöltés',
     'Local Folder' => 'Helyi Mappa',
     'Local copies of remote images, generated thumbnails' => 'Távoli képek helyi másolatai, létrehozott miniatűrök',
+    'Local volumes cannot be located within system directories.' => 'Helyi kötetek nem helyezhetők el a rendszerkönyvtárakban.',
     'Localizing relations' => 'Viszonyok lokalizálása',
     'Location' => 'Hely',
     'Locations that should be available for previewing entries in this section.' => 'Helyek, amelyeknek elérhetőknek kell lenniük a szekcióban lévő bejegyzések előnézetéhez.',

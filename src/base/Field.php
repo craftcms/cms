@@ -490,6 +490,14 @@ abstract class Field extends SavableComponent implements FieldInterface
     /**
      * @inheritdoc
      */
+    public function normalizeValueFromRequest(mixed $value, ?ElementInterface $element = null): mixed
+    {
+        return $this->normalizeValue($value, $element);
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function getInputHtml(mixed $value, ?ElementInterface $element = null): string
     {
         $html = $this->inputHtml($value, $element);

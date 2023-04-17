@@ -850,6 +850,7 @@ return [
     'Loading' => 'Chargement',
     'Local Folder' => 'Dossier local',
     'Local copies of remote images, generated thumbnails' => 'Copies locales des images distantes, miniatures générées',
+    'Local volumes cannot be located within system directories.' => 'Les volumes locaux ne peuvent pas être situés dans des répertoires système.',
     'Localizing relations' => 'Traduction des relations',
     'Location' => 'Localisation',
     'Locations that should be available for previewing entries in this section.' => 'Emplacements à proposer pour la prévisualisation des entrées de cette section.',

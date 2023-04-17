@@ -232,6 +232,7 @@ class Categories extends Component
      */
     public function getGroupSiteSettings(int $groupId): array
     {
+        /** @var CategoryGroup_SiteSettingsRecord[] $results */
         $results = CategoryGroup_SiteSettingsRecord::find()
             ->where(['groupId' => $groupId])
             ->all();
