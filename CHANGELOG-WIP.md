@@ -9,6 +9,7 @@
 - Element metadata fields now have visually-hidden “Metadata” headings for screen readers. ([#12961](https://github.com/craftcms/cms/pull/12961))
 - Structure elements within element indexes now convey their levels to screen readers. ([#13020](https://github.com/craftcms/cms/pull/13020))
 - Non-image asset thumbnails in the control panel now have `alt` attributes set to the file extension. ([#12724](https://github.com/craftcms/cms/pull/12724))
+- Improved copy-text buttons for screen readers. ([#13073](https://github.com/craftcms/cms/pull/13073))
 
 ### Administration
 

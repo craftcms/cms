@@ -1659,19 +1659,7 @@ ul.icons {
   cursor: pointer;
   color: var(--medium-text-color);
 
-  input {
-    border: 0;
-    padding: 0;
-    height: 32px;
-    box-shadow: none;
-    background-color: transparent;
-    border: none;
-    cursor: pointer;
-    color: var(--medium-text-color);
-    text-align: center;
-  }
-
-  span {
+  .copytextbtn__icon {
     padding: 0;
     width: 13px;
     background: none;
@@ -1685,7 +1673,7 @@ ul.icons {
     border-color: var(--medium-hairline-color);
     color: var(--text-color);
 
-    input {
+    .copytextbtn__value {
       color: var(--text-color);
     }
   }
@@ -1693,9 +1681,8 @@ ul.icons {
   &.small {
     padding: 0 5px;
 
-    input {
-      font-size: 11px !important;
-      height: 20px;
+    .copytextbtn__value {
+      font-size: calc(11rem / 16);
     }
   }
 }
