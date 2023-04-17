@@ -1,5 +1,9 @@
 # Release Notes for Craft CMS 3.x
 
+## Unreleased
+
+- Fixed a bug where it was possible to upload files to Assets fields outside of the allowed volumes, if the Default Asset Location was set to a disallowed volume. ([#13072](https://github.com/craftcms/cms/issues/13072))
+
 ## 3.8.7 - 2023-04-11
 
 - Improved the control panel styling when the Debug Toolbar is enabled.
