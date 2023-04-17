@@ -30,6 +30,7 @@ use craft\helpers\Html;
 use craft\helpers\Json;
 use craft\helpers\Session;
 use craft\helpers\StringHelper;
+use craft\helpers\User as UserHelper;
 use craft\helpers\UrlHelper;
 use craft\i18n\Formatter;
 use craft\i18n\Locale;
@@ -1033,13 +1034,13 @@ class User extends Element implements IdentityInterface
             }
 
             if ($passwordValid) {
-                $this->authError = $this->_getAuthError();
+                $this->authError = UserHelper::getAuthStatus($this);
             } else {
                 Craft::$app->getUsers()->handleInvalidLogin($this);
                 // Was that one bad password too many?
                 if ($this->locked && !Craft::$app->getConfig()->getGeneral()->preventUserEnumeration) {
                     // Will set the authError to either AccountCooldown or AccountLocked
-                    $this->authError = $this->_getAuthError();
+                    $this->authError = $UserHelper::getAuthStatus($this);
                 } else {
                     $this->authError = self::AUTH_INVALID_CREDENTIALS;
                 }
@@ -1850,56 +1851,5 @@ class User extends Element implements IdentityInterface
         }
 
         return true;
-    }
-
-    /**
-     * Returns the [[authError]] value for [[authenticate()]]
-     *
-     * @return null|string
-     */
-    private function _getAuthError(): ?string
-    {
-        switch ($this->getStatus()) {
-            case self::STATUS_INACTIVE:
-            case self::STATUS_ARCHIVED:
-                return self::AUTH_INVALID_CREDENTIALS;
-            case self::STATUS_PENDING:
-                return self::AUTH_PENDING_VERIFICATION;
-            case self::STATUS_SUSPENDED:
-                return self::AUTH_ACCOUNT_SUSPENDED;
-            case self::STATUS_ACTIVE:
-                if ($this->locked) {
-                    // Let them know how much time they have to wait (if any) before their account is unlocked.
-                    if (Craft::$app->getConfig()->getGeneral()->cooldownDuration) {
-                        return self::AUTH_ACCOUNT_COOLDOWN;
-                    }
-                    return self::AUTH_ACCOUNT_LOCKED;
-                }
-                // Is a password reset required?
-                if ($this->passwordResetRequired) {
-                    return self::AUTH_PASSWORD_RESET_REQUIRED;
-                }
-                $request = Craft::$app->getRequest();
-                if (!$request->getIsConsoleRequest()) {
-                    if ($request->getIsCpRequest()) {
-                        if (!$this->can('accessCp')) {
-                            return self::AUTH_NO_CP_ACCESS;
-                        }
-                        if (
-                            Craft::$app->getIsLive() === false &&
-                            $this->can('accessCpWhenSystemIsOff') === false
-                        ) {
-                            return self::AUTH_NO_CP_OFFLINE_ACCESS;
-                        }
-                    } elseif (
-                        Craft::$app->getIsLive() === false &&
-                        $this->can('accessSiteWhenSystemIsOff') === false
-                    ) {
-                        return self::AUTH_NO_SITE_OFFLINE_ACCESS;
-                    }
-                }
-        }
-
-        return null;
     }
 }
