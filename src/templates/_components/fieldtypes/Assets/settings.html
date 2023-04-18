@@ -150,3 +150,7 @@
 
     {{ block('advancedSettings') }}
 {% endblock %}
+
+{% js %}
+    Craft.assetsFieldSettings.adjustDefaultAssetLocation("{{ field.defaultUploadLocationSource }}");
+{% endjs %}

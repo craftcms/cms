@@ -5,6 +5,9 @@ const {getConfig} = require('@craftcms/webpack');
 module.exports = getConfig({
   context: __dirname,
   config: {
-    entry: {fieldsettings: './fieldsettings.js'},
+    entry: {
+      fieldsettings: './fieldsettings.js',
+      assetsfieldsettings: './assetsfieldsettings.js',
+    },
   },
 });
