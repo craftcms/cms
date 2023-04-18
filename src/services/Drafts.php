@@ -14,6 +14,7 @@ use craft\behaviors\DraftBehavior;
 use craft\db\Connection;
 use craft\db\Query;
 use craft\db\Table;
+use craft\elements\db\ElementQuery;
 use craft\errors\InvalidElementException;
 use craft\events\DraftEvent;
 use craft\helpers\DateTimeHelper;
@@ -345,6 +346,21 @@ class Drafts extends Component
                 // Move the new source element after the draft?
                 if ($draft->structureId && $draft->root) {
                     Craft::$app->getStructures()->moveAfter($draft->structureId, $newSource, $draft);
+                }
+
+                // any element query joins that were referencing draft id, should now reference the new source id
+                $fieldValues = $newSource->getFieldValues();
+                foreach ($fieldValues as $fieldValue) {
+                    if ($fieldValue instanceof ElementQuery) {
+                        $joins = $fieldValue->join;
+                        array_walk_recursive($joins, function(&$val) use ($draft, $newSource) {
+                            if ($val === $draft->id) {
+                                $val = $newSource->id;
+                            }
+                        });
+                        $fieldValue->join = $joins;
+                        $fieldValue->clearCachedResult();
+                    }
                 }
 
                 // Now delete the draft
