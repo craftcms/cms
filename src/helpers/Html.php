@@ -760,25 +760,42 @@ class Html extends \yii\helpers\Html
     private static function _escapeTextareas(string &$html): array
     {
         $markers = [];
-        $data = preg_replace_callback('/(<textarea\b[^>]*>)(.*?)(<\/textarea>)/is', function(array $matches) use (&$markers) {
-            $marker = '{marker:' . StringHelper::randomString() . '}';
-            $markers[$marker] = $matches[2];
-            return $matches[1] . $marker . $matches[3];
-        }, $html);
 
-        // this can be null if the pcre.backtrack_limit is reached
-        // https://github.com/craftcms/cms/issues/13083
-        if ($data !== null) {
-            /* @phpstan-var $data string */
-            $html = $data;
-        } else {
-            preg_match('/(.*?)(<textarea\b[^>]*>)/is', $html, $matches);
+        // copy $html to $textarea, so that we can manipulate it without affecting $html
+        $textarea = $html;
+
+        $updatedHtml = [];
+        $end = null;
+        // keep getting first <textarea> tag until there's no more
+        while (preg_match('/(.*?)(<textarea\b[^>]*>)/is', $textarea, $matches) !== 0) {
             $start = $matches[0];
-            preg_match('/(<\/textarea>.*)/is', $html, $matches);
+            preg_match('/(<\/textarea>.*)/is', $textarea, $matches);
             $end = $matches[0];
+
             $marker = '{marker:' . StringHelper::randomString() . '}';
-            $markers[$marker] = str_replace([$start, $end], '', $html);
-            $html = $start . $marker . $end;
+
+            // remove first found $start
+            $content = substr_replace($textarea, '', strpos($textarea, $start), strlen($start));
+            // remove first found $end
+            $content = substr_replace($content, '', strpos($content, $end), strlen($end));
+            // set marker's content
+            $markers[$marker] = $content;
+            // store the processed part in the array
+            $updatedHtml[] = $start . $marker . '</textarea>';
+
+            // update the textarea so that we don't get the first <textarea> all the time
+            // start next iteration with $textarea starting where previous </textarea> ended
+            // 11 is the strlen('</textarea>')
+            $textarea = substr($textarea, strlen($start . $markers[$marker]) + 11);
+        }
+
+        if (!empty($updatedHtml)) {
+            // construct updated $html
+            $html = implode('', $updatedHtml);
+            // get the last occurrence of </textarea>
+            $pos = strrpos($html, '</textarea>');
+            // and use the last $end we found to complete our $html (instead of just ending it with </textarea>)
+            $html = substr_replace($html, $end, $pos);
         }
 
         return $markers;
