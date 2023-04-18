@@ -94,9 +94,11 @@ class UserElementTest extends TestCase
 
         $user->username = $this->activeUser->username;
         $user->email = $this->activeUser->email;
+        $user->fullName = 'invalid://fullName';
 
         $activated = Craft::$app->getUsers()->activateUser($user);
         self::assertFalse($activated);
+        self::assertFalse($user->hasErrors('fullName'));
         self::assertTrue($user->hasErrors('username'));
         self::assertTrue($user->hasErrors('email'));
 
