@@ -4,7 +4,7 @@
 
 - `craft\services\Elements::propagateElements()` now returns the element in the target site.
 - Fixed a bug where it was possible to upload files to Assets fields outside of the allowed volumes, if the Default Upload Location was set to a disallowed volume. ([#13072](https://github.com/craftcms/cms/issues/13072))
-- Fixed an error that could occur during database backups. ([#12996](https://github.com/craftcms/cms/issues/12996))
+- Fixed an error that could occur during database backups on MySQL and MariaDB. ([#12996](https://github.com/craftcms/cms/issues/12996))
 - Fixed an error that could occur when running tests. ([#13076](https://github.com/craftcms/cms/issues/13076))
 
 ## 4.4.7.1 - 2023-04-15
