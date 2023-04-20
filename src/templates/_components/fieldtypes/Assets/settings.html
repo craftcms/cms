@@ -12,6 +12,7 @@
             <div class="flex">
                 <div>
                     {{ forms.select({
+                        id: "#{config.id}-source",
                         name: "#{config.name}Source",
                         options: config.sourceOptions,
                         value: config.sourceValue,
@@ -21,6 +22,7 @@
                 <div class="flex-grow">
                     {{ forms.text({
                         class: 'ltr',
+                        id: "#{config.id}-subpath",
                         name: "#{config.name}Subpath",
                         value: config.subpathValue,
                         placeholder: "path/to/subfolder"|t('app'),
@@ -57,6 +59,7 @@
         {{ block('sourcesField') }}
 
         {{ _self.uploadLocationField({
+            id: 'defaultUploadLocation',
             label: 'Default Asset Location'|t('app'),
             instructions: 'Where assets should be stored when they are uploaded directly to the field, or via a front-end form.'|t('app') ~' '~ uploadLocationNote,
             name: 'defaultUploadLocation',
@@ -69,6 +72,7 @@
 
     <div id="single-folder-settings"{% if not field.useSingleFolder %} class="hidden"{% endif %}>
         {{ _self.uploadLocationField({
+            id: 'singleUploadLocation',
             label: 'Asset Location'|t('app'),
             instructions: 'Where selected assets should be stored.'|t('app') ~' '~ uploadLocationNote,
             name: 'singleUploadLocation',
@@ -150,3 +154,11 @@
 
     {{ block('advancedSettings') }}
 {% endblock %}
+
+{% js %}
+  new Craft.AssetsFieldSettings(
+    {{ 'useSingleFolder-toggle'|namespaceInputId|json_encode|raw }},
+    {{ 'sources-field'|namespaceInputId|json_encode|raw }},
+    {{ 'defaultUploadLocation-source'|namespaceInputId|json_encode|raw }},
+  );
+{% endjs %}

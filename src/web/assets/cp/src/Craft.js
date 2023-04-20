@@ -25,6 +25,7 @@ import './js/AssetIndex.js';
 import './js/AssetMover.js';
 import './js/AssetSelectInput.js';
 import './js/AssetSelectorModal.js';
+import './js/AssetsFieldSettings';
 import './js/AuthManager.js';
 import './js/CP.js';
 import './js/CategoryIndex.js';
