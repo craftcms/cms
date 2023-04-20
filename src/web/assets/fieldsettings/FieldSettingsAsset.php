@@ -34,6 +34,5 @@ class FieldSettingsAsset extends AssetBundle
      */
     public $js = [
         'fieldsettings.js',
-        'assetsfieldsettings.js',
     ];
 }
