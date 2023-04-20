@@ -89,7 +89,7 @@
                     name: 'email',
                     value: user.email,
                     type: 'email',
-                    errors: user.getErrors('email')|merge(user.getErrors('unverifiedEmail')),
+                    errors: user.getErrors('email'),
                     inputAttributes: {
                         data: {lpignore: 'true'},
                     },
