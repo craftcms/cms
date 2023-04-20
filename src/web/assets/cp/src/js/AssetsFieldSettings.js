@@ -9,21 +9,34 @@ Craft.AssetsFieldSettings = Garnish.Base.extend({
   $defaultUploadLocationSelect: null,
   $defaultUploadLocationOptions: null,
 
-  init: function (useSingleFolderToggleId, sourcesFieldId, defaultUploadLocationId) {
+  init: function (
+    useSingleFolderToggleId,
+    sourcesFieldId,
+    defaultUploadLocationId
+  ) {
     this.$useSingleFolderInput = $(`#${useSingleFolderToggleId}`);
     this.$sourceInputs = $(`#${sourcesFieldId} input`);
     this.$defaultUploadLocationSelect = $(`#${defaultUploadLocationId}`);
-    this.$defaultUploadLocationOptions = this.$defaultUploadLocationSelect.children('option');
+    this.$defaultUploadLocationOptions =
+      this.$defaultUploadLocationSelect.children('option');
     this.updateDefaultUploadLocationSelect();
 
     // Give CheckboxSelect a chance to register its change event first
     Garnish.requestAnimationFrame(() => {
-      this.addListener(this.$useSingleFolderInput, 'change', 'updateDefaultUploadLocationSelect');
-      this.addListener(this.$sourceInputs, 'change', 'updateDefaultUploadLocationSelect');
+      this.addListener(
+        this.$useSingleFolderInput,
+        'change',
+        'updateDefaultUploadLocationSelect'
+      );
+      this.addListener(
+        this.$sourceInputs,
+        'change',
+        'updateDefaultUploadLocationSelect'
+      );
     });
   },
 
-  updateDefaultUploadLocationSelect: function() {
+  updateDefaultUploadLocationSelect: function () {
     if (this.$useSingleFolderInput.prop('checked')) {
       return;
     }
@@ -49,12 +62,15 @@ Craft.AssetsFieldSettings = Garnish.Base.extend({
     }
 
     const $selectedOption = this.getOption(defaultUploadLocationVal);
-    if (!$selectedOption.length || $selectedOption.prop('disabled') && firstEnabledValue) {
+    if (
+      !$selectedOption.length ||
+      ($selectedOption.prop('disabled') && firstEnabledValue)
+    ) {
       this.$defaultUploadLocationSelect.val(firstEnabledValue);
     }
   },
 
-  getOption: function(val) {
+  getOption: function (val) {
     return this.$defaultUploadLocationOptions.filter(`[value="${val}"]`);
-  }
+  },
 });
