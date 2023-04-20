@@ -168,16 +168,28 @@ JS;
 
         // Delete the users
         $elementsService = Craft::$app->getElements();
+        $deletedCount = 0;
         foreach ($users as $user) {
             if (!in_array($user->id, $undeletableIds, false)) {
                 $user->inheritorOnDelete = $transferContentTo;
-                $elementsService->deleteElement($user, $this->hard);
+                if ($elementsService->deleteElement($user, $this->hard)) {
+                    $deletedCount++;
+                }
             }
         }
 
-        $this->setMessage(Craft::t('app', 'Users deleted.'));
+        if ($deletedCount === count($users)) {
+            $this->setMessage(Craft::t('app', 'Users deleted.'));
+            $success = true;
+        } elseif ($deletedCount === 0) {
+            $this->setMessage(Craft::t('app', 'Couldn’t delete the users.'));
+            $success = false;
+        } else {
+            $this->setMessage(Craft::t('app', 'Some users deleted.'));
+            $success = true;
+        }
 
-        return true;
+        return $success;
     }
 
     /**
