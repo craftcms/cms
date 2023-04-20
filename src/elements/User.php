@@ -126,6 +126,9 @@ class User extends Element implements IdentityInterface
     // Validation scenarios
     // -------------------------------------------------------------------------
 
+    /**
+     * @since 4.4.8
+     */
     public const SCENARIO_ACTIVATION = 'activation';
     public const SCENARIO_REGISTRATION = 'registration';
     public const SCENARIO_PASSWORD = 'password';
