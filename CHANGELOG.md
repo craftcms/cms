@@ -4,6 +4,7 @@
 
 - Fixed a bug where it was possible to select a disallowed volume as the Default Asset Location in Assets field settings. ([#13072](https://github.com/craftcms/cms/issues/13072))
 - Fixed a bug where it was possible to upload files to Assets fields outside of the allowed volumes, if the Default Asset Location was set to a disallowed volume. ([#13072](https://github.com/craftcms/cms/issues/13072))
+- Fixed an error that could occur if a Plain Text field had over 1,000,000 bytes. ([#13083](https://github.com/craftcms/cms/issues/13083))
 
 ## 3.8.7 - 2023-04-11
 
