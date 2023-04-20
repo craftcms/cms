@@ -851,11 +851,19 @@ class Html extends \yii\helpers\Html
     private static function _escapeTextareas(string &$html): array
     {
         $markers = [];
-        $html = preg_replace_callback('/(<textarea\b[^>]*>)(.*?)(<\/textarea>)/is', function(array $matches) use (&$markers) {
-            $marker = '{marker:' . StringHelper::randomString() . '}';
-            $markers[$marker] = $matches[2];
-            return $matches[1] . $marker . $matches[3];
-        }, $html);
+        $offset = 0;
+
+        while (preg_match('/<textarea\b[^>]*>/i', $html, $openMatch, PREG_OFFSET_CAPTURE, $offset)) {
+            $innerOffset = $openMatch[0][1] + strlen($openMatch[0][0]);
+            if (!preg_match('/<\/textarea>/', $html, $closeMatch, PREG_OFFSET_CAPTURE, $innerOffset)) {
+                break;
+            }
+            $marker = sprintf('{marker:%s}', StringHelper::randomString());
+            $markers[$marker] = substr($html, $openMatch[0][1], $closeMatch[0][1] - $innerOffset);
+            $html = substr($html, 0, $innerOffset) . $marker . substr($html, $closeMatch[0][1]);
+            $offset = $innerOffset + strlen($marker) + strlen($closeMatch[0][0]);
+        }
+
         return $markers;
     }
 
