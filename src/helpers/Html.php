@@ -760,42 +760,17 @@ class Html extends \yii\helpers\Html
     private static function _escapeTextareas(string &$html): array
     {
         $markers = [];
+        $offset = 0;
 
-        // copy $html to $textarea, so that we can manipulate it without affecting $html
-        $textarea = $html;
-
-        $updatedHtml = [];
-        $end = null;
-        // keep getting first <textarea> tag until there's no more
-        while (preg_match('/(.*?)(<textarea\b[^>]*>)/is', $textarea, $matches) !== 0) {
-            $start = $matches[0];
-            preg_match('/(<\/textarea>.*)/is', $textarea, $matches);
-            $end = $matches[0];
-
-            $marker = '{marker:' . StringHelper::randomString() . '}';
-
-            // remove first found $start
-            $content = substr_replace($textarea, '', strpos($textarea, $start), strlen($start));
-            // remove first found $end
-            $content = substr_replace($content, '', strpos($content, $end), strlen($end));
-            // set marker's content
-            $markers[$marker] = $content;
-            // store the processed part in the array
-            $updatedHtml[] = $start . $marker . '</textarea>';
-
-            // update the textarea so that we don't get the first <textarea> all the time
-            // start next iteration with $textarea starting where previous </textarea> ended
-            // 11 is the strlen('</textarea>')
-            $textarea = substr($textarea, strlen($start . $markers[$marker]) + 11);
-        }
-
-        if (!empty($updatedHtml)) {
-            // construct updated $html
-            $html = implode('', $updatedHtml);
-            // get the last occurrence of </textarea>
-            $pos = strrpos($html, '</textarea>');
-            // and use the last $end we found to complete our $html (instead of just ending it with </textarea>)
-            $html = substr_replace($html, $end, $pos);
+        while (preg_match('/<textarea\b[^>]*>/i', $html, $openMatch, PREG_OFFSET_CAPTURE, $offset)) {
+            $innerOffset = $openMatch[0][1] + strlen($openMatch[0][0]);
+            if (!preg_match('/<\/textarea>/', $html, $closeMatch, PREG_OFFSET_CAPTURE, $innerOffset)) {
+                break;
+            }
+            $marker = sprintf('{marker:%s}', StringHelper::randomString());
+            $markers[$marker] = substr($html, $openMatch[0][1], $closeMatch[0][1] - $innerOffset);
+            $html = substr($html, 0, $innerOffset) . $marker . substr($html, $closeMatch[0][1]);
+            $offset = $innerOffset + strlen($marker) + strlen($closeMatch[0][0]);
         }
 
         return $markers;
