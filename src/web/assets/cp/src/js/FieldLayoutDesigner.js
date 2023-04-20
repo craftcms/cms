@@ -450,7 +450,6 @@ Craft.FieldLayoutDesigner.Tab = Garnish.Base.extend({
         this.updateConfig((config) =>
           $.extend(response.data.config, {elements: config.elements})
         );
-        debugger;
         const $label = this.$container.find('.tabs .tab span');
         const $indicator = $label.children('.fld-indicator');
         if (response.data.hasConditions) {
