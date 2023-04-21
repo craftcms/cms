@@ -7,6 +7,7 @@
 - Fixed a bug where it was possible to select a disallowed volume as the Default Asset Location in Assets field settings. ([#13072](https://github.com/craftcms/cms/issues/13072))
 - Fixed a bug where it was possible to upload files to Assets fields outside of the allowed volumes, if the Default Upload Location was set to a disallowed volume. ([#13072](https://github.com/craftcms/cms/issues/13072))
 - Fixed an error that could occur if a Plain Text field had over 1,000,000 bytes. ([#13083](https://github.com/craftcms/cms/issues/13083))
+- Fixed a bug where relational field values weren’t yielding any results for event handlers immediately after a draft had been merged. ([#13087](https://github.com/craftcms/cms/issues/13087))
 - Fixed an error that could occur when running tests. ([#13076](https://github.com/craftcms/cms/issues/13076))
 - Fixed an error that occured when sending the activation email for a new user, if there were any validation errors due to new group assignments. ([#13060](https://github.com/craftcms/cms/issues/13060))
 - Fixed a bug where the “Send an activation email now” user account checkbox was losing its value if there were any validation errors.
