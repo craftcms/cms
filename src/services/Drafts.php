@@ -348,17 +348,11 @@ class Drafts extends Component
                     Craft::$app->getStructures()->moveAfter($draft->structureId, $newSource, $draft);
                 }
 
-                // any element query joins that were referencing draft id, should now reference the new source id
-                $fieldValues = $newSource->getFieldValues();
-                foreach ($fieldValues as $fieldValue) {
+
+                // clear field values for queries so that they don't point to the draft we're about to delete
+                foreach ($newSource->getFieldValues() as $handle => $fieldValue) {
                     if ($fieldValue instanceof ElementQuery) {
-                        $joins = $fieldValue->join;
-                        array_walk_recursive($joins, function(&$val) use ($draft, $newSource) {
-                            if ($val === $draft->id) {
-                                $val = $newSource->id;
-                            }
-                        });
-                        $fieldValue->join = $joins;
+                        $newSource->setFieldValue($handle, null);
                         $fieldValue->clearCachedResult();
                     }
                 }
