@@ -2337,10 +2337,14 @@ class Elements extends Component
      */
     public function getElementTypeByRefHandle(string $refHandle): ?string
     {
-        if (array_key_exists($refHandle, $this->_elementTypesByRefHandle)) {
-            return $this->_elementTypesByRefHandle[$refHandle];
+        if (!isset($this->_elementTypesByRefHandle[$refHandle])) {
+            $this->_elementTypesByRefHandle[$refHandle] = $this->elementTypeByRefHandle($refHandle);
         }
+        return $this->_elementTypesByRefHandle[$refHandle] ?: null;
+    }
 
+    private function elementTypeByRefHandle(string $refHandle): string|false
+    {
         foreach ($this->getAllElementTypes() as $class) {
             /** @var string|ElementInterface $class */
             /** @phpstan-var class-string<ElementInterface>|ElementInterface $class */
@@ -2348,11 +2352,11 @@ class Elements extends Component
                 ($elementRefHandle = $class::refHandle()) !== null &&
                 strcasecmp($elementRefHandle, $refHandle) === 0
             ) {
-                return $this->_elementTypesByRefHandle[$refHandle] = $class;
+                return $class;
             }
         }
 
-        return $this->_elementTypesByRefHandle[$refHandle] = null;
+        return false;
     }
 
     /**
