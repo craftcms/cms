@@ -859,7 +859,7 @@ class Html extends \yii\helpers\Html
                 break;
             }
             $marker = sprintf('{marker:%s}', StringHelper::randomString());
-            $markers[$marker] = substr($html, $openMatch[0][1], $closeMatch[0][1] - $innerOffset);
+            $markers[$marker] = substr($html, $innerOffset, $closeMatch[0][1] - $innerOffset);
             $html = substr($html, 0, $innerOffset) . $marker . substr($html, $closeMatch[0][1]);
             $offset = $innerOffset + strlen($marker) + strlen($closeMatch[0][0]);
         }
