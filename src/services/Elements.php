@@ -2338,13 +2338,29 @@ class Elements extends Component
     public function getElementTypeByRefHandle(string $refHandle): ?string
     {
         if (!isset($this->_elementTypesByRefHandle[$refHandle])) {
-            $this->_elementTypesByRefHandle[$refHandle] = $this->elementTypeByRefHandle($refHandle);
+            $class = $this->elementTypeByRefHandle($refHandle);
+
+            // Special cases for categories/tags/globals, if they’ve been entrified
+            if (
+                ($class === Category::class && empty(Craft::$app->getCategories()->getAllGroups())) ||
+                ($class === Tag::class && empty(Craft::$app->getTags()->getAllTagGroups())) ||
+                ($class === GlobalSet::class && empty(Craft::$app->getGlobals()->getAllSets()))
+            ) {
+                $class = Entry::class;
+            }
+
+            $this->_elementTypesByRefHandle[$refHandle] = $class;
         }
+
         return $this->_elementTypesByRefHandle[$refHandle] ?: null;
     }
 
     private function elementTypeByRefHandle(string $refHandle): string|false
     {
+        if (is_subclass_of($refHandle, ElementInterface::class)) {
+            return $refHandle;
+        }
+
         foreach ($this->getAllElementTypes() as $class) {
             /** @var string|ElementInterface $class */
             /** @phpstan-var class-string<ElementInterface>|ElementInterface $class */
@@ -2389,11 +2405,11 @@ class Elements extends Component
                     $fallback = $fullMatch;
                 }
 
-                // Does it already have a full element type class name?
-                if (
-                    !is_subclass_of($elementType, ElementInterface::class) &&
-                    ($elementType = $this->getElementTypeByRefHandle($elementType)) === null
-                ) {
+                // Swap out the ref handle for the element type
+                $elementType = $this->getElementTypeByRefHandle($elementType);
+
+                // Use the fallback if we couldn't find an element type
+                if ($elementType === null) {
                     return $fallback;
                 }
 

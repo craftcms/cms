@@ -27,9 +27,6 @@ use yii\base\InvalidConfigException;
  */
 class GlobalSet extends Element
 {
-    // Validation scenarios
-    // -------------------------------------------------------------------------
-
     /**
      * @since 4.4.6
      */
