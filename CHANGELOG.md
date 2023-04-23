@@ -6,6 +6,7 @@
 - Fixed a bug where it was possible to upload files to Assets fields outside of the allowed volumes, if the Default Asset Location was set to a disallowed volume. ([#13072](https://github.com/craftcms/cms/issues/13072))
 - Fixed an error that could occur if a Plain Text field had over 1,000,000 bytes. ([#13083](https://github.com/craftcms/cms/issues/13083))
 - Fixed a bug where relational field values weren’t yielding any results for event handlers immediately after a draft had been merged. ([#13087](https://github.com/craftcms/cms/issues/13087))
+- Fixed a bug where element labels could bleed out of their container. ([#13099](https://github.com/craftcms/cms/issues/13099))
 
 ## 3.8.7 - 2023-04-11
 

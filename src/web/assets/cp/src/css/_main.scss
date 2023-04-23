@@ -2553,6 +2553,7 @@ $elementInnerSpacing: 5px;
   user-select: none;
   font-weight: normal;
   border-radius: $smallBorderRadius;
+  max-width: 100%;
 
   &:focus,
   li:focus & {
@@ -2613,6 +2614,10 @@ $elementInnerSpacing: 5px;
 
   .label {
     display: inline-block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 100%;
 
     .draft-label {
       display: inline-block;
