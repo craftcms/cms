@@ -297,14 +297,14 @@ class UrlManager extends \yii\web\UrlManager
     /**
      * Returns the rules that should be used for the current request.
      *
-     * @return array|null The rules, or null if it's a console request
+     * @return array
      */
-    private function _getRules()
+    private function _getRules(): array
     {
         $request = Craft::$app->getRequest();
 
         if ($request->getIsConsoleRequest()) {
-            return null;
+            return [];
         }
 
         // Load the config file rules
