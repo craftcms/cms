@@ -25,6 +25,9 @@ import './js/ElementEditorSlideout.js';
 // Tabs
 import './js/Tabs.js';
 
+// Element thumb loader
+import './js/ElementThumbLoader.js';
+
 // Finally load the remaining files
 import './js/Accordion';
 import './js/AddressesInput.js';
@@ -49,7 +52,6 @@ import './js/EditableTable.js';
 import './js/ElementActionTrigger.js';
 import './js/ElementEditor.js';
 import './js/ElementFieldSettings.js';
-import './js/ElementThumbLoader.js';
 import './js/ElevatedSessionForm.js';
 import './js/ElevatedSessionManager.js';
 import './js/EntryIndex.js';

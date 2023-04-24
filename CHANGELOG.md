@@ -2,13 +2,22 @@
 
 ## Unreleased
 
+- Category/tag/global set reference tags now map to entries, if no category groups/tag groups/global sets exist. ([#13082](https://github.com/craftcms/cms/issues/13082))
+- Added `craft\queue\Queue::EVENT_AFTER_EXEC_AND_RELEASE`. ([#13096](https://github.com/craftcms/cms/issues/13096))
 - `craft\services\Elements::propagateElements()` now returns the element in the target site.
+- A globally-defined element thumb loader is now available in the control panel via `Craft.cp.elementThumbLoader`.
 - Fixed a bug where it was possible to select a disallowed volume as the Default Asset Location in Assets field settings. ([#13072](https://github.com/craftcms/cms/issues/13072))
 - Fixed a bug where it was possible to upload files to Assets fields outside of the allowed volumes, if the Default Upload Location was set to a disallowed volume. ([#13072](https://github.com/craftcms/cms/issues/13072))
 - Fixed an error that could occur if a Plain Text field had over 1,000,000 bytes. ([#13083](https://github.com/craftcms/cms/issues/13083))
+- Fixed a bug where relational field values weren’t yielding any results for event handlers immediately after a draft had been merged. ([#13087](https://github.com/craftcms/cms/issues/13087))
+- Fixed a bug where element labels could bleed out of their container. ([#13099](https://github.com/craftcms/cms/issues/13099))
+- Fixed an error that occurred if `yii\web\UrlManager::addRules()` was called on a console request. ([#13109](https://github.com/craftcms/cms/issues/13109))
 - Fixed an error that could occur when running tests. ([#13076](https://github.com/craftcms/cms/issues/13076))
 - Fixed an error that occured when sending the activation email for a new user, if there were any validation errors due to new group assignments. ([#13060](https://github.com/craftcms/cms/issues/13060))
 - Fixed a bug where the “Send an activation email now” user account checkbox was losing its value if there were any validation errors.
+- Fixed an error that could occur when creating a database backup on MySQL and MariaDB. ([#12996](https://github.com/craftcms/cms/issues/12996))
+- Fixed a bug where Edit Category screens were including a Parent field, even if the category group’s Max Levels was set to `1`. ([#13097](https://github.com/craftcms/cms/discussions/13097))
+- Fixed a bug where the uploader’s user photo wasn’t always loading on Edit Asset pages.
 
 ## 4.4.7.1 - 2023-04-15
 
@@ -382,7 +391,7 @@
 ## 4.3.9 - 2023-02-14
 
 - Image thumbnails and previews are no longer versioned if their image URL doesn’t begin with one of the asset’s base filesystem URLs. ([#12663](https://github.com/craftcms/cms/issues/12663))
-- HTML Purifier now allows `oembed` tags. ([ckeditor#59](https://github.com/craftcms/ckeditor/issues/59))
+- HTML Purifier now allows `oembed` tags. ([craftcms/ckeditor#59](https://github.com/craftcms/ckeditor/issues/59))
 - Added `craft\htmlpurifier\VideoEmbedUrlDef`.
 - `craft\helpers\Assets::revUrl()` now has an `$fsOnly` argument.
 - Fixed a bug where entries that aren’t propagated to the primary site weren’t showing revision notes. ([#12641](https://github.com/craftcms/cms/issues/12641))
