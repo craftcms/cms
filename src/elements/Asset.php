@@ -378,7 +378,9 @@ class Asset extends Element
             // Edit
             $actions[] = [
                 'type' => Edit::class,
-                'label' => Craft::t('app', 'Edit asset'),
+                'label' => Craft::t('app', 'Edit {type}', [
+                    'type' => static::lowerDisplayName(),
+                ]),
             ];
 
             $userSession = Craft::$app->getUser();

@@ -290,7 +290,9 @@ class AssetsController extends Controller
                 ]);
             }
 
-            $this->setFailFlash(Craft::t('app', 'Couldn’t save asset.'));
+            $this->setFailFlash(Craft::t('app', 'Couldn’t save {type}.', [
+                'type' => Asset::lowerDisplayName(),
+            ]));
 
             // Send the asset back to the template
             Craft::$app->getUrlManager()->setRouteParams([
@@ -310,7 +312,9 @@ class AssetsController extends Controller
             ]);
         }
 
-        $this->setSuccessFlash(Craft::t('app', 'Asset saved.'));
+        $this->setSuccessFlash(Craft::t('app', '{type} saved.', [
+            'type' => Asset::displayName(),
+        ]));
         return $this->redirectToPostedUrl($asset);
     }
 
@@ -622,7 +626,9 @@ class AssetsController extends Controller
                 return $this->asJson(['success' => false]);
             }
 
-            $this->setFailFlash(Craft::t('app', 'Couldn’t delete asset.'));
+            $this->setFailFlash(Craft::t('app', 'Couldn’t delete {type}.', [
+                'type' => Asset::lowerDisplayName(),
+            ]));
 
             // Send the entry back to the template
             Craft::$app->getUrlManager()->setRouteParams([
@@ -636,7 +642,9 @@ class AssetsController extends Controller
             return $this->asJson(['success' => true]);
         }
 
-        $this->setSuccessFlash(Craft::t('app', 'Asset deleted.'));
+        $this->setSuccessFlash(Craft::t('app', '{type} deleted.', [
+            'type' => Asset::displayName(),
+        ]));
         return $this->redirectToPostedUrl($asset);
     }
 

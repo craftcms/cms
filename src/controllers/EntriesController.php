@@ -359,7 +359,9 @@ class EntriesController extends BaseEntriesController
                         ]);
                     }
 
-                    $this->setFailFlash(Craft::t('app', 'Couldn’t duplicate entry.'));
+                    $this->setFailFlash(Craft::t('app', 'Couldn’t duplicate {type}.', [
+                        'type' => Entry::lowerDisplayName(),
+                    ]));
 
                     // Send the original entry back to the template, with any validation errors on the clone
                     $entry->addErrors($clone->getErrors());
@@ -438,7 +440,9 @@ class EntriesController extends BaseEntriesController
             }
 
 
-            $this->setFailFlash(Craft::t('app', 'Couldn’t save entry.'));
+            $this->setFailFlash(Craft::t('app', 'Couldn’t save {type}.', [
+                'type' => Entry::lowerDisplayName(),
+            ]));
 
             // Send the entry back to the template
             Craft::$app->getUrlManager()->setRouteParams([
@@ -484,7 +488,9 @@ class EntriesController extends BaseEntriesController
             return $this->asJson($return);
         }
 
-        $this->setSuccessFlash(Craft::t('app', 'Entry saved.'));
+        $this->setSuccessFlash(Craft::t('app', '{type} saved.', [
+            'type' => Entry::displayName(),
+        ]));
         return $this->redirectToPostedUrl($entry);
     }
 
@@ -563,9 +569,13 @@ class EntriesController extends BaseEntriesController
         Craft::$app->getElements()->saveElement($entry, true, true, false);
 
         if ($draftId && !$provisional) {
-            $this->setSuccessFlash(Craft::t('app', 'Draft deleted for site.'));
+            $this->setSuccessFlash(Craft::t('app', '{type} deleted for site.', [
+                'type' => Craft::t('app', 'Draft'),
+            ]));
         } else {
-            $this->setSuccessFlash(Craft::t('app', 'Entry deleted for site.'));
+            $this->setSuccessFlash(Craft::t('app', '{type} deleted for site.', [
+                'type' => Entry::displayName(),
+            ]));
         }
 
         if (!in_array($entry->siteId, $editableSiteIds)) {
@@ -610,7 +620,9 @@ class EntriesController extends BaseEntriesController
                 return $this->asJson(['success' => false]);
             }
 
-            $this->setFailFlash(Craft::t('app', 'Couldn’t delete entry.'));
+            $this->setFailFlash(Craft::t('app', 'Couldn’t delete {type}.', [
+                'type' => Entry::lowerDisplayName(),
+            ]));
 
             // Send the entry back to the template
             Craft::$app->getUrlManager()->setRouteParams([
@@ -624,7 +636,9 @@ class EntriesController extends BaseEntriesController
             return $this->asJson(['success' => true]);
         }
 
-        $this->setSuccessFlash(Craft::t('app', 'Entry deleted.'));
+        $this->setSuccessFlash(Craft::t('app', '{type} deleted.', [
+            'type' => Entry::displayName(),
+        ]));
         return $this->redirectToPostedUrl($entry);
     }
 

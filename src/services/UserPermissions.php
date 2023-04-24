@@ -12,6 +12,7 @@ use Craft;
 use craft\base\UtilityInterface;
 use craft\db\Query;
 use craft\db\Table;
+use craft\elements\Entry;
 use craft\elements\User;
 use craft\errors\WrongEditionException;
 use craft\events\ConfigEvent;
@@ -99,7 +100,9 @@ class UserPermissions extends Component
         if (Craft::$app->getEdition() === Craft::Pro) {
             $userPermissions = [
                 'editUsers' => [
-                    'label' => Craft::t('app', 'Edit users'),
+                    'label' => Craft::t('app', 'Edit {type}', [
+                        'type' => User::pluralLowerDisplayName(),
+                    ]),
                     'nested' => [
                         'registerUsers' => [
                             'label' => Craft::t('app', 'Register users'),
@@ -489,16 +492,22 @@ class UserPermissions extends Component
 
         return [
             "editEntries{$suffix}" => [
-                'label' => Craft::t('app', 'Edit entries'),
+                'label' => Craft::t('app', 'Edit {type}', [
+                    'type' => Entry::pluralLowerDisplayName(),
+                ]),
                 'nested' => [
                     "createEntries{$suffix}" => [
-                        'label' => Craft::t('app', 'Create entries'),
+                        'label' => Craft::t('app', 'Create {type}', [
+                            'type' => Entry::pluralLowerDisplayName(),
+                        ]),
                     ],
                     "publishEntries{$suffix}" => [
                         'label' => Craft::t('app', 'Publish live changes'),
                     ],
                     "deleteEntries{$suffix}" => [
-                        'label' => Craft::t('app', 'Delete entries'),
+                        'label' => Craft::t('app', 'Delete {type}', [
+                            'type' => Entry::pluralLowerDisplayName(),
+                        ]),
                     ],
                     "editPeerEntries{$suffix}" => [
                         'label' => Craft::t('app', 'Edit other authors’ entries'),

@@ -261,7 +261,9 @@ class User extends Element implements IdentityInterface
         // Edit
         $actions[] = $elementsService->createAction([
             'type' => Edit::class,
-            'label' => Craft::t('app', 'Edit user'),
+            'label' => Craft::t('app', 'Edit {type}', [
+                'type' => static::lowerDisplayName(),
+            ]),
         ]);
 
         if (Craft::$app->getUser()->checkPermission('moderateUsers')) {
@@ -280,9 +282,15 @@ class User extends Element implements IdentityInterface
         // Restore
         $actions[] = $elementsService->createAction([
             'type' => Restore::class,
-            'successMessage' => Craft::t('app', 'Users restored.'),
-            'partialSuccessMessage' => Craft::t('app', 'Some users restored.'),
-            'failMessage' => Craft::t('app', 'Users not restored.'),
+            'successMessage' => Craft::t('app', '{type} restored.', [
+                'type' => static::pluralDisplayName(),
+            ]),
+            'partialSuccessMessage' => Craft::t('app', 'Some {type} restored.', [
+                'type' => static::pluralLowerDisplayName(),
+            ]),
+            'failMessage' => Craft::t('app', '{type} not restored.', [
+                'type' => static::pluralDisplayName(),
+            ]),
         ]);
 
         return $actions;

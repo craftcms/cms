@@ -377,7 +377,9 @@ class Entry extends Element
             if ($canEdit) {
                 $actions[] = $elementsService->createAction([
                     'type' => Edit::class,
-                    'label' => Craft::t('app', 'Edit entry'),
+                    'label' => Craft::t('app', 'Edit {type}', [
+                        'type' => static::lowerDisplayName(),
+                    ]),
                 ]);
             }
 
@@ -395,7 +397,9 @@ class Entry extends Element
                 // View
                 $actions[] = $elementsService->createAction([
                     'type' => View::class,
-                    'label' => Craft::t('app', 'View entry'),
+                    'label' => Craft::t('app', 'View {type}', [
+                        'type' => static::lowerDisplayName(),
+                    ]),
                 ]);
             }
 
@@ -418,20 +422,26 @@ class Entry extends Element
 
                     $actions[] = $elementsService->createAction([
                         'type' => NewSiblingBefore::class,
-                        'label' => Craft::t('app', 'Create a new entry before'),
+                        'label' => Craft::t('app', 'Create a new {type} before', [
+                            'type' => static::lowerDisplayName(),
+                        ]),
                         'newSiblingUrl' => $newEntryUrl,
                     ]);
 
                     $actions[] = $elementsService->createAction([
                         'type' => NewSiblingAfter::class,
-                        'label' => Craft::t('app', 'Create a new entry after'),
+                        'label' => Craft::t('app', 'Create a new {type} after', [
+                            'type' => static::lowerDisplayName(),
+                        ]),
                         'newSiblingUrl' => $newEntryUrl,
                     ]);
 
                     if ($section->maxLevels != 1) {
                         $actions[] = $elementsService->createAction([
                             'type' => NewChild::class,
-                            'label' => Craft::t('app', 'Create a new child entry'),
+                            'label' => Craft::t('app', 'Create a new child {type}', [
+                                'type' => static::lowerDisplayName(),
+                            ]),
                             'maxLevels' => $section->maxLevels,
                             'newChildUrl' => $newEntryUrl,
                         ]);
@@ -478,9 +488,15 @@ class Entry extends Element
         // Restore
         $actions[] = $elementsService->createAction([
             'type' => Restore::class,
-            'successMessage' => Craft::t('app', 'Entries restored.'),
-            'partialSuccessMessage' => Craft::t('app', 'Some entries restored.'),
-            'failMessage' => Craft::t('app', 'Entries not restored.'),
+            'successMessage' => Craft::t('app', '{type} restored.', [
+                'type' => static::pluralDisplayName(),
+            ]),
+            'partialSuccessMessage' => Craft::t('app', 'Some {type} restored.', [
+                'type' => static::pluralLowerDisplayName(),
+            ]),
+            'failMessage' => Craft::t('app', '{type} not restored.', [
+                'type' => static::pluralDisplayName(),
+            ]),
         ]);
 
         return $actions;

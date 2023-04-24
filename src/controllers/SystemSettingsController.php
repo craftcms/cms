@@ -252,7 +252,9 @@ class SystemSettingsController extends Controller
         }
 
         if ($globalSet->id) {
-            $title = trim($globalSet->name) ?: Craft::t('app', 'Edit Global Set');
+            $title = trim($globalSet->name) ?: Craft::t('app', 'Edit {type}', [
+                'type' => GlobalSet::displayName(),
+            ]);
         } else {
             $title = Craft::t('app', 'Create a new global set');
         }

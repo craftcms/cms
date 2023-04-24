@@ -10,6 +10,7 @@ namespace craft\controllers;
 use Craft;
 use craft\db\Query;
 use craft\db\Table;
+use craft\elements\User;
 use craft\helpers\ChartHelper;
 use craft\helpers\DateTimeHelper;
 use craft\web\Controller;
@@ -64,7 +65,9 @@ class ChartsController extends Controller
         // Get the chart data table
         $dataTable = ChartHelper::getRunChartDataFromQuery($query, $startDate, $endDate, 'users.dateCreated', 'count', '*', [
             'intervalUnit' => $intervalUnit,
-            'valueLabel' => Craft::t('app', 'New Users'),
+            'valueLabel' => Craft::t('app', 'New {type}', [
+                'type' => User::pluralDisplayName(),
+            ]),
         ]);
 
         // Get the total number of new users

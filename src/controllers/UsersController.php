@@ -875,7 +875,9 @@ class UsersController extends Controller
             } elseif ($name = trim($user->getName())) {
                 $title = Craft::t('app', '{user}’s Account', ['user' => $name]);
             } else {
-                $title = Craft::t('app', 'Edit User');
+                $title = Craft::t('app', 'Edit {type}', [
+                    'type' => User::displayName(),
+                ]);
             }
         } else {
             $title = Craft::t('app', 'Register a new user');
@@ -1269,7 +1271,9 @@ JS;
                 ]);
             }
 
-            $this->setFailFlash(Craft::t('app', 'Couldn’t save user.'));
+            $this->setFailFlash(Craft::t('app', 'Couldn’t save {type}.', [
+                'type' => User::lowerDisplayName(),
+            ]));
 
             // Send the account back to the template
             Craft::$app->getUrlManager()->setRouteParams([
@@ -1392,7 +1396,9 @@ JS;
             }
             $this->setSuccessFlash($default);
         } else {
-            $this->setSuccessFlash(Craft::t('app', 'User saved.'));
+            $this->setSuccessFlash(Craft::t('app', '{type} saved.', [
+                'type' => User::displayName(),
+            ]));
         }
 
         // Is this public registration, and is the user going to be activated automatically?
@@ -1692,11 +1698,15 @@ JS;
         $user->inheritorOnDelete = $transferContentTo;
 
         if (!Craft::$app->getElements()->deleteElement($user)) {
-            $this->setFailFlash(Craft::t('app', 'Couldn’t delete the user.'));
+            $this->setFailFlash(Craft::t('app', 'Couldn’t delete {type}.', [
+                'type' => User::lowerDisplayName(),
+            ]));
             return null;
         }
 
-        $this->setSuccessFlash(Craft::t('app', 'User deleted.'));
+        $this->setSuccessFlash(Craft::t('app', '{type} deleted.', [
+            'type' => User::displayName(),
+        ]));
         return $this->redirectToPostedUrl();
     }
 
