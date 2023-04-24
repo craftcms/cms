@@ -347,6 +347,7 @@ return [
     'Couldn’t apply new migrations.' => 'Не вдалося застосувати нові перенесення.',
     'Couldn’t backup the database. How would you like to proceed?' => 'Не вдалося створити резервну копію бази даних. Що робити далі?',
     'Couldn’t create {type}.' => 'Помилка створення ({type}).',
+    'Couldn’t delete all {type}.' => 'Couldn’t delete all {type}.',
     'Couldn’t delete asset.' => 'Не вдалося видалити ресурс.',
     'Couldn’t delete the user.' => 'Не вдалося видалити користувача.',
     'Couldn’t delete {type}.' => 'Помилка видалення ({type}).',
