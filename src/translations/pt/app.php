@@ -347,6 +347,7 @@ return [
     'Couldn’t apply new migrations.' => 'Não foi possível aplicar novas migrações.',
     'Couldn’t backup the database. How would you like to proceed?' => 'Não foi possível criar uma cópia de segurança da base de dados. Como gostaria de resolver a situação?',
     'Couldn’t create {type}.' => 'Não foi possível criar {type}.',
+    'Couldn’t delete all {type}.' => 'Couldn’t delete all {type}.',
     'Couldn’t delete asset.' => 'Não foi possível eliminar o recurso.',
     'Couldn’t delete the user.' => 'Não foi possível excluir o usuário.',
     'Couldn’t delete {type}.' => 'Não foi possível eliminar {type}.',
