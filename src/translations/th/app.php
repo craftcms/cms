@@ -347,6 +347,7 @@ return [
     'Couldn’t apply new migrations.' => 'ใช้การโอนย้ายข้อมูลใหม่ไม่ได้',
     'Couldn’t backup the database. How would you like to proceed?' => 'สำรองฐานข้อมูลไม่ได้ คุณต้องการดำเนินการต่ออย่างไร',
     'Couldn’t create {type}.' => 'ไม่สามารถสร้าง {type} ได้',
+    'Couldn’t delete all {type}.' => 'Couldn’t delete all {type}.',
     'Couldn’t delete asset.' => 'ไม่สามารถลบแอสเซทได้',
     'Couldn’t delete the user.' => 'ไม่สามารถลบผู้ใช้ได้',
     'Couldn’t delete {type}.' => 'ไม่สามารถลบ {type} ได้',
