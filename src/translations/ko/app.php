@@ -347,6 +347,7 @@ return [
     'Couldn’t apply new migrations.' => '새 마이그레이션을 적용할 수 없습니다.',
     'Couldn’t backup the database. How would you like to proceed?' => '데이터베이스를 백업할 수 없습니다. 계속 진행하시겠습니까?',
     'Couldn’t create {type}.' => '{type} 생성을 할 수 없습니다.',
+    'Couldn’t delete all {type}.' => 'Couldn’t delete all {type}.',
     'Couldn’t delete asset.' => '에셋을 삭제할 수 없습니다.',
     'Couldn’t delete the user.' => '사용자를 삭제할 수 없습니다.',
     'Couldn’t delete {type}.' => '{type} 삭제를 할 수 없습니다.',
