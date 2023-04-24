@@ -347,6 +347,7 @@ return [
     'Couldn’t apply new migrations.' => 'نتوانست تغییرات جدید در ساختار پایگاه داده را اعمال کند.',
     'Couldn’t backup the database. How would you like to proceed?' => 'نتوانست از پایگاه داده پشتیبان تهیه نماید. چطور تمایل به ادامه دارید؟',
     'Couldn’t create {type}.' => 'نتوانست {type} را ایجاد نماید.',
+    'Couldn’t delete all {type}.' => 'Couldn’t delete all {type}.',
     'Couldn’t delete asset.' => 'فایل پروژه حذف نشد.',
     'Couldn’t delete the user.' => 'نتوانست کاربر را حذف نماید.',
     'Couldn’t delete {type}.' => 'نتوانست {type} را حذف نماید.',
