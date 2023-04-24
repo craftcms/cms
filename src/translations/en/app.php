@@ -347,6 +347,7 @@ return [
     'Couldn’t apply new migrations.' => 'Couldn’t apply new migrations.',
     'Couldn’t backup the database. How would you like to proceed?' => 'Couldn’t backup the database. How would you like to proceed?',
     'Couldn’t create {type}.' => 'Couldn’t create {type}.',
+    'Couldn’t delete all {type}.' => 'Couldn’t delete all {type}.',
     'Couldn’t delete asset.' => 'Couldn’t delete asset.',
     'Couldn’t delete the user.' => 'Couldn’t delete the user.',
     'Couldn’t delete {type}.' => 'Couldn’t delete {type}.',
