@@ -347,6 +347,7 @@ return [
     'Couldn’t apply new migrations.' => 'Yeni geçişler uygulanamadı.',
     'Couldn’t backup the database. How would you like to proceed?' => 'Veritabanı yedeklenemedi. Nasıl devam etmek istiyorsunuz?',
     'Couldn’t create {type}.' => '{type} oluşturulamadı.',
+    'Couldn’t delete all {type}.' => 'Couldn’t delete all {type}.',
     'Couldn’t delete asset.' => 'Dosya silinemedi.',
     'Couldn’t delete the user.' => 'Kullanıcı silinemedi.',
     'Couldn’t delete {type}.' => '{type} silinemedi.',
