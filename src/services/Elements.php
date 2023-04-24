@@ -2079,6 +2079,8 @@ class Elements extends Component
         // Separate the multi-site elements from the single-site elements
         $multiSiteElementIds = $firstElement::find()
             ->id(array_map(fn(ElementInterface $element) => $element->id, $elements))
+            ->status(null)
+            ->drafts(null)
             ->siteId(['not', $firstElement->siteId])
             ->unique()
             ->select(['elements.id'])
@@ -2114,7 +2116,12 @@ class Elements extends Component
 
             // Resave them
             $this->resaveElements(
-                $firstElement::find()->id($multiSiteElementIds)->site('*')->unique(),
+                $firstElement::find()
+                    ->id($multiSiteElementIds)
+                    ->status(null)
+                    ->drafts(null)
+                    ->site('*')
+                    ->unique(),
                 true,
                 updateSearchIndex: false
             );

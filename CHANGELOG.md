@@ -19,6 +19,7 @@
 - Fixed an error that could occur when creating a database backup on MySQL and MariaDB. ([#12996](https://github.com/craftcms/cms/issues/12996))
 - Fixed a bug where Edit Category screens were including a Parent field, even if the category group’s Max Levels was set to `1`. ([#13097](https://github.com/craftcms/cms/discussions/13097))
 - Fixed a bug where the uploader’s user photo wasn’t always loading on Edit Asset pages.
+- Fixed a bug where the “Delete for site” bulk element action was deleting disabled elements and drafts across all sites. ([#13116](https://github.com/craftcms/cms/issues/13116))
 
 ## 4.4.7.1 - 2023-04-15
 
