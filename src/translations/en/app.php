@@ -317,7 +317,7 @@ return [
     'Couldn’t delete category.' => 'Couldn’t delete category.',
     'Couldn’t delete entry.' => 'Couldn’t delete entry.',
     'Couldn’t delete the user.' => 'Couldn’t delete the user.',
-    'Couldn’t delete {type}.' =>  'Couldn’t delete {type}.',
+    'Couldn’t delete {type}.' => 'Couldn’t delete {type}.',
     'Couldn’t delete “{name}”.' => 'Couldn’t delete “{name}”.',
     'Couldn’t disable plugin.' => 'Couldn’t disable plugin.',
     'Couldn’t duplicate category.' => 'Couldn’t duplicate category.',
