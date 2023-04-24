@@ -391,7 +391,7 @@
 ## 4.3.9 - 2023-02-14
 
 - Image thumbnails and previews are no longer versioned if their image URL doesn’t begin with one of the asset’s base filesystem URLs. ([#12663](https://github.com/craftcms/cms/issues/12663))
-- HTML Purifier now allows `oembed` tags. ([ckeditor#59](https://github.com/craftcms/ckeditor/issues/59))
+- HTML Purifier now allows `oembed` tags. ([craftcms/ckeditor#59](https://github.com/craftcms/ckeditor/issues/59))
 - Added `craft\htmlpurifier\VideoEmbedUrlDef`.
 - `craft\helpers\Assets::revUrl()` now has an `$fsOnly` argument.
 - Fixed a bug where entries that aren’t propagated to the primary site weren’t showing revision notes. ([#12641](https://github.com/craftcms/cms/issues/12641))
