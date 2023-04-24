@@ -3,6 +3,7 @@
 ## Unreleased
 
 - Category/tag/global set reference tags now map to entries, if no category groups/tag groups/global sets exist. ([#13082](https://github.com/craftcms/cms/issues/13082))
+- HTML Purifier now allows `data-oembed-url` attributes on `div` tags. ([craftcms/ckeditor#80](https://github.com/craftcms/ckeditor/issues/80))
 - Added `craft\queue\Queue::EVENT_AFTER_EXEC_AND_RELEASE`. ([#13096](https://github.com/craftcms/cms/issues/13096))
 - `craft\services\Elements::propagateElements()` now returns the element in the target site.
 - A globally-defined element thumb loader is now available in the control panel via `Craft.cp.elementThumbLoader`.
