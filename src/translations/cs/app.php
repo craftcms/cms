@@ -347,6 +347,7 @@ return [
     'Couldn’t apply new migrations.' => 'Nové migrace nelze použít.',
     'Couldn’t backup the database. How would you like to proceed?' => 'Tuto databázi nelze zálohovat. Jak chcete pokračovat?',
     'Couldn’t create {type}.' => 'Nepodařilo se vytvořit {type}.',
+    'Couldn’t delete all {type}.' => 'Couldn’t delete all {type}.',
     'Couldn’t delete asset.' => 'Nepodařilo se smazat objekt.',
     'Couldn’t delete the user.' => 'Uživatele se nepodařilo smazat.',
     'Couldn’t delete {type}.' => 'Nepodařilo se smazat {type}.',
