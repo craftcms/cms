@@ -347,6 +347,7 @@ return [
     'Couldn’t apply new migrations.' => 'Nem lehet új áttelepítéseket alkalmazni.',
     'Couldn’t backup the database. How would you like to proceed?' => 'Az adatbázis frissítése nem sikerült. Hogyan szeretné folytatni?',
     'Couldn’t create {type}.' => 'A {type} létrehozása sikertelen volt.',
+    'Couldn’t delete all {type}.' => 'Couldn’t delete all {type}.',
     'Couldn’t delete asset.' => 'Tartalom nem törölhető.',
     'Couldn’t delete the user.' => 'Nem sikerült törölni a felhasználót.',
     'Couldn’t delete {type}.' => '{type} törlése sikertelen volt.',
