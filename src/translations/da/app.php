@@ -347,6 +347,7 @@ return [
     'Couldn’t apply new migrations.' => 'Kan ikke anvende nye migreringer.',
     'Couldn’t backup the database. How would you like to proceed?' => 'Kan ikke lave backup af database. Hvordan vil du fortsætte?',
     'Couldn’t create {type}.' => 'Kunne ikke oprette {type}.',
+    'Couldn’t delete all {type}.' => 'Couldn’t delete all {type}.',
     'Couldn’t delete asset.' => 'Kunne ikke slette aktiv.',
     'Couldn’t delete the user.' => 'Kunne ikke slette brugeren.',
     'Couldn’t delete {type}.' => 'Kunne ikke slette {type}.',
