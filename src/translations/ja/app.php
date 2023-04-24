@@ -347,6 +347,7 @@ return [
     'Couldn’t apply new migrations.' => '新しいマイグレーションを適用できませんでした。',
     'Couldn’t backup the database. How would you like to proceed?' => 'データベースをバックアップできませんでした。どのように進めますか？',
     'Couldn’t create {type}.' => '{type}を作成できませんでした。',
+    'Couldn’t delete all {type}.' => 'Couldn’t delete all {type}.',
     'Couldn’t delete asset.' => 'アセットを削除できませんでした。',
     'Couldn’t delete the user.' => 'このユーザーを削除できませんでした。',
     'Couldn’t delete {type}.' => '{type}を削除できませんでした。',
