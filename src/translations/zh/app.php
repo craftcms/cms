@@ -347,6 +347,7 @@ return [
     'Couldn’t apply new migrations.' => '无法应用新的迁移。',
     'Couldn’t backup the database. How would you like to proceed?' => '无法备份数据库。下一步该如何进行？',
     'Couldn’t create {type}.' => '无法创建{type}。',
+    'Couldn’t delete all {type}.' => 'Couldn’t delete all {type}.',
     'Couldn’t delete asset.' => '无法删除资产。',
     'Couldn’t delete the user.' => '无法删除用户。',
     'Couldn’t delete {type}.' => '无法删除{type}。',
