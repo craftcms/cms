@@ -819,13 +819,6 @@ JS, [
         }
 
         $html .= '</div></div>';
-
-        $nsId = $view->namespaceInputId($id);
-        $js = <<<JS
-(new Craft.ElementThumbLoader()).load($('#$nsId'));
-JS;
-        $view->registerJs($js);
-
         return $html;
     }
 

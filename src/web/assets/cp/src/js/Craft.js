@@ -2409,7 +2409,7 @@ if (typeof BroadcastChannel !== 'undefined') {
               }
             }
           }
-          new Craft.ElementThumbLoader().load($elements);
+          Craft.cp.elementThumbLoader.load($elements);
         }
       );
     }
