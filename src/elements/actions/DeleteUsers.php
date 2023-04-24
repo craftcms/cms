@@ -178,18 +178,25 @@ JS;
             }
         }
 
-        if ($deletedCount === count($users)) {
-            $this->setMessage(Craft::t('app', 'Users deleted.'));
-            $success = true;
-        } elseif ($deletedCount === 0) {
-            $this->setMessage(Craft::t('app', 'Couldn’t delete the users.'));
-            $success = false;
-        } else {
-            $this->setMessage(Craft::t('app', 'Some users deleted.'));
-            $success = true;
+        if ($deletedCount !== count($users)) {
+            if ($deletedCount === 0) {
+                $this->setMessage(Craft::t('app', 'Couldn’t delete {type}.', [
+                    'type' => User::pluralLowerDisplayName(),
+                ]));
+            } else {
+                $this->setMessage(Craft::t('app', 'Couldn’t delete all {type}.', [
+                    'type' => User::pluralLowerDisplayName(),
+                ]));
+            }
+
+            return false;
         }
 
-        return $success;
+        $this->setMessage(Craft::t('app', '{type} deleted.', [
+            'type' => User::pluralDisplayName(),
+        ]));
+
+        return true;
     }
 
     /**
