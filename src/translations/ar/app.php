@@ -347,6 +347,7 @@ return [
     'Couldn’t apply new migrations.' => 'تعذر تطبيق الترحيلات الجديدة.',
     'Couldn’t backup the database. How would you like to proceed?' => 'تعذر عمل نسخ احتياطي لقاعدة البيانات. كيف ترغب في المتابعة؟',
     'Couldn’t create {type}.' => 'تعذر إنشاء {type}.',
+    'Couldn’t delete all {type}.' => 'Couldn’t delete all {type}.',
     'Couldn’t delete asset.' => 'تعذر حذف الأصل.',
     'Couldn’t delete the user.' => 'تعذر حذف هذا المستخدم.',
     'Couldn’t delete {type}.' => 'تعذر حذف {type}.',
