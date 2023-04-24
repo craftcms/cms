@@ -347,6 +347,7 @@ return [
     'Couldn’t apply new migrations.' => 'Kunde inte tillämpa nya migreringar.',
     'Couldn’t backup the database. How would you like to proceed?' => 'Det gick inte att säkerhetskopiera databasen. Hur vill du fortsätta?',
     'Couldn’t create {type}.' => 'Det gick inte att skapa {type}.',
+    'Couldn’t delete all {type}.' => 'Couldn’t delete all {type}.',
     'Couldn’t delete asset.' => 'Kunde inte radera tillgången.',
     'Couldn’t delete the user.' => 'Kunde inte radera användaren.',
     'Couldn’t delete {type}.' => 'Det gick inte att radera {type}.',
