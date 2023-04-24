@@ -347,6 +347,7 @@ return [
     'Couldn’t apply new migrations.' => 'Kan nieuwe migraties niet toepassen.',
     'Couldn’t backup the database. How would you like to proceed?' => 'Kan geen back-up maken van de database. Hoe wilt u verdergaan?',
     'Couldn’t create {type}.' => 'Kon {type} niet aanmaken.',
+    'Couldn’t delete all {type}.' => 'Couldn’t delete all {type}.',
     'Couldn’t delete asset.' => 'Bestand kon niet worden verwijderd.',
     'Couldn’t delete the user.' => 'Kan de gebruiker niet verwijderen.',
     'Couldn’t delete {type}.' => 'Kon {type} niet verwijderen.',
