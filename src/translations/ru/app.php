@@ -347,6 +347,7 @@ return [
     'Couldn’t apply new migrations.' => 'Не удалось применить новые переносы.',
     'Couldn’t backup the database. How would you like to proceed?' => 'Не удалось создать резервную копию базы данных. Что следует сделать дальше?',
     'Couldn’t create {type}.' => 'Ошибка создания ({type}).',
+    'Couldn’t delete all {type}.' => 'Couldn’t delete all {type}.',
     'Couldn’t delete asset.' => 'Не удалось удалить ресурс.',
     'Couldn’t delete the user.' => 'Этот пользователь не может быть удален.',
     'Couldn’t delete {type}.' => 'Ошибка удаления ({type}).',
