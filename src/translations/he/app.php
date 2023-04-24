@@ -347,6 +347,7 @@ return [
     'Couldn’t apply new migrations.' => 'לא ניתן להחיל העברות חדשות.',
     'Couldn’t backup the database. How would you like to proceed?' => 'לא ניתן לגבות את מסד הנתונים. כיצד ברצונך להמשיך?',
     'Couldn’t create {type}.' => 'לא ניתן ליצור את {type}.',
+    'Couldn’t delete all {type}.' => 'Couldn’t delete all {type}.',
     'Couldn’t delete asset.' => 'לא ניתן למחוק את הנכס.',
     'Couldn’t delete the user.' => 'לא ניתן למחוק את המשתמש.',
     'Couldn’t delete {type}.' => 'לא ניתן למחוק את {type}.',
