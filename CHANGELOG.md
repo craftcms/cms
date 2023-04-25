@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 3.x
 
-## Unreleased
+## 3.8.8 - 2023-04-25
 
 - Fixed a bug where it was possible to select a disallowed volume as the Default Asset Location in Assets field settings. ([#13072](https://github.com/craftcms/cms/issues/13072))
 - Fixed a bug where it was possible to upload files to Assets fields outside of the allowed volumes, if the Default Asset Location was set to a disallowed volume. ([#13072](https://github.com/craftcms/cms/issues/13072))
