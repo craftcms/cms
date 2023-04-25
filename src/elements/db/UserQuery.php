@@ -812,13 +812,13 @@ class UserQuery extends ElementQuery
             'users.lastLoginDate',
             'users.lockoutDate',
             'users.hasDashboard',
-            'users.requireMfa',
         ]);
 
         // todo: cleanup after next breakpoint
         $db = Craft::$app->getDb();
         $activeColumnExists = $db->columnExists(Table::USERS, 'active');
         $fullNameColumnExists = $db->columnExists(Table::USERS, 'fullName');
+        $requireMfaColumnExists = $db->columnExists(Table::USERS, 'requireMfa');
 
         if ($activeColumnExists) {
             $this->query->addSelect(['users.active']);
@@ -826,6 +826,10 @@ class UserQuery extends ElementQuery
 
         if ($fullNameColumnExists) {
             $this->query->addSelect(['users.fullName']);
+        }
+
+        if ($requireMfaColumnExists) {
+            $this->query->addSelect(['users.requireMfa']);
         }
 
         if (is_bool($this->admin)) {
