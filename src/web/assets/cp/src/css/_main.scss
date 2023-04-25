@@ -2740,6 +2740,7 @@ $elementInnerSpacing: 5px;
   user-select: none;
   font-weight: normal;
   border-radius: var(--small-border-radius);
+  max-width: 100%;
 
   .label {
     .segment:after {
@@ -2824,6 +2825,10 @@ $elementInnerSpacing: 5px;
 
   .label {
     display: inline-block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 100%;
 
     .draft-label {
       display: inline-block;

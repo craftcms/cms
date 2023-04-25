@@ -1,22 +1,20 @@
-name: Craft Starter Project
-run-name: Build starter project for Craft ${{ github.event.client_payload.version }}
+name: Create Release
+run-name: Create release for ${{ github.event.client_payload.version }}
 
 on:
-  workflow_dispatch:
-
-  # Allows external webhook trigger
   repository_dispatch:
     types:
-      - craft-cms-release-webhook
+      - craftcms/new-release
 
 env:
   PROJECT_DIRECTORY: 'craftcms'
   BUNDLE_ZIP_FILENAME: 'CraftCMS-${{ github.event.client_payload.version }}.zip'
 
 jobs:
-  starter-project:
+  build:
     runs-on: ubuntu-latest
-
+    permissions:
+      contents: write
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -67,12 +65,13 @@ jobs:
         working-directory: ${{ env.PROJECT_DIRECTORY }}
         run: 'zip -r ../${{ env.BUNDLE_ZIP_FILENAME }} ./'
 
-      - name: 'Create release and upload artifacts'
-        uses: svenstaro/upload-release-action@v2
+      - name: 'Create release'
+        uses: ncipollo/release-action@v1
         with:
-          file: ${{ env.BUNDLE_ZIP_FILENAME }}
-          asset_name: ${{ env.BUNDLE_ZIP_FILENAME }}
-          overwrite: true
-          body: ${{ github.event.client_payload.changelog }}
-          tag: ${{ github.event.client_payload.version }}
-          release_name: ${{ github.event.client_payload.version }}
+          allowUpdates: true
+          artifacts: ${{ env.BUNDLE_ZIP_FILENAME }}
+          body: ${{ github.event.client_payload.notes }}
+          makeLatest: ${{ github.event.client_payload.latest }}
+          name: ${{ github.event.client_payload.version }}
+          prerelease: ${{ github.event.client_payload.prerelease }}
+          tag: ${{ github.event.client_payload.tag }}

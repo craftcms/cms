@@ -18,7 +18,6 @@ Craft.ElementFieldSettings = Garnish.Base.extend({
     minRelationsFieldId,
     maxRelationsFieldId
   ) {
-    debugger;
     this.allowMultipleSources = allowMultipleSources;
     this.$maintainHierarchyField = $(`#${maintainHierarchyFieldId}`);
     this.$maintainHierarchyInput = this.$maintainHierarchyField.find(

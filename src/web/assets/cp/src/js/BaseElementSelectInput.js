@@ -5,7 +5,6 @@
  */
 Craft.BaseElementSelectInput = Garnish.Base.extend(
   {
-    thumbLoader: null,
     elementSelect: null,
     elementSort: null,
     modal: null,
@@ -19,6 +18,13 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
     $spinner: null,
 
     _initialized: false,
+
+    get thumbLoader() {
+      console.warn(
+        'Craft.BaseElementSelectInput::thumbLoader is deprecated. Craft.cp.elementThumbLoader should be used instead.'
+      );
+      return Craft.cp.elementThumbLoader;
+    },
 
     init: function (settings) {
       // Normalize the settings and set them
@@ -73,8 +79,6 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
       this.$elementsContainer = this.getElementsContainer();
       this.$addElementBtn = this.getAddElementsBtn();
       this.$spinner = this.getSpinner();
-
-      this.thumbLoader = new Craft.ElementThumbLoader();
 
       this.initElementSelect();
       this.initElementSort();
@@ -245,7 +249,7 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
     },
 
     addElements: function ($elements) {
-      this.thumbLoader.load($elements);
+      Craft.cp.elementThumbLoader.load($elements);
 
       if (this.settings.selectable) {
         this.elementSelect.addItems($elements);
