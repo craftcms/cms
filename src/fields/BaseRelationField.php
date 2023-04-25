@@ -970,6 +970,7 @@ JS, [
                     ->revisions(null)
                     ->provisionalDrafts(null)
                     ->status(null)
+                    ->siteId($this->targetSiteId($element))
                     ->all();
 
                 // Fill in any gaps
