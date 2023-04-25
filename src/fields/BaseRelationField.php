@@ -970,6 +970,8 @@ JS, [
                     ->revisions(null)
                     ->provisionalDrafts(null)
                     ->status(null)
+                    ->site('*')
+                    ->unique()
                     ->all();
 
                 // Fill in any gaps
