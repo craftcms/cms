@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 4
 
-## Unreleased
+## 4.4.8 - 2023-04-25
 
 - Category/tag/global set reference tags now map to entries, if no category groups/tag groups/global sets exist. ([#13082](https://github.com/craftcms/cms/issues/13082))
 - HTML Purifier now allows `data-oembed-url` attributes on `div` tags. ([craftcms/ckeditor#80](https://github.com/craftcms/ckeditor/issues/80))
