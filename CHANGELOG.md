@@ -9,6 +9,7 @@
 - Fixed a bug where element labels could bleed out of their container. ([#13099](https://github.com/craftcms/cms/issues/13099))
 - Fixed an error that occurred if `yii\web\UrlManager::addRules()` was called on a console request. ([#13109](https://github.com/craftcms/cms/issues/13109))
 - Fixed a bug where it was possible to select the current folder as the target when moving a volume folder, resulting in the folder and its contents being lost. ([#13118](https://github.com/craftcms/cms/issues/13118))
+- Fixed a bug where custom field values weren’t getting saved for assets in the local temp upload location. ([#12695](https://github.com/craftcms/cms/issues/12695))
 
 ## 3.8.7 - 2023-04-11
 

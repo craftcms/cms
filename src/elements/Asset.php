@@ -1477,6 +1477,18 @@ class Asset extends Element
         }
 
         $volume = $this->getVolume();
+
+        if ($volume instanceof Temp) {
+            // See if a default field layout ID was posted
+            $fieldLayoutId = Craft::$app->getRequest()->getBodyParam('defaultFieldLayoutId');
+            if ($fieldLayoutId) {
+                $fieldLayout = Craft::$app->getFields()->getLayoutById($fieldLayoutId);
+                if ($fieldLayout) {
+                    return $fieldLayout;
+                }
+            }
+        }
+
         return $volume->getFieldLayout();
     }
 
@@ -2184,18 +2196,6 @@ class Asset extends Element
         ];
 
         return implode("\n", $components);
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getEditorHtml(): string
-    {
-        if (!$this->fieldLayoutId) {
-            $this->fieldLayoutId = Craft::$app->getRequest()->getBodyParam('defaultFieldLayoutId');
-        }
-
-        return parent::getEditorHtml();
     }
 
     /**
