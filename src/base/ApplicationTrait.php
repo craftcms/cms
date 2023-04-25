@@ -1533,7 +1533,7 @@ trait ApplicationTrait
         ];
 
         foreach ($flavors as $flavor => $class) {
-            if (isset(MarkdownHelper::$flavors[$flavor])) {
+            if (isset(MarkdownHelper::$flavors[$flavor]) && !is_object(MarkdownHelper::$flavors[$flavor])) {
                 MarkdownHelper::$flavors[$flavor]['class'] = $class;
             }
         }
