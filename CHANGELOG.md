@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- Fixed a SQL error that could occur when upgrading to Craft 4, if any `matrixblocks` table rows referenced nonexistent element IDs. ([#13121](https://github.com/craftcms/cms/issues/13121))
+
+## 4.4.8 - 2023-04-25
+
 - Category/tag/global set reference tags now map to entries, if no category groups/tag groups/global sets exist. ([#13082](https://github.com/craftcms/cms/issues/13082))
 - HTML Purifier now allows `data-oembed-url` attributes on `div` tags. ([craftcms/ckeditor#80](https://github.com/craftcms/ckeditor/issues/80))
 - Added `craft\queue\Queue::EVENT_AFTER_EXEC_AND_RELEASE`. ([#13096](https://github.com/craftcms/cms/issues/13096))
@@ -21,6 +25,7 @@
 - Fixed a bug where Edit Category screens were including a Parent field, even if the category group’s Max Levels was set to `1`. ([#13097](https://github.com/craftcms/cms/discussions/13097))
 - Fixed a bug where the uploader’s user photo wasn’t always loading on Edit Asset pages.
 - Fixed a bug where the “Delete for site” bulk element action was deleting disabled elements and drafts across all sites. ([#13116](https://github.com/craftcms/cms/issues/13116))
+- Fixed a bug where Entries and Categories fields with “Maintain hierarchy” enabled could lose relations to elements that didn’t exist in the primary site. ([#13057](https://github.com/craftcms/cms/issues/13057))
 
 ## 4.4.7.1 - 2023-04-15
 
