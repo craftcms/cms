@@ -22,6 +22,7 @@ use craft\elements\db\ElementQueryInterface;
 use craft\elements\db\MatrixBlockQuery;
 use craft\elements\ElementCollection;
 use craft\elements\MatrixBlock;
+use craft\errors\InvalidFieldException;
 use craft\events\BlockTypesEvent;
 use craft\fieldlayoutelements\CustomField;
 use craft\fields\conditions\EmptyFieldConditionRule;
@@ -495,6 +496,19 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
      */
     public function normalizeValue(mixed $value, ?ElementInterface $element = null): mixed
     {
+        return $this->_normalizeValueInternal($value, $element, false);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function normalizeValueFromRequest(mixed $value, ?ElementInterface $element = null): mixed
+    {
+        return $this->_normalizeValueInternal($value, $element, true);
+    }
+
+    private function _normalizeValueInternal(mixed $value, ?ElementInterface $element, bool $fromRequest): mixed
+    {
         if ($value instanceof ElementQueryInterface) {
             return $value;
         }
@@ -507,7 +521,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
         if ($value === '') {
             $query->setCachedResult([]);
         } elseif ($element && is_array($value)) {
-            $query->setCachedResult($this->_createBlocksFromSerializedData($value, $element));
+            $query->setCachedResult($this->_createBlocksFromSerializedData($value, $element, $fromRequest));
         }
 
         return $query;
@@ -787,7 +801,13 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
     {
         /** @var MatrixBlockQuery|Collection $value */
         $value = $element->getFieldValue($this->handle);
-        $blocks = $value->all();
+
+        if ($value instanceof MatrixBlockQuery) {
+            $blocks = $value->getCachedResult() ?? (clone $value)->status(null)->limit(null)->all();
+        } else {
+            $blocks = $value->all();
+        }
+
         $allBlocksValidate = true;
         $scenario = $element->getScenario();
 
@@ -1236,9 +1256,10 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
      *
      * @param array $value The raw field value
      * @param ElementInterface $element The element the field is associated with
+     * @param bool $fromRequest Whether the data came from the request post data
      * @return MatrixBlock[]
      */
-    private function _createBlocksFromSerializedData(array $value, ElementInterface $element): array
+    private function _createBlocksFromSerializedData(array $value, ElementInterface $element, bool $fromRequest): array
     {
         // Get the possible block types for this field
         /** @var MatrixBlockType[] $blockTypes */
@@ -1251,6 +1272,8 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
                 ->fieldId($this->id)
                 ->ownerId($element->id)
                 ->siteId($element->siteId)
+                ->drafts(null)
+                ->revisions(null)
                 ->status(null)
                 ->indexBy('id')
                 ->all();
@@ -1346,6 +1369,11 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
                 $block->enabled = (bool)$blockData['enabled'];
             }
 
+            // Allow setting the UID for the block element
+            if (isset($blockData['uid'])) {
+                $block->uid = $blockData['uid'];
+            }
+
             // Skip disabled blocks on Live Preview requests
             if ($hideDisabledBlocks && !$block->enabled) {
                 continue;
@@ -1359,7 +1387,16 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
             }
 
             if (isset($blockData['fields'])) {
-                $block->setFieldValues($blockData['fields']);
+                foreach ($blockData['fields'] as $fieldHandle => $fieldValue) {
+                    try {
+                        if ($fromRequest) {
+                            $block->setFieldValueFromRequest($fieldHandle, $fieldValue);
+                        } else {
+                            $block->setFieldValue($fieldHandle, $fieldValue);
+                        }
+                    } catch (InvalidFieldException) {
+                    }
+                }
             }
 
             // Set the prev/next blocks

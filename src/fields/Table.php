@@ -400,6 +400,19 @@ class Table extends Field
      */
     public function normalizeValue(mixed $value, ?ElementInterface $element = null): mixed
     {
+        return $this->_normalizeValueInternal($value, $element, false);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function normalizeValueFromRequest(mixed $value, ?ElementInterface $element = null): mixed
+    {
+        return $this->_normalizeValueInternal($value, $element, true);
+    }
+
+    private function _normalizeValueInternal(mixed $value, ?ElementInterface $element, bool $fromRequest): ?array
+    {
         if (is_string($value) && !empty($value)) {
             $value = Json::decodeIfJson($value);
         } elseif ($value === null && $this->isFresh($element)) {
@@ -420,7 +433,7 @@ class Table extends Field
                 } else {
                     $cellValue = null;
                 }
-                $cellValue = $this->_normalizeCellValue($col['type'], $cellValue);
+                $cellValue = $this->_normalizeCellValue($col['type'], $cellValue, $fromRequest);
                 $row[$colId] = $cellValue;
                 if ($col['handle']) {
                     $row[$col['handle']] = $cellValue;
@@ -448,7 +461,7 @@ class Table extends Field
                 $value = $row[$colId];
 
                 if (is_string($value) && in_array($this->columns[$colId]['type'], ['singleline', 'multiline'], true)) {
-                    $value = StringHelper::emojiToShortcodes($value);
+                    $value = StringHelper::emojiToShortcodes(StringHelper::escapeShortcodes($value));
                 }
 
                 $serializedRow[$colId] = parent::serializeValue($value ?? null);
@@ -528,10 +541,11 @@ class Table extends Field
      *
      * @param string $type The cell type
      * @param mixed $value The cell value
+     * @param bool $fromRequest
      * @return mixed
      * @see normalizeValue()
      */
-    private function _normalizeCellValue(string $type, mixed $value): mixed
+    private function _normalizeCellValue(string $type, mixed $value, bool $fromRequest): mixed
     {
         switch ($type) {
             case 'color':
@@ -558,7 +572,9 @@ class Table extends Field
             case 'multiline':
             case 'singleline':
                 if ($value !== null) {
-                    $value = StringHelper::shortcodesToEmoji($value);
+                    if (!$fromRequest) {
+                        $value = StringHelper::unescapeShortcodes(StringHelper::shortcodesToEmoji($value));
+                    }
                     return trim(preg_replace('/\R/u', "\n", $value));
                 }
                 // no break

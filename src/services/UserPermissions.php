@@ -409,7 +409,9 @@ class UserPermissions extends Component
             'heading' => Craft::t('app', 'Users'),
             'permissions' => [
                 'editUsers' => [
-                    'label' => Craft::t('app', 'Edit users'),
+                    'label' => Craft::t('app', 'Edit {type}', [
+                        'type' => User::pluralLowerDisplayName(),
+                    ]),
                     'nested' => array_merge(
                         [
                             'registerUsers' => [

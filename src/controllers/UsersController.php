@@ -981,7 +981,12 @@ class UsersController extends Controller
     public function actionEditUser(mixed $userId = null, ?User $user = null, ?array $errors = null): Response
     {
         if (!empty($errors)) {
-            $this->setFailFlash(implode(', ', reset($errors)));
+            $firstError = reset($errors);
+            if (is_array($firstError)) {
+                $this->setFailFlash(implode(', ', $firstError));
+            } else {
+                $this->setFailFlash($firstError);
+            }
         }
 
         // Determine which user account we're editing
@@ -1191,7 +1196,9 @@ class UsersController extends Controller
             } elseif ($name) {
                 $title = Craft::t('app', '{user}’s Account', ['user' => $name]);
             } else {
-                $title = Craft::t('app', 'Edit User');
+                $title = Craft::t('app', 'Edit {type}', [
+                    'type' => User::displayName(),
+                ]);
             }
         } else {
             $title = Craft::t('app', 'Create a new user');
@@ -1636,7 +1643,9 @@ JS,
 
             return $this->asModelFailure(
                 $user,
-                Craft::t('app', 'Couldn’t save user.'),
+                Craft::t('app', 'Couldn’t save {type}.', [
+                    'type' => User::lowerDisplayName(),
+                ]),
                 $userVariable
             );
         }
@@ -2111,11 +2120,15 @@ JS,
         $user->inheritorOnDelete = $transferContentTo;
 
         if (!Craft::$app->getElements()->deleteElement($user)) {
-            $this->setFailFlash(Craft::t('app', 'Couldn’t delete the user.'));
+            $this->setFailFlash(Craft::t('app', 'Couldn’t delete {type}.', [
+                'type' => User::lowerDisplayName(),
+            ]));
             return null;
         }
 
-        $this->setSuccessFlash(Craft::t('app', 'User deleted.'));
+        $this->setSuccessFlash(Craft::t('app', '{type} deleted.', [
+            'type' => User::displayName(),
+        ]));
         return $this->redirectToPostedUrl();
     }
 

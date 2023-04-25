@@ -130,6 +130,7 @@ class PluginStore extends Component
         }
 
         // Or use the token from the database otherwise
+        /** @var OauthTokenRecord|null $oauthTokenRecord */
         $oauthTokenRecord = OauthTokenRecord::find()
             ->where(['userId' => $userId])
             ->one();

@@ -38,7 +38,6 @@ use craft\errors\ImageTransformException;
 use craft\errors\VolumeException;
 use craft\events\AssetEvent;
 use craft\events\DefineAssetUrlEvent;
-use craft\events\DefineUrlEvent;
 use craft\events\GenerateTransformEvent;
 use craft\fieldlayoutelements\assets\AltField;
 use craft\fs\Temp;
@@ -139,6 +138,13 @@ class Asset extends Element
      * @since 4.0.0
      */
     public const EVENT_AFTER_GENERATE_TRANSFORM = 'afterGenerateTransform';
+
+    /**
+     * @event DefineAssetUrlEvent The event that is triggered before defining the asset’s URL.
+     * @see getUrl()
+     * @since 4.4.7
+     */
+    public const EVENT_BEFORE_DEFINE_URL = 'beforeDefineUrl';
 
     /**
      * @event DefineAssetUrlEvent The event that is triggered when defining the asset’s URL.
@@ -1534,7 +1540,7 @@ JS;
                 'width' => $this->getWidth(),
                 'height' => $this->getHeight(),
                 'srcset' => $sizes ? $this->getSrcset($sizes) : false,
-                'alt' => $this->alt ?? $this->title,
+                'alt' => $this->getThumbAlt(),
             ]);
         } else {
             $img = null;
@@ -1829,7 +1835,10 @@ JS;
         }
 
         // Give plugins/modules a chance to provide a custom URL
-        $event = new DefineUrlEvent();
+        $event = new DefineAssetUrlEvent([
+            'transform' => $transform,
+            'asset' => $this,
+        ]);
         $this->trigger(self::EVENT_BEFORE_DEFINE_URL, $event);
         $url = $event->url;
 
@@ -1966,6 +1975,11 @@ JS;
             return null;
         }
 
+        $extension = $this->getExtension();
+        if (!Image::canManipulateAsImage($extension)) {
+            return $extension;
+        }
+
         return $this->alt;
     }
 
@@ -2007,7 +2021,7 @@ JS;
         return Html::tag('img', '', [
             'sizes' => "{$thumbSizes[0][0]}px",
             'srcset' => implode(', ', $srcsets),
-            'alt' => $this->alt ?? $this->title,
+            'alt' => $this->getThumbAlt(),
         ]);
     }
 

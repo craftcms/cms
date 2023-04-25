@@ -266,6 +266,10 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
   padding-bottom: var(--xl);
   overflow: visible;
 
+  body.has-debug-toolbar & {
+    padding-bottom: calc(42px + var(--xl));
+  }
+
   li {
     &:not(.has-subnav) > a.sel {
       color: var(--gray-800);
@@ -333,6 +337,10 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
   flex-direction: column;
   align-items: center;
   padding: var(--m) var(--m) var(--xl);
+
+  body.has-debug-toolbar & {
+    padding-bottom: calc(var(--xl) + 42px);
+  }
 }
 
 #app-info {
@@ -735,6 +743,10 @@ li.breadcrumb-toggle-wrapper {
   @include left(8px);
   width: calc(100% - 16px);
   z-index: 101;
+
+  body.has-debug-toolbar & {
+    bottom: 50px;
+  }
 
   @media only screen and (min-width: $minHorizontalUiWidth) {
     width: 350px;

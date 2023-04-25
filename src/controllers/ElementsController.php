@@ -361,22 +361,7 @@ class ElementsController extends Controller
 
         // Site statuses
         if ($canEditMultipleSites) {
-            if ($element->enabled && $element->id) {
-                $siteStatusesQuery = $element::find()
-                    ->drafts($isDraft)
-                    ->provisionalDrafts($element->isProvisionalDraft)
-                    ->revisions($isRevision)
-                    ->id($element->id)
-                    ->siteId($propEditableSiteIds)
-                    ->status(null)
-                    ->asArray()
-                    ->select(['elements_sites.siteId', 'elements_sites.enabled']);
-                $siteStatuses = array_map(fn($enabled) => (bool)$enabled, $siteStatusesQuery->pairs());
-            } else {
-                // If the element isn't saved yet, assume other sites will share its current status
-                $defaultStatus = !$element->id && $element->enabled && $enabledForSite;
-                $siteStatuses = array_combine($propEditableSiteIds, array_map(fn() => $defaultStatus, $propEditableSiteIds));
-            }
+            $siteStatuses = ElementHelper::siteStatusesForElement($element, true);
         } else {
             $siteStatuses = [
                 $element->siteId => $element->enabled,
@@ -412,10 +397,11 @@ class ElementsController extends Controller
             ->prepareScreen(
                 fn(Response $response, string $containerId) => $this->_prepareEditor(
                     $element,
+                    $isUnpublishedDraft,
                     $canSave,
                     $response,
                     $containerId,
-                    fn(?FieldLayoutForm $form) => $this->_editorContent($element, $isUnpublishedDraft, $canSave, $form),
+                    fn(?FieldLayoutForm $form) => $this->_editorContent($element, $canSave, $form),
                     fn(?FieldLayoutForm $form) => $this->_editorSidebar($element, $mergeCanonicalChanges, $canSave),
                     fn(?FieldLayoutForm $form) => [
                         'additionalSites' => $addlEditableSites,
@@ -790,6 +776,7 @@ class ElementsController extends Controller
 
     private function _prepareEditor(
         ElementInterface $element,
+        bool $isUnpublishedDraft,
         bool $canSave,
         Response $response,
         string $containerId,
@@ -801,38 +788,21 @@ class ElementsController extends Controller
         $form = $fieldLayout?->createForm($element, !$canSave, [
             'registerDeltas' => true,
         ]);
+        $contentHtml = $contentFn($form);
+        $sidebarHtml = $sidebarFn($form);
 
-        /** @var Response|CpScreenResponseBehavior $response */
-        $response
-            ->tabs($form?->getTabMenu() ?? [])
-            ->content($contentFn($form))
-            ->sidebar($sidebarFn($form));
-
-        if ($canSave && !$element->getIsRevision()) {
-            $this->view->registerJsWithVars(fn($settingsJs) => <<<JS
-new Craft.ElementEditor($('#$containerId'), $settingsJs);
-JS, [
-                $jsSettingsFn($form),
+        if ($contentHtml === '' && $sidebarHtml !== '') {
+            $contentHtml = Html::tag('div', $sidebarHtml, [
+                'class' => 'details',
             ]);
-        }
-
-        // Give the element a chance to do things here too
-        $element->prepareEditScreen($response, $containerId);
-    }
-
-    private function _editorContent(
-        ElementInterface $element,
-        bool $isUnpublishedDraft,
-        bool $canSave,
-        ?FieldLayoutForm $form,
-    ): string {
-        $components = [];
-
-        if ($form) {
-            $components[] = $form->render();
+            $sidebarHtml = '';
+            /** @var Response|CpScreenResponseBehavior $response */
+            $response->slideoutBodyClass = 'so-full-details';
         }
 
         if ($canSave) {
+            $components = [];
+
             if ($element->id) {
                 $components[] = Html::hiddenInput('elementId', (string)$element->getCanonicalId());
             }
@@ -848,9 +818,35 @@ JS, [
             if ($isUnpublishedDraft && $this->_fresh) {
                 $components[] = Html::hiddenInput('fresh', '1');
             }
+
+            $components[] = $contentHtml;
+            $contentHtml = implode("\n", $components);
         }
 
-        $html = implode("\n", $components);
+        /** @var Response|CpScreenResponseBehavior $response */
+        $response
+            ->tabs($form?->getTabMenu() ?? [])
+            ->content($contentHtml)
+            ->sidebar($sidebarHtml);
+
+        if ($canSave && !$element->getIsRevision()) {
+            $this->view->registerJsWithVars(fn($settingsJs) => <<<JS
+new Craft.ElementEditor($('#$containerId'), $settingsJs);
+JS, [
+                $jsSettingsFn($form),
+            ]);
+        }
+
+        // Give the element a chance to do things here too
+        $element->prepareEditScreen($response, $containerId);
+    }
+
+    private function _editorContent(
+        ElementInterface $element,
+        bool $canSave,
+        ?FieldLayoutForm $form,
+    ): string {
+        $html = $form?->render() ?? '';
 
         // Trigger a defineEditorContent event
         if ($this->hasEventHandlers(self::EVENT_DEFINE_EDITOR_CONTENT)) {
@@ -863,7 +859,7 @@ JS, [
             $html = $event->html;
         }
 
-        return $html;
+        return trim($html);
     }
 
     private function _editorSidebar(
@@ -889,7 +885,7 @@ JS, [
             $components[] = Cp::metadataHtml($element->getMetadata());
         }
 
-        return implode("\n", $components);
+        return trim(implode("\n", $components));
     }
 
     private function _draftNotice(): string
@@ -1618,7 +1614,7 @@ JS, [
                         ->one();
                 }
 
-                if (!isset($element)) {
+                if (!isset($element) || !$this->_canSave($element, $user)) {
                     $element = $elementType::find()
                         ->id($elementId)
                         ->siteId($siteId)

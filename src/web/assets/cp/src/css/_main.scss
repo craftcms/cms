@@ -168,8 +168,17 @@ fieldset:last-child,
 }
 
 .offset-drag-helper {
-  @include margin(-50px, 0, 0, -50px);
-  @include padding(60px, 0, 0, 60px);
+  transition: margin linear 200ms, padding linear 200ms;
+}
+
+body.dragging.ltr .offset-drag-helper {
+  margin: -50px 0 0 -50px;
+  padding: 60px 0 0 60px;
+}
+
+body.dragging.rtl .offset-drag-helper {
+  margin: -50px -50px 0 0;
+  padding: 60px 60px 0 0;
 }
 
 img {
@@ -1650,19 +1659,7 @@ ul.icons {
   cursor: pointer;
   color: var(--medium-text-color);
 
-  input {
-    border: 0;
-    padding: 0;
-    height: 32px;
-    box-shadow: none;
-    background-color: transparent;
-    border: none;
-    cursor: pointer;
-    color: var(--medium-text-color);
-    text-align: center;
-  }
-
-  span {
+  .copytextbtn__icon {
     padding: 0;
     width: 13px;
     background: none;
@@ -1676,7 +1673,7 @@ ul.icons {
     border-color: var(--medium-hairline-color);
     color: var(--text-color);
 
-    input {
+    .copytextbtn__value {
       color: var(--text-color);
     }
   }
@@ -1684,9 +1681,8 @@ ul.icons {
   &.small {
     padding: 0 5px;
 
-    input {
-      font-size: 11px !important;
-      height: 20px;
+    .copytextbtn__value {
+      font-size: calc(11rem / 16);
     }
   }
 }
@@ -2744,6 +2740,7 @@ $elementInnerSpacing: 5px;
   user-select: none;
   font-weight: normal;
   border-radius: var(--small-border-radius);
+  max-width: 100%;
 
   .label {
     .segment:after {
@@ -2828,6 +2825,10 @@ $elementInnerSpacing: 5px;
 
   .label {
     display: inline-block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 100%;
 
     .draft-label {
       display: inline-block;
@@ -4618,29 +4619,22 @@ $min2ColWidth: 400px;
   & > .so-body {
     flex: 1;
     margin: -24px var(--neg-padding) 0;
-    padding: 24px var(--padding);
     overflow: hidden auto;
     position: relative;
 
+    &.so-full-details,
     & > .so-sidebar {
-      position: absolute;
-      top: 0;
-      @include pane();
-      width: 350px;
-      height: 100%;
-      max-width: 100%;
+      background-color: var(--gray-100) !important;
+    }
+
+    &:not(.so-full-details) {
+      padding: 24px var(--padding);
+    }
+
+    & > .so-sidebar,
+    &.so-full-details > .so-content > .details {
       box-sizing: border-box;
       padding: 0 var(--padding) var(--spacing);
-      background-color: var(--gray-100);
-      overflow: hidden auto;
-      z-index: 1;
-
-      body.ltr & {
-        transition: right linear 250ms;
-      }
-      body.rtl & {
-        transition: left linear 250ms;
-      }
 
       & > .preview-thumb-container {
         margin: 0 var(--neg-padding);
@@ -4676,6 +4670,24 @@ $min2ColWidth: 400px;
       .notes {
         padding-top: var(--m);
         padding-bottom: var(--m);
+      }
+    }
+
+    & > .so-sidebar {
+      position: absolute;
+      top: 0;
+      @include pane();
+      width: 350px;
+      height: 100%;
+      max-width: 100%;
+      overflow: hidden auto;
+      z-index: 1;
+
+      body.ltr & {
+        transition: right linear 250ms;
+      }
+      body.rtl & {
+        transition: left linear 250ms;
       }
     }
   }
@@ -5114,6 +5126,10 @@ $min2ColWidth: 400px;
     padding-top: 14px;
     padding-bottom: 14px;
     text-align: center;
+
+    & + .body {
+      height: calc(100% - 48px) !important;
+    }
   }
 
   .body {
@@ -5428,7 +5444,7 @@ $min2ColWidth: 400px;
 /* logout warning/login/elevated session modals */
 .logoutwarningmodalshade,
 .loginmodalshade {
-  z-index: 101;
+  z-index: 1001;
 }
 
 #logoutwarningmodal,
@@ -5440,7 +5456,7 @@ $min2ColWidth: 400px;
 
 #logoutwarningmodal,
 #loginmodal {
-  z-index: 101;
+  z-index: 1001;
 
   #mfa-form {
     .field {

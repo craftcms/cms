@@ -281,7 +281,7 @@ export class AssetIndexer {
       let skippedFilesList = '';
 
       for (const skippedFile of skippedFiles) {
-        skippedFilesList += `<li>${skippedFile}</li>`;
+        skippedFilesList += `<li>${Craft.escapeHtml(skippedFile)}</li>`;
       }
 
       $confirmBody.append(`
@@ -302,7 +302,9 @@ export class AssetIndexer {
       if (missingFolders.length) {
         let missingEntries = '';
         for (const [id, uri] of missingFolders) {
-          missingEntries += `<li><label><input type="checkbox" checked="checked" name="deleteFolder[]" value="${id}"> ${uri}</label></li>`;
+          missingEntries += `<li><label><input type="checkbox" checked="checked" name="deleteFolder[]" value="${id}"> ${Craft.escapeHtml(
+            uri
+          )}</label></li>`;
         }
 
         const translationParams = {items: 'folders'};
@@ -331,7 +333,9 @@ export class AssetIndexer {
       if (missingFiles.length) {
         let missingEntries = '';
         for (const [id, uri] of missingFiles) {
-          missingEntries += `<li><label><input type="checkbox" checked="checked" name="deleteAsset[]" value="${id}"> ${uri}</label></li>`;
+          missingEntries += `<li><label><input type="checkbox" checked="checked" name="deleteAsset[]" value="${id}"> ${Craft.escapeHtml(
+            uri
+          )}</label></li>`;
         }
 
         const translationParams = {items: 'files'};

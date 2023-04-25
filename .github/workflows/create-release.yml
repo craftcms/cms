@@ -1,0 +1,77 @@
+name: Create Release
+run-name: Create release for ${{ github.event.client_payload.version }}
+
+on:
+  repository_dispatch:
+    types:
+      - craftcms/new-release
+
+env:
+  PROJECT_DIRECTORY: 'craftcms'
+  BUNDLE_ZIP_FILENAME: 'CraftCMS-${{ github.event.client_payload.version }}.zip'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: 'Set up PHP for Craft 3'
+        uses: shivammathur/setup-php@2.23.0
+        if: ${{ startsWith(github.event.client_payload.version, '3.') }}
+        with:
+          extensions: bcmath, curl, dom, json, intl, mbstring, mcrypt, openssl, pcre, pdo, zip
+          php-version: 7.2.5
+          tools: composer:v2
+
+      - name: 'Set up PHP for Craft 4'
+        uses: shivammathur/setup-php@2.23.0
+        if: ${{ startsWith(github.event.client_payload.version, '4.') }}
+        with:
+          extensions: bcmath, curl, dom, json, intl, mbstring, mcrypt, openssl, pcre, pdo, zip
+          php-version: 8.0.2
+          tools: composer:v2
+
+      - name: 'Initialize Craft 3 starter project'
+        if: ${{ startsWith(github.event.client_payload.version, '3.') }}
+        run: 'composer create-project craftcms/craft=^1 ${{ env.PROJECT_DIRECTORY }}'
+
+      - name: 'Initialize Craft 4 starter project'
+        if: ${{ startsWith(github.event.client_payload.version, '4.') }}
+        run: 'composer create-project craftcms/craft ${{ env.PROJECT_DIRECTORY }}'
+
+      - name: 'Install specific Craft version'
+        working-directory: ${{ env.PROJECT_DIRECTORY }}
+        run: 'composer require craftcms/cms:${{ github.event.client_payload.version }} --update-with-dependencies'
+
+      - name: 'Update Craft 3 .env'
+        if: ${{ startsWith(github.event.client_payload.version, '3.') }}
+        working-directory: ${{ env.PROJECT_DIRECTORY }}
+        run: |
+          sed -i 's/SECURITY_KEY=.*/SECURITY_KEY=/g' .env
+          sed -i 's/APP_ID=.*/APP_ID=/g' .env
+
+      - name: 'Update Craft 4 .env'
+        if: ${{ startsWith(github.event.client_payload.version, '4.') }}
+        working-directory: ${{ env.PROJECT_DIRECTORY }}
+        run: |
+          sed -i 's/CRAFT_SECURITY_KEY=.*/CRAFT_SECURITY_KEY=/g' .env
+          sed -i 's/CRAFT_APP_ID=.*/CRAFT_APP_ID=/g' .env
+
+      - name: 'Create zip'
+        working-directory: ${{ env.PROJECT_DIRECTORY }}
+        run: 'zip -r ../${{ env.BUNDLE_ZIP_FILENAME }} ./'
+
+      - name: 'Create release'
+        uses: ncipollo/release-action@v1
+        with:
+          allowUpdates: true
+          artifacts: ${{ env.BUNDLE_ZIP_FILENAME }}
+          body: ${{ github.event.client_payload.notes }}
+          makeLatest: ${{ github.event.client_payload.latest }}
+          name: ${{ github.event.client_payload.version }}
+          prerelease: ${{ github.event.client_payload.prerelease }}
+          tag: ${{ github.event.client_payload.tag }}

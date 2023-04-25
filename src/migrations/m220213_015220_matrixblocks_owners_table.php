@@ -28,14 +28,32 @@ class m220213_015220_matrixblocks_owners_table extends Migration
         $this->addForeignKey(null, Table::MATRIXBLOCKS_OWNERS, ['ownerId'], Table::ELEMENTS, ['id'], 'CASCADE', null);
 
         $blocksTable = Table::MATRIXBLOCKS;
+        $elementsTable = Table::ELEMENTS;
         $ownersTable = Table::MATRIXBLOCKS_OWNERS;
+
+        // Delete orphaned block rows
+        if ($this->db->getIsMysql()) {
+            $this->execute(<<<SQL
+DELETE [[b]].* FROM $blocksTable [[b]]
+LEFT JOIN $elementsTable [[e]] ON [[e.id]] = [[b.ownerId]]
+WHERE [[e.id]] IS NULL
+SQL);
+        } else {
+            $this->execute(<<<SQL
+DELETE FROM $blocksTable
+USING $blocksTable [[b]]
+LEFT JOIN $elementsTable [[e]] ON [[e.id]] = [[b.ownerId]]
+WHERE
+  $blocksTable.[[id]] = [[b.id]] AND
+  [[e.id]] IS NULL
+SQL);
+        }
 
         $this->execute(<<<SQL
 INSERT INTO $ownersTable ([[blockId]], [[ownerId]], [[sortOrder]]) 
 SELECT [[id]], [[ownerId]], COALESCE([[sortOrder]], 1) 
 FROM $blocksTable
-SQL
-        );
+SQL);
 
         // drop sortOrder
         $this->dropIndexIfExists(Table::MATRIXBLOCKS, ['sortOrder'], false);
