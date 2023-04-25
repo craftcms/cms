@@ -970,7 +970,8 @@ JS, [
                     ->revisions(null)
                     ->provisionalDrafts(null)
                     ->status(null)
-                    ->siteId($this->targetSiteId($element))
+                    ->site('*')
+                    ->unique()
                     ->all();
 
                 // Fill in any gaps
