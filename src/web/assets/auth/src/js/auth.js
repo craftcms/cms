@@ -3,7 +3,7 @@ import {browserSupportsWebAuthn} from '@simplewebauthn/browser';
 (function ($) {
   /** global: Craft */
   /** global: Garnish */
-  Craft.Mfa = Garnish.Base.extend(
+  Craft.Auth = Garnish.Base.extend(
     {
       $mfaLoginFormContainer: null,
       $mfaSetupFormContainer: null,
@@ -26,7 +26,7 @@ import {browserSupportsWebAuthn} from '@simplewebauthn/browser';
           'button.mfa-view-setup'
         );
 
-        this.setSettings(settings, Craft.Mfa.defaults);
+        this.setSettings(settings, Craft.Auth.defaults);
 
         this.addListener(
           this.$alternativeMfaLink,

@@ -52,7 +52,7 @@
 
         <h3>{{ 'Step {number}:'|t('app', {number: 3}) }} {{ 'Verify with the code from the app.'|t('app') }}</h3>
         <p>{{ 'Please enter the code from the app to verify your setup. Please note that the code is time sensitive.'|t('app') }}</p>
-        {% include '_components/mfa/googleauthenticator/verification.twig' with {
+        {% include '_components/auth/googleauthenticator/verification.twig' with {
             'user': user,
             'fields' : fields,
             'currentMethod' : currentMethod

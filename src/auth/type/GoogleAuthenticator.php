@@ -5,15 +5,15 @@
  * @license https://craftcms.github.io/license/
  */
 
-namespace craft\mfa\type;
+namespace craft\auth\type;
 
 use BaconQrCode\Renderer\Image\SvgImageBackEnd;
 use BaconQrCode\Renderer\ImageRenderer;
 use BaconQrCode\Renderer\RendererStyle\RendererStyle;
 use BaconQrCode\Writer;
 use Craft;
+use craft\auth\ConfigurableMfaType;
 use craft\elements\User;
-use craft\mfa\ConfigurableMfaType;
 use craft\records\Authenticator as AuthenticatorRecord;
 use craft\web\View;
 use PragmaRX\Google2FA\Google2FA;
@@ -81,7 +81,7 @@ class GoogleAuthenticator extends ConfigurableMfaType
             $view = Craft::$app->getView();
             $view->templateMode = View::TEMPLATE_MODE_CP;
             $formHtml = Craft::$app->getView()->renderTemplate(
-                '_components/mfa/googleauthenticator/verification.twig',
+                '_components/auth/googleauthenticator/verification.twig',
                 $data
             );
         } else {
@@ -121,7 +121,7 @@ class GoogleAuthenticator extends ConfigurableMfaType
         }
 
         $html = Craft::$app->getView()->renderTemplate(
-            '_components/mfa/googleauthenticator/setup.twig',
+            '_components/auth/googleauthenticator/setup.twig',
             $data,
             View::TEMPLATE_MODE_CP
         );

@@ -5,7 +5,7 @@
  * @license https://craftcms.github.io/license/
  */
 
-namespace craft\mfa;
+namespace craft\auth;
 
 use Craft;
 use craft\base\mfa\BaseMfaType;
@@ -32,7 +32,7 @@ abstract class ConfigurableMfaType extends BaseMfaType implements ConfigurableMf
 
         if ($withInto) {
             $view = Craft::$app->getView();
-            $footer = $view->renderTemplate('_components/mfa/slideout-footer.twig');
+            $footer = $view->renderTemplate('_components/auth/slideout-footer.twig');
 
             $form .= $footer;
         }

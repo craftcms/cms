@@ -5,7 +5,7 @@
  * @license https://craftcms.github.io/license/
  */
 
-namespace craft\mfa;
+namespace craft\auth;
 
 use craft\elements\User;
 

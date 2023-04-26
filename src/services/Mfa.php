@@ -8,12 +8,12 @@
 namespace craft\services;
 
 use Craft;
+use craft\auth\type\EmailCode;
+use craft\auth\type\GoogleAuthenticator;
+use craft\auth\type\WebAuthn;
 use craft\base\mfa\BaseMfaType;
 use craft\elements\User;
 use craft\events\MfaTypeEvent;
-use craft\mfa\type\EmailCode;
-use craft\mfa\type\GoogleAuthenticator;
-use craft\mfa\type\WebAuthn;
 use yii\base\Component;
 use yii\base\Exception;
 

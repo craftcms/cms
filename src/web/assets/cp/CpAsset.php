@@ -8,6 +8,7 @@
 namespace craft\web\assets\cp;
 
 use Craft;
+use craft\auth\type\WebAuthn;
 use craft\base\ElementInterface;
 use craft\base\FieldInterface;
 use craft\config\GeneralConfig;
@@ -20,7 +21,6 @@ use craft\helpers\Json;
 use craft\helpers\StringHelper;
 use craft\helpers\UrlHelper;
 use craft\i18n\Locale;
-use craft\mfa\type\WebAuthn;
 use craft\models\Section;
 use craft\services\Sites;
 use craft\web\AssetBundle;

@@ -8,8 +8,8 @@
 namespace craft\controllers;
 
 use Craft;
-use craft\mfa\ConfigurableMfaInterface;
-use craft\mfa\type\WebAuthn;
+use craft\auth\ConfigurableMfaInterface;
+use craft\auth\type\WebAuthn;
 use craft\web\Controller;
 use craft\web\View;
 use yii\base\Exception;

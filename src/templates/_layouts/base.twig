@@ -19,7 +19,7 @@
 
 {% do view.registerAssetBundle('craft\\web\\assets\\cp\\CpAsset') -%}
 {% set cpAssetUrl = view.getAssetManager().getPublishedUrl('@app/web/assets/cp/dist', true) -%}
-{% do view.registerAssetBundle("craft\\web\\assets\\mfa\\MfaAsset") %}
+{% do view.registerAssetBundle("craft\\web\\assets\\auth\\AuthAsset") %}
 
 {% hook "cp.layouts.base" -%}
 

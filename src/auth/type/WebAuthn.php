@@ -5,14 +5,14 @@
  * @license https://craftcms.github.io/license/
  */
 
-namespace craft\mfa\type;
+namespace craft\auth\type;
 
 use Base64Url\Base64Url;
 use Craft;
+use craft\auth\ConfigurableMfaType;
+use craft\auth\webauthn\CredentialRepository;
 use craft\elements\User;
 use craft\helpers\Json;
-use craft\mfa\ConfigurableMfaType;
-use craft\mfa\webauthn\CredentialRepository;
 use craft\records\WebAuthn as WebAuthnRecord;
 use craft\web\twig\variables\Rebrand;
 use craft\web\View;
@@ -109,7 +109,7 @@ class WebAuthn extends ConfigurableMfaType
         $data['credentials'] = $credentials;
 
         $html = Craft::$app->getView()->renderTemplate(
-            '_components/mfa/webauthn/setup.twig',
+            '_components/auth/webauthn/setup.twig',
             $data,
             View::TEMPLATE_MODE_CP
         );

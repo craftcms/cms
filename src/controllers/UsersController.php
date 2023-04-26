@@ -8,6 +8,7 @@
 namespace craft\controllers;
 
 use Craft;
+use craft\auth\type\WebAuthn;
 use craft\base\Element;
 use craft\base\NameTrait;
 use craft\elements\Address;
@@ -34,7 +35,6 @@ use craft\helpers\Template;
 use craft\helpers\UrlHelper;
 use craft\helpers\User as UserHelper;
 use craft\i18n\Locale;
-use craft\mfa\type\WebAuthn;
 use craft\models\UserGroup;
 use craft\services\Users;
 use craft\web\Application;

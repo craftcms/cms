@@ -5,7 +5,7 @@
  * @license https://craftcms.github.io/license/
  */
 
-namespace craft\mfa\type;
+namespace craft\auth\type;
 
 use Craft;
 use craft\base\mfa\BaseMfaType;
@@ -73,7 +73,7 @@ class EmailCode extends BaseMfaType
         $view = Craft::$app->getView();
         $formHtml = $view->renderTemplate(
 
-            '_components/mfa/emailcode/verification.twig',
+            '_components/auth/emailcode/verification.twig',
             $data,
             View::TEMPLATE_MODE_CP
         );

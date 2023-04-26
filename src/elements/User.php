@@ -8,6 +8,8 @@
 namespace craft\elements;
 
 use Craft;
+use craft\auth\ConfigurableMfaInterface;
+use craft\auth\type\WebAuthn;
 use craft\base\Element;
 use craft\base\mfa\BaseMfaType;
 use craft\base\NameTrait;
@@ -34,8 +36,6 @@ use craft\helpers\StringHelper;
 use craft\helpers\UrlHelper;
 use craft\i18n\Formatter;
 use craft\i18n\Locale;
-use craft\mfa\ConfigurableMfaInterface;
-use craft\mfa\type\WebAuthn;
 use craft\models\FieldLayout;
 use craft\models\UserGroup;
 use craft\records\User as UserRecord;
