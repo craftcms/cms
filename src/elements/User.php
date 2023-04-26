@@ -8,10 +8,10 @@
 namespace craft\elements;
 
 use Craft;
-use craft\auth\ConfigurableMfaInterface;
+use craft\auth\Configurable2faInterface;
 use craft\auth\type\WebAuthn;
+use craft\base\auth\Base2faType;
 use craft\base\Element;
-use craft\base\mfa\BaseMfaType;
 use craft\base\NameTrait;
 use craft\db\Query;
 use craft\db\Table;
@@ -1973,11 +1973,11 @@ class User extends Element implements IdentityInterface
     /**
      * Return default MFA method
      *
-     * @return BaseMfaType
+     * @return Base2faType
      */
-    public function getDefaultMfaType(): BaseMfaType
+    public function getDefault2faType(): Base2faType
     {
-        $allMfaTypes = Craft::$app->getMfa()->getAllMfaTypes();
+        $allMfaTypes = Craft::$app->getAuth()->getAll2faTypes();
 
         if (empty($allMfaTypes)) {
             throw new InvalidValueException('No registered MFA types.');
@@ -1994,13 +1994,13 @@ class User extends Element implements IdentityInterface
      */
     public function isMfaTypeSetup(string $mfaClass): bool
     {
-        $mfaType = new $mfaClass();
+        $auth2faType = new $mfaClass();
 
-        if (!($mfaType instanceof ConfigurableMfaInterface)) {
+        if (!($auth2faType instanceof Configurable2faInterface)) {
             return true;
         }
 
-        return $mfaType->isSetupForUser($this);
+        return $auth2faType->isSetupForUser($this);
     }
 
     /**

@@ -8,7 +8,7 @@
 namespace craft\controllers;
 
 use Craft;
-use craft\auth\ConfigurableMfaInterface;
+use craft\auth\Configurable2faInterface;
 use craft\auth\type\WebAuthn;
 use craft\web\Controller;
 use craft\web\View;
@@ -18,12 +18,12 @@ use yii\web\Response;
 /** @noinspection ClassOverridesFieldOfSuperClassInspection */
 
 /**
- * The AuthenticationController class is a controller that handles various MFA-related actions.
+ * The AuthController class is a controller that handles various 2FA-related actions.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.5.0
  */
-class MfaController extends Controller
+class AuthController extends Controller
 {
     /**
      * @inheritdoc
@@ -31,19 +31,19 @@ class MfaController extends Controller
     protected array|bool|int $allowAnonymous = true;
 
     /**
-     * Get all available alternative MFA types for logging in.
+     * Get all available alternative 2FA types for logging in.
      *
      * @return ?Response
      * @throws \yii\web\BadRequestHttpException
      */
-    public function actionFetchAlternativeMfaTypes(): ?Response
+    public function actionFetchAlternative2faTypes(): ?Response
     {
         if (!$this->request->getIsPost()) {
             return null;
         }
 
         $currentMethod = Craft::$app->getRequest()->getBodyParam('currentMethod');
-        $alternativeTypes = Craft::$app->getMfa()->getAlternativeMfaTypes($currentMethod);
+        $alternativeTypes = Craft::$app->getAuth()->getAlternative2faTypes($currentMethod);
 
         if ($this->request->getAcceptsJson()) {
             return $this->asSuccess(
@@ -59,14 +59,14 @@ class MfaController extends Controller
     }
 
     /**
-     * Return HTML for selected alternative MFA type
+     * Return HTML for selected alternative 2FA type
      *
      * @return Response|null
      * @throws \craft\errors\MissingComponentException
      * @throws \yii\base\Exception
      * @throws \yii\web\BadRequestHttpException
      */
-    public function actionLoadAlternativeMfaType(): ?Response
+    public function actionLoadAlternative2faType(): ?Response
     {
         if (!$this->request->getIsPost()) {
             return null;
@@ -77,28 +77,28 @@ class MfaController extends Controller
             return null;
         }
 
-        $mfaForm = (new $selectedMethod())->getInputHtml();
+        $auth2faForm = (new $selectedMethod())->getInputHtml();
 
         if ($this->request->getAcceptsJson()) {
-            if (empty($mfaForm)) {
+            if (empty($auth2faForm)) {
                 return $this->asFailure(Craft::t('app', 'Something went wrong. Please start again.'));
             }
 
             return $this->asSuccess(
-                data: ['mfaForm' => $mfaForm],
+                data: ['auth2faForm' => $auth2faForm],
             );
         }
 
         $template = Craft::$app->getRequest()->getBodyParam('template');
 
         return $this->renderTemplate($template, [
-            'mfa' => true,
-            'mfaForm' => $mfaForm,
+            'auth2fa' => true,
+            'auth2faForm' => $auth2faForm,
         ], View::TEMPLATE_MODE_SITE);
     }
 
     /**
-     * Remove MFA Type setup from the database
+     * Remove 2FA Type setup from the database
      *
      * @return Response|null
      * @throws \Throwable
@@ -141,7 +141,7 @@ class MfaController extends Controller
     }
 
     /**
-     * Save MFA type setup
+     * Save 2FA type setup
      *
      * @return Response|null
      * @throws Exception
@@ -154,10 +154,10 @@ class MfaController extends Controller
             return null;
         }
 
-        $mfaFields = Craft::$app->request->getRequiredBodyParam('mfaFields');
+        $auth2faFields = Craft::$app->request->getRequiredBodyParam('auth2faFields');
         $currentMethod = Craft::$app->request->getRequiredBodyParam('currentMethod');
 
-        if (empty($mfaFields)) {
+        if (empty($auth2faFields)) {
             return $this->asFailure(Craft::t('app', 'Please fill out the form.'));
         }
 
@@ -165,9 +165,9 @@ class MfaController extends Controller
             return $this->asFailure(Craft::t('app', 'Something went wrong.'));
         }
 
-        $mfaService = Craft::$app->getMfa();
+        $authService = Craft::$app->getAuth();
 
-        $verified = $mfaService->verify($mfaFields, $currentMethod);
+        $verified = $authService->verify($auth2faFields, $currentMethod);
 
         if ($this->request->getAcceptsJson()) {
             if ($verified === false) {
@@ -187,7 +187,7 @@ class MfaController extends Controller
     }
 
     /**
-     * Returns MFA setup HTML for the slideout. Only triggered when editing your own account
+     * Returns 2FA setup HTML for the slideout. Only triggered when editing your own account
      *
      * @return Response|null
      * @throws \Throwable
@@ -209,12 +209,12 @@ class MfaController extends Controller
             return null;
         }
 
-        $mfaType = new $selectedMethod();
-        if (!($mfaType instanceof ConfigurableMfaInterface)) {
-            throw new Exception('This MFA type can’t be configured.');
+        $auth2faType = new $selectedMethod();
+        if (!($auth2faType instanceof Configurable2faInterface)) {
+            throw new Exception('This 2FA type can’t be configured.');
         }
 
-        $html = $mfaType->getSetupFormHtml('',true, $user);
+        $html = $auth2faType->getSetupFormHtml('',true, $user);
 
         return $this->asJson(['html' => $html]);
     }

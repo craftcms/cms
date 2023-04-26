@@ -28,7 +28,7 @@ Craft.AuthManager = Garnish.Base.extend(
     loginWithPassword: true,
     loginWithSecurityKey: false,
     mfaFlow: false,
-    mfa: null,
+    auth2fa: null,
     $alternativeLoginLink: null,
 
     /**
@@ -289,7 +289,7 @@ Craft.AuthManager = Garnish.Base.extend(
             this.loginWithSecurityKey = false;
           }
           this.mfaFlow = false;
-          this.mfa = null;
+          this.auth2fa = null;
         }
 
         var $form = $('<form id="loginmodal" class="modal alert fitted"/>'),
@@ -546,14 +546,20 @@ Craft.AuthManager = Garnish.Base.extend(
 
       Craft.sendActionRequest('POST', 'users/login', {data})
         .then((response) => {
-          if (response.data.mfa !== undefined && response.data.mfa == true) {
+          if (
+            response.data.auth2fa !== undefined &&
+            response.data.auth2fa == true
+          ) {
             this.mfaFlow = true;
-            this.mfa = new Craft.Auth2fa();
+            this.auth2fa = new Craft.Auth2fa();
             if (this.$alternativeLoginLink !== null) {
               this.$alternativeLoginLink.remove();
             }
             $('.inputcontainer').remove();
-            this.mfa.showMfaForm(response.data.mfaForm, $('#loginmodal'));
+            this.auth2fa.showMfaForm(
+              response.data.auth2faForm,
+              $('#loginmodal')
+            );
             this.loginModal.updateSizeAndPosition();
           } else {
             this.closeModal();

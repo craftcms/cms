@@ -12,13 +12,13 @@ use BaconQrCode\Renderer\ImageRenderer;
 use BaconQrCode\Renderer\RendererStyle\RendererStyle;
 use BaconQrCode\Writer;
 use Craft;
-use craft\auth\ConfigurableMfaType;
+use craft\auth\Configurable2faType;
 use craft\elements\User;
 use craft\records\Authenticator as AuthenticatorRecord;
 use craft\web\View;
 use PragmaRX\Google2FA\Google2FA;
 
-class GoogleAuthenticator extends ConfigurableMfaType
+class GoogleAuthenticator extends Configurable2faType
 {
     /**
      * The key to store the authenticator secret in session, while setting up this method.
@@ -64,7 +64,7 @@ class GoogleAuthenticator extends ConfigurableMfaType
      */
     public function getInputHtml(string $html = '', array $options = []): string
     {
-        $user = Craft::$app->getMfa()->getUserForMfa();
+        $user = Craft::$app->getAuth()->getUserFor2fa();
 
         if ($user === null) {
             return '';
@@ -98,7 +98,7 @@ class GoogleAuthenticator extends ConfigurableMfaType
     public function getSetupFormHtml(string $html = '', bool $withInto = false, ?User $user = null): string
     {
         if ($user === null) {
-            $user = Craft::$app->getMfa()->getUserForMfa();
+            $user = Craft::$app->getAuth()->getUserFor2fa();
         }
 
         if ($user === null) {
@@ -153,7 +153,7 @@ class GoogleAuthenticator extends ConfigurableMfaType
      */
     public function verify(array $data): bool
     {
-        $user = Craft::$app->getMfa()->getUserForMfa();
+        $user = Craft::$app->getAuth()->getUserFor2fa();
 
         if ($user === null) {
             return false;
@@ -194,7 +194,7 @@ class GoogleAuthenticator extends ConfigurableMfaType
     // -------------------------------------------------------------------------
 
     /**
-     * Get MFA secret key. If one doesn't exist, generate and store it in the DB.
+     * Get 2FA secret key. If one doesn't exist, generate and store it in the DB.
      *
      * @param User $user
      * @return string
@@ -217,7 +217,7 @@ class GoogleAuthenticator extends ConfigurableMfaType
     }
 
     /**
-     * Generate the QR code for initial setup of this MFA method
+     * Generate the QR code for initial setup of this 2FA method
      *
      * @param User $user
      * @return string
@@ -239,7 +239,7 @@ class GoogleAuthenticator extends ConfigurableMfaType
     }
 
     /**
-     * Return user's MFA secret from the database.
+     * Return user's 2FA secret from the database.
      *
      * @param int $userId
      * @return string|null
@@ -247,15 +247,15 @@ class GoogleAuthenticator extends ConfigurableMfaType
     private static function _getSecretFromDb(int $userId): ?string
     {
         $record = AuthenticatorRecord::find()
-            ->select(['mfaSecret'])
+            ->select(['auth2faSecret'])
             ->where(['userId' => $userId])
             ->one();
 
-        return $record ? $record['mfaSecret'] : null;
+        return $record ? $record['auth2faSecret'] : null;
     }
 
     /**
-     * Store obtained MFA secret in the DB against userId
+     * Store obtained 2FA secret in the DB against userId
      *
      * @param int $userId
      * @param string $secret
@@ -273,7 +273,7 @@ class GoogleAuthenticator extends ConfigurableMfaType
         }
 
         /** @var AuthenticatorRecord $record */
-        $record->mfaSecret = $secret;
+        $record->auth2faSecret = $secret;
         $record->save();
     }
 }

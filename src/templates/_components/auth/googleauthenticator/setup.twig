@@ -4,7 +4,7 @@
     {% if currentUser is defined and currentUser is not empty %}
         {% set user = currentUser %}
     {% else %}
-        {% set user = craft.app.mfa.getMfaUserFromSession() %}
+        {% set user = craft.app.auth.get2faUserFromSession() %}
     {% endif %}
 {% endif %}
 

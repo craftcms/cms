@@ -8,12 +8,12 @@
 namespace craft\auth\type;
 
 use Craft;
-use craft\base\mfa\BaseMfaType;
+use craft\base\auth\Base2faType;
 use craft\elements\User;
 use craft\helpers\StringHelper;
 use craft\web\View;
 
-class EmailCode extends BaseMfaType
+class EmailCode extends Base2faType
 {
     /**
      * @inheritdoc
@@ -56,7 +56,7 @@ class EmailCode extends BaseMfaType
      */
     public function getInputHtml(string $html = '', array $options = []): string
     {
-        $user = Craft::$app->getMfa()->getUserForMfa();
+        $user = Craft::$app->getAuth()->getUserFor2fa();
 
         if ($user === null) {
             return '';
@@ -89,7 +89,7 @@ class EmailCode extends BaseMfaType
      */
     public function verify(array $data): bool
     {
-        $user = Craft::$app->getMfa()->getUserForMfa();
+        $user = Craft::$app->getAuth()->getUserFor2fa();
 
         if ($user === null) {
             return false;

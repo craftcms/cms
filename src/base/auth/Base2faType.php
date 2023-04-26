@@ -5,16 +5,15 @@
  * @license https://craftcms.github.io/license/
  */
 
-namespace craft\base\mfa;
+namespace craft\base\auth;
 
 use craft\base\Component;
 use craft\helpers\Html;
 
 /**
  *
- * @property-read null|array $fields
  */
-abstract class BaseMfaType extends Component implements BaseMfaInterface
+abstract class Base2faType extends Component implements Base2faInterface
 {
     /**
      * @var bool
@@ -24,7 +23,7 @@ abstract class BaseMfaType extends Component implements BaseMfaInterface
     /**
      * @var string
      */
-    private string $_fieldsNamespace = 'mfaFields';
+    private string $_fieldsNamespace = 'auth2faFields';
 
     /**
      * @inheritdoc
@@ -55,7 +54,7 @@ abstract class BaseMfaType extends Component implements BaseMfaInterface
         return Html::tag('div', $html, [
             'id' => 'verifyContainer',
             'data' => [
-                'mfa-type' => static::class,
+                '2fa-type' => static::class,
             ] + $options,
         ]);
     }

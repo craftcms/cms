@@ -22,7 +22,7 @@ import {browserSupportsWebAuthn} from '@simplewebauthn/browser';
     validateOnInput: false,
 
     mfaFlow: false,
-    mfa: null,
+    auth2fa: null,
 
     init: function () {
       this.$loginDiv = $('#login');
@@ -187,7 +187,7 @@ import {browserSupportsWebAuthn} from '@simplewebauthn/browser';
             this.$forgotPasswordLink.show();
             this.$rememberMeCheckbox.parents('.field').show();
             this.$submitBtn.updateMessages(Craft.t('app', 'Sign in'));
-            this.mfa = new Craft.Auth2fa();
+            this.auth2fa = new Craft.Auth2fa();
           }
         })
         .catch(({response}) => {
@@ -261,12 +261,15 @@ import {browserSupportsWebAuthn} from '@simplewebauthn/browser';
 
       Craft.sendActionRequest('POST', 'users/login', {data})
         .then((response) => {
-          if (response.data.mfa !== undefined && response.data.mfa == true) {
+          if (
+            response.data.auth2fa !== undefined &&
+            response.data.auth2fa == true
+          ) {
             this.mfaFlow = true;
             if (this.$alternativeLoginLink !== null) {
               this.$alternativeLoginLink.remove();
             }
-            this.mfa.showMfaForm(response.data.mfaForm, this.$loginDiv);
+            this.auth2fa.showMfaForm(response.data.auth2faForm, this.$loginDiv);
             this.$submitBtn.endBusyState();
           } else {
             this.$submitBtn.successEvent();
@@ -338,7 +341,7 @@ import {browserSupportsWebAuthn} from '@simplewebauthn/browser';
         this.$alternativeLoginLink.text(
           Craft.t('app', 'Use a security key to login')
         );
-        this.mfa = new Craft.Auth2fa();
+        this.auth2fa = new Craft.Auth2fa();
       } else if (this.loginWithSecurityKey) {
         this.$submitBtn.updateMessages(
           Craft.t('app', 'Sign in using a security key')

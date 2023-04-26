@@ -9,7 +9,7 @@ namespace craft\auth\type;
 
 use Base64Url\Base64Url;
 use Craft;
-use craft\auth\ConfigurableMfaType;
+use craft\auth\Configurable2faType;
 use craft\auth\webauthn\CredentialRepository;
 use craft\elements\User;
 use craft\helpers\Json;
@@ -25,7 +25,7 @@ use Webauthn\PublicKeyCredentialSource;
 use Webauthn\PublicKeyCredentialUserEntity;
 use Webauthn\Server;
 
-class WebAuthn extends ConfigurableMfaType
+class WebAuthn extends Configurable2faType
 {
     /**
      * The key for session to use for storing the WebAuthn credential options.

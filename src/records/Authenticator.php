@@ -16,7 +16,7 @@ use yii\db\ActiveQueryInterface;
  *
  * @property int $id ID
  * @property int $userId Volume ID
- * @property string $mfaSecret MFA secret
+ * @property string $auth2faSecret MFA secret
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.5.0
  */
@@ -37,8 +37,8 @@ class Authenticator extends ActiveRecord
     public function rules(): array
     {
         return [
-            [['userId', 'mfaSecret'], 'required'],
-            [['mfaSecret'], 'string', 'max' => 32],
+            [['userId', 'auth2faSecret'], 'required'],
+            [['auth2faSecret'], 'string', 'max' => 32],
         ];
     }
 

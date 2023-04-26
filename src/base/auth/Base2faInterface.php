@@ -5,26 +5,26 @@
  * @license https://craftcms.github.io/license/
  */
 
-namespace craft\base\mfa;
+namespace craft\base\auth;
 
-interface BaseMfaInterface
+interface Base2faInterface
 {
     /**
-     * Name of the MFA authentication method
+     * Name of the 2FA authentication method
      *
      * @return string
      */
     public static function displayName(): string;
 
     /**
-     * Description of the MFA authentication method
+     * Description of the 2FA authentication method
      *
      * @return string
      */
     public static function getDescription(): string;
 
     /**
-     * Get html for MFA verification inputs
+     * Get html for 2FA verification inputs
      *
      * @param string $html
      * @param array $options
@@ -40,14 +40,14 @@ interface BaseMfaInterface
     public function getNamespacedFields(): array;
 
     /**
-     * Returns the array of field names used in the MFA verification form
+     * Returns the array of field names used in the 2FA verification form
      *
      * @return array|null
      */
     public function getFields(): ?array;
 
     /**
-     * Verify provided MFA code
+     * Verify provided 2FA code
      *
      * @param array $data
      * @return bool

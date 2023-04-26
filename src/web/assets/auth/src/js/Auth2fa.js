@@ -36,8 +36,8 @@ import {browserSupportsWebAuthn} from '@simplewebauthn/browser';
         this.addListener(this.$viewSetupBtns, 'click', 'onViewSetupBtnClick');
       },
 
-      showMfaForm: function (mfaForm, $loginDiv) {
-        this.$mfaLoginFormContainer.html('').append(mfaForm);
+      showMfaForm: function (auth2faForm, $loginDiv) {
+        this.$mfaLoginFormContainer.html('').append(auth2faForm);
         $loginDiv.addClass('mfa');
         $('#login-form-buttons').hide();
         const $submitBtn = this.$mfaLoginFormContainer.find('.submit');
@@ -47,7 +47,7 @@ import {browserSupportsWebAuthn} from '@simplewebauthn/browser';
       },
 
       getCurrentMfaType: function ($container) {
-        let currentMethod = $container.attr('data-mfa-type');
+        let currentMethod = $container.attr('data-2fa-type');
 
         if (currentMethod === undefined) {
           currentMethod = null;
@@ -114,7 +114,7 @@ import {browserSupportsWebAuthn} from '@simplewebauthn/browser';
         ev.preventDefault();
 
         let currentMethod = this.getCurrentMfaType(
-          this.slideout.$container.find('#mfa-setup-form')
+          this.slideout.$container.find('#setup-form-2fa')
         );
 
         if (currentMethod === undefined) {
@@ -152,11 +152,11 @@ import {browserSupportsWebAuthn} from '@simplewebauthn/browser';
         $submitBtn.addClass('loading');
 
         let data = {
-          mfaFields: {},
+          auth2faFields: {},
           currentMethod: null,
         };
 
-        data.mfaFields = this._getMfaFields(this.slideout.$container);
+        data.auth2faFields = this._getMfaFields(this.slideout.$container);
         data.currentMethod = this._getCurrentMethodInput(
           this.slideout.$container
         );
@@ -197,7 +197,7 @@ import {browserSupportsWebAuthn} from '@simplewebauthn/browser';
       },
 
       onAlternativeMfaTypeClick: function (event) {
-        // get current authenticator class via data-mfa-type
+        // get current authenticator class via data-2fa-type
         let currentMethod = this.getCurrentMfaType(
           this.$mfaLoginFormContainer.find('#verifyContainer')
         );
@@ -276,10 +276,10 @@ import {browserSupportsWebAuthn} from '@simplewebauthn/browser';
           data,
         })
           .then((response) => {
-            if (response.data.mfaForm !== undefined) {
+            if (response.data.auth2faForm !== undefined) {
               this.$mfaLoginFormContainer
                 .html('')
-                .append(response.data.mfaForm);
+                .append(response.data.auth2faForm);
               this.$alternativeMfaTypesContainer.html('');
               this.$alternativeMfaLink.show();
               this.onSubmitResponse();
@@ -291,16 +291,16 @@ import {browserSupportsWebAuthn} from '@simplewebauthn/browser';
       },
 
       _getMfaFields: function ($container) {
-        let mfaFields = {};
+        let auth2faFields = {};
 
         $container
-          .find('input[name^="mfaFields[')
+          .find('input[name^="auth2faFields[')
           .each(function (index, element) {
             let name = $(element).attr('id');
-            mfaFields[name] = $(element).val();
+            auth2faFields[name] = $(element).val();
           });
 
-        return mfaFields;
+        return auth2faFields;
       },
 
       _getCurrentMethodInput: function ($container) {
@@ -309,11 +309,11 @@ import {browserSupportsWebAuthn} from '@simplewebauthn/browser';
     },
     {
       defaults: {
-        fetchAlternativeMfaTypes: 'mfa/fetch-alternative-mfa-types',
-        loadAlternativeMfaType: 'mfa/load-alternative-mfa-type',
-        setupSlideoutHtml: 'mfa/setup-slideout-html',
-        saveSetup: 'mfa/save-setup',
-        removeSetup: 'mfa/remove-setup',
+        fetchAlternativeMfaTypes: 'auth/fetch-alternative-2fa-types',
+        loadAlternativeMfaType: 'auth/load-alternative-2fa-type',
+        setupSlideoutHtml: 'auth/setup-slideout-html',
+        saveSetup: 'auth/save-setup',
+        removeSetup: 'auth/remove-setup',
       },
     }
   );

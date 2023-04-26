@@ -11,37 +11,37 @@ use Craft;
 use craft\auth\type\EmailCode;
 use craft\auth\type\GoogleAuthenticator;
 use craft\auth\type\WebAuthn;
-use craft\base\mfa\BaseMfaType;
+use craft\base\auth\Base2faType;
 use craft\elements\User;
-use craft\events\MfaTypeEvent;
+use craft\events\Auth2faTypeEvent;
 use yii\base\Component;
 use yii\base\Exception;
 
 /**
- * Mfa service.
- * An instance of the Mfa service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getMfa()|`Craft::$app->mfa`]].
+ * Auth service.
+ * An instance of the Auth service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getAuth()|`Craft::$app->auth`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.5.0
  */
-class Mfa extends Component
+class Auth extends Component
 {
-    public const EVENT_REGISTER_MFA_TYPES = 'registerMfaTypes';
+    public const EVENT_REGISTER_2FA_TYPES = 'register2faTypes';
 
     /**
      * @var string the session key used to store the id of the user we're logging in.
      */
-    protected const MFA_USER_SESSION_KEY = 'craft.mfa.user';
+    protected const AUTH_USER_SESSION_KEY = 'craft.auth.user';
 
     /**
-     * @var BaseMfaType|null MFA Type instance in use
+     * @var Base2faType|null 2FA Type instance in use
      */
-    private ?BaseMfaType $_mfaType = null;
+    private ?Base2faType $_2faType = null;
 
     /**
-     * @var array $_mfaTypes all available MFA types
+     * @var array $_2faTypes all available 2FA types
      */
-    private array $_mfaTypes = [];
+    private array $_2faTypes = [];
 
 
 //    public function mfaEnabled(User $user): bool
@@ -50,16 +50,16 @@ class Mfa extends Component
 //    }
 
     /**
-     * Store the user id and duration in session while we proceed to the MFA step of logging them in
+     * Store the user id and duration in session while we proceed to the 2FA step of logging them in
      *
      * @param User $user
      * @param int $duration
      * @return void
      * @throws \craft\errors\MissingComponentException
      */
-    public function storeDataForMfaLogin(User $user, int $duration): void
+    public function storeDataFor2faLogin(User $user, int $duration): void
     {
-        Craft::$app->getSession()->set(self::MFA_USER_SESSION_KEY, [$user->id, $duration]);
+        Craft::$app->getSession()->set(self::AUTH_USER_SESSION_KEY, [$user->id, $duration]);
     }
 
     /**
@@ -69,9 +69,9 @@ class Mfa extends Component
      * @throws Exception
      * @throws \craft\errors\MissingComponentException
      */
-    public function getMfaDataFromSession(): ?array
+    public function get2faDataFromSession(): ?array
     {
-        $data = Craft::$app->getSession()->get(self::MFA_USER_SESSION_KEY);
+        $data = Craft::$app->getSession()->get(self::AUTH_USER_SESSION_KEY);
 
         if ($data === null) {
             return null;
@@ -92,15 +92,15 @@ class Mfa extends Component
     }
 
     /**
-     * Get the user we're logging in via MFA from session
+     * Get the user we're logging in via 2FA from session
      *
      * @return User|null
      * @throws Exception
      * @throws \craft\errors\MissingComponentException
      */
-    public function getMfaUserFromSession(): ?User
+    public function get2faUserFromSession(): ?User
     {
-        $data = $this->getMfaDataFromSession();
+        $data = $this->get2faDataFromSession();
 
         return $data['user'] ?? null;
     }
@@ -111,81 +111,81 @@ class Mfa extends Component
      * @return void
      * @throws \craft\errors\MissingComponentException
      */
-    public function removeMfaDataFromSession(): void
+    public function remove2faDataFromSession(): void
     {
-        Craft::$app->getSession()->remove(self::MFA_USER_SESSION_KEY);
+        Craft::$app->getSession()->remove(self::AUTH_USER_SESSION_KEY);
     }
 
     /**
-     * Get html of the form for the MFA step
+     * Get html of the form for the 2FA step
      *
      * @return string
      */
     public function getInputHtml(): string
     {
-        $user = $this->getUserForMfa();
+        $user = $this->getUserFor2fa();
 
         if ($user === null) {
             return '';
         }
 
-        $this->_mfaType = $user->getDefaultMfaType();
+        $this->_2faType = $user->getDefault2faType();
 
-        return $this->_mfaType->getInputHtml();
+        return $this->_2faType->getInputHtml();
     }
 
     /**
-     * Verify MFA step
+     * Verify 2FA step
      *
-     * @param array $mfaFields
+     * @param array $auth2faFields
      * @param string $currentMethod
      * @return bool
      */
-    public function verify(array $mfaFields, string $currentMethod): bool
+    public function verify(array $auth2faFields, string $currentMethod): bool
     {
-        $user = $this->getUserForMfa();
+        $user = $this->getUserFor2fa();
 
         if ($user === null) {
             return false;
         }
 
         if (empty($currentMethod)) {
-            throw new Exception('MFA method not specified.');
+            throw new Exception('2FA method not specified.');
         }
 
-        $mfaType = new $currentMethod();
+        $auth2faType = new $currentMethod();
 
-        if (!($mfaType instanceof BaseMfaType)) {
-            throw new Exception('MFA Type needs to be an instance of ' . BaseMfaType::class);
+        if (!($auth2faType instanceof Base2faType)) {
+            throw new Exception('2FA Type needs to be an instance of ' . Base2faType::class);
         }
 
-        $this->_mfaType = new $mfaType();
+        $this->_2faType = new $auth2faType();
 
-        return $this->_mfaType->verify($mfaFields);
+        return $this->_2faType->verify($auth2faFields);
     }
 
     /**
-     * Returns a list of all available MFA types except the one passed in as current
+     * Returns a list of all available 2FA types except the one passed in as current
      *
      * @param ?string $currentMethod
      * @return array
      */
-    public function getAlternativeMfaTypes(?string $currentMethod = null): array
+    public function getAlternative2faTypes(?string $currentMethod = null): array
     {
-        return array_filter($this->getAllMfaTypes(), function($type) use ($currentMethod) {
+        return array_filter($this->getAll2faTypes(), function($type) use ($currentMethod) {
             return $type !== $currentMethod && $type !== WebAuthn::class;
         }, ARRAY_FILTER_USE_KEY);
     }
 
     /**
-     * Returns a list of all available MFA types
+     * Returns a list of all available 2FA types
      *
      * @return array
      */
-    public function getAllMfaTypes(bool $withConfig = false): array
+    public function getAll2faTypes(bool $withConfig = false): array
     {
-        if (!empty($this->_mfaTypes)) {
-            $types = $this->_mfaTypes;
+        if (!empty($this->_2faTypes)) {
+            $types = $this->_2faTypes;
         } else {
             $types = [
                 GoogleAuthenticator::class => [
@@ -212,13 +212,13 @@ class Mfa extends Component
             ];
         }
 
-        $event = new MfaTypeEvent([
+        $event = new Auth2faTypeEvent([
             'types' => $types,
         ]);
 
-        $this->trigger(self::EVENT_REGISTER_MFA_TYPES, $event);
+        $this->trigger(self::EVENT_REGISTER_2FA_TYPES, $event);
 
-        $this->_mfaTypes = $event->types;
+        $this->_2faTypes = $event->types;
 
         if (!$withConfig) {
             foreach ($event->types as $key => $types) {
@@ -230,7 +230,7 @@ class Mfa extends Component
     }
 
     /**
-     * Get user for MFA login.
+     * Get user for 2FA login.
      * First try to get the logged in user (used e.g. when changing a setup).
      * Then try to get one from the session.
      *
@@ -239,14 +239,14 @@ class Mfa extends Component
      * @throws \craft\errors\MissingComponentException
      * @throws \yii\base\Exception
      */
-    public function getUserForMfa(): ?User
+    public function getUserFor2fa(): ?User
     {
         // first let's check if user is logged in; if yes, this is run via a setup action from their profile
         $user = Craft::$app->getUser()->getIdentity();
 
         if ($user === null) {
             // then try to get data from session
-            $user = Craft::$app->getMfa()->getMfaUserFromSession();
+            $user = Craft::$app->getAuth()->get2faUserFromSession();
         }
 
         return $user;

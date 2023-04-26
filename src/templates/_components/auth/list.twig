@@ -17,11 +17,11 @@
 
 
     <div id="mfa-setup">
-        {% set mfaTypes = craft.app.mfa.getAllMfaTypes(true) %}
-        {% if mfaTypes is empty %}
+        {% set auth2faTypes = craft.app.auth.getAll2faTypes(true) %}
+        {% if auth2faTypes is empty %}
             <p class="zilch">{{ 'No MFA options available.'|t('app') }}</p>
         {% else %}
-            {% for key, option in mfaTypes %}
+            {% for key, option in auth2faTypes %}
                 {% set isSetup = option.config.requiresSetup == false or (option.config.requiresSetup and user.isMfaTypeSetup(key)) %}
 
                 <div class="mfa-type">
@@ -37,7 +37,7 @@
                             spinner: craft.app.request.isCpRequest(),
                             type: 'button',
                             attributes: {
-                                'data-mfa-type': key
+                                'data-2fa-type': key
                             }
                         }) }}
                     {% endif %}

@@ -272,8 +272,8 @@ class UsersController extends Controller
 
         // if user requires MFA to login and we have their data stored in session, proceed to show the MFA step
         if ($user->isMfaRequired()) {
-            $mfaService = Craft::$app->getMfa();
-            $mfaService->storeDataForMfaLogin($user, $duration);
+            $authService = Craft::$app->getAuth();
+            $authService->storeDataFor2faLogin($user, $duration);
 
             return $this->_mfaStep();
         }
@@ -296,10 +296,10 @@ class UsersController extends Controller
             return null;
         }
 
-        $mfaFields = Craft::$app->request->getRequiredBodyParam('mfaFields');
+        $auth2faFields = Craft::$app->request->getRequiredBodyParam('auth2faFields');
         $currentMethod = Craft::$app->request->getRequiredBodyParam('currentMethod');
 
-        if (empty($mfaFields)) {
+        if (empty($auth2faFields)) {
             return $this->asFailure(Craft::t('app', 'Please fill out the form.'));
         }
 
@@ -307,8 +307,8 @@ class UsersController extends Controller
             return $this->asFailure(Craft::t('app', 'Something went wrong.'));
         }
 
-        $mfaService = Craft::$app->getMfa();
-        $mfaData = $mfaService->getMfaDataFromSession();
+        $authService = Craft::$app->getAuth();
+        $mfaData = $authService->get2faDataFromSession();
         if ($mfaData === null) {
             throw new Exception(Craft::t('app', 'Please start again.'));
         }
@@ -316,13 +316,13 @@ class UsersController extends Controller
         $user = $mfaData['user'];
         $duration = $mfaData['duration'];
 
-        $verified = $mfaService->verify($mfaFields, $currentMethod);
+        $verified = $authService->verify($auth2faFields, $currentMethod);
 
         if ($verified === false) {
             return $this->_handleLoginFailure(User::AUTH_INVALID_MFA_CODE, $user);
         }
 
-        $mfaService->removeMfaDataFromSession();
+        $authService->remove2faDataFromSession();
         return $this->_completeLogin($user, $duration);
     }
 
@@ -2352,14 +2352,14 @@ JS,
     private function _mfaStep(): Response
     {
         // Get the return URL
-        $mfaService = Craft::$app->getMfa();
-        $mfaForm = $mfaService->getInputHtml();
+        $authService = Craft::$app->getAuth();
+        $auth2faForm = $authService->getInputHtml();
 
         // If this was an Ajax request, just return success:true
         if ($this->request->getAcceptsJson()) {
             $return = [
-                'mfa' => true,
-                'mfaForm' => $mfaForm,
+                'auth2fa' => true,
+                'auth2faForm' => $auth2faForm,
             ];
 
             if (Craft::$app->getConfig()->getGeneral()->enableCsrfProtection) {
@@ -2372,8 +2372,8 @@ JS,
         $template = Craft::$app->getRequest()->getBodyParam('template');
 
         return $this->renderTemplate($template, [
-            'mfa' => true,
-            'mfaForm' => $mfaForm,
+            'auth2fa' => true,
+            'auth2faForm' => $auth2faForm,
         ], View::TEMPLATE_MODE_SITE);
     }
 

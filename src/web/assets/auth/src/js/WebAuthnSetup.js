@@ -182,9 +182,9 @@ import {startRegistration} from '@simplewebauthn/browser';
     },
     {
       defaults: {
-        generateRegistrationOptions: 'mfa/generate-registration-options',
-        verifyRegistration: 'mfa/verify-registration',
-        deleteSecurityKey: 'mfa/delete-security-key',
+        generateRegistrationOptions: 'auth/generate-registration-options',
+        verifyRegistration: 'auth/verify-registration',
+        deleteSecurityKey: 'auth/delete-security-key',
       },
     }
   );

@@ -208,7 +208,7 @@ class Install extends Migration
         $this->createTable(Table::AUTHENTICATOR, [
             'id' => $this->primaryKey(),
             'userId' => $this->integer()->notNull(),
-            'mfaSecret' => $this->string()->defaultValue(null),
+            'auth2faSecret' => $this->string()->defaultValue(null),
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
         ]);

@@ -70,13 +70,13 @@ Craft.Auth2faLogin = {
 
   submitMfaCode: function ($mfaLoginFormContainer, inModal = false) {
     let data = {
-      mfaFields: {},
+      auth2faFields: {},
       currentMethod: null,
     };
 
     let mfa = new Craft.Auth2fa();
 
-    data.mfaFields = mfa._getMfaFields($mfaLoginFormContainer);
+    data.auth2faFields = mfa._getMfaFields($mfaLoginFormContainer);
     data.currentMethod = mfa._getCurrentMethodInput($mfaLoginFormContainer);
 
     return Craft.sendActionRequest('POST', 'users/verify-mfa', {data})

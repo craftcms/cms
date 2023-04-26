@@ -10,12 +10,12 @@ namespace craft\events;
 use yii\base\Event;
 
 /**
- * MfaTypeEvent class.
+ * Auth2faTypeEvent class.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.5.0
  */
-class MfaTypeEvent extends Event
+class Auth2faTypeEvent extends Event
 {
     /**
      * @var string[] List of registered MFA type classes.

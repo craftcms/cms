@@ -8,14 +8,14 @@
 namespace craft\auth;
 
 use Craft;
-use craft\base\mfa\BaseMfaType;
+use craft\base\auth\Base2faType;
 use craft\elements\User;
 use craft\helpers\Html;
 
 /**
  *
  */
-abstract class ConfigurableMfaType extends BaseMfaType implements ConfigurableMfaInterface
+abstract class Configurable2faType extends Base2faType implements Configurable2faInterface
 {
     /**
      * @inheritdoc
@@ -24,9 +24,9 @@ abstract class ConfigurableMfaType extends BaseMfaType implements ConfigurableMf
     {
         $form = Html::tag('div', $html, [
             'class' => 'so-body',
-            'id' => 'mfa-setup-form',
+            'id' => 'setup-form-2fa',
             'data' => [
-                'mfa-type' => static::class,
+                '2fa-type' => static::class,
             ],
         ]);
 
