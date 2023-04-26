@@ -26,6 +26,7 @@ use craft\events\CancelableEvent;
 use craft\events\DefineValueEvent;
 use craft\events\PopulateElementEvent;
 use craft\events\PopulateElementsEvent;
+use craft\helpers\App;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Db;
 use craft\helpers\ElementHelper;
@@ -1299,7 +1300,11 @@ class ElementQuery extends Query implements ElementQueryInterface
     {
         // Log a warning if the app isn't fully initialized yet
         if (!Craft::$app->getIsInitialized()) {
-            Craft::warning('Element query executed before Craft is fully initialized.', __METHOD__);
+            Craft::warning(
+                "Element query executed before Craft is fully initialized.\nStack trace:\n" .
+                App::backtrace(),
+                __METHOD__
+            );
         }
 
         // Is the query already doomed?
