@@ -163,7 +163,6 @@ class UsersController extends Controller
 
         if (!$user || $user->password === null) {
             // Delay again to match $user->authenticate()'s delay
-            Craft::$app->getSecurity()->validatePassword('p@ss1w0rd', '$2y$13$nj9aiBeb7RfEfYP3Cum6Revyu14QelGGxwcnFUKXIrQUitSodEPRi');
             return $this->_handleLoginFailure(User::AUTH_INVALID_CREDENTIALS);
         }
 
@@ -445,6 +444,7 @@ class UsersController extends Controller
                 $user = Craft::$app->getUsers()->getUserById($userId);
 
                 if (!$user) {
+                    $this->_randomlyDelayResponse();
                     throw new NotFoundHttpException('User not found');
                 }
             }
@@ -1799,8 +1799,7 @@ JS;
      */
     private function _handleLoginFailure(string $authError = null, User $user = null)
     {
-        // Delay randomly between 0 and 1.5 seconds.
-        usleep(random_int(0, 1500000));
+        $this->_randomlyDelayResponse();
 
         $message = UserHelper::getLoginFailureMessage($authError, $user);
 
@@ -2277,6 +2276,8 @@ JS;
      */
     private function _handleSendPasswordResetError(array $errors, string $loginName = null)
     {
+        $this->_randomlyDelayResponse();
+
         if ($this->request->getAcceptsJson()) {
             /** @noinspection CallableParameterUseCaseInTypeContextInspection */
             $errors = implode(', ', $errors);
@@ -2310,6 +2311,18 @@ JS;
         return $view->renderTemplate('users/_photo', [
             'user' => $user,
         ], $templateMode);
+    }
+
+    /**
+     * @return void
+     * @throws \Exception
+     */
+    private function _randomlyDelayResponse()
+    {
+        Craft::$app->getSecurity()->validatePassword('p@ss1w0rd', '$2y$13$nj9aiBeb7RfEfYP3Cum6Revyu14QelGGxwcnFUKXIrQUitSodEPRi');
+
+        // Delay randomly between 0 and 1.5 seconds.
+        usleep(random_int(0, 1500000));
     }
 
     /**
