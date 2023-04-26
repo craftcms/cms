@@ -1365,6 +1365,7 @@ JS,
         return $this->renderTemplate('users/_edit.twig', compact(
             'user',
             'isNewUser',
+            'isCurrentUser',
             'statusLabel',
             'actions',
             'languageOptions',

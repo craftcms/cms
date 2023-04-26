@@ -12,6 +12,7 @@
 - Improved copy-text buttons for screen readers. ([#13073](https://github.com/craftcms/cms/pull/13073))
 
 ### Administration
+- The “My Account” page no longer shows a “Require a password reset on next login” checkbox.
 
 ### Development
 - Added a new `_globals` global Twig variable for front-end templates, which can be used to store custom values in a global scope. ([#13050](https://github.com/craftcms/cms/pull/13050), [#12951](https://github.com/craftcms/cms/discussions/12951))
