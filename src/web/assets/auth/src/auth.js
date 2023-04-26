@@ -1,4 +1,4 @@
 // Import JS
-import './js/auth.js';
+import './js/Auth2fa.js';
+import './js/Auth2faLogin.js';
 import './js/WebAuthnSetup.js';
-import './js/AuthLogin.js';

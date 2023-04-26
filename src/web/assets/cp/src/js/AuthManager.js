@@ -508,7 +508,7 @@ Craft.AuthManager = Garnish.Base.extend(
         loginName: Craft.username,
       };
 
-      new Craft.AuthLogin.startWebauthnLogin(data, true)
+      new Craft.Auth2faLogin.startWebauthnLogin(data, true)
         .then((response) => {
           this.closeModal();
         })
@@ -524,7 +524,7 @@ Craft.AuthManager = Garnish.Base.extend(
       var $submitBtn = $mfaLoginContainer.find('#mfa-verify');
       $submitBtn.addClass('loading');
 
-      new Craft.AuthLogin.submitMfaCode($mfaLoginContainer, true)
+      new Craft.Auth2faLogin.submitMfaCode($mfaLoginContainer, true)
         .then((response) => {
           this.closeModal();
         })
@@ -548,7 +548,7 @@ Craft.AuthManager = Garnish.Base.extend(
         .then((response) => {
           if (response.data.mfa !== undefined && response.data.mfa == true) {
             this.mfaFlow = true;
-            this.mfa = new Craft.Auth();
+            this.mfa = new Craft.Auth2fa();
             if (this.$alternativeLoginLink !== null) {
               this.$alternativeLoginLink.remove();
             }

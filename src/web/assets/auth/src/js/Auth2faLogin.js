@@ -2,7 +2,7 @@ import {startAuthentication} from '@simplewebauthn/browser';
 
 /** global: Craft */
 /** global: Garnish */
-Craft.AuthLogin = {
+Craft.Auth2faLogin = {
   loginWithPassword: false,
   loginWithSecurityKey: false,
 
@@ -17,7 +17,7 @@ Craft.AuthLogin = {
           return startAuthentication(authenticationOptions)
             .then((authResponse) => {
               return Promise.resolve(
-                Craft.AuthLogin.verifyWebAuthnLogin(
+                Craft.Auth2faLogin.verifyWebAuthnLogin(
                   authenticationOptions,
                   authResponse,
                   userId,
@@ -74,7 +74,7 @@ Craft.AuthLogin = {
       currentMethod: null,
     };
 
-    let mfa = new Craft.Auth();
+    let mfa = new Craft.Auth2fa();
 
     data.mfaFields = mfa._getMfaFields($mfaLoginFormContainer);
     data.currentMethod = mfa._getCurrentMethodInput($mfaLoginFormContainer);
