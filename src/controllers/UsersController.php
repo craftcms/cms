@@ -2325,10 +2325,10 @@ JS;
 
     private function _randomlyDelayResponse(float $maxOffset = 0)
     {
-        // Delay randomly between 0 and 1.5 seconds.
+        // Delay randomly between 0.5 and 1.5 seconds.
         $max = 1500000 - (int)($maxOffset * 1000000);
-        if ($max > 0) {
-            usleep(random_int(0, $max));
+        if ($max > 500000) {
+            usleep(random_int(500000, $max));
         }
     }
 
