@@ -1,5 +1,9 @@
 # Release Notes for Craft CMS 3.x
 
+## Unreleased
+
+- Fixed a user enumeration timing attack vulnerability.
+
 ## 3.8.8 - 2023-04-25
 
 - Fixed a bug where it was possible to select a disallowed volume as the Default Asset Location in Assets field settings. ([#13072](https://github.com/craftcms/cms/issues/13072))
