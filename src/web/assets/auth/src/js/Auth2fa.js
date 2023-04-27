@@ -5,10 +5,10 @@ import {browserSupportsWebAuthn} from '@simplewebauthn/browser';
   /** global: Garnish */
   Craft.Auth2fa = Garnish.Base.extend(
     {
-      $mfaLoginFormContainer: null,
-      $mfaSetupFormContainer: null,
-      $alternativeMfaLink: null,
-      $alternativeMfaTypesContainer: null,
+      $auth2faLoginFormContainer: null,
+      $auth2faSetupFormContainer: null,
+      $alternative2faLink: null,
+      $alternative2faTypesContainer: null,
       $viewSetupBtns: null,
       $errors: null,
 
@@ -18,35 +18,35 @@ import {browserSupportsWebAuthn} from '@simplewebauthn/browser';
       $verifyButton: null,
 
       init: function (settings) {
-        this.$mfaLoginFormContainer = $('#mfa-form');
-        this.$mfaSetupFormContainer = $('#mfa-setup');
-        this.$alternativeMfaLink = $('#alternative-mfa');
-        this.$alternativeMfaTypesContainer = $('#alternative-mfa-types');
-        this.$viewSetupBtns = this.$mfaSetupFormContainer.find(
-          'button.mfa-view-setup'
+        this.$auth2faLoginFormContainer = $('#auth-2fa-form');
+        this.$auth2faSetupFormContainer = $('#auth-2fa-setup');
+        this.$alternative2faLink = $('#alternative-2fa');
+        this.$alternative2faTypesContainer = $('#alternative-2fa-types');
+        this.$viewSetupBtns = this.$auth2faSetupFormContainer.find(
+          'button.auth-2fa-view-setup'
         );
 
         this.setSettings(settings, Craft.Auth2fa.defaults);
 
         this.addListener(
-          this.$alternativeMfaLink,
+          this.$alternative2faLink,
           'click',
-          'onAlternativeMfaTypeClick'
+          'onAlternative2faTypeClick'
         );
         this.addListener(this.$viewSetupBtns, 'click', 'onViewSetupBtnClick');
       },
 
-      showMfaForm: function (auth2faForm, $loginDiv) {
-        this.$mfaLoginFormContainer.html('').append(auth2faForm);
-        $loginDiv.addClass('mfa');
+      show2faForm: function (auth2faForm, $loginDiv) {
+        this.$auth2faLoginFormContainer.html('').append(auth2faForm);
+        $loginDiv.addClass('auth-2fa');
         $('#login-form-buttons').hide();
-        const $submitBtn = this.$mfaLoginFormContainer.find('.submit');
+        const $submitBtn = this.$auth2faLoginFormContainer.find('.submit');
         this.$errors = $('#login-errors');
 
         this.onSubmitResponse($submitBtn);
       },
 
-      getCurrentMfaType: function ($container) {
+      getCurrent2faType: function ($container) {
         let currentMethod = $container.attr('data-2fa-type');
 
         if (currentMethod === undefined) {
@@ -62,7 +62,7 @@ import {browserSupportsWebAuthn} from '@simplewebauthn/browser';
         ev.preventDefault();
 
         const data = {
-          selectedMethod: this.getCurrentMfaType($button),
+          selectedMethod: this.getCurrent2faType($button),
         };
 
         Craft.sendActionRequest('POST', this.settings.setupSlideoutHtml, {data})
@@ -74,15 +74,17 @@ import {browserSupportsWebAuthn} from '@simplewebauthn/browser';
 
             // initialise webauthn
             if (
-              data.selectedMethod === 'craft\\mfa\\type\\WebAuthn' &&
+              data.selectedMethod === 'craft\\auth\\type\\WebAuthn' &&
               browserSupportsWebAuthn()
             ) {
               new Craft.WebAuthnSetup(this.slideout);
             }
 
-            this.$verifyButton = this.slideout.$container.find('#mfa-verify');
-            this.$removeSetupButton =
-              this.slideout.$container.find('#mfa-remove-setup');
+            this.$verifyButton =
+              this.slideout.$container.find('#auth2fa-verify');
+            this.$removeSetupButton = this.slideout.$container.find(
+              '#auth-2fa-remove-setup'
+            );
 
             this.addListener(this.$removeSetupButton, 'click', 'onRemoveSetup');
             this.addListener(this.$closeButton, 'click', 'onClickClose');
@@ -113,7 +115,7 @@ import {browserSupportsWebAuthn} from '@simplewebauthn/browser';
       onRemoveSetup: function (ev) {
         ev.preventDefault();
 
-        let currentMethod = this.getCurrentMfaType(
+        let currentMethod = this.getCurrent2faType(
           this.slideout.$container.find('#setup-form-2fa')
         );
 
@@ -133,7 +135,7 @@ import {browserSupportsWebAuthn} from '@simplewebauthn/browser';
           Craft.sendActionRequest('POST', this.settings.removeSetup, {data})
             .then((response) => {
               $(ev.currentTarget).remove();
-              Craft.cp.displayNotice(Craft.t('app', 'MFA setup removed.'));
+              Craft.cp.displayNotice(Craft.t('app', '2FA setup removed.'));
             })
             .catch((e) => {
               Craft.cp.displayError(e.response.data.message);
@@ -147,7 +149,7 @@ import {browserSupportsWebAuthn} from '@simplewebauthn/browser';
       onVerify: function (ev) {
         ev.preventDefault();
 
-        const $submitBtn = this.slideout.$container.find('#mfa-verify');
+        const $submitBtn = this.slideout.$container.find('#auth2fa-verify');
 
         $submitBtn.addClass('loading');
 
@@ -156,7 +158,7 @@ import {browserSupportsWebAuthn} from '@simplewebauthn/browser';
           currentMethod: null,
         };
 
-        data.auth2faFields = this._getMfaFields(this.slideout.$container);
+        data.auth2faFields = this._get2faFields(this.slideout.$container);
         data.currentMethod = this._getCurrentMethodInput(
           this.slideout.$container
         );
@@ -164,7 +166,7 @@ import {browserSupportsWebAuthn} from '@simplewebauthn/browser';
         Craft.sendActionRequest('POST', this.settings.saveSetup, {data})
           .then((response) => {
             this.onSubmitResponse($submitBtn);
-            Craft.cp.displayNotice(Craft.t('app', 'MFA settings saved.'));
+            Craft.cp.displayNotice(Craft.t('app', '2FA settings saved.'));
             this.slideout.close();
           })
           .catch(({response}) => {
@@ -196,15 +198,15 @@ import {browserSupportsWebAuthn} from '@simplewebauthn/browser';
         }
       },
 
-      onAlternativeMfaTypeClick: function (event) {
+      onAlternative2faTypeClick: function (event) {
         // get current authenticator class via data-2fa-type
-        let currentMethod = this.getCurrentMfaType(
-          this.$mfaLoginFormContainer.find('#verifyContainer')
+        let currentMethod = this.getCurrent2faType(
+          this.$auth2faLoginFormContainer.find('#verifyContainer')
         );
         if (currentMethod === null) {
-          this.$alternativeMfaLink.hide();
+          this.$alternative2faLink.hide();
           this.showError(
-            Craft.t('app', 'No alternative MFA methods available.')
+            Craft.t('app', 'No alternative 2FA methods available.')
           );
         }
 
@@ -212,21 +214,21 @@ import {browserSupportsWebAuthn} from '@simplewebauthn/browser';
           currentMethod: currentMethod,
         };
 
-        // get available MFA methods, minus the one that's being shown
-        this.getAlternativeMfaTypes(data);
+        // get available 2FA methods, minus the one that's being shown
+        this.getAlternative2faTypes(data);
       },
 
-      getAlternativeMfaTypes: function (data) {
+      getAlternative2faTypes: function (data) {
         Craft.sendActionRequest(
           'POST',
-          this.settings.fetchAlternativeMfaTypes,
+          this.settings.fetchAlternative2faTypes,
           {
             data,
           }
         )
           .then((response) => {
             if (response.data.alternativeTypes !== undefined) {
-              this.showAlternativeMfaTypes(response.data.alternativeTypes);
+              this.showAlternative2faTypes(response.data.alternativeTypes);
             }
           })
           .catch(({response}) => {
@@ -234,16 +236,16 @@ import {browserSupportsWebAuthn} from '@simplewebauthn/browser';
           });
       },
 
-      showAlternativeMfaTypes: function (data) {
+      showAlternative2faTypes: function (data) {
         let alternativeTypes = Object.entries(data).map(([key, value]) => ({
           key,
           value,
         }));
         if (alternativeTypes.length > 0) {
           alternativeTypes.forEach((type) => {
-            this.$alternativeMfaTypesContainer.append(
+            this.$alternative2faTypesContainer.append(
               '<li><button ' +
-                'class="alternative-mfa-type" ' +
+                'class="alternative-2fa-type" ' +
                 'type="button" ' +
                 'value="' +
                 type.key +
@@ -255,33 +257,33 @@ import {browserSupportsWebAuthn} from '@simplewebauthn/browser';
         }
 
         // list them by name
-        this.$alternativeMfaLink
+        this.$alternative2faLink
           .hide()
-          .after(this.$alternativeMfaTypesContainer);
+          .after(this.$alternative2faTypesContainer);
 
         // clicking on a method name swaps the form fields
         this.addListener(
-          $('.alternative-mfa-type'),
+          $('.alternative-2fa-type'),
           'click',
-          'onSelectAlternativeMfaType'
+          'onSelectAlternative2faType'
         );
       },
 
-      onSelectAlternativeMfaType: function (event) {
+      onSelectAlternative2faType: function (event) {
         const data = {
           selectedMethod: $(event.currentTarget).attr('value'),
         };
 
-        Craft.sendActionRequest('POST', this.settings.loadAlternativeMfaType, {
+        Craft.sendActionRequest('POST', this.settings.loadAlternative2faType, {
           data,
         })
           .then((response) => {
             if (response.data.auth2faForm !== undefined) {
-              this.$mfaLoginFormContainer
+              this.$auth2faLoginFormContainer
                 .html('')
                 .append(response.data.auth2faForm);
-              this.$alternativeMfaTypesContainer.html('');
-              this.$alternativeMfaLink.show();
+              this.$alternative2faTypesContainer.html('');
+              this.$alternative2faLink.show();
               this.onSubmitResponse();
             }
           })
@@ -290,7 +292,7 @@ import {browserSupportsWebAuthn} from '@simplewebauthn/browser';
           });
       },
 
-      _getMfaFields: function ($container) {
+      _get2faFields: function ($container) {
         let auth2faFields = {};
 
         $container
@@ -309,8 +311,8 @@ import {browserSupportsWebAuthn} from '@simplewebauthn/browser';
     },
     {
       defaults: {
-        fetchAlternativeMfaTypes: 'auth/fetch-alternative-2fa-types',
-        loadAlternativeMfaType: 'auth/load-alternative-2fa-type',
+        fetchAlternative2faTypes: 'auth/fetch-alternative-2fa-types',
+        loadAlternative2faType: 'auth/load-alternative-2fa-type',
         setupSlideoutHtml: 'auth/setup-slideout-html',
         saveSetup: 'auth/save-setup',
         removeSetup: 'auth/remove-setup',

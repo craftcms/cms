@@ -750,7 +750,7 @@ class Install extends Migration
             'unverifiedEmail' => $this->string(),
             'passwordResetRequired' => $this->boolean()->defaultValue(false)->notNull(),
             'lastPasswordChangeDate' => $this->dateTime(),
-            'requireMfa' => $this->boolean()->defaultValue(false)->notNull(),
+            'has2fa' => $this->boolean()->defaultValue(false)->notNull(),
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
             'PRIMARY KEY([[id]])',
@@ -1282,7 +1282,7 @@ class Install extends Migration
                 'defaultGroup' => null,
                 'photoVolumeUid' => null,
                 'photoSubpath' => null,
-                'requireMfa' => [],
+                'has2fa' => [],
             ],
         ];
     }

@@ -68,18 +68,20 @@ Craft.Auth2faLogin = {
       });
   },
 
-  submitMfaCode: function ($mfaLoginFormContainer, inModal = false) {
+  submit2faCode: function ($auth2faLoginFormContainer, inModal = false) {
     let data = {
       auth2faFields: {},
       currentMethod: null,
     };
 
-    let mfa = new Craft.Auth2fa();
+    let auth2fa = new Craft.Auth2fa();
 
-    data.auth2faFields = mfa._getMfaFields($mfaLoginFormContainer);
-    data.currentMethod = mfa._getCurrentMethodInput($mfaLoginFormContainer);
+    data.auth2faFields = auth2fa._get2faFields($auth2faLoginFormContainer);
+    data.currentMethod = auth2fa._getCurrentMethodInput(
+      $auth2faLoginFormContainer
+    );
 
-    return Craft.sendActionRequest('POST', 'users/verify-mfa', {data})
+    return Craft.sendActionRequest('POST', 'users/verify-2fa', {data})
       .then((response) => {
         if (inModal) {
           return Promise.resolve({success: true});

@@ -18,7 +18,7 @@ use yii\base\Event;
 class Auth2faTypeEvent extends Event
 {
     /**
-     * @var string[] List of registered MFA type classes.
+     * @var string[] List of registered 2FA type classes.
      */
     public array $types = [];
 }

@@ -21,7 +21,7 @@ import {browserSupportsWebAuthn} from '@simplewebauthn/browser';
     loginWithSecurityKey: false,
     validateOnInput: false,
 
-    mfaFlow: false,
+    auth2faFlow: false,
     auth2fa: null,
 
     init: function () {
@@ -139,8 +139,8 @@ import {browserSupportsWebAuthn} from '@simplewebauthn/browser';
         this.submitForgotPassword();
       } else if (this.loginWithSecurityKey) {
         this.webauthnLogin();
-      } else if (this.mfaFlow) {
-        this.submitMfaCode();
+      } else if (this.auth2faFlow) {
+        this.submit2faCode();
       } else if (this.loginWithPassword) {
         this.submitLogin();
       } else {
@@ -235,11 +235,11 @@ import {browserSupportsWebAuthn} from '@simplewebauthn/browser';
         });
     },
 
-    submitMfaCode: function () {
+    submit2faCode: function () {
       this.clearErrors();
       this.$submitBtn.busyEvent();
 
-      new Craft.Auth2faLogin.submitMfaCode($('#mfa-form'), false)
+      new Craft.Auth2faLogin.submit2faCode($('#auth-2fa-form'), false)
         .then((response) => {
           this.$submitBtn.successEvent();
           window.location.href = response.returnUrl;
@@ -265,11 +265,11 @@ import {browserSupportsWebAuthn} from '@simplewebauthn/browser';
             response.data.auth2fa !== undefined &&
             response.data.auth2fa == true
           ) {
-            this.mfaFlow = true;
+            this.auth2faFlow = true;
             if (this.$alternativeLoginLink !== null) {
               this.$alternativeLoginLink.remove();
             }
-            this.auth2fa.showMfaForm(response.data.auth2faForm, this.$loginDiv);
+            this.auth2fa.show2faForm(response.data.auth2faForm, this.$loginDiv);
             this.$submitBtn.endBusyState();
           } else {
             this.$submitBtn.successEvent();

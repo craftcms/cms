@@ -5458,7 +5458,7 @@ $min2ColWidth: 400px;
 #loginmodal {
   z-index: 1001;
 
-  #mfa-form {
+  #auth-2fa-form {
     .field {
       display: inline-block;
       margin: 0;
@@ -7558,10 +7558,10 @@ body.sitepicker {
 }
 
 /* ----------------------------------------
-/* MFA-related
+/* 2FA-related
 /* ----------------------------------------*/
 
-#mfa-form {
+#auth-2fa-form {
   margin-bottom: 1em;
 
   .btn,
@@ -7573,8 +7573,8 @@ body.sitepicker {
   }
 }
 
-#mfa-setup {
-  .mfa-type {
+#auth-2fa-setup {
+  .auth-2fa-type {
     @include padding-left($checkboxSize + 5);
     margin-bottom: var(--row-gap);
   }

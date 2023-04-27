@@ -27,7 +27,7 @@ Craft.AuthManager = Garnish.Base.extend(
 
     loginWithPassword: true,
     loginWithSecurityKey: false,
-    mfaFlow: false,
+    auth2faFlow: false,
     auth2fa: null,
     $alternativeLoginLink: null,
 
@@ -118,8 +118,8 @@ Craft.AuthManager = Garnish.Base.extend(
               if (this.loginWithSecurityKey) {
                 this.webauthnLogin();
               } else if (this.loginWithPassword) {
-                if (this.mfaFlow == true) {
-                  this.mfaLogin();
+                if (this.auth2faFlow == true) {
+                  this.auth2faLogin();
                 } else {
                   this.submitLogin();
                 }
@@ -280,7 +280,7 @@ Craft.AuthManager = Garnish.Base.extend(
       this.showingLoginModal = true;
 
       if (!this.loginModal) {
-        if (Craft.requireMfa) {
+        if (Craft.has2fa) {
           if (Craft.userHasSecurityKeys && browserSupportsWebAuthn()) {
             this.loginWithPassword = false;
             this.loginWithSecurityKey = true;
@@ -288,7 +288,7 @@ Craft.AuthManager = Garnish.Base.extend(
             this.loginWithPassword = true;
             this.loginWithSecurityKey = false;
           }
-          this.mfaFlow = false;
+          this.auth2faFlow = false;
           this.auth2fa = null;
         }
 
@@ -334,7 +334,7 @@ Craft.AuthManager = Garnish.Base.extend(
           changeButtonText: false,
         });
 
-        $('<div id="mfa-form"/>').insertAfter($inputContainer);
+        $('<div id="auth-2fa-form"/>').insertAfter($inputContainer);
 
         if (this.loginWithSecurityKey) {
           this.$loginBtn.$btnLabel.text(
@@ -491,8 +491,8 @@ Craft.AuthManager = Garnish.Base.extend(
         } else {
           if (this.loginWithSecurityKey) {
             this.webauthnLogin();
-          } else if (this.mfaFlow) {
-            this.mfaLogin();
+          } else if (this.auth2faFlow) {
+            this.auth2faLogin();
           } else if (this.loginWithPassword) {
             this.submitLogin();
           }
@@ -517,14 +517,14 @@ Craft.AuthManager = Garnish.Base.extend(
         });
     },
 
-    mfaLogin: function () {
+    auth2faLogin: function () {
       this.clearLoginError();
 
-      var $mfaLoginContainer = $('#mfa-form');
-      var $submitBtn = $mfaLoginContainer.find('#mfa-verify');
+      var $auth2faLoginContainer = $('#auth-2fa-form');
+      var $submitBtn = $auth2faLoginContainer.find('#auth2fa-verify');
       $submitBtn.addClass('loading');
 
-      new Craft.Auth2faLogin.submitMfaCode($mfaLoginContainer, true)
+      new Craft.Auth2faLogin.submit2faCode($auth2faLoginContainer, true)
         .then((response) => {
           this.closeModal();
         })
@@ -550,13 +550,13 @@ Craft.AuthManager = Garnish.Base.extend(
             response.data.auth2fa !== undefined &&
             response.data.auth2fa == true
           ) {
-            this.mfaFlow = true;
+            this.auth2faFlow = true;
             this.auth2fa = new Craft.Auth2fa();
             if (this.$alternativeLoginLink !== null) {
               this.$alternativeLoginLink.remove();
             }
             $('.inputcontainer').remove();
-            this.auth2fa.showMfaForm(
+            this.auth2fa.show2faForm(
               response.data.auth2faForm,
               $('#loginmodal')
             );

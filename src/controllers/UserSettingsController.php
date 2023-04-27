@@ -144,7 +144,7 @@ class UserSettingsController extends Controller
             $settings['defaultGroup'] = $this->request->getBodyParam('defaultGroup');
         }
 
-        $settings['requireMfa'] = $this->request->getBodyParam('requireMfa');
+        $settings['has2fa'] = $this->request->getBodyParam('has2fa');
 
         $projectConfig->set('users', $settings, 'Update user settings');
 

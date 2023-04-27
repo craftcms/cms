@@ -46,7 +46,7 @@ class Auth extends Component
 
 //    public function mfaEnabled(User $user): bool
 //    {
-//        return $user->requireMfa && $this->_getStoredSecret($user->id) !== null;
+//        return $user->has2fa && $this->_getStoredSecret($user->id) !== null;
 //    }
 
     /**

@@ -12,7 +12,7 @@ use craft\web\assets\cp\CpAsset;
 use craft\web\View;
 
 /**
- * Authentication bundle for MFA
+ * Authentication bundle for 2FA
  */
 class AuthAsset extends AssetBundle
 {
@@ -44,9 +44,9 @@ class AuthAsset extends AssetBundle
 
         if ($view instanceof View) {
             $view->registerTranslations('app', [
-                'MFA settings saved.',
-                'MFA setup removed.',
-                'No alternative MFA methods available.',
+                '2FA settings saved.',
+                '2FA setup removed.',
+                'No alternative 2FA methods available.',
                 'Registration failed:',
                 'Security key registered.',
                 'Sign in using a security key',

@@ -8,9 +8,9 @@ use craft\db\Table;
 use craft\services\ProjectConfig;
 
 /**
- * m230314_105605_add_requireMfa_to_users migration.
+ * m230314_105605_add_has2fa_to_users migration.
  */
-class m230314_105605_add_requireMfa_to_users extends Migration
+class m230314_105605_add_has2fa_to_users extends Migration
 {
     /**
      * @inheritdoc
@@ -18,10 +18,10 @@ class m230314_105605_add_requireMfa_to_users extends Migration
     public function safeUp(): bool
     {
         $table = $this->db->schema->getTableSchema(Table::USERS);
-        if (!isset($table->columns['requireMfa'])) {
+        if (!isset($table->columns['has2fa'])) {
             $this->addColumn(
                 Table::USERS,
-                'requireMfa',
+                'has2fa',
                 $this->boolean()->defaultValue(false)->notNull()->after('lastPasswordChangeDate')
             );
         }
@@ -31,7 +31,7 @@ class m230314_105605_add_requireMfa_to_users extends Migration
 
         if (version_compare($schemaVersion, '4.5.0', '<')) {
             $userSettings = $projectConfig->get(ProjectConfig::PATH_USERS);
-            $userSettings['requireMfa'] = [];
+            $userSettings['has2fa'] = [];
             $projectConfig->set(ProjectConfig::PATH_USERS, $userSettings);
         }
 
@@ -44,8 +44,8 @@ class m230314_105605_add_requireMfa_to_users extends Migration
     public function safeDown(): bool
     {
         $table = $this->db->schema->getTableSchema(Table::USERS);
-        if (isset($table->columns['requireMfa'])) {
-            $this->dropColumn(Table::USERS, 'requireMfa');
+        if (isset($table->columns['has2fa'])) {
+            $this->dropColumn(Table::USERS, 'has2fa');
         }
 
         $projectConfig = Craft::$app->getProjectConfig();
@@ -53,8 +53,8 @@ class m230314_105605_add_requireMfa_to_users extends Migration
 
         if (version_compare($schemaVersion, '4.5.0', '<')) {
             $userSettings = $projectConfig->get(ProjectConfig::PATH_USERS);
-            if (isset($userSettings['requireMfa'])) {
-                unset($userSettings['requireMfa']);
+            if (isset($userSettings['has2fa'])) {
+                unset($userSettings['has2fa']);
                 $projectConfig->set(ProjectConfig::PATH_USERS, $userSettings);
             }
         }

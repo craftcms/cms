@@ -60,7 +60,7 @@ class User
             case UserElement::AUTH_NO_SITE_OFFLINE_ACCESS:
                 $message = Craft::t('app', 'You cannot access the site while the system is offline with that account.');
                 break;
-            case UserElement::AUTH_INVALID_MFA_CODE:
+            case UserElement::AUTH_INVALID_2FA_CODE:
                 $message = Craft::t('app', 'Couldn’t verify the code.');
                 break;
             case UserElement::AUTH_WEBAUTHN_NOT_SETUP:

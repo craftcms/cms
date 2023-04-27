@@ -156,7 +156,7 @@ class UsersController extends Controller
         'session-info' => self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE,
         'get-user-for-login' => self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE,
         'login' => self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE,
-        'verify-mfa' => self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE,
+        'verify-2fa' => self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE,
         'start-webauthn-login' => self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE,
         'webauthn-login' => self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE,
         'logout' => self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE,
@@ -234,7 +234,7 @@ class UsersController extends Controller
 
         // does user have security key set up or should we only show the password field
         return $this->asJson([
-            'hasSecurityKeys' => $user->isMfaTypeSetup(WebAuthn::class),
+            'hasSecurityKeys' => $user->is2faTypeSetup(WebAuthn::class),
         ]);
     }
 
@@ -270,19 +270,19 @@ class UsersController extends Controller
             return $this->_handleLoginFailure($user->authError, $user);
         }
 
-        // if user requires MFA to login and we have their data stored in session, proceed to show the MFA step
-        if ($user->isMfaRequired()) {
+        // if user requires 2FA to login and we have their data stored in session, proceed to show the 2FA step
+        if ($user->is2faRequired()) {
             $authService = Craft::$app->getAuth();
             $authService->storeDataFor2faLogin($user, $duration);
 
-            return $this->_mfaStep();
+            return $this->_2faStep();
         }
 
         return $this->_completeLogin($user, $duration);
     }
 
     /**
-     * Verify MFA code
+     * Verify 2FA code
      *
      * @return Response|null
      * @throws BadRequestHttpException
@@ -290,7 +290,7 @@ class UsersController extends Controller
      * @throws ServiceUnavailableHttpException
      * @since 4.5.0
      */
-    public function actionVerifyMfa(): ?Response
+    public function actionVerify2fa(): ?Response
     {
         if (!$this->request->getIsPost()) {
             return null;
@@ -308,18 +308,18 @@ class UsersController extends Controller
         }
 
         $authService = Craft::$app->getAuth();
-        $mfaData = $authService->get2faDataFromSession();
-        if ($mfaData === null) {
+        $auth2faData = $authService->get2faDataFromSession();
+        if ($auth2faData === null) {
             throw new Exception(Craft::t('app', 'Please start again.'));
         }
 
-        $user = $mfaData['user'];
-        $duration = $mfaData['duration'];
+        $user = $auth2faData['user'];
+        $duration = $auth2faData['duration'];
 
         $verified = $authService->verify($auth2faFields, $currentMethod);
 
         if ($verified === false) {
-            return $this->_handleLoginFailure(User::AUTH_INVALID_MFA_CODE, $user);
+            return $this->_handleLoginFailure(User::AUTH_INVALID_2FA_CODE, $user);
         }
 
         $authService->remove2faDataFromSession();
@@ -394,7 +394,7 @@ class UsersController extends Controller
 
     /**
      * Finish logging user in.
-     * Used for logging in with a password (with and without MFA) and via WebAuthn
+     * Used for logging in with a password (with and without 2FA) and via WebAuthn
      *
      * @param User $user
      * @param int $duration
@@ -1260,7 +1260,7 @@ class UsersController extends Controller
                     'currentPassword',
                     'passwordResetRequired',
                     'preferredLanguage',
-                    'requireMfa',
+                    'has2fa',
                 ];
 
                 foreach ($errors as $attribute => $error) {
@@ -1576,7 +1576,7 @@ JS,
         }
 
         if ($isCurrentUser || $canAdministrateUsers) {
-            $user->requireMfa = (bool)$this->request->getBodyParam('requireMfa', $user->requireMfa);
+            $user->has2fa = (bool)$this->request->getBodyParam('has2fa', $user->has2fa);
         }
 
         // Is their admin status changing?
@@ -2349,7 +2349,7 @@ JS,
         );
     }
 
-    private function _mfaStep(): Response
+    private function _2faStep(): Response
     {
         // Get the return URL
         $authService = Craft::$app->getAuth();

@@ -57,7 +57,7 @@ class WebAuthn extends Configurable2faType
             return false;
         }
 
-        return $user->isMfaRequired() && WebAuthnRecord::findOne(['userId' => $user->id]) !== null;
+        return $user->is2faRequired() && WebAuthnRecord::findOne(['userId' => $user->id]) !== null;
     }
 
     /**

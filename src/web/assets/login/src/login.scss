@@ -16,7 +16,7 @@ body {
 #login {
   width: 300px;
 
-  &.mfa {
+  &.auth-2fa {
     width: auto;
     max-width: 600px;
 
@@ -70,7 +70,7 @@ body {
 }
 
 #remember-password,
-#alternative-mfa {
+#alternative-2fa {
   display: none;
 }
 
@@ -99,13 +99,13 @@ body {
   }
 }
 
-.mfa #login-form {
+.auth-2fa #login-form {
   #forgot-password,
   #remember-password {
     display: none;
   }
 
-  #alternative-mfa {
+  #alternative-2fa {
     display: block;
   }
 }
@@ -149,14 +149,14 @@ body {
 
 #forgot-password,
 #remember-password,
-#alternative-mfa,
+#alternative-2fa,
 #alternative-login {
   font-size: 11px;
   color: var(--medium-text-color);
   width: 100%;
 }
 
-.alternative-mfa-types button {
+.alternative-2fa-types button {
   font-size: 13px;
   color: var(--medium-text-color);
 }
@@ -165,10 +165,10 @@ body {
 #forgot-password:focus,
 #remember-password:hover,
 #remember-password:focus,
-#alternative-mfa:hover,
-#alternative-mfa:focus,
-.alternative-mfa-types button:hover,
-.alternative-mfa-types button:focus,
+#alternative-2fa:hover,
+#alternative-2fa:focus,
+.alternative-2fa-types button:hover,
+.alternative-2fa-types button:focus,
 #alternative-login:hover,
 #alternative-login:focus {
   color: var(--link-color);
@@ -186,17 +186,17 @@ body {
   margin-top: 1em;
 }
 
-.mfa-form {
+.auth-2fa-form {
   display: none;
 }
 
-#login.mfa {
+#login.auth-2fa {
   #login-form-top,
   #login-form-bottom {
     display: none;
   }
 
-  .mfa-form {
+  .auth-2fa-form {
     display: block;
   }
 }

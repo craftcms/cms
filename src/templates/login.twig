@@ -90,7 +90,7 @@
                     {% endif %}
                 </div>
 
-                <div id="mfa-form"></div>
+                <div id="auth-2fa-form"></div>
 
                 <div id="login-form-buttons" class="buttons">
                     {{ forms.submitButton({
@@ -107,8 +107,8 @@
                 <div id="login-form-extra">
                     <button id="forgot-password" type="button">{{ 'Forgot your password?'|t('app') }}</button>
                     <button id="remember-password" type="button">{{ 'Remember your password?'|t('app') }}</button>
-                    <button id="alternative-mfa" type="button">{{ 'Alternative MFA methods'|t('app') }}</button>
-                    <ul id="alternative-mfa-types"></ul>
+                    <button id="alternative-2fa" type="button">{{ 'Alternative 2FA methods'|t('app') }}</button>
+                    <ul id="alternative-2fa-types"></ul>
                 </div>
             </form>
 

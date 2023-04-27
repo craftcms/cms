@@ -46,7 +46,7 @@ class GoogleAuthenticator extends Configurable2faType
      */
     public function isSetupForUser(User $user): bool
     {
-        return $user->isMfaRequired() && self::_getSecretFromDb($user->id) !== null;
+        return $user->is2faRequired() && self::_getSecretFromDb($user->id) !== null;
     }
 
     /**

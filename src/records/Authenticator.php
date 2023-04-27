@@ -16,7 +16,7 @@ use yii\db\ActiveQueryInterface;
  *
  * @property int $id ID
  * @property int $userId Volume ID
- * @property string $auth2faSecret MFA secret
+ * @property string $auth2faSecret 2FA secret
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.5.0
  */

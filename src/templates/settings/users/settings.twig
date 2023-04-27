@@ -126,7 +126,7 @@
             </div>
         {% endif %}
 
-        {% set requireMfa = settings.requireMfa|default([]) %}
+        {% set has2fa = settings.has2fa|default([]) %}
         {% set groups = [
             {'value': 'admin','label': 'Admin'|t('app')}
         ] %}
@@ -140,12 +140,12 @@
 
         <h3>{{ 'Require 2FA'|t('app') }}</h3>
         {{ forms.checkboxSelect({
-            name: 'requireMfa',
+            name: 'has2fa',
             options: groups,
             showAllOption: true,
             allLabel: 'All Users'|t('app'),
             allValue: 'all',
-            values: requireMfa
+            values: has2fa
         }) }}
 
         <div class="buttons">

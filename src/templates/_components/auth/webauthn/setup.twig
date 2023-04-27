@@ -12,7 +12,7 @@
 {% endif %}
 
 {% if currentMethod is not defined or currentMethod is empty %}
-    {% set currentMethod = 'craft\\mfa\\type\\WebAuthn' %}
+    {% set currentMethod = 'craft\\auth\\type\\WebAuthn' %}
 {% endif %}
 
 <div class="field">

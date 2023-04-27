@@ -15,8 +15,8 @@
 {% endfor %}
 
 {{ forms.submitButton({
-    id: 'mfa-verify',
-    class: 'mfa-verify',
+    id: 'auth2fa-verify',
+    class: 'auth2fa-verify',
     label: 'Verify'|t('app'),
     spinner: craft.app.request.isCpRequest(),
 }) }}

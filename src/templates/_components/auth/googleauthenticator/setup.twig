@@ -13,10 +13,10 @@
 {% endif %}
 
 {% if currentMethod is not defined or currentMethod is empty %}
-    {% set currentMethod = 'craft\\mfa\\type\\GoogleAuthenticator' %}
+    {% set currentMethod = 'craft\\auth\\type\\GoogleAuthenticator' %}
 {% endif %}
 
-{% set isSetup = user.isMfaTypeSetup(currentMethod) %}
+{% set isSetup = user.is2faTypeSetup(currentMethod) %}
 
 <div class="field">
     {% if withIntro is defined and withIntro == true %}
@@ -33,7 +33,7 @@
 
         <h3>{{ 'Step {number}:'|t('app', {number: 2}) }} {{ 'Use the app to set up your connection.'|t('app') }}</h3>
         <p>
-            {{ 'To continue turning on the Multi-Factor Authentication (MFA), please use the app you just installed to scan the QR code or enter the secret key shown below.'|t('app') }}
+            {{ 'To continue turning on the Two-Factor Authentication (2FA), please use the app you just installed to scan the QR code or enter the secret key shown below.'|t('app') }}
         </p>
         <div id="qr-container">
             {% if (qrCode is defined and qrCode is not empty) or (secret is defined and secret is not empty) %}
@@ -62,6 +62,6 @@
         <p>{{ 'Now every time you log in, you’ll be asked to enter a verification code from the app.'|t('app') }}</p>
     {% else %}
         <h3>{{ 'You’re all set up.'|t('app') }}</h3>
-        <button id="mfa-remove-setup" name="remove-setup" class="btn">{{ 'Remove setup'|t('app') }}</button>
+        <button id="auth-2fa-remove-setup" name="remove-setup" class="btn">{{ 'Remove setup'|t('app') }}</button>
     {% endif %}
 </div>

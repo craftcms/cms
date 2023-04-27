@@ -74,7 +74,7 @@ use yii\web\IdentityInterface;
  * @property-read bool $isCurrent whether this is the current logged-in user
  * @property-read string|null $preferredLanguage the user’s preferred language
  * @property-read string|null $preferredLocale the user’s preferred formatting locale
- * @property bool $requireMfa whether user has MFA enabled
+ * @property bool $has2fa whether user has 2FA enabled
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
@@ -129,7 +129,7 @@ class User extends Element implements IdentityInterface
     public const AUTH_NO_CP_ACCESS = 'no_cp_access';
     public const AUTH_NO_CP_OFFLINE_ACCESS = 'no_cp_offline_access';
     public const AUTH_NO_SITE_OFFLINE_ACCESS = 'no_site_offline_access';
-    public const AUTH_INVALID_MFA_CODE = 'invalid_mfa_code';
+    public const AUTH_INVALID_2FA_CODE = 'invalid_2fa_code';
     public const AUTH_WEBAUTHN_NOT_SETUP = 'webauthn_not_setup';
 
     // Validation scenarios
@@ -428,7 +428,7 @@ class User extends Element implements IdentityInterface
             'groups' => ['label' => Craft::t('app', 'Groups')],
             'preferredLanguage' => ['label' => Craft::t('app', 'Preferred Language')],
             'preferredLocale' => ['label' => Craft::t('app', 'Preferred Locale')],
-            'requireMfa' => ['label' => Craft::t('app', 'MFA Enabled')],
+            'has2fa' => ['label' => Craft::t('app', '2FA Enabled')],
             'id' => ['label' => Craft::t('app', 'ID')],
             'uid' => ['label' => Craft::t('app', 'UID')],
             'lastLoginDate' => ['label' => Craft::t('app', 'Last Login')],
@@ -669,10 +669,10 @@ class User extends Element implements IdentityInterface
     public ?string $verificationCode = null;
 
     /**
-     * @var bool Is MFA enabled
+     * @var bool Is 2FA enabled
      * @since 4.5.0
      */
-    public bool $requireMfa = false;
+    public bool $has2fa = false;
 
     /**
      * @var string|null Last login attempt IP address.
@@ -1125,30 +1125,30 @@ class User extends Element implements IdentityInterface
     }
 
     /**
-     * Return whether user is required to use MFA to login
+     * Return whether user is required to use 2FA to login
      *
      * @return bool
      */
-    public function isMfaRequired()
+    public function is2faRequired()
     {
-        if ($this->requireMfa) {
+        if ($this->has2fa) {
             return true;
         }
 
-        $requireMfa = Craft::$app->getProjectConfig()->get(ProjectConfig::PATH_USERS)['requireMfa'] ?? [];
+        $has2fa = Craft::$app->getProjectConfig()->get(ProjectConfig::PATH_USERS)['has2fa'] ?? [];
 
-        if (!is_array($requireMfa)) {
-            if ($requireMfa === 'all') {
+        if (!is_array($has2fa)) {
+            if ($has2fa === 'all') {
                 return true;
             }
         } else {
-            if ($this->admin && in_array('admin', $requireMfa, true)) {
+            if ($this->admin && in_array('admin', $has2fa, true)) {
                 return true;
             }
 
             $userGroups = $this->getGroups();
             foreach ($userGroups as $userGroup) {
-                if (in_array($userGroup->handle, $requireMfa, true)) {
+                if (in_array($userGroup->handle, $has2fa, true)) {
                     return true;
                 }
             }
@@ -1158,26 +1158,26 @@ class User extends Element implements IdentityInterface
     }
 
     /**
-     * Whether user can turn off MFA requirement. This can only happen if it's not enforced on a group level.
+     * Whether user can turn off 2FA requirement. This can only happen if it's not enforced on a group level.
      *
      * @return bool
      */
-    public function canTurnOffMfa(): bool
+    public function canTurnOff2fa(): bool
     {
-        $requireMfa = Craft::$app->getProjectConfig()->get(ProjectConfig::PATH_USERS)['requireMfa'] ?? [];
+        $has2fa = Craft::$app->getProjectConfig()->get(ProjectConfig::PATH_USERS)['has2fa'] ?? [];
 
-        if (!is_array($requireMfa)) {
-            if ($requireMfa === 'all') {
+        if (!is_array($has2fa)) {
+            if ($has2fa === 'all') {
                 return false;
             }
         } else {
-            if ($this->admin && in_array('admin', $requireMfa, true)) {
+            if ($this->admin && in_array('admin', $has2fa, true)) {
                 return false;
             }
 
             $userGroups = $this->getGroups();
             foreach ($userGroups as $userGroup) {
-                if (in_array($userGroup->handle, $requireMfa, true)) {
+                if (in_array($userGroup->handle, $has2fa, true)) {
                     return false;
                 }
             }
@@ -1865,7 +1865,7 @@ class User extends Element implements IdentityInterface
         $record->email = $this->email;
         $record->passwordResetRequired = $this->passwordResetRequired;
         $record->unverifiedEmail = $this->unverifiedEmail;
-        $record->requireMfa = $this->requireMfa;
+        $record->has2fa = $this->has2fa;
 
         if ($changePassword = (isset($this->newPassword))) {
             $hash = Craft::$app->getSecurity()->hashPassword($this->newPassword);
@@ -1967,34 +1967,34 @@ class User extends Element implements IdentityInterface
         return true;
     }
 
-    // MFA-related
+    // 2FA-related
     // -------------------------------------------------------------------------
 
     /**
-     * Return default MFA method
+     * Return default 2FA method
      *
      * @return Base2faType
      */
     public function getDefault2faType(): Base2faType
     {
-        $allMfaTypes = Craft::$app->getAuth()->getAll2faTypes();
+        $all2faTypes = Craft::$app->getAuth()->getAll2faTypes();
 
-        if (empty($allMfaTypes)) {
-            throw new InvalidValueException('No registered MFA types.');
+        if (empty($all2faTypes)) {
+            throw new InvalidValueException('No registered 2FA types.');
         }
 
-        return new (array_keys($allMfaTypes)[0]);
+        return new (array_keys($all2faTypes)[0]);
     }
 
     /**
-     * Check if given MFA option is fully set up for the user
+     * Check if given 2FA option is fully set up for the user
      *
-     * @param string $mfaClass
+     * @param string $auth2faClass
      * @return bool
      */
-    public function isMfaTypeSetup(string $mfaClass): bool
+    public function is2faTypeSetup(string $auth2faClass): bool
     {
-        $auth2faType = new $mfaClass();
+        $auth2faType = new $auth2faClass();
 
         if (!($auth2faType instanceof Configurable2faInterface)) {
             return true;
