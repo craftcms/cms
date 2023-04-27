@@ -2327,7 +2327,9 @@ JS;
     {
         // Delay randomly between 0 and 1.5 seconds.
         $max = 1500000 - (int)($maxOffset * 1000000);
-        usleep(random_int(0, $max));
+        if ($max > 0) {
+            usleep(random_int(0, $max));
+        }
     }
 
     /**
