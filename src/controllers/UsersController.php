@@ -163,7 +163,8 @@ class UsersController extends Controller
 
         if (!$user || $user->password === null) {
             // Delay again to match $user->authenticate()'s delay
-            return $this->_handleLoginFailure(User::AUTH_INVALID_CREDENTIALS, null, true);
+            $this->_hashCheck();
+            return $this->_handleLoginFailure(User::AUTH_INVALID_CREDENTIALS);
         }
 
         // Did they submit a valid password, and is the user capable of being logged-in?
@@ -444,7 +445,8 @@ class UsersController extends Controller
                 $user = Craft::$app->getUsers()->getUserById($userId);
 
                 if (!$user) {
-                    $this->_randomlyDelayResponse(true);
+                    $this->_hashCheck();
+                    $this->_randomlyDelayResponse();
                     throw new NotFoundHttpException('User not found');
                 }
             }
@@ -458,7 +460,8 @@ class UsersController extends Controller
                 // If they didn't even enter a username/email, just bail now.
                 $errors[] = Craft::t('app', 'Username or email is required.');
 
-                return $this->_handleSendPasswordResetError($errors, null, true);
+                $this->_hashCheck();
+                return $this->_handleSendPasswordResetError($errors);
             }
 
             $user = Craft::$app->getUsers()->getUserByUsernameOrEmail($loginName);
@@ -490,7 +493,8 @@ class UsersController extends Controller
         }
 
         // Handle the errors.
-        return $this->_handleSendPasswordResetError($errors, $loginName, true);
+        $this->_hashCheck();
+        return $this->_handleSendPasswordResetError($errors, $loginName);
     }
 
     /**
@@ -1797,9 +1801,9 @@ JS;
      * @return Response|null
      * @throws ServiceUnavailableHttpException
      */
-    private function _handleLoginFailure(string $authError = null, User $user = null, bool $forceHashCheck = false)
+    private function _handleLoginFailure(string $authError = null, User $user = null)
     {
-        $this->_randomlyDelayResponse($forceHashCheck);
+        $this->_randomlyDelayResponse();
 
         $message = UserHelper::getLoginFailureMessage($authError, $user);
 
@@ -2272,13 +2276,12 @@ JS;
     /**
      * @param string[] $errors
      * @param string|null $loginName
-     * @param bool $forceHashCheck
      * @return Response|null
      * @throws \Exception
      */
-    private function _handleSendPasswordResetError(array $errors, string $loginName = null, bool $forceHashCheck = false)
+    private function _handleSendPasswordResetError(array $errors, string $loginName = null)
     {
-        $this->_randomlyDelayResponse($forceHashCheck);
+        $this->_randomlyDelayResponse();
 
         if ($this->request->getAcceptsJson()) {
             /** @noinspection CallableParameterUseCaseInTypeContextInspection */
@@ -2315,16 +2318,13 @@ JS;
         ], $templateMode);
     }
 
-    /**
-     * @return void
-     * @throws \Exception
-     */
-    private function _randomlyDelayResponse($forceHashCheck = false)
+    private function _hashCheck()
     {
-        if ($forceHashCheck) {
-            Craft::$app->getSecurity()->validatePassword('p@ss1w0rd', '$2y$13$nj9aiBeb7RfEfYP3Cum6Revyu14QelGGxwcnFUKXIrQUitSodEPRi');
-        }
+        Craft::$app->getSecurity()->validatePassword('p@ss1w0rd', '$2y$13$nj9aiBeb7RfEfYP3Cum6Revyu14QelGGxwcnFUKXIrQUitSodEPRi');
+    }
 
+    private function _randomlyDelayResponse()
+    {
         // Delay randomly between 0 and 1.5 seconds.
         usleep(random_int(0, 1500000));
     }
