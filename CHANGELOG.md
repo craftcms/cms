@@ -2,7 +2,7 @@
 
 ## Unreleased
 
-- Fixed a potential user enumeration timing attack vulnerability. 
+- Fixed a user enumeration timing attack vulnerability.
 
 ## 3.8.8 - 2023-04-25
 
