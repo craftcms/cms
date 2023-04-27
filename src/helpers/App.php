@@ -702,12 +702,11 @@ class App
         foreach ($frames as $i => $frame) {
             $trace .= ($i !== 0 ? "\n" : '') .
                 '#' . $i . ' ' .
+                (isset($frame['file']) ? sprintf('%s%s: ', $frame['file'], isset($frame['line']) ? "({$frame['line']})" : '') : '') .
                 ($frame['class'] ?? '') .
                 ($frame['type'] ?? '') .
                 /** @phpstan-ignore-next-line */
-                ($frame['function'] ?? '') . '()' .
-                /** @phpstan-ignore-next-line */
-                (isset($frame['file']) ? ' called at [' . ($frame['file'] ?? '') . ':' . ($frame['line'] ?? '') . ']' : '');
+                (isset($frame['function']) ? "{$frame['function']}()" : '');
         }
 
         return $trace;
