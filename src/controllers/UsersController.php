@@ -162,7 +162,7 @@ class UsersController extends Controller
         $user = Craft::$app->getUsers()->getUserByUsernameOrEmail($loginName);
 
         if (!$user || $user->password === null) {
-            // Delay again to match $user->authenticate()'s delay
+            // Match $user->authenticate()'s delay
             $this->_hashCheck();
             return $this->_handleLoginFailure(User::AUTH_INVALID_CREDENTIALS);
         }
@@ -1803,8 +1803,6 @@ JS;
      */
     private function _handleLoginFailure(string $authError = null, User $user = null)
     {
-        $this->_randomlyDelayResponse();
-
         $message = UserHelper::getLoginFailureMessage($authError, $user);
 
         // Fire a 'loginFailure' event
