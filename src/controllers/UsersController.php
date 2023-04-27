@@ -445,8 +445,6 @@ class UsersController extends Controller
                 $user = Craft::$app->getUsers()->getUserById($userId);
 
                 if (!$user) {
-                    $this->_hashCheck();
-                    $this->_randomlyDelayResponse();
                     throw new NotFoundHttpException('User not found');
                 }
             }
@@ -459,8 +457,6 @@ class UsersController extends Controller
             if (!$loginName) {
                 // If they didn't even enter a username/email, just bail now.
                 $errors[] = Craft::t('app', 'Username or email is required.');
-
-                $this->_hashCheck();
                 return $this->_handleSendPasswordResetError($errors);
             }
 
@@ -471,16 +467,24 @@ class UsersController extends Controller
             }
         }
 
+        // keep track of how long email sending takes
+        $time = microtime(true);
+
         if (!empty($user) && !Craft::$app->getUsers()->sendPasswordResetEmail($user)) {
             $errors[] = Craft::t('app', 'There was a problem sending the password reset email.');
         }
 
-        if (!empty($errors) && Craft::$app->getConfig()->getGeneral()->preventUserEnumeration) {
-            $list = implode("\n", array_map(function(string $error) {
-                return sprintf('- %s', $error);
-            }, $errors));
-            Craft::warning(sprintf("Password reset email not sent:\n%s", $list), __METHOD__);
-            $errors = [];
+        if (Craft::$app->getConfig()->getGeneral()->preventUserEnumeration) {
+            // Randomly delay the response
+            $this->_randomlyDelayResponse(microtime(true) - $time);
+
+            if (!empty($errors)) {
+                $list = implode("\n", array_map(function(string $error) {
+                    return sprintf('- %s', $error);
+                }, $errors));
+                Craft::warning(sprintf("Password reset email not sent:\n%s", $list), __METHOD__);
+                $errors = [];
+            }
         }
 
         if (empty($errors)) {
@@ -493,7 +497,6 @@ class UsersController extends Controller
         }
 
         // Handle the errors.
-        $this->_hashCheck();
         return $this->_handleSendPasswordResetError($errors, $loginName);
     }
 
@@ -2279,8 +2282,6 @@ JS;
      */
     private function _handleSendPasswordResetError(array $errors, string $loginName = null)
     {
-        $this->_randomlyDelayResponse();
-
         if ($this->request->getAcceptsJson()) {
             /** @noinspection CallableParameterUseCaseInTypeContextInspection */
             $errors = implode(', ', $errors);
@@ -2321,10 +2322,11 @@ JS;
         Craft::$app->getSecurity()->validatePassword('p@ss1w0rd', '$2y$13$nj9aiBeb7RfEfYP3Cum6Revyu14QelGGxwcnFUKXIrQUitSodEPRi');
     }
 
-    private function _randomlyDelayResponse()
+    private function _randomlyDelayResponse(float $maxOffset = 0)
     {
         // Delay randomly between 0 and 1.5 seconds.
-        usleep(random_int(0, 1500000));
+        $max = 1500000 - (int)($maxOffset * 1000000);
+        usleep(random_int(0, $max));
     }
 
     /**
