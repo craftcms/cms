@@ -8,7 +8,6 @@
 namespace craft\services;
 
 use Craft;
-use craft\auth\type\EmailCode;
 use craft\auth\type\GoogleAuthenticator;
 use craft\auth\type\WebAuthn;
 use craft\base\auth\Base2faType;
@@ -193,13 +192,6 @@ class Auth extends Component
                     'description' => GoogleAuthenticator::getDescription(),
                     'config' => [
                         'requiresSetup' => GoogleAuthenticator::$requiresSetup,
-                    ],
-                ],
-                EmailCode::class => [
-                    'name' => EmailCode::displayName(),
-                    'description' => EmailCode::getDescription(),
-                    'config' => [
-                        'requiresSetup' => EmailCode::$requiresSetup,
                     ],
                 ],
                 WebAuthn::class => [

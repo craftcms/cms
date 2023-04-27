@@ -43,6 +43,8 @@ import {browserSupportsWebAuthn} from '@simplewebauthn/browser';
         const $submitBtn = this.$auth2faLoginFormContainer.find('.submit');
         this.$errors = $('#login-errors');
 
+        // TODO: check if there are any alternative 2fa methods, and only show the link if there are
+
         this.onSubmitResponse($submitBtn);
       },
 
