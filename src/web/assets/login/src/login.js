@@ -13,6 +13,7 @@ import './login.scss';
     $submitBtn: null,
     $errors: null,
 
+    submitBtn: null,
     forgotPassword: false,
     validateOnInput: false,
 
@@ -26,7 +27,7 @@ import './login.scss';
       this.$submitBtn = $('#submit');
       this.$errors = $('#login-errors');
 
-      this.$submitBtn = new Garnish.MultiFunctionBtn(this.$submitBtn, {
+      this.submitBtn = new Garnish.MultiFunctionBtn(this.$submitBtn, {
         changeButtonText: true,
       });
 
@@ -111,7 +112,7 @@ import './login.scss';
         return;
       }
 
-      this.$submitBtn.busyEvent();
+      this.submitBtn.busyEvent();
 
       this.clearErrors();
 
@@ -133,6 +134,10 @@ import './login.scss';
         })
         .catch(({response}) => {
           this.showError(response.data.message);
+        })
+        .finally(() => {
+          this.submitBtn.successEvent();
+          this.submitBtn.updateMessages(Craft.t('app', 'Reset Password'));
         });
     },
 
@@ -145,7 +150,7 @@ import './login.scss';
 
       Craft.sendActionRequest('POST', 'users/login', {data})
         .then((response) => {
-          this.$submitBtn.successEvent();
+          this.submitBtn.successEvent();
           window.location.href = response.data.returnUrl;
         })
         .catch(({response}) => {
@@ -160,7 +165,7 @@ import './login.scss';
     },
 
     onSubmitResponse: function () {
-      this.$submitBtn.failureEvent();
+      this.submitBtn.failureEvent();
     },
 
     showError: function (error) {
@@ -185,7 +190,7 @@ import './login.scss';
       this.forgotPassword = !this.forgotPassword;
 
       this.$form.toggleClass('reset-password', this.forgotPassword);
-      this.$submitBtn.text(
+      this.submitBtn.updateMessages(
         Craft.t('app', this.forgotPassword ? 'Reset Password' : 'Sign in')
       );
     },
