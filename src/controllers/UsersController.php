@@ -457,6 +457,7 @@ class UsersController extends Controller
             if (!$loginName) {
                 // If they didn't even enter a username/email, just bail now.
                 $errors[] = Craft::t('app', 'Username or email is required.');
+
                 return $this->_handleSendPasswordResetError($errors);
             }
 
