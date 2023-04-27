@@ -33,8 +33,8 @@ Craft.Auth2faLogin = {
           return Promise.reject({success: false, error: error});
         }
       })
-      .catch(({response}) => {
-        return Promise.reject({success: false, error: response.data.message});
+      .catch((response) => {
+        return Promise.reject({success: false, error: response.error.message});
       });
   },
 

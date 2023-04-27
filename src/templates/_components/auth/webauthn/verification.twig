@@ -1,0 +1,13 @@
+{% import '_includes/forms.twig' as forms %}
+
+{{ forms.hidden({
+    'name': 'currentMethod',
+    'value': currentMethod
+}) }}
+
+{{ forms.submitButton({
+    id: 'auth2fa-webauthn',
+    class: 'auth2fa-webauthn',
+    label: 'Authenticate'|t('app'),
+    spinner: craft.app.request.isCpRequest(),
+}) }}

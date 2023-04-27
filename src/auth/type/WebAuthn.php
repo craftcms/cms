@@ -73,7 +73,26 @@ class WebAuthn extends Configurable2faType
      */
     public function getInputHtml(string $html = '', array $options = []): string
     {
-        return '';
+        $user = Craft::$app->getAuth()->getUserFor2fa();
+
+        if ($user === null) {
+            return '';
+        }
+
+        $data = [
+            'user' => $user,
+            'fields' => $this->getNamespacedFields(),
+            'currentMethod' => self::class,
+        ];
+
+        $view = Craft::$app->getView();
+        $view->templateMode = View::TEMPLATE_MODE_CP;
+        $formHtml = Craft::$app->getView()->renderTemplate(
+            '_components/auth/webauthn/verification.twig',
+            $data
+        );
+
+        return parent::getInputHtml($formHtml, $options);
     }
 
     /**

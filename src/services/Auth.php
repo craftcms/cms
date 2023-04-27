@@ -167,12 +167,16 @@ class Auth extends Component
      * Returns a list of all available 2FA types except the one passed in as current
      *
      * @param ?string $currentMethod
+     * @param bool $webAuthnSupported
+     * @param ?User $user
      * @return array
      */
-    public function getAlternative2faTypes(?string $currentMethod = null): array
+    public function getAlternative2faTypes(?string $currentMethod = null, bool $webAuthnSupported = true, ?User $user = null): array
     {
-        return array_filter($this->getAll2faTypes(), function($type) use ($currentMethod) {
-            return $type !== $currentMethod && $type !== WebAuthn::class;
+        return array_filter($this->getAll2faTypes(), function($type) use ($currentMethod, $webAuthnSupported, $user) {
+            return
+                ($type !== $currentMethod && $type !== WebAuthn::class) ||
+                ($type === WebAuthn::class && $webAuthnSupported && $user !== null && $user->hasWebAuthnRecord());
         }, ARRAY_FILTER_USE_KEY);
     }
 

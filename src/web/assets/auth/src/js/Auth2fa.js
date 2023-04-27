@@ -25,6 +25,7 @@ import {browserSupportsWebAuthn} from '@simplewebauthn/browser';
         this.$viewSetupBtns = this.$auth2faSetupFormContainer.find(
           'button.auth-2fa-view-setup'
         );
+        this.$errors = $('#login-errors');
 
         this.setSettings(settings, Craft.Auth2fa.defaults);
 
@@ -41,9 +42,6 @@ import {browserSupportsWebAuthn} from '@simplewebauthn/browser';
         $loginDiv.addClass('auth-2fa');
         $('#login-form-buttons').hide();
         const $submitBtn = this.$auth2faLoginFormContainer.find('.submit');
-        this.$errors = $('#login-errors');
-
-        // TODO: check if there are any alternative 2fa methods, and only show the link if there are
 
         this.onSubmitResponse($submitBtn);
       },
@@ -201,6 +199,11 @@ import {browserSupportsWebAuthn} from '@simplewebauthn/browser';
       },
 
       onAlternative2faTypeClick: function (event) {
+        this.clearErrors();
+
+        let $btn = $(event.currentTarget);
+        $btn.attr('disabled', true).disable();
+
         // get current authenticator class via data-2fa-type
         let currentMethod = this.getCurrent2faType(
           this.$auth2faLoginFormContainer.find('#verifyContainer')
@@ -214,13 +217,14 @@ import {browserSupportsWebAuthn} from '@simplewebauthn/browser';
 
         let data = {
           currentMethod: currentMethod,
+          webAuthnSupported: browserSupportsWebAuthn(),
         };
 
         // get available 2FA methods, minus the one that's being shown
-        this.getAlternative2faTypes(data);
+        this.getAlternative2faTypes(data, $btn);
       },
 
-      getAlternative2faTypes: function (data) {
+      getAlternative2faTypes: function (data, $btn) {
         Craft.sendActionRequest(
           'POST',
           this.settings.fetchAlternative2faTypes,
@@ -235,10 +239,14 @@ import {browserSupportsWebAuthn} from '@simplewebauthn/browser';
           })
           .catch(({response}) => {
             this.showError(response.data.message);
+          })
+          .finally(() => {
+            $btn.attr('disabled', false).enable();
           });
       },
 
       showAlternative2faTypes: function (data) {
+        this.$alternative2faTypesContainer.empty();
         let alternativeTypes = Object.entries(data).map(([key, value]) => ({
           key,
           value,
@@ -256,6 +264,10 @@ import {browserSupportsWebAuthn} from '@simplewebauthn/browser';
                 '</button></li>'
             );
           });
+        } else {
+          this.showError(
+            Craft.t('app', 'No alternative 2FA methods available.')
+          );
         }
 
         // list them by name
@@ -272,6 +284,9 @@ import {browserSupportsWebAuthn} from '@simplewebauthn/browser';
       },
 
       onSelectAlternative2faType: function (event) {
+        let $btn = $(event.currentTarget);
+        $btn.attr('disabled', true).disable();
+
         const data = {
           selectedMethod: $(event.currentTarget).attr('value'),
         };
@@ -291,6 +306,9 @@ import {browserSupportsWebAuthn} from '@simplewebauthn/browser';
           })
           .catch(({response}) => {
             //this.showError(response.data.message);
+          })
+          .finally(() => {
+            $btn.attr('disabled', false).enable();
           });
       },
 

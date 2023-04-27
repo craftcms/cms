@@ -183,62 +183,6 @@ class UsersController extends Controller
     }
 
     /**
-     * Get common login data for logging in via password and security key (WebAuthn)
-     *
-     * @return array|Response
-     * @throws BadRequestHttpException
-     * @throws ServiceUnavailableHttpException
-     * @since 4.5.0
-     */
-    private function _getLoginData(): array|Response
-    {
-        $loginName = $this->request->getRequiredBodyParam('loginName');
-        $rememberMe = (bool)$this->request->getBodyParam('rememberMe');
-
-        $user = $this->_findLoginUser($loginName);
-
-        if (!$user || $user->password === null) {
-            // Delay again to match $user->authenticate()'s delay
-            Craft::$app->getSecurity()->validatePassword('p@ss1w0rd', '$2y$13$nj9aiBeb7RfEfYP3Cum6Revyu14QelGGxwcnFUKXIrQUitSodEPRi');
-            return $this->_handleLoginFailure(User::AUTH_INVALID_CREDENTIALS);
-        }
-
-        // Get the session duration
-        $generalConfig = Craft::$app->getConfig()->getGeneral();
-        if ($rememberMe && $generalConfig->rememberedUserSessionDuration !== 0) {
-            $duration = $generalConfig->rememberedUserSessionDuration;
-        } else {
-            $duration = $generalConfig->userSessionDuration;
-        }
-
-        return compact('user', 'duration');
-    }
-
-    /**
-     * Get User for Login
-     *
-     * @return Response|null
-     * @throws BadRequestHttpException
-     */
-    public function actionGetUserForLogin(): ?Response
-    {
-        $loginName = $this->request->getRequiredBodyParam('loginName');
-
-        $user = $this->_findLoginUser($loginName);
-
-        if (!$user || $user->password === null) {
-            return $this->asJson([
-                'hasSecurityKeys' => false,
-            ]);
-        }
-
-        // does user have security key set up or should we only show the password field
-        return $this->asJson([
-            'hasSecurityKeys' => $user->is2faTypeSetup(WebAuthn::class),
-        ]);
-    }
-
-    /**
      * Displays the login template, and handles login post requests for logging in with a password.
      *
      * @return Response|null
@@ -256,18 +200,29 @@ class UsersController extends Controller
             return null;
         }
 
-        $loginData = $this->_getLoginData();
-        if ($loginData instanceof Response) {
-            return $loginData;
-        }
-
-        $user = $loginData['user'];
-        $duration = $loginData['duration'];
+        $loginName = $this->request->getRequiredBodyParam('loginName');
         $password = $this->request->getRequiredBodyParam('password');
+        $rememberMe = (bool)$this->request->getBodyParam('rememberMe');
+
+        $user = $this->_findLoginUser($loginName);
+
+        if (!$user || $user->password === null) {
+            // Delay again to match $user->authenticate()'s delay
+            Craft::$app->getSecurity()->validatePassword('p@ss1w0rd', '$2y$13$nj9aiBeb7RfEfYP3Cum6Revyu14QelGGxwcnFUKXIrQUitSodEPRi');
+            return $this->_handleLoginFailure(User::AUTH_INVALID_CREDENTIALS);
+        }
 
         // Did they submit a valid password, and is the user capable of being logged-in?
         if (!$user->authenticate($password)) {
             return $this->_handleLoginFailure($user->authError, $user);
+        }
+
+        // Get the session duration
+        $generalConfig = Craft::$app->getConfig()->getGeneral();
+        if ($rememberMe && $generalConfig->rememberedUserSessionDuration !== 0) {
+            $duration = $generalConfig->rememberedUserSessionDuration;
+        } else {
+            $duration = $generalConfig->userSessionDuration;
         }
 
         // if user requires 2FA to login and we have their data stored in session, proceed to show the 2FA step
@@ -338,17 +293,14 @@ class UsersController extends Controller
         $this->requirePostRequest();
         $this->requireAcceptsJson();
 
-        $loginData = $this->_getLoginData();
-        if ($loginData instanceof Response) {
-            return $loginData;
+        $authService = Craft::$app->getAuth();
+        $auth2faData = $authService->get2faDataFromSession();
+        if ($auth2faData === null) {
+            throw new Exception(Craft::t('app', 'Please start again.'));
         }
 
-        $user = $loginData['user'];
-        $duration = $loginData['duration'];
-
-        if ($user === null || $duration === null) {
-            return $this->asFailure('Something went wrong.');
-        }
+        $user = $auth2faData['user'];
+        $duration = $auth2faData['duration'];
 
         $webAuthn = new WebAuthn();
         $options = $webAuthn->generateCredentialRequestOptions($user);
