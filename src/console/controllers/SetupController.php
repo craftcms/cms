@@ -21,6 +21,7 @@ use craft\helpers\FileHelper;
 use craft\helpers\StringHelper;
 use craft\migrations\CreateDbCacheTable;
 use craft\migrations\CreatePhpSessionTable;
+use m150207_210500_i18n_init;
 use PDOException;
 use Seld\CliPrompt\CliPrompt;
 use Throwable;
@@ -520,6 +521,37 @@ EOD;
         }
 
         $this->stdout("The `phpsessions` table was created successfully.\n", Console::FG_GREEN);
+        return ExitCode::OK;
+    }
+
+    /**
+     * Creates database tables for storing message translations. (EXPERIMENTAL!)
+     *
+     * @return int
+     * @since 4.5.0
+     */
+    public function actionMessageTables(): int
+    {
+        $db = Craft::$app->getDb();
+        if ($db->tableExists('{{%source_message}}')) {
+            $this->stdout("The `source_message` table already exists.\n", Console::FG_YELLOW);
+            return ExitCode::OK;
+        }
+        if ($db->tableExists('{{%message}}')) {
+            $this->stdout("The `message` table already exists.\n", Console::FG_YELLOW);
+            return ExitCode::OK;
+        }
+
+        require Craft::getAlias('@vendor/yiisoft/yii2/i18n/migrations/m150207_210500_i18n_init.php');
+        /** @phpstan-ignore-next-line */
+        $migration = new m150207_210500_i18n_init();
+        /** @phpstan-ignore-next-line */
+        if ($migration->up() === false) {
+            $this->stderr("An error occurred while creating the `source_message` and `message` tables.\n", Console::FG_RED);
+            return ExitCode::UNSPECIFIED_ERROR;
+        }
+
+        $this->stdout("The `source_message` and `message` tables were created successfully.\n", Console::FG_GREEN);
         return ExitCode::OK;
     }
 
