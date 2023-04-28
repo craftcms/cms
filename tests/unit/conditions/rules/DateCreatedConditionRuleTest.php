@@ -157,49 +157,37 @@ class DateCreatedConditionRuleTest extends TestCase
             'periodTypeHoursAfter' => [
                 ['rangeType' => DateRange::TYPE_AFTER, 'periodValue' => 10, 'periodType' => DateRange::PERIOD_HOURS_AGO],
                 [
-                    static function() {
-                        return '>= ' . (new DateTime('now', new DateTimeZone('America/Los_Angeles')))->modify('-10 hours')->format(DATE_ATOM);
-                    },
+                    fn() => sprintf('>= %s', DateTimeHelper::now(new DateTimeZone('America/Los_Angeles'))->modify('-10 hours')->format(DATE_ATOM)),
                 ],
             ],
             'periodTypeMinutesAfter' => [
                 ['rangeType' => DateRange::TYPE_AFTER, 'periodValue' => 10, 'periodType' => DateRange::PERIOD_MINUTES_AGO],
                 [
-                    static function() {
-                        return '>= ' . (new DateTime('now', new DateTimeZone('America/Los_Angeles')))->modify('-10 minutes')->format(DATE_ATOM);
-                    },
+                    fn() => sprintf('>= %s', DateTimeHelper::now(new DateTimeZone('America/Los_Angeles'))->modify('-10 minutes')->format(DATE_ATOM)),
                 ],
             ],
             'periodTypeDaysAfter' => [
                 ['rangeType' => DateRange::TYPE_AFTER, 'periodValue' => 10, 'periodType' => DateRange::PERIOD_DAYS_AGO],
                 [
-                    static function() {
-                        return '>= ' . (new DateTime('now', new DateTimeZone('America/Los_Angeles')))->modify('-10 days')->format(DATE_ATOM);
-                    },
+                    fn() => sprintf('>= %s', DateTimeHelper::now(new DateTimeZone('America/Los_Angeles'))->modify('-10 days')->format(DATE_ATOM)),
                 ],
             ],
             'periodTypeHoursBefore' => [
                 ['rangeType' => DateRange::TYPE_BEFORE, 'periodValue' => 10, 'periodType' => DateRange::PERIOD_HOURS_AGO],
                 [
-                    static function() {
-                        return '< ' . (new DateTime('now', new DateTimeZone('America/Los_Angeles')))->modify('-10 hours')->format(DATE_ATOM);
-                    },
+                    fn() => sprintf('< %s', DateTimeHelper::now(new DateTimeZone('America/Los_Angeles'))->modify('-10 hours')->format(DATE_ATOM)),
                 ],
             ],
             'periodTypeMinutesBefore' => [
                 ['rangeType' => DateRange::TYPE_BEFORE, 'periodValue' => 10, 'periodType' => DateRange::PERIOD_MINUTES_AGO],
                 [
-                    static function() {
-                        return '< ' . (new DateTime('now', new DateTimeZone('America/Los_Angeles')))->modify('-10 minutes')->format(DATE_ATOM);
-                    },
+                    fn() => sprintf('< %s', DateTimeHelper::now(new DateTimeZone('America/Los_Angeles'))->modify('-10 minutes')->format(DATE_ATOM)),
                 ],
             ],
             'periodTypeDaysBefore' => [
                 ['rangeType' => DateRange::TYPE_BEFORE, 'periodValue' => 10, 'periodType' => DateRange::PERIOD_DAYS_AGO],
                 [
-                    static function() {
-                        return '< ' . (new DateTime('now', new DateTimeZone('America/Los_Angeles')))->modify('-10 days')->format(DATE_ATOM);
-                    },
+                    fn() => sprintf('< %s', DateTimeHelper::now(new DateTimeZone('America/Los_Angeles'))->modify('-10 days')->format(DATE_ATOM)),
                 ],
             ],
         ];
