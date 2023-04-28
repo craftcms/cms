@@ -38,7 +38,6 @@ import {browserSupportsWebAuthn} from '@simplewebauthn/browser';
       },
 
       show2faForm: function (auth2faForm, $loginDiv) {
-        console.log('show2faForm');
         this.$auth2faLoginFormContainer.html('').append(auth2faForm);
         $loginDiv.addClass('auth-2fa');
         $('#login-form-buttons').hide();
