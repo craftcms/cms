@@ -519,7 +519,7 @@ EOD;
             return ExitCode::UNSPECIFIED_ERROR;
         }
 
-        $this->stdout('The `phpsessions` table was created successfully.' . PHP_EOL . PHP_EOL, Console::FG_GREEN);
+        $this->stdout("The `phpsessions` table was created successfully.\n", Console::FG_GREEN);
         return ExitCode::OK;
     }
 
