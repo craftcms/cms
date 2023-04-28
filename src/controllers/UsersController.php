@@ -201,8 +201,8 @@ class UsersController extends Controller
         $user = $this->_findLoginUser($loginName);
 
         if (!$user || $user->password === null) {
-            // Delay again to match $user->authenticate()'s delay
-            Craft::$app->getSecurity()->validatePassword('p@ss1w0rd', '$2y$13$nj9aiBeb7RfEfYP3Cum6Revyu14QelGGxwcnFUKXIrQUitSodEPRi');
+            // Match $user->authenticate()'s delay
+            $this->_hashCheck();
             return $this->_handleLoginFailure(User::AUTH_INVALID_CREDENTIALS);
         }
 
@@ -515,6 +515,9 @@ class UsersController extends Controller
             }
         }
 
+        // keep track of how long email sending takes
+        $time = microtime(true);
+
         // Don't try to send the email if there are already error or there is no user
         try {
             if (empty($errors) && !empty($user) && !Craft::$app->getUsers()->sendPasswordResetEmail($user)) {
@@ -524,12 +527,17 @@ class UsersController extends Controller
             $errors[] = Craft::t('app', 'There was a problem sending the password reset email.');
         }
 
-        if (!empty($errors) && Craft::$app->getConfig()->getGeneral()->preventUserEnumeration) {
-            $list = implode("\n", array_map(function(string $error) {
-                return sprintf('- %s', $error);
-            }, $errors));
-            Craft::warning(sprintf("Password reset email not sent:\n%s", $list), __METHOD__);
-            $errors = [];
+        if (Craft::$app->getConfig()->getGeneral()->preventUserEnumeration) {
+            // Randomly delay the response
+            $this->_randomlyDelayResponse(microtime(true) - $time);
+
+            if (!empty($errors)) {
+                $list = implode("\n", array_map(function(string $error) {
+                    return sprintf('- %s', $error);
+                }, $errors));
+                Craft::warning(sprintf("Password reset email not sent:\n%s", $list), __METHOD__);
+                $errors = [];
+            }
         }
 
         if (empty($errors)) {
@@ -2129,9 +2137,6 @@ JS,
      */
     private function _handleLoginFailure(?string $authError, ?User $user = null): ?Response
     {
-        // Delay randomly between 0 and 1.5 seconds.
-        usleep(random_int(0, 1500000));
-
         $message = UserHelper::getLoginFailureMessage($authError, $user);
 
         // Fire a 'loginFailure' event
@@ -2591,6 +2596,7 @@ JS,
      * @param string[] $errors
      * @param string|null $loginName
      * @return Response|null
+     * @throws \Exception
      */
     private function _handleSendPasswordResetError(array $errors, ?string $loginName = null): ?Response
     {
@@ -2625,6 +2631,20 @@ JS,
         return $view->renderTemplate('users/_photo.twig', [
             'user' => $user,
         ], $templateMode);
+    }
+
+    private function _hashCheck()
+    {
+        Craft::$app->getSecurity()->validatePassword('p@ss1w0rd', '$2y$13$nj9aiBeb7RfEfYP3Cum6Revyu14QelGGxwcnFUKXIrQUitSodEPRi');
+    }
+
+    private function _randomlyDelayResponse(float $maxOffset = 0)
+    {
+        // Delay randomly between 0.5 and 1.5 seconds.
+        $max = 1500000 - (int)($maxOffset * 1000000);
+        if ($max > 500000) {
+            usleep(random_int(500000, $max));
+        }
     }
 
     /**

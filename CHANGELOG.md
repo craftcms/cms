@@ -4,6 +4,7 @@
 
 - Stack traces returned by `craft\helpers\App::backtrace()` now more closely resemble exception stack traces.
 - “Element query executed before Craft is fully initialized” warnings now include a stack trace.
+- Fixed a user enumeration timing attack vulnerability.
 - Fixed a SQL error that could occur when upgrading to Craft 4, if any `matrixblocks` table rows referenced nonexistent element IDs. ([#13121](https://github.com/craftcms/cms/issues/13121))
 - Fixed a JavaScript error that could occur on the control panel login form.
 
