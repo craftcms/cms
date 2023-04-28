@@ -509,13 +509,13 @@ EOD;
     public function actionPhpSessionTable(): int
     {
         if (Craft::$app->getDb()->tableExists(Table::PHPSESSIONS)) {
-            $this->stdout('The `phpsessions` table already exists.' . PHP_EOL . PHP_EOL, Console::FG_YELLOW);
+            $this->stdout("The `phpsessions` table already exists.\n", Console::FG_YELLOW);
             return ExitCode::OK;
         }
 
         $migration = new CreatePhpSessionTable();
         if ($migration->up() === false) {
-            $this->stderr('An error occurred while creating the `phpsessions` table.' . PHP_EOL . PHP_EOL, Console::FG_RED);
+            $this->stderr("An error occurred while creating the `phpsessions` table.\n", Console::FG_RED);
             return ExitCode::UNSPECIFIED_ERROR;
         }
 
