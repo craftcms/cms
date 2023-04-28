@@ -69,8 +69,7 @@ body {
   z-index: 1;
 }
 
-#remember-password,
-#alternative-2fa {
+#remember-password {
   display: none;
 }
 
@@ -103,10 +102,6 @@ body {
   #forgot-password,
   #remember-password {
     display: none;
-  }
-
-  #alternative-2fa {
-    display: block;
   }
 }
 
@@ -156,9 +151,18 @@ body {
   width: 100%;
 }
 
-.alternative-2fa-types button {
-  font-size: 13px;
-  color: var(--medium-text-color);
+#alternative-2fa,
+#alternative-2fa-types {
+  margin-top: 1em;
+}
+
+#alternative-2fa-types {
+  text-align: center;
+
+  button {
+    font-size: 13px;
+    color: var(--medium-text-color);
+  }
 }
 
 #forgot-password:hover,
@@ -167,8 +171,8 @@ body {
 #remember-password:focus,
 #alternative-2fa:hover,
 #alternative-2fa:focus,
-.alternative-2fa-types button:hover,
-.alternative-2fa-types button:focus,
+#alternative-2fa-types button:hover,
+#alternative-2fa-types button:focus,
 #alternative-login:hover,
 #alternative-login:focus {
   color: var(--link-color);

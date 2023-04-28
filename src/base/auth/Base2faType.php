@@ -7,6 +7,7 @@
 
 namespace craft\base\auth;
 
+use Craft;
 use craft\base\Component;
 use craft\helpers\Html;
 
@@ -51,7 +52,13 @@ abstract class Base2faType extends Component implements Base2faInterface
      */
     public function getInputHtml(string $html = '', array $options = []): string
     {
-        return Html::tag('div', $html, [
+        $alternative2faHtml = Html::button(Craft::t('app', 'Alternative 2FA methods'), [
+            'id' => 'alternative-2fa',
+        ]) . Html::tag('ul', '', [
+             'id' => 'alternative-2fa-types',
+            ]);
+
+        return Html::tag('div', $html . $alternative2faHtml, [
             'id' => 'verifyContainer',
             'data' => [
                 '2fa-type' => static::class,

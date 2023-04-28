@@ -175,8 +175,8 @@ class Auth extends Component
     {
         return array_filter($this->getAll2faTypes(), function($type) use ($currentMethod, $webAuthnSupported, $user) {
             return
-                ($type !== $currentMethod && $type !== WebAuthn::class) ||
-                ($type === WebAuthn::class && $webAuthnSupported && $user !== null && $user->hasWebAuthnRecord());
+                $type !== $currentMethod && ($type !== WebAuthn::class ||
+                ($type === WebAuthn::class && $webAuthnSupported && $user !== null && $user->is2faTypeSetup(WebAuthn::class)));
         }, ARRAY_FILTER_USE_KEY);
     }
 

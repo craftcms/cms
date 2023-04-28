@@ -5465,6 +5465,13 @@ $min2ColWidth: 400px;
       width: 75%;
     }
   }
+
+  #alternative-2fa,
+  #alternative-2fa-types {
+    display: block;
+    clear: both;
+    margin-top: 1em;
+  }
 }
 
 .prompt {

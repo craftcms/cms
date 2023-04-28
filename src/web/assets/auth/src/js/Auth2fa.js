@@ -20,8 +20,8 @@ import {browserSupportsWebAuthn} from '@simplewebauthn/browser';
       init: function (settings) {
         this.$auth2faLoginFormContainer = $('#auth-2fa-form');
         this.$auth2faSetupFormContainer = $('#auth-2fa-setup');
-        this.$alternative2faLink = $('#alternative-2fa');
-        this.$alternative2faTypesContainer = $('#alternative-2fa-types');
+        // this.$alternative2faLink = $('#alternative-2fa');
+        // this.$alternative2faTypesContainer = $('#alternative-2fa-types');
         this.$viewSetupBtns = this.$auth2faSetupFormContainer.find(
           'button.auth-2fa-view-setup'
         );
@@ -29,20 +29,23 @@ import {browserSupportsWebAuthn} from '@simplewebauthn/browser';
 
         this.setSettings(settings, Craft.Auth2fa.defaults);
 
-        this.addListener(
-          this.$alternative2faLink,
-          'click',
-          'onAlternative2faTypeClick'
-        );
+        // this.addListener(
+        //   this.$alternative2faLink,
+        //   'click',
+        //   'onAlternative2faTypeClick'
+        // );
         this.addListener(this.$viewSetupBtns, 'click', 'onViewSetupBtnClick');
       },
 
       show2faForm: function (auth2faForm, $loginDiv) {
+        console.log('show2faForm');
         this.$auth2faLoginFormContainer.html('').append(auth2faForm);
         $loginDiv.addClass('auth-2fa');
         $('#login-form-buttons').hide();
+
         const $submitBtn = this.$auth2faLoginFormContainer.find('.submit');
 
+        this.connectAlternative2fa();
         this.onSubmitResponse($submitBtn);
       },
 
@@ -299,8 +302,8 @@ import {browserSupportsWebAuthn} from '@simplewebauthn/browser';
               this.$auth2faLoginFormContainer
                 .html('')
                 .append(response.data.auth2faForm);
-              this.$alternative2faTypesContainer.html('');
-              this.$alternative2faLink.show();
+
+              this.connectAlternative2fa();
               this.onSubmitResponse();
             }
           })
@@ -310,6 +313,18 @@ import {browserSupportsWebAuthn} from '@simplewebauthn/browser';
           .finally(() => {
             $btn.attr('disabled', false).enable();
           });
+      },
+
+      connectAlternative2fa: function () {
+        this.$alternative2faLink =
+          this.$auth2faLoginFormContainer.find('#alternative-2fa');
+        this.$alternative2faTypesContainer =
+          this.$auth2faLoginFormContainer.find('#alternative-2fa-types');
+        this.addListener(
+          this.$alternative2faLink,
+          'click',
+          'onAlternative2faTypeClick'
+        );
       },
 
       _get2faFields: function ($container) {

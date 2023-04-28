@@ -39,7 +39,6 @@ use craft\i18n\Locale;
 use craft\models\FieldLayout;
 use craft\models\UserGroup;
 use craft\records\User as UserRecord;
-use craft\records\WebAuthn as WebAuthnRecord;
 use craft\services\ProjectConfig;
 use craft\validators\DateTimeValidator;
 use craft\validators\UniqueValidator;
@@ -1123,16 +1122,6 @@ class User extends Element implements IdentityInterface
         }
 
         return !isset($this->authError);
-    }
-
-    /**
-     * Check if there's a webauthn record for the user
-     *
-     * @return bool
-     */
-    public function hasWebAuthnRecord(): bool
-    {
-        return WebAuthnRecord::find()->where(['userId' => $this->id])->exists();
     }
 
     /**

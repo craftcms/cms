@@ -25,11 +25,8 @@ Craft.AuthManager = Garnish.Base.extend(
 
     submitLoginIfLoggedOut: false,
 
-    loginWithPassword: true,
-    loginWithSecurityKey: false,
     auth2faFlow: false,
     auth2fa: null,
-    $alternativeLoginLink: null,
 
     /**
      * Init
@@ -115,14 +112,10 @@ Craft.AuthManager = Garnish.Base.extend(
         } else {
           if (this.showingLoginModal) {
             if (this.submitLoginIfLoggedOut) {
-              if (this.loginWithSecurityKey) {
-                this.webauthnLogin();
-              } else if (this.loginWithPassword) {
-                if (this.auth2faFlow == true) {
-                  this.auth2faLogin();
-                } else {
-                  this.submitLogin();
-                }
+              if (this.auth2faFlow == true) {
+                this.auth2faLogin();
+              } else {
+                this.submitLogin();
               }
             }
           } else {
@@ -281,13 +274,6 @@ Craft.AuthManager = Garnish.Base.extend(
 
       if (!this.loginModal) {
         if (Craft.has2fa) {
-          if (Craft.userHasSecurityKeys && browserSupportsWebAuthn()) {
-            this.loginWithPassword = false;
-            this.loginWithSecurityKey = true;
-          } else {
-            this.loginWithPassword = true;
-            this.loginWithSecurityKey = false;
-          }
           this.auth2faFlow = false;
           this.auth2fa = null;
         }
@@ -336,29 +322,6 @@ Craft.AuthManager = Garnish.Base.extend(
 
         $('<div id="auth-2fa-form"/>').insertAfter($inputContainer);
 
-        if (this.loginWithSecurityKey) {
-          this.$loginBtn.$btnLabel.text(
-            Craft.t('app', 'Sign in with a security key')
-          );
-          this.$loginBtn.$btn
-            .removeClass('disabled')
-            .attr('aria-disabled', 'false');
-          this.$passwordInput.parents('.flex-grow').hide();
-
-          this.$alternativeLoginLink = Craft.ui
-            .createButton({
-              label: Craft.t('app', 'Use password to login'),
-              type: 'button',
-            })
-            .appendTo($additionalActionsContainer);
-
-          this.addListener(
-            this.$alternativeLoginLink,
-            'click',
-            'onAlternativeLoginLink'
-          );
-        }
-
         this.$loginErrorPara = $('<p class="error"/>').appendTo($body);
 
         this.loginModal = new Garnish.Modal($form, {
@@ -394,34 +357,6 @@ Craft.AuthManager = Garnish.Base.extend(
         this.loginModal.quickShow();
       } else {
         this.loginModal.show();
-      }
-    },
-
-    onAlternativeLoginLink: function () {
-      this.clearLoginError();
-
-      this.loginWithPassword = !this.loginWithPassword;
-      this.loginWithSecurityKey = !this.loginWithSecurityKey;
-
-      this.$passwordInput.val('');
-      this.$passwordInput.parents('.flex-grow').toggle();
-
-      if (this.loginWithPassword) {
-        this.$loginBtn.$btnLabel.text(Craft.t('app', 'Sign in'));
-        this.$loginBtn.$btn.attr('aria-disabled', 'true').addClass('disabled');
-        this.$alternativeLoginLink.text(
-          Craft.t('app', 'Use a security key to login')
-        );
-      } else if (this.loginWithSecurityKey) {
-        this.$loginBtn.$btnLabel.text(
-          Craft.t('app', 'Sign in using a security key')
-        );
-        this.$loginBtn.$btn
-          .attr('aria-disabled', 'false')
-          .removeClass('disabled');
-        this.$alternativeLoginLink.text(
-          Craft.t('app', 'Use a password to login')
-        );
       }
     },
 
@@ -479,21 +414,16 @@ Craft.AuthManager = Garnish.Base.extend(
         ev.preventDefault();
       }
 
-      if (
-        (this.loginWithPassword && this.validatePassword()) ||
-        this.loginWithSecurityKey
-      ) {
+      if (this.validatePassword()) {
         if (typeof Craft.csrfTokenValue !== 'undefined') {
           // Check the auth status one last time before sending this off,
           // in case the user has already logged back in from another window/tab
           this.submitLoginIfLoggedOut = true;
           this.checkRemainingSessionTime();
         } else {
-          if (this.loginWithSecurityKey) {
-            this.webauthnLogin();
-          } else if (this.auth2faFlow) {
+          if (this.auth2faFlow) {
             this.auth2faLogin();
-          } else if (this.loginWithPassword) {
+          } else {
             this.submitLogin();
           }
         }
@@ -521,6 +451,11 @@ Craft.AuthManager = Garnish.Base.extend(
       this.clearLoginError();
 
       var $auth2faLoginContainer = $('#auth-2fa-form');
+
+      if ($auth2faLoginContainer.find('#auth2fa-webauthn').length > 0) {
+        return this.webauthnLogin();
+      }
+
       var $submitBtn = $auth2faLoginContainer.find('#auth2fa-verify');
       $submitBtn.addClass('loading');
 
@@ -552,14 +487,13 @@ Craft.AuthManager = Garnish.Base.extend(
           ) {
             this.auth2faFlow = true;
             this.auth2fa = new Craft.Auth2fa();
-            if (this.$alternativeLoginLink !== null) {
-              this.$alternativeLoginLink.remove();
-            }
+
             $('.inputcontainer').remove();
             this.auth2fa.show2faForm(
               response.data.auth2faForm,
               $('#loginmodal')
             );
+
             this.loginModal.updateSizeAndPosition();
           } else {
             this.closeModal();

@@ -123,9 +123,6 @@ import {browserSupportsWebAuthn} from '@simplewebauthn/browser';
       this.$submitBtn.busyEvent();
       this.clearErrors();
 
-      // if (!browserSupportsWebAuthn()) {
-      //   this.loginWithPassword = true;
-      // }
       if ($(event.originalEvent.submitter).hasClass('auth2fa-webauthn')) {
         this.loginWithSecurityKey = true;
         this.loginWithPassword = false;
