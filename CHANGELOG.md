@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Fixed a bug where queue-runner Ajax requests triggered on the front end weren’t getting closed before running the queue, potentially causing long front-end load delays.
 - Fixed a user enumeration timing attack vulnerability.
 
 ## 3.8.8 - 2023-04-25
