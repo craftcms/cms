@@ -46,7 +46,7 @@ class GoogleAuthenticator extends Configurable2faType
      */
     public function isSetupForUser(User $user): bool
     {
-        return $user->is2faRequired() && self::_getSecretFromDb($user->id) !== null;
+        return self::_getSecretFromDb($user->id) !== null;
     }
 
     /**
@@ -129,6 +129,9 @@ class GoogleAuthenticator extends Configurable2faType
         return parent::getSetupFormHtml($html, $withInto, $user);
     }
 
+    /**
+     * @inheritdoc
+     */
     public function removeSetup(): bool
     {
         $userId = Craft::$app->getUser()->getId();

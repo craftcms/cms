@@ -126,6 +126,9 @@ import {browserSupportsWebAuthn} from '@simplewebauthn/browser';
       if ($(event.originalEvent.submitter).hasClass('auth2fa-webauthn')) {
         this.loginWithSecurityKey = true;
         this.loginWithPassword = false;
+      } else {
+        this.loginWithSecurityKey = false;
+        this.loginWithPassword = true;
       }
 
       if (this.forgotPassword) {

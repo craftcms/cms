@@ -273,11 +273,6 @@ Craft.AuthManager = Garnish.Base.extend(
       this.showingLoginModal = true;
 
       if (!this.loginModal) {
-        if (Craft.has2fa) {
-          this.auth2faFlow = false;
-          this.auth2fa = null;
-        }
-
         var $form = $('<form id="loginmodal" class="modal alert fitted"/>'),
           $body = $(
             '<div class="body"><h2>' +

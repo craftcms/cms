@@ -4,7 +4,6 @@ namespace craft\migrations;
 
 use Craft;
 use craft\db\Migration;
-use craft\db\Table;
 use craft\services\ProjectConfig;
 
 /**
@@ -17,15 +16,6 @@ class m230314_105605_add_has2fa_to_users extends Migration
      */
     public function safeUp(): bool
     {
-        $table = $this->db->schema->getTableSchema(Table::USERS);
-        if (!isset($table->columns['has2fa'])) {
-            $this->addColumn(
-                Table::USERS,
-                'has2fa',
-                $this->boolean()->defaultValue(false)->notNull()->after('lastPasswordChangeDate')
-            );
-        }
-
         $projectConfig = Craft::$app->getProjectConfig();
         $schemaVersion = $projectConfig->get('system.schemaVersion', true);
 
@@ -43,11 +33,6 @@ class m230314_105605_add_has2fa_to_users extends Migration
      */
     public function safeDown(): bool
     {
-        $table = $this->db->schema->getTableSchema(Table::USERS);
-        if (isset($table->columns['has2fa'])) {
-            $this->dropColumn(Table::USERS, 'has2fa');
-        }
-
         $projectConfig = Craft::$app->getProjectConfig();
         $schemaVersion = $projectConfig->get('system.schemaVersion', true);
 

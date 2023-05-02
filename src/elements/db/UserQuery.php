@@ -818,7 +818,6 @@ class UserQuery extends ElementQuery
         $db = Craft::$app->getDb();
         $activeColumnExists = $db->columnExists(Table::USERS, 'active');
         $fullNameColumnExists = $db->columnExists(Table::USERS, 'fullName');
-        $has2faColumnExists = $db->columnExists(Table::USERS, 'has2fa');
 
         if ($activeColumnExists) {
             $this->query->addSelect(['users.active']);
@@ -826,10 +825,6 @@ class UserQuery extends ElementQuery
 
         if ($fullNameColumnExists) {
             $this->query->addSelect(['users.fullName']);
-        }
-
-        if ($has2faColumnExists) {
-            $this->query->addSelect(['users.has2fa']);
         }
 
         if (is_bool($this->admin)) {

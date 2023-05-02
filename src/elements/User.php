@@ -74,7 +74,6 @@ use yii\web\IdentityInterface;
  * @property-read bool $isCurrent whether this is the current logged-in user
  * @property-read string|null $preferredLanguage the user’s preferred language
  * @property-read string|null $preferredLocale the user’s preferred formatting locale
- * @property bool $has2fa whether user has 2FA enabled
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
@@ -428,7 +427,6 @@ class User extends Element implements IdentityInterface
             'groups' => ['label' => Craft::t('app', 'Groups')],
             'preferredLanguage' => ['label' => Craft::t('app', 'Preferred Language')],
             'preferredLocale' => ['label' => Craft::t('app', 'Preferred Locale')],
-            'has2fa' => ['label' => Craft::t('app', '2FA Enabled')],
             'id' => ['label' => Craft::t('app', 'ID')],
             'uid' => ['label' => Craft::t('app', 'UID')],
             'lastLoginDate' => ['label' => Craft::t('app', 'Last Login')],
@@ -667,12 +665,6 @@ class User extends Element implements IdentityInterface
      * @var string|null Verification code
      */
     public ?string $verificationCode = null;
-
-    /**
-     * @var bool Is 2FA enabled
-     * @since 4.5.0
-     */
-    public bool $has2fa = false;
 
     /**
      * @var string|null Last login attempt IP address.
@@ -1131,8 +1123,15 @@ class User extends Element implements IdentityInterface
      */
     public function is2faRequired(): bool
     {
-        if ($this->has2fa) {
-            return true;
+        // get all 2fa types
+        $all2faTypes = Craft::$app->getAuth()->getAll2faTypes();
+
+        // for each type check if isSetupForUser
+        foreach ($all2faTypes as $class => $type) {
+            $service = new $class();
+            if ($service->isSetupForUser($this)) {
+                return true;
+            }
         }
 
         $has2fa = Craft::$app->getProjectConfig()->get(ProjectConfig::PATH_USERS)['has2fa'] ?? [];
@@ -1155,35 +1154,6 @@ class User extends Element implements IdentityInterface
         }
 
         return false;
-    }
-
-    /**
-     * Whether user can turn off 2FA requirement. This can only happen if it's not enforced on a group level.
-     *
-     * @return bool
-     */
-    public function canTurnOff2fa(): bool
-    {
-        $has2fa = Craft::$app->getProjectConfig()->get(ProjectConfig::PATH_USERS)['has2fa'] ?? [];
-
-        if (!is_array($has2fa)) {
-            if ($has2fa === 'all') {
-                return false;
-            }
-        } else {
-            if ($this->admin && in_array('admin', $has2fa, true)) {
-                return false;
-            }
-
-            $userGroups = $this->getGroups();
-            foreach ($userGroups as $userGroup) {
-                if (in_array($userGroup->handle, $has2fa, true)) {
-                    return false;
-                }
-            }
-        }
-
-        return true;
     }
 
     /**
@@ -1865,7 +1835,6 @@ class User extends Element implements IdentityInterface
         $record->email = $this->email;
         $record->passwordResetRequired = $this->passwordResetRequired;
         $record->unverifiedEmail = $this->unverifiedEmail;
-        $record->has2fa = $this->has2fa;
 
         if ($changePassword = (isset($this->newPassword))) {
             $hash = Craft::$app->getSecurity()->hashPassword($this->newPassword);

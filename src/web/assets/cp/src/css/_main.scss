@@ -7582,8 +7582,11 @@ body.sitepicker {
 
 #auth-2fa-setup {
   .auth-2fa-type {
-    @include padding-left($checkboxSize + 5);
     margin-bottom: var(--row-gap);
+
+    .btn {
+      margin-top: var(--m);
+    }
   }
 }
 

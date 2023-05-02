@@ -2,16 +2,6 @@
 
 {% import '_includes/forms.twig' as forms %}
 
-{{ forms.checkboxField({
-    label: 'Enable 2FA'|t('app'),
-    name: 'has2fa',
-    id: 'has2fa',
-    instructions: 'Should Two-Factor Authentication (2FA) be enabled for this user.'|t('app'),
-    checked: user ? user.is2faRequired() : false,
-    toggle: (user.id == currentUser.id) ? 'auth-2fa-setup' : false,
-    disabled: user.canTurnOff2fa() == false
-}) }}
-
 {% if user.id == currentUser.id %}
     {% do view.registerDeltaName('auth-2fa-setup') %}
 

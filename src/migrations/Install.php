@@ -750,7 +750,6 @@ class Install extends Migration
             'unverifiedEmail' => $this->string(),
             'passwordResetRequired' => $this->boolean()->defaultValue(false)->notNull(),
             'lastPasswordChangeDate' => $this->dateTime(),
-            'has2fa' => $this->boolean()->defaultValue(false)->notNull(),
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
             'PRIMARY KEY([[id]])',
