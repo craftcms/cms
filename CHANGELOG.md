@@ -3,6 +3,7 @@
 ## Unreleased
 
 - Volumes no longer validate if their field layout contains a field called `extension`, `filename`, `height`, `kind`, `size`, or `width`.
+- It’s now possible for plugins to register errors to entries’ `typeId`, `parentId`, and `authorId` attributes. ([#13138](https://github.com/craftcms/cms/pull/13138))
 - Stack traces returned by `craft\helpers\App::backtrace()` now more closely resemble exception stack traces.
 - “Element query executed before Craft is fully initialized” warnings now include a stack trace.
 - Fixed a bug where queue-runner Ajax requests triggered on the front end weren’t getting closed before running the queue, potentially causing long front-end load delays.
