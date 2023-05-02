@@ -616,26 +616,13 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
 <script type="text/javascript">
 /*<![CDATA[*/
 (function(){
-    var XMLHttpFactories = [
-        function () {return new XMLHttpRequest()},
-        function () {return new ActiveXObject("Msxml2.XMLHTTP")},
-        function () {return new ActiveXObject("Msxml3.XMLHTTP")},
-        function () {return new ActiveXObject("Microsoft.XMLHTTP")}
-    ];
-    var req = false;
-    for (var i = 0; i < XMLHttpFactories.length; i++) {
-        try {
-            req = XMLHttpFactories[i]();
-        }
-        catch (e) {
-            continue;
-        }
-        break;
-    }
-    if (!req) return;
+  try {
+    var req = new XMLHttpRequest();
     req.open('GET', $url, true);
-    if (req.readyState == 4) return;
+    req.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
+    if (req.readyState === 4) return;
     req.send();
+  } catch (e) {}
 })();
 /*]]>*/
 </script>
