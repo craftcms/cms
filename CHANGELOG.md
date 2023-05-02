@@ -4,6 +4,7 @@
 
 - Volumes no longer validate if their field layout contains a field called `extension`, `filename`, `height`, `kind`, `size`, or `width`.
 - Fixed a bug where queue-runner Ajax requests triggered on the front end weren’t getting closed before running the queue, potentially causing long front-end load delays.
+- Fixed a bug where long element titles weren’t wrapping. ([#13143](https://github.com/craftcms/cms/issues/13143))
 - Fixed a user enumeration timing attack vulnerability.
 
 ## 3.8.8 - 2023-04-25
