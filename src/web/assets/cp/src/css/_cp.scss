@@ -795,6 +795,11 @@ li.breadcrumb-toggle-wrapper {
 
         .element {
           border: 1px solid $hairlineColor;
+
+          .label {
+            text-overflow: unset;
+            white-space: normal;
+          }
         }
       }
     }
