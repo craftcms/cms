@@ -1584,6 +1584,8 @@ EOD;
                     'value' => $this->getTypeId(),
                     'options' => $entryTypeOptions,
                     'disabled' => $static,
+                    'attribute' => 'typeId',
+                    'errors' => $this->getErrors('typeId'),
                 ]);
             })();
         }
@@ -1624,6 +1626,7 @@ EOD;
                     'elements' => $parent ? [$parent] : [],
                     'disabled' => $static,
                     'describedBy' => 'parentId-label',
+                    'errors' => $this->getErrors('parentId'),
                 ]);
             })();
         }
@@ -1645,6 +1648,7 @@ EOD;
                         'single' => true,
                         'elements' => $author ? [$author] : null,
                         'disabled' => $static,
+                        'errors' => $this->getErrors('authorId'),
                     ]);
                 })();
             }

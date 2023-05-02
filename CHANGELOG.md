@@ -1,5 +1,20 @@
 # Release Notes for Craft CMS 4
 
+## 4.4.9 - 2023-05-02
+
+- Volumes no longer validate if their field layout contains a field called `extension`, `filename`, `height`, `kind`, `size`, or `width`.
+- It’s now possible for plugins to register errors to entries’ `typeId`, `parentId`, and `authorId` attributes. ([#13138](https://github.com/craftcms/cms/pull/13138))
+- Stack traces returned by `craft\helpers\App::backtrace()` now more closely resemble exception stack traces.
+- “Element query executed before Craft is fully initialized” warnings now include a stack trace.
+- Fixed a bug where queue-runner Ajax requests triggered on the front end weren’t getting closed before running the queue, potentially causing long front-end load delays.
+- Fixed a bug where long element titles weren’t wrapping. ([#13143](https://github.com/craftcms/cms/issues/13143))
+- Fixed a user enumeration timing attack vulnerability.
+- Fixed a SQL error that could occur when upgrading to Craft 4, if any `matrixblocks` table rows referenced nonexistent element IDs. ([#13121](https://github.com/craftcms/cms/issues/13121))
+- Fixed a SQL error that could occur when upgrading to Craft 4, if anything triggered an asset or volume query. ([#13130](https://github.com/craftcms/cms/issues/13130))
+- Fixed a SQL error that occurred when deleting a category group on PostgreSQL, when configured with a table prefix. ([#13127](https://github.com/craftcms/cms/issues/13127))
+- Fixed a bug where it was possible to query for elements with soft-deleted site IDs.
+- Fixed a JavaScript error that could occur on the control panel login form.
+
 ## 4.4.8 - 2023-04-25
 
 - Category/tag/global set reference tags now map to entries, if no category groups/tag groups/global sets exist. ([#13082](https://github.com/craftcms/cms/issues/13082))
