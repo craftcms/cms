@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 4
 
-## Unreleased
+## 4.4.9 - 2023-05-02
 
 - Volumes no longer validate if their field layout contains a field called `extension`, `filename`, `height`, `kind`, `size`, or `width`.
 - It’s now possible for plugins to register errors to entries’ `typeId`, `parentId`, and `authorId` attributes. ([#13138](https://github.com/craftcms/cms/pull/13138))
