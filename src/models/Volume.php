@@ -186,8 +186,14 @@ class Volume extends Model implements BaseFsInterface
         $fieldLayout = $this->getFieldLayout();
         $fieldLayout->reservedFieldHandles = [
             'alt',
+            'extension',
+            'filename',
             'folder',
+            'height',
+            'kind',
+            'size',
             'volume',
+            'width',
         ];
 
         if (!$fieldLayout->validate()) {
