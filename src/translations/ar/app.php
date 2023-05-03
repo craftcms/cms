@@ -699,7 +699,6 @@ return [
     'Height unit' => 'وحدة الارتفاع',
     'Height' => 'الارتفاع',
     'Helper text to guide the author.' => 'النص المساعد لتوجيه المؤلف.',
-    'Hide nested sources' => 'إخفاء المصادر المتداخلة',
     'Hide sidebar' => 'إخفاء الشريط الجانبي',
     'Hide' => 'إخفاء',
     'High' => 'عالية',

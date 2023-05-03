@@ -37,7 +37,6 @@ use craft\helpers\Gql;
 use craft\helpers\Json;
 use craft\helpers\Queue;
 use craft\helpers\StringHelper;
-use craft\i18n\Locale;
 use craft\i18n\Translation;
 use craft\models\FieldLayoutTab;
 use craft\models\MatrixBlockType;
@@ -671,7 +670,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
                     'group' => Craft::t('site', $element->getSite()->getGroup()->getName()),
                 ]);
             case self::PROPAGATION_METHOD_LANGUAGE:
-                $language = (new Locale($element->getSite()->language))
+                $language = Craft::$app->getI18n()->getLocaleById($element->getSite()->language)
                     ->getDisplayName(Craft::$app->language);
                 return Craft::t('app', 'Blocks will be saved across all {language}-language sites.', [
                     'language' => $language,

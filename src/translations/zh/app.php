@@ -699,7 +699,6 @@ return [
     'Height unit' => '高度单位',
     'Height' => '高度',
     'Helper text to guide the author.' => '指导作者的辅助文字。',
-    'Hide nested sources' => '隐藏嵌套源',
     'Hide sidebar' => '隐藏侧边栏',
     'Hide' => '隐藏',
     'High' => '高',

@@ -699,7 +699,6 @@ return [
     'Height unit' => 'Hoogte-eenheid',
     'Height' => 'Hoogte',
     'Helper text to guide the author.' => 'Hulptekst om de auteur te ondersteunen.',
-    'Hide nested sources' => 'Geneste bronnen verbergen',
     'Hide sidebar' => 'Zijbalk verbergen',
     'Hide' => 'Verbergen',
     'High' => 'Hoog',

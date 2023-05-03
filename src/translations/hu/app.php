@@ -699,7 +699,6 @@ return [
     'Height unit' => 'Magasság egysége',
     'Height' => 'Magasság',
     'Helper text to guide the author.' => 'Segítség a szerkesztőnek.',
-    'Hide nested sources' => 'Beágyazott források elrejtése',
     'Hide sidebar' => 'Az oldalsáv elrejtése',
     'Hide' => 'Elrejtés',
     'High' => 'Magas',

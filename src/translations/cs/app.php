@@ -699,7 +699,6 @@ return [
     'Height unit' => 'Jednotka výšky',
     'Height' => 'Výška',
     'Helper text to guide the author.' => 'Pomocný text autorovi obsahu.',
-    'Hide nested sources' => 'Skrýt vnořené zdroje',
     'Hide sidebar' => 'Skrýt boční panel',
     'Hide' => 'Skrýt',
     'High' => 'Výška',

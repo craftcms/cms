@@ -699,7 +699,6 @@ return [
     'Height unit' => 'יחידת גובה',
     'Height' => 'גובה',
     'Helper text to guide the author.' => 'טקסט הסבר לעורך התוכן.',
-    'Hide nested sources' => 'הסתר מקורות מקוננים',
     'Hide sidebar' => 'הסתר סרגל צדי',
     'Hide' => 'הסתר',
     'High' => 'גבוה',

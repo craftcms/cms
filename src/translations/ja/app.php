@@ -699,7 +699,6 @@ return [
     'Height unit' => '高さの単位',
     'Height' => '高さ',
     'Helper text to guide the author.' => '投稿者のための説明テキスト',
-    'Hide nested sources' => 'ネストされたソースを非表示',
     'Hide sidebar' => 'サイバーを非表示',
     'Hide' => '隠す',
     'High' => '高い',

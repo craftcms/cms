@@ -196,7 +196,7 @@ class ViewTest extends TestCase
             CraftTest::normalizePathSeparators($this->view->templatesPath)
         );
         self::assertSame(
-            ['html', 'twig'],
+            ['twig', 'html'],
             $this->getInaccessibleProperty($this->view, '_defaultTemplateExtensions')
         );
 
@@ -492,7 +492,7 @@ TWIG;
         return [
             ['@craftunittemplates/template.twig', '@craftunittemplates', 'template'],
             ['@craftunittemplates/index.html', '@craftunittemplates', 'index'],
-            ['@craftunittemplates/doubleindex/index.html', '@craftunittemplates/doubleindex', 'index'],
+            ['@craftunittemplates/doubleindex/index.twig', '@craftunittemplates/doubleindex', 'index'],
 
             // Index is found by default
             ['@craftunittemplates/index.html', '@craftunittemplates', ''],

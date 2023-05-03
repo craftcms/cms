@@ -699,7 +699,6 @@ return [
     'Height unit' => 'Yükseklik birimi',
     'Height' => 'Yükseklik',
     'Helper text to guide the author.' => 'Yazarı yönlendirmek için yardımcı metin.',
-    'Hide nested sources' => 'İç içe geçmiş kaynakları gizle',
     'Hide sidebar' => 'Kenar çubuğunu gizle',
     'Hide' => 'Sakla',
     'High' => 'Yüksek',

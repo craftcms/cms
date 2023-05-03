@@ -699,7 +699,6 @@ return [
     'Height unit' => 'Höjdenhet',
     'Height' => 'Höjd',
     'Helper text to guide the author.' => 'Hjälptext som leder författaren.',
-    'Hide nested sources' => 'Dölj inbäddade källor',
     'Hide sidebar' => 'Dölj sidofält',
     'Hide' => 'Dölj',
     'High' => 'Hög',

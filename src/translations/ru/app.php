@@ -699,7 +699,6 @@ return [
     'Height unit' => 'Единица высоты',
     'Height' => 'Высота',
     'Helper text to guide the author.' => 'Вспомогательный текст для помощи автору.',
-    'Hide nested sources' => 'Скрыть вложенные источники',
     'Hide sidebar' => 'Скрыть боковую панель',
     'Hide' => 'Скрыть',
     'High' => 'Высоко',

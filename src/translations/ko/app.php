@@ -699,7 +699,6 @@ return [
     'Height unit' => '높이 단위',
     'Height' => '높이',
     'Helper text to guide the author.' => '저자를 안내하는 도움말 텍스트.',
-    'Hide nested sources' => '중첩된 소스 숨기기',
     'Hide sidebar' => '사이드바 숨기기',
     'Hide' => '숨기기',
     'High' => '높음',

@@ -699,7 +699,6 @@ return [
     'Height unit' => 'Høydeenhet',
     'Height' => 'Høyde',
     'Helper text to guide the author.' => 'Hjelpetekst som forteller brukeren om feltets hensikt.',
-    'Hide nested sources' => 'Skjul nestede kilder',
     'Hide sidebar' => 'Skjul sidepanelet',
     'Hide' => 'Skjul',
     'High' => 'Høy',

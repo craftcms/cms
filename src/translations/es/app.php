@@ -699,7 +699,6 @@ return [
     'Height unit' => 'Unidad de altura',
     'Height' => 'Altura',
     'Helper text to guide the author.' => 'Texto de ayuda para guiar al autor.',
-    'Hide nested sources' => 'Ocultar fuentes anidadas',
     'Hide sidebar' => 'Ocultar barra lateral',
     'Hide' => 'Ocultar',
     'High' => 'Alto',

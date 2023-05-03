@@ -699,7 +699,6 @@ return [
     'Height unit' => 'واحد ارتفاع',
     'Height' => 'ارتفاع',
     'Helper text to guide the author.' => 'متن راهنما برای راهنمایی کردن نویسنده.',
-    'Hide nested sources' => 'پنهان کردن منابع تودرتو',
     'Hide sidebar' => 'مخفی کردن نوار کناری',
     'Hide' => 'مخفی کردن',
     'High' => 'بالا',
