@@ -1,5 +1,9 @@
 # Release Notes for Craft CMS 3.x
 
+## Unreleased
+
+- Fixed an error that could occur when running tests. ([#13076](https://github.com/craftcms/cms/issues/13076))
+
 ## 3.8.9 - 2023-05-02
 
 - Volumes no longer validate if their field layout contains a field called `extension`, `filename`, `height`, `kind`, `size`, or `width`.
