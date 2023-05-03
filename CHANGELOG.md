@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Fixed a “Double-instantiating a menu button on an element” console warning that occurred on pages with Matrix fields. ([#6338](https://github.com/craftcms/cms/issues/6338))
 - Fixed an error that could occur when running tests. ([#13076](https://github.com/craftcms/cms/issues/13076))
 
 ## 3.8.9 - 2023-05-02
