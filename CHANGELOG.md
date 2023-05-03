@@ -1,5 +1,9 @@
 # Release Notes for Craft CMS 4
 
+## Unreleased
+
+- Fixed a “Double-instantiating a menu button on an element” console warning that occurred on pages with Matrix fields. ([#6338](https://github.com/craftcms/cms/issues/6338))
+
 ## 4.4.9 - 2023-05-02
 
 - Volumes no longer validate if their field layout contains a field called `extension`, `filename`, `height`, `kind`, `size`, or `width`.
