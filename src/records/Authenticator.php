@@ -18,7 +18,7 @@ use yii\db\ActiveQueryInterface;
  * @property int $userId Volume ID
  * @property string $auth2faSecret 2FA secret
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 4.5.0
+ * @since 5.0
  */
 class Authenticator extends ActiveRecord
 {

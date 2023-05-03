@@ -68,7 +68,7 @@ class CredentialRepository implements PublicKeyCredentialSourceRepository
         if (!$record) {
             $record = new WebAuthn();
             $record->userId = Craft::$app->getUser()->getIdentity()?->id;
-            $record->credentialName = !empty($credentialName) ? $credentialName : Craft::t('app', 'Secure credentials');
+            $record->credentialName = !empty($credentialName) ? $credentialName : Craft::t('app', 'Secure credential');
             $record->credentialId = Base64Url::encode($publicKeyCredentialId);
         }
 

@@ -22,7 +22,7 @@ import {startRegistration} from '@simplewebauthn/browser';
 
         if (!browserSupportsWebAuthn()) {
           Craft.cp.displayError(
-            Craft.t('app', 'This browser does not support WebAuth.')
+            Craft.t('app', 'This browser does not support WebAuthn.')
           );
           this.$addSecurityKeyBtn.disable();
         }
