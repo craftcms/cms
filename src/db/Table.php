@@ -23,7 +23,7 @@ abstract class Table
     /** @since 4.0.0 */
     public const ASSETINDEXINGSESSIONS = '{{%assetindexingsessions}}';
     public const ASSETS = '{{%assets}}';
-    /** @since 4.5.0 */
+    /** @since 5.0 */
     public const AUTHENTICATOR = '{{%authenticator}}';
     /** @since 4.0.0 */
     public const IMAGETRANSFORMINDEX = '{{%imagetransformindex}}';
@@ -73,6 +73,8 @@ abstract class Table
     public const PLUGINS = '{{%plugins}}';
     /** @since 3.4.0 */
     public const PROJECTCONFIG = '{{%projectconfig}}';
+    /** @since 5.0 */
+    public const RECOVERYCODES = '{{%recoverycodes}}';
     public const QUEUE = '{{%queue}}';
     public const RELATIONS = '{{%relations}}';
     public const SECTIONS = '{{%sections}}';
@@ -95,7 +97,7 @@ abstract class Table
     public const USERS = '{{%users}}';
     public const VOLUMEFOLDERS = '{{%volumefolders}}';
     public const VOLUMES = '{{%volumes}}';
-    /** @since 4.5.0 */
+    /** @since 5.0 */
     public const WEBAUTHN = '{{%webauthn}}';
     public const WIDGETS = '{{%widgets}}';
     public const SEARCHINDEX = '{{%searchindex}}';

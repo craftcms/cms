@@ -9,6 +9,7 @@ namespace craft\services;
 
 use Craft;
 use craft\auth\type\GoogleAuthenticator;
+use craft\auth\type\RecoveryCodes;
 use craft\auth\type\WebAuthn;
 use craft\base\auth\Base2faType;
 use craft\elements\User;
@@ -203,6 +204,13 @@ class Auth extends Component
                     'description' => WebAuthn::getDescription(),
                     'config' => [
                         'requiresSetup' => WebAuthn::$requiresSetup,
+                    ],
+                ],
+                RecoveryCodes::class => [
+                    'name' => RecoveryCodes::displayName(),
+                    'description' => RecoveryCodes::getDescription(),
+                    'config' => [
+                        'requiresSetup' => RecoveryCodes::$requiresSetup,
                     ],
                 ],
             ];

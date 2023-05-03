@@ -552,6 +552,13 @@ class Install extends Migration
             'dateFailed' => $this->dateTime(),
             'error' => $this->text(),
         ]);
+        $this->createTable(Table::RECOVERYCODES, [
+            'id' => $this->primaryKey(),
+            'userId' => $this->integer()->notNull(),
+            'recoveryCodes' => $this->text()->defaultValue(null),
+            'dateCreated' => $this->dateTime()->notNull(),
+            'dateUpdated' => $this->dateTime()->notNull(),
+        ]);
         $this->createTable(Table::RELATIONS, [
             'id' => $this->primaryKey(),
             'fieldId' => $this->integer()->notNull(),
@@ -1055,6 +1062,7 @@ class Install extends Migration
         $this->addForeignKey(null, Table::MATRIXBLOCKS_OWNERS, ['ownerId'], Table::ELEMENTS, ['id'], 'CASCADE', null);
         $this->addForeignKey(null, Table::MATRIXBLOCKTYPES, ['fieldId'], Table::FIELDS, ['id'], 'CASCADE', null);
         $this->addForeignKey(null, Table::MATRIXBLOCKTYPES, ['fieldLayoutId'], Table::FIELDLAYOUTS, ['id'], 'SET NULL', null);
+        $this->addForeignKey(null, Table::RECOVERYCODES, ['userId'], Table::USERS, ['id'], 'CASCADE', null);
         $this->addForeignKey(null, Table::RELATIONS, ['fieldId'], Table::FIELDS, ['id'], 'CASCADE', null);
         $this->addForeignKey(null, Table::RELATIONS, ['sourceId'], Table::ELEMENTS, ['id'], 'CASCADE', null);
         $this->addForeignKey(null, Table::RELATIONS, ['sourceSiteId'], Table::SITES, ['id'], 'CASCADE', 'CASCADE');

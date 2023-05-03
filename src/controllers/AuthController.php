@@ -9,6 +9,7 @@ namespace craft\controllers;
 
 use Craft;
 use craft\auth\Configurable2faInterface;
+use craft\auth\type\RecoveryCodes;
 use craft\auth\type\WebAuthn;
 use craft\web\Controller;
 use craft\web\View;
@@ -305,5 +306,31 @@ class AuthController extends Controller
         $data['html'] = $webAuthn->getSetupFormHtml('',true, $user);
 
         return $this->asSuccess(Craft::t('app', 'Security key removed.'), $data);
+    }
+
+
+    // Recovery Codes methods
+    ////////////////////////////////////////////////////////////////////////////
+
+    public function actionGenerateRecoveryCodes(): Response
+    {
+        $this->requireAcceptsJson();
+        $this->requirePostRequest();
+        $this->requireLogin();
+        $this->requireElevatedSession();
+
+        $user = Craft::$app->getUser()->getIdentity();
+
+        $recoveryCodes = new RecoveryCodes();
+        $codes = $recoveryCodes->generateRecoveryCodes($user);
+
+        $data['verified'] = true;
+
+        if (empty($codes)) {
+            $data['verified'] = false;
+        }
+        $data['html'] = $recoveryCodes->getSetupFormHtml('',true, $user);
+
+        return $this->asJson($data);
     }
 }

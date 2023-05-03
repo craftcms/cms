@@ -81,6 +81,10 @@ import {browserSupportsWebAuthn} from '@simplewebauthn/browser';
             ) {
               new Craft.WebAuthnSetup(this.slideout);
             }
+            // initialise recovery codes
+            if (data.selectedMethod === 'craft\\auth\\type\\RecoveryCodes') {
+              new Craft.RecoveryCodesSetup(this.slideout);
+            }
 
             this.$verifyButton =
               this.slideout.$container.find('#auth2fa-verify');

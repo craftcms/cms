@@ -1,0 +1,65 @@
+{% import '_includes/forms.twig' as forms %}
+{% do view.registerJs('new Craft.WebAuthn') %}
+
+{% if user is not defined or user is empty %}
+    {% if currentUser is defined and currentUser is not empty %}
+        {% set user = currentUser %}
+    {% endif %}
+{% endif %}
+
+{% if fields is not defined or fields is empty %}
+    {% set fields = {'recoveryCode' : ''} %}
+{% endif %}
+
+{% if currentMethod is not defined or currentMethod is empty %}
+    {% set currentMethod = 'craft\\auth\\type\\RecoveryCodes' %}
+{% endif %}
+
+<div class="field">
+    {% if withIntro is defined and withIntro == true %}
+        {% if typeName is defined and typeName is not empty %}
+            <h1>{{ typeName }}</h1>
+        {% endif %}
+        {% if typeDescription is defined and typeDescription is not empty %}
+            <p>{{ typeDescription }}</p>
+        {% endif %}
+    {% endif %}
+    <h3>{{ 'Manage your recovery codes'|t('app') }}</h3>
+    {# if there aren't any recovery codes, show a message #}
+    {% if recoveryCodes is not defined or recoveryCodes is defined and recoveryCodes is empty %}
+        <p class="zilch">No recovery codes found.</p>
+    {% else %}
+        {# otherwise show the table of recovery codes #}
+        <div class="tableview">
+            <button id="download-recovery-codes" name="download-recovery-codes" class="btn">{{ 'Download recovery codes'|t('app') }}</button>
+            <table class="data fullwidth" id="recovery-codes">
+                <thead>
+                <tr>
+                    <th>#</th>
+                    <td>Code</td>
+                    <td>Used</td>
+                </tr>
+                </thead>
+                <tbody>
+                {% for recoveryCode in recoveryCodes %}
+                    <tr {% if recoveryCode.dateLastUsed is not empty %}class="disabled"{% endif %}>
+                        <td>{{ loop.index }}</td>
+                        <td>{{ recoveryCode.value }}</td>
+                        <td>{% if recoveryCode.dateLastUsed is not empty %}{{ recoveryCode.dateLastUsed|date('Y-m-d H:i:s') }}{% endif %}</td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <button id="auth-2fa-remove-setup" name="remove-setup" class="btn">{{ 'Remove setup'|t('app') }}</button>
+    {% endif %}
+
+    {{ forms.button({
+        name: 'generateRecoveryCodes',
+        id: 'generate-recovery-codes',
+        label: 'Generate new recovery codes'|t('app'),
+        role: 'button',
+        spinner: craft.app.request.isCpRequest(),
+    }) }}
+</div>

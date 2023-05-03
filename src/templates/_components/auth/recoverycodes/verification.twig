@@ -1,9 +1,5 @@
 {% import '_includes/forms.twig' as forms %}
 
-{% if craft.app.session.hasFlash('verificationCodeSent') %}
-    <p class="notice">{{ craft.app.session.getFlash('verificationCodeSent') }}</p>
-{% endif %}
-
 {{ forms.hidden({
     'name': 'currentMethod',
     'value': currentMethod
@@ -14,11 +10,12 @@
         'label': field.label,
         'id': field.key,
         'name': field.namespacedKey,
-        'placeholder': 'XXXX-XXXX'
+        'placeholder': 'XXXXXX'
     }) }}
 {% endfor %}
 
 {{ forms.submitButton({
+    id: 'auth2fa-verify',
     class: 'auth2fa-verify',
     label: 'Verify'|t('app'),
     spinner: craft.app.request.isCpRequest(),
