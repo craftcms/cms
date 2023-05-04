@@ -501,6 +501,21 @@ Garnish = $.extend(Garnish, {
   },
 
   /**
+   * Handles keyboard activation of non-semantic buttons
+   * @param {Object} event The keypress event
+   * @param {Object} callback The callback to perform if SPACE or ENTER keys are pressed on the non-semantic button
+   * @deprecated The `activate` event should be used instead
+   */
+  handleActivatingKeypress: function (event, callback) {
+    const key = event.keyCode;
+
+    if (key === Garnish.SPACE_KEY || key === Garnish.RETURN_KEY) {
+      event.preventDefault();
+      callback();
+    }
+  },
+
+  /**
    * Returns the body's real scrollTop, discarding any window banding in Safari.
    *
    * @return {number}
