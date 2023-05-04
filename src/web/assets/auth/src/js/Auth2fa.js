@@ -12,12 +12,14 @@ import {browserSupportsWebAuthn} from '@simplewebauthn/browser';
       $viewSetupBtns: null,
       $errors: null,
 
-      $slideout: null,
+      slideout: null,
       $removeSetupButton: null,
       $closeButton: null,
       $verifyButton: null,
 
       init: function (settings) {
+        this.setSettings(settings, Craft.Auth2fa.defaults);
+
         this.$auth2faLoginFormContainer = $('#auth-2fa-form');
         this.$auth2faSetupFormContainer = $('#auth-2fa-setup');
         // this.$alternative2faLink = $('#alternative-2fa');
@@ -26,8 +28,6 @@ import {browserSupportsWebAuthn} from '@simplewebauthn/browser';
           'button.auth-2fa-view-setup'
         );
         this.$errors = $('#login-errors');
-
-        this.setSettings(settings, Craft.Auth2fa.defaults);
 
         // this.addListener(
         //   this.$alternative2faLink,
@@ -58,6 +58,24 @@ import {browserSupportsWebAuthn} from '@simplewebauthn/browser';
         return currentMethod;
       },
 
+      initSlideout: function () {
+        this.$errors = this.slideout.$container.find('.so-notice');
+        this.$closeButton = this.slideout.$container.find('button.close');
+        this.$verifyButton = this.slideout.$container.find('#auth2fa-verify');
+        this.$removeSetupButton = this.slideout.$container.find(
+          '#auth-2fa-remove-setup'
+        );
+
+        this.addListener(this.$removeSetupButton, 'click', 'onRemoveSetup');
+        this.addListener(this.$closeButton, 'click', 'onClickClose');
+        this.addListener(this.$verifyButton, 'click', 'onVerify');
+        this.addListener(this.slideout.$container, 'keypress', (ev) => {
+          if (ev.keyCode === Garnish.RETURN_KEY) {
+            this.$verifyButton.trigger('click');
+          }
+        });
+      },
+
       onViewSetupBtnClick: function (ev) {
         const $button = $(ev.currentTarget);
         $button.disable();
@@ -71,8 +89,7 @@ import {browserSupportsWebAuthn} from '@simplewebauthn/browser';
           .then((response) => {
             this.slideout = new Craft.Slideout(response.data.html);
 
-            this.$errors = this.slideout.$container.find('.so-notice');
-            this.$closeButton = this.slideout.$container.find('button.close');
+            this.initSlideout();
 
             // initialise webauthn
             if (
@@ -81,25 +98,11 @@ import {browserSupportsWebAuthn} from '@simplewebauthn/browser';
             ) {
               new Craft.WebAuthnSetup(this.slideout);
             }
+
             // initialise recovery codes
             if (data.selectedMethod === 'craft\\auth\\type\\RecoveryCodes') {
               new Craft.RecoveryCodesSetup(this.slideout);
             }
-
-            this.$verifyButton =
-              this.slideout.$container.find('#auth2fa-verify');
-            this.$removeSetupButton = this.slideout.$container.find(
-              '#auth-2fa-remove-setup'
-            );
-
-            this.addListener(this.$removeSetupButton, 'click', 'onRemoveSetup');
-            this.addListener(this.$closeButton, 'click', 'onClickClose');
-            this.addListener(this.$verifyButton, 'click', 'onVerify');
-            this.addListener(this.slideout.$container, 'keypress', (ev) => {
-              if (ev.keyCode === Garnish.RETURN_KEY) {
-                this.$verifyButton.trigger('click');
-              }
-            });
 
             this.slideout.on('close', (ev) => {
               this.$removeSetupButton = null;
@@ -179,7 +182,7 @@ import {browserSupportsWebAuthn} from '@simplewebauthn/browser';
             this.onSubmitResponse($submitBtn);
 
             // Add the error message
-            this.showError(response.data.message);
+            this.showStatus(response.data.message);
             Craft.cp.displayError(response.data.message);
           });
       },
@@ -188,15 +191,18 @@ import {browserSupportsWebAuthn} from '@simplewebauthn/browser';
         $submitBtn.removeClass('loading');
       },
 
-      showError: function (error, $errorsContainer = null) {
-        this.clearErrors();
+      showStatus: function (message, type = 'error') {
+        this.clearStatus();
 
-        $('<p class="error" style="display: none;">' + error + '</p>')
-          .appendTo($errorsContainer !== null ? $errorsContainer : this.$errors)
-          .velocity('fadeIn');
+        if (type == 'error') {
+          this.$errors.addClass('error');
+        } else {
+          this.$errors.removeClass('error');
+        }
+        this.$errors.text(message);
       },
 
-      clearErrors: function ($errorsContainer = null) {
+      clearStatus: function ($errorsContainer = null) {
         if ($errorsContainer !== null) {
           $errorsContainer.empty();
         } else {
@@ -205,7 +211,7 @@ import {browserSupportsWebAuthn} from '@simplewebauthn/browser';
       },
 
       onAlternative2faTypeClick: function (event) {
-        this.clearErrors();
+        this.clearStatus();
 
         let $btn = $(event.currentTarget);
         $btn.attr('disabled', true).disable();
@@ -216,7 +222,7 @@ import {browserSupportsWebAuthn} from '@simplewebauthn/browser';
         );
         if (currentMethod === null) {
           this.$alternative2faLink.hide();
-          this.showError(
+          this.showStatus(
             Craft.t('app', 'No alternative 2FA methods available.')
           );
         }
@@ -244,7 +250,7 @@ import {browserSupportsWebAuthn} from '@simplewebauthn/browser';
             }
           })
           .catch(({response}) => {
-            this.showError(response.data.message);
+            this.showStatus(response.data.message);
           })
           .finally(() => {
             $btn.attr('disabled', false).enable();
@@ -271,7 +277,7 @@ import {browserSupportsWebAuthn} from '@simplewebauthn/browser';
             );
           });
         } else {
-          this.showError(
+          this.showStatus(
             Craft.t('app', 'No alternative 2FA methods available.')
           );
         }
@@ -311,7 +317,7 @@ import {browserSupportsWebAuthn} from '@simplewebauthn/browser';
             }
           })
           .catch(({response}) => {
-            //this.showError(response.data.message);
+            //this.showStatus(response.data.message);
           })
           .finally(() => {
             $btn.attr('disabled', false).enable();

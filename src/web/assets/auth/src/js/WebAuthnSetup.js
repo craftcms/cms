@@ -4,18 +4,17 @@ import {startRegistration} from '@simplewebauthn/browser';
 (function ($) {
   /** global: Craft */
   /** global: Garnish */
-  Craft.WebAuthnSetup = Garnish.Base.extend(
+  Craft.WebAuthnSetup = Craft.Auth2fa.extend(
     {
       $addSecurityKeyBtn: null,
-      $noticeContainer: null,
       $keysTable: null,
-      slideout: null,
 
       init: function (slideout, settings) {
-        this.slideout = slideout;
         this.setSettings(settings, Craft.WebAuthnSetup.defaults);
+        this.slideout = slideout;
+        this.initSlideout();
+
         this.$addSecurityKeyBtn = $('#add-security-key');
-        this.$noticeContainer = this.slideout.$container.find('.so-notice');
         this.$keysTable = this.slideout.$container.find(
           '#webauthn-security-keys'
         );
@@ -44,7 +43,7 @@ import {startRegistration} from '@simplewebauthn/browser';
 
       onAddSecurityKeyBtn: function (ev) {
         if (!$(ev.currentTarget).hasClass('disabled')) {
-          this.showStatus(Craft.t('app', 'Waiting for elevated session'));
+          this.showStatus(Craft.t('app', 'Waiting for elevated session'), '');
           Craft.elevatedSessionManager.requireElevatedSession(
             this.startWebAuthRegistration.bind(this),
             this.failedElevation.bind(this)
@@ -67,7 +66,7 @@ import {startRegistration} from '@simplewebauthn/browser';
           .then((response) => {
             const registrationOptions = response.data.registrationOptions;
             try {
-              this.showStatus(Craft.t('app', 'Starting registration'));
+              this.showStatus(Craft.t('app', 'Starting registration'), '');
               const credentialName = Craft.escapeHtml(
                 prompt(
                   Craft.t('app', 'Please enter a name for the security key')
@@ -81,16 +80,15 @@ import {startRegistration} from '@simplewebauthn/browser';
                   this.showStatus(
                     Craft.t('app', 'Registration failed:') +
                       ' ' +
-                      regResponseError.message,
-                    'error'
+                      regResponseError.message
                   );
                 });
             } catch (error) {
-              this.showStatus(error, 'error');
+              this.showStatus(error);
             }
           })
           .catch(({response}) => {
-            this.showStatus(response.data.message, 'error');
+            this.showStatus(response.data.message);
           });
       },
 
@@ -98,7 +96,7 @@ import {startRegistration} from '@simplewebauthn/browser';
         startRegistrationResponse,
         credentialName
       ) {
-        this.showStatus(Craft.t('app', 'Starting verification'));
+        this.showStatus(Craft.t('app', 'Starting verification'), '');
         let data = {
           credentials: JSON.stringify(startRegistrationResponse),
           credentialName: credentialName,
@@ -117,14 +115,14 @@ import {startRegistration} from '@simplewebauthn/browser';
               );
               if (response.data.html) {
                 this.slideout.$container.html(response.data.html);
-                this.init(this.slideout); //reinitialise
+                this.init(this.slideout); //re-initialise slideout
               }
             } else {
-              this.showStatus('Something went wrong!', 'error');
+              this.showStatus('Something went wrong!');
             }
           })
           .catch(({response}) => {
-            this.showStatus(response.data.message, 'error');
+            this.showStatus(response.data.message);
           });
       },
 
@@ -157,27 +155,13 @@ import {startRegistration} from '@simplewebauthn/browser';
               Craft.cp.displaySuccess(response.data.message);
               if (response.data.html) {
                 this.slideout.$container.html(response.data.html);
-                this.init(this.slideout); //reinitialise
+                this.init(this.slideout); //re-initialise slideout
               }
             })
             .catch(({response}) => {
-              this.showStatus(response.data.message, 'error');
+              this.showStatus(response.data.message);
             });
         }
-      },
-
-      showStatus: function (message, type) {
-        //Craft.cp.displayError(message);
-        if (type == 'error') {
-          this.$noticeContainer.addClass('error');
-        } else {
-          this.$noticeContainer.removeClass('error');
-        }
-        this.$noticeContainer.text(message);
-      },
-
-      clearStatus: function () {
-        this.$noticeContainer.text('');
       },
     },
     {

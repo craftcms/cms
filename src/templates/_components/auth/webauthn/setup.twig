@@ -1,5 +1,5 @@
 {% import '_includes/forms.twig' as forms %}
-{% do view.registerJs('new Craft.WebAuthn') %}
+{#{% do view.registerJs('new Craft.WebAuthn') %}#}
 
 {% if user is not defined or user is empty %}
     {% if currentUser is defined and currentUser is not empty %}
