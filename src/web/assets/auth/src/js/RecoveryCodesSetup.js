@@ -85,7 +85,7 @@
                 this.init(this.slideout); //re-initialise the slideout
               }
             } else {
-              this.showStatus('Something went wrong!');
+              this.showStatus(Craft.t('app', 'Something went wrong!'));
             }
           })
           .catch(({response}) => {
