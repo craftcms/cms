@@ -120,8 +120,7 @@ class ElementSources extends Component
             $sources = $nativeSources;
         }
 
-        // Clear out any unwanted headings and return
-        return static::filterExtraHeadings($sources);
+        return $sources;
     }
 
     /**

@@ -26,6 +26,7 @@
                     role: 'checkbox',
                     aria: {
                         label: 'Select'|t('app'),
+                        checked: 'false',
                     },
                 }) }}
             </td>
@@ -43,6 +44,19 @@
                     {%- include '_elements/element' with {
                         autoReload: false,
                     } -%}
+
+                    {%- if structure %}
+                        {% set textAlternative = 'Level {num}'|t('app', {
+                            num: element.level,
+                        }) %}
+                        {{ tag('span', {
+                            class: 'visually-hidden',
+                            data: {
+                                'text-alternative': true,
+                            },
+                            text: textAlternative,
+                        }) }}
+                    {% endif  %}
                 </th>
             {% else %}
                 <td data-title="{{ attribute[1].label }}" data-attr="{{ attribute[0] }}">

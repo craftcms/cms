@@ -1445,6 +1445,16 @@ class StringHelperTest extends TestCase
     }
 
     /**
+     * @dataProvider toHandleDataProvider
+     * @param string $expected
+     * @param string $str
+     */
+    public function testToHandle(string $expected, string $str)
+    {
+        self::assertSame($expected, StringHelper::toHandle($str));
+    }
+
+    /**
      * @dataProvider trimDataProvider
      * @param string $expected
      * @param string $string
@@ -1539,6 +1549,50 @@ class StringHelperTest extends TestCase
     {
         $actual = StringHelper::idnToUtf8Email($string);
         self::assertSame($expected, $actual);
+    }
+
+    /**
+     * @dataProvider emojiToShortcodesDataProvider
+     *
+     * @param string $expected
+     * @param string $str
+     */
+    public function testEmojiToShortcodes(string $expected, string $str)
+    {
+        self::assertSame($expected, StringHelper::emojiToShortcodes($str));
+    }
+
+    /**
+     * @dataProvider shortcodesToEmojiDataProvider
+     *
+     * @param string $expected
+     * @param string $str
+     */
+    public function testShortcodesToEmoji(string $expected, string $str)
+    {
+        self::assertSame($expected, StringHelper::shortcodesToEmoji($str));
+    }
+
+    /**
+     * @dataProvider escapeShortcodesDataProvider
+     *
+     * @param string $expected
+     * @param string $str
+     */
+    public function testEscapeShortcodes(string $expected, string $str)
+    {
+        self::assertSame($expected, StringHelper::escapeShortcodes($str));
+    }
+
+    /**
+     * @dataProvider unescapeShortcodesDataProvider
+     *
+     * @param string $expected
+     * @param string $str
+     */
+    public function testUnescapeShortcodes(string $expected, string $str)
+    {
+        self::assertSame($expected, StringHelper::unescapeShortcodes($str));
     }
 
     /**
@@ -2138,6 +2192,20 @@ class StringHelperTest extends TestCase
             ['😘', '😘'],
             ['22 ALPHAN NUMERIC', '22 AlphaN Numeric'],
             ['!@#$%  ^&*()', '!@#$%  ^&*()'],
+        ];
+    }
+
+    /**
+     * @return array
+     */
+    public function toHandleDataProvider(): array
+    {
+        return [
+            ['foo', 'FOO'],
+            ['fooBar', 'FOO BAR'],
+            ['fooBar', 'Fo’o Bar'],
+            ['fooBarBaz', 'Foo Ba’r   Baz'],
+            ['fooBar', '0 Foo Bar'],
         ];
     }
 
@@ -4160,6 +4228,48 @@ class StringHelperTest extends TestCase
         return [
             ['userName', 'userName'],
             ['aaa@äö.ee', 'aaa@xn--4ca0b.ee'],
+        ];
+    }
+
+    /**
+     * @return array
+     */
+    public function emojiToShortcodesDataProvider(): array
+    {
+        return [
+            ['Baby you light my :fire:! :smiley:', 'Baby you light my 🔥! 😃'],
+            ['Test — em – en - dashes :hand_with_index_and_middle_fingers_crossed:', 'Test — em – en - dashes 🤞'],
+        ];
+    }
+
+    /**
+     * @return array
+     */
+    public function shortcodesToEmojiDataProvider(): array
+    {
+        return [
+            ['Baby you light my 🔥! 😃', 'Baby you light my :fire:! :smiley:'],
+            ['Test — em – en - dashes 🤞', 'Test — em – en - dashes :hand_with_index_and_middle_fingers_crossed:'],
+        ];
+    }
+
+    /**
+     * @return array
+     */
+    public function escapeShortcodesDataProvider(): array
+    {
+        return [
+            ['\\:100\\: \\:1234\\: 🔥', ':100: :1234: 🔥'],
+        ];
+    }
+
+    /**
+     * @return array
+     */
+    public function unescapeShortcodesDataProvider(): array
+    {
+        return [
+            [':100: :1234: 🔥', '\\:100\\: \\:1234\\: 🔥'],
         ];
     }
 }

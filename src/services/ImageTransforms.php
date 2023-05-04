@@ -211,23 +211,8 @@ class ImageTransforms extends Component
         }
 
         $projectConfig = Craft::$app->getProjectConfig();
-
-        $configData = [
-            'format' => $transform->format,
-            'handle' => $transform->handle,
-            'height' => (int)$transform->height ?: null,
-            'interlace' => $transform->interlace,
-            'mode' => $transform->mode,
-            'name' => $transform->name,
-            'position' => $transform->position,
-            'quality' => (int)$transform->quality ?: null,
-            'width' => (int)$transform->width ?: null,
-            'fill' => $transform->fill,
-            'upscale' => $transform->upscale,
-        ];
-
         $configPath = ProjectConfig::PATH_IMAGE_TRANSFORMS . '.' . $transform->uid;
-        $projectConfig->set($configPath, $configData, "Saving transform “{$transform->handle}”");
+        $projectConfig->set($configPath, $transform->getConfig(), "Saving transform “{$transform->handle}”");
 
         if ($isNewTransform) {
             $transform->id = Db::idByUid(Table::IMAGETRANSFORMS, $transform->uid, $this->db);
@@ -276,7 +261,7 @@ class ImageTransforms extends Component
             $transformRecord->interlace = $data['interlace'];
             $transformRecord->format = $data['format'];
             $transformRecord->fill = $data['fill'] ?? null;
-            $transformRecord->upscale = $data['upscale'] ?? null;
+            $transformRecord->upscale = $data['upscale'] ?? true;
             $transformRecord->uid = $transformUid;
 
             $transformRecord->save(false);

@@ -17,6 +17,9 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
     promptHandler: null,
     progressBar: null,
 
+    $listedFolders: null,
+    itemDrag: null,
+
     _uploadTotalFiles: 0,
     _uploadFileProgress: {},
     _currentUploaderSettings: {},
@@ -26,6 +29,118 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
       this.base(elementType, $container, settings);
 
       if (this.settings.context === 'index') {
+        this.itemDrag = new Garnish.DragDrop({
+          activeDropTargetClass: 'sel',
+          minMouseDist: 10,
+          hideDraggee: false,
+          moveHelperToCursor: true,
+          activeDropTargetClass: 'active-drop-target',
+          handle: (item) => $(item).closest('tr,li'),
+          filter: () => {
+            const $container = this.itemDrag.$targetItem.closest('tr,li');
+            this.view.elementSelect.selectItem($container);
+            return this._findDraggableItems(this.view.getSelectedElements());
+          },
+          helper: ($item, index) =>
+            $('<div class="offset-drag-helper"/>')
+              .append($item)
+              .css({
+                opacity: Math.max(0.9 - 0.05 * index, 0),
+                width: '',
+                height: '',
+              }),
+          dropTargets: () => {
+            // volume sources
+            let $dropTargets = $(
+              this.$visibleSources
+                .toArray()
+                .filter(
+                  (source) =>
+                    Garnish.hasAttr(source, 'data-folder-id') &&
+                    Garnish.hasAttr(source, 'data-can-move-peer-files-to')
+                )
+            );
+            if (this.sourcePath.length <= 1) {
+              // exclude the current source since we're already at the root of it
+              $dropTargets = $dropTargets.not(this.$source);
+            } else {
+              // parent folders in the source path
+              for (let i = 0; i < this.sourcePath.length - 1; i++) {
+                const step = this.sourcePath[i];
+                if (step.folderId) {
+                  $dropTargets = $dropTargets.add(step.$btn);
+                }
+              }
+            }
+            // folders in the elements listing
+            if (this.$listedFolders) {
+              $dropTargets = $dropTargets
+                .add(
+                  this.$listedFolders
+                    .filter('[data-folder-id]')
+                    .closest('tr,li')
+                )
+                .not(this.view.getSelectedElements());
+            }
+            return $dropTargets;
+          },
+          onDragStart: () => {
+            Garnish.$bod.addClass('dragging');
+            this.itemDrag.$draggee.closest('tr,li').addClass('draggee');
+          },
+          onDragStop: () => {
+            Garnish.$bod.removeClass('dragging');
+
+            const $draggee = this.itemDrag.$draggee;
+            const targetFolderId = this._targetFolderId(
+              this.itemDrag.$activeDropTarget
+            );
+
+            if (!targetFolderId) {
+              $draggee.closest('tr,li').removeClass('draggee');
+              this.itemDrag.returnHelpersToDraggees();
+              return;
+            }
+
+            this.itemDrag.fadeOutHelpers();
+
+            const $folders = $draggee.filter('[data-is-folder]');
+            const $assets = $draggee.not($folders);
+            const folderIds = $folders.toArray().map((item) => {
+              return parseInt($(item).data('folder-id'));
+            });
+            const assetIds = $assets.toArray().map((item) => {
+              return parseInt($(item).data('id'));
+            });
+
+            const mover = new Craft.AssetMover();
+            mover
+              .moveFolders(folderIds, targetFolderId)
+              .then((totalFoldersMoved) => {
+                mover
+                  .moveAssets(assetIds, targetFolderId)
+                  .then((totalAssetsMoved) => {
+                    const totalItemsMoved =
+                      totalFoldersMoved + totalAssetsMoved;
+                    if (totalItemsMoved) {
+                      Craft.cp.displayNotice(
+                        Craft.t(
+                          'app',
+                          '{totalItems, plural, =1{Item} other{Items}} moved.',
+                          {
+                            totalItems: totalItemsMoved,
+                          }
+                        )
+                      );
+                      Craft.elementIndex.updateElements(true);
+                    } else {
+                      $draggee.closest('tr,li').removeClass('draggee');
+                    }
+                  });
+              });
+          },
+        });
+
         this.addListener(Garnish.$win, 'resize,scroll', '_positionProgressBar');
       } else {
         this.addListener(this.$main, 'scroll', '_positionProgressBar');
@@ -37,6 +152,37 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
           );
         }
       }
+    },
+
+    _findDraggableItems: function ($items) {
+      return $(
+        $items
+          .toArray()
+          .map((item) => $(item).find('.element:first')[0])
+          .filter((item) => item && Garnish.hasAttr(item, 'data-movable'))
+      );
+    },
+
+    _targetFolderId: function ($dropTarget) {
+      if (!$dropTarget || !$dropTarget.length) {
+        return false;
+      }
+
+      // source?
+      if ($dropTarget.is(this.$visibleSources)) {
+        return $dropTarget.data('folder-id');
+      }
+
+      // source path step?
+      for (let i = 0; i < this.sourcePath.length - 1; i++) {
+        const step = this.sourcePath[i];
+        if ($dropTarget.is(step.$btn)) {
+          return step.folderId;
+        }
+      }
+
+      // folder in the element listing?
+      return $dropTarget.find('.element:first').data('folder-id') || false;
     },
 
     afterInit: function () {
@@ -131,9 +277,18 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
       if (!this.settings.foldersOnly && this.sourcePath.length) {
         const currentFolder = this.sourcePath[this.sourcePath.length - 1];
         if (currentFolder.folderId) {
-          this.uploader.setParams({
-            folderId: currentFolder.folderId,
-          });
+          if (this.uploader) {
+            this.uploader.setParams({
+              folderId: currentFolder.folderId,
+            });
+          }
+
+          // will the user be allowed to move items in this folder?
+          const canMoveSubItems = !!currentFolder.canMoveSubItems;
+          this.settings.selectable =
+            this.settings.selectable || canMoveSubItems;
+          this.settings.multiSelect =
+            this.settings.multiSelect || canMoveSubItems;
         }
       }
 
@@ -220,9 +375,20 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
       this.base();
     },
 
+    getViewSettings: function () {
+      const settings = {};
+
+      if (this.settings.context === 'index') {
+        // Allow folders to be selected
+        settings.canSelectElement = () => true;
+      }
+
+      return settings;
+    },
+
     getViewParams: function () {
       const data = Object.assign(this.base(), {
-        showFolders: this.settings.showFolders,
+        showFolders: this.settings.showFolders && !this.trashed,
         foldersOnly: this.settings.foldersOnly,
       });
 
@@ -318,7 +484,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
           : Craft.t('app', 'Upload failed.');
       }
 
-      alert(message);
+      Craft.cp.displayError(message);
     },
 
     /**
@@ -377,7 +543,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
           followupAlways();
         };
         const followupFailure = (data) => {
-          alert(data.message);
+          Craft.cp.displayError(data.message);
           followupAlways();
         };
 
@@ -433,13 +599,17 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
       this.addListener(this.$elements, 'keydown', this._onKeyDown.bind(this));
       this.view.elementSelect.on('focusItem', this._onElementFocus.bind(this));
 
-      const $folders = $newElements.find('.element[data-is-folder]');
-      for (let i = 0; i < $folders.length; i++) {
-        const $folder = $folders.eq(i);
+      this.$listedFolders = $newElements.find(
+        '.element[data-is-folder][data-folder-name]'
+      );
+      for (let i = 0; i < this.$listedFolders.length; i++) {
+        const $folder = this.$listedFolders.eq(i);
         const $label = $folder.find('.label');
+        const $title = $label.find('.title');
         const folderId = parseInt($folder.data('folder-id'));
+        const folderName = $folder.data('folder-name');
         const label = Craft.t('app', '{name} folder', {
-          name: $folder.attr('title'),
+          name: folderName,
         });
         if (this.settings.disabledFolderIds.includes(folderId)) {
           $label.attr('aria-label', label);
@@ -450,7 +620,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
         if (sourcePath) {
           const $a = $('<a/>', {
             href: Craft.getCpUrl(sourcePath[sourcePath.length - 1].uri),
-            html: $folder.html(),
+            html: $title.html(),
             role: 'button',
             'aria-label': label,
           });
@@ -467,6 +637,21 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
               }
             });
           });
+        }
+      }
+
+      if (this.itemDrag) {
+        const currentFolder = this.sourcePath[this.sourcePath.length - 1];
+        const canMoveSubItems = !!(
+          currentFolder &&
+          currentFolder.folderId &&
+          currentFolder.canMoveSubItems
+        );
+        if (!canMoveSubItems || !append) {
+          this.itemDrag.removeAllItems();
+        }
+        if (canMoveSubItems) {
+          this.itemDrag.addItems(this._findDraggableItems($newElements));
         }
       }
     },
@@ -505,7 +690,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
     },
 
     /**
-     * Load the preview for an Asset element
+     * Load the preview for an asset
      * @private
      */
     _loadPreview: function ($element) {
@@ -608,7 +793,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
           })
           .catch(({response}) => {
             this.setIndexAvailable();
-            alert(response.data.message);
+            Craft.cp.displayError(response.data.message);
           });
       }
     },
@@ -641,7 +826,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
           })
           .catch(({response}) => {
             this.setIndexAvailable();
-            alert(response.data.message);
+            Craft.cp.displayError(response.data.message);
           });
       }
     },
@@ -673,12 +858,14 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
           const sourcePath = this.sourcePath.slice();
           sourcePath[sourcePath.length - 1].label = response.data.newName;
           sourcePath[sourcePath.length - 1].uri =
-            sourcePath[sourcePath.length - 1].uri + `/${response.data.newName}`;
+            sourcePath[sourcePath.length - 2].uri + `/${response.data.newName}`;
           this.sourcePath = sourcePath;
         })
         .catch(({response}) => {
+          Craft.cp.displayError(response.data.message);
+        })
+        .finally(() => {
           this.setIndexAvailable();
-          alert(response.data.message);
         });
     },
 
@@ -701,19 +888,25 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 
     _moveFolder: function () {
       const currentFolder = this.sourcePath[this.sourcePath.length - 1];
+      const parentFolder = this.sourcePath[this.sourcePath.length - 2];
+
+      const disabledFolderIds = [currentFolder.folderId];
+      if (parentFolder) {
+        disabledFolderIds.push(parentFolder.folderId);
+      }
 
       new Craft.VolumeFolderSelectorModal({
         sources: this.getMoveTargetSourceKeys(true),
         showTitle: true,
         modalTitle: Craft.t('app', 'Move to'),
         selectBtnLabel: Craft.t('app', 'Move'),
+        disabledFolderIds: disabledFolderIds,
         indexSettings: {
           defaultSource: this.sourceKey,
           defaultSourcePath: this.sourcePath.slice(
             0,
             this.sourcePath.length - 1
           ),
-          disabledFolderIds: [currentFolder.folderId],
         },
         onSelect: ([targetFolder]) => {
           this.$sourcePathActionsBtn.focus();

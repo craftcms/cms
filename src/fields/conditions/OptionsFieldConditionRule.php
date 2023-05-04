@@ -35,7 +35,7 @@ class OptionsFieldConditionRule extends BaseMultiSelectConditionRule implements 
     /**
      * @inheritdoc
      */
-    protected function elementQueryParam(): array
+    protected function elementQueryParam(): ?array
     {
         return $this->paramValue();
     }

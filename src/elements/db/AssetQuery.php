@@ -900,7 +900,6 @@ class AssetQuery extends ElementQuery
             'assets.uploaderId',
             'assets.filename',
             'assets.kind',
-            'assets.alt',
             'assets.width',
             'assets.height',
             'assets.size',
@@ -909,6 +908,11 @@ class AssetQuery extends ElementQuery
             'assets.dateModified',
             'volumeFolders.path AS folderPath',
         ]);
+
+        // todo: cleanup after next breakpoint
+        if (Craft::$app->getDb()->columnExists(Table::ASSETS, 'alt')) {
+            $this->query->addSelect(['assets.alt']);
+        }
 
         if ($this->volumeId) {
             if ($this->volumeId === ':empty:') {

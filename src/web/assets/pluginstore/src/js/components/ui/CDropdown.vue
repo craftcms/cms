@@ -7,21 +7,27 @@
       disabled,
     }"
   >
-    <select
-      :disabled="disabled"
-      :value="value"
-      :class="{
-        'form-select sm:tw-text-sm sm:tw-leading-5 tw-ps-3 tw-pe-10 tw-rounded-md': true,
-        'tw-w-full': fullwidth,
-        'tw-border-danger': invalid,
-        'tw-border-field': !invalid,
-      }"
-      @input="$emit('input', $event.target.value)"
-    >
-      <option v-for="(option, key) in options" :value="option.value" :key="key">
-        {{ option.label }}
-      </option>
-    </select>
+    <div class="select">
+      <select
+        :disabled="disabled"
+        :value="value"
+        :class="{
+          'form-select sm:tw-text-sm sm:tw-leading-5 tw-ps-3 tw-pe-10 tw-rounded-md': true,
+          'tw-w-full': fullwidth,
+          'tw-border-danger': invalid,
+          'tw-border-field': !invalid,
+        }"
+        @input="$emit('input', $event.target.value)"
+      >
+        <option
+          v-for="(option, key) in options"
+          :value="option.value"
+          :key="key"
+        >
+          {{ option.label }}
+        </option>
+      </select>
+    </div>
   </div>
 </template>
 

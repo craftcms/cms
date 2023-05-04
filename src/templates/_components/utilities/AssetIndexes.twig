@@ -1,4 +1,4 @@
-{% import "_includes/forms" as forms %}
+{% import '_includes/forms.twig' as forms %}
 
 <form id="asset-indexes" class="utility" method="post" accept-charset="UTF-8">
 
@@ -82,7 +82,13 @@
         const data = {
             'cacheImages': !!$('input[name=cacheImages]').val(),
             'listEmptyFolders': !!$('input[name=listEmptyFolders]').val(),
-            'volumes': $(ev.target).find('.checkbox-select input:checked:enabled').map(function(){return $(this).val();}).get()
+            // get all selected volume ids; don't rely on '*' because of the new EVENT_LIST_VOLUMES event
+            'volumes': $(ev.target).find('.checkbox-select input:checked').map(function(){
+                let val = $(this).val();
+                if (val !== '*') {
+                    return val;
+                }
+            }).get()
         };
 
         $submitButton.addClass('disabled').after('<div class="spinner"></div>');

@@ -390,6 +390,29 @@ class ExtensionTest extends TestCase
     /**
      *
      */
+    public function testBase64DecodeFilter(): void
+    {
+        $encoded = base64_encode('foo');
+        $this->testRenderResult(
+            'foo',
+            "{{ '$encoded'|base64_decode }}",
+        );
+    }
+
+    /**
+     *
+     */
+    public function testBase64EncodeFilter(): void
+    {
+        $this->testRenderResult(
+            base64_encode('foo'),
+            '{{ "foo"|base64_encode }}',
+        );
+    }
+
+    /**
+     *
+     */
     public function testParseAttrFilter(): void
     {
         $this->testRenderResult(
@@ -507,6 +530,11 @@ class ExtensionTest extends TestCase
         $this->testRenderResult(
             'foo qux baz',
             '{{ "foo bar baz"|replace("bar", "qux") }}'
+        );
+
+        $this->testRenderResult(
+            'foo zar zazzy',
+            '{{ "foo bar baz"|replace({"/b(\\\w+)/": "z$1", zaz: "zazzy"}) }}',
         );
     }
 

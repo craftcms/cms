@@ -272,7 +272,9 @@ class EntriesController extends BaseEntriesController
 
                 return $this->asModelFailure(
                     $entry,
-                    Craft::t('app', 'Couldn’t duplicate entry.'),
+                    Craft::t('app', 'Couldn’t duplicate {type}.', [
+                        'type' => Entry::lowerDisplayName(),
+                    ]),
                     'entry'
                 );
             } catch (Throwable $e) {

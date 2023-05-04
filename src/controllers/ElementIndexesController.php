@@ -14,6 +14,7 @@ use craft\base\ElementExporterInterface;
 use craft\base\ElementInterface;
 use craft\elements\actions\DeleteActionInterface;
 use craft\elements\actions\Restore;
+use craft\elements\conditions\ElementCondition;
 use craft\elements\conditions\ElementConditionInterface;
 use craft\elements\conditions\ElementConditionRuleInterface;
 use craft\elements\db\ElementQueryInterface;
@@ -492,7 +493,17 @@ class ElementIndexesController extends BaseElementsController
             return null;
         }
 
-        return Craft::$app->getConditions()->createCondition($conditionConfig);
+        $condition = Craft::$app->getConditions()->createCondition($conditionConfig);
+
+        if ($condition instanceof ElementCondition) {
+            $referenceElementId = $this->request->getBodyParam('referenceElementId');
+            if ($referenceElementId) {
+                $siteId = $this->request->getBodyParam('referenceElementSiteId');
+                $condition->referenceElement = Craft::$app->getElements()->getElementById((int)$referenceElementId, siteId: $siteId);
+            }
+        }
+
+        return $condition;
     }
 
     /**

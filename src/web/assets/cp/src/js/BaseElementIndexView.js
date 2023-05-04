@@ -11,7 +11,6 @@ Craft.BaseElementIndexView = Garnish.Base.extend(
     $scroller: null,
 
     elementIndex: null,
-    thumbLoader: null,
     elementSelect: null,
 
     loadingMore: false,
@@ -20,6 +19,13 @@ Craft.BaseElementIndexView = Garnish.Base.extend(
     _morePending: null,
     _handleEnableElements: null,
     _handleDisableElements: null,
+
+    get thumbLoader() {
+      console.warn(
+        'Craft.BaseElementIndexView::thumbLoader is deprecated. Craft.cp.elementThumbLoader should be used instead.'
+      );
+      return Craft.cp.elementThumbLoader;
+    },
 
     init: function (elementIndex, container, settings) {
       this.elementIndex = elementIndex;
@@ -42,14 +48,17 @@ Craft.BaseElementIndexView = Garnish.Base.extend(
         this.settings.batchSize && $elements.length == this.settings.batchSize
       );
 
-      // Instantiate the thumb loader
-      this.thumbLoader = new Craft.ElementThumbLoader();
-      this.thumbLoader.load($elements);
+      // Load thumbnails
+      Craft.cp.elementThumbLoader.load($elements);
 
       if (this.settings.selectable) {
         this.elementSelect = new Garnish.Select(
           this.$elementContainer,
-          $elements.filter(':not(.disabled)'),
+          $(
+            $elements
+              .toArray()
+              .filter((element) => this.canSelectElement($(element)))
+          ),
           {
             multi: this.settings.multiSelect,
             vertical: this.isVerticalList(),
@@ -126,6 +135,16 @@ Craft.BaseElementIndexView = Garnish.Base.extend(
         this.addListener(this.$scroller, 'scroll', 'maybeLoadMore');
         this.maybeLoadMore();
       }
+    },
+
+    canSelectElement: function ($element) {
+      if ($element.hasClass('disabled')) {
+        return false;
+      }
+      if (this.settings.canSelectElement) {
+        return this.settings.canSelectElement($element);
+      }
+      return !!$element.data('id');
     },
 
     getElementContainer: function () {
@@ -207,6 +226,10 @@ Craft.BaseElementIndexView = Garnish.Base.extend(
 
     deselectAllElements: function () {
       this.elementSelect.deselectAll();
+    },
+
+    getElementCheckbox: function (element) {
+      return $(element).find('[role="checkbox"]');
     },
 
     isVerticalList: function () {
@@ -323,7 +346,7 @@ Craft.BaseElementIndexView = Garnish.Base.extend(
 
     appendElements: function ($newElements) {
       $newElements.appendTo(this.$elementContainer);
-      this.thumbLoader.load($newElements);
+      Craft.cp.elementThumbLoader.load($newElements);
       this.onAppendElements($newElements);
     },
 
@@ -337,6 +360,17 @@ Craft.BaseElementIndexView = Garnish.Base.extend(
     onSelectionChange: function () {
       this.settings.onSelectionChange();
       this.trigger('selectionChange');
+
+      // Update checkboxes
+      if (this.settings.checkboxMode) {
+        const $items = this.elementSelect.$items.each((index, item) => {
+          if (this.elementSelect.isSelected(item)) {
+            this.getElementCheckbox(item).attr('aria-checked', 'true');
+          } else {
+            this.getElementCheckbox(item).attr('aria-checked', 'false');
+          }
+        });
+      }
     },
 
     disable: function () {
@@ -354,10 +388,6 @@ Craft.BaseElementIndexView = Garnish.Base.extend(
     destroy: function () {
       // Remove the "loading-more" spinner, since we added that outside of the view container
       this.$loadingMoreSpinner.remove();
-
-      // Kill the thumb loader
-      this.thumbLoader.destroy();
-      delete this.thumbLoader;
 
       // Delete the element select
       if (this.elementSelect) {
@@ -378,6 +408,7 @@ Craft.BaseElementIndexView = Garnish.Base.extend(
       params: null,
       selectable: false,
       multiSelect: false,
+      canSelectElement: null,
       checkboxMode: false,
       loadMoreElementsAction: 'element-indexes/get-more-elements',
       onAppendElements: $.noop,

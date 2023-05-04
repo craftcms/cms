@@ -26,11 +26,13 @@ use craft\events\CancelableEvent;
 use craft\events\DefineValueEvent;
 use craft\events\PopulateElementEvent;
 use craft\events\PopulateElementsEvent;
+use craft\helpers\App;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Db;
 use craft\helpers\ElementHelper;
 use craft\helpers\StringHelper;
 use craft\models\Site;
+use Illuminate\Support\Collection;
 use ReflectionClass;
 use ReflectionException;
 use ReflectionProperty;
@@ -1299,7 +1301,11 @@ class ElementQuery extends Query implements ElementQueryInterface
     {
         // Log a warning if the app isn't fully initialized yet
         if (!Craft::$app->getIsInitialized()) {
-            Craft::warning('Element query executed before Craft is fully initialized.', __METHOD__);
+            Craft::warning(
+                "Element query executed before Craft is fully initialized.\nStack trace:\n" .
+                App::backtrace(),
+                __METHOD__
+            );
         }
 
         // Is the query already doomed?
@@ -1798,13 +1804,14 @@ class ElementQuery extends Query implements ElementQueryInterface
      */
     public function fields(): array
     {
-        $fields = array_unique(array_merge(
-            array_keys(Craft::getObjectVars($this)),
-            array_keys(Craft::getObjectVars($this->getBehavior('customFields')))
-        ));
-        $fields = array_combine($fields, $fields);
+        $vars = array_keys(Craft::getObjectVars($this));
+        $behavior = $this->getBehavior('customFields');
+        $behaviorVars = array_keys(Craft::getObjectVars($behavior));
+        $fields = array_merge(
+            array_combine($vars, $vars),
+            array_combine($behaviorVars, array_map(fn(string $var) => fn() => $behavior->$var, $behaviorVars))
+        );
         unset($fields['query'], $fields['subQuery'], $fields['owner']);
-
         return $fields;
     }
 
@@ -2354,9 +2361,8 @@ class ElementQuery extends Query implements ElementQueryInterface
     private function _shouldJoinStructureData(): bool
     {
         return (
-            !$this->trashed &&
             !$this->revisions &&
-            ($this->withStructure ?? (bool)$this->structureId)
+            ($this->withStructure ?? ($this->structureId && !$this->trashed))
         );
     }
 
@@ -2638,11 +2644,21 @@ class ElementQuery extends Query implements ElementQueryInterface
      */
     private function _normalizeSiteId(): void
     {
+        $sitesService = Craft::$app->getSites();
         if (!$this->siteId) {
             // Default to the current site
-            $this->siteId = Craft::$app->getSites()->getCurrentSite()->id;
+            $this->siteId = $sitesService->getCurrentSite()->id;
         } elseif ($this->siteId === '*') {
-            $this->siteId = Craft::$app->getSites()->getAllSiteIds();
+            $this->siteId = $sitesService->getAllSiteIds();
+        } elseif (is_numeric($this->siteId) || ArrayHelper::isNumeric($this->siteId)) {
+            // Filter out any invalid site IDs
+            $siteIds = Collection::make((array)$this->siteId)
+                ->filter(fn($siteId) => $sitesService->getSiteById($siteId, true) !== null)
+                ->all();
+            if (empty($siteIds)) {
+                throw new QueryAbortedException();
+            }
+            $this->siteId = is_array($this->siteId) ? $siteIds : reset($siteIds);
         }
     }
 

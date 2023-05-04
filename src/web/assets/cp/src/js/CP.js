@@ -7,6 +7,7 @@ import $ from 'jquery';
  */
 Craft.CP = Garnish.Base.extend(
   {
+    elementThumbLoader: null,
     authManager: null,
 
     $nav: null,
@@ -62,6 +63,8 @@ Craft.CP = Garnish.Base.extend(
     resizeTimeout: null,
 
     init: function () {
+      this.elementThumbLoader = new Craft.ElementThumbLoader();
+
       // Is this session going to expire?
       if (Craft.remainingSessionTime !== 0) {
         this.authManager = new Craft.AuthManager();
@@ -330,6 +333,9 @@ Craft.CP = Garnish.Base.extend(
         );
         observer.observe(footer);
       }
+
+      // Load any element thumbs
+      this.elementThumbLoader.load(this.$mainContent);
     },
 
     get $contentHeader() {
@@ -1001,13 +1007,21 @@ Craft.CP = Garnish.Base.extend(
       if (Garnish.isArray(alerts) && alerts.length) {
         this.$alerts = $('<ul id="alerts"/>').prependTo($('#page-container'));
 
-        for (var i = 0; i < alerts.length; i++) {
-          $(
-            `<li><span data-icon="alert" aria-label="${Craft.t(
+        for (let alert of alerts) {
+          if (!$.isPlainObject(alert)) {
+            alert = {
+              content: alert,
+              showIcon: true,
+            };
+          }
+          let content = alert.content;
+          if (alert.showIcon) {
+            content = `<span data-icon="alert" aria-label="${Craft.t(
               'app',
               'Error'
-            )}"></span> ${alerts[i]}</li>`
-          ).appendTo(this.$alerts);
+            )}"></span> ${content}`;
+          }
+          $(`<li>${content}</li>`).appendTo(this.$alerts);
         }
 
         var height = this.$alerts.outerHeight();
@@ -1480,9 +1494,9 @@ Craft.CP.Notification = Garnish.Base.extend({
       'data-type': this.type,
     }).appendTo(Craft.cp.$notificationContainer);
 
-    const $body = $('<div class="notification-body"/>')
-      .appendTo(this.$container)
-      .attr('role', 'status');
+    const $body = $('<div class="notification-body"/>').appendTo(
+      this.$container
+    );
 
     if (this.settings.icon) {
       const $icon = $('<span/>', {

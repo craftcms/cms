@@ -73,6 +73,12 @@ class UrlManager extends \yii\web\UrlManager
     public bool $checkToken = true;
 
     /**
+     * @var bool whether the full list of URL rules have been defined
+     * @see parseRequest()
+     */
+    private bool $_definedRules = false;
+
+    /**
      * @var array Params that should be included in the
      */
     private array $_routeParams = [];
@@ -95,7 +101,6 @@ class UrlManager extends \yii\web\UrlManager
     public function __construct(array $config = [])
     {
         $config['showScriptName'] = !Craft::$app->getConfig()->getGeneral()->omitScriptNameInUrls;
-        $config['rules'] = $this->_getRules();
 
         parent::__construct($config);
     }
@@ -105,6 +110,12 @@ class UrlManager extends \yii\web\UrlManager
      */
     public function parseRequest($request)
     {
+        // Now we can define the full list of rules
+        if (!$this->_definedRules) {
+            $this->addRules($this->_getRules());
+            $this->_definedRules = true;
+        }
+
         /** @var Request $request */
         // Just in case...
         if ($request->getIsConsoleRequest()) {
@@ -297,14 +308,14 @@ class UrlManager extends \yii\web\UrlManager
     /**
      * Returns the rules that should be used for the current request.
      *
-     * @return array|null The rules, or null if it's a console request
+     * @return array
      */
-    private function _getRules(): ?array
+    private function _getRules(): array
     {
         $request = Craft::$app->getRequest();
 
         if ($request->getIsConsoleRequest()) {
-            return null;
+            return [];
         }
 
         // Load the config file rules
@@ -486,24 +497,12 @@ class UrlManager extends \yii\web\UrlManager
      */
     private function _isPublicTemplatePath(Request $request): bool
     {
-        if ($request->getIsConsoleRequest() || $request->getIsCpRequest()) {
-            $trigger = '_';
-        } else {
-            $trigger = Craft::$app->getConfig()->getGeneral()->privateTemplateTrigger;
-
+        if ($request->getIsSiteRequest() && !Craft::$app->getConfig()->getGeneral()->privateTemplateTrigger) {
             // If privateTemplateTrigger is set to an empty value, disable all public template routing
-            if (!$trigger) {
-                return false;
-            }
+            return false;
         }
 
-        foreach (Craft::$app->getRequest()->getSegments() as $requestPathSeg) {
-            if (str_starts_with($requestPathSeg, $trigger)) {
-                return false;
-            }
-        }
-
-        return true;
+        return Craft::$app->getView()->doesTemplateExist($request->getPathInfo(), publicOnly: true);
     }
 
     /**

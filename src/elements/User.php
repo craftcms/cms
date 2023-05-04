@@ -126,6 +126,10 @@ class User extends Element implements IdentityInterface
     // Validation scenarios
     // -------------------------------------------------------------------------
 
+    /**
+     * @since 4.4.8
+     */
+    public const SCENARIO_ACTIVATION = 'activation';
     public const SCENARIO_REGISTRATION = 'registration';
     public const SCENARIO_PASSWORD = 'password';
 
@@ -548,7 +552,7 @@ class User extends Element implements IdentityInterface
     }
 
     /**
-     * @var int|null Photo asset id
+     * @var int|null Photo asset ID
      */
     public ?int $photoId = null;
 
@@ -806,7 +810,10 @@ class User extends Element implements IdentityInterface
     {
         $rules = parent::defineRules();
 
-        $treatAsActive = fn() => $this->active || $this->pending || $this->getScenario() === self::SCENARIO_REGISTRATION;
+        $treatAsActive = fn() => $this->getIsCredentialed() || in_array($this->getScenario(), [
+            self::SCENARIO_REGISTRATION,
+            self::SCENARIO_ACTIVATION,
+        ]);
 
         $rules[] = [['lastLoginDate', 'lastInvalidLoginDate', 'lockoutDate', 'lastPasswordChangeDate', 'verificationCodeIssuedDate'], DateTimeValidator::class];
         $rules[] = [['invalidLoginCount', 'photoId'], 'number', 'integerOnly' => true];
@@ -913,6 +920,7 @@ class User extends Element implements IdentityInterface
         $scenarios = parent::scenarios();
         $scenarios[self::SCENARIO_PASSWORD] = ['newPassword'];
         $scenarios[self::SCENARIO_REGISTRATION] = ['username', 'email', 'newPassword'];
+        $scenarios[self::SCENARIO_ACTIVATION] = ['username', 'email'];
 
         return $scenarios;
     }

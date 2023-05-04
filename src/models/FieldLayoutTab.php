@@ -315,8 +315,11 @@ class FieldLayoutTab extends FieldLayoutComponent
             $asciiName = sprintf('tab-%s', md5($this->name));
         }
 
+        // ensure unique tab id even if there are multiple tabs with the same name
+        $tabOrder = StringHelper::pad((string)$this->sortOrder, 2, '0', 'left');
+
         // Use two dashes here in case a tab name starts with “Tab”
-        return "tab--$asciiName";
+        return "tab$tabOrder--$asciiName";
     }
 
     /**

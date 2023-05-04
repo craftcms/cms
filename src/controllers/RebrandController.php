@@ -102,7 +102,7 @@ class RebrandController extends Controller
         $type = $this->request->getRequiredBodyParam('type');
 
         if (!in_array($type, $this->_allowedTypes, true)) {
-            $this->asFailure(Craft::t('app', 'That is not an allowed image type.'));
+            return $this->asFailure(Craft::t('app', 'That is not an allowed image type.'));
         }
 
         FileHelper::clearDirectory(Craft::$app->getPath()->getRebrandPath() . '/' . $type);

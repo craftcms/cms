@@ -67,6 +67,8 @@ use yii\base\Component;
 use yii\base\Exception;
 use yii\base\InvalidArgumentException;
 use yii\db\Exception as DbException;
+use yii\db\Expression;
+use yii\db\Schema;
 use yii\db\Transaction;
 use yii\web\BadRequestHttpException;
 
@@ -1667,7 +1669,8 @@ class Fields extends Component
             // Drop any unneeded columns for this field
             $db->getSchema()->refresh();
 
-            if (!$isNewField) {
+            // don't drop the field content column if the field is missing
+            if (!$isNewField && $class !== MissingField::class) {
                 $this->_dropOldFieldColumns($oldHandle, $oldColumnSuffix, $newColumns);
 
                 if ($data['handle'] !== $oldHandle || ($data['columnSuffix'] ?? null) !== $oldColumnSuffix) {
@@ -1759,10 +1762,18 @@ class Fields extends Component
      * @param string|null $oldName
      * @param string $newName
      * @param string $type
+     * @param bool $handleOverflowData
      * @since 3.7.39
      */
-    protected function updateColumn(Connection $db, Transaction &$transaction, string $table, ?string $oldName, string $newName, string $type): void
-    {
+    protected function updateColumn(
+        Connection $db,
+        Transaction &$transaction,
+        string $table,
+        ?string $oldName,
+        string $newName,
+        string $type,
+        bool $handleOverflowData = true,
+    ): void {
         // Clear the schema cache
         $db->getSchema()->refresh();
 
@@ -1775,11 +1786,36 @@ class Fields extends Component
                 $db->createCommand()
                     ->alterColumn($table, $oldName, $type)
                     ->execute();
-            } catch (DbException) {
-                // Just rename the old column and pretend it didn’t exist
+            } catch (DbException $e) {
+                // Restart the transaction
                 $transaction->rollBack();
                 $transaction = $db->beginTransaction();
-                $this->_preserveColumn($db, $table, $oldName);
+
+                // 22001 == the existing data is too long (applies to both MySQL and PostgreSQL)
+                if ($handleOverflowData && $e->getCode() == '22001') {
+                    $maxLength = Db::getTextualColumnStorageCapacity($type);
+                    if ($maxLength) {
+                        // Backup the current column data
+                        $this->_backupFieldColumn($db, $table, $oldName);
+
+                        // Empty the overflowing values and try again
+                        try {
+                            Db::update(
+                                $table,
+                                [$oldName => null],
+                                ['>', new Expression("LENGTH([[$oldName]])"), $maxLength],
+                            );
+                        } catch (DbException $truncateException) {
+                        }
+                        if (!isset($truncateException)) {
+                            $this->updateColumn($db, $transaction, $table, $oldName, $newName, $type, false);
+                            return;
+                        }
+                    }
+                }
+
+                // Backup the column data and drop it
+                $this->_backupFieldColumn($db, $table, $oldName, true);
                 $existingColumn = false;
             }
         }
@@ -1789,8 +1825,8 @@ class Fields extends Component
             if ($oldName !== $newName) {
                 // Does the new column already exist?
                 if ($db->columnExists($table, $newName)) {
-                    // Rename it so we don't lose any data
-                    $this->_preserveColumn($db, $table, $newName);
+                    // Backup the old column data and drop it
+                    $this->_backupFieldColumn($db, $table, $newName, true);
                 }
 
                 // Rename the column
@@ -1801,8 +1837,8 @@ class Fields extends Component
         } else {
             // Does the new column already exist?
             if ($db->columnExists($table, $newName)) {
-                // Rename it so we don't lose any data
-                $this->_preserveColumn($db, $table, $newName);
+                // Backup the old column data and drop it
+                $this->_backupFieldColumn($db, $table, $newName, true);
             }
 
             // Add the new column
@@ -1813,23 +1849,62 @@ class Fields extends Component
     }
 
     /**
-     * Renames a content table column so its data is preserved.
+     * Backs up a table column’s content so its data is preserved.
      *
      * @param Connection $db
      * @param string $table
      * @param string $column
+     * @param bool $dropColumn
      */
-    private function _preserveColumn(Connection $db, string $table, string $column): void
+    private function _backupFieldColumn(Connection $db, string $table, string $column, bool $dropColumn = false): void
     {
-        $n = 0;
+        // Make sure there are any non-null values worth backing up
+        $hasValues = (new Query())
+            ->from($table)
+            ->where(['not', [$column => null]])
+            ->exists($db);
+
+        if (!$hasValues) {
+            return;
+        }
+
+        // Find a unique backup table name
+        $shortTableName = Db::rawTableShortName($table);
+        $timestamp = time();
+        $n = 1;
         do {
+            $suffix = $n === 1 ? '' : "_$n";
+            $bakTable = "{{%{$shortTableName}_{$column}_bak_$timestamp$suffix}}";
             $n++;
-            $newName = $column . '_old' . ($n > 1 ? $n : '');
-        } while ($db->columnExists($table, $newName));
+        } while ($db->tableExists($bakTable));
+
+        $schema = $db->getSchema();
+        $columnSchema = $schema->getTableSchema($table)->getColumn($column);
 
         $db->createCommand()
-            ->renameColumn($table, $column, $newName)
+            ->createTable($bakTable, [
+                'id' => $schema->createColumnSchemaBuilder(Schema::TYPE_PK),
+                'elementId' => $schema->createColumnSchemaBuilder(Schema::TYPE_INTEGER)->notNull(),
+                'siteId' => $schema->createColumnSchemaBuilder(Schema::TYPE_INTEGER)->notNull(),
+                $column => $schema->createColumnSchemaBuilder($columnSchema->type, $columnSchema->size),
+            ])
             ->execute();
+
+        $db->getSchema()->refreshTableSchema($bakTable);
+
+        // Copy the non-null values
+        $db->createCommand(<<<SQL
+INSERT INTO $bakTable ([[id]], [[elementId]], [[siteId]], [[$column]])
+SELECT [[id]], [[elementId]], [[siteId]], [[$column]]
+FROM $table
+WHERE [[$column]] IS NOT NULL
+SQL)->execute();
+
+        if ($dropColumn) {
+            $db->createCommand()
+                ->dropColumn($table, $column)
+                ->execute();
+        }
     }
 
     /**
