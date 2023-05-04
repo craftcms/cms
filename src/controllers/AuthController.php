@@ -11,6 +11,7 @@ use Craft;
 use craft\auth\Configurable2faInterface;
 use craft\auth\type\RecoveryCodes;
 use craft\auth\type\WebAuthn;
+use craft\helpers\StringHelper;
 use craft\web\Controller;
 use craft\web\View;
 use yii\base\Exception;
@@ -332,5 +333,33 @@ class AuthController extends Controller
         $data['html'] = $recoveryCodes->getSetupFormHtml('',true, $user);
 
         return $this->asJson($data);
+    }
+
+    /**
+     * Get user's recovery codes for download and return them as a file
+     *
+     * @return Response|null
+     * @throws \Throwable
+     * @throws \yii\web\BadRequestHttpException
+     * @throws \yii\web\ForbiddenHttpException
+     * @throws \yii\web\HttpException
+     * @throws \yii\web\RangeNotSatisfiableHttpException
+     */
+    public function actionDownloadRecoveryCodes(): ?Response
+    {
+        $this->requirePostRequest();
+        $this->requireLogin();
+        $this->requireElevatedSession();
+
+        $user = Craft::$app->getUser()->getIdentity();
+
+        $recoveryCodes = new RecoveryCodes();
+        $codes = $recoveryCodes->getRecoveryCodesForDownload($user->id);
+
+        return $this->response->sendContentAsFile(
+            $codes,
+            StringHelper::toKebabCase(Craft::$app->getSystemName()) . '-recovery-codes.txt',
+            ['mimeType' => 'text/plain']
+        );
     }
 }

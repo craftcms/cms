@@ -4,7 +4,7 @@
   Craft.RecoveryCodesSetup = Garnish.Base.extend(
     {
       $generateRecoveryCodesBtn: null,
-      $downloadRecoveryCodesBtn: null,
+      $downloadRecoveryCodes: null,
       $noticeContainer: null,
       slideout: null,
 
@@ -14,10 +14,11 @@
         this.$generateRecoveryCodesBtn = this.slideout.$container.find(
           '#generate-recovery-codes'
         );
-        this.$downloadRecoveryCodesBtn = this.slideout.$container.find(
+        this.$downloadRecoveryCodes = this.slideout.$container.find(
           '#download-recovery-codes'
         );
         this.$noticeContainer = this.slideout.$container.find('.so-notice');
+        this.$closeButton = this.slideout.$container.find('button.close');
 
         this.addListener(
           this.$generateRecoveryCodesBtn,
@@ -25,10 +26,10 @@
           'onGenerateRecoveryCodesBtn'
         );
 
-        if (this.$downloadRecoveryCodesBtn.length > 0) {
+        if (this.$downloadRecoveryCodes.length > 0) {
           this.addListener(
-            this.$downloadRecoveryCodesBtn,
-            'click',
+            this.$downloadRecoveryCodes,
+            'submit',
             'onDownloadRecoveryCodesBtn'
           );
         }
@@ -36,15 +37,26 @@
 
       onGenerateRecoveryCodesBtn: function (ev) {
         if (!$(ev.currentTarget).hasClass('disabled')) {
-          this.showStatus(Craft.t('app', 'Waiting for elevated session'));
-          Craft.elevatedSessionManager.requireElevatedSession(
-            this.generateRecoveryCodes.bind(this),
-            this.failedElevation.bind(this)
+          const confirmed = confirm(
+            Craft.t(
+              'app',
+              'Are you sure you want to generate new recovery codes? All current codes will stop working.'
+            )
           );
+
+          if (confirmed) {
+            this.showStatus(Craft.t('app', 'Waiting for elevated session'));
+            Craft.elevatedSessionManager.requireElevatedSession(
+              this.generateRecoveryCodes.bind(this),
+              this.failedElevation.bind(this)
+            );
+          }
         }
       },
 
       onDownloadRecoveryCodesBtn: function (ev) {
+        ev.preventDefault();
+
         if (!$(ev.currentTarget).hasClass('disabled')) {
           this.showStatus(Craft.t('app', 'Waiting for elevated session'));
           Craft.elevatedSessionManager.requireElevatedSession(
@@ -71,6 +83,7 @@
                 Craft.t('app', 'Recovery codes generated.')
               );
               if (response.data.html) {
+                console.log(response.data.html);
                 this.slideout.$container.html(response.data.html);
                 this.init(this.slideout); //reinitialise
               }
@@ -86,7 +99,23 @@
       downloadRecoveryCodes: function () {
         this.clearStatus();
 
-        //TODO
+        Craft.downloadFromUrl(
+          'POST',
+          Craft.getActionUrl(this.settings.downloadRecoveryCodes),
+          this.$downloadRecoveryCodes.serialize()
+        )
+          .then((response) => {
+            this.clearStatus();
+
+            // Show UI message
+            Craft.cp.displaySuccess(
+              Craft.t('app', 'Recovery codes downloaded.')
+            );
+          })
+          .catch(({response}) => {
+            console.log(response);
+            //this.showStatus(response.data.message, 'error');
+          });
       },
 
       showStatus: function (message, type) {

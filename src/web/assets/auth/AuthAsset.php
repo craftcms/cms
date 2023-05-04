@@ -48,6 +48,7 @@ class AuthAsset extends AssetBundle
                 '2FA setup removed.',
                 'Are you sure you want to delete this setup?',
                 'Are you sure you want to delete ‘{credentialName}‘ security key?',
+                'Are you sure you want to generate new recovery codes? All current codes will stop working.',
                 'No alternative 2FA methods available.',
                 'Please enter a name for the security key',
                 'Recovery codes generated.',

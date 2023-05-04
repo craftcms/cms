@@ -153,6 +153,7 @@ return [
     'Are you sure you want to delete “{name}”?' => 'Are you sure you want to delete “{name}”?',
     'Are you sure you want to discard the pending project config YAML changes?' => 'Are you sure you want to discard the pending project config YAML changes?',
     'Are you sure you want to discard your changes?' => 'Are you sure you want to discard your changes?',
+    'Are you sure you want to generate new recovery codes? All current codes will stop working.' => 'Are you sure you want to generate new recovery codes? All current codes will stop working.',
     'Are you sure you want to permanently delete the selected {type}?' => 'Are you sure you want to permanently delete the selected {type}?',
     'Are you sure you want to release all jobs in the queue?' => 'Are you sure you want to release all jobs in the queue?',
     'Are you sure you want to release the job “{description}”?' => 'Are you sure you want to release the job “{description}”?',

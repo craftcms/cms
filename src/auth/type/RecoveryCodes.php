@@ -191,8 +191,8 @@ class RecoveryCodes extends Configurable2faType
             ->mixedcase()
             ->setBlockSeparator('-')
             ->setCount(8)
-            ->setBlocks(4)
-            ->setChars(8);
+            ->setBlocks(2)
+            ->setChars(6);
 
         $codes = $recovery->toArray();
         $recoveryCodes = [];
@@ -207,6 +207,25 @@ class RecoveryCodes extends Configurable2faType
         }
 
         return $recoveryCodes;
+    }
+
+    /**
+     * Get user's recovery codes as a string
+     *
+     * @param int $userId
+     * @return string|null
+     */
+    public function getRecoveryCodesForDownload(int $userId): ?string
+    {
+        $recoveryCodes = self::_getRecoveryCodesFromDb($userId);
+        $codes = null;
+        if ($recoveryCodes !== null) {
+            foreach ($recoveryCodes as $item) {
+                $codes .= $item['value'] . PHP_EOL;
+            }
+        }
+
+        return $codes;
     }
 
 

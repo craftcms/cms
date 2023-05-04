@@ -31,7 +31,15 @@
     {% else %}
         {# otherwise show the table of recovery codes #}
         <div class="tableview">
-            <button id="download-recovery-codes" name="download-recovery-codes" class="btn">{{ 'Download recovery codes'|t('app') }}</button>
+
+            <form id="download-recovery-codes" method="post" accept-charset="UTF-8">
+                {{ actionInput('auth/download-recovery-codes') }}
+                {{ csrfInput() }}
+                <div class="buttons">
+                    <button type="submit" class="btn">{{ 'Download recovery codes'|t('app') }}</button>
+                </div>
+            </form>
+            
             <table class="data fullwidth" id="recovery-codes">
                 <thead>
                 <tr>
