@@ -1317,7 +1317,10 @@ class Entry extends Element implements ExpirableElementInterface
         $section = $this->getSection();
 
         if (!$this->id) {
-            return $user->can("createEntries:$section->uid");
+            return (
+                $section->type !== Section::TYPE_SINGLE &&
+                $user->can("createEntries:$section->uid")
+            );
         }
 
         if ($this->getIsDraft()) {
