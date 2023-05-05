@@ -709,7 +709,12 @@ class Matrix extends Component
             /** @var MatrixBlock[] $blocks */
             foreach ($blocks as $block) {
                 $sortOrder++;
-                if ($saveAll || !$block->id || $block->dirty) {
+                if (
+                    // skip blocks that are primarily owned by a different element
+                    ($saveAll && (!$block->primaryOwnerId || $block->primaryOwnerId === $owner->id)) ||
+                    !$block->id ||
+                    $block->dirty
+                ) {
                     $block->primaryOwnerId = $block->ownerId = $owner->id;
                     $block->sortOrder = $sortOrder;
                     $elementsService->saveElement($block, false);
