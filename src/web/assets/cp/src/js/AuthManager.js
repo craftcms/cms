@@ -27,6 +27,7 @@ Craft.AuthManager = Garnish.Base.extend(
 
     auth2faFlow: false,
     auth2fa: null,
+    $webAuthnLoginBtn: null,
 
     /**
      * Init
@@ -315,7 +316,16 @@ Craft.AuthManager = Garnish.Base.extend(
           changeButtonText: false,
         });
 
-        $('<div id="auth-2fa-form"/>').insertAfter($inputContainer);
+        let $auth2faForm = $('<div id="auth-2fa-form"/>').insertAfter(
+          $inputContainer
+        );
+        if (browserSupportsWebAuthn()) {
+          this.$webAuthnLoginBtn = $(
+            '<a href="#" role="button" class="btn">' +
+              Craft.t('app', 'Sign in using a security key') +
+              '</a>'
+          ).insertAfter($auth2faForm);
+        }
 
         this.$loginErrorPara = $('<p class="error"/>').appendTo($body);
 
@@ -346,6 +356,13 @@ Craft.AuthManager = Garnish.Base.extend(
 
         this.addListener(this.$passwordInput, 'input', 'validatePassword');
         this.addListener($form, 'submit', 'login');
+        if (this.$webAuthnLoginBtn !== null) {
+          const WebAuthnLogin = new Craft.WebAuthnLogin();
+          this.addListener(this.$webAuthnLoginBtn, 'click', function (ev) {
+            this.checkRemainingSessionTime();
+            WebAuthnLogin.webauthnLogin(ev);
+          });
+        }
       }
 
       if (quickShow) {
@@ -425,36 +442,17 @@ Craft.AuthManager = Garnish.Base.extend(
       }
     },
 
-    webauthnLogin: function () {
-      this.clearLoginError();
-      this.$loginBtn.busyEvent();
-
-      var data = {
-        loginName: Craft.username,
-      };
-
-      new Craft.Auth2faLogin.startWebauthnLogin(data, true)
-        .then((response) => {
-          this.closeModal();
-        })
-        .catch((response) => {
-          this.showLoginError(response.error);
-        });
-    },
-
     auth2faLogin: function () {
       this.clearLoginError();
 
       var $auth2faLoginContainer = $('#auth-2fa-form');
 
-      if ($auth2faLoginContainer.find('#auth2fa-webauthn').length > 0) {
-        return this.webauthnLogin();
-      }
-
       var $submitBtn = $auth2faLoginContainer.find('#auth2fa-verify');
       $submitBtn.addClass('loading');
 
-      new Craft.Auth2faLogin.submit2faCode($auth2faLoginContainer, true)
+      const auth2fa = new Craft.Auth2fa();
+      auth2fa
+        .verify2faCode($auth2faLoginContainer, true)
         .then((response) => {
           this.closeModal();
         })

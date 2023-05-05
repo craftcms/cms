@@ -30,12 +30,14 @@ use craft\helpers\Db;
 use craft\helpers\FileHelper;
 use craft\helpers\Html;
 use craft\helpers\Image;
+use craft\helpers\Json;
 use craft\helpers\Session;
 use craft\helpers\Template;
 use craft\helpers\UrlHelper;
 use craft\helpers\User as UserHelper;
 use craft\i18n\Locale;
 use craft\models\UserGroup;
+use craft\records\WebAuthn as WebAuthnRecord;
 use craft\services\Users;
 use craft\web\Application;
 use craft\web\assets\edituser\EditUserAsset;
@@ -293,23 +295,14 @@ class UsersController extends Controller
         $this->requirePostRequest();
         $this->requireAcceptsJson();
 
-        $authService = Craft::$app->getAuth();
-        $auth2faData = $authService->get2faDataFromSession();
-        if ($auth2faData === null) {
-            throw new Exception(Craft::t('app', 'Please start again.'));
-        }
-
-        $user = $auth2faData['user'];
-        $duration = $auth2faData['duration'];
-
         $webAuthn = new WebAuthn();
-        $options = $webAuthn->generateCredentialRequestOptions($user);
+        $options = $webAuthn->getCredentialRequestOptions();
 
         if ($options == null) {
             return $this->asFailure('Something went wrong.');
         }
 
-        return $this->asJson(['authenticationOptions' => $options, 'userId' => $user->id, 'duration' => $duration]);
+        return $this->asJson(['authenticationOptions' => $options]);
     }
 
     /**
@@ -325,12 +318,19 @@ class UsersController extends Controller
         $this->requireAcceptsJson();
 
         $request = Craft::$app->getRequest();
-        $duration = $request->getRequiredBodyParam('duration');
-        $userId = $request->getRequiredBodyParam('userId');
         $authResponse = $request->getRequiredBodyParam('authResponse');
         $authenticationOptions = $request->getRequiredBodyParam('authenticationOptions');
 
-        $user = User::findOne(['id' => $userId]);
+        // TODO: should rememberMe also be used here?
+        $duration = Craft::$app->getConfig()->getGeneral()->userSessionDuration;
+        $authResponseArray = Json::decode($authResponse);
+        $credential = WebAuthnRecord::findOne(['credentialId' => $authResponseArray['id']]);
+
+        if ($credential === null) {
+            return null;
+        }
+
+        $user = User::findOne(['id' => $credential['userId']]);
 
         if ($user === null) {
             return null;

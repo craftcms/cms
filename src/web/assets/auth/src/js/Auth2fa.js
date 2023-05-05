@@ -210,6 +210,38 @@ import {browserSupportsWebAuthn} from '@simplewebauthn/browser';
         }
       },
 
+      verify2faCode: function ($auth2faLoginFormContainer, inModal = false) {
+        let data = {
+          auth2faFields: {},
+          currentMethod: null,
+        };
+
+        let auth2fa = new Craft.Auth2fa();
+
+        data.auth2faFields = auth2fa._get2faFields($auth2faLoginFormContainer);
+        data.currentMethod = auth2fa._getCurrentMethodInput(
+          $auth2faLoginFormContainer
+        );
+
+        return Craft.sendActionRequest('POST', 'users/verify-2fa', {data})
+          .then((response) => {
+            if (inModal) {
+              return Promise.resolve({success: true});
+            } else {
+              return Promise.resolve({
+                success: true,
+                returnUrl: response.data.returnUrl,
+              });
+            }
+          })
+          .catch(({response}) => {
+            return Promise.reject({
+              success: false,
+              error: response.data.message,
+            });
+          });
+      },
+
       onAlternative2faTypeClick: function (event) {
         this.clearStatus();
 

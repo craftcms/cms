@@ -1083,17 +1083,13 @@ class User extends Element implements IdentityInterface
 //        ]);
 //        $this->trigger(self::EVENT_BEFORE_AUTHENTICATE, $event);
 
+        /** @var PublicKeyCredentialRequestOptions $optionsArray */
         $optionsArray = PublicKeyCredentialRequestOptions::createFromArray(Json::decodeIfJson($authenticationOptions));
-        /** @phpstan-ignore-next-line */
-        if (empty($optionsArray->getAllowCredentials())) {
-            $this->authError = User::AUTH_WEBAUTHN_NOT_SETUP;
-        }
 
         if (!isset($this->authError) /*&& $event->performAuthentication*/) {
             $webAuthn = new WebAuthn();
             // Validate the security key
             try {
-                /** @phpstan-ignore-next-line */
                 $keyValid = $webAuthn->verifyAuthenticationResponse($this, $optionsArray, $authResponse);
             } catch (InvalidArgumentException) {
                 $keyValid = false;

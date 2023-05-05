@@ -17,6 +17,7 @@ use craft\records\WebAuthn as WebAuthnRecord;
 use craft\web\twig\variables\Rebrand;
 use craft\web\View;
 use GuzzleHttp\Psr7\ServerRequest;
+use Webauthn\AuthenticatorSelectionCriteria;
 use Webauthn\PublicKeyCredentialCreationOptions;
 use Webauthn\PublicKeyCredentialOptions;
 use Webauthn\PublicKeyCredentialRequestOptions;
@@ -168,26 +169,17 @@ class WebAuthn extends Configurable2faType
         return false;
     }
 
-    /**
-     * Return the WebAuthn server, responsible for key creation and validation.
-     *
-     * @return Server
-     */
-    public function getWebauthnServer(): Server
-    {
-        return Craft::createObject(Server::class, [
-            $this->getRelyingPartyEntity(),
-            Craft::createObject(CredentialRepository::class),
-        ]);
-    }
+    // WebAuthn-specific methods
+    // -------------------------------------------------------------------------
 
     /**
      * Get the credential creation options.
      *
      * @param User $user The user for which to get the credential creation options.
      * @param bool $createNew Whether new credential options should be created
-     *
-     * @return PublicKeyCredentialOptions | null
+     * @return PublicKeyCredentialOptions|null
+     * @throws \craft\errors\MissingComponentException
+     * @throws \yii\base\InvalidConfigException
      */
     public function getCredentialCreationOptions(User $user, bool $createNew = false): ?PublicKeyCredentialOptions
     {
@@ -199,17 +191,19 @@ class WebAuthn extends Configurable2faType
         $credentialOptions = $session->get(self::WEBAUTHN_CREDENTIAL_OPTIONS_KEY);
 
         if ($createNew || !$credentialOptions) {
-            $userEntity = $this->getUserEntity($user);
+            $userEntity = $this->_getUserEntity($user);
 
             $excludeCredentials = array_map(
                 static fn(PublicKeyCredentialSource $credential) => $credential->getPublicKeyCredentialDescriptor(),
                 Craft::createObject(CredentialRepository::class)->findAllForUserEntity($userEntity));
 
+
             $credentialOptions = Json::encode(
-                $this->getWebauthnServer()->generatePublicKeyCredentialCreationOptions(
+                $this->_getWebauthnServer()->generatePublicKeyCredentialCreationOptions(
                     $userEntity,
                     PublicKeyCredentialCreationOptions::ATTESTATION_CONVEYANCE_PREFERENCE_NONE,
                     $excludeCredentials,
+                    $this->_getAuthenticatorSelectionCriteria(),
                 )
             );
 
@@ -220,25 +214,26 @@ class WebAuthn extends Configurable2faType
     }
 
     /**
-     * Verify WebAuthn registration response & save to DB
+     * Verify WebAuthn registration response and save to DB
      *
      * @param User $user
      * @param string $credentials
-     * @param ?string $credentialName
+     * @param string|null $credentialName
      * @return bool
+     * @throws \Throwable
+     * @throws \craft\errors\MissingComponentException
+     * @throws \yii\base\InvalidConfigException
      */
     public function verifyRegistrationResponse(User $user, string $credentials, ?string $credentialName = null): bool
     {
+        /** @var PublicKeyCredentialCreationOptions $options */
         $options = $this->getCredentialCreationOptions($user);
-        
-        $psrServerRequest = $this->getPsrServerRequest();
 
         try {
-            $verifiedCredentials = $this->getWebauthnServer()->loadAndCheckAttestationResponse(
+            $verifiedCredentials = $this->_getWebauthnServer()->loadAndCheckAttestationResponse(
                 $credentials,
-                /** @phpstan-ignore-next-line */
                 $options,
-                $psrServerRequest,
+                $this->_getPsrServerRequest(),
             );
         } catch (\Exception) {
             return false;
@@ -250,28 +245,21 @@ class WebAuthn extends Configurable2faType
         return true;
     }
 
-
-
     /**
-     * Get the credential creation options.
-     *
-     * @param User $user The user for which to get the credential request options.
+     * Get the credential request options.
      *
      * @return PublicKeyCredentialOptions | null
      */
-    public function generateCredentialRequestOptions(User $user): ?PublicKeyCredentialOptions
+    public function getCredentialRequestOptions(): ?PublicKeyCredentialOptions
     {
         if (Craft::$app->getEdition() !== Craft::Pro) {
             return null;
         }
 
-        $server = $this->getWebauthnServer();
-        $userEntity = $this->getUserEntity($user);
-        $allowedCredentials = array_map(
-            static fn(PublicKeyCredentialSource $credential) => $credential->getPublicKeyCredentialDescriptor(),
-            Craft::createObject(CredentialRepository::class)->findAllForUserEntity($userEntity));
-
-        return $server->generatePublicKeyCredentialRequestOptions(null, $allowedCredentials);
+        return $this->_getWebauthnServer()->generatePublicKeyCredentialRequestOptions(
+            PublicKeyCredentialRequestOptions::USER_VERIFICATION_REQUIREMENT_PREFERRED,
+            []
+        );
     }
 
     /**
@@ -284,13 +272,13 @@ class WebAuthn extends Configurable2faType
      */
     public function verifyAuthenticationResponse(User $user, PublicKeyCredentialRequestOptions $authenticationOptions, string $credentials): bool
     {
-        $psrServerRequest = $this->getPsrServerRequest();
+        $psrServerRequest = $this->_getPsrServerRequest();
 
         try {
-            $this->getWebauthnServer()->loadAndCheckAssertionResponse(
+            $this->_getWebauthnServer()->loadAndCheckAssertionResponse(
                 $credentials,
                 $authenticationOptions,
-                $this->getUserEntity($user),
+                $this->_getUserEntity($user),
                 $psrServerRequest,
             );
         } catch (\Exception $e) {
@@ -300,7 +288,65 @@ class WebAuthn extends Configurable2faType
         return true;
     }
 
-    public function getRelyingPartyEntity(): PublicKeyCredentialRpEntity
+    /**
+     * Get PublicKeyCredentialUserEntity based on User
+     *
+     * @param User $user
+     * @return PublicKeyCredentialUserEntity
+     */
+    private function _getUserEntity(User $user): PublicKeyCredentialUserEntity
+    {
+        $data = [
+            'name' => $user->email,
+            'id' => Base64Url::encode($user->uid),
+            'displayName' => $user->friendlyName,
+        ];
+
+//        $photo = $user->getPhoto();
+//        if ($photo !== null) {
+//            $data['icon'] = $photo->getDataUrl();
+//        }
+
+        return PublicKeyCredentialUserEntity::createFromArray($data);
+    }
+
+    /**
+     * Get server request in a format that WebAuthn expects
+     *
+     * @return ServerRequest
+     */
+    private function _getPsrServerRequest(): ServerRequest
+    {
+        $request = Craft::$app->getRequest();
+
+        return new ServerRequest(
+            $request->getMethod(),
+            $request->getFullUri(),
+            $request->getHeaders()->toArray(),
+            $request->getRawBody()
+        );
+    }
+
+    /**
+     * Return the WebAuthn server, responsible for key creation and validation.
+     *
+     * @return Server
+     * @throws \yii\base\InvalidConfigException
+     */
+    private function _getWebauthnServer(): Server
+    {
+        return Craft::createObject(Server::class, [
+            $this->_getRelyingPartyEntity(),
+            Craft::createObject(CredentialRepository::class),
+        ]);
+    }
+
+    /**
+     * Get relying party entity (rp)
+     *
+     * @return PublicKeyCredentialRpEntity
+     */
+    public function _getRelyingPartyEntity(): PublicKeyCredentialRpEntity
     {
         $data = [
             'name' => Craft::$app->getSystemName(),
@@ -320,41 +366,17 @@ class WebAuthn extends Configurable2faType
     }
 
     /**
-     * Get PublicKeyCredentialUserEntity based on User
+     * Get authenticator selection criteria to allow usernameless login
+     * https://github.com/MasterKale/SimpleWebAuthn/issues/96#issuecomment-771137312
      *
-     * @param User $user
-     * @return PublicKeyCredentialUserEntity
+     * @return AuthenticatorSelectionCriteria
      */
-    public function getUserEntity(User $user): PublicKeyCredentialUserEntity
+    private function _getAuthenticatorSelectionCriteria(): AuthenticatorSelectionCriteria
     {
-        $data = [
-            'name' => $user->username,
-            'id' => Base64Url::encode($user->uid),
-            'displayName' => $user->friendlyName,
-        ];
+        $authenticatorSelectionCriteria = new AuthenticatorSelectionCriteria();
+        $authenticatorSelectionCriteria->setRequireResidentKey(true);
+        $authenticatorSelectionCriteria->setUserVerification(AuthenticatorSelectionCriteria::USER_VERIFICATION_REQUIREMENT_PREFERRED);
 
-//        $photo = $user->getPhoto();
-//        if ($photo !== null) {
-//            $data['icon'] = $photo->getDataUrl();
-//        }
-
-        return PublicKeyCredentialUserEntity::createFromArray($data);
-    }
-
-    /**
-     * Get server request in a format that WebAuthn expects
-     *
-     * @return ServerRequest
-     */
-    protected function getPsrServerRequest(): ServerRequest
-    {
-        $request = Craft::$app->getRequest();
-
-        return new ServerRequest(
-            $request->getMethod(),
-            $request->getFullUri(),
-            $request->getHeaders()->toArray(),
-            $request->getRawBody()
-        );
+        return $authenticatorSelectionCriteria;
     }
 }

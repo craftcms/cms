@@ -1,5 +1,4 @@
 import './login.scss';
-import {browserSupportsWebAuthn} from '@simplewebauthn/browser';
 
 (function ($) {
   /** global: Craft */
@@ -17,8 +16,6 @@ import {browserSupportsWebAuthn} from '@simplewebauthn/browser';
     $errors: null,
 
     forgotPassword: false,
-    loginWithPassword: true,
-    loginWithSecurityKey: false,
     validateOnInput: false,
 
     auth2faFlow: false,
@@ -76,7 +73,7 @@ import {browserSupportsWebAuthn} from '@simplewebauthn/browser';
         return Craft.t('app', 'Invalid email.');
       }
 
-      if (!this.forgotPassword && this.loginWithPassword) {
+      if (!this.forgotPassword) {
         const passwordLength = this.$passwordInput.val().length;
         if (passwordLength < window.minPasswordLength) {
           return Craft.t(
@@ -123,24 +120,12 @@ import {browserSupportsWebAuthn} from '@simplewebauthn/browser';
       this.$submitBtn.busyEvent();
       this.clearErrors();
 
-      if ($(event.originalEvent.submitter).hasClass('auth2fa-webauthn')) {
-        this.loginWithSecurityKey = true;
-        this.loginWithPassword = false;
-      } else {
-        this.loginWithSecurityKey = false;
-        this.loginWithPassword = true;
-      }
-
       if (this.forgotPassword) {
         this.submitForgotPassword();
-      } else if (this.loginWithSecurityKey) {
-        this.webauthnLogin();
       } else if (this.auth2faFlow) {
         this.submit2faCode();
-      } else if (this.loginWithPassword) {
-        this.submitLogin();
       } else {
-        this.submitFindUser();
+        this.submitLogin();
       }
     },
 
@@ -158,31 +143,6 @@ import {browserSupportsWebAuthn} from '@simplewebauthn/browser';
         });
     },
 
-    webauthnLogin: function () {
-      this.clearErrors();
-
-      let $btn = $('#auth-2fa-form').find('button');
-      $btn = new Garnish.MultiFunctionBtn($btn);
-      $btn.busyEvent();
-
-      var data = {
-        loginName: this.$loginNameInput.val(),
-        rememberMe: this.$rememberMeCheckbox.prop('checked') ? 'y' : '',
-      };
-
-      new Craft.Auth2faLogin.startWebauthnLogin(data, false)
-        .then((response) => {
-          $btn.successEvent();
-          if (response.returnUrl != undefined) {
-            window.location.href = response.returnUrl;
-          }
-        })
-        .catch((response) => {
-          $btn.failureEvent();
-          this.processFailure(response.error);
-        });
-    },
-
     submit2faCode: function () {
       this.clearErrors();
 
@@ -190,7 +150,9 @@ import {browserSupportsWebAuthn} from '@simplewebauthn/browser';
       $btn = new Garnish.MultiFunctionBtn($btn);
       $btn.busyEvent();
 
-      new Craft.Auth2faLogin.submit2faCode($('#auth-2fa-form'), false)
+      const auth2fa = new Craft.Auth2fa();
+      auth2fa
+        .verify2faCode($('#auth-2fa-form'), false)
         .then((response) => {
           $btn.successEvent();
           window.location.href = response.returnUrl;
@@ -239,14 +201,9 @@ import {browserSupportsWebAuthn} from '@simplewebauthn/browser';
 
     processFailure: function (error) {
       Garnish.shake(this.$form, 'left');
-      this.onSubmitResponse();
 
       // Add the error message
       this.showError(error);
-      this.$submitBtn.failureEvent();
-    },
-
-    onSubmitResponse: function () {
       this.$submitBtn.failureEvent();
     },
 

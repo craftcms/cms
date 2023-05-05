@@ -10,6 +10,7 @@ namespace craft\web\assets\login;
 use Craft;
 use craft\validators\UserPasswordValidator;
 use craft\web\AssetBundle;
+use craft\web\assets\auth\AuthAsset;
 use craft\web\assets\cp\CpAsset;
 use craft\web\View;
 
@@ -28,6 +29,7 @@ class LoginAsset extends AssetBundle
      */
     public $depends = [
         CpAsset::class,
+        AuthAsset::class,
     ];
 
     /**
