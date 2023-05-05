@@ -3,6 +3,7 @@
 ## Unreleased
 
 - Fixed a “Double-instantiating a menu button on an element” console warning that occurred on pages with Matrix fields. ([#6338](https://github.com/craftcms/cms/issues/6338))
+- Fixed a bug where Quick Post widget settings weren’t filtering custom field options for the selected entry type.
 
 ## 4.4.9 - 2023-05-02
 
