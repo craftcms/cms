@@ -38,7 +38,7 @@ class Utilities extends Component
     /**
      * @event RegisterComponentTypesEvent The event that is triggered when registering utilities.
      *
-     * Utility must implement [[UtilityInterface]]. [[\craft\base\Utility]] provides a base implementation.
+     * Utilities must implement [[UtilityInterface]]. [[\craft\base\Utility]] provides a base implementation.
      *
      * Read more about creating utilities in the [documentation](https://craftcms.com/docs/4.x/extend/utilities.html).
      * ---
