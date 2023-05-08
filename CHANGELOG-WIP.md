@@ -18,6 +18,7 @@
 ### Development
 - Added a new `_globals` global Twig variable for front-end templates, which can be used to store custom values in a global scope. ([#13050](https://github.com/craftcms/cms/pull/13050), [#12951](https://github.com/craftcms/cms/discussions/12951))
 - The `|replace` Twig filter now supports passing in a hash with regular expression keys. ([#12956](https://github.com/craftcms/cms/issues/12956))
+- `{% exit %}` tags now support passing a message after the status code. ([#13166](https://github.com/craftcms/cms/discussions/13166))
 - Elements now include custom field values when being iterated over, and when being merged. ([#13009](https://github.com/craftcms/cms/issues/13009))
 - Dropdown and Radio Buttons fields now have a “Column Type” setting, which will be set to `varchar` for existing fields, and defaults to “Automatic” for new fields. ([#13025](https://github.com/craftcms/cms/pull/13025), [#12954](https://github.com/craftcms/cms/issues/12954))
 
