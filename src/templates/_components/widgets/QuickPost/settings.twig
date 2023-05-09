@@ -64,31 +64,25 @@
                 }) }}
             {% endif %}
 
-            {% set fieldCheckboxes = [] %}
-            {% set fieldsInput %}
-                {% set entryTypes = section.getEntryTypes() %}
-                {% for entryType in entryTypes %}
-                    {% set showEntryType = (((not showSection or not widget.entryType) and loop.first) or widget.entryType == entryType.id or entryTypes|length == 1) %}
-                    <div id="section{{ section.id }}-type{{ entryType.id }}"{% if not showEntryType %} class="hidden"{% endif %}>
-                        {% for layoutElement in fieldsByEntryTypeId[entryType.id] ?? [] %}
-                            {% set field = layoutElement.getField() %}
-                            {% set fieldCheckboxes = fieldCheckboxes|merge([{
-                                label: raw(field.name|e ~ (layoutElement.required ? '<span class="required"></span>')),
-                                name: 'sections['~section.id~'][fields][]',
-                                value: field.id,
-                                checked: (layoutElement.required or field.id in widget.fields),
-                                disabled: layoutElement.required
-                            }]) %}
-                        {% endfor %}
-                    </div>
-                {% endfor %}
-            {% endset %}
+            {% set entryTypes = section.getEntryTypes() %}
+            {% for entryType in entryTypes %}
+                {% set showEntryType = (((not showSection or not widget.entryType) and loop.first) or widget.entryType == entryType.id or entryTypes|length == 1) %}
+                {% set fieldOptions = (fieldsByEntryTypeId[entryType.id] ?? [])|map(layoutElement => {
+                    label: raw(layoutElement.getField().name|e ~ (layoutElement.required ? '<span class="required"></span>')),
+                    name: 'sections['~section.id~'][fields][]',
+                    value: layoutElement.getField().id,
+                    checked: (layoutElement.required or layoutElement.getField().id in widget.fields),
+                    disabled: layoutElement.required
+                }) %}
 
-            {{ forms.checkboxGroupField({
-                label: "Fields"|t('app'),
-                instructions: "Which fields should be visible in the widget?"|t('app'),
-                options: fieldCheckboxes,
-            }) }}
+                <div id="section{{ section.id }}-type{{ entryType.id }}"{% if not showEntryType %} class="hidden"{% endif %}>
+                    {{ forms.checkboxGroupField({
+                        label: "Fields"|t('app'),
+                        instructions: "Which fields should be visible in the widget?"|t('app'),
+                        options: fieldOptions,
+                    }) }}
+                </div>
+            {% endfor %}
         </div>
     {% endfor %}
 
