@@ -73,12 +73,14 @@ class ImageTransform extends Model
     public string $mode = 'crop';
 
     /**
-     * @var 'top-left'|'top-center'|'top-right'|'center-left'|'center-center'|'center-right'|'bottom-left'|'bottom-center'|'bottom-right' Position
+     * @var string Position
+     * @phpstan-var 'top-left'|'top-center'|'top-right'|'center-left'|'center-center'|'center-right'|'bottom-left'|'bottom-center'|'bottom-right'
      */
     public string $position = 'center-center';
 
     /**
-     * @var 'none'|'line'|'plane'|'partition' Interlace
+     * @var string Interlace
+     * @phpstan-var 'none'|'line'|'plane'|'partition'
      */
     public string $interlace = 'none';
 
