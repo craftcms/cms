@@ -9,6 +9,7 @@
 - Fixed an error that could occur when entrifying a global set without a field layout. ([#13156](https://github.com/craftcms/cms/issues/13156))
 - Fixed a bug where Single entries’ edit pages could have “Save and add another” actions. ([#13157](https://github.com/craftcms/cms/issues/13157))
 - Fixed styling issues with Date fields. ([#13167](https://github.com/craftcms/cms/issues/13167))
+- Fixed the vertical alignment of element labels. ([#13168](https://github.com/craftcms/cms/issues/13168))
 - Added `craft\helpers\ArrayHelper::containsRecursive()`.
 
 ## 4.4.9 - 2023-05-02

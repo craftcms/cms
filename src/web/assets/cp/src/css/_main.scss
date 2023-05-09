@@ -2839,6 +2839,7 @@ $elementInnerSpacing: 5px;
   .label {
     display: inline-block;
     overflow: hidden;
+    vertical-align: bottom; // https://stackoverflow.com/a/37427386/1688568
     text-overflow: ellipsis;
     max-width: 100%;
 
