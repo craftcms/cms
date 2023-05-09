@@ -42,7 +42,8 @@ class PlainText extends Field implements PreviewableFieldInterface, SortableFiel
     }
 
     /**
-     * @var 'normal'|'enlarged' The UI mode of the field.
+     * @var string The UI mode of the field.
+     * @phpstan-var 'normal'|'enlarged'
      * @since 3.5.0
      */
     public string $uiMode = 'normal';
