@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 3.x
 
-## 3.8.10.2 - 2023-05-09
+## 3.8.10.2 - 2023-05-10
 
 - Fixed a bug where it wasn’t possible to add new Matrix blocks via the “Add a block” menu. ([#13177](https://github.com/craftcms/cms/issues/13177))
 
