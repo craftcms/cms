@@ -751,6 +751,7 @@ return [
     'Image' => 'Image',
     'Impersonate users' => 'Impersonate users',
     'In the local temp folder' => 'In the local temp folder',
+    'In this browser, you can only use a security key with an external (roaming) authenticator like Yubikey or Titan Key.' => 'In this browser, you can only use a security key with an external (roaming) authenticator like Yubikey or Titan Key.',
     'Inactive' => 'Inactive',
     'Include your template files' => 'Include your template files',
     'Includes activating/deactivating user accounts, resetting passwords, and changing email addresses.' => 'Includes activating/deactivating user accounts, resetting passwords, and changing email addresses.',

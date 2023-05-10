@@ -1,4 +1,7 @@
-import {browserSupportsWebAuthn} from '@simplewebauthn/browser';
+import {
+  browserSupportsWebAuthn,
+  platformAuthenticatorIsAvailable,
+} from '@simplewebauthn/browser';
 import {startRegistration} from '@simplewebauthn/browser';
 
 (function ($) {
@@ -43,11 +46,35 @@ import {startRegistration} from '@simplewebauthn/browser';
 
       onAddSecurityKeyBtn: function (ev) {
         if (!$(ev.currentTarget).hasClass('disabled')) {
-          this.showStatus(Craft.t('app', 'Waiting for elevated session'), '');
-          Craft.elevatedSessionManager.requireElevatedSession(
-            this.startWebAuthRegistration.bind(this),
-            this.failedElevation.bind(this)
-          );
+          let webAuthnPlatformAuthenticatorSupported = true;
+          platformAuthenticatorIsAvailable()
+            .then((response) => {
+              if (!response) {
+                webAuthnPlatformAuthenticatorSupported = false;
+              }
+            })
+            .catch((error) => {
+              this.showError(error);
+            });
+
+          let proceed = true;
+
+          if (!this.webAuthnPlatformAuthenticatorSupported) {
+            proceed = confirm(
+              Craft.t(
+                'app',
+                'In this browser, you can only use a security key with an external (roaming) authenticator like Yubikey or Titan Key.'
+              )
+            );
+          }
+
+          if (proceed) {
+            this.showStatus(Craft.t('app', 'Waiting for elevated session'), '');
+            Craft.elevatedSessionManager.requireElevatedSession(
+              this.startWebAuthRegistration.bind(this),
+              this.failedElevation.bind(this)
+            );
+          }
         }
       },
 

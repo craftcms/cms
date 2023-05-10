@@ -49,6 +49,7 @@ class AuthAsset extends AssetBundle
                 'Are you sure you want to delete this setup?',
                 'Are you sure you want to delete ‘{credentialName}‘ security key?',
                 'Are you sure you want to generate new recovery codes? All current codes will stop working.',
+                'In this browser, you can only use a security key with an external (roaming) authenticator like Yubikey or Titan Key.',
                 'No alternative 2FA methods available.',
                 'Please enter a name for the security key',
                 'Recovery codes generated.',
