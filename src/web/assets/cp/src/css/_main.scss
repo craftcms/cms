@@ -6807,6 +6807,7 @@ body .selectize-dropdown {
 
 body .selectize-dropdown-content {
   @include menu-styles;
+  max-height: 70vh;
 
   .option {
     min-height: 18px;
@@ -6826,6 +6827,17 @@ body .selectize-dropdown-content > div[data-value='new']:after {
 body .selectize-dropdown [data-selectable],
 body .selectize-dropdown .optgroup-header {
   @include menu-option-styles;
+}
+
+body .selectize-dropdown .optgroup {
+  &:not(:first-child) {
+    border-top: 1px solid var(--hairline-color);
+  }
+  padding-top: 5px;
+
+  .option {
+    padding-left: 24px;
+  }
 }
 
 body .selectize-dropdown .optgroup-header {
