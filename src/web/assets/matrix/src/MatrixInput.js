@@ -45,7 +45,7 @@
         this.$addBlockBtnGroup =
           this.$addBlockBtnContainer.children('.btngroup');
         this.$addBlockBtnGroupBtns = this.$addBlockBtnGroup.children('.btn');
-        this.$addBlockMenuBtn = this.$addBlockBtnContainer.children('.menubtn');
+        this.$addBlockMenuBtn = this.$addBlockBtnContainer.children('.add');
         this.$statusMessage = this.$container.find('[data-status-message]');
 
         this.$container.data('matrix', this);
@@ -118,9 +118,6 @@
           this.addBlock(type);
         });
 
-        if (this.$addBlockMenuBtn.data('menubtn')) {
-          this.$addBlockMenuBtn.data('menubtn').destroy();
-        }
         new Garnish.MenuBtn(this.$addBlockMenuBtn, {
           onOptionSelect: (option) => {
             this.addBlock($(option).data('type'));
