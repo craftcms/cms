@@ -110,9 +110,10 @@
                 </div>
             </form>
 
-            <span>or</span>
-
-            <button id="webauthn-login" type="button" class="btn">{{ 'Sign in using a security key'|t('app') }}</button>
+            <div class="alternative-login-methods">
+                <div class="fullwidth divider">or</div>
+                <button id="webauthn-login" type="button" class="btn">{{ 'Sign in using a security key'|t('app') }}</button>
+            </div>
 
             <div id="login-errors" role="status">
             </div>
