@@ -261,7 +261,6 @@ import {browserSupportsWebAuthn} from '@simplewebauthn/browser';
 
         let data = {
           currentMethod: currentMethod,
-          webAuthnSupported: browserSupportsWebAuthn(),
         };
 
         // get available 2FA methods, minus the one that's being shown

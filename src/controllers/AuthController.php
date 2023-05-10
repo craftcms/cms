@@ -44,13 +44,8 @@ class AuthController extends Controller
             return null;
         }
 
-        $authService = Craft::$app->getAuth();
-        $auth2faData = $authService->get2faDataFromSession();
-        $user = $auth2faData !== null ? $auth2faData['user'] : null;
-
         $currentMethod = Craft::$app->getRequest()->getBodyParam('currentMethod');
-        $webAuthnSupported = Craft::$app->getRequest()->getBodyParam('webAuthnSupported');
-        $alternativeTypes = Craft::$app->getAuth()->getAlternative2faTypes($currentMethod, $webAuthnSupported, $user);
+        $alternativeTypes = Craft::$app->getAuth()->getAlternative2faTypes($currentMethod);
 
         if ($this->request->getAcceptsJson()) {
             return $this->asSuccess(
