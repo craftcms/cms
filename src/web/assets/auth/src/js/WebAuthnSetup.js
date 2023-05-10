@@ -59,7 +59,7 @@ import {startRegistration} from '@simplewebauthn/browser';
 
           let proceed = true;
 
-          if (!this.webAuthnPlatformAuthenticatorSupported) {
+          if (!webAuthnPlatformAuthenticatorSupported) {
             proceed = confirm(
               Craft.t(
                 'app',
