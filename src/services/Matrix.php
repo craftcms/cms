@@ -710,8 +710,8 @@ class Matrix extends Component
             foreach ($blocks as $block) {
                 $sortOrder++;
                 if (
-                    // skip blocks that are primarily owned by a different element
-                    ($saveAll && (!$block->primaryOwnerId || $block->primaryOwnerId === $owner->id)) ||
+                    // skip blocks that are primarily owned by a different element, unless we're adding owner to new site(s)
+                    ($saveAll && (!$block->primaryOwnerId || $block->primaryOwnerId === $owner->id || !empty($owner->newSiteIds))) ||
                     !$block->id ||
                     $block->dirty
                 ) {
