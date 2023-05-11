@@ -2,13 +2,25 @@
 
 ## Unreleased
 
+- Fixed a bug where `craft\helpers\StringHelper::isUtf8()` was unreliable.
+
+## 4.4.10.1 - 2023-05-10
+
+- Fixed a bug where it wasn’t possible to add new Matrix blocks via the “Add a block” menu. ([#13177](https://github.com/craftcms/cms/issues/13177))
+
+## 4.4.10 - 2023-05-09
+
 - PHP warnings and notices no longer halt execution when Dev Mode is disabled. ([#13164](https://github.com/craftcms/cms/issues/13164))
 - Fixed a “Double-instantiating a menu button on an element” console warning that occurred on pages with Matrix fields. ([#6338](https://github.com/craftcms/cms/issues/6338))
 - Fixed a bug where Quick Post widget settings weren’t filtering custom field options for the selected entry type.
 - Fixed a bug where Matrix blocks could get detached from entries when sections were enabled for a new site. ([#13155](https://github.com/craftcms/cms/issues/13155))
 - Fixed an error that could occur when entrifying a global set without a field layout. ([#13156](https://github.com/craftcms/cms/issues/13156))
 - Fixed a bug where Single entries’ edit pages could have “Save and add another” actions. ([#13157](https://github.com/craftcms/cms/issues/13157))
+- Fixed styling issues with Date fields. ([#13167](https://github.com/craftcms/cms/issues/13167))
+- Fixed the vertical alignment of element labels. ([#13168](https://github.com/craftcms/cms/issues/13168))
+- Fixed a bug where the System Report utility could display MariaDB’s MySQL-equivalent version, if it was listed first in the server version string.
 - Added `craft\helpers\ArrayHelper::containsRecursive()`.
+- `craft\helpers\App::normalizeVersion()` now returns the highest version found before distribution info.
 
 ## 4.4.9 - 2023-05-02
 

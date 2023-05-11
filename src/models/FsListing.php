@@ -35,7 +35,8 @@ class FsListing extends Model
     private string $basename;
 
     /**
-     * @var 'file'|'dir' Type of listing. Can be "file" or "dir".
+     * @var string Type of listing. Can be "file" or "dir".
+     * @phpstan-var 'file'|'dir'
      */
     private string $type;
 

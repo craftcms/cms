@@ -2826,6 +2826,7 @@ $elementInnerSpacing: 5px;
   .label {
     display: inline-block;
     overflow: hidden;
+    vertical-align: bottom; // https://stackoverflow.com/a/37427386/1688568
     text-overflow: ellipsis;
     max-width: 100%;
 
@@ -6515,14 +6516,10 @@ body.reduce-focus-visibility {
 
 .datetimewrapper {
   display: flex;
+  flex-wrap: wrap;
   flex-direction: row;
   align-items: center;
-
-  & > .datewrapper + .timewrapper,
-  & > .timewrapper + .timezone,
-  & > .select {
-    @include margin-left(5px);
-  }
+  gap: 5px;
 }
 
 .clear-btn {
@@ -6730,8 +6727,8 @@ body .selectize-dropdown {
   height: 34px;
 
   &:not(.fullwidth) {
-    max-width: 25em;
-    min-width: 10em;
+    width: 25em;
+    max-width: 100%;
   }
 }
 
