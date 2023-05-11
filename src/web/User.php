@@ -15,9 +15,11 @@ use craft\errors\UserLockedException;
 use craft\events\LoginFailureEvent;
 use craft\helpers\ConfigHelper;
 use craft\helpers\Db;
+use craft\helpers\Json;
 use craft\helpers\Session as SessionHelper;
 use craft\helpers\UrlHelper;
 use craft\helpers\User as UserHelper;
+use craft\records\WebAuthn as WebAuthnRecord;
 use craft\validators\UserPasswordValidator;
 use yii\web\Cookie;
 use yii\web\ForbiddenHttpException;
@@ -319,12 +321,19 @@ class User extends \yii\web\User
     /**
      * Starts an elevated user session for the current user.
      *
-     * @param string $password the current user’s password
+     * @param string|null $password the current user’s password
+     * @param bool $passwordless whether action is being performed without a password
+     * @param string|null $passwordlessMethod passwordless authentication method
+     * @param array $passwordlessData data for the passwordless authentication method
      * @return bool Whether the password was valid, and the user session has been elevated
      * @throws UserLockedException if the user is locked.
      */
-    public function startElevatedSession(string $password): bool
-    {
+    public function startElevatedSession(
+        ?string $password = null,
+        bool $passwordless = false,
+        ?string $passwordlessMethod = null,
+        array $passwordlessData = [],
+    ): bool {
         // If the current user is being impersonated by an admin, get the admin instead
         if ($previousUserId = SessionHelper::get(UserElement::IMPERSONATE_KEY)) {
             /** @var UserElement $user */
@@ -348,13 +357,33 @@ class User extends \yii\web\User
             throw new UserLockedException($user);
         }
 
-        // Validate the password
-        $validator = new UserPasswordValidator();
+        if (!$passwordless) {
+            // Validate the password
+            $validator = new UserPasswordValidator();
 
-        // Did they submit a valid password, and is the user capable of being logged-in?
-        if (!$validator->validate($password) || !$user->authenticate($password)) {
-            $this->_handleLoginFailure($user->authError, $user);
-            return false;
+            // Did they submit a valid password, and is the user capable of being logged-in?
+            if (!$validator->validate($password) || !$user->authenticate($password)) {
+                $this->_handleLoginFailure($user->authError, $user);
+                return false;
+            }
+        } else {
+            if ($passwordlessMethod == null) {
+                return false;
+            }
+
+            if ($passwordlessMethod === 'WebAuthn') {
+                $authResponseArray = Json::decode($passwordlessData['authResponse']);
+                $credential = WebAuthnRecord::findOne(['credentialId' => $authResponseArray['id']]);
+
+                if ($credential === null || $credential['userId'] !== $user->id) {
+                    return false;
+                }
+
+                if (!$user->authenticateWebAuthn(...$passwordlessData)) {
+                    $this->_handleLoginFailure($user->authError, $user);
+                    return false;
+                }
+            }
         }
 
         // Make sure elevated sessions haven't been disabled

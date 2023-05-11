@@ -160,7 +160,7 @@ class UsersController extends Controller
         'login' => self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE,
         'verify-2fa' => self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE,
         'start-webauthn-login' => self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE,
-        'webauthn-login' => self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE,
+        'webauthn-verify' => self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE,
         'logout' => self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE,
         'impersonate-with-token' => self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE,
         'save-user' => self::ALLOW_ANONYMOUS_LIVE,
@@ -312,7 +312,7 @@ class UsersController extends Controller
      * @throws ServiceUnavailableHttpException
      * @since 4.5.0
      */
-    public function actionWebauthnLogin(): ?Response
+    public function actionWebauthnVerify(): ?Response
     {
         $this->requirePostRequest();
         $this->requireAcceptsJson();
@@ -559,10 +559,29 @@ class UsersController extends Controller
      */
     public function actionStartElevatedSession(): ?Response
     {
-        $password = $this->request->getBodyParam('currentPassword') ?? $this->request->getBodyParam('password');
+        $request = Craft::$app->getRequest();
+        $password = $request->getBodyParam('currentPassword') ?? $request->getBodyParam('password');
+        $passwordless = $request->getBodyParam('passwordless') ?? false;
+        $passwordlessMethod = $request->getBodyParam('passwordlessMethod') ?? null;
 
         try {
-            $success = Craft::$app->getUser()->startElevatedSession($password);
+            if (!$passwordless) {
+                $success = Craft::$app->getUser()->startElevatedSession($password, $passwordless);
+            } else {
+                $passwordlessData = [];
+
+                if ($passwordlessMethod == 'WebAuthn') {
+                    $authenticationOptions = $request->getRequiredBodyParam('authenticationOptions');
+                    $authResponse = $request->getRequiredBodyParam('authResponse');
+
+                    $passwordlessData = [
+                        'authenticationOptions' => $authenticationOptions,
+                        'authResponse' => $authResponse,
+                    ];
+                }
+
+                $success = Craft::$app->getUser()->startElevatedSession($password, $passwordless, $passwordlessMethod, $passwordlessData);
+            }
         } catch (UserLockedException $e) {
             $authError = Craft::$app->getConfig()->getGeneral()->cooldownDuration
                 ? User::AUTH_ACCOUNT_COOLDOWN

@@ -28,6 +28,7 @@ Craft.AuthManager = Garnish.Base.extend(
     auth2faFlow: false,
     auth2fa: null,
     $webAuthnLoginBtn: null,
+    WebAuthnLogin: null,
 
     /**
      * Init
@@ -357,11 +358,8 @@ Craft.AuthManager = Garnish.Base.extend(
         this.addListener(this.$passwordInput, 'input', 'validatePassword');
         this.addListener($form, 'submit', 'login');
         if (this.$webAuthnLoginBtn !== null) {
-          const WebAuthnLogin = new Craft.WebAuthnLogin();
-          this.addListener(this.$webAuthnLoginBtn, 'click', function (ev) {
-            this.checkRemainingSessionTime();
-            WebAuthnLogin.webauthnLogin(ev);
-          });
+          this.WebAuthnLogin = new Craft.WebAuthnLogin();
+          this.addListener(this.$webAuthnLoginBtn, 'click', 'webauthLogin');
         }
       }
 
@@ -369,6 +367,23 @@ Craft.AuthManager = Garnish.Base.extend(
         this.loginModal.quickShow();
       } else {
         this.loginModal.show();
+      }
+    },
+
+    webauthLogin: function (ev) {
+      ev.preventDefault();
+      this.checkRemainingSessionTime();
+      this.clearLoginError();
+
+      if (this.WebAuthnLogin.supportCheck()) {
+        this.WebAuthnLogin.startAuthentication(true, 'login')
+          .then((response) => {
+            this.closeModal();
+          })
+          .catch((response) => {
+            this.showLoginError(response.error);
+            Garnish.shake(this.loginModal.$container);
+          });
       }
     },
 
@@ -458,6 +473,7 @@ Craft.AuthManager = Garnish.Base.extend(
         })
         .catch((response) => {
           this.showLoginError(response.error);
+          Garnish.shake(this.loginModal.$container);
         })
         .finally(() => {
           $submitBtn.removeClass('loading');

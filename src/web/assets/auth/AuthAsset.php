@@ -59,8 +59,7 @@ class AuthAsset extends AssetBundle
                 'Starting registration',
                 'Starting verification',
                 'This browser does not support WebAuthn.',
-                'Use a password to login',
-                'Use a security key to login',
+                'Use a security key',
                 'Waiting for elevated session',
             ]);
         }

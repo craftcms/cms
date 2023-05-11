@@ -1077,12 +1077,6 @@ class User extends Element implements IdentityInterface
     {
         $this->authError = null;
 
-//        // Fire a 'beforeAuthenticate' event
-//        $event = new AuthenticateUserEvent([
-//            'password' => $password,
-//        ]);
-//        $this->trigger(self::EVENT_BEFORE_AUTHENTICATE, $event);
-
         /** @var PublicKeyCredentialRequestOptions $optionsArray */
         $optionsArray = PublicKeyCredentialRequestOptions::createFromArray(Json::decodeIfJson($authenticationOptions));
 

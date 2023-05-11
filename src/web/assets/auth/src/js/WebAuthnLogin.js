@@ -34,7 +34,7 @@ import {
             this.showError(error);
           })
           .finally(() => {
-            this.addListener(this.$submitBtn, 'click', 'webauthnLogin');
+            this.addListener(this.$submitBtn, 'click', 'auth');
 
             this.$submitBtn = new Garnish.MultiFunctionBtn(this.$submitBtn, {
               changeButtonText: true,
@@ -43,8 +43,7 @@ import {
       }
     },
 
-    webauthnLogin: function (ev) {
-      ev.preventDefault();
+    supportCheck: function () {
       let proceed = true;
 
       if (!this.webAuthnPlatformAuthenticatorSupported) {
@@ -56,11 +55,17 @@ import {
         );
       }
 
-      if (proceed) {
+      return proceed;
+    },
+
+    auth: function (ev, action = 'login') {
+      ev.preventDefault();
+
+      if (this.supportCheck()) {
         this.$submitBtn.busyEvent();
         this.clearErrors();
 
-        this.startWebauthnLogin(false)
+        this.startAuthentication(false, action)
           .then((response) => {
             this.$submitBtn.successEvent();
             if (response.returnUrl != undefined) {
@@ -74,7 +79,7 @@ import {
       }
     },
 
-    startWebauthnLogin: function (inModal = false) {
+    startAuthentication: function (inModal = false, action = 'login') {
       return Craft.sendActionRequest('POST', 'users/start-webauthn-login', {})
         .then((response) => {
           const authenticationOptions = response.data.authenticationOptions;
@@ -83,10 +88,11 @@ import {
             return startAuthentication(authenticationOptions)
               .then((authResponse) => {
                 return Promise.resolve(
-                  this.verifyWebAuthnLogin(
+                  this.verifyAuthentication(
                     authenticationOptions,
                     authResponse,
-                    inModal
+                    inModal,
+                    action
                   )
                 );
               })
@@ -101,24 +107,39 @@ import {
           }
         })
         .catch((response) => {
+          let error = '';
+          if (response.error !== undefined) {
+            error = response.error;
+          } else {
+            error = response.response.data.message;
+          }
           return Promise.reject({
             success: false,
-            error: response.error.message,
+            error: error,
           });
         });
     },
 
-    verifyWebAuthnLogin: function (
+    verifyAuthentication: function (
       authenticationOptions,
       authResponse,
-      inModal
+      inModal,
+      action
     ) {
       let data = {
         authenticationOptions: JSON.stringify(authenticationOptions),
         authResponse: JSON.stringify(authResponse),
       };
 
-      return Craft.sendActionRequest('POST', 'users/webauthn-login', {data})
+      let actionUrl = 'users/webauthn-verify';
+
+      if (action == 'elevateSessionWebAuthn') {
+        actionUrl = 'users/start-elevated-session';
+        data['passwordless'] = true;
+        data['passwordlessMethod'] = 'WebAuthn';
+      }
+
+      return Craft.sendActionRequest('POST', actionUrl, {data})
         .then((response) => {
           if (inModal) {
             return Promise.resolve({success: true});

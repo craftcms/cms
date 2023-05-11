@@ -1,5 +1,7 @@
 /** global: Craft */
 /** global: Garnish */
+import {browserSupportsWebAuthn} from '@simplewebauthn/browser';
+
 /**
  * Elevated Session Manager
  */
@@ -13,6 +15,9 @@ Craft.ElevatedSessionManager = Garnish.Base.extend(
     $errorPara: null,
 
     callback: null,
+
+    $webAuthnElevateBtn: null,
+    WebAuthnLogin: null,
 
     /**
      * @callback requireElevatedSessionCallback
@@ -69,6 +74,17 @@ Craft.ElevatedSessionManager = Garnish.Base.extend(
             $passwordContainer
           );
 
+        let $auth2faForm = $('<div id="auth-2fa-form"/>').insertAfter(
+          $inputContainer
+        );
+        if (browserSupportsWebAuthn()) {
+          this.$webAuthnElevateBtn = $(
+            '<a href="#" role="button" class="btn">' +
+              Craft.t('app', 'Use a security key') +
+              '</a>'
+          ).insertAfter($auth2faForm);
+        }
+
         this.$passwordInput = $(
           '<input type="password" class="text password fullwidth" placeholder="' +
             Craft.t('app', 'Password') +
@@ -101,8 +117,34 @@ Craft.ElevatedSessionManager = Garnish.Base.extend(
 
         this.addListener(this.$passwordInput, 'input', 'validatePassword');
         this.addListener($passwordModal, 'submit', 'submitPassword');
+
+        if (this.$webAuthnElevateBtn !== null) {
+          this.WebAuthnLogin = new Craft.WebAuthnLogin();
+          this.addListener(this.$webAuthnElevateBtn, 'click', 'webauthElevate');
+        }
       } else {
         this.passwordModal.show();
+      }
+    },
+
+    webauthElevate: function (ev) {
+      ev.preventDefault();
+      this.$webAuthnElevateBtn.addClass('loading');
+      this.clearLoginError();
+
+      if (this.WebAuthnLogin.supportCheck()) {
+        this.WebAuthnLogin.startAuthentication(true, 'elevateSessionWebAuthn')
+          .then((response) => {
+            this.passwordModal.hide();
+            this.callback();
+          })
+          .catch((response) => {
+            this.showPasswordError(response.error);
+            Garnish.shake(this.passwordModal.$container);
+          })
+          .finally(() => {
+            this.$webAuthnElevateBtn.removeClass('loading');
+          });
       }
     },
 
