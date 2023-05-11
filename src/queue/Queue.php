@@ -41,6 +41,13 @@ use yii\web\Response;
 class Queue extends \yii\queue\cli\Queue implements QueueInterface
 {
     /**
+     * @event ExecEvent The event that is triggered after a job is executed and released.
+     * @see executeJob()
+     * @since 4.4.8
+     */
+    public const EVENT_AFTER_EXEC_AND_RELEASE = 'afterExecAndRelease';
+
+    /**
      * @see isFailed()
      */
     public const STATUS_FAILED = 4;
@@ -182,6 +189,19 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
 
         if ($this->handleMessage($payload['id'], $payload['job'], $payload['ttr'], $payload['attempt'])) {
             $this->release($payload['id']);
+
+            if ($this->hasEventHandlers(self::EVENT_AFTER_EXEC_AND_RELEASE)) {
+                // Can't just capture the exec event from handleMessage()
+                // because it was probably created in a subprocess
+                [$job, $error] = $this->unserializeMessage($payload['job']);
+                $this->trigger(self::EVENT_AFTER_EXEC_AND_RELEASE, new ExecEvent([
+                    'id' => $payload['id'],
+                    'job' => $job,
+                    'ttr' => $payload['ttr'],
+                    'attempt' => $payload['attempt'],
+                    'error' => $error,
+                ]));
+            }
         }
 
         return true;
@@ -596,26 +616,13 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
 <script type="text/javascript">
 /*<![CDATA[*/
 (function(){
-    var XMLHttpFactories = [
-        function () {return new XMLHttpRequest()},
-        function () {return new ActiveXObject("Msxml2.XMLHTTP")},
-        function () {return new ActiveXObject("Msxml3.XMLHTTP")},
-        function () {return new ActiveXObject("Microsoft.XMLHTTP")}
-    ];
-    var req = false;
-    for (var i = 0; i < XMLHttpFactories.length; i++) {
-        try {
-            req = XMLHttpFactories[i]();
-        }
-        catch (e) {
-            continue;
-        }
-        break;
-    }
-    if (!req) return;
+  try {
+    var req = new XMLHttpRequest();
     req.open('GET', $url, true);
-    if (req.readyState == 4) return;
+    req.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
+    if (req.readyState === 4) return;
     req.send();
+  } catch (e) {}
 })();
 /*]]>*/
 </script>

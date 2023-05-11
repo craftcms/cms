@@ -321,7 +321,7 @@ interface ElementInterface extends ComponentInterface
     public static function fieldLayouts(string $source): array;
 
     /**
-     * Returns the available [element actions](https://craftcms.com/docs/4.x/extend/element-action-types.html) for a
+     * Returns the available [element actions](https://craftcms.com/docs/4.x/extend/element-actions.html) for a
      * given source.
      *
      * The actions can be represented by their fully qualified class name, a config array with the class name

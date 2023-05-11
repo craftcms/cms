@@ -5,7 +5,6 @@
  */
 Craft.BaseElementSelectInput = Garnish.Base.extend(
   {
-    thumbLoader: null,
     elementSelect: null,
     elementSort: null,
     modal: null,
@@ -19,6 +18,13 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
     $spinner: null,
 
     _initialized: false,
+
+    get thumbLoader() {
+      console.warn(
+        'Craft.BaseElementSelectInput::thumbLoader is deprecated. Craft.cp.elementThumbLoader should be used instead.'
+      );
+      return Craft.cp.elementThumbLoader;
+    },
 
     init: function (settings) {
       // Normalize the settings and set them
@@ -74,8 +80,6 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
       this.$addElementBtn = this.getAddElementsBtn();
       this.$spinner = this.getSpinner();
 
-      this.thumbLoader = new Craft.ElementThumbLoader();
-
       this.initElementSelect();
       this.initElementSort();
       this.resetElements();
@@ -87,6 +91,17 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
       Garnish.requestAnimationFrame(() => {
         this._initialized = true;
       });
+
+      if (this.elementSelect) {
+        this.addListener(Garnish.$win, 'mousedown', (ev) => {
+          if (
+            !this.$container.is(ev.target) &&
+            !this.$container.find(ev.target).length
+          ) {
+            this.elementSelect.deselectAll();
+          }
+        });
+      }
     },
 
     get totalSelected() {
@@ -245,7 +260,7 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
     },
 
     addElements: function ($elements) {
-      this.thumbLoader.load($elements);
+      Craft.cp.elementThumbLoader.load($elements);
 
       if (this.settings.selectable) {
         this.elementSelect.addItems($elements);

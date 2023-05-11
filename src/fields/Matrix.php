@@ -1368,6 +1368,11 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
                 $block->enabled = (bool)$blockData['enabled'];
             }
 
+            // Allow setting the UID for the block element
+            if (isset($blockData['uid'])) {
+                $block->uid = $blockData['uid'];
+            }
+
             // Skip disabled blocks on Live Preview requests
             if ($hideDisabledBlocks && !$block->enabled) {
                 continue;

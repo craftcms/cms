@@ -200,14 +200,18 @@ class AssetsController extends Controller
         if (!Craft::$app->getElements()->saveElement($asset)) {
             return $this->asModelFailure(
                 $asset,
-                Craft::t('app', 'Couldn’t save asset.'),
+                Craft::t('app', 'Couldn’t save {type}.', [
+                    'type' => Asset::lowerDisplayName(),
+                ]),
                 $assetVariable
             );
         }
 
         return $this->asModelSuccess(
             $asset,
-            Craft::t('app', 'Asset saved.'),
+            Craft::t('app', '{type} saved.', [
+                'type' => Asset::displayName(),
+            ]),
             data: [
                 'id' => $asset->id,
                 'title' => $asset->title,
@@ -552,14 +556,18 @@ class AssetsController extends Controller
         if (!$success) {
             return $this->asModelFailure(
                 $asset,
-                Craft::t('app', 'Couldn’t delete asset.'),
+                Craft::t('app', 'Couldn’t delete {type}.', [
+                    'type' => Asset::lowerDisplayName(),
+                ]),
                 'asset'
             );
         }
 
         return $this->asModelSuccess(
             $asset,
-            Craft::t('app', 'Asset deleted.'),
+            Craft::t('app', '{type} deleted.', [
+                'type' => Asset::displayName(),
+            ]),
             'asset',
         );
     }

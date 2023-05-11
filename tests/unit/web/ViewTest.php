@@ -677,12 +677,13 @@ TWIG;
     /**
      * @param string $basePath
      * @param string $name
+     * @param bool $publicOnly
      * @return string|null
      * @throws ReflectionException
      */
-    private function _resolveTemplate(string $basePath, string $name): ?string
+    private function _resolveTemplate(string $basePath, string $name, bool $publicOnly = false): ?string
     {
-        $path = $this->invokeMethod($this->view, '_resolveTemplate', [$basePath, $name]);
+        $path = $this->invokeMethod($this->view, '_resolveTemplate', [$basePath, $name, $publicOnly]);
         if ($path !== null) {
             $path = CraftTest::normalizePathSeparators($path);
         }

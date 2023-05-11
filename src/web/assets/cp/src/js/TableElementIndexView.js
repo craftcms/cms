@@ -95,7 +95,7 @@ Craft.TableElementIndexView = Craft.BaseElementIndexView.extend({
                   }
                 }
               }
-              new Craft.ElementThumbLoader().load($rows);
+              Craft.cp.elementThumbLoader.load($rows);
             });
           }
         }

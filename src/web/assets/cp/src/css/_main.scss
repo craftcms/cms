@@ -168,8 +168,17 @@ fieldset:last-child,
 }
 
 .offset-drag-helper {
-  @include margin(-50px, 0, 0, -50px);
-  @include padding(60px, 0, 0, 60px);
+  transition: margin linear 200ms, padding linear 200ms;
+}
+
+body.dragging.ltr .offset-drag-helper {
+  margin: -50px 0 0 -50px;
+  padding: 60px 0 0 60px;
+}
+
+body.dragging.rtl .offset-drag-helper {
+  margin: -50px -50px 0 0;
+  padding: 60px 60px 0 0;
 }
 
 img {
@@ -1650,19 +1659,7 @@ ul.icons {
   cursor: pointer;
   color: var(--medium-text-color);
 
-  input {
-    border: 0;
-    padding: 0;
-    height: 32px;
-    box-shadow: none;
-    background-color: transparent;
-    border: none;
-    cursor: pointer;
-    color: var(--medium-text-color);
-    text-align: center;
-  }
-
-  span {
+  .copytextbtn__icon {
     padding: 0;
     width: 13px;
     background: none;
@@ -1676,7 +1673,7 @@ ul.icons {
     border-color: var(--medium-hairline-color);
     color: var(--text-color);
 
-    input {
+    .copytextbtn__value {
       color: var(--text-color);
     }
   }
@@ -1684,9 +1681,8 @@ ul.icons {
   &.small {
     padding: 0 5px;
 
-    input {
-      font-size: 11px !important;
-      height: 20px;
+    .copytextbtn__value {
+      font-size: calc(11rem / 16);
     }
   }
 }
@@ -2744,6 +2740,7 @@ $elementInnerSpacing: 5px;
   user-select: none;
   font-weight: normal;
   border-radius: var(--small-border-radius);
+  max-width: 100%;
 
   .label {
     .segment:after {
@@ -2828,6 +2825,10 @@ $elementInnerSpacing: 5px;
 
   .label {
     display: inline-block;
+    overflow: hidden;
+    vertical-align: bottom; // https://stackoverflow.com/a/37427386/1688568
+    text-overflow: ellipsis;
+    max-width: 100%;
 
     .draft-label {
       display: inline-block;
@@ -5125,6 +5126,10 @@ $min2ColWidth: 400px;
     padding-top: 14px;
     padding-bottom: 14px;
     text-align: center;
+
+    & + .body {
+      height: calc(100% - 48px) !important;
+    }
   }
 
   .body {
@@ -5439,7 +5444,7 @@ $min2ColWidth: 400px;
 /* logout warning/login/elevated session modals */
 .logoutwarningmodalshade,
 .loginmodalshade {
-  z-index: 101;
+  z-index: 1001;
 }
 
 #logoutwarningmodal,
@@ -5451,7 +5456,7 @@ $min2ColWidth: 400px;
 
 #logoutwarningmodal,
 #loginmodal {
-  z-index: 101;
+  z-index: 1001;
 }
 
 .prompt {
@@ -6511,14 +6516,10 @@ body.reduce-focus-visibility {
 
 .datetimewrapper {
   display: flex;
+  flex-wrap: wrap;
   flex-direction: row;
   align-items: center;
-
-  & > .datewrapper + .timewrapper,
-  & > .timewrapper + .timezone,
-  & > .select {
-    @include margin-left(5px);
-  }
+  gap: 5px;
 }
 
 .clear-btn {
@@ -6726,8 +6727,8 @@ body .selectize-dropdown {
   height: 34px;
 
   &:not(.fullwidth) {
-    max-width: 25em;
-    min-width: 10em;
+    width: 25em;
+    max-width: 100%;
   }
 }
 

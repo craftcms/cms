@@ -338,11 +338,11 @@ Craft.CpScreenSlideout = Craft.Slideout.extend(
           Craft.appendBodyHtml(data.bodyHtml);
 
           Craft.initUiElements(this.$content);
-          new Craft.ElementThumbLoader().load($(this.$content));
+          Craft.cp.elementThumbLoader.load($(this.$content));
 
           if (data.sidebar) {
             Craft.initUiElements(this.$sidebar);
-            new Craft.ElementThumbLoader().load(this.$sidebar);
+            Craft.cp.elementThumbLoader.load(this.$sidebar);
           }
 
           if (!Garnish.isMobileBrowser()) {

@@ -2,6 +2,71 @@
 
 ## Unreleased
 
+- Fixed a bug where `craft\helpers\StringHelper::isUtf8()` was unreliable.
+
+## 4.4.10.1 - 2023-05-10
+
+- Fixed a bug where it wasn’t possible to add new Matrix blocks via the “Add a block” menu. ([#13177](https://github.com/craftcms/cms/issues/13177))
+
+## 4.4.10 - 2023-05-09
+
+- PHP warnings and notices no longer halt execution when Dev Mode is disabled. ([#13164](https://github.com/craftcms/cms/issues/13164))
+- Fixed a “Double-instantiating a menu button on an element” console warning that occurred on pages with Matrix fields. ([#6338](https://github.com/craftcms/cms/issues/6338))
+- Fixed a bug where Quick Post widget settings weren’t filtering custom field options for the selected entry type.
+- Fixed a bug where Matrix blocks could get detached from entries when sections were enabled for a new site. ([#13155](https://github.com/craftcms/cms/issues/13155))
+- Fixed an error that could occur when entrifying a global set without a field layout. ([#13156](https://github.com/craftcms/cms/issues/13156))
+- Fixed a bug where Single entries’ edit pages could have “Save and add another” actions. ([#13157](https://github.com/craftcms/cms/issues/13157))
+- Fixed styling issues with Date fields. ([#13167](https://github.com/craftcms/cms/issues/13167))
+- Fixed the vertical alignment of element labels. ([#13168](https://github.com/craftcms/cms/issues/13168))
+- Fixed a bug where the System Report utility could display MariaDB’s MySQL-equivalent version, if it was listed first in the server version string.
+- Added `craft\helpers\ArrayHelper::containsRecursive()`.
+- `craft\helpers\App::normalizeVersion()` now returns the highest version found before distribution info.
+
+## 4.4.9 - 2023-05-02
+
+- Volumes no longer validate if their field layout contains a field called `extension`, `filename`, `height`, `kind`, `size`, or `width`.
+- It’s now possible for plugins to register errors to entries’ `typeId`, `parentId`, and `authorId` attributes. ([#13138](https://github.com/craftcms/cms/pull/13138))
+- Stack traces returned by `craft\helpers\App::backtrace()` now more closely resemble exception stack traces.
+- “Element query executed before Craft is fully initialized” warnings now include a stack trace.
+- Fixed a bug where queue-runner Ajax requests triggered on the front end weren’t getting closed before running the queue, potentially causing long front-end load delays.
+- Fixed a bug where long element titles weren’t wrapping. ([#13143](https://github.com/craftcms/cms/issues/13143))
+- Fixed a user enumeration timing attack vulnerability.
+- Fixed a SQL error that could occur when upgrading to Craft 4, if any `matrixblocks` table rows referenced nonexistent element IDs. ([#13121](https://github.com/craftcms/cms/issues/13121))
+- Fixed a SQL error that could occur when upgrading to Craft 4, if anything triggered an asset or volume query. ([#13130](https://github.com/craftcms/cms/issues/13130))
+- Fixed a SQL error that occurred when deleting a category group on PostgreSQL, when configured with a table prefix. ([#13127](https://github.com/craftcms/cms/issues/13127))
+- Fixed a bug where it was possible to query for elements with soft-deleted site IDs.
+- Fixed a JavaScript error that could occur on the control panel login form.
+
+## 4.4.8 - 2023-04-25
+
+- Category/tag/global set reference tags now map to entries, if no category groups/tag groups/global sets exist. ([#13082](https://github.com/craftcms/cms/issues/13082))
+- HTML Purifier now allows `data-oembed-url` attributes on `div` tags. ([craftcms/ckeditor#80](https://github.com/craftcms/ckeditor/issues/80))
+- Added `craft\queue\Queue::EVENT_AFTER_EXEC_AND_RELEASE`. ([#13096](https://github.com/craftcms/cms/issues/13096))
+- `craft\services\Elements::propagateElements()` now returns the element in the target site.
+- A globally-defined element thumb loader is now available in the control panel via `Craft.cp.elementThumbLoader`.
+- Fixed a bug where it was possible to select a disallowed volume as the Default Asset Location in Assets field settings. ([#13072](https://github.com/craftcms/cms/issues/13072))
+- Fixed a bug where it was possible to upload files to Assets fields outside of the allowed volumes, if the Default Upload Location was set to a disallowed volume. ([#13072](https://github.com/craftcms/cms/issues/13072))
+- Fixed an error that could occur if a Plain Text field had over 1,000,000 bytes. ([#13083](https://github.com/craftcms/cms/issues/13083))
+- Fixed a bug where relational field values weren’t yielding any results for event handlers immediately after a draft had been merged. ([#13087](https://github.com/craftcms/cms/issues/13087))
+- Fixed a bug where element labels could bleed out of their container. ([#13099](https://github.com/craftcms/cms/issues/13099))
+- Fixed an error that occurred if `yii\web\UrlManager::addRules()` was called on a console request. ([#13109](https://github.com/craftcms/cms/issues/13109))
+- Fixed a bug where it was possible to select the current folder as the target when moving a volume folder, resulting in the folder and its contents being lost. ([#13118](https://github.com/craftcms/cms/issues/13118))
+- Fixed an error that could occur when running tests. ([#13076](https://github.com/craftcms/cms/issues/13076))
+- Fixed an error that occured when sending the activation email for a new user, if there were any validation errors due to new group assignments. ([#13060](https://github.com/craftcms/cms/issues/13060))
+- Fixed a bug where the “Send an activation email now” user account checkbox was losing its value if there were any validation errors.
+- Fixed an error that could occur when creating a database backup on MySQL and MariaDB. ([#12996](https://github.com/craftcms/cms/issues/12996))
+- Fixed a bug where Edit Category screens were including a Parent field, even if the category group’s Max Levels was set to `1`. ([#13097](https://github.com/craftcms/cms/discussions/13097))
+- Fixed a bug where the uploader’s user photo wasn’t always loading on Edit Asset pages.
+- Fixed a bug where the “Delete for site” bulk element action was deleting disabled elements and drafts across all sites. ([#13116](https://github.com/craftcms/cms/issues/13116))
+- Fixed a bug where Entries and Categories fields with “Maintain hierarchy” enabled could lose relations to elements that didn’t exist in the primary site. ([#13057](https://github.com/craftcms/cms/issues/13057))
+
+## 4.4.7.1 - 2023-04-15
+
+- Locked the Yii 2 PSR Log Target library to 1.1.3 to avoid a PHP error that occurs on 1.1.4.
+
+## 4.4.7 - 2023-04-11
+
+- Improved the control panel styling when the Debug Toolbar is enabled.
 - The image transformer now verifies that transforms don’t exist if the index record is missing, before queuing up the transform generation, for local filesystems. ([#13052](https://github.com/craftcms/cms/issues/13052))
 - Added the `--propagate-to` and `--set-enabled-for-site` options to the `resave/entries` command.
 - Craft’s bootstrap script now defines a `CRAFT_ENVIRONMENT` environment variable, as a safety measure for plugins that may be checking for it rather than `Craft::$app->env`.
@@ -10,10 +75,14 @@
 - `craft\web\View::renderObjectTemplate()` now trims the returned template output.
 - Fixed a bug where users were “View other users’ drafts” section permissions weren’t being enforced for unpublished drafts.
 - Fixed a bug where Matrix fields weren’t counting disabled blocks when enforcing their Min Blocks settings. ([#13059](https://github.com/craftcms/cms/issues/13059))
+- Fixed a bug where volume folder modals’ sidebars and content were being cut off. ([#13074](https://github.com/craftcms/cms/issues/13074))
 - Fixed a bug where element editors were showing provisional changes, even if the user didn’t have permission to save them.
 - Fixed a bug where the control panel could be inaccessible if a mutex lock couldn’t be acquired for the queue. ([#13052](https://github.com/craftcms/cms/issues/13052))
 - Fixed a bug where it wasn’t possible to update a Matrix block on a revision without a new block ID being assigned. ([#13064](https://github.com/craftcms/cms/discussions/13064))
 - Fixed a JavaScript error that could occur on field layout designers, if any tabs didn’t have any elements. ([#13062](https://github.com/craftcms/cms/issues/13062))
+- Fixed a bug where selecting an image with a transform within an asset selector modal wasn’t ever resolving.
+- Fixed a PHP error that could occur if there was a problem sending a password-reset email. ([#13070](https://github.com/craftcms/cms/pull/13070))
+- Fixed a bug where users’ User Groups and Permissions settings were getting cleared in the UI when sending an activation email, if the email failed to send. ([#13061](https://github.com/craftcms/cms/issues/13061))
 - Fixed XSS vulnerabilities.
 - Updated yii2-debug to 2.1.22. ([#13058](https://github.com/craftcms/cms/issues/13058))
 
@@ -363,7 +432,7 @@
 ## 4.3.9 - 2023-02-14
 
 - Image thumbnails and previews are no longer versioned if their image URL doesn’t begin with one of the asset’s base filesystem URLs. ([#12663](https://github.com/craftcms/cms/issues/12663))
-- HTML Purifier now allows `oembed` tags. ([ckeditor#59](https://github.com/craftcms/ckeditor/issues/59))
+- HTML Purifier now allows `oembed` tags. ([craftcms/ckeditor#59](https://github.com/craftcms/ckeditor/issues/59))
 - Added `craft\htmlpurifier\VideoEmbedUrlDef`.
 - `craft\helpers\Assets::revUrl()` now has an `$fsOnly` argument.
 - Fixed a bug where entries that aren’t propagated to the primary site weren’t showing revision notes. ([#12641](https://github.com/craftcms/cms/issues/12641))
