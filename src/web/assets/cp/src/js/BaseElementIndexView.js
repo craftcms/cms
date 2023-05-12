@@ -88,7 +88,6 @@ Craft.BaseElementIndexView = Garnish.Base.extend(
       if (this.settings.context === 'index') {
         this._handleElementEditing = (ev) => {
           var $target = $(ev.target);
-          console.log($target);
 
           if ($target.prop('nodeName') === 'A') {
             // Let the link do its thing
