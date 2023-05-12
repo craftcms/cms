@@ -88,6 +88,7 @@ Craft.BaseElementIndexView = Garnish.Base.extend(
       if (this.settings.context === 'index') {
         this._handleElementEditing = (ev) => {
           var $target = $(ev.target);
+          console.log($target);
 
           if ($target.prop('nodeName') === 'A') {
             // Let the link do its thing
@@ -111,11 +112,38 @@ Craft.BaseElementIndexView = Garnish.Base.extend(
           }
         };
 
+        this._handleElementExpansion = (ev) => {
+          const $expandBtn = $(ev.target).closest('[data-expand-elements]');
+
+          if ($expandBtn.length === 0) return;
+
+          // Replace button with additional elements
+          $expandBtn.replaceWith(
+            JSON.parse($expandBtn.attr('data-other-html'))
+          );
+        };
+
         if (!this.elementIndex.trashed) {
           this.addListener(
             this.$elementContainer,
             'dblclick,taphold',
             this._handleElementEditing
+          );
+
+          // Listen for expansion
+          this.addListener(this.$elementContainer, 'keypress', (event) => {
+            if (
+              event.keyCode === Garnish.SPACE_KEY ||
+              event.keyCode === Garnish.RETURN_KEY
+            ) {
+              this._handleElementExpansion(event);
+            }
+          });
+
+          this.addListener(
+            this.$elementContainer,
+            'click',
+            this._handleElementExpansion
           );
         }
       }

@@ -659,7 +659,10 @@ class Cp
                 'title' => implode(', ', ArrayHelper::getColumn($elements, 'title')),
                 'class' => 'btn small',
                 'role' => 'button',
-                'onclick' => 'jQuery(this).replaceWith(' . Json::encode($otherHtml) . ')',
+                'tabindex' => '0',
+                'aria-expanded' => 'false',
+                'data-expand-elements' => true,
+                'data-other-html' => Json::encode($otherHtml),
             ]);
         }
 
