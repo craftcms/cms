@@ -11,6 +11,7 @@ import {startRegistration} from '@simplewebauthn/browser';
     {
       $addSecurityKeyBtn: null,
       $keysTable: null,
+      webAuthnPlatformAuthenticatorSupported: true,
 
       init: function (slideout, settings) {
         this.setSettings(settings, Craft.WebAuthnSetup.defaults);
@@ -27,13 +28,24 @@ import {startRegistration} from '@simplewebauthn/browser';
             Craft.t('app', 'This browser does not support WebAuthn.')
           );
           this.$addSecurityKeyBtn.disable();
+        } else {
+          platformAuthenticatorIsAvailable()
+            .then((response) => {
+              if (!response) {
+                this.webAuthnPlatformAuthenticatorSupported = false;
+              }
+            })
+            .catch((error) => {
+              this.showError(error);
+            })
+            .finally(() => {
+              this.addListener(
+                this.$addSecurityKeyBtn,
+                'click',
+                'onAddSecurityKeyBtn'
+              );
+            });
         }
-
-        this.addListener(
-          this.$addSecurityKeyBtn,
-          'click',
-          'onAddSecurityKeyBtn'
-        );
 
         if (this.$keysTable !== null) {
           this.addListener(
@@ -46,20 +58,9 @@ import {startRegistration} from '@simplewebauthn/browser';
 
       onAddSecurityKeyBtn: function (ev) {
         if (!$(ev.currentTarget).hasClass('disabled')) {
-          let webAuthnPlatformAuthenticatorSupported = true;
-          platformAuthenticatorIsAvailable()
-            .then((response) => {
-              if (!response) {
-                webAuthnPlatformAuthenticatorSupported = false;
-              }
-            })
-            .catch((error) => {
-              this.showError(error);
-            });
-
           let proceed = true;
 
-          if (!webAuthnPlatformAuthenticatorSupported) {
+          if (!this.webAuthnPlatformAuthenticatorSupported) {
             proceed = confirm(
               Craft.t(
                 'app',
@@ -71,7 +72,7 @@ import {startRegistration} from '@simplewebauthn/browser';
           if (proceed) {
             this.showStatus(Craft.t('app', 'Waiting for elevated session'), '');
             Craft.elevatedSessionManager.requireElevatedSession(
-              this.startWebAuthRegistration.bind(this),
+              this.startRegistration.bind(this),
               this.failedElevation.bind(this)
             );
           }
@@ -82,7 +83,7 @@ import {startRegistration} from '@simplewebauthn/browser';
         this.clearStatus();
       },
 
-      startWebAuthRegistration: function () {
+      startRegistration: function () {
         this.clearStatus();
 
         // GET registration options from the endpoint that calls
@@ -101,7 +102,7 @@ import {startRegistration} from '@simplewebauthn/browser';
               );
               startRegistration(registrationOptions)
                 .then((regResponse) => {
-                  this.verifyWebAuthnRegistration(regResponse, credentialName);
+                  this.verifyRegistration(regResponse, credentialName);
                 })
                 .catch((regResponseError) => {
                   this.showStatus(
@@ -119,10 +120,7 @@ import {startRegistration} from '@simplewebauthn/browser';
           });
       },
 
-      verifyWebAuthnRegistration: function (
-        startRegistrationResponse,
-        credentialName
-      ) {
+      verifyRegistration: function (startRegistrationResponse, credentialName) {
         this.showStatus(Craft.t('app', 'Starting verification'), '');
         let data = {
           credentials: JSON.stringify(startRegistrationResponse),
