@@ -1780,6 +1780,7 @@ return [
     'Waiting for elevated session' => 'Waiting for elevated session',
     'Warning' => 'Warning',
     'Warning:' => 'Warning:',
+    'We couldn’t find your credentials. This can happen e.g. if you deleted them via the Control Panel.' => 'We couldn’t find your credentials. This can happen e.g. if you deleted them via the Control Panel.',
     'Web page' => 'Web page',
     'Website' => 'Website',
     'Week Start Day' => 'Week Start Day',

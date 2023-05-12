@@ -74,7 +74,7 @@ import {
           })
           .catch((response) => {
             this.$submitBtn.failureEvent();
-            this.processFailure(response.error);
+            this.processFailure(response);
           });
       }
     },
@@ -106,26 +106,14 @@ import {
                 );
               })
               .catch((authResponseError) => {
-                return Promise.reject({
-                  success: false,
-                  error: authResponseError,
-                });
+                return Promise.reject(authResponseError);
               });
           } catch (error) {
-            return Promise.reject({success: false, error: error});
+            return Promise.reject(error);
           }
         })
         .catch((response) => {
-          let error = '';
-          if (response.error !== undefined) {
-            error = response.error;
-          } else {
-            error = response.response.data.message;
-          }
-          return Promise.reject({
-            success: false,
-            error: error,
-          });
+          return Promise.reject(response);
         });
     },
 
@@ -160,7 +148,7 @@ import {
           }
         })
         .catch(({response}) => {
-          return Promise.reject({success: false, error: response.data.message});
+          return Promise.reject(response.data.message);
         });
     },
 

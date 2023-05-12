@@ -61,6 +61,7 @@ class AuthAsset extends AssetBundle
                 'This browser does not support WebAuthn.',
                 'Use a security key',
                 'Waiting for elevated session',
+                'We couldn’t find your credentials. This can happen e.g. if you deleted them via the Control Panel.',
             ]);
         }
     }

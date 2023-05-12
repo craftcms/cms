@@ -329,13 +329,16 @@ class UsersController extends Controller
         $credential = WebAuthnRecord::findOne(['credentialId' => $authResponseArray['id']]);
 
         if ($credential === null) {
-            return null;
+            return $this->asFailure(Craft::t(
+                'app',
+                'We couldn’t find your credentials. This can happen e.g. if you deleted them via the Control Panel.'
+            ));
         }
 
         $user = User::findOne(['id' => $credential['userId']]);
 
         if ($user === null) {
-            return null;
+            return $this->_handleLoginFailure(null, $user);
         }
 
         // Did they submit a valid security key, and is the user capable of being logged-in?
