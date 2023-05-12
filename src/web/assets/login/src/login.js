@@ -140,6 +140,10 @@ import './login.scss';
         })
         .catch(({response}) => {
           this.showError(response.data.message);
+        })
+        .finally(() => {
+          this.$submitBtn.successEvent();
+          this.$submitBtn.updateMessages(Craft.t('app', 'Reset Password'));
         });
     },
 
@@ -229,6 +233,7 @@ import './login.scss';
       this.forgotPassword = !this.forgotPassword;
 
       this.$form.toggleClass('reset-password', this.forgotPassword);
+
       this.$submitBtn.updateMessages(
         Craft.t('app', this.forgotPassword ? 'Reset Password' : 'Sign in')
       );

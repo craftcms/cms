@@ -204,9 +204,40 @@
 
 ## 4.3.11 - 2023-03-07
 
+- Fixed a bug where `craft\helpers\StringHelper::isUtf8()` was unreliable.
+
+## 4.4.10.1 - 2023-05-10
+
+- Fixed a bug where it wasn’t possible to add new Matrix blocks via the “Add a block” menu. ([#13177](https://github.com/craftcms/cms/issues/13177))
+
+## 4.4.10 - 2023-05-09
+
+- PHP warnings and notices no longer halt execution when Dev Mode is disabled. ([#13164](https://github.com/craftcms/cms/issues/13164))
+- Fixed a “Double-instantiating a menu button on an element” console warning that occurred on pages with Matrix fields. ([#6338](https://github.com/craftcms/cms/issues/6338))
+- Fixed a bug where Quick Post widget settings weren’t filtering custom field options for the selected entry type.
+- Fixed a bug where Matrix blocks could get detached from entries when sections were enabled for a new site. ([#13155](https://github.com/craftcms/cms/issues/13155))
+- Fixed an error that could occur when entrifying a global set without a field layout. ([#13156](https://github.com/craftcms/cms/issues/13156))
+- Fixed a bug where Single entries’ edit pages could have “Save and add another” actions. ([#13157](https://github.com/craftcms/cms/issues/13157))
+- Fixed styling issues with Date fields. ([#13167](https://github.com/craftcms/cms/issues/13167))
+- Fixed the vertical alignment of element labels. ([#13168](https://github.com/craftcms/cms/issues/13168))
+- Fixed a bug where the System Report utility could display MariaDB’s MySQL-equivalent version, if it was listed first in the server version string.
+- Added `craft\helpers\ArrayHelper::containsRecursive()`.
+- `craft\helpers\App::normalizeVersion()` now returns the highest version found before distribution info.
+
+## 4.4.9 - 2023-05-02
+
+- Volumes no longer validate if their field layout contains a field called `extension`, `filename`, `height`, `kind`, `size`, or `width`.
+- It’s now possible for plugins to register errors to entries’ `typeId`, `parentId`, and `authorId` attributes. ([#13138](https://github.com/craftcms/cms/pull/13138))
 - Stack traces returned by `craft\helpers\App::backtrace()` now more closely resemble exception stack traces.
 - “Element query executed before Craft is fully initialized” warnings now include a stack trace.
+- Fixed a bug where queue-runner Ajax requests triggered on the front end weren’t getting closed before running the queue, potentially causing long front-end load delays.
+- Fixed a bug where long element titles weren’t wrapping. ([#13143](https://github.com/craftcms/cms/issues/13143))
+- Fixed a user enumeration timing attack vulnerability.
 - Fixed a SQL error that could occur when upgrading to Craft 4, if any `matrixblocks` table rows referenced nonexistent element IDs. ([#13121](https://github.com/craftcms/cms/issues/13121))
+- Fixed a SQL error that could occur when upgrading to Craft 4, if anything triggered an asset or volume query. ([#13130](https://github.com/craftcms/cms/issues/13130))
+- Fixed a SQL error that occurred when deleting a category group on PostgreSQL, when configured with a table prefix. ([#13127](https://github.com/craftcms/cms/issues/13127))
+- Fixed a bug where it was possible to query for elements with soft-deleted site IDs.
+- Fixed a JavaScript error that could occur on the control panel login form.
 
 ## 4.4.8 - 2023-04-25
 

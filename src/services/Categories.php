@@ -622,7 +622,7 @@ FROM $elementsTable [[elements]]
 WHERE $conditionSql
 SQL)->execute();
                 $db->createCommand(<<<SQL
-UPDATE $elementsTable
+UPDATE $elementsTable [[elements]]
 SET [[dateDeleted]] = '$now'
 FROM $categoriesTable [[categories]]
 WHERE $conditionSql

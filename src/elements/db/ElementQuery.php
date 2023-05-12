@@ -32,6 +32,7 @@ use craft\helpers\Db;
 use craft\helpers\ElementHelper;
 use craft\helpers\StringHelper;
 use craft\models\Site;
+use Illuminate\Support\Collection;
 use ReflectionClass;
 use ReflectionException;
 use ReflectionProperty;
@@ -2592,11 +2593,21 @@ class ElementQuery extends Query implements ElementQueryInterface
      */
     private function _normalizeSiteId(): void
     {
+        $sitesService = Craft::$app->getSites();
         if (!$this->siteId) {
             // Default to the current site
-            $this->siteId = Craft::$app->getSites()->getCurrentSite()->id;
+            $this->siteId = $sitesService->getCurrentSite()->id;
         } elseif ($this->siteId === '*') {
-            $this->siteId = Craft::$app->getSites()->getAllSiteIds();
+            $this->siteId = $sitesService->getAllSiteIds();
+        } elseif (is_numeric($this->siteId) || ArrayHelper::isNumeric($this->siteId)) {
+            // Filter out any invalid site IDs
+            $siteIds = Collection::make((array)$this->siteId)
+                ->filter(fn($siteId) => $sitesService->getSiteById($siteId, true) !== null)
+                ->all();
+            if (empty($siteIds)) {
+                throw new QueryAbortedException();
+            }
+            $this->siteId = is_array($this->siteId) ? $siteIds : reset($siteIds);
         }
     }
 

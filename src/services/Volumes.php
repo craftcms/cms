@@ -586,14 +586,11 @@ class Volumes extends Component
      */
     private function _createVolumeQuery(): Query
     {
-        return (new Query())
+        $query = (new Query())
             ->select([
                 'id',
                 'name',
                 'handle',
-                'fs',
-                'transformFs',
-                'transformSubpath',
                 'titleTranslationMethod',
                 'titleTranslationKeyFormat',
                 'sortOrder',
@@ -603,6 +600,18 @@ class Volumes extends Component
             ->from([Table::VOLUMES])
             ->where(['dateDeleted' => null])
             ->orderBy(['sortOrder' => SORT_ASC]);
+
+        // todo: cleanup after next breakpoint
+        $db = Craft::$app->getDb();
+        if ($db->columnExists(Table::VOLUMES, 'fs')) {
+            $query->addSelect([
+                'fs',
+                'transformFs',
+                'transformSubpath',
+            ]);
+        }
+
+        return $query;
     }
 
     /**
