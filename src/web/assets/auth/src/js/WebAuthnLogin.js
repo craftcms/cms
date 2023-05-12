@@ -34,7 +34,7 @@ import {
             this.showError(error);
           })
           .finally(() => {
-            this.addListener(this.$submitBtn, 'click', 'auth');
+            this.addListener(this.$submitBtn, 'click', 'login');
 
             this.$submitBtn = new Garnish.MultiFunctionBtn(this.$submitBtn, {
               changeButtonText: true,
@@ -58,14 +58,14 @@ import {
       return proceed;
     },
 
-    auth: function (ev, action = 'login') {
+    login: function (ev) {
       ev.preventDefault();
 
       if (this.supportCheck()) {
         this.$submitBtn.busyEvent();
         this.clearErrors();
 
-        this.startAuthentication(false, action)
+        this.startAuthentication(true, false, 'login')
           .then((response) => {
             this.$submitBtn.successEvent();
             if (response.returnUrl != undefined) {
@@ -79,8 +79,17 @@ import {
       }
     },
 
-    startAuthentication: function (inModal = false, action = 'login') {
-      return Craft.sendActionRequest('POST', 'users/start-webauthn-login', {})
+    startAuthentication: function (
+      usernameless = false,
+      inModal = false,
+      action = 'login'
+    ) {
+      let data = {
+        usernameless: usernameless,
+      };
+      return Craft.sendActionRequest('POST', 'users/start-webauthn-login', {
+        data,
+      })
         .then((response) => {
           const authenticationOptions = response.data.authenticationOptions;
 

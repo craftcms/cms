@@ -133,7 +133,11 @@ Craft.ElevatedSessionManager = Garnish.Base.extend(
       this.clearLoginError();
 
       if (this.WebAuthnLogin.supportCheck()) {
-        this.WebAuthnLogin.startAuthentication(true, 'elevateSessionWebAuthn')
+        this.WebAuthnLogin.startAuthentication(
+          false,
+          true,
+          'elevateSessionWebAuthn'
+        )
           .then((response) => {
             this.passwordModal.hide();
             this.callback();

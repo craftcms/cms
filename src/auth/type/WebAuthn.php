@@ -248,18 +248,43 @@ class WebAuthn extends Configurable2faType
     /**
      * Get the credential request options.
      *
+     * @param string|bool $usernameless
      * @return PublicKeyCredentialOptions | null
      */
-    public function getCredentialRequestOptions(): ?PublicKeyCredentialOptions
+    public function getCredentialRequestOptions(string|bool $usernameless = false): ?PublicKeyCredentialOptions
     {
         if (Craft::$app->getEdition() !== Craft::Pro) {
             return null;
         }
 
-        return $this->_getWebauthnServer()->generatePublicKeyCredentialRequestOptions(
-            PublicKeyCredentialRequestOptions::USER_VERIFICATION_REQUIREMENT_PREFERRED,
-            []
-        );
+        // if we're doing usernameless authentication
+        // proceed with userVerification: preferred and empty allowed credentials
+        if ($usernameless === true) {
+            return $this->_getWebauthnServer()->generatePublicKeyCredentialRequestOptions(
+                PublicKeyCredentialRequestOptions::USER_VERIFICATION_REQUIREMENT_PREFERRED,
+                []
+            );
+        }
+
+        // otherwise - get a user
+        if (is_string($usernameless)) {
+            // if a string was passed - that's username or email; used by e.g. AuthManager.js
+            $user = Craft::$app->getUsers()->getUserByUsernameOrEmail($usernameless);
+        } else {
+            // if it wasn't a string, get user from session; use by e.g. ElevatedSessionManager.js
+            $user = Craft::$app->getUser()->getIdentity();
+        }
+        if ($user === null) {
+            return null;
+        }
+
+        $userEntity = $this->_getUserEntity($user);
+        // and get a list of allowed credentials for given user
+        $allowedCredentials = array_map(
+            static fn(PublicKeyCredentialSource $credential) => $credential->getPublicKeyCredentialDescriptor(),
+            Craft::createObject(CredentialRepository::class)->findAllForUserEntity($userEntity));
+
+        return $this->_getWebauthnServer()->generatePublicKeyCredentialRequestOptions(null, $allowedCredentials);
     }
 
     /**

@@ -295,8 +295,10 @@ class UsersController extends Controller
         $this->requirePostRequest();
         $this->requireAcceptsJson();
 
+        $usernameless = Craft::$app->getRequest()->getRequiredBodyParam('usernameless');
+
         $webAuthn = new WebAuthn();
-        $options = $webAuthn->getCredentialRequestOptions();
+        $options = $webAuthn->getCredentialRequestOptions($usernameless);
 
         if ($options == null) {
             return $this->asFailure('Something went wrong.');

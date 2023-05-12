@@ -376,7 +376,7 @@ Craft.AuthManager = Garnish.Base.extend(
       this.clearLoginError();
 
       if (this.WebAuthnLogin.supportCheck()) {
-        this.WebAuthnLogin.startAuthentication(true, 'login')
+        this.WebAuthnLogin.startAuthentication(Craft.username, true, 'login')
           .then((response) => {
             this.closeModal();
           })
