@@ -117,10 +117,18 @@ Craft.BaseElementIndexView = Garnish.Base.extend(
 
           if ($expandBtn.length === 0) return;
 
+          const $prevElement = $expandBtn.prev();
+
           // Replace button with additional elements
           $expandBtn.replaceWith(
             JSON.parse($expandBtn.attr('data-other-html'))
           );
+
+          // Find element to focus
+          const $nextFocusable = Garnish.firstFocusableElement(
+            $prevElement.next()
+          );
+          $nextFocusable.trigger('focus');
         };
 
         if (!this.elementIndex.trashed) {
