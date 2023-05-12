@@ -77,7 +77,7 @@ Craft.ElevatedSessionManager = Garnish.Base.extend(
         let $auth2faForm = $('<div id="auth-2fa-form"/>').insertAfter(
           $inputContainer
         );
-        if (browserSupportsWebAuthn()) {
+        if (browserSupportsWebAuthn() && Craft.userHasSecurityKeys) {
           this.$webAuthnElevateBtn = $(
             '<a href="#" role="button" class="btn">' +
               Craft.t('app', 'Use a security key') +
