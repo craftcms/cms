@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 3.x
 
-## Unreleased
+## 3.8.11 - 2023-05-15
 
 - Fixed a SQL error that could occur when updating to Craft 3.8 on PostgreSQL. ([#13186](https://github.com/craftcms/cms/issues/13186))
 - Fixed a JavaScript error that occurred for Matrix inputs with static blocks. ([#13194](https://github.com/craftcms/cms/issues/13194))
