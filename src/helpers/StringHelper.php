@@ -350,8 +350,7 @@ class StringHelper extends \yii\helpers\StringHelper
         if (App::checkForValidIconv()) {
             $str = HtmlPurifier::convertToUtf8($str, $config);
         } else {
-            $encoding = static::encoding($str);
-            $str = mb_convert_encoding($str, 'utf-8', $encoding);
+            $str = mb_convert_encoding($str, self::UTF8);
         }
 
         return $str;
@@ -460,7 +459,7 @@ class StringHelper extends \yii\helpers\StringHelper
         // So, by converting from UTF-8 to UTF-32, we magically
         // get the correct hex encoding.
         return static::replaceMb4($str, static function($char) {
-            $unpacked = unpack('H*', mb_convert_encoding($char, 'UTF-32', 'UTF-8'));
+            $unpacked = unpack('H*', mb_convert_encoding($char, 'UTF-32', self::UTF8));
             return isset($unpacked[1]) ? '&#x' . ltrim($unpacked[1], '0') . ';' : '';
         });
     }
@@ -815,7 +814,7 @@ class StringHelper extends \yii\helpers\StringHelper
      */
     public static function isUtf8(string $str): bool
     {
-        return static::encoding($str) === 'utf-8';
+        return mb_check_encoding($str, self::UTF8);
     }
 
     /**

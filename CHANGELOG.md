@@ -1,5 +1,12 @@
 # Release Notes for Craft CMS 4
 
+## 4.4.11 - 2023-05-15
+
+- Fixed a bug where Matrix blocks weren’t getting propagated to newly-added sites for entries. ([#13181](https://github.com/craftcms/cms/issues/13181))
+- Fixed a SQL error that could occur when updating to Craft 4.4 on PostgreSQL. ([#13186](https://github.com/craftcms/cms/issues/13186))
+- Fixed a bug where `craft\helpers\StringHelper::isUtf8()` was unreliable.
+- Fixed a styling issue with Date fields. ([#13182](https://github.com/craftcms/cms/issues/13182))
+
 ## 4.4.10.1 - 2023-05-10
 
 - Fixed a bug where it wasn’t possible to add new Matrix blocks via the “Add a block” menu. ([#13177](https://github.com/craftcms/cms/issues/13177))
