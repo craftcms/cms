@@ -3,6 +3,7 @@
 ## Unreleased
 
 - Fixed a SQL error that could occur when updating to Craft 3.8 on PostgreSQL. ([#13186](https://github.com/craftcms/cms/issues/13186))
+- Fixed a JavaScript error that occurred for Matrix inputs with static blocks. ([#13194](https://github.com/craftcms/cms/issues/13194))
 - Fixed the vertical alignment of element labels. ([#13168](https://github.com/craftcms/cms/issues/13168))
 
 ## 3.8.10.2 - 2023-05-10

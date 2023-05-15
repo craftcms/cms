@@ -118,10 +118,12 @@
           this.addBlock(type);
         });
 
-        this.$addBlockMenuBtn.menubtn();
-        this.$addBlockMenuBtn.data('menubtn').on('optionSelect', (ev) => {
-          this.addBlock($(ev.option).data('type'));
-        });
+        if (this.$addBlockMenuBtn.length > 0) {
+          this.$addBlockMenuBtn.menubtn();
+          this.$addBlockMenuBtn.data('menubtn').on('optionSelect', (ev) => {
+            this.addBlock($(ev.option).data('type'));
+          });
+        }
 
         this.updateAddBlockBtn();
 
