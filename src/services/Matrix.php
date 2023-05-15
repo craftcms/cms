@@ -711,7 +711,13 @@ class Matrix extends Component
                 $sortOrder++;
                 if (
                     // skip blocks that are primarily owned by a different element
-                    ($saveAll && (!$block->primaryOwnerId || $block->primaryOwnerId === $owner->id)) ||
+                    ($saveAll &&
+                        (
+                            !$block->primaryOwnerId ||
+                            (!$owner->getIsDraft() && $block->primaryOwnerId === $owner->id) ||
+                            ($owner->getIsDraft() && $block->primaryOwnerId === $owner->getCanonicalId())
+                        )
+                    ) ||
                     !$block->id ||
                     $block->dirty
                 ) {
