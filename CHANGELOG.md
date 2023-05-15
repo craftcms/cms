@@ -1,5 +1,9 @@
 # Release Notes for Craft CMS 3.x
 
+## Unreleased
+
+- Fixed a SQL error that could occur when updating to Craft 3.8 on PostgreSQL. ([#13186](https://github.com/craftcms/cms/issues/13186))
+
 ## 3.8.10.2 - 2023-05-10
 
 - Fixed a bug where it wasn’t possible to add new Matrix blocks via the “Add a block” menu. ([#13177](https://github.com/craftcms/cms/issues/13177))
