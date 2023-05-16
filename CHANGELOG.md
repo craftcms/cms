@@ -1,5 +1,9 @@
 # Release Notes for Craft CMS 4
 
+## Unreleased
+
+- Improved `craft\helpers\FileHelper::getExtensionByMimeType()` for some ambiguous, web-friendly MIME types.
+
 ## 4.4.11 - 2023-05-15
 
 - Fixed a bug where Matrix blocks weren’t getting propagated to newly-added sites for entries. ([#13181](https://github.com/craftcms/cms/issues/13181))
