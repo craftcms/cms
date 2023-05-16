@@ -62,6 +62,7 @@ import {startRegistration} from '@simplewebauthn/browser';
 
       onAddSecurityKeyBtn: function (ev) {
         if (!$(ev.currentTarget).hasClass('disabled')) {
+          $(ev.currentTarget).disable();
           this.showStatus(Craft.t('app', 'Waiting for elevated session'), '');
           Craft.elevatedSessionManager.requireElevatedSession(
             this.startRegistration.bind(this),
@@ -71,6 +72,7 @@ import {startRegistration} from '@simplewebauthn/browser';
       },
 
       failedElevation: function () {
+        this.$addSecurityKeyBtn.enable();
         this.clearStatus();
       },
 
@@ -104,13 +106,16 @@ import {startRegistration} from '@simplewebauthn/browser';
                       ' ' +
                       regResponseError.message
                   );
+                  this.$addSecurityKeyBtn.enable();
                 });
             } catch (error) {
               this.showStatus(error);
+              this.$addSecurityKeyBtn.enable();
             }
           })
           .catch(({response}) => {
             this.showStatus(response.data.message);
+            this.$addSecurityKeyBtn.enable();
           });
       },
 
@@ -142,6 +147,9 @@ import {startRegistration} from '@simplewebauthn/browser';
           })
           .catch(({response}) => {
             this.showStatus(response.data.message);
+          })
+          .finally(() => {
+            this.$addSecurityKeyBtn.enable();
           });
       },
 
