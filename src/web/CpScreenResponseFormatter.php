@@ -13,6 +13,7 @@ use craft\helpers\StringHelper;
 use craft\helpers\UrlHelper;
 use yii\base\Component;
 use yii\base\InvalidConfigException;
+use yii\web\BadRequestHttpException;
 use yii\web\JsonResponseFormatter;
 use yii\web\Response as YiiResponse;
 use yii\web\ResponseFormatterInterface;
@@ -58,6 +59,9 @@ class CpScreenResponseFormatter extends Component implements ResponseFormatterIn
 
         if ($behavior->prepareScreen) {
             $containerId = $request->getHeaders()->get('X-Craft-Container-Id');
+            if (!$containerId) {
+                throw new BadRequestHttpException('Request missing the X-Craft-Container-Id header.');
+            }
             $view->setNamespace($namespace);
             call_user_func($behavior->prepareScreen, $response, $containerId);
             $view->setNamespace(null);
