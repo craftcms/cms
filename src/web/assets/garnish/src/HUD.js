@@ -217,6 +217,7 @@ export default Base.extend(
       Garnish.HUD.activeHUDs[this._namespace] = this;
 
       Garnish.uiLayerManager.addLayer(this.$hud);
+      Garnish.setFocusWithin(this.$hud);
 
       if (this.settings.hideOnEsc) {
         Garnish.uiLayerManager.registerShortcut(
@@ -580,6 +581,7 @@ export default Base.extend(
       delete Garnish.HUD.activeHUDs[this._namespace];
       Garnish.uiLayerManager.removeLayer();
 
+      // TODO update this to refocus trigger if focus is on the container also
       if (Garnish.focusIsInside(this.$hud)) {
         this.$trigger.trigger('focus');
       }
