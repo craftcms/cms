@@ -10,73 +10,60 @@ import {
   Craft.WebAuthnLogin = Garnish.Base.extend({
     $submitBtn: null,
     $errors: null,
-    webAuthnPlatformAuthenticatorSupported: true,
 
     init: function () {
       this.$submitBtn = $('#webauthn-login');
       this.$errors = $('#login-errors');
 
       if (!browserSupportsWebAuthn()) {
-        this.$submitBtn.disable();
+        this.$submitBtn.remove();
       } else {
         // "FIDO2 and WebAuthn support two types of authenticators, platform authenticators and roaming authenticators.
         // Platform Authenticators are authentication mechanisms built into devices. This could include things like Windows Hello, Apple's Touch ID or Face ID.
         // Roaming Authenticators are separate authentication hardware keys like Yubikeys or Google's Titan Keys."
         // @link: https://www.twilio.com/blog/detect-browser-support-webauthn
-        // Firefox supports Platform Authenticators on Windows but not on macOS.
+        // e.g. Firefox supports Platform Authenticators on Windows but not on macOS.
         platformAuthenticatorIsAvailable()
           .then((response) => {
             if (!response) {
-              this.webAuthnPlatformAuthenticatorSupported = false;
+              this.$submitBtn.remove();
             }
           })
           .catch((error) => {
             this.showError(error);
           })
           .finally(() => {
-            this.addListener(this.$submitBtn, 'click', 'login');
+            if (this.$submitBtn !== null) {
+              this.addListener(this.$submitBtn, 'click', 'login');
 
-            this.$submitBtn = new Garnish.MultiFunctionBtn(this.$submitBtn, {
-              changeButtonText: true,
-            });
+              this.$submitBtn = new Garnish.MultiFunctionBtn(this.$submitBtn, {
+                changeButtonText: true,
+              });
+            }
+            if ($('.alternative-login-methods').find('.btn').length == 0) {
+              $('.alternative-login-methods').remove();
+            }
           });
       }
-    },
-
-    supportCheck: function () {
-      let proceed = true;
-
-      if (!this.webAuthnPlatformAuthenticatorSupported) {
-        proceed = confirm(
-          Craft.t(
-            'app',
-            'In this browser, you can only use a security key with an external (roaming) authenticator like Yubikey or Titan Key.'
-          )
-        );
-      }
-
-      return proceed;
     },
 
     login: function (ev) {
       ev.preventDefault();
 
-      if (this.supportCheck()) {
-        this.$submitBtn.busyEvent();
-        this.clearErrors();
+      this.$submitBtn.busyEvent();
+      this.clearErrors();
 
-        this.startAuthentication(true, false, 'login')
-          .then((response) => {
-            this.$submitBtn.successEvent();
-            if (response.returnUrl != undefined) {
-              window.location.href = response.returnUrl;
-            }
-          })
-          .catch((response) => {
-            this.$submitBtn.failureEvent();
-            this.processFailure(response);
-          });
-      }
+      this.startAuthentication(true, false, 'login')
+        .then((response) => {
+          this.$submitBtn.successEvent();
+          if (response.returnUrl != undefined) {
+            window.location.href = response.returnUrl;
+          }
+        })
+        .catch((response) => {
+          this.$submitBtn.failureEvent();
+          this.processFailure(response);
+        });
     },
 
     startAuthentication: function (

@@ -11,7 +11,6 @@ import {startRegistration} from '@simplewebauthn/browser';
     {
       $addSecurityKeyBtn: null,
       $keysTable: null,
-      webAuthnPlatformAuthenticatorSupported: true,
 
       init: function (slideout, settings) {
         this.setSettings(settings, Craft.WebAuthnSetup.defaults);
@@ -24,26 +23,31 @@ import {startRegistration} from '@simplewebauthn/browser';
         );
 
         if (!browserSupportsWebAuthn()) {
-          Craft.cp.displayError(
+          Craft.cp.displayNotice(
             Craft.t('app', 'This browser does not support WebAuthn.')
           );
-          this.$addSecurityKeyBtn.disable();
+          this.$addSecurityKeyBtn.remove();
         } else {
           platformAuthenticatorIsAvailable()
             .then((response) => {
               if (!response) {
-                this.webAuthnPlatformAuthenticatorSupported = false;
+                Craft.cp.displayNotice(
+                  Craft.t('app', 'This browser does not support WebAuthn.')
+                );
+                this.$addSecurityKeyBtn.remove();
               }
             })
             .catch((error) => {
               this.showError(error);
             })
             .finally(() => {
-              this.addListener(
-                this.$addSecurityKeyBtn,
-                'click',
-                'onAddSecurityKeyBtn'
-              );
+              if (this.$addSecurityKeyBtn !== null) {
+                this.addListener(
+                  this.$addSecurityKeyBtn,
+                  'click',
+                  'onAddSecurityKeyBtn'
+                );
+              }
             });
         }
 
@@ -58,24 +62,11 @@ import {startRegistration} from '@simplewebauthn/browser';
 
       onAddSecurityKeyBtn: function (ev) {
         if (!$(ev.currentTarget).hasClass('disabled')) {
-          let proceed = true;
-
-          if (!this.webAuthnPlatformAuthenticatorSupported) {
-            proceed = confirm(
-              Craft.t(
-                'app',
-                'In this browser, you can only use a security key with an external (roaming) authenticator like Yubikey or Titan Key.'
-              )
-            );
-          }
-
-          if (proceed) {
-            this.showStatus(Craft.t('app', 'Waiting for elevated session'), '');
-            Craft.elevatedSessionManager.requireElevatedSession(
-              this.startRegistration.bind(this),
-              this.failedElevation.bind(this)
-            );
-          }
+          this.showStatus(Craft.t('app', 'Waiting for elevated session'), '');
+          Craft.elevatedSessionManager.requireElevatedSession(
+            this.startRegistration.bind(this),
+            this.failedElevation.bind(this)
+          );
         }
       },
 

@@ -1,6 +1,9 @@
 /** global: Craft */
 /** global: Garnish */
-import {browserSupportsWebAuthn} from '@simplewebauthn/browser';
+import {
+  browserSupportsWebAuthn,
+  platformAuthenticatorIsAvailable,
+} from '@simplewebauthn/browser';
 
 /**
  * Elevated Session Manager
@@ -18,7 +21,17 @@ Craft.ElevatedSessionManager = Garnish.Base.extend(
 
     $webAuthnElevateBtn: null,
     WebAuthnLogin: null,
+    showWebAuthnOption: false,
 
+    init: function () {
+      if (browserSupportsWebAuthn() && Craft.userHasSecurityKeys) {
+        platformAuthenticatorIsAvailable().then((response) => {
+          if (response) {
+            this.showWebAuthnOption = true;
+          }
+        });
+      }
+    },
     /**
      * @callback requireElevatedSessionCallback
      */
@@ -77,7 +90,7 @@ Craft.ElevatedSessionManager = Garnish.Base.extend(
         let $auth2faForm = $('<div id="auth-2fa-form"/>').insertAfter(
           $inputContainer
         );
-        if (browserSupportsWebAuthn() && Craft.userHasSecurityKeys) {
+        if (this.showWebAuthnOption) {
           this.$webAuthnElevateBtn = $(
             '<a href="#" role="button" class="btn">' +
               Craft.t('app', 'Use a security key') +

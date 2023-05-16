@@ -1,4 +1,7 @@
-import {browserSupportsWebAuthn} from '@simplewebauthn/browser';
+import {
+  browserSupportsWebAuthn,
+  platformAuthenticatorIsAvailable,
+} from '@simplewebauthn/browser';
 
 /** global: Craft */
 /** global: Garnish */
@@ -29,6 +32,7 @@ Craft.AuthManager = Garnish.Base.extend(
     auth2fa: null,
     $webAuthnLoginBtn: null,
     WebAuthnLogin: null,
+    showWebAuthnOption: false,
 
     /**
      * Init
@@ -36,6 +40,14 @@ Craft.AuthManager = Garnish.Base.extend(
     init: function () {
       if (Craft.username) {
         this.updateRemainingSessionTime(Craft.remainingSessionTime);
+      }
+
+      if (browserSupportsWebAuthn() && Craft.userHasSecurityKeys) {
+        platformAuthenticatorIsAvailable().then((response) => {
+          if (response) {
+            this.showWebAuthnOption = true;
+          }
+        });
       }
     },
 
@@ -320,7 +332,7 @@ Craft.AuthManager = Garnish.Base.extend(
         let $auth2faForm = $('<div id="auth-2fa-form"/>').insertAfter(
           $inputContainer
         );
-        if (browserSupportsWebAuthn() && Craft.userHasSecurityKeys) {
+        if (this.showWebAuthnOption) {
           this.$webAuthnLoginBtn = $(
             '<a href="#" role="button" class="btn">' +
               Craft.t('app', 'Sign in using a security key') +
