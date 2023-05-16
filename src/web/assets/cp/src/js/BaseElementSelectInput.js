@@ -286,6 +286,7 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
           }
         };
 
+        this.addListener($elements, 'dblclick', this._handleShowElementEditor);
         this.addListener($editBtns, 'click', this._handleShowElementEditor);
       }
 
