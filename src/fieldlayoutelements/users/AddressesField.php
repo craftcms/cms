@@ -66,6 +66,14 @@ class AddressesField extends BaseNativeField
     /**
      * @inheritdoc
      */
+    public function useFieldset(): bool
+    {
+        return true;
+    }
+
+    /**
+     * @inheritdoc
+     */
     protected function inputHtml(?ElementInterface $element = null, bool $static = false): ?string
     {
         if (!$element instanceof User) {
