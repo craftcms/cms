@@ -2,9 +2,6 @@
 {%- set options = options ?? [] %}
 {%- set values = values ?? [] -%}
 {%- set hasOptgroups = false -%}
-{% set selectizeOptions = {
-    dropdownParent: 'body',
-}|merge(selectizeOptions ?? []) %}
 
 {% set containerAttributes = {
   class: (class ?? [])|explodeClass,
@@ -57,43 +54,3 @@
         {% endif %}
     {% endtag %}
 {% endtag %}
-
-{% js %}
-(() => {
-    const $select = $("#{{ id|namespaceInputId|e('js') }}");
-
-    const positionDropdown = (selectizeItem) => {
-        // adjust dropdown position - if there's not enough space to display it below the field
-        // display it above the field
-        var bodyHeight = $('body').height();
-        var windowInnerHeight = window.innerHeight;
-        var offsetAdjustment = 0;
-        if (bodyHeight > windowInnerHeight) {
-            offsetAdjustment = bodyHeight - windowInnerHeight;
-        }
-
-        var $control = selectizeItem.$control;
-        var controlOffset = selectizeItem.settings.dropdownParent === 'body' ? $control.offset() : $control.position();
-        var controlHeight = $control.outerHeight();
-
-        var dropdownHeight = selectizeItem.$dropdown.outerHeight();
-
-        var exceededWindowHeight = (controlOffset.top - offsetAdjustment + controlHeight + dropdownHeight) > windowInnerHeight;
-        if (exceededWindowHeight) {
-            selectizeItem.$dropdown.css({
-                top: controlOffset.top - dropdownHeight - 4,
-            });
-        }
-    };
-
-    $select.selectize($.extend({
-        onChange: function() {
-            positionDropdown(this);
-        },
-        onDropdownOpen: function() {
-            positionDropdown(this);
-        }
-    }, {{ selectizeOptions|json_encode|raw }}));
-
-})()
-{% endjs %}

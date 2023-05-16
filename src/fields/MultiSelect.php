@@ -59,6 +59,22 @@ class MultiSelect extends BaseOptionsField
 
         $id = $this->getInputId();
 
+        $view = Craft::$app->getView();
+        $view->registerJsWithVars(fn($id) => <<<JS
+$('#' + $id).selectize({
+  plugins: ['remove_button'],
+  dropdownParent: 'body',
+  onDropdownOpen: function() {
+    Craft.selectizePosition(this);
+  },
+  onChange: function() {
+    Craft.selectizePosition(this);
+  },
+});
+JS, [
+            $view->namespaceInputId($id),
+        ]);
+
         return Cp::multiSelectHtml([
             'id' => $id,
             'describedBy' => $this->describedBy,
@@ -70,9 +86,6 @@ class MultiSelect extends BaseOptionsField
                 'style' => [
                     'display' => 'none', // Hide it before selectize does its thing
                 ],
-            ],
-            'selectizeOptions' => [
-                'plugins' => ['remove_button'],
             ],
         ]);
     }

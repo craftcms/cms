@@ -6805,12 +6805,18 @@ body .selectize-dropdown {
   margin-top: 1px;
 }
 
-body .selectize-dropdown-content {
-  @include menu-styles;
-  max-height: 70vh;
+body {
+  .selectize-dropdown-content {
+    @include menu-styles;
+    max-height: 70vh;
 
-  .option {
-    min-height: 18px;
+    .option {
+      min-height: 18px;
+    }
+  }
+
+  &.no-scroll .selectize-dropdown-content {
+    max-height: 200px; // default for selectize
   }
 }
 

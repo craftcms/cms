@@ -150,27 +150,7 @@
             $(this.$control_input).attr(attrs);
         },
         onDropdownOpen: function() {
-            // adjust dropdown position - if there's not enough space to display it below the field
-            // display it above the field
-            var bodyHeight = $('body').height();
-            var windowInnerHeight = window.innerHeight;
-            var offsetAdjustment = 0;
-            if (bodyHeight > windowInnerHeight) {
-                offsetAdjustment = bodyHeight - windowInnerHeight;
-            }
-
-            var $control = this.$control;
-            var controlOffset = this.settings.dropdownParent === 'body' ? $control.offset() : $control.position();
-            var controlHeight = $control.outerHeight();
-
-            var dropdownHeight = this.$dropdown.outerHeight();
-
-            var exceededWindowHeight = (controlOffset.top - offsetAdjustment + controlHeight + dropdownHeight) > windowInnerHeight;
-            if (exceededWindowHeight) {
-                this.$dropdown.css({
-                    top: controlOffset.top - dropdownHeight - 4,
-                });
-            }
+            Craft.selectizePosition(this);
         }
     }, {{ selectizeOptions|json_encode|raw }}));
 
