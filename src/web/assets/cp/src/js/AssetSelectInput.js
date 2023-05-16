@@ -1,11 +1,9 @@
 /** global: Craft */
 /** global: Garnish */
 /**
- * Asset Select input
+ * Asset select input
  */
 Craft.AssetSelectInput = Craft.BaseElementSelectInput.extend({
-  requestId: 0,
-  hud: null,
   $uploadBtn: null,
   uploader: null,
   progressBar: null,
@@ -89,7 +87,7 @@ Craft.AssetSelectInput = Craft.BaseElementSelectInput.extend({
   },
 
   /**
-   * Load the preview for an Asset element
+   * Load the preview for an asset
    * @private
    */
   _loadPreview: function ($element) {
@@ -271,7 +269,7 @@ Craft.AssetSelectInput = Craft.BaseElementSelectInput.extend({
    */
   _onUploadComplete: function (event, data) {
     if (data.result.error) {
-      alert(data.result.error);
+      Craft.cp.displayError(data.result.error);
       this.progressBar.hideProgressBar();
       this.$container.removeClass('uploading');
     } else {
@@ -297,7 +295,7 @@ Craft.AssetSelectInput = Craft.BaseElementSelectInput.extend({
           }
         })
         .catch(({response}) => {
-          alert(response.data.message);
+          Craft.cp.displayError(response.data.message);
         });
 
       Craft.cp.runQueue();
@@ -317,7 +315,7 @@ Craft.AssetSelectInput = Craft.BaseElementSelectInput.extend({
         : Craft.t('app', 'Upload failed.');
     }
 
-    alert(message);
+    Craft.cp.displayError(message);
     this.progressBar.hideProgressBar();
     this.$container.removeClass('uploading');
   },

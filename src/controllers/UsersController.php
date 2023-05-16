@@ -14,6 +14,7 @@ use craft\elements\Address;
 use craft\elements\Asset;
 use craft\elements\Entry;
 use craft\elements\User;
+use craft\errors\InvalidElementException;
 use craft\errors\UploadFailedException;
 use craft\errors\UserLockedException;
 use craft\events\DefineUserContentSummaryEvent;
@@ -43,6 +44,7 @@ use craft\web\UploadedFile;
 use craft\web\View;
 use DateTime;
 use Throwable;
+use yii\base\Exception;
 use yii\base\InvalidArgumentException;
 use yii\web\BadRequestHttpException;
 use yii\web\ForbiddenHttpException;
@@ -199,8 +201,8 @@ class UsersController extends Controller
         $user = $this->_findLoginUser($loginName);
 
         if (!$user || $user->password === null) {
-            // Delay again to match $user->authenticate()'s delay
-            Craft::$app->getSecurity()->validatePassword('p@ss1w0rd', '$2y$13$nj9aiBeb7RfEfYP3Cum6Revyu14QelGGxwcnFUKXIrQUitSodEPRi');
+            // Match $user->authenticate()'s delay
+            $this->_hashCheck();
             return $this->_handleLoginFailure(User::AUTH_INVALID_CREDENTIALS);
         }
 
@@ -513,17 +515,29 @@ class UsersController extends Controller
             }
         }
 
+        // keep track of how long email sending takes
+        $time = microtime(true);
+
         // Don't try to send the email if there are already error or there is no user
-        if (empty($errors) && !empty($user) && !Craft::$app->getUsers()->sendPasswordResetEmail($user)) {
+        try {
+            if (empty($errors) && !empty($user) && !Craft::$app->getUsers()->sendPasswordResetEmail($user)) {
+                throw new Exception();
+            }
+        } catch (Exception) {
             $errors[] = Craft::t('app', 'There was a problem sending the password reset email.');
         }
 
-        if (!empty($errors) && Craft::$app->getConfig()->getGeneral()->preventUserEnumeration) {
-            $list = implode("\n", array_map(function(string $error) {
-                return sprintf('- %s', $error);
-            }, $errors));
-            Craft::warning(sprintf("Password reset email not sent:\n%s", $list), __METHOD__);
-            $errors = [];
+        if (Craft::$app->getConfig()->getGeneral()->preventUserEnumeration) {
+            // Randomly delay the response
+            $this->_randomlyDelayResponse(microtime(true) - $time);
+
+            if (!empty($errors)) {
+                $list = implode("\n", array_map(function(string $error) {
+                    return sprintf('- %s', $error);
+                }, $errors));
+                Craft::warning(sprintf("Password reset email not sent:\n%s", $list), __METHOD__);
+                $errors = [];
+            }
         }
 
         if (empty($errors)) {
@@ -555,8 +569,15 @@ class UsersController extends Controller
             $this->_noUserExists();
         }
 
+        try {
+            $url = Craft::$app->getUsers()->getPasswordResetUrl($user);
+        } catch (InvalidElementException) {
+            $errors = $user->getFirstErrors();
+            throw new BadRequestHttpException(reset($errors));
+        }
+
         return $this->asJson([
-            'url' => Craft::$app->getUsers()->getPasswordResetUrl($user),
+            'url' => $url,
         ]);
     }
 
@@ -736,10 +757,11 @@ class UsersController extends Controller
      *
      * @return Response
      */
-    public function actionActivateUser(): Response
+    public function actionActivateUser(): ?Response
     {
         $this->requirePermission('administrateUsers');
         $this->requirePostRequest();
+        $userVariable = $this->request->getValidatedBodyParam('userVariable') ?? 'user';
 
         $userId = $this->request->getRequiredBodyParam('userId');
         $user = Craft::$app->getUsers()->getUserById($userId);
@@ -748,13 +770,23 @@ class UsersController extends Controller
             $this->_noUserExists();
         }
 
-        if (Craft::$app->getUsers()->activateUser($user)) {
-            $this->setSuccessFlash(Craft::t('app', 'Successfully activated the user.'));
-        } else {
-            $this->setFailFlash(Craft::t('app', 'There was a problem activating the user.'));
+        try {
+            if (!Craft::$app->getUsers()->activateUser($user)) {
+                throw new InvalidElementException($user);
+            }
+        } catch (InvalidElementException) {
+            return $this->asModelFailure(
+                $user,
+                Craft::t('app', 'There was a problem activating the user.'),
+                $userVariable,
+            );
         }
 
-        return $this->redirectToPostedUrl();
+        return $this->asModelSuccess(
+            $user,
+            Craft::t('app', 'Successfully activated the user.'),
+            $userVariable,
+        );
     }
 
     /**
@@ -770,7 +802,12 @@ class UsersController extends Controller
     public function actionEditUser(mixed $userId = null, ?User $user = null, ?array $errors = null): Response
     {
         if (!empty($errors)) {
-            $this->setFailFlash(implode(', ', reset($errors)));
+            $firstError = reset($errors);
+            if (is_array($firstError)) {
+                $this->setFailFlash(implode(', ', $firstError));
+            } else {
+                $this->setFailFlash($firstError);
+            }
         }
 
         // Determine which user account we're editing
@@ -980,7 +1017,9 @@ class UsersController extends Controller
             } elseif ($name) {
                 $title = Craft::t('app', '{user}’s Account', ['user' => $name]);
             } else {
-                $title = Craft::t('app', 'Edit User');
+                $title = Craft::t('app', 'Edit {type}', [
+                    'type' => User::displayName(),
+                ]);
             }
         } else {
             $title = Craft::t('app', 'Create a new user');
@@ -1075,6 +1114,7 @@ class UsersController extends Controller
                 'data' => [
                     'data' => [
                         'hint' => $locale->getLanguageID() !== $languageId ? $locale->getDisplayName() : false,
+                        'hintLang' => $locale->id,
                     ],
                 ],
             ], $appLocales);
@@ -1101,6 +1141,7 @@ class UsersController extends Controller
                 'data' => [
                     'data' => [
                         'hint' => $locale->getLanguageID() !== $languageId ? $locale->getDisplayName() : false,
+                        'hintLang' => $locale->id,
                     ],
                 ],
             ], $allLocales));
@@ -1144,6 +1185,7 @@ JS,
         return $this->renderTemplate('users/_edit.twig', compact(
             'user',
             'isNewUser',
+            'isCurrentUser',
             'statusLabel',
             'actions',
             'languageOptions',
@@ -1418,7 +1460,9 @@ JS,
 
             return $this->asModelFailure(
                 $user,
-                Craft::t('app', 'Couldn’t save user.'),
+                Craft::t('app', 'Couldn’t save {type}.', [
+                    'type' => User::lowerDisplayName(),
+                ]),
                 $userVariable
             );
         }
@@ -1672,7 +1716,20 @@ JS,
             $this->requirePermission('administrateUsers');
         }
 
-        $emailSent = Craft::$app->getUsers()->sendActivationEmail($user);
+        try {
+            $emailSent = Craft::$app->getUsers()->sendActivationEmail($user);
+        } catch (InvalidElementException) {
+            $emailSent = false;
+        }
+
+        $userVariable = $this->request->getValidatedBodyParam('userVariable') ?? 'user';
+        if ($user->hasErrors()) {
+            return $this->asModelFailure(
+                $user,
+                Craft::t('app', 'Couldn’t send activation email.'),
+                $userVariable,
+            );
+        }
 
         return $emailSent ?
             $this->asSuccess(Craft::t('app', 'Activation email sent.')) :
@@ -1757,9 +1814,15 @@ JS,
     {
         $this->requirePostRequest();
 
-        $userIds = $this->request->getRequiredBodyParam('userId');
+        $userId = $this->request->getRequiredBodyParam('userId');
 
-        if ($userIds !== (string)static::currentUser()->id) {
+        if (is_array($userId)) {
+            $userId = array_map(fn($id) => (int)$id, $userId);
+        } else {
+            $userId = (int)$userId;
+        }
+
+        if ($userId !== static::currentUser()?->id) {
             $this->requirePermission('deleteUsers');
         }
 
@@ -1768,7 +1831,7 @@ JS,
         foreach (Craft::$app->getSections()->getAllSections() as $section) {
             $entryCount = Entry::find()
                 ->sectionId($section->id)
-                ->authorId($userIds)
+                ->authorId($userId)
                 ->site('*')
                 ->unique()
                 ->status(null)
@@ -1784,6 +1847,7 @@ JS,
 
         // Fire a 'defineUserContentSummary' event
         $event = new DefineUserContentSummaryEvent([
+            'userId' => $userId,
             'contentSummary' => $summary,
         ]);
         $this->trigger(self::EVENT_DEFINE_CONTENT_SUMMARY, $event);
@@ -1873,11 +1937,15 @@ JS,
         $user->inheritorOnDelete = $transferContentTo;
 
         if (!Craft::$app->getElements()->deleteElement($user)) {
-            $this->setFailFlash(Craft::t('app', 'Couldn’t delete the user.'));
+            $this->setFailFlash(Craft::t('app', 'Couldn’t delete {type}.', [
+                'type' => User::lowerDisplayName(),
+            ]));
             return null;
         }
 
-        $this->setSuccessFlash(Craft::t('app', 'User deleted.'));
+        $this->setSuccessFlash(Craft::t('app', '{type} deleted.', [
+            'type' => User::displayName(),
+        ]));
         return $this->redirectToPostedUrl();
     }
 
@@ -2070,9 +2138,6 @@ JS,
      */
     private function _handleLoginFailure(?string $authError, ?User $user = null): ?Response
     {
-        // Delay randomly between 0 and 1.5 seconds.
-        usleep(random_int(0, 1500000));
-
         $message = UserHelper::getLoginFailureMessage($authError, $user);
 
         // Fire a 'loginFailure' event
@@ -2532,6 +2597,7 @@ JS,
      * @param string[] $errors
      * @param string|null $loginName
      * @return Response|null
+     * @throws \Exception
      */
     private function _handleSendPasswordResetError(array $errors, ?string $loginName = null): ?Response
     {
@@ -2566,6 +2632,20 @@ JS,
         return $view->renderTemplate('users/_photo.twig', [
             'user' => $user,
         ], $templateMode);
+    }
+
+    private function _hashCheck()
+    {
+        Craft::$app->getSecurity()->validatePassword('p@ss1w0rd', '$2y$13$nj9aiBeb7RfEfYP3Cum6Revyu14QelGGxwcnFUKXIrQUitSodEPRi');
+    }
+
+    private function _randomlyDelayResponse(float $maxOffset = 0)
+    {
+        // Delay randomly between 0.5 and 1.5 seconds.
+        $max = 1500000 - (int)($maxOffset * 1000000);
+        if ($max > 500000) {
+            usleep(random_int(500000, $max));
+        }
     }
 
     /**

@@ -39,7 +39,7 @@
                   <div
                     class="tw-border-t tw-border-solid tw-border-gray-200 tw-flex tw-justify-between tw-py-4"
                   >
-                    <div class="expiry-date">
+                    <div class="expiry-date flex flex-nowrap">
                       <template
                         v-if="
                           item.lineItem.purchasable.type === 'cms-edition' ||
@@ -263,9 +263,14 @@
         this.$set(this.loadingItems, itemKey, true);
         let item = this.cartItemsData[itemKey];
         item.expiryDate = this.selectedExpiryDates[itemKey];
-        this.$store.dispatch('cart/updateItem', {itemKey, item}).then(() => {
-          this.$delete(this.loadingItems, itemKey);
-        });
+        this.$store
+          .dispatch('cart/updateItem', {itemKey, item})
+          .catch(() => {
+            this.$root.displayError('Couldn’t update item in cart.');
+          })
+          .finally(() => {
+            this.$delete(this.loadingItems, itemKey);
+          });
       },
 
       payment() {

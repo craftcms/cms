@@ -1,4 +1,4 @@
-{% extends "_layouts/cp" %}
+{% extends '_layouts/cp.twig' %}
 
 {% if CraftEdition == CraftPro and currentUser.can('editUsers') %}
     {% set crumbs = [
@@ -6,7 +6,7 @@
     ] %}
 {% endif %}
 
-{% import "_includes/forms" as forms %}
+{% import '_includes/forms.twig' as forms %}
 
 {% do view.registerAssetBundle("craft\\web\\assets\\fileupload\\FileUploadAsset") %}
 {% do view.setIsDeltaRegistrationActive(true) %}
@@ -14,7 +14,7 @@
 {% set requireEmailVerification = craft.app.projectConfig.get('users.requireEmailVerification') ?? true %}
 {% set canAdministrateUsers = currentUser.can('administrateUsers') %}
 
-{% if craft.app.request.isPost %}
+{% if craft.app.request.getActionSegments() == ['users', 'save-user'] %}
     {% set currentGroupIds = craft.app.request.getBodyParam('groups') ?: [] %}
 {% else %}
     {% set currentGroupIds = user.getGroups()|column('id') %}
@@ -49,6 +49,7 @@
             </div>
         </div>
     {% endif %}
+
 {% endblock %}
 
 {% block content %}
@@ -58,7 +59,7 @@
         'accept-charset': 'UTF-8',
         data: {
             saveshortcut: true,
-            'saveshortcut-redirect':  (user.getIsCurrent() ? 'myaccount' : (CraftEdition == CraftPro and currentUser.can('editUsers') ? 'users/{id}' : 'dashboard'))|hash,
+            'saveshortcut-redirect':  (isCurrentUser ? 'myaccount' : (CraftEdition == CraftPro and currentUser.can('editUsers') ? 'users/{id}' : 'dashboard'))|hash,
             'saveshortcut-scroll': true,
             'confirm-unload': true,
             delta: true,
@@ -88,7 +89,7 @@
                     name: 'email',
                     value: user.email,
                     type: 'email',
-                    errors: user.getErrors('email')|merge(user.getErrors('unverifiedEmail')),
+                    errors: user.getErrors('email'),
                     inputAttributes: {
                         data: {lpignore: 'true'},
                     },
@@ -97,9 +98,10 @@
                 {{ forms.checkboxField({
                     label: 'Send an activation email now'|t('app'),
                     name: 'sendActivationEmail',
+                    checked: (user.hasErrors() and craft.app.request.getBodyParam('sendActivationEmail')),
                 }) }}
 
-            {% elseif user.getIsCurrent() or canAdministrateUsers %}
+            {% elseif isCurrentUser or canAdministrateUsers %}
                 <hr>
 
                 {{ forms.textField({
@@ -116,7 +118,7 @@
                     },
                 }) }}
 
-                {% if user.getIsCurrent() %}
+                {% if isCurrentUser %}
                     {{ forms.passwordField({
                         label: "New Password"|t('app'),
                         id: 'newPassword',
@@ -125,7 +127,7 @@
                         errors: user.getErrors('newPassword'),
                         inputAttributes: {
                             data: {
-                                lpignore: user.getIsCurrent() ? false : 'true',
+                                lpignore: isCurrentUser ? false : 'true',
                             }|filter,
                         },
                     }) }}
@@ -135,7 +137,7 @@
                     {% endjs %}
                 {% endif %}
 
-                {% if canAdministrateUsers and (user.pending or user.active) %}
+                {% if canAdministrateUsers and (user.pending or user.active) and not isCurrentUser %}
                     {{ forms.checkboxField({
                         label: "Require a password reset on next login"|t('app'),
                         name: 'passwordResetRequired',
@@ -158,7 +160,7 @@
                         {% do view.registerDeltaName('groups') %}
                         {% set assignableGroups = craft.app.userGroups.getAssignableGroups(user) %}
 
-                        {% embed '_includes/forms/field' with {
+                        {% embed '_includes/forms/field.twig' with {
                             fieldId: 'user-groups',
                         } %}
                             {% block input %}
@@ -210,7 +212,7 @@
             </div>
         {% endif %}
 
-        {% if user.getIsCurrent() %}
+        {% if isCurrentUser %}
             <div id="prefs" class="flex-fields hidden">
                 <h2>{{ 'General'|t('app') }}</h2>
 
@@ -347,7 +349,6 @@
                     <h5 class="heading">{{ "Status"|t('app') }}</h5>
                     <div class="value flex">
                         <div class="flex-grow"><span class="status {{ user.getStatus() }}"></span> {{ statusLabel }}</div>
-
                         {% if actions|length %}
                             <div>
                                 {{ forms.button({
@@ -370,18 +371,18 @@
                                         <ul>
                                             {% for actionItem in actionList %}
                                                 <li>
-                                                  {{ tag('a', {
-                                                      id: actionItem.id ?? false,
-                                                      class: [
-                                                          (actionItem.action ?? false) ? 'formsubmit',
-                                                          (actionItem.destructive ?? false) ? 'error',
-                                                      ]|filter,
-                                                      data: {
-                                                          action: actionItem.action ?? false,
-                                                          confirm: actionItem.confirm ?? false,
-                                                      },
-                                                      text: actionItem.label,
-                                                  }) }}
+                                                    {{ tag('a', {
+                                                        id: actionItem.id ?? false,
+                                                        class: [
+                                                            (actionItem.action ?? false) ? 'formsubmit',
+                                                            (actionItem.destructive ?? false) ? 'error',
+                                                        ]|filter,
+                                                        data: {
+                                                            action: actionItem.action ?? false,
+                                                            confirm: actionItem.confirm ?? false,
+                                                        },
+                                                        text: actionItem.label,
+                                                    }) }}
                                                 </li>
                                             {% endfor %}
                                         </ul>
@@ -431,7 +432,7 @@
 {% endblock %}
 
 {% js %}
-    {% if user.getIsCurrent() %}
+    {% if isCurrentUser %}
         var changeSidebarPicture = true;
     {% else %}
         var changeSidebarPicture = false;

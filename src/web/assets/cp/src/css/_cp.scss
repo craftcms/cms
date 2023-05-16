@@ -30,9 +30,12 @@ html {
 
 body {
   min-height: 100vh;
-}
 
-body {
+  &.dragging * {
+    cursor: move !important;
+    cursor: grabbing !important;
+  }
+
   :focus {
     outline-style: solid;
     outline-color: transparent;
@@ -263,10 +266,14 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
   padding-bottom: var(--xl);
   overflow: visible;
 
+  body.has-debug-toolbar & {
+    padding-bottom: calc(42px + var(--xl));
+  }
+
   li {
     &:not(.has-subnav) > a.sel {
       color: var(--gray-800);
-      background-color: var(--gray-100);
+      background-color: var(--gray-100) !important;
       opacity: 1;
 
       .icon {
@@ -330,6 +337,10 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
   flex-direction: column;
   align-items: center;
   padding: var(--m) var(--m) var(--xl);
+
+  body.has-debug-toolbar & {
+    padding-bottom: calc(var(--xl) + 42px);
+  }
 }
 
 #app-info {
@@ -429,15 +440,20 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
 #alerts {
   position: relative; // to keep it above #global-header's shadow
   background-color: var(--red-050);
-  border-left: 5px solid var(--error-color);
-  padding: 11px 0;
-  text-align: center;
+  border-left: 6px solid var(--error-color);
   color: var(--error-color);
 
-  li {
-    padding: 4px var(--xl);
+  & > li {
+    padding: 10px 24px;
+    box-shadow: inset 0 -1px 0 0 var(--red-100);
 
-    a {
+    a.btn,
+    a.go {
+      display: inline-flex;
+      align-items: center;
+    }
+
+    a:not(.btn) {
       color: var(--error-color);
       text-decoration: underline;
 
@@ -446,11 +462,13 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
         white-space: nowrap;
         border: 1px solid transparentize($errorColor, 0.5);
         border-radius: var(--medium-border-radius);
-        padding: 3px 5px;
+        padding: 4px 5px;
         margin: 0 2px;
 
         &:after {
           color: var(--error-color);
+          font-size: 15px;
+          margin-top: 1px;
         }
 
         &:hover {
@@ -725,6 +743,10 @@ li.breadcrumb-toggle-wrapper {
   @include left(8px);
   width: calc(100% - 16px);
   z-index: 101;
+
+  body.has-debug-toolbar & {
+    bottom: 50px;
+  }
 
   @media only screen and (min-width: $minHorizontalUiWidth) {
     width: 350px;
@@ -1401,15 +1423,19 @@ li.breadcrumb-toggle-wrapper {
           background-color: var(--gray-100);
         }
 
-        &.sel {
+        &.sel,
+        &.active-drop-target {
           cursor: default;
-          background-color: var(--gray-500);
-          @include light-on-dark-text;
+          background-color: var(--gray-500) !important;
 
           &,
           & + .toggle {
             color: var(--white);
           }
+        }
+
+        &.sel {
+          @include light-on-dark-text;
         }
       }
 
@@ -1523,7 +1549,8 @@ li.breadcrumb-toggle-wrapper {
 /* flexbox field layouts */
 #content :not(.meta) > .flex-fields,
 #content > .flex-fields,
-.so-content .flex-fields {
+.so-content .flex-fields,
+.draghelper .flex-fields {
   --row-gap: var(--xl);
   display: flex;
   flex-wrap: wrap;
@@ -1576,7 +1603,8 @@ li.breadcrumb-toggle-wrapper {
 }
 
 #content :not(.meta) > .flex-fields,
-#content > .flex-fields {
+#content > .flex-fields,
+.draghelper.drag-in-content .flex-fields {
   & > :not(h2):not(hr):not(.line-break) {
     &,
     &:last-child {
@@ -1604,7 +1632,8 @@ li.breadcrumb-toggle-wrapper {
   }
 }
 
-.so-content .flex-fields {
+.so-content .flex-fields,
+.draghelper.drag-in-slideout .flex-fields {
   & > :not(h2):not(hr):not(.line-break) {
     &,
     &:last-child {

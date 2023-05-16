@@ -314,21 +314,15 @@ class Category extends Element
             'uri' => Craft::t('app', 'URI'),
             [
                 'label' => Craft::t('app', 'Date Created'),
-                'orderBy' => 'elements.dateCreated',
-                'attribute' => 'dateCreated',
+                'orderBy' => 'dateCreated',
                 'defaultDir' => 'desc',
             ],
             [
                 'label' => Craft::t('app', 'Date Updated'),
-                'orderBy' => 'elements.dateUpdated',
-                'attribute' => 'dateUpdated',
+                'orderBy' => 'dateUpdated',
                 'defaultDir' => 'desc',
             ],
-            [
-                'label' => Craft::t('app', 'ID'),
-                'orderBy' => 'elements.id',
-                'attribute' => 'id',
-            ],
+            'id ' => Craft::t('app', 'ID'),
         ];
     }
 
@@ -338,6 +332,8 @@ class Category extends Element
     protected static function defineTableAttributes(): array
     {
         return [
+            'ancestors' => ['label' => Craft::t('app', 'Ancestors')],
+            'parent' => ['label' => Craft::t('app', 'Parent')],
             'slug' => ['label' => Craft::t('app', 'Slug')],
             'uri' => ['label' => Craft::t('app', 'URI')],
             'link' => ['label' => Craft::t('app', 'Link'), 'icon' => 'world'],
@@ -580,7 +576,7 @@ class Category extends Element
 
         // Ignore homepage/temp slugs
         if ($this->slug && !str_starts_with($this->slug, '__')) {
-            $path .= "-$this->slug";
+            $path .= sprintf('-%s', str_replace('/', '-', $this->slug));
         }
 
         return UrlHelper::cpUrl($path);
@@ -645,41 +641,43 @@ class Category extends Element
             $this->slugFieldHtml($static),
         ];
 
-        $fields[] = (function() use ($static) {
-            if ($parentId = $this->getParentId()) {
-                $parent = Craft::$app->getCategories()->getCategoryById($parentId, $this->siteId, [
-                    'drafts' => null,
-                    'draftOf' => false,
+        $group = $this->getGroup();
+
+        if ($group->maxLevels !== 1) {
+            $fields[] = (function() use ($static, $group) {
+                if ($parentId = $this->getParentId()) {
+                    $parent = Craft::$app->getCategories()->getCategoryById($parentId, $this->siteId, [
+                        'drafts' => null,
+                        'draftOf' => false,
+                    ]);
+                } else {
+                    // If the category already has structure data, use it. Otherwise, use its canonical category
+                    /** @var self|null $parent */
+                    $parent = self::find()
+                        ->siteId($this->siteId)
+                        ->ancestorOf($this->lft ? $this : ($this->getIsCanonical() ? $this->id : $this->getCanonical(true)))
+                        ->ancestorDist(1)
+                        ->drafts(null)
+                        ->draftOf(false)
+                        ->status(null)
+                        ->one();
+                }
+
+                return Cp::elementSelectFieldHtml([
+                    'label' => Craft::t('app', 'Parent'),
+                    'id' => 'parentId',
+                    'name' => 'parentId',
+                    'elementType' => self::class,
+                    'selectionLabel' => Craft::t('app', 'Choose'),
+                    'sources' => ["group:$group->uid"],
+                    'criteria' => $this->_parentOptionCriteria($group),
+                    'limit' => 1,
+                    'elements' => $parent ? [$parent] : [],
+                    'disabled' => $static,
+                    'describedBy' => 'parentId-label',
                 ]);
-            } else {
-                // If the category already has structure data, use it. Otherwise, use its canonical category
-                /** @var self|null $parent */
-                $parent = self::find()
-                    ->siteId($this->siteId)
-                    ->ancestorOf($this->lft ? $this : ($this->getIsCanonical() ? $this->id : $this->getCanonical(true)))
-                    ->ancestorDist(1)
-                    ->drafts(null)
-                    ->draftOf(false)
-                    ->status(null)
-                    ->one();
-            }
-
-            $group = $this->getGroup();
-
-            return Cp::elementSelectFieldHtml([
-                'label' => Craft::t('app', 'Parent'),
-                'id' => 'parentId',
-                'name' => 'parentId',
-                'elementType' => self::class,
-                'selectionLabel' => Craft::t('app', 'Choose'),
-                'sources' => ["group:$group->uid"],
-                'criteria' => $this->_parentOptionCriteria($group),
-                'limit' => 1,
-                'elements' => $parent ? [$parent] : [],
-                'disabled' => $static,
-                'describedBy' => 'parentId-label',
-            ]);
-        })();
+            })();
+        }
 
         $fields[] = parent::metaFieldsHtml($static);
 

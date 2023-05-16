@@ -548,6 +548,14 @@ class DbHelperTest extends TestCase
             ['\,', ','],
             ['\,\*', ',*'],
             ['\,\*', '\,\*'],
+            ['\>10', '>10'],
+            ['\not :empty:', 'not :empty:'],
+            ['\:notempty:', ':notempty:'],
+            ['\:empty:', ':empty:'],
+            ['\NOT :EMPTY:', 'NOT :EMPTY:'],
+            ['\:NOTEMPTY:', ':NOTEMPTY:'],
+            ['\:EMPTY:', ':EMPTY:'],
+            [':foo:', ':foo:'],
         ];
     }
 
@@ -754,7 +762,9 @@ class DbHelperTest extends TestCase
     {
         return [
             [1, Schema::TYPE_CHAR],
+            [5, sprintf('%s(5)', Schema::TYPE_CHAR)],
             [255, Schema::TYPE_STRING],
+            [50, sprintf('%s(50)', Schema::TYPE_STRING)],
             [false, Schema::TYPE_MONEY],
             [false, Schema::TYPE_BOOLEAN],
         ];

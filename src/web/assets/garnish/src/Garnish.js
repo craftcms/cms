@@ -79,7 +79,7 @@ Garnish = $.extend(Garnish, {
   X_AXIS: 'x',
   Y_AXIS: 'y',
 
-  FX_DURATION: 100,
+  FX_DURATION: 200,
 
   // Node types
   TEXT_NODE: 3,
@@ -504,6 +504,7 @@ Garnish = $.extend(Garnish, {
    * Handles keyboard activation of non-semantic buttons
    * @param {Object} event The keypress event
    * @param {Object} callback The callback to perform if SPACE or ENTER keys are pressed on the non-semantic button
+   * @deprecated The `activate` event should be used instead
    */
   handleActivatingKeypress: function (event, callback) {
     const key = event.keyCode;

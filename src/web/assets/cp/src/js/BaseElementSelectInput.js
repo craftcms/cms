@@ -5,13 +5,10 @@
  */
 Craft.BaseElementSelectInput = Garnish.Base.extend(
   {
-    thumbLoader: null,
     elementSelect: null,
     elementSort: null,
     modal: null,
     elementEditor: null,
-
-    fieldLabel: null,
 
     $container: null,
     $form: null,
@@ -21,6 +18,13 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
     $spinner: null,
 
     _initialized: false,
+
+    get thumbLoader() {
+      console.warn(
+        'Craft.BaseElementSelectInput::thumbLoader is deprecated. Craft.cp.elementThumbLoader should be used instead.'
+      );
+      return Craft.cp.elementThumbLoader;
+    },
 
     init: function (settings) {
       // Normalize the settings and set them
@@ -68,7 +72,6 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
 
       this.$container = this.getContainer();
       this.$form = this.$container.closest('form');
-      this.fieldLabel = this.getFieldLabel();
 
       // Store a reference to this class
       this.$container.data('elementSelect', this);
@@ -76,8 +79,6 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
       this.$elementsContainer = this.getElementsContainer();
       this.$addElementBtn = this.getAddElementsBtn();
       this.$spinner = this.getSpinner();
-
-      this.thumbLoader = new Craft.ElementThumbLoader();
 
       this.initElementSelect();
       this.initElementSort();
@@ -90,6 +91,17 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
       Garnish.requestAnimationFrame(() => {
         this._initialized = true;
       });
+
+      if (this.elementSelect) {
+        this.addListener(Garnish.$win, 'mousedown', (ev) => {
+          if (
+            !this.$container.is(ev.target) &&
+            !this.$container.find(ev.target).length
+          ) {
+            this.elementSelect.deselectAll();
+          }
+        });
+      }
     },
 
     get totalSelected() {
@@ -98,13 +110,6 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
 
     getContainer: function () {
       return $('#' + this.settings.id);
-    },
-
-    getFieldLabel: function () {
-      if (!this.$container) return;
-
-      const $fieldset = this.$container.closest('fieldset');
-      return $fieldset.find('legend').first().data('label');
     },
 
     getElementsContainer: function () {
@@ -255,7 +260,7 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
     },
 
     addElements: function ($elements) {
-      this.thumbLoader.load($elements);
+      Craft.cp.elementThumbLoader.load($elements);
       $editBtns = $elements.find('[data-edit-element]');
 
       if (this.settings.selectable) {
@@ -350,7 +355,7 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
           })
           .catch(({response}) => {
             if (response && response.data && response.data.message) {
-              alert(response.data.message);
+              Craft.cp.displayError(response.data.message);
             } else {
               Craft.cp.displayError();
             }
@@ -488,6 +493,8 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
           storageKey: this.modalStorageKey,
           sources: this.settings.sources,
           condition: this.settings.condition,
+          referenceElementId: this.settings.referenceElementId,
+          referenceElementSiteId: this.settings.referenceElementSiteId,
           criteria: this.settings.criteria,
           multiSelect: this.settings.limit != 1,
           hideOnSelect: !this.settings.maintainHierarchy,
@@ -496,9 +503,7 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
           onSelect: this.onModalSelect.bind(this),
           onHide: this.onModalHide.bind(this),
           triggerElement: this.$addElementBtn,
-          modalTitle: Craft.t('app', 'Select {element}', {
-            element: this.fieldLabel,
-          }),
+          modalTitle: Craft.t('app', 'Choose'),
         },
         this.settings.modalSettings
       );
@@ -547,6 +552,17 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
     },
 
     onModalHide: function () {
+      // If the modal has a condition and a reference element, recreate it each time it’s opened
+      // in case something about the edited element is going to affect the condition
+      if (
+        this.modal &&
+        this.settings.condition &&
+        this.settings.referenceElementId
+      ) {
+        this.modal.destroy();
+        this.modal = null;
+      }
+
       // If can add more elements, do default behavior of focus on "Add" button
       if (this.canAddMoreElements()) return;
 
@@ -775,6 +791,8 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
       elementType: null,
       sources: null,
       condition: null,
+      referenceElementId: null,
+      referenceElementSiteId: null,
       criteria: {},
       allowSelfRelations: false,
       sourceElementId: null,

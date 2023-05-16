@@ -7,6 +7,7 @@
 
 namespace craft\base;
 
+use ArrayIterator;
 use Craft;
 use craft\behaviors\CustomFieldBehavior;
 use craft\behaviors\DraftBehavior;
@@ -75,6 +76,7 @@ use craft\web\UploadedFile;
 use DateTime;
 use Illuminate\Support\Collection;
 use Throwable;
+use Traversable;
 use Twig\Markup;
 use UnitEnum;
 use yii\base\ErrorHandler;
@@ -544,6 +546,40 @@ abstract class Element extends Component implements ElementInterface
     public const EVENT_DEFINE_KEYWORDS = 'defineKeywords';
 
     /**
+     * @event DefineUrlEvent The event that is triggered before defining the element’s URL.
+     *
+     * It can be used to provide a custom URL, completely bypassing the default URL generation.
+     *
+     * ```php
+     * use craft\base\Element;
+     * use craft\elements\Entry;
+     * use craft\events\DefineUrlEvent;
+     * use craft\helpers\UrlHelper;
+     * use yii\base\Event;
+     *
+     * Event::on(
+     *     Entry::class,
+     *     Element::EVENT_BEFORE_DEFINE_URL,
+     *     function(DefineUrlEvent $e
+     * ) {
+     *     // @var Entry $entry
+     *     $entry = $e->sender;
+     *
+     *     $event->url = '...';
+     * });
+     * ```
+     *
+     * To prevent the element from getting a URL, ensure `$event->url` is set to `null`,
+     * and set `$event->handled` to `true`.
+     *
+     * Note that [[EVENT_DEFINE_URL]] will still be called regardless of what happens with this event.
+     *
+     * @since 4.4.6
+     * @see getUrl()
+     */
+    public const EVENT_BEFORE_DEFINE_URL = 'beforeDefineUrl';
+
+    /**
      * @event DefineUrlEvent The event that is triggered when defining the element’s URL.
      *
      * ```php
@@ -569,6 +605,9 @@ abstract class Element extends Component implements ElementInterface
      *     }
      * });
      * ```
+     *
+     * To prevent the element from getting a URL, ensure `$event->url` is set to `null`,
+     * and set `$event->handled` to `true`.
      *
      * @since 4.3.0
      * @see getUrl()
@@ -1143,11 +1182,28 @@ abstract class Element extends Component implements ElementInterface
      */
     protected static function prepElementQueryForTableAttribute(ElementQueryInterface $elementQuery, string $attribute): void
     {
-        /** @var ElementQuery $elementQuery */
-        // Is this a custom field?
-        if (preg_match('/^field:(.+)/', $attribute, $matches)) {
-            $fieldUid = $matches[1];
-            Craft::$app->getFields()->getFieldByUid($fieldUid)?->modifyElementIndexQuery($elementQuery);
+        switch ($attribute) {
+            case 'ancestors':
+                $elementQuery->andWith(['ancestors', ['status' => null]]);
+                break;
+            case 'parent':
+                $elementQuery->andWith(['parent', ['status' => null]]);
+                break;
+            case 'revisionNotes':
+                $elementQuery->andWith('currentRevision');
+                break;
+            case 'revisionCreator':
+                $elementQuery->andWith('currentRevision.revisionCreator');
+                break;
+            case 'drafts':
+                $elementQuery->andWith(['drafts', ['status' => null, 'orderBy' => ['dateUpdated' => SORT_DESC]]]);
+                break;
+            default:
+                // Is this a custom field?
+                if (preg_match('/^field:(.+)/', $attribute, $matches)) {
+                    $fieldUid = $matches[1];
+                    Craft::$app->getFields()->getFieldByUid($fieldUid)?->modifyElementIndexQuery($elementQuery);
+                }
         }
     }
 
@@ -1302,6 +1358,19 @@ abstract class Element extends Component implements ElementInterface
         // (Leave it up to the extended class to set the field context, if it shouldn't be 'global')
         $field = Craft::$app->getFields()->getFieldByHandle($handle);
         if ($field && $field instanceof EagerLoadingFieldInterface) {
+            // filter out elements, if field is not part of its layout
+            // https://github.com/craftcms/cms/issues/12539
+            $sourceElements = array_values(
+                array_filter($sourceElements, function($sourceElement) use ($handle) {
+                    $fieldLayout = $sourceElement->getFieldLayout();
+                    return !$fieldLayout || $fieldLayout->getFieldByHandle($handle) !== null;
+                })
+            );
+
+            if (empty($sourceElements)) {
+                return false;
+            }
+
             return $field->getEagerLoadingMap($sourceElements);
         }
 
@@ -1561,7 +1630,7 @@ abstract class Element extends Component implements ElementInterface
         return [
             'elementType' => static::class,
             'map' => $map,
-            'criteria' => ['revisions' => true],
+            'criteria' => ['revisions' => true, 'status' => null],
         ];
     }
 
@@ -1989,6 +2058,13 @@ abstract class Element extends Component implements ElementInterface
     private ?string $_uiLabel = null;
 
     /**
+     * @var string[]
+     * @see getUiLabelPath()
+     * @see setUiLabelPath()
+     */
+    private array $_uiLabelPath = [];
+
+    /**
      * @var bool|null
      * @see getIsFresh()
      * @see setIsFresh()
@@ -2082,7 +2158,7 @@ abstract class Element extends Component implements ElementInterface
         // If this is a field, make sure the value has been normalized before returning the CustomFieldBehavior value
         if ($this->fieldByHandle($name) !== null) {
             $value = $this->getFieldValue($name);
-            if (is_object($value) && (!class_exists(UnitEnum::class) || !$value instanceof UnitEnum)) {
+            if (is_object($value) && (!interface_exists(UnitEnum::class) || !$value instanceof UnitEnum)) {
                 $value = clone $value;
             }
             return $value;
@@ -2244,6 +2320,26 @@ abstract class Element extends Component implements ElementInterface
             'site',
             'totalDescendants',
         ];
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getIterator(): Traversable
+    {
+        $attributes = $this->getAttributes();
+
+        // Include custom fields
+        if (static::hasContent() && ($fieldLayout = $this->getFieldLayout()) !== null) {
+            foreach ($fieldLayout->getCustomFieldElements() as $layoutElement) {
+                $field = $layoutElement->getField();
+                if (!isset($attributes[$field->handle])) {
+                    $attributes[$field->handle] = $this->getFieldValue($field->handle);
+                }
+            }
+        }
+
+        return new ArrayIterator($attributes);
     }
 
     /**
@@ -2867,11 +2963,15 @@ abstract class Element extends Component implements ElementInterface
      */
     public function getUrl(): ?string
     {
-        if (isset($this->uri)) {
+        // Give plugins/modules a chance to provide a custom URL
+        $event = new DefineUrlEvent();
+        $this->trigger(self::EVENT_BEFORE_DEFINE_URL, $event);
+        $url = $event->url;
+
+        // If DefineAssetUrlEvent::$url is set to null, only respect that if $handled is true
+        if ($url === null && !$event->handled && isset($this->uri)) {
             $path = $this->getIsHomepage() ? '' : $this->uri;
             $url = UrlHelper::siteUrl($path, null, null, $this->siteId);
-        } else {
-            $url = null;
         }
 
         // Give plugins/modules a chance to customize it
@@ -2916,6 +3016,22 @@ abstract class Element extends Component implements ElementInterface
     public function setUiLabel(?string $label): void
     {
         $this->_uiLabel = $label;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getUiLabelPath(): array
+    {
+        return $this->_uiLabelPath;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function setUiLabelPath(array $path): void
+    {
+        $this->_uiLabelPath = $path;
     }
 
     /**
@@ -3243,7 +3359,7 @@ abstract class Element extends Component implements ElementInterface
             return $this->_enabledForSite[$siteId] ?? ($siteId == $this->siteId ? true : null);
         }
         if ($siteId == $this->siteId) {
-            return is_bool($this->_enabledForSite) ? $this->_enabledForSite : true;
+            return $this->_enabledForSite;
         }
         return null;
     }
@@ -3254,13 +3370,10 @@ abstract class Element extends Component implements ElementInterface
     public function setEnabledForSite(array|bool $enabledForSite): void
     {
         if (is_array($enabledForSite)) {
-            foreach ($enabledForSite as &$value) {
-                $value = (bool)$value;
-            }
+            $this->_enabledForSite = array_map(fn($value) => (bool)$value, $enabledForSite);
         } else {
-            $enabledForSite = (bool)$enabledForSite;
+            $this->_enabledForSite = $enabledForSite;
         }
-        $this->_enabledForSite = $enabledForSite;
     }
 
     /**
@@ -3850,7 +3963,7 @@ abstract class Element extends Component implements ElementInterface
      */
     public function setDirtyAttributes(array $names, bool $merge = true): void
     {
-        if ($merge) {
+        if ($merge && !empty($this->_dirtyAttributes)) {
             $this->_dirtyAttributes = array_merge($this->_dirtyAttributes, array_flip($names));
         } else {
             $this->_dirtyAttributes = array_flip($names);
@@ -3959,6 +4072,27 @@ abstract class Element extends Component implements ElementInterface
         // If the field value was previously eager-loaded, undo that
         unset($this->_eagerLoadedElements[$fieldHandle]);
         unset($this->_eagerLoadedElementCounts[$fieldHandle]);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function setFieldValueFromRequest(string $fieldHandle, mixed $value): void
+    {
+        $field = $this->fieldByHandle($fieldHandle);
+
+        if (!$field) {
+            throw new InvalidFieldException($fieldHandle);
+        }
+
+        // Normalize it now in case the system language changes later
+        // (we'll do this with the value directly rather than using setFieldValue() + normalizeFieldValue(),
+        // because it's slightly more efficient, and to workaround an infinite loop bug caused by Matrix
+        // needing to render an object template on the owner element during normalization, which would in turn
+        // cause the Matrix field value to be (re-)normalized based on the POST data, and on and on...)
+        $value = $field->normalizeValueFromRequest($value, $this);
+        $this->setFieldValue($field->handle, $value);
+        $this->_normalizedFieldValues[$field->handle] = true;
     }
 
     /**
@@ -4074,6 +4208,20 @@ abstract class Element extends Component implements ElementInterface
     }
 
     /**
+     * @inheritdoc
+     */
+    public function setDirtyFields(array $fieldHandles, bool $merge = true): void
+    {
+        if ($merge && !empty($this->_dirtyFields)) {
+            $this->_dirtyFields = array_merge($this->_dirtyFields, array_flip($fieldHandles));
+        } else {
+            $this->_dirtyFields = array_flip($fieldHandles);
+        }
+
+        $this->_allDirty = false;
+    }
+
+    /**
      * Returns whether all fields and attributes should be considered dirty.
      *
      * @return bool
@@ -4141,14 +4289,7 @@ abstract class Element extends Component implements ElementInterface
                     continue;
                 }
 
-                // Normalize it now in case the system language changes later
-                // (we'll do this with the value directly rather than using setFieldValue() + normalizeFieldValue(),
-                // because it's slightly more efficient and to workaround an infinite loop bug caused by Matrix
-                // needing to render an object template on the owner element during normalization, which would in turn
-                // cause the Matrix field value to be (re-)normalized based on the POST data, and on and on...)
-                $value = $field->normalizeValue($value, $this);
-                $this->setFieldValue($field->handle, $value);
-                $this->_normalizedFieldValues[$field->handle] = true;
+                $this->setFieldValueFromRequest($field->handle, $value);
             }
         } while ($processedAnyFields);
     }
@@ -4327,6 +4468,7 @@ abstract class Element extends Component implements ElementInterface
         if (!isset($this->_currentRevision)) {
             $canonical = $this->getCanonical(true);
             $this->_currentRevision = static::find()
+                ->siteId($canonical->siteId)
                 ->revisionOf($canonical->id)
                 ->dateCreated($canonical->dateUpdated)
                 ->status(null)
@@ -4423,6 +4565,21 @@ abstract class Element extends Component implements ElementInterface
     protected function tableAttributeHtml(string $attribute): string
     {
         switch ($attribute) {
+            case 'ancestors':
+                $ancestors = $this->getAncestors();
+                if (!$ancestors instanceof Collection || $ancestors->isEmpty()) {
+                    return '';
+                }
+                $html = Html::beginTag('ul', ['class' => 'path']);
+                foreach ($ancestors as $ancestor) {
+                    $html .= Html::tag('li', Cp::elementHtml($ancestor));
+                }
+                return $html . Html::endTag('ul');
+
+            case 'parent':
+                $parent = $this->getParent();
+                return $parent ? Cp::elementHtml($parent) : '';
+
             case 'link':
                 if (ElementHelper::isDraftOrRevision($this)) {
                     return '';
@@ -4488,6 +4645,45 @@ abstract class Element extends Component implements ElementInterface
 
                 return Html::encode($this->slug);
 
+            case 'revisionNotes':
+                $revision = $this->getCurrentRevision();
+                if (!$revision) {
+                    return '';
+                }
+                /** @var RevisionBehavior|null $behavior */
+                $behavior = $revision->getBehavior('revision');
+                if (!$behavior) {
+                    return '';
+                }
+                return Html::encode($behavior->revisionNotes);
+
+            case 'revisionCreator':
+                $revision = $this->getCurrentRevision();
+                if (!$revision) {
+                    return '';
+                }
+                /** @var RevisionBehavior|null $behavior */
+                $behavior = $revision->getBehavior('revision');
+                if (!$behavior) {
+                    return '';
+                }
+                $creator = $behavior->getCreator();
+                return $creator ? Cp::elementHtml($creator) : '';
+
+            case 'drafts':
+                if (!$this->hasEagerLoadedElements('drafts')) {
+                    return '';
+                }
+
+                $drafts = $this->getEagerLoadedElements('drafts')->all();
+
+                foreach ($drafts as $draft) {
+                    /** @var ElementInterface|DraftBehavior $draft */
+                    $draft->setUiLabel($draft->draftName);
+                }
+
+                return Cp::elementPreviewHtml($drafts, Cp::ELEMENT_SIZE_SMALL, true, false, true, false);
+
             default:
                 // Is this a custom field?
                 if (preg_match('/^field:(.+)/', $attribute, $matches)) {
@@ -4528,7 +4724,8 @@ abstract class Element extends Component implements ElementInterface
 
         $metaFieldsHtml = $this->metaFieldsHtml($static);
         if ($metaFieldsHtml !== '') {
-            $components[] = Html::tag('div', $metaFieldsHtml, ['class' => 'meta']);
+            $components[] = Html::tag('div', $metaFieldsHtml, ['class' => 'meta']) .
+                Html::tag('h2', Craft::t('app', 'Metadata'), ['class' => 'visually-hidden']);
         }
 
         if (!$static && static::hasStatuses()) {
@@ -4673,13 +4870,14 @@ JS,
      */
     protected function notesFieldHtml(): string
     {
+        // todo: this should accept a $static arg
         /** @var static|DraftBehavior $this */
         return Cp::textareaFieldHtml([
             'label' => Craft::t('app', 'Notes about your changes'),
             'labelClass' => 'h6',
             'class' => ['nicetext', 'notes'],
             'name' => 'notes',
-            'value' => $this->getIsCanonical() || $this->isProvisionalDraft ? $this->revisionNotes : $this->draftNotes,
+            'value' => $this->getIsDraft() ? $this->draftNotes : $this->revisionNotes,
             'rows' => 1,
             'inputAttributes' => [
                 'aria' => [

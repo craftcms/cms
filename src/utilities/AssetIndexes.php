@@ -12,6 +12,7 @@ use craft\base\Utility;
 use craft\events\ListVolumesEvent;
 use craft\helpers\Html;
 use craft\i18n\Locale;
+use craft\models\Volume;
 use craft\web\assets\assetindexes\AssetIndexesAsset;
 use yii\base\Event;
 
@@ -54,19 +55,29 @@ class AssetIndexes extends Utility
     }
 
     /**
-     * @inheritdoc
+     * Returns all of the available volumes for indexing.
+     *
+     * @return Volume[]
+     * @since 4.4.6
      */
-    public static function contentHtml(): string
+    public static function volumes(): array
     {
         // Fire a 'listVolumes' event
         $event = new ListVolumesEvent([
             'volumes' => Craft::$app->getVolumes()->getAllVolumes(),
         ]);
-        Event::trigger(self::class, self::EVENT_LIST_VOLUMES, $event,);
+        Event::trigger(self::class, self::EVENT_LIST_VOLUMES, $event);
+        return $event->volumes;
+    }
 
+    /**
+     * @inheritdoc
+     */
+    public static function contentHtml(): string
+    {
         $volumeOptions = [];
 
-        foreach ($event->volumes as $volume) {
+        foreach (static::volumes() as $volume) {
             $volumeOptions[] = [
                 'label' => Html::encode($volume->name),
                 'value' => $volume->id,

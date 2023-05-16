@@ -121,10 +121,9 @@
         });
 
         if (this.$addBlockMenuBtn.length) {
-          new Garnish.MenuBtn(this.$addBlockMenuBtn, {
-            onOptionSelect: (option) => {
-              this.addBlock($(option).data('type'));
-            },
+          this.$addBlockMenuBtn.menubtn();
+          this.$addBlockMenuBtn.data('menubtn').on('optionSelect', (ev) => {
+            this.addBlock($(ev.option).data('type'));
           });
         }
 
@@ -813,6 +812,7 @@
         () => {
           this.$previewContainer.html('');
           this.$container.height('auto');
+          this.$container.trigger('scroll');
         }
       );
 

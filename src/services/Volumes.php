@@ -49,17 +49,17 @@ use yii\base\InvalidConfigException;
 class Volumes extends Component
 {
     /**
-     * @event VolumeEvent The event that is triggered before an Asset volume is saved.
+     * @event VolumeEvent The event that is triggered before a volume is saved.
      */
     public const EVENT_BEFORE_SAVE_VOLUME = 'beforeSaveVolume';
 
     /**
-     * @event VolumeEvent The event that is triggered after an Asset volume is saved.
+     * @event VolumeEvent The event that is triggered after a volume is saved.
      */
     public const EVENT_AFTER_SAVE_VOLUME = 'afterSaveVolume';
 
     /**
-     * @event VolumeEvent The event that is triggered before an Asset volume is deleted.
+     * @event VolumeEvent The event that is triggered before a volume is deleted.
      */
     public const EVENT_BEFORE_DELETE_VOLUME = 'beforeDeleteVolume';
 
@@ -70,7 +70,7 @@ class Volumes extends Component
     public const EVENT_BEFORE_APPLY_VOLUME_DELETE = 'beforeApplyVolumeDelete';
 
     /**
-     * @event VolumeEvent The event that is triggered after a Asset volume is deleted.
+     * @event VolumeEvent The event that is triggered after a volume is deleted.
      */
     public const EVENT_AFTER_DELETE_VOLUME = 'afterDeleteVolume';
 
@@ -586,14 +586,11 @@ class Volumes extends Component
      */
     private function _createVolumeQuery(): Query
     {
-        return (new Query())
+        $query = (new Query())
             ->select([
                 'id',
                 'name',
                 'handle',
-                'fs',
-                'transformFs',
-                'transformSubpath',
                 'titleTranslationMethod',
                 'titleTranslationKeyFormat',
                 'sortOrder',
@@ -603,6 +600,18 @@ class Volumes extends Component
             ->from([Table::VOLUMES])
             ->where(['dateDeleted' => null])
             ->orderBy(['sortOrder' => SORT_ASC]);
+
+        // todo: cleanup after next breakpoint
+        $db = Craft::$app->getDb();
+        if ($db->columnExists(Table::VOLUMES, 'fs')) {
+            $query->addSelect([
+                'fs',
+                'transformFs',
+                'transformSubpath',
+            ]);
+        }
+
+        return $query;
     }
 
     /**

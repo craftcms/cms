@@ -5,19 +5,33 @@
   --white: #fff;
   --black: #000;
 
-  --gray-050: hsl(212, 60%, 97%);
-  --gray-100: hsl(212, 50%, 93%);
-  --gray-200: hsl(212, 30%, 85%);
-  --gray-300: hsl(211, 13%, 65%);
-  --gray-350: hsl(211, 11%, 59%);
-  --gray-400: hsl(210, 10%, 53%);
-  --gray-500: hsl(211, 12%, 43%);
-  --gray-550: hsl(210, 13%, 40%);
-  --gray-600: hsl(209, 14%, 37%);
-  --gray-700: hsl(209, 18%, 30%);
-  --gray-800: hsl(209, 20%, 25%);
-  --gray-900: hsl(210, 24%, 16%);
-  --gray-1000: hsl(210, 24%, 10%);
+  --gray-050-hsl: 212, 60%, 97%;
+  --gray-100-hsl: 212, 50%, 93%;
+  --gray-200-hsl: 212, 30%, 85%;
+  --gray-300-hsl: 211, 13%, 65%;
+  --gray-350-hsl: 211, 11%, 59%;
+  --gray-400-hsl: 210, 10%, 53%;
+  --gray-500-hsl: 211, 12%, 43%;
+  --gray-550-hsl: 210, 13%, 40%;
+  --gray-600-hsl: 209, 14%, 37%;
+  --gray-700-hsl: 209, 18%, 30%;
+  --gray-800-hsl: 209, 20%, 25%;
+  --gray-900-hsl: 210, 24%, 16%;
+  --gray-1000-hsl: 210, 24%, 10%;
+
+  --gray-050: hsl(var(--gray-050-hsl));
+  --gray-100: hsl(var(--gray-100-hsl));
+  --gray-200: hsl(var(--gray-200-hsl));
+  --gray-300: hsl(var(--gray-300-hsl));
+  --gray-350: hsl(var(--gray-350-hsl));
+  --gray-400: hsl(var(--gray-400-hsl));
+  --gray-500: hsl(var(--gray-500-hsl));
+  --gray-550: hsl(var(--gray-550-hsl));
+  --gray-600: hsl(var(--gray-600-hsl));
+  --gray-700: hsl(var(--gray-700-hsl));
+  --gray-800: hsl(var(--gray-800-hsl));
+  --gray-900: hsl(var(--gray-900-hsl));
+  --gray-1000: hsl(var(--gray-1000-hsl));
 
   --blue-050: #e3f8ff;
   --blue-100: #b3ecff;

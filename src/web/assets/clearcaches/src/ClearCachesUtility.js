@@ -81,7 +81,7 @@
                 }, 300);
               })
               .catch(({response}) => {
-                alert(response.data.message);
+                Craft.cp.displayError(response.data.message);
               });
           },
         }

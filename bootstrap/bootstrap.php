@@ -24,10 +24,6 @@ if (!isset($appType) || ($appType !== 'web' && $appType !== 'console')) {
     throw new Exception('$appType must be set to "web" or "console".');
 }
 
-$findConfig = function($cliName, $envName) {
-    return App::cliOption($cliName, true) ?? App::env($envName);
-};
-
 $createFolder = function($path) {
     // Code borrowed from Io...
     if (!is_dir($path)) {
@@ -45,8 +41,8 @@ $createFolder = function($path) {
     }
 };
 
-$findConfigPath = function($cliName, $envName) use ($findConfig, $createFolder) {
-    $path = $findConfig($cliName, $envName);
+$findConfigPath = function($cliName, $envName) use ($createFolder) {
+    $path = App::cliOption($cliName, true) ?? App::env($envName);
     if (!$path) {
         return null;
     }
@@ -90,7 +86,11 @@ $translationsPath = $findConfigPath('--translationsPath', 'CRAFT_TRANSLATIONS_PA
 $testsPath = $findConfigPath('--testsPath', 'CRAFT_TESTS_PATH') ?? "$rootPath/tests";
 
 // Set the environment
-$environment = $findConfig('--env', 'CRAFT_ENVIRONMENT') ?? $_SERVER['SERVER_NAME'] ?? null;
+$environment = App::cliOption('--env', true)
+    ?? App::env('CRAFT_ENVIRONMENT')
+    ?? App::env('ENVIRONMENT')
+    ?? $_SERVER['SERVER_NAME']
+    ?? null;
 
 // Validate the paths
 // -----------------------------------------------------------------------------
@@ -145,7 +145,7 @@ if (!App::isStreamLog()) {
 }
 
 // Log errors to storage/logs/phperrors.log or php://stderr
-if (!App::parseBooleanEnv('$CRAFT_LOG_PHP_ERRORS')) {
+if (App::parseBooleanEnv('$CRAFT_LOG_PHP_ERRORS') !== false) {
     ini_set('log_errors', '1');
 
     if (App::isStreamLog()) {
@@ -155,7 +155,8 @@ if (!App::parseBooleanEnv('$CRAFT_LOG_PHP_ERRORS')) {
     }
 }
 
-error_reporting(E_ALL & ~E_DEPRECATED & ~E_USER_DEPRECATED);
+$errorLevel = E_ALL & ~E_DEPRECATED & ~E_USER_DEPRECATED;
+error_reporting($errorLevel);
 
 // Load the general config
 // -----------------------------------------------------------------------------
@@ -179,6 +180,9 @@ if ($devMode) {
     ini_set('display_errors', '0');
     defined('YII_DEBUG') || define('YII_DEBUG', false);
     defined('YII_ENV') || define('YII_ENV', 'prod');
+
+    // don't let PHP warnings & notices halt execution
+    error_reporting($errorLevel & ~E_WARNING & ~E_NOTICE);
 }
 
 // Load the Composer dependencies and the app

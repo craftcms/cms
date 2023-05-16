@@ -127,8 +127,8 @@ class ImageTransformsController extends Controller
         $transform->id = $this->request->getBodyParam('transformId');
         $transform->name = $this->request->getBodyParam('name');
         $transform->handle = $this->request->getBodyParam('handle');
-        $transform->width = $this->request->getBodyParam('width') ?: null;
-        $transform->height = $this->request->getBodyParam('height') ?: null;
+        $transform->width = (int)$this->request->getBodyParam('width') ?: null;
+        $transform->height = (int)$this->request->getBodyParam('height') ?: null;
         $transform->mode = $this->request->getBodyParam('mode');
         $transform->position = $this->request->getBodyParam('position');
         $transform->quality = $this->request->getBodyParam('quality') ?: null;

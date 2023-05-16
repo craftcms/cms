@@ -51,6 +51,8 @@
     elementType: elementType,
     sources: sources,
     condition: condition ? condition.getConfig() : null,
+    referenceElementId: referenceElement.id ?? null,
+    referenceElementSiteId: referenceElement.siteId ?? null,
     criteria: criteria,
     sourceElementId: sourceElementId,
     viewMode: viewMode,
@@ -68,8 +70,10 @@
         indexSettings: {
             showFolders: showFolders ?? true,
         },
+        modalTitle: selectionLabel,
     },
     describedBy: (describedBy ?? false) ? describedBy|split(' ')|map(id => id|namespaceInputId)|join(' ') : null,
+    allowSelfRelations: allowSelfRelations ?? false,
 } %}
 
 {% js %}

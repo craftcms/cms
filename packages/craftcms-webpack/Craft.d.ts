@@ -20,7 +20,9 @@ declare var Craft: {
   sendActionRequest(method: string, action: string, options?: object): Promise;
   initUiElements($container: JQuery): void;
   expandPostArray(arr: object): any;
+  escapeHtml(str: string);
   Preview: any;
+  cp: any;
 };
 
 declare var Garnish: any;

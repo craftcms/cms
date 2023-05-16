@@ -140,6 +140,13 @@ class Asset extends Element
     public const EVENT_AFTER_GENERATE_TRANSFORM = 'afterGenerateTransform';
 
     /**
+     * @event DefineAssetUrlEvent The event that is triggered before defining the asset’s URL.
+     * @see getUrl()
+     * @since 4.4.7
+     */
+    public const EVENT_BEFORE_DEFINE_URL = 'beforeDefineUrl';
+
+    /**
      * @event DefineAssetUrlEvent The event that is triggered when defining the asset’s URL.
      * @see getUrl()
      * @since 4.0.0
@@ -358,21 +365,20 @@ class Asset extends Element
      */
     protected static function defineSources(string $context): array
     {
-        $volumes = Craft::$app->getVolumes();
-
-        if ($context === ElementSources::CONTEXT_INDEX) {
-            $volumeIds = $volumes->getViewableVolumeIds();
-        } else {
-            $volumeIds = $volumes->getAllVolumeIds();
-        }
-
-        $tree = Craft::$app->getAssets()->getFolderTreeByVolumeIds($volumeIds, [
-            'parentId' => ':empty:',
-        ]);
         $sources = [];
 
-        foreach ($tree as $folder) {
-            $sources[] = self::_assembleSourceInfoForFolder($folder, Craft::$app->getUser()->getIdentity());
+        if ($context === ElementSources::CONTEXT_INDEX) {
+            $volumeIds = Craft::$app->getVolumes()->getViewableVolumeIds();
+        } else {
+            $volumeIds = Craft::$app->getVolumes()->getAllVolumeIds();
+        }
+
+        $assetsService = Craft::$app->getAssets();
+        $user = Craft::$app->getUser()->getIdentity();
+
+        foreach ($volumeIds as $volumeId) {
+            $folder = $assetsService->getRootFolderByVolumeId($volumeId);
+            $sources[] = self::_assembleSourceInfoForFolder($folder, $user);
         }
 
         // Add the Temporary Uploads location, if that's not set to a real volume
@@ -521,21 +527,17 @@ class Asset extends Element
             ],
             [
                 'label' => Craft::t('app', 'Date Uploaded'),
-                'orderBy' => 'elements.dateCreated',
-                'attribute' => 'dateCreated',
+                'orderBy' => 'dateCreated',
                 'defaultDir' => 'desc',
             ],
             [
                 'label' => Craft::t('app', 'Date Updated'),
-                'orderBy' => 'elements.dateUpdated',
-                'attribute' => 'dateUpdated',
+                'orderBy' => 'dateUpdated',
                 'defaultDir' => 'desc',
             ],
-            [
-                'label' => Craft::t('app', 'ID'),
-                'orderBy' => 'elements.id',
-                'attribute' => 'id',
-            ],
+            'id' => Craft::t('app', 'ID'),
+            'width' => Craft::t('app', 'Width'),
+            'height' => Craft::t('app', 'Height'),
         ];
     }
 
@@ -669,12 +671,16 @@ class Asset extends Element
                     }
 
                     $path = rtrim($folder->path, '/');
+                    $path = StringHelper::removeRight($path, $folder->name);
+                    $path = StringHelper::removeLeft($path, $queryFolder->path ?? '');
+
                     $assets[] = new self([
                         'isFolder' => true,
                         'volumeId' => $queryFolder->volumeId,
                         'folderId' => $folder->id,
                         'folderPath' => $path,
-                        'title' => StringHelper::removeLeft($path, $queryFolder->path ?? ''),
+                        'title' => $folder->name,
+                        'uiLabelPath' => ArrayHelper::filterEmptyStringsFromArray(explode('/', $path)),
                         'sourcePath' => $sourcePath,
                     ]);
                 }
@@ -689,11 +695,17 @@ class Asset extends Element
             }
         }
 
-        if (!self::isFolderIndex()) {
-            $assets = array_merge($assets, $elementQuery->all());
+        // if it's a 'foldersOnly' request, or we have enough folders to hit the query limit,
+        // return the folders directly
+        if (
+            self::isFolderIndex() ||
+            count($assets) === (int)$elementQuery->limit
+        ) {
+            return $assets;
         }
 
-        return $assets;
+        // otherwise merge in the resulting assets
+        return array_merge($assets, $elementQuery->all());
     }
 
     /**
@@ -975,7 +987,7 @@ class Asset extends Element
     public ?string $newFilename = null;
 
     /**
-     * @var int|null New folder id
+     * @var int|null New folder ID
      */
     public ?int $newFolderId = null;
 
@@ -985,7 +997,7 @@ class Asset extends Element
     public ?string $tempFilePath = null;
 
     /**
-     * @var bool Whether Asset should avoid filename conflicts when saved.
+     * @var bool Whether the asset should avoid filename conflicts when saved.
      */
     public bool $avoidFilenameConflicts = false;
 
@@ -1528,7 +1540,7 @@ JS;
                 'width' => $this->getWidth(),
                 'height' => $this->getHeight(),
                 'srcset' => $sizes ? $this->getSrcset($sizes) : false,
-                'alt' => $this->alt ?? $this->title,
+                'alt' => $this->getThumbAlt(),
             ]);
         } else {
             $img = null;
@@ -1822,7 +1834,18 @@ JS;
             return null;
         }
 
-        $url = $this->_url($transform, $immediately);
+        // Give plugins/modules a chance to provide a custom URL
+        $event = new DefineAssetUrlEvent([
+            'transform' => $transform,
+            'asset' => $this,
+        ]);
+        $this->trigger(self::EVENT_BEFORE_DEFINE_URL, $event);
+        $url = $event->url;
+
+        // If DefineAssetUrlEvent::$url is set to null, only respect that if $handled is true
+        if ($url === null && !$event->handled) {
+            $url = $this->_url($transform, $immediately);
+        }
 
         // Give plugins/modules a chance to customize it
         if ($this->hasEventHandlers(self::EVENT_DEFINE_URL)) {
@@ -1917,12 +1940,12 @@ JS;
             return $url;
         }
 
-        $fs = $volume->getFs();
-        if (!$fs->hasUrls) {
-            return null;
-        }
+        // todo: uncomment for v5. Currently Imager X is relying on a relative URL being returned
+        //if (!$volume->getFs()->hasUrls) {
+        //    return null;
+        //}
 
-        return Html::encodeSpaces(Assets::generateUrl($fs, $this));
+        return Html::encodeSpaces(Assets::generateUrl($volume, $this));
     }
 
     /**
@@ -1950,6 +1973,11 @@ JS;
     {
         if ($this->isFolder) {
             return null;
+        }
+
+        $extension = $this->getExtension();
+        if (!Image::canManipulateAsImage($extension)) {
+            return $extension;
         }
 
         return $this->alt;
@@ -1993,7 +2021,7 @@ JS;
         return Html::tag('img', '', [
             'sizes' => "{$thumbSizes[0][0]}px",
             'srcset' => implode(', ', $srcsets),
-            'alt' => $this->alt ?? $this->title,
+            'alt' => $this->getThumbAlt(),
         ]);
     }
 
@@ -2205,7 +2233,7 @@ JS;
      */
     public function getImageTransformSourcePath(): string
     {
-        $fs = $this->getFs();
+        $fs = $this->getVolume()->getFs();
 
         if ($fs instanceof LocalFsInterface) {
             return FileHelper::normalizePath($fs->getRootPath() . DIRECTORY_SEPARATOR . $this->getPath());
@@ -2223,9 +2251,9 @@ JS;
      */
     public function getCopyOfFile(): string
     {
-        $tempFilename = uniqid(pathinfo($this->_filename, PATHINFO_FILENAME), true) . '.' . $this->getExtension();
+        $tempFilename = FileHelper::uniqueName($this->_filename);
         $tempPath = Craft::$app->getPath()->getTempPath() . DIRECTORY_SEPARATOR . $tempFilename;
-        Assets::downloadFile($this->getFs(), $this->getPath(), $tempPath);
+        Assets::downloadFile($this->getVolume(), $this->getPath(), $tempPath);
 
         return $tempPath;
     }
@@ -2239,7 +2267,7 @@ JS;
      */
     public function getStream()
     {
-        return $this->getFs()->getFileStream($this->getPath());
+        return $this->getVolume()->getFileStream($this->getPath());
     }
 
     /**
@@ -2848,7 +2876,7 @@ JS;
     public function afterDelete(): void
     {
         if (!$this->keepFileOnDelete) {
-            $this->getFs()->deleteFile($this->getPath());
+            $this->getVolume()->deleteFile($this->getPath());
         }
 
         Craft::$app->getImageTransforms()->deleteAllTransformData($this);
@@ -2874,6 +2902,7 @@ JS;
                 'data' => [
                     'is-folder' => true,
                     'folder-id' => $this->folderId,
+                    'folder-name' => $this->title,
                     'source-path' => Json::encode($this->sourcePath),
                     'has-children' => Craft::$app->getAssets()->foldersExist(['parentId' => $this->folderId]),
                 ],
@@ -2883,8 +2912,8 @@ JS;
             $userSession = Craft::$app->getUser();
 
             if (
-                $userSession->checkPermission("editPeerFilesInVolume:$volume->uid") &&
-                $userSession->checkPermission("deletePeerFilesInVolume:$volume->uid")
+                $userSession->checkPermission("savePeerAssets:$volume->uid") &&
+                $userSession->checkPermission("deletePeerAssets:$volume->uid")
             ) {
                 $attributes['data']['movable'] = true;
             }
@@ -2957,6 +2986,7 @@ JS;
      * @return FsInterface
      * @throws InvalidConfigException
      * @since 4.0.0
+     * @deprecated in 4.4.0
      */
     public function getFs(): FsInterface
     {
@@ -3037,7 +3067,7 @@ JS;
 
         // Is this just a simple move/rename within the same volume?
         if (!isset($this->tempFilePath) && $oldFolder !== null && $oldFolder->volumeId == $newFolder->volumeId) {
-            $oldVolume->getFs()->renameFile($oldPath, $newPath);
+            $oldVolume->renameFile($oldPath, $newPath);
         } else {
             // Get the temp path
             if (isset($this->tempFilePath)) {
@@ -3050,7 +3080,7 @@ JS;
             } else {
                 $tempFilename = uniqid(pathinfo($filename, PATHINFO_FILENAME), true) . '.' . pathinfo($filename, PATHINFO_EXTENSION);
                 $tempPath = Craft::$app->getPath()->getTempPath() . DIRECTORY_SEPARATOR . $tempFilename;
-                Assets::downloadFile($oldVolume->getFs(), $oldPath, $tempPath);
+                Assets::downloadFile($oldVolume, $oldPath, $tempPath);
             }
 
             // Try to open a file stream
@@ -3063,12 +3093,12 @@ JS;
 
             if ($this->folderId) {
                 // Delete the old file
-                $oldVolume->getFs()->deleteFile($oldPath);
+                $oldVolume->deleteFile($oldPath);
             }
 
             // Upload the file to the new location
             try {
-                $newVolume->getFs()->writeFileFromStream($newPath, $stream, [
+                $newVolume->writeFileFromStream($newPath, $stream, [
                     Fs::CONFIG_MIMETYPE => FileHelper::getMimeType($tempPath),
                 ]);
             } catch (VolumeException $exception) {

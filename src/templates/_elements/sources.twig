@@ -13,16 +13,14 @@
 {% endif %}
 
 {% macro sourceLink(key, source, isTopLevel, elementType, baseSortOptions, tableColumns) %}
-    {% set hasStructure = (source.structureId ?? null)|boolean %}
     {{ tag('a', {
         data: {
             key: key,
             'has-thumbs': (source.hasThumbs ?? false) ? true : false,
-            'has-structure': hasStructure,
+            'has-structure': (source.structureId ?? null)|boolean,
             'default-sort': source.defaultSort ?? false,
             'sort-opts': isTopLevel
-                ? [hasStructure ? {label: 'Structure'|t('app'), attr: 'structure', defaultDir: 'asc'} : null]|filter
-                    |merge(baseSortOptions)
+                ? baseSortOptions
                     |merge(craft.app.elementSources.getSourceSortOptions(elementType, key)|map(option => {
                         label: option.label,
                         attr: option.attribute ?? option.orderBy,
