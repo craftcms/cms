@@ -387,16 +387,14 @@ Craft.AuthManager = Garnish.Base.extend(
       this.checkRemainingSessionTime();
       this.clearLoginError();
 
-      if (this.WebAuthnLogin.supportCheck()) {
-        this.WebAuthnLogin.startAuthentication(Craft.username, true, 'login')
-          .then((response) => {
-            this.closeModal();
-          })
-          .catch((response) => {
-            this.showLoginError(response.error);
-            Garnish.shake(this.loginModal.$container);
-          });
-      }
+      this.WebAuthnLogin.startAuthentication(Craft.username, true, 'login')
+        .then((response) => {
+          this.closeModal();
+        })
+        .catch((response) => {
+          this.showLoginError(response.error);
+          Garnish.shake(this.loginModal.$container);
+        });
     },
 
     /**

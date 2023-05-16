@@ -150,7 +150,7 @@ import './login.scss';
     submit2faCode: function () {
       this.clearErrors();
 
-      let $btn = $('#auth-2fa-form').find('button');
+      let $btn = $('#auth-2fa-form').find('button.submit');
       $btn = new Garnish.MultiFunctionBtn($btn);
       $btn.busyEvent();
 

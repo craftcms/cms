@@ -145,24 +145,22 @@ Craft.ElevatedSessionManager = Garnish.Base.extend(
       this.$webAuthnElevateBtn.addClass('loading');
       this.clearLoginError();
 
-      if (this.WebAuthnLogin.supportCheck()) {
-        this.WebAuthnLogin.startAuthentication(
-          false,
-          true,
-          'elevateSessionWebAuthn'
-        )
-          .then((response) => {
-            this.passwordModal.hide();
-            this.callback();
-          })
-          .catch((response) => {
-            this.showPasswordError(response.error);
-            Garnish.shake(this.passwordModal.$container);
-          })
-          .finally(() => {
-            this.$webAuthnElevateBtn.removeClass('loading');
-          });
-      }
+      this.WebAuthnLogin.startAuthentication(
+        false,
+        true,
+        'elevateSessionWebAuthn'
+      )
+        .then((response) => {
+          this.passwordModal.hide();
+          this.callback();
+        })
+        .catch((response) => {
+          this.showPasswordError(response.error);
+          Garnish.shake(this.passwordModal.$container);
+        })
+        .finally(() => {
+          this.$webAuthnElevateBtn.removeClass('loading');
+        });
     },
 
     focusPasswordInput: function () {

@@ -22,18 +22,11 @@ import {browserSupportsWebAuthn} from '@simplewebauthn/browser';
 
         this.$auth2faLoginFormContainer = $('#auth-2fa-form');
         this.$auth2faSetupFormContainer = $('#auth-2fa-setup');
-        // this.$alternative2faLink = $('#alternative-2fa');
-        // this.$alternative2faTypesContainer = $('#alternative-2fa-types');
         this.$viewSetupBtns = this.$auth2faSetupFormContainer.find(
           'button.auth-2fa-view-setup'
         );
         this.$errors = $('#login-errors');
 
-        // this.addListener(
-        //   this.$alternative2faLink,
-        //   'click',
-        //   'onAlternative2faTypeClick'
-        // );
         this.addListener(this.$viewSetupBtns, 'click', 'onViewSetupBtnClick');
       },
 
@@ -89,19 +82,18 @@ import {browserSupportsWebAuthn} from '@simplewebauthn/browser';
           .then((response) => {
             this.slideout = new Craft.Slideout(response.data.html);
 
-            this.initSlideout();
-
-            // initialise webauthn
             if (
               data.selectedMethod === 'craft\\auth\\type\\WebAuthn' &&
               browserSupportsWebAuthn()
             ) {
-              new Craft.WebAuthnSetup(this.slideout);
-            }
-
-            // initialise recovery codes
-            if (data.selectedMethod === 'craft\\auth\\type\\RecoveryCodes') {
-              new Craft.RecoveryCodesSetup(this.slideout);
+              new Craft.WebAuthnSetup(this.slideout, this.settings);
+            } else if (
+              data.selectedMethod === 'craft\\auth\\type\\RecoveryCodes'
+            ) {
+              new Craft.RecoveryCodesSetup(this.slideout, this.settings);
+            } else {
+              // for any other auth methods, just make sure we re-initialised the slideout vars
+              this.initSlideout();
             }
 
             this.slideout.on('close', (ev) => {
@@ -216,10 +208,8 @@ import {browserSupportsWebAuthn} from '@simplewebauthn/browser';
           currentMethod: null,
         };
 
-        let auth2fa = new Craft.Auth2fa();
-
-        data.auth2faFields = auth2fa._get2faFields($auth2faLoginFormContainer);
-        data.currentMethod = auth2fa._getCurrentMethodInput(
+        data.auth2faFields = this._get2faFields($auth2faLoginFormContainer);
+        data.currentMethod = this._getCurrentMethodInput(
           $auth2faLoginFormContainer
         );
 
