@@ -1,5 +1,9 @@
 # Release Notes for Craft CMS 3.x
 
+## Unreleased
+
+- Improved `craft\helpers\FileHelper::getExtensionByMimeType()` for some ambiguous, web-friendly MIME types.
+
 ## 3.8.11 - 2023-05-15
 
 - Fixed a SQL error that could occur when updating to Craft 3.8 on PostgreSQL. ([#13186](https://github.com/craftcms/cms/issues/13186))
