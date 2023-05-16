@@ -106,8 +106,18 @@ class BaseContentRefactorMigration extends Migration
             $query->addSelect('c.title');
         }
 
+        $total = (string)$query->count();
+        $totalLen = strlen($total);
+        $i = 0;
+
         foreach (Db::each($query) as $element) {
-            echo sprintf('    > Updating %s ...', $this->elementLabel($element));
+            $i++;
+            echo sprintf(
+                '    > [%s/%s] Updating %s ...',
+                str_pad((string)$i, $totalLen, '0', STR_PAD_LEFT),
+                $total,
+                $this->elementLabel($element),
+            );
             $content = [];
 
             foreach ($fieldColumns as $fieldUid => $column) {
