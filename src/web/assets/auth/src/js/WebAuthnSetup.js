@@ -95,9 +95,12 @@ import {startRegistration} from '@simplewebauthn/browser';
             const registrationOptions = response.data.registrationOptions;
             try {
               this.showStatus(Craft.t('app', 'Starting registration'), '');
+              let defaultName =
+                this._getBrowser() + ' on ' + this._getPlatformName();
               const credentialName = Craft.escapeHtml(
                 prompt(
-                  Craft.t('app', 'Please enter a name for the security key')
+                  Craft.t('app', 'Please enter a name for the security key'),
+                  defaultName
                 )
               );
               startRegistration(registrationOptions)
@@ -187,6 +190,59 @@ import {startRegistration} from '@simplewebauthn/browser';
               this.showStatus(response.data.message);
             });
         }
+      },
+
+      _getPlatformName: function () {
+        let platform = navigator.platform;
+
+        if (platform.indexOf('Mac') != -1) {
+          platform = 'Mac';
+        } else if (
+          platform.indexOf('iPhone') != -1 ||
+          platform.indexOf('Pike')
+        ) {
+          platform = 'iPhone';
+        } else if (platform.indexOf('iPad') != -1) {
+          platform = 'iPad';
+        } else if (platform.indexOf('iPod') != -1) {
+          platform = 'iPod';
+        } else if (platform.indexOf('FreeBSD') != -1) {
+          platform = 'FreeBSD';
+        } else if (platform.indexOf('Linux') != -1) {
+          platform = 'Linux';
+        } else if (platform.indexOf('Win') != -1) {
+          platform = 'Windows';
+        } else if (platform.indexOf('Nintendo') != -1) {
+          platform = 'Nintendo';
+        } else if (platform.indexOf('SunOS') != -1) {
+          platform = 'Solaris';
+        }
+        // in other cases - just use the full name returned by navigator.platform
+
+        return platform;
+      },
+
+      _getBrowser: function () {
+        let userAgent = navigator.userAgent;
+        let browser = '';
+
+        if (userAgent.match(/chrome|chromium|crios/i)) {
+          browser = 'Chrome';
+        } else if (userAgent.match(/firefox|fxios/i)) {
+          browser = 'Firefox';
+        } else if (userAgent.match(/safari/i)) {
+          browser = 'Safari';
+        } else if (userAgent.match(/opr\//i)) {
+          browser = 'Opera';
+        } else if (userAgent.match(/edg/i)) {
+          browser = 'Edge';
+        } else if (userAgent.match(/trident/i)) {
+          browser = 'IE';
+        } else {
+          browser = 'Browser';
+        }
+
+        return browser;
       },
     },
     {
