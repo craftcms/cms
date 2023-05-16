@@ -1311,6 +1311,7 @@ JS, [
             Html::beginTag('button', [
                 'type' => 'button',
                 'class' => ['btn', 'dashed', 'add', 'icon', 'address-cards__add-btn'],
+                'aria-label' => Craft::t('app', 'Add an address'),
             ]) .
             Html::tag('div', '', [
                 'class' => ['spinner', 'spinner-absolute'],
