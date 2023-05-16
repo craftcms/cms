@@ -1,0 +1,199 @@
+<?php
+
+namespace craft\migrations;
+
+use craft\base\ElementInterface;
+use craft\base\FieldInterface;
+use craft\db\Migration;
+use craft\db\Table;
+use craft\fields\BaseOptionsField;
+use craft\fields\Lightswitch;
+use craft\fields\Table as TableField;
+use craft\helpers\Db;
+use craft\helpers\Json;
+use craft\models\FieldLayout;
+use yii\db\ColumnSchema;
+use yii\db\Query;
+use yii\db\Schema;
+
+/**
+ * Base content refactor migration class
+ *
+ * @since 5.0.0
+ */
+class BaseContentRefactorMigration extends Migration
+{
+    /**
+     * Updates the `elements_sites.content` value for elements.
+     *
+     * @param int[]|Query $ids The elmenet IDs to update, or a query that selects them.
+     * If a query is passed but `select` is not set, it will default to `'id'`.
+     * @param FieldLayout|null $fieldLayout The field layout that the elements use, if any
+     * @param string $contentTable The table that the elements stored their field values in.
+     * @param string $fieldColumnPrefix The column prefix that the content table used for these elements’ fields.
+     */
+    protected function updateElements(
+        Query|array $ids,
+        ?FieldLayout $fieldLayout,
+        string $contentTable = Table::CONTENT,
+        string $fieldColumnPrefix = 'field_',
+    ): void {
+        $contentTableSchema = $this->db->getSchema()->getTableSchema($contentTable);
+        $fieldsByUid = [];
+        $fieldColumns = [];
+        $flatFieldColumns = [];
+
+        if ($fieldLayout) {
+            foreach ($fieldLayout->getCustomFields() as $field) {
+                // can't rely on hasContentColumn() since that is going away
+                $primaryColumn = sprintf(
+                    '%s%s%s',
+                    $fieldColumnPrefix,
+                    $field->handle,
+                    ($field->columnSuffix ? "_$field->columnSuffix" : ''),
+                );
+
+                if ($contentTableSchema->getColumn($primaryColumn)) {
+                    $fieldsByUid[$field->uid] = $field;
+
+                    // was this a multi-column field?
+                    // (multi-column support was added alongside columnSuffix, so no chance it will be
+                    // multi-column if the field doesn’t have that property set.)
+                    if (
+                        isset($field->columnSuffix) &&
+                        method_exists($field, 'getContentColumnType') &&
+                        is_array($fieldColumnTypes = $field->getContentColumnType())
+                    ) {
+                        foreach (array_keys($fieldColumnTypes) as $i => $key) {
+                            $column = $i === 0 ? $primaryColumn : sprintf(
+                                '%s%s_%s_%s',
+                                $fieldColumnPrefix,
+                                $field->handle,
+                                $key,
+                                $field->columnSuffix,
+                            );
+                            $fieldColumns[$field->uid][$key] = $column;
+                            $flatFieldColumns[] = "c.$column";
+                        }
+                    } else {
+                        $fieldColumns[$field->uid] = $primaryColumn;
+                        $flatFieldColumns[] = $primaryColumn;
+                    }
+                }
+            }
+        }
+
+        if ($ids instanceof Query && !$ids->select) {
+            $ids->select('id');
+        }
+
+        $query = (new Query())
+            ->select([
+                'es.id',
+                'es.elementId',
+                'es.siteId',
+                'e.draftId',
+                'e.revisionId',
+                'e.type',
+                ...$flatFieldColumns,
+            ])
+            ->from(['es' => Table::ELEMENTS_SITES])
+            ->innerJoin(['c' => $contentTable], '[[c.elementId]] = [[es.elementId]] and [[c.siteId]] = [[es.siteId]]')
+            ->innerJoin(['e' => Table::ELEMENTS], '[[e.id]] = [[es.elementId]]')
+            ->where(['in', 'es.elementId', $ids]);
+
+        if ($contentTableSchema->getColumn('title')) {
+            $query->addSelect('c.title');
+        }
+
+        foreach (Db::each($query) as $element) {
+            echo sprintf('    > Updating %s ...', $this->elementLabel($element));
+            $content = [];
+
+            foreach ($fieldColumns as $fieldUid => $column) {
+                $field = $fieldsByUid[$fieldUid];
+                if (is_array($column)) {
+                    $value = array_map(
+                        fn($c) => $this->decodeValue($element[$c], $field, $contentTableSchema->getColumn($c)),
+                        $column,
+                    );
+                    if (reset($value) === null) {
+                        continue;
+                    }
+                } else {
+                    $value = $this->decodeValue($element[$column], $field, $contentTableSchema->getColumn($column));
+                    if ($value === null) {
+                        continue;
+                    }
+                }
+                $content[$fieldUid] = $value;
+            }
+
+            // don't call $this->update() so it doesn't mess with the CLI output
+            Db::update(Table::ELEMENTS_SITES, [
+                'title' => $element['title'] ?? null,
+                'content' => !empty($content) ? Db::prepareForJsonColumn($content, $this->db) : null,
+            ], ['id' => $element['id']], updateTimestamp: false, db: $this->db);
+
+            echo " done\n";
+        }
+    }
+
+    private function elementLabel(array $element): string
+    {
+        $elementType = $element['type'];
+        if ($elementType && class_exists($elementType) && is_subclass_of($elementType, ElementInterface::class)) {
+            /** @var string|ElementInterface $elementType */
+            $label = $elementType::lowerDisplayName();
+        } else {
+            $label = 'element';
+        }
+        if ($element['draftId']) {
+            $label .= ' draft';
+        } elseif ($element['revisionId']) {
+            $label .= ' revision';
+        }
+        $label .= " {$element['elementId']}";
+        if (!empty($element['title'])) {
+            $label .= sprintf(' "%s"', $element['title']);
+        }
+        return $label;
+    }
+
+    private function decodeValue(mixed $value, FieldInterface $field, ColumnSchema $column): mixed
+    {
+        if ($value === null || $value === '') {
+            return null;
+        }
+
+        if (
+            $field instanceof TableField ||
+            ($field instanceof BaseOptionsField && $field->getIsMultiOptionsField())
+        ) {
+            return Json::decodeIfJson($value);
+        }
+
+        if ($field instanceof Lightswitch) {
+            return (bool)$value;
+        }
+
+        switch ($column->type) {
+            case Schema::TYPE_TINYINT:
+            case Schema::TYPE_SMALLINT:
+            case Schema::TYPE_INTEGER:
+            case Schema::TYPE_BIGINT:
+                return (int)$value;
+
+            case Schema::TYPE_FLOAT:
+            case Schema::TYPE_DOUBLE:
+            case Schema::TYPE_DECIMAL:
+            case Schema::TYPE_MONEY:
+                return (float)$value;
+
+            case Schema::TYPE_BOOLEAN:
+                return (bool)$value;
+        }
+
+        return $value;
+    }
+}

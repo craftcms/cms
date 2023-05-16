@@ -194,6 +194,25 @@ class Db
     }
 
     /**
+     * Prepares data for a JSON column.
+     *
+     * @param array
+     * @return array|string
+     */
+    public static function prepareForJsonColumn(array $value, ?Connection $db = null): array|string
+    {
+        if ($db === null) {
+            $db = self::db();
+        }
+
+        if ($db->getIsMaria()) {
+            return Json::encode($value);
+        }
+
+        return $value;
+    }
+
+    /**
      * Returns the minimum number allowed for a given column type.
      *
      * @param string $columnType
