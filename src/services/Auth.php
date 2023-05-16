@@ -22,7 +22,7 @@ use yii\base\Exception;
  * An instance of the Auth service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getAuth()|`Craft::$app->auth`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 4.5.0
+ * @since 5.0
  */
 class Auth extends Component
 {

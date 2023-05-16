@@ -1071,7 +1071,7 @@ class User extends Element implements IdentityInterface
      * @param string $authenticationOptions
      * @param string $authResponse
      * @return bool
-     * @since 4.5.0
+     * @since 5.0
      */
     public function authenticateWebAuthn(string $authenticationOptions, string $authResponse): bool
     {
@@ -1110,6 +1110,7 @@ class User extends Element implements IdentityInterface
      * Return whether user is required to use 2FA to login
      *
      * @return bool
+     * @since 5.0
      */
     public function is2faRequired(): bool
     {
@@ -1933,6 +1934,7 @@ class User extends Element implements IdentityInterface
      * Return default 2FA method
      *
      * @return Base2faType
+     * @since 5.0
      */
     public function getDefault2faType(): Base2faType
     {
@@ -1950,6 +1952,7 @@ class User extends Element implements IdentityInterface
      *
      * @param string $auth2faClass
      * @return bool
+     * @since 5.0
      */
     public function is2faTypeSetup(string $auth2faClass): bool
     {

@@ -245,7 +245,7 @@ class UsersController extends Controller
      * @throws BadRequestHttpException
      * @throws Exception
      * @throws ServiceUnavailableHttpException
-     * @since 4.5.0
+     * @since 5.0
      */
     public function actionVerify2fa(): ?Response
     {
@@ -288,7 +288,7 @@ class UsersController extends Controller
      *
      * @return Response
      * @throws ServiceUnavailableHttpException
-     * @since 4.5.0
+     * @since 5.0
      */
     public function actionStartWebauthnLogin(): Response
     {
@@ -312,7 +312,7 @@ class UsersController extends Controller
      *
      * @return Response|null
      * @throws ServiceUnavailableHttpException
-     * @since 4.5.0
+     * @since 5.0
      */
     public function actionWebauthnVerify(): ?Response
     {
@@ -357,7 +357,7 @@ class UsersController extends Controller
      * @param int $duration
      * @return Response
      * @throws ServiceUnavailableHttpException
-     * @since 4.5.0
+     * @since 5.0
      */
     private function _completeLogin(User $user, int $duration): Response
     {

@@ -23,7 +23,7 @@ use yii\web\Response;
  * The AuthController class is a controller that handles various 2FA-related actions.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 4.5.0
+ * @since 5.0
  */
 class AuthController extends Controller
 {

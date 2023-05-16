@@ -22,7 +22,7 @@ use yii\db\ActiveQueryInterface;
  * @property string $dateLastUsed Date last used
  * @property string $uid uid
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 4.5.0
+ * @since 5.0
  */
 class WebAuthn extends ActiveRecord
 {
