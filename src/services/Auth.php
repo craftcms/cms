@@ -173,13 +173,14 @@ class Auth extends Component
     public function getAlternative2faTypes(?string $currentMethod = null): array
     {
         return array_filter($this->getAll2faTypes(), function($type) use ($currentMethod) {
-            return $type !== $currentMethod && $type !== WebAuthn::class;
+            return $type !== $currentMethod;
         }, ARRAY_FILTER_USE_KEY);
     }
 
     /**
      * Returns a list of all available 2FA types
      *
+     * @param bool $withConfig
      * @return array
      */
     public function getAll2faTypes(bool $withConfig = false): array
@@ -193,13 +194,6 @@ class Auth extends Component
                     'description' => GoogleAuthenticator::getDescription(),
                     'config' => [
                         'requiresSetup' => GoogleAuthenticator::$requiresSetup,
-                    ],
-                ],
-                WebAuthn::class => [
-                    'name' => WebAuthn::displayName(),
-                    'description' => WebAuthn::getDescription(),
-                    'config' => [
-                        'requiresSetup' => WebAuthn::$requiresSetup,
                     ],
                 ],
                 RecoveryCodes::class => [
@@ -227,6 +221,33 @@ class Auth extends Component
         }
 
         return $event->types;
+    }
+
+    /**
+     * Get WebAuthn auth type
+     *
+     * @param bool $withConfig
+     * @return array[]
+     */
+    public function getWebAuthnType(bool $withConfig = false): array
+    {
+        $types = [
+            WebAuthn::class => [
+                'name' => WebAuthn::displayName(),
+                'description' => WebAuthn::getDescription(),
+                'config' => [
+                    'requiresSetup' => WebAuthn::$requiresSetup,
+                ],
+            ],
+        ];
+
+        if (!$withConfig) {
+            foreach ($types as $key => $type) {
+                unset($types[$key]['config']);
+            }
+        }
+
+        return $types;
     }
 
     /**

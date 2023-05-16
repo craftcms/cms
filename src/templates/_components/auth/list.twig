@@ -5,9 +5,10 @@
 {% if user.id == currentUser.id %}
     {% do view.registerDeltaName('auth-2fa-setup') %}
 
-
     <div id="auth-2fa-setup">
-        {% set auth2faTypes = craft.app.auth.getAll2faTypes(true) %}
+        {% set auth2faTypes = [] %}
+        {% set auth2faTypes = auth2faTypes|merge(craft.app.auth.getAll2faTypes(true)) %}
+        {% set auth2faTypes = auth2faTypes|merge(craft.app.auth.getWebAuthnType(true)) %}
         {% if auth2faTypes is empty %}
             <p class="zilch">{{ 'No 2FA options available.'|t('app') }}</p>
         {% else %}

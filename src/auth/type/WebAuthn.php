@@ -46,7 +46,7 @@ class WebAuthn extends Configurable2faType
      */
     public static function getDescription(): string
     {
-        return Craft::t('app', 'Faster login with WebAuthn (e.g. TouchID, FaceID and Yubikey). You can set up and manage your security keys from your account page.');
+        return Craft::t('app', 'Faster login with WebAuthn (e.g. TouchID, FaceID, Windows Hello, fingerprint). You can set up and manage your security keys from your account page.');
     }
 
     /**
