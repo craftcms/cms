@@ -106,17 +106,22 @@ interface ProviderInterface extends SavableComponentInterface
     public function getAuthRequestUrl(): string | null;
 
     /**
-     * @return string|null The login response URL
+     * @return string|null The response URL
      */
-    public function getLoginResponseUrl(): string | null;
+    public function getResponseUrl(): string | null;
 
-    /**
-     * @return string|null The logout response URL
-     */
-    public function getLogoutResponseUrl(): string | null;
-
-    /**
-     * @return string|null The auth response URL
-     */
-    public function getAuthResponseUrl(): string | null;
+//    /**
+//     * @return string|null The login response URL
+//     */
+//    public function getLoginResponseUrl(): string | null;
+//
+//    /**
+//     * @return string|null The logout response URL
+//     */
+//    public function getLogoutResponseUrl(): string | null;
+//
+//    /**
+//     * @return string|null The auth response URL
+//     */
+//    public function getAuthResponseUrl(): string | null;
 }

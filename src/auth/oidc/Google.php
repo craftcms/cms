@@ -60,7 +60,7 @@ class Google extends AbstractOpenIdConnectProvider
                 'hostedDomain' => $this->hostedDomain,
                 'prompt' => $this->prompt,
                 'scopes' => $this->scopes,
-                'redirectUri' => $this->getAuthResponseUrl()
+                'redirectUri' => $this->getResponseUrl()
             ]);
         }
 

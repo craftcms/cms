@@ -85,24 +85,32 @@ trait AuthProviderTrait
     /**
      * @inheritDoc
      */
-    public function getLoginResponseUrl(): string | null
+    public function getResponseUrl(): string | null
     {
         return UrlHelper::actionUrl('auth/response', ['provider' => $this->handle], null, false);
     }
-
-    /**
-     * @inheritDoc
-     */
-    public function getLogoutResponseUrl(): string | null
-    {
-        return UrlHelper::actionUrl('auth/response', ['provider' => $this->handle], null, false);
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function getAuthResponseUrl(): string | null
-    {
-        return UrlHelper::actionUrl('auth/response', ['provider' => $this->handle], null, false);
-    }
+//
+//    /**
+//     * @inheritDoc
+//     */
+//    public function getLoginResponseUrl(): string | null
+//    {
+//        return UrlHelper::actionUrl('auth/response', ['provider' => $this->handle], null, false);
+//    }
+//
+//    /**
+//     * @inheritDoc
+//     */
+//    public function getLogoutResponseUrl(): string | null
+//    {
+//        return UrlHelper::actionUrl('auth/response', ['provider' => $this->handle], null, false);
+//    }
+//
+//    /**
+//     * @inheritDoc
+//     */
+//    public function getAuthResponseUrl(): string | null
+//    {
+//        return UrlHelper::actionUrl('auth/response', ['provider' => $this->handle], null, false);
+//    }
 }
