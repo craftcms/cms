@@ -113,13 +113,20 @@ export default Base.extend(
 
       // When the menu is expanded, tabbing on the trigger should move focus into it
       this.addListener(this.$trigger, 'keydown', (ev) => {
-        if (ev.keyCode === Garnish.TAB_KEY && !ev.shiftKey && this.showing) {
-          const $focusableElement = Garnish.getKeyboardFocusableElements(
-            this.$hud
-          ).first();
-          if ($focusableElement.length) {
-            ev.preventDefault();
-            $focusableElement.focus();
+        if (this.showing) {
+          if (ev.keyCode === Garnish.TAB_KEY && !ev.shiftKey) {
+            const $focusableElement = Garnish.getKeyboardFocusableElements(
+              this.$hud
+            ).first();
+            if ($focusableElement.length) {
+              ev.preventDefault();
+              $focusableElement.focus();
+            }
+          } else if (
+            ev.keyCode === Garnish.RETURN_KEY ||
+            ev.keyCode === Garnish.SPACE_KEY
+          ) {
+            this.hide();
           }
         }
       });
@@ -213,6 +220,7 @@ export default Base.extend(
 
       this.$hud.show();
       this.$shade.show();
+      this.$trigger.attr('aria-expanded', 'true');
       this.showing = true;
       Garnish.HUD.activeHUDs[this._namespace] = this;
 
@@ -576,6 +584,7 @@ export default Base.extend(
 
       this.$hud.hide();
       this.$shade.hide();
+      this.$trigger.attr('aria-expanded', 'false');
 
       this.showing = false;
       delete Garnish.HUD.activeHUDs[this._namespace];
