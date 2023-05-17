@@ -453,6 +453,16 @@ Garnish = $.extend(Garnish, {
   },
 
   /**
+   * Takes two jQuery objects and compares them to see if they are the same element
+   */
+  isSameElement: function (element1, element2) {
+    const $element1 = $(element1);
+    const $element2 = $(element2);
+
+    return $element1.get(0) === $element2.get(0);
+  },
+
+  /**
    * Traps focus within a container, so when focus is tabbed out of it, it’s cycled back into it.
    * @param {Object} container
    */

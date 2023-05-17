@@ -581,8 +581,11 @@ export default Base.extend(
       delete Garnish.HUD.activeHUDs[this._namespace];
       Garnish.uiLayerManager.removeLayer();
 
-      // TODO update this to refocus trigger if focus is on the container also
-      if (Garnish.focusIsInside(this.$hud)) {
+      // Return focus to trigger if on/inside HUD container
+      if (
+        Garnish.focusIsInside(this.$hud) ||
+        Garnish.isSameElement(this.$hud, Garnish.getFocusedElement())
+      ) {
         this.$trigger.trigger('focus');
       }
 
