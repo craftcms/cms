@@ -23,6 +23,11 @@ class Checkboxes extends BaseOptionsField
     /**
      * @inheritdoc
      */
+    protected static bool $multi = true;
+
+    /**
+     * @inheritdoc
+     */
     public static function displayName(): string
     {
         return Craft::t('app', 'Checkboxes');
@@ -31,15 +36,10 @@ class Checkboxes extends BaseOptionsField
     /**
      * @inheritdoc
      */
-    public static function valueType(): string
+    public static function phpType(): string
     {
         return sprintf('\\%s', MultiOptionsFieldData::class);
     }
-
-    /**
-     * @inheritdoc
-     */
-    protected bool $multi = true;
 
     /**
      * @inheritdoc

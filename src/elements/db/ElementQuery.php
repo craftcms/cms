@@ -30,6 +30,7 @@ use craft\helpers\App;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Db;
 use craft\helpers\ElementHelper;
+use craft\helpers\Json;
 use craft\helpers\StringHelper;
 use craft\models\Site;
 use Illuminate\Support\Collection;
@@ -105,11 +106,6 @@ class ElementQuery extends Query implements ElementQueryInterface
      * @see prepare()
      */
     public ?Query $subQuery = null;
-
-    /**
-     * @var string|null The content table that will be joined by this query.
-     */
-    public ?string $contentTable = Table::CONTENT;
 
     /**
      * @var FieldInterface[]|null The fields that may be involved in this query.
@@ -1300,7 +1296,7 @@ class ElementQuery extends Query implements ElementQueryInterface
         $this->query
             ->from(['subquery' => $this->subQuery])
             ->innerJoin(['elements' => Table::ELEMENTS], '[[elements.id]] = [[subquery.elementsId]]')
-            ->innerJoin(['elements_sites' => Table::ELEMENTS_SITES], '[[elements_sites.id]] = [[subquery.elementsSitesId]]');
+            ->innerJoin(['elements_sites' => Table::ELEMENTS_SITES], '[[elements_sites.id]] = [[subquery.siteSettingsId]]');
 
         // Prepare a new column mapping
         // (for use in SELECT and ORDER BY clauses)
@@ -1323,7 +1319,7 @@ class ElementQuery extends Query implements ElementQueryInterface
         $this->subQuery
             ->addSelect([
                 'elementsId' => 'elements.id',
-                'elementsSitesId' => 'elements_sites.id',
+                'siteSettingsId' => 'elements_sites.id',
             ])
             ->from(['elements' => Table::ELEMENTS])
             ->innerJoin(['elements_sites' => Table::ELEMENTS_SITES], '[[elements_sites.elementId]] = [[elements.id]]')
@@ -1336,13 +1332,8 @@ class ElementQuery extends Query implements ElementQueryInterface
             $this->subQuery->andWhere(['elements_sites.siteId' => $this->siteId]);
         }
 
-        $hasContent = $class::hasContent() && isset($this->contentTable);
-        if ($hasContent) {
-            $this->customFields = $this->customFields();
-            $this->_joinContentTable($class);
-        } else {
-            $this->customFields = null;
-        }
+        $this->customFields = $this->customFields();
+        $this->_loopInCustomFields();
 
         if ($this->distinct) {
             $this->query->distinct();
@@ -1400,20 +1391,17 @@ class ElementQuery extends Query implements ElementQueryInterface
             $this->subQuery->andWhere(Db::parseParam('elements_sites.uri', $this->uri, '=', true));
         }
 
-        if ($hasContent) {
-            if ($class::hasTitles()) {
-                $this->_columnMap['title'] = 'content.title';
-            }
+        if ($class::hasTitles()) {
+            $this->_columnMap['title'] = 'elements_sites.title';
+        }
 
-            // Map custom field handles to their content columns
-            foreach ($this->customFields as $field) {
-                if (!isset($this->_columnMap[$field->handle])) {
-                    $column = $this->_fieldColumn($field);
-                    if ($column !== null) {
-                        $firstCol = is_string($column) ? $column : reset($column);
-                        $this->_columnMap[$field->handle] = "content.$firstCol";
-                    }
-                }
+        // Map custom field handles to their content values
+        foreach ($this->customFields as $field) {
+            if (
+                !isset($this->_columnMap[$field->handle]) &&
+                ($valueSql = $field->getValueSql()) !== null
+            ) {
+                $this->_columnMap[$field->handle] = $valueSql;
             }
         }
 
@@ -1790,62 +1778,29 @@ class ElementQuery extends Query implements ElementQueryInterface
             $row['structureId'] = $this->structureId;
         }
 
-        if ($class::hasContent() && isset($this->contentTable)) {
-            if ($class::hasTitles()) {
-                // Ensure the title is a string
-                $row['title'] = (string)($row['title'] ?? '');
+        if ($class::hasTitles()) {
+            // Ensure the title is a string
+            $row['title'] = (string)($row['title'] ?? '');
+        }
+
+        // Set the field values
+        $content = ArrayHelper::remove($row, 'content');
+        $row['fieldValues'] = [];
+
+        if (!empty($this->customFields) && !empty($content)) {
+            if (is_string($content)) {
+                $content = Json::decode($content);
             }
 
-            // Separate the content values from the main element attributes
-            $fieldValues = [];
-
-            if (!empty($this->customFields)) {
-                foreach ($this->customFields as $field) {
-                    if (($column = $this->_fieldColumn($field)) !== null) {
-                        // Account for results where multiple fields have the same handle, but from
-                        // different columns e.g. two Matrix block types that each have a field with the
-                        // same handle
-                        $firstCol = is_string($column) ? $column : reset($column);
-                        $setValue = !isset($fieldValues[$field->handle]) || (empty($fieldValues[$field->handle]) && !empty($row[$firstCol]));
-
-                        if (is_string($column)) {
-                            if ($setValue) {
-                                $fieldValues[$field->handle] = $row[$column] ?? null;
-                            }
-                            unset($row[$column]);
-                        } else {
-                            if ($setValue) {
-                                $columnValues = [];
-                                $hasColumnValues = false;
-
-                                foreach ($column as $key => $col) {
-                                    $columnValues[$key] = $row[$col] ?? null;
-                                    $hasColumnValues = $hasColumnValues || $columnValues[$key] !== null;
-                                }
-
-                                // Only actually set it on $fieldValues if any of the columns weren't null.
-                                // Otherwise, leave it alone in case another field has the same handle.
-                                if ($hasColumnValues) {
-                                    $fieldValues[$field->handle] = $columnValues;
-                                }
-                            }
-
-                            foreach ($column as $col) {
-                                unset($row[$col]);
-                            }
-                        }
-                    }
+            foreach ($this->customFields as $field) {
+                if ($field::dbType() !== null && isset($content[$field->uid])) {
+                    $row['fieldValues'][$field->handle] = $content[$field->uid];
                 }
             }
         }
 
         if (array_key_exists('dateDeleted', $row)) {
             $row['trashed'] = $row['dateDeleted'] !== null;
-        }
-
-        // Set the custom field values
-        if (isset($fieldValues)) {
-            $row['fieldValues'] = $fieldValues;
         }
 
         $behaviors = [];
@@ -2019,13 +1974,7 @@ class ElementQuery extends Query implements ElementQueryInterface
      */
     protected function customFields(): array
     {
-        $contentService = Craft::$app->getContent();
-        $originalFieldContext = $contentService->fieldContext;
-        $contentService->fieldContext = 'global';
-        $fields = Craft::$app->getFields()->getAllFields();
-        $contentService->fieldContext = $originalFieldContext;
-
-        return $fields;
+        return Craft::$app->getFields()->getAllFields('global');
     }
 
     /**
@@ -2144,78 +2093,30 @@ class ElementQuery extends Query implements ElementQueryInterface
     }
 
     /**
-     * Joins the content table into the query being prepared.
+     * Allow the custom fields to modify the query.
      *
-     * @param string $class
-     * @phpstan-param class-string<ElementInterface> $class
      * @throws QueryAbortedException
      */
-    private function _joinContentTable(string $class): void
+    private function _loopInCustomFields(): void
     {
-        /** @var ElementInterface|string $class */
-        // Join in the content table on both queries
-        $joinCondition = [
-            'and',
-            '[[content.elementId]] = [[elements.id]]',
-        ];
-        if (Craft::$app->getIsMultiSite(false, true)) {
-            $joinCondition[] = '[[content.siteId]] = [[elements_sites.siteId]]';
-        }
-        $this->subQuery
-            ->innerJoin($this->contentTable . ' content', $joinCondition)
-            ->addSelect(['contentId' => 'content.id']);
-
-        $this->query->innerJoin($this->contentTable . ' content', '[[content.id]] = [[subquery.contentId]]');
-
-        // Select the content table columns on the main query
-        $this->query->addSelect(['contentId' => 'content.id']);
-
-        if ($class::hasTitles()) {
-            $this->query->addSelect(['content.title']);
-        }
-
         if (is_array($this->customFields)) {
-            $contentService = Craft::$app->getContent();
-            $originalFieldColumnPrefix = $contentService->fieldColumnPrefix;
             $fieldAttributes = $this->getBehavior('customFields');
 
             foreach ($this->customFields as $field) {
-                if (($column = $this->_fieldColumn($field)) !== null) {
-                    if (is_string($column)) {
-                        $this->query->addSelect("content.$column");
-                    } else {
-                        foreach ($column as $c) {
-                            $this->query->addSelect("content.$c");
-                        }
-                    }
-                }
-
                 $handle = $field->handle;
 
                 // In theory all field handles will be accounted for on the CustomFieldBehavior, but just to be safe...
                 if ($handle !== 'owner' && isset($fieldAttributes->$handle)) {
-                    $fieldAttributeValue = $fieldAttributes->$handle;
-                } else {
-                    $fieldAttributeValue = null;
-                }
+                    $condition = $field->getQueryCondition($fieldAttributes->$handle, $params);
 
-                // Set the field's column prefix on the Content service.
-                if ($field->columnPrefix !== null) {
-                    $contentService->fieldColumnPrefix = $field->columnPrefix;
-                }
+                    // aborting?
+                    if ($condition === false) {
+                        throw new QueryAbortedException();
+                    }
 
-                $exception = null;
-                try {
-                    $field->modifyElementsQuery($this, $fieldAttributeValue);
-                } catch (QueryAbortedException $exception) {
-                }
-
-                // Set it back
-                $contentService->fieldColumnPrefix = $originalFieldColumnPrefix;
-
-                // Need to bail early?
-                if ($exception !== null) {
-                    throw $exception;
+                    if ($condition !== null) {
+                        $this->subQuery->andWhere($condition, $params);
+                    }
                 }
             }
         }
@@ -2838,9 +2739,11 @@ class ElementQuery extends Query implements ElementQueryInterface
                 'elements.dateCreated' => 'elements.dateCreated',
                 'elements.dateUpdated' => 'elements.dateUpdated',
                 'siteSettingsId' => 'elements_sites.id',
-                'elements_sites.slug' => 'elements_sites.slug',
                 'elements_sites.siteId' => 'elements_sites.siteId',
+                'elements_sites.title' => 'elements_sites.title',
+                'elements_sites.slug' => 'elements_sites.slug',
                 'elements_sites.uri' => 'elements_sites.uri',
+                'elements_sites.content' => 'elements_sites.content',
                 'enabledForSite' => 'elements_sites.enabled',
             ]);
 
@@ -2934,31 +2837,6 @@ class ElementQuery extends Query implements ElementQueryInterface
         $subSelectSql = str_replace($qTmpElements, $qElements, $subSelectSql);
 
         $this->subQuery->andWhere(new Expression("[[elements_sites.id]] = ($subSelectSql)"));
-    }
-
-    /**
-     * Returns a field’s content column name(s).
-     *
-     * @param FieldInterface $field
-     * @return string|string[]|null
-     */
-    private function _fieldColumn(FieldInterface $field): array|string|null
-    {
-        if (!$field::hasContentColumn()) {
-            return null;
-        }
-
-        $type = $field->getContentColumnType();
-
-        if (is_array($type)) {
-            $columns = [];
-            foreach (array_keys($type) as $i => $key) {
-                $columns[$key] = ElementHelper::fieldColumnFromField($field, $i !== 0 ? $key : null);
-            }
-            return $columns;
-        }
-
-        return ElementHelper::fieldColumnFromField($field);
     }
 
     /**

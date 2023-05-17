@@ -26,7 +26,6 @@ use craft\web\assets\timepicker\TimepickerAsset;
 use DateTime;
 use GraphQL\Type\Definition\InputObjectType;
 use GraphQL\Type\Definition\Type;
-use yii\db\Schema;
 use yii\validators\EmailValidator;
 
 /**
@@ -48,7 +47,7 @@ class Table extends Field
     /**
      * @inheritdoc
      */
-    public static function valueType(): string
+    public static function phpType(): string
     {
         return 'array|null';
     }
@@ -83,12 +82,6 @@ class Table extends Field
      * @var array|null The default row values that new elements should have
      */
     public ?array $defaults = [[]];
-
-    /**
-     * @var string The type of database column the field should have in the content table
-     * @phpstan-var 'auto'|Schema::TYPE_STRING|Schema::TYPE_TEXT|'mediumtext'
-     */
-    public string $columnType = Schema::TYPE_TEXT;
 
     /**
      * @inheritdoc
@@ -142,6 +135,9 @@ class Table extends Field
                 }
             }
         }
+
+        // remove unused settings
+        unset($config['columnType']);
 
         parent::__construct($config);
     }
@@ -215,14 +211,6 @@ class Table extends Field
     public function hasMaxRows(): bool
     {
         return (bool)$this->maxRows;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getContentColumnType(): string
-    {
-        return $this->columnType;
     }
 
     /**

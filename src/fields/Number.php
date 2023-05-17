@@ -14,12 +14,12 @@ use craft\base\PreviewableFieldInterface;
 use craft\base\SortableFieldInterface;
 use craft\fields\conditions\NumberFieldConditionRule;
 use craft\gql\types\Number as NumberType;
-use craft\helpers\Db;
 use craft\helpers\Localization;
 use craft\i18n\Locale;
 use GraphQL\Type\Definition\Type;
 use Throwable;
 use yii\base\InvalidArgumentException;
+use yii\db\Schema;
 
 /**
  * Number represents a Number field.
@@ -53,9 +53,17 @@ class Number extends Field implements PreviewableFieldInterface, SortableFieldIn
     /**
      * @inheritdoc
      */
-    public static function valueType(): string
+    public static function phpType(): string
     {
         return 'int|float|null';
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function dbType(): string
+    {
+        return Schema::TYPE_DECIMAL;
     }
 
     /**
@@ -161,14 +169,6 @@ class Number extends Field implements PreviewableFieldInterface, SortableFieldIn
             [
                 'field' => $this,
             ]);
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getContentColumnType(): string
-    {
-        return Db::getNumericalColumnType($this->min, $this->max, $this->decimals);
     }
 
     /**

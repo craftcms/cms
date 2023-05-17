@@ -61,7 +61,6 @@ use craft\services\Categories;
 use craft\services\Composer;
 use craft\services\Conditions;
 use craft\services\Config;
-use craft\services\Content;
 use craft\services\Dashboard;
 use craft\services\Deprecator;
 use craft\services\Drafts;
@@ -140,7 +139,6 @@ use yii\web\ServerErrorHttpException;
  * @property-read Conditions $conditions The conditions service
  * @property-read Config $config The config service
  * @property-read Connection $db The database connection component
- * @property-read Content $content The content service
  * @property-read Dashboard $dashboard The dashboard service
  * @property-read Deprecator $deprecator The deprecator service
  * @property-read Drafts $drafts The drafts service
@@ -991,17 +989,6 @@ trait ApplicationTrait
     {
         /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->get('config');
-    }
-
-    /**
-     * Returns the content service.
-     *
-     * @return Content The content service
-     */
-    public function getContent(): Content
-    {
-        /** @noinspection PhpIncompatibleReturnTypeInspection */
-        return $this->get('content');
     }
 
     /**

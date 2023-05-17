@@ -24,6 +24,16 @@ class MultiSelect extends BaseOptionsField
     /**
      * @inheritdoc
      */
+    protected static bool $multi = true;
+
+    /**
+     * @inheritdoc
+     */
+    protected static bool $optgroups = true;
+
+    /**
+     * @inheritdoc
+     */
     public static function displayName(): string
     {
         return Craft::t('app', 'Multi-select');
@@ -32,20 +42,10 @@ class MultiSelect extends BaseOptionsField
     /**
      * @inheritdoc
      */
-    public static function valueType(): string
+    public static function phpType(): string
     {
         return sprintf('\\%s', MultiOptionsFieldData::class);
     }
-
-    /**
-     * @inheritdoc
-     */
-    protected bool $multi = true;
-
-    /**
-     * @inheritdoc
-     */
-    protected bool $optgroups = true;
 
     /**
      * @inheritdoc

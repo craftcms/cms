@@ -121,7 +121,7 @@ class Connection extends \yii\db\Connection
      */
     public function getDriverLabel(): string
     {
-        return match(true) {
+        return match (true) {
             $this->getIsMaria() => 'MariaDB',
             $this->getIsMysql() => 'MySQL',
             default => 'PostgreSQL',

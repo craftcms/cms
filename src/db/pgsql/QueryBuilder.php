@@ -8,6 +8,7 @@
 namespace craft\db\pgsql;
 
 use craft\db\Connection;
+use craft\helpers\Json;
 
 /**
  * @inheritdoc
@@ -121,5 +122,48 @@ class QueryBuilder extends \yii\db\pgsql\QueryBuilder
         }
 
         return $sql;
+    }
+
+    /**
+     * Builds the SQL expression used to cast a SQL expression as a given type.
+     *
+     * @param string $sql
+     * @param string $type
+     * @return string
+     * @since 5.0.0
+     */
+    public function cast(string $sql, string $type): string
+    {
+        $type = $this->getColumnType($type);
+        return "$sql::$type";
+    }
+
+    /**
+     * Builds the SQL expression used to extract a value from a JSON column.
+     *
+     * @param string $column
+     * @param string $path A dot-separated JSON path, beginning with `$`.
+     * @return string
+     * @since 5.0.0
+     */
+    public function jsonExtract(string $column, string $path): string
+    {
+        $column = $this->db->quoteColumnName($column);
+        $path = $this->db->quoteValue($path);
+        return "($column->>$path)";
+    }
+
+    /**
+     * Builds the SQL expression used to check whether a given value is contained by a target JSON value.
+     *
+     * @param string $targetSql SQL that expresses the JSON value
+     * @param mixed $value The value to check for (**not** JSON-encoded)
+     * @return string
+     * @since 5.0.0
+     */
+    public function jsonContains(string $targetSql, mixed $value): string
+    {
+        $value = $this->db->quoteValue(Json::encode($value));
+        return "($targetSql @> $value::jsonb)";
     }
 }

@@ -13,6 +13,7 @@ use craft\db\Connection;
 use craft\db\mysql\Schema as MysqlSchema;
 use craft\db\pgsql\Schema as PgsqlSchema;
 use craft\db\Query;
+use craft\db\QueryParam;
 use DateTime;
 use DateTimeZone;
 use Money\Money;
@@ -194,10 +195,12 @@ class Db
     }
 
     /**
-     * Prepares data for a JSON column.
+     * Prepares a value to be stored in a JSON column
      *
-     * @param array
+     * @param array $value The value to be stored as JSON
+     * @param Connection|null $db The database connection
      * @return array|string
+     * @since 5.0.0
      */
     public static function prepareForJsonColumn(array $value, ?Connection $db = null): array|string
     {
@@ -557,7 +560,7 @@ class Db
      * (can be `not`, `!=`, `<=`, `>=`, `<`, `>`, or `=`)
      * @param bool $caseInsensitive Whether the resulting condition should be case-insensitive
      * @param string|null $columnType The database column type the param is targeting
-     * @return string|array
+     * @return array|null
      * @throws InvalidArgumentException if the param value isn’t compatible with the column type.
      */
     public static function parseParam(
@@ -566,28 +569,23 @@ class Db
         string $defaultOperator = '=',
         bool $caseInsensitive = false,
         string|null $columnType = null,
-    ): string|array {
-        if (is_string($value) && preg_match('/^not\s*$/', $value)) {
-            return '';
-        }
+    ): ?array {
+        $param = QueryParam::parse($value);
 
-        $value = self::_toArray($value);
-
-        if (!count($value)) {
-            return '';
+        if (empty($param->values)) {
+            return null;
         }
 
         $parsedColumnType = $columnType ? static::parseColumnType($columnType) : null;
 
-        $glue = static::extractGlue($value) ?? self::GLUE_OR;
-        if ($glue === self::GLUE_NOT) {
-            $glue = self::GLUE_AND;
+        if ($param->glue === self::GLUE_NOT) {
+            $param->glue = self::GLUE_AND;
             $negate = true;
         } else {
             $negate = false;
         }
 
-        $condition = [$glue];
+        $condition = [$param->glue];
         $isMysql = self::db()->getIsMysql();
 
         // Only PostgreSQL supports case-sensitive strings
@@ -600,7 +598,7 @@ class Db
         $inVals = [];
         $notInVals = [];
 
-        foreach ($value as $val) {
+        foreach ($param->values as $val) {
             self::_normalizeEmptyValue($val);
             $operator = self::_parseParamOperator($val, $defaultOperator, $negate);
 
@@ -680,13 +678,13 @@ class Db
             }
 
             // ['or', 1, 2, 3] => IN (1, 2, 3)
-            if ($glue == self::GLUE_OR && $operator === '=') {
+            if ($param->glue == self::GLUE_OR && $operator === '=') {
                 $inVals[] = $val;
                 continue;
             }
 
             // ['and', '!=1', '!=2', '!=3'] => NOT IN (1, 2, 3)
-            if ($glue == self::GLUE_AND && $operator === '!=') {
+            if ($param->glue == self::GLUE_AND && $operator === '!=') {
                 $notInVals[] = $val;
                 continue;
             }
@@ -718,24 +716,19 @@ class Db
      * @param string|array|DateTime $value The param value
      * @param string $defaultOperator The default operator to apply to the values
      * (can be `not`, `!=`, `<=`, `>=`, `<`, `>`, or `=`)
-     * @return string|array
+     * @return array|null
      */
-    public static function parseDateParam(string $column, mixed $value, string $defaultOperator = '='): string|array
+    public static function parseDateParam(string $column, mixed $value, string $defaultOperator = '='): ?array
     {
-        $normalizedValues = [];
+        $param = QueryParam::parse($value);
 
-        $value = self::_toArray($value);
-        $glue = static::extractGlue($value);
-
-        if (empty($value)) {
-            return '';
+        if (empty($param->values)) {
+            return null;
         }
 
-        if ($glue !== null) {
-            $normalizedValues[] = $glue;
-        }
+        $normalizedValues = [$param->glue];
 
-        foreach ($value as $val) {
+        foreach ($param->values as $val) {
             // Is this an empty value?
             self::_normalizeEmptyValue($val);
 
@@ -766,7 +759,7 @@ class Db
      * @param string|array|Money $value The param value
      * @param string $defaultOperator The default operator to apply to the values
      * (can be `not`, `!=`, `<=`, `>=`, `<`, `>`, or `=`)
-     * @return string|array
+     * @return array|null
      * @since 4.0.0
      */
     public static function parseMoneyParam(
@@ -774,21 +767,16 @@ class Db
         string $currency,
         mixed $value,
         string $defaultOperator = '=',
-    ): string|array {
-        $normalizedValues = [];
+    ): ?array {
+        $param = QueryParam::parse($value);
 
-        $value = self::_toArray($value);
-
-        if (!count($value)) {
-            return '';
+        if (empty($param->values)) {
+            return null;
         }
 
-        if (in_array($value[0], ['and', 'or', 'not'], true)) {
-            $normalizedValues[] = $value[0];
-            array_shift($value);
-        }
+        $normalizedValues = [$param->glue];
 
-        foreach ($value as $val) {
+        foreach ($param->values as $val) {
             // Is this an empty value?
             self::_normalizeEmptyValue($val);
 
@@ -861,7 +849,7 @@ class Db
      * @param string $defaultOperator The default operator to apply to the values
      * (can be `not`, `!=`, `<=`, `>=`, `<`, `>`, or `=`)
      * @param string|null $columnType The database column type the param is targeting
-     * @return string|array
+     * @return array|null
      * @throws InvalidArgumentException if the param value isn’t numeric
      * @since 4.0.0
      */
@@ -870,7 +858,7 @@ class Db
         mixed $value,
         string $defaultOperator = '=',
         string|null $columnType = Schema::TYPE_INTEGER,
-    ): string|array {
+    ): ?array {
         return static::parseParam($column, $value, $defaultOperator, false, $columnType);
     }
 
@@ -1588,44 +1576,6 @@ class Db
             self::$_db->close();
         }
         self::$_db = null;
-    }
-
-    /**
-     * Converts a given param value to an array.
-     *
-     * @param mixed $value
-     * @return array
-     */
-    private static function _toArray(mixed $value): array
-    {
-        if ($value === null) {
-            return [];
-        }
-
-        if ($value instanceof DateTime) {
-            return [$value];
-        }
-
-        if (is_string($value)) {
-            // Split it on the non-escaped commas
-            $value = preg_split('/(?<!\\\),/', $value);
-
-            // Remove any of the backslashes used to escape the commas
-            foreach ($value as $key => $val) {
-                // Remove leading/trailing whitespace
-                $val = trim($val);
-
-                // Remove any backslashes used to escape commas
-                $val = str_replace('\,', ',', $val);
-
-                $value[$key] = $val;
-            }
-
-            // Remove any empty elements and reset the keys
-            return array_values(ArrayHelper::filterEmptyStringsFromArray($value));
-        }
-
-        return ArrayHelper::toArray($value);
     }
 
     /**

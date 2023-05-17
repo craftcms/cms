@@ -242,7 +242,7 @@ class Craft extends Yii
                 /** @var FieldInterface|string $fieldClass */
                 $fieldClass = $field['type'];
                 if (Component::validateComponentClass($fieldClass, FieldInterface::class)) {
-                    $types = explode('|', $fieldClass::valueType());
+                    $types = explode('|', $fieldClass::phpType());
                 } else {
                     $types = ['mixed'];
                 }

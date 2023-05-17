@@ -5,6 +5,7 @@ namespace craft\migrations;
 use craft\base\ElementInterface;
 use craft\base\FieldInterface;
 use craft\db\Migration;
+use craft\db\Query;
 use craft\db\Table;
 use craft\fields\BaseOptionsField;
 use craft\fields\Lightswitch;
@@ -13,7 +14,7 @@ use craft\helpers\Db;
 use craft\helpers\Json;
 use craft\models\FieldLayout;
 use yii\db\ColumnSchema;
-use yii\db\Query;
+use yii\db\Query as YiiQuery;
 use yii\db\Schema;
 
 /**
@@ -26,14 +27,14 @@ class BaseContentRefactorMigration extends Migration
     /**
      * Updates the `elements_sites.content` value for elements.
      *
-     * @param int[]|Query $ids The elmenet IDs to update, or a query that selects them.
+     * @param int[]|YiiQuery $ids The elmenet IDs to update, or a query that selects them.
      * If a query is passed but `select` is not set, it will default to `'id'`.
      * @param FieldLayout|null $fieldLayout The field layout that the elements use, if any
      * @param string $contentTable The table that the elements stored their field values in.
      * @param string $fieldColumnPrefix The column prefix that the content table used for these elements’ fields.
      */
     protected function updateElements(
-        Query|array $ids,
+        YiiQuery|array $ids,
         ?FieldLayout $fieldLayout,
         string $contentTable = Table::CONTENT,
         string $fieldColumnPrefix = 'field_',
@@ -45,7 +46,12 @@ class BaseContentRefactorMigration extends Migration
 
         if ($fieldLayout) {
             foreach ($fieldLayout->getCustomFields() as $field) {
-                // can't rely on hasContentColumn() since that is going away
+                $dbType = $field::dbType();
+
+                if ($dbType === null) {
+                    continue;
+                }
+
                 $primaryColumn = sprintf(
                     '%s%s%s',
                     $fieldColumnPrefix,
@@ -56,15 +62,9 @@ class BaseContentRefactorMigration extends Migration
                 if ($contentTableSchema->getColumn($primaryColumn)) {
                     $fieldsByUid[$field->uid] = $field;
 
-                    // was this a multi-column field?
-                    // (multi-column support was added alongside columnSuffix, so no chance it will be
-                    // multi-column if the field doesn’t have that property set.)
-                    if (
-                        isset($field->columnSuffix) &&
-                        method_exists($field, 'getContentColumnType') &&
-                        is_array($fieldColumnTypes = $field->getContentColumnType())
-                    ) {
-                        foreach (array_keys($fieldColumnTypes) as $i => $key) {
+                    // is this a multi-column field?
+                    if (is_array($dbType)) {
+                        foreach (array_keys($dbType) as $i => $key) {
                             $column = $i === 0 ? $primaryColumn : sprintf(
                                 '%s%s_%s_%s',
                                 $fieldColumnPrefix,
@@ -83,11 +83,11 @@ class BaseContentRefactorMigration extends Migration
             }
         }
 
-        if ($ids instanceof Query && !$ids->select) {
+        if ($ids instanceof YiiQuery && !$ids->select) {
             $ids->select('id');
         }
 
-        $query = (new Query())
+        $query = (new YiiQuery())
             ->select([
                 'es.id',
                 'es.elementId',
@@ -127,9 +127,12 @@ class BaseContentRefactorMigration extends Migration
                         fn($c) => $this->decodeValue($element[$c], $field, $contentTableSchema->getColumn($c)),
                         $column,
                     );
+                    // if the primary column is null, consider the whole value to be null
                     if (reset($value) === null) {
                         continue;
                     }
+                    // prune out any null values in the secondary columns
+                    $value = array_filter($value, fn($v) => $v !== null);
                 } else {
                     $value = $this->decodeValue($element[$column], $field, $contentTableSchema->getColumn($column));
                     if ($value === null) {
@@ -146,6 +149,20 @@ class BaseContentRefactorMigration extends Migration
             ], ['id' => $element['id']], updateTimestamp: false, db: $this->db);
 
             echo " done\n";
+        }
+
+        // drop these content rows completely
+        $this->delete($contentTable, ['in', 'es.elementId', $ids]);
+
+        // if the content table is totally empty now, drop it
+        $rowsExist = (new Query())
+            ->select('id')
+            ->from($contentTable)
+            ->limit(1)
+            ->exists($this->db);
+
+        if (!$rowsExist) {
+            $this->dropTable($contentTable);
         }
     }
 

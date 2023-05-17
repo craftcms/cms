@@ -12,14 +12,11 @@ use craft\base\ElementInterface;
 use craft\base\Field;
 use craft\base\PreviewableFieldInterface;
 use craft\base\SortableFieldInterface;
-use craft\elements\db\ElementQuery;
-use craft\elements\db\ElementQueryInterface;
 use craft\fields\conditions\DateFieldConditionRule;
 use craft\gql\directives\FormatDateTime;
 use craft\gql\types\DateTime as DateTimeType;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
-use craft\helpers\ElementHelper;
 use craft\helpers\Gql;
 use craft\helpers\Html;
 use craft\i18n\Locale;
@@ -49,9 +46,20 @@ class Date extends Field implements PreviewableFieldInterface, SortableFieldInte
     /**
      * @inheritdoc
      */
-    public static function valueType(): string
+    public static function phpType(): string
     {
         return sprintf('\\%s|null', DateTime::class);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function dbType(): array|string
+    {
+        return [
+            'date' => Schema::TYPE_DATETIME,
+            'tz' => Schema::TYPE_STRING,
+        ];
     }
 
     /**
@@ -162,21 +170,6 @@ class Date extends Field implements PreviewableFieldInterface, SortableFieldInte
         $rules[] = [['minuteIncrement'], 'integer', 'min' => 1, 'max' => 60];
         $rules[] = [['max'], DateTimeValidator::class, 'min' => $this->min];
         return $rules;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getContentColumnType(): array|string
-    {
-        if ($this->showTimeZone) {
-            return [
-                'date' => Schema::TYPE_DATETIME,
-                'tz' => Schema::TYPE_STRING,
-            ];
-        }
-
-        return Schema::TYPE_DATETIME;
     }
 
     /**
@@ -405,13 +398,9 @@ class Date extends Field implements PreviewableFieldInterface, SortableFieldInte
     /**
      * @inheritdoc
      */
-    public function modifyElementsQuery(ElementQueryInterface $query, mixed $value): void
+    public function getQueryCondition(mixed $value, array &$params = []): ?array
     {
-        /** @var ElementQuery $query */
-        if ($value !== null) {
-            $column = ElementHelper::fieldColumnFromField($this);
-            $query->subQuery->andWhere(Db::parseDateParam("content.$column", $value));
-        }
+        return Db::parseDateParam($this->getValueSql(), $value);
     }
 
     /**

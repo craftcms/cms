@@ -1281,11 +1281,6 @@ class Elements extends Component
                         ]));
                     }
 
-                    // Make sure the element was queried with its content
-                    if ($element::hasContent() && $element->contentId === null) {
-                        throw new InvalidElementException($element, "Skipped resaving {$element->getUiLabel()} ($element->id) because it wasn’t loaded with its content.");
-                    }
-
                     // Make sure this isn't a revision
                     if ($skipRevisions) {
                         try {
@@ -1465,7 +1460,6 @@ class Elements extends Component
         $mainClone->id = null;
         $mainClone->uid = StringHelper::UUID();
         $mainClone->siteSettingsId = null;
-        $mainClone->contentId = null;
         $mainClone->root = null;
         $mainClone->lft = null;
         $mainClone->rgt = null;
@@ -1600,7 +1594,6 @@ class Elements extends Component
                     $siteClone->level = $mainClone->level;
                     $siteClone->enabled = $mainClone->enabled;
                     $siteClone->siteSettingsId = null;
-                    $siteClone->contentId = null;
                     $siteClone->dateCreated = $mainClone->dateCreated;
                     $siteClone->dateUpdated = $mainClone->dateUpdated;
                     $siteClone->dateLastMerged = null;
@@ -2981,6 +2974,9 @@ class Elements extends Component
             return false;
         }
 
+        // Get the field layout
+        $fieldLayout = $element->getFieldLayout();
+
         // Get the sites supported by this element
         $supportedSites = $supportedSites ?? ArrayHelper::index(ElementHelper::supportedSitesForElement($element), 'siteId');
 
@@ -2998,7 +2994,7 @@ class Elements extends Component
         }
 
         // If we're skipping validation, at least make sure the title is valid
-        if (!$runValidation && $element::hasContent() && $element::hasTitles()) {
+        if (!$runValidation && $element::hasTitles()) {
             foreach ($element->getActiveValidators('title') as $validator) {
                 $validator->validateAttributes($element, ['title']);
             }
@@ -3051,7 +3047,7 @@ class Elements extends Component
                 $elementRecord->canonicalId = $element->getIsDerivative() ? $element->getCanonicalId() : null;
                 $elementRecord->draftId = (int)$element->draftId ?: null;
                 $elementRecord->revisionId = (int)$element->revisionId ?: null;
-                $elementRecord->fieldLayoutId = $element->fieldLayoutId = (int)($element->fieldLayoutId ?? $element->getFieldLayout()->id ?? 0) ?: null;
+                $elementRecord->fieldLayoutId = $element->fieldLayoutId = (int)($element->fieldLayoutId ?? $fieldLayout->id ?? 0) ?: null;
                 $elementRecord->enabled = (bool)$element->enabled;
                 $elementRecord->archived = (bool)$element->archived;
                 $elementRecord->dateLastMerged = Db::prepareDateForDb($element->dateLastMerged);
@@ -3131,6 +3127,8 @@ class Elements extends Component
                 $siteSettingsRecord->siteId = $element->siteId;
             }
 
+            $title = $element::hasTitles() ? $element->title : null;
+            $siteSettingsRecord->title = $title !== null && $title !== '' ? $title : null;
             $siteSettingsRecord->slug = $element->slug;
             $siteSettingsRecord->uri = $element->uri;
 
@@ -3151,6 +3149,21 @@ class Elements extends Component
                 }
             }
 
+            // Set the field values
+            $content = [];
+            if ($fieldLayout) {
+                foreach ($fieldLayout->getCustomFields() as $field) {
+                    if ($field::dbType() !== null) {
+                        $serializedValue = $field->serializeValue($element->getFieldValue($field->handle), $element);
+                        if ($serializedValue !== null) {
+                            $content[$field->uid] = $serializedValue;
+                        }
+                    }
+                }
+            }
+            $siteSettingsRecord->content = $content ?: null;
+
+            // Save the site settings record
             if (!$siteSettingsRecord->save(false)) {
                 $element->firstSave = $originalFirstSave;
                 $element->propagateAll = $originalPropagateAll;
@@ -3158,11 +3171,6 @@ class Elements extends Component
             }
 
             $element->siteSettingsId = $siteSettingsRecord->id;
-
-            // Save the content
-            if ($element::hasContent()) {
-                Craft::$app->getContent()->saveContent($element);
-            }
 
             // Set all of the dirty attributes on the element, in case an event listener wants to know
             if ($trackChanges) {
@@ -3233,17 +3241,6 @@ class Elements extends Component
                         ['not', ['siteId' => array_keys($supportedSites)]],
                     ]
                 );
-
-                if ($element::hasContent()) {
-                    Db::deleteIfExists(
-                        $element->getContentTable(),
-                        [
-                            'and',
-                            ['elementId' => $element->id],
-                            ['not', ['siteId' => array_keys($supportedSites)]],
-                        ]
-                    );
-                }
             }
 
             // Invalidate any caches involving this element
@@ -3273,7 +3270,6 @@ class Elements extends Component
         // Update the changed attributes & fields
         if ($trackChanges) {
             $dirtyAttributes = $element->getDirtyAttributes();
-            $fieldLayout = $element->getFieldLayout();
             $dirtyFields = $fieldLayout ? $element->getDirtyFields() : null;
 
             $userId = Craft::$app->getUser()->getId();
@@ -3357,7 +3353,6 @@ class Elements extends Component
             $siteElement = clone $element;
             $siteElement->siteId = $siteInfo['siteId'];
             $siteElement->siteSettingsId = null;
-            $siteElement->contentId = null;
             $siteElement->setEnabledForSite($siteInfo['enabledByDefault']);
 
             // Keep track of this new site ID
@@ -3366,7 +3361,6 @@ class Elements extends Component
             $oldSiteElement = $siteElement;
             $siteElement = clone $element;
             $siteElement->siteId = $oldSiteElement->siteId;
-            $siteElement->contentId = $oldSiteElement->contentId;
             $siteElement->setEnabledForSite($oldSiteElement->getEnabledForSite());
         } else {
             $siteElement->enabled = $element->enabled;
@@ -3397,11 +3391,13 @@ class Elements extends Component
         }));
 
         // Copy any non-translatable field values
-        if ($element::hasContent()) {
-            if ($isNewSiteForElement) {
-                // Copy all the field values
-                $siteElement->setFieldValues($element->getFieldValues());
-            } elseif (($fieldLayout = $element->getFieldLayout()) !== null) {
+        if ($isNewSiteForElement) {
+            // Copy all the field values
+            $siteElement->setFieldValues($element->getFieldValues());
+        } else {
+            $fieldLayout = $element->getFieldLayout();
+
+            if ($fieldLayout !== null) {
                 // Only copy the non-translatable field values
                 foreach ($fieldLayout->getCustomFields() as $field) {
                     // Has this field changed, and does it produce the same translation key as it did for the initial element?

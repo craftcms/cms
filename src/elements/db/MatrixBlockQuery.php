@@ -527,16 +527,6 @@ class MatrixBlockQuery extends ElementQuery
         $this->query->innerJoin(['matrixblocks_owners' => Table::MATRIXBLOCKS_OWNERS], $ownersCondition);
         $this->subQuery->innerJoin(['matrixblocks_owners' => Table::MATRIXBLOCKS_OWNERS], $ownersCondition);
 
-        // Figure out which content table to use
-        $this->contentTable = null;
-        if ($this->fieldId && count($this->fieldId) === 1) {
-            /** @var MatrixField|null $matrixField */
-            $matrixField = Craft::$app->getFields()->getFieldById(reset($this->fieldId));
-            if ($matrixField) {
-                $this->contentTable = $matrixField->contentTable;
-            }
-        }
-
         $this->query->addSelect([
             'matrixblocks.fieldId',
             'matrixblocks.primaryOwnerId',

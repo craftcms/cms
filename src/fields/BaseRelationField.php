@@ -16,7 +16,6 @@ use craft\base\ElementInterface;
 use craft\base\Field;
 use craft\base\PreviewableFieldInterface;
 use craft\db\Query;
-use craft\db\QueryAbortedException;
 use craft\db\Table as DbTable;
 use craft\elements\conditions\ElementCondition;
 use craft\elements\conditions\ElementConditionInterface;
@@ -62,7 +61,7 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
     /**
      * @inheritdoc
      */
-    public static function hasContentColumn(): bool
+    public static function hasContent(): bool
     {
         return false;
     }
@@ -99,7 +98,7 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
     /**
      * @inheritdoc
      */
-    public static function valueType(): string
+    public static function phpType(): string
     {
         return sprintf('\\%s|\\%s<\\%s>', ElementQueryInterface::class, ElementCollection::class, ElementInterface::class);
     }
@@ -648,17 +647,12 @@ JS, [
     /**
      * @inheritdoc
      */
-    public function modifyElementsQuery(ElementQueryInterface $query, mixed $value): void
+    public function getQueryCondition(mixed $value, array &$params = []): array|false
     {
-        if (empty($value)) {
-            return;
-        }
-
         if (!is_array($value)) {
             $value = [$value];
         }
 
-        /** @var ElementQuery $query */
         $conditions = [];
 
         if (isset($value[0]) && in_array($value[0], [':notempty:', ':empty:', 'not :empty:'])) {
@@ -711,11 +705,11 @@ JS, [
         }
 
         if (empty($conditions)) {
-            throw new QueryAbortedException();
+            return false;
         }
 
         array_unshift($conditions, 'or');
-        $query->subQuery->andWhere($conditions);
+        return $conditions;
     }
 
     /**
