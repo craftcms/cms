@@ -182,6 +182,11 @@ class Entry extends Structure
                     return $childrenComplexity + GqlService::GRAPHQL_COMPLEXITY_NPLUS1 * (int)!empty($args);
                 },
             ],
+            'enabledForSite' => [
+                'name' => 'enabledForSite',
+                'type' => Type::boolean(),
+                'description' => 'Whether the element is enabled for the site or not.',
+            ],
         ]), self::getName());
     }
 
