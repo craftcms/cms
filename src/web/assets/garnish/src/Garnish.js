@@ -418,7 +418,9 @@ Garnish = $.extend(Garnish, {
    * @param {Object} container
    */
   firstFocusableElement: function (container) {
-    return $(container).find(':focusable').first();
+    const $container = $(container);
+    const $focusableElements = Garnish.getKeyboardFocusableElements($container);
+    return $focusableElements.first();
   },
 
   /**
