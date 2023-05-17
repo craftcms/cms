@@ -497,14 +497,7 @@ Garnish = $.extend(Garnish, {
    */
   setFocusWithin: function (container) {
     const $container = $(container);
-    const $firstFocusable = $(container).find(
-      ':focusable:not(.checkbox):first'
-    );
-
-    // Ensure the result is actually keyboard-focusable
-    if (!Garnish.isKeyboardFocusable($firstFocusable)) {
-      $firstFocusable.slice(-1);
-    }
+    const $firstFocusable = Garnish.firstFocusableElement(container);
 
     if ($firstFocusable.length > 0) {
       $firstFocusable.trigger('focus');
