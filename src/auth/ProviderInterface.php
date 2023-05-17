@@ -25,20 +25,50 @@ interface ProviderInterface extends SavableComponentInterface
     /**
      * Initiate an auth request
      *
-     * @param bool $isLogin
      * @throws AuthFailedException
      * @return bool
      */
-    public function handleRequest(bool $isLogin): bool;
+    public function handleAuthRequest(): bool;
+
+    /**
+     * Initiate an login request
+     *
+     * @throws AuthFailedException
+     * @return bool
+     */
+    public function handleLoginRequest(): bool;
+
+    /**
+     * Initiate a logout request
+     *
+     * @throws AuthFailedException
+     * @return bool
+     */
+    public function handleLogoutRequest(): bool;
 
     /**
      * Handle an auth response
      *
-     * @param bool $isLogin
      * @throws AuthFailedException
      * @return bool
      */
-    public function handleResponse(bool $isLogin): bool;
+    public function handleAuthResponse(): bool;
+
+    /**
+     * Handle a login response
+     *
+     * @throws AuthFailedException
+     * @return bool
+     */
+    public function handleLoginResponse(): bool;
+
+    /**
+     * Handle a logout response
+     *
+     * @throws AuthFailedException
+     * @return bool
+     */
+    public function handleLogoutResponse(): bool;
 
     /**
      * @return string|null The site login HTML
@@ -49,4 +79,44 @@ interface ProviderInterface extends SavableComponentInterface
      * @return string|null The admin login HTML
      */
     public function getCpLoginHtml(): string | null;
+
+    /**
+     * @return string|null The site logout HTML
+     */
+    public function getSiteLogoutHtml(): string | null;
+
+    /**
+     * @return string|null The admin logout HTML
+     */
+    public function getCpLogoutHtml(): string | null;
+
+    /**
+     * @return string|null The login request URL
+     */
+    public function getLoginRequestUrl(): string | null;
+
+    /**
+     * @return string|null The logout request URL
+     */
+    public function getLogoutRequestUrl(): string | null;
+
+    /**
+     * @return string|null The auth request URL
+     */
+    public function getAuthRequestUrl(): string | null;
+
+    /**
+     * @return string|null The login response URL
+     */
+    public function getLoginResponseUrl(): string | null;
+
+    /**
+     * @return string|null The logout response URL
+     */
+    public function getLogoutResponseUrl(): string | null;
+
+    /**
+     * @return string|null The auth response URL
+     */
+    public function getAuthResponseUrl(): string | null;
 }

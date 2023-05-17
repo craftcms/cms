@@ -20,15 +20,20 @@ use yii\web\Response;
 class AuthController extends Controller
 {
     /**
-     * The session key used to store the type of request made.  The requset type is retrieved
+     * The session key used to store the type of request made.  The request type is retrieved
      * when a response comes back.
      */
-    const SESSION_KEY = "Login";
+    const SESSION_KEY = "Auth";
 
     /**
      * A request type where a user should be logged into Craft
      */
     const REQUEST_TYPE_LOGIN = "Login";
+
+    /**
+     * A request type where a user should be logged out of Craft
+     */
+    const REQUEST_TYPE_LOGOUT = "Logout";
 
     /**
      * A request type where only the identity session check should be performed
@@ -39,8 +44,8 @@ class AuthController extends Controller
      * @inheritdoc
      */
     protected array|bool|int $allowAnonymous = [
-        'login' => self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE,
-        'session' => self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE,
+        'request-login' => self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE,
+        'request-session' => self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE,
         'response' => self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE,
     ];
 
@@ -48,17 +53,51 @@ class AuthController extends Controller
      * Perform a login request.
      *
      * @param string $provider
-     * @return null|Response
+     * @return Response|null
      * @throws AuthProviderNotFoundException
+     * @throws HttpException
      * @throws \craft\errors\MissingComponentException
      */
-    public function actionLogin(string $provider): ?Response
+    public function actionRequestLogin(string $provider): ?Response
     {
         $authProvider = Craft::$app->getAuth()->getProviderByHandle($provider);
 
         Craft::$app->getSession()->set(self::SESSION_KEY, self::REQUEST_TYPE_LOGIN);
 
-        return $this->processRequest($authProvider, true);
+        try {
+            if ($authProvider->handleLoginRequest()) {
+                return $this->response;
+            }
+        } catch (AuthFailedException $exception) {
+            throw new HttpException(400, $exception->getMessage(), previous: $exception);
+        }
+
+        return $this->handleFailedRequest();
+    }
+
+    /**
+     * Perform a logout request.
+     *
+     * @param string $provider
+     * @return null|Response
+     * @throws AuthProviderNotFoundException
+     * @throws \craft\errors\MissingComponentException
+     */
+    public function actionRequestLogout(string $provider): ?Response
+    {
+        $authProvider = Craft::$app->getAuth()->getProviderByHandle($provider);
+
+        Craft::$app->getSession()->set(self::SESSION_KEY, self::REQUEST_TYPE_LOGOUT);
+
+        try {
+            if ($authProvider->handleLogoutRequest()) {
+                return $this->response;
+            }
+        } catch (AuthFailedException $exception) {
+            throw new HttpException(400, $exception->getMessage(), previous: $exception);
+        }
+
+        return $this->handleFailedRequest();
     }
 
     /**
@@ -70,27 +109,14 @@ class AuthController extends Controller
      * @throws HttpException
      * @throws \craft\errors\MissingComponentException
      */
-    public function actionSession(string $provider): Response
+    public function actionRequestSession(string $provider): Response
     {
         $authProvider = Craft::$app->getAuth()->getProviderByHandle($provider);
 
         Craft::$app->getSession()->set(self::SESSION_KEY, self::REQUEST_TYPE_SESSION);
 
-        return $this->processRequest($authProvider, false);
-    }
-
-    /**
-     * Process a login or session request
-     *
-     * @param ProviderInterface $provider
-     * @param bool $isLogin
-     * @return Response|null
-     * @throws HttpException
-     */
-    protected function processRequest(ProviderInterface $provider, bool $isLogin): ?Response
-    {
         try {
-            if ($provider->handleRequest($isLogin)) {
+            if ($authProvider->handleAuthRequest()) {
                 return $this->response;
             }
         } catch (AuthFailedException $exception) {
@@ -105,17 +131,60 @@ class AuthController extends Controller
      *
      * @param string $provider
      * @return Response|null
-     * @throws AuthProviderNotFoundException
      * @throws \craft\errors\MissingComponentException
      */
     public function actionResponse(string $provider): ?Response
     {
+        switch(Craft::$app->getSession()->get(self::SESSION_KEY)) {
+            case self::REQUEST_TYPE_LOGIN:
+                return $this->actionLoginResponse($provider);
+
+            case self::REQUEST_TYPE_SESSION:
+                return $this->actionSessionResponse($provider);
+
+            case self::REQUEST_TYPE_LOGOUT:
+                return $this->actionLogoutResponse($provider);
+        }
+
+        return $this->handleFailedResponse();
+    }
+
+    public function actionLoginResponse(string $provider): ?Response
+    {
         $authProvider = Craft::$app->getAuth()->getProviderByHandle($provider);
 
         try {
-            if ($authProvider->handleResponse(
-                Craft::$app->getSession()->get(self::SESSION_KEY) !== self::REQUEST_TYPE_SESSION)
-            ) {
+            if ($authProvider->handleLoginResponse()) {
+                return $this->handleSuccessfulResponse();
+            }
+        } catch (AuthFailedException $exception) {
+            return $this->handleFailedResponse($exception->identity);
+        }
+
+        return $this->handleFailedResponse();
+    }
+
+    public function actionLogoutResponse(string $provider): ?Response
+    {
+        $authProvider = Craft::$app->getAuth()->getProviderByHandle($provider);
+
+        try {
+            if ($authProvider->handleLogoutResponse()) {
+                return $this->handleSuccessfulResponse();
+            }
+        } catch (AuthFailedException $exception) {
+            return $this->handleFailedResponse($exception->identity);
+        }
+
+        return $this->handleFailedResponse();
+    }
+
+    public function actionSessionResponse(string $provider): ?Response
+    {
+        $authProvider = Craft::$app->getAuth()->getProviderByHandle($provider);
+
+        try {
+            if ($authProvider->handleAuthResponse()) {
                 return $this->handleSuccessfulResponse();
             }
         } catch (AuthFailedException $exception) {
@@ -191,12 +260,12 @@ class AuthController extends Controller
         return $this->asFailure(
             $message,
             data: [
-                'errorCode' => $user->authError,
+                'errorCode' => $user->authError ?? "unknown",
             ],
             routeParams: array_merge(
                 $routeParams,
                 [
-                    'errorCode' => $user->authError,
+                    'errorCode' => $user->authError ?? "unknown",
                     'errorMessage' => $message,
                 ]
             )

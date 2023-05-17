@@ -25,4 +25,6 @@ abstract class AbstractOpenIdConnectProvider extends AbstractProvider
      * @var string
      */
     public string $state;
+
+
 }

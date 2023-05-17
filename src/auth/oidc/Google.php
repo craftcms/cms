@@ -11,7 +11,6 @@ use Craft;
 use craft\elements\User;
 use craft\errors\AuthFailedException;
 use craft\helpers\Html;
-use craft\helpers\UrlHelper;
 use League\OAuth2\Client\Provider\Exception\IdentityProviderException;
 use League\OAuth2\Client\Provider\Google as GoogleProvider;
 use League\OAuth2\Client\Provider\GoogleUser;
@@ -61,7 +60,7 @@ class Google extends AbstractOpenIdConnectProvider
                 'hostedDomain' => $this->hostedDomain,
                 'prompt' => $this->prompt,
                 'scopes' => $this->scopes,
-                'redirectUri' => UrlHelper::actionUrl('auth/response', ['provider' => $this->handle], null, false)
+                'redirectUri' => $this->getAuthResponseUrl()
             ]);
         }
 
@@ -71,7 +70,7 @@ class Google extends AbstractOpenIdConnectProvider
     /**
      * @inheritDoc
      */
-    public function handleRequest(bool $isLogin): bool
+    public function handleAuthRequest(): bool
     {
         Craft::$app->getResponse()->redirect(
             $this->provider()->getAuthorizationUrl()
@@ -83,9 +82,21 @@ class Google extends AbstractOpenIdConnectProvider
     /**
      * @inheritDoc
      */
-    public function handleResponse(bool $isLogin): bool
+    public function handleLoginRequest(): bool
     {
-        return $isLogin ? $this->handleLoginRequest() : $this->handleSessionRequest();
+        Craft::$app->getResponse()->redirect(
+            $this->provider()->getAuthorizationUrl()
+        );
+
+        return true;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function handleLogoutRequest(): bool
+    {
+        return true;
     }
 
     /**
@@ -94,7 +105,7 @@ class Google extends AbstractOpenIdConnectProvider
      * @throws Exception
      * @throws \yii\web\BadRequestHttpException
      */
-    private function handleLoginRequest(): bool
+    public function handleLoginResponse(): bool
     {
         try {
             return $this->loginUser(
@@ -112,7 +123,7 @@ class Google extends AbstractOpenIdConnectProvider
      * @throws IdentityProviderException
      * @throws \yii\web\BadRequestHttpException
      */
-    private function handleSessionRequest(): bool
+    public function handleAuthResponse(): bool
     {
         try {
             $this->getAuthorizedUser();
@@ -121,6 +132,15 @@ class Google extends AbstractOpenIdConnectProvider
         } catch (IdentityProviderException $exception) {
             throw new AuthFailedException($this, message: "Failed to retrieve Google Identity.", previous: $exception);
         }
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function handleLogoutResponse(): bool
+    {
+        // Todo - implement me
+        return true;
     }
 
     /**
@@ -163,7 +183,7 @@ class Google extends AbstractOpenIdConnectProvider
      */
     public function getSiteLoginHtml(?string $label = "Login via Google", ?string $url = null): string
     {
-        return Html::a($label, $url ?: UrlHelper::actionUrl('auth/login', ['provider' => $this->handle]));
+        return Html::a($label, $url ?: $this->getLoginRequestUrl());
     }
 
     /**
@@ -171,6 +191,22 @@ class Google extends AbstractOpenIdConnectProvider
      */
     public function getCpLoginHtml(?string $label = "Login via Google", ?string $url = null): string
     {
-        return Html::a($label, $url ?: UrlHelper::actionUrl('auth/login', ['provider' => $this->handle] ));
+        return Html::a($label, $url ?: $this->getLoginRequestUrl());
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getSiteLogoutHtml(?string $label = "Logout via Google", ?string $url = null): string
+    {
+        return Html::a($label, $url ?: $this->getLogoutRequestUrl());
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getCpLogoutHtml(?string $label = "Logout via Google", ?string $url = null): string
+    {
+        return Html::a($label, $url ?: $this->getLogoutRequestUrl());
     }
 }

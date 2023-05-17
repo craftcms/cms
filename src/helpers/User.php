@@ -74,7 +74,7 @@ class User
      */
     public static function getAuthFailureMessage(?UserElement $user): ?string
     {
-        switch ($user->authError) {
+        switch ($user->authError ?? "") {
             case UserElement::AUTH_PENDING_VERIFICATION:
                 return Craft::t('app', 'Account has not been activated.');
             case UserElement::AUTH_ACCOUNT_LOCKED:
