@@ -4444,6 +4444,8 @@ $min2ColWidth: 400px;
         }
 
         & > .datetimewrapper {
+          gap: 0;
+
           & > .datewrapper {
             width: 55%;
           }
