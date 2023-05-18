@@ -902,9 +902,14 @@ class Matrix extends Component
                     }
                 } elseif (!$force && $block->primaryOwnerId === $target->id) {
                     // Only the block ownership was duplicated, so just update its sort order for the target element
-                    Db::update(Table::MATRIXBLOCKS_OWNERS, [
+                    // (use upsert in case the row doesn’t exist though)
+                    Db::upsert(Table::MATRIXBLOCKS_OWNERS, [
+                        'blockId' => $block->id,
+                        'ownerId' => $target->id,
                         'sortOrder' => $block->sortOrder,
-                    ], ['blockId' => $block->id, 'ownerId' => $target->id], updateTimestamp: false);
+                    ], [
+                        'sortOrder' => $block->sortOrder,
+                    ], updateTimestamp: false);
                     $newBlockId = $block->id;
                 } else {
                     $newBlockId = $elementsService->duplicateElement($block, $newAttributes, trackDuplication: $trackDuplications)->id;

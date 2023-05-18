@@ -3,6 +3,7 @@
 ## Unreleased
 
 - Improved `craft\helpers\FileHelper::getExtensionByMimeType()` for some ambiguous, web-friendly MIME types.
+- Fixed a bug where reverting an entry’s content from a revision could omit some Matrix blocks.
 
 ## 4.4.11 - 2023-05-15
 
