@@ -4,6 +4,7 @@
 
 - Improved `craft\helpers\FileHelper::getExtensionByMimeType()` for some ambiguous, web-friendly MIME types.
 - Fixed a bug where reverting an entry’s content from a revision could omit some Matrix blocks.
+- Fixed an error that could occur when adding a new site to an entry which contained Matrix blocks, if the same site had been added and removed previously.
 
 ## 4.4.11 - 2023-05-15
 
