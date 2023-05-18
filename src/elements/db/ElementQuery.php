@@ -32,6 +32,7 @@ use craft\helpers\Db;
 use craft\helpers\ElementHelper;
 use craft\helpers\Json;
 use craft\helpers\StringHelper;
+use craft\models\FieldLayout;
 use craft\models\Site;
 use Illuminate\Support\Collection;
 use ReflectionClass;
@@ -1974,7 +1975,22 @@ class ElementQuery extends Query implements ElementQueryInterface
      */
     protected function customFields(): array
     {
-        return Craft::$app->getFields()->getAllFields('global');
+        $fields = [];
+        foreach ($this->fieldLayouts() as $fieldLayout) {
+            array_push($fields, ...$fieldLayout->getCustomFields());
+        }
+        return $fields;
+    }
+
+    /**
+     * Returns the field layouts whose custom fields should be returned by [[customFields()]].
+     *
+     * @return FieldLayout[]
+     * @since 5.0.0
+     */
+    protected function fieldLayouts(): array
+    {
+        return Craft::$app->getFields()->getLayoutsByType($this->elementType);
     }
 
     /**

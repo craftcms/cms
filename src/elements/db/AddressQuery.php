@@ -7,6 +7,7 @@
 
 namespace craft\elements\db;
 
+use Craft;
 use craft\base\ElementInterface;
 use craft\db\QueryAbortedException;
 use craft\db\Table;
@@ -302,5 +303,15 @@ class AddressQuery extends ElementQuery
         }
 
         return $tags;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    protected function fieldLayouts(): array
+    {
+        return [
+            Craft::$app->getAddresses()->getLayout(),
+        ];
     }
 }

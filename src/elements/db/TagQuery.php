@@ -227,4 +227,24 @@ class TagQuery extends ElementQuery
         }
         return $tags;
     }
+
+    /**
+     * @inheritdoc
+     */
+    protected function fieldLayouts(): array
+    {
+        if ($this->groupId) {
+            $fieldLayouts = [];
+            $tagsService = Craft::$app->getTags();
+            foreach ($this->groupId as $groupId) {
+                $group = $tagsService->getTagGroupById($groupId);
+                if ($group) {
+                    $fieldLayouts[] = $group->getFieldLayout();
+                }
+            }
+            return $fieldLayouts;
+        }
+
+        return parent::fieldLayouts();
+    }
 }

@@ -1139,4 +1139,35 @@ class EntryQuery extends ElementQuery
         }
         return $tags;
     }
+
+    /**
+     * @inheritdoc
+     */
+    protected function fieldLayouts(): array
+    {
+        if ($this->typeId || $this->sectionId) {
+            $fieldLayouts = [];
+            $sectionsService = Craft::$app->getSections();
+            if ($this->typeId) {
+                foreach ($this->typeId as $entryTypeId) {
+                    $entryType = $sectionsService->getEntryTypeById($entryTypeId);
+                    if ($entryType) {
+                        $fieldLayouts[] = $entryType->getFieldLayout();
+                    }
+                }
+            } else {
+                foreach ($this->sectionId as $sectionId) {
+                    $section = $sectionsService->getSectionById($sectionId);
+                    if ($section) {
+                        foreach ($section->getEntryTypes() as $entryType) {
+                            $fieldLayouts[] = $entryType->getFieldLayout();
+                        }
+                    }
+                }
+            }
+            return $fieldLayouts;
+        }
+
+        return parent::fieldLayouts();
+    }
 }

@@ -632,26 +632,6 @@ class MatrixBlockQuery extends ElementQuery
 
     /**
      * @inheritdoc
-     */
-    protected function customFields(): array
-    {
-        // This method won't get called if $this->fieldId isn't set to a single int
-        /** @var MatrixField $matrixField */
-        $matrixField = Craft::$app->getFields()->getFieldById(reset($this->fieldId));
-
-        if (!empty($this->typeId)) {
-            $blockTypes = ArrayHelper::toArray($this->typeId);
-
-            if (ArrayHelper::isNumeric($blockTypes)) {
-                return $matrixField->getBlockTypeFields($blockTypes);
-            }
-        }
-
-        return $matrixField->getBlockTypeFields();
-    }
-
-    /**
-     * @inheritdoc
      * @since 3.5.0
      */
     protected function cacheTags(): array
@@ -677,5 +657,28 @@ class MatrixBlockQuery extends ElementQuery
             }
         }
         return $tags;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    protected function fieldLayouts(): array
+    {
+        if ($this->fieldId) {
+            $fieldLayouts = [];
+            $fieldsService = Craft::$app->getFields();
+            foreach ($this->fieldId as $fieldId) {
+                $field = $fieldsService->getFieldById($fieldId);
+                if ($field instanceof Matrix) {
+                    array_push($fieldLayouts, ...array_map(
+                        fn(MatrixBlockType $blockType) => $blockType->getFieldLayout(),
+                        $field->getBlockTypes(),
+                    ));
+                }
+            }
+            return $fieldLayouts;
+        }
+
+        return parent::fieldLayouts();
     }
 }
