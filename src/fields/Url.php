@@ -326,6 +326,7 @@ JS;
                 UrlValidator::class,
                 'pattern' => '/' . implode('|', $patterns) . '/i',
             ],
+            ['string', 'max' => $this->maxLength],
         ];
     }
 
