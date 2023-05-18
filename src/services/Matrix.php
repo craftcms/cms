@@ -607,13 +607,12 @@ class Matrix extends Component
             /** @var MatrixBlock[] $blocks */
             foreach ($blocks as $block) {
                 $sortOrder++;
-                if (
-                    // skip blocks that are primarily owned by a different element
-                    ($saveAll && (!$block->primaryOwnerId || $block->primaryOwnerId === $owner->id)) ||
-                    !$block->id ||
-                    $block->dirty
-                ) {
-                    $block->primaryOwnerId = $block->ownerId = $owner->id;
+                if ($saveAll || !$block->id || $block->dirty) {
+                    $block->setOwner($owner);
+                    // If the block already has an ID and primary owner ID, don't reassign it
+                    if (!$block->id || !$block->primaryOwnerId) {
+                        $block->primaryOwnerId = $owner->id;
+                    }
                     $block->sortOrder = $sortOrder;
                     $elementsService->saveElement($block, false);
 
@@ -801,9 +800,14 @@ class Matrix extends Component
                     }
                 } elseif (!$force && $block->primaryOwnerId === $target->id) {
                     // Only the block ownership was duplicated, so just update its sort order for the target element
-                    Db::update(Table::MATRIXBLOCKS_OWNERS, [
+                    // (use upsert in case the row doesn’t exist though)
+                    Db::upsert(Table::MATRIXBLOCKS_OWNERS, [
+                        'blockId' => $block->id,
+                        'ownerId' => $target->id,
                         'sortOrder' => $block->sortOrder,
-                    ], ['blockId' => $block->id, 'ownerId' => $target->id], updateTimestamp: false);
+                    ], [
+                        'sortOrder' => $block->sortOrder,
+                    ], updateTimestamp: false);
                     $newBlockId = $block->id;
                 } else {
                     $newBlockId = $elementsService->duplicateElement($block, $newAttributes, trackDuplication: $trackDuplications)->id;

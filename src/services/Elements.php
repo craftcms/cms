@@ -1104,10 +1104,7 @@ class Elements extends Component
             // Start with the other sites (if any), so we don't update dateLastMerged until the end
             $otherSiteIds = ArrayHelper::withoutValue(array_keys($supportedSites), $element->siteId);
             if (!empty($otherSiteIds)) {
-                $siteElements = $element::find()
-                    ->drafts(null)
-                    ->provisionalDrafts(null)
-                    ->id($element->id)
+                $siteElements = $this->_localizedElementQuery($element)
                     ->siteId($otherSiteIds)
                     ->status(null)
                     ->all();
@@ -1142,6 +1139,23 @@ class Elements extends Component
                 'element' => $element,
             ]));
         }
+    }
+
+    private function _localizedElementQuery(ElementInterface $element): ElementQueryInterface
+    {
+        // use getLocalized() unless it’s eager-loaded
+        $query = $element->getLocalized();
+        if ($query instanceof ElementQueryInterface) {
+            return $query;
+        }
+
+        return $element::find()
+            ->id($element->id ?: false)
+            ->structureId($element->structureId)
+            ->siteId(['not', $element->siteId])
+            ->drafts($element->getIsDraft())
+            ->provisionalDrafts($element->isProvisionalDraft)
+            ->revisions($element->getIsRevision());
     }
 
     /**
@@ -1569,13 +1583,9 @@ class Elements extends Component
             // Propagate it
             $otherSiteIds = ArrayHelper::withoutValue(array_keys($supportedSites), $mainClone->siteId);
             if ($element->id && !empty($otherSiteIds)) {
-                $siteElements = $this->createElementQuery(get_class($element))
-                    ->id($element->id)
+                $siteElements = $this->_localizedElementQuery($element)
                     ->siteId($otherSiteIds)
                     ->status(null)
-                    ->drafts(null)
-                    ->provisionalDrafts(null)
-                    ->revisions(null)
                     ->all();
 
                 foreach ($siteElements as $siteElement) {
@@ -1732,8 +1742,7 @@ class Elements extends Component
                 continue;
             }
 
-            $elementInOtherSite = $this->createElementQuery(get_class($element))
-                ->id($element->id)
+            $elementInOtherSite = $this->_localizedElementQuery($element)
                 ->siteId($siteId)
                 ->one();
 
@@ -2209,11 +2218,8 @@ class Elements extends Component
                 $otherSiteIds = ArrayHelper::withoutValue(array_keys($supportedSites), $element->siteId);
 
                 if (!empty($otherSiteIds)) {
-                    $siteElements = $this->createElementQuery(get_class($element))
-                        ->id($element->id)
+                    $siteElements = $this->_localizedElementQuery($element)
                         ->siteId($otherSiteIds)
-                        ->drafts(null)
-                        ->provisionalDrafts(null)
                         ->status(null)
                         ->trashed(null)
                         ->all();
@@ -3187,12 +3193,8 @@ class Elements extends Component
 
                 if (!empty($otherSiteIds)) {
                     if (!$isNewElement) {
-                        $siteElements = $this->createElementQuery(get_class($element))
-                            ->id($element->id)
+                        $siteElements = $this->_localizedElementQuery($element)
                             ->siteId($otherSiteIds)
-                            ->drafts(null)
-                            ->provisionalDrafts(null)
-                            ->revisions(null)
                             ->status(null)
                             ->indexBy('siteId')
                             ->all();

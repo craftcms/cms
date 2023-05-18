@@ -183,6 +183,17 @@ class FileHelperTest extends TestCase
     }
 
     /**
+     * @dataProvider getExtensionByMimeTypeDataProvider
+     *
+     * @param string $expected
+     * @param string $mimeType
+     */
+    public function testGetExtensionByMimeType(string $expected, string $mimeType)
+    {
+        self::assertSame($expected, FileHelper::getExtensionByMimeType($mimeType));
+    }
+
+    /**
      * @dataProvider sanitizeFilenameDataProvider
      * @param string $expected
      * @param string $filename
@@ -419,6 +430,17 @@ class FileHelperTest extends TestCase
             [true, __DIR__ . '/sandbox/isdirempty/yes'],
             [false, __DIR__ . '/sandbox/isdirempty/no'],
             [false, __DIR__ . '/sandbox/isdirempty/dotfile'],
+        ];
+    }
+
+    /**
+     * @return array
+     */
+    public function getExtensionByMimeTypeDataProvider(): array
+    {
+        return [
+            ['jpg', 'image/jpeg'],
+            ['svg', 'image/svg+xml'],
         ];
     }
 
