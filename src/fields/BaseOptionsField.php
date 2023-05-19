@@ -119,16 +119,6 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
     {
         $rules = parent::defineRules();
         $rules[] = ['options', 'validateOptions'];
-
-        if (!static::$multi) {
-            $rules[] = [
-                'in',
-                'range' => [null, Schema::TYPE_STRING],
-                'strict' => true,
-                'skipOnEmpty' => false,
-            ];
-        }
-
         return $rules;
     }
 
