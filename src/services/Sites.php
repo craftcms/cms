@@ -958,12 +958,6 @@ class Sites extends Component
 
                 if (!empty($entryIds)) {
                     // Update the entry tables
-                    Db::update(Table::CONTENT, [
-                        'siteId' => $transferContentTo,
-                    ], [
-                        'elementId' => $entryIds,
-                    ]);
-
                     Db::update(Table::ELEMENTS_SITES, [
                         'siteId' => $transferContentTo,
                     ], [
@@ -1305,7 +1299,7 @@ class Sites extends Component
                 $isMysql = $db->getIsMysql();
                 $elementsTable = Table::ELEMENTS;
 
-                foreach ([Table::ELEMENTS_SITES, Table::CONTENT, Table::SEARCHINDEX] as $table) {
+                foreach ([Table::ELEMENTS_SITES, Table::SEARCHINDEX] as $table) {
                     $deleteParams = [];
                     $deleteCondition = $qb->buildCondition([
                         'and',

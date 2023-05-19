@@ -36,7 +36,7 @@ class BaseContentRefactorMigration extends Migration
     protected function updateElements(
         YiiQuery|array $ids,
         ?FieldLayout $fieldLayout,
-        string $contentTable = Table::CONTENT,
+        string $contentTable = '{{%content}}',
         string $fieldColumnPrefix = 'field_',
     ): void {
         $contentTableSchema = $this->db->getSchema()->getTableSchema($contentTable);

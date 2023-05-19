@@ -512,7 +512,7 @@ class EntrifyController extends Controller
                 'id' => $globalSet->id,
             ]);
 
-            Db::update(Table::CONTENT, [
+            Db::update(Table::ELEMENTS_SITES, [
                 'title' => $globalSet->name,
             ], [
                 'elementId' => $globalSet->id,

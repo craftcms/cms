@@ -36,7 +36,6 @@ abstract class Table
     public const CHANGEDATTRIBUTES = '{{%changedattributes}}';
     /** @since 3.4.0 */
     public const CHANGEDFIELDS = '{{%changedfields}}';
-    public const CONTENT = '{{%content}}';
     public const CRAFTIDTOKENS = '{{%craftidtokens}}';
     public const DEPRECATIONERRORS = '{{%deprecationerrors}}';
     /** @since 3.2.0 */
