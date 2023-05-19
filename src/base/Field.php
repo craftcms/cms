@@ -664,7 +664,7 @@ abstract class Field extends SavableComponent implements FieldInterface
         if ($valueSql === null) {
             return false;
         }
-        return Db::parseParam($valueSql, $value, '=', false, Schema::TYPE_JSON);
+        return Db::parseParam($valueSql, $value, columnType: Schema::TYPE_JSON);
     }
 
     /**
@@ -693,9 +693,10 @@ abstract class Field extends SavableComponent implements FieldInterface
         if ($db->getIsMysql()) {
             // If the field uses an optimized DB type, cast it so its values can be indexed
             // (see "Functional Key Parts" on https://dev.mysql.com/doc/refman/8.0/en/create-index.html)
-            $castType = match (Db::getSimplifiedColumnType($dbType)) {
+            $castType = match (Db::parseColumnType($dbType)) {
                 Schema::TYPE_CHAR,
-                Schema::TYPE_STRING => 'CHAR(255)',
+                Schema::TYPE_STRING,
+                'varchar' => 'CHAR(255)',
                 Schema::TYPE_DATE => 'DATE',
                 Schema::TYPE_DATETIME => 'DATETIME',
                 Schema::TYPE_DECIMAL => 'DECIMAL',
