@@ -1830,7 +1830,7 @@ JS;
      */
     public function getUrl(mixed $transform = null, ?bool $immediately = null): ?string
     {
-        if ($this->isFolder) {
+        if ($this->isFolder || !$this->getVolume()->getFs()->hasUrls) {
             return null;
         }
 
