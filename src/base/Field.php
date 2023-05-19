@@ -697,6 +697,8 @@ abstract class Field extends SavableComponent implements FieldInterface
                 Schema::TYPE_CHAR,
                 Schema::TYPE_STRING,
                 'varchar' => 'CHAR(255)',
+                // only reliable way to compare booleans is as 'true'/'false' strings :(
+                Schema::TYPE_BOOLEAN => 'CHAR(5)',
                 Schema::TYPE_DATE => 'DATE',
                 Schema::TYPE_DATETIME => 'DATETIME',
                 Schema::TYPE_DECIMAL => 'DECIMAL',

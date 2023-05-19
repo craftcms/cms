@@ -171,7 +171,7 @@ class QueryBuilder extends \yii\db\mysql\QueryBuilder
 
         // Maria doesn't support ->/->> operators :(
         if ($this->db->getIsMaria()) {
-            return "JSON_UNQUOTE(JSON_EXTRACT($column, $path)";
+            return "JSON_UNQUOTE(JSON_EXTRACT($column, $path))";
         }
 
         return "($column->>$path)";

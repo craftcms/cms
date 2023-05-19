@@ -161,7 +161,7 @@ class Lightswitch extends Field implements PreviewableFieldInterface, SortableFi
      */
     public function getQueryCondition(mixed $value, array &$params = []): array
     {
-        return Db::parseBooleanParam($this->getValueSql(), $value, $this->default);
+        return Db::parseBooleanParam($this->getValueSql(), $value, $this->default, Schema::TYPE_JSON);
     }
 
     /**

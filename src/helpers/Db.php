@@ -808,21 +808,37 @@ class Db
      * @param string $column The database column that the param is targeting.
      * @param string|bool $value The param value
      * @param bool|null $defaultValue How `null` values should be treated
+     * @param string $columnType The database column type the param is targeting
+     * @param Connection|null $db
      * @return array
      * @since 3.4.14
      */
-    public static function parseBooleanParam(string $column, mixed $value, ?bool $defaultValue = null): array
-    {
+    public static function parseBooleanParam(
+        string $column,
+        mixed $value,
+        ?bool $defaultValue = null,
+        string $columnType = Schema::TYPE_BOOLEAN,
+        ?Connection $db = null,
+    ): array {
         self::_normalizeEmptyValue($value);
         $operator = self::_parseParamOperator($value, '=');
         $value = $value && $value !== ':empty:';
         if ($operator === '!=') {
             $value = !$value;
         }
-        $condition = $condition[] = [$column => $value];
+
+        if ($columnType === Schema::TYPE_JSON && ($db ?? self::db())->getIsMysql()) {
+            $value = match ($value) {
+                true => 'true',
+                false => 'false',
+            };
+        }
+
+        $condition = [$column => $value];
         if ($defaultValue === $value) {
             $condition = ['or', $condition, [$column => null]];
         }
+
         return $condition;
     }
 
