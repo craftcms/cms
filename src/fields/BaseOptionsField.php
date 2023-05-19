@@ -21,7 +21,6 @@ use craft\gql\arguments\OptionField as OptionFieldArguments;
 use craft\gql\resolvers\OptionField as OptionFieldResolver;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Cp;
-use craft\helpers\Html;
 use craft\helpers\Json;
 use craft\helpers\StringHelper;
 use GraphQL\Type\Definition\Type;
@@ -225,7 +224,7 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
             $rows[] = $option;
         }
 
-        $html = Cp::editableTableFieldHtml([
+        return Cp::editableTableFieldHtml([
             'label' => $this->optionsSettingLabel(),
             'instructions' => Craft::t('app', 'Define the available options.'),
             'id' => 'options',
@@ -238,21 +237,6 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
             'rows' => $rows,
             'errors' => $this->getErrors('options'),
         ]);
-
-        if (!static::$multi) {
-            $html .= Html::tag('hr') .
-                Html::a(Craft::t('app', 'Advanced'), options: [
-                    'class' => 'fieldtoggle',
-                    'data' => ['target' => 'advanced'],
-                ]) .
-                Html::beginTag('div', [
-                    'id' => 'advanced',
-                    'class' => 'hidden',
-                ]) .
-                Html::endTag('div');
-        }
-
-        return $html;
     }
 
     /**
