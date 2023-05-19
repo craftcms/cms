@@ -14,6 +14,7 @@ use craft\base\PreviewableFieldInterface;
 use craft\base\SortableFieldInterface;
 use craft\fields\conditions\NumberFieldConditionRule;
 use craft\gql\types\Number as NumberType;
+use craft\helpers\Db;
 use craft\helpers\Localization;
 use craft\i18n\Locale;
 use GraphQL\Type\Definition\Type;
@@ -307,6 +308,14 @@ JS;
             self::FORMAT_CURRENCY => Craft::$app->getFormatter()->asCurrency($value, $this->previewCurrency, [], [], !$this->decimals),
             default => $value,
         };
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getQueryCondition(mixed $value, array &$params = []): ?array
+    {
+        return Db::parseNumericParam($this->getValueSql(), $value, columnType: static::dbType());
     }
 
     /**
