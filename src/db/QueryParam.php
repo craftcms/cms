@@ -8,7 +8,6 @@
 namespace craft\db;
 
 use craft\helpers\ArrayHelper;
-use craft\helpers\Db;
 use DateTime;
 
 /**
@@ -17,12 +16,18 @@ use DateTime;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 5.0.0
  */
-class QueryParam
+final class QueryParam
 {
-    public const GLUE_AND = 'and';
-    public const GLUE_OR = 'or';
-    public const GLUE_NOT = 'not';
+    public const AND = 'and';
+    public const OR = 'or';
+    public const NOT = 'not';
 
+    /**
+     * Parses a given query param, separating it into an array of values and the logical operator (`and`, `or`, `not`).
+     *
+     * @param mixed $value
+     * @return self
+     */
     public static function parse(mixed $value): self
     {
         $param = new self();
@@ -37,12 +42,12 @@ class QueryParam
             return $param;
         }
 
-        $param->glue = Db::extractGlue($values) ?? self::GLUE_OR;
+        $param->operator = self::extractOperator($values) ?? self::OR;
         $param->values = $values;
         return $param;
     }
 
-    private static function toArray(mixed $value): array
+    public static function toArray(mixed $value): array
     {
         if ($value === null) {
             return [];
@@ -75,11 +80,37 @@ class QueryParam
     }
 
     /**
-     * @var string[]
+     * Extracts the logic operator (`and`, `or`, or `not`) from the beginning of an array.
+     *
+     * @param array $values
+     * @return string|null
+     * @since 3.7.40
+     */
+    public static function extractOperator(array &$values): ?string
+    {
+        $firstVal = reset($values);
+
+        if (!is_string($firstVal)) {
+            return null;
+        }
+
+        $firstVal = strtolower($firstVal);
+
+        if (!in_array($firstVal, [self::AND, self::OR, self::NOT], true)) {
+            return null;
+        }
+
+        array_shift($values);
+        return $firstVal;
+    }
+
+    /**
+     * @var string[] The param values.
      */
     public array $values = [];
+
     /**
-     * @var string `and` or `or`
+     * @var string The logical operator that the values should be combined with (`and`, `or`, or `not`).
      */
-    public string $glue = self::GLUE_OR;
+    public string $operator = self::OR;
 }

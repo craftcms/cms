@@ -41,13 +41,6 @@ class Db
     public const SIMPLE_TYPE_NUMERIC = 'numeric';
     public const SIMPLE_TYPE_TEXTUAL = 'textual';
 
-    /** @since 3.7.40 */
-    public const GLUE_AND = 'and';
-    /** @since 3.7.40 */
-    public const GLUE_OR = 'or';
-    /** @since 3.7.40 */
-    public const GLUE_NOT = 'not';
-
     /**
      * @var array
      */
@@ -578,14 +571,14 @@ class Db
 
         $parsedColumnType = $columnType ? static::parseColumnType($columnType) : null;
 
-        if ($param->glue === self::GLUE_NOT) {
-            $param->glue = self::GLUE_AND;
+        if ($param->operator === QueryParam::NOT) {
+            $param->operator = QueryParam::AND;
             $negate = true;
         } else {
             $negate = false;
         }
 
-        $condition = [$param->glue];
+        $condition = [$param->operator];
         $isMysql = self::db()->getIsMysql();
 
         // Only PostgreSQL supports case-sensitive strings
@@ -678,13 +671,13 @@ class Db
             }
 
             // ['or', 1, 2, 3] => IN (1, 2, 3)
-            if ($param->glue == self::GLUE_OR && $operator === '=') {
+            if ($param->operator == QueryParam::OR && $operator === '=') {
                 $inVals[] = $val;
                 continue;
             }
 
             // ['and', '!=1', '!=2', '!=3'] => NOT IN (1, 2, 3)
-            if ($param->glue == self::GLUE_AND && $operator === '!=') {
+            if ($param->operator == QueryParam::AND && $operator === '!=') {
                 $notInVals[] = $val;
                 continue;
             }
@@ -726,7 +719,7 @@ class Db
             return null;
         }
 
-        $normalizedValues = [$param->glue];
+        $normalizedValues = [$param->operator];
 
         foreach ($param->values as $val) {
             // Is this an empty value?
@@ -774,7 +767,7 @@ class Db
             return null;
         }
 
-        $normalizedValues = [$param->glue];
+        $normalizedValues = [$param->operator];
 
         foreach ($param->values as $val) {
             // Is this an empty value?
@@ -863,37 +856,6 @@ class Db
     }
 
     /**
-     * Extracts a “glue” param from an a param value.
-     *
-     * Supported glue values are `and`, `or`, and `not`.
-     *
-     * @param mixed $value
-     * @return string|null
-     * @since 3.7.40
-     */
-    public static function extractGlue(&$value): ?string
-    {
-        if (!is_array($value)) {
-            return null;
-        }
-
-        $firstVal = reset($value);
-
-        if (!is_string($firstVal)) {
-            return null;
-        }
-
-        $firstVal = strtolower($firstVal);
-
-        if (!in_array($firstVal, [self::GLUE_AND, self::GLUE_OR, self::GLUE_NOT], true)) {
-            return null;
-        }
-
-        array_shift($value);
-        return $firstVal;
-    }
-
-    /**
      * Normalizes a param value with a provided resolver function, unless the resolver function ever returns
      * an empty value.
      *
@@ -925,7 +887,7 @@ class Db
             if (
                 empty($normalized) &&
                 is_string($item) &&
-                in_array(strtolower($item), [Db::GLUE_OR, Db::GLUE_AND, Db::GLUE_NOT], true)
+                in_array(strtolower($item), [QueryParam::OR, QueryParam::AND, QueryParam::NOT], true)
             ) {
                 $normalized[] = strtolower($item);
                 continue;

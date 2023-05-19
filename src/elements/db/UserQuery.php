@@ -10,6 +10,7 @@ namespace craft\elements\db;
 use Craft;
 use craft\db\Query;
 use craft\db\QueryAbortedException;
+use craft\db\QueryParam;
 use craft\db\Table;
 use craft\elements\User;
 use craft\helpers\Db;
@@ -427,14 +428,14 @@ class UserQuery extends ElementQuery
         })) {
             $this->groupId = $value;
         } else {/**/
-            $glue = Db::extractGlue($value);
+            $operator = QueryParam::extractOperator($value);
             $this->groupId = (new Query())
                 ->select(['id'])
                 ->from([Table::USERGROUPS])
                 ->where(Db::parseParam('handle', $value))
                 ->column();
-            if ($this->groupId && $glue !== null) {
-                array_unshift($this->groupId, $glue);
+            if ($this->groupId && $operator !== null) {
+                array_unshift($this->groupId, $operator);
             }
         }
 

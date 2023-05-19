@@ -384,14 +384,14 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
                 return null;
             }
 
-            if ($param->glue === QueryParam::GLUE_NOT) {
-                $param->glue = QueryParam::GLUE_OR;
+            if ($param->operator === QueryParam::NOT) {
+                $param->operator = QueryParam::OR;
                 $negate = true;
             } else {
                 $negate = false;
             }
 
-            $condition = [$param->glue];
+            $condition = [$param->operator];
             $qb = Craft::$app->getDb()->getQueryBuilder();
             $valueSql = $this->getValueSql();
 
