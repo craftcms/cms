@@ -60,7 +60,7 @@ class QueueController extends Controller
     public function actionRun(): Response
     {
         // Prep the response
-        $this->response->contentHtml = '1';
+        $this->response->content = '1';
 
         // Make sure Craft is configured to run queues over the web
         if (!Craft::$app->getConfig()->getGeneral()->runQueueAutomatically) {
