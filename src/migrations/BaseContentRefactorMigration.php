@@ -152,7 +152,7 @@ class BaseContentRefactorMigration extends Migration
         }
 
         // drop these content rows completely
-        $this->delete($contentTable, ['in', 'es.elementId', $ids]);
+        $this->delete($contentTable, ['in', 'elementId', $ids]);
 
         // if the content table is totally empty now, drop it
         $rowsExist = (new Query())
