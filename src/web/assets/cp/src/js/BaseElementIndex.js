@@ -335,7 +335,21 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       // Initialize the Export button
       // ---------------------------------------------------------------------
 
-      this.addListener(this.$exportBtn, 'click', '_showExportHud');
+      this.addListener(this.$exportBtn, 'click', (ev) => {
+        console.log(
+          `instance is ${this.$exportBtn.data('hud')} and showing is ${
+            this.$exportBtn.data('hud').showing
+          }`
+        );
+        if (
+          this.$exportBtn.data('hud') &&
+          this.$exportBtn.data('hud').showing
+        ) {
+          this.$exportBtn.data('hud').hide();
+        } else {
+          this._showExportHud();
+        }
+      });
 
       // Let everyone know that the UI is initialized
       // ---------------------------------------------------------------------
@@ -2984,7 +2998,6 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
     _showExportHud: function () {
       this.$exportBtn.addClass('active');
-      this.$exportBtn.attr('aria-expanded', 'true');
 
       var $form = $('<form/>', {
         class: 'export-form',
@@ -3056,7 +3069,6 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
       hud.on('hide', () => {
         this.$exportBtn.removeClass('active');
-        this.$exportBtn.attr('aria-expanded', 'false');
       });
 
       var submitting = false;

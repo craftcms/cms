@@ -34,7 +34,7 @@ export default Base.extend(
      * Constructor
      */
     init: function (trigger, bodyContents, settings) {
-      this.$trigger = $(trigger);
+      this.$trigger = $(trigger).data('hud', this);
 
       this.setSettings(settings, Garnish.HUD.defaults);
       this.on('show', this.settings.onShow);
