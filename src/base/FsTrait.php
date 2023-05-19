@@ -44,4 +44,14 @@ trait FsTrait
      * @var string|null UID
      */
     public ?string $uid = null;
+
+    /**
+     * @var bool Whether to show the toggle for setting if the volume has a public URL
+     */
+    public bool $showHasUrlSetting = true;
+
+    /**
+     * @var bool Whether to show the input for setting the volume's URL
+     */
+    public bool $showUrlSetting = true;
 }
