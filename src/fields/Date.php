@@ -15,6 +15,7 @@ use craft\base\SortableFieldInterface;
 use craft\fields\conditions\DateFieldConditionRule;
 use craft\gql\directives\FormatDateTime;
 use craft\gql\types\DateTime as DateTimeType;
+use craft\helpers\ArrayHelper;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
 use craft\helpers\Gql;
@@ -341,10 +342,9 @@ class Date extends Field implements PreviewableFieldInterface, SortableFieldInte
             return $value;
         }
 
-        // Is this coming from the DB?
+        // tz => timezone
         if (is_array($value) && array_key_exists('tz', $value)) {
-            $timeZone = $value['tz'];
-            $value = $value['date'];
+            $value['timezone'] = ArrayHelper::remove($value, 'tz');
         }
 
         if (
@@ -360,8 +360,8 @@ class Date extends Field implements PreviewableFieldInterface, SortableFieldInte
             return null;
         }
 
-        if ($this->showTimeZone && (isset($timeZone) || (is_array($value) && isset($value['timezone'])))) {
-            $date->setTimezone(new DateTimeZone($timeZone ?? $value['timezone']));
+        if ($this->showTimeZone && is_array($value) && !empty($value['timezone'])) {
+            $date->setTimezone(new DateTimeZone($value['timezone']));
         }
 
         return $date;
@@ -376,15 +376,17 @@ class Date extends Field implements PreviewableFieldInterface, SortableFieldInte
             return null;
         }
 
-        /** @var DateTime $value */
-        if (!$this->showTimeZone) {
-            return Db::prepareDateForDb($value);
+        $serialized = [
+            'date' => Db::prepareDateForDb($value),
+        ];
+
+        if ($this->showTimeZone) {
+            $serialized += [
+                'tz' => $value->getTimezone()->getName(),
+            ];
         }
 
-        return [
-            'date' => Db::prepareDateForDb($value),
-            'tz' => $value->getTimezone()->getName(),
-        ];
+        return $serialized;
     }
 
     /**
