@@ -194,6 +194,17 @@ abstract class Field extends SavableComponent implements FieldInterface
     private ?bool $_isFresh = null;
 
     /**
+     * Constructor
+     */
+    public function __construct($config = [])
+    {
+        // remove unused settings
+        unset($config['columnPrefix']);
+
+        parent::__construct($config);
+    }
+
+    /**
      * Use the translated field name as the string representation.
      *
      * @return string

@@ -74,11 +74,6 @@ trait FieldTrait
     public ?array $oldSettings = null;
 
     /**
-     * @var string|null The field’s content column prefix
-     */
-    public ?string $columnPrefix = null;
-
-    /**
      * @var string|null The field’s content column suffix
      * @since 3.7.0
      * @deprecated in 5.0.0

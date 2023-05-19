@@ -245,11 +245,8 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
                 // Assemble the fields
                 foreach ($blockTypes as $blockType) {
                     if (isset($fieldIdsByLayoutId[$blockType->fieldLayoutId])) {
-                        $fieldColumnPrefix = 'field_' . $blockType->handle . '_';
-
                         foreach ($fieldIdsByLayoutId[$blockType->fieldLayoutId] as $fieldId) {
                             if (isset($fieldsById[$fieldId])) {
-                                $fieldsById[$fieldId]->columnPrefix = $fieldColumnPrefix;
                                 $this->_blockTypeFields[$blockType->id][] = $fieldsById[$fieldId];
                             }
                         }
