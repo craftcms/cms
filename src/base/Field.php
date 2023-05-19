@@ -678,11 +678,11 @@ abstract class Field extends SavableComponent implements FieldInterface
             return null;
         }
 
-        $jsonPath = sprintf('$."%s"', $this->uid);
+        $jsonPath = [$this->uid];
 
         if (is_array($dbType)) {
             // Focus on the primary value by default
-            $jsonPath .= sprintf('."%s"', ArrayHelper::firstKey($dbType));
+            $jsonPath[] = ArrayHelper::firstKey($dbType);
             $dbType = reset($dbType);
         }
 

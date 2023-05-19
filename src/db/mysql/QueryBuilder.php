@@ -160,14 +160,16 @@ class QueryBuilder extends \yii\db\mysql\QueryBuilder
      * Builds the SQL expression used to extract a value from a JSON column.
      *
      * @param string $column The column name to extract from
-     * @param string $path The JSON path
+     * @param string[] $path The path to the value to extract
      * @return string
      * @since 5.0.0
      */
-    public function jsonExtract(string $column, string $path): string
+    public function jsonExtract(string $column, array $path): string
     {
         $column = $this->db->quoteColumnName($column);
-        $path = $this->db->quoteValue($path);
+        $path = $this->db->quoteValue(
+            sprintf('$.%s', implode('.', array_map(fn(string $seg) => sprintf('"%s"', $seg), $path)))
+        );
 
         // Maria doesn't support ->/->> operators :(
         if ($this->db->getIsMaria()) {

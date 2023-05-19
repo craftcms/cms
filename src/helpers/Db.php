@@ -809,7 +809,6 @@ class Db
      * @param string|bool $value The param value
      * @param bool|null $defaultValue How `null` values should be treated
      * @param string $columnType The database column type the param is targeting
-     * @param Connection|null $db
      * @return array
      * @since 3.4.14
      */
@@ -818,7 +817,6 @@ class Db
         mixed $value,
         ?bool $defaultValue = null,
         string $columnType = Schema::TYPE_BOOLEAN,
-        ?Connection $db = null,
     ): array {
         self::_normalizeEmptyValue($value);
         $operator = self::_parseParamOperator($value, '=');
@@ -827,7 +825,7 @@ class Db
             $value = !$value;
         }
 
-        if ($columnType === Schema::TYPE_JSON && ($db ?? self::db())->getIsMysql()) {
+        if ($columnType === Schema::TYPE_JSON) {
             $value = match ($value) {
                 true => 'true',
                 false => 'false',
