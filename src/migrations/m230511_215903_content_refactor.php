@@ -8,6 +8,7 @@ use craft\db\Query;
 use craft\db\Table;
 use craft\elements\User;
 use craft\fields\Matrix;
+use craft\services\ProjectConfig;
 
 /**
  * m230511_215903_content_refactor migration.
@@ -25,12 +26,9 @@ class m230511_215903_content_refactor extends BaseContentRefactorMigration
             $this->createIndex(null, Table::ELEMENTS_SITES, ['title', 'siteId']);
         }
 
-//        $projectConfig = Craft::$app->getProjectConfig();
-//        $schemaVersion = $projectConfig->get('system.schemaVersion', true);
-//
-//        if (version_compare($schemaVersion, '5.0.0', '<')) {
-//            // ...
-//        }
+        $projectConfig = Craft::$app->getProjectConfig();
+        $schemaVersion = $projectConfig->get('system.schemaVersion', true);
+        $updateProjectConfig = version_compare($schemaVersion, '5.0.0', '<');
 
         $fieldsService = Craft::$app->getFields();
 
@@ -82,6 +80,11 @@ class m230511_215903_content_refactor extends BaseContentRefactorMigration
                     $field->contentTable,
                     sprintf('field_%s_', $blockType->handle),
                 );
+            }
+
+            // if the field is global, drop the contentTable value from its config
+            if ($updateProjectConfig && $field->context === 'global') {
+                $projectConfig->remove(sprintf('%s.%s.settings.contentTable', ProjectConfig::PATH_FIELDS, $field->uid));
             }
         }
 

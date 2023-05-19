@@ -188,6 +188,18 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
     /**
      * @inheritdoc
      */
+    public function getSettings(): array
+    {
+        $settings = parent::getSettings();
+        if ($settings['contentTable'] === null) {
+            unset($settings['contentTable']);
+        }
+        return $settings;
+    }
+
+    /**
+     * @inheritdoc
+     */
     protected function defineRules(): array
     {
         $rules = parent::defineRules();
