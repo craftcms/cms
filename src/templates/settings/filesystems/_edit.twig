@@ -47,13 +47,13 @@
     <div id="{{ fsType|id }}"{% if not isCurrent %} class="hidden"{% endif %}>
         {% namespace 'types['~fsType~']' %}
             {% if isCurrent %}
-                {% if filesystem.showHasUrlSetting %}
+                {% if filesystem.showHasUrlSetting() %}
                     {{ macro.fsUrlFields(filesystem) }}
                 {% endif %}
 
                 {{ filesystem.getSettingsHtml()|raw }}
             {% else %}
-                {% if fsInstances[fsType].showHasUrlSetting %}
+                {% if fsInstances[fsType].showHasUrlSetting() %}
                     {{ macro.fsUrlFields(fsInstances[fsType]) }}
                 {% endif %}
 
@@ -76,10 +76,10 @@
         label: 'Files in this filesystem have public URLs'|t('app'),
         name: 'hasUrls',
         on:   filesystem.hasUrls,
-        toggle: filesystem.showUrlSetting ? "url-field" : null
+        toggle: filesystem.showUrlSetting() ? "url-field" : null
     }) }}
 
-    {% if filesystem.showUrlSetting %}
+    {% if filesystem.showUrlSetting() %}
         <div id="url-field" class="{% if not filesystem.hasUrls %}hidden{% endif %}">
             {{ forms.autosuggestField({
                 label: "Base URL"|t('app'),

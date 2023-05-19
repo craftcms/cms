@@ -31,24 +31,6 @@ abstract class Fs extends SavableComponent implements FsInterface
 
     /**
      * @inheritdoc
-     *
-     * TODO: remove for Craft 5 and fully move $hasUrl and $url to FS settings
-     */
-    public function getSettings(): array
-    {
-        $settings = parent::getSettings();
-
-        // url should keep being saved top-level, not inside settings
-        // to be changed in Craft 5
-        if (isset($settings['url']) && $this->url === $settings['url']) {
-            unset($settings['url']);
-        }
-
-        return $settings;
-    }
-
-    /**
-     * @inheritdoc
      */
     public function getRootUrl(): ?string
     {
@@ -73,6 +55,44 @@ abstract class Fs extends SavableComponent implements FsInterface
             'handle' => Craft::t('app', 'Handle'),
             'name' => Craft::t('app', 'Name'),
         ];
+    }
+
+    /**
+     * Return value of $showHasUrlSetting
+     *
+     * @return bool
+     */
+    public function showHasUrlSetting(): bool
+    {
+        return $this->showHasUrlSetting;
+    }
+
+    /**
+     * Return value of $showUrlSetting
+     *
+     * @return bool
+     */
+    public function showUrlSetting(): bool
+    {
+        return $this->showUrlSetting;
+    }
+
+    /**
+     * @inheritdoc
+     *
+     * TODO: remove for Craft 5 and fully move $hasUrl and $url to FS settings
+     */
+    public function getSettings(): array
+    {
+        $settings = parent::getSettings();
+
+        // url should keep being saved top-level, not inside settings
+        // to be changed in Craft 5
+        if (isset($settings['url']) && $this->url === $settings['url']) {
+            unset($settings['url']);
+        }
+
+        return $settings;
     }
 
     /**
