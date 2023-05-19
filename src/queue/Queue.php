@@ -628,10 +628,10 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
 </script>
 EOD;
 
-        if ($response->contentHtml === null) {
-            $response->contentHtml = $js;
+        if ($response->content === null) {
+            $response->content = $js;
         } else {
-            $response->contentHtml .= $js;
+            $response->content .= $js;
         }
     }
 
