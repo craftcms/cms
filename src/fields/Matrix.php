@@ -101,6 +101,14 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
     }
 
     /**
+     * @inheritdoc
+     */
+    public static function dbType(): array|string|null
+    {
+        return null;
+    }
+
+    /**
      * @var int|null Min blocks
      */
     public ?int $minBlocks = null;
@@ -372,14 +380,6 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
         }
 
         return $validates;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public static function hasContent(): bool
-    {
-        return false;
     }
 
     /**

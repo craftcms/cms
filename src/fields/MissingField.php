@@ -27,9 +27,9 @@ class MissingField extends Field implements MissingComponentInterface
     /**
      * @inheritdoc
      */
-    public static function hasContent(): bool
+    public static function dbType(): array|string|null
     {
-        return false;
+        return null;
     }
 
     /**

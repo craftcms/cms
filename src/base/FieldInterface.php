@@ -37,17 +37,6 @@ interface FieldInterface extends SavableComponentInterface
     public static function isRequirable(): bool;
 
     /**
-     * Returns whether this field’s values should be stored in the `elements_sites.content` column.
-     *
-     * ::: warning
-     * If you set this to `false`, you will be on your own in terms of saving and retrieving your field values.
-     * :::
-     *
-     * @return bool
-     */
-    public static function hasContent(): bool;
-
-    /**
      * Returns which translation methods the field supports.
      *
      * This method should return an array with at least one of the following values:

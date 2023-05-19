@@ -31,13 +31,14 @@ class QueryParam
             return $param;
         }
 
-        $value = self::toArray($value);
+        $values = self::toArray($value);
 
-        if (empty($value)) {
+        if (empty($values)) {
             return $param;
         }
 
-        $param->glue = Db::extractGlue($value) ?? self::GLUE_OR;
+        $param->glue = Db::extractGlue($values) ?? self::GLUE_OR;
+        $param->values = $values;
         return $param;
     }
 

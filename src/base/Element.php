@@ -2386,7 +2386,7 @@ abstract class Element extends Component implements ElementInterface
     protected function defineRules(): array
     {
         $rules = parent::defineRules();
-        $rules[] = [['id', 'contentId', 'parentId', 'root', 'lft', 'rgt', 'level'], 'number', 'integerOnly' => true, 'on' => [self::SCENARIO_DEFAULT, self::SCENARIO_LIVE]];
+        $rules[] = [['id', 'parentId', 'root', 'lft', 'rgt', 'level'], 'number', 'integerOnly' => true, 'on' => [self::SCENARIO_DEFAULT, self::SCENARIO_LIVE]];
         $rules[] = [
             ['siteId'],
             SiteIdValidator::class,

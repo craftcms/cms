@@ -491,16 +491,11 @@ class Fields extends Component
      */
     public function getFieldTypesWithContent(): array
     {
-        $fieldTypes = [];
-
-        foreach ($this->getAllFieldTypes() as $fieldType) {
-            /** @var FieldInterface|string $fieldType */
-            if ($fieldType::hasContent()) {
-                $fieldTypes[] = $fieldType;
-            }
-        }
-
-        return $fieldTypes;
+        return ArrayHelper::where(
+            $this->getAllFieldTypes(),
+            fn(string $class) => /** @var string|FieldInterface $class */ $class::dbType() !== null,
+            keepKeys: false,
+        );
     }
 
     /**
@@ -512,18 +507,14 @@ class Fields extends Component
      */
     public function getCompatibleFieldTypes(FieldInterface $field, bool $includeCurrent = true): array
     {
-        if (!$field::hasContent()) {
-            return $includeCurrent ? [get_class($field)] : [];
-        }
-
         // If the field has any validation errors and has an ID, swap it with the saved field
         if (!$field->getIsNew() && $field->hasErrors()) {
             $field = $this->getFieldById($field->id);
         }
 
-        $fieldColumnType = $field->dbType();
+        $dbType = $field::dbType();
 
-        if (is_array($fieldColumnType)) {
+        if (!is_string($dbType)) {
             return $includeCurrent ? [get_class($field)] : [];
         }
 
@@ -539,23 +530,11 @@ class Fields extends Component
                 continue;
             }
 
-            if (!$class::hasContent()) {
-                continue;
+            $otherDbType = $class::dbType();
+
+            if (is_string($otherDbType) && Db::areColumnTypesCompatible($dbType, $otherDbType)) {
+                $types[] = $class;
             }
-
-            /** @var FieldInterface $tempField */
-            $tempField = new $class();
-            $tempFieldColumnType = $tempField->dbType();
-
-            if (is_array($tempFieldColumnType)) {
-                continue;
-            }
-
-            if (!Db::areColumnTypesCompatible($fieldColumnType, $tempFieldColumnType)) {
-                continue;
-            }
-
-            $types[] = $class;
         }
 
         // Make sure the current field class is in there if it's supposed to be
@@ -601,7 +580,7 @@ class Fields extends Component
     /**
      * Returns a memoizable array of all fields.
      *
-     * @param string|string[]|false|null $context The field context(s) to fetch fields from. Defaults to [[\craft\services\Content::$fieldContext]].
+     * @param string|string[]|false|null $context The field context(s) to fetch fields from. Defaults to [[\craft\services\Fields::$fieldContext]].
      * Set to `false` to get all fields regardless of context.
      *
      * @return MemoizableArray<FieldInterface>
@@ -634,7 +613,7 @@ class Fields extends Component
     /**
      * Returns all fields within a field context(s).
      *
-     * @param string|string[]|false|null $context The field context(s) to fetch fields from. Defaults to [[\craft\services\Content::$fieldContext]].
+     * @param string|string[]|false|null $context The field context(s) to fetch fields from. Defaults to [[\craft\services\Fields::$fieldContext]].
      * Set to `false` to get all fields regardless of context.
      * @return FieldInterface[] The fields
      */
@@ -644,32 +623,36 @@ class Fields extends Component
     }
 
     /**
-     * Returns all fields that have a column in the content table.
+     * Returns all fields that store content in the `elements_sites.content` table.
      *
-     * @param string|string[]|false|null $context The field context(s) to fetch fields from. Defaults to [[\craft\services\Content::$fieldContext]].
+     * @param string|string[]|false|null $context The field context(s) to fetch fields from. Defaults to [[\craft\services\Fields::$fieldContext]].
      * Set to `false` to get all fields regardless of context.
      * @return FieldInterface[] The fields
      */
     public function getFieldsWithContent(mixed $context = null): array
     {
-        return ArrayHelper::where($this->getAllFields($context), function(FieldInterface $field) {
-            return $field::hasContent();
-        }, true, true, false);
+        return ArrayHelper::where(
+            $this->getAllFields($context),
+            fn(FieldInterface $field) => $field::dbType() !== null,
+            keepKeys: false,
+        );
     }
 
     /**
-     * Returns all fields that don’t have a column in the content table.
+     * Returns all fields that don’t store content in the `elements_sites.content` table.
      *
-     * @param string|string[]|false|null $context The field context(s) to fetch fields from. Defaults to [[\craft\services\Content::$fieldContext]].
+     * @param string|string[]|false|null $context The field context(s) to fetch fields from. Defaults to [[\craft\services\Fields::$fieldContext]].
      * Set to `false` to get all fields regardless of context.
      * @return FieldInterface[] The fields
      * @since 4.3.2
      */
     public function getFieldsWithoutContent(mixed $context = null): array
     {
-        return ArrayHelper::where($this->getAllFields($context), function(FieldInterface $field) {
-            return !$field::hasContent();
-        }, true, true, false);
+        return ArrayHelper::where(
+            $this->getAllFields($context),
+            fn(FieldInterface $field) => $field::dbType() === null,
+            keepKeys: false,
+        );
     }
 
     /**
@@ -677,7 +660,7 @@ class Fields extends Component
      *
      * @param string $type The field type
      * @phpstan-param class-string<FieldInterface> $type
-     * @param string|string[]|false|null $context The field context(s) to fetch fields from. Defaults to [[\craft\services\Content::$fieldContext]].
+     * @param string|string[]|false|null $context The field context(s) to fetch fields from. Defaults to [[\craft\services\Fields::$fieldContext]].
      * Set to `false` to get all fields regardless of context.
      * @return FieldInterface[] The fields
      * @since 4.4.0
@@ -727,7 +710,7 @@ class Fields extends Component
      * ```
      *
      * @param string $handle The field’s handle
-     * @param string|string[]|false|null $context The field context(s) to fetch fields from. Defaults to [[\craft\services\Content::$fieldContext]].
+     * @param string|string[]|false|null $context The field context(s) to fetch fields from. Defaults to [[\craft\services\Fields::$fieldContext]].
      * Set to `false` to get all fields regardless of context.
      * @return FieldInterface|null The field, or null if it doesn’t exist
      */
@@ -740,7 +723,7 @@ class Fields extends Component
      * Returns whether a field exists with a given handle and context.
      *
      * @param string $handle The field handle
-     * @param string|null $context The field context (defauts to [[\craft\services\Content::$fieldContext]])
+     * @param string|null $context The field context (defauts to [[\craft\services\Fields::$fieldContext]])
      * @return bool Whether a field with that handle exists
      */
     public function doesFieldWithHandleExist(string $handle, ?string $context = null): bool
@@ -768,14 +751,6 @@ class Fields extends Component
      */
     public function createFieldConfig(FieldInterface $field): array
     {
-        $columnType = $field->dbType();
-        if (is_array($columnType)) {
-            array_walk($columnType, function(&$type, $key) {
-                $type = "$key:$type";
-            });
-            $columnType = array_values($columnType);
-        }
-
         $config = [
             'name' => $field->name,
             'handle' => $field->handle,
@@ -786,7 +761,6 @@ class Fields extends Component
             'translationKeyFormat' => $field->translationKeyFormat,
             'type' => get_class($field),
             'settings' => ProjectConfigHelper::packAssociativeArrays($field->getSettings()),
-            'contentColumnType' => $columnType,
         ];
 
         if ($field->groupId) {

@@ -61,14 +61,6 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
     /**
      * @inheritdoc
      */
-    public static function hasContent(): bool
-    {
-        return false;
-    }
-
-    /**
-     * @inheritdoc
-     */
     public static function supportedTranslationMethods(): array
     {
         // Don't ever automatically propagate values to other sites.
@@ -101,6 +93,14 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
     public static function phpType(): string
     {
         return sprintf('\\%s|\\%s<\\%s>', ElementQueryInterface::class, ElementCollection::class, ElementInterface::class);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function dbType(): array|string|null
+    {
+        return null;
     }
 
     /**

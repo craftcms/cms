@@ -145,14 +145,6 @@ abstract class Field extends SavableComponent implements FieldInterface
     /**
      * @inheritdoc
      */
-    public static function hasContent(): bool
-    {
-        return true;
-    }
-
-    /**
-     * @inheritdoc
-     */
     public static function supportedTranslationMethods(): array
     {
         if (static::dbType() === null) {
@@ -292,7 +284,6 @@ abstract class Field extends SavableComponent implements FieldInterface
                 'canSetProperties',
                 'canonical',
                 'children',
-                'contentId',
                 'contentTable',
                 'dateCreated',
                 'dateDeleted',
