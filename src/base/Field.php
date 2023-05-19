@@ -693,24 +693,27 @@ abstract class Field extends SavableComponent implements FieldInterface
         if ($db->getIsMysql()) {
             // If the field uses an optimized DB type, cast it so its values can be indexed
             // (see "Functional Key Parts" on https://dev.mysql.com/doc/refman/8.0/en/create-index.html)
-            if (in_array(Db::getSimplifiedColumnType($dbType), [
+            $castType = match (Db::getSimplifiedColumnType($dbType)) {
                 Schema::TYPE_CHAR,
-                Schema::TYPE_STRING,
+                Schema::TYPE_STRING => 'CHAR(255)',
+                Schema::TYPE_DATE => 'DATE',
+                Schema::TYPE_DATETIME => 'DATETIME',
+                Schema::TYPE_DECIMAL => 'DECIMAL',
+                Schema::TYPE_DOUBLE => 'DOUBLE',
+                Schema::TYPE_FLOAT => 'FLOAT',
                 Schema::TYPE_TINYINT,
                 Schema::TYPE_SMALLINT,
                 Schema::TYPE_INTEGER,
-                Schema::TYPE_BIGINT,
-                Schema::TYPE_FLOAT,
-                Schema::TYPE_DOUBLE,
-                Schema::TYPE_DECIMAL,
-                Schema::TYPE_DATETIME,
-                Schema::TYPE_TIMESTAMP,
-                Schema::TYPE_TIME,
-                Schema::TYPE_DATE,
-                Schema::TYPE_BOOLEAN,
-                Schema::TYPE_MONEY,
-            ])) {
-                $sql = $qb->cast($sql, $dbType);
+                Schema::TYPE_BIGINT => 'SIGNED',
+                SCHEMA::TYPE_TIME => 'TIME',
+                default => null,
+            };
+            if ($castType !== null) {
+                // if a length was specified, replace the default with that
+                if ($length = Db::parseColumnLength($dbType)) {
+                    $castType = preg_replace('/\(\d+\)/', "($length)", $castType);
+                }
+                $sql = "CAST($sql AS $castType)";
             }
         }
 

@@ -157,20 +157,6 @@ class QueryBuilder extends \yii\db\mysql\QueryBuilder
     }
 
     /**
-     * Builds the SQL expression used to cast a SQL expression as a given type.
-     *
-     * @param string $sql
-     * @param string $type
-     * @return string
-     * @since 5.0.0
-     */
-    public function cast(string $sql, string $type): string
-    {
-        $type = $this->getColumnType($type);
-        return "CAST($sql AS $type)";
-    }
-
-    /**
      * Builds the SQL expression used to extract a value from a JSON column.
      *
      * @param string $column The column name to extract from
