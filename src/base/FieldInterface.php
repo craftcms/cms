@@ -7,12 +7,12 @@
 
 namespace craft\base;
 
-use craft\db\QueryAbortedException;
 use craft\elements\db\ElementQueryInterface;
 use craft\models\FieldGroup;
 use craft\models\GqlSchema;
 use GraphQL\Type\Definition\Type;
 use yii\base\Component as YiiComponent;
+use yii\db\ExpressionInterface;
 use yii\validators\Validator;
 
 /**
@@ -35,17 +35,6 @@ interface FieldInterface extends SavableComponentInterface
      * @since 4.0.0
      */
     public static function isRequirable(): bool;
-
-    /**
-     * Returns whether this field has a column in the content table.
-     *
-     * ::: warning
-     * If you set this to `false`, you will be on your own in terms of saving and retrieving your field values.
-     * :::
-     *
-     * @return bool
-     */
-    public static function hasContentColumn(): bool;
 
     /**
      * Returns which translation methods the field supports.
@@ -78,14 +67,23 @@ interface FieldInterface extends SavableComponentInterface
      * @return string
      * @since 3.2.0
      */
-    public static function valueType(): string;
+    public static function phpType(): string;
 
     /**
-     * Returns the column type(s) that this field should get within the content table.
+     * Returns the DB data type(s) that this field will store within the `elements_sites.content` column.
      *
-     * This method will only be called if [[hasContentColumn()]] returns true.
+     * ```php
+     * return 'string(100)';
+     * ```
      *
-     * If the field type requires multiple columns, an array should be returned:
+     * [[\yii\db\QueryBuilder::getColumnType()]] will be used to normalize the provided type.
+     * For example, `string(100)` will become `varchar(100)`.
+     *
+     * Specifying the DB type isn’t strictly necessary, but it enables individual field values to be targeted
+     * by functional indexes.
+     *
+     * If field values will consist of an associative array, each of the array keys can be specified here,
+     * so the nested values can receive their own functional indexes.
      *
      * ```php
      * return [
@@ -94,17 +92,13 @@ interface FieldInterface extends SavableComponentInterface
      * ];
      * ```
      *
-     * When this is the case, all columns’ values will be passed to [[normalizeValue()]] as an associative
-     * array, whose keys match the keys returned by this method. The field type should also override
-     * [[serializeValue()]] to ensure values are being returned as associative arrays using the same keys.
+     * If `null` is returned, the field’s values won’t be stored in the `elements_sites.content` column at all.
+     * In that case, the field will be solely responsible for storing and retrieving its own values from
+     * [[normalizeValue()]] and [[afterElementSave()]]/[[afterElementPropagate()]].
      *
-     * @return string|string[] The column type(s). [[\yii\db\QueryBuilder::getColumnType()]] will be called
-     * to convert the give column type to the physical one. For example, `string` will be converted
-     * as `varchar(255)` and `string(100)` becomes `varchar(100)`. `not null` will automatically be
-     * appended as well.
-     * @see \yii\db\QueryBuilder::getColumnType()
+     * @return string|string[]|null The column type(s).
      */
-    public function getContentColumnType(): array|string;
+    public static function dbType(): array|string|null;
 
     /**
      * Returns the orientation the field should use (`ltr` or `rtl`).
@@ -417,19 +411,24 @@ interface FieldInterface extends SavableComponentInterface
     public function getElementConditionRuleType(): array|string|null;
 
     /**
-     * Modifies an element query.
+     * Returns a query builder-compatible condition for the field, for a user-provided param value.
      *
-     * This method will be called whenever elements are being searched for that
-     * may have this field assigned to them. If the method returns `false`, the
-     * query will be stopped before it ever gets a chance to execute.
+     * If `false` is returned, an always-false condition will be used.
      *
-     * @param ElementQueryInterface $query The element query
-     * @param mixed $value The value that was set on this field’s corresponding
-     * element query param, if any.
-     * @throws QueryAbortedException in the event that the method is sure that
-     * no elements are going to be found.
+     * @param mixed $value The user-supplied param value
+     * @param array $params Additional parameters that should be bound to the query via [[\yii\db\Query::addParams()]]
+     * @return array|string|ExpressionInterface|false|null
+     * @since 5.0.0
      */
-    public function modifyElementsQuery(ElementQueryInterface $query, mixed $value): void;
+    public function getQueryCondition(mixed $value, array &$params = []): array|string|ExpressionInterface|false|null;
+
+    /**
+     * Returns a SQL expression which extracts the field’s value from the `elements_sites.content` column.
+     *
+     * @return string|null
+     * @since 5.0.0
+     */
+    public function getValueSql(): ?string;
 
     /**
      * Modifies an element index query.

@@ -12,13 +12,10 @@ use craft\base\ElementInterface;
 use craft\base\Field;
 use craft\base\PreviewableFieldInterface;
 use craft\base\SortableFieldInterface;
-use craft\elements\db\ElementQuery;
-use craft\elements\db\ElementQueryInterface;
 use craft\fields\conditions\LightswitchFieldConditionRule;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Cp;
 use craft\helpers\Db;
-use craft\helpers\ElementHelper;
 use craft\helpers\Html;
 use GraphQL\Type\Definition\Type;
 use yii\db\Schema;
@@ -50,9 +47,17 @@ class Lightswitch extends Field implements PreviewableFieldInterface, SortableFi
     /**
      * @inheritdoc
      */
-    public static function valueType(): string
+    public static function phpType(): string
     {
         return 'bool';
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function dbType(): string
+    {
+        return Schema::TYPE_BOOLEAN;
     }
 
     /**
@@ -83,14 +88,6 @@ class Lightswitch extends Field implements PreviewableFieldInterface, SortableFi
         }
 
         parent::__construct($config);
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getContentColumnType(): string
-    {
-        return Schema::TYPE_BOOLEAN;
     }
 
     /**
@@ -162,15 +159,9 @@ class Lightswitch extends Field implements PreviewableFieldInterface, SortableFi
     /**
      * @inheritdoc
      */
-    public function modifyElementsQuery(ElementQueryInterface $query, mixed $value): void
+    public function getQueryCondition(mixed $value, array &$params = []): array
     {
-        /** @var ElementQuery $query */
-        if ($value === null) {
-            return;
-        }
-
-        $column = ElementHelper::fieldColumnFromField($this);
-        $query->subQuery->andWhere(Db::parseBooleanParam("content.$column", $value, $this->default));
+        return Db::parseBooleanParam($this->getValueSql(), $value, $this->default, Schema::TYPE_JSON);
     }
 
     /**

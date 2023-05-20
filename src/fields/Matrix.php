@@ -17,7 +17,6 @@ use craft\base\GqlInlineFragmentFieldInterface;
 use craft\base\GqlInlineFragmentInterface;
 use craft\db\Query;
 use craft\db\Table as DbTable;
-use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\db\MatrixBlockQuery;
 use craft\elements\ElementCollection;
@@ -96,9 +95,17 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
     /**
      * @inheritdoc
      */
-    public static function valueType(): string
+    public static function phpType(): string
     {
         return sprintf('\\%s|\\%s<\\%s>', MatrixBlockQuery::class, ElementCollection::class, MatrixBlock::class);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function dbType(): array|string|null
+    {
+        return null;
     }
 
     /**
@@ -112,10 +119,11 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
     public ?int $maxBlocks = null;
 
     /**
-     * @var string Content table name
+     * @var string|null Content table name
      * @since 3.0.23
+     * @deprecated in 5.0.0.
      */
-    public string $contentTable;
+    public ?string $contentTable = null;
 
     /**
      * @var string Propagation method
@@ -175,6 +183,18 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
     public function settingsAttributes(): array
     {
         return ArrayHelper::withoutValue(parent::settingsAttributes(), 'localizeBlocks');
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getSettings(): array
+    {
+        $settings = parent::getSettings();
+        if ($settings['contentTable'] === null) {
+            unset($settings['contentTable']);
+        }
+        return $settings;
     }
 
     /**
@@ -245,11 +265,8 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
                 // Assemble the fields
                 foreach ($blockTypes as $blockType) {
                     if (isset($fieldIdsByLayoutId[$blockType->fieldLayoutId])) {
-                        $fieldColumnPrefix = 'field_' . $blockType->handle . '_';
-
                         foreach ($fieldIdsByLayoutId[$blockType->fieldLayoutId] as $fieldId) {
                             if (isset($fieldsById[$fieldId])) {
-                                $fieldsById[$fieldId]->columnPrefix = $fieldColumnPrefix;
                                 $this->_blockTypeFields[$blockType->id][] = $fieldsById[$fieldId];
                             }
                         }
@@ -375,14 +392,6 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
         }
 
         return $validates;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public static function hasContentColumn(): bool
-    {
-        return false;
     }
 
     /**
@@ -600,13 +609,8 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
     /**
      * @inheritdoc
      */
-    public function modifyElementsQuery(ElementQueryInterface $query, mixed $value): void
+    public function getQueryCondition(mixed $value, array &$params = []): array
     {
-        /** @var ElementQuery $query */
-        if ($value === null) {
-            return;
-        }
-
         $ns = $this->handle . '_' . StringHelper::randomString(5);
         $existsQuery = (new Query())
             ->from(["matrixblocks_$ns" => DbTable::MATRIXBLOCKS])
@@ -624,23 +628,23 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
         }
 
         if ($value === ':empty:') {
-            $query->subQuery->andWhere(['not exists', $existsQuery]);
-        } else {
-            if ($value !== ':notempty:') {
-                $ids = $value;
-                if (!is_array($ids)) {
-                    $ids = is_string($ids) ? StringHelper::split($ids) : [$ids];
-                }
+            return ['not exists', $existsQuery];
+        }
 
-                $ids = array_map(function($id) {
-                    return $id instanceof MatrixBlock ? $id->id : (int)$id;
-                }, $ids);
-
-                $existsQuery->andWhere(["matrixblocks_$ns.id" => $ids]);
+        if ($value !== ':notempty:') {
+            $ids = $value;
+            if (!is_array($ids)) {
+                $ids = is_string($ids) ? StringHelper::split($ids) : [$ids];
             }
 
-            $query->subQuery->andWhere(['exists', $existsQuery]);
+            $ids = array_map(function($id) {
+                return $id instanceof MatrixBlock ? $id->id : (int)$id;
+            }, $ids);
+
+            $existsQuery->andWhere(["matrixblocks_$ns.id" => $ids]);
         }
+
+        return ['exists', $existsQuery];
     }
 
     /**
@@ -1022,15 +1026,14 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
             }
         }
 
-        // Set the content table name
+        // Maintain the content table name
+        // todo: remove this after the next breakpoint
         if ($this->id) {
             $oldField = $fieldsService->getFieldById($this->id);
             if ($oldField instanceof self) {
                 $this->contentTable = $oldField->contentTable;
             }
         }
-
-        $this->contentTable = Craft::$app->getMatrix()->defineContentTableName($this);
 
         return true;
     }

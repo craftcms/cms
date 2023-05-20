@@ -67,11 +67,6 @@ trait ElementTrait
     public ?int $structureId = null;
 
     /**
-     * @var int|null The element’s content row ID
-     */
-    public ?int $contentId = null;
-
-    /**
      * @var bool Whether the element is enabled
      */
     public bool $enabled = true;

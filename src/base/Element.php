@@ -88,7 +88,6 @@ use yii\base\UnknownPropertyException;
 use yii\db\Expression;
 use yii\db\ExpressionInterface;
 use yii\validators\BooleanValidator;
-use yii\validators\NumberValidator;
 use yii\validators\RequiredValidator;
 use yii\validators\Validator;
 use yii\web\Response;
@@ -103,12 +102,10 @@ use yii\web\Response;
  * @property-read bool $isDerivative Whether this is a derivative element, such as a draft or revision
  * @property ElementQueryInterface $ancestors The element’s ancestors
  * @property ElementQueryInterface $children The element’s children
- * @property string $contentTable The name of the table this element’s content is stored in
  * @property string|null $cpEditUrl The element’s edit URL in the control panel
  * @property ElementQueryInterface $descendants The element’s descendants
  * @property string $editorHtml The HTML for the element’s editor HUD
  * @property bool $enabledForSite Whether the element is enabled for this site
- * @property string $fieldColumnPrefix The field column prefix this element’s content uses
  * @property string $fieldContext The field context this element’s content uses
  * @property FieldLayout|null $fieldLayout The field layout used by this element
  * @property array $fieldParamNamespace The namespace used by custom field params on the request
@@ -781,14 +778,6 @@ abstract class Element extends Component implements ElementInterface
      * @inheritdoc
      */
     public static function trackChanges(): bool
-    {
-        return false;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public static function hasContent(): bool
     {
         return false;
     }
@@ -2287,7 +2276,9 @@ abstract class Element extends Component implements ElementInterface
         $fields = parent::fields();
 
         // Include custom fields
-        if (static::hasContent() && ($fieldLayout = $this->getFieldLayout()) !== null) {
+        $fieldLayout = $this->getFieldLayout();
+
+        if ($fieldLayout !== null) {
             foreach ($fieldLayout->getCustomFieldElements() as $layoutElement) {
                 $field = $layoutElement->getField();
                 if (!isset($fields[$field->handle])) {
@@ -2330,7 +2321,9 @@ abstract class Element extends Component implements ElementInterface
         $attributes = $this->getAttributes();
 
         // Include custom fields
-        if (static::hasContent() && ($fieldLayout = $this->getFieldLayout()) !== null) {
+        $fieldLayout = $this->getFieldLayout();
+
+        if ($fieldLayout !== null) {
             foreach ($fieldLayout->getCustomFieldElements() as $layoutElement) {
                 $field = $layoutElement->getField();
                 if (!isset($attributes[$field->handle])) {
@@ -2393,7 +2386,7 @@ abstract class Element extends Component implements ElementInterface
     protected function defineRules(): array
     {
         $rules = parent::defineRules();
-        $rules[] = [['id', 'contentId', 'parentId', 'root', 'lft', 'rgt', 'level'], 'number', 'integerOnly' => true, 'on' => [self::SCENARIO_DEFAULT, self::SCENARIO_LIVE]];
+        $rules[] = [['id', 'parentId', 'root', 'lft', 'rgt', 'level'], 'number', 'integerOnly' => true, 'on' => [self::SCENARIO_DEFAULT, self::SCENARIO_LIVE]];
         $rules[] = [
             ['siteId'],
             SiteIdValidator::class,
@@ -2441,7 +2434,6 @@ abstract class Element extends Component implements ElementInterface
     public function afterValidate(): void
     {
         if (
-            static::hasContent() &&
             Craft::$app->getIsInstalled() &&
             $fieldLayout = $this->getFieldLayout()
         ) {
@@ -2470,19 +2462,6 @@ abstract class Element extends Component implements ElementInterface
                         (empty($validator->on) && !in_array($scenario, $validator->except))
                     ) {
                         $validator->validateAttributes($this);
-                    }
-                }
-
-                if ($field::hasContentColumn()) {
-                    $columnType = $field->getContentColumnType();
-                    $value = $field->serializeValue($this->getFieldValue($field->handle), $this);
-
-                    if (is_array($columnType)) {
-                        foreach ($columnType as $key => $type) {
-                            $this->_validateCustomFieldContentSizeInternal($attribute, $field, $type, $value[$key] ?? null);
-                        }
-                    } else {
-                        $this->_validateCustomFieldContentSizeInternal($attribute, $field, $columnType, $value);
                     }
                 }
             }
@@ -2584,47 +2563,6 @@ abstract class Element extends Component implements ElementInterface
         }
 
         return $field->isValueEmpty($this->getFieldValue($handle), $this);
-    }
-
-    /**
-     * @param string $attribute
-     * @param FieldInterface $field
-     * @param string $columnType
-     * @param mixed $value
-     */
-    private function _validateCustomFieldContentSizeInternal(string $attribute, FieldInterface $field, string $columnType, mixed $value): void
-    {
-        $simpleColumnType = Db::getSimplifiedColumnType($columnType);
-
-        if (!in_array($simpleColumnType, [Db::SIMPLE_TYPE_NUMERIC, Db::SIMPLE_TYPE_TEXTUAL], true)) {
-            return;
-        }
-
-        $value = Db::prepareValueForDb($value);
-
-        // Ignore empty values
-        if ($value === null || $value === '') {
-            return;
-        }
-
-        if ($simpleColumnType === Db::SIMPLE_TYPE_NUMERIC) {
-            $validator = new NumberValidator([
-                'min' => Db::getMinAllowedValueForNumericColumn($columnType) ?: null,
-                'max' => Db::getMaxAllowedValueForNumericColumn($columnType) ?: null,
-            ]);
-        } else {
-            $validator = new StringValidator([
-                // Don't count multibyte characters as a single char
-                'encoding' => '8bit',
-                'max' => Db::getTextualColumnStorageCapacity($columnType) ?: null,
-                'disallowMb4' => true,
-            ]);
-        }
-
-        if (!$validator->validate($value, $error)) {
-            $error = str_replace(Craft::t('yii', 'the input value'), Craft::t('site', $field->name), $error);
-            $this->addError($attribute, $error);
-        }
     }
 
     /**
@@ -4313,25 +4251,9 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
-    public function getContentTable(): string
-    {
-        return Craft::$app->getContent()->contentTable;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getFieldColumnPrefix(): string
-    {
-        return Craft::$app->getContent()->fieldColumnPrefix;
-    }
-
-    /**
-     * @inheritdoc
-     */
     public function getFieldContext(): string
     {
-        return Craft::$app->getContent()->fieldContext;
+        return Craft::$app->getFields()->fieldContext;
     }
 
     /**
@@ -4421,7 +4343,7 @@ abstract class Element extends Component implements ElementInterface
             return false;
         }
 
-        if (!isset($this->contentId)) {
+        if (!isset($this->siteSettingsId)) {
             return true;
         }
 
@@ -5215,9 +5137,9 @@ JS,
             return $this->_fieldsByHandle[$handle];
         }
 
-        $contentService = Craft::$app->getContent();
-        $originalFieldContext = $contentService->fieldContext;
-        $contentService->fieldContext = $this->getFieldContext();
+        $fieldsService = Craft::$app->getFields();
+        $originalFieldContext = $fieldsService->fieldContext;
+        $fieldsService->fieldContext = $this->getFieldContext();
         $fieldLayout = $this->getFieldLayout();
         $this->_fieldsByHandle[$handle] = $fieldLayout?->getFieldByHandle($handle);
 
@@ -5230,7 +5152,7 @@ JS,
             }
         }
 
-        $contentService->fieldContext = $originalFieldContext;
+        $fieldsService->fieldContext = $originalFieldContext;
 
         return $this->_fieldsByHandle[$handle];
     }

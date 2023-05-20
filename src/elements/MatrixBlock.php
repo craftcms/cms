@@ -86,14 +86,6 @@ class MatrixBlock extends Element implements BlockElementInterface
     /**
      * @inheritdoc
      */
-    public static function hasContent(): bool
-    {
-        return true;
-    }
-
-    /**
-     * @inheritdoc
-     */
     public static function isLocalized(): bool
     {
         return true;
@@ -142,13 +134,13 @@ class MatrixBlock extends Element implements BlockElementInterface
         $blockType = $blockTypes[$blockTypeHandle];
 
         // Set the field context
-        $contentService = Craft::$app->getContent();
-        $originalFieldContext = $contentService->fieldContext;
-        $contentService->fieldContext = 'matrixBlockType:' . $blockType->uid;
+        $fieldsService = Craft::$app->getFields();
+        $originalFieldContext = $fieldsService->fieldContext;
+        $fieldsService->fieldContext = 'matrixBlockType:' . $blockType->uid;
 
         $map = parent::eagerLoadingMap($sourceElements, $fieldHandle);
 
-        $contentService->fieldContext = $originalFieldContext;
+        $fieldsService->fieldContext = $originalFieldContext;
 
         return $map;
     }
@@ -357,22 +349,6 @@ class MatrixBlock extends Element implements BlockElementInterface
     {
         $this->_owner = $owner;
         $this->ownerId = $owner->id;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getContentTable(): string
-    {
-        return $this->_field()->contentTable;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getFieldColumnPrefix(): string
-    {
-        return 'field_' . $this->getType()->handle . '_';
     }
 
     /**

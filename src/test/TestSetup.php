@@ -28,7 +28,6 @@ use craft\services\Assets;
 use craft\services\Categories;
 use craft\services\Composer;
 use craft\services\Config;
-use craft\services\Content;
 use craft\services\Dashboard;
 use craft\services\Deprecator;
 use craft\services\Elements;
@@ -576,7 +575,6 @@ class TestSetup
             [Categories::class, ['getCategories', 'categories']],
             [Composer::class, ['getComposer', 'composer']],
             [Config::class, ['getConfig', 'config']],
-            [Content::class, ['getContent', 'content']],
             [MigrationManager::class, ['getContentMigrator', 'contentMigrator']],
             [Dashboard::class, ['getDashboard', 'dashboard']],
             [Deprecator::class, ['getDeprecator', 'deprecator']],

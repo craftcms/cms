@@ -150,7 +150,8 @@ class Search extends Component
         $updateFields = [];
         /** @var string[] $ignoreFieldIds */
         $ignoreFieldIds = [];
-        if ($element::hasContent() && ($fieldLayout = $element->getFieldLayout()) !== null) {
+        $fieldLayout = $element->getFieldLayout();
+        if ($fieldLayout !== null) {
             if ($fieldHandles !== null) {
                 $fieldHandles = array_flip($fieldHandles);
             }

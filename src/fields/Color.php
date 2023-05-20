@@ -36,23 +36,23 @@ class Color extends Field implements PreviewableFieldInterface
     /**
      * @inheritdoc
      */
-    public static function valueType(): string
+    public static function phpType(): string
     {
         return sprintf('\\%s|null', ColorData::class);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function dbType(): string
+    {
+        return sprintf('%s(7)', Schema::TYPE_CHAR);
     }
 
     /**
      * @var string|null The default color hex
      */
     public ?string $defaultColor = null;
-
-    /**
-     * @inheritdoc
-     */
-    public function getContentColumnType(): string
-    {
-        return sprintf('%s(7)', Schema::TYPE_CHAR);
-    }
 
     /** @inheritdoc */
     public function getSettingsHtml(): ?string

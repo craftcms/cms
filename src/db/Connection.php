@@ -67,6 +67,12 @@ class Connection extends \yii\db\Connection
     public const EVENT_AFTER_RESTORE_BACKUP = 'afterRestoreBackup';
 
     /**
+     * @var bool|null whether this is MariaDB.
+     * @see getIsMaria()
+     */
+    private ?bool $_isMaria = null;
+
+    /**
      * @var bool|null whether the database supports 4+ byte characters
      * @see getSupportsMb4()
      * @see setSupportsMb4()
@@ -74,13 +80,27 @@ class Connection extends \yii\db\Connection
     private ?bool $_supportsMb4 = null;
 
     /**
-     * Returns whether this is a MySQL connection.
+     * Returns whether this is a MySQL (or MySQL-like) connection.
      *
      * @return bool
      */
     public function getIsMysql(): bool
     {
         return $this->getDriverName() === Connection::DRIVER_MYSQL;
+    }
+
+    /**
+     * Returns whether this is a MariaDB connection.
+     *
+     * @return bool
+     * @since 5.0.0
+     */
+    public function getIsMaria(): bool
+    {
+        if (!isset($this->_isMaria)) {
+            $this->_isMaria = $this->getIsMysql() && str_contains(strtolower($this->getSchema()->getServerVersion()), 'mariadb');
+        }
+        return $this->_isMaria;
     }
 
     /**
@@ -101,16 +121,11 @@ class Connection extends \yii\db\Connection
      */
     public function getDriverLabel(): string
     {
-        if ($this->getIsMysql()) {
-            // Actually MariaDB though?
-            if (StringHelper::contains($this->getSchema()->getServerVersion(), 'mariadb', false)) {
-                return 'MariaDB';
-            }
-
-            return 'MySQL';
-        }
-
-        return 'PostgreSQL';
+        return match (true) {
+            $this->getIsMaria() => 'MariaDB',
+            $this->getIsMysql() => 'MySQL',
+            default => 'PostgreSQL',
+        };
     }
 
     /**

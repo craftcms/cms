@@ -1093,4 +1093,24 @@ class AssetQuery extends ElementQuery
         }
         return $tags;
     }
+
+    /**
+     * @inheritdoc
+     */
+    protected function fieldLayouts(): array
+    {
+        if ($this->volumeId && $this->volumeId !== ':empty:') {
+            $fieldLayouts = [];
+            $volumesService = Craft::$app->getVolumes();
+            foreach ($this->volumeId as $volumeId) {
+                $volume = $volumesService->getVolumeById($volumeId);
+                if ($volume) {
+                    $fieldLayouts[] = $volume->getFieldLayout();
+                }
+            }
+            return $fieldLayouts;
+        }
+
+        return parent::fieldLayouts();
+    }
 }

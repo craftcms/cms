@@ -74,13 +74,6 @@ interface ElementInterface extends ComponentInterface
     public static function trackChanges(): bool;
 
     /**
-     * Returns whether elements of this type will be storing any data in the `content` table (titles or custom fields).
-     *
-     * @return bool Whether elements of this type will be storing any data in the `content` table.
-     */
-    public static function hasContent(): bool;
-
-    /**
      * Returns whether elements of this type have traditional titles.
      *
      * @return bool Whether elements of this type have traditional titles.
@@ -1444,20 +1437,6 @@ interface ElementInterface extends ComponentInterface
      * @param string $namespace The field param namespace
      */
     public function setFieldParamNamespace(string $namespace): void;
-
-    /**
-     * Returns the name of the table this element’s content is stored in.
-     *
-     * @return string
-     */
-    public function getContentTable(): string;
-
-    /**
-     * Returns the field column prefix this element’s content uses.
-     *
-     * @return string
-     */
-    public function getFieldColumnPrefix(): string;
 
     /**
      * Returns the field context this element’s content uses.
