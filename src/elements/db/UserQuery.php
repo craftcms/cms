@@ -427,7 +427,7 @@ class UserQuery extends ElementQuery
             return $item instanceof UserGroup ? $item->id : null;
         })) {
             $this->groupId = $value;
-        } else {/**/
+        } else {
             $operator = QueryParam::extractOperator($value);
             $this->groupId = (new Query())
                 ->select(['id'])
