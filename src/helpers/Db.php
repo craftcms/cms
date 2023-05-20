@@ -1846,4 +1846,26 @@ class Db
 
         return $name;
     }
+
+    /**
+     * Returns the default collation that should be used, based on the current MySQL version.
+     *
+     * - If MySQL 8.0+, `utf8mb4_0900_ai_ci` will be returned.
+     * - Otherwise, `utf8mb4_unicode_ci` will be returned.
+     *
+     * @param Connection|null $db The database connection
+     * @since 5.0.0
+     */
+    public static function defaultCollation(?Connection $db = null): string
+    {
+        if ($db === null) {
+            $db = self::db();
+        }
+
+        if (!$db->getIsMaria() && version_compare($db->getServerVersion(), '8.0', '>=')) {
+            return 'utf8mb4_0900_ai_ci';
+        }
+
+        return 'utf8mb4_unicode_ci';
+    }
 }

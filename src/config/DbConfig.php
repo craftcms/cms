@@ -81,11 +81,6 @@ class DbConfig extends BaseConfig
      *
      * This is only used by MySQL. If null, the [[$charset|charset’s]] default collation will be used.
      *
-     * | Charset   | Default collation    |
-     * | --------- | -------------------- |
-     * | `utf8`    | `utf8_general_ci`    |
-     * | `utf8mb4` | `utf8mb4_0900_ai_ci` |
-     *
      * ::: tip
      * You can change the character set and collation across all existing database tables using this terminal command:
      *
@@ -332,6 +327,7 @@ class DbConfig extends BaseConfig
         $this
             ->url($this->url)
             ->tablePrefix($this->tablePrefix)
+            ->charset($this->charset)
         ;
 
         // If we don't have a DSN yet, create one from the deprecated settings
@@ -387,6 +383,12 @@ class DbConfig extends BaseConfig
      */
     public function charset(string $value): self
     {
+        if ($value === 'utf8' && $this->driver === Connection::DRIVER_MYSQL) {
+            // treat utf8 as an alias for utf8mb4
+            // (MySQL aliases it to utf8mb3, but that's deprecated and likely to change eventually)
+            $value = 'utf8mb4';
+        }
+
         $this->charset = $value;
         return $this;
     }
@@ -395,11 +397,6 @@ class DbConfig extends BaseConfig
      * The collation to use when creating tables.
      *
      * This is only used by MySQL. If null, the [[$charset|charset’s]] default collation will be used.
-     *
-     * | Charset   | Default collation    |
-     * | --------- | -------------------- |
-     * | `utf8`    | `utf8_general_ci`    |
-     * | `utf8mb4` | `utf8mb4_0900_ai_ci` |
      *
      * ::: tip
      * You can change the character set and collation across all existing database tables using this terminal command:

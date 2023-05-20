@@ -28,6 +28,7 @@
 - Added `craft\db\pgsql\QueryBuilder::jsonExtract()`.
 - Added `craft\db\QueryParam`.
 - Added `craft\elements\db\ElementQueryInterface::fieldLayouts()`
+- Added `craft\helpers\Db::defaultCollation()`.
 - Added `craft\helpers\Db::prepareForJsonColumn()`.
 - Added `craft\i18n\Locale::$aliasOf`.
 - Added `craft\i18n\Locale::setDisplayName()`.
@@ -63,4 +64,5 @@
 
 ### System
 - Craft now requires PHP 8.1 or later.
+- New database tables now default to the `utf8mb4` charset, and the `utf8mb4_0900_ai_ci` or `utf8mb4_unicode_ci` collation, on MySQL. Existing installs should run `db/convert-charset` after upgrading, to ensure all tables have consistent charsets and collations. ([#11823](https://github.com/craftcms/cms/discussions/11823))
 - The `defaultTemplateExtensions` config setting now lists `twig` before `html` by default. ([#11809](https://github.com/craftcms/cms/discussions/11809))

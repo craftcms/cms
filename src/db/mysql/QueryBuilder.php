@@ -9,6 +9,7 @@ namespace craft\db\mysql;
 
 use Craft;
 use craft\db\Connection;
+use craft\helpers\Db;
 use craft\helpers\Json;
 use yii\base\NotSupportedException;
 
@@ -50,8 +51,8 @@ class QueryBuilder extends \yii\db\mysql\QueryBuilder
         if (!preg_match('/\bCHARACTER +SET\b/i', $options)) {
             $options .= " DEFAULT CHARACTER SET = $dbConfig->charset";
         }
-        if ($dbConfig->collation !== null && !preg_match('/\bCOLLATE\b/i', $options)) {
-            $options .= " DEFAULT COLLATE = $dbConfig->collation";
+        if (!preg_match('/\bCOLLATE\b/i', $options)) {
+            $options .= sprintf(' DEFAULT COLLATE = %s', $dbConfig->collation ?? Db::defaultCollation($this->db));
         }
 
         return parent::createTable($table, $columns, $options);
