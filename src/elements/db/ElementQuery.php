@@ -1381,7 +1381,7 @@ class ElementQuery extends Query implements ElementQueryInterface
             if (is_string($this->title)) {
                 $this->title = Db::escapeCommas($this->title);
             }
-            $this->subQuery->andWhere(Db::parseParam('content.title', $this->title, '=', true));
+            $this->subQuery->andWhere(Db::parseParam('elements_sites.title', $this->title, '=', true));
         }
 
         if ($this->slug) {
@@ -1657,7 +1657,7 @@ class ElementQuery extends Query implements ElementQueryInterface
                 $dec = $property->getDeclaringClass();
                 if (
                     ($dec->getName() === self::class || $dec->isSubclassOf(self::class)) &&
-                    !in_array($property->getName(), ['elementType', 'query', 'subQuery', 'contentTable', 'customFields', 'asArray'], true)
+                    !in_array($property->getName(), ['elementType', 'query', 'subQuery', 'customFields', 'asArray'], true)
                 ) {
                     $names[] = $property->getName();
                 }
