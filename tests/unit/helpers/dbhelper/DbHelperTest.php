@@ -73,7 +73,7 @@ class DbHelperTest extends TestCase
 
     /**
      * @dataProvider parseParamDataProvider
-     * @param string|array $expected
+     * @param array|null $expected
      * @param string $column
      * @param mixed $value
      * @param string $defaultOperator
@@ -81,7 +81,7 @@ class DbHelperTest extends TestCase
      * @param string|null $columnType
      */
     public function testParseParam(
-        string|array $expected,
+        ?array $expected,
         string $column,
         mixed $value,
         string $defaultOperator = '=',
@@ -410,27 +410,27 @@ class DbHelperTest extends TestCase
                 'raaa',
             ],
             [
-                '',
+                null,
                 'foo',
                 'not',
             ],
             [
-                '',
+                null,
                 'foo',
                 [],
             ],
             [
-                '',
+                null,
                 '',
                 '',
             ],
             [
-                '',
+                null,
                 'foo',
                 null,
             ],
             [
-                '',
+                null,
                 'foo',
                 '',
             ],
