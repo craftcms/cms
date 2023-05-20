@@ -1030,7 +1030,6 @@ return
                         'searchable' => true,
                         'settings' =>
                             [
-                                'contentTable' => '{{%matrixcontent_articlebody}}',
                                 'maxBlocks' => '',
                                 'minBlocks' => '',
                                 'propagationMethod' => 'all',
@@ -1049,7 +1048,6 @@ return
                         'searchable' => true,
                         'settings' =>
                             [
-                                'contentTable' => '{{%matrixcontent_testimonials}}',
                                 'maxBlocks' => '3',
                                 'minBlocks' => '',
                                 'propagationMethod' => 'all',
@@ -1128,7 +1126,6 @@ return
                         'searchable' => true,
                         'settings' =>
                             [
-                                'contentTable' => '{{%matrixcontent_servicebody}}',
                                 'maxBlocks' => '',
                                 'minBlocks' => '',
                                 'propagationMethod' => 'all',
@@ -1260,7 +1257,6 @@ return
                         'searchable' => true,
                         'settings' =>
                             [
-                                'contentTable' => '{{%matrixcontent_contactmethods}}',
                                 'maxBlocks' => '',
                                 'minBlocks' => '',
                                 'propagationMethod' => 'all',
