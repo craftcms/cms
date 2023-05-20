@@ -2122,7 +2122,8 @@ class ElementQuery extends Query implements ElementQueryInterface
                 $handle = $field->handle;
 
                 // In theory all field handles will be accounted for on the CustomFieldBehavior, but just to be safe...
-                if ($handle !== 'owner' && isset($fieldAttributes->$handle)) {
+                // ($fieldAttributes->$handle will return true even if it's set to null, so can't use isset() alone here)
+                if ($handle !== 'owner' && ($fieldAttributes->$handle ?? null) !== null) {
                     $params = [];
                     $condition = $field->getQueryCondition($fieldAttributes->$handle, $params);
 
