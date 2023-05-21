@@ -261,7 +261,7 @@ class FileHelper extends \yii\helpers\FileHelper
         // Strip any characters not allowed.
         $filename = str_replace($disallowedChars, '', strip_tags($filename));
 
-        if (Craft::$app->getDb()->getIsMysql()) {
+        if (!Craft::$app->getDb()->getSupportsMb4()) {
             // Strip emojis
             $filename = StringHelper::replaceMb4($filename, '');
         }

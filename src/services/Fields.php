@@ -1425,7 +1425,7 @@ class Fields extends Component
             }
 
             $tabRecord->sortOrder = $tab->sortOrder;
-            if (Craft::$app->getDb()->getIsMysql()) {
+            if (!Craft::$app->getDb()->getSupportsMb4()) {
                 $tabRecord->name = StringHelper::encodeMb4($tab->name);
             } else {
                 $tabRecord->name = $tab->name;
