@@ -264,14 +264,6 @@ class PlainText extends Field implements PreviewableFieldInterface, SortableFiel
     /**
      * @inheritdoc
      */
-    protected function searchKeywords(mixed $value, ElementInterface $element): string
-    {
-        return StringHelper::emojiToShortcodes((string)$value);
-    }
-
-    /**
-     * @inheritdoc
-     */
     public function getElementConditionRuleType(): ?string
     {
         return TextFieldConditionRule::class;
