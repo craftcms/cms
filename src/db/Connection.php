@@ -17,6 +17,7 @@ use craft\errors\DbConnectException;
 use craft\errors\ShellCommandException;
 use craft\events\BackupEvent;
 use craft\events\RestoreEvent;
+use craft\helpers\ArrayHelper;
 use craft\helpers\Db;
 use craft\helpers\FileHelper;
 use craft\helpers\StringHelper;
@@ -73,11 +74,10 @@ class Connection extends \yii\db\Connection
     private ?bool $_isMaria = null;
 
     /**
-     * @var bool|null whether the database supports 4+ byte characters
+     * @var array<string,bool>
      * @see getSupportsMb4()
-     * @see setSupportsMb4()
      */
-    private ?bool $_supportsMb4 = null;
+    private array $_supportsMb4 = [];
 
     /**
      * Returns whether this is a MySQL (or MySQL-like) connection.
@@ -129,26 +129,32 @@ class Connection extends \yii\db\Connection
     }
 
     /**
-     * Returns whether the database supports 4+ byte characters.
+     * Returns whether a database table supports 4+ byte characters.
      *
+     * @param string $table The table to check
      * @return bool
      */
-    public function getSupportsMb4(): bool
+    public function getSupportsMb4(string $table = Table::ELEMENTS_SITES): bool
     {
-        if (isset($this->_supportsMb4)) {
-            return $this->_supportsMb4;
+        if ($this->getIsPgsql()) {
+            return true;
         }
-        return $this->_supportsMb4 = $this->getIsPgsql();
-    }
 
-    /**
-     * Sets whether the database supports 4+ byte characters.
-     *
-     * @param bool $supportsMb4
-     */
-    public function setSupportsMb4(bool $supportsMb4): void
-    {
-        $this->_supportsMb4 = $supportsMb4;
+        if (!isset($this->_supportsMb4[$table])) {
+            try {
+                $columns = $this->createCommand("SHOW FULL COLUMNS FROM $table")->queryAll();
+            } catch (DbException $e) {
+                Craft::warning("Couldn’t determine whether $table supports 4-byte characters: {$e->getMessage()}");
+                $columns = [];
+            }
+            // collation names start with the charset name
+            $this->_supportsMb4[$table] = ArrayHelper::contains(
+                $columns,
+                fn(array $column) => isset($column['Collation']) && str_contains($column['Collation'], 'mb4')
+            );
+        }
+
+        return $this->_supportsMb4[$table];
     }
 
     /**
@@ -194,7 +200,7 @@ class Connection extends \yii\db\Connection
     public function close(): void
     {
         parent::close();
-        $this->_supportsMb4 = null;
+        $this->_supportsMb4 = [];
     }
 
     /**
