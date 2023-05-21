@@ -116,7 +116,7 @@ class PlainText extends Field implements PreviewableFieldInterface, SortableFiel
     public function getSettings(): array
     {
         $settings = parent::getSettings();
-        if (isset($settings['placeholder'])) {
+        if (isset($settings['placeholder']) && !Craft::$app->getDb()->getSupportsMb4()) {
             $settings['placeholder'] = StringHelper::emojiToShortcodes($settings['placeholder']);
         }
         return $settings;
@@ -205,7 +205,7 @@ class PlainText extends Field implements PreviewableFieldInterface, SortableFiel
      */
     public function serializeValue(mixed $value, ?ElementInterface $element = null): mixed
     {
-        if ($value !== null) {
+        if ($value !== null && !Craft::$app->getDb()->getSupportsMb4()) {
             $value = StringHelper::emojiToShortcodes(StringHelper::escapeShortcodes($value));
         }
         return $value;
