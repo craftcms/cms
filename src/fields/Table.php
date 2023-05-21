@@ -442,13 +442,14 @@ class Table extends Field
         }
 
         $serialized = [];
+        $supportsMb4 = Craft::$app->getDb()->getSupportsMb4();
 
         foreach ($value as $row) {
             $serializedRow = [];
             foreach (array_keys($this->columns) as $colId) {
                 $value = $row[$colId];
 
-                if (is_string($value) && in_array($this->columns[$colId]['type'], ['singleline', 'multiline'], true)) {
+                if (is_string($value) && !$supportsMb4) {
                     $value = StringHelper::emojiToShortcodes(StringHelper::escapeShortcodes($value));
                 }
 
