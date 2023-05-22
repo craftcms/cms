@@ -8,7 +8,7 @@
 namespace craft\auth\type;
 
 use Craft;
-use craft\auth\Configurable2faType;
+use craft\auth\ConfigurableAuthType;
 use craft\elements\User;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Json;
@@ -16,7 +16,7 @@ use craft\records\RecoveryCodes as RecoveryCodesRecord;
 use craft\web\View;
 use PragmaRX\Recovery\Recovery;
 
-class RecoveryCodes extends Configurable2faType
+class RecoveryCodes extends ConfigurableAuthType
 {
     /**
      * @inheritdoc

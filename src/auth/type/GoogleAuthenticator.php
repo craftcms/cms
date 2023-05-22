@@ -12,13 +12,13 @@ use BaconQrCode\Renderer\ImageRenderer;
 use BaconQrCode\Renderer\RendererStyle\RendererStyle;
 use BaconQrCode\Writer;
 use Craft;
-use craft\auth\Configurable2faType;
+use craft\auth\ConfigurableAuthType;
 use craft\elements\User;
 use craft\records\Authenticator as AuthenticatorRecord;
 use craft\web\View;
 use PragmaRX\Google2FA\Google2FA;
 
-class GoogleAuthenticator extends Configurable2faType
+class GoogleAuthenticator extends ConfigurableAuthType
 {
     /**
      * The key to store the authenticator secret in session, while setting up this method.

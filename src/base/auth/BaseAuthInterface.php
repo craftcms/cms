@@ -7,7 +7,7 @@
 
 namespace craft\base\auth;
 
-interface Base2faInterface
+interface BaseAuthInterface
 {
     /**
      * Name of the 2FA authentication method

@@ -8,7 +8,7 @@
 namespace craft\controllers;
 
 use Craft;
-use craft\auth\Configurable2faInterface;
+use craft\auth\ConfigurableAuthInterface;
 use craft\auth\type\RecoveryCodes;
 use craft\auth\type\WebAuthn;
 use craft\helpers\StringHelper;
@@ -212,7 +212,7 @@ class AuthController extends Controller
         }
 
         $auth2faType = new $selectedMethod();
-        if (!($auth2faType instanceof Configurable2faInterface)) {
+        if (!($auth2faType instanceof ConfigurableAuthInterface)) {
             throw new Exception('This 2FA type can’t be configured.');
         }
 

@@ -9,10 +9,10 @@ namespace craft\auth;
 
 use craft\elements\User;
 
-interface Configurable2faInterface
+interface ConfigurableAuthInterface
 {
     /**
-     * Checks if given 2FA method has been fully set up for user to use
+     * Checks if given authentication method has been fully set up for user to use
      *
      * @param User $user
      * @return bool
@@ -20,7 +20,7 @@ interface Configurable2faInterface
     public function isSetupForUser(User $user): bool;
 
     /**
-     * Get html for 2FA setup form
+     * Get html for authentication setup form
      *
      * @param string $html
      * @param bool $withInto
@@ -30,7 +30,7 @@ interface Configurable2faInterface
     public function getSetupFormHtml(string $html = '', bool $withInto = false, ?User $user = null): string;
 
     /**
-     * Remove all setup user has for this 2FA option
+     * Remove all setup user has for this authentication option
      *
      * @return bool
      */

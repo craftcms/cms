@@ -16,7 +16,7 @@
     {% set currentMethod = 'craft\\auth\\type\\GoogleAuthenticator' %}
 {% endif %}
 
-{% set isSetup = user.is2faTypeSetup(currentMethod) %}
+{% set isSetup = user.isAuthTypeSetup(currentMethod) %}
 
 <div class="field">
     {% if withIntro is defined and withIntro == true %}

@@ -8,9 +8,9 @@
 namespace craft\elements;
 
 use Craft;
-use craft\auth\Configurable2faInterface;
+use craft\auth\ConfigurableAuthInterface;
 use craft\auth\type\WebAuthn;
-use craft\base\auth\Base2faType;
+use craft\base\auth\BaseAuthType;
 use craft\base\Element;
 use craft\base\NameTrait;
 use craft\db\Query;
@@ -1933,10 +1933,10 @@ class User extends Element implements IdentityInterface
     /**
      * Return default 2FA method
      *
-     * @return Base2faType
+     * @return BaseAuthType
      * @since 5.0
      */
-    public function getDefault2faType(): Base2faType
+    public function getDefault2faType(): BaseAuthType
     {
         $all2faTypes = Craft::$app->getAuth()->getAll2faTypes();
 
@@ -1948,21 +1948,21 @@ class User extends Element implements IdentityInterface
     }
 
     /**
-     * Check if given 2FA option is fully set up for the user
+     * Check if given authentication option is fully set up for the user
      *
-     * @param string $auth2faClass
+     * @param string $authClass
      * @return bool
      * @since 5.0
      */
-    public function is2faTypeSetup(string $auth2faClass): bool
+    public function isAuthTypeSetup(string $authClass): bool
     {
-        $auth2faType = new $auth2faClass();
+        $authType = new $authClass();
 
-        if (!($auth2faType instanceof Configurable2faInterface)) {
+        if (!($authType instanceof ConfigurableAuthInterface)) {
             return true;
         }
 
-        return $auth2faType->isSetupForUser($this);
+        return $authType->isSetupForUser($this);
     }
 
     /**

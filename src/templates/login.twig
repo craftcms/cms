@@ -112,7 +112,15 @@
 
             <div class="alternative-login-methods">
                 <div class="fullwidth divider">or</div>
-                <button id="webauthn-login" type="button" class="btn">{{ 'Sign in using a security key'|t('app') }}</button>
+                {{ forms.button({
+                    id: 'webauthn-login',
+                    label: 'Sign in using a security key'|t('app'),
+                    spinner: true,
+                    busyMessage: 'Signing in'|t('app'),
+                    successMessage: 'Signed in'|t('app'),
+                    failureMessage: 'Sign in unsuccessful'|t('app'),
+                    retryMessage: 'Sign in using a security key'|t('app'),
+                }) }}
             </div>
 
             <div id="login-errors" role="status">

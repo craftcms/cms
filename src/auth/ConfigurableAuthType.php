@@ -8,14 +8,14 @@
 namespace craft\auth;
 
 use Craft;
-use craft\base\auth\Base2faType;
+use craft\base\auth\BaseAuthType;
 use craft\elements\User;
 use craft\helpers\Html;
 
 /**
  *
  */
-abstract class Configurable2faType extends Base2faType implements Configurable2faInterface
+abstract class ConfigurableAuthType extends BaseAuthType implements ConfigurableAuthInterface
 {
     /**
      * @inheritdoc

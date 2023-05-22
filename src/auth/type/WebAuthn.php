@@ -9,12 +9,11 @@ namespace craft\auth\type;
 
 use Base64Url\Base64Url;
 use Craft;
-use craft\auth\Configurable2faType;
+use craft\auth\ConfigurableAuthType;
 use craft\auth\webauthn\CredentialRepository;
 use craft\elements\User;
 use craft\helpers\Json;
 use craft\records\WebAuthn as WebAuthnRecord;
-use craft\web\twig\variables\Rebrand;
 use craft\web\View;
 use GuzzleHttp\Psr7\ServerRequest;
 use Webauthn\AuthenticatorSelectionCriteria;
@@ -26,7 +25,7 @@ use Webauthn\PublicKeyCredentialSource;
 use Webauthn\PublicKeyCredentialUserEntity;
 use Webauthn\Server;
 
-class WebAuthn extends Configurable2faType
+class WebAuthn extends ConfigurableAuthType
 {
     /**
      * The key for session to use for storing the WebAuthn credential options.
@@ -109,7 +108,7 @@ class WebAuthn extends Configurable2faType
             return '';
         }
 
-        // otherwise show keys table and setup button
+        // show keys table and setup button
         $data = [
             'user' => $user,
             'fields' => $this->getNamespacedFields(),
@@ -126,6 +125,7 @@ class WebAuthn extends Configurable2faType
             ->select(['credentialName', 'dateLastUsed', 'uid'])
             ->where(['userId' => $user->id])
             ->all();
+
         $data['credentials'] = $credentials;
 
         $html = Craft::$app->getView()->renderTemplate(
@@ -183,10 +183,6 @@ class WebAuthn extends Configurable2faType
      */
     public function getCredentialCreationOptions(User $user, bool $createNew = false): ?PublicKeyCredentialOptions
     {
-        if (Craft::$app->getEdition() !== Craft::Pro) {
-            return null;
-        }
-
         $session = Craft::$app->getSession();
         $credentialOptions = $session->get(self::WEBAUTHN_CREDENTIAL_OPTIONS_KEY);
 
@@ -253,10 +249,6 @@ class WebAuthn extends Configurable2faType
      */
     public function getCredentialRequestOptions(string|bool $usernameless = false): ?PublicKeyCredentialOptions
     {
-        if (Craft::$app->getEdition() !== Craft::Pro) {
-            return null;
-        }
-
         // if we're doing usernameless authentication
         // proceed with userVerification: preferred and empty allowed credentials
         if ($usernameless === true) {
@@ -327,11 +319,6 @@ class WebAuthn extends Configurable2faType
             'displayName' => $user->friendlyName,
         ];
 
-//        $photo = $user->getPhoto();
-//        if ($photo !== null) {
-//            $data['icon'] = $photo->getDataUrl();
-//        }
-
         return PublicKeyCredentialUserEntity::createFromArray($data);
     }
 
@@ -377,15 +364,6 @@ class WebAuthn extends Configurable2faType
             'name' => Craft::$app->getSystemName(),
             'id' => Craft::$app->getRequest()->getHostName(),
         ];
-
-//        $rebrand = new Rebrand();
-//        if (Craft::$app->getEdition() === Craft::Pro && ($rebrand->isIconUploaded() || $rebrand->isLogoUploaded())) {
-//            if ($rebrand->isIconUploaded()) {
-//                $data['icon'] = $rebrand->getIcon()?->getDataUrl();
-//            } elseif ($rebrand->isLogoUploaded()) {
-//                $data['icon'] = $rebrand->getLogo()?->getDataUrl();
-//            }
-//        }
 
         return PublicKeyCredentialRpEntity::createFromArray($data);
     }

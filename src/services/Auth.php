@@ -11,7 +11,7 @@ use Craft;
 use craft\auth\type\GoogleAuthenticator;
 use craft\auth\type\RecoveryCodes;
 use craft\auth\type\WebAuthn;
-use craft\base\auth\Base2faType;
+use craft\base\auth\BaseAuthType;
 use craft\elements\User;
 use craft\events\Auth2faTypeEvent;
 use yii\base\Component;
@@ -34,9 +34,9 @@ class Auth extends Component
     protected const AUTH_USER_SESSION_KEY = 'craft.auth.user';
 
     /**
-     * @var Base2faType|null 2FA Type instance in use
+     * @var BaseAuthType|null 2FA Type instance in use
      */
-    private ?Base2faType $_2faType = null;
+    private ?BaseAuthType $_2faType = null;
 
     /**
      * @var array $_2faTypes all available 2FA types
@@ -155,8 +155,8 @@ class Auth extends Component
 
         $auth2faType = new $currentMethod();
 
-        if (!($auth2faType instanceof Base2faType)) {
-            throw new Exception('2FA Type needs to be an instance of ' . Base2faType::class);
+        if (!($auth2faType instanceof BaseAuthType)) {
+            throw new Exception('2FA Type needs to be an instance of ' . BaseAuthType::class);
         }
 
         $this->_2faType = new $auth2faType();

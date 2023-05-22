@@ -13,7 +13,7 @@
             <p class="zilch">{{ 'No 2FA options available.'|t('app') }}</p>
         {% else %}
             {% for key, option in auth2faTypes %}
-                {% set isSetup = option.config.requiresSetup == false or (option.config.requiresSetup and user.is2faTypeSetup(key)) %}
+                {% set isSetup = option.config.requiresSetup == false or (option.config.requiresSetup and user.isAuthTypeSetup(key)) %}
 
                 <div class="auth-2fa-type">
                     <strong>{{ option.name }}</strong>

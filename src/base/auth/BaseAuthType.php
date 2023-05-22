@@ -14,7 +14,7 @@ use craft\helpers\Html;
 /**
  *
  */
-abstract class Base2faType extends Component implements Base2faInterface
+abstract class BaseAuthType extends Component implements BaseAuthInterface
 {
     /**
      * @var bool

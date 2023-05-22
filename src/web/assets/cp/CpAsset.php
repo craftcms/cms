@@ -488,7 +488,7 @@ JS;
             'sites' => $this->_sites($sitesService),
             'siteToken' => $generalConfig->siteToken,
             'slugWordSeparator' => $generalConfig->slugWordSeparator,
-            'userHasSecurityKeys' => $currentUser->is2faTypeSetup(WebAuthn::class),
+            'userHasSecurityKeys' => $currentUser->isAuthTypeSetup(WebAuthn::class),
             'userIsAdmin' => $currentUser->admin,
             'username' => $currentUser->username,
         ];
