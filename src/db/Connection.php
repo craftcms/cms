@@ -135,10 +135,11 @@ class Connection extends \yii\db\Connection
      */
     public function getSupportsMb4(): bool
     {
-        if (isset($this->_supportsMb4)) {
-            return $this->_supportsMb4;
+        if (!isset($this->_supportsMb4)) {
+            // if elements_sites supports mb4, pretty good chance everything else does too
+            $this->_supportsMb4 = $this->getSchema()->supportsMb4(Table::ELEMENTS_SITES);
         }
-        return $this->_supportsMb4 = $this->getIsPgsql();
+        return $this->_supportsMb4;
     }
 
     /**

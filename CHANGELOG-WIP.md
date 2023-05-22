@@ -22,12 +22,16 @@
 - Added `craft\base\FieldInterface::getQueryCondition()`, which accepts an element query param value and returns the corresponding query condition.
 - Added `craft\base\FieldInterface::getValueSql()`.
 - Added `craft\db\Connection::getIsMaria()`.
+- Added `craft\db\mysql\ColumnSchema::$collation`.
 - Added `craft\db\mysql\QueryBuilder::jsonContains()`.
 - Added `craft\db\mysql\QueryBuilder::jsonExtract()`.
+- Added `craft\db\mysql\Schema::supportsMb4()`.
 - Added `craft\db\pgsql\QueryBuilder::jsonContains()`.
 - Added `craft\db\pgsql\QueryBuilder::jsonExtract()`.
+- Added `craft\db\pgsql\Schema::supportsMb4()`.
 - Added `craft\db\QueryParam`.
 - Added `craft\elements\db\ElementQueryInterface::fieldLayouts()`
+- Added `craft\helpers\Db::defaultCollation()`.
 - Added `craft\helpers\Db::prepareForJsonColumn()`.
 - Added `craft\i18n\Locale::$aliasOf`.
 - Added `craft\i18n\Locale::setDisplayName()`.
@@ -40,6 +44,7 @@
 - Renamed `craft\web\CpScreenResponseBehavior::$notice()` and `notice()` to `$noticeHtml` and `noticeHtml()`. ([#13037](https://github.com/craftcms/cms/pull/13037))
 - Renamed `craft\web\CpScreenResponseBehavior::$pageSidebar()` and `pageSidebar()` to `$pageSidebarHtml` and `pageSidebarHtml()`. ([#13037](https://github.com/craftcms/cms/pull/13037))
 - Renamed `craft\web\CpScreenResponseBehavior::$sidebar()` and `sidebar()` to `$metaSidebarHtml` and `metaSidebarHtml()`. ([#13037](https://github.com/craftcms/cms/pull/13037))
+- `craft\db\Connection::getSupportsMb4()` is now dynamic for MySQL installs, based on whether the `elements_sites` table has an `mb4` charset.
 - `craft\fields\BaseOptionsField::$multi` and `$optgroups` properties are now static.
 - `craft\helpers\Db::parseParam()`, `parseDateParam()`, `parseMoneyParam()`, and `parseNumericParam()` now return `null` instead of an empty string if no condition should be applied.
 - `craft\i18n\I18N::getPrimarySiteLocale()` is now deprecated. `craft\models\Site::getLocale()` should be used instead.
@@ -63,4 +68,5 @@
 
 ### System
 - Craft now requires PHP 8.1 or later.
+- New database tables now default to the `utf8mb4` charset, and the `utf8mb4_0900_ai_ci` or `utf8mb4_unicode_ci` collation, on MySQL. Existing installs should run `db/convert-charset` after upgrading, to ensure all tables have consistent charsets and collations. ([#11823](https://github.com/craftcms/cms/discussions/11823))
 - The `defaultTemplateExtensions` config setting now lists `twig` before `html` by default. ([#11809](https://github.com/craftcms/cms/discussions/11809))
