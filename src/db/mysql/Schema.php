@@ -19,6 +19,7 @@ use mikehaertl\shellcommand\Command as ShellCommand;
 use PDO;
 use PDOException;
 use yii\base\ErrorException;
+use yii\base\InvalidArgumentException;
 use yii\base\NotSupportedException;
 use yii\db\Exception;
 
@@ -62,6 +63,29 @@ class Schema extends \yii\db\mysql\Schema
         $this->typeMap['mediumtext'] = self::TYPE_MEDIUMTEXT;
         $this->typeMap['longtext'] = self::TYPE_LONGTEXT;
         $this->typeMap['enum'] = self::TYPE_ENUM;
+    }
+
+    /**
+     * Returns whether a table supports 4-byte characters.
+     *
+     * @param string $table The table to check
+     * @return bool
+     * @throws InvalidArgumentException if $table is invalid
+     * @since 5.0.0
+     */
+    public function supportsMb4(string $table): bool
+    {
+        $tableSchema = $this->getTableSchema($table);
+        if (!$tableSchema) {
+            throw new InvalidArgumentException("Invalid table: $table");
+        }
+        foreach ($tableSchema->columns as $column) {
+            /** @var ColumnSchema $column */
+            if (isset($column->collation) && str_contains($column->collation, 'mb4')) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
@@ -298,6 +322,18 @@ class Schema extends \yii\db\mysql\Schema
         }
 
         return null;
+    }
+
+    /**
+     * @param array $info
+     * @return ColumnSchema
+     */
+    protected function loadColumnSchema($info): ColumnSchema
+    {
+        /** @var ColumnSchema $column */
+        $column = parent::loadColumnSchema($info);
+        $column->collation = $info['collation'] ?? null;
+        return $column;
     }
 
     /**

@@ -17,7 +17,6 @@ use craft\errors\DbConnectException;
 use craft\errors\ShellCommandException;
 use craft\events\BackupEvent;
 use craft\events\RestoreEvent;
-use craft\helpers\ArrayHelper;
 use craft\helpers\Db;
 use craft\helpers\FileHelper;
 use craft\helpers\StringHelper;
@@ -74,10 +73,11 @@ class Connection extends \yii\db\Connection
     private ?bool $_isMaria = null;
 
     /**
-     * @var array<string,bool>
+     * @var bool|null whether the database supports 4+ byte characters
      * @see getSupportsMb4()
+     * @see setSupportsMb4()
      */
-    private array $_supportsMb4 = [];
+    private ?bool $_supportsMb4 = null;
 
     /**
      * Returns whether this is a MySQL (or MySQL-like) connection.
@@ -129,32 +129,27 @@ class Connection extends \yii\db\Connection
     }
 
     /**
-     * Returns whether a database table supports 4+ byte characters.
+     * Returns whether the database supports 4+ byte characters.
      *
-     * @param string $table The table to check
      * @return bool
      */
-    public function getSupportsMb4(string $table = Table::ELEMENTS_SITES): bool
+    public function getSupportsMb4(): bool
     {
-        if ($this->getIsPgsql()) {
-            return true;
+        if (!isset($this->_supportsMb4)) {
+            // if elements_sites supports mb4, pretty good chance everything else does too
+            $this->_supportsMb4 = $this->getSchema()->supportsMb4(Table::ELEMENTS_SITES);
         }
+        return $this->_supportsMb4;
+    }
 
-        if (!isset($this->_supportsMb4[$table])) {
-            try {
-                $columns = $this->createCommand("SHOW FULL COLUMNS FROM $table")->queryAll();
-            } catch (DbException $e) {
-                Craft::warning("Couldn’t determine whether $table supports 4-byte characters: {$e->getMessage()}");
-                $columns = [];
-            }
-            // collation names start with the charset name
-            $this->_supportsMb4[$table] = ArrayHelper::contains(
-                $columns,
-                fn(array $column) => isset($column['Collation']) && str_contains($column['Collation'], 'mb4')
-            );
-        }
-
-        return $this->_supportsMb4[$table];
+    /**
+     * Sets whether the database supports 4+ byte characters.
+     *
+     * @param bool $supportsMb4
+     */
+    public function setSupportsMb4(bool $supportsMb4): void
+    {
+        $this->_supportsMb4 = $supportsMb4;
     }
 
     /**
@@ -200,7 +195,7 @@ class Connection extends \yii\db\Connection
     public function close(): void
     {
         parent::close();
-        $this->_supportsMb4 = [];
+        $this->_supportsMb4 = null;
     }
 
     /**
