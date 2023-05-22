@@ -80,6 +80,8 @@ class Schema extends \yii\db\mysql\Schema
             throw new InvalidArgumentException("Invalid table: $table");
         }
         foreach ($tableSchema->columns as $column) {
+            // collation names always start with the charset name,
+            // so if a collation includes "mb4" we can safely assume the table has an mb4 charset
             /** @var ColumnSchema $column */
             if (isset($column->collation) && str_contains($column->collation, 'mb4')) {
                 return true;
