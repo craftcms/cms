@@ -3599,7 +3599,7 @@ const ViewMenu = Garnish.Base.extend({
       .createSelect({
         options: this.elementIndex.getSortOptions(this.$source).map((o) => {
           return {
-            label: o.label,
+            label: Craft.escapeHtml(o.label),
             value: o.attr,
           };
         }),

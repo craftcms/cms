@@ -242,14 +242,14 @@ class Response extends \yii\web\Response
             $obContent = @ob_get_clean();
 
             if ($obContent !== false) {
-                $this->contentHtml = $obContent . $this->contentHtml;
+                $this->content = $obContent . $this->content;
             } else {
                 break;
             }
         }
 
         // Tell the browser to close the connection
-        $length = isset($this->contentHtml) ? strlen($this->contentHtml) : 0;
+        $length = isset($this->content) ? strlen($this->content) : 0;
         $this->getHeaders()
             ->set('Connection', 'close')
             ->set('Content-Length', (string)$length);

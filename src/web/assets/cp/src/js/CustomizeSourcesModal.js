@@ -636,7 +636,7 @@ Craft.CustomizeSourcesModal.Source =
           name: `sources[${this.sourceData.key}][defaultSort][0]`,
           options: this.sourceData.sortOptions.map((o) => {
             return {
-              label: o.label,
+              label: Craft.escapeHtml(o.label),
               value: o.attr,
             };
           }),
