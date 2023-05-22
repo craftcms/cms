@@ -55,7 +55,7 @@ class DbConfig extends BaseConfig
     public array $attributes = [];
 
     /**
-     * @var string The charset to use when creating tables.
+     * @var string The character set to use when creating tables.
      *
      * ::: tip
      * You can change the character set and collation across all existing database tables using this terminal command:
@@ -65,21 +65,31 @@ class DbConfig extends BaseConfig
      * ```
      * :::
      *
+     * ::: warning
+     * If you set this to something besides `utf8` or `utf8mb4` for MySQL, you **must** also set the [[collation]]
+     * setting to a compatible collation name.
+     * :::
+     *
      * ::: code
      * ```php Static Config
-     * ->charset('utf8mb4')
+     * ->charset('utf8mb3')
+     * ->collation('utf8mb3_general_ci')
      * ```
      * ```shell Environment Override
-     * CRAFT_DB_CHARSET=utf8mb4
+     * CRAFT_DB_CHARSET=utf8mb3
+     * CRAFT_DB_COLLATION=utf8mb3_general_ci
      * ```
      * :::
      */
     public string $charset = 'utf8';
 
     /**
-     * @var string|null The collation to use when creating tables.
+     * @var string|null The collation to use when creating tables. (MySQL only.)
      *
-     * This is only used by MySQL. If null, the [[$charset|charset’s]] default collation will be used.
+     * If null, the following collation will be used by default:
+     *
+     * - **MySQL 8.0+**: `utf8mb4_0900_ai_ci`
+     * - **Older MySQL versions and MariaDB**: `utf8mb4_unicode_ci`
      *
      * ::: tip
      * You can change the character set and collation across all existing database tables using this terminal command:
@@ -91,10 +101,12 @@ class DbConfig extends BaseConfig
      *
      * ::: code
      * ```php Static Config
-     * ->collation('utf8mb4_0900_ai_ci')
+     * ->charset('utf8mb3')
+     * ->collation('utf8mb3_general_ci')
      * ```
      * ```shell Environment Override
-     * CRAFT_DB_COLLATION=utf8mb4_0900_ai_ci
+     * CRAFT_DB_CHARSET=utf8mb3
+     * CRAFT_DB_COLLATION=utf8mb3_general_ci
      * ```
      * :::
      *
@@ -362,7 +374,7 @@ class DbConfig extends BaseConfig
     }
 
     /**
-     * The charset to use when creating tables.
+     * The character set to use when creating tables.
      *
      * ::: tip
      * You can change the character set and collation across all existing database tables using this terminal command:
@@ -372,8 +384,14 @@ class DbConfig extends BaseConfig
      * ```
      * :::
      *
+     * ::: warning
+     * If you set this to something besides `utf8` or `utf8mb4` for MySQL, you **must** also set the [[collation]]
+     * setting to a compatible collation name.
+     * :::
+     *
      * ```php
-     * ->charset('utf8mb4')
+     * ->charset('utf8mb3')
+     * ->collation('utf8mb3_general_ci')
      * ```
      *
      * @param string $value
@@ -394,9 +412,12 @@ class DbConfig extends BaseConfig
     }
 
     /**
-     * The collation to use when creating tables.
+     * The collation to use when creating tables. (MySQL only.)
      *
-     * This is only used by MySQL. If null, the [[$charset|charset’s]] default collation will be used.
+     * If null, the following collation will be used by default:
+     *
+     * - **MySQL 8.0+**: `utf8mb4_0900_ai_ci`
+     * - **Older MySQL versions and MariaDB**: `utf8mb4_unicode_ci`
      *
      * ::: tip
      * You can change the character set and collation across all existing database tables using this terminal command:
@@ -407,7 +428,7 @@ class DbConfig extends BaseConfig
      * :::
      *
      * ```php
-     * ->collation('utf8mb4_0900_ai_ci')
+     * ->collation('utf8mb3_general_ci')
      * ```
      *
      * @param string|null $value
