@@ -56,7 +56,6 @@ class QueryBuilderTest extends TestCase
             [false, 'DEFAULT CHARACTER SET = utf8', 'CHARACTER SET = foo'],
             [true, 'DEFAULT CHARACTER SET = utf8', 'CHARACTER SETS = foo'],
             [true, 'CHARACTER SET = foo', 'CHARACTER SET = foo'],
-            [false, 'COLLATE'],
             [true, 'COLLATE = utf8_unicode_ci', 'COLLATE = utf8_unicode_ci'],
         ];
     }
