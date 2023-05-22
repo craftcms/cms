@@ -185,7 +185,7 @@ class Entry extends Structure
             'enabledForSite' => [
                 'name' => 'enabledForSite',
                 'type' => Type::boolean(),
-                'description' => 'Whether the element is enabled for the site .',
+                'description' => 'Whether the element is enabled for the site.',
             ],
         ]), self::getName());
     }
