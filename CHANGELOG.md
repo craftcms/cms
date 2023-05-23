@@ -12,6 +12,7 @@
 - Fixed a styling issue with “Post Date” and “Expiry Date” fields. ([#13216](https://github.com/craftcms/cms/issues/13216))
 - Removed the OAuth 2.0 Client library, as it’s no longer used in core.
 - Fixed a bug where activation emails sent to newly-created users could link to the front-end site, if they were granted control panel access via a user group. ([#13204](https://github.com/craftcms/cms/issues/13204))
+- Fixed a bug where “Required” lightswitch labels within field layout designers’ field settings slideouts weren’t getting translated. ([#13230](https://github.com/craftcms/cms/issues/13230))
 - Fixed two XSS vulnerabilities.
 
 ## 4.4.11 - 2023-05-15
