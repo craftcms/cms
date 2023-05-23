@@ -495,7 +495,11 @@ class Table extends Field
 
         foreach ($value as $row) {
             $serializedRow = [];
-            foreach (array_keys($this->columns) as $colId) {
+            foreach ($this->columns as $colId => $column) {
+                if ($column['type'] === 'heading') {
+                    continue;
+                }
+
                 $value = $row[$colId];
 
                 if (is_string($value) && !$supportsMb4) {
