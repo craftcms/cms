@@ -9,6 +9,7 @@
 - Fixed a bug where Matrix blocks nested within Neo or Super Table fields could be omitted when propagating an entry to a new site. ([#13207](https://github.com/craftcms/cms/issues/13207))
 - Fixed a bug where `craft\web\View::registerTwigExtension()` could throw an exception if Twig was already initialized. ([#13208](https://github.com/craftcms/cms/issues/13208))
 - Fixed a bug where entries mutated via GraphQL weren’t becoming globally enabled if `enabled` was set to `true`. ([#13214](https://github.com/craftcms/cms/pull/13214))
+- Fixed a styling issue with “Post Date” and “Expiry Date” fields. ([#13216](https://github.com/craftcms/cms/issues/13216))
 - Fixed two XSS vulnerabilities.
 
 ## 4.4.11 - 2023-05-15
