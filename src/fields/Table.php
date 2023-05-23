@@ -55,7 +55,7 @@ class Table extends Field
 
     /**
      * @var bool Whether the rows should be static.
-     * @since 5.0.0
+     * @since 4.5.0
      */
     public bool $staticRows = false;
 
