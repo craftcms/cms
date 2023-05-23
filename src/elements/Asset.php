@@ -412,6 +412,33 @@ class Asset extends Element
         return null;
     }
 
+    public static function sourcePath(string $sourceKey, string $stepKey, ?string $context): ?array
+    {
+        if (!preg_match('/^folder:(\d+)$/', $stepKey, $match)) {
+            return null;
+        }
+
+        $folder = Craft::$app->getAssets()->getFolderById((int)$match[1]);
+
+        if (!$folder) {
+            return null;
+        }
+
+        $path = [$folder->getSourcePathInfo()];
+
+        while ($parent = $folder->getParent()) {
+            array_unshift($path, $parent->getSourcePathInfo());
+            $folder = $parent;
+        }
+
+        // Make sure the root folder lives in the same volume as $sourceKey
+        if ($sourceKey !== "folder:$folder->uid") {
+            return null;
+        }
+
+        return $path;
+    }
+
     /**
      * @inheritdoc
      * @since 3.5.0
