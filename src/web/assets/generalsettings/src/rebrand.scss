@@ -13,6 +13,12 @@
   height: 100px;
   background: no-repeat;
   box-shadow: inset 0 0 0 1px var(--hairline-color);
+
+  &.checkered {
+    background-color: var(--white);
+    @include checkered-bg(17px);
+    background-repeat: repeat;
+  }
 }
 
 .cp-image-controls {

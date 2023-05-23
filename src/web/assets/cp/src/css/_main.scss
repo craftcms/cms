@@ -1,33 +1,6 @@
 @charset "UTF-8";
 @import '@craftcms/sass/mixins';
 
-@mixin checkered-bg($size) {
-  // h/t https://gist.github.com/dfrankland/f6fed3e3ccc42e3de482b324126f9542
-  $halfSize: $size * 0.5;
-  background-image: linear-gradient(
-      45deg,
-      #{transparentize($grey300, 0.75)} 25%,
-      transparent 25%
-    ),
-    linear-gradient(
-      135deg,
-      #{transparentize($grey300, 0.75)} 25%,
-      transparent 25%
-    ),
-    linear-gradient(
-      45deg,
-      transparent 75%,
-      #{transparentize($grey300, 0.75)} 75%
-    ),
-    linear-gradient(
-      135deg,
-      transparent 75%,
-      #{transparentize($grey300, 0.75)} 75%
-    );
-  background-size: $size $size;
-  background-position: 0 0, $halfSize 0, $halfSize -#{$halfSize}, 0 $halfSize;
-}
-
 @mixin striped-bg($size, $color: $grey100) {
   // h/t https://css-tricks.com/stripes-css/
   $halfSize: $size * 0.5;
