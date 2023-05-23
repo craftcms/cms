@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Asset indexes now remember their previously-selected source path. ([#13147](https://github.com/craftcms/cms/issues/13147))
+- Added `craft\base\ElementInterface::sourcePath()`.
 - Improved `craft\helpers\FileHelper::getExtensionByMimeType()` for some ambiguous, web-friendly MIME types.
 - Removed the OAuth 2.0 Client library, as it’s no longer used in core.
 - Fixed a bug where activation emails sent to newly-created users could link to the front-end site, if they were granted control panel access via a user group. ([#13204](https://github.com/craftcms/cms/issues/13204))

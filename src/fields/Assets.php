@@ -716,6 +716,7 @@ class Assets extends BaseRelationField
                 $variables['defaultSourcePath'] = array_map(function(VolumeFolder $folder) {
                     return $folder->getSourcePathInfo();
                 }, $folders);
+                $variables['preferStoredSource'] = true;
             }
         }
 
