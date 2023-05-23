@@ -130,6 +130,7 @@ class VolumeFolder extends Model
         // Is this a root folder?
         if (!$this->parentId) {
             $info += [
+                'key' => "folder:$this->uid",
                 'icon' => 'home',
                 'label' => Craft::t('app', '{volume} root', [
                     'volume' => Html::encode(Craft::t('site', $volume->name)),
@@ -140,6 +141,7 @@ class VolumeFolder extends Model
             $canRename = $canCreate & $userSession->checkPermission("deleteFilesAndFoldersInVolume:$volume->uid");
 
             $info += [
+                'key' => "folder:$this->id",
                 'label' => Html::encode($this->name),
                 'criteria' => [
                     'folderId' => $this->id,
