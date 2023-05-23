@@ -3595,7 +3595,7 @@ table.editable {
     .datewrapper,
     .timewrapper {
       display: block;
-      width: 100%;
+      width: calc(100% - 29px);
 
       .text + div[data-icon] {
         top: 6px;
@@ -4431,6 +4431,8 @@ $min2ColWidth: 400px;
         }
 
         & > .datetimewrapper {
+          gap: 0;
+
           & > .datewrapper {
             width: 55%;
           }
@@ -6730,6 +6732,10 @@ body .selectize-dropdown {
     width: 25em;
     max-width: 100%;
   }
+}
+
+.datetimewrapper .selectize.select:not(.fullwidth) {
+  max-width: calc(100% - 29px);
 }
 
 .selectize.select .selectize-control {
