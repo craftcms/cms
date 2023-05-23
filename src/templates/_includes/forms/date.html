@@ -25,7 +25,7 @@
         autocomplete: false,
         size: 10,
         placeholder: ' ',
-        value: value ? value|date(isMobile ? 'Y-m-d' : 'short') : '',
+        value: value ? value|date(isMobile ? 'Y-m-d' : 'short', false) : '',
         inputAttributes: {
             aria: {
                 label: isDateTime ? 'Date'|t('app') : false,

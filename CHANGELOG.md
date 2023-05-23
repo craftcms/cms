@@ -6,6 +6,7 @@
 - Removed the OAuth 2.0 Client library, as it’s no longer used in core.
 - Fixed a bug where activation emails sent to newly-created users could link to the front-end site, if they were granted control panel access via a user group. ([#13204](https://github.com/craftcms/cms/issues/13204))
 - Fixed a bug where it wasn’t possible to drag Verbb Navigation nodes via their drag handles. ([#12896](https://github.com/craftcms/cms/issues/12896))
+- Fixed a bug where Date fields could display the wrong date. ([#13233](https://github.com/craftcms/cms/issues/13233))
 - Deprecated the `Craft.startsWith()` JavaScript method. `String.prototype.startsWith()` should be used instead.
 
 ## 3.8.11 - 2023-05-15
