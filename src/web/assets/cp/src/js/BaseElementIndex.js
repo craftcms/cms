@@ -316,8 +316,9 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         this.loadSourcePathByKey(stepKey).then((sourcePath) => {
           if (sourcePath) {
             // Filter out any source path steps that are above the source's root
+            const lastSourceKey = this.sourceKey.split('/').slice(-1)[0];
             const sourceRootIndex = sourcePath.findIndex(
-              (p) => p.key === this.sourceKey
+              (p) => p.key === lastSourceKey
             );
             if (sourceRootIndex !== -1) {
               this.sourcePath = sourcePath.slice(sourceRootIndex);
