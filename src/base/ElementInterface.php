@@ -315,7 +315,7 @@ interface ElementInterface extends ComponentInterface
      * @param string $stepKey
      * @param string|null $context
      * @return array[]|null
-     * @since 3.8.12
+     * @since 4.4.12
      */
     public static function sourcePath(string $sourceKey, string $stepKey, ?string $context): ?array;
 

@@ -139,7 +139,7 @@ class ElementIndexesController extends BaseElementsController
     /**
      * Returns the source path for the given source key, step key, and context.
      *
-     * @since 3.8.12
+     * @since 4.4.12
      */
     public function actionSourcePath(): Response
     {
