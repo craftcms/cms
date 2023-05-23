@@ -1397,10 +1397,11 @@ $.extend(Craft, {
    *
    * @param {string} str
    * @param {string} substr
-   * @return boolean
+   * @returns {boolean}
+   * @deprecated String.prototype.endsWith() should be used instead
    */
   startsWith: function (str, substr) {
-    return str.substr(0, substr.length) === substr;
+    return str.startsWith(substr);
   },
 
   /**
