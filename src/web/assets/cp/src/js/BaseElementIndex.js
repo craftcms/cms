@@ -368,11 +368,11 @@ Craft.BaseElementIndex = Garnish.Base.extend(
               this.sourcePath = sourcePath.slice(sourceRootIndex);
             }
           }
-          this.afterSetInitialSource();
+          this.afterSetInitialSource(queryParams);
         });
       } else {
         this.sourcePath = sourcePath;
-        this.afterSetInitialSource();
+        this.afterSetInitialSource(queryParams);
       }
     },
 
@@ -401,7 +401,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       });
     },
 
-    afterSetInitialSource: function () {
+    afterSetInitialSource: function (queryParams) {
       // Resize handler
       // ---------------------------------------------------------------------
 

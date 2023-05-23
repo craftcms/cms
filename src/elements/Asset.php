@@ -432,7 +432,7 @@ class Asset extends Element
         }
 
         // Make sure the root folder lives in the same volume as $sourceKey
-        if ($sourceKey !== "folder:$folder->uid") {
+        if ($sourceKey !== sprintf('volume:%s', $folder->getVolume()->uid)) {
             return null;
         }
 
