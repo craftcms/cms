@@ -518,6 +518,14 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         }
       }
 
+      if (!sourceKey) {
+        // If we couldn't resolve a default source, clear out the defaultSource and defaultSourcePath
+        // settings, as defaultSourcePath is expected to be relative to defaultSource
+        // (https://github.com/craftcms/cms/issues/13072)
+        this.settings.defaultSource = null;
+        this.settings.defaultSourcePath = null;
+      }
+
       return sourceKey ?? this.instanceState.selectedSource;
     },
 
@@ -529,11 +537,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       if (
         this.settings.defaultSourcePath !== null &&
         this.settings.defaultSourcePath[0] !== undefined &&
-        this.settings.defaultSourcePath[0].canView === true &&
-        ((this.sourcePath.length > 0 &&
-          this.sourcePath[0].handle ===
-            this.settings.defaultSourcePath[0].handle) ||
-          this.sourcePath.length === 0)
+        this.settings.defaultSourcePath[0].canView === true
       ) {
         return this.settings.defaultSourcePath;
       } else {
