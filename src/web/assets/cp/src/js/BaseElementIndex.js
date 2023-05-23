@@ -303,7 +303,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       // Select the initial source + source path
       // ---------------------------------------------------------------------
 
-      // Grab the localStorage step key up frant, so we don's lose track of it when the default source's default
+      // Grab the localStorage step key up front, so we don's lose track of it when the default source's default
       // source path is selected
       const stepKey = this.getSelectedSourceState('sourcePathStep');
 
