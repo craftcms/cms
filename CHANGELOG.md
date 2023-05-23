@@ -10,6 +10,8 @@
 - Fixed a bug where `craft\web\View::registerTwigExtension()` could throw an exception if Twig was already initialized. ([#13208](https://github.com/craftcms/cms/issues/13208))
 - Fixed a bug where entries mutated via GraphQL weren’t becoming globally enabled if `enabled` was set to `true`. ([#13214](https://github.com/craftcms/cms/pull/13214))
 - Fixed a styling issue with “Post Date” and “Expiry Date” fields. ([#13216](https://github.com/craftcms/cms/issues/13216))
+- Removed the OAuth 2.0 Client library, as it’s no longer used in core.
+- Fixed a bug where activation emails sent to newly-created users could link to the front-end site, if they were granted control panel access via a user group. ([#13204](https://github.com/craftcms/cms/issues/13204))
 - Fixed two XSS vulnerabilities.
 
 ## 4.4.11 - 2023-05-15
