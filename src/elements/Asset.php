@@ -354,11 +354,6 @@ class Asset extends Element
             $folder = $parent;
         }
 
-        // Make sure the root folder lives in the same volume as $sourceKey
-        if ($sourceKey !== "folder:$folder->uid") {
-            return null;
-        }
-
         return $path;
     }
 
