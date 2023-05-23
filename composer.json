@@ -33,7 +33,6 @@
     "ext-pdo": "*",
     "ext-zip": "*",
     "composer/composer": "2.2.19",
-    "craftcms/oauth2-craftid": "~1.0.0",
     "craftcms/plugin-installer": "~1.6.0",
     "craftcms/server-check": "~1.2.0",
     "creocoder/yii2-nested-sets": "~0.9.0",
@@ -42,7 +41,6 @@
     "guzzlehttp/guzzle": "^6.5.5|^7.2.0",
     "laminas/laminas-feed": "~2.12.3|^2.13.1",
     "league/flysystem": "^1.1.4",
-    "league/oauth2-client": "^2.6.0",
     "mikehaertl/php-shellcommand": "^1.6.3",
     "pixelandtonic/imagine": "~1.3.3.1",
     "seld/cli-prompt": "^1.0.4",
@@ -75,7 +73,6 @@
     "yii2tech/ar-softdelete": "1.0.4"
   },
   "conflict": {
-    "league/oauth2-client": "2.4.0",
     "webonyx/graphql-php": "14.11.7"
   },
   "suggest": {

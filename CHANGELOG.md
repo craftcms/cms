@@ -3,6 +3,7 @@
 ## Unreleased
 
 - Improved `craft\helpers\FileHelper::getExtensionByMimeType()` for some ambiguous, web-friendly MIME types.
+- Removed the OAuth 2.0 Client library, as it’s no longer used in core.
 
 ## 3.8.11 - 2023-05-15
 
