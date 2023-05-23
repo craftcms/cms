@@ -414,11 +414,11 @@ class Asset extends Element
 
     public static function sourcePath(string $sourceKey, string $stepKey, ?string $context): ?array
     {
-        if (!preg_match('/^folder:(\d+)$/', $stepKey, $match)) {
+        if (!preg_match('/^folder:([\w\-]+)$/', $stepKey, $match)) {
             return null;
         }
 
-        $folder = Craft::$app->getAssets()->getFolderById((int)$match[1]);
+        $folder = Craft::$app->getAssets()->getFolderByUid($match[1]);
 
         if (!$folder) {
             return null;

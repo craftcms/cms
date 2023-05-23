@@ -142,7 +142,7 @@ class VolumeFolder extends Model
             $canRename = $canCreate & $userSession->checkPermission("deleteAssets:$volume->uid");
 
             $info += [
-                'key' => "folder:$this->id",
+                'key' => "folder:$this->uid",
                 'label' => Html::encode($this->name),
                 'criteria' => [
                     'folderId' => $this->id,
