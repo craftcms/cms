@@ -1405,6 +1405,34 @@ $.extend(Craft, {
   },
 
   /**
+   * Ensures a string starts with another string.
+   *
+   * @param {string} str
+   * @param {string} substr
+   * @return {string}
+   */
+  ensureStartsWith: function (str, substr) {
+    if (!str.startsWith(substr)) {
+      str = substr + str;
+    }
+    return str;
+  },
+
+  /**
+   * Ensures a string ends with another string.
+   *
+   * @param {string} str
+   * @param {string} substr
+   * @return {string}
+   */
+  ensureEndsWith: function (str, substr) {
+    if (!str.endsWith(substr)) {
+      str += substr;
+    }
+    return str;
+  },
+
+  /**
    * Filters an array.
    *
    * @param {object} arr
