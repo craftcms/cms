@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 4
 
-## Unreleased
+## 4.4.12 - 2023-05-23
 
 - Asset indexes now remember their previously-selected source path. ([#13147](https://github.com/craftcms/cms/issues/13147))
 - Added the `enabledForSite` field for entries queried via GraphQL. ([#13214](https://github.com/craftcms/cms/pull/13214))
