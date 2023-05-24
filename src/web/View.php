@@ -24,6 +24,7 @@ use craft\web\twig\Extension;
 use craft\web\twig\GlobalsExtension;
 use craft\web\twig\SinglePreloaderExtension;
 use craft\web\twig\TemplateLoader;
+use LogicException;
 use Throwable;
 use Twig\Error\LoaderError as TwigLoaderError;
 use Twig\Error\RuntimeError as TwigRuntimeError;
@@ -402,12 +403,20 @@ class View extends \yii\web\View
 
         $this->_twigExtensions[$class] = $extension;
 
-        // Add it to any existing Twig environments
         if (isset($this->_cpTwig)) {
-            $this->_cpTwig->addExtension($extension);
+            try {
+                $this->_cpTwig->addExtension($extension);
+            } catch (LogicException) {
+                $this->_cpTwig = null;
+            }
         }
+
         if (isset($this->_siteTwig)) {
-            $this->_siteTwig->addExtension($extension);
+            try {
+                $this->_siteTwig->addExtension($extension);
+            } catch (LogicException) {
+                $this->_siteTwig = null;
+            }
         }
     }
 

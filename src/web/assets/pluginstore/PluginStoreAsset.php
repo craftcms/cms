@@ -49,11 +49,12 @@ class PluginStoreAsset extends AssetBundle
 
         if ($view instanceof View) {
             $view->registerTranslations('app', [
+                '({period} days)',
                 'Abandoned',
                 'Active Installs',
                 'Active Trials',
                 'Active trials added to the cart.',
-                'Activity <small>(Past Month)</small>',
+                'Activity',
                 'Add all to cart',
                 'Add to cart',
                 'Added to cart',
@@ -68,8 +69,12 @@ class PluginStoreAsset extends AssetBundle
                 'Compatibility',
                 'Continue shopping',
                 'Couldn’t add all items to the cart.',
+                'Couldn’t change Craft CMS edition.',
                 'Couldn’t load CMS editions.',
                 'Couldn’t load active trials.',
+                'Couldn’t update cart’s email.',
+                'Couldn’t update item in cart.',
+                'Craft CMS edition changed.',
                 'Critical',
                 'Descending',
                 'Discover',
@@ -79,6 +84,7 @@ class PluginStoreAsset extends AssetBundle
                 'Free',
                 'Install with Composer',
                 'Install',
+                'Installation Instructions',
                 'Installed as a trial',
                 'Installed',
                 'Item',
@@ -97,6 +103,7 @@ class PluginStoreAsset extends AssetBundle
                 'Overview',
                 'Page not found.',
                 'Plugin Store',
+                'Plugin edition changed.',
                 'Popularity',
                 'Price includes 1 year of updates.',
                 'Pricing',
@@ -126,6 +133,7 @@ class PluginStoreAsset extends AssetBundle
                 'Version {version}',
                 'Version',
                 'Website',
+                'Your cart is empty.',
                 '{renewalPrice}/year per site for updates after that.',
             ]);
         }

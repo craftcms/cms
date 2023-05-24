@@ -1,5 +1,24 @@
 # Release Notes for Craft CMS 4
 
+## 4.4.12 - 2023-05-23
+
+- Asset indexes now remember their previously-selected source path. ([#13147](https://github.com/craftcms/cms/issues/13147))
+- Added the `enabledForSite` field for entries queried via GraphQL. ([#13214](https://github.com/craftcms/cms/pull/13214))
+- Added `craft\base\ElementInterface::sourcePath()`.
+- Improved `craft\helpers\FileHelper::getExtensionByMimeType()` for some ambiguous, web-friendly MIME types.
+- Fixed a bug where reverting an entry’s content from a revision could omit some Matrix blocks.
+- Fixed an error that could occur when adding a new site to an entry which contained Matrix blocks, if the same site had been added and removed previously.
+- Fixed a bug where Matrix blocks nested within Neo or Super Table fields could be omitted when propagating an entry to a new site. ([#13207](https://github.com/craftcms/cms/issues/13207))
+- Fixed a bug where `craft\web\View::registerTwigExtension()` could throw an exception if Twig was already initialized. ([#13208](https://github.com/craftcms/cms/issues/13208))
+- Fixed a bug where entries mutated via GraphQL weren’t becoming globally enabled if `enabled` was set to `true`. ([#13214](https://github.com/craftcms/cms/pull/13214))
+- Fixed a styling issue with “Post Date” and “Expiry Date” fields. ([#13216](https://github.com/craftcms/cms/issues/13216))
+- Removed the OAuth 2.0 Client library, as it’s no longer used in core.
+- Fixed a bug where activation emails sent to newly-created users could link to the front-end site, if they were granted control panel access via a user group. ([#13204](https://github.com/craftcms/cms/issues/13204))
+- Fixed a bug where “Required” lightswitch labels within field layout designers’ field settings slideouts weren’t getting translated. ([#13230](https://github.com/craftcms/cms/issues/13230))
+- Fixed a bug where Date fields could display the wrong date. ([#13233](https://github.com/craftcms/cms/issues/13233))
+- Deprecated the `Craft.startsWith()` JavaScript method. `String.prototype.startsWith()` should be used instead.
+- Fixed two XSS vulnerabilities.
+
 ## 4.4.11 - 2023-05-15
 
 - Fixed a bug where Matrix blocks weren’t getting propagated to newly-added sites for entries. ([#13181](https://github.com/craftcms/cms/issues/13181))

@@ -1524,8 +1524,8 @@ JS,
                 }
 
                 // Assign user groups and permissions if the current user is allowed to do that
-                $this->_saveUserPermissions($user, $currentUser);
                 $this->_saveUserGroups($user, $currentUser);
+                $this->_saveUserPermissions($user, $currentUser);
 
                 // Fire an 'afterAssignGroupsAndPermissions' event
                 if ($this->hasEventHandlers(self::EVENT_AFTER_ASSIGN_GROUPS_AND_PERMISSIONS)) {
