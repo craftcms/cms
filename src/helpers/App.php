@@ -37,6 +37,7 @@ use ReflectionProperty;
 use yii\base\Event;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidValueException;
+use yii\base\Model;
 use yii\helpers\Inflector;
 use yii\mutex\FileMutex;
 use yii\web\JsonParser;
@@ -115,15 +116,20 @@ class App
     public static function envConfig(string $class, ?string $envPrefix = null): array
     {
         $envPrefix = $envPrefix !== null ? StringHelper::ensureRight($envPrefix, '_') : '';
-        $properties = (new ReflectionClass($class))->getProperties(ReflectionProperty::IS_PUBLIC);
+        $reflectionClass = new ReflectionClass($class);
+
+        /** @var Model $model */
+        $model = $reflectionClass->isSubclassOf(Model::class) ? Craft::createObject($class) : null;
+
+        $properties = $model ? $model->attributes() : $reflectionClass->getProperties(ReflectionProperty::IS_PUBLIC);
         $envConfig = [];
 
         foreach ($properties as $prop) {
-            if ($prop->isStatic()) {
+            if ($prop instanceof ReflectionProperty && $prop->isStatic()) {
                 continue;
             }
 
-            $propName = $prop->getName();
+            $propName = $prop instanceof ReflectionProperty ? $prop->getName() : $prop;
             $envName = $envPrefix . strtoupper(StringHelper::toSnakeCase($propName));
             $envValue = static::env($envName);
 
