@@ -309,6 +309,17 @@ interface ElementInterface extends ComponentInterface
     public static function findSource(string $sourceKey, ?string $context = null): ?array;
 
     /**
+     * Returns the source path for a given source key, step key, and context.
+     *
+     * @param string $sourceKey
+     * @param string $stepKey
+     * @param string|null $context
+     * @return array[]|null
+     * @since 4.4.12
+     */
+    public static function sourcePath(string $sourceKey, string $stepKey, ?string $context): ?array;
+
+    /**
      * Returns all of the field layouts associated with elements from the given source.
      *
      * This is used to determine which custom fields should be included in the element index sort menu,

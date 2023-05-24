@@ -3400,6 +3400,7 @@ table.editable {
   border: 1px solid var(--gray-200);
 
   th,
+  td.heading,
   td.action {
     color: var(--medium-text-color);
     font-weight: normal;
@@ -4431,6 +4432,8 @@ $min2ColWidth: 400px;
         }
 
         & > .datetimewrapper {
+          gap: 0;
+
           & > .datewrapper {
             width: 55%;
           }

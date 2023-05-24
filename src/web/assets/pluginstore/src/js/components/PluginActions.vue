@@ -366,7 +366,9 @@
             })
             .then(() => {
               this.loading = false;
-              this.$root.displayNotice('Plugin edition changed.');
+              this.$root.displayNotice(
+                Craft.t('app', 'Plugin edition changed.')
+              );
             });
 
           return false;

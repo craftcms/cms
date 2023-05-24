@@ -137,6 +137,24 @@ class ElementIndexesController extends BaseElementsController
     }
 
     /**
+     * Returns the source path for the given source key, step key, and context.
+     *
+     * @since 4.4.12
+     */
+    public function actionSourcePath(): Response
+    {
+        /** @var string|ElementInterface $elementType */
+        $elementType = $this->elementType;
+        $stepKey = $this->request->getRequiredBodyParam('stepKey');
+        $sourcePath = $elementType::sourcePath($this->sourceKey, $stepKey, $this->context);
+
+        return $this->asJson([
+            'sourcePath' => $sourcePath,
+        ]);
+    }
+
+
+    /**
      * Renders and returns an element index container, plus its first batch of elements.
      *
      * @return Response

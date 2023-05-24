@@ -60,7 +60,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
     siteMenu: null,
     siteId: null,
 
-    _sourcePath: null,
+    sourcePaths: null,
     $sourcePathOuterContainer: null,
     $sourcePathInnerContainer: null,
     $sourcePathOverflowBtnContainer: null,
@@ -117,6 +117,8 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       this.elementType = elementType;
       this.$container = $container;
       this.setSettings(settings, Craft.BaseElementIndex.defaults);
+
+      this.sourcePaths = {};
 
       // Define an ID prefix that can be used for dynamically created elements
       // ---------------------------------------------------------------------
@@ -350,15 +352,70 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       // Select the initial source + source path
       // ---------------------------------------------------------------------
 
+      // Grab the localStorage step key up front, so we don's lose track of it when the default source's default
+      // source path is selected
+      const stepKey = this.getSelectedSourceState('sourcePathStep');
+
       this.selectDefaultSource();
 
       const sourcePath = this.getDefaultSourcePath();
-      if (sourcePath !== null) {
-        this.sourcePath = sourcePath;
+
+      // If no default source path was explicitly configured, use the localStorage key
+      if (!sourcePath && stepKey) {
+        this.loadSourcePathByKey(stepKey).then((sourcePath) => {
+          if (sourcePath) {
+            // Filter out any source path steps that are above the source's root
+            const lastSourceKey = this.sourceKey.split('/').slice(-1)[0];
+            const sourceRootIndex = sourcePath.findIndex(
+              (p) => p.key === lastSourceKey
+            );
+            if (sourceRootIndex !== -1) {
+              this.sourcePath = sourcePath.slice(sourceRootIndex);
+            }
+          }
+          this.afterSetInitialSource(queryParams);
+        });
+      } else {
+        if (sourcePath) {
+          this.sourcePath = sourcePath;
+        }
+        this.afterSetInitialSource(queryParams);
       }
+    },
+
+    afterInit: function () {
+      this.onAfterInit();
+    },
+
+    loadSourcePathByKey: function (stepKey) {
+      return new Promise((resolve, reject) => {
+        // If the step key is equal to the current source key, then it represents the root. No source path needed.
+        if (stepKey === this.sourceKey) {
+          resolve([]);
+          return;
+        }
+
+        const params = this.getViewParams();
+        params.stepKey = stepKey;
+
+        Craft.sendActionRequest('POST', 'element-indexes/source-path', {
+          data: params,
+        })
+          .then(({data}) => {
+            resolve(data.sourcePath);
+          })
+          .catch(reject);
+      });
+    },
+
+    afterSetInitialSource: function (queryParams) {
+      // Resize handler
+      // ---------------------------------------------------------------------
+
       if (this.settings.context === 'index') {
         this.addListener(Garnish.$win, 'resize', 'handleResize');
       }
+
       this.handleResize();
 
       // Respect initial search
@@ -390,10 +447,6 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       this.setPage(Craft.pageNum);
 
       this.updateElements(true);
-    },
-
-    afterInit: function () {
-      this.onAfterInit();
     },
 
     handleResize: function () {
@@ -564,6 +617,16 @@ Craft.BaseElementIndex = Garnish.Base.extend(
     },
 
     getDefaultSourceKey: function () {
+      if (
+        this.settings.preferStoredSource &&
+        this.instanceState.selectedSource
+      ) {
+        // Discard the defaults and go with localStorage
+        this.settings.defaultSource = null;
+        this.settings.defaultSourcePath = null;
+        return this.instanceState.selectedSource;
+      }
+
       let sourceKey = null;
 
       if (this.settings.defaultSource) {
@@ -597,6 +660,14 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         }
       }
 
+      if (!sourceKey) {
+        // If we couldn't resolve a default source, clear out the defaultSource and defaultSourcePath
+        // settings, as defaultSourcePath is expected to be relative to defaultSource
+        // (https://github.com/craftcms/cms/issues/13072)
+        this.settings.defaultSource = null;
+        this.settings.defaultSourcePath = null;
+      }
+
       return sourceKey ?? this.instanceState.selectedSource;
     },
 
@@ -608,11 +679,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       if (
         this.settings.defaultSourcePath !== null &&
         this.settings.defaultSourcePath[0] !== undefined &&
-        this.settings.defaultSourcePath[0].canView === true &&
-        ((this.sourcePath.length > 0 &&
-          this.sourcePath[0].handle ===
-            this.settings.defaultSourcePath[0].handle) ||
-          this.sourcePath.length === 0)
+        this.settings.defaultSourcePath[0].canView === true
       ) {
         return this.settings.defaultSourcePath;
       } else {
@@ -628,14 +695,15 @@ Craft.BaseElementIndex = Garnish.Base.extend(
      * @returns {Object[]}
      */
     get sourcePath() {
-      return this._sourcePath || [];
+      return this.sourcePaths[this.sourceKey] || [];
     },
 
     /**
      * @param {Object[]|null} sourcePath
      */
     set sourcePath(sourcePath) {
-      this._sourcePath = sourcePath && sourcePath.length ? sourcePath : null;
+      this.sourcePaths[this.sourceKey] =
+        sourcePath && sourcePath.length ? sourcePath : null;
 
       if (this.$sourcePathOuterContainer) {
         this.$sourcePathOuterContainer.remove();
@@ -645,7 +713,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         this.$sourcePathActionsBtn = null;
       }
 
-      if (this._sourcePath && this.settings.showSourcePath) {
+      if (this.sourcePaths[this.sourceKey] && this.settings.showSourcePath) {
         const actions = this.getSourcePathActions();
 
         this.$sourcePathOuterContainer = $('<div/>', {
@@ -825,6 +893,16 @@ Craft.BaseElementIndex = Garnish.Base.extend(
           );
         }
       }
+
+      // Store the source path
+      this.setSelecetedSourceState(
+        'sourcePathStep',
+        (this.sourcePaths[this.sourceKey]
+          ? this.sourcePaths[this.sourceKey][
+              this.sourcePaths[this.sourceKey].length - 1
+            ].key
+          : null) || null
+      );
 
       this.onSourcePathChange();
     },
@@ -1886,7 +1964,9 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       this.updateViewMenu();
       this.updateFilterBtn();
 
-      this.sourcePath = this.$source.data('default-source-path');
+      this.sourcePath =
+        this.sourcePaths[this.sourceKey] ||
+        this.$source.data('default-source-path');
 
       this.onSelectSource();
 
@@ -3204,6 +3284,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       defaultSiteId: null,
       defaultSource: null,
       defaultSourcePath: null,
+      preferStoredSource: false,
       showSourcePath: true,
       canHaveDrafts: false,
 
