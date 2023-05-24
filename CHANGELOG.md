@@ -1,5 +1,9 @@
 # Release Notes for Craft CMS 3.x
 
+## Unreleased
+
+- Fixed a bug where asset sources weren‘t immediately showing a source path on a clear `localStorage` cache.
+
 ## 3.8.12 - 2023-05-23
 
 - Asset indexes now remember their previously-selected source path. ([#13147](https://github.com/craftcms/cms/issues/13147))

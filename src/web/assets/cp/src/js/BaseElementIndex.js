@@ -327,7 +327,9 @@ Craft.BaseElementIndex = Garnish.Base.extend(
           this.afterSetInitialSource();
         });
       } else {
-        this.sourcePath = sourcePath;
+        if (sourcePath) {
+          this.sourcePath = sourcePath;
+        }
         this.afterSetInitialSource();
       }
     },
