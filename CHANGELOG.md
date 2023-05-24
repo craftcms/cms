@@ -1,5 +1,10 @@
 # Release Notes for Craft CMS 4
 
+## Unreleased
+
+- Added `\craft\services\Addresses::$formatter`
+- The default address formatter can now be overridden. ([#13242](https://github.com/craftcms/cms/pull/13242))
+
 ## 4.4.12 - 2023-05-23
 
 - Asset indexes now remember their previously-selected source path. ([#13147](https://github.com/craftcms/cms/issues/13147))
