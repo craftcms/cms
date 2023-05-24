@@ -421,7 +421,7 @@ import './dashboard.scss';
       this.$saveBtn = $btnsContainer.children('button[type=submit]');
 
       this.addListener(
-        $btnsContainer.children('.btn:nth-child(2)'),
+        $btnsContainer.children('.btn:eq(1)'),
         'click',
         'cancelSettings'
       );
