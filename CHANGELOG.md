@@ -3,6 +3,7 @@
 ## Unreleased
 
 - Fixed a bug where asset sources weren‘t immediately showing a source path on a clear `localStorage` cache.
+- Fixed a JavaScript error that could occur when searching within an asset index, when there was no source path. ([#13241](https://github.com/craftcms/cms/issues/13241))
 
 ## 3.8.12 - 2023-05-23
 

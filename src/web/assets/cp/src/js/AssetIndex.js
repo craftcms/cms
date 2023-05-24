@@ -299,6 +299,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
       // Does this source have subfolders?
       if (
         !this.settings.hideSidebar &&
+        this.sourcePath.length &&
         this.sourcePath[this.sourcePath.length - 1].hasChildren
       ) {
         if (this.$includeSubfoldersContainer === null) {
