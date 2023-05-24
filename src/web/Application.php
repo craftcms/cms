@@ -22,12 +22,14 @@ use craft\helpers\FileHelper;
 use craft\helpers\Path;
 use craft\helpers\UrlHelper;
 use craft\queue\QueueLogBehavior;
+use ReflectionClass;
 use yii\base\Component;
 use yii\base\ErrorException;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
 use yii\base\InvalidRouteException;
 use yii\db\Exception as DbException;
+use yii\debug\Module as YiiDebugModule;
 use yii\debug\panels\AssetPanel;
 use yii\debug\panels\DbPanel;
 use yii\debug\panels\LogPanel;
@@ -428,9 +430,13 @@ class Application extends \yii\web\Application
         $svg = rawurlencode(file_get_contents(dirname(__DIR__) . '/icons/c-debug.svg'));
         DebugModule::setYiiLogo("data:image/svg+xml;charset=utf-8,{$svg}");
 
+        // Determine the base path using reflection in case it wasn't loaded from @vendor
+        $ref = new ReflectionClass(YiiDebugModule::class);
+        $basePath = dirname($ref->getFileName());
+
         $this->setModule('debug', [
             'class' => DebugModule::class,
-            'basePath' => '@vendor/yiisoft/yii2-debug/src',
+            'basePath' => $basePath,
             'allowedIPs' => ['*'],
             'panels' => [
                 'config' => false,
