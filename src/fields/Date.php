@@ -325,19 +325,34 @@ class Date extends Field implements PreviewableFieldInterface, SortableFieldInte
      */
     public function getTableAttributeHtml($value, ElementInterface $element): string
     {
+        /** @var DateTime|null $value */
         if (!$value) {
             return '';
         }
 
+        $formatter = Craft::$app->getFormatter();
+
         if ($this->showDate && $this->showTime) {
-            return Craft::$app->getFormatter()->asDatetime($value, Locale::LENGTH_SHORT);
+            if ($this->showTimeZone) {
+                $timeZone = $formatter->timeZone;
+                $formatter->timeZone = $value->getTimezone()->getName();
+                $html = sprintf(
+                    '%s %s',
+                    $formatter->asDatetime($value, Locale::LENGTH_SHORT),
+                    $value->format('T')
+                );
+                $formatter->timeZone = $timeZone;
+                return $html;
+            }
+
+            return $formatter->asDatetime($value, Locale::LENGTH_SHORT);
         }
 
         if ($this->showDate) {
-            return Craft::$app->getFormatter()->asDate($value, Locale::LENGTH_SHORT);
+            return $formatter->asDate($value, Locale::LENGTH_SHORT);
         }
 
-        return Craft::$app->getFormatter()->asTime($value, Locale::LENGTH_SHORT);
+        return $formatter->asTime($value, Locale::LENGTH_SHORT);
     }
 
     /**
