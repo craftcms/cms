@@ -434,6 +434,10 @@ class Table extends Field
 
     private function _normalizeValueInternal(mixed $value, ?ElementInterface $element, bool $fromRequest): ?array
     {
+        if (empty($this->columns)) {
+            return null;
+        }
+
         $defaults = $this->defaults ?? [];
 
         if (is_string($value) && !empty($value)) {
@@ -442,8 +446,8 @@ class Table extends Field
             $value = $defaults;
         }
 
-        if (!is_array($value) || empty($this->columns)) {
-            return null;
+        if (!is_array($value)) {
+            $value = [];
         }
 
         // Normalize the values and make them accessible from both the col IDs and the handles
@@ -457,6 +461,11 @@ class Table extends Field
             } elseif ($valueRows > $totalRows) {
                 array_splice($value, $totalRows);
             }
+        }
+
+        // If the value is still empty, return null
+        if (empty($value)) {
+            return null;
         }
 
         foreach ($value as $rowIndex => &$row) {
