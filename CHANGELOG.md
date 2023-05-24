@@ -1,5 +1,12 @@
 # Release Notes for Craft CMS 4
 
+## 4.4.13 - 2023-05-24
+
+- Fixed a bug where asset sources weren‘t immediately showing a source path on a clear `localStorage` cache.
+- Fixed a JavaScript error that could occur when searching within an asset index, when there was no source path. ([#13241](https://github.com/craftcms/cms/issues/13241))
+- Fixed a bug where Date fields with “Show Time Zone” enabled were displaying their values in the system’s time zone within element indexes. ([#13233](https://github.com/craftcms/cms/issues/13233))
+- Fixed a bug where the “Cancel” buttons within Dashboard widgets’ settings didn’t do anything. ([#13239](https://github.com/craftcms/cms/issues/13239))
+
 ## 4.4.12 - 2023-05-23
 
 - Asset indexes now remember their previously-selected source path. ([#13147](https://github.com/craftcms/cms/issues/13147))
