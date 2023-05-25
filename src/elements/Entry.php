@@ -11,6 +11,7 @@ use Craft;
 use craft\base\Element;
 use craft\base\ExpirableElementInterface;
 use craft\base\Field;
+use craft\base\LayoutContainerInterface;
 use craft\behaviors\DraftBehavior;
 use craft\controllers\ElementIndexesController;
 use craft\db\Connection;
@@ -1095,6 +1096,14 @@ class Entry extends Element implements ExpirableElementInterface
         }
 
         return $entryTypes;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getLayoutContainer(): ?LayoutContainerInterface
+    {
+        return $this->getType();
     }
 
     /**

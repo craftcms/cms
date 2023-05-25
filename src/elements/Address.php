@@ -8,6 +8,7 @@ use Craft;
 use craft\base\BlockElementInterface;
 use craft\base\Element;
 use craft\base\ElementInterface;
+use craft\base\LayoutContainerInterface;
 use craft\base\NameTrait;
 use craft\elements\conditions\addresses\AddressCondition;
 use craft\elements\conditions\ElementConditionInterface;
@@ -606,6 +607,14 @@ class Address extends Element implements AddressInterface, BlockElementInterface
         $this->setDirtyAttributes($dirtyAttributes);
 
         parent::afterSave($isNew);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getLayoutContainer(): ?LayoutContainerInterface
+    {
+        return null;
     }
 
     /**

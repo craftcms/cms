@@ -11,6 +11,7 @@ use Craft;
 use craft\base\BaseFsInterface;
 use craft\base\Field;
 use craft\base\FsInterface;
+use craft\base\LayoutContainerInterface;
 use craft\base\Model;
 use craft\behaviors\FieldLayoutBehavior;
 use craft\elements\Asset;
@@ -32,7 +33,7 @@ use yii\base\InvalidConfigException;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.0.0
  */
-class Volume extends Model implements BaseFsInterface
+class Volume extends Model implements BaseFsInterface, LayoutContainerInterface
 {
     /**
      * @var int|null ID

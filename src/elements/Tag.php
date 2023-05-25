@@ -9,6 +9,7 @@ namespace craft\elements;
 
 use Craft;
 use craft\base\Element;
+use craft\base\LayoutContainerInterface;
 use craft\db\Table;
 use craft\elements\conditions\ElementConditionInterface;
 use craft\elements\conditions\tags\TagCondition;
@@ -279,6 +280,14 @@ class Tag extends Element
     public function getFieldLayout(): ?FieldLayout
     {
         return parent::getFieldLayout() ?? $this->getGroup()->getFieldLayout();
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getLayoutContainer(): ?LayoutContainerInterface
+    {
+        return $this->getGroup();
     }
 
     /**

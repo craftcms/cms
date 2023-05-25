@@ -8,6 +8,7 @@
 namespace craft\models;
 
 use Craft;
+use craft\base\LayoutContainerInterface;
 use craft\base\Model;
 use craft\behaviors\FieldLayoutBehavior;
 use craft\elements\Tag;
@@ -23,7 +24,7 @@ use DateTime;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
-class TagGroup extends Model
+class TagGroup extends Model implements LayoutContainerInterface
 {
     /**
      * @var int|null ID

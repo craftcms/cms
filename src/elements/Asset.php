@@ -12,6 +12,7 @@ use craft\base\Element;
 use craft\base\Field;
 use craft\base\Fs;
 use craft\base\FsInterface;
+use craft\base\LayoutContainerInterface;
 use craft\base\LocalFsInterface;
 use craft\controllers\ElementIndexesController;
 use craft\controllers\ElementSelectorModalsController;
@@ -1764,6 +1765,14 @@ JS;
         }
 
         return $folder;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getLayoutContainer(): ?LayoutContainerInterface
+    {
+        return $this->getVolume();
     }
 
     /**

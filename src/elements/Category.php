@@ -9,6 +9,7 @@ namespace craft\elements;
 
 use Craft;
 use craft\base\Element;
+use craft\base\LayoutContainerInterface;
 use craft\behaviors\DraftBehavior;
 use craft\controllers\ElementIndexesController;
 use craft\db\Query;
@@ -724,6 +725,14 @@ class Category extends Element
         }
 
         return $parentOptionCriteria;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getLayoutContainer(): ?LayoutContainerInterface
+    {
+        return $this->getGroup();
     }
 
     /**

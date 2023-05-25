@@ -11,6 +11,7 @@ use Craft;
 use craft\base\BlockElementInterface;
 use craft\base\Element;
 use craft\base\ElementInterface;
+use craft\base\LayoutContainerInterface;
 use craft\db\Table;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\db\MatrixBlockQuery;
@@ -307,6 +308,14 @@ class MatrixBlock extends Element implements BlockElementInterface
     public function getFieldLayout(): ?FieldLayout
     {
         return parent::getFieldLayout() ?? $this->getType()->getFieldLayout();
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getLayoutContainer(): ?LayoutContainerInterface
+    {
+        return $this->getType();
     }
 
     /**
