@@ -79,6 +79,13 @@
                     }) }}
                 </div>
 
+                <div id="auth-2fa-form"></div>
+
+                <div id="login-form-extra">
+                    <button id="forgot-password" type="button">{{ 'Forgot your password?'|t('app') }}</button>
+                    <button id="remember-password" type="button">{{ 'Remember your password?'|t('app') }}</button>
+                </div>
+
                 <div id="login-form-bottom">
                     {% if generalConfig.rememberedUserSessionDuration %}
                         {{ forms.checkboxField({
@@ -90,8 +97,6 @@
                     {% endif %}
                 </div>
 
-                <div id="auth-2fa-form"></div>
-
                 <div id="login-form-buttons" class="buttons">
                     {{ forms.submitButton({
                         id: 'submit',
@@ -102,11 +107,6 @@
                         failureMessage: 'Sign in unsuccessful'|t('app'),
                         retryMessage: 'Try again'|t('app'),
                     }) }}
-                </div>
-
-                <div id="login-form-extra">
-                    <button id="forgot-password" type="button">{{ 'Forgot your password?'|t('app') }}</button>
-                    <button id="remember-password" type="button">{{ 'Remember your password?'|t('app') }}</button>
                 </div>
             </form>
 

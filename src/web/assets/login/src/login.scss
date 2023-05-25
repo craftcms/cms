@@ -34,7 +34,7 @@ body {
     .divider {
       overflow: hidden;
       text-align: center;
-      margin: 3em 0;
+      margin: var(--s) 0;
 
       &:before,
       &:after {
@@ -48,12 +48,12 @@ body {
       }
 
       &:before {
-        right: 0.5em;
+        right: var(--s);
         margin-left: -50%;
       }
 
       &:after {
-        left: 0.5em;
+        left: var(--s);
         margin-right: -50%;
       }
     }
@@ -161,7 +161,7 @@ body {
 }
 
 #login-form-buttons {
-  margin: var(--xl) 0 var(--s);
+  margin: var(--l) 0 var(--s);
 }
 
 #login-form-extra {
@@ -182,6 +182,12 @@ body {
   font-size: 11px;
   color: var(--medium-text-color);
   width: 100%;
+  text-align: right;
+  margin-top: var(--xs);
+}
+
+#login-form #auth-2fa-form {
+  margin-bottom: 0;
 }
 
 #alternative-2fa,

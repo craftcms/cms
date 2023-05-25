@@ -18,6 +18,12 @@
           '#download-recovery-codes'
         );
 
+        if (this.$generateRecoveryCodesBtn.length) {
+          this.$errors = $('<div class="auth-errors" />').insertAfter(
+            this.$generateRecoveryCodesBtn
+          );
+        }
+
         this.addListener(
           this.$generateRecoveryCodesBtn,
           'click',

@@ -52,12 +52,18 @@ import {browserSupportsWebAuthn} from '@simplewebauthn/browser';
       },
 
       initSlideout: function () {
-        this.$errors = this.slideout.$container.find('.so-notice');
         this.$closeButton = this.slideout.$container.find('button.close');
         this.$verifyButton = this.slideout.$container.find('#auth2fa-verify');
         this.$removeSetupButton = this.slideout.$container.find(
           '#auth-2fa-remove-setup'
         );
+        if (this.$verifyButton.length) {
+          this.$errors = $('<div class="auth-errors" />').insertAfter(
+            this.$verifyButton
+          );
+        } else {
+          this.$errors = this.slideout.$container.find('.so-notice');
+        }
 
         this.addListener(this.$removeSetupButton, 'click', 'onRemoveSetup');
         this.addListener(this.$closeButton, 'click', 'onClickClose');

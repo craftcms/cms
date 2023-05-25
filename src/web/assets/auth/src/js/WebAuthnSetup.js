@@ -22,6 +22,12 @@ import {startRegistration} from '@simplewebauthn/browser';
           '#webauthn-security-keys'
         );
 
+        if (this.$addSecurityKeyBtn.length) {
+          this.$errors = $('<div class="auth-errors" />').insertAfter(
+            this.$addSecurityKeyBtn
+          );
+        }
+
         if (!browserSupportsWebAuthn()) {
           Craft.cp.displayNotice(
             Craft.t('app', 'This browser does not support WebAuthn.')
