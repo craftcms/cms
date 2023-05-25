@@ -836,7 +836,7 @@ class Html extends \yii\helpers\Html
                         return $match[0];
                     }, $match[2]);
                 if ($withClasses) {
-                    $html = preg_replace("/(?<![\\w'\"])\\.([\\w\\-]+)(?=[,\\s\\{])/", ".$namespace-$1", $match[2]);
+                    $html = preg_replace("/(?<![\\w'\"])\\.([\\w\\-]+)(?=[,:\\s\\{])/", ".$namespace-$1", $match[2]);
                 }
                 return $match[1] . $html . $match[3];
             }, $html);
