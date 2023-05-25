@@ -37,7 +37,6 @@
     "bacon/bacon-qr-code": "^2.0",
     "commerceguys/addressing": "^1.2",
     "composer/composer": "2.2.19",
-    "craftcms/oauth2-craftid": "~1.0.0",
     "craftcms/plugin-installer": "~1.6.0",
     "craftcms/server-check": "~2.1.2",
     "creocoder/yii2-nested-sets": "~0.9.0",
@@ -45,7 +44,6 @@
     "enshrined/svg-sanitize": "~0.16.0",
     "guzzlehttp/guzzle": "^7.2.0",
     "illuminate/collections": "^9.1.0",
-    "league/oauth2-client": "^2.6.0",
     "mikehaertl/php-shellcommand": "^1.6.3",
     "moneyphp/money": "^4.0",
     "monolog/monolog": "^2.3",
@@ -89,7 +87,6 @@
     "yii2tech/ar-softdelete": "1.0.4"
   },
   "conflict": {
-    "league/oauth2-client": "2.4.0",
     "webonyx/graphql-php": "14.11.7"
   },
   "suggest": {

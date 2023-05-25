@@ -92,12 +92,16 @@
           .then(() => {
             this.getCraftData().then(() => {
               this.loading = false;
-              this.$root.displayNotice('Craft CMS edition changed.');
+              this.$root.displayNotice(
+                Craft.t('app', 'Craft CMS edition changed.')
+              );
             });
           })
           .catch(() => {
             this.loading = false;
-            this.$root.displayError('Couldn’t change Craft CMS edition.');
+            this.$root.displayError(
+              Craft.t('app', 'Couldn’t change Craft CMS edition.')
+            );
           });
       },
     },
