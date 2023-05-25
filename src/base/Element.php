@@ -2818,6 +2818,14 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
+    public function getLayoutContainer(): ?LayoutContainerInterface
+    {
+        return null;
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function getFieldLayout(): ?FieldLayout
     {
         if ($this->fieldLayoutId) {

@@ -671,7 +671,7 @@ interface ElementInterface extends ComponentInterface
     public function getFieldLayout(): ?FieldLayout;
 
     /**
-     * Returns the layout container used by this element.
+     * Returns the layout container used by this element if used.
      *
      * @return LayoutContainerInterface|null
      */
