@@ -92,12 +92,12 @@ class Element extends InterfaceType implements SingularTypeInterface
             'enabled' => [
                 'name' => 'enabled',
                 'type' => Type::boolean(),
-                'description' => 'Whether the element is enabled or not.',
+                'description' => 'Whether the element is enabled.',
             ],
             'archived' => [
                 'name' => 'archived',
                 'type' => Type::boolean(),
-                'description' => 'Whether the element is archived or not.',
+                'description' => 'Whether the element is archived.',
             ],
             'siteHandle' => [
                 'name' => 'siteHandle',
@@ -127,7 +127,7 @@ class Element extends InterfaceType implements SingularTypeInterface
             'trashed' => [
                 'name' => 'trashed',
                 'type' => Type::boolean(),
-                'description' => 'Whether the element has been soft-deleted or not.',
+                'description' => 'Whether the element has been soft-deleted.',
             ],
             'status' => [
                 'name' => 'status',

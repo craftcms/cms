@@ -105,7 +105,7 @@ class Entry extends Mutation
                         'provisional' => [
                             'name' => 'provisional',
                             'type' => Type::boolean(),
-                            'description' => 'Whether the draft should be a provisional draft or not.',
+                            'description' => 'Whether the draft should be a provisional draft.',
                         ],
                     ],
                     'resolve' => [$resolver, 'createDraft'],

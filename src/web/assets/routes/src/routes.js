@@ -393,7 +393,7 @@ import './routes.scss';
             val = Craft.ltrim(val, '/');
 
             // Make sure the first element isn’t using the action/control panel trigger
-            if (Craft.startsWith(val, Craft.actionTrigger + '/')) {
+            if (val.startsWith(`${Craft.actionTrigger}/`)) {
               this.addUriError(
                 Craft.t(
                   'app',
@@ -406,7 +406,7 @@ import './routes.scss';
               return;
             } else if (
               Craft.cpTrigger &&
-              Craft.startsWith(val, Craft.cpTrigger + '/')
+              val.startsWith(`${Craft.cpTrigger}/`)
             ) {
               this.addUriError(
                 Craft.t(

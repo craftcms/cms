@@ -33,7 +33,7 @@
         autocomplete: false,
         size: 10,
         placeholder: ' ',
-        value: value ? value|time(isMobile ? 'H:i' : 'short') : '',
+        value: value ? value|time(isMobile ? 'H:i' : 'short', false) : '',
         inputAttributes: {
             aria: {
                 label: isDateTime ? 'Time'|t('app') : false,
