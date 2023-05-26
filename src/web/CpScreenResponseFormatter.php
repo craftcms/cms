@@ -13,6 +13,7 @@ use craft\helpers\StringHelper;
 use craft\helpers\UrlHelper;
 use yii\base\Component;
 use yii\base\InvalidConfigException;
+use yii\web\BadRequestHttpException;
 use yii\web\JsonResponseFormatter;
 use yii\web\Response as YiiResponse;
 use yii\web\ResponseFormatterInterface;
@@ -58,6 +59,9 @@ class CpScreenResponseFormatter extends Component implements ResponseFormatterIn
 
         if ($behavior->prepareScreen) {
             $containerId = $request->getHeaders()->get('X-Craft-Container-Id');
+            if (!$containerId) {
+                throw new BadRequestHttpException('Request missing the X-Craft-Container-Id header.');
+            }
             $view->setNamespace($namespace);
             call_user_func($behavior->prepareScreen, $response, $containerId);
             $view->setNamespace(null);
@@ -90,6 +94,7 @@ class CpScreenResponseFormatter extends Component implements ResponseFormatterIn
             'title' => $behavior->title,
             'notice' => $notice,
             'tabs' => $tabs,
+            'bodyClass' => $behavior->slideoutBodyClass,
             'formAttributes' => $behavior->formAttributes,
             'action' => $behavior->action,
             'submitButtonLabel' => $behavior->submitButtonLabel,
@@ -120,6 +125,7 @@ class CpScreenResponseFormatter extends Component implements ResponseFormatterIn
         $notice = is_callable($behavior->notice) ? call_user_func($behavior->notice) : $behavior->notice;
         $content = is_callable($behavior->content) ? call_user_func($behavior->content) : ($behavior->content ?? '');
         $sidebar = is_callable($behavior->sidebar) ? call_user_func($behavior->sidebar) : $behavior->sidebar;
+        $pageSidebar = is_callable($behavior->pageSidebar) ? call_user_func($behavior->pageSidebar) : $behavior->pageSidebar;
 
         if ($behavior->action) {
             $content .= Html::actionInput($behavior->action, [
@@ -159,6 +165,7 @@ class CpScreenResponseFormatter extends Component implements ResponseFormatterIn
                 'contentNotice' => $notice,
                 'content' => $content,
                 'details' => $sidebar,
+                'sidebar' => $pageSidebar,
             ],
             'templateMode' => View::TEMPLATE_MODE_CP,
         ]);

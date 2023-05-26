@@ -175,7 +175,9 @@ Garnish.$doc.ready(function () {
               }
             })
             .catch((error) => {
-              this.$root.displayError('Couldn’t update cart’s email.');
+              this.$root.displayError(
+                Craft.t('app', 'Couldn’t update cart’s email.')
+              );
 
               if (callback) {
                 callback();

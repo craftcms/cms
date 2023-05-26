@@ -367,7 +367,7 @@ class TemplateCaches extends Component
         }
 
         $this->_path .= $request->getPathInfo();
-        if (Craft::$app->getDb()->getIsMysql()) {
+        if (!Craft::$app->getDb()->getSupportsMb4()) {
             $this->_path = StringHelper::encodeMb4($this->_path);
         }
 

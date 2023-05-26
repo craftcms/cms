@@ -412,6 +412,28 @@ class Asset extends Element
         return null;
     }
 
+    public static function sourcePath(string $sourceKey, string $stepKey, ?string $context): ?array
+    {
+        if (!preg_match('/^folder:([\w\-]+)$/', $stepKey, $match)) {
+            return null;
+        }
+
+        $folder = Craft::$app->getAssets()->getFolderByUid($match[1]);
+
+        if (!$folder) {
+            return null;
+        }
+
+        $path = [$folder->getSourcePathInfo()];
+
+        while ($parent = $folder->getParent()) {
+            array_unshift($path, $parent->getSourcePathInfo());
+            $folder = $parent;
+        }
+
+        return $path;
+    }
+
     /**
      * @inheritdoc
      * @since 3.5.0
@@ -1540,7 +1562,7 @@ JS;
                 'width' => $this->getWidth(),
                 'height' => $this->getHeight(),
                 'srcset' => $sizes ? $this->getSrcset($sizes) : false,
-                'alt' => $this->alt ?? $this->title,
+                'alt' => $this->getThumbAlt(),
             ]);
         } else {
             $img = null;
@@ -1975,6 +1997,11 @@ JS;
             return null;
         }
 
+        $extension = $this->getExtension();
+        if (!Image::canManipulateAsImage($extension)) {
+            return $extension;
+        }
+
         return $this->alt;
     }
 
@@ -2016,7 +2043,7 @@ JS;
         return Html::tag('img', '', [
             'sizes' => "{$thumbSizes[0][0]}px",
             'srcset' => implode(', ', $srcsets),
-            'alt' => $this->alt ?? $this->title,
+            'alt' => $this->getThumbAlt(),
         ]);
     }
 

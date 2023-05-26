@@ -1659,19 +1659,7 @@ ul.icons {
   cursor: pointer;
   color: var(--medium-text-color);
 
-  input {
-    border: 0;
-    padding: 0;
-    height: 32px;
-    box-shadow: none;
-    background-color: transparent;
-    border: none;
-    cursor: pointer;
-    color: var(--medium-text-color);
-    text-align: center;
-  }
-
-  span {
+  .copytextbtn__icon {
     padding: 0;
     width: 13px;
     background: none;
@@ -1685,7 +1673,7 @@ ul.icons {
     border-color: var(--medium-hairline-color);
     color: var(--text-color);
 
-    input {
+    .copytextbtn__value {
       color: var(--text-color);
     }
   }
@@ -1693,9 +1681,8 @@ ul.icons {
   &.small {
     padding: 0 5px;
 
-    input {
-      font-size: 11px !important;
-      height: 20px;
+    .copytextbtn__value {
+      font-size: calc(11rem / 16);
     }
   }
 }
@@ -3413,6 +3400,7 @@ table.editable {
   border: 1px solid var(--gray-200);
 
   th,
+  td.heading,
   td.action {
     color: var(--medium-text-color);
     font-weight: normal;
@@ -3608,7 +3596,7 @@ table.editable {
     .datewrapper,
     .timewrapper {
       display: block;
-      width: 100%;
+      width: calc(100% - 29px);
 
       .text + div[data-icon] {
         top: 6px;
@@ -4444,6 +4432,8 @@ $min2ColWidth: 400px;
         }
 
         & > .datetimewrapper {
+          gap: 0;
+
           & > .datewrapper {
             width: 55%;
           }
@@ -4632,29 +4622,22 @@ $min2ColWidth: 400px;
   & > .so-body {
     flex: 1;
     margin: -24px var(--neg-padding) 0;
-    padding: 24px var(--padding);
     overflow: hidden auto;
     position: relative;
 
+    &.so-full-details,
     & > .so-sidebar {
-      position: absolute;
-      top: 0;
-      @include pane();
-      width: 350px;
-      height: 100%;
-      max-width: 100%;
+      background-color: var(--gray-100) !important;
+    }
+
+    &:not(.so-full-details) {
+      padding: 24px var(--padding);
+    }
+
+    & > .so-sidebar,
+    &.so-full-details > .so-content > .details {
       box-sizing: border-box;
       padding: 0 var(--padding) var(--spacing);
-      background-color: var(--gray-100);
-      overflow: hidden auto;
-      z-index: 1;
-
-      body.ltr & {
-        transition: right linear 250ms;
-      }
-      body.rtl & {
-        transition: left linear 250ms;
-      }
 
       & > .preview-thumb-container {
         margin: 0 var(--neg-padding);
@@ -4690,6 +4673,24 @@ $min2ColWidth: 400px;
       .notes {
         padding-top: var(--m);
         padding-bottom: var(--m);
+      }
+    }
+
+    & > .so-sidebar {
+      position: absolute;
+      top: 0;
+      @include pane();
+      width: 350px;
+      height: 100%;
+      max-width: 100%;
+      overflow: hidden auto;
+      z-index: 1;
+
+      body.ltr & {
+        transition: right linear 250ms;
+      }
+      body.rtl & {
+        transition: left linear 250ms;
       }
     }
   }
@@ -6732,6 +6733,10 @@ body .selectize-dropdown {
     width: 25em;
     max-width: 100%;
   }
+}
+
+.datetimewrapper .selectize.select:not(.fullwidth) {
+  max-width: calc(100% - 29px);
 }
 
 .selectize.select .selectize-control {

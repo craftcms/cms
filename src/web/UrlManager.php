@@ -73,6 +73,12 @@ class UrlManager extends \yii\web\UrlManager
     public bool $checkToken = true;
 
     /**
+     * @var bool whether the full list of URL rules have been defined
+     * @see parseRequest()
+     */
+    private bool $_definedRules = false;
+
+    /**
      * @var array Params that should be included in the
      */
     private array $_routeParams = [];
@@ -95,7 +101,6 @@ class UrlManager extends \yii\web\UrlManager
     public function __construct(array $config = [])
     {
         $config['showScriptName'] = !Craft::$app->getConfig()->getGeneral()->omitScriptNameInUrls;
-        $config['rules'] = $this->_getRules();
 
         parent::__construct($config);
     }
@@ -105,6 +110,12 @@ class UrlManager extends \yii\web\UrlManager
      */
     public function parseRequest($request)
     {
+        // Now we can define the full list of rules
+        if (!$this->_definedRules) {
+            $this->addRules($this->_getRules());
+            $this->_definedRules = true;
+        }
+
         /** @var Request $request */
         // Just in case...
         if ($request->getIsConsoleRequest()) {
