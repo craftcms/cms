@@ -174,7 +174,7 @@
             var controlHeight = $control.outerHeight();
             var dropdownHeight = this.$dropdown.outerHeight();
 
-            var exceededWindowHeight = controlOffset.top - offsetAdjustment + controlHeight + dropdownHeight > windowInnerHeight;
+            var exceededWindowHeight = (controlOffset.top - offsetAdjustment + controlHeight + dropdownHeight) > windowInnerHeight;
             if (exceededWindowHeight) {
                 this.$dropdown.css({
                     top: controlOffset.top - dropdownHeight - 4,
