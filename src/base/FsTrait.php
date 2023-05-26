@@ -16,6 +16,18 @@ namespace craft\base;
 trait FsTrait
 {
     /**
+     * @var bool Whether the “Files in this filesystem have public URLs” setting should be shown.
+     * @since 4.5.0
+     */
+    protected static bool $showHasUrlSetting = true;
+
+    /**
+     * @var bool Whether the “Base URL” setting should be shown.
+     * @since 4.5.0
+     */
+    protected static bool $showUrlSetting = true;
+
+    /**
      * @var string|null Name
      */
     public ?string $name = null;
@@ -44,14 +56,4 @@ trait FsTrait
      * @var string|null UID
      */
     public ?string $uid = null;
-
-    /**
-     * @var bool Whether to show the toggle for setting if the volume has a public URL
-     */
-    protected bool $showHasUrlSetting = true;
-
-    /**
-     * @var bool Whether to show the input for setting the volume's URL
-     */
-    protected bool $showUrlSetting = true;
 }

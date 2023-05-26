@@ -58,23 +58,19 @@ abstract class Fs extends SavableComponent implements FsInterface
     }
 
     /**
-     * Return value of $showHasUrlSetting
-     *
-     * @return bool
+     * @inheritdoc
      */
-    public function showHasUrlSetting(): bool
+    public function getShowHasUrlSetting(): bool
     {
-        return $this->showHasUrlSetting;
+        return static::$showHasUrlSetting;
     }
 
     /**
-     * Return value of $showUrlSetting
-     *
-     * @return bool
+     * @inheritdoc
      */
-    public function showUrlSetting(): bool
+    public function getShowUrlSetting(): bool
     {
-        return $this->showUrlSetting;
+        return static::$showUrlSetting;
     }
 
     /**

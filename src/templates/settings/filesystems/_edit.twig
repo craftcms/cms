@@ -1,5 +1,4 @@
 {% import '_includes/forms.twig' as forms %}
-{% import _self as macro %}
 
 {% if oldHandle %}{{ hiddenInput('oldHandle', oldHandle) }}{% endif %}
 
@@ -47,16 +46,10 @@
     <div id="{{ fsType|id }}"{% if not isCurrent %} class="hidden"{% endif %}>
         {% namespace 'types['~fsType~']' %}
             {% if isCurrent %}
-                {% if filesystem.showHasUrlSetting() %}
-                    {{ macro.fsUrlFields(filesystem) }}
-                {% endif %}
-
+                {{ _self.fsUrlFields(filesystem) }}
                 {{ filesystem.getSettingsHtml()|raw }}
             {% else %}
-                {% if fsInstances[fsType].showHasUrlSetting() %}
-                    {{ macro.fsUrlFields(fsInstances[fsType]) }}
-                {% endif %}
-
+                {{ _self.fsUrlFields(fsInstances[fsType]) }}
                 {{ fsInstances[fsType].getSettingsHtml()|raw }}
             {% endif %}
         {% endnamespace %}
@@ -72,14 +65,16 @@
 
 
 {% macro fsUrlFields(filesystem) %}
-    {{ forms.lightswitchField({
-        label: 'Files in this filesystem have public URLs'|t('app'),
-        name: 'hasUrls',
-        on:   filesystem.hasUrls,
-        toggle: filesystem.showUrlSetting() ? "url-field" : null
-    }) }}
+    {% if filesystem.getShowHasUrlSetting() %}
+        {{ forms.lightswitchField({
+            label: 'Files in this filesystem have public URLs'|t('app'),
+            name: 'hasUrls',
+            on:   filesystem.hasUrls,
+            toggle: filesystem.getShowUrlSetting() ? "url-field" : null
+        }) }}
+    {% endif %}
 
-    {% if filesystem.showUrlSetting() %}
+    {% if filesystem.getShowUrlSetting() %}
         <div id="url-field" class="{% if not filesystem.hasUrls %}hidden{% endif %}">
             {{ forms.autosuggestField({
                 label: "Base URL"|t('app'),
