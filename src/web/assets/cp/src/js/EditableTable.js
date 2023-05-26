@@ -715,7 +715,8 @@ Craft.EditableTable.Row = Garnish.Base.extend(
         if (
           col.autopopulate &&
           typeof textareasByColId[col.autopopulate] !== 'undefined' &&
-          !textareasByColId[colId].val()
+          !textareasByColId[colId].val() &&
+          !textareasByColId[col.autopopulate].val()
         ) {
           new Craft.HandleGenerator(
             textareasByColId[colId],
