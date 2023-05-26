@@ -19,6 +19,7 @@
 
 ### Administration
 - The “My Account” page no longer shows a “Require a password reset on next login” checkbox.
+- The Asset Indexes utility no longer shows the “Cache remote images” option on ephemeral environments. ([#13202](https://github.com/craftcms/cms/issues/13202))
 
 ### Development
 - Added a new `_globals` global Twig variable for front-end templates, which can be used to store custom values in a global scope. ([#13050](https://github.com/craftcms/cms/pull/13050), [#12951](https://github.com/craftcms/cms/discussions/12951))
