@@ -2380,35 +2380,6 @@ $.extend(Craft, {
   useMobileStyles: function () {
     return Garnish.isMobileBrowser() || document.body.clientWidth < 600;
   },
-
-  selectizePosition: function (el) {
-    // adjust dropdown position - if there's not enough space to display it below the field
-    // display it above the field
-    var bodyHeight = $('body').height();
-    var windowInnerHeight = window.innerHeight;
-    var offsetAdjustment = 0;
-    if (bodyHeight > windowInnerHeight) {
-      offsetAdjustment = bodyHeight - windowInnerHeight;
-    }
-
-    var $control = el.$control;
-    var controlOffset =
-      el.settings.dropdownParent === 'body'
-        ? $control.offset()
-        : $control.position();
-    var controlHeight = $control.outerHeight();
-    var dropdownHeight = el.$dropdown.outerHeight();
-
-    var exceededWindowHeight =
-      controlOffset.top - offsetAdjustment + controlHeight + dropdownHeight >
-      windowInnerHeight;
-
-    if (exceededWindowHeight) {
-      el.$dropdown.css({
-        top: controlOffset.top - dropdownHeight - 4,
-      });
-    }
-  },
 });
 
 // -------------------------------------------

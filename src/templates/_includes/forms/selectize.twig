@@ -3,6 +3,13 @@
     dropdownParent: 'body',
 }|merge(selectizeOptions ?? []) %}
 
+{% set multi = multi ?? false %}
+{% if multi %}
+    {% set selectizeOptions = selectizeOptions|merge({
+        plugins: (selectizeOptions.plugins ?? [])|push('remove_button')
+    }) %}
+{% endif %}
+
 {# Normalize the options #}
 {% set options = (options ?? [])|map((o, k) => (o.optgroup is defined or o.value is defined) ? o : {
     value: k,
@@ -48,8 +55,11 @@
     {% set options = options|merge(craft.cp.getEnvOptions(allowedEnvValues)) %}
 {% endif %}
 
-{% include '_includes/forms/select' with {
+{% include (multi ? '_includes/forms/multiselect.twig' : '_includes/forms/select.twig') with {
     class: (class ?? [])|explodeClass|push('selectize')|unique,
+    inputAttributes: {
+        style: {display: 'none'},
+    },
 } %}
 
 {% js %}
@@ -150,8 +160,30 @@
             $(this.$control_input).attr(attrs);
         },
         onDropdownOpen: function() {
-            Craft.selectizePosition(this);
-        }
+            // adjust dropdown position - if there's not enough space to display it below the field
+            // display it above the field
+            var bodyHeight = $('body').height();
+            var windowInnerHeight = window.innerHeight;
+            var offsetAdjustment = 0;
+            if (bodyHeight > windowInnerHeight) {
+                offsetAdjustment = bodyHeight - windowInnerHeight;
+            }
+
+            var $control = this.$control;
+            var controlOffset = this.settings.dropdownParent === 'body' ? $control.offset() : $control.position();
+            var controlHeight = $control.outerHeight();
+            var dropdownHeight = this.$dropdown.outerHeight();
+
+            var exceededWindowHeight = controlOffset.top - offsetAdjustment + controlHeight + dropdownHeight > windowInnerHeight;
+            if (exceededWindowHeight) {
+                this.$dropdown.css({
+                    top: controlOffset.top - dropdownHeight - 4,
+                });
+            }
+        },
+        onDropdownClose: function() {
+            $select.trigger('change');
+        },
     }, {{ selectizeOptions|json_encode|raw }}));
 
     onChange();
