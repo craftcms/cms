@@ -261,7 +261,7 @@ class FileHelper extends \yii\helpers\FileHelper
         // Strip any characters not allowed.
         $filename = str_replace($disallowedChars, '', strip_tags($filename));
 
-        if (Craft::$app->getDb()->getIsMysql()) {
+        if (!Craft::$app->getDb()->getSupportsMb4()) {
             // Strip emojis
             $filename = StringHelper::replaceMb4($filename, '');
         }
@@ -857,20 +857,34 @@ class FileHelper extends \yii\helpers\FileHelper
      */
     public static function getExtensionByMimeType(string $mimeType): string
     {
+        // cover the ambiguous, web-friendly MIME types up front
+        switch (strtolower($mimeType)) {
+            case 'application/msword': return 'doc';
+            case 'application/x-yaml': return 'yml';
+            case 'application/xml': return 'xml';
+            case 'audio/mp4': return 'm4a';
+            case 'audio/mpeg': return 'mp3';
+            case 'audio/ogg': return 'ogg';
+            case 'image/heic': return 'heic';
+            case 'image/jpeg': return 'jpg';
+            case 'image/svg+xml': return 'svg';
+            case 'image/tiff': return 'tif';
+            case 'text/calendar': return 'ics';
+            case 'text/html': return 'html';
+            case 'text/markdown': return 'md';
+            case 'text/plain': return 'txt';
+            case 'video/mp4': return 'mp4';
+            case 'video/mpeg': return 'mpg';
+            case 'video/quicktime': return 'mov';
+        }
+
         $extensions = FileHelper::getExtensionsByMimeType($mimeType);
 
         if (empty($extensions)) {
             throw new InvalidArgumentException("No file extensions are known for the MIME Type $mimeType.");
         }
 
-        $extension = reset($extensions);
-
-        // Manually correct for some types.
-        return match ($extension) {
-            'svgz' => 'svg',
-            'jpe' => 'jpg',
-            default => $extension,
-        };
+        return reset($extensions);
     }
 
     /**

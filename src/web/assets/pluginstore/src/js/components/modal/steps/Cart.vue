@@ -266,7 +266,9 @@
         this.$store
           .dispatch('cart/updateItem', {itemKey, item})
           .catch(() => {
-            this.$root.displayError('Couldn’t update item in cart.');
+            this.$root.displayError(
+              Craft.t('app', 'Couldn’t update item in cart.')
+            );
           })
           .finally(() => {
             this.$delete(this.loadingItems, itemKey);

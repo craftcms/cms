@@ -54,6 +54,12 @@ class Table extends Field
     }
 
     /**
+     * @var bool Whether the rows should be static.
+     * @since 4.5.0
+     */
+    public bool $staticRows = false;
+
+    /**
      * @var string|null Custom add row button label
      */
     public ?string $addRowLabel = null;
@@ -156,6 +162,11 @@ class Table extends Field
         if (!isset($this->addRowLabel)) {
             $this->addRowLabel = Craft::t('app', 'Add a row');
         }
+
+        if ($this->staticRows) {
+            $this->minRows = null;
+            $this->maxRows = null;
+        }
     }
 
     /**
@@ -236,6 +247,7 @@ class Table extends Field
             'date' => Craft::t('app', 'Date'),
             'select' => Craft::t('app', 'Dropdown'),
             'email' => Craft::t('app', 'Email'),
+            'heading' => Craft::t('app', 'Row heading'),
             'lightswitch' => Craft::t('app', 'Lightswitch'),
             'multiline' => Craft::t('app', 'Multi-line text'),
             'number' => Craft::t('app', 'Number'),
@@ -305,6 +317,15 @@ class Table extends Field
             'initJs' => false,
         ]);
 
+        // Replace heading columns with singleline, for the Default Values table
+        $columns = array_map(function(array $column) {
+            if ($column['type'] === 'heading') {
+                $column['type'] = 'singleline';
+                $column['class'] = 'heading';
+            }
+            return $column;
+        }, $this->columns);
+
         $view = Craft::$app->getView();
 
         $view->registerAssetBundle(TimepickerAsset::class);
@@ -312,7 +333,7 @@ class Table extends Field
         $view->registerJs('new Craft.TableFieldSettings(' .
             Json::encode($view->namespaceInputName('columns')) . ', ' .
             Json::encode($view->namespaceInputName('defaults')) . ', ' .
-            Json::encode($this->columns) . ', ' .
+            Json::encode($columns) . ', ' .
             Json::encode($this->defaults ?? []) . ', ' .
             Json::encode($columnSettings) . ', ' .
             Json::encode($dropdownSettingsHtml) . ', ' .
@@ -333,7 +354,7 @@ class Table extends Field
             'allowAdd' => true,
             'allowReorder' => true,
             'allowDelete' => true,
-            'cols' => $this->columns,
+            'cols' => $columns,
             'rows' => $this->defaults,
             'initJs' => false,
         ]);
@@ -413,20 +434,45 @@ class Table extends Field
 
     private function _normalizeValueInternal(mixed $value, ?ElementInterface $element, bool $fromRequest): ?array
     {
-        if (is_string($value) && !empty($value)) {
-            $value = Json::decodeIfJson($value);
-        } elseif ($value === null && $this->isFresh($element)) {
-            $value = array_values($this->defaults ?? []);
-        }
-
-        if (!is_array($value) || empty($this->columns)) {
+        if (empty($this->columns)) {
             return null;
         }
 
+        $defaults = $this->defaults ?? [];
+
+        if (is_string($value) && !empty($value)) {
+            $value = Json::decodeIfJson($value);
+        } elseif ($value === null && $this->isFresh($element)) {
+            $value = $defaults;
+        }
+
+        if (!is_array($value)) {
+            $value = [];
+        }
+
         // Normalize the values and make them accessible from both the col IDs and the handles
-        foreach ($value as &$row) {
+        $value = array_values($value);
+
+        if ($this->staticRows) {
+            $valueRows = count($value);
+            $totalRows = count($defaults);
+            if ($valueRows < $totalRows) {
+                $value = array_pad($value, $totalRows, []);
+            } elseif ($valueRows > $totalRows) {
+                array_splice($value, $totalRows);
+            }
+        }
+
+        // If the value is still empty, return null
+        if (empty($value)) {
+            return null;
+        }
+
+        foreach ($value as $rowIndex => &$row) {
             foreach ($this->columns as $colId => $col) {
-                if (array_key_exists($colId, $row)) {
+                if ($col['type'] === 'heading') {
+                    $cellValue = $defaults[$rowIndex][$colId] ?? '';
+                } elseif (array_key_exists($colId, $row)) {
                     $cellValue = $row[$colId];
                 } elseif ($col['handle'] && array_key_exists($col['handle'], $row)) {
                     $cellValue = $row[$col['handle']];
@@ -454,13 +500,18 @@ class Table extends Field
         }
 
         $serialized = [];
+        $supportsMb4 = Craft::$app->getDb()->getSupportsMb4();
 
         foreach ($value as $row) {
             $serializedRow = [];
-            foreach (array_keys($this->columns) as $colId) {
+            foreach ($this->columns as $colId => $column) {
+                if ($column['type'] === 'heading') {
+                    continue;
+                }
+
                 $value = $row[$colId];
 
-                if (is_string($value) && in_array($this->columns[$colId]['type'], ['singleline', 'multiline'], true)) {
+                if (is_string($value) && !$supportsMb4) {
                     $value = StringHelper::emojiToShortcodes(StringHelper::escapeShortcodes($value));
                 }
 
@@ -677,6 +728,7 @@ class Table extends Field
             'minRows' => $this->minRows,
             'maxRows' => $this->maxRows,
             'static' => $static,
+            'staticRows' => $this->staticRows,
             'allowAdd' => true,
             'allowDelete' => true,
             'allowReorder' => true,

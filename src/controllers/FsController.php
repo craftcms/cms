@@ -140,8 +140,6 @@ class FsController extends Controller
             'name' => $this->request->getBodyParam('name'),
             'handle' => $this->request->getBodyParam('handle'),
             'oldHandle' => $this->request->getBodyParam('oldHandle'),
-            'hasUrls' => (bool)$this->request->getBodyParam('hasUrls'),
-            'url' => $this->request->getBodyParam('url'),
             'settings' => $this->request->getBodyParam("types.$type"),
         ]);
 
