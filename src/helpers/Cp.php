@@ -414,27 +414,44 @@ class Cp
         }
 
         if ($thumbUrl !== null) {
-            $imageSize2x = $thumbSizePx * 2;
-            $thumbUrl2x = $element->getThumbUrl($imageSize2x);
+            // $element->getThumbUrl can return an SVG markup now (for icons)
+            // we need to check if $thumbUrl starts with <svg
+            // if it does - use it
+            if (preg_match('/^<svg/', $thumbUrl) === 1) {
+                $imgHtml = Html::tag('div', $thumbUrl, [
+                    'class' => array_filter([
+                        'elementthumb',
+                        $element->getHasCheckeredThumb() ? 'checkered' : null,
+                        $size === self::ELEMENT_SIZE_SMALL && $element->getHasRoundedThumb() ? 'rounded' : null,
+                    ]),
+                    'data' => [
+                        'alt' => $element->getThumbAlt(),
+                    ],
+                ]);
+            } else {
+                // otherwise do what we always had
+                $imageSize2x = $thumbSizePx * 2;
+                $thumbUrl2x = $element->getThumbUrl($imageSize2x);
 
-            $srcsets = [
-                "$thumbUrl {$thumbSizePx}w",
-                "$thumbUrl2x {$imageSize2x}w",
-            ];
-            $sizesHtml = "{$thumbSizePx}px";
-            $srcsetHtml = implode(', ', $srcsets);
-            $imgHtml = Html::tag('div', '', [
-                'class' => array_filter([
-                    'elementthumb',
-                    $element->getHasCheckeredThumb() ? 'checkered' : null,
-                    $size === self::ELEMENT_SIZE_SMALL && $element->getHasRoundedThumb() ? 'rounded' : null,
-                ]),
-                'data' => [
-                    'sizes' => $sizesHtml,
-                    'srcset' => $srcsetHtml,
-                    'alt' => $element->getThumbAlt(),
-                ],
-            ]);
+                $srcsets = [
+                    "$thumbUrl {$thumbSizePx}w",
+                    "$thumbUrl2x {$imageSize2x}w",
+                ];
+                $sizesHtml = "{$thumbSizePx}px";
+                $srcsetHtml = implode(', ', $srcsets);
+                $imgHtml = Html::tag('div', '', [
+                    'class' => array_filter([
+                        'elementthumb',
+                        $element->getHasCheckeredThumb() ? 'checkered' : null,
+                        $size === self::ELEMENT_SIZE_SMALL && $element->getHasRoundedThumb() ? 'rounded' : null,
+                    ]),
+                    'data' => [
+                        'sizes' => $sizesHtml,
+                        'srcset' => $srcsetHtml,
+                        'alt' => $element->getThumbAlt(),
+                    ],
+                ]);
+            }
         } else {
             $imgHtml = '';
         }

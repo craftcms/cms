@@ -905,7 +905,44 @@ class Assets
             return $path;
         }
 
+        $svg = self::_prepFileIconSvg($extension);
+
+        FileHelper::writeToFile($path, $svg);
+        return $path;
+    }
+
+    /**
+     * Returns SVG markup for an asset icon for a given extension
+     *
+     * @param string $extension
+     * @return string
+     * @since 4.5.0
+     */
+    public static function iconHtml(string $extension): string
+    {
+        if (!preg_match('/^\w+$/', $extension)) {
+            throw new InvalidArgumentException("$extension isn’t a valid file extension.");
+        }
+
+        return self::_prepFileIconSvg($extension, true);
+    }
+
+    /**
+     * Get file icon svg and add the extension text to it
+     *
+     * @param string $extension
+     * @param bool $removeXml
+     * @return string
+     * @since 4.5.0
+     */
+    private static function _prepFileIconSvg(string $extension, bool $removeXml = false): string
+    {
         $svg = file_get_contents(Craft::getAlias('@appicons/file.svg'));
+
+        if ($removeXml) {
+            // remove <?xml from the svg
+            $svg = preg_replace('/^<\?xml.*\?>\n?/', '', $svg);
+        }
 
         $extLength = strlen($extension);
         if ($extLength <= 3) {
@@ -922,7 +959,6 @@ class Assets
         $textNode = "<text x=\"50\" y=\"73\" text-anchor=\"middle\" font-family=\"sans-serif\" fill=\"#9aa5b1\" font-size=\"$textSize\">" . strtoupper($extension) . '</text>';
         $svg = str_replace('<!-- EXT -->', $textNode, $svg);
 
-        FileHelper::writeToFile($path, $svg);
-        return $path;
+        return $svg;
     }
 }

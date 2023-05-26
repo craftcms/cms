@@ -645,7 +645,8 @@ class Assets extends Component
         // If it’s not an image, return a generic file extension icon
         $extension = $asset->getExtension();
         if (!Image::canManipulateAsImage($extension)) {
-            return AssetsHelper::iconUrl($extension);
+            // return an SVG markup for this icon
+            return AssetsHelper::iconHtml($extension);
         }
 
         $transform = new ImageTransform([
