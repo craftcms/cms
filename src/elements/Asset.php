@@ -2955,6 +2955,7 @@ JS;
             'data' => [
                 'kind' => $this->kind,
                 'alt' => $this->alt,
+                'filename' => $this->filename,
             ],
         ];
 

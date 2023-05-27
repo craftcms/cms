@@ -284,6 +284,32 @@ trait ApplicationTrait
     private bool $_waitingToSaveInfo = false;
 
     /**
+     * @inheritdoc
+     */
+    public function setVendorPath($path): void
+    {
+        parent::setVendorPath($path);
+
+        // Override the @bower and @npm aliases if using asset-packagist.org
+        // todo: remove this whenever Yii is updated with support for asset-packagist.org
+        $altBowerPath = $this->getVendorPath() . DIRECTORY_SEPARATOR . 'bower-asset';
+        $altNpmPath = $this->getVendorPath() . DIRECTORY_SEPARATOR . 'npm-asset';
+        if (is_dir($altBowerPath)) {
+            Craft::setAlias('@bower', $altBowerPath);
+        }
+        if (is_dir($altNpmPath)) {
+            Craft::setAlias('@npm', $altNpmPath);
+        }
+
+        // Override where Yii should find its asset deps
+        $assetsPath = Craft::getAlias('@craft') . '/web/assets';
+        Craft::setAlias('@bower/jquery/dist', $assetsPath . '/jquery/dist');
+        Craft::setAlias('@bower/inputmask/dist', $assetsPath . '/inputmask/dist');
+        Craft::setAlias('@bower/punycode', $assetsPath . '/punycode/dist');
+        Craft::setAlias('@bower/yii2-pjax', $assetsPath . '/yii2pjax/dist');
+    }
+
+    /**
      * Sets the target application language.
      *
      * @param bool|null $useUserLanguage Whether the user’s preferred language should be used.

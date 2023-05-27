@@ -16,6 +16,18 @@ namespace craft\base;
 trait FsTrait
 {
     /**
+     * @var bool Whether the “Files in this filesystem have public URLs” setting should be shown.
+     * @since 4.5.0
+     */
+    protected static bool $showHasUrlSetting = true;
+
+    /**
+     * @var bool Whether the “Base URL” setting should be shown.
+     * @since 4.5.0
+     */
+    protected static bool $showUrlSetting = true;
+
+    /**
      * @var string|null Name
      */
     public ?string $name = null;
