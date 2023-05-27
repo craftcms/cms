@@ -8,6 +8,7 @@
 namespace crafttests\unit\gql;
 
 use Craft;
+use craft\db\Table;
 use craft\gql\resolvers\elements\Asset as AssetResolver;
 use craft\gql\resolvers\elements\Category as CategoryResolver;
 use craft\gql\resolvers\elements\Entry as EntryResolver;
@@ -15,6 +16,7 @@ use craft\gql\resolvers\elements\GlobalSet as GlobalSetResolver;
 use craft\gql\resolvers\elements\MatrixBlock as MatrixBlockResolver;
 use craft\gql\resolvers\elements\Tag as TagResolver;
 use craft\gql\resolvers\elements\User as UserResolver;
+use craft\helpers\Db;
 use craft\helpers\StringHelper;
 use craft\models\GqlSchema;
 use craft\records\CategoryGroup;
@@ -306,6 +308,14 @@ class PrepareQueryTest extends TestCase
 
     private function _setupEntries()
     {
+        $this->_entryType = new EntryType([
+            'uid' => self::ENTRY_TYPE_UID,
+            'name' => StringHelper::randomString(),
+            'handle' => StringHelper::randomString(),
+            'hasTitleField' => false,
+        ]);
+        $this->_entryType->save();
+
         $this->_section = new Section([
             'uid' => self::SECTION_UID,
             'name' => StringHelper::randomString(),
@@ -316,14 +326,11 @@ class PrepareQueryTest extends TestCase
         ]);
         $this->_section->save();
 
-        $this->_entryType = new EntryType([
-            'uid' => self::ENTRY_TYPE_UID,
-            'name' => StringHelper::randomString(),
-            'handle' => StringHelper::randomString(),
+        Db::insert(Table::SECTIONS_ENTRYTYPES, [
             'sectionId' => $this->_section->id,
-            'hasTitleField' => false,
+            'typeId' => $this->_entryType->id,
+            'sortOrder' => 1,
         ]);
-        $this->_entryType->save();
     }
 
     private function _setupGlobals()

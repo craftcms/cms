@@ -9,13 +9,13 @@ namespace craft\helpers;
 
 use Craft;
 use craft\base\ElementInterface;
-use craft\elements\Entry as EntryElement;
 use craft\errors\GqlException;
 use craft\gql\base\Directive;
 use craft\gql\ElementQueryConditionBuilder;
 use craft\gql\GqlEntityRegistry;
-use craft\models\EntryType as EntryTypeModel;
+use craft\models\EntryType;
 use craft\models\GqlSchema;
+use craft\models\Section;
 use craft\models\Site;
 use craft\services\Gql as GqlService;
 use GraphQL\Language\AST\ListValueNode;
@@ -582,13 +582,27 @@ class Gql
     /**
      * Return all entry types a given (or loaded) schema contains.
      *
-     * @return EntryTypeModel[]
+     * @return EntryType[]
      */
     public static function getSchemaContainedEntryTypes(?GqlSchema $schema = null): array
     {
         return array_filter(
             Craft::$app->getSections()->getAllEntryTypes(),
-            static fn($entryType) => self::isSchemaAwareOf(EntryElement::gqlScopesByContext($entryType), $schema)
+            fn(EntryType $entryType) => self::isSchemaAwareOf("entrytypes.$entryType->uid", $schema),
+        );
+    }
+
+    /**
+     * Returns all sections a given (or loaded) schema contains.
+     *
+     * @return Section[]
+     * @since 5.0.0
+     */
+    public static function getSchemaContainedSections(?GqlSchema $schema = null): array
+    {
+        return array_filter(
+            Craft::$app->getSections()->getAllSections(),
+            fn(Section $section) => self::isSchemaAwareOf("sections.$section->uid", $schema),
         );
     }
 

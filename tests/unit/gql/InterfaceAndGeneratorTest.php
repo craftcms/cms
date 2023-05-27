@@ -86,14 +86,15 @@ class InterfaceAndGeneratorTest extends TestCase
             ]
         );
 
+        [$entryTypes, $sections] = $this->mockEntryTypesAndSections();
+
         $this->tester->mockMethods(
             Craft::$app,
             'sections',
             [
-                'getAllEntryTypes' => function() {
-                    return $this->mockEntryTypes();
-                },
-            ]
+                'getAllEntryTypes' => fn() => $entryTypes,
+                'getAllSections' => fn() => $sections,
+            ],
         );
 
         $this->tester->mockMethods(
@@ -214,7 +215,7 @@ class InterfaceAndGeneratorTest extends TestCase
                     return ['Element'];
                 }, [BaseElement::class, 'gqlTypeNameByContext'],
             ],
-            [EntryInterface::class, [$this, 'mockEntryTypes'], [EntryElement::class, 'gqlTypeNameByContext']],
+            [EntryInterface::class, fn() => $this->mockEntryTypesAndSections()[0], [EntryElement::class, 'gqlTypeNameByContext']],
             [GlobalSetInterface::class, [$this, 'mockGlobalSets'], [GlobalSetElement::class, 'gqlTypeNameByContext']],
             [CategoryInterface::class, [$this, 'mockCategoryGroups'], [CategoryElement::class, 'gqlTypeNameByContext']],
             [TagInterface::class, [$this, 'mockTagGroups'], [TagElement::class, 'gqlTypeNameByContext']],
@@ -256,32 +257,50 @@ class InterfaceAndGeneratorTest extends TestCase
     }
 
     /**
-     * Mock the entry types for tests.
+     * Mock the entry types and sections for tests.
      *
      * @return array
      * @throws Exception
      */
-    public function mockEntryTypes(): array
+    public function mockEntryTypesAndSections(): array
     {
+        $typeA = $this->make(EntryType::class, [
+            'uid' => 'entrytype-uid-1',
+            'handle' => 'mockType1',
+            '__call' => function($name, $params) {
+                /** @phpstan-ignore-next-line */
+                return $name === 'getCustomFields' ? [] : parent::__get($name, $params);
+            },
+        ]);
+
+        $typeB = $this->make(EntryType::class, [
+            'uid' => 'entrytype-uid-1',
+            'handle' => 'mockType2',
+            '__call' => function($name, $params) {
+                /** @phpstan-ignore-next-line */
+                return $name === 'getCustomFields' ? [$this->make(PlainText::class, ['name' => 'Mock field', 'handle' => 'mockField'])] : parent::__get($name, $params);
+            },
+        ]);
+
+        $sectionA = $this->make(Section::class, [
+            'uid' => 'section-uid-1',
+            'handle' => 'mockSection1',
+            'getEntryTypes' => [
+                $typeA,
+            ],
+        ]);
+
+        $sectionB = $this->make(Section::class, [
+            'uid' => 'section-uid-1',
+            'handle' => 'mockSection2',
+            'getEntryTypes' => [
+                $typeB,
+            ],
+        ]);
+
         return [
-            $this->make(EntryType::class, [
-                'uid' => 'entrytype-uid-1',
-                'handle' => 'mockType1',
-                'getSection' => $this->make(Section::class, ['uid' => 'section-uid-1', 'handle' => 'mockSection1']),
-                '__call' => function($name, $params) {
-                    /** @phpstan-ignore-next-line */
-                    return $name === 'getCustomFields' ? [] : parent::__get($name, $params);
-                },
-            ]),
-            $this->make(EntryType::class, [
-                'uid' => 'entrytype-uid-1',
-                'handle' => 'mockType2',
-                'getSection' => $this->make(Section::class, ['uid' => 'section-uid-1', 'handle' => 'mockSection2']),
-                '__call' => function($name, $params) {
-                    /** @phpstan-ignore-next-line */
-                    return $name === 'getCustomFields' ? [$this->make(PlainText::class, ['name' => 'Mock field', 'handle' => 'mockField'])] : parent::__get($name, $params);
-                },
-            ]),
+            [$typeA, $typeB],
+            [$sectionA, $sectionB],
         ];
     }
 

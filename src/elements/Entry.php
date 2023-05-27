@@ -617,7 +617,6 @@ class Entry extends Element implements ExpirableElementInterface
     {
         /** @var EntryType $context */
         return [
-            'sections.' . $context->getSection()->uid,
             'entrytypes.' . $context->uid,
         ];
     }
@@ -2095,6 +2094,6 @@ EOD;
      */
     private static function _getGqlIdentifierByContext(EntryType $context): string
     {
-        return $context->getSection()->handle . '_' . $context->handle;
+        return $context->handle;
     }
 }

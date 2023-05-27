@@ -16,6 +16,7 @@ use craft\helpers\ArrayHelper;
 use craft\helpers\Db;
 use craft\helpers\ProjectConfig as ProjectConfigHelper;
 use craft\helpers\StringHelper;
+use craft\helpers\UrlHelper;
 use craft\records\Section as SectionRecord;
 use craft\validators\HandleValidator;
 use craft\validators\UniqueValidator;
@@ -152,6 +153,9 @@ class Section extends Model
             'handle' => Craft::t('app', 'Handle'),
             'name' => Craft::t('app', 'Name'),
             'type' => Craft::t('app', 'Section Type'),
+            'entryTypes' => $this->type === self::TYPE_SINGLE
+                ? Craft::t('app', 'Entry Type')
+                : Craft::t('app', 'Entry Types'),
         ];
     }
 
@@ -180,7 +184,7 @@ class Section extends Model
             ],
         ];
         $rules[] = [['name', 'handle'], UniqueValidator::class, 'targetClass' => SectionRecord::class];
-        $rules[] = [['name', 'handle', 'type', 'propagationMethod', 'siteSettings'], 'required'];
+        $rules[] = [['name', 'handle', 'type', 'entryTypes', 'propagationMethod', 'siteSettings'], 'required'];
         $rules[] = [['name', 'handle'], 'string', 'max' => 255];
         $rules[] = [['siteSettings'], 'validateSiteSettings'];
         $rules[] = [['defaultPlacement'], 'in', 'range' => [self::DEFAULT_PLACEMENT_BEGINNING, self::DEFAULT_PLACEMENT_END]];
@@ -355,6 +359,17 @@ class Section extends Model
     }
 
     /**
+     * Returns the section’s edit URL in the control panel.
+     *
+     * @return string
+     * @since 5.0.0
+     */
+    public function getCpEditUrl(): string
+    {
+        return UrlHelper::cpUrl("settings/sections/$this->id");
+    }
+
+    /**
      * Returns the section’s config.
      *
      * @return array
@@ -366,6 +381,7 @@ class Section extends Model
             'name' => $this->name,
             'handle' => $this->handle,
             'type' => $this->type,
+            'entryTypes' => array_map(fn(EntryType $entryType) => $entryType->uid, $this->getEntryTypes()),
             'enableVersioning' => $this->enableVersioning,
             'propagationMethod' => $this->propagationMethod,
             'siteSettings' => [],

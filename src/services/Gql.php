@@ -71,7 +71,6 @@ use craft\helpers\ProjectConfig as ProjectConfigHelper;
 use craft\helpers\StringHelper;
 use craft\models\GqlSchema;
 use craft\models\GqlToken;
-use craft\models\Section;
 use craft\records\GqlSchema as GqlSchemaRecord;
 use craft\records\GqlToken as GqlTokenRecord;
 use GraphQL\Error\DebugFlag;
@@ -655,10 +654,17 @@ class Gql extends Component
         $label = Craft::t('app', 'All elements');
         $queries[$label] = $components['query'] ?? [];
 
-        // Entries
+        // Entry types
+        // ---------------------------------------------------------------------
+        $components = $this->_getEntryTypeSchemaComponents();
+        $label = Craft::t('app', 'Entry Types');
+        $queries[$label] = $components['query'] ?? [];
+        $mutations[$label] = $components['mutation'] ?? [];
+
+        // Sections
         // ---------------------------------------------------------------------
         $components = $this->_getSectionSchemaComponents();
-        $label = Craft::t('app', 'Entries');
+        $label = Craft::t('app', 'Sections');
         $queries[$label] = $components['query'] ?? [];
         $mutations[$label] = $components['mutation'] ?? [];
 
@@ -672,7 +678,7 @@ class Gql extends Component
         // Global Sets
         // ---------------------------------------------------------------------
         $components = $this->_getGlobalSetSchemaComponents();
-        $label = Craft::t('app', 'Global sets');
+        $label = Craft::t('app', 'Global Sets');
         $queries[$label] = $components['query'] ?? [];
         $mutations[$label] = $components['mutation'] ?? [];
 
@@ -1444,56 +1450,65 @@ class Gql extends Component
         ];
     }
 
+    /**
+     * Returns the available scema components for entry types.
+     *
+     * @return array
+     */
+    private function _getEntryTypeSchemaComponents(): array
+    {
+        $queryComponents = [];
+        $mutationComponents = [];
+
+        foreach (Craft::$app->getSections()->getAllEntryTypes() as $entryType) {
+            $name = Craft::t('site', $entryType->name);
+            $prefix = "entrytypes.$entryType->uid";
+
+            $queryComponents["$prefix:read"] = [
+                'label' => Craft::t('app', 'View entry type - {name}', ['name' => $name]),
+            ];
+            $mutationComponents["$prefix:edit"] = [
+                'label' => Craft::t('app', 'Edit entry type - {name}', ['name' => $name]),
+                'nested' => [
+                    "$prefix:create" => [
+                        'label' => Craft::t('app', 'Create entries with the “{entryType}” entry type', ['entryType' => $name]),
+                    ],
+                    "$prefix:save" => [
+                        'label' => Craft::t('app', 'Save entries with the “{entryType}” entry type', ['entryType' => $name]),
+                    ],
+                    "$prefix:delete" => [
+                        'label' => Craft::t('app', 'Delete entries with the “{entryType}” entry type', ['entryType' => $name]),
+                    ],
+                ],
+            ];
+        }
+
+        return [
+            'query' => $queryComponents,
+            'mutation' => $mutationComponents,
+        ];
+    }
 
     /**
-     * Return section permissions.
+     * Return the available schema components for sections.
      *
      * @return array
      */
     private function _getSectionSchemaComponents(): array
     {
-        $sortedEntryTypes = [];
-
-        foreach (Craft::$app->getSections()->getAllEntryTypes() as $entryType) {
-            $sortedEntryTypes[$entryType->sectionId][] = $entryType;
-        }
-
         $queryComponents = [];
         $mutationComponents = [];
 
-        if (!empty($sortedEntryTypes)) {
-            foreach (Craft::$app->getSections()->getAllSections() as $section) {
-                if (!isset($sortedEntryTypes[$section->id])) {
-                    continue;
-                }
+        foreach (Craft::$app->getSections()->getAllSections() as $section) {
+            $name = Craft::t('site', $section->name);
+            $prefix = "sections.$section->uid";
 
-                $query = ['label' => Craft::t('app', 'Section - {section}', ['section' => Craft::t('site', $section->name)])];
-                $mutate = ['label' => Craft::t('app', 'Section - {section}', ['section' => Craft::t('site', $section->name)])];
-
-                foreach ($sortedEntryTypes[$section->id] as $entryType) {
-                    $suffix = 'entrytypes.' . $entryType->uid;
-
-                    if ($section->type == Section::TYPE_SINGLE) {
-                        $mutate['nested'][$suffix . ':save'] = ['label' => Craft::t('app', 'Edit “{entryType}”', ['entryType' => Craft::t('site', $entryType->name)])];
-                    } else {
-                        $mutate['nested'][$suffix . ':edit'] = [
-                            'label' => Craft::t('app', 'Edit entries with the “{entryType}” entry type', ['entryType' => Craft::t('site', $entryType->name)]),
-                            'nested' => [
-                                $suffix . ':create' => ['label' => Craft::t('app', 'Create entries with the “{entryType}” entry type', ['entryType' => Craft::t('site', $entryType->name)])],
-                                $suffix . ':save' => ['label' => Craft::t('app', 'Save entries with the “{entryType}” entry type', ['entryType' => Craft::t('site', $entryType->name)])],
-                                $suffix . ':delete' => ['label' => Craft::t('app', 'Delete entries with the “{entryType}” entry type', ['entryType' => Craft::t('site', $entryType->name)])],
-                            ],
-                        ];
-                    }
-
-                    $query['nested'][$suffix . ':read'] = [
-                        'label' => Craft::t('app', 'View entries with the “{entryType}” entry type', ['entryType' => Craft::t('site', $entryType->name)]),
-                    ];
-                }
-
-                $queryComponents['sections.' . $section->uid . ':read'] = $query;
-                $mutationComponents['sections.' . $section->uid . ':edit'] = $mutate;
-            }
+            $queryComponents["$prefix:read"] = [
+                'label' => Craft::t('app', 'View section - {section}', ['section' => $name]),
+            ];
+            $mutationComponents["$prefix:edit"] = [
+                'label' => Craft::t('app', 'Edit section - {section}', ['section' => $name]),
+            ];
         }
 
         return [

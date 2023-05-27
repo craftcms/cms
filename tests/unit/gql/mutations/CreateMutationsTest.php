@@ -65,17 +65,26 @@ class CreateMutationsTest extends TestCase
             ],
         ]);
 
+        $entryType = $this->make(EntryType::class, [
+            'uid' => 'uid',
+            'handle' => 'article',
+        ]);
+
+        $section = $this->make(Section::class, [
+            'type' => Section::TYPE_CHANNEL,
+            'uid' => 'sectionUid',
+            'handle' => 'news',
+            'getEntryTypes' => [
+                $entryType,
+            ],
+        ]);
+
         $this->tester->mockCraftMethods('sections', [
             'getAllEntryTypes' => [
-                $this->make(EntryType::class, [
-                    'uid' => 'uid',
-                    'handle' => 'article',
-                    'getSection' => new Section([
-                        'type' => Section::TYPE_CHANNEL,
-                        'uid' => 'sectionUid',
-                        'handle' => 'news',
-                    ]),
-                ]),
+                $entryType,
+            ],
+            'getAllSections' => [
+                $section,
             ],
         ]);
     }
@@ -291,51 +300,63 @@ class CreateMutationsTest extends TestCase
      */
     public function testCreateEntrySaveMutation(): void
     {
-        $single = $this->make(EntryType::class, [
-                '__call' => function($name, $args) {
-                    return [
-                        new PlainText(['handle' => 'someTextField']),
-                    ];
-                },
-                'getSection' => new Section(['type' => Section::TYPE_SINGLE]),
-            ]
-        );
+        $typeA = $this->make(EntryType::class, [
+            'handle' => 'typeA',
+            '__call' => function($name, $args) {
+                return [
+                    new PlainText(['handle' => 'someTextField']),
+                ];
+            },
+        ]);
+        $sectionA = new Section([
+            'handle' => 'sectionA',
+            'type' => Section::TYPE_SINGLE,
+            'entryTypes' => [$typeA],
+        ]);
 
-        $channel = $this->make(EntryType::class, [
-                '__call' => function($name, $args) {
-                    return [
-                        new PlainText(['handle' => 'someTextField']),
-                    ];
-                },
-                'getSection' => new Section(['type' => Section::TYPE_CHANNEL]),
-            ]
-        );
+        $typeB = $this->make(EntryType::class, [
+            'handle' => 'typeB',
+            '__call' => function($name, $args) {
+                return [
+                    new PlainText(['handle' => 'someTextField']),
+                ];
+            },
+        ]);
+        $sectionB = new Section([
+            'handle' => 'sectionB',
+            'type' => Section::TYPE_CHANNEL,
+            'entryTypes' => [$typeB],
+        ]);
 
-        $structure = $this->make(EntryType::class, [
-                '__call' => function($name, $args) {
-                    return [
-                        new PlainText(['handle' => 'someTextField']),
-                    ];
-                },
-                'getSection' => new Section(['type' => Section::TYPE_STRUCTURE]),
-            ]
-        );
+        $typeC = $this->make(EntryType::class, [
+            'handle' => 'typeC',
+            '__call' => function($name, $args) {
+                return [
+                    new PlainText(['handle' => 'someTextField']),
+                ];
+            },
+        ]);
+        $sectionC = new Section([
+            'handle' => 'sectionC',
+            'type' => Section::TYPE_STRUCTURE,
+            'entryTypes' => [$typeC],
+        ]);
 
-        [$saveMutation, $draftMutation] = EntryMutations::createSaveMutations($single, true);
+        [$saveMutation, $draftMutation] = EntryMutations::createSaveMutations($sectionA, $typeA, true);
         self::assertInstanceOf(EntryGqlType::class, $saveMutation['type']);
         self::assertInstanceOf(EntryGqlType::class, $draftMutation['type']);
         self::assertArrayHasKey('someTextField', $saveMutation['args']);
         self::assertArrayNotHasKey('id', $saveMutation['args']);
         self::assertArrayNotHasKey('authorId', $draftMutation['args']);
 
-        [$saveMutation, $draftMutation] = EntryMutations::createSaveMutations($channel, true);
+        [$saveMutation, $draftMutation] = EntryMutations::createSaveMutations($sectionB, $typeB, true);
         self::assertInstanceOf(EntryGqlType::class, $saveMutation['type']);
         self::assertInstanceOf(EntryGqlType::class, $draftMutation['type']);
         self::assertArrayHasKey('someTextField', $draftMutation['args']);
         self::assertArrayHasKey('uid', $saveMutation['args']);
         self::assertArrayHasKey('authorId', $draftMutation['args']);
 
-        [$saveMutation, $draftMutation] = EntryMutations::createSaveMutations($structure, true);
+        [$saveMutation, $draftMutation] = EntryMutations::createSaveMutations($sectionC, $typeC, true);
         self::assertInstanceOf(EntryGqlType::class, $saveMutation['type']);
         self::assertInstanceOf(EntryGqlType::class, $draftMutation['type']);
         self::assertStringContainsString('draft', $draftMutation['description']);
@@ -414,19 +435,19 @@ class CreateMutationsTest extends TestCase
     {
         return [
             [
-                ['entrytypes.uid:edit', 'entrytypes.uid:delete'],
+                ['sections.sectionUid:edit', 'entrytypes.uid:edit', 'entrytypes.uid:delete'],
                 ['deleteEntry'],
             ],
             [
-                ['entrytypes.uid:edit', 'entrytypes.uid:save', 'entrytypes.uid:delete'],
+                ['sections.sectionUid:edit', 'entrytypes.uid:edit', 'entrytypes.uid:save', 'entrytypes.uid:delete'],
                 ['deleteEntry', 'save_news_article_Entry', 'save_news_article_Draft', 'createDraft', 'publishDraft'],
             ],
             [
-                ['entrytypes.uid:edit', 'entrytypes.uid:create'],
+                ['sections.sectionUid:edit', 'entrytypes.uid:edit', 'entrytypes.uid:create'],
                 ['save_news_article_Entry'],
             ],
             [
-                ['entrytypes.uid:edit', 'entrytypes.uid:save'],
+                ['sections.sectionUid:edit', 'entrytypes.uid:edit', 'entrytypes.uid:save'],
                 ['save_news_article_Entry', 'save_news_article_Draft', 'createDraft', 'publishDraft'],
             ],
             [

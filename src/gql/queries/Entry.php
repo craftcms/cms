@@ -13,7 +13,9 @@ use craft\gql\GqlEntityRegistry;
 use craft\gql\interfaces\elements\Entry as EntryInterface;
 use craft\gql\resolvers\elements\Entry as EntryResolver;
 use craft\gql\types\generators\EntryType as EntryTypeGenerator;
+use craft\helpers\ArrayHelper;
 use craft\helpers\Gql as GqlHelper;
+use craft\models\EntryType;
 use GraphQL\Type\Definition\ResolveInfo;
 use GraphQL\Type\Definition\Type;
 use yii\base\InvalidConfigException;
@@ -71,27 +73,32 @@ class Entry extends Query
      */
     protected static function getSectionLevelFields(): array
     {
-        $entryTypes = GqlHelper::getSchemaContainedEntryTypes();
-        $entryTypeMap = [];
-
-        foreach ($entryTypes as $entryType) {
-            $entryTypeMap[$entryType->getSection()->handle][] = $entryType;
-        }
+        $entryTypeGqlTypes = array_map(
+            fn(EntryType $entryType) => EntryTypeGenerator::generateType($entryType),
+            ArrayHelper::index(
+                GqlHelper::getSchemaContainedEntryTypes(),
+                fn(EntryType $entryType) => $entryType->id
+            ),
+        );
 
         $gqlTypes = [];
 
-        // For each `sectionHandle` => [EntryTypeModel]
-        foreach ($entryTypeMap as $sectionHandle => $entryTypes) {
-            $typeName = $sectionHandle . 'SectionEntriesQuery';
+        foreach (GqlHelper::getSchemaContainedSections() as $section) {
+            $typeName = "{$section->handle}SectionEntriesQuery";
+            $sectionQueryType = GqlEntityRegistry::getEntity($typeName);
 
-            // Unless we already have the type
-            if (!($sectionQueryType = GqlEntityRegistry::getEntity($typeName))) {
+            if (!$sectionQueryType) {
                 $entryTypesInSection = [];
 
                 // Loop through the entry types and create further queries
-                foreach ($entryTypes as $entryType) {
-                    $entryTypeGqlType = EntryTypeGenerator::generateType($entryType);
-                    $entryTypesInSection[] = $entryTypeGqlType;
+                foreach ($section->getEntryTypes() as $entryType) {
+                    if (isset($entryTypeGqlTypes[$entryType->id])) {
+                        $entryTypesInSection[] = $entryTypeGqlTypes[$entryType->id];
+                    }
+                }
+
+                if (empty($entryTypesInSection)) {
+                    continue;
                 }
 
                 // Unset unusable arguments
@@ -100,19 +107,17 @@ class Entry extends Query
 
                 // Create the section query field
                 $sectionQueryType = [
-                    'name' => $sectionHandle . 'Entries',
+                    'name' => "{$section->handle}Entries",
                     'args' => $arguments,
-                    'description' => 'Entries within the ' . $sectionHandle . ' section.',
-                    'type' => Type::listOf(GqlHelper::getUnionType($sectionHandle . 'SectionEntryUnion', $entryTypesInSection)),
+                    'description' => "Entries within the $section->name section.",
+                    'type' => Type::listOf(GqlHelper::getUnionType("{$section->handle}SectionEntryUnion", $entryTypesInSection)),
                     // Enforce the section argument and set the source to `null`, to enforce a new element query.
-                    'resolve' => function($source, array $arguments, $context, ResolveInfo $resolveInfo) use ($sectionHandle) {
-                        $arguments['section'] = $sectionHandle;
-                        return EntryResolver::resolve(null, $arguments, $context, $resolveInfo);
-                    },
+                    'resolve' => fn($source, array $arguments, $context, ResolveInfo $resolveInfo) =>
+                        EntryResolver::resolve(null, $arguments + ['section' => $section->handle], $context, $resolveInfo),
                 ];
             }
 
-            $gqlTypes[$sectionHandle] = $sectionQueryType;
+            $gqlTypes[$section->handle] = $sectionQueryType;
         }
 
         return $gqlTypes;

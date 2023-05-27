@@ -73,6 +73,8 @@ abstract class Table
     public const QUEUE = '{{%queue}}';
     public const RELATIONS = '{{%relations}}';
     public const SECTIONS = '{{%sections}}';
+    /** @since 5.0.0 */
+    public const SECTIONS_ENTRYTYPES = '{{%sections_entrytypes}}';
     public const SECTIONS_SITES = '{{%sections_sites}}';
     public const SESSIONS = '{{%sessions}}';
     public const SHUNNEDMESSAGES = '{{%shunnedmessages}}';
