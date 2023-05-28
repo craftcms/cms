@@ -1260,6 +1260,12 @@ class ElementQuery extends Query implements ElementQueryInterface
             throw new QueryAbortedException(sprintf('Element queries must be executed for %s connections.', Connection::class));
         }
 
+        // todo: remove after the next breakpoint
+        /** @var  */
+        if (!$db->columnExists(Table::ELEMENTS_SITES, 'content')) {
+            throw new QueryAbortedException("The elements_sites.content column doesn't exist yet.");
+        }
+
         // Is the query already doomed?
         if (isset($this->id) && empty($this->id)) {
             throw new QueryAbortedException();
