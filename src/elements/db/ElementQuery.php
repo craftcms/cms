@@ -16,6 +16,7 @@ use craft\behaviors\CustomFieldBehavior;
 use craft\behaviors\DraftBehavior;
 use craft\behaviors\RevisionBehavior;
 use craft\cache\ElementQueryTagDependency;
+use craft\db\Connection;
 use craft\db\FixedOrderExpression;
 use craft\db\Query;
 use craft\db\QueryAbortedException;
@@ -42,7 +43,7 @@ use yii\base\ArrayableTrait;
 use yii\base\Exception;
 use yii\base\InvalidArgumentException;
 use yii\base\NotSupportedException;
-use yii\db\Connection;
+use yii\db\Connection as YiiConnection;
 use yii\db\Expression;
 use yii\db\ExpressionInterface;
 use yii\db\QueryBuilder;
@@ -1254,6 +1255,11 @@ class ElementQuery extends Query implements ElementQueryInterface
             );
         }
 
+        $db = $builder->db;
+        if (!$db instanceof Connection) {
+            throw new QueryAbortedException(sprintf('Element queries must be executed for %s connections.', Connection::class));
+        }
+
         // Is the query already doomed?
         if (isset($this->id) && empty($this->id)) {
             throw new QueryAbortedException();
@@ -1409,8 +1415,8 @@ class ElementQuery extends Query implements ElementQueryInterface
         $this->_applyRelatedToParam();
         $this->_applyStructureParams($class);
         $this->_applyRevisionParams();
-        $this->_applySearchParam($builder->db);
-        $this->_applyOrderByParams($builder->db);
+        $this->_applySearchParam($db);
+        $this->_applyOrderByParams($db);
         $this->_applySelectParam();
         $this->_applyJoinParams();
 
@@ -1432,7 +1438,7 @@ class ElementQuery extends Query implements ElementQueryInterface
             }
         }
 
-        $this->_applyUniqueParam($builder->db);
+        $this->_applyUniqueParam($db);
 
         // Pass along the cache info
         if ($this->queryCacheDuration !== null) {
@@ -1556,7 +1562,7 @@ class ElementQuery extends Query implements ElementQueryInterface
      * @inheritdoc
      * @return ElementInterface|array|null
      */
-    public function nth(int $n, ?Connection $db = null): mixed
+    public function nth(int $n, ?YiiConnection $db = null): mixed
     {
         // Cached?
         if (($cachedResult = $this->getCachedResult()) !== null) {
@@ -1569,7 +1575,7 @@ class ElementQuery extends Query implements ElementQueryInterface
     /**
      * @inheritdoc
      */
-    public function ids(?Connection $db = null): array
+    public function ids(?YiiConnection $db = null): array
     {
         $select = $this->select;
         $this->select = ['elements.id' => 'elements.id'];
@@ -2632,7 +2638,7 @@ class ElementQuery extends Query implements ElementQueryInterface
                     $ids = is_string($ids) ? StringHelper::split($ids) : [$ids];
                 }
 
-                if (!$db instanceof \craft\db\Connection) {
+                if (!$db instanceof Connection) {
                     throw new Exception('The database connection doesn’t support fixed ordering.');
                 }
                 $this->orderBy = [new FixedOrderExpression('elements.id', $ids, $db)];
