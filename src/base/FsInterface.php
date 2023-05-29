@@ -28,6 +28,9 @@ interface FsInterface extends BaseFsInterface, SavableComponentInterface
     /**
      * Returns whether the “Base URL” setting should be shown.
      *
+     * If this returns `false`, and the filesystem has a base URL, [[getRootUrl()]] should be implemented directly,
+     * rather than storing the base URL on the [[\craft\base\Fs::$url]] property.
+     *
      * @return bool
      * @since 4.5.0
      */
