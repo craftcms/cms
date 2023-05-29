@@ -93,33 +93,53 @@
 
     const onChange = () => {
         const selectize = $select.data('selectize');
-        const $item = selectize.$wrapper.find('.item');
+        const $items = selectize.$wrapper.find('.item');
+        const isSelect = $select.is('select');
 
-        const boolean = $item.data('boolean');
-        if (typeof boolean !== 'undefined') {
-            $select.data('boolean', !!boolean);
-        } else {
-            $select.removeData('boolean');
-        }
+        for (let i = 0; i < $items.length; i++) {
+            const $item = $items.eq(i);
 
-        {% if addOptionFn is defined and addOptionLabel is defined %}
-        if ($item.data('add-option')) {
-            selectize.setValue('', true);
-            ({{ addOptionFn|raw }})(item => {
-                selectize.addOption(item);
+            if (isSelect) {
+                const boolean = $item.data('boolean');
+                if (typeof boolean !== 'undefined') {
+                    $select.data('boolean', !!boolean);
+                } else {
+                    $select.removeData('boolean');
+                }
+            }
 
-                // Remove the “Create” option and re-place it at the end
-                selectize.removeOption('__add__', true);
-                selectize.addOption({
-                    text: {{ addOptionLabel|json_encode|raw }} ,
-                    value: '__add__',
-                    addOption: true,
-                    hint: null,
-                });
+            {% if addOptionFn is defined and addOptionLabel is defined %}
+            if ($item.data('add-option')) {
+                if (isSelect) {
+                    selectize.setValue('', true);
+                } else {
+                    selectize.removeItem('__add__');
+                }
 
-                selectize.refreshOptions(false);
-                selectize.setValue(item.value);
-            }, selectize);
+                selectize.close();
+                selectize.blur();
+
+                ({{ addOptionFn|raw }})(item => {
+                    selectize.addOption(item);
+
+                    // Remove the “Create” option and re-place it at the end
+                    selectize.removeOption('__add__', true);
+                    selectize.addOption({
+                        text: {{ addOptionLabel|json_encode|raw }} ,
+                        value: '__add__',
+                        addOption: true,
+                        hint: null,
+                    });
+
+                    selectize.refreshOptions(false);
+
+                    if (isSelect) {
+                        selectize.setValue(item.value, true);
+                    } else {
+                        selectize.addItem(item.value, true);
+                    }
+                }, selectize);
+            }
         }
         {% endif %}
     };
@@ -148,33 +168,27 @@
         onChange: onChange,
         onInitialize: function () {
             // Copy all ARIA attributes from initial select to selectize
-            var s = this;
-            var attrs = {}
-            var initialSelect = $(this.$input)[0];
-            $(initialSelect.attributes).filter(function (index, attribute) {
-                return /^aria-/.test(attribute.name);
-            })
-            .each(function (index, attribute) {
-                attrs[attribute.name] = attribute.value;
-            });
-            $(this.$control_input).attr(attrs);
+            [...$select[0].attributes]
+                .filter(attr => /^aria-/.test(attr.name))
+                .forEach((attr) => {
+                    this.$control_input.attr(attr.name, attr.value);
+                });
         },
         onDropdownOpen: function() {
             // adjust dropdown position - if there's not enough space to display it below the field
             // display it above the field
-            var bodyHeight = $('body').height();
-            var windowInnerHeight = window.innerHeight;
-            var offsetAdjustment = 0;
+            const bodyHeight = $('body').height();
+            const windowInnerHeight = window.innerHeight;
+            let offsetAdjustment = 0;
             if (bodyHeight > windowInnerHeight) {
                 offsetAdjustment = bodyHeight - windowInnerHeight;
             }
 
-            var $control = this.$control;
-            var controlOffset = this.settings.dropdownParent === 'body' ? $control.offset() : $control.position();
-            var controlHeight = $control.outerHeight();
-            var dropdownHeight = this.$dropdown.outerHeight();
+            const controlOffset = this.settings.dropdownParent === 'body' ? this.$control.offset() : this.$control.position();
+            const controlHeight = this.$control.outerHeight();
+            const dropdownHeight = this.$dropdown.outerHeight();
+            const exceededWindowHeight = (controlOffset.top - offsetAdjustment + controlHeight + dropdownHeight) > windowInnerHeight;
 
-            var exceededWindowHeight = (controlOffset.top - offsetAdjustment + controlHeight + dropdownHeight) > windowInnerHeight;
             if (exceededWindowHeight) {
                 this.$dropdown.css({
                     top: controlOffset.top - dropdownHeight - 4,
