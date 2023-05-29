@@ -93,5 +93,5 @@
 }) }}
 
 {% if not entryType.handle %}
-    {% js "new Craft.HandleGenerator('#name', '#handle');" %}
+    {% js "new Craft.HandleGenerator('##{'name'|namespaceInputId}', '##{'handle'|namespaceInputId}');" %}
 {% endif %}

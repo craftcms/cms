@@ -147,18 +147,10 @@ class EntryTypesController extends Controller
 
         // Save it
         if (!$sectionsService->saveEntryType($entryType)) {
-            $this->setFailFlash(Craft::t('app', 'Couldn’t save entry type.'));
-
-            // Send the entry type back to the template
-            Craft::$app->getUrlManager()->setRouteParams([
-                'entryType' => $entryType,
-            ]);
-
-            return null;
+            return $this->asModelFailure($entryType, Craft::t('app', 'Couldn’t save entry type.'), 'entryType');
         }
 
-        $this->setSuccessFlash(Craft::t('app', 'Entry type saved.'));
-        return $this->redirectToPostedUrl($entryType);
+        return $this->asModelSuccess($entryType, Craft::t('app', 'Entry type saved.'), 'entryType');
     }
 
     /**
