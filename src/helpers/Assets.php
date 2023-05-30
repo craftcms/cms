@@ -932,7 +932,7 @@ class Assets
 
         $extLength = strlen($extension);
         if ($extLength <= 3) {
-            $textSize = '20';
+            $textSize = '24';
         } elseif ($extLength === 4) {
             $textSize = '17';
         } else {
@@ -942,7 +942,7 @@ class Assets
             $textSize = '14';
         }
 
-        $textNode = "<text x=\"50\" y=\"73\" text-anchor=\"middle\" font-family=\"sans-serif\" fill=\"#9aa5b1\" font-size=\"$textSize\">" . strtoupper($extension) . '</text>';
+        $textNode = "<text x=\"50\" y=\"73\" text-anchor=\"middle\" font-family=\"sans-serif\" fill=\"hsl(210, 10%, 53%)\" font-size=\"$textSize\">" . strtoupper($extension) . '</text>';
         return str_replace('<!-- EXT -->', $textNode, $svg);
     }
 }
