@@ -17,6 +17,22 @@ Craft.ElementThumbLoader = Garnish.Base.extend(
     },
 
     load: function ($elements) {
+      if (this.workers.length) {
+        // https://github.com/craftcms/cms/issues/13253
+        // if all workers are active on load
+        // reset them, so that they can get to work again
+        let allActive = true;
+        this.workers.forEach((worker) => {
+          if (!worker.active) {
+            allActive = false;
+          }
+        });
+        if (allActive) {
+          this.workers.forEach((worker) => {
+            worker.active = false;
+          });
+        }
+      }
       // Only immediately load the visible images
       let $thumbs = $elements.find('.elementthumb');
       for (let i = 0; i < $thumbs.length; i++) {
