@@ -6,6 +6,7 @@
 - Fixed a JavaScript error that could occur when renaming assets without URLs. ([#13223](https://github.com/craftcms/cms/pull/13223))
 - Fixed a bug where `craft\base\Element::setFieldValuesFromRequest()` wasn’t properly handling empty strings passed as the namespace. ([#13252](https://github.com/craftcms/cms/discussions/13252))
 - Fixed a styling issue with control panel notifications. ([#13258](https://github.com/craftcms/cms/pull/13258))
+- Fixed a bug where element thumbnails could stop getting loaded when quickly switching between element sources. ([#13253](https://github.com/craftcms/cms/issues/13253))
 
 ## 4.4.13 - 2023-05-24
 
