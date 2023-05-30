@@ -413,6 +413,8 @@ class Cp
             $thumbSizePx = $thumbUrl = null;
         }
 
+        $imgHtml = null;
+
         if ($thumbUrl !== null) {
             $imageSize2x = $thumbSizePx * 2;
             $thumbUrl2x = $element->getThumbUrl($imageSize2x);
@@ -436,7 +438,21 @@ class Cp
                 ],
             ]);
         } else {
-            $imgHtml = '';
+            $thumbSvg = $element->getThumbSvg();
+            if ($thumbSvg !== null) {
+                $thumbSvg = Html::svg($thumbSvg, false, true);
+                $alt = $element->getThumbAlt();
+                if ($alt !== null) {
+                    $thumbSvg = Html::prependToTag($thumbSvg, Html::tag('title', Html::encode($alt)));
+                }
+                $imgHtml = Html::tag('div', $thumbSvg, [
+                    'class' => array_filter([
+                        'elementthumb',
+                        $element->getHasCheckeredThumb() ? 'checkered' : null,
+                        $size === self::ELEMENT_SIZE_SMALL && $element->getHasRoundedThumb() ? 'rounded' : null,
+                    ]),
+                ]);
+            }
         }
 
         $title = '';
@@ -487,7 +503,7 @@ class Cp
             $attributes['class'][] = 'hasstatus';
         }
 
-        if ($thumbUrl !== null) {
+        if ($imgHtml !== null) {
             $attributes['class'][] = 'hasthumb';
         }
 
@@ -531,7 +547,9 @@ class Cp
                 ]);
         }
 
-        $innerHtml .= $imgHtml;
+        if ($imgHtml !== null) {
+            $innerHtml .= $imgHtml;
+        }
 
         if ($showLabel) {
             $innerHtml .= '<div class="label">';
