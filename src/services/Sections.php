@@ -1150,6 +1150,7 @@ SQL)->execute();
             $entryTypeRecord->titleTranslationMethod = $data['titleTranslationMethod'] ?? '';
             $entryTypeRecord->titleTranslationKeyFormat = $data['titleTranslationKeyFormat'] ?? null;
             $entryTypeRecord->titleFormat = $data['titleFormat'];
+            $entryTypeRecord->showStatusField = $data['showStatusField'];
             $entryTypeRecord->sortOrder = $data['sortOrder'];
             $entryTypeRecord->sectionId = $section->id;
             $entryTypeRecord->uid = $entryTypeUid;
@@ -1618,6 +1619,7 @@ SQL)->execute();
                 'titleTranslationMethod',
                 'titleTranslationKeyFormat',
                 'titleFormat',
+                'showStatusField',
                 'uid',
             ])
             ->from([Table::ENTRYTYPES])

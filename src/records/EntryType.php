@@ -25,6 +25,7 @@ use yii2tech\ar\softdelete\SoftDeleteBehavior;
  * @property string $titleTranslationMethod Title translation method
  * @property string|null $titleTranslationKeyFormat Title translation key format
  * @property string|null $titleFormat Title format
+ * @property bool $showStatusField Whether to show the Status field
  * @property int $sortOrder Sort order
  * @property Section $section Section
  * @property FieldLayout $fieldLayout Field layout

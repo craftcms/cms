@@ -113,6 +113,19 @@
 
     <hr>
 
+    <div id="showStatusField-container">
+        {{ forms.lightswitchField({
+            label: "Show the Status field"|t('app'),
+            instructions: "By default, entries show their status field and give you the ability to change it. You can turn it off for this entry type."|t('app'),
+            id: 'showStatusField',
+            name: 'showStatusField',
+            on: entryType.showStatusField,
+            errors: entryType.getErrors('showStatusField')
+        }) }}
+    </div>
+
+    <hr>
+
     {{ forms.fieldLayoutDesignerField({
         fieldLayout: entryType.getFieldLayout(),
     }) }}

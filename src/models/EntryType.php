@@ -82,6 +82,12 @@ class EntryType extends Model
     public ?string $titleFormat = null;
 
     /**
+     * @var bool Whether to show the Status field
+     * @since 4.5.0
+     */
+    public bool $showStatusField = true;
+
+    /**
      * @var string|null UID
      */
     public ?string $uid = null;
@@ -108,6 +114,7 @@ class EntryType extends Model
             'handle' => Craft::t('app', 'Handle'),
             'name' => Craft::t('app', 'Name'),
             'titleFormat' => Craft::t('app', 'Title Format'),
+            'showStatusField' => Craft::t('app', 'Show the Status field'),
         ];
     }
 
@@ -221,6 +228,7 @@ class EntryType extends Model
             'titleTranslationMethod' => $this->titleTranslationMethod,
             'titleTranslationKeyFormat' => $this->titleTranslationKeyFormat ?: null,
             'titleFormat' => $this->titleFormat ?: null,
+            'showStatusField' => $this->showStatusField,
             'sortOrder' => (int)$this->sortOrder,
             'section' => $this->getSection()->uid,
         ];
