@@ -1003,7 +1003,7 @@ class Assets extends Component
         // Unlikely, but would be very awkward if this happened without any contingency plans in place.
         if (!$volumeTopFolder) {
             $volumeTopFolder = new VolumeFolder();
-            $tempVolume = new Temp();
+            $tempVolume = Craft::createObject(Temp::class);
             $volumeTopFolder->name = $tempVolume->name;
             $this->storeFolderRecord($volumeTopFolder);
         }
@@ -1022,7 +1022,8 @@ class Assets extends Component
         }
 
         try {
-            FileHelper::createDirectory(Craft::$app->getPath()->getTempAssetUploadsPath() . DIRECTORY_SEPARATOR . $folderName);
+            $path = Craft::$app->getPath()->getTempAssetUploadsPath(false) . DIRECTORY_SEPARATOR . $folderName;
+            $folder->getVolume()->getFs()->createDirectory($path);
         } catch (Exception) {
             throw new VolumeException('Unable to create directory for temporary volume.');
         }
