@@ -8,7 +8,6 @@
 namespace craft\gql\mutations;
 
 use Craft;
-use craft\elements\Tag as TagElement;
 use craft\gql\base\ElementMutationArguments;
 use craft\gql\base\ElementMutationResolver;
 use craft\gql\base\Mutation;
@@ -77,7 +76,6 @@ class Tag extends Mutation
      */
     public static function createSaveMutation(TagGroup $tagGroup): array
     {
-        $mutationName = TagElement::gqlMutationNameByContext($tagGroup);
         $mutationArguments = ElementMutationArguments::getArguments();
         $generatedType = TagType::generateType($tagGroup);
 
@@ -89,7 +87,7 @@ class Tag extends Mutation
         $mutationArguments = array_merge($mutationArguments, $resolver->getResolutionData(ElementMutationResolver::CONTENT_FIELD_KEY));
 
         return [
-            'name' => $mutationName,
+            'name' => "save_{$tagGroup->handle}_Tag",
             'description' => 'Save the “' . $tagGroup->name . '” tag.',
             'args' => $mutationArguments,
             'resolve' => [$resolver, 'saveTag'],

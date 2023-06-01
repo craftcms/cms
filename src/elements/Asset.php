@@ -344,16 +344,6 @@ class Asset extends Element
 
     /**
      * @inheritdoc
-     * @since 3.5.0
-     */
-    public static function gqlMutationNameByContext(mixed $context): string
-    {
-        /** @var Volume $context */
-        return 'save_' . $context->handle . '_Asset';
-    }
-
-    /**
-     * @inheritdoc
      */
     protected static function defineSources(string $context): array
     {

@@ -601,19 +601,6 @@ class Entry extends Element implements ExpirableElementInterface
 
     /**
      * @inheritdoc
-     * @since 3.5.0
-     */
-    public static function gqlMutationNameByContext(mixed $context): string
-    {
-        /** @var Section $section */
-        $section = $context['section'];
-        /** @var EntryType $entryType */
-        $entryType = $context['entryType'];
-        return "save_{$section->handle}_{$entryType->handle}_Entry";
-    }
-
-    /**
-     * @inheritdoc
      */
     public static function gqlScopesByContext(mixed $context): array
     {

@@ -535,15 +535,6 @@ interface ElementInterface extends ComponentInterface
     public static function gqlTypeNameByContext(mixed $context): string;
 
     /**
-     * Returns the GraphQL mutation name by an element’s context.
-     *
-     * @param mixed $context The element’s context, such as a volume, entry type, or Matrix block type.
-     * @return string
-     * @since 3.5.0
-     */
-    public static function gqlMutationNameByContext(mixed $context): string;
-
-    /**
      * Returns the GraphQL scopes required by element’s context.
      *
      * @param mixed $context The element’s context, such as a volume, entry type or Matrix block type.

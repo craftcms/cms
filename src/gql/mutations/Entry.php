@@ -8,7 +8,6 @@
 namespace craft\gql\mutations;
 
 use Craft;
-use craft\elements\Entry as EntryElement;
 use craft\gql\arguments\mutations\Draft as DraftMutationArguments;
 use craft\gql\arguments\mutations\Entry as EntryMutationArguments;
 use craft\gql\arguments\mutations\Structure as StructureArguments;
@@ -17,7 +16,6 @@ use craft\gql\base\Mutation;
 use craft\gql\resolvers\mutations\Entry as EntryMutationResolver;
 use craft\gql\types\generators\EntryType;
 use craft\helpers\Gql;
-use craft\helpers\StringHelper;
 use craft\models\EntryType as EntryTypeModel;
 use craft\models\Section;
 use GraphQL\Type\Definition\Type;
@@ -150,10 +148,6 @@ class Entry extends Mutation
     ): array {
         $mutations = [];
 
-        $mutationName = EntryElement::gqlMutationNameByContext([
-            'section' => $section,
-            'entryType' => $entryType,
-        ]);
         $entryMutationArguments = EntryMutationArguments::getArguments();
         $draftMutationArguments = DraftMutationArguments::getArguments();
         $generatedType = EntryType::generateType($entryType);
@@ -186,7 +180,7 @@ class Entry extends Mutation
         $draftMutationArguments = array_merge($draftMutationArguments, $contentFields);
 
         $mutations[] = [
-            'name' => $mutationName,
+            'name' => "save_{$section->handle}_{$entryType->handle}_Entry",
             'description' => $description,
             'args' => $entryMutationArguments,
             'resolve' => [$resolver, 'saveEntry'],
@@ -196,7 +190,7 @@ class Entry extends Mutation
         // This gets created only if allowed to save entries
         if ($createSaveDraftMutation) {
             $mutations[] = [
-                'name' => StringHelper::replaceEnding($mutationName, '_Entry', '_Draft'),
+                'name' => "save_{$section->handle}_{$entryType->handle}_Draft",
                 'description' => $draftDescription,
                 'args' => $draftMutationArguments,
                 'resolve' => [$resolver, 'saveEntry'],

@@ -1755,16 +1755,6 @@ abstract class Element extends Component implements ElementInterface
 
     /**
      * @inheritdoc
-     * @since 3.5.0
-     */
-    public static function gqlMutationNameByContext(mixed $context): string
-    {
-        // Default to the same type
-        return 'saveElement';
-    }
-
-    /**
-     * @inheritdoc
      * @since 3.3.0
      */
     public static function gqlScopesByContext(mixed $context): array

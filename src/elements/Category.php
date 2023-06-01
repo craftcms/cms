@@ -163,16 +163,6 @@ class Category extends Element
 
     /**
      * @inheritdoc
-     * @since 3.5.0
-     */
-    public static function gqlMutationNameByContext(mixed $context): string
-    {
-        /** @var CategoryGroup $context */
-        return 'save_' . $context->handle . '_Category';
-    }
-
-    /**
-     * @inheritdoc
      */
     protected static function defineSources(string $context): array
     {

@@ -66,6 +66,7 @@
 - Removed `craft\base\Element::$contentId`.
 - Removed `craft\base\ElementInterface::getContentTable()`.
 - Removed `craft\base\ElementInterface::getFieldColumnPrefix()`.
+- Removed `craft\base\ElementInterface::gqlMutationNameByContext()`.
 - Removed `craft\base\ElementInterface::hasContent()`.
 - Removed `craft\base\FieldInterface::getContentColumnType()`. `dbType()` should be implemented instead.
 - Removed `craft\base\FieldInterface::hasContentColumn()`. Fields that don’t need to store values in the `elements_sites.content` column should return `null` from `dbType()`.
