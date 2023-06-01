@@ -124,9 +124,9 @@ class Assets
             $v[] = $fp['y'];
         }
 
-        return [
+        return $v ? [
             'v' => implode(',', $v),
-        ];
+        ] : [];
     }
 
     /**
