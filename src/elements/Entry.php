@@ -619,7 +619,6 @@ class Entry extends Element implements ExpirableElementInterface
     {
         /** @var Section $section */
         $section = $context['section'];
-        ;
         return [
             "sections.$section->uid",
         ];
