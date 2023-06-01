@@ -30,6 +30,7 @@ use craft\test\TestCase;
 use Exception;
 use UnitTester;
 use yii\base\InvalidConfigException;
+use yii\base\UnknownMethodException;
 
 class CreateMutationsTest extends TestCase
 {
@@ -113,13 +114,13 @@ class CreateMutationsTest extends TestCase
     public function testCreateAssetSaveMutation(): void
     {
         $volume = $this->make(Volume::class, [
-                '__call' => function($name, $args) {
-                    return [
-                        new Number(['handle' => 'someNumberField']),
-                    ];
-                },
-            ]
-        );
+            '__call' => fn($name) => match ($name) {
+                'getCustomFields' => [
+                    new Number(['handle' => 'someNumberField']),
+                ],
+                default => throw new UnknownMethodException("Calling unknown method: $name()"),
+            },
+        ]);
 
         $mutation = AssetMutations::createSaveMutation($volume);
 
@@ -158,13 +159,13 @@ class CreateMutationsTest extends TestCase
     public function testCreateCategorySaveMutation(): void
     {
         $categoryGroup = $this->make(CategoryGroup::class, [
-                '__call' => function($name, $args) {
-                    return [
-                        new PlainText(['handle' => 'someTextField']),
-                    ];
-                },
-            ]
-        );
+            '__call' => fn($name) => match ($name) {
+                'getCustomFields' => [
+                    new PlainText(['handle' => 'someTextField']),
+                ],
+                default => throw new UnknownMethodException("Calling unknown method: $name()"),
+            },
+        ]);
 
         $mutation = CategoryMutations::createSaveMutation($categoryGroup);
 
@@ -203,13 +204,13 @@ class CreateMutationsTest extends TestCase
     public function testCreateTagSaveMutation(): void
     {
         $tagGroup = $this->make(TagGroup::class, [
-                '__call' => function($name, $args) {
-                    return [
-                        new PlainText(['handle' => 'someTextField']),
-                    ];
-                },
-            ]
-        );
+            '__call' => fn($name) => match ($name) {
+                'getCustomFields' => [
+                    new PlainText(['handle' => 'someTextField']),
+                ],
+                default => throw new UnknownMethodException("Calling unknown method: $name()"),
+            },
+        ]);
 
         $mutation = TagMutations::createSaveMutation($tagGroup);
 
@@ -247,13 +248,13 @@ class CreateMutationsTest extends TestCase
     public function testCreateGlobalSetSaveMutation(): void
     {
         $globalSet = $this->make(GlobalSet::class, [
-                '__call' => function($name, $args) {
-                    return [
-                        new PlainText(['handle' => 'someTextField']),
-                    ];
-                },
-            ]
-        );
+            '__call' => fn($name) => match ($name) {
+                'getCustomFields' => [
+                    new PlainText(['handle' => 'someTextField']),
+                ],
+                default => throw new UnknownMethodException("Calling unknown method: $name()"),
+            },
+        ]);
 
         $mutation = GlobalSetMutations::createSaveMutation($globalSet);
 
@@ -292,34 +293,34 @@ class CreateMutationsTest extends TestCase
     public function testCreateEntrySaveMutation(): void
     {
         $single = $this->make(EntryType::class, [
-                '__call' => function($name, $args) {
-                    return [
-                        new PlainText(['handle' => 'someTextField']),
-                    ];
-                },
-                'getSection' => new Section(['type' => Section::TYPE_SINGLE]),
-            ]
-        );
+            '__call' => fn($name) => match ($name) {
+                'getCustomFields' => [
+                    new PlainText(['handle' => 'someTextField']),
+                ],
+                default => throw new UnknownMethodException("Calling unknown method: $name()"),
+            },
+            'getSection' => new Section(['type' => Section::TYPE_SINGLE]),
+        ]);
 
         $channel = $this->make(EntryType::class, [
-                '__call' => function($name, $args) {
-                    return [
-                        new PlainText(['handle' => 'someTextField']),
-                    ];
-                },
-                'getSection' => new Section(['type' => Section::TYPE_CHANNEL]),
-            ]
-        );
+            '__call' => fn($name) => match ($name) {
+                'getCustomFields' => [
+                    new PlainText(['handle' => 'someTextField']),
+                ],
+                default => throw new UnknownMethodException("Calling unknown method: $name()"),
+            },
+            'getSection' => new Section(['type' => Section::TYPE_CHANNEL]),
+        ]);
 
         $structure = $this->make(EntryType::class, [
-                '__call' => function($name, $args) {
-                    return [
-                        new PlainText(['handle' => 'someTextField']),
-                    ];
-                },
-                'getSection' => new Section(['type' => Section::TYPE_STRUCTURE]),
-            ]
-        );
+            '__call' => fn($name) => match ($name) {
+                'getCustomFields' => [
+                    new PlainText(['handle' => 'someTextField']),
+                ],
+                default => throw new UnknownMethodException("Calling unknown method: $name()"),
+            },
+            'getSection' => new Section(['type' => Section::TYPE_STRUCTURE]),
+        ]);
 
         [$saveMutation, $draftMutation] = EntryMutations::createSaveMutations($single, true);
         self::assertInstanceOf(EntryGqlType::class, $saveMutation['type']);

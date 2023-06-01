@@ -4205,7 +4205,12 @@ abstract class Element extends Component implements ElementInterface
     public function setFieldValuesFromRequest(string $paramNamespace = ''): void
     {
         $this->setFieldParamNamespace($paramNamespace);
-        $values = Craft::$app->getRequest()->getBodyParam($paramNamespace, []);
+
+        if (isset($this->_fieldParamNamePrefix)) {
+            $values = Craft::$app->getRequest()->getBodyParam($paramNamespace, []);
+        } else {
+            $values = Craft::$app->getRequest()->getBodyParams();
+        }
 
         // Run through this multiple times, in case any fields become visible as a result of other field value changes
         $processedFields = [];
@@ -4226,7 +4231,6 @@ abstract class Element extends Component implements ElementInterface
                     $value = $values[$field->handle];
                 } elseif (
                     isset($this->_fieldParamNamePrefix) &&
-                    $this->_fieldParamNamePrefix !== '' &&
                     UploadedFile::getInstancesByName("$this->_fieldParamNamePrefix.$field->handle")
                 ) {
                     // A file was uploaded for this field
@@ -4253,7 +4257,7 @@ abstract class Element extends Component implements ElementInterface
      */
     public function setFieldParamNamespace(string $namespace): void
     {
-        $this->_fieldParamNamePrefix = $namespace;
+        $this->_fieldParamNamePrefix = $namespace !== '' ? $namespace : null;
     }
 
     /**
