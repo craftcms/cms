@@ -1693,7 +1693,13 @@ EOD;
      */
     public function showStatusField(): bool
     {
-        return $this->getType()->showStatusField;
+        try {
+            $showStatusField = $this->getType()->showStatusField;
+        } catch (InvalidConfigException $e) {
+            $showStatusField = true;
+        }
+
+        return $showStatusField;
     }
 
     private function _parentOptionCriteria(Section $section): array
