@@ -9,6 +9,7 @@
 ### Administration
 - Entry types are now managed independently of sections.
 - Added support for defining custom locale aliases, via a new `localeAliases` config setting. ([#12705](https://github.com/craftcms/cms/pull/12705))
+- `entrify/*` commands now ask if an entry type already exists for the section.
 
 ### Development
 - Entry type names and handles must now be unique globally, rather than just within a single section. Existing entry type names and handles will be renamed automatically where needed, to ensure uniqueness.

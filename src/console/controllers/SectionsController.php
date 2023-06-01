@@ -13,6 +13,7 @@ use craft\elements\Entry;
 use craft\helpers\ArrayHelper;
 use craft\helpers\StringHelper;
 use craft\models\CategoryGroup_SiteSettings;
+use craft\models\EntryType;
 use craft\models\FieldLayout;
 use craft\models\Section;
 use craft\models\Section_SiteSettings;
@@ -20,6 +21,7 @@ use craft\models\Site;
 use yii\base\InvalidConfigException;
 use yii\console\ExitCode;
 use yii\helpers\Console;
+use yii\helpers\Inflector;
 
 /**
  * Manages sections.
@@ -205,24 +207,23 @@ class SectionsController extends Controller
             ];
         }
 
-        $this->do('Saving the section', function() use ($section) {
-            if (!Craft::$app->getSections()->saveSection($section)) {
-                $message = ArrayHelper::firstValue($section->getFirstErrors()) ?? 'Unable to save the section';
-                throw new InvalidConfigException($message);
-            }
-        });
-
-        $entryType = $section->getEntryTypes()[0];
-        $entryTypeName = $this->prompt('Initial entry type name:', [
-            'default' => $entryType->name,
-        ]);
-        $entryTypeHandle = $this->prompt('Initial entry type handle:', [
-            'default' => $entryTypeName !== $entryType->name ? StringHelper::toHandle($entryTypeName) : $entryType->handle,
-        ]);
-
-        if ($entryTypeName !== $entryType->name || $entryTypeHandle !== $entryType->handle) {
-            $entryType->name = $entryTypeName;
-            $entryType->handle = $entryTypeHandle;
+        /** @var EntryType[] $allEntryTypes */
+        $allEntryTypes = ArrayHelper::index(Craft::$app->getSections()->getAllEntryTypes(), 'handle');
+        if (!empty($allEntryTypes) && $this->confirm('Have you already created an entry type for this section?')) {
+            $entryTypeHandle = $this->select("Which entry type should be used?", array_map(
+                fn(EntryType $entryType) => $entryType->name,
+                $allEntryTypes,
+            ));
+            $entryType = $allEntryTypes[$entryTypeHandle];
+        } else {
+            $this->stdout("Let’s create one now, then.\n", Console::FG_YELLOW);
+            $entryType = new EntryType();
+            $entryType->name = $this->prompt('Entry type name:', [
+                'default' => Inflector::singularize($section->name),
+            ]);
+            $entryType->handle = $this->prompt('Entry type handle:', [
+                'default' => StringHelper::toHandle($entryType->name),
+            ]);
             $saveEntryType = true;
         }
 
@@ -242,6 +243,15 @@ class SectionsController extends Controller
                 Craft::$app->getSections()->saveEntryType($entryType);
             });
         }
+
+        $section->setEntryTypes([$entryType]);
+
+        $this->do('Saving the section', function() use ($section) {
+            if (!Craft::$app->getSections()->saveSection($section)) {
+                $message = ArrayHelper::firstValue($section->getFirstErrors()) ?? 'Unable to save the section';
+                throw new InvalidConfigException($message);
+            }
+        });
 
         $this->success('Section created.');
         return ExitCode::OK;
