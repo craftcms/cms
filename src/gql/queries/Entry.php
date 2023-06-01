@@ -37,7 +37,7 @@ class Entry extends Query
             return [];
         }
 
-        $topLevelQueries = [
+        return [
             'entries' => [
                 'type' => Type::listOf(EntryInterface::getType()),
                 'args' => EntryArguments::getArguments(),
@@ -59,10 +59,8 @@ class Entry extends Query
                 'description' => 'This query is used to query for a single entry.',
                 'complexity' => GqlHelper::singleQueryComplexity(),
             ],
+            ...self::getSectionLevelFields(),
         ];
-        $sectionLevelQueries = self::getSectionLevelFields();
-
-        return array_merge($topLevelQueries, $sectionLevelQueries);
     }
 
     /**

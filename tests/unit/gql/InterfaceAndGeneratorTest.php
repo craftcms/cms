@@ -35,6 +35,7 @@ use craft\gql\TypeLoader;
 use craft\gql\types\generators\TableRowType;
 use craft\models\CategoryGroup;
 use craft\models\EntryType;
+use craft\models\FieldLayout;
 use craft\models\GqlSchema;
 use craft\models\MatrixBlockType;
 use craft\models\Section;
@@ -64,12 +65,10 @@ class InterfaceAndGeneratorTest extends TestCase
                         'volumes.volume-uid-1:read',
                         'volumes.volume-uid-2:read',
                         'sections.section-uid-1:read',
+                        'sections.section-uid-2:read',
                         'categorygroups.categoyGroup-uid-1:read',
                         'taggroups.tagGroup-uid-1:read',
-                        'entrytypes.entrytype-uid-1:read',
-                        'entrytypes.entrytype-uid-2:read',
                         'globalsets.globalset-uid-1:read',
-                        'entrytypes.globalset-uid-2:read',
                     ],
                 ]),
             ]
@@ -87,14 +86,14 @@ class InterfaceAndGeneratorTest extends TestCase
             ]
         );
 
-        [$entryTypes, $sections] = $this->mockEntryTypesAndSections();
+        $contexts = $this->mockEntryContexts();
 
         $this->tester->mockMethods(
             Craft::$app,
             'sections',
             [
-                'getAllEntryTypes' => fn() => $entryTypes,
-                'getAllSections' => fn() => $sections,
+                'getAllSections' => fn() => array_map(fn(array $context) => $context['section'], $contexts),
+                'getAllEntryTypes' => fn() => array_map(fn(array $context) => $context['entryType'], $contexts),
             ],
         );
 
@@ -216,7 +215,7 @@ class InterfaceAndGeneratorTest extends TestCase
                     return ['Element'];
                 }, [BaseElement::class, 'gqlTypeNameByContext'],
             ],
-            [EntryInterface::class, fn() => $this->mockEntryTypesAndSections()[0], [EntryElement::class, 'gqlTypeNameByContext']],
+            [EntryInterface::class, fn() => $this->mockEntryContexts(), [EntryElement::class, 'gqlTypeNameByContext']],
             [GlobalSetInterface::class, [$this, 'mockGlobalSets'], [GlobalSetElement::class, 'gqlTypeNameByContext']],
             [CategoryInterface::class, [$this, 'mockCategoryGroups'], [CategoryElement::class, 'gqlTypeNameByContext']],
             [TagInterface::class, [$this, 'mockTagGroups'], [TagElement::class, 'gqlTypeNameByContext']],
@@ -260,29 +259,38 @@ class InterfaceAndGeneratorTest extends TestCase
     }
 
     /**
-     * Mock the entry types and sections for tests.
+     * Mock entry contexts for tests.
      *
      * @return array
      * @throws Exception
      */
-    public function mockEntryTypesAndSections(): array
+    public function mockEntryContexts(): array
     {
         $typeA = $this->make(EntryType::class, [
             'uid' => 'entrytype-uid-1',
             'handle' => 'mockType1',
             '__call' => fn($name) => match ($name) {
                 'getCustomFields' => [],
+                'getFieldLayout' => $this->make(FieldLayout::class, [
+                    'uid' => 'entrytype-fieldlayout-uid-1',
+                    'getCustomFields' => [],
+                ]),
                 default => throw new UnknownMethodException("Calling unknown method: $name()"),
             },
         ]);
 
+        $typeBCustomFields = [
+            $this->make(PlainText::class, ['name' => 'Mock field', 'handle' => 'mockField']),
+        ];
         $typeB = $this->make(EntryType::class, [
-            'uid' => 'entrytype-uid-1',
+            'uid' => 'entrytype-uid-2',
             'handle' => 'mockType2',
             '__call' => fn($name) => match ($name) {
-                'getCustomFields' => [
-                    $this->make(PlainText::class, ['name' => 'Mock field', 'handle' => 'mockField']),
-                ],
+                'getCustomFields' => $typeBCustomFields,
+                'getFieldLayout' => $this->make(FieldLayout::class, [
+                    'uid' => 'entrytype-fieldlayout-uid-2',
+                    'getCustomFields' => $typeBCustomFields,
+                ]),
                 default => throw new UnknownMethodException("Calling unknown method: $name()"),
             },
         ]);
@@ -296,7 +304,7 @@ class InterfaceAndGeneratorTest extends TestCase
         ]);
 
         $sectionB = $this->make(Section::class, [
-            'uid' => 'section-uid-1',
+            'uid' => 'section-uid-2',
             'handle' => 'mockSection2',
             'getEntryTypes' => [
                 $typeB,
@@ -304,8 +312,14 @@ class InterfaceAndGeneratorTest extends TestCase
         ]);
 
         return [
-            [$typeA, $typeB],
-            [$sectionA, $sectionB],
+            [
+                'section' => $sectionA,
+                'entryType' => $typeA,
+            ],
+            [
+                'section' => $sectionB,
+                'entryType' => $typeB,
+            ],
         ];
     }
 

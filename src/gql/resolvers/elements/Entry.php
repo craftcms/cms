@@ -46,22 +46,20 @@ class Entry extends ElementResolver
 
         $pairs = GqlHelper::extractAllowedEntitiesFromSchema('read');
 
-        if (!GqlHelper::canQueryEntries()) {
+        if (!isset($pairs['sections'])) {
             return Collection::empty();
         }
 
-        $sectionsService = Craft::$app->getSections();
-        $sectionIds = array_filter(array_map(function(string $uid) use ($sectionsService) {
-            $section = $sectionsService->getSectionByUid($uid);
-            return $section->id ?? null;
-        }, $pairs['sections']));
-        $entryTypeIds = array_filter(array_map(function(string $uid) use ($sectionsService) {
-            $entryType = $sectionsService->getEntryTypeByUid($uid);
-            return $entryType->id ?? null;
-        }, $pairs['entrytypes']));
+        $sectionUids = array_flip($pairs['sections']);
+        $sectionIds = [];
+
+        foreach (Craft::$app->getSections()->getAllSections() as $section) {
+            if (isset($sectionUids[$section->uid])) {
+                $sectionIds[] = $section->id;
+            }
+        }
 
         $query->andWhere(['in', 'entries.sectionId', $sectionIds]);
-        $query->andWhere(['in', 'entries.typeId', $entryTypeIds]);
 
         return $query;
     }

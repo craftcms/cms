@@ -439,23 +439,23 @@ class CreateMutationsTest extends TestCase
     {
         return [
             [
-                ['sections.sectionUid:edit', 'entrytypes.uid:edit', 'entrytypes.uid:delete'],
+                ['sections.sectionUid:edit', 'sections.sectionUid:delete'],
                 ['deleteEntry'],
             ],
             [
-                ['sections.sectionUid:edit', 'entrytypes.uid:edit', 'entrytypes.uid:save', 'entrytypes.uid:delete'],
+                ['sections.sectionUid:edit', 'sections.sectionUid:save', 'sections.sectionUid:delete'],
                 ['deleteEntry', 'save_news_article_Entry', 'save_news_article_Draft', 'createDraft', 'publishDraft'],
             ],
             [
-                ['sections.sectionUid:edit', 'entrytypes.uid:edit', 'entrytypes.uid:create'],
+                ['sections.sectionUid:edit', 'sections.sectionUid:create'],
                 ['save_news_article_Entry'],
             ],
             [
-                ['sections.sectionUid:edit', 'entrytypes.uid:edit', 'entrytypes.uid:save'],
+                ['sections.sectionUid:edit', 'sections.sectionUid:save'],
                 ['save_news_article_Entry', 'save_news_article_Draft', 'createDraft', 'publishDraft'],
             ],
             [
-                ['entrytypes.nope:edit', 'entrytypes.nope:save'],
+                ['sections.nope:edit', 'sections.nope:save'],
                 [],
             ],
         ];

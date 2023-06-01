@@ -8,6 +8,7 @@
 namespace craft\gql\mutations;
 
 use Craft;
+use craft\elements\Entry as EntryElement;
 use craft\gql\arguments\mutations\Draft as DraftMutationArguments;
 use craft\gql\arguments\mutations\Entry as EntryMutationArguments;
 use craft\gql\arguments\mutations\Structure as StructureArguments;
@@ -15,9 +16,7 @@ use craft\gql\base\ElementMutationResolver;
 use craft\gql\base\Mutation;
 use craft\gql\resolvers\mutations\Entry as EntryMutationResolver;
 use craft\gql\types\generators\EntryType;
-use craft\helpers\ArrayHelper;
 use craft\helpers\Gql;
-use craft\helpers\Gql as GqlHelper;
 use craft\helpers\StringHelper;
 use craft\models\EntryType as EntryTypeModel;
 use craft\models\Section;
@@ -37,43 +36,21 @@ class Entry extends Mutation
      */
     public static function getMutations(): array
     {
-        if (!GqlHelper::canMutateEntries()) {
-            return [];
-        }
-
-        $sectionsService = Craft::$app->getSections();
-        $sections = [];
-        foreach ($sectionsService->getAllSections() as $section) {
-            if (Gql::canSchema("sections.$section->uid", 'edit')) {
-                $sections[] = $section;
-            }
-        }
-
-        if (empty($sections)) {
-            return [];
-        }
-
         $mutationList = [];
-
         $createDeleteMutation = false;
         $createDraftMutations = false;
 
-        // todo: gql
-        foreach (Craft::$app->getSections()->getAllEntryTypes() as $entryType) {
-            $scope = 'entrytypes.' . $entryType->uid;
-            $canCreate = Gql::canSchema($scope, 'create');
+        foreach (Craft::$app->getSections()->getAllSections() as $section) {
+            $scope = "sections.$section->uid";
+            $isSingle = $section->type === Section::TYPE_SINGLE;
+            $canCreate = !$isSingle && Gql::canSchema($scope, 'create');
             $canSave = Gql::canSchema($scope, 'save');
 
             if ($canCreate || $canSave) {
                 // Create a mutation for each editable section that includes the entry type
-                foreach ($sections as $section) {
-                    if (ArrayHelper::contains(
-                        $section->getEntryTypes(),
-                        fn(EntryTypeModel $et) => $et->id === $entryType->id
-                    )) {
-                        foreach (static::createSaveMutations($section, $entryType, $canSave) as $mutation) {
-                            $mutationList[$mutation['name']] = $mutation;
-                        }
+                foreach ($section->getEntryTypes() as $entryType) {
+                    foreach (static::createSaveMutations($section, $entryType, $canSave) as $mutation) {
+                        $mutationList[$mutation['name']] = $mutation;
                     }
                 }
             }
@@ -82,7 +59,7 @@ class Entry extends Mutation
                 $createDraftMutations = true;
             }
 
-            if (!$createDeleteMutation && Gql::canSchema($scope, 'delete')) {
+            if (!$createDeleteMutation && !$isSingle && Gql::canSchema($scope, 'delete')) {
                 $createDeleteMutation = true;
             }
         }
@@ -173,7 +150,10 @@ class Entry extends Mutation
     ): array {
         $mutations = [];
 
-        $mutationName = "save_{$section->handle}_{$entryType->handle}_Entry";
+        $mutationName = EntryElement::gqlMutationNameByContext([
+            'section' => $section,
+            'entryType' => $entryType,
+        ]);
         $entryMutationArguments = EntryMutationArguments::getArguments();
         $draftMutationArguments = DraftMutationArguments::getArguments();
         $generatedType = EntryType::generateType($entryType);

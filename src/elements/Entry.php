@@ -596,7 +596,6 @@ class Entry extends Element implements ExpirableElementInterface
      */
     public static function gqlTypeNameByContext(mixed $context): string
     {
-        /** @var EntryType $context */
         return self::_getGqlIdentifierByContext($context) . '_Entry';
     }
 
@@ -606,8 +605,11 @@ class Entry extends Element implements ExpirableElementInterface
      */
     public static function gqlMutationNameByContext(mixed $context): string
     {
-        /** @var EntryType $context */
-        return 'save_' . self::_getGqlIdentifierByContext($context) . '_Entry';
+        /** @var Section $section */
+        $section = $context['section'];
+        /** @var EntryType $entryType */
+        $entryType = $context['entryType'];
+        return "save_{$section->handle}_{$entryType->handle}_Entry";
     }
 
     /**
@@ -615,9 +617,11 @@ class Entry extends Element implements ExpirableElementInterface
      */
     public static function gqlScopesByContext(mixed $context): array
     {
-        /** @var EntryType $context */
+        /** @var Section $section */
+        $section = $context['section'];
+        ;
         return [
-            'entrytypes.' . $context->uid,
+            "sections.$section->uid",
         ];
     }
 
@@ -1488,7 +1492,9 @@ class Entry extends Element implements ExpirableElementInterface
      */
     public function getGqlTypeName(): string
     {
-        return static::gqlTypeNameByContext($this->getType());
+        return static::gqlTypeNameByContext([
+            'entryType' => $this->getType(),
+        ]);
     }
 
     /**
@@ -2089,11 +2095,13 @@ EOD;
     /**
      * Get the GraphQL identifier by context.
      *
-     * @param EntryType $context
+     * @param array $context
      * @return string
      */
-    private static function _getGqlIdentifierByContext(EntryType $context): string
+    private static function _getGqlIdentifierByContext(array $context): string
     {
-        return $context->handle;
+        /** @var EntryType $entryType */
+        $entryType = $context['entryType'];
+        return $entryType->handle;
     }
 }

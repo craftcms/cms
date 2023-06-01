@@ -139,25 +139,6 @@ class Gql
     }
 
     /**
-     * Return true if active schema can mutate entries.
-     *
-     * @param GqlSchema|null $schema The GraphQL schema. If none is provided, the active schema will be used.
-     * @return bool
-     * @since 3.5.0
-     */
-    public static function canMutateEntries(?GqlSchema $schema = null): bool
-    {
-        $allowedEntities = self::extractAllowedEntitiesFromSchema('edit', $schema);
-
-        // Singles don't have the `edit` action.
-        if (!isset($allowedEntities['entrytypes'])) {
-            $allowedEntities = self::extractAllowedEntitiesFromSchema('save', $schema);
-        }
-
-        return isset($allowedEntities['entrytypes']);
-    }
-
-    /**
      * Return true if active schema can mutate tags.
      *
      * @param GqlSchema|null $schema The GraphQL schema. If none is provided, the active schema will be used.
@@ -218,7 +199,7 @@ class Gql
     public static function canQueryEntries(?GqlSchema $schema = null): bool
     {
         $allowedEntities = self::extractAllowedEntitiesFromSchema('read', $schema);
-        return isset($allowedEntities['sections'], $allowedEntities['entrytypes']);
+        return isset($allowedEntities['sections']);
     }
 
     /**
@@ -597,10 +578,19 @@ class Gql
      */
     public static function getSchemaContainedEntryTypes(?GqlSchema $schema = null): array
     {
-        return array_filter(
-            Craft::$app->getSections()->getAllEntryTypes(),
-            fn(EntryType $entryType) => self::isSchemaAwareOf("entrytypes.$entryType->uid", $schema),
-        );
+        $entryTypes = [];
+
+        foreach (Craft::$app->getSections()->getAllSections() as $section) {
+            if (self::isSchemaAwareOf("sections.$section->uid", $schema)) {
+                foreach ($section->getEntryTypes() as $entryType) {
+                    if (!isset($entryTypes[$entryType->uid])) {
+                        $entryTypes[$entryType->uid] = $entryType;
+                    }
+                }
+            }
+        }
+
+        return array_values($entryTypes);
     }
 
     /**

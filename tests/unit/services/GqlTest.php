@@ -373,8 +373,7 @@ class GqlTest extends TestCase
         self::assertArrayHasKey('queries', $allSchemaComponents);
         self::assertArrayHasKey('mutations', $allSchemaComponents);
 
-        self::assertNotEmpty($allSchemaComponents['queries']['Entry Types'] ?? []);
-        self::assertNotEmpty($allSchemaComponents['queries']['Sections'] ?? []);
+        self::assertNotEmpty($allSchemaComponents['queries']['Entries'] ?? []);
         self::assertNotEmpty($allSchemaComponents['queries']['Assets'] ?? []);
         self::assertNotEmpty($allSchemaComponents['queries']['Global Sets'] ?? []);
         self::assertNotEmpty($allSchemaComponents['queries']['Users'] ?? []);
@@ -382,8 +381,7 @@ class GqlTest extends TestCase
         self::assertNotEmpty($allSchemaComponents['queries']['Tags'] ?? []);
 
 
-        self::assertNotEmpty($allSchemaComponents['mutations']['Entry Types'] ?? []);
-        self::assertNotEmpty($allSchemaComponents['mutations']['Sections'] ?? []);
+        self::assertNotEmpty($allSchemaComponents['mutations']['Entries'] ?? []);
         self::assertNotEmpty($allSchemaComponents['mutations']['Assets'] ?? []);
         self::assertNotEmpty($allSchemaComponents['mutations']['Global Sets'] ?? []);
         self::assertNotEmpty($allSchemaComponents['mutations']['Categories'] ?? []);

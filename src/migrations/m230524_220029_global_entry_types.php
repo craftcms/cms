@@ -35,6 +35,7 @@ class m230524_220029_global_entry_types extends Migration
             ->from(Table::ENTRYTYPES)
             ->all();
 
+        // add sections_entrytypes rows
         $this->batchInsert(
             Table::SECTIONS_ENTRYTYPES,
             ['sectionId', 'typeId', 'sortOrder'],
@@ -61,6 +62,7 @@ class m230524_220029_global_entry_types extends Migration
             $projectConfig->muteEvents = true;
             $entryTypeConfigs = $projectConfig->get(ProjectConfig::PATH_ENTRY_TYPES) ?? [];
             $sectionConfigs = $projectConfig->get(ProjectConfig::PATH_SECTIONS) ?? [];
+
             foreach ($entryTypeConfigs as $entryTypeUid => &$entryTypeConfig) {
                 $entryTypePath = sprintf('%s.%s', ProjectConfig::PATH_ENTRY_TYPES, $entryTypeUid);
                 $sectionUid = ArrayHelper::remove($entryTypeConfig, 'section');
@@ -72,12 +74,14 @@ class m230524_220029_global_entry_types extends Migration
                 $projectConfig->set($entryTypePath, $entryTypeConfig);
             }
             unset($entryTypeConfig);
+
             foreach ($sectionConfigs as $sectionUid => $sectionConfig) {
                 if (!empty($sectionConfig['entryTypes'])) {
                     $sectionPath = sprintf('%s.%s', ProjectConfig::PATH_SECTIONS, $sectionUid);
                     $projectConfig->set($sectionPath, $sectionConfig);
                 }
             }
+
             $projectConfig->muteEvents = $muteEvents;
 
             // check for duplicate entry type names/handles
@@ -124,6 +128,47 @@ class m230524_220029_global_entry_types extends Migration
 
                 $entryTypeNames[$entryTypeConfig['name']] = true;
                 $entryTypeHandles[$entryTypeConfig['handle']] = true;
+            }
+
+            // update GraphQL schemas
+            $actions = ['read', 'create', 'save', 'delete'];
+            foreach ($projectConfig->get(ProjectConfig::PATH_GRAPHQL_SCHEMAS) ?? [] as $schemaUid => $schemaConfig) {
+                if (empty($schemaConfig['scope'])) {
+                    continue;
+                }
+
+                $scope = array_flip(array_map('strtolower', $schemaConfig['scope']));
+
+                foreach ($sectionConfigs as $sectionUid => $sectionConfig) {
+                    if (empty($sectionConfig['entryTypes'])) {
+                        continue;
+                    }
+
+                    // unset the section's `read` component initially. We'll add it back if all entry types have it too
+                    unset($scope["sections.$sectionUid:read"]);
+
+                    $can = array_combine($actions, array_map(fn() => true, $actions));
+                    foreach ($sectionConfig['entryTypes'] as $entryTypeUid) {
+                        // unset the entry type's `edit` component because it's pointless
+                        unset($scope["entrytypes.$entryTypeUid:edit"]);
+
+                        foreach ($actions as $action) {
+                            if (isset($scope["entrytypes.$entryTypeUid:$action"])) {
+                                unset($scope["entrytypes.$entryTypeUid:$action"]);
+                            } else {
+                                $can[$action] = false;
+                            }
+                        }
+                    }
+                    foreach ($actions as $action) {
+                        if ($can[$action]) {
+                            $scope["sections.$sectionUid:$action"] = true;
+                        }
+                    }
+                }
+                $schemaConfig['scope'] = array_keys($scope);
+                $schemaPath = sprintf('%s.%s', ProjectConfig::PATH_GRAPHQL_SCHEMAS, $schemaUid);
+                $projectConfig->set($schemaPath, $schemaConfig);
             }
         }
 
