@@ -15,6 +15,8 @@ use League\OAuth2\Client\Provider\Exception\IdentityProviderException;
 use League\OAuth2\Client\Provider\Google as GoogleProvider;
 use League\OAuth2\Client\Provider\GoogleUser;
 use yii\base\Exception;
+use yii\web\Request;
+use yii\web\Response;
 
 class Google extends AbstractOpenIdConnectProvider
 {
@@ -70,33 +72,30 @@ class Google extends AbstractOpenIdConnectProvider
     /**
      * @inheritDoc
      */
-    public function handleAuthRequest(): bool
+    public function handleAuthRequest(Request $request, Response $response): Response
     {
-        Craft::$app->getResponse()->redirect(
+        return $response->redirect(
             $this->provider()->getAuthorizationUrl()
         );
-
-        return true;
     }
 
     /**
      * @inheritDoc
      */
-    public function handleLoginRequest(): bool
+    public function handleLoginRequest(Request $request, Response $response): Response
     {
-        Craft::$app->getResponse()->redirect(
+        return $response->redirect(
             $this->provider()->getAuthorizationUrl()
         );
-
-        return true;
     }
 
     /**
      * @inheritDoc
      */
-    public function handleLogoutRequest(): bool
+    public function handleLogoutRequest(Request $request, Response $response): Response
     {
-        return true;
+        // Todo - review
+        return $response;
     }
 
     /**
@@ -108,7 +107,8 @@ class Google extends AbstractOpenIdConnectProvider
     public function handleLoginResponse(): bool
     {
         try {
-            return $this->loginUser(
+            return Craft::$app->getAuth()->loginUser(
+                $this,
                 $this->getUser(
                     $this->getAuthorizedUser()
                 )
@@ -139,7 +139,7 @@ class Google extends AbstractOpenIdConnectProvider
      */
     public function handleLogoutResponse(): bool
     {
-        // Todo - implement me
+        // Todo - review
         return true;
     }
 
@@ -159,23 +159,26 @@ class Google extends AbstractOpenIdConnectProvider
         return $this->provider()->getResourceOwner($token);
     }
 
-    protected function findUser(GoogleUser $providerUser): ?User
+    private function findUser(GoogleUser $providerUser): ?User
     {
-        return Craft::$app->getUsers()->getUserByUsernameOrEmail(
+        $user = Craft::$app->getUsers()->getUserByUsernameOrEmail(
             $providerUser->getEmail()
         );
+
+        return Craft::$app->getAuth()->resolveUser($this, $user);
     }
 
-    protected function getUser(GoogleUser $providerUser): User
+    /**
+     * @param GoogleUser $providerUser
+     * @return User
+     */
+    private function getUser(GoogleUser $providerUser): User
     {
-        $user = $this->findUser($providerUser);
-
-        if (!empty($user)) {
-            return $user;
-        }
-
-        throw new Exception('Todo - Create new user');
-        // Create new user
+        // Sync user (and assign attributes)
+        return Craft::$app->getAuth()->syncUser(
+            $this,
+            $this->findUser($providerUser)
+        );
     }
 
     /**

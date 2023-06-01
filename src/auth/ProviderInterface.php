@@ -8,12 +8,7 @@
 namespace craft\auth;
 
 use craft\base\SavableComponentInterface;
-use craft\elements\User;
-//use modules\auth\records\Auth;
 use craft\errors\AuthFailedException;
-use Yii;
-use yii\authclient\ClientInterface;
-use yii\helpers\ArrayHelper;
 use yii\web\Request;
 use yii\web\Response;
 
@@ -25,26 +20,35 @@ interface ProviderInterface extends SavableComponentInterface
     /**
      * Initiate an auth request
      *
+     * @param Request $request
+     * @param Response $response
+     *
      * @throws AuthFailedException
-     * @return bool
+     * @return Response
      */
-    public function handleAuthRequest(): bool;
+    public function handleAuthRequest(Request $request, Response $response): Response;
 
     /**
      * Initiate an login request
      *
-     * @throws AuthFailedException
-     * @return bool
-     */
-    public function handleLoginRequest(): bool;
-
-    /**
-     * Initiate a logout request
+     * @param Request $request
+     * @param Response $response
      *
      * @throws AuthFailedException
      * @return bool
      */
-    public function handleLogoutRequest(): bool;
+    public function handleLoginRequest(Request $request, Response $response): Response;
+
+    /**
+     * Initiate a logout request
+     *
+     * @param Request $request
+     * @param Response $response
+     *
+     * @throws AuthFailedException
+     * @return bool
+     */
+    public function handleLogoutRequest(Request $request, Response $response): Response;
 
     /**
      * Handle an auth response

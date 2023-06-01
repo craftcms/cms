@@ -65,14 +65,10 @@ class AuthController extends Controller
         Craft::$app->getSession()->set(self::SESSION_KEY, self::REQUEST_TYPE_LOGIN);
 
         try {
-            if ($authProvider->handleLoginRequest()) {
-                return $this->response;
-            }
+            return $authProvider->handleLoginRequest($this->request, $this->response);
         } catch (AuthFailedException $exception) {
             throw new HttpException(400, $exception->getMessage(), previous: $exception);
         }
-
-        return $this->handleFailedRequest();
     }
 
     /**
@@ -90,14 +86,10 @@ class AuthController extends Controller
         Craft::$app->getSession()->set(self::SESSION_KEY, self::REQUEST_TYPE_LOGOUT);
 
         try {
-            if ($authProvider->handleLogoutRequest()) {
-                return $this->response;
-            }
+            return $authProvider->handleLogoutRequest($this->request, $this->response);
         } catch (AuthFailedException $exception) {
             throw new HttpException(400, $exception->getMessage(), previous: $exception);
         }
-
-        return $this->handleFailedRequest();
     }
 
     /**
@@ -116,14 +108,10 @@ class AuthController extends Controller
         Craft::$app->getSession()->set(self::SESSION_KEY, self::REQUEST_TYPE_SESSION);
 
         try {
-            if ($authProvider->handleAuthRequest()) {
-                return $this->response;
-            }
+            return $authProvider->handleAuthRequest($this->request, $this->response);
         } catch (AuthFailedException $exception) {
             throw new HttpException(400, $exception->getMessage(), previous: $exception);
         }
-
-        return $this->handleFailedRequest();
     }
 
     /**

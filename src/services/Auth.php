@@ -9,12 +9,20 @@ namespace craft\services;
 
 use Craft;
 use craft\base\MemoizableArray;
+use craft\db\Query;
+use craft\db\Table;
+use craft\elements\User;
+use craft\errors\AuthFailedException;
 use craft\errors\AuthProviderNotFoundException;
 use craft\errors\MissingComponentException;
+use craft\events\UserEvent;
+use craft\events\UserGroupsAssignEvent;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Component as ComponentHelper;
+use craft\helpers\Db;
 use craft\helpers\ProjectConfig as ProjectConfigHelper;
 use craft\auth\ProviderInterface;
+use craft\helpers\User as UserHelper;
 use yii\base\Component;
 use yii\base\Exception;
 use yii\base\InvalidConfigException;
@@ -23,6 +31,11 @@ use Throwable;
 class Auth extends Component
 {
     const PROJECT_CONFIG_PATH = 'auth';
+
+    public const EVENT_POPULATE_USER_GROUPS = 'populateUserGroups';
+
+    public const EVENT_POPULATE_USER = 'populateUser';
+
 
     /**
      * @var MemoizableArray<ProviderInterface>|null
@@ -161,5 +174,111 @@ class Auth extends Component
         }
 
         return $provider;
+    }
+
+    /**
+     * @param ProviderInterface $provider
+     * @param User $user
+     * @param int|null $sessionDuration
+     * @param bool $rememberMe
+     * @return bool
+     * @throws AuthFailedException
+     */
+    public function loginUser(ProviderInterface $provider, User $user, ?int $sessionDuration = null, bool $rememberMe = false, ): bool
+    {
+        $userSession = Craft::$app->getUser();
+        if (!$userSession->getIsGuest()) {
+            return true;
+        }
+
+        if (empty($sessionDuration)) {
+            // Get the session duration
+            $generalConfig = Craft::$app->getConfig()->getGeneral();
+            if ($rememberMe && $generalConfig->rememberedUserSessionDuration !== 0) {
+                $sessionDuration = $generalConfig->rememberedUserSessionDuration;
+            } else {
+                $sessionDuration = $generalConfig->userSessionDuration;
+            }
+        }
+
+        $user->authError = UserHelper::getAuthStatus($user);
+
+        if (!empty($user->authError)) {
+            throw new AuthFailedException($provider, $user, $user->authError);
+        }
+
+        // Try logging them in
+        if (!$userSession->login($user, $sessionDuration)) {
+            throw new AuthFailedException($provider, $user, Craft::t('auth', "Unable to login"));
+        }
+
+        return true;
+    }
+
+    /**
+     * Resolve and populate a user from a provider
+     * @param User|null $user
+     * @return User|null
+     */
+    public function resolveUser(ProviderInterface $provider, ?User $user): User
+    {
+        // Populate a user based on
+        $event = new UserEvent([
+            'user' => $user ?? new User(),
+        ]);
+
+        $provider->trigger(self::EVENT_POPULATE_USER, $event);
+
+        return $event->user;
+    }
+
+    /**
+     * Assigns a user to a given list of user groups.
+     *
+     * @param int $userId The user’s ID
+     * @param int[] $groupIds The groups’ IDs. Pass an empty array to remove a user from all groups.
+     * @return bool Whether the users were successfully assigned to the groups.
+     */
+    public function syncUser(ProviderInterface $provider, User $user): User
+    {
+        // Save user
+        Craft::$app->getElements()->saveElement($user);
+
+        // Assign User Groups
+        $this->assignUserToGroups($provider, $user);
+
+        return $user;
+    }
+
+    /**
+     * @param ProviderInterface $provider
+     * @param User $user
+     * @return bool
+     * @throws Throwable
+     */
+    protected function assignUserToGroups(ProviderInterface $provider, User $user): bool
+    {
+        $db = Craft::$app->getDb();
+
+        // Get the current groups
+        $groupIds = (new Query())
+            ->select(['groupId'])
+            ->from([Table::USERGROUPS_USERS])
+            ->where(['userId' => $user->getId()])
+            ->column($db);
+
+        // Populate a user based on
+        // TODO - New event that only has these two properties?
+        $event = new UserGroupsAssignEvent([
+            'userId' => $user->getId(),
+            'groupIds' => $groupIds,
+        ]);
+
+        $provider->trigger(self::EVENT_POPULATE_USER_GROUPS, $event);
+
+        return Craft::$app->getUsers()->assignUserToGroups(
+            $user->getId(),
+            $event->groupIds
+        );
     }
 }
