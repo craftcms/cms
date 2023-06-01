@@ -184,7 +184,12 @@ class PrepareQueryTest extends TestCase
             ],
             [
                 EntryResolver::class, [null, []], function($result) {
-                    return $result->where[0] === 'and' && !empty($result->where[2]);
+                    $expected = [
+                        'and',
+                        ['in', 'entries.sectionId', []],
+                        ['in', 'entries.typeId', []],
+                    ];
+                    return $result->where === $expected;
                 },
             ],
 
