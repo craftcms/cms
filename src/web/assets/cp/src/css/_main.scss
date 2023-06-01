@@ -2799,7 +2799,8 @@ $elementInnerSpacing: 5px;
       align-items: center;
       -ms-flex-align: center;
 
-      img {
+      img,
+      svg {
         display: block;
         flex-shrink: 0;
         pointer-events: none;
@@ -2808,8 +2809,11 @@ $elementInnerSpacing: 5px;
         max-height: 100%;
       }
 
-      &.rounded img {
-        border-radius: 50%;
+      &.rounded {
+        img,
+        svg {
+          border-radius: 50%;
+        }
       }
     }
     .elementthumb.open-preview {
