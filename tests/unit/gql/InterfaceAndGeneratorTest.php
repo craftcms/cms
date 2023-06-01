@@ -43,6 +43,7 @@ use craft\test\TestCase;
 use Exception;
 use GraphQL\Type\Definition\ObjectType;
 use UnitTester;
+use yii\base\UnknownMethodException;
 
 class InterfaceAndGeneratorTest extends TestCase
 {
@@ -239,17 +240,19 @@ class InterfaceAndGeneratorTest extends TestCase
             $this->make(Local::class, [
                 'uid' => 'volume-uid-1',
                 'handle' => 'mockVolume1',
-                '__call' => function($name, $params) {
-                    /** @phpstan-ignore-next-line */
-                    return $name === 'getCustomFields' ? [] : parent::__get($name, $params);
+                '__call' => fn($name) => match ($name) {
+                    'getCustomFields' => [],
+                    default => throw new UnknownMethodException("Calling unknown method: $name()"),
                 },
             ]),
             $this->make(Local::class, [
                 'uid' => 'volume-uid-2',
                 'handle' => 'mockVolume2',
-                '__call' => function($name, $params) {
-                    /** @phpstan-ignore-next-line */
-                    return $name === 'getCustomFields' ? [$this->make(PlainText::class, ['name' => 'Mock Field', 'handle' => 'mockField'])] : parent::__get($name, $params);
+                '__call' => fn($name) => match ($name) {
+                    'getCustomFields' => [
+                        $this->make(PlainText::class, ['name' => 'Mock Field', 'handle' => 'mockField']),
+                    ],
+                    default => throw new UnknownMethodException("Calling unknown method: $name()"),
                 },
             ]),
         ];
@@ -268,18 +271,20 @@ class InterfaceAndGeneratorTest extends TestCase
                 'uid' => 'entrytype-uid-1',
                 'handle' => 'mockType1',
                 'getSection' => $this->make(Section::class, ['uid' => 'section-uid-1', 'handle' => 'mockSection1']),
-                '__call' => function($name, $params) {
-                    /** @phpstan-ignore-next-line */
-                    return $name === 'getCustomFields' ? [] : parent::__get($name, $params);
+                '__call' => fn($name) => match ($name) {
+                    'getCustomFields' => [],
+                    default => throw new UnknownMethodException("Calling unknown method: $name()"),
                 },
             ]),
             $this->make(EntryType::class, [
                 'uid' => 'entrytype-uid-1',
                 'handle' => 'mockType2',
                 'getSection' => $this->make(Section::class, ['uid' => 'section-uid-1', 'handle' => 'mockSection2']),
-                '__call' => function($name, $params) {
-                    /** @phpstan-ignore-next-line */
-                    return $name === 'getCustomFields' ? [$this->make(PlainText::class, ['name' => 'Mock field', 'handle' => 'mockField'])] : parent::__get($name, $params);
+                '__call' => fn($name) => match ($name) {
+                    'getCustomFields' => [
+                        $this->make(PlainText::class, ['name' => 'Mock field', 'handle' => 'mockField']),
+                    ],
+                    default => throw new UnknownMethodException("Calling unknown method: $name()"),
                 },
             ]),
         ];
@@ -297,9 +302,11 @@ class InterfaceAndGeneratorTest extends TestCase
             $this->make(GlobalSetElement::class, [
                 'uid' => 'globalset-uid-1',
                 'handle' => 'mockGlobal',
-                '__call' => function($name, $params) {
-                    /** @phpstan-ignore-next-line */
-                    return $name === 'getCustomFields' ? [$this->make(PlainText::class, ['name' => 'Mock Field', 'handle' => 'mockField'])] : parent::__get($name, $params);
+                '__call' => fn($name) => match ($name) {
+                    'getCustomFields' => [
+                        $this->make(PlainText::class, ['name' => 'Mock Field', 'handle' => 'mockField']),
+                    ],
+                    default => throw new UnknownMethodException("Calling unknown method: $name()"),
                 },
             ]),
         ];
@@ -317,9 +324,11 @@ class InterfaceAndGeneratorTest extends TestCase
             $this->make(CategoryGroup::class, [
                 'uid' => 'categoyGroup-uid-1',
                 'handle' => 'mockCategoryGroup',
-                '__call' => function($name, $params) {
-                    /** @phpstan-ignore-next-line */
-                    return $name === 'getCustomFields' ? [$this->make(PlainText::class, ['name' => 'Mock Field', 'handle' => 'mockField'])] : parent::__get($name, $params);
+                '__call' => fn($name) => match ($name) {
+                    'getCustomFields' => [
+                        $this->make(PlainText::class, ['name' => 'Mock Field', 'handle' => 'mockField']),
+                    ],
+                    default => throw new UnknownMethodException("Calling unknown method: $name()"),
                 },
             ]),
         ];
@@ -337,9 +346,11 @@ class InterfaceAndGeneratorTest extends TestCase
             $this->make(TagGroup::class, [
                 'uid' => 'tagGroup-uid-1',
                 'handle' => 'mockTagGroup',
-                '__call' => function($name, $params) {
-                    /** @phpstan-ignore-next-line */
-                    return $name === 'getCustomFields' ? [$this->make(PlainText::class, ['name' => 'Mock Field', 'handle' => 'mockField'])] : parent::__get($name, $params);
+                '__call' => fn($name) => match ($name) {
+                    'getCustomFields' => [
+                        $this->make(PlainText::class, ['name' => 'Mock Field', 'handle' => 'mockField']),
+                    ],
+                    default => throw new UnknownMethodException("Calling unknown method: $name()"),
                 },
             ]),
         ];
@@ -357,9 +368,11 @@ class InterfaceAndGeneratorTest extends TestCase
             $this->make(MatrixBlockType::class, [
                 'uid' => 'matrixBlock-uid-1',
                 'handle' => 'mockMatrixBlock',
-                '__call' => function($name, $params) {
-                    /** @phpstan-ignore-next-line */
-                    return $name === 'getCustomFields' ? [$this->make(PlainText::class, ['name' => 'Mock Field', 'handle' => 'mockField'])] : parent::__get($name, $params);
+                '__call' => fn($name) => match ($name) {
+                    'getCustomFields' => [
+                        $this->make(PlainText::class, ['name' => 'Mock Field', 'handle' => 'mockField']),
+                    ],
+                    default => throw new UnknownMethodException("Calling unknown method: $name()"),
                 },
                 'getField' => $this->makeEmpty(MatrixField::class, ['handle' => 'matrixField']),
             ]),
