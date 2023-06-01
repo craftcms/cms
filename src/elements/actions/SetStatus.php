@@ -12,6 +12,7 @@ use craft\base\Element;
 use craft\base\ElementAction;
 use craft\base\ElementInterface;
 use craft\elements\db\ElementQueryInterface;
+use craft\elements\Entry;
 
 /**
  * SetStatus represents a Set Status element action.
@@ -82,6 +83,12 @@ JS, [static::class]);
         $failCount = 0;
 
         foreach ($elements as $element) {
+            // only action if element supports changing statuses (showStatusField)
+            // if it's an entry, and it's entry type has 'showStatusField' set to off - skip this element and carry on
+            if ($elementType == Entry::class && !$element->showStatusField()) {
+                continue;
+            }
+
             switch ($this->status) {
                 case self::ENABLED:
                     // Skip if there's nothing to change

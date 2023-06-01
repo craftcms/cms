@@ -4680,6 +4680,14 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
+    public function showStatusField(): bool
+    {
+        return true;
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function getSidebarHtml(bool $static): string
     {
         $components = [];
@@ -4689,7 +4697,7 @@ abstract class Element extends Component implements ElementInterface
             $components[] = Html::tag('div', $metaFieldsHtml, ['class' => 'meta']);
         }
 
-        if (!$static && static::hasStatuses()) {
+        if (!$static && static::hasStatuses() && $this->showStatusField()) {
             // Is this a multi-site element?
             $components[] = $this->statusFieldHtml();
         }

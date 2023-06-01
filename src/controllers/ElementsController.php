@@ -917,7 +917,7 @@ JS, [
 
         $this->element = $element;
 
-        $this->_applyParamsToElement($element);
+        $this->_applyParamsToElement($element, true);
         $elementsService = Craft::$app->getElements();
         $user = static::currentUser();
 
@@ -1659,9 +1659,10 @@ JS, [
      * Applies the request params to the given element.
      *
      * @param ElementInterface $element
+     * @param bool $checkShowStatusField
      * @throws ForbiddenHttpException
      */
-    private function _applyParamsToElement(ElementInterface $element): void
+    private function _applyParamsToElement(ElementInterface $element, bool $checkShowStatusField = false): void
     {
         if (isset($this->_enabledForSite)) {
             if (is_array($this->_enabledForSite)) {
@@ -1671,13 +1672,19 @@ JS, [
                     throw new ForbiddenHttpException('User not authorized to edit element statuses for all the submitted site IDs.');
                 }
 
-                // Set the global status to true if it's enabled for *any* sites, or if already enabled.
-                $element->enabled = in_array(true, $this->_enabledForSite) || $element->enabled;
+                // only change enabled value if element supports changing statuses (showStatusField)
+                if (!$checkShowStatusField || $element->showStatusField()) {
+                    // Set the global status to true if it's enabled for *any* sites, or if already enabled.
+                    $element->enabled = in_array(true, $this->_enabledForSite) || $element->enabled;
+                }
             }
 
             $element->setEnabledForSite($this->_enabledForSite);
         } elseif (isset($this->_enabled)) {
-            $element->enabled = $this->_enabled;
+            // only change enabled value if element supports changing statuses (showStatusField)
+            if (!$checkShowStatusField || $element->showStatusField()) {
+                $element->enabled = $this->_enabled;
+            }
         }
 
         if ($this->_fresh) {

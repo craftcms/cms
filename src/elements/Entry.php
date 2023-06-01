@@ -1688,6 +1688,14 @@ EOD;
         return implode("\n", $fields);
     }
 
+    /**
+     * @inheritdoc
+     */
+    public function showStatusField(): bool
+    {
+        return $this->getType()->showStatusField;
+    }
+
     private function _parentOptionCriteria(Section $section): array
     {
         $parentOptionCriteria = [

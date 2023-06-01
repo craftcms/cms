@@ -536,7 +536,8 @@ class ResaveController extends Controller
                     }
                     $element->setEnabledForSite($siteStatuses);
                 } else {
-                    if (isset($this->setEnabledForSite)) {
+                    // only change the enabled/disabled status if element supports changing statuses (showStatusField)
+                    if (isset($this->setEnabledForSite) && $element->showStatusField()) {
                         // Just set it for this site
                         $element->setEnabledForSite($this->setEnabledForSite);
                     }

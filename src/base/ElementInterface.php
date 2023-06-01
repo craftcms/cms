@@ -1571,6 +1571,16 @@ interface ElementInterface extends ComponentInterface
     public function getTableAttributeHtml(string $attribute): string;
 
     /**
+     * Whether status field should be shown for this element.
+     * If set to `false`, status can't be updated via editing entry, action or resave command.
+     * `true` for all elements by default for backwards compatibility.
+     *
+     * @return bool
+     * @since 4.5.0
+     */
+    public function showStatusField(): bool;
+
+    /**
      * Returns the HTML for any fields/info that should be shown within the editor sidebar.
      *
      * @param bool $static Whether any fields within the sidebar should be static (non-interactive)
