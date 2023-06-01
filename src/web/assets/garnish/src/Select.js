@@ -99,15 +99,21 @@ export default Base.extend(
         this.deselectAll();
       }
 
-      this.$first = this.$last = $item;
-      this.first = this.last = this.getItemIndex($item);
+      // only allow to select an item if the multiSelectLimit hasn't been reached
+      if (
+        this.settings.multiSelectLimit === null ||
+        this.$selectedItems.length < this.settings.multiSelectLimit
+      ) {
+        this.$first = this.$last = $item;
+        this.first = this.last = this.getItemIndex($item);
 
-      if (focus) {
-        this.setFocusableItem($item);
-        this.focusItem($item, preventScroll);
+        if (focus) {
+          this.setFocusableItem($item);
+          this.focusItem($item, preventScroll);
+        }
+
+        this._selectItems($item);
       }
-
-      this._selectItems($item);
     },
 
     selectAll: function () {
@@ -116,11 +122,33 @@ export default Base.extend(
       }
 
       this.first = 0;
-      this.last = this.$items.length - 1;
+      // get last index for select all - it should be either the last available index
+      // or index that matches the limit set for the field (e.g. entries > max relations)
+      // alternatively - we can disallow selectAll if there's a limit and that limit is greater than the count of all items?
+      this.last = this._getLastForSelectAll();
+
       this.$first = this.$items.eq(this.first);
       this.$last = this.$items.eq(this.last);
 
-      this._selectItems(this.$items);
+      let sliceFrom = this.first;
+      let sliceTo = this.last + 1;
+
+      this._selectItems(this.$items.slice(sliceFrom, sliceTo));
+    },
+
+    _getLastForSelectAll: function () {
+      if (this.settings.multiSelectLimit === null) {
+        this.last = this.$items.length - 1;
+      } else {
+        if (this.$items.length <= this.settings.multiSelectLimit) {
+          this.last = this.$items.length - 1;
+        } else {
+          this.deselectAll();
+          this.last = this.settings.multiSelectLimit - 1;
+        }
+      }
+
+      return this.last;
     },
 
     /**
@@ -133,14 +161,25 @@ export default Base.extend(
 
       this.deselectAll();
 
-      this.$last = $item;
-      this.last = this.getItemIndex($item);
+      let last = this.getItemIndex($item);
+      let selectedItemsCount = Math.abs(this.first - last) + 1;
 
-      this.setFocusableItem($item);
-      this.focusItem($item, preventScroll);
+      if (
+        this.settings.multiSelectLimit !== null &&
+        this.settings.multiSelectLimit < selectedItemsCount
+      ) {
+        let diff = selectedItemsCount - this.settings.multiSelectLimit;
+        last = last - diff;
+      }
+
+      this.last = last;
+      this.$last = this.$items.eq(this.last);
+
+      this.setFocusableItem(this.$last);
+      this.focusItem(this.$last, preventScroll);
 
       // prepare params for $.slice()
-      var sliceFrom, sliceTo;
+      let sliceFrom, sliceTo;
 
       if (this.first < this.last) {
         sliceFrom = this.first;
@@ -874,6 +913,7 @@ export default Base.extend(
     defaults: {
       selectedClass: 'sel',
       multi: false,
+      multiSelectLimit: null,
       allowEmpty: true,
       vertical: false,
       horizontal: false,

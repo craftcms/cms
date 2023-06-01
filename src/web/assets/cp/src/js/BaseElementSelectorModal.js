@@ -452,6 +452,7 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend(
           disabledElementIds: this.settings.disabledElementIds,
           selectable: true,
           multiSelect: this.settings.multiSelect,
+          multiSelectLimit: this.settings.multiSelectLimit,
           buttonContainer: this.$secondaryButtons,
           onSelectionChange: () => {
             if (this.elementIndex) {
@@ -486,6 +487,7 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend(
       referenceElementSiteId: null,
       criteria: null,
       multiSelect: false,
+      multiSelectLimit: null,
       showSiteMenu: null,
       disabledElementIds: [],
       disableElementsOnSelect: false,
