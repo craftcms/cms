@@ -61,7 +61,7 @@ Craft.BaseElementIndexView = Garnish.Base.extend(
           ),
           {
             multi: this.settings.multiSelect,
-            multiSelectLimit: this.settings.multiSelectLimit,
+            multiSelectParams: this.settings.multiSelectParams,
             vertical: this.isVerticalList(),
             handle:
               this.settings.context === 'index'
@@ -409,7 +409,7 @@ Craft.BaseElementIndexView = Garnish.Base.extend(
       params: null,
       selectable: false,
       multiSelect: false,
-      multiSelectLimit: null,
+      multiSelectParams: null,
       canSelectElement: null,
       checkboxMode: false,
       loadMoreElementsAction: 'element-indexes/get-more-elements',

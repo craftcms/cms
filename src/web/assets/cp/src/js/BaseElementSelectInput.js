@@ -486,7 +486,10 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
           referenceElementSiteId: this.settings.referenceElementSiteId,
           criteria: this.settings.criteria,
           multiSelect: this.settings.limit != 1,
-          multiSelectLimit: this.settings.limit,
+          multiSelectParams: {
+            multiSelectLimit: this.settings.limit,
+            selectedCount: this.getSelectedElementIds().length,
+          },
           hideOnSelect: !this.settings.maintainHierarchy,
           showSiteMenu: this.settings.showSiteMenu,
           disabledElementIds: this.getDisabledElementIds(),

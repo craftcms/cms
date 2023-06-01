@@ -22,6 +22,9 @@ export default Base.extend(
     $last: null,
     last: null,
 
+    multiSelectLimit: null,
+    selectedCount: null,
+
     /**
      * Constructor
      */
@@ -54,6 +57,9 @@ export default Base.extend(
       this.$selectedItems = $();
 
       this.addItems(items);
+
+      this.multiSelectLimit = this._getMultiSelectLimit();
+      this.selectedCount = this._getSelectedCount();
 
       // --------------------------------------------------------------------
 
@@ -101,8 +107,8 @@ export default Base.extend(
 
       // only allow to select an item if the multiSelectLimit hasn't been reached
       if (
-        this.settings.multiSelectLimit === null ||
-        this.$selectedItems.length < this.settings.multiSelectLimit
+        this.multiSelectLimit === null ||
+        this.$selectedItems.length < this.multiSelectLimit
       ) {
         this.$first = this.$last = $item;
         this.first = this.last = this.getItemIndex($item);
@@ -137,14 +143,14 @@ export default Base.extend(
     },
 
     _getLastForSelectAll: function () {
-      if (this.settings.multiSelectLimit === null) {
+      if (this.multiSelectLimit === null) {
         this.last = this.$items.length - 1;
       } else {
-        if (this.$items.length <= this.settings.multiSelectLimit) {
+        if (this.$items.length <= this.multiSelectLimit) {
           this.last = this.$items.length - 1;
         } else {
           this.deselectAll();
-          this.last = this.settings.multiSelectLimit - 1;
+          this.last = this.multiSelectLimit - 1;
         }
       }
 
@@ -165,10 +171,11 @@ export default Base.extend(
       let selectedItemsCount = Math.abs(this.first - last) + 1;
 
       if (
-        this.settings.multiSelectLimit !== null &&
-        this.settings.multiSelectLimit < selectedItemsCount
+        this.multiSelectLimit !== null &&
+        this.multiSelectLimit - this.selectedCount < selectedItemsCount
       ) {
-        let diff = selectedItemsCount - this.settings.multiSelectLimit;
+        let diff =
+          selectedItemsCount - (this.multiSelectLimit - this.selectedCount);
         last = last - diff;
       }
 
@@ -908,12 +915,38 @@ export default Base.extend(
         this.$focusedItem = null;
       }
     },
+
+    _getMultiSelectLimit: function () {
+      let limit = null;
+
+      if (
+        this.settings.multiSelectParams !== null &&
+        this.settings.multiSelectParams.multiSelectLimit !== undefined
+      ) {
+        limit = this.settings.multiSelectParams.multiSelectLimit;
+      }
+
+      return limit;
+    },
+
+    _getSelectedCount: function () {
+      let count = 0;
+
+      if (
+        this.settings.multiSelectParams !== null &&
+        this.settings.multiSelectParams.selectedCount !== undefined
+      ) {
+        count = this.settings.multiSelectParams.selectedCount;
+      }
+
+      return count;
+    },
   },
   {
     defaults: {
       selectedClass: 'sel',
       multi: false,
-      multiSelectLimit: null,
+      multiSelectParams: null,
       allowEmpty: true,
       vertical: false,
       horizontal: false,
