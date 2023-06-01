@@ -12,7 +12,6 @@ use craft\base\Field;
 use craft\base\Model;
 use craft\behaviors\FieldLayoutBehavior;
 use craft\elements\Entry;
-use craft\helpers\ArrayHelper;
 use craft\helpers\UrlHelper;
 use craft\records\EntryType as EntryTypeRecord;
 use craft\validators\HandleValidator;
@@ -27,21 +26,6 @@ use craft\validators\UniqueValidator;
  */
 class EntryType extends Model
 {
-    /** todo: gql */
-    public function getSection(): ?Section
-    {
-        return ArrayHelper::firstWhere(
-            Craft::$app->getSections()->getAllSections(),
-            fn(Section $section) => ArrayHelper::contains($section->getEntryTypes(), fn(EntryType $entryType) => $entryType->id === $this->id),
-        );
-    }
-
-    /** todo: gql */
-    public function getSectionId(): ?int
-    {
-        return $this->getSection()?->id;
-    }
-
     /**
      * @var int|null ID
      */
