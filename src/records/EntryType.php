@@ -17,7 +17,6 @@ use yii2tech\ar\softdelete\SoftDeleteBehavior;
  * Class EntryType record.
  *
  * @property int $id ID
- * @property int $sectionId Section ID
  * @property int|null $fieldLayoutId Field layout ID
  * @property string $name Name
  * @property string $handle Handle
@@ -25,8 +24,6 @@ use yii2tech\ar\softdelete\SoftDeleteBehavior;
  * @property string $titleTranslationMethod Title translation method
  * @property string|null $titleTranslationKeyFormat Title translation key format
  * @property string|null $titleFormat Title format
- * @property int $sortOrder Sort order
- * @property Section $section Section
  * @property FieldLayout $fieldLayout Field layout
  * @mixin SoftDeleteBehavior
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
@@ -43,16 +40,6 @@ class EntryType extends ActiveRecord
     public static function tableName(): string
     {
         return Table::ENTRYTYPES;
-    }
-
-    /**
-     * Returns the entry type’s section.
-     *
-     * @return ActiveQueryInterface The relational query object.
-     */
-    public function getSection(): ActiveQueryInterface
-    {
-        return $this->hasOne(Section::class, ['id' => 'sectionId']);
     }
 
     /**

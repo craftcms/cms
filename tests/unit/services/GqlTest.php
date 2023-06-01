@@ -271,34 +271,44 @@ class GqlTest extends TestCase
      */
     public function testPermissionListGenerated(): void
     {
+        $typeA = new EntryType([
+            'id' => 1,
+            'uid' => 'entryTypeUid',
+            'name' => 'Test entry type',
+        ]);
+        $typeB = new EntryType([
+            'id' => 2,
+            'uid' => 'entryTypeUid',
+            'name' => 'Test entry type',
+        ]);
+
+        $sectionA = new Section([
+            'id' => 1,
+            'uid' => 'sectionUid',
+            'name' => 'Test section',
+            'type' => 'channel',
+            'entryTypes' => [
+                $typeA,
+            ],
+        ]);
+        $sectionB = new Section([
+            'id' => 2,
+            'uid' => 'otherSectionUid',
+            'name' => 'Other test section',
+            'type' => 'single',
+            'entryTypes' => [
+                $typeB,
+            ],
+        ]);
+
         $sectionService = $this->make(Sections::class, [
             'getAllSections' => [
-                new Section([
-                    'id' => 1,
-                    'uid' => 'sectionUid',
-                    'name' => 'Test section',
-                    'type' => 'channel',
-                ]),
-                new Section([
-                    'id' => 2,
-                    'uid' => 'otherSectionUid',
-                    'name' => 'Other test section',
-                    'type' => 'single',
-                ]),
+                $sectionA,
+                $sectionB,
             ],
             'getAllEntryTypes' => [
-                new EntryType([
-                    'id' => 1,
-                    'uid' => 'entryTypeUid',
-                    'name' => 'Test entry type',
-                    'sectionId' => 1,
-                ]),
-                new EntryType([
-                    'id' => 2,
-                    'uid' => 'entryTypeUid',
-                    'name' => 'Test entry type',
-                    'sectionId' => 2,
-                ]),
+                $typeA,
+                $typeB,
             ],
         ]);
 
@@ -365,7 +375,7 @@ class GqlTest extends TestCase
 
         self::assertNotEmpty($allSchemaComponents['queries']['Entries'] ?? []);
         self::assertNotEmpty($allSchemaComponents['queries']['Assets'] ?? []);
-        self::assertNotEmpty($allSchemaComponents['queries']['Global sets'] ?? []);
+        self::assertNotEmpty($allSchemaComponents['queries']['Global Sets'] ?? []);
         self::assertNotEmpty($allSchemaComponents['queries']['Users'] ?? []);
         self::assertNotEmpty($allSchemaComponents['queries']['Categories'] ?? []);
         self::assertNotEmpty($allSchemaComponents['queries']['Tags'] ?? []);
@@ -373,7 +383,7 @@ class GqlTest extends TestCase
 
         self::assertNotEmpty($allSchemaComponents['mutations']['Entries'] ?? []);
         self::assertNotEmpty($allSchemaComponents['mutations']['Assets'] ?? []);
-        self::assertNotEmpty($allSchemaComponents['mutations']['Global sets'] ?? []);
+        self::assertNotEmpty($allSchemaComponents['mutations']['Global Sets'] ?? []);
         self::assertNotEmpty($allSchemaComponents['mutations']['Categories'] ?? []);
         self::assertNotEmpty($allSchemaComponents['mutations']['Tags'] ?? []);
     }

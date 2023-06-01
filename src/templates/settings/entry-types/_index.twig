@@ -1,0 +1,57 @@
+{% extends '_layouts/cp' %}
+{% set selectedTab = 'entryTypes' %}
+
+{% do view.registerAssetBundle('craft\\web\\assets\\admintable\\AdminTableAsset') -%}
+
+{% do view.registerTranslations('app', [
+    'Name',
+    'Handle',
+    'Used by',
+]) %}
+
+{% set title = 'Entry Types'|t('app') %}
+
+{% set crumbs = [
+    {
+        label: 'Settings'|t('app'),
+        url: url('settings'),
+    },
+] %}
+
+{% block actionButton %}
+    <a href="{{ url('settings/entry-types/new') }}" class="btn submit add icon">{{ "New entry type"|t('app') }}</a>
+{% endblock %}
+
+{% block content %}
+    <div id="entrytypes-vue-admin-table"></div>
+{% endblock %}
+
+{% set tableData = entryTypes|map(entryType => {
+    id: entryType.id,
+    title: entryType.name|t('site'),
+    url: entryType.getCpEditUrl(),
+    name: entryType.name|t('site')|e,
+    handle: entryType.handle,
+    sections: (sectionsByEntryType[entryType.id] ?? [])|map(s => tag('a', {
+        text: s.name,
+        href: s.getCpEditUrl(),
+    }))|join(', '),
+}) %}
+
+{% dump tableData %}
+
+{% js %}
+var columns = [
+    { name: '__slot:title', title: Craft.t('app', 'Name') },
+    { name: '__slot:handle', title: Craft.t('app', 'Handle') },
+    { name: 'sections', title: Craft.t('app', 'Used by') },
+];
+
+new Craft.VueAdminTable({
+    fullPane: false,
+    columns: columns,
+    container: '#entrytypes-vue-admin-table',
+    deleteAction: 'entry-types/delete',
+    tableData: {{ tableData|json_encode|raw }},
+});
+{% endjs %}

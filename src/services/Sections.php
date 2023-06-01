@@ -38,6 +38,7 @@ use craft\records\EntryType as EntryTypeRecord;
 use craft\records\Section as SectionRecord;
 use craft\records\Section_SiteSettings as Section_SiteSettingsRecord;
 use DateTime;
+use Illuminate\Support\Collection;
 use Throwable;
 use yii\base\Component;
 use yii\base\Exception;
@@ -497,39 +498,6 @@ class Sections extends Component
                 $section->id = Db::idByUid(Table::SECTIONS, $section->uid);
             }
 
-            // Make sure there's at least one entry type for this section
-            // -----------------------------------------------------------------
-
-            if (!$isNewSection) {
-                $entryTypeExists = (new Query())
-                    ->select(['id'])
-                    ->from([Table::ENTRYTYPES])
-                    ->where(['sectionId' => $section->id])
-                    ->exists();
-            } else {
-                $entryTypeExists = false;
-            }
-
-            if (!$entryTypeExists) {
-                $entryType = new EntryType();
-                $entryType->sectionId = $section->id;
-
-                if ($section->type === Section::TYPE_SINGLE) {
-                    $entryType->name = $section->name;
-                    $entryType->handle = $section->handle;
-                    $entryType->hasTitleField = false;
-                    $entryType->titleFormat = '{section.name|raw}';
-                } else {
-                    $entryType->name = Craft::t('app', 'Default');
-                    $entryType->handle = 'default';
-                    $entryType->hasTitleField = true;
-                    $entryType->titleFormat = null;
-                }
-
-                $this->saveEntryType($entryType);
-                $section->setEntryTypes([$entryType]);
-            }
-
             // Special handling for Single sections
             // -----------------------------------------------------------------
 
@@ -575,6 +543,7 @@ class Sections extends Component
     {
         ProjectConfigHelper::ensureAllSitesProcessed();
         ProjectConfigHelper::ensureAllFieldsProcessed();
+        ProjectConfigHelper::ensureAllEntryTypesProcessed();
 
         $sectionUid = $event->tokenMatches[0];
         $data = $event->newValue;
@@ -632,6 +601,25 @@ class Sections extends Component
             } else {
                 $sectionRecord->save(false);
             }
+
+            // Update the entry type relations
+            // -----------------------------------------------------------------
+
+            $entryTypeIds = array_filter(array_map(
+                fn(string $uid) => $this->getEntryTypeByUid($uid)?->id,
+                $data['entryTypes'] ?? [],
+            ));
+
+            Db::delete(Table::SECTIONS_ENTRYTYPES, ['sectionId' => $sectionRecord->id]);
+            Db::batchInsert(
+                Table::SECTIONS_ENTRYTYPES,
+                ['sectionId', 'typeId', 'sortOrder'],
+                Collection::make($entryTypeIds)->map(fn(int $id, int $i) => [
+                    $sectionRecord->id,
+                    $id,
+                    $i + 1,
+                ])->all(),
+            );
 
             // Update the site settings
             // -----------------------------------------------------------------
@@ -758,13 +746,8 @@ class Sections extends Component
         /** @var Section $section */
         $section = $this->getSectionById($sectionRecord->id);
 
-        // If this is a Single and no entry type changes need to be processed,
-        // ensure that the section has its one and only entry
-        if (
-            !$isNewSection &&
-            $section->type === Section::TYPE_SINGLE &&
-            !Craft::$app->getProjectConfig()->getIsApplyingExternalChanges()
-        ) {
+        // If this is a Single, ensure that the section has its one and only entry
+        if (!$isNewSection && $section->type === Section::TYPE_SINGLE) {
             $this->_ensureSingleEntry($section, $siteSettingData);
         }
 
@@ -968,10 +951,23 @@ SQL)->execute();
      */
     public function getEntryTypesBySectionId(int $sectionId): array
     {
-        /** @var EntryType[] $entryTypes */
-        $entryTypes = $this->_entryTypes()->where('sectionId', $sectionId)->all();
-        ArrayHelper::multisort($entryTypes, 'sortOrder', SORT_ASC, SORT_NUMERIC);
-        return $entryTypes;
+        // todo: remove this after the next breakpoint
+        if (!Craft::$app->getDb()->tableExists(Table::SECTIONS_ENTRYTYPES)) {
+            $results = $this->_createEntryTypeQuery()
+                ->where(['sectionId' => $sectionId])
+                ->orderBy(['sortOrder' => SORT_DESC])
+                ->all();
+            return array_map(fn(array $result) => new EntryType($result), $results);
+        }
+
+        $ids = (new Query())
+            ->select('typeId')
+            ->from(Table::SECTIONS_ENTRYTYPES)
+            ->where(['sectionId' => $sectionId])
+            ->orderBy(['sortOrder' => SORT_ASC])
+            ->column();
+
+        return array_map(fn(int $id) => $this->_entryTypes()->firstWhere('id', $id), $ids);
     }
 
     /**
@@ -982,10 +978,10 @@ SQL)->execute();
     private function _entryTypes(): MemoizableArray
     {
         if (!isset($this->_entryTypes)) {
-            $entryTypes = [];
-            foreach ($this->_createEntryTypeQuery()->all() as $result) {
-                $entryTypes[] = new EntryType($result);
-            }
+            $entryTypes = array_map(
+                fn(array $result) => new EntryType($result),
+                $this->_createEntryTypeQuery()->all(),
+            );
             $this->_entryTypes = new MemoizableArray($entryTypes);
 
             if (!empty($entryTypes) && Craft::$app->getRequest()->getIsCpRequest()) {
@@ -1094,15 +1090,6 @@ SQL)->execute();
 
         if ($isNewEntryType) {
             $entryType->uid = StringHelper::UUID();
-
-            $maxSortOrder = (new Query())
-                ->from([Table::ENTRYTYPES])
-                ->where([
-                    'sectionId' => $entryType->sectionId,
-                    'dateDeleted' => null,
-                ])
-                ->max('[[sortOrder]]');
-            $entryType->sortOrder = $maxSortOrder ? $maxSortOrder + 1 : 1;
         }
 
         $configPath = ProjectConfig::PATH_ENTRY_TYPES . '.' . $entryType->uid;
@@ -1129,13 +1116,6 @@ SQL)->execute();
         // Make sure fields are processed
         ProjectConfigHelper::ensureAllSitesProcessed();
         ProjectConfigHelper::ensureAllFieldsProcessed();
-        ProjectConfigHelper::ensureAllSectionsProcessed();
-
-        $section = $this->getSectionByUid($data['section']);
-
-        if (!$section) {
-            return;
-        }
 
         $entryTypeRecord = $this->_getEntryTypeRecord($entryTypeUid, true);
 
@@ -1150,8 +1130,6 @@ SQL)->execute();
             $entryTypeRecord->titleTranslationMethod = $data['titleTranslationMethod'] ?? '';
             $entryTypeRecord->titleTranslationKeyFormat = $data['titleTranslationKeyFormat'] ?? null;
             $entryTypeRecord->titleFormat = $data['titleFormat'];
-            $entryTypeRecord->sortOrder = $data['sortOrder'];
-            $entryTypeRecord->sectionId = $section->id;
             $entryTypeRecord->uid = $entryTypeUid;
 
             if (!empty($data['fieldLayouts'])) {
@@ -1196,7 +1174,6 @@ SQL)->execute();
             // Restore the entries that were deleted with the entry type
             /** @var Entry[] $entries */
             $entries = Entry::find()
-                ->sectionId($entryTypeRecord->sectionId)
                 ->typeId($entryTypeRecord->id)
                 ->drafts(null)
                 ->draftOf(false)
@@ -1212,18 +1189,14 @@ SQL)->execute();
         /** @var EntryType $entryType */
         $entryType = $this->getEntryTypeById($entryTypeRecord->id);
 
-        // If this is for a Single section, ensure its entry exists
-        if ($section->type === Section::TYPE_SINGLE) {
-            $this->_ensureSingleEntry($section);
-        } elseif (!$isNewEntryType && $resaveEntries && $this->autoResaveEntries) {
+        if (!$isNewEntryType && $resaveEntries && $this->autoResaveEntries) {
             // Re-save the entries of this type
             Queue::push(new ResaveElements([
                 'description' => Translation::prep('app', 'Resaving {type} entries', [
-                    'type' => ($section->type !== Section::TYPE_SINGLE ? $section->name . ' - ' : '') . $entryType->name,
+                    'type' => $entryType->name,
                 ]),
                 'elementType' => Entry::class,
                 'criteria' => [
-                    'sectionId' => $section->id,
                     'typeId' => $entryType->id,
                     'siteId' => '*',
                     'unique' => true,
@@ -1242,38 +1215,6 @@ SQL)->execute();
 
         // Invalidate entry caches
         Craft::$app->getElements()->invalidateCachesForElementType(Entry::class);
-    }
-
-    /**
-     * Reorders entry types.
-     *
-     * @param array $entryTypeIds
-     * @return bool Whether the entry types were reordered successfully
-     * @throws Throwable if reasons
-     */
-    public function reorderEntryTypes(array $entryTypeIds): bool
-    {
-        $projectConfig = Craft::$app->getProjectConfig();
-
-        $sectionRecord = null;
-
-        $uidsByIds = Db::uidsByIds(Table::ENTRYTYPES, $entryTypeIds);
-
-        foreach ($entryTypeIds as $entryTypeOrder => $entryTypeId) {
-            if (!empty($uidsByIds[$entryTypeId])) {
-                $entryTypeUid = $uidsByIds[$entryTypeId];
-                $entryTypeRecord = $this->_getEntryTypeRecord($entryTypeUid);
-
-                if (!$sectionRecord) {
-                    $sectionRecord = SectionRecord::findOne($entryTypeRecord->sectionId);
-                }
-
-                $configPath = ProjectConfig::PATH_ENTRY_TYPES . '.' . $entryTypeUid . '.sortOrder';
-                $projectConfig->set($configPath, $entryTypeOrder + 1, 'Reorder entry types');
-            }
-        }
-
-        return true;
     }
 
     /**
@@ -1609,11 +1550,9 @@ SQL)->execute();
         return (new Query())
             ->select([
                 'id',
-                'sectionId',
                 'fieldLayoutId',
                 'name',
                 'handle',
-                'sortOrder',
                 'hasTitleField',
                 'titleTranslationMethod',
                 'titleTranslationKeyFormat',

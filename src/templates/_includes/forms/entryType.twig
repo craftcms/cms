@@ -1,0 +1,19 @@
+{% set addOptionFn %}
+(createOption, selectize) => {
+    const slideout = new Craft.CpScreenSlideout('entry-types/edit');
+    slideout.on('submit', ev => {
+        createOption({
+            text: ev.data.name,
+            value: ev.data.handle,
+        });
+    });
+    slideout.on('close', () => {
+        selectize.focus();
+    });
+}
+{% endset %}
+
+{% include '_includes/forms/selectize' with {
+  options: options ?? craft.cp.getEntryTypeOptions(),
+  addOptionLabel: 'Create a new entry type…'|t('app'),
+} %}

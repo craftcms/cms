@@ -10,12 +10,10 @@ namespace craft\gql\resolvers\mutations;
 use Craft;
 use craft\base\Element;
 use craft\behaviors\DraftBehavior;
-use craft\db\Table;
 use craft\elements\db\EntryQuery;
 use craft\elements\Entry as EntryElement;
 use craft\gql\base\ElementMutationResolver;
 use craft\gql\base\StructureMutationTrait;
-use craft\helpers\Db;
 use craft\models\EntryType;
 use craft\models\Section;
 use Exception;
@@ -113,8 +111,8 @@ class Entry extends ElementMutationResolver
             return;
         }
 
-        $entryTypeUid = Db::uidById(Table::ENTRYTYPES, $entry->getTypeId());
-        $this->requireSchemaAction('entrytypes.' . $entryTypeUid, 'delete');
+        $section = $entry->getSection();
+        $this->requireSchemaAction("sections.$section->uid", 'delete');
 
         $elementService->deleteElementById($entryId);
     }
@@ -140,8 +138,8 @@ class Entry extends ElementMutationResolver
             throw new Error('Unable to perform the action.');
         }
 
-        $entryTypeUid = Db::uidById(Table::ENTRYTYPES, $entry->getTypeId());
-        $this->requireSchemaAction('entrytypes.' . $entryTypeUid, 'save');
+        $section = $entry->getSection();
+        $this->requireSchemaAction("sections.$section->uid", 'save');
 
         $draftName = $arguments['name'] ?? '';
         $draftNotes = $arguments['notes'] ?? '';
@@ -177,8 +175,8 @@ class Entry extends ElementMutationResolver
             throw new Error('Unable to perform the action.');
         }
 
-        $entryTypeUid = Db::uidById(Table::ENTRYTYPES, $draft->getTypeId());
-        $this->requireSchemaAction('entrytypes.' . $entryTypeUid, 'save');
+        $section = $draft->getSection();
+        $this->requireSchemaAction("sections.$section->uid", 'save');
 
         /** @var EntryElement $draft */
         $draft = Craft::$app->getDrafts()->applyDraft($draft);
@@ -204,7 +202,7 @@ class Entry extends ElementMutationResolver
         $canIdentify = $section->type === Section::TYPE_SINGLE || !empty($arguments['id']) || !empty($arguments['uid']) || !empty($arguments['draftId']);
 
         // Check if relevant schema is present
-        $this->requireSchemaAction('entrytypes.' . $entryType->uid, $canIdentify ? 'save' : 'create');
+        $this->requireSchemaAction("sections.$section->uid", $canIdentify ? 'save' : 'create');
 
         $elementService = Craft::$app->getElements();
 

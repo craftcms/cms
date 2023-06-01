@@ -11,7 +11,6 @@ use Craft;
 use craft\base\Field;
 use craft\behaviors\FieldLayoutBehavior;
 use craft\errors\GqlException;
-use craft\models\FieldLayout;
 
 /**
  * Class Generator
@@ -29,7 +28,7 @@ abstract class Generator
      */
     protected static function getContentFields(mixed $context): array
     {
-        /** @var FieldLayout|FieldLayoutBehavior $context */
+        /** @var FieldLayoutBehavior $context */
         try {
             $schema = Craft::$app->getGql()->getActiveSchema();
         } catch (GqlException $e) {
