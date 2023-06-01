@@ -10,6 +10,7 @@ namespace craft\validators;
 use Craft;
 use craft\helpers\StringHelper;
 use yii\base\Model;
+use yii\db\ActiveQueryInterface;
 use yii\db\ActiveRecord;
 use yii\validators\UniqueValidator as YiiUniqueValidator;
 
@@ -58,7 +59,7 @@ class UniqueValidator extends YiiUniqueValidator
             }
 
             $exists = false;
-            $filter = ['and'];
+            $pkFilter = ['and'];
             $tableName = Craft::$app->getDb()->getSchema()->getRawTableName($targetClass::tableName());
 
             foreach ($pkMap as $k => $v) {
@@ -72,12 +73,27 @@ class UniqueValidator extends YiiUniqueValidator
 
                 if ($model->$pkAttribute) {
                     $exists = true;
-                    $filter[] = ['not', ["$tableName.$pkColumn" => $model->$pkAttribute]];
+                    $pkFilter[] = ['not', ["$tableName.$pkColumn" => $model->$pkAttribute]];
                 }
             }
 
             if ($exists) {
-                $this->filter = $filter;
+                if ($this->filter) {
+                    if (is_callable($this->filter)) {
+                        $currentFilter = $this->filter;
+
+                        // Wrap the closure in another closure that will add the PK filter
+                        $this->filter = function(ActiveQueryInterface $query) use ($currentFilter, $pkFilter) {
+                            $currentFilter($query);
+                            $query->andWhere($pkFilter);
+                        };
+                    } else {
+                        // If it isn't a closure then `filter` will be an array or string
+                        $this->filter = ['and', $this->filter, $pkFilter];
+                    }
+                } else {
+                    $this->filter = $pkFilter;
+                }
             }
         }
 
