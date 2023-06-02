@@ -27,6 +27,8 @@
 - Added `craft\base\FieldInterface::getValueSql()`.
 - Added `craft\controllers\EntryTypesController`.
 - Added `craft\db\Connection::getIsMaria()`.
+- Added `craft\db\QueryParam`.
+- Added `craft\db\Table::SECTIONS_ENTRYTYPES`.
 - Added `craft\db\mysql\ColumnSchema::$collation`.
 - Added `craft\db\mysql\QueryBuilder::jsonContains()`.
 - Added `craft\db\mysql\QueryBuilder::jsonExtract()`.
@@ -34,8 +36,6 @@
 - Added `craft\db\pgsql\QueryBuilder::jsonContains()`.
 - Added `craft\db\pgsql\QueryBuilder::jsonExtract()`.
 - Added `craft\db\pgsql\Schema::supportsMb4()`.
-- Added `craft\db\QueryParam`.
-- Added `craft\db\Table::SECTIONS_ENTRYTYPES`.
 - Added `craft\elements\db\ElementQueryInterface::fieldLayouts()`
 - Added `craft\helpers\Db::defaultCollation()`.
 - Added `craft\helpers\Db::prepareForJsonColumn()`.
@@ -46,9 +46,9 @@
 - Added `craft\migrations\BaseContentRefactorMigration`.
 - Added `craft\models\Section::getCpEditUrl()`.
 - Added `craft\services\Fields::$fieldContext`, which replaces `craft\services\Content::$fieldContext`.
-- Added `craft\services\Gql::getOrSetContentArguments()`.
 - Added `craft\services\Gql::defineContentArgumentsForFieldLayouts()`.
 - Added `craft\services\Gql::defineContentArgumentsForFields()`.
+- Added `craft\services\Gql::getOrSetContentArguments()`.
 - Added `craft\web\twig\variables\Cp::getEntryTypeOptions()`.
 - Renamed `craft\base\FieldInterface::valueType()` to `phpType()`.
 - Renamed `craft\web\CpScreenResponseBehavior::$additionalButtons()` and `additionalButtons()` to `$additionalButtonsHtml` and `additionalButtonsHtml()`. ([#13037](https://github.com/craftcms/cms/pull/13037))
@@ -71,9 +71,14 @@
 - Removed `craft\base\FieldInterface::getContentColumnType()`. `dbType()` should be implemented instead.
 - Removed `craft\base\FieldInterface::hasContentColumn()`. Fields that don’t need to store values in the `elements_sites.content` column should return `null` from `dbType()`.
 - Removed `craft\base\FieldInterface::modifyElementsQuery()`. Fields can customize how their element query params are handled by implementing `getQueryCondition()`.
+- Removed `craft\controllers\Sections::actionDeleteEntryType()`.
+- Removed `craft\controllers\Sections::actionEditEntryType()`.
+- Removed `craft\controllers\Sections::actionEntryTypesIndex()`.
+- Removed `craft\controllers\Sections::actionReorderEntryTypes()`.
+- Removed `craft\controllers\Sections::actionSaveEntryType()`.
 - Removed `craft\elements\db\ElementQuery::$contentTable`.
-- Removed `craft\helpers\Db::extractGlue()`. `craft\db\QueryParam::extractOperator()` can be used instead.
 - Removed `craft\helpers\Db::GLUE_AND`, `GLUE_OR`, and `GLUE_NOT`. `craft\db\QueryParam::AND`, `OR`, and `NOT` can be used instead.
+- Removed `craft\helpers\Db::extractGlue()`. `craft\db\QueryParam::extractOperator()` can be used instead.
 - Removed `craft\helpers\ElementHelper::fieldColumn()`.
 - Removed `craft\helpers\ElementHelper::fieldColumnFromField()`.
 - Removed `craft\helpers\FieldHelper`.
@@ -86,11 +91,6 @@
 - Removed `craft\services\Fields::updateColumn()`.
 - Removed `craft\services\Matrix::defineContentTableName()`.
 - Removed `craft\services\Sections::reorderEntryTypes()`.
-- Removed `craft\controllers\Sections::actionEntryTypesIndex()`.
-- Removed `craft\controllers\Sections::actionEditEntryType()`.
-- Removed `craft\controllers\Sections::actionSaveEntryType()`.
-- Removed `craft\controllers\Sections::actionReorderEntryTypes()`.
-- Removed `craft\controllers\Sections::actionDeleteEntryType()`.
 
 ### System
 - Craft now requires PHP 8.1 or later.
