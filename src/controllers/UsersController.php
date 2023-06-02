@@ -1568,7 +1568,9 @@ JS,
                 $return['csrfTokenValue'] = $this->request->getCsrfToken();
             }
 
-            return $this->asSuccess(data: $return);
+            return $this->asModelSuccess($user, Craft::t('app', '{type} saved.', [
+                'type' => User::displayName(),
+            ]), data: $return);
         }
 
         if ($isPublicRegistration) {
