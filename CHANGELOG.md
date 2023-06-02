@@ -1,5 +1,9 @@
 # Release Notes for Craft CMS 3.x
 
+## Unreleased
+
+- Fixed an error that could occur when updating a plugin with the `craft update` command, if it provided a new migration but still had the same schema version.
+
 ## 3.8.13 - 2023-05-24
 
 - Fixed a bug where asset sources weren‘t immediately showing a source path on a clear `localStorage` cache.
