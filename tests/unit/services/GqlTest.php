@@ -234,7 +234,7 @@ class GqlTest extends TestCase
     {
         // Generate types by creating the interface.
         UserInterface::getType();
-        $typeName = User::gqlTypeNameByContext(null);
+        $typeName = User::GQL_TYPE_NAME;
 
         self::assertNotFalse(GqlEntityRegistry::getEntity($typeName));
         self::assertInstanceOf(ObjectType::class, TypeLoader::loadType($typeName));

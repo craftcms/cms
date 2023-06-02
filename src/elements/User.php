@@ -77,6 +77,11 @@ class User extends Element implements IdentityInterface
     use NameTrait;
 
     /**
+     * @since 5.0.0
+     */
+    public const GQL_TYPE_NAME = 'User';
+
+    /**
      * @event AuthenticateUserEvent The event that is triggered before a user is authenticated.
      *
      * If you wish to offload authentication logic, then set [[AuthenticateUserEvent::$performAuthentication]] to `false`, and set [[$authError]] to
@@ -484,15 +489,6 @@ class User extends Element implements IdentityInterface
         }
 
         return parent::eagerLoadingMap($sourceElements, $handle);
-    }
-
-    /**
-     * @inheritdoc
-     * @since 3.3.0
-     */
-    public static function gqlTypeNameByContext(mixed $context): string
-    {
-        return 'User';
     }
 
     // IdentityInterface Methods
@@ -1668,7 +1664,7 @@ class User extends Element implements IdentityInterface
      */
     public function getGqlTypeName(): string
     {
-        return static::gqlTypeNameByContext($this);
+        return self::GQL_TYPE_NAME;
     }
 
     // Events

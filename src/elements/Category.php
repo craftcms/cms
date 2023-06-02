@@ -142,13 +142,13 @@ class Category extends Element
     }
 
     /**
-     * @inheritdoc
-     * @since 3.3.0
+     * Returns the GraphQL type name that categories should use, based on their category group.
+     *
+     * @since 5.0.0
      */
-    public static function gqlTypeNameByContext(mixed $context): string
+    public static function gqlTypeName(CategoryGroup $categoryGroup): string
     {
-        /** @var CategoryGroup $context */
-        return $context->handle . '_Category';
+        return sprintf('%s_Category', $categoryGroup->handle);
     }
 
     /**
@@ -738,7 +738,7 @@ class Category extends Element
      */
     public function getGqlTypeName(): string
     {
-        return static::gqlTypeNameByContext($this->getGroup());
+        return static::gqlTypeName($this->getGroup());
     }
 
     // Events

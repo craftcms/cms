@@ -32,6 +32,11 @@ class Address extends Element implements AddressInterface, BlockElementInterface
     use NameTrait;
 
     /**
+     * @since 5.0.0
+     */
+    public const GQL_TYPE_NAME = 'Address';
+
+    /**
      * @inheritdoc
      */
     public static function displayName(): string
@@ -149,14 +154,6 @@ class Address extends Element implements AddressInterface, BlockElementInterface
         }
         /** @phpstan-var AddressField::* $attribute */
         return Craft::$app->getAddresses()->getFieldLabel($attribute, $countryCode);
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public static function gqlTypeNameByContext(mixed $context): string
-    {
-        return 'Address';
     }
 
     /**
@@ -456,6 +453,15 @@ class Address extends Element implements AddressInterface, BlockElementInterface
     public function getLocale(): string
     {
         return 'und';
+    }
+
+    /**
+     * @inheritdoc
+     * @since 3.3.0
+     */
+    public function getGqlTypeName(): string
+    {
+        return self::GQL_TYPE_NAME;
     }
 
     /**

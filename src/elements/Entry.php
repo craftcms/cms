@@ -592,11 +592,13 @@ class Entry extends Element implements ExpirableElementInterface
     }
 
     /**
-     * @inheritdoc
+     * Returns the GraphQL type name that entries should use, based on their entry type.
+     *
+     * @since 5.0.0
      */
-    public static function gqlTypeNameByContext(mixed $context): string
+    public static function gqlTypeName(EntryType $entryType): string
     {
-        return self::_getGqlIdentifierByContext($context) . '_Entry';
+        return sprintf('%s_Entry', $entryType->handle);
     }
 
     /**
@@ -1478,9 +1480,7 @@ class Entry extends Element implements ExpirableElementInterface
      */
     public function getGqlTypeName(): string
     {
-        return static::gqlTypeNameByContext([
-            'entryType' => $this->getType(),
-        ]);
+        return self::gqlTypeName($this->getType());
     }
 
     /**
@@ -2076,18 +2076,5 @@ EOD;
             !$this->getIsRevision() &&
             $this->getSection()->enableVersioning
         );
-    }
-
-    /**
-     * Get the GraphQL identifier by context.
-     *
-     * @param array $context
-     * @return string
-     */
-    private static function _getGqlIdentifierByContext(array $context): string
-    {
-        /** @var EntryType $entryType */
-        $entryType = $context['entryType'];
-        return $entryType->handle;
     }
 }

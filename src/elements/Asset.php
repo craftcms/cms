@@ -325,12 +325,13 @@ class Asset extends Element
     }
 
     /**
-     * @inheritdoc
-     * @since 3.3.0
+     * Returns the GraphQL type name that assets should use, based on their volume.
+     *
+     * @since 5.0.0
      */
-    public static function gqlTypeNameByContext(mixed $context): string
+    public static function gqlTypeName(Volume $volume): string
     {
-        return $context->handle . '_Asset';
+        return sprintf('%s_Asset', $volume->handle);
     }
 
     /**
@@ -2672,7 +2673,7 @@ JS;
      */
     public function getGqlTypeName(): string
     {
-        return static::gqlTypeNameByContext($this->getVolume());
+        return static::gqlTypeName($this->getVolume());
     }
 
     /**

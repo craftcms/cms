@@ -130,13 +130,13 @@ class Tag extends Element
     }
 
     /**
-     * @inheritdoc
-     * @since 3.3.0
+     * Returns the GraphQL type name that tags should use, based on their tag group.
+     *
+     * @since 5.0.0
      */
-    public static function gqlTypeNameByContext(mixed $context): string
+    public static function gqlTypeName(TagGroup $tagGroup): string
     {
-        /** @var TagGroup $context */
-        return $context->handle . '_Tag';
+        return sprintf('%s_Tag', $tagGroup->handle);
     }
 
     /**
@@ -288,7 +288,7 @@ class Tag extends Element
      */
     public function getGqlTypeName(): string
     {
-        return static::gqlTypeNameByContext($this->getGroup());
+        return static::gqlTypeName($this->getGroup());
     }
 
     // Events

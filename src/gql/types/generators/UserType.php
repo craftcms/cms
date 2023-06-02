@@ -43,15 +43,16 @@ class UserType extends Generator implements GeneratorInterface, SingleGeneratorI
         // Users don't have different types, so the context for a user will be the same every time.
         $context = $context ?: Craft::$app->getFields()->getLayoutByType(UserElement::class);
 
-        $typeName = UserElement::gqlTypeNameByContext(null);
         $contentFieldGqlTypes = self::getContentFields($context);
         $userFields = array_merge(UserInterface::getFieldDefinitions(), $contentFieldGqlTypes);
 
-        return GqlEntityRegistry::getEntity($typeName) ?: GqlEntityRegistry::createEntity($typeName, new User([
-            'name' => $typeName,
-            'fields' => function() use ($userFields, $typeName) {
-                return Craft::$app->getGql()->prepareFieldDefinitions($userFields, $typeName);
-            },
-        ]));
+        return GqlEntityRegistry::getEntity(UserElement::GQL_TYPE_NAME)
+            ?: GqlEntityRegistry::createEntity(UserElement::GQL_TYPE_NAME, new User([
+                'name' => UserElement::GQL_TYPE_NAME,
+                'fields' => fn() => Craft::$app->getGql()->prepareFieldDefinitions(
+                    $userFields,
+                    UserElement::GQL_TYPE_NAME
+                ),
+            ]));
     }
 }

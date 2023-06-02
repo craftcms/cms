@@ -75,6 +75,7 @@ use craft\validators\StringValidator;
 use craft\web\UploadedFile;
 use DateTime;
 use Illuminate\Support\Collection;
+use ReflectionClass;
 use Throwable;
 use Traversable;
 use Twig\Markup;
@@ -1741,16 +1742,6 @@ abstract class Element extends Component implements ElementInterface
             'elementType' => User::class,
             'map' => $map,
         ];
-    }
-
-    /**
-     * @inheritdoc
-     * @since 3.3.0
-     */
-    public static function gqlTypeNameByContext(mixed $context): string
-    {
-        // Default to the same type
-        return 'Element';
     }
 
     /**
@@ -4905,8 +4896,8 @@ JS,
      */
     public function getGqlTypeName(): string
     {
-        // Default to the same type
-        return static::gqlTypeNameByContext(null);
+        // Default to the short class name
+        return (new ReflectionClass($this))->getShortName();
     }
 
     // Events

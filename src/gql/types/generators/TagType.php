@@ -54,7 +54,7 @@ class TagType extends Generator implements GeneratorInterface, SingleGeneratorIn
      */
     public static function generateType(mixed $context): ObjectType
     {
-        $typeName = TagElement::gqlTypeNameByContext($context);
+        $typeName = TagElement::gqlTypeName($context);
         $contentFieldGqlTypes = self::getContentFields($context);
         $tagGroupFields = array_merge(TagInterface::getFieldDefinitions(), $contentFieldGqlTypes);
 

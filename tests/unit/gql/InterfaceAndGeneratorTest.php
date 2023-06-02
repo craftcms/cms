@@ -8,29 +8,23 @@
 namespace crafttests\unit\gql;
 
 use Craft;
-use craft\base\Element as BaseElement;
 use craft\elements\Asset as AssetElement;
 use craft\elements\Category as CategoryElement;
 use craft\elements\Entry as EntryElement;
 use craft\elements\GlobalSet as GlobalSetElement;
 use craft\elements\MatrixBlock as MatrixBlockElement;
 use craft\elements\Tag as TagElement;
-use craft\elements\User as UserElement;
 use craft\errors\GqlException;
 use craft\fields\Matrix as MatrixField;
 use craft\fields\PlainText;
 use craft\fields\Table;
-use craft\fs\Local;
 use craft\gql\base\SingularTypeInterface;
 use craft\gql\GqlEntityRegistry;
-use craft\gql\interfaces\Element as ElementInterface;
 use craft\gql\interfaces\elements\Asset as AssetInterface;
 use craft\gql\interfaces\elements\Category as CategoryInterface;
 use craft\gql\interfaces\elements\Entry as EntryInterface;
-use craft\gql\interfaces\elements\GlobalSet as GlobalSetInterface;
 use craft\gql\interfaces\elements\MatrixBlock as MatrixBlockInterface;
 use craft\gql\interfaces\elements\Tag as TagInterface;
-use craft\gql\interfaces\elements\User as UserInterface;
 use craft\gql\TypeLoader;
 use craft\gql\types\generators\TableRowType;
 use craft\models\CategoryGroup;
@@ -40,6 +34,7 @@ use craft\models\GqlSchema;
 use craft\models\MatrixBlockType;
 use craft\models\Section;
 use craft\models\TagGroup;
+use craft\models\Volume;
 use craft\test\TestCase;
 use Exception;
 use GraphQL\Type\Definition\ObjectType;
@@ -209,22 +204,11 @@ class InterfaceAndGeneratorTest extends TestCase
     public function interfaceDataProvider(): array
     {
         return [
-            [AssetInterface::class, [$this, 'mockVolumes'], [AssetElement::class, 'gqlTypeNameByContext']],
-            [
-                ElementInterface::class, function() {
-                    return ['Element'];
-                }, [BaseElement::class, 'gqlTypeNameByContext'],
-            ],
-            [EntryInterface::class, fn() => $this->mockEntryContexts(), [EntryElement::class, 'gqlTypeNameByContext']],
-            [GlobalSetInterface::class, [$this, 'mockGlobalSets'], [GlobalSetElement::class, 'gqlTypeNameByContext']],
-            [CategoryInterface::class, [$this, 'mockCategoryGroups'], [CategoryElement::class, 'gqlTypeNameByContext']],
-            [TagInterface::class, [$this, 'mockTagGroups'], [TagElement::class, 'gqlTypeNameByContext']],
-            [MatrixBlockInterface::class, [$this, 'mockMatrixBlocks'], [MatrixBlockElement::class, 'gqlTypeNameByContext']],
-            [
-                UserInterface::class, function() {
-                    return ['User'];
-                }, [UserElement::class, 'gqlTypeNameByContext'],
-            ],
+            [AssetInterface::class, [$this, 'mockVolumes'], [AssetElement::class, 'gqlTypeName']],
+            [EntryInterface::class, fn() => array_map(fn(array $context) => $context['entryType'], $this->mockEntryContexts()), [EntryElement::class, 'gqlTypeName']],
+            [CategoryInterface::class, [$this, 'mockCategoryGroups'], [CategoryElement::class, 'gqlTypeName']],
+            [TagInterface::class, [$this, 'mockTagGroups'], [TagElement::class, 'gqlTypeName']],
+            [MatrixBlockInterface::class, [$this, 'mockMatrixBlocks'], [MatrixBlockElement::class, 'gqlTypeName']],
         ];
     }
 
@@ -237,7 +221,7 @@ class InterfaceAndGeneratorTest extends TestCase
     public function mockVolumes(): array
     {
         return [
-            $this->make(Local::class, [
+            $this->make(Volume::class, [
                 'uid' => 'volume-uid-1',
                 'handle' => 'mockVolume1',
                 '__call' => fn($name) => match ($name) {
@@ -245,7 +229,7 @@ class InterfaceAndGeneratorTest extends TestCase
                     default => throw new UnknownMethodException("Calling unknown method: $name()"),
                 },
             ]),
-            $this->make(Local::class, [
+            $this->make(Volume::class, [
                 'uid' => 'volume-uid-2',
                 'handle' => 'mockVolume2',
                 '__call' => fn($name) => match ($name) {

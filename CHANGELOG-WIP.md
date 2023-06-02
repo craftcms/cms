@@ -36,6 +36,13 @@
 - Added `craft\db\pgsql\QueryBuilder::jsonContains()`.
 - Added `craft\db\pgsql\QueryBuilder::jsonExtract()`.
 - Added `craft\db\pgsql\Schema::supportsMb4()`.
+- Added `craft\elements\Address::GQL_TYPE_NAME`.
+- Added `craft\elements\Asset::gqlTypeName()`.
+- Added `craft\elements\Category::gqlTypeName()`.
+- Added `craft\elements\Entry::gqlTypeName()`.
+- Added `craft\elements\MatrixBlock::gqlTypeName()`.
+- Added `craft\elements\Tag::gqlTypeName()`.
+- Added `craft\elements\User::GQL_TYPE_NAME`.
 - Added `craft\elements\db\ElementQueryInterface::fieldLayouts()`
 - Added `craft\helpers\Db::defaultCollation()`.
 - Added `craft\helpers\Db::prepareForJsonColumn()`.
@@ -67,6 +74,7 @@
 - Removed `craft\base\ElementInterface::getContentTable()`.
 - Removed `craft\base\ElementInterface::getFieldColumnPrefix()`.
 - Removed `craft\base\ElementInterface::gqlMutationNameByContext()`.
+- Removed `craft\base\ElementInterface::gqlTypeNameByContext()`.
 - Removed `craft\base\ElementInterface::hasContent()`.
 - Removed `craft\base\FieldInterface::getContentColumnType()`. `dbType()` should be implemented instead.
 - Removed `craft\base\FieldInterface::hasContentColumn()`. Fields that don’t need to store values in the `elements_sites.content` column should return `null` from `dbType()`.

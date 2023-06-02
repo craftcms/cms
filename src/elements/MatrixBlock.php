@@ -19,7 +19,6 @@ use craft\helpers\ArrayHelper;
 use craft\helpers\Db;
 use craft\models\FieldLayout;
 use craft\models\MatrixBlockType;
-use craft\models\MatrixBlockType as MatrixBlockTypeModel;
 use craft\records\MatrixBlock as MatrixBlockRecord;
 use craft\web\assets\matrix\MatrixAsset;
 use Illuminate\Support\Collection;
@@ -146,13 +145,13 @@ class MatrixBlock extends Element implements BlockElementInterface
     }
 
     /**
-     * @inheritdoc
-     * @since 3.3.0
+     * Returns the GraphQL type name that Matrix blocks should use, based on their block type.
+     *
+     * @since 5.0.0
      */
-    public static function gqlTypeNameByContext(mixed $context): string
+    public static function gqlTypeName(MatrixBlockType $blockType): string
     {
-        /** @var MatrixBlockTypeModel $context */
-        return $context->getField()->handle . '_' . $context->handle . '_BlockType';
+        return sprintf('%s_%s_BlockType', $blockType->getField()->handle, $blockType->handle);
     }
 
     /**
@@ -412,7 +411,7 @@ class MatrixBlock extends Element implements BlockElementInterface
      */
     public function getGqlTypeName(): string
     {
-        return static::gqlTypeNameByContext($this->getType());
+        return static::gqlTypeName($this->getType());
     }
 
     // Events
