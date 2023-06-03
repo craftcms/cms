@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Fixed an error that could occur when updating a plugin with the `craft update` command, if it provided a new migration but still had the same schema version.
 - Fixed a bug where CSS classes that contained a pseudo-selector weren’t getting namespaced. ([#13251](https://github.com/craftcms/cms/pull/13251))
 - Fixed a JavaScript error that could occur when renaming assets without URLs. ([#13223](https://github.com/craftcms/cms/pull/13223))
 - Fixed a bug where `craft\base\Element::setFieldValuesFromRequest()` wasn’t properly handling empty strings passed as the namespace. ([#13252](https://github.com/craftcms/cms/discussions/13252))
@@ -9,6 +10,7 @@
 - Fixed a bug where element thumbnails could stop getting loaded when quickly switching between element sources. ([#13253](https://github.com/craftcms/cms/issues/13253))
 - Fixed an error that occurred when uploading an asset with a filename over 232 characters long, directly to an Assets field. ([#13264](https://github.com/craftcms/cms/issues/13264))
 - Fixed a SQL error that could occur when upgrading to 4.4 on PostgreSQL, if the database was converted from MySQL. ([#12855](https://github.com/craftcms/cms/issues/12855))
+- Fixed a bug where `craft\db\Query::collect()` was returning a `craft\elements\ElementCollection` instance.
 
 ## 4.4.13 - 2023-05-24
 
