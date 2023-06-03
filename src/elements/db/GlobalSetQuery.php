@@ -108,6 +108,10 @@ class GlobalSetQuery extends ElementQuery
      */
     protected function beforePrepare(): bool
     {
+        if (!parent::beforePrepare()) {
+            return false;
+        }
+
         $this->joinElementTable(Table::GLOBALSETS);
 
         $this->query->select([
@@ -124,7 +128,7 @@ class GlobalSetQuery extends ElementQuery
         $this->_applyEditableParam();
         $this->_applyRefParam();
 
-        return parent::beforePrepare();
+        return true;
     }
 
 

@@ -228,6 +228,10 @@ class AddressQuery extends ElementQuery
      */
     protected function beforePrepare(): bool
     {
+        if (!parent::beforePrepare()) {
+            return false;
+        }
+
         $this->_normalizeOwnerId();
 
         $this->joinElementTable(Table::ADDRESSES);
@@ -267,7 +271,7 @@ class AddressQuery extends ElementQuery
             $this->subQuery->andWhere(['addresses.administrativeArea' => $this->administrativeArea]);
         }
 
-        return parent::beforePrepare();
+        return true;
     }
 
     /**

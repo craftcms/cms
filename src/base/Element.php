@@ -2009,6 +2009,13 @@ abstract class Element extends Component implements ElementInterface
     private array $_eagerLoadedElements = [];
 
     /**
+     * @var array<string,bool>
+     * @see getFieldValue()
+     * @see setLazyEagerLoadedElements()
+     */
+    private array $_lazyEagerLoadedElements = [];
+
+    /**
      * @var array<string,int>
      * @see getEagerLoadedElementCount()
      * @see setEagerLoadedElementCount
@@ -2124,7 +2131,7 @@ abstract class Element extends Component implements ElementInterface
     public function __get($name)
     {
         // Is $name a set of eager-loaded elements?
-        if ($this->hasEagerLoadedElements($name)) {
+        if ($this->hasEagerLoadedElements($name) && !($this->_lazyEagerLoadedElements[$name] ?? false)) {
             return $this->getEagerLoadedElements($name);
         }
 
@@ -2232,6 +2239,8 @@ abstract class Element extends Component implements ElementInterface
             ArrayHelper::removeValue($names, 'level');
         }
 
+        ArrayHelper::removeValue($names, 'elementQueryResult');
+        ArrayHelper::removeValue($names, 'eagerLoadInfo');
         ArrayHelper::removeValue($names, 'searchScore');
         ArrayHelper::removeValue($names, 'awaitingFieldValues');
         ArrayHelper::removeValue($names, 'firstSave');
@@ -3755,8 +3764,15 @@ abstract class Element extends Component implements ElementInterface
      */
     public function offsetExists($offset): bool
     {
-        /** @phpstan-ignore-next-line */
-        return $offset === 'title' || $this->hasEagerLoadedElements($offset) || parent::offsetExists($offset) || $this->fieldByHandle($offset);
+        return (
+            /** @phpstan-ignore-next-line */
+            $offset === 'title' ||
+            /** @phpstan-ignore-next-line */
+            ($this->hasEagerLoadedElements($offset) && !($this->_lazyEagerLoadedElements[$offset] ?? false)) ||
+            parent::offsetExists($offset) ||
+            /** @phpstan-ignore-next-line */
+            $this->fieldByHandle($offset)
+        );
     }
 
     /**
@@ -3970,7 +3986,7 @@ abstract class Element extends Component implements ElementInterface
     public function getFieldValue(string $fieldHandle): mixed
     {
         // Was this field’s value eager-loaded?
-        if ($this->hasEagerLoadedElements($fieldHandle)) {
+        if ($this->hasEagerLoadedElements($fieldHandle) && !($this->_lazyEagerLoadedElements[$fieldHandle] ?? false)) {
             return $this->getEagerLoadedElements($fieldHandle);
         }
 
@@ -4309,6 +4325,14 @@ abstract class Element extends Component implements ElementInterface
                     $this->_eagerLoadedElements[$handle] = ElementCollection::make($elements);
                 }
         }
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function setLazyEagerLoadedElements(string $handle, bool $value = true): void
+    {
+        $this->_lazyEagerLoadedElements[$handle] = $value;
     }
 
     /**

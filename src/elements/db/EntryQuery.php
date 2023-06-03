@@ -823,6 +823,10 @@ class EntryQuery extends ElementQuery
      */
     protected function beforePrepare(): bool
     {
+        if (!parent::beforePrepare()) {
+            return false;
+        }
+
         $this->_normalizeSectionId();
         $this->_normalizeTypeId();
 
@@ -877,7 +881,7 @@ class EntryQuery extends ElementQuery
         $this->_applySectionIdParam();
         $this->_applyRefParam();
 
-        return parent::beforePrepare();
+        return true;
     }
 
     /**

@@ -1045,6 +1045,16 @@ interface ElementQueryInterface extends QueryInterface, Arrayable
     public function andWith(array|string|null $value): static;
 
     /**
+     * Causes the query to be used to eager-load results for the query’s source element
+     * and any other elements in its collection.
+     *
+     * @param string|bool $value The property value. If a string, the value will be used as the eager-loading alias.
+     * @return static
+     * @since 5.0.0
+     */
+    public function eagerly(string|bool $value = true): static;
+
+    /**
      * Explicitly determines whether the query should join in the structure data.
      *
      * @param bool $value The property value (defaults to true)
@@ -1430,6 +1440,15 @@ interface ElementQueryInterface extends QueryInterface, Arrayable
 
     // Query preparation/execution
     // -------------------------------------------------------------------------
+
+    /**
+     * Returns whether the query results were already eager loaded by the query's source element.
+     *
+     * @param string|null $alias The eager-loading alias to check
+     * @return bool
+     * @since 5.0.0
+     */
+    public function wasEagerLoaded(?string $alias = null): bool;
 
     /**
      * Executes the query and returns all results as an array.

@@ -501,6 +501,10 @@ class MatrixBlockQuery extends ElementQuery
      */
     protected function beforePrepare(): bool
     {
+        if (!parent::beforePrepare()) {
+            return false;
+        }
+
         $this->_normalizeFieldId();
 
         try {
@@ -572,7 +576,7 @@ class MatrixBlockQuery extends ElementQuery
             }
         }
 
-        return parent::beforePrepare();
+        return true;
     }
 
     /**

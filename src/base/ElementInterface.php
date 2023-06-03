@@ -1463,6 +1463,14 @@ interface ElementInterface extends ComponentInterface
     public function setEagerLoadedElements(string $handle, array $elements): void;
 
     /**
+     * Sets whether the given eager-loaded element handles were eager-loaded lazily.
+     *
+     * @param string $handle The handle that was used to eager-load the elements
+     * @param bool $value
+     */
+    public function setLazyEagerLoadedElements(string $handle, bool $value = true): void;
+
+    /**
      * Returns the count of eager-loaded elements for a given handle.
      *
      * @param string $handle The handle of the eager-loaded elements

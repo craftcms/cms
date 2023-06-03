@@ -792,6 +792,10 @@ class UserQuery extends ElementQuery
      */
     protected function beforePrepare(): bool
     {
+        if (!parent::beforePrepare()) {
+            return false;
+        }
+
         // See if 'group' was set to an invalid handle
         if ($this->groupId === []) {
             return false;
@@ -932,7 +936,7 @@ class UserQuery extends ElementQuery
             $this->subQuery->andWhere(Db::parseDateParam('users.lastLoginDate', $this->lastLoginDate));
         }
 
-        return parent::beforePrepare();
+        return true;
     }
 
     /**
