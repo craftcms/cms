@@ -20,6 +20,7 @@ use craft\db\FixedOrderExpression;
 use craft\db\Query;
 use craft\db\QueryAbortedException;
 use craft\db\Table;
+use craft\elements\ElementCollection;
 use craft\elements\User;
 use craft\errors\SiteNotFoundException;
 use craft\events\CancelableEvent;
@@ -1564,6 +1565,15 @@ class ElementQuery extends Query implements ElementQueryInterface
         }
 
         return parent::all($db);
+    }
+
+    /**
+     * @param Connection|null $db
+     * @return Collection
+     */
+    public function collect(?Connection $db = null): Collection
+    {
+        return ElementCollection::make($this->all($db));
     }
 
     /**
