@@ -1518,10 +1518,10 @@ class ElementQuery extends Query implements ElementQueryInterface
     }
 
     /**
-     * @param Connection|null $db
+     * @param YiiConnection|null $db
      * @return Collection
      */
-    public function collect(?Connection $db = null): Collection
+    public function collect(?YiiConnection $db = null): Collection
     {
         return ElementCollection::make($this->all($db));
     }
