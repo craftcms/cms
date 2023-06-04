@@ -55,7 +55,7 @@ class ElementQuery extends Query implements ElementQueryInterface
     use ArrayableTrait;
 
     /**
-     * @event Event An event that is triggered at the beginning of preparing an element query for the query builder.
+     * @event CancelableEvent An event that is triggered at the beginning of preparing an element query for the query builder.
      */
     const EVENT_BEFORE_PREPARE = 'beforePrepare';
 
