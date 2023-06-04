@@ -15,6 +15,7 @@ use craft\base\Element;
 use craft\base\ElementInterface;
 use craft\base\Field;
 use craft\base\PreviewableFieldInterface;
+use craft\behaviors\EventBehavior;
 use craft\db\Query;
 use craft\db\Table as DbTable;
 use craft\elements\conditions\ElementCondition;
@@ -24,6 +25,7 @@ use craft\elements\db\ElementQueryInterface;
 use craft\elements\db\ElementRelationParamParser;
 use craft\elements\ElementCollection;
 use craft\errors\SiteNotFoundException;
+use craft\events\CancelableEvent;
 use craft\events\ElementCriteriaEvent;
 use craft\events\ElementEvent;
 use craft\fields\conditions\RelationalFieldConditionRule;
@@ -39,7 +41,6 @@ use craft\services\ElementSources;
 use DateTime;
 use GraphQL\Type\Definition\Type;
 use Illuminate\Support\Collection;
-use yii\base\Behavior;
 use yii\base\Event;
 use yii\base\InvalidConfigException;
 use yii\db\Expression;
@@ -574,67 +575,52 @@ JS, [
                 }
             }
 
-            $behavior = new class($this, $element, $this->sortable) extends Behavior {
-                public function __construct(
-                    private BaseRelationField $field,
-                    private ElementInterface $element,
-                    private bool $sortable,
-                ) {
-                    parent::__construct();
-                }
+            $query->attachBehavior(self::class, new EventBehavior([
+                ElementQuery::EVENT_BEFORE_PREPARE => function(
+                    CancelableEvent $event,
+                    ElementQuery $query,
+                ) use ($element) {
+                    $relationsAlias = sprintf('relations_%s', StringHelper::randomString(10));
+                    $query->innerJoin(
+                        [$relationsAlias => DbTable::RELATIONS],
+                        [
+                            'and',
+                            "[[$relationsAlias.targetId]] = [[elements.id]]",
+                            [
+                                "$relationsAlias.sourceId" => $element->id,
+                                "$relationsAlias.fieldId" => $this->id,
+                            ],
+                            [
+                                'or',
+                                ["$relationsAlias.sourceSiteId" => null],
+                                ["$relationsAlias.sourceSiteId" => $element->siteId],
+                            ],
+                        ]
+                    );
 
-                public function events(): array
-                {
-                    return [
-                        ElementQuery::EVENT_BEFORE_PREPARE => function() {
-                            /** @var ElementQuery $query */
-                            $query = $this->owner;
-                            $relationsAlias = sprintf('relations_%s', StringHelper::randomString(10));
-                            $query->innerJoin(
-                                [$relationsAlias => DbTable::RELATIONS],
-                                [
-                                    'and',
-                                    "[[$relationsAlias.targetId]] = [[elements.id]]",
-                                    [
-                                        "$relationsAlias.sourceId" => $this->element->id,
-                                        "$relationsAlias.fieldId" => $this->field->id,
-                                    ],
-                                    [
-                                        'or',
-                                        ["$relationsAlias.sourceSiteId" => null],
-                                        ["$relationsAlias.sourceSiteId" => $this->element->siteId],
-                                    ],
-                                ]
-                            );
+                    if ($this->sortable && !$this->maintainHierarchy && !$query->orderBy) {
+                        $query->orderBy(["$relationsAlias.sortOrder" => SORT_ASC]);
+                    }
 
-                            if ($this->sortable && !$this->field->maintainHierarchy && !$query->orderBy) {
-                                $query->orderBy(["$relationsAlias.sortOrder" => SORT_ASC]);
-                            }
+                    if ($this->maintainHierarchy && $query->id === null) {
+                        $structuresService = Craft::$app->getStructures();
 
-                            if ($this->field->maintainHierarchy && $query->id === null) {
-                                $structuresService = Craft::$app->getStructures();
+                        $structureElements = (clone($query))
+                            ->status(null)
+                            ->all();
 
-                                /** @var ElementInterface[] $structureElements */
-                                $structureElements = (clone($query))
-                                    ->status(null)
-                                    ->all();
+                        // Fill in any gaps
+                        $structuresService->fillGapsInElements($structureElements);
 
-                                // Fill in any gaps
-                                $structuresService->fillGapsInElements($structureElements);
+                        // Enforce the branch limit
+                        if ($this->branchLimit) {
+                            $structuresService->applyBranchLimitToElements($structureElements, $this->branchLimit);
+                        }
 
-                                // Enforce the branch limit
-                                if ($this->field->branchLimit) {
-                                    $structuresService->applyBranchLimitToElements($structureElements, $this->field->branchLimit);
-                                }
-
-                                $query->id(ArrayHelper::getColumn($structureElements, 'id'));
-                            }
-                        },
-                    ];
-                }
-            };
-
-            $query->attachBehaviors([$behavior]);
+                        $query->id(ArrayHelper::getColumn($structureElements, 'id'));
+                    }
+                },
+            ]));
 
             // Set the query up for lazy eager loading
             $query->eagerLoadSourceElement = $element;
