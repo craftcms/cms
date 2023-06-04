@@ -15,14 +15,17 @@ use craft\base\Field;
 use craft\base\FieldInterface;
 use craft\base\GqlInlineFragmentFieldInterface;
 use craft\base\GqlInlineFragmentInterface;
+use craft\behaviors\EventBehavior;
 use craft\db\Query;
 use craft\db\Table as DbTable;
+use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\db\MatrixBlockQuery;
 use craft\elements\ElementCollection;
 use craft\elements\MatrixBlock;
 use craft\errors\InvalidFieldException;
 use craft\events\BlockTypesEvent;
+use craft\events\CancelableEvent;
 use craft\fieldlayoutelements\CustomField;
 use craft\fields\conditions\EmptyFieldConditionRule;
 use craft\gql\arguments\elements\MatrixBlock as MatrixBlockArguments;
@@ -46,6 +49,7 @@ use craft\web\assets\matrix\MatrixAsset;
 use craft\web\assets\matrixsettings\MatrixSettingsAsset;
 use GraphQL\Type\Definition\Type;
 use Illuminate\Support\Collection;
+use yii\base\Event;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
 use yii\db\Expression;
@@ -546,19 +550,31 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
     {
         // Existing element?
         if ($element && $element->id) {
-            $query->ownerId = $element->id;
+            $query->attachBehavior(self::class, new EventBehavior([
+                ElementQuery::EVENT_BEFORE_PREPARE => function(
+                    CancelableEvent $event,
+                    MatrixBlockQuery $query,
+                ) use ($element) {
+                    $query->ownerId = $element->id;
 
-            // Clear out id=false if this query was populated previously
-            if ($query->id === false) {
-                $query->id = null;
-            }
+                    // Clear out id=false if this query was populated previously
+                    if ($query->id === false) {
+                        $query->id = null;
+                    }
 
-            // If the owner is a revision, allow revision blocks to be returned as well
-            if ($element->getIsRevision()) {
-                $query
-                    ->revisions(null)
-                    ->trashed(null);
-            }
+                    // If the owner is a revision, allow revision blocks to be returned as well
+                    if ($element->getIsRevision()) {
+                        $query
+                            ->revisions(null)
+                            ->trashed(null);
+                    }
+                },
+            ]));
+
+        // todo: uncomment when Matrix sub-fields go global, and `fieldLayout:field` is globally-supported
+//            // Set the query up for lazy eager loading
+//            $query->eagerLoadSourceElement = $element;
+//            $query->eagerLoadHandle = $this->handle;
         } else {
             $query->id = false;
         }
