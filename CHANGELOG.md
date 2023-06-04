@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- The `utils/fix-field-layout-uids` command now adds missing field layout component UUIDs.
 - Fixed an error that could occur when updating a plugin with the `craft update` command, if it provided a new migration but still had the same schema version.
 - Fixed a bug where CSS classes that contained a pseudo-selector weren’t getting namespaced. ([#13251](https://github.com/craftcms/cms/pull/13251))
 - Fixed a JavaScript error that could occur when renaming assets without URLs. ([#13223](https://github.com/craftcms/cms/pull/13223))
