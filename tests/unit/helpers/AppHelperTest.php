@@ -41,15 +41,28 @@ class AppHelperTest extends TestCase
         putenv('TEST_GETENV_ENV');
 
         putenv('TEST_GETENV_TRUE_ENV=true');
-        self::assertSame(true, App::env('TEST_GETENV_TRUE_ENV'));
+        self::assertTrue(App::env('TEST_GETENV_TRUE_ENV'));
         putenv('TEST_GETENV_TRUE_ENV');
 
         putenv('TEST_GETENV_FALSE_ENV=false');
-        self::assertSame(false, App::env('TEST_GETENV_FALSE_ENV'));
+        self::assertFalse(App::env('TEST_GETENV_FALSE_ENV'));
         putenv('TEST_GETENV_FALSE_ENV');
 
         self::assertSame(CRAFT_TESTS_PATH, App::env('CRAFT_TESTS_PATH'));
-        self::assertSame(null, App::env('TEST_NONEXISTENT_ENV'));
+        self::assertNull(App::env('TEST_NONEXISTENT_ENV'));
+
+        $testSecretsFilePath = getenv('CRAFT_SECRETS_PATH');
+        if (!$testSecretsFilePath) {
+            $testSecretsFilePath = Craft::$app->getPath()->getConfigPath() . '/secrets.php';
+            putenv('CRAFT_SECRETS_PATH='.$testSecretsFilePath);
+            file_put_contents($testSecretsFilePath, '<?php return ["foo" => "bar"];');
+            putenv('foo=baz');
+            self::assertSame('bar', App::env('foo'));
+            putenv('foo');
+            putenv('CRAFT_SECRETS_PATH');
+
+            unlink($testSecretsFilePath);
+        }
     }
 
     /**
@@ -87,7 +100,7 @@ class AppHelperTest extends TestCase
      */
     public function testParseEnv(): void
     {
-        self::assertSame(null, App::parseEnv(null));
+        self::assertNull(App::parseEnv(null));
         self::assertSame(CRAFT_TESTS_PATH, App::parseEnv('$CRAFT_TESTS_PATH'));
         self::assertSame('CRAFT_TESTS_PATH', App::parseEnv('CRAFT_TESTS_PATH'));
         self::assertSame('$TEST_MISSING', App::parseEnv('$TEST_MISSING'));
