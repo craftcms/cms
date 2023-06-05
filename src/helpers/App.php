@@ -102,7 +102,7 @@ class App
     public static function env(string $name): mixed
     {
         $secretsPath = getenv('CRAFT_SECRETS_PATH');
-        if (!isset(self::$_secrets) && $secretsPath &&  is_file($secretsPath)) {
+        if (!isset(self::$_secrets) && $secretsPath && is_file($secretsPath)) {
             self::$_secrets = include $secretsPath;
         }
 

@@ -54,7 +54,7 @@ class AppHelperTest extends TestCase
         $testSecretsFilePath = getenv('CRAFT_SECRETS_PATH');
         if (!$testSecretsFilePath) {
             $testSecretsFilePath = Craft::$app->getPath()->getConfigPath() . '/secrets.php';
-            putenv('CRAFT_SECRETS_PATH='.$testSecretsFilePath);
+            putenv('CRAFT_SECRETS_PATH=' . $testSecretsFilePath);
             file_put_contents($testSecretsFilePath, '<?php return ["foo" => "bar"];');
             putenv('foo=baz');
             self::assertSame('bar', App::env('foo'));
