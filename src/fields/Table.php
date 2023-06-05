@@ -136,7 +136,7 @@ class Table extends Field
                 if (in_array($col['type'], ['date', 'time'], true)) {
                     foreach ($config['defaults'] as &$row) {
                         if (isset($row[$colId])) {
-                            $row[$colId] = DateTimeHelper::toIso8601($row[$colId]) ?: null;
+                            $row[$colId] = DateTimeHelper::toDateTime($row[$colId]) ?: null;
                         }
                     }
                 }

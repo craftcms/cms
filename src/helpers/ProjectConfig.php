@@ -271,6 +271,10 @@ class ProjectConfig
             $value = (array)$value;
         }
 
+        if ($value instanceof \DateTime) {
+            $value = DateTimeHelper::toIso8601($value);
+        }
+
         if (!empty($value) && !is_scalar($value) && !is_array($value)) {
             Craft::info('Unexpected data encountered in config data - ' . print_r($value, true));
             throw new InvalidConfigException('Unexpected data encountered in config data');
