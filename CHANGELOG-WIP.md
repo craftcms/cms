@@ -85,6 +85,7 @@
 - Removed `craft\controllers\Sections::actionReorderEntryTypes()`.
 - Removed `craft\controllers\Sections::actionSaveEntryType()`.
 - Removed `craft\elements\db\ElementQuery::$contentTable`.
+- Removed `craft\fields\Matrix::getBlockTypeFields()`.
 - Removed `craft\helpers\Db::GLUE_AND`, `GLUE_OR`, and `GLUE_NOT`. `craft\db\QueryParam::AND`, `OR`, and `NOT` can be used instead.
 - Removed `craft\helpers\Db::extractGlue()`. `craft\db\QueryParam::extractOperator()` can be used instead.
 - Removed `craft\helpers\ElementHelper::fieldColumn()`.

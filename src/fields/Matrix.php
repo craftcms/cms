@@ -152,11 +152,6 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
     private ?array $_blockTypes = null;
 
     /**
-     * @var MatrixBlockType[]|null The block types' fields
-     */
-    private ?array $_blockTypeFields = null;
-
-    /**
      * @inheritdoc
      */
     public function __construct($config = [])
@@ -233,57 +228,6 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
         }
 
         return $this->_blockTypes = Craft::$app->getMatrix()->getBlockTypesByFieldId($this->id);
-    }
-
-    /**
-     * Returns all of the block types' fields.
-     *
-     * @param int[]|null $typeIds The Matrix block type IDs to return fields for.
-     * If null, all block type fields will be returned.
-     * @return FieldInterface[]
-     */
-    public function getBlockTypeFields(?array $typeIds = null): array
-    {
-        if (!isset($this->_blockTypeFields)) {
-            $this->_blockTypeFields = [];
-
-            if (!empty($blockTypes = $this->getBlockTypes())) {
-                // Get the fields & layout IDs
-                $contexts = [];
-                $layoutIds = [];
-                foreach ($blockTypes as $blockType) {
-                    $contexts[] = 'matrixBlockType:' . $blockType->uid;
-                    $layoutIds[] = $blockType->fieldLayoutId;
-                }
-
-                /** @var FieldInterface[] $fieldsById */
-                $fieldsById = ArrayHelper::index(Craft::$app->getFields()->getAllFields($contexts), 'id');
-
-                // Get all the field IDs grouped by layout ID
-                $fieldIdsByLayoutId = Craft::$app->getFields()->getFieldIdsByLayoutIds($layoutIds);
-
-                // Assemble the fields
-                foreach ($blockTypes as $blockType) {
-                    if (isset($fieldIdsByLayoutId[$blockType->fieldLayoutId])) {
-                        foreach ($fieldIdsByLayoutId[$blockType->fieldLayoutId] as $fieldId) {
-                            if (isset($fieldsById[$fieldId])) {
-                                $this->_blockTypeFields[$blockType->id][] = $fieldsById[$fieldId];
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        $fields = [];
-
-        foreach ($this->_blockTypeFields as $blockTypeId => $blockTypeFields) {
-            if ($typeIds === null || in_array($blockTypeId, $typeIds)) {
-                array_push($fields, ...$blockTypeFields);
-            }
-        }
-
-        return $fields;
     }
 
     /**
