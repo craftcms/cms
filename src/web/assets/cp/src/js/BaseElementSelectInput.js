@@ -477,8 +477,8 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
       } else {
         this.modal.settings.multiSelectParams.selectedCount =
           this.getSelectedElementIds().length;
-        this.modal.settings.multiSelectParams.selectedTopLevelElementIds =
-          this.getTopLevelSelectedElementIds();
+        this.modal.settings.multiSelectParams.selectedBranchRootElementIds =
+          this.getSelectedBranchRootElementIds();
         this.modal.show();
       }
     },
@@ -505,7 +505,8 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
             multiSelectLimit: this.settings.limit,
             branchLimit: this.settings.branchLimit,
             selectedCount: this.getSelectedElementIds().length,
-            selectedTopLevelElementIds: this.getTopLevelSelectedElementIds(),
+            selectedBranchRootElementIds:
+              this.getSelectedBranchRootElementIds(),
           },
           hideOnSelect: !this.settings.maintainHierarchy,
           showSiteMenu: this.settings.showSiteMenu,
@@ -519,7 +520,7 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
       );
     },
 
-    getTopLevelSelectedElementIds: function () {
+    getSelectedBranchRootElementIds: function () {
       var ids = [];
 
       for (var i = 0; i < this.$elements.length; i++) {

@@ -134,7 +134,8 @@ export default Base.extend(
 
       // not grabbing this in init because it can change from one modal opening to another without page reload
       const selectedCount = this._getSelectedCount();
-      const selectedTopLevelElementIds = this._getSelectedTopLevelElementIds();
+      const selectedBranchRootElementIds =
+        this._getSelectedBranchRootElementIds();
 
       if (this.multiSelectLimit === null && this.branchLimit === null) {
         allow = true;
@@ -155,7 +156,7 @@ export default Base.extend(
           !this._isBranchLimitReached(
             $item,
             this.branchLimit,
-            selectedTopLevelElementIds,
+            selectedBranchRootElementIds,
             currentlySelectedItems
           )
         ) {
@@ -171,63 +172,76 @@ export default Base.extend(
      *
      * @param $item
      * @param branchLimit
-     * @param selectedTopLevelElementIds
+     * @param selectedBranchRootElementIds
      * @returns {boolean}
      * @private
      */
     _isBranchLimitReached: function (
       $item,
       branchLimit,
-      selectedTopLevelElementIds,
+      selectedBranchRootElementIds,
       currentlySelectedItems
     ) {
       let limitReached = false;
       const level = $item.data('level');
 
-      let newlySelectedBranchRoots = {};
-      currentlySelectedItems.each((i, e) => {
-        let parent = this._getTopLevelParent($(e));
-        if (newlySelectedBranchRoots[parent.data('id')] === undefined) {
-          newlySelectedBranchRoots[parent.data('id')] = parent[0];
-        }
-      });
-      let currentlySelectedItemsCount = Object.keys(
+      // get newly selected branch roots
+      const newlySelectedBranchRoots = this._getNewlySelectedBranchRoots(
+        currentlySelectedItems
+      );
+
+      let currentlySelectedRootsCount = Object.keys(
         newlySelectedBranchRoots
       ).length;
 
       // are we about to go over the limit?
       if (
-        selectedTopLevelElementIds.length + currentlySelectedItemsCount >=
+        selectedBranchRootElementIds.length + currentlySelectedRootsCount >=
         branchLimit
       ) {
-        // if it's a top-level item, it's a simple comparison and we're over
-        if (level == 1) {
-          limitReached = true;
-        } else {
-          const $topLevelParent = this._getTopLevelParent($item);
+        const $branchRoot = this._getBranchRoot($item);
 
-          // if top-level item is already selected and saved (in selectedTopLevelElementIds)
-          // or selected during this modal open (newlySelectedBranchRoots)
-          // allow the selection of additional descendants
-          if (
-            $topLevelParent.length == 1 &&
-            (Craft.inArray(
-              $topLevelParent.data('id'),
-              selectedTopLevelElementIds
-            ) ||
-              Craft.inArray(
-                $topLevelParent.data('id').toString(),
-                Object.keys(newlySelectedBranchRoots)
-              ))
-          ) {
-            limitReached = false;
-          } else {
-            limitReached = true;
-          }
+        // if top-level item is already selected and saved (in selectedBranchRootElementIds)
+        // or selected during this modal open (newlySelectedBranchRoots)
+        // allow the selection of elements from that branch
+        if (
+          $branchRoot.length == 1 &&
+          (Craft.inArray(
+            $branchRoot.data('id'),
+            selectedBranchRootElementIds
+          ) ||
+            Craft.inArray(
+              $branchRoot.data('id').toString(),
+              Object.keys(newlySelectedBranchRoots)
+            ))
+        ) {
+          limitReached = false;
+        } else {
+          limitReached = true;
         }
       }
 
       return limitReached;
+    },
+
+    /**
+     * Get branch roots of newly selected elements
+     *
+     * @param currentlySelectedItems
+     * @returns {{}}
+     * @private
+     */
+    _getNewlySelectedBranchRoots: function (currentlySelectedItems) {
+      let newlySelectedBranchRoots = {};
+
+      currentlySelectedItems.each((i, e) => {
+        let parent = this._getBranchRoot($(e));
+        if (newlySelectedBranchRoots[parent.data('id')] === undefined) {
+          newlySelectedBranchRoots[parent.data('id')] = parent[0];
+        }
+      });
+
+      return newlySelectedBranchRoots;
     },
 
     /**
@@ -262,7 +276,8 @@ export default Base.extend(
     _getLastForSelectAll: function () {
       // not grabbing this in init because it can change from one modal opening to another without page reload
       const selectedCount = this._getSelectedCount();
-      const selectedTopLevelElementIds = this._getSelectedTopLevelElementIds();
+      const selectedBranchRootElementIds =
+        this._getSelectedBranchRootElementIds();
       let last;
 
       // if multiSelect and branchLimit are not specified - do what we used to do
@@ -286,18 +301,18 @@ export default Base.extend(
         // if we have a branchLimit
         if (this.branchLimit !== null) {
           // get all available top-level items
-          let $topLevelItems = this._getTopLevelItems();
-          const limit = this.branchLimit - selectedTopLevelElementIds.length;
+          let $branchRootItems = this._getBranchRootItems();
+          const limit = this.branchLimit - selectedBranchRootElementIds.length;
 
           // if the limit minus top-level elements already selected is less or equal to all top-level items
           // do what we used to do - truly select all
-          if ($topLevelItems.length <= limit) {
+          if ($branchRootItems.length <= limit) {
             last = this.$items.length - 1;
           } else {
             // select "all" up to the limit;
             // the limit is last top-level item past the limit minus 1
             this.deselectAll();
-            last = this.getItemIndex($topLevelItems[limit]) - 1;
+            last = this.getItemIndex($branchRootItems[limit]) - 1;
           }
         }
       }
@@ -317,7 +332,8 @@ export default Base.extend(
 
       // not grabbing this in init because it can change from one modal opening to another without page reload
       const selectedCount = this._getSelectedCount();
-      const selectedTopLevelElementIds = this._getSelectedTopLevelElementIds();
+      const selectedBranchRootElementIds =
+        this._getSelectedBranchRootElementIds();
 
       let last = this.getItemIndex($item);
       let rangeItemsCount = Math.abs(this.first - last) + 1;
@@ -340,22 +356,22 @@ export default Base.extend(
         // if we have the branchLimit
         if (this.branchLimit !== null) {
           // get all available top-level items
-          let $topLevelItems = this._getTopLevelItems();
+          let $branchRootItems = this._getBranchRootItems();
           const remainingLimit =
-            this.branchLimit - selectedTopLevelElementIds.length;
+            this.branchLimit - selectedBranchRootElementIds.length;
 
           // get top level parent for the first item in the range
-          let $firstTopLevelParent = this._getTopLevelParent(this.$first);
+          let $firstBranchRoot = this._getBranchRoot(this.$first);
 
           // get top level parent for the last item in the range
           let $last = this.$items.eq(last);
-          let $lastTopLevelParent = this._getTopLevelParent($last);
+          let $lastBranchRoot = this._getBranchRoot($last);
 
           // get rangeItemsCount for the top level items
           rangeItemsCount =
             Math.abs(
-              $topLevelItems.index($firstTopLevelParent[0]) -
-                $topLevelItems.index($lastTopLevelParent[0])
+              $branchRootItems.index($firstBranchRoot[0]) -
+                $branchRootItems.index($lastBranchRoot[0])
             ) + 1;
 
           // if we're about to go over the limit - calculate what last can be
@@ -363,22 +379,22 @@ export default Base.extend(
             // calculate the diff
             let diff = rangeItemsCount - remainingLimit;
             // get the top-level index of the last parent
-            let lastTopLevelParentIndex = $topLevelItems.index(
-              $lastTopLevelParent[0]
+            let lastBranchRootIndex = $branchRootItems.index(
+              $lastBranchRoot[0]
             );
 
             // get last allowed top-level item index
             if (this.first < last) {
-              let lastAllowedTopLevelIndex = lastTopLevelParentIndex - diff;
+              let lastAllowedBranchRootIndex = lastBranchRootIndex - diff;
               last =
                 this.getItemIndex(
-                  $topLevelItems[lastAllowedTopLevelIndex + 1]
+                  $branchRootItems[lastAllowedBranchRootIndex + 1]
                 ) - 1;
             } else {
-              let lastAllowedTopLevelIndex = lastTopLevelParentIndex + diff;
+              let lastAllowedBranchRootIndex = lastBranchRootIndex + diff;
               last =
                 this.getItemIndex(
-                  $topLevelItems[lastAllowedTopLevelIndex - 1]
+                  $branchRootItems[lastAllowedBranchRootIndex - 1]
                 ) + 1;
             }
           }
@@ -1179,45 +1195,46 @@ export default Base.extend(
     },
 
     /**
-     * Get the selectedTopLevelElementIds values
+     * Get the selectedBranchRootElementIds values
      * @returns {*[]}
      * @private
      */
-    _getSelectedTopLevelElementIds: function () {
+    _getSelectedBranchRootElementIds: function () {
       let ids = [];
 
       if (
         this.settings.multiSelectParams !== null &&
-        this.settings.multiSelectParams.selectedTopLevelElementIds !== undefined
+        this.settings.multiSelectParams.selectedBranchRootElementIds !==
+          undefined
       ) {
-        ids = this.settings.multiSelectParams.selectedTopLevelElementIds;
+        ids = this.settings.multiSelectParams.selectedBranchRootElementIds;
       }
 
       return ids;
     },
 
     /**
-     * Get the top-level (level 1) parent of an $item
+     * Get the branch root (top-level (level 1) parent) of an $item
      *
      * @param $item
      * @returns {*|jQuery|HTMLElement}
      * @private
      */
-    _getTopLevelParent: function ($item) {
-      let $topLevelParent = $item;
+    _getBranchRoot: function ($item) {
+      let $branchRoot = $item;
       let level = $item.data('level');
       let $prev = $item.prev('tr');
 
       while (level != 1) {
         level = $prev.data('level');
         if (level == 1) {
-          $topLevelParent = $prev;
+          $branchRoot = $prev;
           break;
         }
         $prev = $prev.prev('tr');
       }
 
-      return $topLevelParent;
+      return $branchRoot;
     },
 
     /**
@@ -1226,7 +1243,7 @@ export default Base.extend(
      * @returns {*|jQuery|HTMLElement}
      * @private
      */
-    _getTopLevelItems: function () {
+    _getBranchRootItems: function () {
       return this.$items.filter((i, el) => {
         return $(el).data('level') == 1;
       });
