@@ -67,20 +67,6 @@ class App
     private static array $_secrets;
 
     /**
-     * @event ModelEvent The event that is triggered after the secret is retrieved.
-     *
-     * ---
-     * ```php
-     * use craft\helpers\App;
-     *
-     * Craft::$app->on(App::EVENT_AFTER_RETRIEVE_SECRET, function() {
-     *     // ...
-     * });
-     * ```
-     */
-    public const EVENT_AFTER_RETRIEVE_SECRET = 'afterRetrieveSecret';
-
-    /**
      * Returns whether Dev Mode is enabled.
      *
      * @return bool
@@ -107,13 +93,7 @@ class App
         }
 
         if (isset(self::$_secrets[$name])) {
-            // Fire an 'afterRetrieveSecret' event
-            $event = new Event([
-                'data' => [$name => self::$_secrets[$name]],
-            ]);
-            Craft::$app->trigger(static::EVENT_AFTER_RETRIEVE_SECRET, $event);
-
-            return static::normalizeValue($event->data[$name]);
+            return static::normalizeValue(self::$_secrets[$name]);
         }
 
         if (isset($_SERVER[$name])) {
