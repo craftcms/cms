@@ -20,7 +20,6 @@ use craft\db\Table;
 use craft\errors\ElementNotFoundException;
 use craft\errors\InvalidPluginException;
 use craft\helpers\App;
-use craft\helpers\ArrayHelper;
 use craft\helpers\ProjectConfig;
 use craft\models\FieldLayout;
 use craft\queue\BaseJob;
@@ -592,19 +591,12 @@ class Craft extends Yii2
      */
     public function getFieldLayoutByFieldHandle(string $fieldHandle): ?FieldLayout
     {
-        if (!$field = \Craft::$app->getFields()->getFieldByHandle($fieldHandle)) {
-            return null;
-        }
-
-        $layoutId = (new Query())
-            ->select(['layoutId'])
-            ->from([Table::FIELDLAYOUTFIELDS])
-            ->where(['fieldId' => $field->id])
-            ->column();
-
-        if ($layoutId) {
-            $layoutId = ArrayHelper::firstValue($layoutId);
-            return \Craft::$app->getFields()->getLayoutById($layoutId);
+        foreach (\Craft::$app->getFields()->getAllLayouts() as $fieldLayout) {
+            foreach ($fieldLayout->getCustomFields() as $field) {
+                if ($field->handle === $fieldHandle) {
+                    return $fieldLayout;
+                }
+            }
         }
 
         return null;

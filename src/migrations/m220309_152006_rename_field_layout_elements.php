@@ -9,8 +9,8 @@ use craft\fieldlayoutelements\assets\AltField;
 use craft\fieldlayoutelements\assets\AssetTitleField;
 use craft\fieldlayoutelements\entries\EntryTitleField;
 use craft\helpers\Db;
+use craft\helpers\Json;
 use craft\helpers\StringHelper;
-use craft\records\FieldLayoutTab as FieldLayoutTabRecord;
 use craft\services\ProjectConfig;
 
 /**
@@ -78,26 +78,25 @@ class m220309_152006_rename_field_layout_elements extends Migration
                     if ($modified) {
                         $fieldLayoutId = Db::idByUid(Table::FIELDLAYOUTS, $fieldLayoutUid);
                         if ($fieldLayoutId) {
-                            $this->delete(Table::FIELDLAYOUTTABS, [
+                            $this->delete('{{%fieldlayouttabs}}', [
                                 'layoutId' => $fieldLayoutId,
                             ]);
                             foreach ($fieldLayoutConfig['tabs'] as $sortOrder => $tabConfig) {
-                                $tabRecord = new FieldLayoutTabRecord();
-                                $tabRecord->layoutId = $fieldLayoutId;
-                                $tabRecord->uid = $tabConfig['uid'] ?? StringHelper::UUID();
-                                $tabRecord->sortOrder = $tabConfig['sortOrder'] ?? $sortOrder;
                                 $tabName = $tabConfig['name'] ?? 'Content';
                                 if (!$this->db->getSupportsMb4()) {
-                                    $tabRecord->name = StringHelper::encodeMb4($tabName);
-                                } else {
-                                    $tabRecord->name = $tabName;
+                                    $tabName = StringHelper::encodeMb4($tabName);
                                 }
-                                $tabRecord->settings = [
-                                    'userCondition' => $tabConfig['userCondition'] ?? null,
-                                    'elementCondition' => $tabConfig['elementCondition'] ?? null,
-                                ];
-                                $tabRecord->elements = $tabConfig['elements'];
-                                $tabRecord->save();
+                                Db::insert('{{%fieldlayouttabs}}', [
+                                    'layoutId' => $fieldLayoutId,
+                                    'name' => $tabName,
+                                    'sortOrder' => $tabConfig['sortOrder'] ?? $sortOrder,
+                                    'settings' => Json::encode([
+                                        'userCondition' => $tabConfig['userCondition'] ?? null,
+                                        'elementCondition' => $tabConfig['elementCondition'] ?? null,
+                                    ]),
+                                    'elements' => Json::encode($tabConfig['elements']),
+                                    'uid' => $tabConfig['uid'] ?? StringHelper::UUID(),
+                                ]);
                             }
                         }
                     }

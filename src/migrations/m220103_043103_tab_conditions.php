@@ -3,7 +3,6 @@
 namespace craft\migrations;
 
 use craft\db\Migration;
-use craft\db\Table;
 
 /**
  * m220103_043103_tab_conditions migration.
@@ -15,7 +14,7 @@ class m220103_043103_tab_conditions extends Migration
      */
     public function safeUp(): bool
     {
-        $this->addColumn(Table::FIELDLAYOUTTABS, 'settings', $this->text()->after('name'));
+        $this->addColumn('{{%fieldlayouttabs}}', 'settings', $this->text()->after('name'));
         return true;
     }
 
@@ -24,7 +23,7 @@ class m220103_043103_tab_conditions extends Migration
      */
     public function safeDown(): bool
     {
-        $this->dropColumn(Table::FIELDLAYOUTTABS, 'settings');
+        $this->dropColumn('{{%fieldlayouttabs}}', 'settings');
         return true;
     }
 }

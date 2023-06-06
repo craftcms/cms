@@ -226,7 +226,7 @@ class FieldLayout extends Model
     /**
      * @var FieldLayoutTab[]
      */
-    private array $_tabs;
+    private array $_tabs = [];
 
     /**
      * @inheritdoc
@@ -284,14 +284,6 @@ class FieldLayout extends Model
      */
     public function getTabs(): array
     {
-        if (!isset($this->_tabs)) {
-            if ($this->id) {
-                $this->setTabs(Craft::$app->getFields()->getLayoutTabsById($this->id));
-            } else {
-                $this->setTabs([]);
-            }
-        }
-
         return $this->_tabs;
     }
 

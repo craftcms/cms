@@ -56,9 +56,6 @@ use craft\models\FieldLayoutTab;
 use craft\records\Field as FieldRecord;
 use craft\records\FieldGroup as FieldGroupRecord;
 use craft\records\FieldLayout as FieldLayoutRecord;
-use craft\records\FieldLayoutField as FieldLayoutFieldRecord;
-use craft\records\FieldLayoutTab as FieldLayoutTabRecord;
-use Illuminate\Support\Collection;
 use Throwable;
 use yii\base\Component;
 use yii\base\Exception;
@@ -188,19 +185,10 @@ class Fields extends Component
     private ?MemoizableArray $_fields = null;
 
     /**
-     * @var FieldLayout[]|null[]
+     * @var MemoizableArray<FieldLayout>|null
+     * @see _layouts()
      */
-    private array $_layoutsById = [];
-
-    /**
-     * @var FieldLayout[]
-     */
-    private array $_layoutsByType = [];
-
-    /**
-     * @var FieldLayout[][]
-     */
-    private array $_allLayoutsByType = [];
+    private ?MemoizableArray $_layouts = null;
 
     /**
      * @var array
@@ -1009,6 +997,122 @@ class Fields extends Component
     // -------------------------------------------------------------------------
 
     /**
+     * Returns a memoizable array of all field layouts.
+     *
+     * @return MemoizableArray<FieldLayout>
+     */
+    private function _layouts(): MemoizableArray
+    {
+        if (!isset($this->_layouts)) {
+            $layouts = [];
+            if (Craft::$app->getIsInstalled()) {
+                foreach ($this->_createLayoutQuery()->all() as $result) {
+                    if (array_key_exists('config', $result)) {
+                        $config = ArrayHelper::remove($result, 'config');
+                        if ($config) {
+                            $result += Json::decode($config);
+                        }
+                        $loadTabs = false;
+                    } else {
+                        $loadTabs = true;
+                    }
+
+                    $layouts[] = $layout = $this->createLayout($result);
+
+                    // todo: remove after the next breakpoint
+                    if ($loadTabs) {
+                        $this->_legacyTabsByLayoutId($layout);
+                    }
+                }
+            }
+            $this->_layouts = new MemoizableArray($layouts);
+        }
+
+        return $this->_layouts;
+    }
+
+    private function _legacyTabsByLayoutId(FieldLayout $layout): void
+    {
+        $tabQuery = (new Query())
+            ->select([
+                'id',
+                'layoutId',
+                'name',
+                'elements',
+                'sortOrder',
+                'uid',
+            ])
+            ->from('{{%fieldlayouttabs}}')
+            ->where(['layoutId' => $layout->id])
+            ->orderBy(['sortOrder' => SORT_ASC]);
+
+        if (Craft::$app->getDb()->columnExists('{{%fieldlayouttabs}}', 'settings')) {
+            $tabQuery->addSelect('settings');
+        }
+
+        $tabResults = $tabQuery->all();
+        $isMysql = Craft::$app->getDb()->getIsMysql();
+        $tabs = [];
+
+        foreach ($tabResults as $tabResult) {
+            if ($isMysql) {
+                $tabResult['name'] = html_entity_decode($tabResult['name'], ENT_QUOTES | ENT_HTML5);
+            }
+
+            if (array_key_exists('settings', $tabResult)) {
+                $settings = ArrayHelper::remove($tabResult, 'settings');
+                if ($settings) {
+                    $tabResult += Json::decode($settings);
+                }
+            }
+
+            $elements = ArrayHelper::remove($tabResult, 'elements');
+            if ($elements) {
+                $elements = Json::decode($elements);
+            } else {
+                // old school
+                $elements = [];
+
+                $fieldResults = (new Query())
+                    ->select(['fieldId', 'required'])
+                    ->from(['{{%fieldlayoutfields}}'])
+                    ->where(['tabId' => $tabResult['id']])
+                    ->orderBy(['sortOrder' => SORT_ASC])
+                    ->all();
+
+                foreach ($fieldResults as $fieldResult) {
+                    $field = $this->getFieldById($fieldResult['fieldId']);
+                    if ($field) {
+                        $elements[] = new CustomField($field, [
+                            'uid' => StringHelper::UUID(),
+                            'required' => $fieldResult['required'],
+                        ]);
+                    }
+                }
+            }
+
+            // Set the layout before anything else
+            $tabResult = ['layout' => $layout] + $tabResult;
+            $tabResult['elements'] = $elements;
+
+            $tabs[] = new FieldLayoutTab($tabResult);
+        }
+
+        $layout->setTabs($tabs);
+    }
+
+    /**
+     * Returns all saved field layouts.
+     *
+     * @return FieldLayout[]
+     * @since 5.0.0
+     */
+    public function getAllLayouts(): array
+    {
+        return $this->_layouts()->all();
+    }
+
+    /**
      * Returns a field layout by its ID.
      *
      * @param int $layoutId The field layout’s ID
@@ -1016,15 +1120,18 @@ class Fields extends Component
      */
     public function getLayoutById(int $layoutId): ?FieldLayout
     {
-        if (array_key_exists($layoutId, $this->_layoutsById)) {
-            return $this->_layoutsById[$layoutId];
-        }
+        return $this->_layouts()->firstWhere('id', $layoutId);
+    }
 
-        $result = $this->_createLayoutQuery()
-            ->andWhere(['id' => $layoutId])
-            ->one();
-
-        return $this->_layoutsById[$layoutId] = $result ? new FieldLayout($result) : null;
+    /**
+     * Returns a field layout by its UUID.
+     *
+     * @param string $uid The field layout’s UUID
+     * @return FieldLayout|null The field layout, or null if it doesn’t exist
+     */
+    public function getLayoutByUid(string $uid): ?FieldLayout
+    {
+        return $this->_layouts()->firstWhere('uid', $uid);
     }
 
     /**
@@ -1036,33 +1143,7 @@ class Fields extends Component
      */
     public function getLayoutsByIds(array $layoutIds): array
     {
-        $response = [];
-
-        // Don't re-fetch any layouts we've already memoized
-        foreach ($layoutIds as $key => $id) {
-            if (array_key_exists($id, $this->_layoutsById)) {
-                if ($this->_layoutsById[$id] !== null) {
-                    $response[$id] = $this->_layoutsById[$id];
-                }
-                unset($layoutIds[$key]);
-            }
-        }
-
-        if (!empty($layoutIds)) {
-            $result = $this->_createLayoutQuery()
-                ->andWhere(['id' => $layoutIds])
-                ->all();
-
-            $layouts = [];
-
-            foreach ($result as $row) {
-                $this->_layoutsById[$row['id']] = $response[$row['id']] = $layouts[$row['id']] = new FieldLayout($row);
-            }
-
-            $this->_loadTabs($layouts);
-        }
-
-        return $response;
+        return $this->_layouts()->whereIn('id', $layoutIds)->all();
     }
 
     /**
@@ -1074,27 +1155,8 @@ class Fields extends Component
      */
     public function getLayoutByType(string $type): FieldLayout
     {
-        if (!isset($this->_layoutsByType[$type])) {
-            if (Craft::$app->getIsInstalled()) {
-                $result = $this->_createLayoutQuery()
-                    ->andWhere(['type' => $type])
-                    ->one();
-            }
-
-            if (isset($result)) {
-                if (!isset($this->_layoutsById[$result['id']])) {
-                    $this->_layoutsById[$result['id']] = new FieldLayout($result);
-                }
-
-                $this->_layoutsByType[$type] = $this->_layoutsById[$result['id']];
-            } else {
-                $this->_layoutsByType[$type] = new FieldLayout([
-                    'type' => $type,
-                ]);
-            }
-        }
-
-        return $this->_layoutsByType[$type];
+        return $this->_layouts()->firstWhere('type', $type)
+            ?? new FieldLayout(['type' => $type]);
     }
 
     /**
@@ -1107,104 +1169,7 @@ class Fields extends Component
      */
     public function getLayoutsByType(string $type): array
     {
-        if (!isset($this->_allLayoutsByType[$type])) {
-            $results = $this->_createLayoutQuery()
-                ->andWhere(['type' => $type])
-                ->all();
-
-            $this->_allLayoutsByType[$type] = [];
-
-            foreach ($results as $result) {
-                $this->_allLayoutsByType[$type][] = new FieldLayout($result);
-            }
-        }
-
-        return $this->_allLayoutsByType[$type];
-    }
-
-    /**
-     * Returns a layout's tabs by its ID(s).
-     *
-     * @param int|int[] $layoutId The field layout’s ID(s)
-     * @return FieldLayoutTab[] The field layout’s tabs
-     */
-    public function getLayoutTabsById(int|array $layoutId): array
-    {
-        if (empty($layoutId)) {
-            return [];
-        }
-
-        $result = $this->_createLayoutTabQuery()
-            ->where(['layoutId' => $layoutId])
-            ->all();
-
-        $isMysql = Craft::$app->getDb()->getIsMysql();
-
-        return array_map(function(array $row) use ($isMysql) {
-            return $this->_createLayoutTabFromRow($row, $isMysql);
-        }, $result);
-    }
-
-    /**
-     * Instantiates a field layout tab from its database row.
-     *
-     * @param array $row
-     * @param bool $isMysql
-     * @return FieldLayoutTab
-     */
-    private function _createLayoutTabFromRow(array $row, bool $isMysql): FieldLayoutTab
-    {
-        if ($isMysql) {
-            $row['name'] = html_entity_decode($row['name'], ENT_QUOTES | ENT_HTML5);
-        }
-
-        $settings = ArrayHelper::remove($row, 'settings');
-        if ($settings) {
-            $row = array_merge($row, Json::decode($settings));
-        }
-
-        return new FieldLayoutTab($row);
-    }
-
-    /**
-     * Fetches the layout tabs for the given layouts.
-     *
-     * @param FieldLayout[] $layouts Field layouts indexed by their IDs
-     */
-    private function _loadTabs(array $layouts): void
-    {
-        if (empty($layouts)) {
-            return;
-        }
-
-        $tabs = Collection::make($this->getLayoutTabsById(array_keys($layouts)));
-
-        Collection::make($layouts)
-            ->each(function(FieldLayout $layout) use ($tabs) {
-                $layout->setTabs($tabs->where('layoutId', $layout->id)->all());
-            });
-    }
-
-    /**
-     * Returns the field IDs grouped by layout IDs, for a given set of layout IDs.
-     *
-     * @param int[] $layoutIds The field layout IDs
-     * @return array
-     */
-    public function getFieldIdsByLayoutIds(array $layoutIds): array
-    {
-        $results = (new Query())
-            ->select(['layoutId', 'fieldId'])
-            ->from([Table::FIELDLAYOUTFIELDS])
-            ->where(['layoutId' => $layoutIds])
-            ->all();
-
-        $fieldIdsByLayoutId = [];
-        foreach ($results as $result) {
-            $fieldIdsByLayoutId[$result['layoutId']][] = $result['fieldId'];
-        }
-
-        return $fieldIdsByLayoutId;
+        return $this->_layouts()->where('type', $type)->all();
     }
 
     /**
@@ -1287,9 +1252,6 @@ class Fields extends Component
             return false;
         }
 
-        // Fetch the tabs in case they aren’t memoized yet or don't have their own field records yet
-        $tabs = $layout->getTabs();
-
         if (!$isNewLayout) {
             // Get the current layout
             /** @var FieldLayoutRecord|null $layoutRecord */
@@ -1300,25 +1262,13 @@ class Fields extends Component
             if (!$layoutRecord) {
                 throw new Exception('Invalid field layout ID: ' . $layout->id);
             }
-
-            // Get all the current tab records, indexed by ID
-            $tabRecords = FieldLayoutTabRecord::find()
-                ->where(['layoutId' => $layout->id])
-                ->indexBy('id')
-                ->all();
-
-            // Delete all the field layout - field joins up front (we'll recreate the ones we need later)
-            // note: apparently cascade deletes are unreliable in MySQL in this case for some reason
-            Db::delete(Table::FIELDLAYOUTFIELDS, [
-                'layoutId' => $layout->id,
-            ]);
         } else {
             $layoutRecord = new FieldLayoutRecord();
-            $tabRecords = [];
         }
 
         // Save the layout
         $layoutRecord->type = $layout->type;
+        $layoutRecord->config = $layout->getConfig();
         $layoutRecord->uid = $layout->uid;
 
         if (!$isNewLayout) {
@@ -1337,57 +1287,6 @@ class Fields extends Component
 
         $layout->uid = $layoutRecord->uid;
 
-        foreach ($tabs as $tab) {
-            if ($tab->id && isset($tabRecords[$tab->id])) {
-                /** @var FieldLayoutTabRecord $tabRecord */
-                $tabRecord = $tabRecords[$tab->id];
-                unset($tabRecords[$tab->id]);
-            } else {
-                if (!isset($tab->uid)) {
-                    $tab->uid = StringHelper::UUID();
-                }
-                $tabRecord = new FieldLayoutTabRecord();
-                $tabRecord->layoutId = $layout->id;
-                $tabRecord->uid = $tab->uid;
-            }
-
-            $tabRecord->sortOrder = $tab->sortOrder;
-            if (!Craft::$app->getDb()->getSupportsMb4()) {
-                $tabRecord->name = StringHelper::encodeMb4($tab->name);
-            } else {
-                $tabRecord->name = $tab->name;
-            }
-            $tabRecord->settings = $tab->toArray(['userCondition', 'elementCondition']);
-            $tabRecord->elements = $tab->getElementConfigs();
-            $tabRecord->save(false);
-            $tab->id = $tabRecord->id;
-
-            foreach ($tab->getElements() as $i => $layoutElement) {
-                if ($layoutElement instanceof CustomField) {
-                    $fieldUid = $layoutElement->getFieldUid();
-                    $field = $this->getFieldByUid($fieldUid);
-
-                    if (!$field) {
-                        Craft::warning("Invalid field UUID: $fieldUid", __METHOD__);
-                        continue;
-                    }
-
-                    $fieldRecord = new FieldLayoutFieldRecord();
-                    $fieldRecord->layoutId = $layout->id;
-                    $fieldRecord->tabId = $tab->id;
-                    $fieldRecord->fieldId = $field->id;
-                    $fieldRecord->required = (bool)$layoutElement->required;
-                    $fieldRecord->sortOrder = $i;
-                    $fieldRecord->save(false);
-                }
-            }
-        }
-
-        // Delete any remaining tab records
-        foreach ($tabRecords as $tabRecord) {
-            $tabRecord->delete();
-        }
-
         // Fire an 'afterSaveFieldLayout' event
         if ($this->hasEventHandlers(self::EVENT_AFTER_SAVE_FIELD_LAYOUT)) {
             $this->trigger(self::EVENT_AFTER_SAVE_FIELD_LAYOUT, new FieldLayoutEvent([
@@ -1396,10 +1295,8 @@ class Fields extends Component
             ]));
         }
 
-        $this->_layoutsByType[$layout->type] = $this->_layoutsById[$layout->id] = $layout;
-
         // Clear caches
-        unset($this->_allLayoutsByType[$layout->type]);
+        $this->_layouts = null;
 
         return true;
     }
@@ -1453,9 +1350,7 @@ class Fields extends Component
         }
 
         // Clear caches
-        unset($this->_layoutsById[$layout->id]);
-        unset($this->_layoutsByType[$layout->type]);
-        unset($this->_allLayoutsByType[$layout->type]);
+        $this->_layouts = null;
 
         return true;
     }
@@ -1474,9 +1369,7 @@ class Fields extends Component
             ->execute();
 
         // Clear caches
-        $this->_layoutsById = [];
-        $this->_layoutsByType = [];
-        $this->_allLayoutsByType = [];
+        $this->_layouts = null;
 
         return (bool)$affectedRows;
     }
@@ -1495,9 +1388,7 @@ class Fields extends Component
             ->execute();
 
         // Clear caches
-        $this->_layoutsById = [];
-        $this->_layoutsByType = [];
-        $this->_allLayoutsByType = [];
+        $this->_layouts = null;
 
         return (bool)$affectedRows;
     }
@@ -1695,7 +1586,7 @@ class Fields extends Component
      */
     private function _createLayoutQuery(): Query
     {
-        return (new Query())
+        $query = (new Query())
             ->select([
                 'id',
                 'type',
@@ -1703,30 +1594,10 @@ class Fields extends Component
             ])
             ->from([Table::FIELDLAYOUTS])
             ->where(['dateDeleted' => null]);
-    }
 
-    /**
-     * Returns a Query object prepped for retrieving layout tabs.
-     *
-     * @return Query
-     */
-    private function _createLayoutTabQuery(): Query
-    {
-        $query = (new Query())
-            ->select([
-                'id',
-                'layoutId',
-                'name',
-                'elements',
-                'sortOrder',
-                'uid',
-            ])
-            ->from([Table::FIELDLAYOUTTABS])
-            ->orderBy(['sortOrder' => SORT_ASC]);
-
-        // todo: remove this after the next breakpoint
-        if (version_compare(Craft::$app->getInfo()->schemaVersion, '4.0.0.1', '>=')) {
-            $query->addSelect('settings');
+        // todo: remove after the next breakpoint
+        if (Craft::$app->getDb()->columnExists(Table::FIELDLAYOUTS, 'config')) {
+            $query->addSelect('config');
         }
 
         return $query;
