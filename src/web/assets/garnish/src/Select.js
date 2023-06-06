@@ -139,9 +139,13 @@ export default Base.extend(
       if (this.multiSelectLimit === null && this.branchLimit === null) {
         allow = true;
       } else {
+        const currentlySelectedItems = this.$items.filter((i, el) => {
+          return $(el).hasClass('sel');
+        });
+
         if (
           this.multiSelectLimit !== null &&
-          selectedCount < this.multiSelectLimit
+          selectedCount + currentlySelectedItems.length < this.multiSelectLimit
         ) {
           allow = true;
         }
@@ -151,7 +155,8 @@ export default Base.extend(
           !this._isBranchLimitReached(
             $item,
             this.branchLimit,
-            selectedTopLevelElementIds
+            selectedTopLevelElementIds,
+            currentlySelectedItems
           )
         ) {
           allow = true;
@@ -173,24 +178,47 @@ export default Base.extend(
     _isBranchLimitReached: function (
       $item,
       branchLimit,
-      selectedTopLevelElementIds
+      selectedTopLevelElementIds,
+      currentlySelectedItems
     ) {
       let limitReached = false;
       const level = $item.data('level');
 
-      if (selectedTopLevelElementIds.length >= branchLimit) {
-        // if item we're trying to select is top-level, it's a simple comparison
+      let newlySelectedBranchRoots = {};
+      currentlySelectedItems.each((i, e) => {
+        let parent = this._getTopLevelParent($(e));
+        if (newlySelectedBranchRoots[parent.data('id')] === undefined) {
+          newlySelectedBranchRoots[parent.data('id')] = parent[0];
+        }
+      });
+      let currentlySelectedItemsCount = Object.keys(
+        newlySelectedBranchRoots
+      ).length;
+
+      // are we about to go over the limit?
+      if (
+        selectedTopLevelElementIds.length + currentlySelectedItemsCount >=
+        branchLimit
+      ) {
+        // if it's a top-level item, it's a simple comparison and we're over
         if (level == 1) {
           limitReached = true;
         } else {
           const $topLevelParent = this._getTopLevelParent($item);
 
+          // if top-level item is already selected and saved (in selectedTopLevelElementIds)
+          // or selected during this modal open (newlySelectedBranchRoots)
+          // allow the selection of additional descendants
           if (
             $topLevelParent.length == 1 &&
-            Craft.inArray(
+            (Craft.inArray(
               $topLevelParent.data('id'),
               selectedTopLevelElementIds
-            )
+            ) ||
+              Craft.inArray(
+                $topLevelParent.data('id').toString(),
+                Object.keys(newlySelectedBranchRoots)
+              ))
           ) {
             limitReached = false;
           } else {
@@ -1176,21 +1204,17 @@ export default Base.extend(
      * @private
      */
     _getTopLevelParent: function ($item) {
+      let $topLevelParent = $item;
       let level = $item.data('level');
-      if (level == 1) {
-        return $item;
-      }
-
-      let $topLevelParent = 0;
       let $prev = $item.prev('tr');
 
-      while (level > 0) {
-        if ($prev.data('level') == 1) {
+      while (level != 1) {
+        level = $prev.data('level');
+        if (level == 1) {
           $topLevelParent = $prev;
           break;
         }
         $prev = $prev.prev('tr');
-        level--;
       }
 
       return $topLevelParent;
@@ -1203,14 +1227,9 @@ export default Base.extend(
      * @private
      */
     _getTopLevelItems: function () {
-      let $topLevelItems = $();
-      this.$items.each((i, el) => {
-        if ($(el).data('level') == 1) {
-          $topLevelItems.push(el);
-        }
+      return this.$items.filter((i, el) => {
+        return $(el).data('level') == 1;
       });
-
-      return $topLevelItems;
     },
   },
   {
