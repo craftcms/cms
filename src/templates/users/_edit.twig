@@ -70,7 +70,7 @@
         {{ redirectInput(CraftEdition == CraftPro and currentUser.can('editUsers') ? 'users' : 'dashboard') }}
         {{ hiddenInputs }}
 
-        <div id="account" class="flex-fields">
+        <div id="account" class="flex-fields" role="tabpanel" aria-labelledby="tab-account">
             {% include "users/_accountfields" %}
 
             {% if not isNewUser and showPhotoField %}
@@ -151,7 +151,7 @@
         {{ fieldsHtml|raw }}
 
         {% if showPermissionsTab %}
-            <div id="perms" class="flex-fields hidden">
+            <div id="perms" class="flex-fields hidden" role="tabpanel" aria-labelledby="tab-perms">
 
                 {% if canAssignUserGroups %}
                     <fieldset>
@@ -213,7 +213,7 @@
         {% endif %}
 
         {% if isCurrentUser %}
-            <div id="prefs" class="flex-fields hidden">
+            <div id="prefs" class="flex-fields hidden" role="tabpanel" aria-labelledby="tab-prefs">
                 <h2>{{ 'General'|t('app') }}</h2>
 
                 {{ forms.selectizeField({
