@@ -123,6 +123,12 @@ export default Base.extend(
       }
     },
 
+    /**
+     * Is selecting item allowed?
+     * @param $item
+     * @returns {boolean}
+     * @private
+     */
     _allowSelectItem: function ($item) {
       let allow = false;
 
@@ -155,6 +161,15 @@ export default Base.extend(
       return allow;
     },
 
+    /**
+     * Has branchLimit been reached for selecting (single) item?
+     *
+     * @param $item
+     * @param branchLimit
+     * @param selectedTopLevelElementIds
+     * @returns {boolean}
+     * @private
+     */
     _isBranchLimitReached: function (
       $item,
       branchLimit,
@@ -168,7 +183,7 @@ export default Base.extend(
         if (level == 1) {
           limitReached = true;
         } else {
-          let $topLevelParent = this._getTopLevelParent($item, level);
+          const $topLevelParent = this._getTopLevelParent($item);
 
           if (
             $topLevelParent.length == 1 &&
@@ -187,38 +202,16 @@ export default Base.extend(
       return limitReached;
     },
 
-    _getTopLevelParent: function ($item, level) {
-      if ($item.data('level') == 1) {
-        return $item;
-      }
-
-      // if the item is not top-level
-      // check if it's top-level parent is selected
-      // and if it is - allow the selection
-      let $topLevelParent = 0;
-      let $prev = $item.prev('tr');
-
-      while (level > 0) {
-        if ($prev.data('level') == 1) {
-          $topLevelParent = $prev;
-          break;
-        }
-        $prev = $prev.prev('tr');
-        level--;
-      }
-
-      return $topLevelParent;
-    },
-
+    /**
+     * Select All
+     */
     selectAll: function () {
       if (!this.settings.multi || !this.$items.length) {
         return;
       }
 
       this.first = 0;
-      // get last index for select all - it should be either the last available index
-      // or index that matches the limit set for the field (e.g. entries > max relations)
-      // alternatively - we can disallow selectAll if there's a limit and that limit is greater than the count of all items?
+      // get last index for select all
       this.last = this._getLastForSelectAll();
 
       this.$first = this.$items.eq(this.first);
@@ -230,60 +223,58 @@ export default Base.extend(
       this._selectItems(this.$items.slice(sliceFrom, sliceTo));
     },
 
+    /**
+     * Get last allowed index for select all.
+     * It should be either the last available index,
+     * or the index that matches the limit set for the field
+     *
+     * @returns {number}
+     * @private
+     */
     _getLastForSelectAll: function () {
       // not grabbing this in init because it can change from one modal opening to another without page reload
       const selectedCount = this._getSelectedCount();
       const selectedTopLevelElementIds = this._getSelectedTopLevelElementIds();
+      let last;
 
-      // if we don't have multiSelect and branch limits - do what we used to do
+      // if multiSelect and branchLimit are not specified - do what we used to do
       if (this.multiSelectLimit === null && this.branchLimit === null) {
-        this.last = this.$items.length - 1;
+        last = this.$items.length - 1;
       } else {
         // if we have a multiSelect limit
         if (this.multiSelectLimit !== null) {
           const limit = this.multiSelectLimit - selectedCount;
-          // if the limit minus elements already selected is less than all the items -
+          // if the limit minus elements already selected is less or equal to all the items -
           // do what we used to do - truly select all
           if (this.$items.length <= limit) {
-            this.last = this.$items.length - 1;
+            last = this.$items.length - 1;
           } else {
-            // select "all" until we reach the limit
+            // select "all" up to the limit
             this.deselectAll();
-            this.last = limit - 1;
+            last = limit - 1;
           }
         }
 
-        // if we have a branch limit
+        // if we have a branchLimit
         if (this.branchLimit !== null) {
-          // get available top-level items
+          // get all available top-level items
           let $topLevelItems = this._getTopLevelItems();
-
           const limit = this.branchLimit - selectedTopLevelElementIds.length;
 
-          // if the limit minus top-level elements already selected is less than all top-level items
+          // if the limit minus top-level elements already selected is less or equal to all top-level items
           // do what we used to do - truly select all
           if ($topLevelItems.length <= limit) {
-            this.last = this.$items.length - 1;
+            last = this.$items.length - 1;
           } else {
-            // select "all" until we reach the limit; limit is last top-level item past the limit minus 1
+            // select "all" up to the limit;
+            // the limit is last top-level item past the limit minus 1
             this.deselectAll();
-            this.last = this.getItemIndex($topLevelItems[limit]);
+            last = this.getItemIndex($topLevelItems[limit]) - 1;
           }
         }
       }
 
-      return this.last;
-    },
-
-    _getTopLevelItems: function () {
-      let $topLevelItems = $();
-      this.$items.each((i, el) => {
-        if ($(el).data('level') == 1) {
-          $topLevelItems.push(el);
-        }
-      });
-
-      return $topLevelItems;
+      return last;
     },
 
     /**
@@ -309,55 +300,59 @@ export default Base.extend(
           this.multiSelectLimit !== null &&
           this.multiSelectLimit - selectedCount < rangeItemsCount
         ) {
-          // TODO: do we need to think about bottom-up? CHECK!
           let diff = rangeItemsCount - (this.multiSelectLimit - selectedCount);
-          last = last - diff;
+
+          if (this.first < last) {
+            last = last - diff;
+          } else {
+            last = last + diff;
+          }
         }
 
-        // if we have the branch limit
+        // if we have the branchLimit
         if (this.branchLimit !== null) {
-          // get available top-level items
+          // get all available top-level items
           let $topLevelItems = this._getTopLevelItems();
           const remainingLimit =
             this.branchLimit - selectedTopLevelElementIds.length;
 
           // get top level parent for the first item in the range
-          let $firstTopLevelParent = this._getTopLevelParent(
-            this.$first,
-            this.$first.data('level')
-          );
+          let $firstTopLevelParent = this._getTopLevelParent(this.$first);
 
           // get top level parent for the last item in the range
           let $last = this.$items.eq(last);
-          let $lastTopLevelParent = this._getTopLevelParent(
-            $last,
-            $last.data('level')
-          );
+          let $lastTopLevelParent = this._getTopLevelParent($last);
 
           // get rangeItemsCount for the top level items
-          let rangeItemsCount =
+          rangeItemsCount =
             Math.abs(
               $topLevelItems.index($firstTopLevelParent[0]) -
                 $topLevelItems.index($lastTopLevelParent[0])
             ) + 1;
 
-          // if remainingLimit < rangeItemsCount
+          // if we're about to go over the limit - calculate what last can be
           if (remainingLimit < rangeItemsCount) {
             // calculate the diff
-            // and move last to the last child of the item before the first top level item outside of range
             let diff = rangeItemsCount - remainingLimit;
-            // get the top-level index of our last parent
+            // get the top-level index of the last parent
             let lastTopLevelParentIndex = $topLevelItems.index(
               $lastTopLevelParent[0]
             );
 
-            // TODO: do we need to think about bottom-up? CHECK!
             // get last allowed top-level item index
-            let lastAllowedTopLevelIndex = lastTopLevelParentIndex - diff;
-
-            last =
-              this.getItemIndex($topLevelItems[lastAllowedTopLevelIndex + 1]) -
-              1;
+            if (this.first < last) {
+              let lastAllowedTopLevelIndex = lastTopLevelParentIndex - diff;
+              last =
+                this.getItemIndex(
+                  $topLevelItems[lastAllowedTopLevelIndex + 1]
+                ) - 1;
+            } else {
+              let lastAllowedTopLevelIndex = lastTopLevelParentIndex + diff;
+              last =
+                this.getItemIndex(
+                  $topLevelItems[lastAllowedTopLevelIndex - 1]
+                ) + 1;
+            }
           }
         }
       }
@@ -1099,6 +1094,11 @@ export default Base.extend(
       }
     },
 
+    /**
+     * Get the multiSelect value
+     * @returns {?number}
+     * @private
+     */
     _getMultiSelectLimit: function () {
       let limit = null;
 
@@ -1111,6 +1111,13 @@ export default Base.extend(
 
       return limit;
     },
+
+    /**
+     * Get the branchLimit value
+     *
+     * @returns {?number}
+     * @private
+     */
     _getBranchLimit: function () {
       let limit = null;
 
@@ -1124,6 +1131,12 @@ export default Base.extend(
       return limit;
     },
 
+    /**
+     * Get the selectedCount value
+     *
+     * @returns {number}
+     * @private
+     */
     _getSelectedCount: function () {
       let count = 0;
 
@@ -1137,6 +1150,11 @@ export default Base.extend(
       return count;
     },
 
+    /**
+     * Get the selectedTopLevelElementIds values
+     * @returns {*[]}
+     * @private
+     */
     _getSelectedTopLevelElementIds: function () {
       let ids = [];
 
@@ -1148,6 +1166,51 @@ export default Base.extend(
       }
 
       return ids;
+    },
+
+    /**
+     * Get the top-level (level 1) parent of an $item
+     *
+     * @param $item
+     * @returns {*|jQuery|HTMLElement}
+     * @private
+     */
+    _getTopLevelParent: function ($item) {
+      let level = $item.data('level');
+      if (level == 1) {
+        return $item;
+      }
+
+      let $topLevelParent = 0;
+      let $prev = $item.prev('tr');
+
+      while (level > 0) {
+        if ($prev.data('level') == 1) {
+          $topLevelParent = $prev;
+          break;
+        }
+        $prev = $prev.prev('tr');
+        level--;
+      }
+
+      return $topLevelParent;
+    },
+
+    /**
+     * Get all top-level (level 1) items
+     *
+     * @returns {*|jQuery|HTMLElement}
+     * @private
+     */
+    _getTopLevelItems: function () {
+      let $topLevelItems = $();
+      this.$items.each((i, el) => {
+        if ($(el).data('level') == 1) {
+          $topLevelItems.push(el);
+        }
+      });
+
+      return $topLevelItems;
     },
   },
   {
