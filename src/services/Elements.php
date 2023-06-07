@@ -3379,9 +3379,19 @@ class Elements extends Component
             $siteElement->title = $element->title;
         }
 
-        // Copy the dirty attributes (except title, which may be translatable)
+        // Copy the slug value?
+        $test1 = $siteElement->getSlugTranslationKey();
+        $test2 = $element->getSlugTranslationKey();
+        if (
+            $element->slug !== null &&
+            $siteElement->getSlugTranslationKey() === $element->getSlugTranslationKey()
+        ) {
+            $siteElement->slug = $element->slug;
+        }
+
+        // Copy the dirty attributes (except title and slug, which may be translatable)
         $siteElement->setDirtyAttributes(array_filter($element->getDirtyAttributes(), function(string $attribute): bool {
-            return $attribute !== 'title';
+            return $attribute !== 'title' && $attribute !== 'slug';
         }));
 
         // Copy any non-translatable field values

@@ -111,6 +111,44 @@
         }) }}
     </div>
 
+    <hr />
+
+    {% if craft.app.getIsMultiSite() %}
+        <div id="slug-container">
+            {{ forms.selectField({
+                label: 'Slug Translation Method'|t('app'),
+                instructions: 'How should {type} slugs be translated?'|t('app', {
+                    type: lowerTypeName,
+                }),
+                id: 'slug-translation-method',
+                name: 'slugTranslationMethod',
+                options: [
+                    { value: 'none', label: 'Not translatable'|t('app') },
+                    { value: 'site', label: 'Translate for each site'|t('app') },
+                    { value: 'siteGroup', label: 'Translate for each site group'|t('app') },
+                    { value: 'language', label: 'Translate for each language'|t('app') },
+                    { value: 'custom', label: 'Custom…'|t('app') },
+                ]|filter,
+                value: entryType.slugTranslationMethod,
+                toggle: true,
+                targetPrefix: 'slug-translation-method-'
+            }) }}
+
+            <div id="slug-translation-method-custom" {% if entryType.slugTranslationMethod != 'custom' %}class="hidden"{% endif %}>
+                {{ forms.textField({
+                    label: 'Slug Translation Key Format'|t('app'),
+                    instructions: 'Template that defines the Slug field’s custom “translation key” format. {type} slugs will be copied to all sites that produce the same key. For example, to make slugs translatable based on the first two characters of the site handle, you could enter `{site.handle[:2]}`.'|t('app', {
+                        type: typeName,
+                    }),
+                    id: 'slug-translation-key-format',
+                    name: 'slugTranslationKeyFormat',
+                    value: entryType.slugTranslationKeyFormat,
+                    errors: entryType.getErrors('slugTranslationKeyFormat')
+                }) }}
+            </div>
+        </div>
+    {% endif %}
+
     <hr>
 
     {{ forms.fieldLayoutDesignerField({

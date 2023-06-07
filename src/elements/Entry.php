@@ -1002,6 +1002,31 @@ class Entry extends Element implements ExpirableElementInterface
     /**
      * @inheritdoc
      */
+    public function getIsSlugTranslatable(): bool
+    {
+        return ($this->getType()->slugTranslationMethod !== Field::TRANSLATION_METHOD_NONE);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getSlugTranslationDescription(): ?string
+    {
+        return ElementHelper::translationDescription($this->getType()->slugTranslationMethod);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getSlugTranslationKey(): string
+    {
+        $type = $this->getType();
+        return ElementHelper::translationKey($this, $type->slugTranslationMethod, $type->slugTranslationKeyFormat);
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function getFieldLayout(): ?FieldLayout
     {
         if (($fieldLayout = parent::getFieldLayout()) !== null) {
