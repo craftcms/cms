@@ -1562,7 +1562,7 @@ JS;
                 'width' => $this->getWidth(),
                 'height' => $this->getHeight(),
                 'srcset' => $sizes ? $this->getSrcset($sizes) : false,
-                'alt' => $this->alt ?? $this->title,
+                'alt' => $this->getThumbAlt(),
             ]);
         } else {
             $img = null;
@@ -1997,6 +1997,11 @@ JS;
             return null;
         }
 
+        $extension = $this->getExtension();
+        if (!Image::canManipulateAsImage($extension)) {
+            return $extension;
+        }
+
         return $this->alt;
     }
 
@@ -2038,7 +2043,7 @@ JS;
         return Html::tag('img', '', [
             'sizes' => "{$thumbSizes[0][0]}px",
             'srcset' => implode(', ', $srcsets),
-            'alt' => $this->alt ?? $this->title,
+            'alt' => $this->getThumbAlt(),
         ]);
     }
 
