@@ -423,7 +423,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
      * Update uploaded byte count.
      */
     _onUploadProgress: function (event, data) {
-      var progress = parseInt((data.loaded / data.total) * 100, 10);
+      var progress = parseInt(Math.min(data.loaded / data.total, 1) * 100, 10);
       this.progressBar.setProgressPercentage(progress);
     },
 
@@ -435,7 +435,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
      * @private
      */
     _onUploadSuccess: function (event, data) {
-      const {result} = data;
+      const result = data.result || data;
 
       // Add the uploaded file to the selected ones, if appropriate
       this.selectElementAfterUpdate(result.assetId);
@@ -476,8 +476,13 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
      * On Upload Failure.
      */
     _onUploadFailure: function (event, data) {
-      const response = data.response();
-      let {message, filename} = response?.jqXHR?.responseJSON || {};
+      let dataObj = data;
+
+      if (typeof data.response === 'function') {
+        dataObj = data.response()?.jqXHR?.responseJSON || {};
+      }
+
+      let {message, filename} = dataObj;
 
       if (!message) {
         message = filename
