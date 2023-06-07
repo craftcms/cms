@@ -133,7 +133,7 @@ export default Base.extend(
 
       this.first = 0;
       // get last index for select all
-      this.last = this._getLastForSelectAll();
+      this.last = this._getLastIndexForSelectAll();
 
       this.$first = this.$items.eq(this.first);
       this.$last = this.$items.eq(this.last);
@@ -154,78 +154,7 @@ export default Base.extend(
 
       this.deselectAll();
 
-      // not grabbing this in init because it can change from one modal opening to another without page reload
-      const selectedCount = this._getSelectedCount();
-      const selectedBranchRootElementIds =
-        this._getSelectedBranchRootElementIds();
-
-      let last = this.getItemIndex($item);
-      let rangeItemsCount = Math.abs(this.first - last) + 1;
-
-      if (this.multiSelectLimit !== null || this.branchLimit !== null) {
-        // if we have the multiSelect limit, and we're about to go over it
-        if (
-          this.multiSelectLimit !== null &&
-          this.multiSelectLimit - selectedCount < rangeItemsCount
-        ) {
-          let diff = rangeItemsCount - (this.multiSelectLimit - selectedCount);
-
-          if (this.first < last) {
-            last = last - diff;
-          } else {
-            last = last + diff;
-          }
-        }
-
-        // if we have the branchLimit
-        if (this.branchLimit !== null) {
-          // get all available top-level items
-          let $branchRootItems = this._getBranchRootItems();
-          const remainingLimit =
-            this.branchLimit - selectedBranchRootElementIds.length;
-
-          // get top level parent for the first item in the range
-          let $firstBranchRoot = this._getBranchRoot(this.$first);
-
-          // get top level parent for the last item in the range
-          let $last = this.$items.eq(last);
-          let $lastBranchRoot = this._getBranchRoot($last);
-
-          // get rangeItemsCount for the top level items
-          rangeItemsCount =
-            Math.abs(
-              $branchRootItems.index($firstBranchRoot[0]) -
-                $branchRootItems.index($lastBranchRoot[0])
-            ) + 1;
-
-          // if we're about to go over the limit - calculate what last can be
-          if (remainingLimit < rangeItemsCount) {
-            // calculate the diff
-            let diff = rangeItemsCount - remainingLimit;
-            // get the top-level index of the last parent
-            let lastBranchRootIndex = $branchRootItems.index(
-              $lastBranchRoot[0]
-            );
-
-            // get last allowed top-level item index
-            if (this.first < last) {
-              let lastAllowedBranchRootIndex = lastBranchRootIndex - diff;
-              last =
-                this.getItemIndex(
-                  $branchRootItems[lastAllowedBranchRootIndex + 1]
-                ) - 1;
-            } else {
-              let lastAllowedBranchRootIndex = lastBranchRootIndex + diff;
-              last =
-                this.getItemIndex(
-                  $branchRootItems[lastAllowedBranchRootIndex - 1]
-                ) + 1;
-            }
-          }
-        }
-      }
-
-      this.last = last;
+      this.last = this._getLastIndexForSelectRange($item);
       this.$last = this.$items.eq(this.last);
 
       this.setFocusableItem(this.$last);
@@ -1166,7 +1095,7 @@ export default Base.extend(
      * @returns {number}
      * @private
      */
-    _getLastForSelectAll: function () {
+    _getLastIndexForSelectAll: function () {
       // not grabbing this in init because it can change from one modal opening to another without page reload
       const selectedCount = this._getSelectedCount();
       const selectedBranchRootElementIds =
@@ -1206,6 +1135,88 @@ export default Base.extend(
             // the limit is last top-level item past the limit minus 1
             this.deselectAll();
             last = this.getItemIndex($branchRootItems[limit]) - 1;
+          }
+        }
+      }
+
+      return last;
+    },
+
+    /**
+     * Get last allowed index for select range.
+     *
+     * @param $item
+     * @returns {number}
+     * @private
+     */
+    _getLastIndexForSelectRange: function ($item) {
+      // not grabbing this in init because it can change from one modal opening to another without page reload
+      const selectedCount = this._getSelectedCount();
+      const selectedBranchRootElementIds =
+        this._getSelectedBranchRootElementIds();
+
+      let last = this.getItemIndex($item);
+      let rangeItemsCount = Math.abs(this.first - last) + 1;
+
+      if (this.multiSelectLimit !== null || this.branchLimit !== null) {
+        // if we have the multiSelect limit, and we're about to go over it
+        if (
+          this.multiSelectLimit !== null &&
+          this.multiSelectLimit - selectedCount < rangeItemsCount
+        ) {
+          let diff = rangeItemsCount - (this.multiSelectLimit - selectedCount);
+
+          if (this.first < last) {
+            last = last - diff;
+          } else {
+            last = last + diff;
+          }
+        }
+
+        // if we have the branchLimit
+        if (this.branchLimit !== null) {
+          // get all available top-level items
+          let $branchRootItems = this._getBranchRootItems();
+          const remainingLimit =
+            this.branchLimit - selectedBranchRootElementIds.length;
+
+          // get top level parent for the first item in the range
+          let $firstBranchRoot = this._getBranchRoot(this.$first);
+
+          // get top level parent for the last item in the range
+          let $last = this.$items.eq(last);
+          let $lastBranchRoot = this._getBranchRoot($last);
+
+          // get rangeItemsCount for the top level items
+          rangeItemsCount =
+            Math.abs(
+              $branchRootItems.index($firstBranchRoot[0]) -
+                $branchRootItems.index($lastBranchRoot[0])
+            ) + 1;
+
+          // if we're about to go over the limit - calculate what last can be
+          if (remainingLimit < rangeItemsCount) {
+            // calculate the diff
+            let diff = rangeItemsCount - remainingLimit;
+            // get the top-level index of the last parent
+            let lastBranchRootIndex = $branchRootItems.index(
+              $lastBranchRoot[0]
+            );
+
+            // get last allowed top-level item index
+            if (this.first < last) {
+              let lastAllowedBranchRootIndex = lastBranchRootIndex - diff;
+              last =
+                this.getItemIndex(
+                  $branchRootItems[lastAllowedBranchRootIndex + 1]
+                ) - 1;
+            } else {
+              let lastAllowedBranchRootIndex = lastBranchRootIndex + diff;
+              last =
+                this.getItemIndex(
+                  $branchRootItems[lastAllowedBranchRootIndex - 1]
+                ) + 1;
+            }
           }
         }
       }
