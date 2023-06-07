@@ -124,127 +124,6 @@ export default Base.extend(
     },
 
     /**
-     * Is selecting item allowed?
-     * @param $item
-     * @returns {boolean}
-     * @private
-     */
-    _allowSelectItem: function ($item) {
-      let allow = false;
-
-      // not grabbing this in init because it can change from one modal opening to another without page reload
-      const selectedCount = this._getSelectedCount();
-      const selectedBranchRootElementIds =
-        this._getSelectedBranchRootElementIds();
-
-      if (this.multiSelectLimit === null && this.branchLimit === null) {
-        allow = true;
-      } else {
-        const currentlySelectedItems = this.$items.filter((i, el) => {
-          return $(el).hasClass('sel');
-        });
-
-        if (
-          this.multiSelectLimit !== null &&
-          selectedCount + currentlySelectedItems.length < this.multiSelectLimit
-        ) {
-          allow = true;
-        }
-
-        if (
-          this.branchLimit !== null &&
-          !this._isBranchLimitReached(
-            $item,
-            this.branchLimit,
-            selectedBranchRootElementIds,
-            currentlySelectedItems
-          )
-        ) {
-          allow = true;
-        }
-      }
-
-      return allow;
-    },
-
-    /**
-     * Has branchLimit been reached for selecting (single) item?
-     *
-     * @param $item
-     * @param branchLimit
-     * @param selectedBranchRootElementIds
-     * @returns {boolean}
-     * @private
-     */
-    _isBranchLimitReached: function (
-      $item,
-      branchLimit,
-      selectedBranchRootElementIds,
-      currentlySelectedItems
-    ) {
-      let limitReached = false;
-      const level = $item.data('level');
-
-      // get newly selected branch roots
-      const newlySelectedBranchRoots = this._getNewlySelectedBranchRoots(
-        currentlySelectedItems
-      );
-
-      let currentlySelectedRootsCount = Object.keys(
-        newlySelectedBranchRoots
-      ).length;
-
-      // are we about to go over the limit?
-      if (
-        selectedBranchRootElementIds.length + currentlySelectedRootsCount >=
-        branchLimit
-      ) {
-        const $branchRoot = this._getBranchRoot($item);
-
-        // if top-level item is already selected and saved (in selectedBranchRootElementIds)
-        // or selected during this modal open (newlySelectedBranchRoots)
-        // allow the selection of elements from that branch
-        if (
-          $branchRoot.length == 1 &&
-          (Craft.inArray(
-            $branchRoot.data('id'),
-            selectedBranchRootElementIds
-          ) ||
-            Craft.inArray(
-              $branchRoot.data('id').toString(),
-              Object.keys(newlySelectedBranchRoots)
-            ))
-        ) {
-          limitReached = false;
-        } else {
-          limitReached = true;
-        }
-      }
-
-      return limitReached;
-    },
-
-    /**
-     * Get branch roots of newly selected elements
-     *
-     * @param currentlySelectedItems
-     * @returns {{}}
-     * @private
-     */
-    _getNewlySelectedBranchRoots: function (currentlySelectedItems) {
-      let newlySelectedBranchRoots = {};
-
-      currentlySelectedItems.each((i, e) => {
-        let parent = this._getBranchRoot($(e));
-        if (newlySelectedBranchRoots[parent.data('id')] === undefined) {
-          newlySelectedBranchRoots[parent.data('id')] = parent[0];
-        }
-      });
-
-      return newlySelectedBranchRoots;
-    },
-
-    /**
      * Select All
      */
     selectAll: function () {
@@ -263,61 +142,6 @@ export default Base.extend(
       let sliceTo = this.last + 1;
 
       this._selectItems(this.$items.slice(sliceFrom, sliceTo));
-    },
-
-    /**
-     * Get last allowed index for select all.
-     * It should be either the last available index,
-     * or the index that matches the limit set for the field
-     *
-     * @returns {number}
-     * @private
-     */
-    _getLastForSelectAll: function () {
-      // not grabbing this in init because it can change from one modal opening to another without page reload
-      const selectedCount = this._getSelectedCount();
-      const selectedBranchRootElementIds =
-        this._getSelectedBranchRootElementIds();
-      let last;
-
-      // if multiSelect and branchLimit are not specified - do what we used to do
-      if (this.multiSelectLimit === null && this.branchLimit === null) {
-        last = this.$items.length - 1;
-      } else {
-        // if we have a multiSelect limit
-        if (this.multiSelectLimit !== null) {
-          const limit = this.multiSelectLimit - selectedCount;
-          // if the limit minus elements already selected is less or equal to all the items -
-          // do what we used to do - truly select all
-          if (this.$items.length <= limit) {
-            last = this.$items.length - 1;
-          } else {
-            // select "all" up to the limit
-            this.deselectAll();
-            last = limit - 1;
-          }
-        }
-
-        // if we have a branchLimit
-        if (this.branchLimit !== null) {
-          // get all available top-level items
-          let $branchRootItems = this._getBranchRootItems();
-          const limit = this.branchLimit - selectedBranchRootElementIds.length;
-
-          // if the limit minus top-level elements already selected is less or equal to all top-level items
-          // do what we used to do - truly select all
-          if ($branchRootItems.length <= limit) {
-            last = this.$items.length - 1;
-          } else {
-            // select "all" up to the limit;
-            // the limit is last top-level item past the limit minus 1
-            this.deselectAll();
-            last = this.getItemIndex($branchRootItems[limit]) - 1;
-          }
-        }
-      }
-
-      return last;
     },
 
     /**
@@ -1211,6 +1035,182 @@ export default Base.extend(
       }
 
       return ids;
+    },
+
+    /**
+     * Is selecting item allowed?
+     * @param $item
+     * @returns {boolean}
+     * @private
+     */
+    _allowSelectItem: function ($item) {
+      let allow = false;
+
+      // not grabbing this in init because it can change from one modal opening to another without page reload
+      const selectedCount = this._getSelectedCount();
+      const selectedBranchRootElementIds =
+        this._getSelectedBranchRootElementIds();
+
+      if (this.multiSelectLimit === null && this.branchLimit === null) {
+        allow = true;
+      } else {
+        const currentlySelectedItems = this.$items.filter((i, el) => {
+          return $(el).hasClass('sel');
+        });
+
+        if (
+          this.multiSelectLimit !== null &&
+          selectedCount + currentlySelectedItems.length < this.multiSelectLimit
+        ) {
+          allow = true;
+        }
+
+        if (
+          this.branchLimit !== null &&
+          !this._isBranchLimitReached(
+            $item,
+            this.branchLimit,
+            selectedBranchRootElementIds,
+            currentlySelectedItems
+          )
+        ) {
+          allow = true;
+        }
+      }
+
+      return allow;
+    },
+
+    /**
+     * Has branchLimit been reached for selecting item (incl cmd+click)?
+     *
+     * @param $item
+     * @param branchLimit
+     * @param selectedBranchRootElementIds
+     * @returns {boolean}
+     * @private
+     */
+    _isBranchLimitReached: function (
+      $item,
+      branchLimit,
+      selectedBranchRootElementIds,
+      currentlySelectedItems
+    ) {
+      let limitReached = false;
+      const level = $item.data('level');
+
+      // get newly selected branch roots
+      const newlySelectedBranchRoots = this._getNewlySelectedBranchRoots(
+        currentlySelectedItems
+      );
+
+      const currentlySelectedRootsCount = Object.keys(
+        newlySelectedBranchRoots
+      ).length;
+
+      // are we about to go over the limit?
+      if (
+        selectedBranchRootElementIds.length + currentlySelectedRootsCount >=
+        branchLimit
+      ) {
+        const $branchRoot = this._getBranchRoot($item);
+
+        // if top-level item is already selected and saved (in selectedBranchRootElementIds)
+        // or selected during this modal open (newlySelectedBranchRoots)
+        // allow the selection of elements from that branch
+        if (
+          $branchRoot.length == 1 &&
+          (Craft.inArray(
+            $branchRoot.data('id'),
+            selectedBranchRootElementIds
+          ) ||
+            Craft.inArray(
+              $branchRoot.data('id').toString(),
+              Object.keys(newlySelectedBranchRoots)
+            ))
+        ) {
+          limitReached = false;
+        } else {
+          limitReached = true;
+        }
+      }
+
+      return limitReached;
+    },
+
+    /**
+     * Get branch roots of newly selected elements
+     *
+     * @param currentlySelectedItems
+     * @returns {{}}
+     * @private
+     */
+    _getNewlySelectedBranchRoots: function (currentlySelectedItems) {
+      let newlySelectedBranchRoots = {};
+
+      currentlySelectedItems.each((i, e) => {
+        let parent = this._getBranchRoot($(e));
+        if (newlySelectedBranchRoots[parent.data('id')] === undefined) {
+          newlySelectedBranchRoots[parent.data('id')] = parent[0];
+        }
+      });
+
+      return newlySelectedBranchRoots;
+    },
+
+    /**
+     * Get last allowed index for select all.
+     * It should be either the last available index,
+     * or the index that matches the limit set for the field
+     *
+     * @returns {number}
+     * @private
+     */
+    _getLastForSelectAll: function () {
+      // not grabbing this in init because it can change from one modal opening to another without page reload
+      const selectedCount = this._getSelectedCount();
+      const selectedBranchRootElementIds =
+        this._getSelectedBranchRootElementIds();
+      let last;
+
+      // if multiSelect and branchLimit are not specified - do what we used to do
+      if (this.multiSelectLimit === null && this.branchLimit === null) {
+        last = this.$items.length - 1;
+      } else {
+        // if we have a multiSelect limit
+        if (this.multiSelectLimit !== null) {
+          const limit = this.multiSelectLimit - selectedCount;
+          // if the limit minus elements already selected is less or equal to all the items -
+          // do what we used to do - truly select all
+          if (this.$items.length <= limit) {
+            last = this.$items.length - 1;
+          } else {
+            // select "all" up to the limit
+            this.deselectAll();
+            last = limit - 1;
+          }
+        }
+
+        // if we have a branchLimit
+        if (this.branchLimit !== null) {
+          // get all available top-level items
+          let $branchRootItems = this._getBranchRootItems();
+          const limit = this.branchLimit - selectedBranchRootElementIds.length;
+
+          // if the limit minus top-level elements already selected is less or equal to all top-level items
+          // do what we used to do - truly select all
+          if ($branchRootItems.length <= limit) {
+            last = this.$items.length - 1;
+          } else {
+            // select "all" up to the limit;
+            // the limit is last top-level item past the limit minus 1
+            this.deselectAll();
+            last = this.getItemIndex($branchRootItems[limit]) - 1;
+          }
+        }
+      }
+
+      return last;
     },
 
     /**
