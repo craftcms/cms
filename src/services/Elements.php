@@ -3394,8 +3394,6 @@ class Elements extends Component
         }
 
         // Copy the slug value?
-        $test1 = $siteElement->getSlugTranslationKey();
-        $test2 = $element->getSlugTranslationKey();
         if (
             $element->slug !== null &&
             $siteElement->getSlugTranslationKey() === $element->getSlugTranslationKey()
