@@ -33,28 +33,8 @@
     disabled: static,
 }) }}
 
-{{ forms.textField({
-    label: "First Name"|t('app'),
-    id: 'firstName',
-    name: 'firstName',
-    value: user.firstName,
-    autocomplete: false,
-    errors: user.getErrors('firstName'),
-    inputAttributes: {
-        data: {lpignore: 'true'},
-    },
-    disabled: static,
-}) }}
+{# it shouldn't be a part of the user slideout like all tabs except custom fields aren't #}
+{% if nameCardsHtml is defined %}
+    {{ nameCardsHtml|raw }}
+{% endif %}
 
-{{ forms.textField({
-    label: "Last Name"|t('app'),
-    id: 'lastName',
-    name: 'lastName',
-    value: user.lastName,
-    autocomplete: false,
-    errors: user.getErrors('lastName'),
-    inputAttributes: {
-        data: {lpignore: 'true'},
-    },
-    disabled: static,
-}) }}

@@ -13,6 +13,7 @@ use craft\base\ElementInterface;
 use craft\base\FieldLayoutElement;
 use craft\behaviors\DraftBehavior;
 use craft\elements\Address;
+use craft\elements\User;
 use craft\enums\LicenseKeyStatus;
 use craft\errors\InvalidHtmlTagException;
 use craft\errors\InvalidPluginException;
@@ -1271,6 +1272,86 @@ class Cp
         }
 
         return static::fieldHtml('template:_includes/forms/autosuggest.twig', $config);
+    }
+
+    /**
+     * Renders name card.
+     *
+     * @param User $user
+     * @return string
+     * @since 4.5.0
+     */
+    public static function nameCardHtml(User $user): string
+    {
+        $config = [
+            'id' => sprintf('namefields%s', mt_rand()),
+        ];
+
+        $view = Craft::$app->getView();
+
+        $view->registerJsWithVars(fn($selector, $settings) => <<<JS
+new Craft.NameCard($($selector), $settings);
+JS, [
+            sprintf('#%s', $view->namespaceInputId($config['id'])),
+            [],
+        ]);
+
+        $actionMenuId = sprintf('name-card-action-menu-%s', mt_rand());
+
+        return
+            Html::beginTag('ul', [
+                'id' => $config['id'],
+                'class' => 'name-cards',
+            ]) .
+            Html::beginTag('li', [
+                'class' => 'name-card',
+                'data' => [
+                    'id' => $user->id,
+                ],
+            ]) .
+            Html::beginTag('div', ['class' => 'name-card-header']) .
+            Html::tag('h2', Html::encode($user->fullName), [
+                'class' => array_filter([
+                    'name-card-label',
+                    !$user->fullName ? 'hidden' : null,
+                ]),
+            ]) .
+            Html::beginTag('div', [
+                'class' => 'address-card-header-actions',
+                'data' => [
+                    'wrapper' => true,
+                ],
+            ]) .
+            Html::button('', [
+                'class' => ['btn editbtn'],
+                'title' => Craft::t('app', 'Edit'),
+                'aria' => [
+                    'label' => Craft::t('app', 'Edit'),
+                ],
+                'data' => [
+                    'icon' => 'edit',
+                ],
+            ]) .
+            Html::button('', [
+                'class' => ['btn closebtn'],
+                'title' => Craft::t('app', 'Close'),
+                'aria' => [
+                    'label' => Craft::t('app', 'Close'),
+                ],
+                'data' => [
+                    'icon' => 'remove',
+                ],
+            ]) .
+            Html::endTag('div') . // .name-card-header-actions
+
+            Html::endTag('div') . // .name-card-header
+            Craft::$app->getView()->renderTemplate('users/_namecardbody.twig', [
+                'user' => $user,
+                'parsedNameParts' => [],
+                'isNewUser' => $user->id === null,
+            ]) .
+            Html::endTag('li') . // .name-card .
+            Html::endTag('ul'); // .name-cards
     }
 
     /**

@@ -5353,8 +5353,9 @@ $min2ColWidth: 400px;
   }
 }
 
-/* Address Cards */
-.address-cards {
+/* Address Cards & Name Cards */
+.address-cards,
+.name-cards {
   display: grid;
   gap: var(--m) var(--m);
   grid-template-columns: repeat(1, minmax(0, 1fr));
@@ -5372,11 +5373,13 @@ $min2ColWidth: 400px;
   width: 100%;
 }
 
-.address-card.error {
+.address-card.error,
+.name-card.error {
   border: 1px solid #cf1124;
 }
 
-.address-card.error:hover {
+.address-card.error:hover,
+.name-card.error:hover {
   border-color: #cf1124;
 }
 
@@ -5402,31 +5405,36 @@ $min2ColWidth: 400px;
   }
 }
 
-.address-card {
+.address-card,
+.name-card {
   border: 1px solid #eee;
   border-radius: 0.375rem;
   padding: 1rem;
   min-height: 4rem;
 }
 
-.address-card:hover {
+.address-card:hover,
+.name-card:hover {
   border-color: #ddd;
   background-color: #fafafa;
   cursor: pointer;
 }
 
-.address-card .address-card-header {
+.address-card .address-card-header,
+.name-card .name-card-header {
   display: flex;
   flex-wrap: nowrap;
   justify-content: space-between;
 }
 
-.address-card .address-card-header-actions {
+.address-card .address-card-header-actions,
+.name-card .name-card-header-actions {
   display: flex;
   justify-content: flex-end;
 }
 
-.address-card .address-card-label {
+.address-card .address-card-label,
+.name-card .name-card-label {
   background: #e6f1fe;
   color: #2563eb;
   padding: 0.125rem 0.5rem;
@@ -5443,6 +5451,10 @@ $min2ColWidth: 400px;
   .rtl & {
     margin-left: 0.5rem;
   }
+}
+
+.name-card .name-card-fields {
+  margin-top: 24px;
 }
 
 /* logout warning/login/elevated session modals */

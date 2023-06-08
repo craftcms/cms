@@ -1,0 +1,40 @@
+{% import '_includes/forms.twig' as forms %}
+{#{% set static = static ?? true %}#}
+
+<div class="name-card-body">
+    {% if not isNewUser %}
+        <span>{{ user.firstName }}</span><br/>
+        <span>{{ user.lastName }}</span>
+    {% endif %}
+
+    {% set expandCard = user.hasErrors('firstName') or user.hasErrors('lastName') %}
+
+    <div class="name-card-fields {% if not expandCard %}hidden{% endif %}">
+        <hr />
+        {{ forms.textField({
+            label: "First Name"|t('app'),
+            id: 'firstName',
+            name: 'firstName',
+            value: user.firstName,
+            autocomplete: false,
+            errors: user.getErrors('firstName'),
+            inputAttributes: {
+                data: {lpignore: 'true'},
+            },
+            disabled: expandCard ? false : true,
+        }) }}
+
+        {{ forms.textField({
+            label: "Last Name"|t('app'),
+            id: 'lastName',
+            name: 'lastName',
+            value: user.lastName,
+            autocomplete: false,
+            errors: user.getErrors('lastName'),
+            inputAttributes: {
+                data: {lpignore: 'true'},
+            },
+            disabled: expandCard ? false : true,
+        }) }}
+    </div>
+</div>

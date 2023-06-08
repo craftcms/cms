@@ -25,6 +25,7 @@ use craft\events\RegisterUserActionsEvent;
 use craft\events\UserEvent;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Assets;
+use craft\helpers\Cp;
 use craft\helpers\Db;
 use craft\helpers\FileHelper;
 use craft\helpers\Html;
@@ -838,14 +839,6 @@ class UsersController extends Controller
         /** @var User $user */
         $isNewUser = !$user->id;
 
-        $parsedFirstName = $parsedLastName = null;
-        if (!$isNewUser) {
-            // get parsed first & last name based on the full name stored in the DB
-            $parsedNames = $user->getParsedNames();
-            $parsedFirstName = $parsedNames['parsedFirstName'];
-            $parsedLastName = $parsedNames['parsedLastName'];
-        }
-
         // Make sure they have permission to edit this user
         // ---------------------------------------------------------------------
 
@@ -1105,6 +1098,7 @@ class UsersController extends Controller
             }
         }
 
+        $nameCardsHtml = Cp::nameCardHtml($user);
         $fieldsHtml = $form->render(false);
 
         // Prepare the language/locale options
@@ -1208,7 +1202,8 @@ JS,
             'showPhotoField',
             'showPermissionsTab',
             'canAssignUserGroups',
-            'fieldsHtml'
+            'fieldsHtml',
+            'nameCardsHtml',
         ));
     }
 
