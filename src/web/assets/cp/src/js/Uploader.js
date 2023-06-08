@@ -178,7 +178,7 @@ Craft.Uploader = Garnish.Base.extend(
 
         str = Craft.t('app', str, {
           files: this._rejectedFiles.size.join(', '),
-          size: this.humanFileSize(Craft.maxUploadSize),
+          size: this.humanFileSize(this.settings.maxFileSize),
         });
         this._rejectedFiles.size = [];
         Craft.cp.displayError(str);

@@ -219,31 +219,6 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
       this.promptHandler = new Craft.PromptHandler();
       this.progressBar = new Craft.ProgressBar(this.$main, false);
 
-      var options = {
-        url: Craft.getActionUrl('assets/upload'),
-        fileInput: this.$uploadInput,
-        dropZone: this.$container,
-      };
-
-      options.events = {
-        fileuploadstart: this._onUploadStart.bind(this),
-        fileuploadprogressall: this._onUploadProgress.bind(this),
-        fileuploaddone: this._onUploadSuccess.bind(this),
-        fileuploadalways: this._onUploadAlways.bind(this),
-        fileuploadfail: this._onUploadFailure.bind(this),
-      };
-
-      if (
-        this.settings.criteria &&
-        typeof this.settings.criteria.kind !== 'undefined'
-      ) {
-        options.allowedKinds = this.settings.criteria.kind;
-      }
-
-      this._currentUploaderSettings = options;
-
-      this.uploader = new Craft.Uploader(this.$uploadButton, options);
-
       this.$uploadButton.on('click', () => {
         if (this.$uploadButton.hasClass('disabled')) {
           return;
@@ -261,10 +236,34 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
       if (!this.settings.foldersOnly) {
         const folderId = this.$source.data('folder-id');
         if (folderId && Garnish.hasAttr(this.$source, 'data-can-upload')) {
+          this.$uploadButton.removeClass('disabled');
+
+          var options = {
+            url: Craft.getActionUrl('assets/upload'),
+            fileInput: this.$uploadInput,
+            dropZone: this.$container,
+          };
+
+          options.events = {
+            fileuploadstart: this._onUploadStart.bind(this),
+            fileuploadprogressall: this._onUploadProgress.bind(this),
+            fileuploaddone: this._onUploadSuccess.bind(this),
+            fileuploadalways: this._onUploadAlways.bind(this),
+            fileuploadfail: this._onUploadFailure.bind(this),
+          };
+
+          if (
+            this.settings.criteria &&
+            typeof this.settings.criteria.kind !== 'undefined'
+          ) {
+            options.allowedKinds = this.settings.criteria.kind;
+          }
+
+          this._currentUploaderSettings = options;
+          this.uploader = Craft.createAssetUploader(this.$source.data('fs-type'), this.$uploadButton, options);
           this.uploader.setParams({
             folderId: this.$source.attr('data-folder-id'),
           });
-          this.$uploadButton.removeClass('disabled');
         } else {
           this.$uploadButton.addClass('disabled');
         }
@@ -423,7 +422,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
      * Update uploaded byte count.
      */
     _onUploadProgress: function (event, data) {
-      var progress = parseInt((data.loaded / data.total) * 100, 10);
+      var progress = parseInt(Math.min(data.loaded / data.total, 1) * 100, 10);
       this.progressBar.setProgressPercentage(progress);
     },
 
@@ -435,7 +434,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
      * @private
      */
     _onUploadSuccess: function (event, data) {
-      const {result} = data;
+      const result = data.result || data;
 
       // Add the uploaded file to the selected ones, if appropriate
       this.selectElementAfterUpdate(result.assetId);
@@ -476,8 +475,13 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
      * On Upload Failure.
      */
     _onUploadFailure: function (event, data) {
-      const response = data.response();
-      let {message, filename} = response?.jqXHR?.responseJSON || {};
+      let dataObj = data;
+
+      if (typeof data.response === 'function') {
+        dataObj = data.response()?.jqXHR?.responseJSON || {};
+      }
+
+      let {message, filename} = dataObj;
 
       if (!message) {
         message = filename

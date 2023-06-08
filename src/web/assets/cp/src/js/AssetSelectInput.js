@@ -177,7 +177,7 @@ Craft.AssetSelectInput = Craft.BaseElementSelectInput.extend({
     options.events.fileuploaddone = this._onUploadComplete.bind(this);
     options.events.fileuploadfail = this._onUploadFailure.bind(this);
 
-    this.uploader = new Craft.Uploader(this.$container, options);
+    this.uploader = Craft.createAssetUploader(this.settings.fsType, this.$container, options);
 
     if (this.$uploadBtn) {
       this.$uploadBtn.on('click', (ev) => {
@@ -260,7 +260,7 @@ Craft.AssetSelectInput = Craft.BaseElementSelectInput.extend({
    * On upload progress.
    */
   _onUploadProgress: function (event, data) {
-    var progress = parseInt((data.loaded / data.total) * 100, 10);
+    var progress = parseInt(Math.min(data.loaded / data.total, 1) * 100, 10);
     this.progressBar.setProgressPercentage(progress);
   },
 
@@ -268,46 +268,46 @@ Craft.AssetSelectInput = Craft.BaseElementSelectInput.extend({
    * On a file being uploaded.
    */
   _onUploadComplete: function (event, data) {
-    if (data.result.error) {
-      Craft.cp.displayError(data.result.error);
-      this.progressBar.hideProgressBar();
-      this.$container.removeClass('uploading');
-    } else {
-      var parameters = {
-        elementId: data.result.assetId,
-        siteId: this.settings.criteria.siteId,
-        thumbSize: this.settings.viewMode,
-      };
+    const result = data.result || data;
+    const parameters = {
+      elementId: result.assetId,
+      siteId: this.settings.criteria.siteId,
+      thumbSize: this.settings.viewMode,
+    };
 
-      Craft.sendActionRequest('POST', 'elements/get-element-html', {
-        data: parameters,
+    Craft.sendActionRequest('POST', 'elements/get-element-html', {
+      data: parameters,
+    })
+      .then((response) => {
+        var html = $(response.data.html);
+        Craft.appendHeadHtml(response.data.headHtml);
+        this.selectUploadedFile(Craft.getElementInfo(html));
+
+        // Last file
+        if (this.uploader.isLastUpload()) {
+          this.progressBar.hideProgressBar();
+          this.$container.removeClass('uploading');
+          this.$container.trigger('change');
+        }
       })
-        .then((response) => {
-          var html = $(response.data.html);
-          Craft.appendHeadHtml(response.data.headHtml);
-          this.selectUploadedFile(Craft.getElementInfo(html));
+      .catch(({response}) => {
+        Craft.cp.displayError(response.data.message);
+      });
 
-          // Last file
-          if (this.uploader.isLastUpload()) {
-            this.progressBar.hideProgressBar();
-            this.$container.removeClass('uploading');
-            this.$container.trigger('change');
-          }
-        })
-        .catch(({response}) => {
-          Craft.cp.displayError(response.data.message);
-        });
-
-      Craft.cp.runQueue();
-    }
+    Craft.cp.runQueue();
   },
 
   /**
    * On Upload Failure.
    */
   _onUploadFailure: function (event, data) {
-    const response = data.response();
-    let {message, filename} = response?.jqXHR?.responseJSON || {};
+    let dataObj = data;
+
+    if (typeof data.response === 'function') {
+      dataObj = data.response()?.jqXHR?.responseJSON || {};
+    }
+
+    let {message, filename} = dataObj;
 
     if (!message) {
       message = filename
