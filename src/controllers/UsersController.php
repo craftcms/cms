@@ -838,6 +838,14 @@ class UsersController extends Controller
         /** @var User $user */
         $isNewUser = !$user->id;
 
+        $parsedFirstName = $parsedLastName = null;
+        if (!$isNewUser) {
+            // get parsed first & last name based on the full name stored in the DB
+            $parsedNames = $user->getParsedNames();
+            $parsedFirstName = $parsedNames['parsedFirstName'];
+            $parsedLastName = $parsedNames['parsedLastName'];
+        }
+
         // Make sure they have permission to edit this user
         // ---------------------------------------------------------------------
 
@@ -1075,6 +1083,8 @@ class UsersController extends Controller
                 $accountFields = [
                     'username',
                     'fullName',
+                    'firstName',
+                    'lastName',
                     'email',
                     'password',
                     'newPassword',
@@ -2665,18 +2675,21 @@ JS,
         /** @var object|NameTrait $model */
         $fullName = $this->request->getBodyParam('fullName');
 
-        if ($fullName !== null) {
-            $model->fullName = $fullName;
-        } else {
-            // Still check for firstName/lastName in case a front-end form is still posting them
-            $firstName = $this->request->getBodyParam('firstName');
-            $lastName = $this->request->getBodyParam('lastName');
+        // Still check for firstName/lastName in case a front-end form is still posting them
+        // on in case we want to overwrite them from the CP
+        $firstName = $this->request->getBodyParam('firstName');
+        $lastName = $this->request->getBodyParam('lastName');
 
-            if ($firstName !== null || $lastName !== null) {
-                $model->fullName = null;
-                $model->firstName = $firstName ?? $model->firstName;
-                $model->lastName = $lastName ?? $model->lastName;
-            }
+        if ($fullName !== null) {
+            $model->fullName = $fullName ?: null;
+        }
+
+        if ($firstName !== null) {
+            $model->firstName = $firstName ?: null;
+        }
+
+        if ($lastName !== null) {
+            $model->lastName = $lastName ?: null;
         }
     }
 }

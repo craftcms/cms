@@ -38,6 +38,26 @@ trait NameTrait
     public ?string $lastName = null;
 
     /**
+     * Get parsed first and last names
+     *
+     * @return array
+     */
+    public function getParsedNames(): array
+    {
+        $parsedFirstName = null;
+        $parsedLastName = null;
+
+        if ($this->fullName !== null) {
+            $languages = $this->_prepNameParser();
+            $name = (new NameParser($languages))->parse($this->fullName);
+            $parsedFirstName = $name->getFirstname() ?: null;
+            $parsedLastName = $name->getLastname() ?: null;
+        }
+
+        return compact('parsedFirstName', 'parsedLastName');
+    }
+    
+    /**
      * Normalizes the name properties.
      */
     protected function normalizeNames(): void
@@ -57,22 +77,38 @@ trait NameTrait
     protected function prepareNamesForSave(): void
     {
         if ($this->fullName !== null) {
-            $generalConfig = Craft::$app->getConfig()->getGeneral();
-            $languages = [
-                // Load our custom language file first so config settings can override the defaults
-                new CustomLanguage(
-                    $generalConfig->extraNameSuffixes,
-                    $generalConfig->extraNameSalutations,
-                    $generalConfig->extraLastNamePrefixes,
-                ),
-                new English(),
-                new German(),
-            ];
+            $languages = $this->_prepNameParser();
             $name = (new NameParser($languages))->parse($this->fullName);
-            $this->firstName = $name->getFirstname() ?: null;
-            $this->lastName = $name->getLastname() ?: null;
+            // only overwrite first and last name with the parsed version if it's empty
+            if ($this->firstName === null) {
+                $this->firstName = $name->getFirstname() ?: null;
+            }
+            if ($this->lastName === null) {
+                $this->lastName = $name->getLastname() ?: null;
+            }
         } elseif ($this->firstName !== null || $this->lastName !== null) {
             $this->fullName = trim("$this->firstName $this->lastName") ?: null;
         }
+    }
+
+    /**
+     * Get language settings for the name parser
+     *
+     * @return array
+     */
+    private function _prepNameParser(): array
+    {
+        $generalConfig = Craft::$app->getConfig()->getGeneral();
+
+        return [
+            // Load our custom language file first so config settings can override the defaults
+            new CustomLanguage(
+                $generalConfig->extraNameSuffixes,
+                $generalConfig->extraNameSalutations,
+                $generalConfig->extraLastNamePrefixes,
+            ),
+            new English(),
+            new German(),
+        ];
     }
 }

@@ -32,3 +32,29 @@
     },
     disabled: static,
 }) }}
+
+{{ forms.textField({
+    label: "First Name"|t('app'),
+    id: 'firstName',
+    name: 'firstName',
+    value: user.firstName,
+    autocomplete: false,
+    errors: user.getErrors('firstName'),
+    inputAttributes: {
+        data: {lpignore: 'true'},
+    },
+    disabled: static,
+}) }}
+
+{{ forms.textField({
+    label: "Last Name"|t('app'),
+    id: 'lastName',
+    name: 'lastName',
+    value: user.lastName,
+    autocomplete: false,
+    errors: user.getErrors('lastName'),
+    inputAttributes: {
+        data: {lpignore: 'true'},
+    },
+    disabled: static,
+}) }}
