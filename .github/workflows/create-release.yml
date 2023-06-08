@@ -32,7 +32,7 @@ jobs:
         if: ${{ startsWith(github.event.client_payload.version, '4.') }}
         with:
           extensions: bcmath, curl, dom, json, intl, mbstring, mcrypt, openssl, pcre, pdo, zip
-          php-version: 8.0.2
+          php-version: 8.1.0
           tools: composer:v2
 
       - name: 'Initialize Craft 3 starter project'
