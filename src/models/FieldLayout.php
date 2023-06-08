@@ -630,15 +630,13 @@ class FieldLayout extends Model
      */
     private function _customFields(?ElementInterface $element = null): array
     {
-        $fields = [];
-        $filter = fn(FieldLayoutElement $layoutElement) => $layoutElement instanceof CustomField;
-        foreach ($this->_elements($filter, $element) as $layoutElement) {
-            /** @var CustomField $layoutElement */
-            $field = $layoutElement->getField();
-            $field->required = $layoutElement->required;
-            $fields[] = $field;
-        }
-        return $fields;
+        return array_map(
+            fn(CustomField $layoutElement) => $layoutElement->getField(),
+            iterator_to_array($this->_elements(
+                fn(FieldLayoutElement $layoutElement) => $layoutElement instanceof CustomField,
+                $element,
+            )),
+        );
     }
 
     /**

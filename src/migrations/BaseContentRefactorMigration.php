@@ -45,7 +45,8 @@ class BaseContentRefactorMigration extends Migration
         $flatFieldColumns = [];
 
         if ($fieldLayout) {
-            foreach ($fieldLayout->getCustomFields() as $field) {
+            foreach ($fieldLayout->getCustomFieldElements() as $layoutElement) {
+                $field = $layoutElement->getField();
                 $dbType = $field::dbType();
 
                 if ($dbType === null) {
@@ -60,7 +61,7 @@ class BaseContentRefactorMigration extends Migration
                 );
 
                 if ($contentTableSchema->getColumn($primaryColumn)) {
-                    $fieldsByUid[$field->uid] = $field;
+                    $fieldsByUid[$layoutElement->uid] = $field;
 
                     // is this a multi-column field?
                     if (is_array($dbType)) {
@@ -72,11 +73,11 @@ class BaseContentRefactorMigration extends Migration
                                 $key,
                                 $field->columnSuffix,
                             );
-                            $fieldColumns[$field->uid][$key] = $column;
+                            $fieldColumns[$layoutElement->uid][$key] = $column;
                             $flatFieldColumns[] = "c.$column";
                         }
                     } else {
-                        $fieldColumns[$field->uid] = $primaryColumn;
+                        $fieldColumns[$layoutElement->uid] = $primaryColumn;
                         $flatFieldColumns[] = $primaryColumn;
                     }
                 }

@@ -61,6 +61,15 @@ class Lightswitch extends Field implements PreviewableFieldInterface, SortableFi
     }
 
     /**
+     * @inheritdoc
+     */
+    public static function queryCondition(array $instances, mixed $value, array &$params = []): array
+    {
+        $valueSql = static::valueSql($instances);
+        return Db::parseBooleanParam($valueSql, $value, $instances[0]->default, Schema::TYPE_JSON);
+    }
+
+    /**
      * @var bool Whether the lightswitch should be enabled by default
      */
     public bool $default = false;
@@ -154,14 +163,6 @@ class Lightswitch extends Field implements PreviewableFieldInterface, SortableFi
     public function getElementConditionRuleType(): array|string|null
     {
         return LightswitchFieldConditionRule::class;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getQueryCondition(mixed $value, array &$params = []): array
-    {
-        return Db::parseBooleanParam($this->getValueSql(), $value, $this->default, Schema::TYPE_JSON);
     }
 
     /**

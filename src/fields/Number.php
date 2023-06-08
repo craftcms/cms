@@ -68,6 +68,15 @@ class Number extends Field implements PreviewableFieldInterface, SortableFieldIn
     }
 
     /**
+     * @inheritdoc
+     */
+    public static function queryCondition(array $instances, mixed $value, array &$params = []): ?array
+    {
+        $valueSql = static::valueSql($instances);
+        return Db::parseNumericParam($valueSql, $value, columnType: static::dbType());
+    }
+
+    /**
      * @var int|float|null The default value for new elements
      */
     public int|null|float $defaultValue = null;
@@ -308,14 +317,6 @@ JS;
             self::FORMAT_CURRENCY => Craft::$app->getFormatter()->asCurrency($value, $this->previewCurrency, [], [], !$this->decimals),
             default => $value,
         };
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getQueryCondition(mixed $value, array &$params = []): ?array
-    {
-        return Db::parseNumericParam($this->getValueSql(), $value, columnType: static::dbType());
     }
 
     /**

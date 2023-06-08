@@ -1816,8 +1816,9 @@ class ElementQuery extends Query implements ElementQueryInterface
             }
 
             foreach ($this->customFields as $field) {
-                if ($field::dbType() !== null && isset($content[$field->uid])) {
-                    $row['fieldValues'][$field->handle] = $content[$field->uid];
+                if ($field::dbType() !== null && isset($content[$field->layoutElement->uid])) {
+                    $handle = $field->layoutElement->handle ?? $field->handle;
+                    $row['fieldValues'][$handle] = $content[$field->layoutElement->uid];
                 }
             }
         }
@@ -2140,14 +2141,22 @@ class ElementQuery extends Query implements ElementQueryInterface
         if (is_array($this->customFields)) {
             $fieldAttributes = $this->getBehavior('customFields');
 
-            foreach ($this->customFields as $field) {
-                $handle = $field->handle;
+            // Group the fields by handle
+            /** @var FieldInterface[][] $fieldsByHandle */
+            $fieldsByHandle = ArrayHelper::index($this->customFields, null, [
+                fn(FieldInterface $field) => $field->layoutElement->attribute(),
+            ]);
 
+            foreach ($fieldsByHandle as $handle => $instances) {
                 // In theory all field handles will be accounted for on the CustomFieldBehavior, but just to be safe...
                 // ($fieldAttributes->$handle will return true even if it's set to null, so can't use isset() alone here)
                 if ($handle !== 'owner' && ($fieldAttributes->$handle ?? null) !== null) {
+                    // Ignore any field instances that aren't the same custom field as the first one
+                    $firstInstance = $instances[0];
+                    $instances = array_filter($instances, fn(FieldInterface $field) => $field->uid === $firstInstance->uid);
+
                     $params = [];
-                    $condition = $field->getQueryCondition($fieldAttributes->$handle, $params);
+                    $condition = $firstInstance::queryCondition($instances, $fieldAttributes->$handle, $params);
 
                     // aborting?
                     if ($condition === false) {

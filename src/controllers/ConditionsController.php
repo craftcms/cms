@@ -43,7 +43,7 @@ class ConditionsController extends Controller
 
         if ($newRuleType) {
             $newRuleType = Json::decodeIfJson($newRuleType);
-            $rule = $conditionsService->createConditionRule($newRuleType);
+            $rule = $this->_condition->createConditionRule($newRuleType);
             $rule->setAutofocus();
             $this->_condition->addConditionRule($rule);
         }

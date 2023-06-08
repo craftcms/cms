@@ -21,10 +21,10 @@
 
     {% namespace fieldNamespace %}
         {% for field in fieldLayout.getCustomFields() %}
-            {% if field.required or field.id in widget.fields %}
+            {% if field.layoutElement.required or field.id in widget.fields %}
                 {% include "_includes/field" with {
                     field: field,
-                    required: field.required,
+                    required: field.layoutElement.required,
                     entry: null
                 } only %}
             {% endif %}

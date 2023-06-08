@@ -158,6 +158,15 @@ class Money extends Field implements PreviewableFieldInterface, SortableFieldInt
     /**
      * @inheritdoc
      */
+    public static function queryCondition(array $instances, mixed $value, array &$params = []): ?array
+    {
+        $valueSql = static::valueSql($instances);
+        return Db::parseMoneyParam($valueSql, $instances[0]->currency, $value);
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function normalizeValue(mixed $value, ?ElementInterface $element = null): mixed
     {
         if ($value instanceof MoneyLibrary) {
@@ -303,14 +312,6 @@ class Money extends Field implements PreviewableFieldInterface, SortableFieldInt
     public function getTableAttributeHtml(mixed $value, ElementInterface $element): string
     {
         return MoneyHelper::toString($value) ?: '';
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getQueryCondition(mixed $value, array &$params = []): ?array
-    {
-        return Db::parseMoneyParam($this->getValueSql(), $this->currency, $value);
     }
 
     /**
