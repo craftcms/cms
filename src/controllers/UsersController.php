@@ -2680,11 +2680,13 @@ JS,
         }
 
         if ($firstName !== null) {
-            $model->firstName = $firstName ?: null;
+            // allow setting even if empty, because someone might only be set up only with their first name
+            $model->firstName = $firstName;
         }
 
         if ($lastName !== null) {
-            $model->lastName = $lastName ?: null;
+            // allow setting even if empty, because someone might only be set up only with their last name
+            $model->lastName = $lastName;
         }
     }
 }
