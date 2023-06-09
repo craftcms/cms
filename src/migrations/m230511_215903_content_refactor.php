@@ -20,11 +20,9 @@ class m230511_215903_content_refactor extends BaseContentRefactorMigration
      */
     public function safeUp(): bool
     {
-        if (!$this->db->columnExists(Table::ELEMENTS_SITES, 'title')) {
-            $this->addColumn(Table::ELEMENTS_SITES, 'title', $this->string()->after('siteId'));
-            $this->addColumn(Table::ELEMENTS_SITES, 'content', $this->json()->after('uri'));
-            $this->createIndex(null, Table::ELEMENTS_SITES, ['title', 'siteId']);
-        }
+        $this->addColumn(Table::ELEMENTS_SITES, 'title', $this->string()->after('siteId'));
+        $this->addColumn(Table::ELEMENTS_SITES, 'content', $this->json()->after('uri'));
+        $this->createIndex(null, Table::ELEMENTS_SITES, ['title', 'siteId']);
 
         $projectConfig = Craft::$app->getProjectConfig();
         $schemaVersion = $projectConfig->get('system.schemaVersion', true);
