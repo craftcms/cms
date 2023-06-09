@@ -51,6 +51,14 @@ class CustomField extends BaseField
     /**
      * @inheritdoc
      */
+    public function isMultiInstance(): bool
+    {
+        return $this->_field::isMultiInstance();
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function attribute(): string
     {
         return $this->handle ?? $this->_field->handle;
@@ -92,6 +100,11 @@ class CustomField extends BaseField
     {
         $this->_field = clone $field;
         $this->_field->layoutElement = $this;
+
+        // Set the instance overrides
+        $this->_field->name = $this->label ?? $this->_field->name;
+        $this->_field->handle = $this->handle ?? $this->_field->handle;
+        $this->_field->instructions = $this->instructions ?? $this->_field->instructions;
     }
 
     /**
@@ -137,6 +150,20 @@ class CustomField extends BaseField
             'data' => [
                 'id' => $this->_field->id,
             ],
+        ]);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    protected function settingsHtml(): ?string
+    {
+        return Craft::$app->getView()->renderTemplate('_includes/forms/fld/custom-field-settings.twig', [
+            'field' => $this,
+            'defaultLabel' => $this->defaultLabel(),
+            'defaultHandle' => $this->_field->handle,
+            'defaultInstructions' => $this->defaultInstructions(),
+            'labelHidden' => !$this->showLabel(),
         ]);
     }
 

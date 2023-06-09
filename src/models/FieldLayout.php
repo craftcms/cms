@@ -262,18 +262,23 @@ class FieldLayout extends Model
             return;
         }
 
-        // Make sure no fields are using one of our reserved attribute names
-        foreach ($this->getTabs() as $tab) {
-            foreach ($tab->getElements() as $layoutElement) {
-                if (
-                    $layoutElement instanceof CustomField &&
-                    in_array($layoutElement->attribute(), $this->reservedFieldHandles, true)
-                ) {
-                    $this->addError('fields', Craft::t('app', '“{handle}” is a reserved word.', [
-                        'handle' => $layoutElement->attribute(),
-                    ]));
-                }
+        // Make sure no field handles are duplicated or using one of our reserved attribute names
+        $handles = [];
+        foreach ($this->getCustomFields() as $field) {
+            if (in_array($field->handle, $this->reservedFieldHandles, true)) {
+                $this->addError('fields', Craft::t('app', '“{handle}” is a reserved word.', [
+                    'handle' => $field->handle,
+                ]));
+                return;
             }
+            if (isset($handles[$field->handle])) {
+                $this->addError('fields', Craft::t('yii', '{attribute} "{value}" has already been taken.', [
+                    'attribute' => Craft::t('app', 'Handle'),
+                    'value' => $field->handle,
+                ]));
+                return;
+            }
+            $handles[$field->handle] = true;
         }
     }
 

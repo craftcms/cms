@@ -1298,6 +1298,9 @@ class Fields extends Component
         // Clear caches
         $this->_layouts = null;
 
+        // Refresh CustomFieldBehavior in case any custom field handles were just added/removed
+        $this->updateFieldVersion();
+
         return true;
     }
 

@@ -1174,7 +1174,7 @@ class Elements extends Component
             throw new InvalidArgumentException('Element was already canonical');
         }
 
-        // "Duplicate" the derivative element with the canonical element’s ID, UID, and content ID
+        // "Duplicate" the derivative element with the canonical element’s ID and UID
         $canonical = $element->getCanonical();
 
         $changedAttributes = (new Query())
@@ -1184,7 +1184,7 @@ class Elements extends Component
             ->all();
 
         $changedFields = (new Query())
-            ->select(['siteId', 'fieldId', 'propagated', 'userId'])
+            ->select(['siteId', 'fieldId', 'layoutElementUid', 'propagated', 'userId'])
             ->from([Table::CHANGEDFIELDS])
             ->where(['elementId' => $element->id])
             ->all();
@@ -1237,6 +1237,7 @@ class Elements extends Component
                     'elementId' => $canonical->id,
                     'siteId' => $field['siteId'],
                     'fieldId' => $field['fieldId'],
+                    'layoutElementUid' => $field['layoutElementUid'],
                     'dateUpdated' => $timestamp,
                     'propagated' => $field['propagated'],
                     'userId' => $field['userId'],
@@ -3162,7 +3163,7 @@ class Elements extends Component
                     if ($field::dbType() !== null) {
                         $serializedValue = $field->serializeValue($element->getFieldValue($field->handle), $element);
                         if ($serializedValue !== null) {
-                            $content[$field->uid] = $serializedValue;
+                            $content[$field->layoutElement->uid] = $serializedValue;
                         }
                     }
                 }
@@ -3295,6 +3296,7 @@ class Elements extends Component
                             'elementId' => $element->id,
                             'siteId' => $element->siteId,
                             'fieldId' => $field->id,
+                            'layoutElementUid' => $field->layoutElement->uid,
                             'dateUpdated' => $timestamp,
                             'propagated' => $element->propagating,
                             'userId' => $userId,

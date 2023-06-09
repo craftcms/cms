@@ -250,6 +250,7 @@ class Install extends Migration
             'elementId' => $this->integer()->notNull(),
             'siteId' => $this->integer()->notNull(),
             'fieldId' => $this->integer()->notNull(),
+            'layoutElementUid' => $this->uid(),
             'dateUpdated' => $this->dateTime()->notNull(),
             'propagated' => $this->boolean()->notNull(),
             'userId' => $this->integer(),

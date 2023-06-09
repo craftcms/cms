@@ -32,6 +32,8 @@ Craft.FieldLayoutDesigner = Garnish.Base.extend(
         this._config.tabs = [];
       }
 
+      this._fieldHandles = {};
+
       let $workspace = this.$container.children('.fld-workspace');
       this.$tabContainer = $workspace.children('.fld-tabs');
       this.$newTabBtn = $workspace.children('.fld-new-tab-btn');
@@ -188,6 +190,21 @@ Craft.FieldLayoutDesigner = Garnish.Base.extend(
       if (config !== false) {
         this.config = config;
       }
+    },
+
+    hasHandle: function (handle) {
+      const $elements = this.$container.find('.fld-tabcontent > *');
+      for (let i = 0; i < $elements.length; i++) {
+        const element = $elements.eq(i).data('fld-element');
+        if (element.defaultHandle) {
+          const elementHandle = element.config.handle || element.defaultHandle;
+          if (handle === elementHandle) {
+            return true;
+          }
+        }
+      }
+
+      return false;
     },
   },
   {
@@ -601,17 +618,33 @@ Craft.FieldLayoutDesigner.Element = Garnish.Base.extend({
   hasSettings: false,
   settingsNamespace: null,
   slideout: null,
+  defaultHandle: null,
 
   init: function (tab, $container) {
     this.tab = tab;
     this.$container = $container;
     this.$container.data('fld-element', this);
     this.uid = this.$container.data('uid');
+    this.defaultHandle = this.$container.data('default-handle');
 
     // New element?
     if (!this.uid) {
       this.uid = Craft.uuid();
       this.config = $.extend(this.$container.data('config'), {uid: this.uid});
+
+      if (this.defaultHandle) {
+        // Find a unique handle
+        let handle = this.defaultHandle;
+        let i = 1;
+        while (this.tab.designer.hasHandle(handle)) {
+          i++;
+          handle = this.defaultHandle + i;
+        }
+        if (handle !== this.defaultHandle) {
+          this.config = $.extend({}, this.config, {handle: handle});
+          this.$container.find('.fld-attribute-label').text(handle);
+        }
+      }
     }
 
     this.isField = this.$container.hasClass('fld-field');
@@ -708,8 +741,9 @@ Craft.FieldLayoutDesigner.Element = Garnish.Base.extend({
       this.applySettings();
     });
 
+    const $fieldsContainer = this.slideout.$container.find('.fields:first');
+
     if (this.requirable) {
-      const $fieldsContainer = this.slideout.$container.find('.fields:first');
       Craft.ui
         .createLightswitchField({
           label: Craft.t('app', 'Required'),
@@ -717,6 +751,11 @@ Craft.FieldLayoutDesigner.Element = Garnish.Base.extend({
           on: isRequired,
         })
         .prependTo($fieldsContainer);
+    }
+
+    if (this.defaultHandle) {
+      const $handleInput = $fieldsContainer.find('input[name$="[handle]"]');
+      $handleInput.val(this.config.handle || '');
     }
 
     this.trigger('createSettings');
@@ -1116,6 +1155,7 @@ Craft.FieldLayoutDesigner.ElementDrag =
   Craft.FieldLayoutDesigner.BaseDrag.extend({
     draggingLibraryElement: false,
     draggingField: false,
+    draggingMultiInstanceElement: false,
     originalTab: null,
 
     /**
@@ -1130,8 +1170,14 @@ Craft.FieldLayoutDesigner.ElementDrag =
       // Is it a field?
       this.draggingField = this.$draggee.hasClass('fld-field');
 
+      // Can the element have multiple instances?
+      this.draggingMultiInstanceElement = Garnish.hasAttr(
+        this.$draggee,
+        'data-is-multi-instance'
+      );
+
       // keep UI elements visible
-      if (this.draggingLibraryElement && !this.draggingField) {
+      if (this.draggingLibraryElement && this.draggingMultiInstanceElement) {
         this.$draggee.css({
           display: this.draggeeDisplay,
           visibility: 'visible',
@@ -1228,7 +1274,7 @@ Craft.FieldLayoutDesigner.ElementDrag =
           // Create a new element based on that one
           const $element = this.$draggee.clone().removeClass('unused');
 
-          if (this.draggingField) {
+          if (!this.draggingMultiInstanceElement) {
             // Hide the library field
             this.$draggee
               .css({visibility: 'inherit', display: 'field'})

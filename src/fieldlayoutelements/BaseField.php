@@ -155,13 +155,16 @@ abstract class BaseField extends FieldLayoutElement
                 ]);
         }
 
-        $innerHtml .= Html::tag('div',
-            Html::tag('div', $this->attribute(), [
-                'class' => ['smalltext', 'light', 'code'],
-                'title' => $this->attribute(),
-            ]) . ($label === null ? $indicatorHtml : ''), [
+        $innerHtml .=
+            Html::beginTag('div', [
                 'class' => 'fld-attribute',
-            ]);
+            ]) .
+            Html::tag('div', $this->attribute(), [
+                'class' => ['smalltext', 'light', 'code', 'fld-attribute-label'],
+                'title' => $this->attribute(),
+            ]) .
+            ($label === null ? $indicatorHtml : '') .
+            Html::endTag('div'); // .fld-attribute
 
         return Html::tag('div', $innerHtml, [
             'class' => ['field-name'],

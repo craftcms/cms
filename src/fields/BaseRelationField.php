@@ -1004,6 +1004,7 @@ JS, [
                             'elementId' => $element->id,
                             'siteId' => $siteId,
                             'fieldId' => $this->id,
+                            'layoutElementUid' => $this->layoutElement->uid,
                             'dateUpdated' => $timestamp,
                             'propagated' => $element->propagating,
                             'userId' => $userId,

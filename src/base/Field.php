@@ -138,6 +138,14 @@ abstract class Field extends SavableComponent implements FieldInterface
     /**
      * @inheritdoc
      */
+    public static function isMultiInstance(): bool
+    {
+        return static::dbType() !== null;
+    }
+
+    /**
+     * @inheritdoc
+     */
     public static function isRequirable(): bool
     {
         return true;

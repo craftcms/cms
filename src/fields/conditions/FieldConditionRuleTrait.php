@@ -83,15 +83,15 @@ trait FieldConditionRuleTrait
             $this->_fieldInstances = [];
             /** @var FieldInterface[] $potentialInstances */
             $potentialInstances = [];
+            $selectedInstance = null;
             $selectedInstanceLabel = null;
-            $selectedInstanceHandle = null;
 
             foreach ($this->getCondition()->getFieldLayouts() as $fieldLayout) {
                 foreach ($fieldLayout->getCustomFields() as $field) {
                     if ($field->uid === $this->_fieldUid) {
                         // skip if it doesn't have a label
                         $label = $field->layoutElement->label();
-                        if ($label === null || $label === '') {
+                        if ($label === null) {
                             continue;
                         }
 
@@ -104,8 +104,8 @@ trait FieldConditionRuleTrait
                             $this->_fieldInstances[] = $field;
 
                             if (isset($this->_layoutElementUid)) {
+                                $selectedInstance = $field;
                                 $selectedInstanceLabel = $label;
-                                $selectedInstanceHandle = $field->layoutElement->attribute();
                             }
                         } elseif (isset($this->_layoutElementUid)) {
                             $potentialInstances[] = $field;
@@ -122,8 +122,8 @@ trait FieldConditionRuleTrait
                 if (!empty($potentialInstances)) {
                     // Just go with the first one
                     $this->_fieldInstances[] = $first = array_shift($potentialInstances);
+                    $selectedInstance = $first;
                     $selectedInstanceLabel = $first->layoutElement->label();
-                    $selectedInstanceHandle = $first->layoutElement->handle;
                 } else {
                     throw new InvalidConfigException("Invalid field layout element UUID: $this->_layoutElementUid");
                 }
@@ -132,8 +132,8 @@ trait FieldConditionRuleTrait
             // Add any potential fields to the mix if they have a matching label and handle
             foreach ($potentialInstances as $field) {
                 if (
-                    $field->layoutElement->label() === $selectedInstanceLabel &&
-                    $field->layoutElement->attribute() === $selectedInstanceHandle
+                    $field->handle === $selectedInstance->handle &&
+                    $field->layoutElement->label() === $selectedInstanceLabel
                 ) {
                     $this->_fieldInstances[] = $field;
                 }
@@ -215,7 +215,7 @@ trait FieldConditionRuleTrait
 
         foreach ($element->getFieldLayout()->getCustomFields() as $field) {
             if (isset($instanceUids[$field->layoutElement->uid])) {
-                $value = $element->getFieldValue($field->layoutElement->attribute());
+                $value = $element->getFieldValue($field->handle);
                 if ($this->matchFieldValue($value)) {
                     return true;
                 }

@@ -40,6 +40,8 @@ class m230511_215903_content_refactor extends BaseContentRefactorMigration
         $this->addColumn(Table::ELEMENTS_SITES, 'content', $this->json()->after('uri'));
         $this->createIndex(null, Table::ELEMENTS_SITES, ['title', 'siteId']);
 
+        $this->addColumn(Table::CHANGEDFIELDS, 'layoutElementUid', $this->uid()->after('fieldId'));
+
         $projectConfig = Craft::$app->getProjectConfig();
         $schemaVersion = $projectConfig->get('system.schemaVersion', true);
         $updateProjectConfig = version_compare($schemaVersion, '5.0.0', '<');

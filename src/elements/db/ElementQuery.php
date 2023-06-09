@@ -2144,7 +2144,7 @@ class ElementQuery extends Query implements ElementQueryInterface
             // Group the fields by handle
             /** @var FieldInterface[][] $fieldsByHandle */
             $fieldsByHandle = ArrayHelper::index($this->customFields, null, [
-                fn(FieldInterface $field) => $field->layoutElement->attribute(),
+                fn(FieldInterface $field) => $field->handle,
             ]);
 
             foreach ($fieldsByHandle as $handle => $instances) {

@@ -29,6 +29,14 @@ use yii\validators\Validator;
 interface FieldInterface extends SavableComponentInterface
 {
     /**
+     * Returns whether the field can be included multiple times within a field layout.
+     *
+     * @return bool
+     * @since 5.0.0
+     */
+    public static function isMultiInstance(): bool;
+
+    /**
      * Returns whether the field can be marked as required.
      *
      * @return bool
