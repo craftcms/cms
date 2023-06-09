@@ -95,6 +95,14 @@ trait FieldConditionRuleTrait
     /**
      * @inheritdoc
      */
+    public function getHandle(): string
+    {
+        return $this->field()->handle;
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function getExclusiveQueryParams(): array
     {
         try {

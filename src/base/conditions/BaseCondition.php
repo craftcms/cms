@@ -5,6 +5,7 @@ namespace craft\base\conditions;
 use Craft;
 use craft\base\Component;
 use craft\events\RegisterConditionRuleTypesEvent;
+use craft\fields\conditions\FieldConditionRuleInterface;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Html;
 use craft\helpers\Json;
@@ -460,20 +461,35 @@ JS,
         $labelsByGroup = [];
 
         if ($rule) {
-            $ruleLabel = $rule->getLabel();
+            $ruleLabel = $key = $rule->getLabel();
             $groupLabel = $rule->getGroupLabel() ?? '__UNGROUPED__';
+            $useHandle = false;
+
+            if ($rule instanceof FieldConditionRuleInterface) {
+                $key = $rule->getHandle();
+                $useHandle = true;
+            }
+
             $groupedRuleTypeOptions[$groupLabel] = [
-                ['value' => $ruleValue, 'label' => $ruleLabel],
+                ['value' => $ruleValue, 'label' => $ruleLabel] + ($useHandle ? ['handle' => $key] : []),
             ];
-            $labelsByGroup[$groupLabel][$ruleLabel] = true;
+            $labelsByGroup[$groupLabel][$key] = true;
         }
 
         foreach ($selectableRules as $value => $selectableRule) {
-            $label = $selectableRule->getLabel();
+            $label = $key = $selectableRule->getLabel();
             $groupLabel = $selectableRule->getGroupLabel() ?? '__UNGROUPED__';
-            if (!isset($labelsByGroup[$groupLabel][$label])) {
-                $groupedRuleTypeOptions[$groupLabel][] = compact('value', 'label');
-                $labelsByGroup[$groupLabel][$label] = true;
+            $useHandle = false;
+
+            if ($selectableRule instanceof FieldConditionRuleInterface) {
+                $key = $selectableRule->getHandle();
+                $useHandle = true;
+            }
+
+            if (!isset($labelsByGroup[$groupLabel][$key])) {
+                $groupedRuleTypeOptions[$groupLabel][] =
+                    compact('value', 'label') + ($useHandle ? ['handle' => $key] : []);
+                $labelsByGroup[$groupLabel][$key] = true;
             }
         }
 
@@ -494,14 +510,26 @@ JS,
             ArrayHelper::multisort($groupRuleTypeOptions, 'label');
             $optionsHtml .=
                 Html::beginTag('ul', ['class' => 'padded']) .
-                implode("\n", array_map(fn(array $option) => Html::beginTag('li') .
-                    Html::a(Html::encode($option['label']), options: [
+                implode("\n", array_map(function(array $option) use ($ruleValue) {
+                    $html = Html::beginTag('li');
+
+                    $label = Html::encode($option['label']);
+                    if (isset($option['handle'])) {
+                        $label .= ' ' . Html::tag('div', $option['handle'], [
+                            'class' => ['smalltext', 'code'],
+                            ]);
+                    }
+
+                    $html .= Html::a($label, options: [
                         'class' => $option['value'] === $ruleValue ? 'sel' : false,
                         'data' => [
                             'value' => $option['value'],
                         ],
-                    ]) .
-                    Html::endTag('li'),
+                    ]);
+                    $html .= Html::endTag('li');
+
+                    return $html;
+                },
                     $groupRuleTypeOptions)) .
                 Html::endTag('ul');
         }

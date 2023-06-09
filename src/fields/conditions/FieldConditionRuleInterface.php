@@ -25,4 +25,12 @@ interface FieldConditionRuleInterface extends ElementConditionRuleInterface
      * @param string $uid
      */
     public function setFieldUid(string $uid): void;
+
+    /**
+     * Returns the handle of the custom field's associated with this rule.
+     *
+     * @return string
+     * @since 4.4.14
+     */
+    public function getHandle(): string;
 }
