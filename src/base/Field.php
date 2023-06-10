@@ -279,6 +279,16 @@ abstract class Field extends SavableComponent implements FieldInterface
     /**
      * @inheritdoc
      */
+    public function attributes(): array
+    {
+        $names = parent::attributes();
+        ArrayHelper::removeValue($names, 'layoutElement');
+        return $names;
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function attributeLabels(): array
     {
         return [
