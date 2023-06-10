@@ -111,6 +111,7 @@
 - Removed `craft\models\EntryType::$sortOrder`.
 - Removed `craft\models\EntryType::getSection()`.
 - Removed `craft\records\EntryType::getSection()`.
+- Removed `craft\records\Field::getOldColumnSuffix()`.
 - Removed `craft\records\FieldLayout::getFields()`.
 - Removed `craft\records\FieldLayout::getTabs()`.
 - Removed `craft\records\FieldLayoutField`.

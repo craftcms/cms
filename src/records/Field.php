@@ -38,11 +38,6 @@ class Field extends ActiveRecord
     private ?string $_oldHandle = null;
 
     /**
-     * @var string|null
-     */
-    private ?string $_oldColumnSuffix = null;
-
-    /**
      * @inheritdoc
      */
     public function init(): void
@@ -59,7 +54,6 @@ class Field extends ActiveRecord
     public function storeOldData(): void
     {
         $this->_oldHandle = $this->handle;
-        $this->_oldColumnSuffix = $this->columnSuffix;
     }
 
     /**
@@ -70,17 +64,6 @@ class Field extends ActiveRecord
     public function getOldHandle(): ?string
     {
         return $this->_oldHandle;
-    }
-
-    /**
-     * Returns the old column suffix.
-     *
-     * @return string|null
-     * @since 3.7.0
-     */
-    public function getOldColumnSuffix(): ?string
-    {
-        return $this->_oldColumnSuffix;
     }
 
     /**
