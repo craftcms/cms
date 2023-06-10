@@ -65,7 +65,7 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
     /**
      * @inheritdoc
      */
-    public static function queryCondition(array $instances, mixed $value, array &$params = []): ?array
+    public static function queryCondition(array $instances, mixed $value, array &$params): ?array
     {
         if (static::$multi) {
             $param = QueryParam::parse($value);

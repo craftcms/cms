@@ -70,7 +70,7 @@ class Number extends Field implements PreviewableFieldInterface, SortableFieldIn
     /**
      * @inheritdoc
      */
-    public static function queryCondition(array $instances, mixed $value, array &$params = []): ?array
+    public static function queryCondition(array $instances, mixed $value, array &$params): ?array
     {
         $valueSql = static::valueSql($instances);
         return Db::parseNumericParam($valueSql, $value, columnType: static::dbType());

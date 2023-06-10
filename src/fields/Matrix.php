@@ -111,7 +111,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
     /**
      * @inheritdoc
      */
-    public static function queryCondition(array $instances, mixed $value, array &$params = []): array
+    public static function queryCondition(array $instances, mixed $value, array &$params): array
     {
         /** @var self $field */
         $field = reset($instances);

@@ -158,7 +158,7 @@ class Money extends Field implements PreviewableFieldInterface, SortableFieldInt
     /**
      * @inheritdoc
      */
-    public static function queryCondition(array $instances, mixed $value, array &$params = []): ?array
+    public static function queryCondition(array $instances, mixed $value, array &$params): ?array
     {
         $valueSql = static::valueSql($instances);
         return Db::parseMoneyParam($valueSql, $instances[0]->currency, $value);

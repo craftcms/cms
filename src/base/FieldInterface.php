@@ -122,7 +122,7 @@ interface FieldInterface extends SavableComponentInterface
     public static function queryCondition(
         array $instances,
         mixed $value,
-        array &$params = [],
+        array &$params,
     ): array|string|ExpressionInterface|false|null;
 
     /**

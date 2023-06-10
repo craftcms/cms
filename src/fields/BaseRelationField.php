@@ -106,7 +106,7 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
     /**
      * @inheritdoc
      */
-    public static function queryCondition(array $instances, mixed $value, array &$params = []): array|false
+    public static function queryCondition(array $instances, mixed $value, array &$params): array|false
     {
         /** @var self $field */
         $field = reset($instances);

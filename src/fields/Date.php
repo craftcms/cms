@@ -66,7 +66,7 @@ class Date extends Field implements PreviewableFieldInterface, SortableFieldInte
     /**
      * @inheritdoc
      */
-    public static function queryCondition(array $instances, mixed $value, array &$params = []): ?array
+    public static function queryCondition(array $instances, mixed $value, array &$params): ?array
     {
         $valueSql = static::valueSql($instances);
         return Db::parseDateParam($valueSql, $value);
