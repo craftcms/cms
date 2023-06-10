@@ -7,7 +7,6 @@
 
 namespace craft\queue\jobs;
 
-use Craft;
 use craft\base\Batchable;
 use craft\db\Query;
 use craft\db\QueryBatcher;
@@ -37,24 +36,16 @@ class FindAndReplace extends BaseBatchedJob
 
     protected function loadData(): Batchable
     {
-        $condition = [
-            'or',
-            ['like', 'title', $this->find],
-        ];
-
-        foreach (Craft::$app->getFields()->getAllFields(false) as $field) {
-            $valueSql = $field->getValueSql();
-            if ($valueSql !== null) {
-                $condition[] = ['like', $valueSql, $this->find];
-            }
-        }
-
         return new QueryBatcher(
             (new Query())
                 ->select(['id', 'title', 'content'])
                 ->from(Table::ELEMENTS_SITES)
                 ->orderBy(['id' => SORT_ASC])
-                ->where($condition),
+                ->where([
+                    'or',
+                    ['like', 'title', $this->find],
+                    ['like', 'content', $this->find],
+                ]),
         );
     }
 
