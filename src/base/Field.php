@@ -137,6 +137,14 @@ abstract class Field extends SavableComponent implements FieldInterface
     /**
      * @inheritdoc
      */
+    public static function isMultiInstance(): bool
+    {
+        return static::dbType() !== null;
+    }
+
+    /**
+     * @inheritdoc
+     */
     public static function isRequirable(): bool
     {
         return true;
@@ -176,6 +184,48 @@ abstract class Field extends SavableComponent implements FieldInterface
     public static function dbType(): array|string|null
     {
         return Schema::TYPE_TEXT;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function queryCondition(
+        array $instances,
+        mixed $value,
+        array &$params,
+    ): array|string|ExpressionInterface|false|null {
+        $valueSql = static::valueSql($instances);
+
+        if ($valueSql === null) {
+            return false;
+        }
+
+        return Db::parseParam($valueSql, $value, columnType: Schema::TYPE_JSON);
+    }
+
+    /**
+     * Returns a coalescing value SQL expression for the given field instances.
+     *
+     * @param static[] $instances
+     * @return string|null
+     * @since 5.0.0
+     */
+    protected static function valueSql(array $instances): ?string
+    {
+        $valuesSql = array_filter(
+            array_map(fn(self $field) => $field->getValueSql(), $instances),
+            fn(?string $valueSql) => $valueSql !== null,
+        );
+
+        if (empty($valuesSql)) {
+            return null;
+        }
+
+        if (count($valuesSql) === 1) {
+            return reset($valuesSql);
+        }
+
+        return sprintf('COALESCE(%s)', implode(',', $valuesSql));
     }
 
     /**
@@ -227,6 +277,16 @@ abstract class Field extends SavableComponent implements FieldInterface
         if ($this->translationMethod !== self::TRANSLATION_METHOD_CUSTOM) {
             $this->translationKeyFormat = null;
         }
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function attributes(): array
+    {
+        $names = parent::attributes();
+        ArrayHelper::removeValue($names, 'layoutElement');
+        return $names;
     }
 
     /**
@@ -604,14 +664,14 @@ abstract class Field extends SavableComponent implements FieldInterface
      */
     public function getSortOption(): array
     {
-        if (static::dbType() === null) {
+        if (static::dbType() === null || !isset($this->layoutElement)) {
             throw new NotSupportedException('getSortOption() not supported by ' . $this->name);
         }
 
         return [
             'label' => Craft::t('site', $this->name),
             'orderBy' => [$this->getValueSql(), 'id'],
-            'attribute' => "field:$this->uid",
+            'attribute' => "field:{$this->layoutElement->uid}",
         ];
     }
 
@@ -658,27 +718,19 @@ abstract class Field extends SavableComponent implements FieldInterface
     /**
      * @inheritdoc
      */
-    public function getQueryCondition(mixed $value, array &$params = []): array|string|ExpressionInterface|false|null
-    {
-        $valueSql = $this->getValueSql();
-        if ($valueSql === null) {
-            return false;
-        }
-        return Db::parseParam($valueSql, $value, columnType: Schema::TYPE_JSON);
-    }
-
-    /**
-     * @inheritdoc
-     */
     public function getValueSql(): ?string
     {
+        if (!isset($this->layoutElement)) {
+            return null;
+        }
+
         $dbType = static::dbType();
 
         if ($dbType === null) {
             return null;
         }
 
-        $jsonPath = [$this->uid];
+        $jsonPath = [$this->layoutElement->uid];
 
         if (is_array($dbType)) {
             // Focus on the primary value by default

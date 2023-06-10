@@ -9,6 +9,7 @@ use craft\db\Table;
 use craft\elements\User;
 use craft\fields\Matrix;
 use craft\services\ProjectConfig;
+use yii\console\Exception;
 
 /**
  * m230511_215903_content_refactor migration.
@@ -20,15 +21,30 @@ class m230511_215903_content_refactor extends BaseContentRefactorMigration
      */
     public function safeUp(): bool
     {
+        // Before anything else, be absolutely certain that all custom fields' layout elements have unique UUIDs
+        $uids = [];
+        $fieldsService = Craft::$app->getFields();
+        foreach ($fieldsService->getAllLayouts() as $fieldLayout) {
+            foreach ($fieldLayout->getCustomFieldElements() as $layoutElement) {
+                if (!isset($layoutElement->uid)) {
+                    throw new Exception('A field layout element is missing its UUID. Reinstall Craft CMS ^4.4.14 and run `utils/fix-field-layout-uids` before upgrading to Craft CMS 5.');
+                }
+                if (isset($uids[$layoutElement->uid])) {
+                    throw new Exception('A field layout element has a duplicate UUID. Reinstall Craft CMS ^4.4.14 and run `utils/fix-field-layout-uids` before upgrading to Craft CMS 5.');
+                }
+                $uids[$layoutElement->uid] = true;
+            }
+        }
+
         $this->addColumn(Table::ELEMENTS_SITES, 'title', $this->string()->after('siteId'));
         $this->addColumn(Table::ELEMENTS_SITES, 'content', $this->json()->after('uri'));
         $this->createIndex(null, Table::ELEMENTS_SITES, ['title', 'siteId']);
 
+        $this->addColumn(Table::CHANGEDFIELDS, 'layoutElementUid', $this->uid()->after('fieldId'));
+
         $projectConfig = Craft::$app->getProjectConfig();
         $schemaVersion = $projectConfig->get('system.schemaVersion', true);
         $updateProjectConfig = version_compare($schemaVersion, '5.0.0', '<');
-
-        $fieldsService = Craft::$app->getFields();
 
         // update addresses
         $this->updateElements(

@@ -63,6 +63,39 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
     }
 
     /**
+     * @inheritdoc
+     */
+    public static function queryCondition(array $instances, mixed $value, array &$params): ?array
+    {
+        if (static::$multi) {
+            $param = QueryParam::parse($value);
+
+            if (empty($param->values)) {
+                return null;
+            }
+
+            if ($param->operator === QueryParam::NOT) {
+                $param->operator = QueryParam::OR;
+                $negate = true;
+            } else {
+                $negate = false;
+            }
+
+            $condition = [$param->operator];
+            $qb = Craft::$app->getDb()->getQueryBuilder();
+            $valueSql = static::valueSql($instances);
+
+            foreach ($param->values as $value) {
+                $condition[] = $qb->jsonContains($valueSql, $value);
+            }
+
+            return $negate ? ['not', $condition] : $condition;
+        }
+
+        return parent::queryCondition($instances, $value, $params);
+    }
+
+    /**
      * @var array The available options
      */
     public array $options;
@@ -344,39 +377,6 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
     public function getElementConditionRuleType(): array|string|null
     {
         return OptionsFieldConditionRule::class;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getQueryCondition(mixed $value, array &$params = []): ?array
-    {
-        if (static::$multi) {
-            $param = QueryParam::parse($value);
-
-            if (empty($param->values)) {
-                return null;
-            }
-
-            if ($param->operator === QueryParam::NOT) {
-                $param->operator = QueryParam::OR;
-                $negate = true;
-            } else {
-                $negate = false;
-            }
-
-            $condition = [$param->operator];
-            $qb = Craft::$app->getDb()->getQueryBuilder();
-            $valueSql = $this->getValueSql();
-
-            foreach ($param->values as $value) {
-                $condition[] = $qb->jsonContains($valueSql, $value);
-            }
-
-            return $negate ? ['not', $condition] : $condition;
-        }
-
-        return parent::getQueryCondition($value, $params);
     }
 
     /**

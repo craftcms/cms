@@ -250,6 +250,7 @@ class Install extends Migration
             'elementId' => $this->integer()->notNull(),
             'siteId' => $this->integer()->notNull(),
             'fieldId' => $this->integer()->notNull(),
+            'layoutElementUid' => $this->uid(),
             'dateUpdated' => $this->dateTime()->notNull(),
             'propagated' => $this->boolean()->notNull(),
             'userId' => $this->integer(),
@@ -378,34 +379,13 @@ class Install extends Migration
             'dateDeleted' => $this->dateTime()->null(),
             'uid' => $this->uid(),
         ]);
-        $this->createTable(Table::FIELDLAYOUTFIELDS, [
-            'id' => $this->primaryKey(),
-            'layoutId' => $this->integer()->notNull(),
-            'tabId' => $this->integer()->notNull(),
-            'fieldId' => $this->integer()->notNull(),
-            'required' => $this->boolean()->defaultValue(false)->notNull(),
-            'sortOrder' => $this->smallInteger()->unsigned(),
-            'dateCreated' => $this->dateTime()->notNull(),
-            'dateUpdated' => $this->dateTime()->notNull(),
-            'uid' => $this->uid(),
-        ]);
         $this->createTable(Table::FIELDLAYOUTS, [
             'id' => $this->primaryKey(),
             'type' => $this->string()->notNull(),
+            'config' => $this->text(),
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
             'dateDeleted' => $this->dateTime()->null(),
-            'uid' => $this->uid(),
-        ]);
-        $this->createTable(Table::FIELDLAYOUTTABS, [
-            'id' => $this->primaryKey(),
-            'layoutId' => $this->integer()->notNull(),
-            'name' => $this->string()->notNull(),
-            'settings' => $this->text(),
-            'elements' => $this->text(),
-            'sortOrder' => $this->smallInteger()->unsigned(),
-            'dateCreated' => $this->dateTime()->notNull(),
-            'dateUpdated' => $this->dateTime()->notNull(),
             'uid' => $this->uid(),
         ]);
         $this->createTable(Table::FIELDS, [
@@ -833,14 +813,8 @@ class Install extends Migration
         $this->createIndex(null, Table::ENTRYTYPES, ['dateDeleted'], false);
         $this->createIndex(null, Table::FIELDGROUPS, ['name'], false);
         $this->createIndex(null, Table::FIELDGROUPS, ['dateDeleted', 'name'], false);
-        $this->createIndex(null, Table::FIELDLAYOUTFIELDS, ['layoutId', 'fieldId'], true);
-        $this->createIndex(null, Table::FIELDLAYOUTFIELDS, ['sortOrder'], false);
-        $this->createIndex(null, Table::FIELDLAYOUTFIELDS, ['tabId'], false);
-        $this->createIndex(null, Table::FIELDLAYOUTFIELDS, ['fieldId'], false);
         $this->createIndex(null, Table::FIELDLAYOUTS, ['dateDeleted'], false);
         $this->createIndex(null, Table::FIELDLAYOUTS, ['type'], false);
-        $this->createIndex(null, Table::FIELDLAYOUTTABS, ['sortOrder'], false);
-        $this->createIndex(null, Table::FIELDLAYOUTTABS, ['layoutId'], false);
         $this->createIndex(null, Table::FIELDS, ['handle', 'context']);
         $this->createIndex(null, Table::FIELDS, ['groupId'], false);
         $this->createIndex(null, Table::FIELDS, ['context'], false);
@@ -1009,10 +983,6 @@ class Install extends Migration
         $this->addForeignKey(null, Table::ENTRIES, ['parentId'], Table::ENTRIES, ['id'], 'SET NULL', null);
         $this->addForeignKey(null, Table::ENTRIES, ['typeId'], Table::ENTRYTYPES, ['id'], 'CASCADE', null);
         $this->addForeignKey(null, Table::ENTRYTYPES, ['fieldLayoutId'], Table::FIELDLAYOUTS, ['id'], 'SET NULL', null);
-        $this->addForeignKey(null, Table::FIELDLAYOUTFIELDS, ['fieldId'], Table::FIELDS, ['id'], 'CASCADE', null);
-        $this->addForeignKey(null, Table::FIELDLAYOUTFIELDS, ['layoutId'], Table::FIELDLAYOUTS, ['id'], 'CASCADE', null);
-        $this->addForeignKey(null, Table::FIELDLAYOUTFIELDS, ['tabId'], Table::FIELDLAYOUTTABS, ['id'], 'CASCADE', null);
-        $this->addForeignKey(null, Table::FIELDLAYOUTTABS, ['layoutId'], Table::FIELDLAYOUTS, ['id'], 'CASCADE', null);
         $this->addForeignKey(null, Table::FIELDS, ['groupId'], Table::FIELDGROUPS, ['id'], 'CASCADE', null);
         $this->addForeignKey(null, Table::GLOBALSETS, ['fieldLayoutId'], Table::FIELDLAYOUTS, ['id'], 'SET NULL', null);
         $this->addForeignKey(null, Table::GLOBALSETS, ['id'], Table::ELEMENTS, ['id'], 'CASCADE', null);

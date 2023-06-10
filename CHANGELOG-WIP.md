@@ -8,6 +8,8 @@
 
 ### Administration
 - Entry types are now managed independently of sections.
+- Field layouts can now override custom fields’ handles.
+- Most custom fields can now be included multiple times within the same field layout. ([#8497](https://github.com/craftcms/cms/discussions/8497))
 - Added support for defining custom locale aliases, via a new `localeAliases` config setting. ([#12705](https://github.com/craftcms/cms/pull/12705))
 - `entrify/*` commands now ask if an entry type already exists for the section.
 
@@ -22,9 +24,14 @@
 - Selectize menus no longer apply special styling to options with the value `new`. The `_includes/forms/selectize.twig` control panel template should be used instead (or `craft\helpers\Cp::selectizeHtml()`/`selectizeFieldHtml()`), which will append an styled “Add” option when `addOptionFn` and `addOptionLabel` settings are passed. ([#11946](https://github.com/craftcms/cms/issues/11946))
 - The `assets/move-asset` and `assets/move-folder` actions no longer include `success` keys in responses. ([#12159](https://github.com/craftcms/cms/pull/12159))
 - The `assets/upload` controller action now includes `errors` object in failure responses. ([#12159](https://github.com/craftcms/cms/pull/12159))
+- Added `craft\base\Field::valueSql()`.
 - Added `craft\base\FieldInterface::dbType()`, which defines the type(s) of values the field will store in the `elements_sites.content` column (if any).
-- Added `craft\base\FieldInterface::getQueryCondition()`, which accepts an element query param value and returns the corresponding query condition.
 - Added `craft\base\FieldInterface::getValueSql()`.
+- Added `craft\base\FieldInterface::isMultiInstance()`.
+- Added `craft\base\FieldInterface::queryCondition()`, which accepts an element query param value and returns the corresponding query condition.
+- Added `craft\base\FieldLayoutElement::isMultiInstance()`.
+- Added `craft\base\FieldTrait::$layoutElement`.
+- Added `craft\base\conditions\ConditionInterface::createConditionRule()`.
 - Added `craft\controllers\EntryTypesController`.
 - Added `craft\db\Connection::getIsMaria()`.
 - Added `craft\db\QueryParam`.
@@ -43,7 +50,11 @@
 - Added `craft\elements\MatrixBlock::gqlTypeName()`.
 - Added `craft\elements\Tag::gqlTypeName()`.
 - Added `craft\elements\User::GQL_TYPE_NAME`.
+- Added `craft\elements\conditions\ElementConditionInterface::getFieldLayouts()`.
 - Added `craft\elements\db\ElementQueryInterface::fieldLayouts()`
+- Added `craft\fieldlayoutelements\CustomField::$handle`.
+- Added `craft\fields\conditions\FieldConditionRuleTrait::fieldInstances()`.
+- Added `craft\fields\conditions\FieldConditionRuleTrait::setLayoutElementUid()`.
 - Added `craft\helpers\Db::defaultCollation()`.
 - Added `craft\helpers\Db::prepareForJsonColumn()`.
 - Added `craft\helpers\Gql::getSchemaContainedSections()`.
@@ -53,6 +64,7 @@
 - Added `craft\migrations\BaseContentRefactorMigration`.
 - Added `craft\models\Section::getCpEditUrl()`.
 - Added `craft\services\Fields::$fieldContext`, which replaces `craft\services\Content::$fieldContext`.
+- Added `craft\services\Fields::getAllLayouts()`.
 - Added `craft\services\Gql::defineContentArgumentsForFieldLayouts()`.
 - Added `craft\services\Gql::defineContentArgumentsForFields()`.
 - Added `craft\services\Gql::getOrSetContentArguments()`.
@@ -78,7 +90,10 @@
 - Removed `craft\base\ElementInterface::hasContent()`.
 - Removed `craft\base\FieldInterface::getContentColumnType()`. `dbType()` should be implemented instead.
 - Removed `craft\base\FieldInterface::hasContentColumn()`. Fields that don’t need to store values in the `elements_sites.content` column should return `null` from `dbType()`.
-- Removed `craft\base\FieldInterface::modifyElementsQuery()`. Fields can customize how their element query params are handled by implementing `getQueryCondition()`.
+- Removed `craft\base\FieldInterface::modifyElementsQuery()`. Fields can customize how their element query params are handled by implementing `queryCondition()`.
+- Removed `craft\base\FieldTrait::$layoutId`.
+- Removed `craft\base\FieldTrait::$sortOrder`.
+- Removed `craft\base\FieldTrait::$tabId`.
 - Removed `craft\controllers\Sections::actionDeleteEntryType()`.
 - Removed `craft\controllers\Sections::actionEditEntryType()`.
 - Removed `craft\controllers\Sections::actionEntryTypesIndex()`.
@@ -96,7 +111,13 @@
 - Removed `craft\models\EntryType::$sortOrder`.
 - Removed `craft\models\EntryType::getSection()`.
 - Removed `craft\records\EntryType::getSection()`.
+- Removed `craft\records\FieldLayout::getFields()`.
+- Removed `craft\records\FieldLayout::getTabs()`.
+- Removed `craft\records\FieldLayoutField`.
+- Removed `craft\records\FieldLayoutTab`.
 - Removed `craft\services\Content`.
+- Removed `craft\services\Fields::getFieldIdsByLayoutIds()`.
+- Removed `craft\services\Fields::getLayoutTabsById()`.
 - Removed `craft\services\Fields::updateColumn()`.
 - Removed `craft\services\Matrix::defineContentTableName()`.
 - Removed `craft\services\Sections::reorderEntryTypes()`.

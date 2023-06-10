@@ -109,6 +109,50 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
     }
 
     /**
+     * @inheritdoc
+     */
+    public static function queryCondition(array $instances, mixed $value, array &$params): array
+    {
+        /** @var self $field */
+        $field = reset($instances);
+        $ns = $field->handle . '_' . StringHelper::randomString(5);
+
+        $existsQuery = (new Query())
+            ->from(["matrixblocks_$ns" => DbTable::MATRIXBLOCKS])
+            ->innerJoin(["elements_$ns" => DbTable::ELEMENTS], "[[elements_$ns.id]] = [[matrixblocks_$ns.id]]")
+            ->innerJoin(["matrixblocks_owners_$ns" => DbTable::MATRIXBLOCKS_OWNERS], "[[matrixblocks_owners_$ns.blockId]] = [[elements_$ns.id]]")
+            ->andWhere([
+                "matrixblocks_$ns.fieldId" => $field->id,
+                "elements_$ns.enabled" => true,
+                "elements_$ns.dateDeleted" => null,
+                "[[matrixblocks_owners_$ns.ownerId]]" => new Expression('[[elements.id]]'),
+            ]);
+
+        if ($value === 'not :empty:') {
+            $value = ':notempty:';
+        }
+
+        if ($value === ':empty:') {
+            return ['not exists', $existsQuery];
+        }
+
+        if ($value !== ':notempty:') {
+            $ids = $value;
+            if (!is_array($ids)) {
+                $ids = is_string($ids) ? StringHelper::split($ids) : [$ids];
+            }
+
+            $ids = array_map(function($id) {
+                return $id instanceof MatrixBlock ? $id->id : (int)$id;
+            }, $ids);
+
+            $existsQuery->andWhere(["matrixblocks_$ns.id" => $ids]);
+        }
+
+        return ['exists', $existsQuery];
+    }
+
+    /**
      * @var int|null Min blocks
      */
     public ?int $minBlocks = null;
@@ -548,47 +592,6 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
     public function getElementConditionRuleType(): array|string|null
     {
         return EmptyFieldConditionRule::class;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getQueryCondition(mixed $value, array &$params = []): array
-    {
-        $ns = $this->handle . '_' . StringHelper::randomString(5);
-        $existsQuery = (new Query())
-            ->from(["matrixblocks_$ns" => DbTable::MATRIXBLOCKS])
-            ->innerJoin(["elements_$ns" => DbTable::ELEMENTS], "[[elements_$ns.id]] = [[matrixblocks_$ns.id]]")
-            ->innerJoin(["matrixblocks_owners_$ns" => DbTable::MATRIXBLOCKS_OWNERS], "[[matrixblocks_owners_$ns.blockId]] = [[elements_$ns.id]]")
-            ->andWhere([
-                "matrixblocks_$ns.fieldId" => $this->id,
-                "elements_$ns.enabled" => true,
-                "elements_$ns.dateDeleted" => null,
-                "[[matrixblocks_owners_$ns.ownerId]]" => new Expression('[[elements.id]]'),
-            ]);
-
-        if ($value === 'not :empty:') {
-            $value = ':notempty:';
-        }
-
-        if ($value === ':empty:') {
-            return ['not exists', $existsQuery];
-        }
-
-        if ($value !== ':notempty:') {
-            $ids = $value;
-            if (!is_array($ids)) {
-                $ids = is_string($ids) ? StringHelper::split($ids) : [$ids];
-            }
-
-            $ids = array_map(function($id) {
-                return $id instanceof MatrixBlock ? $id->id : (int)$id;
-            }, $ids);
-
-            $existsQuery->andWhere(["matrixblocks_$ns.id" => $ids]);
-        }
-
-        return ['exists', $existsQuery];
     }
 
     /**

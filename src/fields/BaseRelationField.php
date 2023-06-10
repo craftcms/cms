@@ -104,6 +104,77 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
     }
 
     /**
+     * @inheritdoc
+     */
+    public static function queryCondition(array $instances, mixed $value, array &$params): array|false
+    {
+        /** @var self $field */
+        $field = reset($instances);
+
+        if (!is_array($value)) {
+            $value = [$value];
+        }
+
+        $conditions = [];
+
+        if (isset($value[0]) && in_array($value[0], [':notempty:', ':empty:', 'not :empty:'])) {
+            $emptyCondition = array_shift($value);
+            if ($emptyCondition === 'not :empty:') {
+                $emptyCondition = ':notempty:';
+            }
+
+            $ns = $field->handle . '_' . StringHelper::randomString(5);
+            $condition = [
+                'exists', (new Query())
+                    ->from(["relations_$ns" => DbTable::RELATIONS])
+                    ->innerJoin(["elements_$ns" => DbTable::ELEMENTS], "[[elements_$ns.id]] = [[relations_$ns.targetId]]")
+                    ->leftJoin(["elements_sites_$ns" => DbTable::ELEMENTS_SITES], "[[elements_sites_$ns.elementId]] = [[elements_$ns.id]]")
+                    ->where("[[relations_$ns.sourceId]] = [[elements.id]]")
+                    ->andWhere([
+                        'or',
+                        ["relations_$ns.sourceSiteId" => null],
+                        ["relations_$ns.sourceSiteId" => new Expression('[[elements_sites.siteId]]')],
+                    ])
+                    ->andWhere([
+                        "relations_$ns.fieldId" => $field->id,
+                        "elements_$ns.enabled" => true,
+                        "elements_$ns.dateDeleted" => null,
+                        "elements_sites_$ns.siteId" => $field->_targetSiteId() ?? new Expression('[[elements_sites.siteId]]'),
+                        "elements_sites_$ns.enabled" => true,
+                    ]),
+            ];
+
+            if ($emptyCondition === ':notempty:') {
+                $conditions[] = $condition;
+            } else {
+                $conditions[] = ['not', $condition];
+            }
+        }
+
+        if (!empty($value)) {
+            $parser = new ElementRelationParamParser([
+                'fields' => [
+                    $field->handle => $field,
+                ],
+            ]);
+            $condition = $parser->parse([
+                'targetElement' => $value,
+                'field' => $field->handle,
+            ]);
+            if ($condition !== false) {
+                $conditions[] = $condition;
+            }
+        }
+
+        if (empty($conditions)) {
+            return false;
+        }
+
+        array_unshift($conditions, 'or');
+        return $conditions;
+    }
+
+    /**
      * @var array Related elements that have been validated
      * @see _validateRelatedElement()
      */
@@ -647,74 +718,6 @@ JS, [
     /**
      * @inheritdoc
      */
-    public function getQueryCondition(mixed $value, array &$params = []): array|false
-    {
-        if (!is_array($value)) {
-            $value = [$value];
-        }
-
-        $conditions = [];
-
-        if (isset($value[0]) && in_array($value[0], [':notempty:', ':empty:', 'not :empty:'])) {
-            $emptyCondition = array_shift($value);
-            if ($emptyCondition === 'not :empty:') {
-                $emptyCondition = ':notempty:';
-            }
-
-            $ns = $this->handle . '_' . StringHelper::randomString(5);
-            $condition = [
-                'exists', (new Query())
-                    ->from(["relations_$ns" => DbTable::RELATIONS])
-                    ->innerJoin(["elements_$ns" => DbTable::ELEMENTS], "[[elements_$ns.id]] = [[relations_$ns.targetId]]")
-                    ->leftJoin(["elements_sites_$ns" => DbTable::ELEMENTS_SITES], "[[elements_sites_$ns.elementId]] = [[elements_$ns.id]]")
-                    ->where("[[relations_$ns.sourceId]] = [[elements.id]]")
-                    ->andWhere([
-                        'or',
-                        ["relations_$ns.sourceSiteId" => null],
-                        ["relations_$ns.sourceSiteId" => new Expression('[[elements_sites.siteId]]')],
-                    ])
-                    ->andWhere([
-                        "relations_$ns.fieldId" => $this->id,
-                        "elements_$ns.enabled" => true,
-                        "elements_$ns.dateDeleted" => null,
-                        "elements_sites_$ns.siteId" => $this->_targetSiteId() ?? new Expression('[[elements_sites.siteId]]'),
-                        "elements_sites_$ns.enabled" => true,
-                    ]),
-            ];
-
-            if ($emptyCondition === ':notempty:') {
-                $conditions[] = $condition;
-            } else {
-                $conditions[] = ['not', $condition];
-            }
-        }
-
-        if (!empty($value)) {
-            $parser = new ElementRelationParamParser([
-                'fields' => [
-                    $this->handle => $this,
-                ],
-            ]);
-            $condition = $parser->parse([
-                'targetElement' => $value,
-                'field' => $this->handle,
-            ]);
-            if ($condition !== false) {
-                $conditions[] = $condition;
-            }
-        }
-
-        if (empty($conditions)) {
-            return false;
-        }
-
-        array_unshift($conditions, 'or');
-        return $conditions;
-    }
-
-    /**
-     * @inheritdoc
-     */
     public function modifyElementIndexQuery(ElementQueryInterface $query): void
     {
         $criteria = [
@@ -1001,6 +1004,7 @@ JS, [
                             'elementId' => $element->id,
                             'siteId' => $siteId,
                             'fieldId' => $this->id,
+                            'layoutElementUid' => $this->layoutElement->uid,
                             'dateUpdated' => $timestamp,
                             'propagated' => $element->propagating,
                             'userId' => $userId,

@@ -4,7 +4,6 @@ namespace craft\migrations;
 
 use craft\db\Migration;
 use craft\db\Query;
-use craft\db\Table;
 use craft\helpers\Json;
 use craft\helpers\StringHelper;
 
@@ -22,7 +21,7 @@ class m220314_211928_field_layout_element_uids extends Migration
         // (No need to update project config; the UIDs only need to be consistent within an edit session.)
         $tabs = (new Query())
             ->select(['id', 'elements'])
-            ->from([Table::FIELDLAYOUTTABS])
+            ->from(['{{%fieldlayouttabs}}'])
             ->all();
 
         foreach ($tabs as $tab) {
@@ -38,7 +37,7 @@ class m220314_211928_field_layout_element_uids extends Migration
                     }
                     return $config;
                 }, is_array($elementConfigs) ? $elementConfigs : []);
-                $this->update(Table::FIELDLAYOUTTABS, [
+                $this->update('{{%fieldlayouttabs}}', [
                     'elements' => Json::encode($elementConfigs),
                 ], ['id' => $tab['id']]);
             }

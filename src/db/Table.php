@@ -50,9 +50,7 @@ abstract class Table
     public const ENTRIES = '{{%entries}}';
     public const ENTRYTYPES = '{{%entrytypes}}';
     public const FIELDGROUPS = '{{%fieldgroups}}';
-    public const FIELDLAYOUTFIELDS = '{{%fieldlayoutfields}}';
     public const FIELDLAYOUTS = '{{%fieldlayouts}}';
-    public const FIELDLAYOUTTABS = '{{%fieldlayouttabs}}';
     public const FIELDS = '{{%fields}}';
     public const GLOBALSETS = '{{%globalsets}}';
     /** @since 3.3.0 */

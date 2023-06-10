@@ -830,6 +830,11 @@ class Db
                 true => 'true',
                 false => 'false',
             };
+            $defaultValue = match ($defaultValue) {
+                true => 'true',
+                false => 'false',
+                null => null,
+            };
         }
 
         $condition = [$column => $value];

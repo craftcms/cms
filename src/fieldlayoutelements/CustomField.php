@@ -25,6 +25,12 @@ use craft\helpers\ArrayHelper;
 class CustomField extends BaseField
 {
     /**
+     * @var string|null The field handle override.
+     * @since 5.0.0
+     */
+    public ?string $handle = null;
+
+    /**
      * @var FieldInterface|null The custom field this layout field is based on.
      */
     private ?FieldInterface $_field = null;
@@ -35,8 +41,19 @@ class CustomField extends BaseField
      */
     public function __construct(?FieldInterface $field = null, $config = [])
     {
-        $this->_field = $field;
         parent::__construct($config);
+
+        if ($field) {
+            $this->setField($field);
+        }
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function isMultiInstance(): bool
+    {
+        return $this->_field::isMultiInstance();
     }
 
     /**
@@ -44,7 +61,7 @@ class CustomField extends BaseField
      */
     public function attribute(): string
     {
-        return $this->_field->handle;
+        return $this->handle ?? $this->_field->handle;
     }
 
     /**
@@ -81,7 +98,14 @@ class CustomField extends BaseField
      */
     public function setField(FieldInterface $field): void
     {
-        $this->_field = $field;
+        $this->_field = clone $field;
+        $this->_field->layoutElement = $this;
+
+        // Set the instance overrides
+        $this->_field->name = $this->label ?? $this->_field->name;
+        $this->_field->handle = $this->handle ?? $this->_field->handle;
+        $this->_field->instructions = $this->instructions ?? $this->_field->instructions;
+        $this->_field->required = $this->required;
     }
 
     /**
@@ -105,7 +129,7 @@ class CustomField extends BaseField
         if (($field = Craft::$app->getFields()->getFieldByUid($uid)) === null) {
             throw new FieldNotFoundException($uid);
         }
-        $this->_field = $field;
+        $this->setField($field);
     }
 
     /**
@@ -127,6 +151,20 @@ class CustomField extends BaseField
             'data' => [
                 'id' => $this->_field->id,
             ],
+        ]);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    protected function settingsHtml(): ?string
+    {
+        return Craft::$app->getView()->renderTemplate('_includes/forms/fld/custom-field-settings.twig', [
+            'field' => $this,
+            'defaultLabel' => $this->defaultLabel(),
+            'defaultHandle' => $this->_field->handle,
+            'defaultInstructions' => $this->defaultInstructions(),
+            'labelHidden' => !$this->showLabel(),
         ]);
     }
 
@@ -256,15 +294,11 @@ class CustomField extends BaseField
         $view = Craft::$app->getView();
         $view->registerDeltaName($this->_field->handle);
 
-        $required = $this->_field->required;
         $describedBy = $this->_field->describedBy;
-
-        $this->_field->required = $this->required;
         $this->_field->describedBy = $this->describedBy($element, $static);
 
         $html = $this->_field->getInputHtml($value, $element);
 
-        $this->_field->required = $required;
         $this->_field->describedBy = $describedBy;
 
         return $html;

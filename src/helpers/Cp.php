@@ -19,6 +19,7 @@ use craft\errors\InvalidPluginException;
 use craft\events\DefineElementInnerHtmlEvent;
 use craft\events\RegisterCpAlertsEvent;
 use craft\fieldlayoutelements\BaseField;
+use craft\fieldlayoutelements\CustomField;
 use craft\models\FieldLayout;
 use craft\models\FieldLayoutTab;
 use craft\models\Site;
@@ -1855,6 +1856,13 @@ JS;
             ]);
         }
 
+        if ($element instanceof CustomField) {
+            $originalField = Craft::$app->getFields()->getFieldByUid($element->getFieldUid());
+            if ($originalField) {
+                $attr['data']['default-handle'] = $originalField->handle;
+            }
+        }
+
         $view = Craft::$app->getView();
         $oldNamespace = $view->getNamespace();
         $namespace = $view->namespaceInputName('element-' . ($forLibrary ? 'ELEMENT_UID' : $element->uid));
@@ -1872,6 +1880,7 @@ JS;
             'data' => [
                 'uid' => !$forLibrary ? $element->uid : false,
                 'config' => $forLibrary ? ['type' => get_class($element)] + $element->toArray() : false,
+                'is-multi-instance' => $element->isMultiInstance(),
                 'has-custom-width' => $element->hasCustomWidth(),
                 'settings-namespace' => $namespace,
                 'settings-html' => $settingsHtml ?: false,
@@ -1890,7 +1899,10 @@ JS;
      */
     private static function _fldFieldSelectorsHtml(string $groupName, array $groupFields, FieldLayout $fieldLayout): string
     {
-        $showGroup = ArrayHelper::contains($groupFields, fn(BaseField $field) => !$fieldLayout->isFieldIncluded($field->attribute()));
+        $showGroup = ArrayHelper::contains(
+            $groupFields,
+            fn(BaseField $field) => self::_showFldFieldSelector($fieldLayout, $field),
+        );
 
         return
             Html::beginTag('div', [
@@ -1903,10 +1915,18 @@ JS;
             Html::tag('h6', Html::encode($groupName)) .
             implode('', array_map(fn(BaseField $field) => self::_fldElementSelectorHtml($field, true, [
                 'class' => array_filter([
-                    $fieldLayout->isFieldIncluded($field->attribute()) ? 'hidden' : null,
+                    !self::_showFldFieldSelector($fieldLayout, $field) ? 'hidden' : null,
                 ]),
             ]), $groupFields)) .
             Html::endTag('div'); // .fld-field-group
+    }
+
+    private static function _showFldFieldSelector(FieldLayout $fieldLayout, BaseField $field): bool
+    {
+        return (
+            $field->isMultiInstance() ||
+            !$fieldLayout->isFieldIncluded($field->attribute())
+        );
     }
 
     /**

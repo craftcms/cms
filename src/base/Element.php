@@ -4065,21 +4065,20 @@ abstract class Element extends Component implements ElementInterface
 
         if (!isset($this->_outdatedFields)) {
             $query = (new Query())
-                ->select(['f.handle'])
-                ->from(['f' => Table::FIELDS])
-                ->innerJoin(['cf' => Table::CHANGEDFIELDS], '[[cf.fieldId]] = [[f.id]]')
+                ->select(['layoutElementUid'])
+                ->from(Table::CHANGEDFIELDS)
                 ->where([
-                    'cf.elementId' => $this->getCanonicalId(),
-                    'cf.siteId' => $this->siteId,
+                    'elementId' => $this->getCanonicalId(),
+                    'siteId' => $this->siteId,
                 ]);
 
             if ($this->dateLastMerged) {
-                $query->andWhere(['>=', 'cf.dateUpdated', Db::prepareDateForDb($this->dateLastMerged)]);
+                $query->andWhere(['>=', 'dateUpdated', Db::prepareDateForDb($this->dateLastMerged)]);
             } else {
-                $query->andWhere(['>=', 'cf.dateUpdated', Db::prepareDateForDb($this->dateCreated)]);
+                $query->andWhere(['>=', 'dateUpdated', Db::prepareDateForDb($this->dateCreated)]);
             }
 
-            $this->_outdatedFields = array_flip($query->column());
+            $this->_outdatedFields = $this->_layoutElementUids2fieldHandles($query->column());
         }
 
         return $this->_outdatedFields;
@@ -4099,16 +4098,15 @@ abstract class Element extends Component implements ElementInterface
 
         if (!isset($this->_modifiedFields[$key])) {
             $query = (new Query())
-                ->select(['f.handle'])
-                ->from(['f' => Table::FIELDS])
-                ->innerJoin(['cf' => Table::CHANGEDFIELDS], '[[cf.fieldId]] = [[f.id]]')
-                ->where(['cf.elementId' => $this->id]);
+                ->select('layoutElementUid')
+                ->from(Table::CHANGEDFIELDS)
+                ->where(['elementId' => $this->id]);
 
             if (!$anySite) {
-                $query->andWhere(['cf.siteId' => $this->siteId]);
+                $query->andWhere(['siteId' => $this->siteId]);
             }
 
-            $this->_modifiedFields[$key] = array_flip($query->column());
+            $this->_modifiedFields[$key] = $this->_layoutElementUids2fieldHandles($query->column());
         }
 
         return $this->_modifiedFields[$key];
@@ -4146,6 +4144,28 @@ abstract class Element extends Component implements ElementInterface
         }
 
         $this->_allDirty = false;
+    }
+
+    /**
+     * Returns field handles based on a list of field layout element UUIDs.
+     *
+     * @param string[] $uids
+     * @return array
+     */
+    private function _layoutElementUids2fieldHandles(array $uids): array
+    {
+        $uids = array_flip($uids);
+        $handles = [];
+
+        if (!empty($uids)) {
+            foreach ($this->getFieldLayout()->getCustomFieldElements() as $layoutElement) {
+                if (isset($uids[$layoutElement->uid])) {
+                    $handles[$layoutElement->attribute()] = true;
+                }
+            }
+        }
+
+        return $handles;
     }
 
     /**
@@ -4200,11 +4220,11 @@ abstract class Element extends Component implements ElementInterface
 
             foreach ($this->fieldLayoutFields(true) as $field) {
                 // Have we already processed this field?
-                if (isset($processedFields[$field->id])) {
+                if (isset($processedFields[$field->handle])) {
                     continue;
                 }
 
-                $processedFields[$field->id] = true;
+                $processedFields[$field->handle] = true;
                 $processedAnyFields = true;
 
                 // Do we have any post data for this field?
