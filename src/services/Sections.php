@@ -967,7 +967,9 @@ SQL)->execute();
             ->orderBy(['sortOrder' => SORT_ASC])
             ->column();
 
-        return array_map(fn(int $id) => $this->_entryTypes()->firstWhere('id', $id), $ids);
+        return array_values(array_filter(
+            array_map(fn(int $id) => $this->_entryTypes()->firstWhere('id', $id), $ids),
+        ));
     }
 
     /**
