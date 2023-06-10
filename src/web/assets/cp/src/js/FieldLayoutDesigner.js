@@ -21,6 +21,7 @@ Craft.FieldLayoutDesigner = Garnish.Base.extend(
     elementDrag: null,
 
     _config: null,
+    _$selectedFields: null,
 
     init: function (container, settings) {
       this.$container = $(container);
@@ -130,6 +131,8 @@ Craft.FieldLayoutDesigner = Garnish.Base.extend(
       this.addListener(this.$clearFieldSearchBtn, 'click', () => {
         this.$fieldSearch.val('').trigger('input');
       });
+
+      this.refreshSelectedFields();
     },
 
     initTab: function ($tab) {
@@ -192,15 +195,16 @@ Craft.FieldLayoutDesigner = Garnish.Base.extend(
       }
     },
 
+    refreshSelectedFields: function () {
+      this._$selectedFields = this.$tabContainer.find('.fld-field');
+    },
+
     hasHandle: function (handle) {
-      const $elements = this.$container.find('.fld-tabcontent > *');
-      for (let i = 0; i < $elements.length; i++) {
-        const element = $elements.eq(i).data('fld-element');
-        if (element.defaultHandle) {
-          const elementHandle = element.config.handle || element.defaultHandle;
-          if (handle === elementHandle) {
-            return true;
-          }
+      for (let i = 0; i < this._$selectedFields.length; i++) {
+        const element = this._$selectedFields.eq(i).data('fld-element');
+        const elementHandle = element.config.handle || element.attribute;
+        if (handle === elementHandle) {
+          return true;
         }
       }
 
@@ -599,6 +603,7 @@ Craft.FieldLayoutDesigner.Tab = Garnish.Base.extend({
     this.designer.tabGrid.removeItems(this.$container);
     this.designer.tabDrag.removeItems(this.$container);
     this.$container.remove();
+    this.designer.refreshSelectedFields();
 
     this.base();
   },
@@ -611,6 +616,7 @@ Craft.FieldLayoutDesigner.Element = Garnish.Base.extend({
   $editBtn: null,
 
   uid: null,
+  isMultiInstance: null,
   isField: false,
   attribute: null,
   requirable: false,
@@ -625,14 +631,26 @@ Craft.FieldLayoutDesigner.Element = Garnish.Base.extend({
     this.$container = $container;
     this.$container.data('fld-element', this);
     this.uid = this.$container.data('uid');
-    this.defaultHandle = this.$container.data('default-handle');
+
+    this.isField = this.$container.hasClass('fld-field');
+    this.isMultiInstance = Garnish.hasAttr(
+      this.$container,
+      'is-multi-instance'
+    );
+    this.requirable =
+      this.isField && Garnish.hasAttr(this.$container, 'data-requirable');
+
+    if (this.isField) {
+      this.attribute = this.$container.data('attribute');
+      this.defaultHandle = this.$container.data('default-handle');
+    }
 
     // New element?
     if (!this.uid) {
       this.uid = Craft.uuid();
       this.config = $.extend(this.$container.data('config'), {uid: this.uid});
 
-      if (this.defaultHandle) {
+      if (this.isField) {
         // Find a unique handle
         let handle = this.defaultHandle;
         let i = 1;
@@ -644,15 +662,8 @@ Craft.FieldLayoutDesigner.Element = Garnish.Base.extend({
           this.config = $.extend({}, this.config, {handle: handle});
           this.$container.find('.fld-attribute-label').text(handle);
         }
+        this.tab.designer.refreshSelectedFields();
       }
-    }
-
-    this.isField = this.$container.hasClass('fld-field');
-    this.requirable =
-      this.isField && Garnish.hasAttr(this.$container, 'data-requirable');
-
-    if (this.isField) {
-      this.attribute = this.$container.data('attribute');
     }
 
     this.settingsNamespace = this.$container
@@ -753,7 +764,7 @@ Craft.FieldLayoutDesigner.Element = Garnish.Base.extend({
         .prependTo($fieldsContainer);
     }
 
-    if (this.defaultHandle) {
+    if (this.isField) {
       const $handleInput = $fieldsContainer.find('input[name$="[handle]"]');
       $handleInput.val(this.config.handle || '');
     }
@@ -877,7 +888,11 @@ Craft.FieldLayoutDesigner.Element = Garnish.Base.extend({
     this.$container.remove();
 
     if (this.isField) {
-      this.tab.designer.removeFieldByHandle(this.attribute);
+      this.tab.designer.refreshSelectedFields();
+
+      if (!this.isMultiInstance) {
+        this.tab.designer.removeFieldByHandle(this.defaultHandle);
+      }
     }
 
     this.base();
