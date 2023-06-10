@@ -4,8 +4,10 @@
 {% do view.registerAssetBundle('craft\\web\\assets\\admintable\\AdminTableAsset') -%}
 
 {% do view.registerTranslations('app', [
-    'Name',
+    'Are you sure you want to delete “{name}” and all entries of that type?',
     'Handle',
+    'Name',
+    'No entry types exist yet.',
     'Used by',
 ]) %}
 
@@ -52,6 +54,8 @@ new Craft.VueAdminTable({
     columns: columns,
     container: '#entrytypes-vue-admin-table',
     deleteAction: 'entry-types/delete',
+    deleteConfirmationMessage: Craft.t('app', 'Are you sure you want to delete “{name}” and all entries of that type?'),
+    emptyMessage: Craft.t('app', 'No entry types exist yet.'),
     tableData: {{ tableData|json_encode|raw }},
 });
 {% endjs %}
