@@ -36,7 +36,6 @@ use yii\db\Schema;
 /**
  * Field is the base class for classes representing fields in terms of objects.
  *
- * @property-read bool $required
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
@@ -989,15 +988,5 @@ abstract class Field extends SavableComponent implements FieldInterface
         }
 
         return true;
-    }
-
-    /**
-     * @deprecated in 5.0.0
-     */
-    public function getRequired(): bool
-    {
-        $class = static::class;
-        Craft::$app->getDeprecator()->log("$class::required", "$class::required has been deprecated. $class::layoutElement->required should be used instead.");
-        return $this->layoutElement->required ?? false;
     }
 }

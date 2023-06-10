@@ -88,6 +88,12 @@ trait FieldTrait
     public ?string $uid = null;
 
     /**
+     * @var bool|null Whether the field is required in the field layout it was fetched from
+     * @deprecated in 4.1.4. [[\craft\fieldlayoutelements\BaseField::$required]] should be used instead
+     */
+    public ?bool $required = null;
+
+    /**
      * @var CustomField|null The field layout element
      * @since 5.0.0
      */
