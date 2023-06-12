@@ -10,6 +10,7 @@
 - Fixed a styling issue with control panel notifications. ([#13258](https://github.com/craftcms/cms/pull/13258))
 - Fixed a bug where element thumbnails could stop getting loaded when quickly switching between element sources. ([#13253](https://github.com/craftcms/cms/issues/13253))
 - Fixed an error that occurred when uploading an asset with a filename over 232 characters long, directly to an Assets field. ([#13264](https://github.com/craftcms/cms/issues/13264))
+- Fixed an error that occurred when transforming an image with a filename over 232 characters long. ([#13266](https://github.com/craftcms/cms/pull/13266))
 - Fixed a SQL error that could occur when upgrading to 4.4 on PostgreSQL, if the database was converted from MySQL. ([#12855](https://github.com/craftcms/cms/issues/12855))
 - Fixed a bug where `craft\db\Query::collect()` was returning a `craft\elements\ElementCollection` instance.
 - Fixed a SQL error that could occur when upgrading to Craft 4 if any database tables had foreign keys to `entryversions` or other now-unused tables that are removed during the upgrade.
