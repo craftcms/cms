@@ -83,20 +83,22 @@ class Assets extends Component
     public const EVENT_REGISTER_PREVIEW_HANDLER = 'registerPreviewHandler';
 
     /**
-     * @var array
+     * @var array<int,VolumeFolder|null>
+     * @see getFolderById()
      */
     private array $_foldersById = [];
 
     /**
-     * @var array
+     * @var array<string,VolumeFolder|null>
+     * @see getFolderByUid()
      */
     private array $_foldersByUid = [];
 
     /**
      * @var VolumeFolder[]
-     * @see getUserTemporaryUploadFolder
+     * @see getUserTemporaryUploadFolder()
      */
-    private $_userTempFolders = [];
+    private array $_userTempFolders = [];
 
     /**
      * Returns a file by its ID.
@@ -400,42 +402,34 @@ class Assets extends Component
      */
     public function getFolderById(int $folderId): ?VolumeFolder
     {
-        if (isset($this->_foldersById) && array_key_exists($folderId, $this->_foldersById)) {
-            return $this->_foldersById[$folderId];
+        if (!array_key_exists($folderId, $this->_foldersById)) {
+            $result = $this->createFolderQuery()
+                ->where(['id' => $folderId])
+                ->one();
+
+            $this->_foldersById[$folderId] = $result ? new VolumeFolder($result) : null;
         }
 
-        $result = $this->createFolderQuery()
-            ->where(['id' => $folderId])
-            ->one();
-
-        if (!$result) {
-            return $this->_foldersById[$folderId] = null;
-        }
-
-        return $this->_foldersById[$folderId] = new VolumeFolder($result);
+        return $this->_foldersById[$folderId];
     }
 
     /**
-     * Returns a folder by its UID.
+     * Returns a folder by its UUID.
      *
      * @param string $folderUid
      * @return VolumeFolder|null
      */
     public function getFolderByUid(string $folderUid): ?VolumeFolder
     {
-        if (isset($this->_foldersByUid) && array_key_exists($folderUid, $this->_foldersByUid)) {
-            return $this->_foldersByUid[$folderUid];
+        if (!array_key_exists($folderUid, $this->_foldersByUid)) {
+            $result = $this->createFolderQuery()
+                ->where(['uid' => $folderUid])
+                ->one();
+
+            $this->_foldersByUid[$folderUid] = $result ? new VolumeFolder($result) : null;
         }
 
-        $result = $this->createFolderQuery()
-            ->where(['uid' => $folderUid])
-            ->one();
-
-        if (!$result) {
-            return $this->_foldersByUid[$folderUid] = null;
-        }
-
-        return $this->_foldersByUid[$folderUid] = new VolumeFolder($result);
+        return $this->_foldersByUid[$folderUid];
     }
 
     /**
