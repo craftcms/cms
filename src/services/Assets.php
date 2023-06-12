@@ -95,6 +95,12 @@ class Assets extends Component
     private array $_foldersByUid = [];
 
     /**
+     * @var array<int,VolumeFolder|null>
+     * @see getRootFolderByVolumeId()
+     */
+    private array $_rootFolders = [];
+
+    /**
      * @var VolumeFolder[]
      * @see getUserTemporaryUploadFolder()
      */
@@ -543,10 +549,31 @@ class Assets extends Component
      */
     public function getRootFolderByVolumeId(int $volumeId): ?VolumeFolder
     {
-        return $this->findFolder([
-            'volumeId' => $volumeId,
-            'parentId' => ':empty:',
-        ]);
+        if (!array_key_exists($volumeId, $this->_rootFolders)) {
+            $volume = Craft::$app->getVolumes()->getVolumeById($volumeId);
+            if (!$volume) {
+                // todo: throw an InvalidArgumentException
+                return $this->_rootFolders[$volumeId] = null;
+            }
+
+            $folder = $this->findFolder([
+                'volumeId' => $volumeId,
+                'parentId' => ':empty:',
+            ]);
+
+            if (!$folder) {
+                $folder = new VolumeFolder();
+                $folder->volumeId = $volume->id;
+                $folder->parentId = null;
+                $folder->name = $volume->name;
+                $folder->path = '';
+                $this->storeFolderRecord($folder);
+            }
+
+            $this->_rootFolders[$volumeId] = $folder;
+        }
+
+        return $this->_rootFolders[$volumeId];
     }
 
     /**
@@ -826,7 +853,7 @@ class Assets extends Component
      */
     public function ensureFolderByFullPathAndVolume(string $fullPath, Volume $volume, bool $justRecord = true): VolumeFolder
     {
-        $parentFolder = Craft::$app->getVolumes()->ensureTopFolder($volume);
+        $parentFolder = $this->getRootFolderByVolumeId($volume->id);
         $folderModel = $parentFolder;
         $parentId = $parentFolder->id;
 
