@@ -14,6 +14,7 @@
 - Fixed a SQL error that could occur when upgrading to 4.4 on PostgreSQL, if the database was converted from MySQL. ([#12855](https://github.com/craftcms/cms/issues/12855))
 - Fixed a bug where `craft\db\Query::collect()` was returning a `craft\elements\ElementCollection` instance.
 - Fixed a SQL error that could occur when upgrading to Craft 4 if any database tables had foreign keys to `entryversions` or other now-unused tables that are removed during the upgrade.
+- Fixed a bug where the `users/save-user` action wasn’t including user details in successful responses. ([#13267](https://github.com/craftcms/cms/issues/13267))
 
 ## 4.4.13 - 2023-05-24
 
