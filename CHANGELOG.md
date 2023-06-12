@@ -15,6 +15,7 @@
 - Fixed a bug where `craft\db\Query::collect()` was returning a `craft\elements\ElementCollection` instance.
 - Fixed a SQL error that could occur when upgrading to Craft 4 if any database tables had foreign keys to `entryversions` or other now-unused tables that are removed during the upgrade.
 - Fixed a bug where the `users/save-user` action wasn’t including user details in successful responses. ([#13267](https://github.com/craftcms/cms/issues/13267))
+- Fixed a PHP error that occurred if an asset without a `dateModified` value was passed to `craft\helpers\Assets::revParams()`. ([#13268](https://github.com/craftcms/cms/pull/13268))
 
 ## 4.4.13 - 2023-05-24
 
