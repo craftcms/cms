@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 4
 
-## Unreleased
+## 4.4.14 - 2023-06-13
 
 - The `utils/fix-field-layout-uids` command now adds missing field layout component UUIDs.
 - The `_includes/forms/date` and `_includes/forms/time` templates now accept a `timeZone` variable.
