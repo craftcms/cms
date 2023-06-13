@@ -21,6 +21,7 @@
 - Fixed a bug where the Updates utility’s heading wasn’t reflecting updates that were blocked due to an expired plugin. ([#13274](https://github.com/craftcms/cms/issues/13274))
 - Fixed a bug where element deletion events weren’t getting triggered when elements were hard-deleted from an element index. ([#13280](https://github.com/craftcms/cms/issues/13280))
 - Fixed a bug where dropdowns within editable tables had blank optgroup labels. ([#13298](https://github.com/craftcms/cms/issues/13298))
+- Fixed a bug where textual cells within editable tables would display `[object Object]` if an object was passed as their value. ([#13303](https://github.com/craftcms/cms/issues/13303))
 
 ## 4.4.13 - 2023-05-24
 
