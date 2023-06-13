@@ -263,6 +263,8 @@ Craft.AssetSelectInput = Craft.BaseElementSelectInput.extend({
    * On upload progress.
    */
   _onUploadProgress: function (event, data) {
+    data = event instanceof Event ? event.detail : data;
+
     var progress = parseInt(Math.min(data.loaded / data.total, 1) * 100, 10);
     this.progressBar.setProgressPercentage(progress);
   },
@@ -271,7 +273,8 @@ Craft.AssetSelectInput = Craft.BaseElementSelectInput.extend({
    * On a file being uploaded.
    */
   _onUploadComplete: function (event, data) {
-    const result = data.result || data;
+    const result = event instanceof Event ? event.detail : data.result;
+
     const parameters = {
       elementId: result.assetId,
       siteId: this.settings.criteria.siteId,
@@ -304,13 +307,12 @@ Craft.AssetSelectInput = Craft.BaseElementSelectInput.extend({
    * On Upload Failure.
    */
   _onUploadFailure: function (event, data) {
-    let dataObj = data;
+    const response =
+      event instanceof Event
+        ? event?.detail
+        : data?.result?.response()?.jqXHR?.responseJSON || {};
 
-    if (typeof data.response === 'function') {
-      dataObj = data.response()?.jqXHR?.responseJSON || {};
-    }
-
-    let {message, filename} = dataObj;
+    let {message, filename} = response;
 
     if (!message) {
       message = filename
