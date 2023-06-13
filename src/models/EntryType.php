@@ -130,14 +130,14 @@ class EntryType extends Model
             UniqueValidator::class,
             'targetClass' => EntryTypeRecord::class,
             'targetAttribute' => ['name', 'sectionId'],
-            'comboNotUnique' => Craft::t('yii', '{attribute} "{value}" has already been taken.'),
+            'message' => Craft::t('yii', '{attribute} "{value}" has already been taken.'),
         ];
         $rules[] = [
             ['handle'],
             UniqueValidator::class,
             'targetClass' => EntryTypeRecord::class,
             'targetAttribute' => ['handle', 'sectionId'],
-            'comboNotUnique' => Craft::t('yii', '{attribute} "{value}" has already been taken.'),
+            'message' => Craft::t('yii', '{attribute} "{value}" has already been taken.'),
         ];
         $rules[] = [['fieldLayout'], 'validateFieldLayout'];
 

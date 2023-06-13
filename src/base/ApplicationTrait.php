@@ -284,6 +284,32 @@ trait ApplicationTrait
     private bool $_waitingToSaveInfo = false;
 
     /**
+     * @inheritdoc
+     */
+    public function setVendorPath($path): void
+    {
+        parent::setVendorPath($path);
+
+        // Override the @bower and @npm aliases if using asset-packagist.org
+        // todo: remove this whenever Yii is updated with support for asset-packagist.org
+        $altBowerPath = $this->getVendorPath() . DIRECTORY_SEPARATOR . 'bower-asset';
+        $altNpmPath = $this->getVendorPath() . DIRECTORY_SEPARATOR . 'npm-asset';
+        if (is_dir($altBowerPath)) {
+            Craft::setAlias('@bower', $altBowerPath);
+        }
+        if (is_dir($altNpmPath)) {
+            Craft::setAlias('@npm', $altNpmPath);
+        }
+
+        // Override where Yii should find its asset deps
+        $assetsPath = Craft::getAlias('@craft') . '/web/assets';
+        Craft::setAlias('@bower/jquery/dist', $assetsPath . '/jquery/dist');
+        Craft::setAlias('@bower/inputmask/dist', $assetsPath . '/inputmask/dist');
+        Craft::setAlias('@bower/punycode', $assetsPath . '/punycode/dist');
+        Craft::setAlias('@bower/yii2-pjax', $assetsPath . '/yii2pjax/dist');
+    }
+
+    /**
      * Sets the target application language.
      *
      * @param bool|null $useUserLanguage Whether the user’s preferred language should be used.
@@ -1494,6 +1520,19 @@ trait ApplicationTrait
         ColumnSchemaBuilder::$typeCategoryMap[Schema::TYPE_MEDIUMTEXT] = ColumnSchemaBuilder::CATEGORY_STRING;
         ColumnSchemaBuilder::$typeCategoryMap[Schema::TYPE_LONGTEXT] = ColumnSchemaBuilder::CATEGORY_STRING;
         ColumnSchemaBuilder::$typeCategoryMap[Schema::TYPE_ENUM] = ColumnSchemaBuilder::CATEGORY_STRING;
+
+        // Register Collection::set() as an alias of put() - with support for bulk-setting values
+        Collection::macro('set', function(mixed $values) {
+            /** @var Collection $this */
+            if (is_array($values)) {
+                foreach ($values as $key => $value) {
+                    $this->put($key, $value);
+                }
+            } else {
+                $this->put(...func_get_args());
+            }
+            return $this;
+        });
 
         // Register Collection::one() as an alias of first(), for consistency with yii\db\Query.
         Collection::macro('one', function() {

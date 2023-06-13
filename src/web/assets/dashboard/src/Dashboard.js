@@ -144,7 +144,7 @@ import './dashboard.scss';
                   .append(
                     $('<button/>', {
                       type: 'button',
-                      class: 'btn',
+                      class: 'btn cancel-btn',
                       text: Craft.t('app', 'Cancel'),
                     })
                   )
@@ -421,7 +421,7 @@ import './dashboard.scss';
       this.$saveBtn = $btnsContainer.children('button[type=submit]');
 
       this.addListener(
-        $btnsContainer.children('.btn:nth-child(2)'),
+        $btnsContainer.children('.cancel-btn'),
         'click',
         'cancelSettings'
       );

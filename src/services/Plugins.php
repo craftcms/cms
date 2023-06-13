@@ -833,22 +833,16 @@ class Plugins extends Component
      * Updates a plugin’s stored version & schema version to match what’s Composer-installed.
      *
      * @param PluginInterface $plugin
-     * @return void
-     * @throws InvalidPluginException if there’s no record of the plugin in the database
      * @since 3.7.13
      */
     public function updatePluginVersionInfo(PluginInterface $plugin): void
     {
-        $success = (bool)Db::update(Table::PLUGINS, [
+        Db::update(Table::PLUGINS, [
             'version' => $plugin->getVersion(),
             'schemaVersion' => $plugin->schemaVersion,
         ], [
             'handle' => $plugin->id,
         ]);
-
-        if (!$success) {
-            throw new InvalidPluginException($plugin->id);
-        }
 
         // Update our cache of the versions
         $this->loadPlugins();

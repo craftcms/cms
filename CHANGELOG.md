@@ -2,8 +2,27 @@
 
 ## Unreleased
 
-- Added `\craft\services\Addresses::$formatter`
-- The default address formatter can now be overridden. ([#13242](https://github.com/craftcms/cms/pull/13242))
+- The `utils/fix-field-layout-uids` command now adds missing field layout component UUIDs.
+- Fixed an error that could occur when updating a plugin with the `craft update` command, if it provided a new migration but still had the same schema version.
+- Fixed a bug where CSS classes that contained a pseudo-selector weren’t getting namespaced. ([#13251](https://github.com/craftcms/cms/pull/13251))
+- Fixed a JavaScript error that could occur when renaming assets without URLs. ([#13223](https://github.com/craftcms/cms/pull/13223))
+- Fixed a bug where `craft\base\Element::setFieldValuesFromRequest()` wasn’t properly handling empty strings passed as the namespace. ([#13252](https://github.com/craftcms/cms/discussions/13252))
+- Fixed a styling issue with control panel notifications. ([#13258](https://github.com/craftcms/cms/pull/13258))
+- Fixed a bug where element thumbnails could stop getting loaded when quickly switching between element sources. ([#13253](https://github.com/craftcms/cms/issues/13253))
+- Fixed an error that occurred when uploading an asset with a filename over 232 characters long, directly to an Assets field. ([#13264](https://github.com/craftcms/cms/issues/13264))
+- Fixed an error that occurred when transforming an image with a filename over 232 characters long. ([#13266](https://github.com/craftcms/cms/pull/13266))
+- Fixed a SQL error that could occur when upgrading to 4.4 on PostgreSQL, if the database was converted from MySQL. ([#12855](https://github.com/craftcms/cms/issues/12855))
+- Fixed a bug where `craft\db\Query::collect()` was returning a `craft\elements\ElementCollection` instance.
+- Fixed a SQL error that could occur when upgrading to Craft 4 if any database tables had foreign keys to `entryversions` or other now-unused tables that are removed during the upgrade.
+- Fixed a bug where the `users/save-user` action wasn’t including user details in successful responses. ([#13267](https://github.com/craftcms/cms/issues/13267))
+- Fixed a PHP error that occurred if an asset without a `dateModified` value was passed to `craft\helpers\Assets::revParams()`. ([#13268](https://github.com/craftcms/cms/pull/13268))
+
+## 4.4.13 - 2023-05-24
+
+- Fixed a bug where asset sources weren‘t immediately showing a source path on a clear `localStorage` cache.
+- Fixed a JavaScript error that could occur when searching within an asset index, when there was no source path. ([#13241](https://github.com/craftcms/cms/issues/13241))
+- Fixed a bug where Date fields with “Show Time Zone” enabled were displaying their values in the system’s time zone within element indexes. ([#13233](https://github.com/craftcms/cms/issues/13233))
+- Fixed a bug where the “Cancel” buttons within Dashboard widgets’ settings didn’t do anything. ([#13239](https://github.com/craftcms/cms/issues/13239))
 
 ## 4.4.12 - 2023-05-23
 
