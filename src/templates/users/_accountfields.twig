@@ -1,6 +1,12 @@
 {% import '_includes/forms.twig' as forms %}
 {% set static = static ?? false %}
 
+{% set parsedName = user.getParsedNames() %}
+{% set showFullName = true %}
+{% if not user.hasErrors('fullName') and (parsedName['parsedFirstName'] != user.firstName or parsedName['parsedLastName'] != user.lastName) %}
+    {% set showFullName = false %}
+{% endif %}
+
 {% if not craft.app.config.general.useEmailAsUsername %}
     {{ forms.textField({
         first: true,
@@ -19,22 +25,57 @@
     }) }}
 {% endif %}
 
-{{ forms.textField({
-    label: "Full Name"|t('app'),
-    id: 'fullName',
-    name: 'fullName',
-    value: user.fullName,
-    autocomplete: false,
-    errors: user.getErrors('fullName'),
-    autofocus: craft.app.config.general.useEmailAsUsername,
-    inputAttributes: {
-        data: {lpignore: 'true'},
-    },
-    disabled: static,
-}) }}
-
-{# it shouldn't be a part of the user slideout like all tabs except custom fields aren't #}
-{% if nameCardsHtml is defined %}
-    {{ nameCardsHtml|raw }}
+{% if showFullName %}
+    <div id="fullNameField">
+        {{ forms.textField({
+            label: "Full Name"|t('app'),
+            id: 'fullName',
+            name: 'fullName',
+            value: user.fullName,
+            autocomplete: false,
+            errors: user.getErrors('fullName'),
+            autofocus: craft.app.config.general.useEmailAsUsername,
+            inputAttributes: {
+                data: {lpignore: 'true'},
+            },
+            disabled: static,
+        }) }}
+    </div>
+    
+    {{ forms.lightswitchField({
+        label: "Edit Name"|t("app"),
+        id: "editName",
+        name: "editName",
+        on: false,
+        value: 1,
+        toggle: "editNameFields",
+        reverseToggle: "fullNameField"
+    }) }}
 {% endif %}
+<div id="editNameFields"{% if showFullName %} class="hidden"{% endif %}>
+    {{ forms.textField({
+        label: "First Name"|t('app'),
+        id: 'firstName',
+        name: 'firstName',
+        value: user.firstName,
+        autocomplete: false,
+        errors: user.getErrors('firstName'),
+        inputAttributes: {
+            data: {lpignore: 'true'},
+        },
+        disabled: static,
+    }) }}
 
+    {{ forms.textField({
+        label: "Last Name"|t('app'),
+        id: 'lastName',
+        name: 'lastName',
+        value: user.lastName,
+        autocomplete: false,
+        errors: user.getErrors('lastName'),
+        inputAttributes: {
+            data: {lpignore: 'true'},
+        },
+        disabled: static,
+    }) }}
+</div>

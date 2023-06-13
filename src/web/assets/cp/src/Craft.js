@@ -65,7 +65,6 @@ import './js/InfoIcon.js';
 import './js/LightSwitch.js';
 import './js/Listbox.js';
 import './js/LivePreview.js';
-import './js/NameCard.js';
 import './js/PasswordInput.js';
 import './js/Preview.js';
 import './js/PreviewFileModal.js';

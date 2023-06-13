@@ -25,7 +25,6 @@ use craft\events\RegisterUserActionsEvent;
 use craft\events\UserEvent;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Assets;
-use craft\helpers\Cp;
 use craft\helpers\Db;
 use craft\helpers\FileHelper;
 use craft\helpers\Html;
@@ -1098,7 +1097,6 @@ class UsersController extends Controller
             }
         }
 
-        $nameCardsHtml = Cp::nameCardHtml($user);
         $fieldsHtml = $form->render(false);
 
         // Prepare the language/locale options
@@ -1204,7 +1202,6 @@ JS,
             'showPermissionsTab',
             'canAssignUserGroups',
             'fieldsHtml',
-            'nameCardsHtml',
         ));
     }
 
@@ -2668,26 +2665,25 @@ JS,
 
     private function populateNameAttributes(object $model): void
     {
+        $editName = (bool)$this->request->getBodyParam('editName', false);
+
         /** @var object|NameTrait $model */
         $fullName = $this->request->getBodyParam('fullName');
 
-        // Still check for firstName/lastName in case a front-end form is still posting them
-        // on in case we want to overwrite them from the CP
-        $firstName = $this->request->getBodyParam('firstName');
-        $lastName = $this->request->getBodyParam('lastName');
-
-        if ($fullName !== null) {
+        if ($fullName !== null && !$editName) {
             $model->fullName = $fullName ?: null;
-        }
+            $model->firstName = null;
+            $model->lastName = null;
+        } else {
+            // Still check for firstName/lastName in case a front-end form is still posting them
+            $firstName = $this->request->getBodyParam('firstName');
+            $lastName = $this->request->getBodyParam('lastName');
 
-        if ($firstName !== null) {
-            // allow setting even if empty, because someone might only be set up only with their first name
-            $model->firstName = $firstName;
-        }
-
-        if ($lastName !== null) {
-            // allow setting even if empty, because someone might only be set up only with their last name
-            $model->lastName = $lastName;
+            if ($firstName !== null || $lastName !== null) {
+                $model->fullName = null;
+                $model->firstName = $firstName ?? null;
+                $model->lastName = $lastName ?? null;
+            }
         }
     }
 }
