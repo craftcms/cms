@@ -35,6 +35,7 @@ use HTMLPurifier_Encoder;
 use ReflectionClass;
 use ReflectionProperty;
 use yii\base\Event;
+use yii\base\Exception;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidValueException;
 use yii\helpers\Inflector;
@@ -61,6 +62,11 @@ class App
     private static array $_basePaths;
 
     /**
+     * @var string[]
+     */
+    private static array $_secrets;
+
+    /**
      * Returns whether Dev Mode is enabled.
      *
      * @return bool
@@ -72,14 +78,24 @@ class App
     }
 
     /**
-     * Returns an environment variable, falling back to a PHP constant of the same name.
+     * Returns a secret first, then an environment variable, falling back to a PHP constant of the same name.
      *
-     * @param string $name The environment variable name
-     * @return mixed The environment variable, PHP constant, or `null` if neither are found
+     * @param string $name The name to search for.
+     * @return mixed The secret, environment variable, PHP constant, or `null` if none are found
+     * @throws Exception
      * @since 3.4.18
      */
     public static function env(string $name): mixed
     {
+        $secretsPath = getenv('CRAFT_SECRETS_PATH');
+        if (!isset(self::$_secrets) && $secretsPath && is_file($secretsPath)) {
+            self::$_secrets = include $secretsPath;
+        }
+
+        if (isset(self::$_secrets[$name])) {
+            return static::normalizeValue(self::$_secrets[$name]);
+        }
+
         if (isset($_SERVER[$name])) {
             return static::normalizeValue($_SERVER[$name]);
         }
