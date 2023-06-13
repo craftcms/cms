@@ -19,6 +19,7 @@
 - Fixed a bug where the `users/save-user` action wasn’t including user details in successful responses. ([#13267](https://github.com/craftcms/cms/issues/13267))
 - Fixed a PHP error that occurred if an asset without a `dateModified` value was passed to `craft\helpers\Assets::revParams()`. ([#13268](https://github.com/craftcms/cms/pull/13268))
 - Fixed a bug where the Updates utility’s heading wasn’t reflecting updates that were blocked due to an expired plugin. ([#13274](https://github.com/craftcms/cms/issues/13274))
+- Fixed a bug where element deletion events weren’t getting triggered when elements were hard-deleted from an element index. ([#13280](https://github.com/craftcms/cms/issues/13280))
 
 ## 4.4.13 - 2023-05-24
 
