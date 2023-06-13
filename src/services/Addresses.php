@@ -62,7 +62,8 @@ class Addresses extends Component
     public const EVENT_DEFINE_FIELD_LABEL = 'defineFieldLabel';
 
     /**
-     * @var ?FormatterInterface The default formatter instance.
+     * @var FormatterInterface|null The default address formatter used by [[formatAddress()]]
+     * @since 4.5.0
      */
     public ?FormatterInterface $formatter = null;
 
