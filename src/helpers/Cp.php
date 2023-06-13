@@ -13,7 +13,6 @@ use craft\base\ElementInterface;
 use craft\base\FieldLayoutElement;
 use craft\behaviors\DraftBehavior;
 use craft\elements\Address;
-use craft\elements\User;
 use craft\enums\LicenseKeyStatus;
 use craft\errors\InvalidHtmlTagException;
 use craft\errors\InvalidPluginException;

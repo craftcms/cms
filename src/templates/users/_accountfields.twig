@@ -3,7 +3,7 @@
 
 {% set parsedName = user.getParsedNames() %}
 {% set showFullName = true %}
-{% if not user.hasErrors('fullName') and (parsedName['parsedFirstName'] != user.firstName or parsedName['parsedLastName'] != user.lastName) %}
+{% if not user.hasErrors('fullName') and (parsedName['firstName'] != user.firstName or parsedName['lastName'] != user.lastName) %}
     {% set showFullName = false %}
 {% endif %}
 

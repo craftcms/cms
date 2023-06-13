@@ -2681,8 +2681,8 @@ JS,
 
             if ($firstName !== null || $lastName !== null) {
                 $model->fullName = null;
-                $model->firstName = $firstName ?? null;
-                $model->lastName = $lastName ?? null;
+                $model->firstName = $firstName ?? $model->firstName;
+                $model->lastName = $lastName ?? $model->lastName;
             }
         }
     }

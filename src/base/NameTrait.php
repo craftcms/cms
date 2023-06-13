@@ -41,20 +41,21 @@ trait NameTrait
      * Get parsed first and last names
      *
      * @return array
+     * @since 4.5.0
      */
     public function getParsedNames(): array
     {
-        $parsedFirstName = null;
-        $parsedLastName = null;
+        $firstName = null;
+        $lastName = null;
 
         if ($this->fullName !== null) {
             $languages = $this->_prepNameParser();
             $name = (new NameParser($languages))->parse($this->fullName);
-            $parsedFirstName = $name->getFirstname() ?: null;
-            $parsedLastName = $name->getLastname() ?: null;
+            $firstName = $name->getFirstname() ?: null;
+            $lastName = $name->getLastname() ?: null;
         }
 
-        return compact('parsedFirstName', 'parsedLastName');
+        return compact('firstName', 'lastName');
     }
     
     /**
@@ -77,15 +78,9 @@ trait NameTrait
     protected function prepareNamesForSave(): void
     {
         if ($this->fullName !== null) {
-            $languages = $this->_prepNameParser();
-            $name = (new NameParser($languages))->parse($this->fullName);
-            // only overwrite first and last name with the parsed version if it's empty
-            if ($this->firstName === null) {
-                $this->firstName = $name->getFirstname() ?: null;
-            }
-            if ($this->lastName === null) {
-                $this->lastName = $name->getLastname() ?: null;
-            }
+            $parsedNames = $this->getParsedNames();
+            $this->firstName = $parsedNames['firstName'];
+            $this->lastName = $parsedNames['lastName'];
         } elseif ($this->firstName !== null || $this->lastName !== null) {
             $this->fullName = trim("$this->firstName $this->lastName") ?: null;
         }
@@ -95,6 +90,7 @@ trait NameTrait
      * Get language settings for the name parser
      *
      * @return array
+     * @since 4.5.0
      */
     private function _prepNameParser(): array
     {
