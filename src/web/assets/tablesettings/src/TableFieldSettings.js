@@ -174,26 +174,6 @@
 
       const $tbody = $('<tbody/>').appendTo($table);
 
-      // check if default values can work with the col type we switched to
-      for (let colId in this.columnsData) {
-        if (this.columnsData.hasOwnProperty(colId)) {
-          for (let rowId in defaults) {
-            if (defaults[rowId][colId] !== undefined) {
-              // if the default value is an object (applicable for date, time),
-              // and we're switching to any other column type
-              // empty the value
-              if (
-                this.columnsData[colId]['type'] !== 'date' &&
-                this.columnsData[colId]['type'] !== 'time' &&
-                typeof defaults[rowId][colId] === 'object'
-              ) {
-                defaults[rowId][colId] = null;
-              }
-            }
-          }
-        }
-      }
-
       for (let rowId in defaults) {
         if (!defaults.hasOwnProperty(rowId)) {
           continue;
