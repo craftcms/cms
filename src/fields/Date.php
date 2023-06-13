@@ -260,6 +260,7 @@ class Date extends Field implements PreviewableFieldInterface, SortableFieldInte
             'describedBy' => $this->describedBy,
             'name' => $this->handle,
             'value' => $value,
+            'timeZone' => $this->showTimeZone ? false : null,
             'outputTzParam' => false,
             'minuteIncrement' => $this->minuteIncrement,
             'isDateTime' => $this->showTime,

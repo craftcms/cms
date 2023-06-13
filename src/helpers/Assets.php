@@ -111,16 +111,22 @@ class Assets
      */
     public static function revParams(Asset $asset, ?DateTime $dateUpdated = null): array
     {
-        /** @var DateTime $dateModified */
-        $dateModified = max($asset->dateModified, $dateUpdated ?? null);
-        $v = $dateModified->getTimestamp();
+        $v = [];
+
+        $dateModified = max($asset->dateModified, $dateUpdated);
+        if ($dateModified) {
+            $v[] = $dateModified->getTimestamp();
+        }
 
         if ($asset->getHasFocalPoint()) {
             $fp = $asset->getFocalPoint();
-            $v .= ",{$fp['x']},{$fp['y']}";
+            $v[] = $fp['x'];
+            $v[] = $fp['y'];
         }
 
-        return compact('v');
+        return array_filter([
+            'v' => implode(',', $v),
+        ]);
     }
 
     /**
