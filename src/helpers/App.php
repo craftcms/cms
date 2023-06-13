@@ -78,18 +78,31 @@ class App
     }
 
     /**
-     * Returns a secret first, then an environment variable, falling back to a PHP constant of the same name.
+     * Returns an environment-specific value.
+     *
+     * Values will be looked for in the following places:
+     *
+     * 1. “Secret” values returned by a PHP file identified by a `CRAFT_SECRETS_PATH` environment variable
+     * 2. Environment variables stored in `$_SERVER`
+     * 3. Environment variables returned by `getenv()`
+     * 4. PHP constants
+     *
+     * If the value cannot be found, `null` will be returned.
      *
      * @param string $name The name to search for.
-     * @return mixed The secret, environment variable, PHP constant, or `null` if none are found
+     * @return mixed The value, or `null` if not found.
      * @throws Exception
      * @since 3.4.18
      */
     public static function env(string $name): mixed
     {
-        $secretsPath = getenv('CRAFT_SECRETS_PATH');
-        if (!isset(self::$_secrets) && $secretsPath && is_file($secretsPath)) {
-            self::$_secrets = include $secretsPath;
+        if (!isset(self::$_secrets)) {
+            // set it to an empty array initially, so the nested env() call doesn’t cause infinite recursion
+            self::$_secrets = [];
+            $secretsPath = static::env('CRAFT_SECRETS_PATH');
+            if ($secretsPath && is_file($secretsPath)) {
+                self::$_secrets = require $secretsPath;
+            }
         }
 
         if (isset(self::$_secrets[$name])) {

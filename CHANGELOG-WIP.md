@@ -52,6 +52,7 @@
 - Deprecated `craft\services\Volumes::ensureTopFolder()`. `craft\services\Assets::getRootFolderByVolumeId()` should be used instead.
 
 ### System
+- Added support for setting environmental values in a “secrets” PHP file, identified by a `CRAFT_SECRETS_PATH` environment variable. ([#13283](https://github.com/craftcms/cms/pull/13283)) 
 - All generated URL param characters are now properly encoded. ([#12796](https://github.com/craftcms/cms/issues/12796))
 - `migrate` commands besides `migrate/create` no longer create the migration directory if it doesn’t exist yet. ([#12732](https://github.com/craftcms/cms/pull/12732))
 - When `content` table columns are resized, if any existing values are too long, all column data is now backed up into a new table, and the overflowing values are set to `null`. ([#13025](https://github.com/craftcms/cms/pull/13025))
