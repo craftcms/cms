@@ -74,6 +74,7 @@ return [
     'settings/tags/<tagGroupId:\d+>' => 'tags/edit-tag-group',
     'settings/users' => ['template' => 'settings/users/fields'],
     'utilities' => 'utilities',
+    'utilities/upgrade' => 'utilities', // to be removed when we're ready to show Upgrade to Craft 5 Utility
     'utilities/<id:[\w\-]+><extra:(\/.*)?>' => 'utilities/show-utility',
     'plugin-store' => 'plugin-store',
     'plugin-store/callback' => 'plugin-store/callback',
