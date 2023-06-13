@@ -853,9 +853,6 @@ class Assets extends BaseRelationField
 
         $assetsService = Craft::$app->getAssets();
         $rootFolder = $assetsService->getRootFolderByVolumeId($volume->id);
-        if (!$rootFolder) {
-            $rootFolder = Craft::$app->getVolumes()->ensureTopFolder($volume);
-        }
 
         // Are we looking for the root folder?
         $subpath = trim($subpath ?? '', '/');

@@ -87,7 +87,6 @@ class AssetsController extends Controller
 
             if ($volume) {
                 $assetsService = Craft::$app->getAssets();
-                $rootFolder = $assetsService->getRootFolderByVolumeId($volume->id);
                 $variables['defaultSource'] = "volume:$volume->uid";
 
                 if (!empty($defaultSourcePath)) {

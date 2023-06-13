@@ -21,6 +21,7 @@ use craft\helpers\StringHelper;
 use craft\web\twig\CpExtension;
 use craft\web\twig\Environment;
 use craft\web\twig\Extension;
+use craft\web\twig\FeExtension;
 use craft\web\twig\GlobalsExtension;
 use craft\web\twig\SinglePreloaderExtension;
 use craft\web\twig\TemplateLoader;
@@ -360,6 +361,7 @@ class View extends \yii\web\View
         if ($this->_templateMode === self::TEMPLATE_MODE_CP) {
             $twig->addExtension(new CpExtension());
         } elseif (Craft::$app->getIsInstalled()) {
+            $twig->addExtension(new FeExtension());
             $twig->addExtension(new GlobalsExtension());
 
             if (Craft::$app->getConfig()->getGeneral()->preloadSingles) {
