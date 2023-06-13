@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 3.x
 
-## Unreleased
+## 3.8.14 - 2023-06-13
 
 - The `_includes/forms/date` and `_includes/forms/time` templates now accept a `timeZone` variable.
 - Fixed an error that could occur when updating a plugin with the `craft update` command, if it provided a new migration but still had the same schema version.
