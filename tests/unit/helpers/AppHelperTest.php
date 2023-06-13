@@ -51,18 +51,9 @@ class AppHelperTest extends TestCase
         self::assertSame(CRAFT_TESTS_PATH, App::env('CRAFT_TESTS_PATH'));
         self::assertNull(App::env('TEST_NONEXISTENT_ENV'));
 
-        $testSecretsFilePath = getenv('CRAFT_SECRETS_PATH');
-        if (!$testSecretsFilePath) {
-            $testSecretsFilePath = Craft::$app->getPath()->getConfigPath() . '/secrets.php';
-            putenv('CRAFT_SECRETS_PATH=' . $testSecretsFilePath);
-            file_put_contents($testSecretsFilePath, '<?php return ["foo" => "bar"];');
-            putenv('foo=baz');
-            self::assertSame('bar', App::env('foo'));
-            putenv('foo');
-            putenv('CRAFT_SECRETS_PATH');
-
-            unlink($testSecretsFilePath);
-        }
+        putenv('SHH=foo');
+        self::assertSame('foo', App::env('SHH'));
+        putenv('SHH');
     }
 
     /**
