@@ -1185,6 +1185,7 @@ JS,
         return $this->renderTemplate('users/_edit.twig', compact(
             'user',
             'isNewUser',
+            'isCurrentUser',
             'statusLabel',
             'actions',
             'languageOptions',
@@ -1561,14 +1562,17 @@ JS,
         $returnCsrfToken = $returnCsrfToken || $loggedIn;
 
         if ($this->request->getAcceptsJson()) {
-            $return = [
-                'id' => $user->id,
-            ];
-            if ($returnCsrfToken && $generalConfig->enableCsrfProtection) {
-                $return['csrfTokenValue'] = $this->request->getCsrfToken();
-            }
-
-            return $this->asSuccess(data: $return);
+            return $this->asModelSuccess(
+                $user,
+                Craft::t('app', '{type} saved.', ['type' => User::displayName()]),
+                $userVariable,
+                array_filter([
+                    'id' => $user->id, // todo: remove
+                    'csrfTokenValue' => $returnCsrfToken && $generalConfig->enableCsrfProtection
+                        ? $this->request->getCsrfToken()
+                        : null,
+                ]),
+            );
         }
 
         if ($isPublicRegistration) {
