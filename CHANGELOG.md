@@ -3,15 +3,25 @@
 ## Unreleased
 
 - The `utils/fix-field-layout-uids` command now adds missing field layout component UUIDs.
+- The `_includes/forms/date` and `_includes/forms/time` templates now accept a `timeZone` variable.
 - Fixed an error that could occur when updating a plugin with the `craft update` command, if it provided a new migration but still had the same schema version.
+- Fixed an error that occurred when rendering editable tables with Date or Time columns. ([#13270](https://github.com/craftcms/cms/issues/13270))
 - Fixed a bug where CSS classes that contained a pseudo-selector weren’t getting namespaced. ([#13251](https://github.com/craftcms/cms/pull/13251))
 - Fixed a JavaScript error that could occur when renaming assets without URLs. ([#13223](https://github.com/craftcms/cms/pull/13223))
 - Fixed a bug where `craft\base\Element::setFieldValuesFromRequest()` wasn’t properly handling empty strings passed as the namespace. ([#13252](https://github.com/craftcms/cms/discussions/13252))
 - Fixed a styling issue with control panel notifications. ([#13258](https://github.com/craftcms/cms/pull/13258))
 - Fixed a bug where element thumbnails could stop getting loaded when quickly switching between element sources. ([#13253](https://github.com/craftcms/cms/issues/13253))
 - Fixed an error that occurred when uploading an asset with a filename over 232 characters long, directly to an Assets field. ([#13264](https://github.com/craftcms/cms/issues/13264))
+- Fixed an error that occurred when transforming an image with a filename over 232 characters long. ([#13266](https://github.com/craftcms/cms/pull/13266))
 - Fixed a SQL error that could occur when upgrading to 4.4 on PostgreSQL, if the database was converted from MySQL. ([#12855](https://github.com/craftcms/cms/issues/12855))
 - Fixed a bug where `craft\db\Query::collect()` was returning a `craft\elements\ElementCollection` instance.
+- Fixed a SQL error that could occur when upgrading to Craft 4 if any database tables had foreign keys to `entryversions` or other now-unused tables that are removed during the upgrade.
+- Fixed a bug where the `users/save-user` action wasn’t including user details in successful responses. ([#13267](https://github.com/craftcms/cms/issues/13267))
+- Fixed a PHP error that occurred if an asset without a `dateModified` value was passed to `craft\helpers\Assets::revParams()`. ([#13268](https://github.com/craftcms/cms/pull/13268))
+- Fixed a bug where the Updates utility’s heading wasn’t reflecting updates that were blocked due to an expired plugin. ([#13274](https://github.com/craftcms/cms/issues/13274))
+- Fixed a bug where element deletion events weren’t getting triggered when elements were hard-deleted from an element index. ([#13280](https://github.com/craftcms/cms/issues/13280))
+- Fixed a bug where dropdowns within editable tables had blank optgroup labels. ([#13298](https://github.com/craftcms/cms/issues/13298))
+- Fixed a bug where textual cells within editable tables would display `[object Object]` if an object was passed as their value. ([#13303](https://github.com/craftcms/cms/issues/13303))
 
 ## 4.4.13 - 2023-05-24
 
