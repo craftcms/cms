@@ -116,7 +116,6 @@ Craft.AssetSelectInput = Craft.BaseElementSelectInput.extend({
     );
 
     var options = {
-      url: Craft.getActionUrl('assets/upload'),
       dropZone: this.$container,
       formData: {
         fieldId: this.settings.fieldId,
@@ -177,7 +176,11 @@ Craft.AssetSelectInput = Craft.BaseElementSelectInput.extend({
     options.events.fileuploaddone = this._onUploadComplete.bind(this);
     options.events.fileuploadfail = this._onUploadFailure.bind(this);
 
-    this.uploader = Craft.createAssetUploader(this.settings.fsType, this.$container, options);
+    this.uploader = Craft.createAssetUploader(
+      this.settings.fsType,
+      this.$container,
+      options
+    );
 
     if (this.$uploadBtn) {
       this.$uploadBtn.on('click', (ev) => {

@@ -2025,15 +2025,15 @@ $.extend(Craft, {
    * @returns {Uploader}
    */
   createAssetUploader: function (fsType, $container, settings) {
-    var func;
+    const func =
+      typeof this._assetUploaderClasses[fsType] !== 'undefined'
+        ? this._assetUploaderClasses[fsType]
+        : Craft.Uploader;
 
-    if (typeof this._assetUploaderClasses[fsType] !== 'undefined') {
-      func = this._assetUploaderClasses[fsType];
-    } else {
-      func = Craft.Uploader;
-    }
+    const uploader = new func($container, settings);
+    uploader.fsType = fsType;
 
-    return new func($container, settings);
+    return uploader;
   },
 
   /**

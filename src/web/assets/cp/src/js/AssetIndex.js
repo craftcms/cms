@@ -23,6 +23,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
     _uploadTotalFiles: 0,
     _uploadFileProgress: {},
     _currentUploaderSettings: {},
+    _uploadersByFsType: {},
 
     init: function (elementType, $container, settings) {
       settings = Object.assign({}, Craft.AssetIndex.defaults, settings);
@@ -235,35 +236,39 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
     onSelectSource: function () {
       if (!this.settings.foldersOnly) {
         const folderId = this.$source.data('folder-id');
+        const fsType = this.$source.data('fs-type');
         if (folderId && Garnish.hasAttr(this.$source, 'data-can-upload')) {
           this.$uploadButton.removeClass('disabled');
+          if (this._uploadersByFsType[fsType]) {
+            this.uploader = this._uploadersByFsType[fsType];
+          } else {
+            const options = {
+              fileInput: this.$uploadInput,
+              dropZone: this.$container,
+              events: {
+                fileuploadstart: this._onUploadStart.bind(this),
+                fileuploadprogressall: this._onUploadProgress.bind(this),
+                fileuploaddone: this._onUploadSuccess.bind(this),
+                fileuploadalways: this._onUploadAlways.bind(this),
+                fileuploadfail: this._onUploadFailure.bind(this),
+              },
+            };
 
-          var options = {
-            url: Craft.getActionUrl('assets/upload'),
-            fileInput: this.$uploadInput,
-            dropZone: this.$container,
-          };
+            if (this.settings?.criteria?.kind) {
+              options.allowedKinds = this.settings.criteria.kind;
+            }
 
-          options.events = {
-            fileuploadstart: this._onUploadStart.bind(this),
-            fileuploadprogressall: this._onUploadProgress.bind(this),
-            fileuploaddone: this._onUploadSuccess.bind(this),
-            fileuploadalways: this._onUploadAlways.bind(this),
-            fileuploadfail: this._onUploadFailure.bind(this),
-          };
-
-          if (
-            this.settings.criteria &&
-            typeof this.settings.criteria.kind !== 'undefined'
-          ) {
-            options.allowedKinds = this.settings.criteria.kind;
+            this._currentUploaderSettings = options;
+            this.uploader = Craft.createAssetUploader(
+              fsType,
+              this.$uploadButton,
+              options
+            );
+            this.uploader.setParams({
+              folderId,
+            });
+            this._uploadersByFsType[fsType] = this.uploader;
           }
-
-          this._currentUploaderSettings = options;
-          this.uploader = Craft.createAssetUploader(this.$source.data('fs-type'), this.$uploadButton, options);
-          this.uploader.setParams({
-            folderId: this.$source.attr('data-folder-id'),
-          });
         } else {
           this.$uploadButton.addClass('disabled');
         }
@@ -422,6 +427,8 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
      * Update uploaded byte count.
      */
     _onUploadProgress: function (event, data) {
+      data = event instanceof Event ? event.detail : data;
+
       var progress = parseInt(Math.min(data.loaded / data.total, 1) * 100, 10);
       this.progressBar.setProgressPercentage(progress);
     },
@@ -434,7 +441,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
      * @private
      */
     _onUploadSuccess: function (event, data) {
-      const result = data.result || data;
+      const result = event instanceof Event ? event.detail : data.result;
 
       // Add the uploaded file to the selected ones, if appropriate
       this.selectElementAfterUpdate(result.assetId);
@@ -475,13 +482,12 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
      * On Upload Failure.
      */
     _onUploadFailure: function (event, data) {
-      let dataObj = data;
+      const response =
+        event instanceof Event
+          ? event?.detail
+          : data?.result?.response()?.jqXHR?.responseJSON || {};
 
-      if (typeof data.response === 'function') {
-        dataObj = data.response()?.jqXHR?.responseJSON || {};
-      }
-
-      let {message, filename} = dataObj;
+      let {message, filename} = response;
 
       if (!message) {
         message = filename
@@ -528,6 +534,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
       var doFollowup = (parameterArray, parameterIndex, callback) => {
         var data = {};
         var action = null;
+        const {replaceAction, deleteAction} = this.uploader.settings;
 
         const followupAlways = () => {
           parameterIndex++;
@@ -553,7 +560,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
         };
 
         if (parameterArray[parameterIndex].choice === 'replace') {
-          action = 'assets/replace-file';
+          action = replaceAction;
           data.sourceAssetId = parameterArray[parameterIndex].assetId;
 
           if (parameterArray[parameterIndex].conflictingAssetId) {
@@ -562,7 +569,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
             data.targetFilename = parameterArray[parameterIndex].filename;
           }
         } else if (parameterArray[parameterIndex].choice === 'cancel') {
-          action = 'assets/delete-asset';
+          action = deleteAction;
           data.assetId = parameterArray[parameterIndex].assetId;
         }
 
