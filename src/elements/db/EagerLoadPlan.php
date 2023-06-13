@@ -10,7 +10,7 @@ namespace craft\elements\db;
 use yii\base\BaseObject;
 
 /**
- * AssetQuery represents a SELECT SQL statement for assets in a way that is independent of DBMS.
+ * Class EagerLoadPlan
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.5.0
