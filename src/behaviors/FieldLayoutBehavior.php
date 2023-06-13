@@ -115,14 +115,21 @@ class FieldLayoutBehavior extends Behavior
         try {
             $id = $this->getFieldLayoutId();
         } catch (InvalidConfigException) {
-            return $this->_fieldLayout = new FieldLayout([
+            $id = null;
+        }
+
+        if ($id) {
+            $fieldLayout = Craft::$app->getFields()->getLayoutById($id);
+            if (!$fieldLayout) {
+                throw new InvalidConfigException('Invalid field layout ID: ' . $id);
+            }
+        } else {
+            $fieldLayout = new FieldLayout([
                 'type' => $this->elementType,
             ]);
         }
 
-        if (($fieldLayout = Craft::$app->getFields()->getLayoutById($id)) === null) {
-            throw new InvalidConfigException('Invalid field layout ID: ' . $id);
-        }
+        $fieldLayout->owner = $this->owner;
 
         return $this->_fieldLayout = $fieldLayout;
     }

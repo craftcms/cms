@@ -41,6 +41,7 @@
 - Added `craft\base\FsTrait::$showUrlSetting`. ([#13224](https://github.com/craftcms/cms/pull/13224))
 - Added `craft\helpers\StringHelper::escapeShortcodes()`. ([#12935](https://github.com/craftcms/cms/issues/12935))
 - Added `craft\helpers\StringHelper::unescapeShortcodes()`. ([#12935](https://github.com/craftcms/cms/issues/12935))
+- Added `craft\models\FieldLayout::$owner`. ([#13250](https://github.com/craftcms/cms/pull/13250))
 - Added `craft\services\Addresses::$formatter`, which can be used to override the default address formatter. ([#13242](https://github.com/craftcms/cms/pull/13242), [#12615](https://github.com/craftcms/cms/discussions/12615))
 - Added `craft\web\CpScreenResponseBehavior::$pageSidebar`, `pageSidebar()`, and `pageSidebarTemplate()`. ([#13019](https://github.com/craftcms/cms/pull/13019), [#12795](https://github.com/craftcms/cms/issues/12795))
 - Added `craft\web\CpScreenResponseBehavior::$slideoutBodyClass`.
