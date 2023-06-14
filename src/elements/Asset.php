@@ -886,8 +886,8 @@ class Asset extends Element
     private static function _assembleSourceInfoForFolder(VolumeFolder $folder, ?User $user = null): array
     {
         $volume = $folder->getVolume();
-
-        if ($volume->getFs() instanceof Temp) {
+        $fs = $volume->getFs();
+        if ($fs instanceof Temp) {
             $volumeHandle = 'temp';
         } elseif (!$folder->parentId) {
             $volumeHandle = $volume->handle ?? false;
@@ -919,6 +919,7 @@ class Asset extends Element
                 'can-upload' => $folder->volumeId === null || $canUpload,
                 'can-move-to' => $canMoveTo,
                 'can-move-peer-files-to' => $canMovePeerFilesTo,
+                'fs-type' => $fs::class,
             ],
         ];
 
@@ -1480,10 +1481,11 @@ JS;
 
             $dimensionsLabel = Html::encode(Craft::t('app', 'Dimensions'));
             $updatePreviewThumbJs = $this->_updatePreviewThumbJs();
+            $fsClass = addslashes($this->fs::class);
             $js = <<<JS
 $('#replace-btn').on('click', () => {
     const \$fileInput = $('<input/>', {type: 'file', name: 'replaceFile', class: 'replaceFile hidden'}).appendTo(Garnish.\$bod);
-    const uploader = new Craft.Uploader(\$fileInput, {
+    const uploader = Craft.createAssetUploader('{$fsClass}', \$fileInput, {
         url: Craft.getActionUrl('assets/replace-file'),
         dropZone: null,
         fileInput: \$fileInput,

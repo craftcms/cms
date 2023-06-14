@@ -22,7 +22,7 @@ class OptionsFieldConditionRule extends BaseMultiSelectConditionRule implements 
     protected function options(): array
     {
         /** @var BaseOptionsField $field */
-        $field = $this->_field;
+        $field = $this->field();
         return Collection::make($field->options)
             ->filter(fn(array $option) => !empty($option['value']) && !empty($option['label']))
             ->map(fn(array $option) => [

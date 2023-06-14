@@ -27,6 +27,12 @@ class m221027_160703_add_image_transform_fill extends Migration
             $this->execute(sprintf('alter table %s drop constraint if exists %s', Table::IMAGETRANSFORMS, '{{%imagetransforms_mode_check}}'));
             $this->execute(sprintf('alter table %s drop constraint if exists %s', Table::IMAGETRANSFORMS, '{{%assettransforms_mode_check}}'));
 
+            // also make sure the column is a varchar, in case the column uses a custom type
+            // (e.g. if the DB was originally MySQL and the converter used a custom type rather than a check constraint)
+            if ($this->db->getTableSchema(Table::IMAGETRANSFORMS)->getColumn('mode')->dbType !== 'varchar') {
+                $this->alterColumn(Table::IMAGETRANSFORMS, 'mode', $this->string());
+            }
+
             $check = '[[mode]] in (';
             foreach ($modeOptions as $i => $value) {
                 if ($i !== 0) {

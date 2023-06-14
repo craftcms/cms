@@ -16,6 +16,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
     uploader: null,
     promptHandler: null,
     progressBar: null,
+    currentFolderId: null,
 
     $listedFolders: null,
     itemDrag: null,
@@ -199,50 +200,28 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
      * @private
      */
     initForFiles: function () {
-      if (!this.$uploadButton) {
-        this.$uploadButton = $('<button/>', {
-          type: 'button',
-          class: 'btn submit',
-          'data-icon': 'upload',
-          style: 'position: relative; overflow: hidden;',
-          text: Craft.t('app', 'Upload files'),
-        });
-        this.addButton(this.$uploadButton);
-
-        this.$uploadInput = $(
-          '<input type="file" multiple="multiple" name="assets-upload" />'
-        )
-          .hide()
-          .insertBefore(this.$uploadButton);
-      }
-
       this.promptHandler = new Craft.PromptHandler();
       this.progressBar = new Craft.ProgressBar(this.$main, false);
+    },
 
-      var options = {
-        url: Craft.getActionUrl('assets/upload'),
-        fileInput: this.$uploadInput,
-        dropZone: this.$container,
-      };
+    createUploadInputs: function () {
+      this.$uploadButton?.remove();
+      this.uploader?.$fileInput.remove();
 
-      options.events = {
-        fileuploadstart: this._onUploadStart.bind(this),
-        fileuploadprogressall: this._onUploadProgress.bind(this),
-        fileuploaddone: this._onUploadSuccess.bind(this),
-        fileuploadalways: this._onUploadAlways.bind(this),
-        fileuploadfail: this._onUploadFailure.bind(this),
-      };
+      this.$uploadButton = $('<button/>', {
+        type: 'button',
+        class: 'btn submit',
+        'data-icon': 'upload',
+        style: 'position: relative; overflow: hidden;',
+        text: Craft.t('app', 'Upload files'),
+      });
+      this.addButton(this.$uploadButton);
 
-      if (
-        this.settings.criteria &&
-        typeof this.settings.criteria.kind !== 'undefined'
-      ) {
-        options.allowedKinds = this.settings.criteria.kind;
-      }
-
-      this._currentUploaderSettings = options;
-
-      this.uploader = new Craft.Uploader(this.$uploadButton, options);
+      this.$uploadInput = $(
+        '<input type="file" multiple="multiple" name="assets-upload" />'
+      )
+        .hide()
+        .insertBefore(this.$uploadButton);
 
       this.$uploadButton.on('click', () => {
         if (this.$uploadButton.hasClass('disabled')) {
@@ -259,12 +238,46 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 
     onSelectSource: function () {
       if (!this.settings.foldersOnly) {
-        const folderId = this.$source.data('folder-id');
-        if (folderId && Garnish.hasAttr(this.$source, 'data-can-upload')) {
-          this.uploader.setParams({
-            folderId: this.$source.attr('data-folder-id'),
-          });
+        this.currentFolderId =
+          this.currentFolderId || this.$source.data('folder-id');
+        const fsType = this.$source.data('fs-type');
+
+        this.createUploadInputs();
+
+        if (
+          this.currentFolderId &&
+          Garnish.hasAttr(this.$source, 'data-can-upload')
+        ) {
+          this.uploader?.destroy();
+          this.$uploadInput.insertBefore(this.$uploadButton);
           this.$uploadButton.removeClass('disabled');
+
+          const options = {
+            fileInput: this.$uploadInput,
+            dropZone: this.$container,
+            events: {
+              fileuploadstart: this._onUploadStart.bind(this),
+              fileuploadprogressall: this._onUploadProgress.bind(this),
+              fileuploaddone: this._onUploadSuccess.bind(this),
+              fileuploadalways: this._onUploadAlways.bind(this),
+              fileuploadfail: this._onUploadFailure.bind(this),
+            },
+          };
+
+          if (this.settings?.criteria?.kind) {
+            options.allowedKinds = this.settings.criteria.kind;
+          }
+
+          this._currentUploaderSettings = options;
+
+          this.uploader = Craft.createAssetUploader(
+            fsType,
+            this.$uploadButton,
+            options
+          );
+          this.uploader.setParams({
+            folderId: this.currentFolderId,
+          });
         } else {
           this.$uploadButton.addClass('disabled');
         }
@@ -274,22 +287,21 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
     },
 
     onSourcePathChange: function () {
-      if (!this.settings.foldersOnly && this.sourcePath.length) {
-        const currentFolder = this.sourcePath[this.sourcePath.length - 1];
-        if (currentFolder.folderId) {
-          if (this.uploader) {
-            this.uploader.setParams({
-              folderId: currentFolder.folderId,
-            });
-          }
+      const currentFolder = this.sourcePath.length
+        ? this.sourcePath[this.sourcePath.length - 1]
+        : null;
+      this.currentFolderId = currentFolder?.folderId;
 
-          // will the user be allowed to move items in this folder?
-          const canMoveSubItems = !!currentFolder.canMoveSubItems;
-          this.settings.selectable =
-            this.settings.selectable || canMoveSubItems;
-          this.settings.multiSelect =
-            this.settings.multiSelect || canMoveSubItems;
-        }
+      if (!this.settings.foldersOnly && this.currentFolderId) {
+        this.uploader?.setParams({
+          folderId: this.currentFolderId,
+        });
+
+        // will the user be allowed to move items in this folder?
+        const canMoveSubItems = !!currentFolder.canMoveSubItems;
+        this.settings.selectable = this.settings.selectable || canMoveSubItems;
+        this.settings.multiSelect =
+          this.settings.multiSelect || canMoveSubItems;
       }
 
       this.base();
@@ -423,6 +435,8 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
      * Update uploaded byte count.
      */
     _onUploadProgress: function (event, data) {
+      data = event instanceof Event ? event.detail : data;
+
       var progress = parseInt(Math.min(data.loaded / data.total, 1) * 100, 10);
       this.progressBar.setProgressPercentage(progress);
     },
@@ -435,7 +449,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
      * @private
      */
     _onUploadSuccess: function (event, data) {
-      const result = data.result || data;
+      const result = event instanceof Event ? event.detail : data.result;
 
       // Add the uploaded file to the selected ones, if appropriate
       this.selectElementAfterUpdate(result.assetId);
@@ -476,13 +490,12 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
      * On Upload Failure.
      */
     _onUploadFailure: function (event, data) {
-      let dataObj = data;
+      const response =
+        event instanceof Event
+          ? event?.detail
+          : data?.result?.response()?.jqXHR?.responseJSON || {};
 
-      if (typeof data.response === 'function') {
-        dataObj = data.response()?.jqXHR?.responseJSON || {};
-      }
-
-      let {message, filename} = dataObj;
+      let {message, filename} = response;
 
       if (!message) {
         message = filename
@@ -529,6 +542,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
       var doFollowup = (parameterArray, parameterIndex, callback) => {
         var data = {};
         var action = null;
+        const {replaceAction, deleteAction} = this.uploader.settings;
 
         const followupAlways = () => {
           parameterIndex++;
@@ -554,7 +568,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
         };
 
         if (parameterArray[parameterIndex].choice === 'replace') {
-          action = 'assets/replace-file';
+          action = replaceAction;
           data.sourceAssetId = parameterArray[parameterIndex].assetId;
 
           if (parameterArray[parameterIndex].conflictingAssetId) {
@@ -563,7 +577,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
             data.targetFilename = parameterArray[parameterIndex].filename;
           }
         } else if (parameterArray[parameterIndex].choice === 'cancel') {
-          action = 'assets/delete-asset';
+          action = deleteAction;
           data.assetId = parameterArray[parameterIndex].assetId;
         }
 

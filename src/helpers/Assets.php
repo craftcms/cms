@@ -112,8 +112,8 @@ class Assets
     public static function revParams(Asset $asset, ?DateTime $dateUpdated = null): array
     {
         $v = [];
-        $dateModified = $asset->dateModified ? max($asset->dateModified, $dateUpdated) : null;
 
+        $dateModified = max($asset->dateModified, $dateUpdated);
         if ($dateModified) {
             $v[] = $dateModified->getTimestamp();
         }
@@ -124,9 +124,9 @@ class Assets
             $v[] = $fp['y'];
         }
 
-        return $v ? [
+        return array_filter([
             'v' => implode(',', $v),
-        ] : [];
+        ]);
     }
 
     /**

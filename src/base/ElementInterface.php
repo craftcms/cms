@@ -21,7 +21,7 @@ use yii\web\Response;
 
 /**
  * ElementInterface defines the common interface to be implemented by element classes.
- * A class implementing this interface should also use [[ElementTrait]] and [[ContentTrait]].
+ * A class implementing this interface should also use [[ElementTrait]].
  *
  * @mixin ElementTrait
  * @mixin CustomFieldBehavior

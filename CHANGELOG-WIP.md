@@ -7,7 +7,9 @@
 - Element slideouts now show their sidebar content full-screen for elements without a field layout, rather than having an empty body. ([#13056](https://github.com/craftcms/cms/pull/13056), [#13053](https://github.com/craftcms/cms/issues/13053))
 - Relational fields no longer track the previously-selected element(s) when something outside the field is clicked on. ([#13123](https://github.com/craftcms/cms/issues/13123))
 - Element indexes now use field layouts’ overridden field labels, if all field layouts associated with an element source use the same label. ([#8903](https://github.com/craftcms/cms/discussions/8903))
-- Improved the styling and max height of Selectize inputs. ([#13176](https://github.com/craftcms/cms/pull/13176), [#13176](https://github.com/craftcms/cms/pull/13176))
+- Improved the styling and max height of Selectize inputs. ([#13065](https://github.com/craftcms/cms/discussions/13065), [#13176](https://github.com/craftcms/cms/pull/13176))
+- Selectize inputs now support click-and-drag selection. ([#13273](https://github.com/craftcms/cms/discussions/13273))
+- Selectize single-select inputs now automatically select the current value on focus. ([#13273](https://github.com/craftcms/cms/discussions/13273)) 
 
 ### Accessibility
 - Image assets’ thumbnails and `<img>` tags generated via `craft\element\Asset::getImg()` no longer use the assets’ titles as `alt` fallback values. ([#12854](https://github.com/craftcms/cms/pull/12854))
@@ -39,17 +41,23 @@
 - Added `craft\base\FsTrait::$showUrlSetting`. ([#13224](https://github.com/craftcms/cms/pull/13224))
 - Added `craft\helpers\StringHelper::escapeShortcodes()`. ([#12935](https://github.com/craftcms/cms/issues/12935))
 - Added `craft\helpers\StringHelper::unescapeShortcodes()`. ([#12935](https://github.com/craftcms/cms/issues/12935))
+- Added `craft\models\FieldLayout::$owner`. ([#13250](https://github.com/craftcms/cms/pull/13250))
+- Added `craft\services\Addresses::$formatter`, which can be used to override the default address formatter. ([#13242](https://github.com/craftcms/cms/pull/13242), [#12615](https://github.com/craftcms/cms/discussions/12615))
 - Added `craft\web\CpScreenResponseBehavior::$pageSidebar`, `pageSidebar()`, and `pageSidebarTemplate()`. ([#13019](https://github.com/craftcms/cms/pull/13019), [#12795](https://github.com/craftcms/cms/issues/12795))
 - Added `craft\web\CpScreenResponseBehavior::$slideoutBodyClass`.
 - `craft\helpers\Cp::selectizeFieldHtml()`, `selectizeHtml()`, and `_includes/forms/selectize.twig` now support a `multi` param. ([#13176](https://github.com/craftcms/cms/pull/13176))
+- `craft\services\Assets::getRootFolderByVolumeId()` now ensures the root folder actually exists, and caches its results internally, improving performance. ([#13297](https://github.com/craftcms/cms/issues/13297))
 - `craft\validators\UniqueValidator` now supports setting an additional filter via the `filter` property. ([#12941](https://github.com/craftcms/cms/pull/12941))
 - `craft\web\UrlManager` no longer triggers its `EVENT_REGISTER_CP_URL_RULES` and `EVENT_REGISTER_SITE_URL_RULES` events until the request is ready to be routed, making it safe to call `UrlManager::addRules()` from plugin/module constructors. ([#13109](https://github.com/craftcms/cms/issues/13109))
 - Deprecated `craft\helpers\UrlHelper::buildQuery()`. `http_build_query()` should be used instead.
+- Deprecated `craft\services\Volumes::ensureTopFolder()`. `craft\services\Assets::getRootFolderByVolumeId()` should be used instead.
 
 ### System
+- Added support for setting environmental values in a “secrets” PHP file, identified by a `CRAFT_SECRETS_PATH` environment variable. ([#13283](https://github.com/craftcms/cms/pull/13283)) 
 - All generated URL param characters are now properly encoded. ([#12796](https://github.com/craftcms/cms/issues/12796))
 - `migrate` commands besides `migrate/create` no longer create the migration directory if it doesn’t exist yet. ([#12732](https://github.com/craftcms/cms/pull/12732))
 - When `content` table columns are resized, if any existing values are too long, all column data is now backed up into a new table, and the overflowing values are set to `null`. ([#13025](https://github.com/craftcms/cms/pull/13025))
 - When `content` table columns are renamed, if an existing column with the same name already exists, the original column data is now backed up into a new table and then deleted from the `content` table. ([#13025](https://github.com/craftcms/cms/pull/13025))
 - Plain Text and Table fields no longer convert emoji to shortcodes on PostgreSQL.
 - Fixed a bug where Plain Text and Table fields were converting posted shortcode-looking strings to emoji. ([#12935](https://github.com/craftcms/cms/issues/12935))
+- Updated Selectize to 0.15.2. ([#13273](https://github.com/craftcms/cms/discussions/13273))

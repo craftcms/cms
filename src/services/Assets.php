@@ -31,7 +31,6 @@ use craft\fs\Temp;
 use craft\helpers\Assets as AssetsHelper;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
-use craft\helpers\FileHelper;
 use craft\helpers\Image;
 use craft\helpers\Json;
 use craft\helpers\StringHelper;
@@ -83,20 +82,28 @@ class Assets extends Component
     public const EVENT_REGISTER_PREVIEW_HANDLER = 'registerPreviewHandler';
 
     /**
-     * @var array
+     * @var array<int,VolumeFolder|null>
+     * @see getFolderById()
      */
     private array $_foldersById = [];
 
     /**
-     * @var array
+     * @var array<string,VolumeFolder|null>
+     * @see getFolderByUid()
      */
     private array $_foldersByUid = [];
 
     /**
-     * @var VolumeFolder[]
-     * @see getUserTemporaryUploadFolder
+     * @var array<int,VolumeFolder|null>
+     * @see getRootFolderByVolumeId()
      */
-    private $_userTempFolders = [];
+    private array $_rootFolders = [];
+
+    /**
+     * @var VolumeFolder[]
+     * @see getUserTemporaryUploadFolder()
+     */
+    private array $_userTempFolders = [];
 
     /**
      * Returns a file by its ID.
@@ -400,42 +407,34 @@ class Assets extends Component
      */
     public function getFolderById(int $folderId): ?VolumeFolder
     {
-        if (isset($this->_foldersById) && array_key_exists($folderId, $this->_foldersById)) {
-            return $this->_foldersById[$folderId];
+        if (!array_key_exists($folderId, $this->_foldersById)) {
+            $result = $this->createFolderQuery()
+                ->where(['id' => $folderId])
+                ->one();
+
+            $this->_foldersById[$folderId] = $result ? new VolumeFolder($result) : null;
         }
 
-        $result = $this->createFolderQuery()
-            ->where(['id' => $folderId])
-            ->one();
-
-        if (!$result) {
-            return $this->_foldersById[$folderId] = null;
-        }
-
-        return $this->_foldersById[$folderId] = new VolumeFolder($result);
+        return $this->_foldersById[$folderId];
     }
 
     /**
-     * Returns a folder by its UID.
+     * Returns a folder by its UUID.
      *
      * @param string $folderUid
      * @return VolumeFolder|null
      */
     public function getFolderByUid(string $folderUid): ?VolumeFolder
     {
-        if (isset($this->_foldersByUid) && array_key_exists($folderUid, $this->_foldersByUid)) {
-            return $this->_foldersByUid[$folderUid];
+        if (!array_key_exists($folderUid, $this->_foldersByUid)) {
+            $result = $this->createFolderQuery()
+                ->where(['uid' => $folderUid])
+                ->one();
+
+            $this->_foldersByUid[$folderUid] = $result ? new VolumeFolder($result) : null;
         }
 
-        $result = $this->createFolderQuery()
-            ->where(['uid' => $folderUid])
-            ->one();
-
-        if (!$result) {
-            return $this->_foldersByUid[$folderUid] = null;
-        }
-
-        return $this->_foldersByUid[$folderUid] = new VolumeFolder($result);
+        return $this->_foldersByUid[$folderUid];
     }
 
     /**
@@ -549,10 +548,31 @@ class Assets extends Component
      */
     public function getRootFolderByVolumeId(int $volumeId): ?VolumeFolder
     {
-        return $this->findFolder([
-            'volumeId' => $volumeId,
-            'parentId' => ':empty:',
-        ]);
+        if (!array_key_exists($volumeId, $this->_rootFolders)) {
+            $volume = Craft::$app->getVolumes()->getVolumeById($volumeId);
+            if (!$volume) {
+                // todo: throw an InvalidArgumentException
+                return $this->_rootFolders[$volumeId] = null;
+            }
+
+            $folder = $this->findFolder([
+                'volumeId' => $volumeId,
+                'parentId' => ':empty:',
+            ]);
+
+            if (!$folder) {
+                $folder = new VolumeFolder();
+                $folder->volumeId = $volume->id;
+                $folder->parentId = null;
+                $folder->name = $volume->name;
+                $folder->path = '';
+                $this->storeFolderRecord($folder);
+            }
+
+            $this->_rootFolders[$volumeId] = $folder;
+        }
+
+        return $this->_rootFolders[$volumeId];
     }
 
     /**
@@ -833,7 +853,7 @@ class Assets extends Component
      */
     public function ensureFolderByFullPathAndVolume(string $fullPath, Volume $volume, bool $justRecord = true): VolumeFolder
     {
-        $parentFolder = Craft::$app->getVolumes()->ensureTopFolder($volume);
+        $parentFolder = $this->getRootFolderByVolumeId($volume->id);
         $folderModel = $parentFolder;
         $parentId = $parentFolder->id;
 
