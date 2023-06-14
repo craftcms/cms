@@ -156,7 +156,6 @@ Craft.AssetSelectInput = Craft.BaseElementSelectInput.extend({
     options.events.fileuploadprogressall = this._onUploadProgress.bind(this);
     options.events.fileuploaddone = this._onUploadComplete.bind(this);
     options.events.fileuploadfail = this._onUploadFailure.bind(this);
-    options.events.fileuploadalways = this._onUploadAlways.bind(this);
 
     this.uploader = Craft.createAssetUploader(
       this.settings.fsType,
@@ -311,11 +310,6 @@ Craft.AssetSelectInput = Craft.BaseElementSelectInput.extend({
     Craft.cp.displayError(message);
     this.progressBar.hideProgressBar();
     this.$container.removeClass('uploading');
-  },
-
-  _onUploadAlways: function () {
-    // Reset the value so change events still fire when you try and upload the same file
-    this.$fileInput.val('');
   },
 
   /**
