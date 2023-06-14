@@ -16,6 +16,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
     uploader: null,
     promptHandler: null,
     progressBar: null,
+    currentFolderId: null,
 
     $listedFolders: null,
     itemDrag: null,
@@ -200,25 +201,29 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
      * @private
      */
     initForFiles: function () {
-      if (!this.$uploadButton) {
-        this.$uploadButton = $('<button/>', {
-          type: 'button',
-          class: 'btn submit',
-          'data-icon': 'upload',
-          style: 'position: relative; overflow: hidden;',
-          text: Craft.t('app', 'Upload files'),
-        });
-        this.addButton(this.$uploadButton);
-
-        this.$uploadInput = $(
-          '<input type="file" multiple="multiple" name="assets-upload" />'
-        )
-          .hide()
-          .insertBefore(this.$uploadButton);
-      }
-
       this.promptHandler = new Craft.PromptHandler();
       this.progressBar = new Craft.ProgressBar(this.$main, false);
+    },
+
+    createUploadInputs: function () {
+      this.$uploadButton?.remove();
+      this.uploader?.$fileInput.remove();
+
+      this.$uploadButton = $('<button/>', {
+        id: 'assets-upload-button',
+        type: 'button',
+        class: 'btn submit',
+        'data-icon': 'upload',
+        style: 'position: relative; overflow: hidden;',
+        text: Craft.t('app', 'Upload files'),
+      });
+      this.addButton(this.$uploadButton);
+
+      this.$uploadInput = $(
+        '<input type="file" multiple="multiple" name="assets-upload" id="assets-upload" />'
+      )
+        .hide()
+        .insertBefore(this.$uploadButton);
 
       this.$uploadButton.on('click', () => {
         if (this.$uploadButton.hasClass('disabled')) {
@@ -235,14 +240,14 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 
     onSelectSource: function () {
       if (!this.settings.foldersOnly) {
-        const folderId = this.$source.data('folder-id');
+        const folderId = this.currentFolderId;
         const fsType = this.$source.data('fs-type');
-        if (folderId && Garnish.hasAttr(this.$source, 'data-can-upload')) {
-          this.$uploadButton.removeClass('disabled');
+        this.createUploadInputs();
 
-          if (this.uploader) {
-            this.uploader.destroy();
-          }
+        if (folderId && Garnish.hasAttr(this.$source, 'data-can-upload')) {
+          this.uploader?.destroy();
+          this.$uploadInput.insertBefore(this.$uploadButton);
+          this.$uploadButton.removeClass('disabled');
 
           const options = {
             fileInput: this.$uploadInput,
@@ -282,11 +287,10 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
       if (!this.settings.foldersOnly && this.sourcePath.length) {
         const currentFolder = this.sourcePath[this.sourcePath.length - 1];
         if (currentFolder.folderId) {
-          if (this.uploader) {
-            this.uploader.setParams({
-              folderId: currentFolder.folderId,
-            });
-          }
+          this.currentFolderId = currentFolder.folderId;
+          this.uploader?.setParams({
+            folderId: this.currentFolderId,
+          });
 
           // will the user be allowed to move items in this folder?
           const canMoveSubItems = !!currentFolder.canMoveSubItems;
@@ -468,7 +472,6 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
      */
     _onUploadAlways: function () {
       if (this.uploader.isLastUpload()) {
-        this.uploader.$fileInput.val('');
         this.progressBar.hideProgressBar();
         this.setIndexAvailable();
 
