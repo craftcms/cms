@@ -468,6 +468,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
      */
     _onUploadAlways: function () {
       if (this.uploader.isLastUpload()) {
+        this.uploader.$fileInput.val('');
         this.progressBar.hideProgressBar();
         this.setIndexAvailable();
 
