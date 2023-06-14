@@ -553,7 +553,7 @@ abstract class Controller extends \yii\web\Controller
      * @throws ForbiddenHttpException
      * @since 3.4.8
      */
-    protected function requirePeerVolumePermissionByAsset(string $permissionName, Asset $asset): void
+    public function requirePeerVolumePermissionByAsset(string $permissionName, Asset $asset): void
     {
         if ($asset->getVolumeId()) {
             $userId = Craft::$app->getUser()->getId();
@@ -573,7 +573,7 @@ abstract class Controller extends \yii\web\Controller
      * @throws VolumeException
      * @since 3.4.8
      */
-    protected function requireVolumePermissionByFolder(string $permissionName, VolumeFolder $folder): void
+    public function requireVolumePermissionByFolder(string $permissionName, VolumeFolder $folder): void
     {
         if (!$folder->volumeId) {
             $userTemporaryFolder = Craft::$app->getAssets()->getUserTemporaryUploadFolder();
@@ -596,7 +596,7 @@ abstract class Controller extends \yii\web\Controller
      * @throws ForbiddenHttpException
      * @since 3.4.8
      */
-    protected function requireVolumePermission(string $permissionName, string $volumeUid): void
+    public function requireVolumePermission(string $permissionName, string $volumeUid): void
     {
         $this->requirePermission($permissionName . ':' . $volumeUid);
     }
