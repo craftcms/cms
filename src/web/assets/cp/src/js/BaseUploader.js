@@ -8,6 +8,7 @@ Craft.BaseUploader = Garnish.Base.extend(
   {
     allowedKinds: null,
     $element: null,
+    $fileInput: null,
     settings: null,
     fsType: null,
     params: {},
@@ -21,6 +22,7 @@ Craft.BaseUploader = Garnish.Base.extend(
       this.$element = $element;
       this.settings = $.extend({}, Craft.BaseUploader.defaults, settings);
 
+      this.$fileInput = this.settings.fileInput || $element;
       this.events = this.settings.events;
 
       if (!this.settings.url) {
