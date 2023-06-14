@@ -24,7 +24,6 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
     _uploadTotalFiles: 0,
     _uploadFileProgress: {},
     _currentUploaderSettings: {},
-    _uploadersByFsType: {},
 
     init: function (elementType, $container, settings) {
       settings = Object.assign({}, Craft.AssetIndex.defaults, settings);
@@ -210,7 +209,6 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
       this.uploader?.$fileInput.remove();
 
       this.$uploadButton = $('<button/>', {
-        id: 'assets-upload-button',
         type: 'button',
         class: 'btn submit',
         'data-icon': 'upload',
@@ -220,7 +218,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
       this.addButton(this.$uploadButton);
 
       this.$uploadInput = $(
-        '<input type="file" multiple="multiple" name="assets-upload" id="assets-upload" />'
+        '<input type="file" multiple="multiple" name="assets-upload" />'
       )
         .hide()
         .insertBefore(this.$uploadButton);
@@ -242,6 +240,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
       if (!this.settings.foldersOnly) {
         const folderId = this.currentFolderId;
         const fsType = this.$source.data('fs-type');
+
         this.createUploadInputs();
 
         if (folderId && Garnish.hasAttr(this.$source, 'data-can-upload')) {

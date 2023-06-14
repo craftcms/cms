@@ -11,7 +11,7 @@ Craft.BaseUploader = Garnish.Base.extend(
     $fileInput: null,
     settings: null,
     fsType: null,
-    params: {},
+    formData: {},
     events: {},
     _rejectedFiles: {},
     _extensionList: null,
@@ -21,7 +21,7 @@ Craft.BaseUploader = Garnish.Base.extend(
       this._rejectedFiles = {size: [], type: [], limit: []};
       this.$element = $element;
       this.settings = $.extend({}, Craft.BaseUploader.defaults, settings);
-
+      this.formData = this.settings.formData;
       this.$fileInput = this.settings.fileInput || $element;
       this.events = this.settings.events;
 
@@ -55,7 +55,7 @@ Craft.BaseUploader = Garnish.Base.extend(
         paramObject[Craft.csrfTokenName] = Craft.csrfTokenValue;
       }
 
-      this.params = paramObject;
+      this.formData = paramObject;
     },
 
     /**
@@ -178,6 +178,7 @@ Craft.BaseUploader = Garnish.Base.extend(
       maxFileSize: Craft.maxUploadSize,
       allowedKinds: null,
       events: {},
+      formData: {},
       canAddMoreFiles: null,
       headers: {Accept: 'application/json;q=0.9,*/*;q=0.8'},
       paramName: 'assets-upload',

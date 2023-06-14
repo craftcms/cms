@@ -40,7 +40,7 @@ Craft.Uploader = Craft.BaseUploader.extend(
      */
     setParams: function (paramObject) {
       this.base(paramObject);
-      this.uploader.fileupload('option', {formData: this.params});
+      this.uploader.fileupload('option', {formData: this.formData});
     },
 
     /**

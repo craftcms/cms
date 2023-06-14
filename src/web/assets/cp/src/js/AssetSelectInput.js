@@ -115,21 +115,6 @@ Craft.AssetSelectInput = Craft.BaseElementSelectInput.extend({
       $('<div class="progress-shade"></div>').appendTo(this.$container)
     );
 
-    var options = {
-      dropZone: this.$container,
-      formData: {
-        fieldId: this.settings.fieldId,
-      },
-    };
-
-    if (this.settings.sourceElementId) {
-      options.formData.elementId = this.settings.sourceElementId;
-    }
-
-    if (this.settings.criteria.siteId) {
-      options.formData.siteId = this.settings.criteria.siteId;
-    }
-
     if (this.$addElementBtn) {
       this.$uploadBtn = $('<button/>', {
         type: 'button',
@@ -145,7 +130,7 @@ Craft.AssetSelectInput = Craft.BaseElementSelectInput.extend({
             ? Craft.t('app', 'Upload a file')
             : Craft.t('app', 'Upload files'),
       }).insertAfter(this.$addElementBtn);
-      options.fileInput = $('<input/>', {
+      this.$fileInput = $('<input/>', {
         type: 'file',
         class: 'hidden',
         multiple: this.settings.limit != 1,
@@ -155,14 +140,10 @@ Craft.AssetSelectInput = Craft.BaseElementSelectInput.extend({
       Garnish.$win.trigger('resize');
     }
 
-    // If CSRF protection isn't enabled, these won't be defined.
-    if (
-      typeof Craft.csrfTokenName !== 'undefined' &&
-      typeof Craft.csrfTokenValue !== 'undefined'
-    ) {
-      // Add the CSRF token
-      options.formData[Craft.csrfTokenName] = Craft.csrfTokenValue;
-    }
+    var options = {
+      dropZone: this.$container,
+      fileInput: this.$fileInput,
+    };
 
     if (typeof this.settings.criteria.kind !== 'undefined') {
       options.allowedKinds = this.settings.criteria.kind;
@@ -175,12 +156,19 @@ Craft.AssetSelectInput = Craft.BaseElementSelectInput.extend({
     options.events.fileuploadprogressall = this._onUploadProgress.bind(this);
     options.events.fileuploaddone = this._onUploadComplete.bind(this);
     options.events.fileuploadfail = this._onUploadFailure.bind(this);
+    options.events.fileuploadalways = this._onUploadAlways.bind(this);
 
     this.uploader = Craft.createAssetUploader(
       this.settings.fsType,
       this.$container,
       options
     );
+
+    this.uploader.setParams({
+      elementId: this.settings.sourceElementId,
+      siteId: this.settings.criteria.siteId,
+      fieldId: this.settings.fieldId,
+    });
 
     if (this.$uploadBtn) {
       this.$uploadBtn.on('click', (ev) => {
@@ -323,6 +311,11 @@ Craft.AssetSelectInput = Craft.BaseElementSelectInput.extend({
     Craft.cp.displayError(message);
     this.progressBar.hideProgressBar();
     this.$container.removeClass('uploading');
+  },
+
+  _onUploadAlways: function () {
+    // Reset the value so change events still fire when you try and upload the same file
+    this.$fileInput.val('');
   },
 
   /**
