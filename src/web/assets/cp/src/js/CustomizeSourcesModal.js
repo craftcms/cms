@@ -516,10 +516,7 @@ Craft.CustomizeSourcesModal.BaseSource = Garnish.Base.extend({
 
     this.$item.data('source', this);
 
-    this.addListener(this.$itemLabel, 'click', 'select');
-    this.addListener(this.$itemLabel, 'keypress', (e) =>
-      Garnish.handleActivatingKeypress(e, this.select.bind(this))
-    );
+    this.addListener(this.$itemLabel, 'activate', this.select);
   },
 
   isHeading: function () {
@@ -877,10 +874,7 @@ Craft.CustomizeSourcesModal.CustomSource =
         .appendTo($container);
 
       this.addListener(this.$labelInput, 'input', 'handleLabelInputChange');
-      this.addListener(this.$deleteBtn, 'click', 'destroy');
-      this.addListener(this.$deleteBtn, 'keypress', (e) => {
-        Garnish.handleActivatingKeypress(e, this.destroy.bind(this));
-      });
+      this.addListener(this.$deleteBtn, 'activate', 'destroy');
     },
 
     availableTableAttributes: function () {
@@ -955,10 +949,7 @@ Craft.CustomizeSourcesModal.Heading =
         .appendTo($container);
 
       this.addListener(this.$labelInput, 'input', 'handleLabelInputChange');
-      this.addListener(this.$deleteBtn, 'click', 'destroy');
-      this.addListener(this.$deleteBtn, 'keypress', (e) => {
-        Garnish.handleActivatingKeypress(e, this.destroy.bind(this));
-      });
+      this.addListener(this.$deleteBtn, 'activate', 'destroy');
     },
 
     handleLabelInputChange: function () {

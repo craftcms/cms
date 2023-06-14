@@ -26,29 +26,6 @@
     required: true,
 }) }}
 
-{{ forms.lightswitchField({
-    label: 'Files in this filesystem have public URLs'|t('app'),
-    name: 'hasUrls',
-    on:   filesystem.hasUrls,
-    toggle: "url-field"
-}) }}
-
-<div id="url-field" class="{% if not filesystem.hasUrls %}hidden{% endif %}">
-    {{ forms.autosuggestField({
-        label: "Base URL"|t('app'),
-        instructions: "The base URL to the files in this filesystem."|t('app'),
-        id: 'url',
-        class: ['ltr', 'fs-url'],
-        name: 'url',
-        suggestEnvVars: true,
-        suggestAliases: true,
-        value: (filesystem is defined ? filesystem.url : null),
-        errors: (filesystem is defined ? filesystem.getErrors('url') : null),
-        required: true,
-        placeholder: "//example.com/path/to/folder"
-    }) }}
-</div>
-
 <hr>
 
 {% if fsOptions|length %}
@@ -69,8 +46,10 @@
     <div id="{{ fsType|id }}"{% if not isCurrent %} class="hidden"{% endif %}>
         {% namespace 'types['~fsType~']' %}
             {% if isCurrent %}
+                {{ _self.fsUrlFields(filesystem) }}
                 {{ filesystem.getSettingsHtml()|raw }}
             {% else %}
+                {{ _self.fsUrlFields(fsInstances[fsType]) }}
                 {{ fsInstances[fsType].getSettingsHtml()|raw }}
             {% endif %}
         {% endnamespace %}
@@ -83,3 +62,35 @@
         new Craft.HandleGenerator("#{{ 'name'|namespaceInputId }}", "#{{ 'handle'|namespaceInputId }}");
     {% endjs %}
 {% endif %}
+
+
+{% macro fsUrlFields(filesystem) %}
+    {% if filesystem.getShowHasUrlSetting() %}
+        {{ forms.lightswitchField({
+            label: 'Files in this filesystem have public URLs'|t('app'),
+            name: 'hasUrls',
+            on:   filesystem.hasUrls,
+            toggle: filesystem.getShowUrlSetting() ? "url-field" : null
+        }) }}
+    {% endif %}
+
+    {% if filesystem.getShowUrlSetting() %}
+        <div id="url-field" class="{% if not filesystem.hasUrls %}hidden{% endif %}">
+            {{ forms.autosuggestField({
+                label: "Base URL"|t('app'),
+                instructions: "The base URL to the files in this filesystem."|t('app'),
+                id: 'url',
+                class: ['ltr', 'fs-url'],
+                name: 'url',
+                suggestEnvVars: true,
+                suggestAliases: true,
+                value: (filesystem is defined ? filesystem.url : null),
+                errors: (filesystem is defined ? filesystem.getErrors('url') : null),
+                required: true,
+                placeholder: "//example.com/path/to/folder"
+            }) }}
+        </div>
+    {% endif %}
+
+    <hr />
+{% endmacro %}
