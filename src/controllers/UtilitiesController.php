@@ -24,7 +24,6 @@ use yii\base\InvalidArgumentException;
 use yii\caching\TagDependency;
 use yii\web\BadRequestHttpException;
 use yii\web\ForbiddenHttpException;
-use yii\web\NotFoundHttpException;
 use yii\web\Response;
 
 class UtilitiesController extends Controller
@@ -64,7 +63,6 @@ class UtilitiesController extends Controller
      *
      * @param string $id
      * @return Response
-     * @throws NotFoundHttpException if $id is invalid
      * @throws ForbiddenHttpException if the user doesn’t have access to the requested utility
      * @throws Exception in case of failure
      */
@@ -73,7 +71,7 @@ class UtilitiesController extends Controller
         $utilitiesService = Craft::$app->getUtilities();
 
         if (($class = $utilitiesService->getUtilityTypeById($id)) === null) {
-            throw new NotFoundHttpException('Invalid utility ID: ' . $id);
+            return $this->run('index');
         }
 
         /** @var string|UtilityInterface $class */

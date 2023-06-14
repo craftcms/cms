@@ -15,6 +15,7 @@ use craft\gql\base\ElementResolver;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Gql as GqlHelper;
 use Illuminate\Support\Collection;
+use yii\base\UnknownMethodException;
 
 /**
  * Class User
@@ -66,7 +67,13 @@ class User extends ElementResolver
         }
 
         foreach ($arguments as $key => $value) {
-            $query->$key($value);
+            try {
+                $query->$key($value);
+            } catch (UnknownMethodException $e) {
+                if ($value !== null) {
+                    throw $e;
+                }
+            }
         }
 
         if (!GqlHelper::canQueryUsers()) {
