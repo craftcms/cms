@@ -238,12 +238,16 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 
     onSelectSource: function () {
       if (!this.settings.foldersOnly) {
-        const folderId = this.currentFolderId;
+        this.currentFolderId =
+          this.currentFolderId || this.$source.data('folder-id');
         const fsType = this.$source.data('fs-type');
 
         this.createUploadInputs();
 
-        if (folderId && Garnish.hasAttr(this.$source, 'data-can-upload')) {
+        if (
+          this.currentFolderId &&
+          Garnish.hasAttr(this.$source, 'data-can-upload')
+        ) {
           this.uploader?.destroy();
           this.$uploadInput.insertBefore(this.$uploadButton);
           this.$uploadButton.removeClass('disabled');
@@ -272,7 +276,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
             options
           );
           this.uploader.setParams({
-            folderId,
+            folderId: this.currentFolderId,
           });
         } else {
           this.$uploadButton.addClass('disabled');
@@ -283,21 +287,21 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
     },
 
     onSourcePathChange: function () {
-      if (!this.settings.foldersOnly && this.sourcePath.length) {
-        const currentFolder = this.sourcePath[this.sourcePath.length - 1];
-        if (currentFolder.folderId) {
-          this.currentFolderId = currentFolder.folderId;
-          this.uploader?.setParams({
-            folderId: this.currentFolderId,
-          });
+      const currentFolder = this.sourcePath.length
+        ? this.sourcePath[this.sourcePath.length - 1]
+        : null;
+      this.currentFolderId = currentFolder?.folderId;
 
-          // will the user be allowed to move items in this folder?
-          const canMoveSubItems = !!currentFolder.canMoveSubItems;
-          this.settings.selectable =
-            this.settings.selectable || canMoveSubItems;
-          this.settings.multiSelect =
-            this.settings.multiSelect || canMoveSubItems;
-        }
+      if (!this.settings.foldersOnly && this.currentFolderId) {
+        this.uploader?.setParams({
+          folderId: this.currentFolderId,
+        });
+
+        // will the user be allowed to move items in this folder?
+        const canMoveSubItems = !!currentFolder.canMoveSubItems;
+        this.settings.selectable = this.settings.selectable || canMoveSubItems;
+        this.settings.multiSelect =
+          this.settings.multiSelect || canMoveSubItems;
       }
 
       this.base();
