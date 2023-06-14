@@ -11,6 +11,7 @@ Craft.BaseUploader = Garnish.Base.extend(
     settings: null,
     fsType: null,
     params: {},
+    events: {},
     _rejectedFiles: {},
     _extensionList: null,
     _inProgressCounter: 0,
@@ -19,6 +20,8 @@ Craft.BaseUploader = Garnish.Base.extend(
       this._rejectedFiles = {size: [], type: [], limit: []};
       this.$element = $element;
       this.settings = $.extend({}, Craft.BaseUploader.defaults, settings);
+
+      this.events = this.settings.events;
 
       if (!this.settings.url) {
         this.settings.url =
@@ -163,10 +166,7 @@ Craft.BaseUploader = Garnish.Base.extend(
       }
     },
 
-    destroy: function () {
-      this.$element.fileupload('destroy');
-      this.base();
-    },
+    destroy: $.noop,
   },
   {
     defaults: {

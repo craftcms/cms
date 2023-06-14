@@ -239,36 +239,37 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
         const fsType = this.$source.data('fs-type');
         if (folderId && Garnish.hasAttr(this.$source, 'data-can-upload')) {
           this.$uploadButton.removeClass('disabled');
-          if (this._uploadersByFsType[fsType]) {
-            this.uploader = this._uploadersByFsType[fsType];
-          } else {
-            const options = {
-              fileInput: this.$uploadInput,
-              dropZone: this.$container,
-              events: {
-                fileuploadstart: this._onUploadStart.bind(this),
-                fileuploadprogressall: this._onUploadProgress.bind(this),
-                fileuploaddone: this._onUploadSuccess.bind(this),
-                fileuploadalways: this._onUploadAlways.bind(this),
-                fileuploadfail: this._onUploadFailure.bind(this),
-              },
-            };
 
-            if (this.settings?.criteria?.kind) {
-              options.allowedKinds = this.settings.criteria.kind;
-            }
-
-            this._currentUploaderSettings = options;
-            this.uploader = Craft.createAssetUploader(
-              fsType,
-              this.$uploadButton,
-              options
-            );
-            this.uploader.setParams({
-              folderId,
-            });
-            this._uploadersByFsType[fsType] = this.uploader;
+          if (this.uploader) {
+            this.uploader.destroy();
           }
+
+          const options = {
+            fileInput: this.$uploadInput,
+            dropZone: this.$container,
+            events: {
+              fileuploadstart: this._onUploadStart.bind(this),
+              fileuploadprogressall: this._onUploadProgress.bind(this),
+              fileuploaddone: this._onUploadSuccess.bind(this),
+              fileuploadalways: this._onUploadAlways.bind(this),
+              fileuploadfail: this._onUploadFailure.bind(this),
+            },
+          };
+
+          if (this.settings?.criteria?.kind) {
+            options.allowedKinds = this.settings.criteria.kind;
+          }
+
+          this._currentUploaderSettings = options;
+
+          this.uploader = Craft.createAssetUploader(
+            fsType,
+            this.$uploadButton,
+            options
+          );
+          this.uploader.setParams({
+            folderId,
+          });
         } else {
           this.$uploadButton.addClass('disabled');
         }
