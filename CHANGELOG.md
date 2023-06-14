@@ -1,9 +1,10 @@
 # Release Notes for Craft CMS 4
 
-## Unreleased
+## 4.4.14 - 2023-06-13
 
 - The `utils/fix-field-layout-uids` command now adds missing field layout component UUIDs.
 - The `_includes/forms/date` and `_includes/forms/time` templates now accept a `timeZone` variable.
+- Invalid utility URLs now redirect to the first permitted utility (besides “Updates”). ([#13282](https://github.com/craftcms/cms/issues/13282))
 - Fixed an error that could occur when updating a plugin with the `craft update` command, if it provided a new migration but still had the same schema version.
 - Fixed an error that occurred when rendering editable tables with Date or Time columns. ([#13270](https://github.com/craftcms/cms/issues/13270))
 - Fixed a bug where CSS classes that contained a pseudo-selector weren’t getting namespaced. ([#13251](https://github.com/craftcms/cms/pull/13251))
