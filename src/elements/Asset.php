@@ -1489,6 +1489,7 @@ $('#replace-btn').on('click', () => {
         dropZone: null,
         fileInput: \$fileInput,
         paramName: 'replaceFile',
+        replace: true,
         events: {
             fileuploadstart: () => {
                 $('#thumb-container').addClass('loading');
