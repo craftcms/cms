@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Tags fields now only show up to five suggestions. ([#13322](https://github.com/craftcms/cms/issues/13322))
 - Fixed a bug where Single entries weren’t getting preloaded for template macros, if the template body wasn‘t rendered. ([#13312](https://github.com/craftcms/cms/issues/13312))
 
 ## 4.4.14 - 2023-06-13
