@@ -789,6 +789,8 @@ li.breadcrumb-toggle-wrapper {
 
       .notification-message {
         font-weight: bold;
+        word-break: normal;
+        overflow-wrap: anywhere;
       }
 
       .notification-details {

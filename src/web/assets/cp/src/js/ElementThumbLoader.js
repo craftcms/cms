@@ -11,7 +11,7 @@ Craft.ElementThumbLoader = Garnish.Base.extend(
     init: function () {
       this.queue = [];
 
-      for (var i = 0; i < 3; i++) {
+      for (let i = 0; i < 3; i++) {
         this.workers.push(new Craft.ElementThumbLoader.Worker(this));
       }
     },
@@ -60,7 +60,7 @@ Craft.ElementThumbLoader = Garnish.Base.extend(
       this.queue.push(thumb);
 
       // See if there are any inactive workers
-      for (var i = 0; i < this.workers.length; i++) {
+      for (let i = 0; i < this.workers.length; i++) {
         if (!this.workers[i].active) {
           this.workers[i].loadNext();
         }
@@ -84,7 +84,7 @@ Craft.ElementThumbLoader = Garnish.Base.extend(
     },
 
     destroy: function () {
-      for (var i = 0; i < this.workers.length; i++) {
+      for (let i = 0; i < this.workers.length; i++) {
         this.workers[i].destroy();
       }
 
@@ -108,33 +108,92 @@ Craft.ElementThumbLoader = Garnish.Base.extend(
 Craft.ElementThumbLoader.Worker = Garnish.Base.extend({
   loader: null,
   active: false,
+  container: null,
+  _interval: null,
+  _timeout: null,
 
   init: function (loader) {
     this.loader = loader;
   },
 
+  activate: function () {
+    if (this.active) {
+      return;
+    }
+    this.active = true;
+    // keep track of whether the current container is actually in the DOM
+    this.clearInterval();
+    this._interval = setInterval(() => {
+      this.loadNextIfRemoved();
+    }, 500);
+  },
+
+  deactivate: function () {
+    if (!this.active) {
+      return;
+    }
+    this.active = false;
+    this.clearInterval();
+    this.clearTimeout();
+  },
+
+  clearInterval: function () {
+    if (this._interval) {
+      clearInterval(this._interval);
+      this._interval = null;
+    }
+  },
+
+  clearTimeout: function () {
+    if (this._timeout) {
+      clearTimeout(this._timeout);
+      this._timeout = null;
+    }
+  },
+
   loadNext: function () {
-    var container = this.loader.queue.shift();
-    if (typeof container === 'undefined') {
-      this.active = false;
+    this.clearTimeout();
+
+    this.container = this.loader.queue.shift();
+    if (typeof this.container === 'undefined') {
+      this.deactivate();
       return;
     }
 
-    this.active = true;
-    var $container = $(container);
+    if (this.loadNextIfRemoved()) {
+      return;
+    }
+
+    const $container = $(this.container);
     if ($container.find('img').length) {
       this.loadNext();
       return;
     }
-    var $img = $('<img/>', {
+
+    this.activate();
+
+    // give up after 30 seconds
+    this._timeout = setTimeout(() => {
+      this.loadNext();
+    }, 30000);
+
+    const $img = $('<img/>', {
       sizes: $container.attr('data-sizes'),
       srcset: $container.attr('data-srcset'),
       alt: $container.attr('data-alt') || '',
     });
-    this.addListener($img, 'load,error', 'loadNext');
+    this.addListener($img, 'load,abort,error', 'loadNext');
     $img.appendTo($container);
     picturefill({
       elements: [$img[0]],
     });
+  },
+
+  loadNextIfRemoved() {
+    if (this.container && !document.body.contains(this.container)) {
+      this.loadNext();
+      return true;
+    }
+    return false;
   },
 });

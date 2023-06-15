@@ -6810,11 +6810,46 @@ body .selectize-dropdown {
 }
 
 /* menu styles */
-body .selectize-dropdown {
-  margin-top: 1px;
-}
-
 body {
+  .selectize-dropdown {
+    margin-top: 1px;
+
+    [data-selectable],
+    .optgroup-header {
+      @include menu-option-styles;
+    }
+
+    .optgroup {
+      &:not(:first-child) {
+        border-top: 1px solid var(--hairline-color);
+      }
+      padding-top: 5px;
+
+      .option {
+        padding-left: 24px;
+      }
+    }
+
+    .optgroup-header {
+      @include h6-styles;
+      margin: 0;
+      padding: 4px 0;
+    }
+
+    .active:not(.selected) {
+      background-color: var(--gray-100);
+    }
+
+    .selected {
+      @include menu-option-active-styles;
+      cursor: default !important;
+
+      .light {
+        color: inherit !important;
+      }
+    }
+  }
+
   .selectize-dropdown-content {
     @include menu-styles;
     max-height: 70vh;
@@ -6822,50 +6857,22 @@ body {
     .option {
       min-height: 18px;
     }
+
+    & > div[data-value='new'] {
+      &:before {
+        @include icon;
+        content: 'plus';
+        margin-right: 5px;
+      }
+
+      &:after {
+        content: '…';
+      }
+    }
   }
 
   &.no-scroll .selectize-dropdown-content {
     max-height: 200px; // default for selectize
-  }
-}
-
-body .selectize-dropdown-content > div[data-value='new']:before {
-  @include icon;
-  content: 'plus';
-  margin-right: 5px;
-}
-
-body .selectize-dropdown-content > div[data-value='new']:after {
-  content: '…';
-}
-
-body .selectize-dropdown [data-selectable],
-body .selectize-dropdown .optgroup-header {
-  @include menu-option-styles;
-}
-
-body .selectize-dropdown .optgroup {
-  &:not(:first-child) {
-    border-top: 1px solid var(--hairline-color);
-  }
-  padding-top: 5px;
-
-  .option {
-    padding-left: 24px;
-  }
-}
-
-body .selectize-dropdown .optgroup-header {
-  @include h6-styles;
-  margin: 0;
-  padding: 4px 0;
-}
-
-body .selectize-dropdown .active {
-  @include menu-option-active-styles;
-
-  .light {
-    color: inherit !important;
   }
 }
 

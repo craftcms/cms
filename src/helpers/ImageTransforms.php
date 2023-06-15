@@ -473,7 +473,7 @@ class ImageTransforms
         }
 
         // Save it!
-        $tempFilename = sprintf('%s.%s', uniqid($asset->getFilename(false), true), $format);
+        $tempFilename = FileHelper::uniqueName($asset->getFilename());
         $tempPath = Craft::$app->getPath()->getTempPath() . DIRECTORY_SEPARATOR . $tempFilename;
         $image->saveAs($tempPath);
         clearstatcache(true, $tempPath);
