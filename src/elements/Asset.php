@@ -1486,7 +1486,6 @@ JS;
 $('#replace-btn').on('click', () => {
     const \$fileInput = $('<input/>', {type: 'file', name: 'replaceFile', class: 'replaceFile hidden'}).appendTo(Garnish.\$bod);
     const uploader = Craft.createAssetUploader('{$fsClass}', \$fileInput, {
-        url: Craft.getActionUrl('assets/replace-file'),
         dropZone: null,
         fileInput: \$fileInput,
         paramName: 'replaceFile',
@@ -1495,33 +1494,54 @@ $('#replace-btn').on('click', () => {
                 $('#thumb-container').addClass('loading');
             },
             fileuploaddone: (event, data) => {
-                if (data.result.error) {
-                    $('#thumb-container').removeClass('loading');
-                    alert(data.result.error);
-                } else {
-                    $('#new-filename').val(data.result.filename);
-                    $('#file-size-value')
-                        .text(data.result.formattedSize)
-                        .attr('title', data.result.formattedSizeInBytes);
-                    let \$dimensionsVal = $('#dimensions-value');
-                    if (data.result.dimensions) {
-                        if (!\$dimensionsVal.length) {
-                            $(
-                                '<div class="data">' +
-                                '<dt class="heading">$dimensionsLabel</div>' +
-                                '<dd id="dimensions-value" class="value"></div>' +
-                                '</div>'
-                            ).appendTo($('#details > .meta.read-only'));
-                            \$dimensionsVal = $('#dimensions-value');
-                        }
-                        \$dimensionsVal.text(data.result.dimensions);
-                    } else if (\$dimensionsVal.length) {
-                        \$dimensionsVal.parent().remove();
+                const result = event instanceof CustomEvent ? event.detail : data.result;
+                
+                $('#new-filename').val(result.filename);
+                $('#file-size-value')
+                    .text(result.formattedSize)
+                    .attr('title', result.formattedSizeInBytes);
+                let \$dimensionsVal = $('#dimensions-value');
+                if (result.dimensions) {
+                    if (!\$dimensionsVal.length) {
+                        $(
+                            '<div class="data">' +
+                            '<dt class="heading">$dimensionsLabel</div>' +
+                            '<dd id="dimensions-value" class="value"></div>' +
+                            '</div>'
+                        ).appendTo($('#details > .meta.read-only'));
+                        \$dimensionsVal = $('#dimensions-value');
                     }
-                    $updatePreviewThumbJs
-                    Craft.cp.runQueue();
+                    \$dimensionsVal.text(result.dimensions);
+                } else if (\$dimensionsVal.length) {
+                    \$dimensionsVal.parent().remove();
                 }
-            }
+                $updatePreviewThumbJs
+                Craft.cp.runQueue();
+                if (result.error) {
+                    $('#thumb-container').removeClass('loading');
+                    alert(result.error);
+                } else {
+
+                }
+            },
+            fileuploadfail: (event, data) => {
+                const response = event instanceof Event
+                    ? event.detail
+                    : data?.jqXHR?.responseJSON;
+                
+                let {message, filename} = response || {};
+                
+                if (!message) {
+                    message = filename
+                        ? Craft.t('app', 'Replace file failed for “{filename}”.', {filename})
+                        : Craft.t('app', 'Replace file failed.');
+                }
+                
+              Craft.cp.displayError(message);
+            },
+            fileuploadalways: (event, data) => {
+                $('#thumb-container').removeClass('loading');
+            },
         }
     });
     uploader.setParams({
