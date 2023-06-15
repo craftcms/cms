@@ -4185,6 +4185,7 @@ ul.tree,
     }
 
     & > .field,
+    & > .name-wrapper > .field,
     & > .data {
       margin: 0 var(--neg-padding) !important;
 
@@ -4222,6 +4223,7 @@ ul.tree,
   }
 
   & > .field > .heading > label,
+  & > .name-wrapper > .field > .heading > label,
   & > fieldset > legend {
     margin-top: 0;
     font-weight: normal;
@@ -4236,7 +4238,8 @@ ul.tree,
     }
   }
 
-  & > .field {
+  & > .field,
+  & > .name-wrapper > .field {
     margin: 0 0 var(--spacing);
 
     & > .heading {
@@ -4273,6 +4276,7 @@ $min2ColWidth: 400px;
   &,
   & > .flex-fields {
     & > .field,
+    & > .name-wrapper > .field,
     & > .data {
       display: flex;
       min-height: 50px;
@@ -4331,7 +4335,8 @@ $min2ColWidth: 400px;
       }
     }
 
-    & > .field > .heading {
+    & > .field > .heading,
+    & > .name-wrapper > .field > .heading {
       padding-top: var(--s);
 
       @media screen and (min-width: $min2ColWidth) {
@@ -4348,11 +4353,13 @@ $min2ColWidth: 400px;
     }
 
     & > .field > .heading > label,
+    & > .name-wrapper > .field > .heading > label,
     & > .data > .heading {
       color: var(--medium-text-color);
     }
 
     & > .field > .input,
+    & > .name-wrapper > .field > .input,
     & > .data > .value {
       padding: var(--s) 0;
       width: 100%;
@@ -4377,7 +4384,8 @@ $min2ColWidth: 400px;
       width: auto;
     }
 
-    & > .field {
+    & > .field,
+    & > .name-wrapper > .field {
       &.has-errors {
         border: 1px solid var(--error-color) !important;
 
@@ -4468,6 +4476,7 @@ $min2ColWidth: 400px;
   }
 
   & > .field:not(:first-child):not(.first-child),
+  & > .name-wrapper > .field:not(.first-child),
   & > .flex-fields + .field:not(.first-child) {
     border-top: 1px solid var(--hairline-color);
   }

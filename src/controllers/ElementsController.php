@@ -13,6 +13,7 @@ use craft\base\ElementInterface;
 use craft\base\FieldLayoutComponent;
 use craft\behaviors\DraftBehavior;
 use craft\behaviors\RevisionBehavior;
+use craft\elements\Address;
 use craft\elements\User;
 use craft\errors\InvalidElementException;
 use craft\errors\InvalidTypeException;
@@ -929,6 +930,11 @@ JS, [
         $this->element = $element;
 
         $this->_applyParamsToElement($element);
+
+        // for editing names in the slideout
+        if ($element instanceof User || $element instanceof Address) {
+            $element->populateNameAttributes();
+        }
         $elementsService = Craft::$app->getElements();
         $user = static::currentUser();
 

@@ -38,6 +38,35 @@ trait NameTrait
     public ?string $lastName = null;
 
     /**
+     * Populate fullName, firstName and lastName attributes from the request
+     *
+     * @return void
+     * @since 4.5.0
+     */
+    public function populateNameAttributes(): void
+    {
+        $request = Craft::$app->getRequest();
+        $editName = (bool)$request->getBodyParam('editName', false);
+
+        /** @var object|NameTrait $this */
+        $fullName = $request->getBodyParam('fullName');
+
+        if ($fullName !== null && !$editName) {
+            $this->fullName = $fullName ?: null;
+        } else {
+            // Still check for firstName/lastName in case a front-end form is still posting them
+            $firstName = $request->getBodyParam('firstName');
+            $lastName = $request->getBodyParam('lastName');
+
+            if ($firstName !== null || $lastName !== null) {
+                $this->fullName = null;
+                $this->firstName = $firstName ?? $this->firstName;
+                $this->lastName = $lastName ?? $this->lastName;
+            }
+        }
+    }
+
+    /**
      * Get parsed first and last names
      *
      * @return array

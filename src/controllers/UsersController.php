@@ -9,7 +9,6 @@ namespace craft\controllers;
 
 use Craft;
 use craft\base\Element;
-use craft\base\NameTrait;
 use craft\elements\Address;
 use craft\elements\Asset;
 use craft\elements\Entry;
@@ -1385,7 +1384,7 @@ JS,
             $user->username = $this->request->getBodyParam('username', ($user->username ?: $user->email));
         }
 
-        $this->populateNameAttributes($user);
+        $user->populateNameAttributes();
 
         // New users should always be initially saved in a pending state,
         // even if an admin is doing this and opted to not send the verification email
@@ -2021,7 +2020,7 @@ JS,
         $address->setScenario(Element::SCENARIO_LIVE);
 
         // Name attributes
-        $this->populateNameAttributes($address);
+        $address->populateNameAttributes();
 
         // All safe attributes
         $safeAttributes = [];
@@ -2661,27 +2660,5 @@ JS,
         $ids = $this->request->getRequiredBodyParam('ids');
         Craft::$app->getAnnouncements()->markAsRead($ids);
         return $this->asSuccess();
-    }
-
-    private function populateNameAttributes(object $model): void
-    {
-        $editName = (bool)$this->request->getBodyParam('editName', false);
-
-        /** @var object|NameTrait $model */
-        $fullName = $this->request->getBodyParam('fullName');
-
-        if ($fullName !== null && !$editName) {
-            $model->fullName = $fullName ?: null;
-        } else {
-            // Still check for firstName/lastName in case a front-end form is still posting them
-            $firstName = $this->request->getBodyParam('firstName');
-            $lastName = $this->request->getBodyParam('lastName');
-
-            if ($firstName !== null || $lastName !== null) {
-                $model->fullName = null;
-                $model->firstName = $firstName ?? $model->firstName;
-                $model->lastName = $lastName ?? $model->lastName;
-            }
-        }
     }
 }
