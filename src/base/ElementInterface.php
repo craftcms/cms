@@ -945,10 +945,21 @@ interface ElementInterface extends ComponentInterface
     /**
      * Returns the URL to the element’s thumbnail, if there is one.
      *
+     * If this returns `null`, [[getThumbSvg()]] will be checked as a fallback.
+     *
      * @param int $size The maximum width and height the thumbnail should have.
      * @return string|null
      */
     public function getThumbUrl(int $size): ?string;
+
+    /**
+     * Returns the element’s thumbnail SVG contents, which should be used as a fallback when [[getThumbUrl()]]
+     * returns `null`.
+     *
+     * @return string|null
+     * @since 4.5.0
+     */
+    public function getThumbSvg(): ?string;
 
     /**
      * Returns alt text for the element’s thumbnail.

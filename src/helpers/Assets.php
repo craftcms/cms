@@ -884,6 +884,7 @@ class Assets
      * @param string $extension
      * @return string
      * @since 4.0.0
+     * @deprecated in 4.5.0
      */
     public static function iconUrl(string $extension): string
     {
@@ -898,8 +899,30 @@ class Assets
      * @param string $extension
      * @return string
      * @since 4.0.0
+     * @deprecated in 4.5.0. [[iconSvg()]] or [[Asset::getThumbSvg()]] should be used instead.
      */
     public static function iconPath(string $extension): string
+    {
+        $path = sprintf('%s%s%s.svg', Craft::$app->getPath()->getAssetsIconsPath(), DIRECTORY_SEPARATOR, strtolower($extension));
+
+        if (file_exists($path)) {
+            return $path;
+        }
+
+        $svg = static::iconSvg($extension);
+
+        FileHelper::writeToFile($path, $svg);
+        return $path;
+    }
+
+    /**
+     * Returns the SVG contents for an asset icon with a given extension.
+     *
+     * @param string $extension
+     * @return string
+     * @since 4.5.0
+     */
+    public static function iconSvg(string $extension): string
     {
         if (!preg_match('/^\w+$/', $extension)) {
             throw new InvalidArgumentException("$extension isn’t a valid file extension.");
@@ -915,20 +938,22 @@ class Assets
 
         $extLength = strlen($extension);
         if ($extLength <= 3) {
-            $textSize = '20';
+            $textSize = '19';
         } elseif ($extLength === 4) {
-            $textSize = '17';
+            $textSize = '16';
         } else {
-            if ($extLength > 5) {
-                $extension = substr($extension, 0, 4) . '…';
-            }
-            $textSize = '14';
+            $extension = substr($extension, 0, 3) . '…';
+            $textSize = '15';
         }
+        $textNode = Html::tag('text', strtoupper($extension), [
+            'x' => 50,
+            'y' => 73,
+            'text-anchor' => 'middle',
+            'font-family' => 'sans-serif',
+            'fill' => 'hsl(210, 10%, 47%)',
+            'font-size' => $textSize,
+        ]);
 
-        $textNode = "<text x=\"50\" y=\"73\" text-anchor=\"middle\" font-family=\"sans-serif\" fill=\"#9aa5b1\" font-size=\"$textSize\">" . strtoupper($extension) . '</text>';
-        $svg = str_replace('<!-- EXT -->', $textNode, $svg);
-
-        FileHelper::writeToFile($path, $svg);
-        return $path;
+        return Html::appendToTag($svg, $textNode);
     }
 }

@@ -640,9 +640,10 @@ class Assets extends Component
      * @param Asset $asset asset to return a thumb for
      * @param int $width width of the returned thumb
      * @param int|null $height height of the returned thumb (defaults to $width if null)
-     * @return string
+     * @param bool $iconFallback Whether an icon URL fallback should be returned as a fallback
+     * @return string|null
      */
-    public function getThumbUrl(Asset $asset, int $width, ?int $height = null): string
+    public function getThumbUrl(Asset $asset, int $width, ?int $height = null, $iconFallback = true): ?string
     {
         if ($height === null) {
             $height = $width;
@@ -666,7 +667,7 @@ class Assets extends Component
         // If it’s not an image, return a generic file extension icon
         $extension = $asset->getExtension();
         if (!Image::canManipulateAsImage($extension)) {
-            return AssetsHelper::iconUrl($extension);
+            return $iconFallback ? AssetsHelper::iconUrl($extension) : null;
         }
 
         $transform = new ImageTransform([
@@ -684,7 +685,7 @@ class Assets extends Component
         }
 
         if ($url === null) {
-            return AssetsHelper::iconUrl($extension);
+            return $iconFallback ? AssetsHelper::iconUrl($extension) : null;
         }
 
         return AssetsHelper::revUrl($url, $asset, fsOnly: true);
@@ -737,7 +738,7 @@ class Assets extends Component
      *
      * @param Asset $asset
      * @return string
-     * @deprecated in 4.0.0. [[AssetsHelper::iconPath()]] should be used instead.
+     * @deprecated in 4.0.0. [[AssetsHelper::iconSvg()]] or [[Asset::getThumbSvg()]] should be used instead.
      */
     public function getIconPath(Asset $asset): string
     {
