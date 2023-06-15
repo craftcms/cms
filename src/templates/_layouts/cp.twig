@@ -116,13 +116,20 @@
 
 {% set userPhoto %}
     <div class="header-photo">
-        {{ tag('img', {
-            width: 30,
-            height: 30,
-            sizes: '30px',
-            srcset: "#{currentUser.getThumbUrl(30)} 30w, #{currentUser.getThumbUrl(60)} 60w",
-            alt: currentUser.getThumbAlt(),
-        }) }}
+        {% set photoUrl = currentUser.getThumbUrl(30) %}
+        {% if photoUrl %}
+            {{ tag('img', {
+                width: 30,
+                height: 30,
+                sizes: '30px',
+                srcset: "#{photoUrl} 30w, #{currentUser.getThumbUrl(60)} 60w",
+                alt: currentUser.getThumbAlt(),
+            }) }}
+        {% else %}
+            {{ svg('@appicons/user.svg')|prepend(tag('title', {
+                text: currentUser.getThumbAlt(),
+            })) }}
+        {% endif %}
     </div>
 {% endset %}
 

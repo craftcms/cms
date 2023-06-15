@@ -1917,16 +1917,10 @@ JS;
         $volume = $this->getVolume();
         $transform = $transform ?? $this->_transform;
 
-        if ($transform) {
-            $mimeType = $this->getMimeType();
-            $generalConfig = Craft::$app->getConfig()->getGeneral();
-            if (
-                ($mimeType === 'image/gif' && !$generalConfig->transformGifs) ||
-                ($mimeType === 'image/svg+xml' && !$generalConfig->transformSvgs) ||
-                !Image::canManipulateAsImage(pathinfo($this->getFilename(), PATHINFO_EXTENSION))
-            ) {
-                $transform = null;
-            }
+        if ($transform &&
+            !Image::canManipulateAsImage(pathinfo($this->getFilename(), PATHINFO_EXTENSION))
+        ) {
+            $transform = null;
         }
 
         if ($transform) {
@@ -1998,7 +1992,7 @@ JS;
     public function getThumbUrl(int $size): ?string
     {
         if ($this->isFolder) {
-            return Craft::$app->getAssetManager()->getPublishedUrl('@app/web/assets/cp/dist', true, 'images/folder.svg');
+            return null;
         }
 
         if ($this->getWidth() && $this->getHeight()) {
@@ -2007,7 +2001,19 @@ JS;
             $width = $height = $size;
         }
 
-        return Craft::$app->getAssets()->getThumbUrl($this, $width, $height);
+        return Craft::$app->getAssets()->getThumbUrl($this, $width, $height, false);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getThumbSvg(): ?string
+    {
+        if ($this->isFolder) {
+            return file_get_contents(Craft::getAlias('@appicons/folder.svg'));
+        }
+
+        return Assets::iconSvg($this->getExtension());
     }
 
     /**
