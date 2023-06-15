@@ -938,17 +938,16 @@ class Assets
 
         $extLength = strlen($extension);
         if ($extLength <= 3) {
-            $textSize = '24';
+            $textSize = '19';
         } elseif ($extLength === 4) {
-            $textSize = '17';
+            $textSize = '16';
         } else {
-            if ($extLength > 5) {
-                $extension = substr($extension, 0, 4) . '…';
-            }
-            $textSize = '14';
+            $extension = substr($extension, 0, 3) . '…';
+            $textSize = '15';
         }
 
         $textNode = "<text x=\"50\" y=\"73\" text-anchor=\"middle\" font-family=\"sans-serif\" fill=\"hsl(210, 10%, 53%)\" font-size=\"$textSize\">" . strtoupper($extension) . '</text>';
+
         return str_replace('<!-- EXT -->', $textNode, $svg);
     }
 }
