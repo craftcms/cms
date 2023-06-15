@@ -443,6 +443,7 @@ class Cp
                     if ($alt !== null) {
                         $thumbSvg = Html::prependToTag($thumbSvg, Html::tag('title', Html::encode($alt)));
                     }
+                    $thumbSvg = Html::modifyTagAttributes($thumbSvg, ['role' => 'img']);
                     $imgHtml = Html::tag('div', $thumbSvg, [
                         'class' => $thumbClass,
                     ]);
