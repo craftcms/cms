@@ -26,10 +26,9 @@ Craft.BaseUploader = Garnish.Base.extend(
       this.events = this.settings.events;
 
       if (!this.settings.url) {
-        this.settings.url =
-          this.settings.paramName === 'replaceFile'
-            ? Craft.getActionUrl(this.settings.replaceAction)
-            : Craft.getActionUrl(this.settings.createAction);
+        this.settings.url = this.settings.replace
+          ? Craft.getActionUrl(this.settings.replaceAction)
+          : Craft.getActionUrl(this.settings.createAction);
       }
 
       if (this.settings.allowedKinds && this.settings.allowedKinds.length) {
@@ -186,6 +185,7 @@ Craft.BaseUploader = Garnish.Base.extend(
       createAction: null,
       replaceAction: null,
       deleteAction: null,
+      replace: false,
     },
   }
 );

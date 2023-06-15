@@ -47,6 +47,7 @@ class ReplaceFile extends ElementAction
             settings.dropZone = null;
             settings.fileInput = \$fileInput;
             settings.paramName = 'replaceFile';
+            settings.replace = true;
             
             const tempUploader = Craft.createAssetUploader(Craft.elementIndex.uploader.fsType, \$fileInput, settings);
             tempUploader.setParams({

@@ -250,7 +250,7 @@ Craft.AssetSelectInput = Craft.BaseElementSelectInput.extend({
    * On upload progress.
    */
   _onUploadProgress: function (event, data) {
-    data = event instanceof Event ? event.detail : data;
+    data = event instanceof CustomEvent ? event.detail : data;
 
     var progress = parseInt(Math.min(data.loaded / data.total, 1) * 100, 10);
     this.progressBar.setProgressPercentage(progress);
@@ -260,7 +260,7 @@ Craft.AssetSelectInput = Craft.BaseElementSelectInput.extend({
    * On a file being uploaded.
    */
   _onUploadComplete: function (event, data) {
-    const result = event instanceof Event ? event.detail : data.result;
+    const result = event instanceof CustomEvent ? event.detail : data.result;
 
     const parameters = {
       elementId: result.assetId,
@@ -295,11 +295,9 @@ Craft.AssetSelectInput = Craft.BaseElementSelectInput.extend({
    */
   _onUploadFailure: function (event, data) {
     const response =
-      event instanceof Event
-        ? event?.detail
-        : data?.result?.response()?.jqXHR?.responseJSON || {};
+      event instanceof CustomEvent ? event.detail : data?.jqXHR?.responseJSON;
 
-    let {message, filename} = response;
+    let {message, filename} = response || {};
 
     if (!message) {
       message = filename

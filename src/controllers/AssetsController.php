@@ -10,6 +10,7 @@ namespace craft\controllers;
 use Craft;
 use craft\assetpreviews\Image as ImagePreview;
 use craft\base\Element;
+use craft\base\LocalFsInterface;
 use craft\elements\Asset;
 use craft\elements\conditions\ElementCondition;
 use craft\errors\AssetException;
@@ -63,6 +64,8 @@ use ZipArchive;
  */
 class AssetsController extends Controller
 {
+    use AssetsControllerTrait;
+
     /**
      * @inheritdoc
      */
@@ -1274,26 +1277,46 @@ class AssetsController extends Controller
     /**
      * Generates a fallback transform.
      *
-     * @param int $assetId
      * @param string $transform
      * @return Response
      * @since 4.4.0
      */
-    public function actionGenerateFallbackTransform(int $assetId, string $transform): Response
+    public function actionGenerateFallbackTransform(string $transform): Response
     {
-        $transformString = Craft::$app->getSecurity()->validateData($transform);
-        if ($transformString === false) {
+        $transform = Craft::$app->getSecurity()->validateData($transform);
+        if ($transform === false) {
             throw new BadRequestHttpException('Request contained an invalid transform param.');
         }
+
+        [$assetId, $transformString] = explode(',', $transform, 2);
 
         /** @var Asset|null $asset */
         $asset = Asset::find()->id($assetId)->one();
         if (!$asset) {
-            throw new NotFoundHttpException("Invalid asset ID: $assetId");
+            throw new BadRequestHttpException("Invalid asset ID: $assetId");
         }
 
-        $transform = new ImageTransform(ImageTransforms::parseTransformString($transformString));
-        $ext = $transform->format ?: ImageTransforms::detectTransformFormat($asset);
+        $this->response->setCacheHeaders();
+
+        // If we're returning the original asset, and it's in a local FS, just read the file out directly
+        $useOriginal = $transformString === 'original';
+        if ($useOriginal) {
+            $fs = $asset->getVolume()->getFs();
+            if ($fs instanceof LocalFsInterface) {
+                $path = sprintf('%s/%s', rtrim($fs->getRootPath(), '/'), $asset->getPath());
+                return $this->response->sendFile($path, $asset->getFilename(), [
+                    'inline' => true,
+                ]);
+            }
+        }
+
+        if ($useOriginal) {
+            $ext = $asset->getExtension();
+        } else {
+            $transform = new ImageTransform(ImageTransforms::parseTransformString($transformString));
+            $ext = $transform->format ?: ImageTransforms::detectTransformFormat($asset);
+        }
+
         $filename = sprintf('%s.%s', $asset->id, $ext);
         $path = implode(DIRECTORY_SEPARATOR, [
             Craft::$app->getPath()->getImageTransformsPath(),
@@ -1302,7 +1325,12 @@ class AssetsController extends Controller
         ]);
 
         if (!file_exists($path) || filemtime($path) < ($asset->dateModified?->getTimestamp() ?? 0)) {
-            $tempPath = ImageTransforms::generateTransform($asset, $transform);
+            if ($useOriginal) {
+                $tempPath = $asset->getCopyOfFile();
+            } else {
+                $tempPath = ImageTransforms::generateTransform($asset, $transform);
+            }
+
             FileHelper::createDirectory(dirname($path));
             rename($tempPath, $path);
         }
