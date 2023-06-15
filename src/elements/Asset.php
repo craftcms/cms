@@ -1485,7 +1485,7 @@ JS;
             $js = <<<JS
 $('#replace-btn').on('click', () => {
     const \$fileInput = $('<input/>', {type: 'file', name: 'replaceFile', class: 'replaceFile hidden'}).appendTo(Garnish.\$bod);
-    const uploader = Craft.createAssetUploader('{$fsClass}', \$fileInput, {
+    const uploader = Craft.createUploader('{$fsClass}', \$fileInput, {
         dropZone: null,
         fileInput: \$fileInput,
         paramName: 'replaceFile',

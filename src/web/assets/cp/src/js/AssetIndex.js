@@ -270,7 +270,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 
           this._currentUploaderSettings = options;
 
-          this.uploader = Craft.createAssetUploader(
+          this.uploader = Craft.createUploader(
             fsType,
             this.$uploadButton,
             options

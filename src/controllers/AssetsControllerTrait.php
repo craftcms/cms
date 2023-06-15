@@ -1,4 +1,9 @@
 <?php
+/**
+ * @link https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license https://craftcms.github.io/license/
+ */
 
 namespace craft\controllers;
 
@@ -9,6 +14,12 @@ use craft\models\VolumeFolder;
 use yii\base\InvalidConfigException;
 use yii\web\ForbiddenHttpException;
 
+/**
+ * Provides asset permission enforcement methods for controllers.
+ *
+ * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @since 4.5.0
+ */
 trait AssetsControllerTrait
 {
     /**
@@ -19,7 +30,6 @@ trait AssetsControllerTrait
      * @throws ForbiddenHttpException
      * @throws InvalidConfigException
      * @throws VolumeException
-     * @since 3.4.8
      */
     public function requireVolumePermissionByAsset(string $permissionName, Asset $asset): void
     {
@@ -42,7 +52,6 @@ trait AssetsControllerTrait
      * @param string $permissionName The name of the peer permission to require (sans `:<volume-uid>` suffix)
      * @param Asset $asset The asset whose volume should be checked
      * @throws ForbiddenHttpException
-     * @since 3.4.8
      */
     public function requirePeerVolumePermissionByAsset(string $permissionName, Asset $asset): void
     {
@@ -62,7 +71,6 @@ trait AssetsControllerTrait
      * @throws ForbiddenHttpException
      * @throws InvalidConfigException
      * @throws VolumeException
-     * @since 3.4.8
      */
     public function requireVolumePermissionByFolder(string $permissionName, VolumeFolder $folder): void
     {
@@ -85,7 +93,6 @@ trait AssetsControllerTrait
      * @param string $permissionName The name of the peer permission to require (sans `:<volume-uid>` suffix)
      * @param string $volumeUid The volume’s UID
      * @throws ForbiddenHttpException
-     * @since 3.4.8
      */
     public function requireVolumePermission(string $permissionName, string $volumeUid): void
     {
