@@ -64,6 +64,8 @@ use ZipArchive;
  */
 class AssetsController extends Controller
 {
+    use AssetsControllerTrait;
+
     /**
      * @inheritdoc
      */
