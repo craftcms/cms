@@ -16,6 +16,7 @@ import './js/BaseElementIndexView.js';
 import './js/BaseElementSelectInput.js';
 import './js/BaseElementSelectorModal.js';
 import './js/BaseInputGenerator.js';
+import './js/BaseUploader.js';
 
 // Slideouts
 import './js/Slideout.js';
