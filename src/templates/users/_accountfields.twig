@@ -1,7 +1,7 @@
 {% import '_includes/forms.twig' as forms %}
 {% set static = static ?? false %}
 
-{% set parsedName = user.getParsedNames() %}
+{% set parsedName = user.getParsedName() %}
 {% set showFullName = true %}
 {% if not user.hasErrors('fullName') and (parsedName['firstName'] != user.firstName or parsedName['lastName'] != user.lastName) %}
     {% set showFullName = false %}

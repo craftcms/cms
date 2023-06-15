@@ -2672,8 +2672,6 @@ JS,
 
         if ($fullName !== null && !$editName) {
             $model->fullName = $fullName ?: null;
-            $model->firstName = null;
-            $model->lastName = null;
         } else {
             // Still check for firstName/lastName in case a front-end form is still posting them
             $firstName = $this->request->getBodyParam('firstName');

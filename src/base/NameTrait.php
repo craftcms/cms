@@ -43,7 +43,7 @@ trait NameTrait
      * @return array
      * @since 4.5.0
      */
-    public function getParsedNames(): array
+    public function getParsedName(): array
     {
         $firstName = null;
         $lastName = null;
@@ -78,9 +78,9 @@ trait NameTrait
     protected function prepareNamesForSave(): void
     {
         if ($this->fullName !== null) {
-            $parsedNames = $this->getParsedNames();
-            $this->firstName = $parsedNames['firstName'];
-            $this->lastName = $parsedNames['lastName'];
+            $parsedName = $this->getParsedName();
+            $this->firstName = $parsedName['firstName'];
+            $this->lastName = $parsedName['lastName'];
         } elseif ($this->firstName !== null || $this->lastName !== null) {
             $this->fullName = trim("$this->firstName $this->lastName") ?: null;
         }
