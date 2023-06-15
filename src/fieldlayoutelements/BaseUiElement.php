@@ -51,7 +51,6 @@ abstract class BaseUiElement extends FieldLayoutElement
                 'class' => 'fld-ui-element',
                 'data' => [
                     'type' => str_replace('\\', '-', static::class),
-                    'foo' => 'bar',
                 ],
             ]) .
             Html::beginTag('div', ['class' => 'fld-element-icon']) .

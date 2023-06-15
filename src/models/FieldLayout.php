@@ -27,6 +27,7 @@ use craft\helpers\ArrayHelper;
 use craft\helpers\Html;
 use craft\helpers\StringHelper;
 use Generator;
+use yii\base\Component;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
 
@@ -204,6 +205,12 @@ class FieldLayout extends Model
      * @var string UID
      */
     public string $uid;
+
+    /**
+     * @var Component|null The field layout’s owner.
+     * @since 4.5.0
+     */
+    public ?Component $owner = null;
 
     /**
      * @var string[]|null Reserved custom field handles

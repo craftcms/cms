@@ -3253,6 +3253,14 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
+    public function getThumbSvg(): ?string
+    {
+        return null;
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function getThumbAlt(): ?string
     {
         return null;
