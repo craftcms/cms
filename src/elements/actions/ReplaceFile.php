@@ -49,7 +49,7 @@ class ReplaceFile extends ElementAction
             settings.paramName = 'replaceFile';
             settings.replace = true;
             
-            const tempUploader = Craft.createAssetUploader(Craft.elementIndex.uploader.fsType, \$fileInput, settings);
+            const tempUploader = Craft.createUploader(Craft.elementIndex.uploader.fsType, \$fileInput, settings);
             tempUploader.setParams({
                 assetId: \$element.data('id')
             });

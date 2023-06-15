@@ -43,7 +43,7 @@ Craft.ImageUpload = Garnish.Base.extend(
       options.events.fileuploaddone = this._onUploadComplete.bind(this);
       options.events.fileuploadfail = this._onUploadFailure.bind(this);
 
-      this.uploader = Craft.createAssetUploader(null, this.$container, options);
+      this.uploader = Craft.createUploader(null, this.$container, options);
 
       this.initButtons();
     },

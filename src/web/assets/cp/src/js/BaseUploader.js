@@ -2,7 +2,7 @@
 /** global: Garnish */
 
 /**
- * File Manager.
+ * Base uploader class
  */
 Craft.BaseUploader = Garnish.Base.extend(
   {

@@ -1922,7 +1922,7 @@ $.extend(Craft, {
   _elementIndexClasses: {},
   _elementSelectorModalClasses: {},
   _elementEditorClasses: {},
-  _assetUploaderClasses: {},
+  _uploaderClasses: {},
 
   /**
    * Registers an element index class for a given element type.
@@ -1943,13 +1943,13 @@ $.extend(Craft, {
   },
 
   /**
-   * Registers an asset uploader class for a given filesystem.
+   * Registers a file uploader class for a given filesystem type.
    *
-   * @param {string} fs
+   * @param {string} fsType
    * @param {function} func
    */
-  registerAssetUploaderClass: function (fsType, func) {
-    if (typeof this._assetUploaderClasses[fsType] !== 'undefined') {
+  registerUploaderClass: function (fsType, func) {
+    if (typeof this._uploaderClasses[fsType] !== 'undefined') {
       throw (
         'An asset uploader class has already been registered for the filesystem type “' +
         fsType +
@@ -1957,7 +1957,7 @@ $.extend(Craft, {
       );
     }
 
-    this._assetUploaderClasses[fsType] = func;
+    this._uploaderClasses[fsType] = func;
   },
 
   /**
@@ -2017,17 +2017,17 @@ $.extend(Craft, {
   },
 
   /**
-   * Creates an asset uploader for a given filesystem.
+   * Creates a file uploader for a given filesystem type.
    *
-   * @param {string} fs
+   * @param {string} fsType
    * @param {jQuery} $container
    * @param {Object} settings
    * @returns {Uploader}
    */
-  createAssetUploader: function (fsType, $container, settings) {
+  createUploader: function (fsType, $container, settings) {
     const func =
-      typeof this._assetUploaderClasses[fsType] !== 'undefined'
-        ? this._assetUploaderClasses[fsType]
+      typeof this._uploaderClasses[fsType] !== 'undefined'
+        ? this._uploaderClasses[fsType]
         : Craft.Uploader;
 
     const uploader = new func($container, settings);

@@ -157,7 +157,7 @@ Craft.AssetSelectInput = Craft.BaseElementSelectInput.extend({
     options.events.fileuploaddone = this._onUploadComplete.bind(this);
     options.events.fileuploadfail = this._onUploadFailure.bind(this);
 
-    this.uploader = Craft.createAssetUploader(
+    this.uploader = Craft.createUploader(
       this.settings.fsType,
       this.$container,
       options
