@@ -1390,7 +1390,6 @@ class AssetsController extends Controller
         }
 
         if ($useOriginal) {
-            $transform = null;
             $ext = $asset->getExtension();
         } else {
             $transform = new ImageTransform(ImageTransforms::parseTransformString($transformString));
