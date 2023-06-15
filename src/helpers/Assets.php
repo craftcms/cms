@@ -945,9 +945,15 @@ class Assets
             $extension = substr($extension, 0, 3) . '…';
             $textSize = '15';
         }
+        $textNode = Html::tag('text', strtoupper($extension), [
+            'x' => 50,
+            'y' => 73,
+            'text-anchor' => 'middle',
+            'font-family' => 'sans-serif',
+            'fill' => 'hsl(210, 10%, 47%)',
+            'font-size' => $textSize,
+        ]);
 
-        $textNode = "<text x=\"50\" y=\"73\" text-anchor=\"middle\" font-family=\"sans-serif\" fill=\"hsl(210, 10%, 53%)\" font-size=\"$textSize\">" . strtoupper($extension) . '</text>';
-
-        return str_replace('<!-- EXT -->', $textNode, $svg);
+        return Html::appendToTag($svg, $textNode);
     }
 }
