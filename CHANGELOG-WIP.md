@@ -61,4 +61,5 @@
 - When `content` table columns are renamed, if an existing column with the same name already exists, the original column data is now backed up into a new table and then deleted from the `content` table. ([#13025](https://github.com/craftcms/cms/pull/13025))
 - Plain Text and Table fields no longer convert emoji to shortcodes on PostgreSQL.
 - Fixed a bug where Plain Text and Table fields were converting posted shortcode-looking strings to emoji. ([#12935](https://github.com/craftcms/cms/issues/12935))
+- Fixed a bug where `craft\elements\Asset::getUrl()` was returning invalid URLs for GIF and SVG assets within filesystems without base URLs, if the `transformGifs` or `transformSvgs` config settings were disabled. ([#13306](https://github.com/craftcms/cms/issues/13306)) 
 - Updated Selectize to 0.15.2. ([#13273](https://github.com/craftcms/cms/discussions/13273))
