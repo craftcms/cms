@@ -11,6 +11,7 @@ use craft\web\AssetBundle;
 use craft\web\assets\elementresizedetector\ElementResizeDetectorAsset;
 use craft\web\assets\jquerytouchevents\JqueryTouchEventsAsset;
 use craft\web\assets\velocity\VelocityAsset;
+use craft\web\View;
 use yii\web\JqueryAsset;
 
 /**
@@ -36,5 +37,27 @@ class GarnishAsset extends AssetBundle
         ];
 
         parent::init();
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function registerAssetFiles($view): void
+    {
+        parent::registerAssetFiles($view);
+
+        if ($view instanceof View) {
+            $this->_registerTranslations($view);
+        }
+    }
+
+    /**
+     * @param View $view
+     */
+    private function _registerTranslations(View $view): void
+    {
+        $view->registerTranslations('app', [
+            'Limit set on the field prevents selecting all.',
+        ]);
     }
 }

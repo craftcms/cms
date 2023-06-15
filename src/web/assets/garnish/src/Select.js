@@ -133,15 +133,18 @@ export default Base.extend(
 
       this.first = 0;
       // get last index for select all
-      this.last = this._getLastIndexForSelectAll();
+      let last = this._getLastIndexForSelectAll();
+      if (last !== null) {
+        this.last = last;
 
-      this.$first = this.$items.eq(this.first);
-      this.$last = this.$items.eq(this.last);
+        this.$first = this.$items.eq(this.first);
+        this.$last = this.$items.eq(this.last);
 
-      let sliceFrom = this.first;
-      let sliceTo = this.last + 1;
+        let sliceFrom = this.first;
+        let sliceTo = this.last + 1;
 
-      this._selectItems(this.$items.slice(sliceFrom, sliceTo));
+        this._selectItems(this.$items.slice(sliceFrom, sliceTo));
+      }
     },
 
     /**
@@ -1100,7 +1103,7 @@ export default Base.extend(
       const selectedCount = this._getSelectedCount();
       const selectedBranchRootElementIds =
         this._getSelectedBranchRootElementIds();
-      let last;
+      let last = null;
 
       // if multiSelect and branchLimit are not specified - do what we used to do
       if (this.multiSelectLimit === null && this.branchLimit === null) {
@@ -1114,9 +1117,10 @@ export default Base.extend(
           if (this.$items.length <= limit) {
             last = this.$items.length - 1;
           } else {
-            // select "all" up to the limit
+            Craft.cp.displayNotice(
+              Craft.t('app', 'Limit set on the field prevents selecting all.')
+            );
             this.deselectAll();
-            last = limit - 1;
           }
         }
 
@@ -1131,10 +1135,10 @@ export default Base.extend(
           if ($branchRootItems.length <= limit) {
             last = this.$items.length - 1;
           } else {
-            // select "all" up to the limit;
-            // the limit is last top-level item past the limit minus 1
+            Craft.cp.displayNotice(
+              Craft.t('app', 'Limit set on the field prevents selecting all.')
+            );
             this.deselectAll();
-            last = this.getItemIndex($branchRootItems[limit]) - 1;
           }
         }
       }

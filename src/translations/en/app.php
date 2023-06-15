@@ -826,6 +826,7 @@ return [
     'Licensed' => 'Licensed',
     'Licensing Issues' => 'Licensing Issues',
     'Lightswitch' => 'Lightswitch',
+    'Limit set on the field prevents selecting all.' => 'Limit set on the field prevents selecting all.',
     'Limit the number of selectable category branches.' => 'Limit the number of selectable category branches.',
     'Limit the number of selectable {type} branches.' => 'Limit the number of selectable {type} branches.',
     'Limit' => 'Limit',
