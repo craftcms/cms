@@ -359,7 +359,7 @@ Craft.ui = {
       // Starting a new <optgroup>?
       if (typeof option.optgroup !== 'undefined') {
         $optgroup = $('<optgroup/>', {
-          label: option.label,
+          label: option.optgroup,
         }).appendTo($select);
       } else {
         $('<option/>', {
