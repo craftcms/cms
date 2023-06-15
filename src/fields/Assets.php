@@ -899,7 +899,7 @@ class Assets extends BaseRelationField
 
         // Ensure that the folder exists
         if (!$folder) {
-            if (!$isDynamic && !$createDynamicFolders) {
+            if (!$createDynamicFolders) {
                 throw new InvalidSubpathException($subpath);
             }
 

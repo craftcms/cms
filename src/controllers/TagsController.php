@@ -180,6 +180,8 @@ class TagsController extends Controller
         $tags = Tag::find()
             ->groupId($tagGroupId)
             ->title(Db::escapeParam($search) . '*')
+            ->orderBy(['LENGTH([[title]])' => SORT_ASC])
+            ->limit(5)
             ->all();
 
         $return = [];
