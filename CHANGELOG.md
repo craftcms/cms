@@ -1,5 +1,9 @@
 # Release Notes for Craft CMS 4
 
+## Unreleased
+
+- Fixed a bug where Single entries weren’t getting preloaded for template macros, if the template body wasn‘t rendered. ([#13312](https://github.com/craftcms/cms/issues/13312))
+
 ## 4.4.14 - 2023-06-13
 
 - The `utils/fix-field-layout-uids` command now adds missing field layout component UUIDs.
