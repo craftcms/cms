@@ -477,7 +477,6 @@ JS;
             'isMultiSite' => Craft::$app->getIsMultiSite(),
             'limitAutoSlugsToAscii' => $generalConfig->limitAutoSlugsToAscii,
             'maxUploadSize' => Assets::getMaxUploadSize(),
-            'maxUploadFileSize' => Craft::$app->getConfig()->getGeneral()->maxUploadFileSize,
             'notificationDuration' => (int)($currentUser->getPreference('notificationDuration') ?? 5000),
             'previewIframeResizerOptions' => $this->_previewIframeResizerOptions($generalConfig),
             'primarySiteId' => $primarySite ? (int)$primarySite->id : null,
