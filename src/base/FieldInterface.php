@@ -8,7 +8,6 @@
 namespace craft\base;
 
 use craft\elements\db\ElementQueryInterface;
-use craft\models\FieldGroup;
 use craft\models\GqlSchema;
 use GraphQL\Type\Definition\Type;
 use yii\base\Component as YiiComponent;
@@ -460,13 +459,6 @@ interface FieldInterface extends SavableComponentInterface
      * @param bool|null $isFresh Whether the field is fresh.
      */
     public function setIsFresh(?bool $isFresh = null): void;
-
-    /**
-     * Returns the field’s group.
-     *
-     * @return FieldGroup|null
-     */
-    public function getGroup(): ?FieldGroup;
 
     /**
      * Returns whether the field should be included in the given GraphQL schema.

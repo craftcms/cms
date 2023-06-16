@@ -18,11 +18,6 @@ use craft\fieldlayoutelements\CustomField;
 trait FieldTrait
 {
     /**
-     * @var int|null The field’s group’s ID
-     */
-    public ?int $groupId = null;
-
-    /**
      * @var string|null The field’s name
      */
     public ?string $name = null;
