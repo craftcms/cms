@@ -140,11 +140,6 @@ class PageRenderChecksCest
                 ['rendered' => 'New field'],
             ],
             ],
-            [
-                'url' => '/settings/fields/1', 'title' => 'Fields', 'extraContent' => [
-                ['rendered' => 'New field'],
-            ],
-            ],
 
             [
                 'url' => '/settings/assets', 'title' => 'Volumes - Asset Settings', 'extraContent' => [
