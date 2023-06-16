@@ -371,20 +371,21 @@ class FieldLayout extends Model
     public function getAvailableCustomFields(): array
     {
         if (!isset($this->_availableCustomFields)) {
-            $fields = [];
+            $customFields = [];
 
-            foreach (Craft::$app->getFields()->getAllGroups() as $group) {
-                $groupName = Craft::t('site', $group->name);
-                foreach ($group->getFields() as $field) {
-                    $fields[$groupName][] = Craft::createObject([
-                        'class' => CustomField::class,
-                        'layout' => $this,
-                    ], [$field]);
-                }
+            foreach (Craft::$app->getFields()->getAllFields() as $field) {
+                $customFields[] = Craft::createObject([
+                    'class' => CustomField::class,
+                    'layout' => $this,
+                ], [$field]);
             }
 
             // Allow changes
-            $event = new DefineFieldLayoutCustomFieldsEvent(['fields' => $fields]);
+            $event = new DefineFieldLayoutCustomFieldsEvent([
+                'fields' => [
+                    Craft::t('app', 'Custom Fields') => $customFields,
+                ],
+            ]);
             $this->trigger(self::EVENT_DEFINE_CUSTOM_FIELDS, $event);
 
             $this->_availableCustomFields = $event->fields;

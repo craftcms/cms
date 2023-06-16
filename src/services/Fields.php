@@ -19,7 +19,6 @@ use craft\db\Table;
 use craft\errors\MissingComponentException;
 use craft\events\ConfigEvent;
 use craft\events\FieldEvent;
-use craft\events\FieldGroupEvent;
 use craft\events\FieldLayoutEvent;
 use craft\events\RegisterComponentTypesEvent;
 use craft\fieldlayoutelements\CustomField;
@@ -50,11 +49,9 @@ use craft\helpers\Db;
 use craft\helpers\Json;
 use craft\helpers\ProjectConfig as ProjectConfigHelper;
 use craft\helpers\StringHelper;
-use craft\models\FieldGroup;
 use craft\models\FieldLayout;
 use craft\models\FieldLayoutTab;
 use craft\records\Field as FieldRecord;
-use craft\records\FieldGroup as FieldGroupRecord;
 use craft\records\FieldLayout as FieldLayoutRecord;
 use Throwable;
 use yii\base\Component;
@@ -93,32 +90,6 @@ class Fields extends Component
      * ```
      */
     public const EVENT_REGISTER_FIELD_TYPES = 'registerFieldTypes';
-
-    /**
-     * @event FieldGroupEvent The event that is triggered before a field group is saved.
-     */
-    public const EVENT_BEFORE_SAVE_FIELD_GROUP = 'beforeSaveFieldGroup';
-
-    /**
-     * @event FieldGroupEvent The event that is triggered after a field group is saved.
-     */
-    public const EVENT_AFTER_SAVE_FIELD_GROUP = 'afterSaveFieldGroup';
-
-    /**
-     * @event FieldGroupEvent The event that is triggered before a field group delete is applied to the database.
-     * @since 3.1.0
-     */
-    public const EVENT_BEFORE_APPLY_GROUP_DELETE = 'beforeApplyGroupDelete';
-
-    /**
-     * @event FieldGroupEvent The event that is triggered before a field group is deleted.
-     */
-    public const EVENT_BEFORE_DELETE_FIELD_GROUP = 'beforeDeleteFieldGroup';
-
-    /**
-     * @event FieldGroupEvent The event that is triggered after a field group is deleted.
-     */
-    public const EVENT_AFTER_DELETE_FIELD_GROUP = 'afterDeleteFieldGroup';
 
     /**
      * @event FieldEvent The event that is triggered before a field is saved.
@@ -173,12 +144,6 @@ class Fields extends Component
     public string $fieldContext = 'global';
 
     /**
-     * @var MemoizableArray<FieldGroup>|null
-     * @see _groups()
-     */
-    private ?MemoizableArray $_groups = null;
-
-    /**
      * @var MemoizableArray<FieldInterface>|null
      * @see _fields()
      */
@@ -203,231 +168,8 @@ class Fields extends Component
     public function __serialize()
     {
         $vars = get_object_vars($this);
-        unset($vars['_groups'], $vars['_fields']);
+        unset($vars['_fields']);
         return $vars;
-    }
-
-    // Groups
-    // -------------------------------------------------------------------------
-
-    /**
-     * Returns a memoizable array of all field groups.
-     *
-     * @return MemoizableArray<FieldGroup>
-     */
-    private function _groups(): MemoizableArray
-    {
-        if (!isset($this->_groups)) {
-            $groups = [];
-            foreach ($this->_createGroupQuery()->all() as $result) {
-                $groups[] = new FieldGroup($result);
-            }
-            $this->_groups = new MemoizableArray($groups);
-        }
-
-        return $this->_groups;
-    }
-
-    /**
-     * Returns all field groups.
-     *
-     * @return FieldGroup[] The field groups
-     */
-    public function getAllGroups(): array
-    {
-        return $this->_groups()->all();
-    }
-
-    /**
-     * Returns a field group by its ID.
-     *
-     * @param int $groupId The field group’s ID
-     * @return FieldGroup|null The field group, or null if it doesn’t exist
-     */
-    public function getGroupById(int $groupId): ?FieldGroup
-    {
-        return $this->_groups()->firstWhere('id', $groupId);
-    }
-
-    /**
-     * Returns a field group by its UID.
-     *
-     * @param string $groupUid The field group’s UID
-     * @return FieldGroup|null The field group, or null if it doesn’t exist
-     * @since 3.3.0
-     */
-    public function getGroupByUid(string $groupUid): ?FieldGroup
-    {
-        return $this->_groups()->firstWhere('uid', $groupUid, true);
-    }
-
-    /**
-     * Saves a field group.
-     *
-     * @param FieldGroup $group The field group to be saved
-     * @param bool $runValidation Whether the group should be validated
-     * @return bool Whether the field group was saved successfully
-     */
-    public function saveGroup(FieldGroup $group, bool $runValidation = true): bool
-    {
-        $isNewGroup = !$group->id;
-
-        // Fire a 'beforeSaveFieldGroup' event
-        if ($this->hasEventHandlers(self::EVENT_BEFORE_SAVE_FIELD_GROUP)) {
-            $this->trigger(self::EVENT_BEFORE_SAVE_FIELD_GROUP, new FieldGroupEvent([
-                'group' => $group,
-                'isNew' => $isNewGroup,
-            ]));
-        }
-
-        if ($runValidation && !$group->validate()) {
-            Craft::info('Field group not saved due to validation error.', __METHOD__);
-            return false;
-        }
-
-        if ($isNewGroup) {
-            $group->uid = StringHelper::UUID();
-        }
-
-        $configPath = ProjectConfig::PATH_FIELD_GROUPS . '.' . $group->uid;
-        $configData = $group->getConfig();
-        Craft::$app->getProjectConfig()->set($configPath, $configData, "Save field group “{$group->name}”");
-
-        if ($isNewGroup) {
-            $group->id = Db::idByUid(Table::FIELDGROUPS, $group->uid);
-        }
-
-        return true;
-    }
-
-    /**
-     * Handle field group change
-     *
-     * @param ConfigEvent $event
-     */
-    public function handleChangedGroup(ConfigEvent $event): void
-    {
-        $data = $event->newValue;
-        $uid = $event->tokenMatches[0];
-
-        $groupRecord = $this->_getGroupRecord($uid, true);
-        $isNewGroup = $groupRecord->getIsNewRecord();
-
-        // If this is a new group, set the UID we want.
-        if ($isNewGroup) {
-            $groupRecord->uid = $uid;
-        }
-
-        $groupRecord->name = $data['name'];
-
-        if ($groupRecord->dateDeleted) {
-            $groupRecord->restore();
-        } else {
-            $groupRecord->save(false);
-        }
-
-        // Update caches
-        $this->_groups = null;
-
-        // Fire an 'afterSaveFieldGroup' event
-        if ($this->hasEventHandlers(self::EVENT_AFTER_SAVE_FIELD_GROUP)) {
-            $this->trigger(self::EVENT_AFTER_SAVE_FIELD_GROUP, new FieldGroupEvent([
-                'group' => $this->getGroupById($groupRecord->id),
-                'isNew' => $isNewGroup,
-            ]));
-        }
-    }
-
-    /**
-     * Handle field group getting deleted.
-     *
-     * @param ConfigEvent $event
-     */
-    public function handleDeletedGroup(ConfigEvent $event): void
-    {
-        $uid = $event->tokenMatches[0];
-        $groupRecord = $this->_getGroupRecord($uid);
-
-        if ($groupRecord->getIsNewRecord()) {
-            return;
-        }
-
-        $group = $this->getGroupById($groupRecord->id);
-
-        // Fire a 'beforeApplyGroupDelete' event
-        if ($this->hasEventHandlers(self::EVENT_BEFORE_APPLY_GROUP_DELETE)) {
-            $this->trigger(self::EVENT_BEFORE_APPLY_GROUP_DELETE, new FieldGroupEvent([
-                'group' => $group,
-            ]));
-        }
-
-        Craft::$app->getDb()->createCommand()
-            ->softDelete(Table::FIELDGROUPS, ['id' => $groupRecord->id])
-            ->execute();
-
-        // Update caches
-        $this->_groups = null;
-
-        // Fire an 'afterDeleteFieldGroup' event
-        if ($this->hasEventHandlers(self::EVENT_AFTER_DELETE_FIELD_GROUP)) {
-            $this->trigger(self::EVENT_AFTER_DELETE_FIELD_GROUP, new FieldGroupEvent([
-                'group' => $group,
-            ]));
-        }
-    }
-
-    /**
-     * Deletes a field group by its ID.
-     *
-     * @param int $groupId The field group’s ID
-     * @return bool Whether the field group was deleted successfully
-     */
-    public function deleteGroupById(int $groupId): bool
-    {
-        $group = $this->getGroupById($groupId);
-
-        if (!$group) {
-            return false;
-        }
-
-        return $this->deleteGroup($group);
-    }
-
-    /**
-     * Deletes a field group.
-     *
-     * @param FieldGroup $group The field group
-     * @return bool Whether the field group was deleted successfully
-     */
-    public function deleteGroup(FieldGroup $group): bool
-    {
-        /** @var FieldGroupRecord|null $groupRecord */
-        $groupRecord = FieldGroupRecord::find()
-            ->where(['id' => $group->id])
-            ->with('fields')
-            ->one();
-
-        if (!$groupRecord) {
-            return false;
-        }
-
-        // Fire a 'beforeDeleteFieldGroup' event
-        if ($this->hasEventHandlers(self::EVENT_BEFORE_DELETE_FIELD_GROUP)) {
-            $this->trigger(self::EVENT_BEFORE_DELETE_FIELD_GROUP, new FieldGroupEvent([
-                'group' => $group,
-            ]));
-        }
-
-        // Manually delete the fields (rather than relying on cascade deletes) so we have a chance to delete the
-        // content columns
-        $fields = $this->getFieldsByGroupId($group->id);
-
-        foreach ($fields as $field) {
-            $this->deleteField($field);
-        }
-
-        Craft::$app->getProjectConfig()->remove(ProjectConfig::PATH_FIELD_GROUPS . '.' . $group->uid, "Delete the “{$group->name}” field group");
-        return true;
     }
 
     // Fields
@@ -720,17 +462,6 @@ class Fields extends Component
     }
 
     /**
-     * Returns all the fields in a given group.
-     *
-     * @param int $groupId The field group’s ID
-     * @return FieldInterface[] The fields
-     */
-    public function getFieldsByGroupId(int $groupId): array
-    {
-        return $this->_fields(false)->where('groupId', $groupId)->all();
-    }
-
-    /**
      * Returns the config for the given field.
      *
      * @param FieldInterface $field
@@ -739,7 +470,7 @@ class Fields extends Component
      */
     public function createFieldConfig(FieldInterface $field): array
     {
-        $config = [
+        return [
             'name' => $field->name,
             'handle' => $field->handle,
             'columnSuffix' => $field->columnSuffix,
@@ -750,14 +481,6 @@ class Fields extends Component
             'type' => get_class($field),
             'settings' => ProjectConfigHelper::packAssociativeArrays($field->getSettings()),
         ];
-
-        if ($field->groupId) {
-            $config['fieldGroup'] = $this->getGroupById($field->groupId)->uid;
-        } else {
-            $config['fieldGroup'] = null;
-        }
-
-        return $config;
     }
 
     /**
@@ -1440,19 +1163,11 @@ class Fields extends Component
      */
     public function applyFieldSave(string $fieldUid, array $data, string $context): void
     {
-        $groupUid = $data['fieldGroup'];
-
-        // Ensure we have the field group in the place first
-        if ($groupUid) {
-            Craft::$app->getProjectConfig()->processConfigChanges(ProjectConfig::PATH_FIELD_GROUPS . '.' . $groupUid);
-        }
-
         $db = Craft::$app->getDb();
         $transaction = $db->beginTransaction();
 
         try {
             $fieldRecord = $this->_getFieldRecord($fieldUid);
-            $groupRecord = $groupUid ? $this->_getGroupRecord($groupUid) : null;
             $isNewField = $fieldRecord->getIsNewRecord();
             $oldSettings = $fieldRecord->getOldAttribute('settings');
 
@@ -1470,7 +1185,6 @@ class Fields extends Component
             }
 
             $fieldRecord->uid = $fieldUid;
-            $fieldRecord->groupId = $groupRecord->id ?? null;
             $fieldRecord->name = $data['name'];
             $fieldRecord->handle = $data['handle'];
             $fieldRecord->context = $context;
@@ -1536,24 +1250,6 @@ class Fields extends Component
     }
 
     /**
-     * Returns a Query object prepped for retrieving groups.
-     *
-     * @return Query
-     */
-    private function _createGroupQuery(): Query
-    {
-        return (new Query())
-            ->select([
-                'id',
-                'name',
-                'uid',
-            ])
-            ->from([Table::FIELDGROUPS])
-            ->where(['dateDeleted' => null])
-            ->orderBy(['name' => SORT_ASC]);
-    }
-
-    /**
      * Returns a Query object prepped for retrieving fields.
      *
      * @return Query
@@ -1565,7 +1261,6 @@ class Fields extends Component
                 'fields.id',
                 'fields.dateCreated',
                 'fields.dateUpdated',
-                'fields.groupId',
                 'fields.name',
                 'fields.handle',
                 'fields.context',
@@ -1604,28 +1299,6 @@ class Fields extends Component
         }
 
         return $query;
-    }
-
-    /**
-     * Gets a field group record or creates a new one.
-     *
-     * @param int|string $criteria ID or UID of the field group.
-     * @param bool $withTrashed Whether to include trashed field groups in search
-     * @return FieldGroupRecord
-     */
-    private function _getGroupRecord(int|string $criteria, bool $withTrashed = false): FieldGroupRecord
-    {
-        $query = $withTrashed ? FieldGroupRecord::findWithTrashed() : FieldGroupRecord::find();
-
-        if (is_numeric($criteria)) {
-            $query->where(['id' => $criteria]);
-        } elseif (is_string($criteria)) {
-            $query->where(['uid' => $criteria]);
-        }
-
-        /** @noinspection PhpIncompatibleReturnTypeInspection */
-        /** @var FieldGroupRecord */
-        return $query->one() ?? new FieldGroupRecord();
     }
 
     /**

@@ -22,24 +22,13 @@
 
 {% block content %}
     {{ actionInput('fields/save-field') }}
-    {{ redirectInput('settings/fields/{groupId}') }}
+    {{ redirectInput('settings/fields') }}
     {% if fieldId is defined and fieldId %}
         {{ hiddenInput('fieldId', fieldId) }}
     {% endif %}
 
-    {{ forms.selectField({
-        first: true,
-        label: "Group"|t('app'),
-        instructions: "Which group should this field be displayed in?"|t('app'),
-        id: 'group',
-        name: 'group',
-        options: groupOptions,
-        value: groupId,
-        required: true,
-        errors: field.getErrors('groupId'),
-    }) }}
-
     {{ forms.textField({
+        first: true,
         label: "Name"|t('app'),
         instructions: "What this field will be called in the control panel."|t('app'),
         id: 'name',

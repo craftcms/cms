@@ -9,13 +9,11 @@ namespace craft\records;
 
 use craft\db\ActiveRecord;
 use craft\db\Table;
-use yii\db\ActiveQueryInterface;
 
 /**
  * Class Field record.
  *
  * @property int $id ID
- * @property int $groupId Group ID
  * @property string $name Name
  * @property string $handle Handle
  * @property string $context Context
@@ -26,7 +24,6 @@ use yii\db\ActiveQueryInterface;
  * @property string $translationKeyFormat Translation key format
  * @property string $type Type
  * @property array $settings Settings
- * @property FieldGroup $group Group
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
@@ -73,15 +70,5 @@ class Field extends ActiveRecord
     public static function tableName(): string
     {
         return Table::FIELDS;
-    }
-
-    /**
-     * Returns the field’s group.
-     *
-     * @return ActiveQueryInterface The relational query object.
-     */
-    public function getGroup(): ActiveQueryInterface
-    {
-        return $this->hasOne(FieldGroup::class, ['id' => 'groupId']);
     }
 }

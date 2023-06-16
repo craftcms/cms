@@ -109,7 +109,6 @@ class ProjectConfig extends Component
     public const PATH_ELEMENT_SOURCES = 'elementSources';
     public const PATH_ENTRY_TYPES = 'entryTypes';
     public const PATH_FIELDS = 'fields';
-    public const PATH_FIELD_GROUPS = 'fieldGroups';
     public const PATH_GLOBAL_SETS = 'globalSets';
     public const PATH_FS = 'fs';
     public const PATH_GRAPHQL = 'graphql';
@@ -1174,7 +1173,6 @@ class ProjectConfig extends Component
         $config[self::PATH_ELEMENT_SOURCES] = $this->_getElementSourceData($config[self::PATH_ELEMENT_SOURCES] ?? []);
         $config[self::PATH_ENTRY_TYPES] = $this->_getEntryTypeData();
         $config[self::PATH_FIELDS] = $this->_getFieldData();
-        $config[self::PATH_FIELD_GROUPS] = $this->_getFieldGroupData();
         $config[self::PATH_FS] = $this->_getFsData();
         $config[self::PATH_GLOBAL_SETS] = $this->_getGlobalSetData();
         $config[self::PATH_GRAPHQL] = $this->_getGqlData();
@@ -1887,20 +1885,6 @@ class ProjectConfig extends Component
         $data = [];
         foreach (Craft::$app->getSections()->getAllEntryTypes() as $entryType) {
             $data[$entryType->uid] = $entryType->getConfig();
-        }
-        return $data;
-    }
-
-    /**
-     * Return field data config array.
-     *
-     * @return array
-     */
-    private function _getFieldGroupData(): array
-    {
-        $data = [];
-        foreach (Craft::$app->getFields()->getAllGroups() as $group) {
-            $data[$group->uid] = $group->getConfig();
         }
         return $data;
     }

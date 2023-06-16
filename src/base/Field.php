@@ -19,7 +19,6 @@ use craft\helpers\Db;
 use craft\helpers\ElementHelper;
 use craft\helpers\Html;
 use craft\helpers\StringHelper;
-use craft\models\FieldGroup;
 use craft\models\GqlSchema;
 use craft\records\Field as FieldRecord;
 use craft\validators\HandleValidator;
@@ -295,7 +294,6 @@ abstract class Field extends SavableComponent implements FieldInterface
     public function attributeLabels(): array
     {
         return [
-            'groupId' => Craft::t('app', 'Group'),
             'handle' => Craft::t('app', 'Handle'),
             'name' => Craft::t('app', 'Name'),
         ];
@@ -309,13 +307,6 @@ abstract class Field extends SavableComponent implements FieldInterface
         $rules = parent::defineRules();
 
         $rules[] = [['name', 'handle', 'translationMethod'], 'required'];
-        $rules[] = [['groupId'], 'number', 'integerOnly' => true];
-
-        $rules[] = [
-            ['groupId'],
-            'required',
-            'when' => fn() => $this->context === 'global',
-        ];
 
         $rules[] = [
             ['translationMethod'],
@@ -790,18 +781,6 @@ abstract class Field extends SavableComponent implements FieldInterface
     public function setIsFresh(?bool $isFresh = null): void
     {
         $this->_isFresh = $isFresh;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getGroup(): ?FieldGroup
-    {
-        if (!$this->groupId) {
-            return null;
-        }
-
-        return Craft::$app->getFields()->getGroupById($this->groupId);
     }
 
     /**

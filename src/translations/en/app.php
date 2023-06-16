@@ -1,7 +1,6 @@
 <?php
 
 return [
-    '(Ungrouped)' => '(Ungrouped)',
     '(blank)' => '(blank)',
     '(trial)' => '(trial)',
     '({currencyCode}) {currencySymbol}' => '({currencyCode}) {currencySymbol}',
@@ -141,7 +140,6 @@ return [
     'Are you sure you want to delete this address?' => 'Are you sure you want to delete this address?',
     'Are you sure you want to delete this block type?' => 'Are you sure you want to delete this block type?',
     'Are you sure you want to delete this field?' => 'Are you sure you want to delete this field?',
-    'Are you sure you want to delete this group and all its fields?' => 'Are you sure you want to delete this group and all its fields?',
     'Are you sure you want to delete this group?' => 'Are you sure you want to delete this group?',
     'Are you sure you want to delete this image?' => 'Are you sure you want to delete this image?',
     'Are you sure you want to delete this route?' => 'Are you sure you want to delete this route?',
@@ -437,6 +435,7 @@ return [
     'Current User Condition' => 'Current User Condition',
     'Current' => 'Current',
     'Currently SVG images do not support focal point.' => 'Currently SVG images do not support focal point.',
+    'Custom Fields' => 'Custom Fields',
     'Custom' => 'Custom',
     'Customize sources' => 'Customize sources',
     'Custom…' => 'Custom…',
@@ -1540,7 +1539,6 @@ return [
     'This field’s target subfolder path is invalid: {path}' => 'This field’s target subfolder path is invalid: {path}',
     'This field’s values are used as search keywords.' => 'This field’s values are used as search keywords.',
     'This global set doesn’t have any fields assigned to it in its field layout.' => 'This global set doesn’t have any fields assigned to it in its field layout.',
-    'This group doesn’t have any fields yet.' => 'This group doesn’t have any fields yet.',
     'This is being overridden by the {setting} config setting.' => 'This is being overridden by the {setting} config setting.',
     'This license is for the {name} edition.' => 'This license is for the {name} edition.',
     'This license is tied to another Craft install. Visit {accountLink} to detach it, or <a href="{buyUrl}">buy a new license</a>' => 'This license is tied to another Craft install. Visit {accountLink} to detach it, or <a href="{buyUrl}">buy a new license</a>',
@@ -1778,7 +1776,6 @@ return [
     'Whether validation errors on the related {type} should prevent the source element from being saved.' => 'Whether validation errors on the related {type} should prevent the source element from being saved.',
     'Whether {type} elements should be allowed to relate to themselves.' => 'Whether {type} elements should be allowed to relate to themselves.',
     'Which fields should be visible in the widget?' => 'Which fields should be visible in the widget?',
-    'Which group should this field be displayed in?' => 'Which group should this field be displayed in?',
     'Which group should this site belong to?' => 'Which group should this site belong to?',
     'Which section do you want to pull recent entries from?' => 'Which section do you want to pull recent entries from?',
     'Which section do you want to save entries to?' => 'Which section do you want to save entries to?',
