@@ -11,6 +11,7 @@
 - Field layouts can now override custom fields’ handles.
 - Most custom fields can now be included multiple times within the same field layout. ([#8497](https://github.com/craftcms/cms/discussions/8497))
 - Added support for defining custom locale aliases, via a new `localeAliases` config setting. ([#12705](https://github.com/craftcms/cms/pull/12705))
+- Removed the concept of field groups.
 - `entrify/*` commands now ask if an entry type already exists for the section.
 
 ### Development
@@ -89,8 +90,10 @@
 - Removed `craft\base\ElementInterface::gqlTypeNameByContext()`.
 - Removed `craft\base\ElementInterface::hasContent()`.
 - Removed `craft\base\FieldInterface::getContentColumnType()`. `dbType()` should be implemented instead.
+- Removed `craft\base\FieldInterface::getGroup()`.
 - Removed `craft\base\FieldInterface::hasContentColumn()`. Fields that don’t need to store values in the `elements_sites.content` column should return `null` from `dbType()`.
 - Removed `craft\base\FieldInterface::modifyElementsQuery()`. Fields can customize how their element query params are handled by implementing `queryCondition()`.
+- Removed `craft\base\FieldTrait::$groupId`.
 - Removed `craft\base\FieldTrait::$layoutId`.
 - Removed `craft\base\FieldTrait::$sortOrder`.
 - Removed `craft\base\FieldTrait::$tabId`.
@@ -99,7 +102,9 @@
 - Removed `craft\controllers\Sections::actionEntryTypesIndex()`.
 - Removed `craft\controllers\Sections::actionReorderEntryTypes()`.
 - Removed `craft\controllers\Sections::actionSaveEntryType()`.
+- Removed `craft\db\Table::FIELDGROUPS`.
 - Removed `craft\elements\db\ElementQuery::$contentTable`.
+- Removed `craft\events\FieldGroupEvent`.
 - Removed `craft\fields\Matrix::getBlockTypeFields()`.
 - Removed `craft\helpers\Db::GLUE_AND`, `GLUE_OR`, and `GLUE_NOT`. `craft\db\QueryParam::AND`, `OR`, and `NOT` can be used instead.
 - Removed `craft\helpers\Db::extractGlue()`. `craft\db\QueryParam::extractOperator()` can be used instead.
@@ -110,15 +115,32 @@
 - Removed `craft\models\EntryType::$sectionId`.
 - Removed `craft\models\EntryType::$sortOrder`.
 - Removed `craft\models\EntryType::getSection()`.
+- Removed `craft\models\FieldGroup`.
 - Removed `craft\records\EntryType::getSection()`.
+- Removed `craft\records\Field::getGroup()`.
 - Removed `craft\records\Field::getOldColumnSuffix()`.
+- Removed `craft\records\FieldGroup`.
 - Removed `craft\records\FieldLayout::getFields()`.
 - Removed `craft\records\FieldLayout::getTabs()`.
 - Removed `craft\records\FieldLayoutField`.
 - Removed `craft\records\FieldLayoutTab`.
 - Removed `craft\services\Content`.
+- Removed `craft\services\Fields::EVENT_AFTER_DELETE_FIELD_GROUP`.
+- Removed `craft\services\Fields::EVENT_AFTER_SAVE_FIELD_GROUP`.
+- Removed `craft\services\Fields::EVENT_BEFORE_APPLY_GROUP_DELETE`.
+- Removed `craft\services\Fields::EVENT_BEFORE_DELETE_FIELD_GROUP`.
+- Removed `craft\services\Fields::EVENT_BEFORE_SAVE_FIELD_GROUP`.
+- Removed `craft\services\Fields::deleteGroup()`.
+- Removed `craft\services\Fields::deleteGroupById()`.
+- Removed `craft\services\Fields::getAllGroups()`.
 - Removed `craft\services\Fields::getFieldIdsByLayoutIds()`.
+- Removed `craft\services\Fields::getFieldsByGroupId()`.
+- Removed `craft\services\Fields::getGroupById()`.
+- Removed `craft\services\Fields::getGroupByUid()`.
 - Removed `craft\services\Fields::getLayoutTabsById()`.
+- Removed `craft\services\Fields::handleChangedGroup()`.
+- Removed `craft\services\Fields::handleDeletedGroup()`.
+- Removed `craft\services\Fields::saveGroup()`.
 - Removed `craft\services\Fields::updateColumn()`.
 - Removed `craft\services\Matrix::defineContentTableName()`.
 - Removed `craft\services\Sections::reorderEntryTypes()`.
