@@ -382,7 +382,7 @@ class Install extends Migration
         ]);
         $this->createTable(Table::FIELDS, [
             'id' => $this->primaryKey(),
-            'name' => $this->string()->notNull(),
+            'name' => $this->text()->notNull(),
             'handle' => $this->string(64)->notNull(),
             'context' => $this->string()->notNull()->defaultValue('global'),
             'columnSuffix' => $this->char(8),

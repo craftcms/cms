@@ -306,7 +306,6 @@ abstract class Field extends SavableComponent implements FieldInterface
     {
         $rules = parent::defineRules();
 
-        $rules[] = [['name'], 'string', 'max' => 255];
         $rules[] = [['name', 'handle', 'translationMethod'], 'required'];
 
         $rules[] = [
