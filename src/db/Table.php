@@ -49,7 +49,6 @@ abstract class Table
     public const SYSTEMMESSAGES = '{{%systemmessages}}';
     public const ENTRIES = '{{%entries}}';
     public const ENTRYTYPES = '{{%entrytypes}}';
-    public const FIELDGROUPS = '{{%fieldgroups}}';
     public const FIELDLAYOUTS = '{{%fieldlayouts}}';
     public const FIELDS = '{{%fields}}';
     public const GLOBALSETS = '{{%globalsets}}';

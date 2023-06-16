@@ -110,7 +110,6 @@ class Gc extends Component
         $this->hardDelete([
             Table::CATEGORYGROUPS,
             Table::ENTRYTYPES,
-            Table::FIELDGROUPS,
             Table::SECTIONS,
             Table::TAGGROUPS,
         ]);
