@@ -115,7 +115,6 @@ class ProjectConfig extends Component
     public const PATH_GRAPHQL_PUBLIC_TOKEN = self::PATH_GRAPHQL . '.' . 'publicToken';
     public const PATH_GRAPHQL_SCHEMAS = self::PATH_GRAPHQL . '.' . 'schemas';
     public const PATH_IMAGE_TRANSFORMS = 'imageTransforms';
-    public const PATH_MATRIX_BLOCK_TYPES = 'matrixBlockTypes';
     public const PATH_META_NAMES = 'meta.__names__';
     public const PATH_PLUGINS = 'plugins';
     public const PATH_ROUTES = 'routes';
@@ -452,6 +451,35 @@ class ProjectConfig extends Component
         }
 
         return $source->get($path);
+    }
+
+    /**
+     * Finds all config items that pass a condition, and returns their paths and configs as key/value pairs.
+     *
+     * @param callable $callback
+     * @param bool $fromExternalConfig whether to find config items in the external config
+     * @return array
+     * @since 5.0.0
+     */
+    public function find(callable $callback, bool $fromExternalConfig = false): array
+    {
+        $items = [];
+        $this->findInternal($this->get(null, $fromExternalConfig), $callback, null, $items);
+        return $items;
+    }
+
+    private function findInternal(array $config, callable $callback, ?string $path, array &$items): void
+    {
+        foreach ($config as $key => $item) {
+            if (is_array($item)) {
+                $itemPath = sprintf('%s%s', ($path !== null) ? "$path." : '', $key);
+                if ($callback($item)) {
+                    $items[$itemPath] = $item;
+                } else {
+                    $this->findInternal($item, $callback, $itemPath, $items);
+                }
+            }
+        }
     }
 
     /**
@@ -1173,7 +1201,6 @@ class ProjectConfig extends Component
         $config[self::PATH_GLOBAL_SETS] = $this->_getGlobalSetData();
         $config[self::PATH_GRAPHQL] = $this->_getGqlData();
         $config[self::PATH_IMAGE_TRANSFORMS] = $this->_getTransformData();
-        $config[self::PATH_MATRIX_BLOCK_TYPES] = $this->_getMatrixBlockTypeData();
         $config[self::PATH_PLUGINS] = $this->_getPluginData($config[self::PATH_PLUGINS] ?? []);
         $config[self::PATH_SECTIONS] = $this->_getSectionData();
         $config[self::PATH_SITES] = $this->_getSiteData();
@@ -1916,20 +1943,6 @@ class ProjectConfig extends Component
         $fieldsService = Craft::$app->getFields();
         foreach ($fieldsService->getAllFields('global') as $field) {
             $data[$field->uid] = $fieldsService->createFieldConfig($field);
-        }
-        return $data;
-    }
-
-    /**
-     * Return matrix block type data config array.
-     *
-     * @return array
-     */
-    private function _getMatrixBlockTypeData(): array
-    {
-        $data = [];
-        foreach (Craft::$app->getMatrix()->getAllBlockTypes() as $blockType) {
-            $data[$blockType->uid] = $blockType->getConfig();
         }
         return $data;
     }

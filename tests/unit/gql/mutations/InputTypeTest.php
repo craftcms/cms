@@ -18,9 +18,9 @@ use craft\fields\RadioButtons;
 use craft\gql\GqlEntityRegistry;
 use craft\gql\types\input\File;
 use craft\gql\types\input\Matrix;
+use craft\models\EntryType;
 use craft\models\FieldLayout;
 use craft\models\FieldLayoutTab;
-use craft\models\MatrixBlockType;
 use craft\test\TestCase;
 use GraphQL\Type\Definition\InputType;
 use GraphQL\Type\Definition\ListOfType;
@@ -62,20 +62,20 @@ class InputTypeTest extends TestCase
     /**
      * @dataProvider testMatrixInputDataProvider
      * @param MatrixField $matrixField
-     * @param MatrixBlockType[] $blockTypes
+     * @param EntryType[] $entryTypes
      */
-    public function testMatrixInput(MatrixField $matrixField, array $blockTypes): void
+    public function testMatrixInput(MatrixField $matrixField, array $entryTypes): void
     {
         // Trigger addition to the registry
         Matrix::getType($matrixField);
 
         $fieldTypeName = $matrixField->handle . '_MatrixInput';
         self::assertNotFalse(GqlEntityRegistry::getEntity($fieldTypeName));
-        self::assertNotFalse(GqlEntityRegistry::getEntity($matrixField->handle . '_MatrixBlockContainerInput'));
+        self::assertNotFalse(GqlEntityRegistry::getEntity($matrixField->handle . '_MatrixEntryContainerInput'));
         self::assertNotEmpty(GqlEntityRegistry::getEntity($fieldTypeName)->getFields());
 
-        foreach ($blockTypes as $blockType) {
-            self::assertNotFalse(GqlEntityRegistry::getEntity($matrixField->handle . '_' . $blockType->handle . '_MatrixBlockInput'));
+        foreach ($entryTypes as $entryType) {
+            self::assertNotFalse(GqlEntityRegistry::getEntity($matrixField->handle . '_' . $entryType->handle . '_MatrixEntryInput'));
         }
     }
 
@@ -99,11 +99,11 @@ class InputTypeTest extends TestCase
             'handle' => 'matrixField',
         ]);
 
-        $blockTypes = [];
+        $entryTypes = [];
 
         for ($j = 0; $j < 3; $j++) {
-            $blockType = new MatrixBlockType([
-                'handle' => 'blockType' . ($j + 1),
+            $entryType = new EntryType([
+                'handle' => 'entryType' . ($j + 1),
             ]);
 
             $layoutElements = [];
@@ -118,14 +118,14 @@ class InputTypeTest extends TestCase
             $tab = new FieldLayoutTab();
             $fieldLayout->setTabs([$tab]);
             $tab->setElements($layoutElements);
-            $blockType->setFieldLayout($fieldLayout);
+            $entryType->setFieldLayout($fieldLayout);
 
-            $blockTypes[] = $blockType;
+            $entryTypes[] = $entryType;
         }
 
-        $matrixField->setBlockTypes($blockTypes);
+        $matrixField->setEntryTypes($entryTypes);
 
-        $data[] = [$matrixField, $blockTypes];
+        $data[] = [$matrixField, $entryTypes];
 
         return $data;
     }

@@ -87,8 +87,6 @@ class SlugValidator extends Validator
         } elseif (!$isTemp) {
             if ($originalSlug !== '') {
                 $this->addError($model, $attribute, Craft::t('yii', '{attribute} is invalid.'));
-            } else {
-                $this->addError($model, $attribute, Craft::t('yii', '{attribute} cannot be blank.'));
             }
         }
     }

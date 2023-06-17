@@ -40,7 +40,6 @@ use craft\gql\interfaces\elements\Asset as AssetInterface;
 use craft\gql\interfaces\elements\Category as CategoryInterface;
 use craft\gql\interfaces\elements\Entry as EntryInterface;
 use craft\gql\interfaces\elements\GlobalSet as GlobalSetInterface;
-use craft\gql\interfaces\elements\MatrixBlock as MatrixBlockInterface;
 use craft\gql\interfaces\elements\Tag as TagInterface;
 use craft\gql\interfaces\elements\User as UserInterface;
 use craft\gql\mutations\Asset as AssetMutation;
@@ -1364,7 +1363,6 @@ class Gql extends Component
             AddressInterface::class,
             ElementInterface::class,
             EntryInterface::class,
-            MatrixBlockInterface::class,
             AssetInterface::class,
             UserInterface::class,
             GlobalSetInterface::class,

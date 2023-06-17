@@ -8,30 +8,23 @@
 namespace craft\events;
 
 use craft\base\ElementInterface;
-use craft\elements\MatrixBlock;
-use craft\models\MatrixBlockType;
-use yii\base\Event;
+use craft\elements\Entry;
 
 /**
- * Matrix block types event class.
+ * Class DefineEntryTypesForFieldEvent
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.1.27
+ * @since 5.0.0
  */
-class BlockTypesEvent extends Event
+class DefineEntryTypesForFieldEvent extends DefineEntryTypesEvent
 {
-    /**
-     * @var MatrixBlockType[] The block types that will be available for the current field
-     */
-    public array $blockTypes;
-
     /**
      * @var ElementInterface|null The element that the field is generating an input for.
      */
     public ?ElementInterface $element = null;
 
     /**
-     * @var MatrixBlock[] The current value of the field.
+     * @var Entry[] The current value of the field.
      */
     public array $value;
 }

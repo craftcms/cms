@@ -14,7 +14,7 @@ use craft\fields\Entries;
 use craft\fields\Matrix;
 use craft\gql\ArgumentManager;
 use craft\gql\ElementQueryConditionBuilder;
-use craft\models\MatrixBlockType;
+use craft\models\EntryType;
 use craft\test\TestCase;
 use crafttests\fixtures\GqlSchemasFixture;
 use Exception;
@@ -62,7 +62,7 @@ class ExtractEagerLoadingParameterTest extends TestCase
                         'handle' => 'matrixField',
                         'context' => 'global',
                         'getEagerLoadingGqlConditions' => [],
-                        'getGqlFragmentEntityByName' => $this->make(MatrixBlockType::class, [
+                        'getGqlFragmentEntityByName' => $this->make(EntryType::class, [
                             'getEagerLoadingPrefix' => 'mockedBlockHandle',
                             'getFieldContext' => 'matrix',
                         ]),

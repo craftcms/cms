@@ -12,7 +12,6 @@ use craft\elements\Asset as AssetElement;
 use craft\elements\Category as CategoryElement;
 use craft\elements\Entry as EntryElement;
 use craft\elements\GlobalSet as GlobalSetElement;
-use craft\elements\MatrixBlock as MatrixBlockElement;
 use craft\elements\Tag as TagElement;
 use craft\errors\GqlException;
 use craft\fields\Matrix as MatrixField;
@@ -23,7 +22,6 @@ use craft\gql\GqlEntityRegistry;
 use craft\gql\interfaces\elements\Asset as AssetInterface;
 use craft\gql\interfaces\elements\Category as CategoryInterface;
 use craft\gql\interfaces\elements\Entry as EntryInterface;
-use craft\gql\interfaces\elements\MatrixBlock as MatrixBlockInterface;
 use craft\gql\interfaces\elements\Tag as TagInterface;
 use craft\gql\TypeLoader;
 use craft\gql\types\generators\TableRowType;
@@ -31,7 +29,6 @@ use craft\models\CategoryGroup;
 use craft\models\EntryType;
 use craft\models\FieldLayout;
 use craft\models\GqlSchema;
-use craft\models\MatrixBlockType;
 use craft\models\Section;
 use craft\models\TagGroup;
 use craft\models\Volume;
@@ -127,7 +124,7 @@ class InterfaceAndGeneratorTest extends TestCase
             'matrix',
             [
                 'getAllBlockTypes' => function() {
-                    return $this->mockMatrixBlocks();
+                    return $this->mockMatrixEntries();
                 },
             ]
         );
@@ -208,7 +205,6 @@ class InterfaceAndGeneratorTest extends TestCase
             [EntryInterface::class, fn() => array_map(fn(array $context) => $context['entryType'], $this->mockEntryContexts()), [EntryElement::class, 'gqlTypeName']],
             [CategoryInterface::class, [$this, 'mockCategoryGroups'], [CategoryElement::class, 'gqlTypeName']],
             [TagInterface::class, [$this, 'mockTagGroups'], [TagElement::class, 'gqlTypeName']],
-            [MatrixBlockInterface::class, [$this, 'mockMatrixBlocks'], [MatrixBlockElement::class, 'gqlTypeName']],
         ];
     }
 
@@ -379,12 +375,12 @@ class InterfaceAndGeneratorTest extends TestCase
      * @return array
      * @throws Exception
      */
-    public function mockMatrixBlocks(): array
+    public function mockMatrixEntries(): array
     {
         return [
-            $this->make(MatrixBlockType::class, [
-                'uid' => 'matrixBlock-uid-1',
-                'handle' => 'mockMatrixBlock',
+            $this->make(EntryType::class, [
+                'uid' => 'matrixEntry-uid-1',
+                'handle' => 'mockMatrixEntry',
                 '__call' => fn($name) => match ($name) {
                     'getCustomFields' => [
                         $this->make(PlainText::class, ['name' => 'Mock Field', 'handle' => 'mockField']),

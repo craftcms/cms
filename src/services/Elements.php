@@ -26,7 +26,6 @@ use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\Entry;
 use craft\elements\GlobalSet;
-use craft\elements\MatrixBlock;
 use craft\elements\Tag;
 use craft\elements\User;
 use craft\errors\ElementNotFoundException;
@@ -2305,7 +2304,6 @@ class Elements extends Component
             Category::class,
             Entry::class,
             GlobalSet::class,
-            MatrixBlock::class,
             Tag::class,
             User::class,
         ];
