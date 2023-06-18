@@ -89,7 +89,7 @@ class ProjectConfigTest extends TestCase
             'getInternalConfig' => new ReadOnlyProjectConfigData($internal),
             'persistInternalConfigValues' => null,
             'removeInternalConfigValuesByPaths' => null,
-            'updateYamlFiles' => true,
+            'writeYamlFiles' => true,
             'updateConfigVersion' => true,
         ];
         $mockConfig = array_merge($mockConfig, $additionalConfig);

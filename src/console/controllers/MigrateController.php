@@ -208,6 +208,10 @@ class MigrateController extends BaseMigrateController
         $projectConfig = Craft::$app->getProjectConfig();
         if ($projectConfig->writeYamlAutomatically && !$projectConfig->getDoesExternalConfigExist()) {
             $projectConfig->regenerateExternalConfig();
+        } elseif ($projectConfig->areChangesPending(force: true)) {
+            // allow project config changes, but don't overwrite the pending changes
+            $projectConfig->readOnly = false;
+            $projectConfig->writeYamlAutomatically = false;
         }
 
         try {

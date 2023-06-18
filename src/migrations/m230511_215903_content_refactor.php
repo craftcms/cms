@@ -42,10 +42,6 @@ class m230511_215903_content_refactor extends BaseContentRefactorMigration
 
         $this->addColumn(Table::CHANGEDFIELDS, 'layoutElementUid', $this->uid()->after('fieldId'));
 
-        $projectConfig = Craft::$app->getProjectConfig();
-        $schemaVersion = $projectConfig->get('system.schemaVersion', true);
-        $updateProjectConfig = version_compare($schemaVersion, '5.0.0', '<');
-
         // update addresses
         $this->updateElements(
             (new Query())->from(Table::ADDRESSES),
@@ -97,8 +93,8 @@ class m230511_215903_content_refactor extends BaseContentRefactorMigration
             }
 
             // if the field is global, drop the contentTable value from its config
-            if ($updateProjectConfig && $field->context === 'global') {
-                $projectConfig->remove(sprintf('%s.%s.settings.contentTable', ProjectConfig::PATH_FIELDS, $field->uid));
+            if ($field->context === 'global') {
+                Craft::$app->getProjectConfig()->remove(sprintf('%s.%s.settings.contentTable', ProjectConfig::PATH_FIELDS, $field->uid));
             }
         }
 

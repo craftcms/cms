@@ -51,7 +51,9 @@ class UpController extends Controller
     public function actionIndex(): int
     {
         try {
-            $pendingChanges = Craft::$app->getProjectConfig()->areChangesPending();
+            $projectConfig = Craft::$app->getProjectConfig();
+            $pendingChanges = $projectConfig->areChangesPending(force: true);
+            $writeYamlAutomatically = $projectConfig->writeYamlAutomatically;
 
             // Craft + plugin migrations
             if ($this->run('migrate/all', ['noContent' => true]) !== ExitCode::OK) {
@@ -59,6 +61,10 @@ class UpController extends Controller
                 throw new OperationAbortedException();
             }
             $this->stdout("\n");
+
+            // Save and reset the project config
+            $projectConfig->saveModifiedConfigData();
+            $projectConfig->reset();
 
             // Project Config
             if ($pendingChanges) {
@@ -78,6 +84,10 @@ class UpController extends Controller
                 throw $e;
             }
             return ExitCode::UNSPECIFIED_ERROR;
+        }
+
+        if ($writeYamlAutomatically) {
+            $projectConfig->writeYamlFiles(true);
         }
 
         return ExitCode::OK;
