@@ -133,6 +133,11 @@
 {% endmacro %}
 
 
+{% macro entryType(config) %}
+    {% include "_includes/forms/entryType" with config only %}
+{% endmacro %}
+
+
 {% macro fs(config) %}
     {% include "_includes/forms/fs" with config only %}
 {% endmacro %}
@@ -350,6 +355,12 @@
         }) %}
     {% endif %}
     {{ _self.field(config, 'template:_includes/forms/timeZone') }}
+{% endmacro %}
+
+
+{% macro entryTypeField(config) %}
+    {% set config = config|merge({id: config.id ?? "entrytype#{random()}"}) %}
+    {{ _self.field(config, 'template:_includes/forms/entryType') }}
 {% endmacro %}
 
 
