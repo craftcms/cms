@@ -22,20 +22,16 @@ class m230616_173810_kill_field_groups extends Migration
         $this->dropTable('{{%fieldgroups}}');
 
         $projectConfig = Craft::$app->getProjectConfig();
-        $schemaVersion = $projectConfig->get('system.schemaVersion', true);
+        $muteEvents = $projectConfig->muteEvents;
+        $projectConfig->muteEvents = true;
 
-        if (version_compare($schemaVersion, '5.0.0.3', '<')) {
-            $muteEvents = $projectConfig->muteEvents;
-            $projectConfig->muteEvents = true;
-
-            $projectConfig->remove('fieldGroups');
-            foreach ($projectConfig->get(ProjectConfig::PATH_FIELDS) ?? [] as $fieldUid => $fieldConfig) {
-                unset($fieldConfig['fieldGroup']);
-                $projectConfig->set(sprintf('%s.%s', ProjectConfig::PATH_FIELDS, $fieldUid), $fieldConfig);
-            }
-
-            $projectConfig->muteEvents = $muteEvents;
+        $projectConfig->remove('fieldGroups');
+        foreach ($projectConfig->get(ProjectConfig::PATH_FIELDS) ?? [] as $fieldUid => $fieldConfig) {
+            unset($fieldConfig['fieldGroup']);
+            $projectConfig->set(sprintf('%s.%s', ProjectConfig::PATH_FIELDS, $fieldUid), $fieldConfig);
         }
+
+        $projectConfig->muteEvents = $muteEvents;
 
         return true;
     }
