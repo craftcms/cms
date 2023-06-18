@@ -227,7 +227,7 @@ class ProjectConfig extends Component
      * project config data, so there’s a chance that the Project Config utility will be a bit misleading.
      * :::
      *
-     * @see updateYamlFiles()
+     * @see flush()
      * @since 3.5.13
      */
     public bool $writeYamlAutomatically = true;
@@ -384,15 +384,27 @@ class ProjectConfig extends Component
      */
     public function init(): void
     {
-        Craft::$app->on(Application::EVENT_AFTER_REQUEST, function() {
-            $this->saveModifiedConfigData();
-        }, null, false);
+        Craft::$app->on(Application::EVENT_AFTER_REQUEST, [$this, 'flush'], append: false);
 
         $this->on(self::EVENT_ADD_ITEM, [$this, 'handleChangeEvent']);
         $this->on(self::EVENT_UPDATE_ITEM, [$this, 'handleChangeEvent']);
         $this->on(self::EVENT_REMOVE_ITEM, [$this, 'handleChangeEvent']);
 
         parent::init();
+    }
+
+    /**
+     * Saves the modified project confgi state and writes out updated YAML files, if needed.
+     *
+     * @since 5.0.0
+     */
+    public function flush(): void
+    {
+        $this->saveModifiedConfigData();
+
+        if ($this->writeYamlAutomatically) {
+            $this->writeYamlFiles();
+        }
     }
 
     /**
@@ -542,7 +554,8 @@ class ProjectConfig extends Component
         // And ensure we save it.
         $this->_saveConfigAfterRequest();
         $this->updateParsedConfigTimesAfterRequest();
-        $this->saveModifiedConfigData(true);
+        $this->saveModifiedConfigData();
+        $this->writeYamlFiles(true);
     }
 
     /**
@@ -636,9 +649,10 @@ class ProjectConfig extends Component
         if ($this->getHadFileWriteIssues() || !$this->getDoesExternalConfigExist()) {
             if ($this->writeYamlAutomatically) {
                 $this->regenerateExternalConfig();
+            } else {
+                $this->saveModifiedConfigData();
             }
 
-            $this->saveModifiedConfigData();
             return false;
         }
 
@@ -726,10 +740,9 @@ class ProjectConfig extends Component
     /**
      * Saves all the config data that has been modified up to now.
      *
-     * @param bool|null $writeExternalConfig Whether to update the external config. Defaults to [[$writeYamlAutomatically]].
      * @throws ErrorException
      */
-    public function saveModifiedConfigData(?bool $writeExternalConfig = null): void
+    public function saveModifiedConfigData(): void
     {
         $this->_processProjectConfigNameChanges();
 
@@ -817,10 +830,6 @@ class ProjectConfig extends Component
                     'changes' => $deltaChanges,
                 ]);
             }
-        }
-
-        if ($this->_updateYaml && ($writeExternalConfig ?? $this->writeYamlAutomatically)) {
-            $this->updateYamlFiles();
         }
     }
 
@@ -1191,7 +1200,7 @@ class ProjectConfig extends Component
 
         if ($this->writeYamlAutomatically) {
             $this->_processProjectConfigNameChanges();
-            $this->updateYamlFiles();
+            $this->writeYamlFiles();
         }
 
         // And now ensure that Project Config doesn't attempt to export the config again
@@ -1485,7 +1494,7 @@ class ProjectConfig extends Component
 
         // Are we too late for EVENT_AFTER_REQUEST?
         if (Craft::$app->state >= Application::STATE_AFTER_REQUEST) {
-            $this->saveModifiedConfigData();
+            $this->flush();
         }
     }
 
@@ -1537,12 +1546,18 @@ class ProjectConfig extends Component
     }
 
     /**
-     * Update the config Yaml files with the buffered changes.
+     * Update the config YAML files with the buffered changes.
      *
+     * @param bool $force Whether to write out the YAML even if there aren’t any new changes
      * @throws Exception if something goes wrong
+     * @since 5.0.0
      */
-    protected function updateYamlFiles(): void
+    public function writeYamlFiles(bool $force = false): void
     {
+        if (!$this->_updateYaml && !$force) {
+            return;
+        }
+
         $config = ProjectConfigHelper::splitConfigIntoComponents($this->getCurrentWorkingConfig()->export());
 
         try {

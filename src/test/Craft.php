@@ -206,7 +206,7 @@ class Craft extends Yii2
                 TestSetup::getSeedProjectConfigData()
             );
 
-            \Craft::$app->getProjectConfig()->saveModifiedConfigData();
+            \Craft::$app->getProjectConfig()->flush();
         } else {
             \Craft::$app->getProjectConfig()->rebuild();
 

@@ -69,6 +69,8 @@
 - Added `craft\services\Gql::defineContentArgumentsForFieldLayouts()`.
 - Added `craft\services\Gql::defineContentArgumentsForFields()`.
 - Added `craft\services\Gql::getOrSetContentArguments()`.
+- Added `craft\services\ProjectConfig::flush()`.
+- Added `craft\services\ProjectConfig::writeYamlFiles()`.
 - Added `craft\web\twig\variables\Cp::getEntryTypeOptions()`.
 - Renamed `craft\base\FieldInterface::valueType()` to `phpType()`.
 - Renamed `craft\web\CpScreenResponseBehavior::$additionalButtons()` and `additionalButtons()` to `$additionalButtonsHtml` and `additionalButtonsHtml()`. ([#13037](https://github.com/craftcms/cms/pull/13037))
@@ -83,6 +85,7 @@
 - `craft\helpers\Db::parseParam()`, `parseDateParam()`, `parseMoneyParam()`, and `parseNumericParam()` now return `null` instead of an empty string if no condition should be applied.
 - `craft\i18n\I18N::getPrimarySiteLocale()` is now deprecated. `craft\models\Site::getLocale()` should be used instead.
 - `craft\i18n\I18N::getPrimarySiteLocaleId()` is now deprecated. `craft\models\Site::$language` should be used instead.
+- `craft\services\ProjectConfig::saveModifiedConfigData()` no longer has a `$writeExternalConfig` argument, and no longer writes out updated project config YAML files.
 - Removed `craft\base\Element::$contentId`.
 - Removed `craft\base\ElementInterface::getContentTable()`.
 - Removed `craft\base\ElementInterface::getFieldColumnPrefix()`.
