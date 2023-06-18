@@ -278,11 +278,6 @@ class ProjectConfig extends Component
     private bool $_updateYaml = false;
 
     /**
-     * @var bool Whether to update the database config data at the end of the request
-     */
-    private bool $_updateDb = false;
-
-    /**
      * @var bool Whether we’re listening for the request end, to update the config parse time caches.
      * @see updateParsedConfigTimes()
      */
@@ -412,7 +407,7 @@ class ProjectConfig extends Component
         $this->_currentWorkingConfig = null;
         $this->_configFileList = [];
         $this->_updateYaml = false;
-        $this->_updateDb = false;
+        $this->_appliedChanges = [];
         $this->_applyingExternalChanges = false;
         $this->_timestampUpdated = false;
 
@@ -687,14 +682,6 @@ class ProjectConfig extends Component
     }
 
     /**
-     * Updates the stored config after the request ends.
-     */
-    public function updateStoredConfigAfterRequest(): void
-    {
-        $this->_updateDb = true;
-    }
-
-    /**
      * Updates cached config file modified times after the request ends.
      */
     public function updateParsedConfigTimesAfterRequest(): void
@@ -746,7 +733,7 @@ class ProjectConfig extends Component
     {
         $this->_processProjectConfigNameChanges();
 
-        if ($this->_updateDb && !empty($this->_appliedChanges)) {
+        if (!empty($this->_appliedChanges)) {
             $deltaChanges = [];
             $db = Craft::$app->getDb();
 
@@ -1209,7 +1196,6 @@ class ProjectConfig extends Component
 
         // And now ensure that Project Config doesn't attempt to export the config again
         $this->_updateYaml = false;
-        $this->_updateDb = true;
 
         $this->readOnly = $readOnly;
         $this->muteEvents = false;

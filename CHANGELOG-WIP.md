@@ -143,6 +143,7 @@
 - Removed `craft\services\Fields::saveGroup()`.
 - Removed `craft\services\Fields::updateColumn()`.
 - Removed `craft\services\Matrix::defineContentTableName()`.
+- Removed `craft\services\ProjectConfig::updateStoredConfigAfterRequest()`.
 - Removed `craft\services\Sections::reorderEntryTypes()`.
 
 ### System
