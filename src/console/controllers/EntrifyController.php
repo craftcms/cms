@@ -24,8 +24,8 @@ use craft\helpers\ArrayHelper;
 use craft\helpers\Db;
 use craft\models\EntryType;
 use craft\models\Section;
+use craft\services\Entries as EntriesService;
 use craft\services\ProjectConfig;
-use craft\services\Sections;
 use craft\services\Structures;
 use yii\base\InvalidConfigException;
 use yii\console\ExitCode;
@@ -115,7 +115,7 @@ class EntrifyController extends Controller
         ) {
             $this->stdout("Let’s create one now, then.\n", Console::FG_YELLOW);
             // Capture the new section handle
-            Event::once(Sections::class, Sections::EVENT_AFTER_SAVE_SECTION, function(SectionEvent $event) {
+            Event::once(Entries::class, EntriesService::EVENT_AFTER_SAVE_SECTION, function(SectionEvent $event) {
                 $this->section = $event->section->handle;
             });
             $this->run('sections/create', [
@@ -314,7 +314,7 @@ class EntrifyController extends Controller
         ) {
             $this->stdout("Let’s create one now, then.\n", Console::FG_YELLOW);
             // Capture the new section handle
-            Event::once(Sections::class, Sections::EVENT_AFTER_SAVE_SECTION, function(SectionEvent $event) {
+            Event::once(Entries::class, EntriesService::EVENT_AFTER_SAVE_SECTION, function(SectionEvent $event) {
                 $this->section = $event->section->handle;
             });
             $this->run('sections/create', [
@@ -453,7 +453,7 @@ class EntrifyController extends Controller
         ) {
             $this->stdout("Let’s create one now, then.\n", Console::FG_YELLOW);
             // Capture the new section handle
-            Event::once(Sections::class, Sections::EVENT_AFTER_SAVE_SECTION, function(SectionEvent $event) {
+            Event::once(Entries::class, EntriesService::EVENT_AFTER_SAVE_SECTION, function(SectionEvent $event) {
                 $this->section = $event->section->handle;
             });
             $this->run('sections/create', [
@@ -546,7 +546,7 @@ class EntrifyController extends Controller
     {
         if (!isset($this->_section)) {
             if ($this->section) {
-                $section = Craft::$app->getSections()->getSectionByHandle($this->section);
+                $section = Craft::$app->getEntries()->getSectionByHandle($this->section);
                 if (!$section) {
                     throw new InvalidConfigException("Invalid section handle: $this->section");
                 }
@@ -562,7 +562,7 @@ class EntrifyController extends Controller
                 if (!$this->interactive) {
                     throw new InvalidConfigException('The --section option is required when this command is run non-interactively.');
                 }
-                $allSections = ArrayHelper::index(Craft::$app->getSections()->getAllSections(), 'handle');
+                $allSections = ArrayHelper::index(Craft::$app->getEntries()->getAllSections(), 'handle');
                 if ($this->_forSingle) {
                     $allSections = array_filter($allSections, fn(Section $section) => $section->type === Section::TYPE_SINGLE);
                 } else {

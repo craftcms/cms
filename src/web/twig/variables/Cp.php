@@ -216,7 +216,7 @@ class Cp extends Component
             ],
         ];
 
-        if (Craft::$app->getSections()->getTotalEditableSections()) {
+        if (Craft::$app->getEntries()->getTotalEditableSections()) {
             $navItems[] = [
                 'label' => Craft::t('app', 'Entries'),
                 'url' => 'entries',
@@ -736,7 +736,7 @@ class Cp extends Component
         $options = array_map(fn(EntryType $entryType) => [
             'label' => $entryType->name,
             'value' => $entryType->handle,
-        ], Craft::$app->getSections()->getAllEntryTypes());
+        ], Craft::$app->getEntries()->getAllEntryTypes());
 
         ArrayHelper::multisort($options, 'label');
 

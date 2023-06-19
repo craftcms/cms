@@ -1847,7 +1847,7 @@ class ProjectConfig extends Component
     private function _getSectionData(): array
     {
         $data = [];
-        foreach (Craft::$app->getSections()->getAllSections() as $section) {
+        foreach (Craft::$app->getEntries()->getAllSections() as $section) {
             $data[$section->uid] = $section->getConfig();
         }
         return $data;
@@ -1884,7 +1884,7 @@ class ProjectConfig extends Component
     private function _getEntryTypeData(): array
     {
         $data = [];
-        foreach (Craft::$app->getSections()->getAllEntryTypes() as $entryType) {
+        foreach (Craft::$app->getEntries()->getAllEntryTypes() as $entryType) {
             $data[$entryType->uid] = $entryType->getConfig();
         }
         return $data;

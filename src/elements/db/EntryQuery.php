@@ -313,7 +313,7 @@ class EntryQuery extends ElementQuery
     public function section(mixed $value): static
     {
         // If the value is a section handle, swap it with the section
-        if (is_string($value) && ($section = Craft::$app->getSections()->getSectionByHandle($value))) {
+        if (is_string($value) && ($section = Craft::$app->getEntries()->getSectionByHandle($value))) {
             $value = $section;
         }
 
@@ -327,7 +327,7 @@ class EntryQuery extends ElementQuery
             }
         } elseif (Db::normalizeParam($value, function($item) {
             if (is_string($item)) {
-                $item = Craft::$app->getSections()->getSectionByHandle($item);
+                $item = Craft::$app->getEntries()->getSectionByHandle($item);
             }
             return $item instanceof Section ? $item->id : null;
         })) {
@@ -420,7 +420,7 @@ class EntryQuery extends ElementQuery
     {
         if (Db::normalizeParam($value, function($item) {
             if (is_string($item)) {
-                $item = Craft::$app->getSections()->getEntryTypesByHandle($item);
+                $item = Craft::$app->getEntries()->getEntryTypesByHandle($item);
             }
             return $item instanceof EntryType ? $item->id : null;
         })) {
@@ -950,7 +950,7 @@ class EntryQuery extends ElementQuery
             throw new QueryAbortedException();
         }
 
-        $sections = Craft::$app->getSections()->getAllSections();
+        $sections = Craft::$app->getEntries()->getAllSections();
 
         if (empty($sections)) {
             return;
@@ -1051,7 +1051,7 @@ class EntryQuery extends ElementQuery
                 !isset($this->structureId) &&
                 count($this->sectionId) === 1
             ) {
-                $section = Craft::$app->getSections()->getSectionById(reset($this->sectionId));
+                $section = Craft::$app->getEntries()->getSectionById(reset($this->sectionId));
                 if ($section && $section->type === Section::TYPE_STRUCTURE) {
                     $this->structureId = $section->structureId;
                 } else {
@@ -1147,7 +1147,7 @@ class EntryQuery extends ElementQuery
     {
         if ($this->typeId || $this->sectionId) {
             $fieldLayouts = [];
-            $sectionsService = Craft::$app->getSections();
+            $sectionsService = Craft::$app->getEntries();
             if ($this->typeId) {
                 foreach ($this->typeId as $entryTypeId) {
                     $entryType = $sectionsService->getEntryTypeById($entryTypeId);

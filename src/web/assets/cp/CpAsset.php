@@ -582,7 +582,7 @@ JS;
     {
         $sections = [];
 
-        foreach (Craft::$app->getSections()->getEditableSections() as $section) {
+        foreach (Craft::$app->getEntries()->getEditableSections() as $section) {
             if ($section->type !== Section::TYPE_SINGLE && $currentUser->can("createEntries:$section->uid")) {
                 $sections[] = [
                     'entryTypes' => $this->_entryTypes($section),

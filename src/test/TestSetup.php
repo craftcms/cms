@@ -45,7 +45,6 @@ use craft\services\ProjectConfig;
 use craft\services\Relations;
 use craft\services\Routes;
 use craft\services\Search;
-use craft\services\Sections;
 use craft\services\Sites;
 use craft\services\Structures;
 use craft\services\SystemMessages;
@@ -598,7 +597,7 @@ class TestSetup
             [Relations::class, ['getRelations', 'relations']],
             [Routes::class, ['getRoutes', 'routes']],
             [Search::class, ['getSearch', 'search']],
-            [Sections::class, ['getSections', 'sections']],
+            [Entries::class, ['getSections', 'sections']],
             [Sites::class, ['getSites', 'sites']],
             [Structures::class, ['getStructures', 'structures']],
             [SystemMessages::class, ['getSystemMessages', 'systemMessages']],

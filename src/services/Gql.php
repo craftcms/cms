@@ -1522,7 +1522,7 @@ class Gql extends Component
         $queryComponents = [];
         $mutationComponents = [];
 
-        foreach (Craft::$app->getSections()->getAllSections() as $section) {
+        foreach (Craft::$app->getEntries()->getAllSections() as $section) {
             $name = Craft::t('site', $section->name);
             $prefix = "sections.$section->uid";
 

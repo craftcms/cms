@@ -1831,7 +1831,7 @@ JS,
 
         $summary = [];
 
-        foreach (Craft::$app->getSections()->getAllSections() as $section) {
+        foreach (Craft::$app->getEntries()->getAllSections() as $section) {
             $entryCount = Entry::find()
                 ->sectionId($section->id)
                 ->authorId($userId)

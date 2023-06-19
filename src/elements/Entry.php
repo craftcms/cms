@@ -204,10 +204,10 @@ class Entry extends Element implements ExpirableElementInterface
     protected static function defineSources(string $context): array
     {
         if ($context === ElementSources::CONTEXT_INDEX) {
-            $sections = Craft::$app->getSections()->getEditableSections();
+            $sections = Craft::$app->getEntries()->getEditableSections();
             $editable = true;
         } else {
-            $sections = Craft::$app->getSections()->getAllSections();
+            $sections = Craft::$app->getEntries()->getAllSections();
             $editable = null;
         }
 
@@ -301,12 +301,12 @@ class Entry extends Element implements ExpirableElementInterface
         // Get all the sections covered by this source
         $sections = [];
         if ($source === '*') {
-            $sections = Craft::$app->getSections()->getAllSections();
+            $sections = Craft::$app->getEntries()->getAllSections();
         } elseif ($source === 'singles') {
-            $sections = Craft::$app->getSections()->getSectionsByType(Section::TYPE_SINGLE);
+            $sections = Craft::$app->getEntries()->getSectionsByType(Section::TYPE_SINGLE);
         } elseif (
             preg_match('/^section:(.+)$/', $source, $matches) &&
-            $section = Craft::$app->getSections()->getSectionByUid($matches[1])
+            $section = Craft::$app->getEntries()->getSectionByUid($matches[1])
         ) {
             $sections = [$section];
         }
@@ -339,9 +339,9 @@ class Entry extends Element implements ExpirableElementInterface
 
         // Get the section we need to check permissions on
         if (preg_match('/^section:(\d+)$/', $source, $matches)) {
-            $section = Craft::$app->getSections()->getSectionById((int)$matches[1]);
+            $section = Craft::$app->getEntries()->getSectionById((int)$matches[1]);
         } elseif (preg_match('/^section:(.+)$/', $source, $matches)) {
-            $section = Craft::$app->getSections()->getSectionByUid($matches[1]);
+            $section = Craft::$app->getEntries()->getSectionByUid($matches[1]);
         } else {
             $section = null;
         }
@@ -444,7 +444,7 @@ class Entry extends Element implements ExpirableElementInterface
             [
                 'label' => Craft::t('app', 'Section'),
                 'orderBy' => function(int $dir, Connection $db) {
-                    $sectionIds = Collection::make(Craft::$app->getSections()->getAllSections())
+                    $sectionIds = Collection::make(Craft::$app->getEntries()->getAllSections())
                         ->sort(fn(Section $a, Section $b) => $dir === SORT_ASC
                             ? $a->name <=> $b->name
                             : $b->name <=> $a->name)
@@ -457,7 +457,7 @@ class Entry extends Element implements ExpirableElementInterface
             [
                 'label' => Craft::t('app', 'Entry Type'),
                 'orderBy' => function(int $dir, Connection $db) {
-                    $entryTypeIds = Collection::make(Craft::$app->getSections()->getAllEntryTypes())
+                    $entryTypeIds = Collection::make(Craft::$app->getEntries()->getAllEntryTypes())
                         ->sort(fn(EntryType $a, EntryType $b) => $dir === SORT_ASC
                             ? $a->name <=> $b->name
                             : $b->name <=> $a->name)
@@ -1027,7 +1027,7 @@ class Entry extends Element implements ExpirableElementInterface
             throw new InvalidConfigException('Entry is missing its section ID');
         }
 
-        if (($section = Craft::$app->getSections()->getSectionById($this->sectionId)) === null) {
+        if (($section = Craft::$app->getEntries()->getSectionById($this->sectionId)) === null) {
             throw new InvalidConfigException('Invalid section ID: ' . $this->sectionId);
         }
 
