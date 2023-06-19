@@ -635,6 +635,13 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
      */
     public function getIsTranslatable(?ElementInterface $element = null): bool
     {
+        /** @phpstan-ignore-next-line */
+        if ($this->propagationMethod === self::PROPAGATION_METHOD_CUSTOM) {
+            $propagationKey = Craft::$app->getView()->renderObjectTemplate($this->propagationKeyFormat, $element);
+
+            return $element === null || $propagationKey !== '';
+        }
+
         return $this->propagationMethod !== self::PROPAGATION_METHOD_ALL;
     }
 
