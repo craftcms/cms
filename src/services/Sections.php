@@ -228,6 +228,37 @@ class Sections extends Component
     }
 
     /**
+     * Returns a Query object prepped for retrieving sections.
+     *
+     * @return Query
+     */
+    private function _createSectionQuery(): Query
+    {
+        return (new Query())
+            ->select([
+                'sections.id',
+                'sections.structureId',
+                'sections.name',
+                'sections.handle',
+                'sections.type',
+                'sections.enableVersioning',
+                'sections.defaultPlacement',
+                'sections.propagationMethod',
+                'sections.previewTargets',
+                'sections.uid',
+                'structures.maxLevels',
+            ])
+            ->leftJoin(['structures' => Table::STRUCTURES], [
+                'and',
+                '[[structures.id]] = [[sections.structureId]]',
+                ['structures.dateDeleted' => null],
+            ])
+            ->from(['sections' => Table::SECTIONS])
+            ->where(['sections.dateDeleted' => null])
+            ->orderBy(['name' => SORT_ASC]);
+    }
+
+    /**
      * Returns all sections.
      *
      * ---
@@ -415,6 +446,28 @@ class Sections extends Component
         }
 
         return $siteSettings;
+    }
+
+    /**
+     * Returns a new section site settings query.
+     *
+     * @return Query
+     */
+    private function _createSectionSiteSettingsQuery(): Query
+    {
+        return (new Query())
+            ->select([
+                'sections_sites.id',
+                'sections_sites.sectionId',
+                'sections_sites.siteId',
+                'sections_sites.enabledByDefault',
+                'sections_sites.hasUrls',
+                'sections_sites.uriFormat',
+                'sections_sites.template',
+            ])
+            ->from(['sections_sites' => Table::SECTIONS_SITES])
+            ->innerJoin(['sites' => Table::SITES], '[[sites.id]] = [[sections_sites.siteId]]')
+            ->orderBy(['sites.sortOrder' => SORT_ASC]);
     }
 
     /**
@@ -764,6 +817,134 @@ class Sections extends Component
     }
 
     /**
+     * Adds existing entries to a newly-created structure, if the section type was just converted to Structure.
+     *
+     * @param SectionRecord $sectionRecord
+     * @throws Exception if reasons
+     * @see saveSection()
+     */
+    private function _populateNewStructure(SectionRecord $sectionRecord): void
+    {
+        // Add all of the entries to the structure
+        $query = Entry::find()
+            ->sectionId($sectionRecord->id)
+            ->drafts(null)
+            ->draftOf(false)
+            ->site('*')
+            ->unique()
+            ->status(null)
+            ->orderBy(['id' => SORT_ASC])
+            ->withStructure(false);
+
+        $structuresService = Craft::$app->getStructures();
+
+        foreach (Db::each($query) as $entry) {
+            /** @var Entry $entry */
+            $structuresService->appendToRoot($sectionRecord->structureId, $entry, Structures::MODE_INSERT);
+        }
+    }
+
+    /**
+     * Ensures that the given Single section has its one and only entry, and returns it.
+     *
+     * @param Section $section
+     * @param array|null $siteSettings
+     * @return Entry The
+     * @throws Exception if reasons
+     * @see saveSection()
+     */
+    private function _ensureSingleEntry(Section $section, ?array $siteSettings = null): Entry
+    {
+        // Get the section's supported sites
+        // ---------------------------------------------------------------------
+
+        if ($siteSettings === null) {
+            $siteSettings = Craft::$app->getProjectConfig()->get(ProjectConfig::PATH_SECTIONS . '.' . $section->uid . '.siteSettings');
+        }
+
+        if (empty($siteSettings)) {
+            throw new Exception('No site settings exist for section ' . $section->id);
+        }
+
+        $sites = ArrayHelper::where(Craft::$app->getSites()->getAllSites(), function(Site $site) use ($siteSettings) {
+            // Only include it if it's one of this section's sites
+            return isset($siteSettings[$site->uid]);
+        }, true, true, false);
+
+        $siteIds = ArrayHelper::getColumn($sites, 'id');
+
+        // Get the section's entry types
+        // ---------------------------------------------------------------------
+
+        $entryTypeIds = ArrayHelper::getColumn($this->getEntryTypesBySectionId($section->id), 'id', false);
+
+        // There should always be at least one entry type by the time this is called
+        if (empty($entryTypeIds)) {
+            throw new Exception('No entry types exist for section ' . $section->id);
+        }
+
+        // Get/save the entry with updated title, slug, and URI format
+        // ---------------------------------------------------------------------
+
+        // If there are any existing entries, find the first one with a valid typeId
+        /** @var Entry|null $entry */
+        $entry = Entry::find()
+            ->typeId($entryTypeIds)
+            ->siteId($siteIds)
+            ->status(null)
+            ->one();
+
+        // Otherwise create a new one
+        if ($entry === null) {
+            // Create one
+            $entry = new Entry();
+            $entry->siteId = $siteIds[0];
+            $entry->sectionId = $section->id;
+            $entry->setTypeId($entryTypeIds[0]);
+            $entry->title = $section->name;
+        }
+
+        // Validate first
+        $entry->setScenario(Element::SCENARIO_ESSENTIALS);
+        $entry->validate();
+
+        // If there are any errors on the URI, re-validate as disabled
+        if ($entry->hasErrors('uri') && $entry->enabled) {
+            $entry->enabled = false;
+            $entry->validate();
+        }
+
+        if (
+            $entry->hasErrors() ||
+            !Craft::$app->getElements()->saveElement($entry, false)
+        ) {
+            throw new Exception("Couldn’t save single entry for section $section->name due to validation errors: " . implode(', ', $entry->getFirstErrors()));
+        }
+
+        // Delete any other entries in the section
+        // ---------------------------------------------------------------------
+
+        $elementsService = Craft::$app->getElements();
+        $otherEntriesQuery = Entry::find()
+            ->sectionId($section->id)
+            ->drafts(null)
+            ->provisionalDrafts(null)
+            ->site('*')
+            ->unique()
+            ->id(['not', $entry->id])
+            ->status(null);
+
+        foreach (Db::each($otherEntriesQuery) as $entryToDelete) {
+            /** @var Entry $entryToDelete */
+            if (!$entryToDelete->getIsDraft() || $entry->canonicalId != $entry->id) {
+                $elementsService->deleteElement($entryToDelete, true);
+            }
+        }
+
+        return $entry;
+    }
+
+    /**
      * Deletes a section by its ID.
      *
      * ---
@@ -908,6 +1089,22 @@ SQL)->execute();
     }
 
     /**
+     * Gets a sections's record by uid.
+     *
+     * @param string $uid
+     * @param bool $withTrashed Whether to include trashed sections in search
+     * @return SectionRecord
+     */
+    private function _getSectionRecord(string $uid, bool $withTrashed = false): SectionRecord
+    {
+        $query = $withTrashed ? SectionRecord::findWithTrashed() : SectionRecord::find();
+        $query->andWhere(['uid' => $uid]);
+        /** @noinspection PhpIncompatibleReturnTypeInspection */
+        /** @var SectionRecord */
+        return $query->one() ?? new SectionRecord();
+    }
+
+    /**
      * Prune a deleted site from section site settings.
      *
      * @param DeleteSiteEvent $event
@@ -999,6 +1196,27 @@ SQL)->execute();
         }
 
         return $this->_entryTypes;
+    }
+
+    /**
+     * @return Query
+     */
+    private function _createEntryTypeQuery(): Query
+    {
+        return (new Query())
+            ->select([
+                'id',
+                'fieldLayoutId',
+                'name',
+                'handle',
+                'hasTitleField',
+                'titleTranslationMethod',
+                'titleTranslationKeyFormat',
+                'titleFormat',
+                'uid',
+            ])
+            ->from([Table::ENTRYTYPES])
+            ->where(['dateDeleted' => null]);
     }
 
     /**
@@ -1361,224 +1579,6 @@ SQL)->execute();
 
         // Invalidate entry caches
         Craft::$app->getElements()->invalidateCachesForElementType(Entry::class);
-    }
-
-    /**
-     * Returns a Query object prepped for retrieving sections.
-     *
-     * @return Query
-     */
-    private function _createSectionQuery(): Query
-    {
-        return (new Query())
-            ->select([
-                'sections.id',
-                'sections.structureId',
-                'sections.name',
-                'sections.handle',
-                'sections.type',
-                'sections.enableVersioning',
-                'sections.defaultPlacement',
-                'sections.propagationMethod',
-                'sections.previewTargets',
-                'sections.uid',
-                'structures.maxLevels',
-            ])
-            ->leftJoin(['structures' => Table::STRUCTURES], [
-                'and',
-                '[[structures.id]] = [[sections.structureId]]',
-                ['structures.dateDeleted' => null],
-            ])
-            ->from(['sections' => Table::SECTIONS])
-            ->where(['sections.dateDeleted' => null])
-            ->orderBy(['name' => SORT_ASC]);
-    }
-
-    /**
-     * Returns a new section site settings query.
-     *
-     * @return Query
-     */
-    private function _createSectionSiteSettingsQuery(): Query
-    {
-        return (new Query())
-            ->select([
-                'sections_sites.id',
-                'sections_sites.sectionId',
-                'sections_sites.siteId',
-                'sections_sites.enabledByDefault',
-                'sections_sites.hasUrls',
-                'sections_sites.uriFormat',
-                'sections_sites.template',
-            ])
-            ->from(['sections_sites' => Table::SECTIONS_SITES])
-            ->innerJoin(['sites' => Table::SITES], '[[sites.id]] = [[sections_sites.siteId]]')
-            ->orderBy(['sites.sortOrder' => SORT_ASC]);
-    }
-
-    /**
-     * Ensures that the given Single section has its one and only entry, and returns it.
-     *
-     * @param Section $section
-     * @param array|null $siteSettings
-     * @return Entry The
-     * @throws Exception if reasons
-     * @see saveSection()
-     */
-    private function _ensureSingleEntry(Section $section, ?array $siteSettings = null): Entry
-    {
-        // Get the section's supported sites
-        // ---------------------------------------------------------------------
-
-        if ($siteSettings === null) {
-            $siteSettings = Craft::$app->getProjectConfig()->get(ProjectConfig::PATH_SECTIONS . '.' . $section->uid . '.siteSettings');
-        }
-
-        if (empty($siteSettings)) {
-            throw new Exception('No site settings exist for section ' . $section->id);
-        }
-
-        $sites = ArrayHelper::where(Craft::$app->getSites()->getAllSites(), function(Site $site) use ($siteSettings) {
-            // Only include it if it's one of this section's sites
-            return isset($siteSettings[$site->uid]);
-        }, true, true, false);
-
-        $siteIds = ArrayHelper::getColumn($sites, 'id');
-
-        // Get the section's entry types
-        // ---------------------------------------------------------------------
-
-        $entryTypeIds = ArrayHelper::getColumn($this->getEntryTypesBySectionId($section->id), 'id', false);
-
-        // There should always be at least one entry type by the time this is called
-        if (empty($entryTypeIds)) {
-            throw new Exception('No entry types exist for section ' . $section->id);
-        }
-
-        // Get/save the entry with updated title, slug, and URI format
-        // ---------------------------------------------------------------------
-
-        // If there are any existing entries, find the first one with a valid typeId
-        /** @var Entry|null $entry */
-        $entry = Entry::find()
-            ->typeId($entryTypeIds)
-            ->siteId($siteIds)
-            ->status(null)
-            ->one();
-
-        // Otherwise create a new one
-        if ($entry === null) {
-            // Create one
-            $entry = new Entry();
-            $entry->siteId = $siteIds[0];
-            $entry->sectionId = $section->id;
-            $entry->setTypeId($entryTypeIds[0]);
-            $entry->title = $section->name;
-        }
-
-        // Validate first
-        $entry->setScenario(Element::SCENARIO_ESSENTIALS);
-        $entry->validate();
-
-        // If there are any errors on the URI, re-validate as disabled
-        if ($entry->hasErrors('uri') && $entry->enabled) {
-            $entry->enabled = false;
-            $entry->validate();
-        }
-
-        if (
-            $entry->hasErrors() ||
-            !Craft::$app->getElements()->saveElement($entry, false)
-        ) {
-            throw new Exception("Couldn’t save single entry for section $section->name due to validation errors: " . implode(', ', $entry->getFirstErrors()));
-        }
-
-        // Delete any other entries in the section
-        // ---------------------------------------------------------------------
-
-        $elementsService = Craft::$app->getElements();
-        $otherEntriesQuery = Entry::find()
-            ->sectionId($section->id)
-            ->drafts(null)
-            ->provisionalDrafts(null)
-            ->site('*')
-            ->unique()
-            ->id(['not', $entry->id])
-            ->status(null);
-
-        foreach (Db::each($otherEntriesQuery) as $entryToDelete) {
-            /** @var Entry $entryToDelete */
-            if (!$entryToDelete->getIsDraft() || $entry->canonicalId != $entry->id) {
-                $elementsService->deleteElement($entryToDelete, true);
-            }
-        }
-
-        return $entry;
-    }
-
-    /**
-     * Adds existing entries to a newly-created structure, if the section type was just converted to Structure.
-     *
-     * @param SectionRecord $sectionRecord
-     * @throws Exception if reasons
-     * @see saveSection()
-     */
-    private function _populateNewStructure(SectionRecord $sectionRecord): void
-    {
-        // Add all of the entries to the structure
-        $query = Entry::find()
-            ->sectionId($sectionRecord->id)
-            ->drafts(null)
-            ->draftOf(false)
-            ->site('*')
-            ->unique()
-            ->status(null)
-            ->orderBy(['id' => SORT_ASC])
-            ->withStructure(false);
-
-        $structuresService = Craft::$app->getStructures();
-
-        foreach (Db::each($query) as $entry) {
-            /** @var Entry $entry */
-            $structuresService->appendToRoot($sectionRecord->structureId, $entry, Structures::MODE_INSERT);
-        }
-    }
-
-    /**
-     * @return Query
-     */
-    private function _createEntryTypeQuery(): Query
-    {
-        return (new Query())
-            ->select([
-                'id',
-                'fieldLayoutId',
-                'name',
-                'handle',
-                'hasTitleField',
-                'titleTranslationMethod',
-                'titleTranslationKeyFormat',
-                'titleFormat',
-                'uid',
-            ])
-            ->from([Table::ENTRYTYPES])
-            ->where(['dateDeleted' => null]);
-    }
-
-    /**
-     * Gets a sections's record by uid.
-     *
-     * @param string $uid
-     * @param bool $withTrashed Whether to include trashed sections in search
-     * @return SectionRecord
-     */
-    private function _getSectionRecord(string $uid, bool $withTrashed = false): SectionRecord
-    {
-        $query = $withTrashed ? SectionRecord::findWithTrashed() : SectionRecord::find();
-        $query->andWhere(['uid' => $uid]);
-        /** @noinspection PhpIncompatibleReturnTypeInspection */
-        /** @var SectionRecord */
-        return $query->one() ?? new SectionRecord();
     }
 
     /**
