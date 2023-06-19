@@ -597,7 +597,6 @@ class TestSetup
             [Relations::class, ['getRelations', 'relations']],
             [Routes::class, ['getRoutes', 'routes']],
             [Search::class, ['getSearch', 'search']],
-            [Entries::class, ['getSections', 'sections']],
             [Sites::class, ['getSites', 'sites']],
             [Structures::class, ['getStructures', 'structures']],
             [SystemMessages::class, ['getSystemMessages', 'systemMessages']],
