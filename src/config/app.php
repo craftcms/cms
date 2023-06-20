@@ -107,9 +107,6 @@ return [
         'search' => [
             'class' => craft\services\Search::class,
         ],
-        'sections' => [
-            'class' => craft\services\Sections::class,
-        ],
         'security' => [
             'class' => craft\services\Security::class,
             'sensitiveKeywords' => [

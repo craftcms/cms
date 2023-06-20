@@ -101,7 +101,7 @@ class Entries extends BaseRelationField
         $sectionIds = [];
         $entryTypeIds = [];
 
-        foreach (Craft::$app->getSections()->getAllSections() as $section) {
+        foreach (Craft::$app->getEntries()->getAllSections() as $section) {
             if (isset($sectionUids[$section->uid])) {
                 $sectionIds[] = $section->id;
                 array_push(

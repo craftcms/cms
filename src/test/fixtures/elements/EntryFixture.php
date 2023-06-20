@@ -38,11 +38,11 @@ abstract class EntryFixture extends BaseElementFixture
     {
         parent::init();
 
-        foreach (Craft::$app->getSections()->getAllSections() as $section) {
+        foreach (Craft::$app->getEntries()->getAllSections() as $section) {
             $this->sectionIds[$section->handle] = $section->id;
             $this->typeIds[$section->handle] = [];
 
-            foreach (Craft::$app->getSections()->getEntryTypesBySectionId($section->id) as $type) {
+            foreach (Craft::$app->getEntries()->getEntryTypesBySectionId($section->id) as $type) {
                 $this->typeIds[$section->handle][$type->handle] = $type->id;
             }
         }

@@ -38,7 +38,7 @@ class Entry extends Mutation
         $createDeleteMutation = false;
         $createDraftMutations = false;
 
-        foreach (Craft::$app->getSections()->getAllSections() as $section) {
+        foreach (Craft::$app->getEntries()->getAllSections() as $section) {
             $scope = "sections.$section->uid";
             $isSingle = $section->type === Section::TYPE_SINGLE;
             $canCreate = !$isSingle && Gql::canSchema($scope, 'create');

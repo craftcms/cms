@@ -60,7 +60,7 @@ class Entry extends ElementResolver
         $sectionUids = array_flip($pairs['sections']);
         $sectionIds = [];
 
-        foreach (Craft::$app->getSections()->getAllSections() as $section) {
+        foreach (Craft::$app->getEntries()->getAllSections() as $section) {
             if (isset($sectionUids[$section->uid])) {
                 $sectionIds[] = $section->id;
             }

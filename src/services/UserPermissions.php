@@ -467,7 +467,7 @@ class UserPermissions extends Component
 
     private function _entryPermissions(array &$permissions): void
     {
-        $sections = Craft::$app->getSections()->getAllSections();
+        $sections = Craft::$app->getEntries()->getAllSections();
 
         if (!$sections) {
             return;

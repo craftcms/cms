@@ -12,7 +12,7 @@ use craft\db\Table;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Db;
 use craft\records\Section;
-use craft\services\Sections;
+use craft\services\Entries;
 use craft\test\ActiveFixture;
 
 /**
@@ -48,8 +48,8 @@ class SectionsFixture extends ActiveFixture
     {
         parent::load();
 
-        $sectionsService = new Sections();
-        Craft::$app->set('sections', $sectionsService);
+        $entriesService = new Entries();
+        Craft::$app->set('entries', $entriesService);
 
         foreach ($this->entryTypeIds as $key => $entryTypeIds) {
             $data = [];

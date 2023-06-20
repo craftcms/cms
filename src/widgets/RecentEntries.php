@@ -93,7 +93,7 @@ class RecentEntries extends Widget
     public function getTitle(): ?string
     {
         if (is_numeric($this->section)) {
-            $section = Craft::$app->getSections()->getSectionById((int)$this->section);
+            $section = Craft::$app->getEntries()->getSectionById((int)$this->section);
 
             if ($section) {
                 $title = Craft::t('app', 'Recent {section} Entries', [
@@ -196,7 +196,7 @@ class RecentEntries extends Widget
     {
         $sectionIds = [];
 
-        foreach (Craft::$app->getSections()->getEditableSections() as $section) {
+        foreach (Craft::$app->getEntries()->getEditableSections() as $section) {
             if ($section->type != Section::TYPE_SINGLE) {
                 $sectionIds[] = $section->id;
             }

@@ -65,7 +65,7 @@ class m230511_215903_content_refactor extends BaseContentRefactorMigration
         }
 
         // update entries
-        foreach (Craft::$app->getSections()->getAllSections() as $section) {
+        foreach (Craft::$app->getEntries()->getAllSections() as $section) {
             foreach ($section->getEntryTypes() as $entryType) {
                 $this->updateElements(
                     (new Query())->from(Table::ENTRIES)->where(['typeId' => $entryType->id]),

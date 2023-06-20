@@ -47,7 +47,7 @@ class SectionsController extends Controller
      */
     public function actionIndex(array $variables = []): Response
     {
-        $variables['sections'] = Craft::$app->getSections()->getAllSections();
+        $variables['sections'] = Craft::$app->getEntries()->getAllSections();
 
         return $this->renderTemplate('settings/sections/_index.twig', $variables);
     }
@@ -63,7 +63,7 @@ class SectionsController extends Controller
      */
     public function actionEditSection(?int $sectionId = null, ?Section $section = null): Response
     {
-        $sectionsService = Craft::$app->getSections();
+        $sectionsService = Craft::$app->getEntries();
 
         $variables = [
             'sectionId' => $sectionId,
@@ -133,7 +133,7 @@ class SectionsController extends Controller
     {
         $this->requirePostRequest();
 
-        $sectionsService = Craft::$app->getSections();
+        $sectionsService = Craft::$app->getEntries();
         $sectionId = $this->request->getBodyParam('sectionId');
         if ($sectionId) {
             $section = $sectionsService->getSectionById($sectionId);
@@ -228,7 +228,7 @@ class SectionsController extends Controller
 
         $sectionId = $this->request->getRequiredBodyParam('id');
 
-        Craft::$app->getSections()->deleteSectionById($sectionId);
+        Craft::$app->getEntries()->deleteSectionById($sectionId);
 
         return $this->asSuccess();
     }

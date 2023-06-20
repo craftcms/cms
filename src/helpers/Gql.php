@@ -580,7 +580,7 @@ class Gql
     {
         $entryTypes = [];
 
-        foreach (Craft::$app->getSections()->getAllSections() as $section) {
+        foreach (Craft::$app->getEntries()->getAllSections() as $section) {
             if (self::isSchemaAwareOf("sections.$section->uid", $schema)) {
                 foreach ($section->getEntryTypes() as $entryType) {
                     if (!isset($entryTypes[$entryType->uid])) {
@@ -602,7 +602,7 @@ class Gql
     public static function getSchemaContainedSections(?GqlSchema $schema = null): array
     {
         return array_filter(
-            Craft::$app->getSections()->getAllSections(),
+            Craft::$app->getEntries()->getAllSections(),
             fn(Section $section) => self::isSchemaAwareOf("sections.$section->uid", $schema),
         );
     }

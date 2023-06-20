@@ -208,7 +208,7 @@ class SectionsController extends Controller
         }
 
         /** @var EntryType[] $allEntryTypes */
-        $allEntryTypes = ArrayHelper::index(Craft::$app->getSections()->getAllEntryTypes(), 'handle');
+        $allEntryTypes = ArrayHelper::index(Craft::$app->getEntries()->getAllEntryTypes(), 'handle');
         if (!empty($allEntryTypes) && $this->confirm('Have you already created an entry type for this section?')) {
             $entryTypeHandle = $this->select("Which entry type should be used?", array_map(
                 fn(EntryType $entryType) => $entryType->name,
@@ -240,14 +240,14 @@ class SectionsController extends Controller
                     $entryType->setFieldLayout($fieldLayout);
                 }
 
-                Craft::$app->getSections()->saveEntryType($entryType);
+                Craft::$app->getEntries()->saveEntryType($entryType);
             });
         }
 
         $section->setEntryTypes([$entryType]);
 
         $this->do('Saving the section', function() use ($section) {
-            if (!Craft::$app->getSections()->saveSection($section)) {
+            if (!Craft::$app->getEntries()->saveSection($section)) {
                 $message = ArrayHelper::firstValue($section->getFirstErrors()) ?? 'Unable to save the section';
                 throw new InvalidConfigException($message);
             }
@@ -265,7 +265,7 @@ class SectionsController extends Controller
      */
     public function actionDelete(string $handle): int
     {
-        $sectionsService = Craft::$app->getSections();
+        $sectionsService = Craft::$app->getEntries();
         $section = $sectionsService->getSectionByHandle($handle);
 
         if (!$section) {

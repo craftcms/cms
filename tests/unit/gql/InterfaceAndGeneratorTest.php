@@ -85,7 +85,7 @@ class InterfaceAndGeneratorTest extends TestCase
 
         $this->tester->mockMethods(
             Craft::$app,
-            'sections',
+            'entries',
             [
                 'getAllSections' => fn() => array_map(fn(array $context) => $context['section'], $contexts),
                 'getAllEntryTypes' => fn() => array_map(fn(array $context) => $context['entryType'], $contexts),

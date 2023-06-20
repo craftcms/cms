@@ -53,7 +53,7 @@ class EntriesController extends BaseEntriesController
             $sectionHandle = $this->request->getRequiredBodyParam('section');
         }
 
-        $section = Craft::$app->getSections()->getSectionByHandle($sectionHandle);
+        $section = Craft::$app->getEntries()->getSectionByHandle($sectionHandle);
         if (!$section) {
             throw new BadRequestHttpException("Invalid section handle: $sectionHandle");
         }

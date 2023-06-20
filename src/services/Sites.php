@@ -919,7 +919,7 @@ class Sites extends Component
         $soloSectionIds = [];
 
         foreach ($sectionIds as $sectionId) {
-            $sectionSiteSettings = Craft::$app->getSections()->getSectionSiteSettings($sectionId);
+            $sectionSiteSettings = Craft::$app->getEntries()->getSectionSiteSettings($sectionId);
 
             if (count($sectionSiteSettings) == 1 && $sectionSiteSettings[0]->siteId == $site->id) {
                 $soloSectionIds[] = $sectionId;
@@ -1022,7 +1022,7 @@ class Sites extends Component
             } else {
                 // Delete those sections
                 foreach ($soloSectionIds as $sectionId) {
-                    Craft::$app->getSections()->deleteSectionById($sectionId);
+                    Craft::$app->getEntries()->deleteSectionById($sectionId);
                 }
             }
         }

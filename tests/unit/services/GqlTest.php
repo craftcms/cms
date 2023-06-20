@@ -31,9 +31,9 @@ use craft\models\Section;
 use craft\models\TagGroup;
 use craft\models\UserGroup;
 use craft\services\Categories;
+use craft\services\Entries;
 use craft\services\Globals;
 use craft\services\Gql;
-use craft\services\Sections;
 use craft\services\Tags;
 use craft\services\UserGroups;
 use craft\services\Volumes;
@@ -301,7 +301,7 @@ class GqlTest extends TestCase
             ],
         ]);
 
-        $sectionService = $this->make(Sections::class, [
+        $entriesService = $this->make(Entries::class, [
             'getAllSections' => [
                 $sectionA,
                 $sectionB,
@@ -360,7 +360,7 @@ class GqlTest extends TestCase
             ],
         ]);
 
-        Craft::$app->set('sections', $sectionService);
+        Craft::$app->set('entries', $entriesService);
         Craft::$app->set('volumes', $volumeService);
         Craft::$app->set('globals', $globalService);
         Craft::$app->set('categories', $categoryService);

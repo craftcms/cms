@@ -99,7 +99,7 @@ class Entry extends StructureElementArguments
         $gqlService = Craft::$app->getGql();
         return $gqlService->getOrSetContentArguments(EntryElement::class, function() use ($gqlService): array {
             $fieldLayouts = [];
-            foreach (Craft::$app->getSections()->getAllSections() as $section) {
+            foreach (Craft::$app->getEntries()->getAllSections() as $section) {
                 if (GqlHelper::isSchemaAwareOf("sections.$section->uid")) {
                     foreach ($section->getEntryTypes() as $entryType) {
                         $fieldLayouts[] = $entryType->getFieldLayout();
