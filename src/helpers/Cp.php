@@ -406,37 +406,49 @@ class Cp
         $showStatus = $showStatus && ($isDraft || $element::hasStatuses());
 
         // Create the thumb/icon image, if there is one
+        $imgHtml = null;
+
         if ($showThumb) {
             $thumbSizePx = $size === self::ELEMENT_SIZE_SMALL ? 34 : 120;
             $thumbUrl = $element->getThumbUrl($thumbSizePx);
-        } else {
-            $thumbSizePx = $thumbUrl = null;
-        }
-
-        if ($thumbUrl !== null) {
-            $imageSize2x = $thumbSizePx * 2;
-            $thumbUrl2x = $element->getThumbUrl($imageSize2x);
-
-            $srcsets = [
-                "$thumbUrl {$thumbSizePx}w",
-                "$thumbUrl2x {$imageSize2x}w",
-            ];
-            $sizesHtml = "{$thumbSizePx}px";
-            $srcsetHtml = implode(', ', $srcsets);
-            $imgHtml = Html::tag('div', '', [
-                'class' => array_filter([
-                    'elementthumb',
-                    $element->getHasCheckeredThumb() ? 'checkered' : null,
-                    $size === self::ELEMENT_SIZE_SMALL && $element->getHasRoundedThumb() ? 'rounded' : null,
-                ]),
-                'data' => [
-                    'sizes' => $sizesHtml,
-                    'srcset' => $srcsetHtml,
-                    'alt' => $element->getThumbAlt(),
-                ],
+            $thumbClass = array_filter([
+                'elementthumb',
+                $size === self::ELEMENT_SIZE_SMALL && $element->getHasRoundedThumb() ? 'rounded' : null,
             ]);
-        } else {
-            $imgHtml = '';
+            if ($thumbUrl !== null) {
+                $imageSize2x = $thumbSizePx * 2;
+                $thumbUrl2x = $element->getThumbUrl($imageSize2x);
+                if ($element->getHasCheckeredThumb()) {
+                    $thumbClass[] = 'checkered';
+                }
+                $srcsets = [
+                    "$thumbUrl {$thumbSizePx}w",
+                    "$thumbUrl2x {$imageSize2x}w",
+                ];
+                $sizesHtml = "{$thumbSizePx}px";
+                $srcsetHtml = implode(', ', $srcsets);
+                $imgHtml = Html::tag('div', '', [
+                    'class' => $thumbClass,
+                    'data' => [
+                        'sizes' => $sizesHtml,
+                        'srcset' => $srcsetHtml,
+                        'alt' => $element->getThumbAlt(),
+                    ],
+                ]);
+            } else {
+                $thumbSvg = $element->getThumbSvg();
+                if ($thumbSvg !== null) {
+                    $thumbSvg = Html::svg($thumbSvg, false, true);
+                    $alt = $element->getThumbAlt();
+                    if ($alt !== null) {
+                        $thumbSvg = Html::prependToTag($thumbSvg, Html::tag('title', Html::encode($alt)));
+                    }
+                    $thumbSvg = Html::modifyTagAttributes($thumbSvg, ['role' => 'img']);
+                    $imgHtml = Html::tag('div', $thumbSvg, [
+                        'class' => $thumbClass,
+                    ]);
+                }
+            }
         }
 
         $title = '';
@@ -487,7 +499,7 @@ class Cp
             $attributes['class'][] = 'hasstatus';
         }
 
-        if ($thumbUrl !== null) {
+        if ($imgHtml !== null) {
             $attributes['class'][] = 'hasthumb';
         }
 
@@ -531,7 +543,9 @@ class Cp
                 ]);
         }
 
-        $innerHtml .= $imgHtml;
+        if ($imgHtml !== null) {
+            $innerHtml .= $imgHtml;
+        }
 
         if ($showLabel) {
             $innerHtml .= '<div class="label">';
