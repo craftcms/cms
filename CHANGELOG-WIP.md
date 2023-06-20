@@ -74,6 +74,7 @@
 - Added `craft\services\ProjectConfig::flush()`.
 - Added `craft\services\ProjectConfig::writeYamlFiles()`.
 - Added `craft\web\twig\variables\Cp::getEntryTypeOptions()`.
+- All of the `craft\services\Sections` members have been moved into `craft\services\Entries`.
 - Renamed `craft\base\FieldInterface::valueType()` to `phpType()`.
 - Renamed `craft\web\CpScreenResponseBehavior::$additionalButtons()` and `additionalButtons()` to `$additionalButtonsHtml` and `additionalButtonsHtml()`. ([#13037](https://github.com/craftcms/cms/pull/13037))
 - Renamed `craft\web\CpScreenResponseBehavior::$content()` and `content()` to `$contentHtml` and `contentHtml()`. ([#13037](https://github.com/craftcms/cms/pull/13037))
