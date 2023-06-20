@@ -48,8 +48,8 @@ class SectionsFixture extends ActiveFixture
     {
         parent::load();
 
-        $sectionsService = new Entries();
-        Craft::$app->set('sections', $sectionsService);
+        $entriesService = new Entries();
+        Craft::$app->set('entries', $entriesService);
 
         foreach ($this->entryTypeIds as $key => $entryTypeIds) {
             $data = [];

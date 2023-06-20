@@ -80,7 +80,7 @@ class CreateMutationsTest extends TestCase
             ],
         ]);
 
-        $this->tester->mockCraftMethods('sections', [
+        $this->tester->mockCraftMethods('entries', [
             'getAllEntryTypes' => [
                 $entryType,
             ],

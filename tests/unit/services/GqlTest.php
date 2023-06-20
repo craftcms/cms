@@ -301,7 +301,7 @@ class GqlTest extends TestCase
             ],
         ]);
 
-        $sectionService = $this->make(Entries::class, [
+        $entriesService = $this->make(Entries::class, [
             'getAllSections' => [
                 $sectionA,
                 $sectionB,
@@ -360,7 +360,7 @@ class GqlTest extends TestCase
             ],
         ]);
 
-        Craft::$app->set('sections', $sectionService);
+        Craft::$app->set('entries', $entriesService);
         Craft::$app->set('volumes', $volumeService);
         Craft::$app->set('globals', $globalService);
         Craft::$app->set('categories', $categoryService);
