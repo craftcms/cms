@@ -109,6 +109,9 @@ class GraphqlController extends Controller
 
         $gqlService = Craft::$app->getGql();
         $schema = $this->_schema($gqlService);
+
+        $this->_enforceSiteAccess($schema);
+
         $query = $operationName = $variables = null;
 
         // Check the body if it's a POST request
@@ -280,6 +283,51 @@ class GraphqlController extends Controller
         }
 
         return $token->getIsValid() ? $token : null;
+    }
+
+    /**
+     * Enforce site access based on used schema.
+     *
+     * @param GqlSchema $schema
+     * @return void
+     * @throws ForbiddenHttpException
+     * @throws \craft\errors\SiteNotFoundException
+     * @since 4.5
+     */
+    private function _enforceSiteAccess(GqlSchema $schema): void
+    {
+        $primarySite = Craft::$app->getSites()->getPrimarySite();
+        $currentSite = Craft::$app->getSites()->getCurrentSite();
+        $allowedSites = GqlHelper::getAllowedSites($schema);
+        $allowedSiteIds = array_map(fn($site) => $site->id, $allowedSites);
+
+        $siteToUse = null;
+
+        // check if schema has access to the current site
+        if (in_array($currentSite->id, $allowedSiteIds)) {
+            $siteToUse = $currentSite->id;
+        } else {
+            // if not, check if it has access to the primary site (if different from the current site)
+            if ($currentSite->id !== $primarySite->id && in_array($primarySite->id, $allowedSiteIds)) {
+                $siteToUse = $primarySite->id;
+            } else {
+                // otherwise, loop through all sites until we find one that the token has access to
+                foreach (Craft::$app->getSites()->getAllSites() as $site) {
+                    if (in_array($site->id, $allowedSiteIds)) {
+                        $siteToUse = $site->id;
+                        break;
+                    }
+                }
+            }
+        }
+
+        // if no accessible site can be found, throw a ForbiddenHttpException
+        if ($siteToUse === null) {
+            throw new ForbiddenHttpException('Schema doesn’t have access to the “' . $currentSite->getName() . '” site.');
+        }
+
+        // set the current site to the one token has access to
+        Craft::$app->getSites()->setCurrentSite($siteToUse);
     }
 
     /**
