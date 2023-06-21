@@ -11,6 +11,7 @@ use Craft;
 use craft\base\ElementInterface;
 use craft\base\FieldInterface;
 use craft\base\FieldLayoutElement;
+use craft\base\FieldLayoutProviderInterface;
 use craft\base\Model;
 use craft\events\CreateFieldLayoutFormEvent;
 use craft\events\DefineFieldLayoutCustomFieldsEvent;
@@ -27,7 +28,6 @@ use craft\helpers\ArrayHelper;
 use craft\helpers\Html;
 use craft\helpers\StringHelper;
 use Generator;
-use yii\base\Component;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
 
@@ -207,10 +207,10 @@ class FieldLayout extends Model
     public string $uid;
 
     /**
-     * @var Component|null The field layout’s owner.
+     * @var FieldLayoutProviderInterface|null The field layout’s provider.
      * @since 4.5.0
      */
-    public ?Component $owner = null;
+    public ?FieldLayoutProviderInterface $provider = null;
 
     /**
      * @var string[]|null Reserved custom field handles
