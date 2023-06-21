@@ -177,7 +177,7 @@ class UpdateController extends Controller
 
         // Run migrations?
         if (!$this->_migrate()) {
-            if ($this->_restoreDb()) {
+            if ($this->restore()) {
                 $this->_revertComposerChanges();
             }
             return ExitCode::UNSPECIFIED_ERROR;
@@ -422,34 +422,6 @@ class UpdateController extends Controller
         } catch (ProcessFailedException $e) {
             $this->stderr('error: ' . $e->getMessage() . PHP_EOL . PHP_EOL, Console::FG_RED);
             $this->stdout('Output:' . PHP_EOL . PHP_EOL . $process->getOutput() . PHP_EOL . PHP_EOL);
-            return false;
-        }
-
-        $this->stdout('done' . PHP_EOL, Console::FG_GREEN);
-        return true;
-    }
-
-    /**
-     * Attempts to restore the database after a migration failure.
-     *
-     * @return bool
-     */
-    private function _restoreDb(): bool
-    {
-        if (
-            !$this->backupPath ||
-            ($this->interactive && !$this->confirm('Restore the database backup?', true))
-        ) {
-            return false;
-        }
-
-        $this->stdout('Restoring the database backup ... ', Console::FG_YELLOW);
-
-        try {
-            Craft::$app->getDb()->restore($this->backupPath);
-        } catch (Throwable $e) {
-            $this->stdout('error: ' . $e->getMessage() . PHP_EOL, Console::FG_RED);
-            $this->stdout('You can manually restore the backup file located at ' . $this->backupPath . PHP_EOL);
             return false;
         }
 
