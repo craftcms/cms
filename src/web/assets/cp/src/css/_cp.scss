@@ -1575,6 +1575,17 @@ li.breadcrumb-toggle-wrapper {
     }
   }
 
+  // if the UI heading is not the first child in the tab, but it looks like it is
+  // because it's preceded by fields which are conditionally hidden
+  // remove the additional padding and top border
+  & > .hidden:first-child {
+    & + h2,
+    & + .hidden:nth-child(1n + 1) + h2 {
+      padding-top: 0;
+      border-top: none;
+    }
+  }
+
   & > hr,
   & > .line-break {
     flex: 4 0 100%;
