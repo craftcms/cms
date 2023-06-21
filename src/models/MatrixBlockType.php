@@ -8,6 +8,7 @@
 namespace craft\models;
 
 use Craft;
+use craft\base\FieldLayoutProviderInterface;
 use craft\base\GqlInlineFragmentInterface;
 use craft\base\Model;
 use craft\behaviors\FieldLayoutBehavior;
@@ -23,7 +24,7 @@ use yii\base\InvalidConfigException;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
-class MatrixBlockType extends Model implements GqlInlineFragmentInterface
+class MatrixBlockType extends Model implements FieldLayoutProviderInterface, GqlInlineFragmentInterface
 {
     /**
      * @var int|string|null ID The block ID. If unsaved, it will be in the format "newX".
@@ -96,6 +97,16 @@ class MatrixBlockType extends Model implements GqlInlineFragmentInterface
     public function __toString(): string
     {
         return (string)$this->handle ?: static::class;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getFieldLayout(): FieldLayout
+    {
+        /** @var FieldLayoutBehavior $behavior */
+        $behavior = $this->getBehavior('fieldLayout');
+        return $behavior->getFieldLayout();
     }
 
     /**
