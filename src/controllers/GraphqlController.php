@@ -292,7 +292,6 @@ class GraphqlController extends Controller
      * @return void
      * @throws ForbiddenHttpException
      * @throws \craft\errors\SiteNotFoundException
-     * @since 4.5
      */
     private function _enforceSiteAccess(GqlSchema $schema): void
     {
