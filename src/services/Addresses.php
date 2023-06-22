@@ -22,6 +22,7 @@ use craft\elements\Address;
 use craft\events\ConfigEvent;
 use craft\events\DefineAddressFieldLabelEvent;
 use craft\events\DefineAddressFieldsEvent;
+use craft\events\DefineAddressSubdivisionsEvent;
 use craft\helpers\ProjectConfig as ProjectConfigHelper;
 use craft\helpers\StringHelper;
 use craft\models\FieldLayout;
@@ -60,6 +61,14 @@ class Addresses extends Component
      * @since 4.3.0
      */
     public const EVENT_DEFINE_FIELD_LABEL = 'defineFieldLabel';
+
+    /**
+     * @event DefineAddressSubdivisionsEvent The event that is triggered when getting subdivisions options for an address field
+     * for a given country code, and optionally administrativeArea and locality.
+     * @see getSubdivisions()
+     * @since 4.5.0
+     */
+    public const EVENT_DEFINE_ADDRESS_SUBDIVISIONS = 'defineAddressSubdivisions';
 
     /**
      * @var CountryRepository
@@ -108,6 +117,32 @@ class Addresses extends Component
     public function getAddressFormatRepository(): AddressFormatRepository
     {
         return $this->_addressFormatRepository;
+    }
+
+    /**
+     * Get subdivisions for a field based on it's parents
+     *
+     * @param $field
+     * @param $parents
+     * @return array
+     * @since 4.5.0
+     */
+    public function getSubdivisions($field, $parents): array
+    {
+        $options = Craft::$app->getAddresses()->getSubdivisionRepository()->getList($parents, Craft::$app->language);
+
+        if ($this->hasEventHandlers(self::EVENT_DEFINE_ADDRESS_SUBDIVISIONS)) {
+            $event = new DefineAddressSubdivisionsEvent([
+                'field' => $field,
+                'parents' => $parents,
+                'subdivisions' => $options,
+            ]);
+            $this->trigger(self::EVENT_DEFINE_ADDRESS_SUBDIVISIONS, $event);
+
+            return $event->subdivisions;
+        }
+
+        return $options;
     }
 
     /**
