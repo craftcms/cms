@@ -45,6 +45,12 @@ class BaseContentRefactorMigration extends Migration
         }
 
         $contentTableSchema = $this->db->getSchema()->getTableSchema($contentTable);
+
+        // make sure the table hasn't already been deleted
+        if (!$contentTableSchema) {
+            return;
+        }
+
         $fieldsByUid = [];
         $fieldColumns = [];
         $flatFieldColumns = [];
