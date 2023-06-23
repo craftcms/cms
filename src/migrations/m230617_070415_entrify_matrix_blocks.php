@@ -201,46 +201,37 @@ SQL,
                 '{{%matrixblocks_owners}}',
             ));
 
-            if ($this->db->getIsMysql()) {
-                $updateTypeSql = sprintf(
-                    <<<SQL
-UPDATE %s AS elements
-SET elements.type = :entryType
-WHERE elements.type = :matrixBlockType 
-SQL,
-                    Table::ELEMENTS,
-                );
+            $this->update(
+                Table::ELEMENTS,
+                ['type' => Entry::class],
+                ['type' => 'craft\elements\MatrixBlock'],
+                updateTimestamp: false,
+            );
 
-                $setTitleSql = sprintf(
+            if ($this->db->getIsMysql()) {
+                $this->execute(sprintf(
                     <<<SQL
-UPDATE %s AS elements_sites
-INNER JOIN %s AS entries ON entries.id = elements_sites.elementId
-SET elements_sites.title = [[elements_sites.elementId]]
-WHERE elements_sites.title IS NULL 
+UPDATE %s AS [[elements_sites]]
+INNER JOIN %s AS [[entries]] ON [[entries.id]] = [[elements_sites.elementId]]
+SET [[elements_sites.title]] = [[elements_sites.elementId]]
+WHERE [[elements_sites.title]] IS NULL 
 SQL,
                     Table::ELEMENTS_SITES,
                     Table::ENTRIES,
-                );
+                ));
             } else {
-                // todo
-                $updateTypeSql = sprintf(
+                $this->execute(sprintf(
                     <<<SQL
-
+UPDATE %s AS [[elements_sites]] 
+SET [[title]] = [[elementId]]
+FROM %s AS [[entries]]
+WHERE [[entries.id]] = [[elements_sites.elementId]] AND
+[[elements_sites.title]] IS NULL
 SQL,
-                );
-
-                $setTitleSql = sprintf(
-                    <<<SQL
-
-SQL,
-                );
+                    Table::ELEMENTS_SITES,
+                    Table::ENTRIES,
+                ));
             }
-
-            $this->execute($updateTypeSql, [
-                ':entryType' => Entry::class,
-                ':matrixBlockType' => 'craft\elements\MatrixBlock',
-            ]);
-            $this->execute($setTitleSql);
         }
 
         // drop the old Matrix tables
