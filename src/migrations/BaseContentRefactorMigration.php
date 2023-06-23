@@ -168,7 +168,7 @@ class BaseContentRefactorMigration extends Migration
             $i = 0;
             foreach ($fieldsByUid as $uid => $field) {
                 $i++;
-                $caseSql .= "WHEN :fieldId$i THEN :uid$i ";
+                $caseSql .= "WHEN [[fieldId]] = :fieldId$i THEN :uid$i ";
                 $params += [
                     ":fieldId$i" => $field->id,
                     ":uid$i" => $uid,
