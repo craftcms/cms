@@ -65,13 +65,11 @@ class GlobalSetType extends Generator implements GeneratorInterface, SingleGener
     {
         $typeName = self::getName($context);
 
-        $contentFieldGqlTypes = self::getContentFields($context);
-
-        $globalSetFields = array_merge(GlobalSetInterface::getFieldDefinitions(), $contentFieldGqlTypes);
-
         return GqlEntityRegistry::getEntity($typeName) ?: GqlEntityRegistry::createEntity($typeName, new GlobalSet([
             'name' => $typeName,
-            'fields' => function() use ($globalSetFields, $typeName) {
+            'fields' => function() use ($context, $typeName) {
+                $contentFieldGqlTypes = self::getContentFields($context);
+                $globalSetFields = array_merge(GlobalSetInterface::getFieldDefinitions(), $contentFieldGqlTypes);
                 return Craft::$app->getGql()->prepareFieldDefinitions($globalSetFields, $typeName);
             },
         ]));

@@ -37,49 +37,46 @@ class Matrix extends InputObjectType
             return $inputType;
         }
 
-        // Array of block types.
-        $blockTypes = $context->getBlockTypes();
-        $blockInputTypes = [];
-
-        // For all the blocktypes
-        foreach ($blockTypes as $blockType) {
-            $fields = $blockType->getCustomFields();
-            $blockTypeFields = [
-                'id' => [
-                    'name' => 'id',
-                    'type' => Type::id(),
-                ],
-            ];
-
-            // Get the field input types
-            foreach ($fields as $field) {
-                /** @var Field $field */
-                $blockTypeFields[$field->handle] = $field->getContentGqlMutationArgumentType();
-            }
-
-            $blockTypeGqlName = $context->handle . '_' . $blockType->handle . '_MatrixBlockInput';
-            $blockInputTypes[$blockType->handle] = [
-                'name' => $blockType->handle,
-                'type' => GqlEntityRegistry::createEntity($blockTypeGqlName, new InputObjectType([
-                    'name' => $blockTypeGqlName,
-                    'fields' => $blockTypeFields,
-                ])),
-            ];
-        }
-
-        // All the different field block types now get wrapped in a container input.
-        // If two different block types are passed, the selected block type to parse is undefined.
-        $blockTypeContainerName = $context->handle . '_MatrixBlockContainerInput';
-        $blockContainerInputType = GqlEntityRegistry::createEntity($blockTypeContainerName, new InputObjectType([
-            'name' => $blockTypeContainerName,
-            'fields' => function() use ($blockInputTypes) {
-                return $blockInputTypes;
-            },
-        ]));
-
         return GqlEntityRegistry::createEntity($typeName, new InputObjectType([
             'name' => $typeName,
-            'fields' => function() use ($blockContainerInputType) {
+            'fields' => function() use ($context) {
+                // All the different field block types now get wrapped in a container input.
+                // If two different block types are passed, the selected block type to parse is undefined.
+                $blockTypeContainerName = $context->handle . '_MatrixBlockContainerInput';
+                $blockContainerInputType = GqlEntityRegistry::createEntity($blockTypeContainerName, new InputObjectType([
+                    'name' => $blockTypeContainerName,
+                    'fields' => function() use ($context) {
+                        $blockInputTypes = [];
+
+                        foreach ($context->getBlockTypes() as $blockType) {
+                            $blockTypeGqlName = $context->handle . '_' . $blockType->handle . '_MatrixBlockInput';
+                            $blockInputTypes[$blockType->handle] = [
+                                'name' => $blockType->handle,
+                                'type' => GqlEntityRegistry::createEntity($blockTypeGqlName, new InputObjectType([
+                                    'name' => $blockTypeGqlName,
+                                    'fields' => function() use ($blockType) {
+                                        $blockTypeFields = [
+                                            'id' => [
+                                                'name' => 'id',
+                                                'type' => Type::id(),
+                                            ],
+                                        ];
+
+                                        // Get the field input types
+                                        foreach ($blockType->getCustomFields() as $field) {
+                                            $blockTypeFields[$field->handle] = $field->getContentGqlMutationArgumentType();
+                                        }
+
+                                        return $blockTypeFields;
+                                    },
+                                ])),
+                            ];
+                        }
+
+                        return $blockInputTypes;
+                    },
+                ]));
+
                 return [
                     'sortOrder' => [
                         'name' => 'sortOrder',
