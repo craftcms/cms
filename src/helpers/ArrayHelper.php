@@ -355,23 +355,6 @@ class ArrayHelper extends \yii\helpers\ArrayHelper
     }
 
     /**
-     * Returns the last key in a given array.
-     *
-     * @param array $array
-     * @return string|int|null The last key, whether that is a number (if the array is numerically indexed) or a string, or null if $array isn’t an array, or is empty.
-     * @since 5.0.0
-     */
-    public static function lastKey(array $array): int|string|null
-    {
-        /** @noinspection LoopWhichDoesNotLoopInspection */
-        foreach (array_reverse($array) as $key => $value) {
-            return $key;
-        }
-
-        return null;
-    }
-
-    /**
      * Returns the first value in a given array.
      *
      * @param array $array
