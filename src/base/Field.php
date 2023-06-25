@@ -724,7 +724,7 @@ abstract class Field extends SavableComponent implements FieldInterface
 
         if (is_array($dbType)) {
             // Focus on the primary value by default
-            $jsonPath[] = ArrayHelper::firstKey($dbType);
+            $jsonPath[] = array_key_first($dbType);
             $dbType = reset($dbType);
         }
 

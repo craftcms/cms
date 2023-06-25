@@ -162,7 +162,7 @@ class QuickPost extends Widget
         if ($this->entryType && isset($entryTypes[$this->entryType])) {
             $entryTypeId = $this->entryType;
         } else {
-            $entryTypeId = ArrayHelper::firstKey($entryTypes);
+            $entryTypeId = array_key_first($entryTypes);
         }
 
         $entryType = $entryTypes[$entryTypeId];
