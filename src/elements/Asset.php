@@ -807,7 +807,7 @@ class Asset extends Element
     {
         if (
             is_array($assetQuery->orderBy) &&
-            is_string($firstOrderByCol = ArrayHelper::firstKey($assetQuery->orderBy)) &&
+            is_string($firstOrderByCol = array_key_first($assetQuery->orderBy)) &&
             in_array($firstOrderByCol, ['title', 'filename'])
         ) {
             $sortDir = $assetQuery->orderBy[$firstOrderByCol];
