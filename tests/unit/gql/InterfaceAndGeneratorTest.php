@@ -12,7 +12,6 @@ use craft\elements\Asset as AssetElement;
 use craft\elements\Category as CategoryElement;
 use craft\elements\Entry as EntryElement;
 use craft\elements\GlobalSet as GlobalSetElement;
-use craft\elements\MatrixBlock as MatrixBlockElement;
 use craft\elements\Tag as TagElement;
 use craft\errors\GqlException;
 use craft\fields\Matrix as MatrixField;
@@ -23,7 +22,6 @@ use craft\gql\GqlEntityRegistry;
 use craft\gql\interfaces\elements\Asset as AssetInterface;
 use craft\gql\interfaces\elements\Category as CategoryInterface;
 use craft\gql\interfaces\elements\Entry as EntryInterface;
-use craft\gql\interfaces\elements\MatrixBlock as MatrixBlockInterface;
 use craft\gql\interfaces\elements\Tag as TagInterface;
 use craft\gql\TypeLoader;
 use craft\gql\types\generators\TableRowType;
@@ -208,7 +206,6 @@ class InterfaceAndGeneratorTest extends TestCase
             [EntryInterface::class, fn() => array_map(fn(array $context) => $context['entryType'], $this->mockEntryContexts()), [EntryElement::class, 'gqlTypeName']],
             [CategoryInterface::class, [$this, 'mockCategoryGroups'], [CategoryElement::class, 'gqlTypeName']],
             [TagInterface::class, [$this, 'mockTagGroups'], [TagElement::class, 'gqlTypeName']],
-            [MatrixBlockInterface::class, [$this, 'mockMatrixBlocks'], [MatrixBlockElement::class, 'gqlTypeName']],
         ];
     }
 
