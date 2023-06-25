@@ -571,16 +571,10 @@ class Table extends Field
     {
         $typeName = $this->handle . '_TableRowInput';
 
-        if ($argumentType = GqlEntityRegistry::getEntity($typeName)) {
-            return Type::listOf($argumentType);
-        }
-
-        $argumentType = GqlEntityRegistry::createEntity($typeName, new InputObjectType([
+        return Type::listOf(GqlEntityRegistry::getOrCreate($typeName, fn() => new InputObjectType([
             'name' => $typeName,
             'fields' => fn() => TableRow::prepareRowFieldDefinition($this->columns, false),
-        ]));
-
-        return Type::listOf($argumentType);
+        ])));
     }
 
     /**

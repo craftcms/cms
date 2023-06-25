@@ -51,11 +51,7 @@ class EntryType extends Generator implements GeneratorInterface, SingleGenerator
     {
         $typeName = EntryElement::gqlTypeNameByContext($context);
 
-        if ($createdType = GqlEntityRegistry::getEntity($typeName)) {
-            return $createdType;
-        }
-
-        return GqlEntityRegistry::createEntity($typeName, new Entry([
+        return GqlEntityRegistry::getOrCreate($typeName, fn() => new Entry([
             'name' => $typeName,
             'fields' => function() use ($context, $typeName) {
                 $contentFieldGqlTypes = self::getContentFields($context);

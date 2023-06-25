@@ -43,7 +43,7 @@ class AddressType extends Generator implements GeneratorInterface, SingleGenerat
     {
         $typeName = AddressElement::gqlTypeNameByContext(null);
 
-        return GqlEntityRegistry::getEntity($typeName) ?: GqlEntityRegistry::createEntity($typeName, new Address([
+        return GqlEntityRegistry::getOrCreate($typeName, fn() => new Address([
             'name' => $typeName,
             'fields' => function() use ($context, $typeName) {
                 // Users don't have different types, so the context for a user will be the same every time.

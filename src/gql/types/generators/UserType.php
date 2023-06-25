@@ -42,7 +42,7 @@ class UserType extends Generator implements GeneratorInterface, SingleGeneratorI
     {
         $typeName = UserElement::gqlTypeNameByContext(null);
 
-        return GqlEntityRegistry::getEntity($typeName) ?: GqlEntityRegistry::createEntity($typeName, new User([
+        return GqlEntityRegistry::getOrCreate($typeName, fn() => new User([
             'name' => $typeName,
             'fields' => function() use ($context, $typeName) {
                 // Users don't have different types, so the context for a user will be the same every time.

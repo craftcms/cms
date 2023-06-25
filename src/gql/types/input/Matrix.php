@@ -33,17 +33,13 @@ class Matrix extends InputObjectType
     {
         $typeName = $context->handle . '_MatrixInput';
 
-        if ($inputType = GqlEntityRegistry::getEntity($typeName)) {
-            return $inputType;
-        }
-
-        return GqlEntityRegistry::createEntity($typeName, new InputObjectType([
+        return GqlEntityRegistry::getOrCreate($typeName, fn() => new InputObjectType([
             'name' => $typeName,
             'fields' => function() use ($context) {
                 // All the different field block types now get wrapped in a container input.
                 // If two different block types are passed, the selected block type to parse is undefined.
                 $blockTypeContainerName = $context->handle . '_MatrixBlockContainerInput';
-                $blockContainerInputType = GqlEntityRegistry::createEntity($blockTypeContainerName, new InputObjectType([
+                $blockContainerInputType = GqlEntityRegistry::getOrCreate($blockTypeContainerName, fn() => new InputObjectType([
                     'name' => $blockTypeContainerName,
                     'fields' => function() use ($context) {
                         $blockInputTypes = [];
@@ -52,7 +48,7 @@ class Matrix extends InputObjectType
                             $blockTypeGqlName = $context->handle . '_' . $blockType->handle . '_MatrixBlockInput';
                             $blockInputTypes[$blockType->handle] = [
                                 'name' => $blockType->handle,
-                                'type' => GqlEntityRegistry::createEntity($blockTypeGqlName, new InputObjectType([
+                                'type' => GqlEntityRegistry::getOrCreate($blockTypeGqlName, fn() => new InputObjectType([
                                     'name' => $blockTypeGqlName,
                                     'fields' => function() use ($blockType) {
                                         $blockTypeFields = [
