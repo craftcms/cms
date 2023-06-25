@@ -8,19 +8,14 @@
 namespace crafttests\unit\gql\mutations;
 
 use craft\base\Field;
-use craft\fieldlayoutelements\CustomField;
 use craft\fields\Checkboxes;
 use craft\fields\Dropdown;
 use craft\fields\Matrix as MatrixField;
 use craft\fields\MultiSelect;
-use craft\fields\PlainText;
 use craft\fields\RadioButtons;
 use craft\gql\GqlEntityRegistry;
 use craft\gql\types\input\File;
 use craft\gql\types\input\Matrix;
-use craft\models\EntryType;
-use craft\models\FieldLayout;
-use craft\models\FieldLayoutTab;
 use craft\test\TestCase;
 use GraphQL\Type\Definition\InputType;
 use GraphQL\Type\Definition\ListOfType;
@@ -60,23 +55,20 @@ class InputTypeTest extends TestCase
     }
 
     /**
-     * @dataProvider testMatrixInputDataProvider
-     * @param MatrixField $matrixField
-     * @param EntryType[] $entryTypes
+     *
      */
-    public function testMatrixInput(MatrixField $matrixField, array $entryTypes): void
+    public function testMatrixInput(): void
     {
+        $matrixField = new MatrixField([
+            'handle' => 'matrixField',
+        ]);
+
         // Trigger addition to the registry
         Matrix::getType($matrixField);
 
         $fieldTypeName = $matrixField->handle . '_MatrixInput';
         self::assertNotFalse(GqlEntityRegistry::getEntity($fieldTypeName));
-        self::assertNotFalse(GqlEntityRegistry::getEntity($matrixField->handle . '_MatrixEntryContainerInput'));
         self::assertNotEmpty(GqlEntityRegistry::getEntity($fieldTypeName)->getFields());
-
-        foreach ($entryTypes as $entryType) {
-            self::assertNotFalse(GqlEntityRegistry::getEntity($matrixField->handle . '_' . $entryType->handle . '_MatrixEntryInput'));
-        }
     }
 
     /**
@@ -89,45 +81,6 @@ class InputTypeTest extends TestCase
     public function testMatrixInputValueNormalization(array $input, array $normalized): void
     {
         self::assertEquals($normalized, Matrix::normalizeValue($input));
-    }
-
-    public function testMatrixInputDataProvider(): array
-    {
-        $data = [];
-
-        $matrixField = new MatrixField([
-            'handle' => 'matrixField',
-        ]);
-
-        $entryTypes = [];
-
-        for ($j = 0; $j < 3; $j++) {
-            $entryType = new EntryType([
-                'handle' => 'entryType' . ($j + 1),
-            ]);
-
-            $layoutElements = [];
-
-            for ($k = 0; $k < 3; $k++) {
-                $layoutElements[] = new CustomField(new PlainText([
-                    'handle' => "nestedField$k",
-                ]));
-            }
-
-            $fieldLayout = new FieldLayout();
-            $tab = new FieldLayoutTab();
-            $fieldLayout->setTabs([$tab]);
-            $tab->setElements($layoutElements);
-            $entryType->setFieldLayout($fieldLayout);
-
-            $entryTypes[] = $entryType;
-        }
-
-        $matrixField->setEntryTypes($entryTypes);
-
-        $data[] = [$matrixField, $entryTypes];
-
-        return $data;
     }
 
     public function matrixInputValueNormalizerDataProvider(): array

@@ -40,17 +40,17 @@ class AddressType extends Generator implements GeneratorInterface, SingleGenerat
      */
     public static function generateType(mixed $context): ObjectType
     {
-        $context = $context ?: Craft::$app->getFields()->getLayoutByType(AddressElement::class);
-        $contentFieldGqlTypes = self::getContentFields($context);
-        $addressFields = array_merge(AddressInterface::getFieldDefinitions(), $contentFieldGqlTypes);
-
-        return GqlEntityRegistry::getEntity(AddressElement::GQL_TYPE_NAME)
-            ?: GqlEntityRegistry::createEntity(AddressElement::GQL_TYPE_NAME, new Address([
-                'name' => AddressElement::GQL_TYPE_NAME,
-                'fields' => fn() => Craft::$app->getGql()->prepareFieldDefinitions(
+        return GqlEntityRegistry::getOrCreate(AddressElement::GQL_TYPE_NAME, fn() => new Address([
+            'name' => AddressElement::GQL_TYPE_NAME,
+            'fields' => function() use ($context) {
+                $context ??= Craft::$app->getFields()->getLayoutByType(AddressElement::class);
+                $contentFieldGqlTypes = self::getContentFields($context);
+                $addressFields = array_merge(AddressInterface::getFieldDefinitions(), $contentFieldGqlTypes);
+                return Craft::$app->getGql()->prepareFieldDefinitions(
                     $addressFields,
-                    AddressElement::GQL_TYPE_NAME,
-                ),
-            ]));
+                    AddressElement::GQL_TYPE_NAME
+                );
+            },
+        ]));
     }
 }

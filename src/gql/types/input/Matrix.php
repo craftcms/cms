@@ -33,51 +33,48 @@ class Matrix extends InputObjectType
     {
         $typeName = $context->handle . '_MatrixInput';
 
-        if ($inputType = GqlEntityRegistry::getEntity($typeName)) {
-            return $inputType;
-        }
-
-        $entryTypes = $context->getEntryTypes();
-        $entryInputTypes = [];
-
-        foreach ($entryTypes as $entryType) {
-            $fields = $entryType->getCustomFields();
-            $entryTypeFields = [
-                'id' => [
-                    'name' => 'id',
-                    'type' => Type::id(),
-                ],
-            ];
-
-            // Get the field input types
-            foreach ($fields as $field) {
-                /** @var Field $field */
-                $entryTypeFields[$field->handle] = $field->getContentGqlMutationArgumentType();
-            }
-
-            $entryTypeGqlName = $context->handle . '_' . $entryType->handle . '_MatrixEntryInput';
-            $entryInputTypes[$entryType->handle] = [
-                'name' => $entryType->handle,
-                'type' => GqlEntityRegistry::createEntity($entryTypeGqlName, new InputObjectType([
-                    'name' => $entryTypeGqlName,
-                    'fields' => $entryTypeFields,
-                ])),
-            ];
-        }
-
-        // All the different field entry types now get wrapped in a container input.
-        // If two different entry types are passed, the selected entry type to parse is undefined.
-        $entryTypeContainerName = $context->handle . '_MatrixEntryContainerInput';
-        $entryContainerInputType = GqlEntityRegistry::createEntity($entryTypeContainerName, new InputObjectType([
-            'name' => $entryTypeContainerName,
-            'fields' => function() use ($entryInputTypes) {
-                return $entryInputTypes;
-            },
-        ]));
-
-        return GqlEntityRegistry::createEntity($typeName, new InputObjectType([
+        return GqlEntityRegistry::getOrCreate($typeName, fn() => new InputObjectType([
             'name' => $typeName,
-            'fields' => function() use ($entryContainerInputType) {
+            'fields' => function() use ($context) {
+                $entryTypes = $context->getEntryTypes();
+                $entryInputTypes = [];
+
+                foreach ($entryTypes as $entryType) {
+                    $entryTypeGqlName = $context->handle . '_' . $entryType->handle . '_MatrixEntryInput';
+                    $entryInputTypes[$entryType->handle] = [
+                        'name' => $entryType->handle,
+                        'type' => GqlEntityRegistry::createEntity($entryTypeGqlName, new InputObjectType([
+                            'name' => $entryTypeGqlName,
+                            'fields' => function() use ($entryType) {
+                                $entryTypeFields = [
+                                    'id' => [
+                                        'name' => 'id',
+                                        'type' => Type::id(),
+                                    ],
+                                ];
+
+                                // Get the field input types
+                                foreach ($entryType->getCustomFields() as $field) {
+                                    /** @var Field $field */
+                                    $entryTypeFields[$field->handle] = $field->getContentGqlMutationArgumentType();
+                                }
+
+                                return $entryTypeFields;
+                            },
+                        ])),
+                    ];
+                }
+
+                // All the different field entry types now get wrapped in a container input.
+                // If two different entry types are passed, the selected entry type to parse is undefined.
+                $entryTypeContainerName = $context->handle . '_MatrixEntryContainerInput';
+                $entryContainerInputType = GqlEntityRegistry::createEntity($entryTypeContainerName, new InputObjectType([
+                    'name' => $entryTypeContainerName,
+                    'fields' => function() use ($entryInputTypes) {
+                        return $entryInputTypes;
+                    },
+                ]));
+
                 return [
                     'sortOrder' => [
                         'name' => 'sortOrder',
