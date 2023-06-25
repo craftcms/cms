@@ -61,7 +61,7 @@ use yii\db\Expression;
 class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragmentFieldInterface
 {
     /**
-     * @event SectionEvent The event that is triggered before a section is saved.
+     * @event BlockTypesEvent The event that is triggered when setting the field’s block types
      * @since 3.1.27
      */
     public const EVENT_SET_FIELD_BLOCK_TYPES = 'setFieldBlockTypes';
