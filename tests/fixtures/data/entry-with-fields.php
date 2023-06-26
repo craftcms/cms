@@ -6,7 +6,7 @@ return [
         'sectionId' => '1000',
         'typeId' => '1000',
         'title' => 'Theories of matrix',
-        'fieldLayoutType' => 'field_layout_with_matrix_and_normal_fields',
+        'fieldLayoutUid' => 'field-layout-1002----------------uid',
         'plainTextField' => "You think it's code you're testing now?",
         'matrixFirst' => [
             'new1' => [

@@ -8,7 +8,7 @@ return [
         'sectionId' => '1006',
         'typeId' => '1006',
         'title' => 'Matrix with relational field',
-        'fieldLayoutType' => 'field_layout_with_matrix_with_relational_field',
+        'fieldLayoutUid' => 'field-layout-1003----------------uid',
         'plainTextField2' => "You think it's code you're testing now?",
         'matrixSecond' => [
             'new1' => [

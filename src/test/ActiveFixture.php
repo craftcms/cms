@@ -8,6 +8,7 @@
 namespace craft\test;
 
 use Craft;
+use craft\helpers\ArrayHelper;
 use yii\base\InvalidArgumentException;
 use yii\db\ActiveRecord;
 use yii\db\TableSchema;
@@ -44,16 +45,22 @@ class ActiveFixture extends YiiActiveFixture
             $correctRow = $row;
 
             // Set the field layout if it exists.
+            $fieldLayout = null;
             if (isset($row['fieldLayoutType'])) {
-                $fieldLayoutType = $row['fieldLayoutType'];
-                unset($row['fieldLayoutType']);
-
+                $fieldLayoutType = ArrayHelper::remove($row, 'fieldLayoutType');
                 $fieldLayout = Craft::$app->getFields()->getLayoutByType($fieldLayoutType);
-                if ($fieldLayout->id) {
-                    $row['fieldLayoutId'] = $fieldLayout->id;
-                } else {
+                if ($fieldLayout->id === null) {
                     codecept_debug("Field layout with type: $fieldLayoutType could not be found");
                 }
+            } elseif (isset($row['fieldLayoutUid'])) {
+                $fieldLayoutUid = ArrayHelper::remove($row, 'fieldLayoutUid');
+                $fieldLayout = Craft::$app->getFields()->getLayoutByUid($fieldLayoutUid);
+                if (!$fieldLayout) {
+                    codecept_debug("Field layout with UUID: $fieldLayoutUid could not be found");
+                }
+            }
+            if ($fieldLayout?->id !== null) {
+                $row['fieldLayoutId'] = $fieldLayout->id;
             }
 
             foreach ($row as $columnName => $rowValue) {
