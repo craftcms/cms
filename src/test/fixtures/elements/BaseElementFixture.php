@@ -65,14 +65,22 @@ abstract class BaseElementFixture extends DbFixture
             $dateDeleted = ArrayHelper::remove($data, 'dateDeleted');
 
             // Set the field layout
-            $fieldLayoutType = ArrayHelper::remove($data, 'fieldLayoutType');
-            if ($fieldLayoutType) {
+            $fieldLayout = null;
+            if (isset($data['fieldLayoutType'])) {
+                $fieldLayoutType = ArrayHelper::remove($data, 'fieldLayoutType');
                 $fieldLayout = Craft::$app->getFields()->getLayoutByType($fieldLayoutType);
-                if ($fieldLayout->id) {
-                    $element->fieldLayoutId = $fieldLayout->id;
-                } else {
+                if ($fieldLayout->id === null) {
                     codecept_debug("Field layout with type: $fieldLayoutType could not be found");
                 }
+            } elseif (isset($data['fieldLayoutUid'])) {
+                $fieldLayoutUid = ArrayHelper::remove($data, 'fieldLayoutUid');
+                $fieldLayout = Craft::$app->getFields()->getLayoutByUid($fieldLayoutUid);
+                if (!$fieldLayout) {
+                    codecept_debug("Field layout with UUID: $fieldLayoutUid could not be found");
+                }
+            }
+            if ($fieldLayout?->id !== null) {
+                $element->fieldLayoutId = $fieldLayout->id;
             }
 
             $this->populateElement($element, $data);

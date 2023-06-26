@@ -5,6 +5,10 @@
  * @license https://craftcms.github.io/license/
  */
 
+use craft\elements\Asset;
+use craft\elements\Entry;
+use craft\elements\GlobalSet;
+use craft\elements\User;
 use craft\fields\Entries;
 use craft\fields\Matrix;
 use craft\fields\Number;
@@ -29,8 +33,9 @@ return [
         ],
     ],
     [
+        'uid' => 'field-layout-1000----------------uid',
         // Because User elements fetch layout by type
-        'type' => 'craft\elements\User',
+        'type' => User::class,
         'tabs' => [
             [
                 'name' => 'Tab 1',
@@ -46,7 +51,8 @@ return [
         ],
     ],
     [
-        'type' => 'volume_field_layout',
+        'uid' => 'field-layout-1001----------------uid',
+        'type' => Asset::class,
         'tabs' => [
             [
                 'name' => 'Tab 1',
@@ -68,8 +74,8 @@ return [
         ],
     ],
     [
-        'uid' => 'field-layout-1000----------------uid',
-        'type' => 'field_layout_with_matrix_and_normal_fields',
+        'uid' => 'field-layout-1002----------------uid',
+        'type' => Entry::class,
         'tabs' => [
             [
                 'name' => 'Tab 1',
@@ -102,7 +108,7 @@ return [
                         'required' => false,
                     ],
 
-                    // PLAIN TEXT FIELD TWO
+                    // PLAIN TEXT FIELD
                     [
                         'uid' => 'field-1001-----------------------uid',
                         'name' => 'Plain Text Field',
@@ -111,7 +117,7 @@ return [
                         'required' => true,
                     ],
 
-                    // A table field
+                    // TABLE FIELD
                     [
                         'uid' => 'field-1002-----------------------uid',
                         'name' => 'Appointments',
@@ -149,8 +155,8 @@ return [
         ],
     ],
     [
-        'uid' => 'field-layout-1001----------------uid',
-        'type' => 'field_layout_with_matrix_with_relational_field',
+        'uid' => 'field-layout-1003----------------uid',
+        'type' => Entry::class,
         'tabs' => [
             [
                 'name' => 'Tab 1',
@@ -214,6 +220,87 @@ return [
                             'section:section-1000---------------------uid',
                         ],
                         'required' => false,
+                    ],
+                ],
+            ],
+        ],
+    ],
+    [
+        'uid' => 'field-layout-1004----------------uid',
+        'type' => GlobalSet::class,
+        'tabs' => [
+            [
+                'name' => 'Tab 1',
+                'fields' => [
+                    // MATRIX FIELD 1
+                    [
+                        'uid' => 'field-1006-----------------------uid',
+                        'name' => 'Matrix 1',
+                        'handle' => 'matrixThird',
+                        'type' => Matrix::class,
+                        'blockTypes' => [
+                            'new1' => [
+                                'name' => 'A Block',
+                                'handle' => 'aBlock',
+                                'fields' => [
+                                    'new1' => [
+                                        'type' => PlainText::class,
+                                        'name' => 'First Subfield',
+                                        'handle' => 'firstSubfield',
+                                        'columnSuffix' => 'aaaaaaaa',
+                                        'instructions' => '',
+                                        'required' => false,
+                                        'typesettings' => [
+                                            'multiline' => '',
+                                        ],
+                                    ],
+                                ],
+                            ],
+                        ],
+                        'required' => false,
+                    ],
+
+                    // PLAIN TEXT FIELD THREE
+                    [
+                        'uid' => 'field-1007-----------------------uid',
+                        'name' => 'Plain Text Field3',
+                        'handle' => 'plainTextField3',
+                        'type' => PlainText::class,
+                        'required' => true,
+                    ],
+
+                    // TABLE FIELD TWO
+                    [
+                        'uid' => 'field-1008-----------------------uid',
+                        'name' => 'Appointments2',
+                        'handle' => 'appointments2',
+                        'type' => Table::class,
+                        'addRowLabel' => 'Add a row',
+                        'minRows' => 1,
+                        'maxRows' => 5,
+                        'columns' => [
+                            'col1' => [
+                                'heading' => 'What',
+                                'handle' => 'one',
+                                'type' => 'singleline',
+                            ],
+                            'col2' => [
+                                'heading' => 'When',
+                                'handle' => 'two',
+                                'type' => 'date',
+                            ],
+                            'col3' => [
+                                'heading' => 'How many',
+                                'handle' => 'howMany',
+                                'type' => 'number',
+                            ],
+                            'col4' => [
+                                'heading' => 'Allow?',
+                                'handle' => 'allow',
+                                'type' => 'lightswitch',
+                            ],
+                        ],
+                        'required' => true,
                     ],
                 ],
             ],

@@ -12,7 +12,7 @@ return [
         'name' => 'Test 1',
         'handle' => 'test1',
         'titleFormat' => null,
-        'fieldLayoutType' => 'field_layout_with_matrix_and_normal_fields',
+        'fieldLayoutUid' => 'field-layout-1002----------------uid',
         'uid' => 'entry-type-1000------------------uid',
     ],
     [
@@ -63,7 +63,7 @@ return [
         'name' => 'With matrix with relations',
         'handle' => 'withMatrixWithRelations',
         'titleFormat' => null,
-        'fieldLayoutType' => 'field_layout_with_matrix_with_relational_field',
+        'fieldLayoutUid' => 'field-layout-1003----------------uid',
         'uid' => 'entry-type-1006------------------uid',
     ],
 ];
