@@ -1012,6 +1012,25 @@ Craft.FieldLayoutDesigner.BaseDrag = Garnish.Drag.extend({
 
     Garnish.$bod.removeClass('dragging');
   },
+
+  onDrag: function () {
+    this.base();
+
+    // stop scrolling if we've reached the boundaries; e.g. don't allow to drag infinitely to the right
+    if (this.drag._scrollProperty == 'scrollTop') {
+      // stop scrolling up and down
+      if (this.mouseY < 0 || this.mouseY >= Garnish.$bod.height()) {
+        Garnish.cancelAnimationFrame(this.scrollFrame);
+        this.scrollFrame = null;
+      }
+    } else {
+      // stop scrolling left and right
+      if (this.mouseX < 0 || this.mouseX >= Garnish.$bod.width()) {
+        Garnish.cancelAnimationFrame(this.scrollFrame);
+        this.scrollFrame = null;
+      }
+    }
+  },
 });
 
 Craft.FieldLayoutDesigner.TabDrag = Craft.FieldLayoutDesigner.BaseDrag.extend({
@@ -1164,21 +1183,6 @@ Craft.FieldLayoutDesigner.ElementDrag =
       }
 
       this.base();
-
-      // stop scrolling if we've reached the boundaries; e.g. don't allow to drag infinitely to the right
-      if (this.drag._scrollProperty == 'scrollTop') {
-        // stop scrolling up and down
-        if (this.mouseY < 0 || this.mouseY >= Garnish.$bod.height()) {
-          Garnish.cancelAnimationFrame(this.scrollFrame);
-          this.scrollFrame = null;
-        }
-      } else {
-        // stop scrolling left and right
-        if (this.mouseX < 0 || this.mouseX >= Garnish.$bod.width()) {
-          Garnish.cancelAnimationFrame(this.scrollFrame);
-          this.scrollFrame = null;
-        }
-      }
     },
 
     isDraggeeMandatory: function () {
