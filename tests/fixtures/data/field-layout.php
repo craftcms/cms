@@ -11,27 +11,10 @@ use craft\elements\GlobalSet;
 use craft\elements\User;
 use craft\fields\Entries;
 use craft\fields\Matrix;
-use craft\fields\Number;
 use craft\fields\PlainText;
 use craft\fields\Table;
 
 return [
-    [
-        'type' => 'craft\test\Craft',
-        'tabs' => [
-            [
-                'name' => 'Tab 1',
-                'fields' => [
-                    [
-                        'name' => 'Test field',
-                        'handle' => 'testField2',
-                        'type' => Number::class,
-                        'required' => true,
-                    ],
-                ],
-            ],
-        ],
-    ],
     [
         'uid' => 'field-layout-1000----------------uid',
         // Because User elements fetch layout by type
