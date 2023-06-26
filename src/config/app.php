@@ -5,7 +5,7 @@ return [
     'name' => 'Craft CMS',
     'version' => '4.4.14',
     'schemaVersion' => '5.0.0.4',
-    'minVersionRequired' => '4.8.0',
+    'minVersionRequired' => '4.4.0',
     'basePath' => dirname(__DIR__), // Defines the @app alias
     'runtimePath' => '@storage/runtime', // Defines the @runtime alias
     'controllerNamespace' => 'craft\controllers',
