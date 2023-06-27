@@ -150,6 +150,26 @@ class Tag extends Element
     }
 
     /**
+     * @inheritdoc
+     */
+    protected static function defineFieldLayouts(?string $source): array
+    {
+        if ($source !== null) {
+            $groups = [];
+            if (preg_match('/^taggroup:(.+)$/', $source, $matches)) {
+                $group = Craft::$app->getTags()->getTagGroupByUid($matches[1]);
+                if ($group) {
+                    $groups[] = $group;
+                }
+            }
+        } else {
+            $groups = Craft::$app->getTags()->getAllTagGroups();
+        }
+
+        return array_map(fn(TagGroup $group) => $group->getFieldLayout(), $groups);
+    }
+
+    /**
      * @var int|null Group ID
      */
     public ?int $groupId = null;

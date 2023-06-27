@@ -235,6 +235,14 @@ class GlobalSet extends Element implements FieldLayoutProviderInterface
     /**
      * @inheritdoc
      */
+    public function getHandle(): ?string
+    {
+        return $this->handle;
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function getFieldLayout(): FieldLayout
     {
         /** @var FieldLayoutBehavior $behavior */

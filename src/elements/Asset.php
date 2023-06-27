@@ -419,18 +419,22 @@ class Asset extends Element
 
     /**
      * @inheritdoc
-     * @since 3.5.0
      */
-    protected static function defineFieldLayouts(string $source): array
+    protected static function defineFieldLayouts(?string $source): array
     {
-        $fieldLayouts = [];
-        if (
-            preg_match('/^volume:(.+)$/', $source, $matches) &&
-            ($volume = Craft::$app->getVolumes()->getVolumeByUid($matches[1]))
-        ) {
-            $fieldLayouts[] = $volume->getFieldLayout();
+        if ($source !== null) {
+            $volumes = [];
+            if (preg_match('/^volume:(.+)$/', $source, $matches)) {
+                $volume = Craft::$app->getVolumes()->getVolumeByUid($matches[1]);
+                if ($volume) {
+                    $volumes[] = $volume;
+                }
+            }
+        } else {
+            $volumes = Craft::$app->getVolumes()->getAllVolumes();
         }
-        return $fieldLayouts;
+
+        return array_map(fn(Volume $volume) => $volume->getFieldLayout(), $volumes);
     }
 
     /**
