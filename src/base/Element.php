@@ -906,9 +906,8 @@ abstract class Element extends Component implements ElementInterface
 
     /**
      * @inheritdoc
-     * @since 3.5.0
      */
-    public static function fieldLayouts(string $source): array
+    public static function fieldLayouts(?string $source = null): array
     {
         $fieldLayouts = static::defineFieldLayouts($source);
 
@@ -925,14 +924,14 @@ abstract class Element extends Component implements ElementInterface
     /**
      * Defines the field layouts associated with elements for a given source.
      *
-     * @param string $source The selected source’s key, if any
+     * @param string|null $source The selected source’s key, or `null` if all known field layouts should be returned
      * @return FieldLayout[] The associated field layouts
      * @see fieldLayouts()
      * @since 3.5.0
      */
-    protected static function defineFieldLayouts(string $source): array
+    protected static function defineFieldLayouts(?string $source): array
     {
-        // Default to all of the field layouts associated with this element type
+        // Default to all the field layouts associated with this element type
         return Craft::$app->getFields()->getLayoutsByType(static::class);
     }
 
@@ -1354,14 +1353,31 @@ abstract class Element extends Component implements ElementInterface
 
         // Is $handle a custom field handle?
         // (Leave it up to the extended class to set the field context, if it shouldn't be 'global')
-        $field = Craft::$app->getFields()->getFieldByHandle($handle);
-        if ($field && $field instanceof EagerLoadingFieldInterface) {
+        if (str_contains($handle, ':')) {
+            [$providerHandle, $fieldHandle] = explode(':', $handle, 2);
+        } else {
+            $providerHandle = null;
+            $fieldHandle = $handle;
+        }
+
+        $field = null;
+        foreach (static::fieldLayouts() as $fieldLayout) {
+            if ($providerHandle === null || $fieldLayout->provider?->getHandle() === $providerHandle) {
+                $layoutField = $fieldLayout->getFieldByHandle($fieldHandle);
+                if ($layoutField) {
+                    $field = $layoutField;
+                    break;
+                }
+            }
+        }
+
+        if ($field instanceof EagerLoadingFieldInterface) {
             // filter out elements, if field is not part of its layout
             // https://github.com/craftcms/cms/issues/12539
             $sourceElements = array_values(
-                array_filter($sourceElements, function($sourceElement) use ($handle) {
-                    $fieldLayout = $sourceElement->getFieldLayout();
-                    return !$fieldLayout || $fieldLayout->getFieldByHandle($handle) !== null;
+                array_filter($sourceElements, function($sourceElement) use ($field) {
+                    $layoutField = $sourceElement->getFieldLayout()?->getFieldByHandle($field->handle);
+                    return $layoutField && $layoutField->id === $field->id;
                 })
             );
 

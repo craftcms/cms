@@ -2701,6 +2701,12 @@ class Elements extends Component
             $this->trigger(self::EVENT_BEFORE_EAGER_LOAD_ELEMENTS, $event);
 
             foreach ($event->with as $plan) {
+                // Get the plan handle, without a provider prefix
+                $planHandle = $plan->alias;
+                if (str_contains($planHandle, ':')) {
+                    $planHandle = explode(':', $planHandle, 2)[1];
+                }
+
                 // Filter out any elements that the plan doesn't like
                 if ($plan->when !== null) {
                     $filteredElements = array_values(array_filter($elements, $plan->when));
@@ -2793,7 +2799,7 @@ class Elements extends Component
                                 }
                             }
                         }
-                        $sourceElement->setEagerLoadedElementCount($plan->alias, $count);
+                        $sourceElement->setEagerLoadedElementCount($planHandle, $count);
                     }
 
                     continue;
@@ -2860,10 +2866,10 @@ class Elements extends Component
                         }
                     }
 
-                    $sourceElement->setEagerLoadedElements($plan->alias, $targetElementsForSource);
+                    $sourceElement->setEagerLoadedElements($planHandle, $targetElementsForSource);
 
                     if ($plan->count) {
-                        $sourceElement->setEagerLoadedElementCount($plan->alias, count($targetElementsForSource));
+                        $sourceElement->setEagerLoadedElementCount($planHandle, count($targetElementsForSource));
                     }
                 }
 

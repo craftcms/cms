@@ -313,16 +313,16 @@ interface ElementInterface extends ComponentInterface
     public static function sourcePath(string $sourceKey, string $stepKey, ?string $context): ?array;
 
     /**
-     * Returns all of the field layouts associated with elements from the given source.
+     * Returns all the field layouts associated with elements from the given source.
      *
      * This is used to determine which custom fields should be included in the element index sort menu,
      * and other things.
      *
-     * @param string $source The selected source’s key
+     * @param string|null $source The selected source’s key, or `null` if all known field layouts should be returned
      * @return FieldLayout[]
      * @since 3.5.0
      */
-    public static function fieldLayouts(string $source): array;
+    public static function fieldLayouts(?string $source = null): array;
 
     /**
      * Returns the available [element actions](https://craftcms.com/docs/4.x/extend/element-actions.html) for a

@@ -298,30 +298,33 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
 
     /**
      * @inheritdoc
-     * @since 3.5.0
      */
-    protected static function defineFieldLayouts(string $source): array
+    protected static function defineFieldLayouts(?string $source): array
     {
-        // Get all the sections covered by this source
-        $sections = [];
-        if ($source === '*') {
-            $sections = Craft::$app->getEntries()->getAllSections();
-        } elseif ($source === 'singles') {
-            $sections = Craft::$app->getEntries()->getSectionsByType(Section::TYPE_SINGLE);
-        } elseif (
-            preg_match('/^section:(.+)$/', $source, $matches) &&
-            $section = Craft::$app->getEntries()->getSectionByUid($matches[1])
-        ) {
-            $sections = [$section];
+        if ($source !== null) {
+            if ($source === '*') {
+                $sections = Craft::$app->getEntries()->getAllSections();
+            } elseif ($source === 'singles') {
+                $sections = Craft::$app->getEntries()->getSectionsByType(Section::TYPE_SINGLE);
+            } else {
+                $sections = [];
+                if (preg_match('/^section:(.+)$/', $source, $matches)) {
+                    $section = Craft::$app->getEntries()->getSectionByUid($matches[1]);
+                    if ($section) {
+                        $sections[] = $section;
+                    }
+                }
+            }
+
+            $entryTypes = array_values(array_unique(array_merge(
+                ...array_map(fn(Section $section) => $section->getEntryTypes(), $sections),
+            )));
+        } else {
+            // get all entry types, including those which may only be used by Matrix fields
+            $entryTypes = Craft::$app->getEntries()->getAllEntryTypes();
         }
 
-        $fieldLayouts = [];
-        foreach ($sections as $section) {
-            foreach ($section->getEntryTypes() as $entryType) {
-                $fieldLayouts[] = $entryType->getFieldLayout();
-            }
-        }
-        return $fieldLayouts;
+        return array_map(fn(EntryType $entryType) => $entryType->getFieldLayout(), $entryTypes);
     }
 
     /**

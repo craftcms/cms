@@ -190,18 +190,22 @@ class Category extends Element
 
     /**
      * @inheritdoc
-     * @since 3.5.0
      */
-    protected static function defineFieldLayouts(string $source): array
+    protected static function defineFieldLayouts(?string $source): array
     {
-        $fieldLayouts = [];
-        if (
-            preg_match('/^group:(.+)$/', $source, $matches) &&
-            ($group = Craft::$app->getCategories()->getGroupByUid($matches[1]))
-        ) {
-            $fieldLayouts[] = $group->getFieldLayout();
+        if ($source !== null) {
+            $groups = [];
+            if (preg_match('/^group:(.+)$/', $source, $matches)) {
+                $group = Craft::$app->getCategories()->getGroupByUid($matches[1]);
+                if ($group) {
+                    $groups[] = $group;
+                }
+            }
+        } else {
+            $groups = Craft::$app->getCategories()->getAllGroups();
         }
-        return $fieldLayouts;
+
+        return array_map(fn(CategoryGroup $group) => $group->getFieldLayout(), $groups);
     }
 
     /**
