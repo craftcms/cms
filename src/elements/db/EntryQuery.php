@@ -690,7 +690,7 @@ class EntryQuery extends ElementQuery
      *
      * @param bool|null $value The property value
      * @return static self reference
-     * @uses $allowOwnerDrafts
+     * @uses $allowOwnerRevisions
      * @since 5.0.0
      */
     public function allowOwnerRevisions(?bool $value = true): static
@@ -1194,17 +1194,36 @@ class EntryQuery extends ElementQuery
                 ->innerJoin(['entries_owners' => Table::ENTRIES_OWNERS], $ownersCondition);
             $this->subQuery->innerJoin(['entries_owners' => Table::ENTRIES_OWNERS], $ownersCondition);
 
+            if ($this->fieldId) {
+                $this->subQuery->andWhere(['entries.fieldId' => $this->fieldId]);
+            }
+
+            if ($this->primaryOwnerId) {
+                $this->subQuery->andWhere(['entries.primaryOwnerId' => $this->primaryOwnerId]);
+            }
+
+            // Ignore revision/draft blocks by default
+            $allowOwnerDrafts = $this->allowOwnerDrafts ?? ($this->id || $this->primaryOwnerId || $this->ownerId);
+            $allowOwnerRevisions = $this->allowOwnerRevisions ?? ($this->id || $this->primaryOwnerId || $this->ownerId);
+
+            if (!$allowOwnerDrafts || !$allowOwnerRevisions) {
+                $this->subQuery->innerJoin(
+                    ['owners' => Table::ELEMENTS],
+                    $this->ownerId ? '[[owners.id]] = [[entries_owners.ownerId]]' : '[[owners.id]] = [[entries.primaryOwnerId]]'
+                );
+
+                if (!$allowOwnerDrafts) {
+                    $this->subQuery->andWhere(['owners.draftId' => null]);
+                }
+
+                if (!$allowOwnerRevisions) {
+                    $this->subQuery->andWhere(['owners.revisionId' => null]);
+                }
+            }
+
             $this->defaultOrderBy = ['entries_owners.sortOrder' => SORT_ASC];
-        }
-
-        $this->_applySectionIdParam();
-
-        if ($this->fieldId) {
-            $this->subQuery->andWhere(['entries.fieldId' => $this->fieldId]);
-        }
-
-        if ($this->primaryOwnerId) {
-            $this->subQuery->andWhere(['entries.primaryOwnerId' => $this->primaryOwnerId]);
+        } else {
+            $this->_applySectionIdParam();
         }
 
         if ($this->postDate) {
@@ -1423,7 +1442,7 @@ class EntryQuery extends ElementQuery
                     $this->withStructure = false;
                 }
             }
-        } elseif (empty($this->fieldId) && empty($this->ownerId) && empty($this->primaryOwnerId)) {
+        } else {
             $this->subQuery->andWhere(['not', ['entries.sectionId' => null]]);
         }
     }
