@@ -1423,6 +1423,8 @@ class EntryQuery extends ElementQuery
                     $this->withStructure = false;
                 }
             }
+        } elseif (empty($this->fieldId) && empty($this->ownerId) && empty($this->primaryOwnerId)) {
+            $this->subQuery->andWhere(['not', ['entries.sectionId' => null]]);
         }
     }
 
