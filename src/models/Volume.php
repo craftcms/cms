@@ -205,6 +205,14 @@ class Volume extends Model implements BaseFsInterface, FieldLayoutProviderInterf
     /**
      * @inheritdoc
      */
+    public function getHandle(): ?string
+    {
+        return $this->handle;
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function getFieldLayout(): FieldLayout
     {
         /** @var FieldLayoutBehavior $behavior */

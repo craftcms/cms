@@ -102,6 +102,14 @@ class MatrixBlockType extends Model implements FieldLayoutProviderInterface, Gql
     /**
      * @inheritdoc
      */
+    public function getHandle(): ?string
+    {
+        return $this->handle;
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function getFieldLayout(): FieldLayout
     {
         /** @var FieldLayoutBehavior $behavior */
