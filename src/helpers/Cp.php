@@ -1532,7 +1532,7 @@ JS, [
         bool $spinner,
     ): string {
         $value = $address->$name;
-        $options = Craft::$app->getAddresses()->getSubdivisions($name, $parents);
+        $options = Craft::$app->getAddresses()->getSubdivisionRepository()->getList($parents, Craft::$app->language);
 
         if ($options) {
             // Persist invalid values in the UI

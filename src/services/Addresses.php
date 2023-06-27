@@ -16,8 +16,8 @@ use CommerceGuys\Addressing\AddressFormat\PostalCodeType;
 use CommerceGuys\Addressing\Country\CountryRepository;
 use CommerceGuys\Addressing\Formatter\DefaultFormatter;
 use CommerceGuys\Addressing\Formatter\FormatterInterface;
-use CommerceGuys\Addressing\Subdivision\SubdivisionRepository;
 use Craft;
+use craft\addresses\SubdivisionRepository;
 use craft\elements\Address;
 use craft\events\ConfigEvent;
 use craft\events\DefineAddressFieldLabelEvent;
@@ -122,18 +122,15 @@ class Addresses extends Component
     /**
      * Get subdivisions for a field based on it's parents
      *
-     * @param $field
-     * @param $parents
+     * @param array $parents
+     * @param array $options
      * @return array
      * @since 4.5.0
      */
-    public function getSubdivisions($field, $parents): array
+    public function defineAddressSubdivisions(array $parents, array $options = []): array
     {
-        $options = Craft::$app->getAddresses()->getSubdivisionRepository()->getList($parents, Craft::$app->language);
-
         if ($this->hasEventHandlers(self::EVENT_DEFINE_ADDRESS_SUBDIVISIONS)) {
             $event = new DefineAddressSubdivisionsEvent([
-                'field' => $field,
                 'parents' => $parents,
                 'subdivisions' => $options,
             ]);

@@ -18,12 +18,6 @@ use yii\base\Event;
 class DefineAddressSubdivisionsEvent extends Event
 {
     /**
-     * @var string The field to define subdivisions for (one of the [[AddressField]] constants)
-     * @see AddressField
-     */
-    public string $field;
-
-    /**
      * @var array The field's parents; always in order of: countryCode, administrativeArea, locality
      */
     public array $parents;
