@@ -94,20 +94,12 @@ class InstallController extends Controller
         $defaultSiteUrl = InstallHelper::defaultSiteUrl();
         $defaultSiteLanguage = InstallHelper::defaultSiteLanguage();
 
-        $iconsPath = Craft::getAlias('@appicons');
-        $dbIcon = $showDbScreen ? file_get_contents($iconsPath . DIRECTORY_SEPARATOR . 'database.svg') : null;
-        $userIcon = file_get_contents($iconsPath . DIRECTORY_SEPARATOR . 'user.svg');
-        $worldIcon = file_get_contents($iconsPath . DIRECTORY_SEPARATOR . 'world.svg');
-
         return $this->renderTemplate('_special/install/index.twig', compact(
             'showDbScreen',
             'license',
             'defaultSystemName',
             'defaultSiteUrl',
             'defaultSiteLanguage',
-            'dbIcon',
-            'userIcon',
-            'worldIcon'
         ));
     }
 

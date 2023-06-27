@@ -373,6 +373,19 @@ interface FieldInterface extends SavableComponentInterface
     public function normalizeValue(mixed $value, ?ElementInterface $element = null): mixed;
 
     /**
+     * Normalizes a posted field value for use.
+     *
+     * This should call [[normalizeValue()]] by default, unless there are any special considerations that
+     * need to be made for posted values.
+     *
+     * @param mixed $value The serialized value
+     * @param ElementInterface|null $element The element the field is associated with, if there is one
+     * @return mixed The prepared field value
+     * @since 4.5.0
+     */
+    public function normalizeValueFromRequest(mixed $value, ?ElementInterface $element = null): mixed;
+
+    /**
      * Prepares the field’s value to be stored somewhere, like the content table.
      *
      * Data types that are JSON-encodable are safe (arrays, integers, strings, booleans, etc).

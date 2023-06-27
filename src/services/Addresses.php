@@ -71,6 +71,12 @@ class Addresses extends Component
     public const EVENT_DEFINE_ADDRESS_SUBDIVISIONS = 'defineAddressSubdivisions';
 
     /**
+     * @var FormatterInterface|null The default address formatter used by [[formatAddress()]]
+     * @since 4.5.0
+     */
+    public ?FormatterInterface $formatter = null;
+
+    /**
      * @var CountryRepository
      */
     private CountryRepository $_countryRepository;
@@ -93,6 +99,14 @@ class Addresses extends Component
         $this->_countryRepository = new CountryRepository();
         $this->_subdivisionRepository = new SubdivisionRepository();
         $this->_addressFormatRepository = new AddressFormatRepository();
+
+        if ($this->formatter === null) {
+            $this->formatter = new DefaultFormatter(
+                $this->getAddressFormatRepository(),
+                $this->getCountryRepository(),
+                $this->getSubdivisionRepository()
+            );
+        }
     }
 
     /**
@@ -243,11 +257,7 @@ class Addresses extends Component
         }
 
         if ($formatter === null) {
-            $formatter = new DefaultFormatter(
-                $this->getAddressFormatRepository(),
-                $this->getCountryRepository(),
-                $this->getSubdivisionRepository()
-            );
+            $formatter = $this->formatter;
         }
 
         return $formatter->format($address, $options);

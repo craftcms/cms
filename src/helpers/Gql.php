@@ -292,13 +292,9 @@ class Gql
      */
     public static function getUnionType(string $typeName, array $includedTypes, ?callable $resolveFunction = null): mixed
     {
-        if (!$resolveFunction) {
-            $resolveFunction = function(ElementInterface $value) {
-                return $value->getGqlTypeName();
-            };
-        }
+        $resolveFunction ??= fn(ElementInterface $value) => $value->getGqlTypeName();
 
-        return GqlEntityRegistry::getEntity($typeName) ?: GqlEntityRegistry::createEntity($typeName, new UnionType([
+        return GqlEntityRegistry::getOrCreate($typeName, fn() => new UnionType([
             'name' => $typeName,
             'types' => $includedTypes,
             'resolveType' => $resolveFunction,

@@ -22,6 +22,7 @@ use craft\elements\db\ElementQueryInterface;
 use craft\elements\db\MatrixBlockQuery;
 use craft\elements\ElementCollection;
 use craft\elements\MatrixBlock;
+use craft\errors\InvalidFieldException;
 use craft\events\BlockTypesEvent;
 use craft\fieldlayoutelements\CustomField;
 use craft\fields\conditions\EmptyFieldConditionRule;
@@ -60,7 +61,7 @@ use yii\db\Expression;
 class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragmentFieldInterface
 {
     /**
-     * @event SectionEvent The event that is triggered before a section is saved.
+     * @event BlockTypesEvent The event that is triggered when setting the field’s block types
      * @since 3.1.27
      */
     public const EVENT_SET_FIELD_BLOCK_TYPES = 'setFieldBlockTypes';
@@ -495,6 +496,19 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
      */
     public function normalizeValue(mixed $value, ?ElementInterface $element = null): mixed
     {
+        return $this->_normalizeValueInternal($value, $element, false);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function normalizeValueFromRequest(mixed $value, ?ElementInterface $element = null): mixed
+    {
+        return $this->_normalizeValueInternal($value, $element, true);
+    }
+
+    private function _normalizeValueInternal(mixed $value, ?ElementInterface $element, bool $fromRequest): mixed
+    {
         if ($value instanceof ElementQueryInterface) {
             return $value;
         }
@@ -507,7 +521,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
         if ($value === '') {
             $query->setCachedResult([]);
         } elseif ($element && is_array($value)) {
-            $query->setCachedResult($this->_createBlocksFromSerializedData($value, $element));
+            $query->setCachedResult($this->_createBlocksFromSerializedData($value, $element, $fromRequest));
         }
 
         return $query;
@@ -561,7 +575,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
                 'type' => $block->getType()->handle,
                 'enabled' => $block->enabled,
                 'collapsed' => $block->collapsed,
-                'fields' => $block->getSerializedFieldValues(),
+                'fields' => fn() => $block->getSerializedFieldValues(),
             ];
         }
 
@@ -1242,9 +1256,10 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
      *
      * @param array $value The raw field value
      * @param ElementInterface $element The element the field is associated with
+     * @param bool $fromRequest Whether the data came from the request post data
      * @return MatrixBlock[]
      */
-    private function _createBlocksFromSerializedData(array $value, ElementInterface $element): array
+    private function _createBlocksFromSerializedData(array $value, ElementInterface $element, bool $fromRequest): array
     {
         // Get the possible block types for this field
         /** @var MatrixBlockType[] $blockTypes */
@@ -1372,7 +1387,16 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
             }
 
             if (isset($blockData['fields'])) {
-                $block->setFieldValues($blockData['fields']);
+                foreach ($blockData['fields'] as $fieldHandle => $fieldValue) {
+                    try {
+                        if ($fromRequest) {
+                            $block->setFieldValueFromRequest($fieldHandle, $fieldValue);
+                        } else {
+                            $block->setFieldValue($fieldHandle, $fieldValue);
+                        }
+                    } catch (InvalidFieldException) {
+                    }
+                }
             }
 
             // Set the prev/next blocks
