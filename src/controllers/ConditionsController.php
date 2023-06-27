@@ -11,6 +11,7 @@ use Craft;
 use craft\base\conditions\ConditionInterface;
 use craft\base\conditions\ConditionRuleInterface;
 use craft\helpers\ArrayHelper;
+use craft\helpers\Component;
 use craft\helpers\Json;
 use craft\web\Controller;
 use Illuminate\Support\Collection;
@@ -34,8 +35,14 @@ class ConditionsController extends Controller
      */
     public function beforeAction($action): bool
     {
+        if (!parent::beforeAction($action)) {
+            return false;
+        }
+
+        $this->requireCpRequest();
+
         $baseConfig = Json::decodeIfJson($this->request->getBodyParam('config'));
-        $config = $this->request->getBodyParam($baseConfig['name']);
+        $config = Component::cleanseConfig($this->request->getBodyParam($baseConfig['name']));
         $newRuleType = ArrayHelper::remove($config, 'new-rule-type');
         $conditionsService = Craft::$app->getConditions();
         $this->_condition = $conditionsService->createCondition($config);
@@ -48,7 +55,7 @@ class ConditionsController extends Controller
             $this->_condition->addConditionRule($rule);
         }
 
-        return parent::beforeAction($action);
+        return true;
     }
 
     /**

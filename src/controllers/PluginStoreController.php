@@ -35,10 +35,14 @@ class PluginStoreController extends Controller
      */
     public function beforeAction($action): bool
     {
+        if (!parent::beforeAction($action)) {
+            return false;
+        }
+
         // All plugin store actions require an admin
         $this->requireAdmin(false);
 
-        return parent::beforeAction($action);
+        return true;
     }
 
     /**
