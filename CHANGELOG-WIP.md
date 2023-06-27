@@ -7,21 +7,28 @@
 - Content tab menus are now implemented as disclosure menus. ([#12963](https://github.com/craftcms/cms/pull/12963))
 
 ### Administration
-- Entry types are now managed independently of sections.
 - Field layouts can now override custom fields’ handles.
 - Most custom fields can now be included multiple times within the same field layout. ([#8497](https://github.com/craftcms/cms/discussions/8497))
+- Entry types are now managed independently of sections.
+- Matrix fields now manage nested entries, rather than Matrix blocks. During the upgrade, existing Matrix block types will be converted to entry types; their nested fields will be made global; and Matrix blocks will be converted to entries.
 - Added support for defining custom locale aliases, via a new `localeAliases` config setting. ([#12705](https://github.com/craftcms/cms/pull/12705))
 - Removed the concept of field groups.
 - `entrify/*` commands now ask if an entry type already exists for the section.
-- The `up`, `migrate/up`, and `migrate/all` commands no longer overwrite pending project config YAML changes, if new project config changes were made by migrations.
+- The `resave/entries` command now accepts a `--field` option.
+- The `up`, `migrate/up`, and `migrate/all` commands no longer overwrite pending project config YAML changes, if new project config changes were made by migrations. 
+- Removed the `resave/matrix-blocks` command.
 
 ### Development
 - Entry type names and handles must now be unique globally, rather than just within a single section. Existing entry type names and handles will be renamed automatically where needed, to ensure uniqueness.
-- Assets, categories, entries, and tags now support eager-loading paths prefixed with a field layout provider’s handle (e.g. `myEntryType:myField`). 
-- Entries’ GraphQL type names are no longer prefixed with their section’s handle.
+- Assets, categories, entries, and tags now support eager-loading paths prefixed with a field layout provider’s handle (e.g. `myEntryType:myField`).
+- Entry queries now have `field`, `fieldId`, `primaryOwner`, `primaryOwnerId`, `owner`, `ownerId`, `allowOwnerDrafts`, and `allowOwnerRevisions` params.
+- Entries’ GraphQL type names are now formatted as `<entryTypeHandle>_Entry`, and are no longer prefixed with their section’s handle. (That goes for Matrix-nested entries as well.)
+- Matrix fields’ GraphQL mutation types now expect nested entries to be defined by an `entries` field rather than `blocks`.
+- Removed the `craft.matrixBlocks()` Twig function. `craft.entries()` should be used instead.
 
 ### Extensibility
 - Elements now store their content in an `elements_sites.content` column as JSON, rather than across multiple columns in a `content` table. ([#2009](https://github.com/craftcms/cms/issues/2009), [#4308](https://github.com/craftcms/cms/issues/4308), [#7221](https://github.com/craftcms/cms/issues/7221), [#7750](https://github.com/craftcms/cms/issues/7750), [#12954](https://github.com/craftcms/cms/issues/12954))
+- Slugs are no longer required on elements that don’t have a URI format.
 - Element types’ `fieldLayouts()` and `defineFieldLayouts()` methods’ `$source` arguments must now accept `null` values.
 - All element types can now support eager-loading paths prefixed with a field layout provider’s handle (e.g. `myEntryType:myField`), by implementing `craft\base\FieldLayoutProviderInterface` on the field layout provider class, and ensuring that `defineFieldLayouts()` is returning field layouts via their providers.
 - The control panel now defines new CSS variables for orange, green, and violet colors. Existing color palette CSS variables have been updated to match the Tailwind 3 color palette.
@@ -30,6 +37,7 @@
 - Selectize menus no longer apply special styling to options with the value `new`. The `_includes/forms/selectize.twig` control panel template should be used instead (or `craft\helpers\Cp::selectizeHtml()`/`selectizeFieldHtml()`), which will append an styled “Add” option when `addOptionFn` and `addOptionLabel` settings are passed. ([#11946](https://github.com/craftcms/cms/issues/11946))
 - The `assets/move-asset` and `assets/move-folder` actions no longer include `success` keys in responses. ([#12159](https://github.com/craftcms/cms/pull/12159))
 - The `assets/upload` controller action now includes `errors` object in failure responses. ([#12159](https://github.com/craftcms/cms/pull/12159))
+- Added `craft\base\ElementContainerFieldInterface`, which should be implemented by fields which contain nested elements, such as Matrix.
 - Added `craft\base\Field::valueSql()`.
 - Added `craft\base\FieldInterface::dbType()`, which defines the type(s) of values the field will store in the `elements_sites.content` column (if any).
 - Added `craft\base\FieldInterface::getValueSql()`.
@@ -38,6 +46,7 @@
 - Added `craft\base\FieldLayoutElement::isMultiInstance()`.
 - Added `craft\base\FieldLayoutProviderInterface::getHandle()`.
 - Added `craft\base\FieldTrait::$layoutElement`.
+- Added `craft\base\NestedElementInterface`, which should be implemented by element types which could be nested by other elements.
 - Added `craft\base\conditions\ConditionInterface::createConditionRule()`.
 - Added `craft\controllers\EntryTypesController`.
 - Added `craft\db\Connection::getIsMaria()`.
@@ -53,15 +62,33 @@
 - Added `craft\elements\Address::GQL_TYPE_NAME`.
 - Added `craft\elements\Asset::gqlTypeName()`.
 - Added `craft\elements\Category::gqlTypeName()`.
+- Added `craft\elements\Entry::$collapsed`.
+- Added `craft\elements\Entry::$deletedWithOwner`.
+- Added `craft\elements\Entry::$dirty`.
+- Added `craft\elements\Entry::$fieldId`.
+- Added `craft\elements\Entry::$ownerId`.
+- Added `craft\elements\Entry::$primaryOwnerId`.
+- Added `craft\elements\Entry::$saveOwnership`.
+- Added `craft\elements\Entry::$sortOrder`.
+- Added `craft\elements\Entry::getField()`.
+- Added `craft\elements\Entry::getOwner()`.
 - Added `craft\elements\Entry::gqlTypeName()`.
-- Added `craft\elements\MatrixBlock::gqlTypeName()`.
+- Added `craft\elements\Entry::setOwner()`.
 - Added `craft\elements\Tag::gqlTypeName()`.
 - Added `craft\elements\User::GQL_TYPE_NAME`.
 - Added `craft\elements\conditions\ElementConditionInterface::getFieldLayouts()`.
 - Added `craft\elements\db\ElementQueryInterface::fieldLayouts()`
+- Added `craft\events\DefineEntryTypesForFieldEvent`.
 - Added `craft\fieldlayoutelements\CustomField::$handle`.
+- Added `craft\fields\Matrix::$entryUriFormat`.
+- Added `craft\fields\Matrix::EVENT_DEFINE_ENTRY_TYPES`.
+- Added `craft\fields\Matrix::getEntryTypes()`.
+- Added `craft\fields\Matrix::getSupportedSitesForElement()`.
+- Added `craft\fields\Matrix::setEntryTypes()`.
+- Added `craft\fields\Matrix::supportedSiteIds()`.
 - Added `craft\fields\conditions\FieldConditionRuleTrait::fieldInstances()`.
 - Added `craft\fields\conditions\FieldConditionRuleTrait::setLayoutElementUid()`.
+- Added `craft\helpers\ArrayHelper::lastValue()`.
 - Added `craft\helpers\Db::defaultCollation()`.
 - Added `craft\helpers\Db::prepareForJsonColumn()`.
 - Added `craft\helpers\Gql::getSchemaContainedSections()`.
@@ -70,16 +97,21 @@
 - Added `craft\i18n\Locale::setDisplayName()`.
 - Added `craft\migrations\BaseContentRefactorMigration`.
 - Added `craft\models\Section::getCpEditUrl()`.
+- Added `craft\services\Entries::refreshEntryTypes()`.
 - Added `craft\services\Fields::$fieldContext`, which replaces `craft\services\Content::$fieldContext`.
 - Added `craft\services\Fields::getAllLayouts()`.
 - Added `craft\services\Gql::defineContentArgumentsForFieldLayouts()`.
 - Added `craft\services\Gql::defineContentArgumentsForFields()`.
 - Added `craft\services\Gql::getOrSetContentArguments()`.
+- Added `craft\services\ProjectConfig::find()`.
 - Added `craft\services\ProjectConfig::flush()`.
 - Added `craft\services\ProjectConfig::writeYamlFiles()`.
 - Added `craft\web\twig\variables\Cp::getEntryTypeOptions()`.
 - All of the `craft\services\Sections` members have been moved into `craft\services\Entries`.
+- Renamed `craft\base\BlockElementInterface` to `NestedElementInterface`, and added a `getField()` method to it.
 - Renamed `craft\base\FieldInterface::valueType()` to `phpType()`.
+- Renamed `craft\fields\Matrix::$maxBlocks` to `$maxEntries`.
+- Renamed `craft\fields\Matrix::$minBlocks` to `$minEntries`.
 - Renamed `craft\web\CpScreenResponseBehavior::$additionalButtons()` and `additionalButtons()` to `$additionalButtonsHtml` and `additionalButtonsHtml()`. ([#13037](https://github.com/craftcms/cms/pull/13037))
 - Renamed `craft\web\CpScreenResponseBehavior::$content()` and `content()` to `$contentHtml` and `contentHtml()`. ([#13037](https://github.com/craftcms/cms/pull/13037))
 - Renamed `craft\web\CpScreenResponseBehavior::$contextMenu()` and `contextMenu()` to `$contextMenuHtml` and `contextMenuHtml()`. ([#13037](https://github.com/craftcms/cms/pull/13037))
@@ -87,12 +119,14 @@
 - Renamed `craft\web\CpScreenResponseBehavior::$pageSidebar()` and `pageSidebar()` to `$pageSidebarHtml` and `pageSidebarHtml()`. ([#13037](https://github.com/craftcms/cms/pull/13037))
 - Renamed `craft\web\CpScreenResponseBehavior::$sidebar()` and `sidebar()` to `$metaSidebarHtml` and `metaSidebarHtml()`. ([#13037](https://github.com/craftcms/cms/pull/13037))
 - `craft\db\Connection::getSupportsMb4()` is now dynamic for MySQL installs, based on whether the `elements_sites` table has an `mb4` charset.
+- `craft\elements\Entry::getSection()` can now return `null`, for nested entries.
 - `craft\fields\BaseOptionsField::$multi` and `$optgroups` properties are now static.
 - `craft\gql\mutations\Entry::createSaveMutations()` now accepts a `$section` argument.
 - `craft\helpers\Db::parseParam()`, `parseDateParam()`, `parseMoneyParam()`, and `parseNumericParam()` now return `null` instead of an empty string if no condition should be applied.
 - `craft\i18n\I18N::getPrimarySiteLocale()` is now deprecated. `craft\models\Site::getLocale()` should be used instead.
 - `craft\i18n\I18N::getPrimarySiteLocaleId()` is now deprecated. `craft\models\Site::$language` should be used instead.
 - `craft\services\ProjectConfig::saveModifiedConfigData()` no longer has a `$writeExternalConfig` argument, and no longer writes out updated project config YAML files.
+- Removed `craft\base\ApplicationTrait::getMatrix()`.
 - Removed `craft\base\Element::$contentId`.
 - Removed `craft\base\ElementInterface::getContentTable()`.
 - Removed `craft\base\ElementInterface::getFieldColumnPrefix()`.
@@ -113,9 +147,22 @@
 - Removed `craft\controllers\Sections::actionReorderEntryTypes()`.
 - Removed `craft\controllers\Sections::actionSaveEntryType()`.
 - Removed `craft\db\Table::FIELDGROUPS`.
+- Removed `craft\elements\MatrixBlock`.
 - Removed `craft\elements\db\ElementQuery::$contentTable`.
+- Removed `craft\elements\db\MatrixBlockQuery`.
+- Removed `craft\errors\MatrixBlockTypeNotFoundException`.
+- Removed `craft\events\BlockTypesEvent`.
 - Removed `craft\events\FieldGroupEvent`.
+- Removed `craft\fields\Matrix::EVENT_SET_FIELD_BLOCK_TYPES`.
+- Removed `craft\fields\Matrix::contentTable`.
 - Removed `craft\fields\Matrix::getBlockTypeFields()`.
+- Removed `craft\fields\Matrix::getBlockTypes()`.
+- Removed `craft\fields\Matrix::setBlockTypes()`.
+- Removed `craft\gql\arguments\elements\MatrixBlock`.
+- Removed `craft\gql\interfaces\elements\MatrixBlock`.
+- Removed `craft\gql\resolvers\elements\MatrixBlock`.
+- Removed `craft\gql\types\elements\MatrixBlock`.
+- Removed `craft\gql\types\generators\MatrixBlockType`.
 - Removed `craft\helpers\Db::GLUE_AND`, `GLUE_OR`, and `GLUE_NOT`. `craft\db\QueryParam::AND`, `OR`, and `NOT` can be used instead.
 - Removed `craft\helpers\Db::extractGlue()`. `craft\db\QueryParam::extractOperator()` can be used instead.
 - Removed `craft\helpers\ElementHelper::fieldColumn()`.
@@ -126,6 +173,7 @@
 - Removed `craft\models\EntryType::$sortOrder`.
 - Removed `craft\models\EntryType::getSection()`.
 - Removed `craft\models\FieldGroup`.
+- Removed `craft\models\MatrixBlockType`.
 - Removed `craft\records\EntryType::getSection()`.
 - Removed `craft\records\Field::getGroup()`.
 - Removed `craft\records\Field::getOldColumnSuffix()`.
@@ -134,6 +182,8 @@
 - Removed `craft\records\FieldLayout::getTabs()`.
 - Removed `craft\records\FieldLayoutField`.
 - Removed `craft\records\FieldLayoutTab`.
+- Removed `craft\records\MatrixBlockType`.
+- Removed `craft\records\MatrixBlock`.
 - Removed `craft\services\Content`.
 - Removed `craft\services\Fields::EVENT_AFTER_DELETE_FIELD_GROUP`.
 - Removed `craft\services\Fields::EVENT_AFTER_SAVE_FIELD_GROUP`.
@@ -152,7 +202,10 @@
 - Removed `craft\services\Fields::handleDeletedGroup()`.
 - Removed `craft\services\Fields::saveGroup()`.
 - Removed `craft\services\Fields::updateColumn()`.
-- Removed `craft\services\Matrix::defineContentTableName()`.
+- Removed `craft\services\Matrix`.
+- Removed `craft\services\ProjectConfig::PATH_MATRIX_BLOCK_TYPES`.
+- Removed `craft\services\ProjectConfig::PATH_MATRIX_BLOCK_TYPES`.
+- Removed `craft\services\ProjectConfig::PATH_MATRIX_BLOCK_TYPES`.
 - Removed `craft\services\ProjectConfig::updateStoredConfigAfterRequest()`.
 - Removed `craft\services\Sections::reorderEntryTypes()`.
 
