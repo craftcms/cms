@@ -69,24 +69,8 @@ return [
                         'name' => 'Matrix 1',
                         'handle' => 'matrixFirst',
                         'type' => Matrix::class,
-                        'blockTypes' => [
-                            'new1' => [
-                                'name' => 'A Block',
-                                'handle' => 'aBlock',
-                                'fields' => [
-                                    'new1' => [
-                                        'type' => PlainText::class,
-                                        'name' => 'First Subfield',
-                                        'handle' => 'firstSubfield',
-                                        'columnSuffix' => 'aaaaaaaa',
-                                        'instructions' => '',
-                                        'required' => false,
-                                        'typesettings' => [
-                                            'multiline' => '',
-                                        ],
-                                    ],
-                                ],
-                            ],
+                        'entryTypes' => [
+                            'entry-type-1007------------------uid',
                         ],
                         'required' => false,
                     ],
@@ -144,42 +128,15 @@ return [
             [
                 'name' => 'Tab 1',
                 'fields' => [
-                    // MATRIX FIELD
+                    // MATRIX FIELD 2
                     [
                         'uid' => 'field-1003-----------------------uid',
                         'name' => 'Matrix 2',
                         'handle' => 'matrixSecond',
                         'type' => Matrix::class,
-                        'blockTypes' => [
-                            'new1' => [
-                                'name' => 'A Block',
-                                'handle' => 'aBlock',
-                                'fields' => [
-                                    'new1' => [
-                                        'type' => PlainText::class,
-                                        'name' => 'First Subfield',
-                                        'handle' => 'firstSubfield',
-                                        'columnSuffix' => 'aaaaaaaa',
-                                        'instructions' => '',
-                                        'required' => false,
-                                        'typesettings' => [
-                                            'multiline' => '',
-                                        ],
-                                    ],
-                                ],
-                            ],
-                            'new2' => [
-                                'name' => 'B Block',
-                                'handle' => 'bBlock',
-                                'fields' => [
-                                    'new1' => [
-                                        'type' => Entries::class,
-                                        'name' => 'Entries Subfield',
-                                        'handle' => 'entriesSubfield',
-                                        'required' => false,
-                                    ],
-                                ],
-                            ],
+                        'entryTypes' => [
+                            'entry-type-1008------------------uid',
+                            'entry-type-1009------------------uid',
                         ],
                         'required' => false,
                     ],
@@ -215,30 +172,14 @@ return [
             [
                 'name' => 'Tab 1',
                 'fields' => [
-                    // MATRIX FIELD 1
+                    // MATRIX FIELD 3
                     [
                         'uid' => 'field-1006-----------------------uid',
-                        'name' => 'Matrix 1',
+                        'name' => 'Matrix 3',
                         'handle' => 'matrixThird',
                         'type' => Matrix::class,
-                        'blockTypes' => [
-                            'new1' => [
-                                'name' => 'A Block',
-                                'handle' => 'aBlock',
-                                'fields' => [
-                                    'new1' => [
-                                        'type' => PlainText::class,
-                                        'name' => 'First Subfield',
-                                        'handle' => 'firstSubfield',
-                                        'columnSuffix' => 'aaaaaaaa',
-                                        'instructions' => '',
-                                        'required' => false,
-                                        'typesettings' => [
-                                            'multiline' => '',
-                                        ],
-                                    ],
-                                ],
-                            ],
+                        'entryTypes' => [
+                            'entry-type-1010------------------uid',
                         ],
                         'required' => false,
                     ],
@@ -284,6 +225,86 @@ return [
                             ],
                         ],
                         'required' => true,
+                    ],
+                ],
+            ],
+        ],
+    ],
+    [
+        'uid' => 'field-layout-1005----------------uid',
+        'type' => Entry::class,
+        'tabs' => [
+            [
+                'name' => 'Tab 1',
+                'fields' => [
+                    [
+                        'type' => PlainText::class,
+                        'name' => 'First Subfield',
+                        'handle' => 'firstSubfield',
+                        'instructions' => '',
+                        'required' => false,
+                        'settings' => [
+                            'multiline' => '',
+                        ],
+                    ],
+                ],
+            ],
+        ],
+    ],
+    [
+        'uid' => 'field-layout-1006----------------uid',
+        'type' => Entry::class,
+        'tabs' => [
+            [
+                'name' => 'Tab 1',
+                'fields' => [
+                    [
+                        'type' => PlainText::class,
+                        'name' => 'Second Subfield',
+                        'handle' => 'secondSubfield',
+                        'instructions' => '',
+                        'required' => false,
+                        'settings' => [
+                            'multiline' => '',
+                        ],
+                    ],
+                ],
+            ],
+        ],
+    ],
+    [
+        'uid' => 'field-layout-1007----------------uid',
+        'type' => Entry::class,
+        'tabs' => [
+            [
+                'name' => 'Tab 1',
+                'fields' => [
+                    [
+                        'type' => Entries::class,
+                        'name' => 'Entries Subfield',
+                        'handle' => 'entriesSubfield',
+                        'required' => false,
+                    ],
+                ],
+            ],
+        ],
+    ],
+    [
+        'uid' => 'field-layout-1008----------------uid',
+        'type' => Entry::class,
+        'tabs' => [
+            [
+                'name' => 'Tab 1',
+                'fields' => [
+                    [
+                        'type' => PlainText::class,
+                        'name' => 'Third Subfield',
+                        'handle' => 'thirdSubfield',
+                        'instructions' => '',
+                        'required' => false,
+                        'settings' => [
+                            'multiline' => '',
+                        ],
                     ],
                 ],
             ],

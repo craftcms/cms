@@ -11,9 +11,11 @@ use Craft;
 use craft\base\Element;
 use craft\base\ElementInterface;
 use craft\db\Table;
+use craft\elements\Entry;
 use craft\errors\InvalidElementException;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Db;
+use craft\models\FieldLayout;
 use craft\test\DbFixtureTrait;
 use yii\test\DbFixture;
 use yii\test\FileFixtureTrait;
@@ -58,6 +60,8 @@ abstract class BaseElementFixture extends DbFixture
      */
     public function load(): void
     {
+        $fieldsService = Craft::$app->getFields();
+
         foreach ($this->loadData($this->dataFile) as $key => $data) {
             $element = $this->createElement();
 
@@ -68,15 +72,19 @@ abstract class BaseElementFixture extends DbFixture
             $fieldLayout = null;
             if (isset($data['fieldLayoutType'])) {
                 $fieldLayoutType = ArrayHelper::remove($data, 'fieldLayoutType');
-                $fieldLayout = Craft::$app->getFields()->getLayoutByType($fieldLayoutType);
+                $fieldLayout = $fieldsService->getLayoutByType($fieldLayoutType);
                 if ($fieldLayout->id === null) {
                     codecept_debug("Field layout with type: $fieldLayoutType could not be found");
                 }
             } elseif (isset($data['fieldLayoutUid'])) {
                 $fieldLayoutUid = ArrayHelper::remove($data, 'fieldLayoutUid');
-                $fieldLayout = Craft::$app->getFields()->getLayoutByUid($fieldLayoutUid);
+                $fieldLayout = $fieldsService->getLayoutByUid($fieldLayoutUid);
                 if (!$fieldLayout) {
-                    codecept_debug("Field layout with UUID: $fieldLayoutUid could not be found");
+                    $fieldLayout = new FieldLayout([
+                        'type' => Entry::class,
+                        'uid' => $fieldLayoutUid,
+                    ]);
+                    $fieldsService->saveLayout($fieldLayout);
                 }
             }
             if ($fieldLayout?->id !== null) {

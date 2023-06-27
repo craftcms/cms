@@ -58,7 +58,14 @@ abstract class FieldLayoutFixture extends DbFixture
             // Get the tabs from the $fieldLayout value and unset the tabs (for later)
             $tabConfigs = ArrayHelper::remove($layoutConfig, 'tabs') ?? [];
 
-            $layout = $this->_layouts[] = new FieldLayout($layoutConfig);
+            $layout = null;
+            if (isset($layoutConfig['uid'])) {
+                $layout = $fieldsService->getLayoutByUid($layoutConfig['uid']);
+            }
+            $layout ??= new FieldLayout();
+            Craft::configure($layout, $layoutConfig);
+            $this->_layouts[] = $layout;
+
             $tabs = [];
 
             foreach ($tabConfigs as $tabIndex => $tabConfig) {

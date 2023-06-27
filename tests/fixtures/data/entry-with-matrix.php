@@ -12,16 +12,15 @@ return [
         'plainTextField2' => "You think it's code you're testing now?",
         'matrixSecond' => [
             'new1' => [
-                'type' => 'bBlock',
+                'type' => 'matrixLayout3',
                 'fields' => [
                     'entriesSubfield' => $relatedEntryQuery,
                 ],
             ],
             'new2' => [
-                'type' => 'aBlock',
+                'type' => 'matrixLayout2',
                 'fields' => [
-                    'firstSubfield' => 'Some text',
-
+                    'secondSubfield' => 'Some text',
                 ],
             ],
         ],

@@ -1859,7 +1859,7 @@ EOD;
     public function updateTitle(): void
     {
         $entryType = $this->getType();
-        if (!$entryType->hasTitleField && isset($entryType->titleFormat)) {
+        if (!$entryType->hasTitleField) {
             // Make sure that the locale has been loaded in case the title format has any Date/Time fields
             Craft::$app->getLocale();
             // Set Craft to the entry’s site’s language, in case the title format has any static translations

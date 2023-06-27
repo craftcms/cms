@@ -46,7 +46,7 @@ class EagerLoadingTest extends TestCase
             ->with([
                 'relatedEntry', // field exists and is part of the layout
                 'matrixSecond', // field exists and is part of the layout
-                'matrixSecond.bBlock:entriesSubfield', // field exists and is part of the layout
+                'matrixSecond.matrixLayout3:entriesSubfield', // field exists and is part of the layout
                 'matrixFirst', // field exists and is NOT part of the layout
             ])
             ->one();

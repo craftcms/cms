@@ -695,7 +695,14 @@ class Matrix extends Field implements
                 $entry->setScenario($scenario);
             }
 
-            if (!$entry->validate()) {
+            // Don't validate the title if the entry type has a dynamic title format
+            if (!$entry->getType()->hasTitleField) {
+                $attributes = ArrayHelper::withoutValue($entry->activeAttributes(), 'title');
+            } else {
+                $attributes = null;
+            }
+
+            if (!$entry->validate($attributes)) {
                 $element->addModelErrors($entry, "$this->handle[$i]");
                 $allEntriesValidate = false;
             }

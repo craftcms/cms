@@ -220,12 +220,17 @@ class ElementFieldResolverTest extends TestCase
         $mockElement = $this->make(
             Entry::class, [
                 '__get' => function($property) {
-                    // Assume a content field named 'plainTextField'
-                    return $property == 'firstSubfield' ? 'ok' : $this->$property;
+                    // Assume a content field named 'firstSubfield'
+                    return match ($property) {
+                        'firstSubfield' => 'ok',
+                        'typeId' => 99,
+                        default => $this->$property,
+                    };
                 },
                 'fieldId' => 1000,
                 'ownerId' => 80,
                 'typeId' => 99,
+                'getTypeId' => 99,
                 'getType' => function() use ($typeHandle) {
                     return $this->make(EntryType::class, ['handle' => $typeHandle]);
                 },

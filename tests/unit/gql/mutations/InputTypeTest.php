@@ -88,14 +88,14 @@ class InputTypeTest extends TestCase
         return [
             [
                 [
-                    'blocks' =>
+                    'entries' =>
                         [
                             ['blockType' => ['id' => 2, 'one', 'two']],
                             ['blockTypeA' => ['snap' => 1, 'crackle' => 2, 'pop' => 3], 'blockTypeB' => ['id' => 88, 'stuff' => 'ok']],
                         ],
                 ],
                 [
-                    'blocks' =>
+                    'entries' =>
                         [
                             2 => [
                                 'type' => 'blockType',
@@ -117,14 +117,14 @@ class InputTypeTest extends TestCase
             ],
             [
                 [
-                    'blocks' =>
+                    'entries' =>
                         [
                             ['blockType' => ['id' => 2, 'one', 'two']],
                             ['blockTypeB' => ['id' => 88, 'stuff' => 'ok'], 'blockTypeA' => ['snap' => 1, 'crackle' => 2, 'pop' => 3]],
                         ],
                 ],
                 [
-                    'blocks' =>
+                    'entries' =>
                         [
                             2 => [
                                 'type' => 'blockType',
@@ -144,7 +144,7 @@ class InputTypeTest extends TestCase
             ],
             [
                 [
-                    'blocks' =>
+                    'entries' =>
                         [
                             ['blockType' => ['one']],
                             ['blockType' => ['two']],
@@ -153,7 +153,7 @@ class InputTypeTest extends TestCase
                         ],
                 ],
                 [
-                    'blocks' =>
+                    'entries' =>
                         [
                             'new:1' => [
                                 'type' => 'blockType',

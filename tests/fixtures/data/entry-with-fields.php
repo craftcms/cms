@@ -10,14 +10,13 @@ return [
         'plainTextField' => "You think it's code you're testing now?",
         'matrixFirst' => [
             'new1' => [
-                'type' => 'aBlock',
+                'type' => 'matrixLayout1',
                 'fields' => [
                     'firstSubfield' => 'Some text',
-
                 ],
             ],
             'new2' => [
-                'type' => 'aBlock',
+                'type' => 'matrixLayout1',
                 'fields' => [
                     'firstSubfield' => 'Some text',
                 ],
