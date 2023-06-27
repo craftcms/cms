@@ -8,12 +8,12 @@
 namespace craft\elements\db;
 
 use Craft;
-use craft\base\ElementContainerFieldInterface;
 use craft\base\ElementInterface;
 use craft\base\FieldInterface;
 use craft\db\Query;
 use craft\db\Table;
 use craft\fields\BaseRelationField;
+use craft\fields\Matrix;
 use craft\helpers\ArrayHelper;
 use craft\helpers\StringHelper;
 use craft\models\Site;
@@ -342,7 +342,7 @@ class ElementRelationParamParser extends BaseObject
         $relationFieldIds = [];
 
         if ($relCriteria['field']) {
-            // Loop through all of the fields in this rel criteria, create the ElementContainerFieldInterface-specific
+            // Loop through all of the fields in this rel criteria, create the Matrix-specific
             // conditions right away and save the normal field IDs for later
             $fields = $relCriteria['field'];
             if (!is_array($fields)) {
@@ -359,19 +359,17 @@ class ElementRelationParamParser extends BaseObject
                 if ($fieldModel instanceof BaseRelationField) {
                     // We'll deal with normal relation fields all together
                     $relationFieldIds[] = $fieldModel->id;
-                } elseif ($fieldModel instanceof ElementContainerFieldInterface) {
+                } elseif ($fieldModel instanceof Matrix) {
                     $nestedFieldIds = [];
 
-                    // Searching by a specific block type field?
+                    // Searching by a specific nested field?
                     if (isset($fieldHandleParts[1])) {
                         // There could be more than one field with this handle, so we must loop through all
                         // the field layouts on this field
-                        foreach ($fieldModel->getFieldLayoutProviders() as $provider) {
-                            foreach ($provider->getFieldLayout()->getCustomFields() as $nestedField) {
-                                if ($nestedField->handle == $fieldHandleParts[1]) {
-                                    $nestedFieldIds[] = $nestedField->id;
-                                    break;
-                                }
+                        foreach ($fieldModel->getEntryTypes() as $entryType) {
+                            $nestedField = $entryType->getFieldLayout()->getFieldByHandle($fieldHandleParts[1]);
+                            if ($nestedField) {
+                                $nestedFieldIds[] = $nestedField->id;
                             }
                         }
 
@@ -452,9 +450,9 @@ class ElementRelationParamParser extends BaseObject
             }
         }
 
-        // If there were no fields, or there are some non-ElementContainerFieldInterface fields, add the
+        // If there were no fields, or there are some non-Matrix fields, add the
         // normal relation condition. (Basically, run this code if the rel criteria wasn't exclusively for
-        // ElementContainerFieldInterface fields.)
+        // Matrix fields.)
         if (empty($relCriteria['field']) || !empty($relationFieldIds)) {
             if ($dir === self::DIR_FORWARD) {
                 self::$_relateSourcesCount++;
