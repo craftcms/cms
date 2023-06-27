@@ -85,9 +85,10 @@ class m230617_070415_entrify_matrix_blocks extends Migration
 
         foreach ($fieldConfigs as $fieldPath => $fieldConfig) {
             $fieldUid = ArrayHelper::lastValue(explode('.', $fieldPath));
+            $fieldEntryTypes = [];
 
             foreach ($blockTypeConfigsByField[$fieldUid] ?? [] as $blockTypeUid => $blockTypeConfig) {
-                $entryType = $newEntryTypes[] = new EntryType([
+                $entryType = $newEntryTypes[] = $fieldEntryTypes[] = new EntryType([
                     'uid' => $blockTypeUid,
                     'name' => $this->uniqueName($blockTypeConfig['name'], $entryTypeNames),
                     'handle' => $this->uniqueHandle($blockTypeConfig['handle'], $entryTypeHandles),
@@ -140,7 +141,7 @@ class m230617_070415_entrify_matrix_blocks extends Migration
             $fieldConfig['settings'] += [
                 'maxEntries' => ArrayHelper::remove($fieldConfig['settings'], 'maxBlocks'),
                 'minEntries' => ArrayHelper::remove($fieldConfig['settings'], 'minBlocks'),
-                'entryTypes' => array_map(fn(EntryType $entryType) => $entryType->uid, $newEntryTypes),
+                'entryTypes' => array_map(fn(EntryType $entryType) => $entryType->uid, $fieldEntryTypes),
             ];
             unset($fieldConfig['settings']['contentTable']);
 
