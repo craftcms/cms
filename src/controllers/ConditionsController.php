@@ -34,6 +34,12 @@ class ConditionsController extends Controller
      */
     public function beforeAction($action): bool
     {
+        if (!parent::beforeAction($action)) {
+            return false;
+        }
+
+        $this->requireCpRequest();
+
         $baseConfig = Json::decodeIfJson($this->request->getBodyParam('config'));
         $config = $this->request->getBodyParam($baseConfig['name']);
         $newRuleType = ArrayHelper::remove($config, 'new-rule-type');
@@ -48,7 +54,7 @@ class ConditionsController extends Controller
             $this->_condition->addConditionRule($rule);
         }
 
-        return parent::beforeAction($action);
+        return true;
     }
 
     /**

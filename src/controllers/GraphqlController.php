@@ -59,13 +59,17 @@ class GraphqlController extends Controller
             throw new NotFoundHttpException(Craft::t('yii', 'Page not found.'));
         }
 
-        Craft::$app->requireEdition(Craft::Pro);
-
         if ($action->id === 'api') {
             $this->enableCsrfValidation = false;
         }
 
-        return parent::beforeAction($action);
+        if (!parent::beforeAction($action)) {
+            return false;
+        }
+
+        Craft::$app->requireEdition(Craft::Pro);
+
+        return true;
     }
 
     /**
