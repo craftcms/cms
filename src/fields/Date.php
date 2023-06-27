@@ -64,6 +64,15 @@ class Date extends Field implements PreviewableFieldInterface, SortableFieldInte
     }
 
     /**
+     * @inheritdoc
+     */
+    public static function queryCondition(array $instances, mixed $value, array &$params): ?array
+    {
+        $valueSql = static::valueSql($instances);
+        return Db::parseDateParam($valueSql, $value);
+    }
+
+    /**
      * @var bool Whether a datepicker should be shown as part of the input
      */
     public bool $showDate = true;
@@ -254,6 +263,7 @@ class Date extends Field implements PreviewableFieldInterface, SortableFieldInte
             'describedBy' => $this->describedBy,
             'name' => $this->handle,
             'value' => $value,
+            'timeZone' => $this->showTimeZone ? false : null,
             'outputTzParam' => false,
             'minuteIncrement' => $this->minuteIncrement,
             'isDateTime' => $this->showTime,
@@ -410,14 +420,6 @@ class Date extends Field implements PreviewableFieldInterface, SortableFieldInte
     public function getElementConditionRuleType(): array|string|null
     {
         return DateFieldConditionRule::class;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getQueryCondition(mixed $value, array &$params = []): ?array
-    {
-        return Db::parseDateParam($this->getValueSql(), $value);
     }
 
     /**

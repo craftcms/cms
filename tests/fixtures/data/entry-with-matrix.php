@@ -8,20 +8,19 @@ return [
         'sectionId' => '1006',
         'typeId' => '1006',
         'title' => 'Matrix with relational field',
-        'fieldLayoutType' => 'field_layout_with_matrix_with_relational_field',
+        'fieldLayoutUid' => 'field-layout-1003----------------uid',
         'plainTextField2' => "You think it's code you're testing now?",
         'matrixSecond' => [
             'new1' => [
-                'type' => 'bBlock',
+                'type' => 'matrixLayout3',
                 'fields' => [
                     'entriesSubfield' => $relatedEntryQuery,
                 ],
             ],
             'new2' => [
-                'type' => 'aBlock',
+                'type' => 'matrixLayout2',
                 'fields' => [
-                    'firstSubfield' => 'Some text',
-
+                    'secondSubfield' => 'Some text',
                 ],
             ],
         ],

@@ -8,6 +8,7 @@
 namespace craft\gql\types\generators;
 
 use Craft;
+use craft\base\ElementContainerFieldInterface;
 use craft\elements\Entry as EntryElement;
 use craft\gql\base\Generator;
 use craft\gql\base\GeneratorInterface;
@@ -32,9 +33,18 @@ class EntryType extends Generator implements GeneratorInterface, SingleGenerator
      */
     public static function generateTypes(mixed $context = null): array
     {
-        $gqlTypes = [];
+        if ($context instanceof ElementContainerFieldInterface) {
+            $entryTypes = [];
+            foreach ($context->getFieldLayoutProviders() as $provider) {
+                if ($provider instanceof EntryTypeModel) {
+                    $entryTypes[] = $provider;
+                }
+            }
+        } else {
+            $entryTypes = GqlHelper::getSchemaContainedEntryTypes();
+        }
 
-        $entryTypes = GqlHelper::getSchemaContainedEntryTypes();
+        $gqlTypes = [];
 
         foreach ($entryTypes as $entryType) {
             // Generate a type for each entry type
@@ -53,16 +63,11 @@ class EntryType extends Generator implements GeneratorInterface, SingleGenerator
         /** @var EntryTypeModel $context */
         $typeName = EntryElement::gqlTypeName($context);
 
-        if ($createdType = GqlEntityRegistry::getEntity($typeName)) {
-            return $createdType;
-        }
-
-        $contentFieldGqlTypes = self::getContentFields($context);
-        $entryTypeFields = array_merge(EntryInterface::getFieldDefinitions(), $contentFieldGqlTypes);
-
-        return GqlEntityRegistry::createEntity($typeName, new Entry([
+        return GqlEntityRegistry::getOrCreate($typeName, fn() => new Entry([
             'name' => $typeName,
-            'fields' => function() use ($entryTypeFields, $typeName) {
+            'fields' => function() use ($context, $typeName) {
+                $contentFieldGqlTypes = self::getContentFields($context);
+                $entryTypeFields = array_merge(EntryInterface::getFieldDefinitions(), $contentFieldGqlTypes);
                 return Craft::$app->getGql()->prepareFieldDefinitions($entryTypeFields, $typeName);
             },
         ]));

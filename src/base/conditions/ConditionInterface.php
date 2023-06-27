@@ -38,6 +38,16 @@ interface ConditionInterface
     public function getConfig(): array;
 
     /**
+     * Creates a condition rule instance.
+     *
+     * @param array|string $config The condition class or configuration array
+     * @phpstan-param array{class: string}|array{type:string}|string $config The condition class or configuration array
+     * @return ConditionRuleInterface
+     * @throws InvalidArgumentException if the condition rule does not implement [[ConditionRuleInterface]]
+     */
+    public function createConditionRule(array|string $config): ConditionRuleInterface;
+
+    /**
      * Returns the available rule types for this condition.
      *
      * Rule types should be defined as either the class name or an array with a `class` key set to the class name.

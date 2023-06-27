@@ -3,34 +3,36 @@
 <div class="matrix matrix-field" id="{{ id }}">
     <span aria-live="assertive" class="visually-hidden" data-status-message></span>
     <div class="blocks" role="list">
-        {% set totalNewBlocks = 0 %}
-        {% for block in blocks %}
-            {% set blockType = block.getType() %}
-            {% set blockTypeName = blockType.name|t('site') %}
-            {% set blockId = block.id %}
-            {% set blockIsNew = blockId is empty %}
-            {% if blockIsNew %}
-                {% set totalNewBlocks = totalNewBlocks + 1 %}
-                {% set blockId = 'new'~totalNewBlocks %}
+        {% set totalNewEntries = 0 %}
+        {% for entry in entries %}
+            {% set entryType = entry.getType() %}
+            {% set entryTypeName = entryType.name|t('site') %}
+            {% set entryId = entry.id %}
+            {% set entryIsNew = entryId is empty %}
+            {% if entryIsNew %}
+                {% set totalNewEntries = totalNewEntries + 1 %}
+                {% set entryId = 'new'~totalNewEntries %}
             {% endif %}
-            {% set baseInputName = "#{name}[blocks][#{blockId}]" %}
-            {% set blockAttributes = {
+            {% set baseInputName = "#{name}[entries][#{entryId}]" %}
+            {% set entryAttributes = {
                 class: [
                     'matrixblock',
-                    not block.enabled ? 'disabled',
+                    not entry.enabled ? 'disabled',
                     static ? 'static',
                 ]|filter,
                 data: {
-                    id: blockId,
-                    type: blockType.handle,
-                    'type-name': blockTypeName,
-                    collapsed: block.collapsed,
+                    id: entryId,
+                    type: entryType.handle,
+                    'type-name': entryTypeName,
+                    collapsed: entry.collapsed,
+                    'type-id': entry.typeId,
+                    'field-layout-id': entry.getFieldLayout().id
                 },
                 role: 'listitem',
             } %}
 
-            {% set actionBtnLabel = "#{blockTypeName} #{'Actions'|t('app')}" %}
-            {% set actionMenuId = "matrixblock-action-menu-#{blockId}" %}
+            {% set actionBtnLabel = "#{entryTypeName} #{'Actions'|t('app')}" %}
+            {% set actionMenuId = "matrixblock-action-menu-#{entryId}" %}
 
             {% set actionBtnAttributes = {
                 class: ['btn', 'settings', 'icon', 'menubtn'],
@@ -46,19 +48,19 @@
                 }
             } %}
 
-            <div {{ attr(blockAttributes) }}>
+            <div {{ attr(entryAttributes) }}>
                 {% if not static %}
-                    {{ hiddenInput("#{name}[sortOrder][]", blockId) }}
-                    {# only register a delta name for this block if it’s not new #}
-                    {% if not blockIsNew %}
+                    {{ hiddenInput("#{name}[sortOrder][]", entryId) }}
+                    {# only register a delta name for this entry if it’s not new #}
+                    {% if not entryIsNew %}
                         {% do view.registerDeltaName(baseInputName) %}
                     {% endif %}
-                    {{ hiddenInput("#{baseInputName}[type]", blockType.handle) }}
-                    {{ hiddenInput("#{baseInputName}[enabled]", block.enabled ? '1' : '') }}
+                    {{ hiddenInput("#{baseInputName}[type]", entryType.handle) }}
+                    {{ hiddenInput("#{baseInputName}[enabled]", entry.enabled ? '1' : '') }}
                     <div class="titlebar">
-                        <div class="blocktype{% if block.hasErrors() %} error{% endif %}">
-                            {{ blockTypeName }}
-                            {% if block.hasErrors() %}<span data-icon="alert" aria-label="{{ 'Error'|t('app') }}"></span>{% endif %}
+                        <div class="blocktype{% if entry.hasErrors() %} error{% endif %}">
+                            {{ entryTypeName }}
+                            {% if entry.hasErrors() %}<span data-icon="alert" aria-label="{{ 'Error'|t('app') }}"></span>{% endif %}
                         </div>
                         <div class="preview"></div>
                     </div>
@@ -77,20 +79,20 @@
                                 <ul class="padded">
                                   <li><a data-icon="collapse" data-action="collapse" href="#" type="button" role="button" aria-label="{{ 'Collapse'|t('app') }}">{{ "Collapse"|t('app') }}</a></li>
                                   <li class="hidden"><a data-icon="expand" data-action="expand" href="#" type="button" role="button" aria-label="{{ 'Expand'|t('app') }}">{{ "Expand"|t('app') }}</a></li>
-                                  <li{% if not block.enabled %} class="hidden"{% endif %}><a data-icon="disabled" data-action="disable" href="#" type="button" role="button" aria-label="{{ 'Disable'|t('app') }}">{{ "Disable"|t('app') }}</a></li>
-                                  <li{% if block.enabled %} class="hidden"{% endif %}><a data-icon="enabled" data-action="enable" href="#" type="button" role="button" aria-label="{{ 'Enable'|t('app') }}">{{ "Enable"|t('app') }}</a></li>
+                                  <li{% if not entry.enabled %} class="hidden"{% endif %}><a data-icon="disabled" data-action="disable" href="#" type="button" role="button" aria-label="{{ 'Disable'|t('app') }}">{{ "Disable"|t('app') }}</a></li>
+                                  <li{% if entry.enabled %} class="hidden"{% endif %}><a data-icon="enabled" data-action="enable" href="#" type="button" role="button" aria-label="{{ 'Enable'|t('app') }}">{{ "Enable"|t('app') }}</a></li>
                                   <li><a data-icon="uarr" data-action="moveUp" href="#" type="button" role="button" aria-label="{{ 'Move up'|t('app') }}">{{ 'Move up'|t('app') }}</a></li>
                                   <li><a data-icon="darr" data-action="moveDown" href="#" type="button" role="button" aria-label="{{ 'Move down'|t('app') }}">{{ 'Move down'|t('app') }}</a></li>
                                 </ul>
-                                {% if not staticBlocks %}
+                                {% if not staticEntries %}
                                 <hr class="padded">
                                 <ul class="padded">
                                   <li><a class="error" data-icon="remove" data-action="delete" href="#" type="button" role="button" aria-label="{{ 'Delete'|t('app') }}">{{ "Delete"|t('app') }}</a></li>
                                 </ul>
                                 <hr class="padded">
                                 <ul class="padded">
-                                    {% for blockType in blockTypes %}
-                                      <li><a data-icon="plus" data-action="add" data-type="{{ blockType.handle }}" href="#" type="button" role="button" aria-label="{{ 'Add {type} above'|t('app', { type: blockType.name|t('site') }) }}">{{ "Add {type} above"|t('app', { type: blockType.name|t('site') }) }}</a></li>
+                                    {% for entryType in entryTypes %}
+                                      <li><a data-icon="plus" data-action="add" data-type="{{ entryType.handle }}" href="#" type="button" role="button" aria-label="{{ 'Add {type} above'|t('app', { type: entryType.name|t('site') }) }}">{{ "Add {type} above"|t('app', { type: entryType.name|t('site') }) }}</a></li>
                                     {% endfor %}
                                 </ul>
                                 {% endif %}
@@ -101,25 +103,25 @@
                 {% endif %}
                 <div class="fields">
                     {% namespace baseInputName %}
-                        {{ block.getFieldLayout().createForm(block, static).render()|raw }}
+                        {{ entry.getFieldLayout().createForm(entry, static).render()|raw }}
                     {% endnamespace %}
                 </div>
             </div>
         {% endfor %}
     </div>
-    {% if not static and not staticBlocks %}
+    {% if not static and not staticEntries %}
         <div class="buttons">
             <div class="btngroup">
-                {% for blockType in blockTypes %}
-                    <button type="button" class="btn dashed{% if loop.first %} add icon{% endif %}" data-type="{{ blockType.handle }}" aria-label="{{ blockType.name|t('site') }}" aria-describedby="{{ labelId }}">{{ blockType.name|t('site') }}</button>
+                {% for entryType in entryTypes %}
+                    <button type="button" class="btn dashed{% if loop.first %} add icon{% endif %}" data-type="{{ entryType.handle }}" aria-label="{{ entryType.name|t('site') }}" aria-describedby="{{ labelId }}">{{ entryType.name|t('site') }}</button>
                 {% endfor %}
             </div>
 
-            <button type="button" class="btn dashed add icon menubtn hidden">{{ "Add a block"|t('app') }}</button>
+            <button type="button" class="btn dashed add icon menubtn hidden">{{ "Add an entry"|t('app') }}</button>
             <div class="menu">
                 <ul>
-                    {% for blockType in blockTypes %}
-                        <li><a data-type="{{ blockType.handle }}">{{ blockType.name|t('site') }}</a></li>
+                    {% for entryType in entryTypes %}
+                        <li><a data-type="{{ entryType.handle }}">{{ entryType.name|t('site') }}</a></li>
                     {% endfor %}
                 </ul>
             </div>

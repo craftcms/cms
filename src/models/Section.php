@@ -267,7 +267,7 @@ class Section extends Model
         }
 
         // Set them with setSiteSettings() so they get indexed by site ID and setSection() gets called on them
-        $this->setSiteSettings(Craft::$app->getSections()->getSectionSiteSettings($this->id));
+        $this->setSiteSettings(Craft::$app->getEntries()->getSectionSiteSettings($this->id));
 
         return $this->_siteSettings;
     }
@@ -327,7 +327,7 @@ class Section extends Model
             return [];
         }
 
-        $this->_entryTypes = Craft::$app->getSections()->getEntryTypesBySectionId($this->id);
+        $this->_entryTypes = Craft::$app->getEntries()->getEntryTypesBySectionId($this->id);
 
         return $this->_entryTypes;
     }

@@ -96,7 +96,6 @@ class ProjectConfigData extends ReadOnlyProjectConfigData
             // Memoize the new config data
             $projectConfig->rememberAppliedChanges($path, $oldValue, $newValue, $message);
             $this->setInternal($path, $newValue);
-            $projectConfig->updateStoredConfigAfterRequest();
 
             if ($projectConfig->writeYamlAutomatically) {
                 $projectConfig->updateParsedConfigTimesAfterRequest();

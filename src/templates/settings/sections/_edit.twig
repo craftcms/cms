@@ -113,7 +113,7 @@
             section.type not in ['channel', 'structure'] ? 'hidden',
         ]|filter,
     } %}
-        {{ forms.field({
+        {{ forms.entryTypeField({
             label: 'Entry Types',
             instructions: 'Choose the types of entries that can be included in this section.'|t('app'),
             id: 'entry-types',
@@ -122,7 +122,7 @@
             values: section.getEntryTypes()|map(entryType => entryType.id),
             multi: true,
             errors: section.getErrors('entryTypes'),
-        }, 'template:_includes/forms/entryType.twig') }}
+        }) }}
     {% endtag %}
 
     {% set siteRows = [] %}

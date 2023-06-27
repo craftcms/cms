@@ -44,7 +44,7 @@ class EntryTypesController extends Controller
      */
     public function actionIndex(): Response
     {
-        $sectionsService = Craft::$app->getSections();
+        $sectionsService = Craft::$app->getEntries();
         $entryTypes = $sectionsService->getAllEntryTypes();
         usort($entryTypes, fn(EntryType $a, EntryType $b) => Craft::t('site', $a->name) <=> Craft::t('site', $b->name));
 
@@ -75,7 +75,7 @@ class EntryTypesController extends Controller
     {
         if ($entryTypeId !== null) {
             if ($entryType === null) {
-                $entryType = Craft::$app->getSections()->getEntryTypeById($entryTypeId);
+                $entryType = Craft::$app->getEntries()->getEntryTypeById($entryTypeId);
 
                 if (!$entryType) {
                     throw new NotFoundHttpException('Entry type not found');
@@ -120,7 +120,7 @@ class EntryTypesController extends Controller
     {
         $this->requirePostRequest();
 
-        $sectionsService = Craft::$app->getSections();
+        $sectionsService = Craft::$app->getEntries();
         $entryTypeId = $this->request->getBodyParam('entryTypeId');
 
         if ($entryTypeId) {
@@ -165,7 +165,7 @@ class EntryTypesController extends Controller
 
         $entryTypeId = $this->request->getRequiredBodyParam('id');
 
-        $success = Craft::$app->getSections()->deleteEntryTypeById($entryTypeId);
+        $success = Craft::$app->getEntries()->deleteEntryTypeById($entryTypeId);
         return $success ? $this->asSuccess() : $this->asFailure();
     }
 }

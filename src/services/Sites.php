@@ -919,7 +919,7 @@ class Sites extends Component
         $soloSectionIds = [];
 
         foreach ($sectionIds as $sectionId) {
-            $sectionSiteSettings = Craft::$app->getSections()->getSectionSiteSettings($sectionId);
+            $sectionSiteSettings = Craft::$app->getEntries()->getSectionSiteSettings($sectionId);
 
             if (count($sectionSiteSettings) == 1 && $sectionSiteSettings[0]->siteId == $site->id) {
                 $soloSectionIds[] = $sectionId;
@@ -972,49 +972,31 @@ class Sites extends Component
                         ['not', ['sourceSiteId' => null]],
                     ]);
 
-                    // All the Matrix tables
-                    $blockIds = (new Query())
+                    // Nested entries
+                    $nestedEntryIds = (new Query())
                         ->select(['id'])
-                        ->from([Table::MATRIXBLOCKS])
+                        ->from([Table::ENTRIES])
                         ->where(['primaryOwnerId' => $entryIds])
                         ->column();
 
-                    if (!empty($blockIds)) {
+                    if (!empty($nestedEntryIds)) {
                         Db::delete(Table::ELEMENTS_SITES, [
-                            'elementId' => $blockIds,
+                            'elementId' => $nestedEntryIds,
                             'siteId' => $transferContentTo,
                         ]);
 
                         Db::update(Table::ELEMENTS_SITES, [
                             'siteId' => $transferContentTo,
                         ], [
-                            'elementId' => $blockIds,
+                            'elementId' => $nestedEntryIds,
                             'siteId' => $site->id,
                         ]);
-
-                        $matrixTablePrefix = Craft::$app->getDb()->getSchema()->getRawTableName('{{%matrixcontent_}}');
-
-                        foreach (Craft::$app->getDb()->getSchema()->getTableNames() as $tableName) {
-                            if (str_starts_with($tableName, $matrixTablePrefix)) {
-                                Db::delete($tableName, [
-                                    'elementId' => $blockIds,
-                                    'siteId' => $transferContentTo,
-                                ]);
-
-                                Db::update($tableName, [
-                                    'siteId' => $transferContentTo,
-                                ], [
-                                    'elementId' => $blockIds,
-                                    'siteId' => $site->id,
-                                ]);
-                            }
-                        }
 
                         Db::update(Table::RELATIONS, [
                             'sourceSiteId' => $transferContentTo,
                         ], [
                             'and',
-                            ['sourceId' => $blockIds],
+                            ['sourceId' => $nestedEntryIds],
                             ['not', ['sourceSiteId' => null]],
                         ]);
                     }
@@ -1022,7 +1004,7 @@ class Sites extends Component
             } else {
                 // Delete those sections
                 foreach ($soloSectionIds as $sectionId) {
-                    Craft::$app->getSections()->deleteSectionById($sectionId);
+                    Craft::$app->getEntries()->deleteSectionById($sectionId);
                 }
             }
         }

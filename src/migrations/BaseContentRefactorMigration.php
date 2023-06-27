@@ -14,6 +14,7 @@ use craft\helpers\Db;
 use craft\helpers\Json;
 use craft\models\FieldLayout;
 use yii\db\ColumnSchema;
+use yii\db\Expression;
 use yii\db\Query as YiiQuery;
 use yii\db\Schema;
 
@@ -39,13 +40,24 @@ class BaseContentRefactorMigration extends Migration
         string $contentTable = '{{%content}}',
         string $fieldColumnPrefix = 'field_',
     ): void {
+        if (is_array($ids) && empty($ids)) {
+            return;
+        }
+
         $contentTableSchema = $this->db->getSchema()->getTableSchema($contentTable);
+
+        // make sure the table hasn't already been deleted
+        if (!$contentTableSchema) {
+            return;
+        }
+
         $fieldsByUid = [];
         $fieldColumns = [];
         $flatFieldColumns = [];
 
         if ($fieldLayout) {
-            foreach ($fieldLayout->getCustomFields() as $field) {
+            foreach ($fieldLayout->getCustomFieldElements() as $layoutElement) {
+                $field = $layoutElement->getField();
                 $dbType = $field::dbType();
 
                 if ($dbType === null) {
@@ -60,7 +72,7 @@ class BaseContentRefactorMigration extends Migration
                 );
 
                 if ($contentTableSchema->getColumn($primaryColumn)) {
-                    $fieldsByUid[$field->uid] = $field;
+                    $fieldsByUid[$layoutElement->uid] = $field;
 
                     // is this a multi-column field?
                     if (is_array($dbType)) {
@@ -72,11 +84,11 @@ class BaseContentRefactorMigration extends Migration
                                 $key,
                                 $field->columnSuffix,
                             );
-                            $fieldColumns[$field->uid][$key] = $column;
+                            $fieldColumns[$layoutElement->uid][$key] = $column;
                             $flatFieldColumns[] = "c.$column";
                         }
                     } else {
-                        $fieldColumns[$field->uid] = $primaryColumn;
+                        $fieldColumns[$layoutElement->uid] = $primaryColumn;
                         $flatFieldColumns[] = $primaryColumn;
                     }
                 }
@@ -149,6 +161,29 @@ class BaseContentRefactorMigration extends Migration
             ], ['id' => $element['id']], updateTimestamp: false, db: $this->db);
 
             echo " done\n";
+        }
+
+        // make sure the elements’ fieldLayoutId values are accurate
+        $this->update(Table::ELEMENTS, [
+            'fieldLayoutId' => $fieldLayout->id,
+        ], ['in', 'id', $ids], updateTimestamp: false);
+
+        if (!empty($fieldsByUid)) {
+            $caseSql = 'CASE ';
+            $params = [];
+            $i = 0;
+            foreach ($fieldsByUid as $uid => $field) {
+                $i++;
+                $caseSql .= "WHEN [[fieldId]] = :fieldId$i THEN :uid$i ";
+                $params += [
+                    ":fieldId$i" => $field->id,
+                    ":uid$i" => $uid,
+                ];
+            }
+            $caseSql .= "ELSE '0' END";
+            $this->update(Table::CHANGEDFIELDS, [
+                'layoutElementUid' => new Expression($caseSql),
+            ], ['in', 'elementId', $ids], $params, false);
         }
 
         // drop these content rows completely

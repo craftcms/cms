@@ -273,13 +273,9 @@ class Gql
      */
     public static function getUnionType(string $typeName, array $includedTypes, ?callable $resolveFunction = null): mixed
     {
-        if (!$resolveFunction) {
-            $resolveFunction = function(ElementInterface $value) {
-                return $value->getGqlTypeName();
-            };
-        }
+        $resolveFunction ??= fn(ElementInterface $value) => $value->getGqlTypeName();
 
-        return GqlEntityRegistry::getEntity($typeName) ?: GqlEntityRegistry::createEntity($typeName, new UnionType([
+        return GqlEntityRegistry::getOrCreate($typeName, fn() => new UnionType([
             'name' => $typeName,
             'types' => $includedTypes,
             'resolveType' => $resolveFunction,
@@ -580,7 +576,7 @@ class Gql
     {
         $entryTypes = [];
 
-        foreach (Craft::$app->getSections()->getAllSections() as $section) {
+        foreach (Craft::$app->getEntries()->getAllSections() as $section) {
             if (self::isSchemaAwareOf("sections.$section->uid", $schema)) {
                 foreach ($section->getEntryTypes() as $entryType) {
                     if (!isset($entryTypes[$entryType->uid])) {
@@ -602,7 +598,7 @@ class Gql
     public static function getSchemaContainedSections(?GqlSchema $schema = null): array
     {
         return array_filter(
-            Craft::$app->getSections()->getAllSections(),
+            Craft::$app->getEntries()->getAllSections(),
             fn(Section $section) => self::isSchemaAwareOf("sections.$section->uid", $schema),
         );
     }

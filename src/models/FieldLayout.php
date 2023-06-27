@@ -11,6 +11,7 @@ use Craft;
 use craft\base\ElementInterface;
 use craft\base\FieldInterface;
 use craft\base\FieldLayoutElement;
+use craft\base\FieldLayoutProviderInterface;
 use craft\base\Model;
 use craft\events\CreateFieldLayoutFormEvent;
 use craft\events\DefineFieldLayoutCustomFieldsEvent;
@@ -206,6 +207,12 @@ class FieldLayout extends Model
     public string $uid;
 
     /**
+     * @var FieldLayoutProviderInterface|null The field layout’s provider.
+     * @since 4.5.0
+     */
+    public ?FieldLayoutProviderInterface $provider = null;
+
+    /**
      * @var string[]|null Reserved custom field handles
      * @since 3.7.0
      */
@@ -226,7 +233,7 @@ class FieldLayout extends Model
     /**
      * @var FieldLayoutTab[]
      */
-    private array $_tabs;
+    private array $_tabs = [];
 
     /**
      * @inheritdoc
@@ -262,18 +269,23 @@ class FieldLayout extends Model
             return;
         }
 
-        // Make sure no fields are using one of our reserved attribute names
-        foreach ($this->getTabs() as $tab) {
-            foreach ($tab->getElements() as $layoutElement) {
-                if (
-                    $layoutElement instanceof CustomField &&
-                    in_array($layoutElement->attribute(), $this->reservedFieldHandles, true)
-                ) {
-                    $this->addError('fields', Craft::t('app', '“{handle}” is a reserved word.', [
-                        'handle' => $layoutElement->attribute(),
-                    ]));
-                }
+        // Make sure no field handles are duplicated or using one of our reserved attribute names
+        $handles = [];
+        foreach ($this->getCustomFields() as $field) {
+            if (in_array($field->handle, $this->reservedFieldHandles, true)) {
+                $this->addError('fields', Craft::t('app', '“{handle}” is a reserved word.', [
+                    'handle' => $field->handle,
+                ]));
+                return;
             }
+            if (isset($handles[$field->handle])) {
+                $this->addError('fields', Craft::t('yii', '{attribute} "{value}" has already been taken.', [
+                    'attribute' => Craft::t('app', 'Handle'),
+                    'value' => $field->handle,
+                ]));
+                return;
+            }
+            $handles[$field->handle] = true;
         }
     }
 
@@ -284,14 +296,6 @@ class FieldLayout extends Model
      */
     public function getTabs(): array
     {
-        if (!isset($this->_tabs)) {
-            if ($this->id) {
-                $this->setTabs(Craft::$app->getFields()->getLayoutTabsById($this->id));
-            } else {
-                $this->setTabs([]);
-            }
-        }
-
         return $this->_tabs;
     }
 
@@ -367,20 +371,21 @@ class FieldLayout extends Model
     public function getAvailableCustomFields(): array
     {
         if (!isset($this->_availableCustomFields)) {
-            $fields = [];
+            $customFields = [];
 
-            foreach (Craft::$app->getFields()->getAllGroups() as $group) {
-                $groupName = Craft::t('site', $group->name);
-                foreach ($group->getFields() as $field) {
-                    $fields[$groupName][] = Craft::createObject([
-                        'class' => CustomField::class,
-                        'layout' => $this,
-                    ], [$field]);
-                }
+            foreach (Craft::$app->getFields()->getAllFields() as $field) {
+                $customFields[] = Craft::createObject([
+                    'class' => CustomField::class,
+                    'layout' => $this,
+                ], [$field]);
             }
 
             // Allow changes
-            $event = new DefineFieldLayoutCustomFieldsEvent(['fields' => $fields]);
+            $event = new DefineFieldLayoutCustomFieldsEvent([
+                'fields' => [
+                    Craft::t('app', 'Custom Fields') => $customFields,
+                ],
+            ]);
             $this->trigger(self::EVENT_DEFINE_CUSTOM_FIELDS, $event);
 
             $this->_availableCustomFields = $event->fields;
@@ -638,15 +643,13 @@ class FieldLayout extends Model
      */
     private function _customFields(?ElementInterface $element = null): array
     {
-        $fields = [];
-        $filter = fn(FieldLayoutElement $layoutElement) => $layoutElement instanceof CustomField;
-        foreach ($this->_elements($filter, $element) as $layoutElement) {
-            /** @var CustomField $layoutElement */
-            $field = $layoutElement->getField();
-            $field->required = $layoutElement->required;
-            $fields[] = $field;
-        }
-        return $fields;
+        return array_map(
+            fn(CustomField $layoutElement) => $layoutElement->getField(),
+            iterator_to_array($this->_elements(
+                fn(FieldLayoutElement $layoutElement) => $layoutElement instanceof CustomField,
+                $element,
+            )),
+        );
     }
 
     /**

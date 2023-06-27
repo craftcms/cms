@@ -14,7 +14,6 @@ use craft\fields\MissingField;
 use craft\fields\PlainText;
 use craft\helpers\ArrayHelper;
 use craft\helpers\UrlHelper;
-use craft\models\FieldGroup;
 use craft\models\FieldLayoutTab;
 use craft\web\assets\fieldsettings\FieldSettingsAsset;
 use craft\web\Controller;
@@ -24,8 +23,7 @@ use yii\web\Response;
 use yii\web\ServerErrorHttpException;
 
 /**
- * The FieldsController class is a controller that handles various field and field group related tasks such as saving
- * and deleting both fields and field groups.
+ * The FieldsController class is a controller that handles various field-related tasks.
  * Note that all actions in the controller require an authenticated Craft session via [[allowAnonymous]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
@@ -44,59 +42,6 @@ class FieldsController extends Controller
         return parent::beforeAction($action);
     }
 
-    // Groups
-    // -------------------------------------------------------------------------
-
-    /**
-     * Saves a field group.
-     *
-     * @return Response
-     * @throws BadRequestHttpException
-     */
-    public function actionSaveGroup(): Response
-    {
-        $this->requirePostRequest();
-        $this->requireAcceptsJson();
-
-        $fieldsService = Craft::$app->getFields();
-        $groupId = $this->request->getBodyParam('id');
-
-        if ($groupId) {
-            $group = $fieldsService->getGroupById($groupId);
-            if (!$group) {
-                throw new BadRequestHttpException("Invalid field group ID: $groupId");
-            }
-        } else {
-            $group = new FieldGroup();
-        }
-
-        $group->name = $this->request->getRequiredBodyParam('name');
-
-        if (!$fieldsService->saveGroup($group)) {
-            return $this->asModelFailure($group);
-        }
-
-        return $this->asModelSuccess($group, modelName: 'group');
-    }
-
-    /**
-     * Deletes a field group.
-     *
-     * @return Response
-     */
-    public function actionDeleteGroup(): Response
-    {
-        $this->requirePostRequest();
-        $this->requireAcceptsJson();
-
-        $groupId = $this->request->getRequiredBodyParam('id');
-        $success = Craft::$app->getFields()->deleteGroupById($groupId);
-
-        return $success ?
-            $this->asSuccess(Craft::t('app', 'Group deleted.')) :
-            $this->asFailure();
-    }
-
     // Fields
     // -------------------------------------------------------------------------
 
@@ -105,12 +50,9 @@ class FieldsController extends Controller
      *
      * @param int|null $fieldId The field’s ID, if editing an existing field
      * @param FieldInterface|null $field The field being edited, if there were any validation errors
-     * @param int|null $groupId The default group ID that the field should be saved in
      * @return Response
-     * @throws NotFoundHttpException if the requested field/field group cannot be found
-     * @throws ServerErrorHttpException if no field groups exist
      */
-    public function actionEditField(?int $fieldId = null, ?FieldInterface $field = null, ?int $groupId = null): Response
+    public function actionEditField(?int $fieldId = null, ?FieldInterface $field = null): Response
     {
         $this->requireAdmin();
 
@@ -183,43 +125,6 @@ class FieldsController extends Controller
             }
         }
 
-        // Groups
-        // ---------------------------------------------------------------------
-
-        $allGroups = $fieldsService->getAllGroups();
-
-        if (empty($allGroups)) {
-            throw new ServerErrorHttpException('No field groups exist');
-        }
-
-        if ($groupId === null && isset($field->groupId)) {
-            $groupId = $field->groupId;
-        }
-
-        if ($groupId) {
-            $fieldGroup = $fieldsService->getGroupById($groupId);
-            if ($fieldGroup === null) {
-                throw new NotFoundHttpException('Field group not found');
-            }
-        } elseif (!$field->id && !$field->hasErrors()) {
-            $fieldGroup = reset($allGroups);
-        } else {
-            $fieldGroup = null;
-        }
-
-        $groupOptions = [];
-
-        if (!$fieldGroup) {
-            $groupOptions[] = ['value' => '', 'label' => ''];
-        }
-
-        foreach ($allGroups as $group) {
-            $groupOptions[] = [
-                'value' => $group->id,
-                'label' => $group->name,
-            ];
-        }
-
         // Page setup + render
         // ---------------------------------------------------------------------
 
@@ -233,13 +138,6 @@ class FieldsController extends Controller
                 'url' => UrlHelper::url('settings/fields'),
             ],
         ];
-
-        if ($fieldGroup) {
-            $crumbs[] = [
-                'label' => Craft::t('site', $fieldGroup->name),
-                'url' => UrlHelper::url('settings/fields/' . $groupId),
-            ];
-        }
 
         if ($fieldId !== null) {
             $title = trim($field->name) ?: Craft::t('app', 'Edit Field');
@@ -265,8 +163,6 @@ JS;
             'missingFieldPlaceholder',
             'supportedTranslationMethods',
             'compatibleFieldTypes',
-            'groupId',
-            'groupOptions',
             'crumbs',
             'title'
         ));
@@ -327,7 +223,6 @@ JS;
             'type' => $type,
             'id' => $fieldId,
             'uid' => $fieldUid,
-            'groupId' => $this->request->getRequiredBodyParam('group'),
             'name' => $this->request->getBodyParam('name'),
             'handle' => $this->request->getBodyParam('handle'),
             'columnSuffix' => $oldField->columnSuffix ?? null,

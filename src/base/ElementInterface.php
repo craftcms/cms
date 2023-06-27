@@ -21,7 +21,7 @@ use yii\web\Response;
 
 /**
  * ElementInterface defines the common interface to be implemented by element classes.
- * A class implementing this interface should also use [[ElementTrait]] and [[ContentTrait]].
+ * A class implementing this interface should also use [[ElementTrait]].
  *
  * @mixin ElementTrait
  * @mixin CustomFieldBehavior
@@ -313,16 +313,16 @@ interface ElementInterface extends ComponentInterface
     public static function sourcePath(string $sourceKey, string $stepKey, ?string $context): ?array;
 
     /**
-     * Returns all of the field layouts associated with elements from the given source.
+     * Returns all the field layouts associated with elements from the given source.
      *
      * This is used to determine which custom fields should be included in the element index sort menu,
      * and other things.
      *
-     * @param string $source The selected source’s key
+     * @param string|null $source The selected source’s key, or `null` if all known field layouts should be returned
      * @return FieldLayout[]
      * @since 3.5.0
      */
-    public static function fieldLayouts(string $source): array;
+    public static function fieldLayouts(?string $source = null): array;
 
     /**
      * Returns the available [element actions](https://craftcms.com/docs/4.x/extend/element-actions.html) for a
@@ -920,10 +920,21 @@ interface ElementInterface extends ComponentInterface
     /**
      * Returns the URL to the element’s thumbnail, if there is one.
      *
+     * If this returns `null`, [[getThumbSvg()]] will be checked as a fallback.
+     *
      * @param int $size The maximum width and height the thumbnail should have.
      * @return string|null
      */
     public function getThumbUrl(int $size): ?string;
+
+    /**
+     * Returns the element’s thumbnail SVG contents, which should be used as a fallback when [[getThumbUrl()]]
+     * returns `null`.
+     *
+     * @return string|null
+     * @since 4.5.0
+     */
+    public function getThumbSvg(): ?string;
 
     /**
      * Returns alt text for the element’s thumbnail.

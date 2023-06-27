@@ -40,19 +40,15 @@ class UserType extends Generator implements GeneratorInterface, SingleGeneratorI
      */
     public static function generateType(mixed $context): ObjectType
     {
-        // Users don't have different types, so the context for a user will be the same every time.
-        $context = $context ?: Craft::$app->getFields()->getLayoutByType(UserElement::class);
-
-        $contentFieldGqlTypes = self::getContentFields($context);
-        $userFields = array_merge(UserInterface::getFieldDefinitions(), $contentFieldGqlTypes);
-
-        return GqlEntityRegistry::getEntity(UserElement::GQL_TYPE_NAME)
-            ?: GqlEntityRegistry::createEntity(UserElement::GQL_TYPE_NAME, new User([
-                'name' => UserElement::GQL_TYPE_NAME,
-                'fields' => fn() => Craft::$app->getGql()->prepareFieldDefinitions(
-                    $userFields,
-                    UserElement::GQL_TYPE_NAME
-                ),
-            ]));
+        return GqlEntityRegistry::getOrCreate(UserElement::GQL_TYPE_NAME, fn() => new User([
+            'name' => UserElement::GQL_TYPE_NAME,
+            'fields' => function() use ($context) {
+                // Users don't have different types, so the context for a user will be the same every time.
+                $context ??= Craft::$app->getFields()->getLayoutByType(UserElement::class);
+                $contentFieldGqlTypes = self::getContentFields($context);
+                $userFields = array_merge(UserInterface::getFieldDefinitions(), $contentFieldGqlTypes);
+                return Craft::$app->getGql()->prepareFieldDefinitions($userFields, UserElement::GQL_TYPE_NAME);
+            },
+        ]));
     }
 }

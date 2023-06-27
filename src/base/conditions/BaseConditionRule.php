@@ -210,7 +210,7 @@ abstract class BaseConditionRule extends Component implements ConditionRuleInter
     protected function defineRules(): array
     {
         return [
-            [['uid'], 'safe'],
+            [['uid', 'condition'], 'safe'],
             [
                 ['operator'],
                 function() {

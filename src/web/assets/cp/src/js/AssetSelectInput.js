@@ -114,22 +114,6 @@ Craft.AssetSelectInput = Craft.BaseElementSelectInput.extend({
       $('<div class="progress-shade"></div>').appendTo(this.$container)
     );
 
-    var options = {
-      url: Craft.getActionUrl('assets/upload'),
-      dropZone: this.$container,
-      formData: {
-        fieldId: this.settings.fieldId,
-      },
-    };
-
-    if (this.settings.sourceElementId) {
-      options.formData.elementId = this.settings.sourceElementId;
-    }
-
-    if (this.settings.criteria.siteId) {
-      options.formData.siteId = this.settings.criteria.siteId;
-    }
-
     if (this.$addElementBtn) {
       this.$uploadBtn = $('<button/>', {
         type: 'button',
@@ -145,7 +129,7 @@ Craft.AssetSelectInput = Craft.BaseElementSelectInput.extend({
             ? Craft.t('app', 'Upload a file')
             : Craft.t('app', 'Upload files'),
       }).insertAfter(this.$addElementBtn);
-      options.fileInput = $('<input/>', {
+      this.$fileInput = $('<input/>', {
         type: 'file',
         class: 'hidden',
         multiple: this.settings.limit != 1,
@@ -155,14 +139,10 @@ Craft.AssetSelectInput = Craft.BaseElementSelectInput.extend({
       Garnish.$win.trigger('resize');
     }
 
-    // If CSRF protection isn't enabled, these won't be defined.
-    if (
-      typeof Craft.csrfTokenName !== 'undefined' &&
-      typeof Craft.csrfTokenValue !== 'undefined'
-    ) {
-      // Add the CSRF token
-      options.formData[Craft.csrfTokenName] = Craft.csrfTokenValue;
-    }
+    var options = {
+      dropZone: this.$container,
+      fileInput: this.$fileInput,
+    };
 
     if (typeof this.settings.criteria.kind !== 'undefined') {
       options.allowedKinds = this.settings.criteria.kind;
@@ -176,7 +156,17 @@ Craft.AssetSelectInput = Craft.BaseElementSelectInput.extend({
     options.events.fileuploaddone = this._onUploadComplete.bind(this);
     options.events.fileuploadfail = this._onUploadFailure.bind(this);
 
-    this.uploader = new Craft.Uploader(this.$container, options);
+    this.uploader = Craft.createUploader(
+      this.settings.fsType,
+      this.$container,
+      options
+    );
+
+    this.uploader.setParams({
+      elementId: this.settings.sourceElementId,
+      siteId: this.settings.criteria.siteId,
+      fieldId: this.settings.fieldId,
+    });
 
     if (this.$uploadBtn) {
       this.$uploadBtn.on('click', (ev) => {
@@ -259,7 +249,9 @@ Craft.AssetSelectInput = Craft.BaseElementSelectInput.extend({
    * On upload progress.
    */
   _onUploadProgress: function (event, data) {
-    var progress = parseInt((data.loaded / data.total) * 100, 10);
+    data = event instanceof CustomEvent ? event.detail : data;
+
+    var progress = parseInt(Math.min(data.loaded / data.total, 1) * 100, 10);
     this.progressBar.setProgressPercentage(progress);
   },
 
@@ -267,8 +259,10 @@ Craft.AssetSelectInput = Craft.BaseElementSelectInput.extend({
    * On a file being uploaded.
    */
   _onUploadComplete: function (event, data) {
-    var parameters = {
-      elementId: data.result.assetId,
+    const result = event instanceof CustomEvent ? event.detail : data.result;
+
+    const parameters = {
+      elementId: result.assetId,
       siteId: this.settings.criteria.siteId,
       thumbSize: this.settings.viewMode,
     };
@@ -299,8 +293,10 @@ Craft.AssetSelectInput = Craft.BaseElementSelectInput.extend({
    * On Upload Failure.
    */
   _onUploadFailure: function (event, data) {
-    const response = data.response();
-    let {message, filename, errors = {}} = response?.jqXHR?.responseJSON || {};
+    const response =
+      event instanceof CustomEvent ? event.detail : data?.jqXHR?.responseJSON;
+
+    let {message, filename, errors} = response || {};
 
     let errorMessages = errors ? Object.values(errors).flat() : [];
 

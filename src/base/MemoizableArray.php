@@ -112,7 +112,7 @@ class MemoizableArray implements IteratorAggregate, Countable
      * @param string $key the column name whose result will be used to index the array
      * @param mixed $value the value that `$key` should be compared with
      * @param bool $strict whether a strict type comparison should be used when checking array element values against `$value`
-     * @return T the first matching value, or `null` if no match is found
+     * @return T|null the first matching value, or `null` if no match is found
      */
     public function firstWhere(string $key, mixed $value = true, bool $strict = false)
     {

@@ -48,11 +48,10 @@ abstract class Table
     public const SEQUENCES = '{{%sequences}}';
     public const SYSTEMMESSAGES = '{{%systemmessages}}';
     public const ENTRIES = '{{%entries}}';
+    /** @since 5.0.0 */
+    public const ENTRIES_OWNERS = '{{%entries_owners}}';
     public const ENTRYTYPES = '{{%entrytypes}}';
-    public const FIELDGROUPS = '{{%fieldgroups}}';
-    public const FIELDLAYOUTFIELDS = '{{%fieldlayoutfields}}';
     public const FIELDLAYOUTS = '{{%fieldlayouts}}';
-    public const FIELDLAYOUTTABS = '{{%fieldlayouttabs}}';
     public const FIELDS = '{{%fields}}';
     public const GLOBALSETS = '{{%globalsets}}';
     /** @since 3.3.0 */
@@ -60,10 +59,6 @@ abstract class Table
     /** @since 3.4.0 */
     public const GQLTOKENS = '{{%gqltokens}}';
     public const INFO = '{{%info}}';
-    public const MATRIXBLOCKS = '{{%matrixblocks}}';
-    /** @since 4.0.0 */
-    public const MATRIXBLOCKS_OWNERS = '{{%matrixblocks_owners}}';
-    public const MATRIXBLOCKTYPES = '{{%matrixblocktypes}}';
     public const MIGRATIONS = '{{%migrations}}';
     /** @since 3.4.0 */
     public const PHPSESSIONS = '{{%phpsessions}}';

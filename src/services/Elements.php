@@ -27,7 +27,6 @@ use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\Entry;
 use craft\elements\GlobalSet;
-use craft\elements\MatrixBlock;
 use craft\elements\Tag;
 use craft\elements\User;
 use craft\errors\ElementNotFoundException;
@@ -1175,7 +1174,7 @@ class Elements extends Component
             throw new InvalidArgumentException('Element was already canonical');
         }
 
-        // "Duplicate" the derivative element with the canonical element’s ID, UID, and content ID
+        // "Duplicate" the derivative element with the canonical element’s ID and UID
         $canonical = $element->getCanonical();
 
         $changedAttributes = (new Query())
@@ -1185,7 +1184,7 @@ class Elements extends Component
             ->all();
 
         $changedFields = (new Query())
-            ->select(['siteId', 'fieldId', 'propagated', 'userId'])
+            ->select(['siteId', 'fieldId', 'layoutElementUid', 'propagated', 'userId'])
             ->from([Table::CHANGEDFIELDS])
             ->where(['elementId' => $element->id])
             ->all();
@@ -1238,6 +1237,7 @@ class Elements extends Component
                     'elementId' => $canonical->id,
                     'siteId' => $field['siteId'],
                     'fieldId' => $field['fieldId'],
+                    'layoutElementUid' => $field['layoutElementUid'],
                     'dateUpdated' => $timestamp,
                     'propagated' => $field['propagated'],
                     'userId' => $field['userId'],
@@ -2305,7 +2305,6 @@ class Elements extends Component
             Category::class,
             Entry::class,
             GlobalSet::class,
-            MatrixBlock::class,
             Tag::class,
             User::class,
         ];
@@ -2703,6 +2702,12 @@ class Elements extends Component
             $this->trigger(self::EVENT_BEFORE_EAGER_LOAD_ELEMENTS, $event);
 
             foreach ($event->with as $plan) {
+                // Get the plan handle, without a provider prefix
+                $planHandle = $plan->alias;
+                if (str_contains($planHandle, ':')) {
+                    $planHandle = explode(':', $planHandle, 2)[1];
+                }
+
                 // Filter out any elements that the plan doesn't like
                 if ($plan->when !== null) {
                     $filteredElements = array_values(array_filter($elements, $plan->when));
@@ -2795,7 +2800,7 @@ class Elements extends Component
                                 }
                             }
                         }
-                        $sourceElement->setEagerLoadedElementCount($plan->alias, $count);
+                        $sourceElement->setEagerLoadedElementCount($planHandle, $count);
                     }
 
                     continue;
@@ -2862,11 +2867,11 @@ class Elements extends Component
                         }
                     }
 
-                    $sourceElement->setEagerLoadedElements($plan->alias, $targetElementsForSource);
-                    $sourceElement->setLazyEagerLoadedElements($plan->alias, $plan->lazy);
+                    $sourceElement->setEagerLoadedElements($planHandle, $targetElementsForSource);
+                    $sourceElement->setLazyEagerLoadedElements($planHandle, $plan->lazy);
 
                     if ($plan->count) {
-                        $sourceElement->setEagerLoadedElementCount($plan->alias, count($targetElementsForSource));
+                        $sourceElement->setEagerLoadedElementCount($planHandle, count($targetElementsForSource));
                     }
                 }
 
@@ -3174,7 +3179,7 @@ class Elements extends Component
                     if ($field::dbType() !== null) {
                         $serializedValue = $field->serializeValue($element->getFieldValue($field->handle), $element);
                         if ($serializedValue !== null) {
-                            $content[$field->uid] = $serializedValue;
+                            $content[$field->layoutElement->uid] = $serializedValue;
                         }
                     }
                 }
@@ -3307,6 +3312,7 @@ class Elements extends Component
                             'elementId' => $element->id,
                             'siteId' => $element->siteId,
                             'fieldId' => $field->id,
+                            'layoutElementUid' => $field->layoutElement->uid,
                             'dateUpdated' => $timestamp,
                             'propagated' => $element->propagating,
                             'userId' => $userId,

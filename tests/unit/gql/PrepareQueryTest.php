@@ -13,7 +13,6 @@ use craft\gql\resolvers\elements\Asset as AssetResolver;
 use craft\gql\resolvers\elements\Category as CategoryResolver;
 use craft\gql\resolvers\elements\Entry as EntryResolver;
 use craft\gql\resolvers\elements\GlobalSet as GlobalSetResolver;
-use craft\gql\resolvers\elements\MatrixBlock as MatrixBlockResolver;
 use craft\gql\resolvers\elements\Tag as TagResolver;
 use craft\gql\resolvers\elements\User as UserResolver;
 use craft\helpers\Db;
@@ -229,19 +228,6 @@ class PrepareQueryTest extends TestCase
                     return !empty($result->groupId);
                 },
             ],
-
-            // Matrix Blocks
-            [
-                MatrixBlockResolver::class, [(object)['field' => ['foo', 'bar']], [], 'field'], function($result) {
-                    return $result === ['foo', 'bar'];
-                },
-            ],
-            [
-                MatrixBlockResolver::class, [null, ['fieldId' => 2, 'typeId' => 5]], function($result) {
-                    return $result->fieldId == 2 && $result->typeId == 5;
-                },
-            ],
-
         ];
     }
 

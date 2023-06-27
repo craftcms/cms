@@ -2799,7 +2799,8 @@ $elementInnerSpacing: 5px;
       align-items: center;
       -ms-flex-align: center;
 
-      img {
+      img,
+      svg {
         display: block;
         flex-shrink: 0;
         pointer-events: none;
@@ -2808,8 +2809,11 @@ $elementInnerSpacing: 5px;
         max-height: 100%;
       }
 
-      &.rounded img {
-        border-radius: 50%;
+      &.rounded {
+        img,
+        svg {
+          border-radius: 50%;
+        }
       }
     }
     .elementthumb.open-preview {
@@ -5829,7 +5833,6 @@ table.editable {
 .text,
 .passwordwrapper,
 .border-box,
-.matrix-configurator > .field > .input,
 .selectize.multiselect .selectize-input,
 .multiselect > select {
   @include input-styles;
@@ -6806,11 +6809,46 @@ body .selectize-dropdown {
 }
 
 /* menu styles */
-body .selectize-dropdown {
-  margin-top: 1px;
-}
-
 body {
+  .selectize-dropdown {
+    margin-top: 1px;
+
+    [data-selectable],
+    .optgroup-header {
+      @include menu-option-styles;
+    }
+
+    .optgroup {
+      &:not(:first-child) {
+        border-top: 1px solid var(--hairline-color);
+      }
+      padding-top: 5px;
+
+      .option {
+        padding-left: 24px;
+      }
+    }
+
+    .optgroup-header {
+      @include h6-styles;
+      margin: 0;
+      padding: 4px 0;
+    }
+
+    .active:not(.selected) {
+      background-color: var(--gray-100);
+    }
+
+    .selected {
+      @include menu-option-active-styles;
+      cursor: default !important;
+
+      .light {
+        color: inherit !important;
+      }
+    }
+  }
+
   .selectize-dropdown-content {
     @include menu-styles;
     max-height: 70vh;
@@ -6818,40 +6856,22 @@ body {
     .option {
       min-height: 18px;
     }
+
+    & > div[data-value='new'] {
+      &:before {
+        @include icon;
+        content: 'plus';
+        margin-right: 5px;
+      }
+
+      &:after {
+        content: '…';
+      }
+    }
   }
 
   &.no-scroll .selectize-dropdown-content {
     max-height: 200px; // default for selectize
-  }
-}
-
-body .selectize-dropdown [data-selectable],
-body .selectize-dropdown .optgroup-header {
-  @include menu-option-styles;
-}
-
-body .selectize-dropdown .optgroup {
-  &:not(:first-child) {
-    border-top: 1px solid var(--hairline-color);
-  }
-  padding-top: 5px;
-
-  .option {
-    padding-left: 24px;
-  }
-}
-
-body .selectize-dropdown .optgroup-header {
-  @include h6-styles;
-  margin: 0;
-  padding: 4px 0;
-}
-
-body .selectize-dropdown .active {
-  @include menu-option-active-styles;
-
-  .light {
-    color: inherit !important;
   }
 }
 
@@ -7108,192 +7128,6 @@ ul.errors li {
 /* ----------------------------------------
 /* Matrix
 /* ----------------------------------------*/
-
-.matrix-configurator {
-  & > .field {
-    max-width: none;
-
-    & > .input {
-      display: flex;
-      align-items: stretch;
-      background-color: var(--gray-050);
-      box-shadow: none;
-    }
-  }
-
-  .mc-sidebar {
-    box-sizing: border-box;
-
-    .mc-col-items {
-      margin-top: -1px;
-      padding-top: 1px;
-    }
-
-    &.block-types {
-      width: 200px;
-      @include border-top-left-radius(var(--small-border-radius));
-      @include border-bottom-left-radius(var(--small-border-radius));
-
-      & > .mc-col-inner-container {
-        & > .mc-col-heading {
-          @include border-top-left-radius(var(--small-border-radius));
-        }
-
-        & > .mc-col-items {
-          .btn {
-            margin: 14px;
-          }
-        }
-      }
-    }
-
-    &.mc-fields {
-      width: 240px;
-      z-index: 1;
-      background: #fff;
-      box-shadow: -1px 0 0 0 transparentize($grey900, 0.9),
-        1px 0 0 0 transparentize($grey900, 0.9);
-
-      .mc-col-items {
-        padding: 14px;
-
-        .btn {
-          margin-top: 14px;
-        }
-      }
-    }
-  }
-
-  .mc-sidebar,
-  .mc-field-settings {
-    & > .mc-col-inner-container > .mc-col-heading {
-      margin: 0;
-      padding: 7px 14px 6px;
-      border-bottom: 1px solid var(--hairline-color);
-      background-color: var(--gray-050);
-      background-image: linear-gradient(
-        transparentize($grey800, 1),
-        transparentize($grey800, 0.95)
-      );
-    }
-  }
-
-  .mc-field-settings {
-    flex: 1;
-    position: relative;
-    @include border-top-right-radius(var(--small-border-radius));
-    @include border-bottom-right-radius(var(--small-border-radius));
-
-    & > .mc-col-inner-container {
-      & > .mc-col-heading {
-        padding-left: 24px;
-        padding-right: 24px;
-        @include border-top-right-radius(var(--small-border-radius));
-      }
-
-      & > .mc-col-items {
-        padding: 24px;
-      }
-    }
-  }
-}
-
-.matrixconfigitem {
-  position: relative;
-  display: flex;
-  align-items: center;
-  user-select: none;
-  cursor: default;
-  min-height: 48px;
-  box-sizing: border-box;
-
-  &.mci-blocktype {
-    margin-top: -1px;
-    padding: 8px 14px;
-    border: solid var(--hairline-color);
-    border-width: 1px 0;
-    background-color: var(--gray-100);
-
-    &.sel {
-      z-index: 1;
-      background-color: var(--gray-200);
-    }
-  }
-
-  &.mci-field {
-    border-radius: var(--medium-border-radius);
-    padding: 7px 10px;
-    background-color: var(--gray-100);
-
-    &.sel {
-      background-color: var(--gray-200);
-
-      .slide-picker:focus a.active {
-        background-color: darken($lightTextColor, 0.5%);
-      }
-    }
-
-    & + .mci-field {
-      margin-top: 7px;
-    }
-  }
-
-  .mci-name {
-    flex: 1;
-    overflow: hidden;
-
-    h4,
-    .smalltext {
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-
-    h4 {
-      margin-bottom: 2px;
-      font-weight: normal;
-      color: var(--text-color);
-
-      &.mci-required:after {
-        @include icon;
-        @include margin(-2px, 0, 0, 4px);
-        content: 'asterisk';
-        font-size: 8px;
-      }
-    }
-  }
-
-  &.error .mci-name h4 {
-    color: var(--error-color);
-  }
-
-  .slide-picker,
-  .icon {
-    @include margin-left(7px);
-  }
-
-  .icon {
-    display: block;
-
-    &:not(.error) {
-      &:before {
-        color: var(--ui-control-color);
-      }
-
-      &:hover:before {
-        color: var(--ui-control-hover-color);
-      }
-
-      &:active:before {
-        color: var(--ui-control-active-color);
-      }
-    }
-
-    &.error:before {
-      color: var(--error-color);
-    }
-  }
-}
 
 /* Matrix fields */
 .matrix {

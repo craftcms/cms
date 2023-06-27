@@ -8,8 +8,8 @@
 namespace craft\services;
 
 use Craft;
-use craft\base\BlockElementInterface;
 use craft\base\ElementInterface;
+use craft\base\NestedElementInterface;
 use craft\config\GeneralConfig;
 use craft\console\Application as ConsoleApplication;
 use craft\db\Connection;
@@ -19,7 +19,6 @@ use craft\elements\Asset;
 use craft\elements\Category;
 use craft\elements\Entry;
 use craft\elements\GlobalSet;
-use craft\elements\MatrixBlock;
 use craft\elements\Tag;
 use craft\elements\User;
 use craft\errors\FsException;
@@ -110,7 +109,6 @@ class Gc extends Component
         $this->hardDelete([
             Table::CATEGORYGROUPS,
             Table::ENTRYTYPES,
-            Table::FIELDGROUPS,
             Table::SECTIONS,
             Table::TAGGROUPS,
         ]);
@@ -119,7 +117,6 @@ class Gc extends Component
         $this->deletePartialElements(Category::class, Table::CATEGORIES, 'id');
         $this->deletePartialElements(Entry::class, Table::ENTRIES, 'id');
         $this->deletePartialElements(GlobalSet::class, Table::GLOBALSETS, 'id');
-        $this->deletePartialElements(MatrixBlock::class, Table::MATRIXBLOCKS, 'id');
         $this->deletePartialElements(Tag::class, Table::TAGS, 'id');
         $this->deletePartialElements(User::class, Table::USERS, 'id');
 
@@ -196,7 +193,7 @@ class Gc extends Component
         $blockElementTypes = [];
 
         foreach (Craft::$app->getElements()->getAllElementTypes() as $elementType) {
-            if (is_subclass_of($elementType, BlockElementInterface::class)) {
+            if (is_subclass_of($elementType, NestedElementInterface::class)) {
                 $blockElementTypes[] = $elementType;
             } else {
                 $normalElementTypes[] = $elementType;

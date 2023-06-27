@@ -51,26 +51,35 @@ class UpController extends Controller
     public function actionIndex(): int
     {
         try {
-            $pendingChanges = Craft::$app->getProjectConfig()->areChangesPending();
+            $projectConfig = Craft::$app->getProjectConfig();
+            $pendingChanges = $projectConfig->areChangesPending(force: true);
+            $writeYamlAutomatically = $projectConfig->writeYamlAutomatically;
 
             // Craft + plugin migrations
-            if ($this->run('migrate/all', ['noContent' => true]) !== ExitCode::OK) {
-                $this->stderr("\nAborting remaining tasks.\n", Console::FG_RED);
-                throw new OperationAbortedException();
+            $res = $this->run('migrate/all', ['noContent' => true]);
+            if ($res !== ExitCode::OK) {
+                $this->stderr("\nAborting remaining tasks.\n", Console::FG_YELLOW);
+                return $res;
             }
             $this->stdout("\n");
 
+            // Save and reset the project config
+            $projectConfig->saveModifiedConfigData();
+            $projectConfig->reset();
+
             // Project Config
             if ($pendingChanges) {
-                if ($this->run('project-config/apply') !== ExitCode::OK) {
-                    throw new OperationAbortedException();
+                $res = $this->run('project-config/apply');
+                if ($res !== ExitCode::OK) {
+                    return $res;
                 }
                 $this->stdout("\n");
             }
 
-            // Content migrations
-            if ($this->run('migrate/up', ['track' => MigrationManager::TRACK_CONTENT]) !== ExitCode::OK) {
-                throw new OperationAbortedException();
+            // Content migration
+            $res = $this->run('migrate/up', ['track' => MigrationManager::TRACK_CONTENT]);
+            if ($res !== ExitCode::OK) {
+                return $res;
             }
             $this->stdout("\n");
         } catch (Throwable $e) {
@@ -78,6 +87,10 @@ class UpController extends Controller
                 throw $e;
             }
             return ExitCode::UNSPECIFIED_ERROR;
+        }
+
+        if ($writeYamlAutomatically) {
+            $projectConfig->writeYamlFiles(true);
         }
 
         return ExitCode::OK;

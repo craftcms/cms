@@ -46,7 +46,7 @@ class EagerLoadingTest extends TestCase
             ->with([
                 'relatedEntry', // field exists and is part of the layout
                 'matrixSecond', // field exists and is part of the layout
-                'matrixSecond.bBlock:entriesSubfield', // field exists and is part of the layout
+                'matrixSecond.matrixLayout3:entriesSubfield', // field exists and is part of the layout
                 'matrixFirst', // field exists and is NOT part of the layout
             ])
             ->one();
@@ -89,7 +89,7 @@ class EagerLoadingTest extends TestCase
     public function testEagerLoadingScenario3(): void
     {
         // get entries from section 1000
-        // that section has field-layout: field_layout_with_matrix_and_normal_fields
+        // that section has field-layout: field-layout-1002----------------uid
         // which doesn't contain the 'relatedEntry' field created for section 1006
         $entries = Entry::find()->sectionId(1000)->limit(2)->all();
 
@@ -143,7 +143,7 @@ class EagerLoadingTest extends TestCase
      */
     public function testEagerLoadingScenario4(): void
     {
-        $this->_removeFieldFromLayout('field_layout_with_matrix_with_relational_field', 'relatedEntry');
+        $this->_removeFieldFromLayout('field-layout-1003----------------uid', 'relatedEntry');
 
         $entry = Entry::find()
             ->title('Matrix with relational field')
@@ -157,17 +157,17 @@ class EagerLoadingTest extends TestCase
     }
 
     /**
-     * Remove field by handle from layout by type
+     * Remove field by handle from layout by UUID
      *
-     * @param string $layoutType
+     * @param string $layoutUid
      * @param string $fieldHandle
      * @return void
      * @throws \yii\base\Exception
      */
-    private function _removeFieldFromLayout(string $layoutType, string $fieldHandle): void
+    private function _removeFieldFromLayout(string $layoutUid, string $fieldHandle): void
     {
         $fieldsService = Craft::$app->getFields();
-        $fieldLayout = $fieldsService->getLayoutByType($layoutType);
+        $fieldLayout = $fieldsService->getLayoutByUid($layoutUid);
         $tabs = $fieldLayout->getTabs();
         $layoutElements = $tabs[0]->getElements();
         foreach ($layoutElements as $key => $element) {

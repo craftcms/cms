@@ -6,16 +6,16 @@ use craft\db\Migration;
 use craft\db\Table;
 
 /**
- * m220413_024536_site_enabled_string migration.
+ * m230616_183820_remove_field_name_limit migration.
  */
-class m220413_024536_site_enabled_string extends Migration
+class m230616_183820_remove_field_name_limit extends Migration
 {
     /**
      * @inheritdoc
      */
     public function safeUp(): bool
     {
-        $this->alterColumn(Table::SITES, 'enabled', $this->string()->notNull()->defaultValue('true'));
+        $this->alterColumn(Table::FIELDS, 'name', $this->text()->notNull());
         return true;
     }
 
@@ -24,7 +24,7 @@ class m220413_024536_site_enabled_string extends Migration
      */
     public function safeDown(): bool
     {
-        echo "m220413_024536_site_enabled_string cannot be reverted.\n";
+        echo "m230616_183820_remove_field_name_limit cannot be reverted.\n";
         return false;
     }
 }

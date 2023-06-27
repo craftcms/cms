@@ -906,9 +906,8 @@ abstract class Element extends Component implements ElementInterface
 
     /**
      * @inheritdoc
-     * @since 3.5.0
      */
-    public static function fieldLayouts(string $source): array
+    public static function fieldLayouts(?string $source = null): array
     {
         $fieldLayouts = static::defineFieldLayouts($source);
 
@@ -925,14 +924,14 @@ abstract class Element extends Component implements ElementInterface
     /**
      * Defines the field layouts associated with elements for a given source.
      *
-     * @param string $source The selected source’s key, if any
+     * @param string|null $source The selected source’s key, or `null` if all known field layouts should be returned
      * @return FieldLayout[] The associated field layouts
      * @see fieldLayouts()
      * @since 3.5.0
      */
-    protected static function defineFieldLayouts(string $source): array
+    protected static function defineFieldLayouts(?string $source): array
     {
-        // Default to all of the field layouts associated with this element type
+        // Default to all the field layouts associated with this element type
         return Craft::$app->getFields()->getLayoutsByType(static::class);
     }
 
@@ -1354,14 +1353,31 @@ abstract class Element extends Component implements ElementInterface
 
         // Is $handle a custom field handle?
         // (Leave it up to the extended class to set the field context, if it shouldn't be 'global')
-        $field = Craft::$app->getFields()->getFieldByHandle($handle);
-        if ($field && $field instanceof EagerLoadingFieldInterface) {
+        if (str_contains($handle, ':')) {
+            [$providerHandle, $fieldHandle] = explode(':', $handle, 2);
+        } else {
+            $providerHandle = null;
+            $fieldHandle = $handle;
+        }
+
+        $field = null;
+        foreach (static::fieldLayouts() as $fieldLayout) {
+            if ($providerHandle === null || $fieldLayout->provider?->getHandle() === $providerHandle) {
+                $layoutField = $fieldLayout->getFieldByHandle($fieldHandle);
+                if ($layoutField) {
+                    $field = $layoutField;
+                    break;
+                }
+            }
+        }
+
+        if ($field instanceof EagerLoadingFieldInterface) {
             // filter out elements, if field is not part of its layout
             // https://github.com/craftcms/cms/issues/12539
             $sourceElements = array_values(
-                array_filter($sourceElements, function($sourceElement) use ($handle) {
-                    $fieldLayout = $sourceElement->getFieldLayout();
-                    return !$fieldLayout || $fieldLayout->getFieldByHandle($handle) !== null;
+                array_filter($sourceElements, function($sourceElement) use ($field) {
+                    $layoutField = $sourceElement->getFieldLayout()?->getFieldByHandle($field->handle);
+                    return $layoutField && $layoutField->id === $field->id;
                 })
             );
 
@@ -2409,6 +2425,12 @@ abstract class Element extends Component implements ElementInterface
 
             $rules[] = [['slug'], SlugValidator::class, 'language' => $language, 'on' => [self::SCENARIO_DEFAULT, self::SCENARIO_LIVE, self::SCENARIO_ESSENTIALS]];
             $rules[] = [['slug'], 'string', 'max' => 255, 'on' => [self::SCENARIO_DEFAULT, self::SCENARIO_LIVE, self::SCENARIO_ESSENTIALS]];
+            $rules[] = [
+                ['slug'],
+                'required',
+                'when' => fn() => $this->getUriFormat() !== null,
+                'on' => [self::SCENARIO_DEFAULT, self::SCENARIO_LIVE, self::SCENARIO_ESSENTIALS],
+            ];
             $rules[] = [['uri'], ElementUriValidator::class, 'on' => [self::SCENARIO_DEFAULT, self::SCENARIO_LIVE, self::SCENARIO_ESSENTIALS]];
         }
 
@@ -3262,6 +3284,14 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
+    public function getThumbSvg(): ?string
+    {
+        return null;
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function getThumbAlt(): ?string
     {
         return null;
@@ -4081,21 +4111,20 @@ abstract class Element extends Component implements ElementInterface
 
         if (!isset($this->_outdatedFields)) {
             $query = (new Query())
-                ->select(['f.handle'])
-                ->from(['f' => Table::FIELDS])
-                ->innerJoin(['cf' => Table::CHANGEDFIELDS], '[[cf.fieldId]] = [[f.id]]')
+                ->select(['layoutElementUid'])
+                ->from(Table::CHANGEDFIELDS)
                 ->where([
-                    'cf.elementId' => $this->getCanonicalId(),
-                    'cf.siteId' => $this->siteId,
+                    'elementId' => $this->getCanonicalId(),
+                    'siteId' => $this->siteId,
                 ]);
 
             if ($this->dateLastMerged) {
-                $query->andWhere(['>=', 'cf.dateUpdated', Db::prepareDateForDb($this->dateLastMerged)]);
+                $query->andWhere(['>=', 'dateUpdated', Db::prepareDateForDb($this->dateLastMerged)]);
             } else {
-                $query->andWhere(['>=', 'cf.dateUpdated', Db::prepareDateForDb($this->dateCreated)]);
+                $query->andWhere(['>=', 'dateUpdated', Db::prepareDateForDb($this->dateCreated)]);
             }
 
-            $this->_outdatedFields = array_flip($query->column());
+            $this->_outdatedFields = $this->_layoutElementUids2fieldHandles($query->column());
         }
 
         return $this->_outdatedFields;
@@ -4115,16 +4144,15 @@ abstract class Element extends Component implements ElementInterface
 
         if (!isset($this->_modifiedFields[$key])) {
             $query = (new Query())
-                ->select(['f.handle'])
-                ->from(['f' => Table::FIELDS])
-                ->innerJoin(['cf' => Table::CHANGEDFIELDS], '[[cf.fieldId]] = [[f.id]]')
-                ->where(['cf.elementId' => $this->id]);
+                ->select('layoutElementUid')
+                ->from(Table::CHANGEDFIELDS)
+                ->where(['elementId' => $this->id]);
 
             if (!$anySite) {
-                $query->andWhere(['cf.siteId' => $this->siteId]);
+                $query->andWhere(['siteId' => $this->siteId]);
             }
 
-            $this->_modifiedFields[$key] = array_flip($query->column());
+            $this->_modifiedFields[$key] = $this->_layoutElementUids2fieldHandles($query->column());
         }
 
         return $this->_modifiedFields[$key];
@@ -4162,6 +4190,28 @@ abstract class Element extends Component implements ElementInterface
         }
 
         $this->_allDirty = false;
+    }
+
+    /**
+     * Returns field handles based on a list of field layout element UUIDs.
+     *
+     * @param string[] $uids
+     * @return array
+     */
+    private function _layoutElementUids2fieldHandles(array $uids): array
+    {
+        $uids = array_flip($uids);
+        $handles = [];
+
+        if (!empty($uids)) {
+            foreach ($this->getFieldLayout()->getCustomFieldElements() as $layoutElement) {
+                if (isset($uids[$layoutElement->uid])) {
+                    $handles[$layoutElement->attribute()] = true;
+                }
+            }
+        }
+
+        return $handles;
     }
 
     /**
@@ -4216,11 +4266,11 @@ abstract class Element extends Component implements ElementInterface
 
             foreach ($this->fieldLayoutFields(true) as $field) {
                 // Have we already processed this field?
-                if (isset($processedFields[$field->id])) {
+                if (isset($processedFields[$field->handle])) {
                     continue;
                 }
 
-                $processedFields[$field->id] = true;
+                $processedFields[$field->handle] = true;
                 $processedAnyFields = true;
 
                 // Do we have any post data for this field?

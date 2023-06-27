@@ -8,10 +8,10 @@
 namespace craft\helpers;
 
 use Craft;
-use craft\base\BlockElementInterface;
 use craft\base\Element;
 use craft\base\ElementInterface;
 use craft\base\Field;
+use craft\base\NestedElementInterface;
 use craft\db\Query;
 use craft\db\Table;
 use craft\errors\OperationAbortedException;
@@ -437,7 +437,7 @@ class ElementHelper
      */
     public static function rootElement(ElementInterface $element): ElementInterface
     {
-        if ($element instanceof BlockElementInterface) {
+        if ($element instanceof NestedElementInterface) {
             $owner = $element->getOwner();
             if ($owner) {
                 return static::rootElement($owner);

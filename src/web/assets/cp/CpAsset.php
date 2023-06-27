@@ -218,7 +218,6 @@ JS;
             'Loading',
             'Make not required',
             'Make required',
-            'Matrix block could not be added. Maximum number of blocks reached.',
             'Merge the folder (any conflicting files will be replaced)',
             'Missing or empty {items}',
             'Missing {items}',
@@ -582,7 +581,7 @@ JS;
     {
         $sections = [];
 
-        foreach (Craft::$app->getSections()->getEditableSections() as $section) {
+        foreach (Craft::$app->getEntries()->getEditableSections() as $section) {
             if ($section->type !== Section::TYPE_SINGLE && $currentUser->can("createEntries:$section->uid")) {
                 $sections[] = [
                     'entryTypes' => $this->_entryTypes($section),

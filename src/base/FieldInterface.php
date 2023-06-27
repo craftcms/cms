@@ -8,7 +8,6 @@
 namespace craft\base;
 
 use craft\elements\db\ElementQueryInterface;
-use craft\models\FieldGroup;
 use craft\models\GqlSchema;
 use GraphQL\Type\Definition\Type;
 use yii\base\Component as YiiComponent;
@@ -28,6 +27,14 @@ use yii\validators\Validator;
  */
 interface FieldInterface extends SavableComponentInterface
 {
+    /**
+     * Returns whether the field can be included multiple times within a field layout.
+     *
+     * @return bool
+     * @since 5.0.0
+     */
+    public static function isMultiInstance(): bool;
+
     /**
      * Returns whether the field can be marked as required.
      *
@@ -99,6 +106,23 @@ interface FieldInterface extends SavableComponentInterface
      * @return string|string[]|null The column type(s).
      */
     public static function dbType(): array|string|null;
+
+    /**
+     * Returns a query builder-compatible condition for the given field instances, for a user-provided param value.
+     *
+     * If `false` is returned, an always-false condition will be used.
+     *
+     * @param static[] $instances The field instances to search
+     * @param mixed $value The user-supplied param value
+     * @param array $params Additional parameters that should be bound to the query via [[\yii\db\Query::addParams()]]
+     * @return array|string|ExpressionInterface|false|null
+     * @since 5.0.0
+     */
+    public static function queryCondition(
+        array $instances,
+        mixed $value,
+        array &$params,
+    ): array|string|ExpressionInterface|false|null;
 
     /**
      * Returns the orientation the field should use (`ltr` or `rtl`).
@@ -411,18 +435,6 @@ interface FieldInterface extends SavableComponentInterface
     public function getElementConditionRuleType(): array|string|null;
 
     /**
-     * Returns a query builder-compatible condition for the field, for a user-provided param value.
-     *
-     * If `false` is returned, an always-false condition will be used.
-     *
-     * @param mixed $value The user-supplied param value
-     * @param array $params Additional parameters that should be bound to the query via [[\yii\db\Query::addParams()]]
-     * @return array|string|ExpressionInterface|false|null
-     * @since 5.0.0
-     */
-    public function getQueryCondition(mixed $value, array &$params = []): array|string|ExpressionInterface|false|null;
-
-    /**
      * Returns a SQL expression which extracts the field’s value from the `elements_sites.content` column.
      *
      * @return string|null
@@ -447,13 +459,6 @@ interface FieldInterface extends SavableComponentInterface
      * @param bool|null $isFresh Whether the field is fresh.
      */
     public function setIsFresh(?bool $isFresh = null): void;
-
-    /**
-     * Returns the field’s group.
-     *
-     * @return FieldGroup|null
-     */
-    public function getGroup(): ?FieldGroup;
 
     /**
      * Returns whether the field should be included in the given GraphQL schema.
