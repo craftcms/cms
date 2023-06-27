@@ -4,7 +4,7 @@ return [
     'id' => 'CraftCMS',
     'name' => 'Craft CMS',
     'version' => '4.4.14',
-    'schemaVersion' => '5.0.0.4',
+    'schemaVersion' => '5.0.0.5',
     'minVersionRequired' => '4.4.0',
     'basePath' => dirname(__DIR__), // Defines the @app alias
     'runtimePath' => '@storage/runtime', // Defines the @runtime alias
@@ -76,9 +76,6 @@ return [
         ],
         'log' => [
             'class' => craft\log\Dispatcher::class,
-        ],
-        'matrix' => [
-            'class' => craft\services\Matrix::class,
         ],
         'mutex' => [
             'class' => craft\mutex\Mutex::class,

@@ -14,7 +14,6 @@ use craft\elements\Entry as EntryElement;
 use craft\elements\GlobalSet as GlobalSetElement;
 use craft\elements\Tag as TagElement;
 use craft\errors\GqlException;
-use craft\fields\Matrix as MatrixField;
 use craft\fields\PlainText;
 use craft\fields\Table;
 use craft\gql\base\SingularTypeInterface;
@@ -24,12 +23,12 @@ use craft\gql\interfaces\elements\Category as CategoryInterface;
 use craft\gql\interfaces\elements\Entry as EntryInterface;
 use craft\gql\interfaces\elements\Tag as TagInterface;
 use craft\gql\TypeLoader;
+use craft\gql\types\generators\EntryType as EntryTypeGenerator;
 use craft\gql\types\generators\TableRowType;
 use craft\models\CategoryGroup;
 use craft\models\EntryType;
 use craft\models\FieldLayout;
 use craft\models\GqlSchema;
-use craft\models\MatrixBlockType;
 use craft\models\Section;
 use craft\models\TagGroup;
 use craft\models\Volume;
@@ -85,8 +84,8 @@ class InterfaceAndGeneratorTest extends TestCase
             Craft::$app,
             'entries',
             [
-                'getAllSections' => fn() => array_map(fn(array $context) => $context['section'], $contexts),
-                'getAllEntryTypes' => fn() => array_map(fn(array $context) => $context['entryType'], $contexts),
+                'getAllSections' => fn() => array_filter(array_map(fn(array $context) => $context['section'], $contexts)),
+                'getAllEntryTypes' => fn() => array_filter(array_map(fn(array $context) => $context['entryType'], $contexts)),
             ],
         );
 
@@ -119,16 +118,6 @@ class InterfaceAndGeneratorTest extends TestCase
                 },
             ]
         );
-
-        $this->tester->mockMethods(
-            Craft::$app,
-            'matrix',
-            [
-                'getAllBlockTypes' => function() {
-                    return $this->mockMatrixBlocks();
-                },
-            ]
-        );
     }
 
     protected function _after(): void
@@ -144,20 +133,33 @@ class InterfaceAndGeneratorTest extends TestCase
      * @phpstan-param class-string<SingularTypeInterface> $gqlInterfaceClass
      * @param callable $getAllContexts The callback that provides an array of all contexts for generated types
      * @param callable $getTypeNameByContext The callback to generate the GQL type name by context
+     * @param callable|null $generator The type generator that should be called
+     * @param bool $preloaded Whether the type sholud be preloaded
      */
-    public function testInterfacesGeneratingTypes(string $gqlInterfaceClass, callable $getAllContexts, callable $getTypeNameByContext): void
-    {
+    public function testInterfacesGeneratingTypes(
+        string $gqlInterfaceClass,
+        callable $getAllContexts,
+        callable $getTypeNameByContext,
+        ?callable $generator = null,
+        bool $preloaded = true,
+    ): void {
         /** @var string|SingularTypeInterface $gqlInterfaceClass */
         $gqlInterfaceClass::getType();
 
         foreach ($getAllContexts() as $context) {
+            if ($generator) {
+                $generator($context);
+            }
+
             $typeName = $getTypeNameByContext($context);
 
             // Make sure the specific type entity exists and can be loaded.
             self::assertInstanceOf(ObjectType::class, TypeLoader::loadType($typeName));
 
             // Make sure the generated types are pre-loaded, when asserting valid.
-            self::assertTrue(array_key_exists($typeName, Craft::$app->getGql()->getSchemaDef(null, true)->getTypeMap()));
+            if ($preloaded) {
+                self::assertTrue(array_key_exists($typeName, Craft::$app->getGql()->getSchemaDef(null, true)->getTypeMap()));
+            }
         }
     }
 
@@ -203,7 +205,13 @@ class InterfaceAndGeneratorTest extends TestCase
     {
         return [
             [AssetInterface::class, [$this, 'mockVolumes'], [AssetElement::class, 'gqlTypeName']],
-            [EntryInterface::class, fn() => array_map(fn(array $context) => $context['entryType'], $this->mockEntryContexts()), [EntryElement::class, 'gqlTypeName']],
+            [
+                EntryInterface::class,
+                fn() => array_filter(array_map(fn(array $context) => $context['entryType'], $this->mockEntryContexts())),
+                [EntryElement::class, 'gqlTypeName'],
+                [EntryTypeGenerator::class, 'generateType'],
+                false,
+            ],
             [CategoryInterface::class, [$this, 'mockCategoryGroups'], [CategoryElement::class, 'gqlTypeName']],
             [TagInterface::class, [$this, 'mockTagGroups'], [TagElement::class, 'gqlTypeName']],
         ];
@@ -276,6 +284,22 @@ class InterfaceAndGeneratorTest extends TestCase
             },
         ]);
 
+        $typeCCustomFields = [
+            $this->make(PlainText::class, ['name' => 'Mock Field', 'handle' => 'mockField']),
+        ];
+        $typeC = $this->make(EntryType::class, [
+            'uid' => 'matrixEntry-uid-1',
+            'handle' => 'mockMatrixEntry',
+            '__call' => fn($name) => match ($name) {
+                'getCustomFields' => $typeCCustomFields,
+                'getFieldLayout' => $this->make(FieldLayout::class, [
+                    'uid' => 'entrytype-fieldlayout-uid-3',
+                    'getCustomFields' => $typeCCustomFields,
+                ]),
+                default => throw new UnknownMethodException("Calling unknown method: $name()"),
+            },
+        ]);
+
         $sectionA = $this->make(Section::class, [
             'uid' => 'section-uid-1',
             'handle' => 'mockSection1',
@@ -300,6 +324,10 @@ class InterfaceAndGeneratorTest extends TestCase
             [
                 'section' => $sectionB,
                 'entryType' => $typeB,
+            ],
+            [
+                'section' => null,
+                'entryType' => $typeC,
             ],
         ];
     }
@@ -366,29 +394,6 @@ class InterfaceAndGeneratorTest extends TestCase
                     ],
                     default => throw new UnknownMethodException("Calling unknown method: $name()"),
                 },
-            ]),
-        ];
-    }
-
-    /**
-     * Mock matrix blocks.
-     *
-     * @return array
-     * @throws Exception
-     */
-    public function mockMatrixBlocks(): array
-    {
-        return [
-            $this->make(MatrixBlockType::class, [
-                'uid' => 'matrixBlock-uid-1',
-                'handle' => 'mockMatrixBlock',
-                '__call' => fn($name) => match ($name) {
-                    'getCustomFields' => [
-                        $this->make(PlainText::class, ['name' => 'Mock Field', 'handle' => 'mockField']),
-                    ],
-                    default => throw new UnknownMethodException("Calling unknown method: $name()"),
-                },
-                'getField' => $this->makeEmpty(MatrixField::class, ['handle' => 'matrixField']),
             ]),
         ];
     }

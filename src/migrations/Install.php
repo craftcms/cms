@@ -346,16 +346,25 @@ class Install extends Migration
         ]);
         $this->createTable(Table::ENTRIES, [
             'id' => $this->integer()->notNull(),
-            'sectionId' => $this->integer()->notNull(),
+            'sectionId' => $this->integer(),
             'parentId' => $this->integer(),
+            'primaryOwnerId' => $this->integer(),
+            'fieldId' => $this->integer(),
             'typeId' => $this->integer()->notNull(),
             'authorId' => $this->integer(),
             'postDate' => $this->dateTime(),
             'expiryDate' => $this->dateTime(),
             'deletedWithEntryType' => $this->boolean()->null(),
+            'deletedWithOwner' => $this->boolean()->null(),
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
             'PRIMARY KEY([[id]])',
+        ]);
+        $this->createTable(Table::ENTRIES_OWNERS, [
+            'entryId' => $this->integer()->notNull(),
+            'ownerId' => $this->integer()->notNull(),
+            'sortOrder' => $this->smallInteger()->unsigned()->notNull(),
+            'PRIMARY KEY([[entryId]], [[ownerId]])',
         ]);
         $this->createTable(Table::ENTRYTYPES, [
             'id' => $this->primaryKey(),
@@ -434,33 +443,6 @@ class Install extends Migration
             'maintenance' => $this->boolean()->defaultValue(false)->notNull(),
             'configVersion' => $this->char(12)->notNull()->defaultValue('000000000000'),
             'fieldVersion' => $this->char(12)->notNull()->defaultValue('000000000000'),
-            'dateCreated' => $this->dateTime()->notNull(),
-            'dateUpdated' => $this->dateTime()->notNull(),
-            'uid' => $this->uid(),
-        ]);
-        $this->createTable(Table::MATRIXBLOCKS, [
-            'id' => $this->integer()->notNull(),
-            'primaryOwnerId' => $this->integer()->notNull(),
-            'fieldId' => $this->integer()->notNull(),
-            'typeId' => $this->integer()->notNull(),
-            'deletedWithOwner' => $this->boolean()->null(),
-            'dateCreated' => $this->dateTime()->notNull(),
-            'dateUpdated' => $this->dateTime()->notNull(),
-            'PRIMARY KEY([[id]])',
-        ]);
-        $this->createTable(Table::MATRIXBLOCKS_OWNERS, [
-            'blockId' => $this->integer()->notNull(),
-            'ownerId' => $this->integer()->notNull(),
-            'sortOrder' => $this->smallInteger()->unsigned()->notNull(),
-            'PRIMARY KEY([[blockId]], [[ownerId]])',
-        ]);
-        $this->createTable(Table::MATRIXBLOCKTYPES, [
-            'id' => $this->primaryKey(),
-            'fieldId' => $this->integer()->notNull(),
-            'fieldLayoutId' => $this->integer(),
-            'name' => $this->string()->notNull(),
-            'handle' => $this->string()->notNull(),
-            'sortOrder' => $this->smallInteger()->unsigned(),
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
             'uid' => $this->uid(),
@@ -800,6 +782,8 @@ class Install extends Migration
         $this->createIndex(null, Table::ENTRIES, ['authorId'], false);
         $this->createIndex(null, Table::ENTRIES, ['sectionId'], false);
         $this->createIndex(null, Table::ENTRIES, ['typeId'], false);
+        $this->createIndex(null, Table::ENTRIES, ['primaryOwnerId'], false);
+        $this->createIndex(null, Table::ENTRIES, ['fieldId'], false);
         $this->createIndex(null, Table::ENTRYTYPES, ['fieldLayoutId'], false);
         $this->createIndex(null, Table::ENTRYTYPES, ['dateDeleted'], false);
         $this->createIndex(null, Table::FIELDLAYOUTS, ['dateDeleted'], false);
@@ -815,13 +799,6 @@ class Install extends Migration
         $this->createIndex(null, Table::IMAGETRANSFORMINDEX, ['assetId', 'transformString'], false);
         $this->createIndex(null, Table::IMAGETRANSFORMS, ['name']);
         $this->createIndex(null, Table::IMAGETRANSFORMS, ['handle']);
-        $this->createIndex(null, Table::MATRIXBLOCKS, ['primaryOwnerId'], false);
-        $this->createIndex(null, Table::MATRIXBLOCKS, ['fieldId'], false);
-        $this->createIndex(null, Table::MATRIXBLOCKS, ['typeId'], false);
-        $this->createIndex(null, Table::MATRIXBLOCKTYPES, ['name', 'fieldId']);
-        $this->createIndex(null, Table::MATRIXBLOCKTYPES, ['handle', 'fieldId']);
-        $this->createIndex(null, Table::MATRIXBLOCKTYPES, ['fieldId'], false);
-        $this->createIndex(null, Table::MATRIXBLOCKTYPES, ['fieldLayoutId'], false);
         $this->createIndex(null, Table::MIGRATIONS, ['track', 'name'], true);
         $this->createIndex(null, Table::PLUGINS, ['handle'], true);
         $this->createIndex(null, Table::QUEUE, ['channel', 'fail', 'timeUpdated', 'timePushed']);
@@ -970,18 +947,14 @@ class Install extends Migration
         $this->addForeignKey(null, Table::ENTRIES, ['sectionId'], Table::SECTIONS, ['id'], 'CASCADE', null);
         $this->addForeignKey(null, Table::ENTRIES, ['parentId'], Table::ENTRIES, ['id'], 'SET NULL', null);
         $this->addForeignKey(null, Table::ENTRIES, ['typeId'], Table::ENTRYTYPES, ['id'], 'CASCADE', null);
+        $this->addForeignKey(null, Table::ENTRIES, ['fieldId'], Table::FIELDS, ['id'], 'CASCADE', null);
+        $this->addForeignKey(null, Table::ENTRIES, ['primaryOwnerId'], Table::ELEMENTS, ['id'], 'CASCADE', null);
+        $this->addForeignKey(null, Table::ENTRIES_OWNERS, ['entryId'], Table::ENTRIES, ['id'], 'CASCADE', null);
+        $this->addForeignKey(null, Table::ENTRIES_OWNERS, ['ownerId'], Table::ELEMENTS, ['id'], 'CASCADE', null);
         $this->addForeignKey(null, Table::ENTRYTYPES, ['fieldLayoutId'], Table::FIELDLAYOUTS, ['id'], 'SET NULL', null);
         $this->addForeignKey(null, Table::GLOBALSETS, ['fieldLayoutId'], Table::FIELDLAYOUTS, ['id'], 'SET NULL', null);
         $this->addForeignKey(null, Table::GLOBALSETS, ['id'], Table::ELEMENTS, ['id'], 'CASCADE', null);
         $this->addForeignKey(null, Table::GQLTOKENS, 'schemaId', Table::GQLSCHEMAS, 'id', 'SET NULL', null);
-        $this->addForeignKey(null, Table::MATRIXBLOCKS, ['fieldId'], Table::FIELDS, ['id'], 'CASCADE', null);
-        $this->addForeignKey(null, Table::MATRIXBLOCKS, ['id'], Table::ELEMENTS, ['id'], 'CASCADE', null);
-        $this->addForeignKey(null, Table::MATRIXBLOCKS, ['primaryOwnerId'], Table::ELEMENTS, ['id'], 'CASCADE', null);
-        $this->addForeignKey(null, Table::MATRIXBLOCKS, ['typeId'], Table::MATRIXBLOCKTYPES, ['id'], 'CASCADE', null);
-        $this->addForeignKey(null, Table::MATRIXBLOCKS_OWNERS, ['blockId'], Table::MATRIXBLOCKS, ['id'], 'CASCADE', null);
-        $this->addForeignKey(null, Table::MATRIXBLOCKS_OWNERS, ['ownerId'], Table::ELEMENTS, ['id'], 'CASCADE', null);
-        $this->addForeignKey(null, Table::MATRIXBLOCKTYPES, ['fieldId'], Table::FIELDS, ['id'], 'CASCADE', null);
-        $this->addForeignKey(null, Table::MATRIXBLOCKTYPES, ['fieldLayoutId'], Table::FIELDLAYOUTS, ['id'], 'SET NULL', null);
         $this->addForeignKey(null, Table::RELATIONS, ['fieldId'], Table::FIELDS, ['id'], 'CASCADE', null);
         $this->addForeignKey(null, Table::RELATIONS, ['sourceId'], Table::ELEMENTS, ['id'], 'CASCADE', null);
         $this->addForeignKey(null, Table::RELATIONS, ['sourceSiteId'], Table::SITES, ['id'], 'CASCADE', 'CASCADE');

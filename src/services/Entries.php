@@ -780,8 +780,8 @@ class Entries extends Component
                 // If the propagation method just changed, we definitely need to update entries for that
                 if ($propagationMethodChanged) {
                     Queue::push(new ApplyNewPropagationMethod([
-                        'description' => Translation::prep('app', 'Applying new propagation method to {section} entries', [
-                            'section' => $sectionRecord->name,
+                        'description' => Translation::prep('app', 'Applying new propagation method to {name} entries', [
+                            'name' => $sectionRecord->name,
                         ]),
                         'elementType' => Entry::class,
                         'criteria' => [
@@ -1339,7 +1339,7 @@ SQL)->execute();
             return false;
         }
 
-        if ($isNewEntryType) {
+        if ($isNewEntryType && !$entryType->uid) {
             $entryType->uid = StringHelper::UUID();
         }
 
@@ -1614,6 +1614,16 @@ SQL)->execute();
 
         // Invalidate entry caches
         Craft::$app->getElements()->invalidateCachesForElementType(Entry::class);
+    }
+
+    /**
+     * Refreshes the internal entry type cache.
+     *
+     * @since 5.0.0
+     */
+    public function refreshEntryTypes(): void
+    {
+        $this->_entryTypes = null;
     }
 
     /**

@@ -8,12 +8,12 @@
 namespace craft\fields;
 
 use Craft;
-use craft\base\BlockElementInterface;
 use craft\base\conditions\ConditionInterface;
 use craft\base\EagerLoadingFieldInterface;
 use craft\base\Element;
 use craft\base\ElementInterface;
 use craft\base\Field;
+use craft\base\NestedElementInterface;
 use craft\base\PreviewableFieldInterface;
 use craft\db\Query;
 use craft\db\Table as DbTable;
@@ -1202,7 +1202,7 @@ JS, [
             if ($element->id) {
                 $disabledElementIds[] = $element->getCanonicalId();
             }
-            if ($element instanceof BlockElementInterface) {
+            if ($element instanceof NestedElementInterface) {
                 $el = $element;
                 do {
                     try {
@@ -1213,7 +1213,7 @@ JS, [
                     } catch (InvalidConfigException) {
                         break;
                     }
-                } while ($el instanceof BlockElementInterface);
+                } while ($el instanceof NestedElementInterface);
             }
         }
 

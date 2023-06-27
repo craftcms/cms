@@ -37,7 +37,6 @@ use craft\services\Fields;
 use craft\services\Globals;
 use craft\services\Images;
 use craft\services\ImageTransforms;
-use craft\services\Matrix;
 use craft\services\Path;
 use craft\services\Plugins;
 use craft\services\PluginStore;
@@ -586,7 +585,6 @@ class TestSetup
             [Images::class, ['getImages', 'images']],
             [Locale::class, ['getLocale', 'locale']],
             [Mailer::class, ['getMailer', 'mailer']],
-            [Matrix::class, ['getMatrix', 'matrix']],
             [MigrationManager::class, ['getMigrator', 'migrator']],
             [Mutex::class, ['getMutex', 'mutex']],
             [Path::class, ['getPath', 'path']],

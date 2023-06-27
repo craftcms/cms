@@ -7,8 +7,7 @@ use craft\db\Migration;
 use craft\db\Query;
 use craft\db\Table;
 use craft\elements\User;
-use craft\fields\Matrix;
-use craft\services\ProjectConfig;
+use craft\helpers\ArrayHelper;
 use yii\console\Exception;
 
 /**
@@ -41,6 +40,8 @@ class m230511_215903_content_refactor extends BaseContentRefactorMigration
         $this->createIndex(null, Table::ELEMENTS_SITES, ['title', 'siteId']);
 
         $this->addColumn(Table::CHANGEDFIELDS, 'layoutElementUid', $this->uid()->after('fieldId'));
+
+        $projectConfig = Craft::$app->getProjectConfig();
 
         // update addresses
         $this->updateElements(
@@ -80,22 +81,37 @@ class m230511_215903_content_refactor extends BaseContentRefactorMigration
         }
 
         // update Matrix blocks
-        /** @var Matrix[] $matrixFields */
-        $matrixFields = $fieldsService->getFieldsByType(Matrix::class);
-        foreach ($matrixFields as $field) {
-            foreach ($field->getBlockTypes() as $blockType) {
-                $this->updateElements(
-                    (new Query())->from(Table::MATRIXBLOCKS)->where(['typeId' => $blockType->id]),
-                    $blockType->getFieldLayout(),
-                    $field->contentTable,
-                    sprintf('field_%s_', $blockType->handle),
-                );
+        $blockTypeData = (new Query())
+            ->select(['id', 'uid', 'fieldLayoutId'])
+            ->from('{{%matrixblocktypes}}')
+            ->indexBy('uid')
+            ->all();
+        $indexedMatrixFieldConfigs = [];
+        $matrixFieldConfigs = $projectConfig->find(
+            fn(array $config) => ($config['type'] ?? null) === 'craft\fields\Matrix',
+        );
+        foreach ($matrixFieldConfigs as $matrixFieldPath => $matrixFieldConfig) {
+            $matrixFieldUid = ArrayHelper::lastValue(explode('.', $matrixFieldPath));
+            if (!isset($matrixFieldConfig['settings']['contentTable'])) {
+                throw new Exception("Matrix field {$matrixFieldUid} is missing its contentTable value.");
             }
-
-            // if the field is global, drop the contentTable value from its config
-            if ($field->context === 'global') {
-                Craft::$app->getProjectConfig()->remove(sprintf('%s.%s.settings.contentTable', ProjectConfig::PATH_FIELDS, $field->uid));
+            $indexedMatrixFieldConfigs[$matrixFieldUid] = $matrixFieldConfig;
+        }
+        foreach ($projectConfig->get('matrixBlockTypes') ?? [] as $blockTypeUid => $blockTypeConfig) {
+            if (!isset($indexedMatrixFieldConfigs[$blockTypeConfig['field']])) {
+                continue;
             }
+            if (!isset($blockTypeData[$blockTypeUid])) {
+                throw new Exception("Matrix block type $blockTypeUid is out of sync.");
+            }
+            $blockTypeDatum = $blockTypeData[$blockTypeUid];
+            $fieldLayout = $fieldsService->getLayoutById($blockTypeDatum['fieldLayoutId']);
+            $this->updateElements(
+                (new Query())->from('{{%matrixblocks}}')->where(['typeId' => $blockTypeDatum['id']]),
+                $fieldLayout,
+                $indexedMatrixFieldConfigs[$blockTypeConfig['field']]['settings']['contentTable'],
+                sprintf('field_%s_', $blockTypeConfig['handle']),
+            );
         }
 
         // update tags

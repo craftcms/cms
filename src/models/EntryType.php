@@ -130,9 +130,11 @@ class EntryType extends Model implements FieldLayoutProviderInterface
         ];
         $rules[] = [['fieldLayout'], 'validateFieldLayout'];
 
-        if (!$this->hasTitleField) {
-            $rules[] = [['titleFormat'], 'required'];
-        }
+        $rules[] = [
+            ['titleFormat'],
+            'required',
+            'when' => fn() => !$this->hasTitleField,
+        ];
 
         return $rules;
     }
