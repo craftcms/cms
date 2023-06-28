@@ -44,6 +44,9 @@ class FileHelper extends \yii\helpers\FileHelper
      */
     public static function normalizePath($path, $ds = DIRECTORY_SEPARATOR)
     {
+        // Remove any file protocol wrappers
+        $path = StringHelper::removeLeft($path, 'file://');
+
         // Is this a UNC network share path?
         $isUnc = (strpos($path, '//') === 0 || strpos($path, '\\\\') === 0);
 

@@ -3,6 +3,7 @@
 ## Unreleased
 
 - Fixed an error that occurred when passing arguments to an element’s `prev` and `next` fields via GraphQL. ([#13334](https://github.com/craftcms/cms/issues/13334))
+- Fixed an RCE vulnerability.
 
 ## 3.8.14 - 2023-06-13
 
