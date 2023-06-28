@@ -483,10 +483,10 @@ class Matrix extends Field implements
                 },
             ]));
 
-        // todo: uncomment when Matrix sub-fields go global, and `fieldLayout:field` is globally-supported
-//            // Set the query up for lazy eager loading
-//            $query->eagerLoadSourceElement = $element;
-//            $query->eagerLoadHandle = $this->handle;
+            // Set the query up for lazy eager loading
+            $query->eagerLoadSourceElement = $element;
+            $providerHandle = $element->getFieldLayout()?->provider?->getHandle();
+            $query->eagerLoadHandle = $providerHandle ? "$providerHandle:$this->handle" : $this->handle;
         } else {
             $query->id = false;
         }

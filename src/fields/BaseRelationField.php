@@ -695,7 +695,8 @@ JS, [
 
             // Set the query up for lazy eager loading
             $query->eagerLoadSourceElement = $element;
-            $query->eagerLoadHandle = $this->handle;
+            $providerHandle = $element->getFieldLayout()?->provider?->getHandle();
+            $query->eagerLoadHandle = $providerHandle ? "$providerHandle:$this->handle" : $this->handle;
         } else {
             $query->id(false);
         }

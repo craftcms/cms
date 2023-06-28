@@ -1273,10 +1273,19 @@ class ElementQuery extends Query implements ElementQueryInterface
      */
     public function wasEagerLoaded(?string $alias = null): bool
     {
-        return (
-            isset($this->eagerLoadHandle) &&
-            $this->eagerLoadSourceElement?->hasEagerLoadedElements($alias ?? $this->eagerLoadHandle)
-        );
+        if (!isset($this->eagerLoadHandle, $this->eagerLoadSourceElement)) {
+            return false;
+        }
+
+        if ($alias !== null) {
+            return $this->eagerLoadSourceElement->hasEagerLoadedElements($alias);
+        }
+
+        $planHandle = $this->eagerLoadHandle;
+        if (str_contains($planHandle, ':')) {
+            $planHandle = explode(':', $planHandle, 2)[1];
+        }
+        return $this->eagerLoadSourceElement->hasEagerLoadedElements($planHandle);
     }
 
     /**
@@ -1603,6 +1612,11 @@ class ElementQuery extends Query implements ElementQueryInterface
             $this->eagerly &&
             isset($this->eagerLoadSourceElement->elementQueryResult, $this->eagerLoadHandle)
         ) {
+            $planHandle = $this->eagerLoadHandle;
+            if (str_contains($planHandle, ':')) {
+                $planHandle = explode(':', $planHandle, 2)[1];
+            }
+
             // not yet eager loaded?
             if (!$this->wasEagerLoaded()) {
                 Craft::$app->getElements()->eagerLoadElements(
@@ -1611,7 +1625,7 @@ class ElementQuery extends Query implements ElementQueryInterface
                     [
                         new EagerLoadPlan([
                             'handle' => $this->eagerLoadHandle,
-                            'alias' => $this->eagerLoadAlias ?? $this->eagerLoadHandle,
+                            'alias' => $this->eagerLoadAlias ?? $planHandle,
                             'criteria' => $this->getCriteria() + ['with' => $this->with],
                             'all' => true,
                             'lazy' => true,
@@ -1620,7 +1634,7 @@ class ElementQuery extends Query implements ElementQueryInterface
                 );
             }
 
-            return $this->eagerLoadSourceElement->getEagerLoadedElements($this->eagerLoadHandle);
+            return $this->eagerLoadSourceElement->getEagerLoadedElements($planHandle);
         }
 
         return ElementCollection::make($this->all($db));
