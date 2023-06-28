@@ -266,6 +266,7 @@ return [
     'Choose which filesystem assets should be stored in.' => '에셋을 저장할 파일 시스템을 선택합니다.',
     'Choose which filesystem image transforms should be stored in.' => '이미지 변환을 저장할 파일 시스템을 선택합니다.',
     'Choose which sites this section should be available in, and configure the site-specific settings.' => '이 섹션을 사용할 수 있는 사이트를 선택하고 사이트별 설정을 구성하세요.',
+    'Choose which sites this source should be visible for.' => 'Choose which sites this source should be visible for.',
     'Choose which table columns should be visible for this source by default.' => '기본적으로 이 소스에 대해 표시될 테이블 열을 선택하세요.',
     'Choose which user groups should have access to this source.' => '이 소스에 액세스해야 하는 사용자 그룹을 선택합니다.',
     'Choose' => '선택',
