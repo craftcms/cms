@@ -116,6 +116,16 @@ class ComponentHelperTest extends TestCase
     }
 
     /**
+     * @dataProvider cleanseConfigDataProvider
+     * @param array $expected
+     * @param array $config
+     */
+    public function testCleanseConfig(array $expected, array $config)
+    {
+        self::assertSame($expected, Component::cleanseConfig($config));
+    }
+
+    /**
      * @return array
      */
     public function validateComponentClassDataProvider(): array
@@ -302,6 +312,23 @@ class ComponentHelperTest extends TestCase
             'file-does-not-exist' => ['<title>Default</title>', '/file/does/not/exist.svg', 'Default'],
             'not-an-svg' => ['<title>Default</title>', dirname(__DIR__, 2) . '/_data/assets/files/background.jpeg', 'Default'],
             'aria-hidden' => ['aria-hidden="true"', '<svg width="100px" height="100px" viewBox="0 0 100 100" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"></svg>', 'Default'],
+        ];
+    }
+
+    /**
+     * @return array
+     */
+    public function cleanseConfigDataProvider(): array
+    {
+        return [
+            [
+                ['f' => 'foo', 'b' => 'bar'],
+                ['f' => 'foo', 'b' => 'bar', 'as f' => 'f', 'on b' => 'b'],
+            ],
+            [
+                ['nested' => ['f' => 'foo', 'b' => 'bar']],
+                ['nested' => ['f' => 'foo', 'b' => 'bar', 'as f' => 'f', 'on b' => 'b']],
+            ],
         ];
     }
 }
