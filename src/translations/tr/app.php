@@ -266,6 +266,7 @@ return [
     'Choose which filesystem assets should be stored in.' => 'Dosyaların hangi dosya sisteminde saklanacağını seçin.',
     'Choose which filesystem image transforms should be stored in.' => 'Görüntü dönüştürücülerin hangi dosya sisteminde saklanacağını seçin.',
     'Choose which sites this section should be available in, and configure the site-specific settings.' => 'Bu bölümün kullanılabileceği siteleri seçin ve siteye özel ayarları yapılandırın.',
+    'Choose which sites this source should be visible for.' => 'Choose which sites this source should be visible for.',
     'Choose which table columns should be visible for this source by default.' => 'Varsayılan olarak bu kaynak için hangi tablo sütunlarının görüneceğini seçin.',
     'Choose which user groups should have access to this source.' => 'Bu kaynağa hangi kullanıcı gruplarının erişebileceğini seçin.',
     'Choose' => 'Seçiniz',
