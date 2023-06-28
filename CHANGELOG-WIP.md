@@ -21,6 +21,7 @@
 ### Development
 - Entry type names and handles must now be unique globally, rather than just within a single section. Existing entry type names and handles will be renamed automatically where needed, to ensure uniqueness.
 - Assets, categories, entries, and tags now support eager-loading paths prefixed with a field layout provider’s handle (e.g. `myEntryType:myField`).
+- Element queries now have an `eagerly` param, which can be used to lazily eager-load the resulting elements for all peer elements, when `all()`, `collect()`, `one()`, `nth()`, or `count()` is called.
 - Entry queries now have `field`, `fieldId`, `primaryOwner`, `primaryOwnerId`, `owner`, `ownerId`, `allowOwnerDrafts`, and `allowOwnerRevisions` params.
 - Entries’ GraphQL type names are now formatted as `<entryTypeHandle>_Entry`, and are no longer prefixed with their section’s handle. (That goes for Matrix-nested entries as well.)
 - Matrix fields’ GraphQL mutation types now expect nested entries to be defined by an `entries` field rather than `blocks`.
@@ -38,6 +39,9 @@
 - The `assets/move-asset` and `assets/move-folder` actions no longer include `success` keys in responses. ([#12159](https://github.com/craftcms/cms/pull/12159))
 - The `assets/upload` controller action now includes `errors` object in failure responses. ([#12159](https://github.com/craftcms/cms/pull/12159))
 - Added `craft\base\ElementContainerFieldInterface`, which should be implemented by fields which contain nested elements, such as Matrix.
+- Added `craft\base\ElementInterface::setLazyEagerLoadedElements()`.
+- Added `craft\base\ElementTrait::$eagerLoadInfo`.
+- Added `craft\base\ElementTrait::$elementQueryResult`.
 - Added `craft\base\Field::valueSql()`.
 - Added `craft\base\FieldInterface::dbType()`, which defines the type(s) of values the field will store in the `elements_sites.content` column (if any).
 - Added `craft\base\FieldInterface::getValueSql()`.
@@ -48,6 +52,7 @@
 - Added `craft\base\FieldTrait::$layoutElement`.
 - Added `craft\base\NestedElementInterface`, which should be implemented by element types which could be nested by other elements.
 - Added `craft\base\conditions\ConditionInterface::createConditionRule()`.
+- Added `craft\behaviors\EventBehavior`.
 - Added `craft\controllers\EntryTypesController`.
 - Added `craft\db\Connection::getIsMaria()`.
 - Added `craft\db\QueryParam`.
@@ -77,6 +82,12 @@
 - Added `craft\elements\Tag::gqlTypeName()`.
 - Added `craft\elements\User::GQL_TYPE_NAME`.
 - Added `craft\elements\conditions\ElementConditionInterface::getFieldLayouts()`.
+- Added `craft\elements\db\EagerLoadInfo`.
+- Added `craft\elements\db\EagerLoadPlan::$lazy`.
+- Added `craft\elements\db\ElementQuery::$eagerLoadAlias`.
+- Added `craft\elements\db\ElementQuery::$eagerLoadHandle`.
+- Added `craft\elements\db\ElementQuery::wasCountEagerLoaded()`.
+- Added `craft\elements\db\ElementQuery::wasEagerLoaded()`.
 - Added `craft\elements\db\ElementQueryInterface::fieldLayouts()`
 - Added `craft\events\DefineEntryTypesForFieldEvent`.
 - Added `craft\fieldlayoutelements\CustomField::$handle`.
@@ -118,6 +129,7 @@
 - Renamed `craft\web\CpScreenResponseBehavior::$notice()` and `notice()` to `$noticeHtml` and `noticeHtml()`. ([#13037](https://github.com/craftcms/cms/pull/13037))
 - Renamed `craft\web\CpScreenResponseBehavior::$pageSidebar()` and `pageSidebar()` to `$pageSidebarHtml` and `pageSidebarHtml()`. ([#13037](https://github.com/craftcms/cms/pull/13037))
 - Renamed `craft\web\CpScreenResponseBehavior::$sidebar()` and `sidebar()` to `$metaSidebarHtml` and `metaSidebarHtml()`. ([#13037](https://github.com/craftcms/cms/pull/13037))
+- `craft\base\ElementInterface::getEagerLoadedElementCount()` can now return `null` for counts that haven’t been eager-loaded yet.
 - `craft\db\Connection::getSupportsMb4()` is now dynamic for MySQL installs, based on whether the `elements_sites` table has an `mb4` charset.
 - `craft\elements\Entry::getSection()` can now return `null`, for nested entries.
 - `craft\fields\BaseOptionsField::$multi` and `$optgroups` properties are now static.
