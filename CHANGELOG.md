@@ -1,5 +1,9 @@
 # Release Notes for Craft CMS 3.x
 
+## Unreleased
+
+- Fixed an error that occurred when passing arguments to an element’s `prev` and `next` fields via GraphQL. ([#13334](https://github.com/craftcms/cms/issues/13334))
+
 ## 3.8.14 - 2023-06-13
 
 - The `_includes/forms/date` and `_includes/forms/time` templates now accept a `timeZone` variable.
