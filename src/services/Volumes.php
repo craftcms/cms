@@ -27,6 +27,7 @@ use craft\records\Volume as AssetVolumeRecord;
 use craft\records\VolumeFolder as VolumeFolderRecord;
 use Throwable;
 use yii\base\Component;
+use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
 
 /**
@@ -442,24 +443,14 @@ class Volumes extends Component
      *
      * @param Volume $volume
      * @return VolumeFolder
+     * @deprecated in 4.5.0. [[Assets::getRootFolderByVolumeId()]] should be used instead.
      */
     public function ensureTopFolder(Volume $volume): VolumeFolder
     {
-        $assetsService = Craft::$app->getAssets();
-        $folder = $assetsService->findFolder([
-            'name' => $volume->name,
-            'volumeId' => $volume->id,
-        ]);
-
-        if ($folder === null) {
-            $folder = new VolumeFolder();
-            $folder->volumeId = $volume->id;
-            $folder->parentId = null;
-            $folder->name = $volume->name;
-            $folder->path = '';
-            $assetsService->storeFolderRecord($folder);
+        $folder = Craft::$app->getAssets()->getRootFolderByVolumeId($volume->id);
+        if (!$folder) {
+            throw new InvalidArgumentException(sprintf('Invalid volume passed to %s().', __METHOD__));
         }
-
         return $folder;
     }
 

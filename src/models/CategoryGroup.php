@@ -8,6 +8,7 @@
 namespace craft\models;
 
 use Craft;
+use craft\base\FieldLayoutProviderInterface;
 use craft\base\Model;
 use craft\behaviors\FieldLayoutBehavior;
 use craft\db\Table;
@@ -28,7 +29,7 @@ use DateTime;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
-class CategoryGroup extends Model
+class CategoryGroup extends Model implements FieldLayoutProviderInterface
 {
     /** @since 3.7.0 */
     public const DEFAULT_PLACEMENT_BEGINNING = 'beginning';
@@ -166,6 +167,16 @@ class CategoryGroup extends Model
     public function __toString(): string
     {
         return Craft::t('site', $this->name) ?: static::class;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getFieldLayout(): FieldLayout
+    {
+        /** @var FieldLayoutBehavior $behavior */
+        $behavior = $this->getBehavior('fieldLayout');
+        return $behavior->getFieldLayout();
     }
 
     /**

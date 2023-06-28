@@ -53,6 +53,9 @@ class FileHelper extends \yii\helpers\FileHelper
      */
     public static function normalizePath($path, $ds = DIRECTORY_SEPARATOR): string
     {
+        // Remove any file protocol wrappers
+        $path = StringHelper::removeLeft($path, 'file://');
+
         // Is this a UNC network share path?
         $isUnc = (str_starts_with($path, '//') || str_starts_with($path, '\\\\'));
 
@@ -261,7 +264,7 @@ class FileHelper extends \yii\helpers\FileHelper
         // Strip any characters not allowed.
         $filename = str_replace($disallowedChars, '', strip_tags($filename));
 
-        if (Craft::$app->getDb()->getIsMysql()) {
+        if (!Craft::$app->getDb()->getSupportsMb4()) {
             // Strip emojis
             $filename = StringHelper::replaceMb4($filename, '');
         }

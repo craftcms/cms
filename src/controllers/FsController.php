@@ -33,10 +33,14 @@ class FsController extends Controller
      */
     public function beforeAction($action): bool
     {
+        if (!parent::beforeAction($action)) {
+            return false;
+        }
+
         // All asset volume actions require an admin
         $this->requireAdmin();
 
-        return parent::beforeAction($action);
+        return true;
     }
 
     /**
@@ -140,8 +144,6 @@ class FsController extends Controller
             'name' => $this->request->getBodyParam('name'),
             'handle' => $this->request->getBodyParam('handle'),
             'oldHandle' => $this->request->getBodyParam('oldHandle'),
-            'hasUrls' => (bool)$this->request->getBodyParam('hasUrls'),
-            'url' => $this->request->getBodyParam('url'),
             'settings' => $this->request->getBodyParam("types.$type"),
         ]);
 

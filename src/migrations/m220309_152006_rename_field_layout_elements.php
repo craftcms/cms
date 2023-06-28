@@ -87,7 +87,7 @@ class m220309_152006_rename_field_layout_elements extends Migration
                                 $tabRecord->uid = $tabConfig['uid'] ?? StringHelper::UUID();
                                 $tabRecord->sortOrder = $tabConfig['sortOrder'] ?? $sortOrder;
                                 $tabName = $tabConfig['name'] ?? 'Content';
-                                if ($this->db->getIsMysql()) {
+                                if (!$this->db->getSupportsMb4()) {
                                     $tabRecord->name = StringHelper::encodeMb4($tabName);
                                 } else {
                                     $tabRecord->name = $tabName;
