@@ -41,7 +41,7 @@ class ConditionsController extends Controller
 
         $this->requireCpRequest();
 
-        $baseConfig = Json::decodeIfJson($this->request->getBodyParam('config'));
+        $baseConfig = Component::cleanseConfig(Json::decodeIfJson($this->request->getBodyParam('config')));
         $config = Component::cleanseConfig($this->request->getBodyParam($baseConfig['name']));
         $newRuleType = ArrayHelper::remove($config, 'new-rule-type');
         $conditionsService = Craft::$app->getConditions();
