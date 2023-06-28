@@ -18,6 +18,7 @@ use craft\helpers\Json;
 use craft\helpers\UrlHelper;
 use craft\models\GqlSchema;
 use craft\models\GqlToken;
+use craft\models\Site;
 use craft\services\Gql as GqlService;
 use craft\web\assets\graphiql\GraphiqlAsset;
 use craft\web\Controller;
@@ -299,38 +300,33 @@ class GraphqlController extends Controller
      */
     private function _enforceSiteAccess(GqlSchema $schema): void
     {
-        $primarySite = Craft::$app->getSites()->getPrimarySite();
-        $currentSite = Craft::$app->getSites()->getCurrentSite();
+        $sitesService = Craft::$app->getSites();
         $allowedSites = GqlHelper::getAllowedSites($schema);
-        $allowedSiteIds = array_map(fn($site) => $site->id, $allowedSites);
-
-        $siteToUse = null;
+        $allowedSiteIds = array_flip(array_map(fn(Site $site) => $site->id, $allowedSites));
 
         // check if schema has access to the current site
-        if (in_array($currentSite->id, $allowedSiteIds)) {
-            $siteToUse = $currentSite->id;
-        } else {
-            // if not, check if it has access to the primary site (if different from the current site)
-            if ($currentSite->id !== $primarySite->id && in_array($primarySite->id, $allowedSiteIds)) {
-                $siteToUse = $primarySite->id;
-            } else {
-                // otherwise, loop through all sites until we find one that the token has access to
-                foreach (Craft::$app->getSites()->getAllSites() as $site) {
-                    if (in_array($site->id, $allowedSiteIds)) {
-                        $siteToUse = $site->id;
-                        break;
-                    }
-                }
+        $currentSite = $sitesService->getCurrentSite();
+        if (isset($allowedSiteIds[$currentSite->id])) {
+            return;
+        }
+
+        // if not, check if it has access to the primary site (if different from the current site)
+        $primarySite = $sitesService->getPrimarySite();
+        if ($currentSite->id !== $primarySite->id && isset($allowedSiteIds[$primarySite->id])) {
+            $sitesService->setCurrentSite($primarySite);
+            return;
+        }
+
+        // otherwise, loop through all sites until we find one that the token has access to
+        foreach ($sitesService->getAllSites() as $site) {
+            if (isset($allowedSiteIds[$site->id])) {
+                $sitesService->setCurrentSite($site);
+                return;
             }
         }
 
-        // if no accessible site can be found, throw a ForbiddenHttpException
-        if ($siteToUse === null) {
-            throw new ForbiddenHttpException('Schema doesn’t have access to the “' . $currentSite->getName() . '” site.');
-        }
-
-        // set the current site to the one token has access to
-        Craft::$app->getSites()->setCurrentSite($siteToUse);
+        // no allowed sites could be found, so throw a ForbiddenHttpException
+        throw new ForbiddenHttpException(sprintf('Schema doesn’t have access to the “%s” site.', $currentSite->getName()));
     }
 
     /**
