@@ -24,6 +24,7 @@
 - Custom element sources can now be configured to only appear for certain sites. ([#13344](https://github.com/craftcms/cms/discussions/13344))
 - The “My Account” page no longer shows a “Require a password reset on next login” checkbox.
 - The Asset Indexes utility no longer shows the “Cache remote images” option on ephemeral environments. ([#13202](https://github.com/craftcms/cms/issues/13202))
+- It’s now possible to configure UK addresses to show a “County” field. ([#13361](https://github.com/craftcms/cms/pull/13361))
 
 ### Development
 - Added a new `_globals` global Twig variable for front-end templates, which can be used to store custom values in a global scope. ([#13050](https://github.com/craftcms/cms/pull/13050), [#12951](https://github.com/craftcms/cms/discussions/12951))
@@ -36,6 +37,7 @@
 ### Extensibility
 - Filesystem types can now register custom file uploaders. ([#13313](https://github.com/craftcms/cms/pull/13313))
 - When applying a draft, the canonical elements’ `getDirtyAttributes()` and `getDirtyFields()` methods now return the attribute names and field handles that were modified on the draft for save events. ([#12967](https://github.com/craftcms/cms/issues/12967))
+- Added `craft\addresses\SubdivisionRepository`. ([#13361](https://github.com/craftcms/cms/pull/13361))
 - Added `craft\base\ElementInterface::getThumbSvg()`. ([#13262](https://github.com/craftcms/cms/pull/13262))
 - Added `craft\base\ElementInterface::setDirtyFields()`.
 - Added `craft\base\ElementInterface::setFieldValueFromRequest()`. ([#12935](https://github.com/craftcms/cms/issues/12935))
@@ -46,12 +48,15 @@
 - Added `craft\base\FsTrait::$showHasUrlSetting`. ([#13224](https://github.com/craftcms/cms/pull/13224))
 - Added `craft\base\FsTrait::$showUrlSetting`. ([#13224](https://github.com/craftcms/cms/pull/13224))
 - Added `craft\controllers\AssetsControllerTrait`.
+- Added `craft\events\DefineAddressSubdivisionsEvent`. ([#13361](https://github.com/craftcms/cms/pull/13361))
 - Added `craft\gql\GqlEntityRegistry::getOrCreate()`. ([#13354](https://github.com/craftcms/cms/pull/13354))
 - Added `craft\helpers\Assets::iconSvg()`.
 - Added `craft\helpers\StringHelper::escapeShortcodes()`. ([#12935](https://github.com/craftcms/cms/issues/12935))
 - Added `craft\helpers\StringHelper::unescapeShortcodes()`. ([#12935](https://github.com/craftcms/cms/issues/12935))
 - Added `craft\models\FieldLayout::$provider`. ([#13250](https://github.com/craftcms/cms/pull/13250))
 - Added `craft\services\Addresses::$formatter`, which can be used to override the default address formatter. ([#13242](https://github.com/craftcms/cms/pull/13242), [#12615](https://github.com/craftcms/cms/discussions/12615))
+- Added `craft\services\Addresses::EVENT_DEFINE_ADDRESS_SUBDIVISIONS`. ([#13361](https://github.com/craftcms/cms/pull/13361))
+- Added `craft\services\Addresses::defineAddressSubdivisions()`. ([#13361](https://github.com/craftcms/cms/pull/13361))
 - Added `craft\web\CpScreenResponseBehavior::$pageSidebar`, `pageSidebar()`, and `pageSidebarTemplate()`. ([#13019](https://github.com/craftcms/cms/pull/13019), [#12795](https://github.com/craftcms/cms/issues/12795))
 - Added `craft\web\CpScreenResponseBehavior::$slideoutBodyClass`.
 - `craft\helpers\Cp::selectizeFieldHtml()`, `selectizeHtml()`, and `_includes/forms/selectize.twig` now support a `multi` param. ([#13176](https://github.com/craftcms/cms/pull/13176))
