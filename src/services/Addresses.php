@@ -63,9 +63,9 @@ class Addresses extends Component
     public const EVENT_DEFINE_FIELD_LABEL = 'defineFieldLabel';
 
     /**
-     * @event DefineAddressSubdivisionsEvent The event that is triggered when getting subdivisions options for an address field
+     * @event DefineAddressSubdivisionsEvent The event that is triggered when defining subdivisions options for an address field
      * for a given country code, and optionally administrativeArea and locality.
-     * @see getSubdivisions()
+     * @see defineAddressSubdivisions()
      * @since 4.5.0
      */
     public const EVENT_DEFINE_ADDRESS_SUBDIVISIONS = 'defineAddressSubdivisions';
@@ -134,7 +134,7 @@ class Addresses extends Component
     }
 
     /**
-     * Get subdivisions for a field based on it's parents
+     * Returns subdivisions for a field based on its parents.
      *
      * @param array $parents
      * @param array $options

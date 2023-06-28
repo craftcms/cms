@@ -8,20 +8,21 @@
 namespace craft\addresses;
 
 use CommerceGuys\Addressing\Locale;
+use CommerceGuys\Addressing\Subdivision\SubdivisionRepository as BaseSubdivisionRepository;
 use Craft;
 
 /**
  * Craft's extension of the commerceguys/addressing SubdivisionRepository.
- * It's main purpose is to allow addition of data that's not returned by the commerceguys/addressing library,
+ * Its main purpose is to allow addition of data that's not returned by the commerceguys/addressing library,
  * like the GB counties data. It also triggers an event which allows developers to modify the subdivisions further.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.5.0
  */
-class SubdivisionRepository extends \CommerceGuys\Addressing\Subdivision\SubdivisionRepository
+class SubdivisionRepository extends BaseSubdivisionRepository
 {
     /**
-     * {@inheritdoc}
+     * @inheritdoc
      */
     public function getList(array $parents, $locale = null): array
     {
