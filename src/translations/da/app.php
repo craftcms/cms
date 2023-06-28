@@ -266,6 +266,7 @@ return [
     'Choose which filesystem assets should be stored in.' => 'Vælg, i hvilket filsystem aktiver skal gemmes i.',
     'Choose which filesystem image transforms should be stored in.' => 'Vælg, i hvilket filsystem billedtransformationer skal gemmes i.',
     'Choose which sites this section should be available in, and configure the site-specific settings.' => 'Vælg, hvilke sites afsnittet skal findes i, og konfigurer site-specifikke indstillinger.',
+    'Choose which sites this source should be visible for.' => 'Choose which sites this source should be visible for.',
     'Choose which table columns should be visible for this source by default.' => 'Vælg, hvilke tabelkolonner der skal være synlige for denne kilde som standard.',
     'Choose which user groups should have access to this source.' => 'Vælg, hvilke brugergrupper der skal have adgang til denne kilde.',
     'Choose' => 'Vælg',
