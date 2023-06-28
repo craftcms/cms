@@ -3148,6 +3148,9 @@ JS;
 
             if ($this->kind === self::KIND_IMAGE) {
                 [$this->_width, $this->_height] = Image::imageSize($tempPath);
+            } elseif ($this->kind === self::KIND_VIDEO) {
+                $this->_width = $this->_width ?? null;
+                $this->_height = $this->_height ?? null;
             } else {
                 $this->_width = null;
                 $this->_height = null;
