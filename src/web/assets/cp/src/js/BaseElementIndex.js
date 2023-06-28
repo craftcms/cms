@@ -2586,7 +2586,22 @@ Craft.BaseElementIndex = Garnish.Base.extend(
               .data('sites')
               .toString()
               .split(',')
-              .indexOf(this.siteId.toString()) !== -1)
+              .some((siteId) => {
+                if (siteId == this.siteId) {
+                  return true;
+                }
+                // maybe UUIDs were used
+                if (siteId != parseInt(siteId)) {
+                  const site = Craft.sites.find(
+                    (site) => site.id == this.siteId
+                  );
+                  if (site && siteId == site.uid) {
+                    return true;
+                  }
+                }
+
+                return false;
+              }))
         ) {
           $source.parent().removeClass('hidden');
           this.$visibleSources = this.$visibleSources.add($source);

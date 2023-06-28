@@ -21,6 +21,7 @@
 - Improved the contrast of asset file type icons. ([#13262](https://github.com/craftcms/cms/pull/13262))
 
 ### Administration
+- Custom element sources can now be configured to only appear for certain sites. ([#13344](https://github.com/craftcms/cms/discussions/13344))
 - The “My Account” page no longer shows a “Require a password reset on next login” checkbox.
 - The Asset Indexes utility no longer shows the “Cache remote images” option on ephemeral environments. ([#13202](https://github.com/craftcms/cms/issues/13202))
 
@@ -76,5 +77,6 @@
 - Plain Text and Table fields no longer convert emoji to shortcodes on PostgreSQL.
 - Improved GraphQL performance. ([#13354](https://github.com/craftcms/cms/pull/13354))
 - Fixed a bug where Plain Text and Table fields were converting posted shortcode-looking strings to emoji. ([#12935](https://github.com/craftcms/cms/issues/12935))
-- Fixed a bug where `craft\elements\Asset::getUrl()` was returning invalid URLs for GIF and SVG assets within filesystems without base URLs, if the `transformGifs` or `transformSvgs` config settings were disabled. ([#13306](https://github.com/craftcms/cms/issues/13306)) 
+- Fixed a bug where `craft\elements\Asset::getUrl()` was returning invalid URLs for GIF and SVG assets within filesystems without base URLs, if the `transformGifs` or `transformSvgs` config settings were disabled. ([#13306](https://github.com/craftcms/cms/issues/13306))
+- Fixed a bug where the GraphQL API wasn’t enforcing schema site selections for the requested site. ([#13346](https://github.com/craftcms/cms/pull/13346))
 - Updated Selectize to 0.15.2. ([#13273](https://github.com/craftcms/cms/discussions/13273))
