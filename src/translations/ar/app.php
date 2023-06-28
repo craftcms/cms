@@ -266,6 +266,7 @@ return [
     'Choose which filesystem assets should be stored in.' => 'اختر نظام ملفات الأصول التي يجب تخزينها.',
     'Choose which filesystem image transforms should be stored in.' => 'اختر أي تحويلات صور نظام الملفات يجب تخزينها.',
     'Choose which sites this section should be available in, and configure the site-specific settings.' => 'اختر المواقع التي يجب أن يتوفر بها هذا القسم، وقم بتكوين الإعدادات الخاصة بالموقع.',
+    'Choose which sites this source should be visible for.' => 'Choose which sites this source should be visible for.',
     'Choose which table columns should be visible for this source by default.' => 'اختر أعمدة الجدول التي ينبغي أن تكون ظاهرة لهذا المصدر بشكلٍ افتراضي.',
     'Choose which user groups should have access to this source.' => 'اختر مجموعات المستخدمين التي يجب أن يكون لها حق الوصول إلى هذا المصدر.',
     'Choose' => 'اختر',
