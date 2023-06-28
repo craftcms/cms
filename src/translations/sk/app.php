@@ -266,6 +266,7 @@ return [
     'Choose which filesystem assets should be stored in.' => 'Vyberte, do ktorého súborového systému sa majú ukladať prostriedky.',
     'Choose which filesystem image transforms should be stored in.' => 'Vyberte, do ktorého súborového systému sa majú ukladať transformácie obrazu.',
     'Choose which sites this section should be available in, and configure the site-specific settings.' => 'Vyberte, na ktorých weboch by mala byť k dispozícii táto časť, a nakonfigurujte nastavenia pre konkrétne weby.',
+    'Choose which sites this source should be visible for.' => 'Choose which sites this source should be visible for.',
     'Choose which table columns should be visible for this source by default.' => 'Vyberte, ktoré stĺpce tabuľky majú byť pre tento zdroj predvolene viditeľné.',
     'Choose which user groups should have access to this source.' => 'Vyberte, ktoré skupiny používateľov majú mať prístup k tomuto zdroju.',
     'Choose' => 'Vybrať',
