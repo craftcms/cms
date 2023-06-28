@@ -21,6 +21,7 @@ use craft\db\Table;
 use craft\elements\Address;
 use craft\elements\Asset;
 use craft\elements\Category;
+use craft\elements\db\EagerLoadInfo;
 use craft\elements\db\EagerLoadPlan;
 use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
@@ -2867,16 +2868,27 @@ class Elements extends Component
                     }
 
                     $sourceElement->setEagerLoadedElements($planHandle, $targetElementsForSource);
+                    $sourceElement->setLazyEagerLoadedElements($planHandle, $plan->lazy);
 
                     if ($plan->count) {
                         $sourceElement->setEagerLoadedElementCount($planHandle, count($targetElementsForSource));
                     }
                 }
 
-                // Pass the instantiated elements to afterPopulate()
                 if (!empty($targetElements)) {
+                    /** @var ElementInterface[] $flatTargetElements */
+                    $flatTargetElements = array_merge(...array_values($targetElements));
+
+                    // Set the eager loading info on each of the target elements,
+                    // in case it's needed for lazy eager loading
+                    $eagerLoadResult = new EagerLoadInfo($plan, $filteredElements);
+                    foreach ($flatTargetElements as $element) {
+                        $element->eagerLoadInfo = $eagerLoadResult;
+                    }
+
+                    // Pass the instantiated elements to afterPopulate()
                     $query->asArray = false;
-                    $query->afterPopulate(array_merge(...array_values($targetElements)));
+                    $query->afterPopulate($flatTargetElements);
                 }
 
                 // Now eager-load any sub paths

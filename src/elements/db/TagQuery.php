@@ -174,6 +174,10 @@ class TagQuery extends ElementQuery
      */
     protected function beforePrepare(): bool
     {
+        if (!parent::beforePrepare()) {
+            return false;
+        }
+
         $this->_normalizeGroupId();
 
         $this->joinElementTable(Table::TAGS);
@@ -186,7 +190,7 @@ class TagQuery extends ElementQuery
             $this->subQuery->andWhere(['tags.groupId' => $this->groupId]);
         }
 
-        return parent::beforePrepare();
+        return true;
     }
 
     /**

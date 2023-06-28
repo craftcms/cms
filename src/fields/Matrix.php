@@ -16,14 +16,17 @@ use craft\base\Field;
 use craft\base\GqlInlineFragmentFieldInterface;
 use craft\base\GqlInlineFragmentInterface;
 use craft\base\NestedElementInterface;
+use craft\behaviors\EventBehavior;
 use craft\db\Query;
 use craft\db\Table;
 use craft\db\Table as DbTable;
+use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\db\EntryQuery;
 use craft\elements\ElementCollection;
 use craft\elements\Entry;
 use craft\errors\InvalidFieldException;
+use craft\events\CancelableEvent;
 use craft\events\DefineEntryTypesForFieldEvent;
 use craft\fields\conditions\EmptyFieldConditionRule;
 use craft\gql\arguments\elements\Entry as EntryArguments;
@@ -459,19 +462,31 @@ class Matrix extends Field implements
     {
         // Existing element?
         if ($element && $element->id) {
-            $query->ownerId = $element->id;
+            $query->attachBehavior(self::class, new EventBehavior([
+                ElementQuery::EVENT_BEFORE_PREPARE => function(
+                    CancelableEvent $event,
+                    EntryQuery $query,
+                ) use ($element) {
+                    $query->ownerId = $element->id;
 
-            // Clear out id=false if this query was populated previously
-            if ($query->id === false) {
-                $query->id = null;
-            }
+                    // Clear out id=false if this query was populated previously
+                    if ($query->id === false) {
+                        $query->id = null;
+                    }
 
-            // If the owner is a revision, allow revision entries to be returned as well
-            if ($element->getIsRevision()) {
-                $query
-                    ->revisions(null)
-                    ->trashed(null);
-            }
+                    // If the owner is a revision, allow revision entries to be returned as well
+                    if ($element->getIsRevision()) {
+                        $query
+                            ->revisions(null)
+                            ->trashed(null);
+                    }
+                },
+            ]));
+
+            // Set the query up for lazy eager loading
+            $query->eagerLoadSourceElement = $element;
+            $providerHandle = $element->getFieldLayout()?->provider?->getHandle();
+            $query->eagerLoadHandle = $providerHandle ? "$providerHandle:$this->handle" : $this->handle;
         } else {
             $query->id = false;
         }

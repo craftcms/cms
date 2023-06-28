@@ -1141,6 +1141,10 @@ class EntryQuery extends ElementQuery
      */
     protected function beforePrepare(): bool
     {
+        if (!parent::beforePrepare()) {
+            return false;
+        }
+
         if ($this->fieldId === false) {
             throw new QueryAbortedException();
         }
@@ -1261,7 +1265,7 @@ class EntryQuery extends ElementQuery
         $this->_applyAuthParam($this->savable, 'saveEntries', 'savePeerEntries', 'savePeerEntryDrafts');
         $this->_applyRefParam();
 
-        return parent::beforePrepare();
+        return true;
     }
 
     /**

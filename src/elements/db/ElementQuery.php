@@ -344,6 +344,16 @@ class ElementQuery extends Query implements ElementQueryInterface
     public mixed $ref = null;
 
     /**
+     * @inheritdoc
+     * @used-by orderBy()
+     * @used-by addOrderBy()
+     */
+    public $orderBy = '';
+
+    // Eager-loading
+    // -------------------------------------------------------------------------
+
+    /**
      * @var string|array|null The eager-loading declaration.
      *
      * See [Eager-Loading Elements](https://craftcms.com/docs/4.x/dev/eager-loading-elements.html) for supported syntax options.
@@ -354,11 +364,30 @@ class ElementQuery extends Query implements ElementQueryInterface
     public array|string|null $with = null;
 
     /**
-     * @inheritdoc
-     * @used-by orderBy()
-     * @used-by addOrderBy()
+     * @var ElementInterface|null The source element that this query is fetching relations for.
+     * @since 5.0.0
      */
-    public $orderBy = '';
+    public ?ElementInterface $eagerLoadSourceElement = null;
+
+    /**
+     * @var string|null The handle that could be used to eager-load the query's target elmeents.
+     * @since 5.0.0
+     */
+    public ?string $eagerLoadHandle = null;
+
+    /**
+     * @var string|null The eager-loading alias that should be used.
+     * @since 5.0.0
+     */
+    public ?string $eagerLoadAlias = null;
+
+    /**
+     * @var bool Whether the query should be used to eager-load results for the [[$eagerSourceElement|source element]]
+     * and any other elements in its collection.
+     * @used-by eagerly()
+     * @since 5.0.0
+     */
+    public bool $eagerly = false;
 
     // Structure parameters
     // -------------------------------------------------------------------------
@@ -1075,6 +1104,16 @@ class ElementQuery extends Query implements ElementQueryInterface
 
     /**
      * @inheritdoc
+     */
+    public function eagerly(string|bool $value = true): static
+    {
+        $this->eagerly = $value !== false;
+        $this->eagerLoadAlias = is_string($value) ? $value : null;
+        return $this;
+    }
+
+    /**
+     * @inheritdoc
      * @uses $withStructure
      */
     public function withStructure(bool $value = true): static
@@ -1228,6 +1267,46 @@ class ElementQuery extends Query implements ElementQueryInterface
 
     // Query preparation/execution
     // -------------------------------------------------------------------------
+
+    /**
+     * @inheritdoc
+     */
+    public function wasEagerLoaded(?string $alias = null): bool
+    {
+        if (!isset($this->eagerLoadHandle, $this->eagerLoadSourceElement)) {
+            return false;
+        }
+
+        if ($alias !== null) {
+            return $this->eagerLoadSourceElement->hasEagerLoadedElements($alias);
+        }
+
+        $planHandle = $this->eagerLoadHandle;
+        if (str_contains($planHandle, ':')) {
+            $planHandle = explode(':', $planHandle, 2)[1];
+        }
+        return $this->eagerLoadSourceElement->hasEagerLoadedElements($planHandle);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function wasCountEagerLoaded(?string $alias = null): bool
+    {
+        if (!isset($this->eagerLoadHandle, $this->eagerLoadSourceElement)) {
+            return false;
+        }
+
+        if ($alias !== null) {
+            return $this->eagerLoadSourceElement->getEagerLoadedElementCount($alias) !== null;
+        }
+
+        $planHandle = $this->eagerLoadHandle;
+        if (str_contains($planHandle, ':')) {
+            $planHandle = explode(':', $planHandle, 2)[1];
+        }
+        return $this->eagerLoadSourceElement->getEagerLoadedElementCount($planHandle) !== null;
+    }
 
     /**
      * @inheritdoc
@@ -1484,6 +1563,31 @@ class ElementQuery extends Query implements ElementQueryInterface
      */
     public function afterPopulate(array $elements): array
     {
+        if (!$this->asArray) {
+            $elementsService = Craft::$app->getElements();
+
+            foreach ($elements as $element) {
+                // Set the full query result on the element, in case it's needed for lazy eager loading
+                $element->elementQueryResult = $elements;
+
+                // If we're collecting cache info and the element is expirable, register its expiry date
+                if (
+                    $element instanceof ExpirableElementInterface &&
+                    $elementsService->getIsCollectingCacheInfo() &&
+                    ($expiryDate = $element->getExpiryDate()) !== null
+                ) {
+                    $elementsService->setCacheExpiryDate($expiryDate);
+                }
+            }
+
+            ElementHelper::setNextPrevOnElements($elements);
+
+            // Should we eager-load some elements onto these?
+            if ($this->with) {
+                Craft::$app->getElements()->eagerLoadElements($this->elementType, $elements, $this->with);
+            }
+        }
+
         return $elements;
     }
 
@@ -1497,7 +1601,7 @@ class ElementQuery extends Query implements ElementQueryInterface
             return count($cachedResult);
         }
 
-        return parent::count($q, $db) ?: 0;
+        return $this->eagerLoad(true) ?? parent::count($q, $db) ?: 0;
     }
 
     /**
@@ -1514,7 +1618,7 @@ class ElementQuery extends Query implements ElementQueryInterface
             return $cachedResult;
         }
 
-        return parent::all($db);
+        return $this->eagerLoad()?->all() ?? parent::all($db);
     }
 
     /**
@@ -1523,7 +1627,48 @@ class ElementQuery extends Query implements ElementQueryInterface
      */
     public function collect(?YiiConnection $db = null): Collection
     {
-        return ElementCollection::make($this->all($db));
+        return $this->eagerLoad() ?? ElementCollection::make($this->all($db));
+    }
+
+    private function eagerLoad(bool $count = false, array $criteria = []): Collection|int|null
+    {
+        if (!$this->eagerly || !isset($this->eagerLoadSourceElement->elementQueryResult, $this->eagerLoadHandle)) {
+            return null;
+        }
+
+        $planHandle = $this->eagerLoadHandle;
+        if (str_contains($planHandle, ':')) {
+            $planHandle = explode(':', $planHandle, 2)[1];
+        }
+
+        // see if it was already eager-loaded
+        $eagerLoaded = match ($count) {
+            true => $this->wasCountEagerLoaded($this->eagerLoadAlias),
+            false => $this->wasEagerLoaded($this->eagerLoadAlias),
+        };
+
+        if (!$eagerLoaded) {
+            Craft::$app->getElements()->eagerLoadElements(
+                $this->elementType,
+                $this->eagerLoadSourceElement->elementQueryResult,
+                [
+                    new EagerLoadPlan([
+                        'handle' => $this->eagerLoadHandle,
+                        'alias' => $this->eagerLoadAlias ?? $planHandle,
+                        'criteria' => $criteria + $this->getCriteria() + ['with' => $this->with],
+                        'all' => !$count,
+                        'count' => $count,
+                        'lazy' => true,
+                    ]),
+                ],
+            );
+        }
+
+        if ($count) {
+            return $this->eagerLoadSourceElement->getEagerLoadedElementCount($planHandle);
+        }
+
+        return $this->eagerLoadSourceElement->getEagerLoadedElements($planHandle);
     }
 
     /**
@@ -1535,6 +1680,12 @@ class ElementQuery extends Query implements ElementQueryInterface
         // Cached?
         if (($cachedResult = $this->getCachedResult()) !== null) {
             return reset($cachedResult) ?: null;
+        }
+
+        // Eagerly?
+        $eagerResult = $this->eagerLoad(criteria: ['limit' => 1]);
+        if ($eagerResult !== null) {
+            return $eagerResult->first();
         }
 
         if ($row = parent::one($db)) {
@@ -1583,6 +1734,15 @@ class ElementQuery extends Query implements ElementQueryInterface
         // Cached?
         if (($cachedResult = $this->getCachedResult()) !== null) {
             return $cachedResult[$n] ?? null;
+        }
+
+        // Eagerly?
+        $eagerResult = $this->eagerLoad(criteria: [
+            'offset' => ($this->offset ?: 0) + $n,
+            'limit' => 1,
+        ]);
+        if ($eagerResult !== null) {
+            return $eagerResult->first();
         }
 
         return parent::nth($n, $db);
@@ -1656,12 +1816,7 @@ class ElementQuery extends Query implements ElementQueryInterface
      */
     public function getCriteria(): array
     {
-        $attributes = $this->criteriaAttributes();
-
-        // Ignore the 'with' param
-        ArrayHelper::removeValue($attributes, 'with');
-
-        return $this->toArray($attributes, [], false);
+        return $this->toArray($this->criteriaAttributes(), [], false);
     }
 
     /**
@@ -1679,7 +1834,7 @@ class ElementQuery extends Query implements ElementQueryInterface
                 $dec = $property->getDeclaringClass();
                 if (
                     ($dec->getName() === self::class || $dec->isSubclassOf(self::class)) &&
-                    !in_array($property->getName(), ['elementType', 'query', 'subQuery', 'customFields', 'asArray'], true)
+                    !in_array($property->getName(), ['elementType', 'query', 'subQuery', 'customFields', 'asArray', 'with', 'eagerly'], true)
                 ) {
                     $names[] = $property->getName();
                 }
@@ -2929,22 +3084,6 @@ class ElementQuery extends Query implements ElementQueryInterface
 
                     $elements[$key] = $element;
                 }
-
-                // If we're collecting cache info and the element is expirable, register its expiry date
-                if (
-                    $element instanceof ExpirableElementInterface &&
-                    $elementsService->getIsCollectingCacheInfo() &&
-                    ($expiryDate = $element->getExpiryDate()) !== null
-                ) {
-                    $elementsService->setCacheExpiryDate($expiryDate);
-                }
-            }
-
-            ElementHelper::setNextPrevOnElements($elements);
-
-            // Should we eager-load some elements onto these?
-            if ($this->with) {
-                Craft::$app->getElements()->eagerLoadElements($this->elementType, $elements, $this->with);
             }
 
             // Fire an 'afterPopulateElements' event

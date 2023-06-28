@@ -15,6 +15,7 @@ use craft\base\ElementInterface;
 use craft\base\Field;
 use craft\base\NestedElementInterface;
 use craft\base\PreviewableFieldInterface;
+use craft\behaviors\EventBehavior;
 use craft\db\Query;
 use craft\db\Table as DbTable;
 use craft\elements\conditions\ElementCondition;
@@ -24,6 +25,7 @@ use craft\elements\db\ElementQueryInterface;
 use craft\elements\db\ElementRelationParamParser;
 use craft\elements\ElementCollection;
 use craft\errors\SiteNotFoundException;
+use craft\events\CancelableEvent;
 use craft\events\ElementCriteriaEvent;
 use craft\events\ElementEvent;
 use craft\fields\conditions\RelationalFieldConditionRule;
@@ -635,27 +637,6 @@ JS, [
                 ->id(array_values(array_filter($value)))
                 ->fixedOrder();
         } elseif ($value !== '' && $element && $element->id) {
-            $query->innerJoin(
-                ['relations' => DbTable::RELATIONS],
-                [
-                    'and',
-                    '[[relations.targetId]] = [[elements.id]]',
-                    [
-                        'relations.sourceId' => $element->id,
-                        'relations.fieldId' => $this->id,
-                    ],
-                    [
-                        'or',
-                        ['relations.sourceSiteId' => null],
-                        ['relations.sourceSiteId' => $element->siteId],
-                    ],
-                ]
-            );
-
-            if ($this->sortable && !$this->maintainHierarchy) {
-                $query->orderBy(['relations.sortOrder' => SORT_ASC]);
-            }
-
             if (!$this->allowMultipleSources && $this->source) {
                 $source = ElementHelper::findSource($class, $this->source, ElementSources::CONTEXT_FIELD);
 
@@ -665,24 +646,57 @@ JS, [
                 }
             }
 
-            if ($this->maintainHierarchy) {
-                $structuresService = Craft::$app->getStructures();
+            $query->attachBehavior(self::class, new EventBehavior([
+                ElementQuery::EVENT_BEFORE_PREPARE => function(
+                    CancelableEvent $event,
+                    ElementQuery $query,
+                ) use ($element) {
+                    $relationsAlias = sprintf('relations_%s', StringHelper::randomString(10));
+                    $query->innerJoin(
+                        [$relationsAlias => DbTable::RELATIONS],
+                        [
+                            'and',
+                            "[[$relationsAlias.targetId]] = [[elements.id]]",
+                            [
+                                "$relationsAlias.sourceId" => $element->id,
+                                "$relationsAlias.fieldId" => $this->id,
+                            ],
+                            [
+                                'or',
+                                ["$relationsAlias.sourceSiteId" => null],
+                                ["$relationsAlias.sourceSiteId" => $element->siteId],
+                            ],
+                        ]
+                    );
 
-                /** @var ElementInterface[] $structureElements */
-                $structureElements = (clone($query))
-                    ->status(null)
-                    ->all();
+                    if ($this->sortable && !$this->maintainHierarchy && !$query->orderBy) {
+                        $query->orderBy(["$relationsAlias.sortOrder" => SORT_ASC]);
+                    }
 
-                // Fill in any gaps
-                $structuresService->fillGapsInElements($structureElements);
+                    if ($this->maintainHierarchy && $query->id === null) {
+                        $structuresService = Craft::$app->getStructures();
 
-                // Enforce the branch limit
-                if ($this->branchLimit) {
-                    $structuresService->applyBranchLimitToElements($structureElements, $this->branchLimit);
-                }
+                        $structureElements = (clone($query))
+                            ->status(null)
+                            ->all();
 
-                $query->id(ArrayHelper::getColumn($structureElements, 'id'));
-            }
+                        // Fill in any gaps
+                        $structuresService->fillGapsInElements($structureElements);
+
+                        // Enforce the branch limit
+                        if ($this->branchLimit) {
+                            $structuresService->applyBranchLimitToElements($structureElements, $this->branchLimit);
+                        }
+
+                        $query->id(ArrayHelper::getColumn($structureElements, 'id'));
+                    }
+                },
+            ]));
+
+            // Set the query up for lazy eager loading
+            $query->eagerLoadSourceElement = $element;
+            $providerHandle = $element->getFieldLayout()?->provider?->getHandle();
+            $query->eagerLoadHandle = $providerHandle ? "$providerHandle:$this->handle" : $this->handle;
         } else {
             $query->id(false);
         }

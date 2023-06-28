@@ -57,4 +57,10 @@ class EagerLoadPlan extends BaseObject
      * @var EagerLoadPlan[] Nested eager-loading plans to apply to the eager-loaded elements.
      */
     public array $nested = [];
+
+    /**
+     * @var bool Whether the elements are being eager-loaded lazily.
+     * @since 5.0.0
+     */
+    public bool $lazy = false;
 }
