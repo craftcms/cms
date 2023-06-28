@@ -266,6 +266,7 @@ return [
     'Choose which filesystem assets should be stored in.' => 'Kies in welk bestandssysteem bestanden moeten worden opgeslagen.',
     'Choose which filesystem image transforms should be stored in.' => 'Kies in welk bestandssysteem afbeeldingstransformaties moeten worden opgeslagen.',
     'Choose which sites this section should be available in, and configure the site-specific settings.' => 'Kies op welke websites deze sectie beschikbaar moet zijn en configureer de websitespecifieke instellingen.',
+    'Choose which sites this source should be visible for.' => 'Choose which sites this source should be visible for.',
     'Choose which table columns should be visible for this source by default.' => 'Kies welke tabel kolommen standaard zichtbaar moeten zijn voor deze bron.',
     'Choose which user groups should have access to this source.' => 'Kies welke gebruikersgroepen toegang moeten hebben tot deze bron.',
     'Choose' => 'Kiezen',
