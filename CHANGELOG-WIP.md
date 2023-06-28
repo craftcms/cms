@@ -21,6 +21,7 @@
 - Improved the contrast of asset file type icons. ([#13262](https://github.com/craftcms/cms/pull/13262))
 
 ### Administration
+- Custom element sources can now be configured to only appear for certain sites. ([#13344](https://github.com/craftcms/cms/discussions/13344))
 - The “My Account” page no longer shows a “Require a password reset on next login” checkbox.
 - The Asset Indexes utility no longer shows the “Cache remote images” option on ephemeral environments. ([#13202](https://github.com/craftcms/cms/issues/13202))
 
