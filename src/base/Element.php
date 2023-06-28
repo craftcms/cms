@@ -4388,9 +4388,9 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
-    public function getEagerLoadedElementCount(string $handle): int
+    public function getEagerLoadedElementCount(string $handle): ?int
     {
-        return $this->_eagerLoadedElementCounts[$handle] ?? 0;
+        return $this->_eagerLoadedElementCounts[$handle] ?? null;
     }
 
     /**

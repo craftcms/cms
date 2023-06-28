@@ -1485,10 +1485,10 @@ interface ElementInterface extends ComponentInterface
      * Returns the count of eager-loaded elements for a given handle.
      *
      * @param string $handle The handle of the eager-loaded elements
-     * @return int The eager-loaded element count
+     * @return int|null The eager-loaded element count, or null if it hadn't been eager-loaded
      * @since 3.4.0
      */
-    public function getEagerLoadedElementCount(string $handle): int;
+    public function getEagerLoadedElementCount(string $handle): ?int;
 
     /**
      * Sets the count of eager-loaded elements for a given handle.

@@ -1451,6 +1451,15 @@ interface ElementQueryInterface extends QueryInterface, Arrayable
     public function wasEagerLoaded(?string $alias = null): bool;
 
     /**
+     * Returns whether the query result count was already eager loaded by the query's source element.
+     *
+     * @param string|null $alias The eager-loading alias to check
+     * @return bool
+     * @since 5.0.0
+     */
+    public function wasCountEagerLoaded(?string $alias = null): bool;
+
+    /**
      * Executes the query and returns all results as an array.
      *
      * @param Connection|null $db The database connection used to generate the SQL statement.

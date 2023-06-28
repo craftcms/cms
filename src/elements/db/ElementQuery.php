@@ -1291,6 +1291,26 @@ class ElementQuery extends Query implements ElementQueryInterface
     /**
      * @inheritdoc
      */
+    public function wasCountEagerLoaded(?string $alias = null): bool
+    {
+        if (!isset($this->eagerLoadHandle, $this->eagerLoadSourceElement)) {
+            return false;
+        }
+
+        if ($alias !== null) {
+            return $this->eagerLoadSourceElement->getEagerLoadedElementCount($alias) !== null;
+        }
+
+        $planHandle = $this->eagerLoadHandle;
+        if (str_contains($planHandle, ':')) {
+            $planHandle = explode(':', $planHandle, 2)[1];
+        }
+        return $this->eagerLoadSourceElement->getEagerLoadedElementCount($planHandle) !== null;
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function cache($duration = true, $dependency = null): \yii\db\Query|ElementQuery
     {
         if ($dependency === null) {
@@ -1581,7 +1601,7 @@ class ElementQuery extends Query implements ElementQueryInterface
             return count($cachedResult);
         }
 
-        return parent::count($q, $db) ?: 0;
+        return $this->eagerLoad(true) ?? parent::count($q, $db) ?: 0;
     }
 
     /**
@@ -1598,7 +1618,7 @@ class ElementQuery extends Query implements ElementQueryInterface
             return $cachedResult;
         }
 
-        return parent::all($db);
+        return $this->eagerLoad()?->all() ?? parent::all($db);
     }
 
     /**
@@ -1607,37 +1627,48 @@ class ElementQuery extends Query implements ElementQueryInterface
      */
     public function collect(?YiiConnection $db = null): Collection
     {
-        // eagerly?
-        if (
-            $this->eagerly &&
-            isset($this->eagerLoadSourceElement->elementQueryResult, $this->eagerLoadHandle)
-        ) {
-            $planHandle = $this->eagerLoadHandle;
-            if (str_contains($planHandle, ':')) {
-                $planHandle = explode(':', $planHandle, 2)[1];
-            }
+        return $this->eagerLoad() ?? ElementCollection::make($this->all($db));
+    }
 
-            // not yet eager loaded?
-            if (!$this->wasEagerLoaded()) {
-                Craft::$app->getElements()->eagerLoadElements(
-                    $this->elementType,
-                    $this->eagerLoadSourceElement->elementQueryResult,
-                    [
-                        new EagerLoadPlan([
-                            'handle' => $this->eagerLoadHandle,
-                            'alias' => $this->eagerLoadAlias ?? $planHandle,
-                            'criteria' => $this->getCriteria() + ['with' => $this->with],
-                            'all' => true,
-                            'lazy' => true,
-                        ]),
-                    ],
-                );
-            }
-
-            return $this->eagerLoadSourceElement->getEagerLoadedElements($planHandle);
+    private function eagerLoad(bool $count = false, array $criteria = []): Collection|int|null
+    {
+        if (!$this->eagerly || !isset($this->eagerLoadSourceElement->elementQueryResult, $this->eagerLoadHandle)) {
+            return null;
         }
 
-        return ElementCollection::make($this->all($db));
+        $planHandle = $this->eagerLoadHandle;
+        if (str_contains($planHandle, ':')) {
+            $planHandle = explode(':', $planHandle, 2)[1];
+        }
+
+        // see if it was already eager-loaded
+        $eagerLoaded = match ($count) {
+            true => $this->wasCountEagerLoaded($this->eagerLoadAlias),
+            false => $this->wasEagerLoaded($this->eagerLoadAlias),
+        };
+
+        if (!$eagerLoaded) {
+            Craft::$app->getElements()->eagerLoadElements(
+                $this->elementType,
+                $this->eagerLoadSourceElement->elementQueryResult,
+                [
+                    new EagerLoadPlan([
+                        'handle' => $this->eagerLoadHandle,
+                        'alias' => $this->eagerLoadAlias ?? $planHandle,
+                        'criteria' => $criteria + $this->getCriteria() + ['with' => $this->with],
+                        'all' => !$count,
+                        'count' => $count,
+                        'lazy' => true,
+                    ]),
+                ],
+            );
+        }
+
+        if ($count) {
+            return $this->eagerLoadSourceElement->getEagerLoadedElementCount($planHandle);
+        }
+
+        return $this->eagerLoadSourceElement->getEagerLoadedElements($planHandle);
     }
 
     /**
@@ -1649,6 +1680,12 @@ class ElementQuery extends Query implements ElementQueryInterface
         // Cached?
         if (($cachedResult = $this->getCachedResult()) !== null) {
             return reset($cachedResult) ?: null;
+        }
+
+        // Eagerly?
+        $eagerResult = $this->eagerLoad(criteria: ['limit' => 1]);
+        if ($eagerResult !== null) {
+            return $eagerResult->first();
         }
 
         if ($row = parent::one($db)) {
@@ -1697,6 +1734,15 @@ class ElementQuery extends Query implements ElementQueryInterface
         // Cached?
         if (($cachedResult = $this->getCachedResult()) !== null) {
             return $cachedResult[$n] ?? null;
+        }
+
+        // Eagerly?
+        $eagerResult = $this->eagerLoad(criteria: [
+            'offset' => ($this->offset ?: 0) + $n,
+            'limit' => 1,
+        ]);
+        if ($eagerResult !== null) {
+            return $eagerResult->first();
         }
 
         return parent::nth($n, $db);
@@ -1770,12 +1816,7 @@ class ElementQuery extends Query implements ElementQueryInterface
      */
     public function getCriteria(): array
     {
-        $attributes = $this->criteriaAttributes();
-
-        // Ignore the 'with' param
-        ArrayHelper::removeValue($attributes, 'with');
-
-        return $this->toArray($attributes, [], false);
+        return $this->toArray($this->criteriaAttributes(), [], false);
     }
 
     /**
@@ -1793,7 +1834,7 @@ class ElementQuery extends Query implements ElementQueryInterface
                 $dec = $property->getDeclaringClass();
                 if (
                     ($dec->getName() === self::class || $dec->isSubclassOf(self::class)) &&
-                    !in_array($property->getName(), ['elementType', 'query', 'subQuery', 'customFields', 'asArray'], true)
+                    !in_array($property->getName(), ['elementType', 'query', 'subQuery', 'customFields', 'asArray', 'with', 'eagerly'], true)
                 ) {
                     $names[] = $property->getName();
                 }
