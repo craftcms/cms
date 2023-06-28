@@ -266,6 +266,7 @@ return [
     'Choose which filesystem assets should be stored in.' => 'เลือกว่าควรจะจัดเก็บแอสเซทไว้ที่ระบบไฟล์ใด',
     'Choose which filesystem image transforms should be stored in.' => 'เลือกว่าควรจะจัดเก็บการแปลงภาพไว้ที่ระบบไฟล์ใด',
     'Choose which sites this section should be available in, and configure the site-specific settings.' => 'Choose which sites this section should be available in, and configure the site-specific settings.',
+    'Choose which sites this source should be visible for.' => 'Choose which sites this source should be visible for.',
     'Choose which table columns should be visible for this source by default.' => 'เลือกคอลัมน์ตารางที่ควรมองเห็นสำหรับแหล่งที่มานี้ตามค่าเริ่มต้น',
     'Choose which user groups should have access to this source.' => 'เลือกว่ากลุ่มผู้ใช้ใดควรมีการเข้าถึงแหล่งข้อมูลนี้',
     'Choose' => 'Choose',
