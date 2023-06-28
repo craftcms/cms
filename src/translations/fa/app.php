@@ -266,6 +266,7 @@ return [
     'Choose which filesystem assets should be stored in.' => 'انتخاب کنید فایل‌های پروژه در کدام سیستم‌فایل باید نگهداری شوند.',
     'Choose which filesystem image transforms should be stored in.' => 'انتخاب کنید تغییر شکل تصاویر در کدام سیستم‌فایل باید نگهداری شوند.',
     'Choose which sites this section should be available in, and configure the site-specific settings.' => 'انتخاب نمایید که این بخش باید در کدام سایت ها در دسترس باشد، و تنظیمات مرتبط با هر سایت را پیکربندی نمایید.',
+    'Choose which sites this source should be visible for.' => 'Choose which sites this source should be visible for.',
     'Choose which table columns should be visible for this source by default.' => 'انتخاب نمایید که کدام ستون‌های جدول باید به‌صورت پیش‌فرض برای این منبع قابل مشاهده باشند.',
     'Choose which user groups should have access to this source.' => 'انتخاب نمایید کدام گروه‌های کاربری باید به این منبع دسترسی داشته باشند.',
     'Choose' => 'انتخاب کردن',
