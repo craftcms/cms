@@ -12,6 +12,7 @@
 - Fixed a bug where asset folders could get dynamically created for elements with temporary slugs. ([#13311](https://github.com/craftcms/cms/issues/13311))
 - Fixed a bug where Matrx fields with custom propagation methods were being marked as translatable if the rendered translation key was blank. ([#13329](https://github.com/craftcms/cms/issues/13329))
 - Fixed a bug where transformed images’ `width` or `height` properties could be `null` if the transform didn’t specify both dimensions. ([#13335](https://github.com/craftcms/cms/issues/13335))
+- Fixed a bug where heading UI elements within field layouts were getting a top border if they were preceeded by conditionally-hidden fields. ([#13308](https://github.com/craftcms/cms/issues/13308))
 - Fixed two RCE vulnerabilities.
 
 ## 4.4.14 - 2023-06-13
