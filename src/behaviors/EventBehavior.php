@@ -7,8 +7,8 @@
 
 namespace craft\behaviors;
 
-use craft\base\Event;
 use yii\base\Behavior;
+use yii\base\Event;
 
 /**
  * Event behavior adds events to an object that will carry on to clones of the owner.
