@@ -1569,20 +1569,9 @@ li.breadcrumb-toggle-wrapper {
   & > h2 {
     flex: 4 0 100%;
 
-    &:not(:first-child) {
+    &:not(:nth-child(-n + 1 of :not(.hidden))) {
       padding-top: var(--xl);
       border-top: 1px solid var(--hairline-color);
-    }
-  }
-
-  // if the UI heading is not the first child in the tab, but it looks like it is
-  // because it's preceded by fields which are conditionally hidden
-  // remove the additional padding and top border
-  & > .hidden:first-child {
-    & + h2,
-    & + .hidden:nth-child(1n + 1) + h2 {
-      padding-top: 0;
-      border-top: none;
     }
   }
 
