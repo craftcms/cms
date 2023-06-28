@@ -266,6 +266,7 @@ return [
     'Choose which filesystem assets should be stored in.' => 'בחר את מערכת הקבצים בה יש לשמור את הנכסים.',
     'Choose which filesystem image transforms should be stored in.' => 'בחר את מערכת הקבצים בה תישמרנה התמרות התמונות.',
     'Choose which sites this section should be available in, and configure the site-specific settings.' => 'בחר אילו אתרים במקטע זה אמורים להיות זמינים, וקבע את ההגדרות הספציפיות לאתר.',
+    'Choose which sites this source should be visible for.' => 'Choose which sites this source should be visible for.',
     'Choose which table columns should be visible for this source by default.' => 'בחר אילו עמודות טבלה תהיינה גלויות עבור מקור זה כברירת מחדל.',
     'Choose which user groups should have access to this source.' => 'בחר לאיזה קבוצות משתמשים תהיה גישה למקור הזה.',
     'Choose' => 'בחר',
