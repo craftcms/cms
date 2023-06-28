@@ -266,6 +266,7 @@ return [
     'Choose which filesystem assets should be stored in.' => 'Виберіть, у якій файловій системі зберігати ресурси.',
     'Choose which filesystem image transforms should be stored in.' => 'Виберіть, у якій файловій системі зберігати перетворення зображень.',
     'Choose which sites this section should be available in, and configure the site-specific settings.' => 'Виберіть сайти, на яких цей розділ має бути доступним, і налаштуйте параметри для кожного сайту.',
+    'Choose which sites this source should be visible for.' => 'Choose which sites this source should be visible for.',
     'Choose which table columns should be visible for this source by default.' => 'Виберіть, які стовпці таблиці повинні бути видимими для цього джерела за замовчуванням.',
     'Choose which user groups should have access to this source.' => 'Виберіть, яким групам користувачів надати доступ до цього джерела.',
     'Choose' => 'Вибрати',
