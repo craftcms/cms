@@ -266,6 +266,7 @@ return [
     'Choose which filesystem assets should be stored in.' => 'アセットを保存するファイルシステムを選択してください。',
     'Choose which filesystem image transforms should be stored in.' => 'どのファイルシステムの画像変換に保管するのかを選択してください。',
     'Choose which sites this section should be available in, and configure the site-specific settings.' => 'このセクションを表示可能にするサイトを選択して、サイト固有の設定を行ってください。',
+    'Choose which sites this source should be visible for.' => 'Choose which sites this source should be visible for.',
     'Choose which table columns should be visible for this source by default.' => 'このソースに対して表示可能なテーブルの列を選択してください。',
     'Choose which user groups should have access to this source.' => 'どのユーザーグループがこのソースにアクセスする必要があるのか選択してください。',
     'Choose' => '選択',

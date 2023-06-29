@@ -266,6 +266,7 @@ return [
     'Choose which filesystem assets should be stored in.' => '选择应存储在哪个文件系统资产中。',
     'Choose which filesystem image transforms should be stored in.' => '选择应存储在哪个文件系统图像转换中。',
     'Choose which sites this section should be available in, and configure the site-specific settings.' => '选择该部分应在哪个网站可用，并配置特定于网站的设置。',
+    'Choose which sites this source should be visible for.' => 'Choose which sites this source should be visible for.',
     'Choose which table columns should be visible for this source by default.' => '选择默认情况下应对此源可见的表列。',
     'Choose which user groups should have access to this source.' => '选择哪些用户组应有权访问此源。',
     'Choose' => '选择',

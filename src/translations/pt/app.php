@@ -266,6 +266,7 @@ return [
     'Choose which filesystem assets should be stored in.' => 'Escolha em que recursos do sistema de ficheiros devem ser armazenados.',
     'Choose which filesystem image transforms should be stored in.' => 'Escolha em que transformações de imagem do sistema de ficheiro devem ser armazenadas.',
     'Choose which sites this section should be available in, and configure the site-specific settings.' => 'Escolha em que sites esta secção deverá estar disponível e configure as definições específicas do site.',
+    'Choose which sites this source should be visible for.' => 'Choose which sites this source should be visible for.',
     'Choose which table columns should be visible for this source by default.' => 'Escolha a coluna da tabela que deve ficar visível para esta fonte por padrão.',
     'Choose which user groups should have access to this source.' => 'Escolha quais os grupos de utilizadores que devem ter acesso a esta fonte.',
     'Choose' => 'Escolher',
