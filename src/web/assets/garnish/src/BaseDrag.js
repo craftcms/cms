@@ -441,11 +441,6 @@ export default Base.extend(
             this._.$scrollContainer[0].clientWidth -
             Garnish.$scrollContainer.width();
         }
-        console.log(
-          this._.scrollMax,
-          this._.scroll,
-          Garnish.$scrollContainer.height()
-        );
         if (this._.scrollTargetPos > this._.scrollMax) {
           this._.scrollTargetPos = this._.scrollMax;
         }
