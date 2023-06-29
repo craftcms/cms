@@ -424,9 +424,33 @@ export default Base.extend(
      */
     _scrollWindow: function () {
       this._.scrollPos = Garnish.$scrollContainer[this.scrollProperty]();
-      Garnish.$scrollContainer[this.scrollProperty](
-        this._.scrollPos + this.scrollDist
-      );
+      this._.scrollTargetPos = this._.scrollPos + this.scrollDist;
+      if (this._.scrollTargetPos < 0) {
+        this._.scrollTargetPos = 0;
+      } else {
+        this._.$scrollContainer =
+          Garnish.$scrollContainer[0] === Garnish.$win[0]
+            ? Garnish.$bod
+            : Garnish.$scrollContainer;
+        if (this.scrollAxis === 'Y') {
+          this._.scrollMax =
+            this._.$scrollContainer[0].clientHeight -
+            Garnish.$scrollContainer.height();
+        } else {
+          this._.scrollMax =
+            this._.$scrollContainer[0].clientWidth -
+            Garnish.$scrollContainer.width();
+        }
+        console.log(
+          this._.scrollMax,
+          this._.scroll,
+          Garnish.$scrollContainer.height()
+        );
+        if (this._.scrollTargetPos > this._.scrollMax) {
+          this._.scrollTargetPos = this._.scrollMax;
+        }
+      }
+      Garnish.$scrollContainer[this.scrollProperty](this._.scrollTargetPos);
 
       this['mouse' + this.scrollAxis] -=
         this._.scrollPos - Garnish.$scrollContainer[this.scrollProperty]();
