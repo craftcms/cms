@@ -48,6 +48,7 @@
 - Added `craft\base\FsTrait::$showHasUrlSetting`. ([#13224](https://github.com/craftcms/cms/pull/13224))
 - Added `craft\base\FsTrait::$showUrlSetting`. ([#13224](https://github.com/craftcms/cms/pull/13224))
 - Added `craft\controllers\AssetsControllerTrait`.
+- Added `craft\elements\db\ElementQuery::EVENT_BEFORE_POPULATE_ELEMENT`.
 - Added `craft\events\DefineAddressSubdivisionsEvent`. ([#13361](https://github.com/craftcms/cms/pull/13361))
 - Added `craft\gql\GqlEntityRegistry::getOrCreate()`. ([#13354](https://github.com/craftcms/cms/pull/13354))
 - Added `craft\helpers\Assets::iconSvg()`.
