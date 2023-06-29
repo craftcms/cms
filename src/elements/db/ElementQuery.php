@@ -1963,6 +1963,7 @@ class ElementQuery extends Query implements ElementQueryInterface
             ]);
             $this->trigger(self::EVENT_BEFORE_POPULATE_ELEMENT, $event);
 
+            $row = $event->row ?? $row;
             if (isset($event->element)) {
                 $element = $event->element;
             }
