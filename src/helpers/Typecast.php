@@ -8,6 +8,7 @@
 
 namespace craft\helpers;
 
+use BackedEnum;
 use DateTime;
 use ReflectionException;
 use ReflectionNamedType;
@@ -31,6 +32,7 @@ final class Typecast
     private const TYPE_ARRAY = 'array';
     private const TYPE_NULL = 'null';
     private const TYPE_DATETIME = DateTime::class;
+    private const TYPE_BACKED_ENUM = BackedEnum::class;
 
     private static array $types = [];
 
@@ -117,6 +119,13 @@ final class Typecast
                 if ($date || $allowsNull) {
                     $value = $date ?: null;
                 }
+                return;
+            case is_subclass_of($typeName, self::TYPE_BACKED_ENUM):
+                if ($value instanceof BackedEnum) {
+                    return;
+                }
+                /** @var BackedEnum $typeName */
+                $value = $typeName::from($value);
                 return;
         }
     }
