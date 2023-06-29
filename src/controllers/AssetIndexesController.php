@@ -36,11 +36,15 @@ class AssetIndexesController extends Controller
      */
     public function beforeAction($action): bool
     {
+        if (!parent::beforeAction($action)) {
+            return false;
+        }
+
         // No permission no bueno
         $this->requirePermission('utility:asset-indexes');
         $this->requireAcceptsJson();
 
-        return parent::beforeAction($action);
+        return true;
     }
 
     /**
