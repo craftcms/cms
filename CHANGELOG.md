@@ -14,6 +14,7 @@
 - Fixed a bug where transformed images’ `width` or `height` properties could be `null` if the transform didn’t specify both dimensions. ([#13335](https://github.com/craftcms/cms/issues/13335))
 - Fixed a bug where heading UI elements within field layouts were getting a top border if they were preceeded by conditionally-hidden fields. ([#13308](https://github.com/craftcms/cms/issues/13308))
 - Fixed a bug where new Single sections could get URIs filled in on form submit based on the section name, if the input was blank and hadn’t been directly edited. ([#13350](https://github.com/craftcms/cms/issues/13350), [#13355](https://github.com/craftcms/cms/pull/13355))
+- Fixed a bug where it was possible to drag items beyond the normal page scroll limits. ([#13351](https://github.com/craftcms/cms/issues/13351))
 - Fixed two RCE vulnerabilities.
 
 ## 4.4.14 - 2023-06-13
