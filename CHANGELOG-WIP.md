@@ -33,6 +33,7 @@
 - Built-in element types’ GraphQL queries now support passing `null` to `relatedToAssets`, `relatedToEntries`, `relatedToUsers`, `relatedToCategories`, `relatedToTags`, and `relatedToAll` arguments. ([#7954](https://github.com/craftcms/cms/issues/7954))
 - Elements now include custom field values when being iterated over, and when being merged. ([#13009](https://github.com/craftcms/cms/issues/13009))
 - Dropdown and Radio Buttons fields now have a “Column Type” setting, which will be set to `varchar` for existing fields, and defaults to “Automatic” for new fields. ([#13025](https://github.com/craftcms/cms/pull/13025), [#12954](https://github.com/craftcms/cms/issues/12954))
+- Successful `users/login` JSON responses now include information about the logged-in user. ([#13374](https://github.com/craftcms/cms/discussions/13374))   
 
 ### Extensibility
 - Filesystem types can now register custom file uploaders. ([#13313](https://github.com/craftcms/cms/pull/13313))
