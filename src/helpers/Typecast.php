@@ -120,13 +120,12 @@ final class Typecast
                     $value = $date ?: null;
                 }
                 return;
-            case is_subclass_of($typeName, self::TYPE_BACKED_ENUM):
-                if ($value instanceof BackedEnum) {
+            default:
+                if (!$value instanceof BackedEnum && is_subclass_of($typeName, self::TYPE_BACKED_ENUM)) {
+                    /** @var BackedEnum $typeName */
+                    $value = $typeName::from($value);
                     return;
                 }
-                /** @var BackedEnum $typeName */
-                $value = $typeName::from($value);
-                return;
         }
     }
 
