@@ -1,5 +1,24 @@
 # Release Notes for Craft CMS 4
 
+## 4.4.15 - 2023-07-03
+
+- The control panel footer now includes a message about active trials, with a link to purchase the licenses.
+- Tags fields now only show up to five suggestions. ([#13322](https://github.com/craftcms/cms/issues/13322))
+- The `up`, `migrate/up`, and `migrate/all` commands now revert any project config changes created by migrations on failure.
+- The `up`, `migrate/up`, and `migrate/all` commands now prompt to restore the backup created at the outset of the command, or recommend restoring a backup, on failure.
+- Added `craft\console\controllers\BackupTrait::restore()`.
+- Added `craft\helpers\Component::cleanseConfig()`.
+- `craft\log\ContextProcessor::filterVars()` now supports filtering keys using dot notation and `!` negation. ([#13362](https://github.com/craftcms/cms/pull/13362))
+- Fixed an error that occurred when passing arguments to an element’s `prev` and `next` fields via GraphQL. ([#13334](https://github.com/craftcms/cms/issues/13334))
+- Fixed a bug where Single entries weren’t getting preloaded for template macros, if the template body wasn‘t rendered. ([#13312](https://github.com/craftcms/cms/issues/13312))
+- Fixed a bug where asset folders could get dynamically created for elements with temporary slugs. ([#13311](https://github.com/craftcms/cms/issues/13311))
+- Fixed a bug where Matrix fields with custom propagation methods were being marked as translatable if the rendered translation key was blank. ([#13329](https://github.com/craftcms/cms/issues/13329))
+- Fixed a bug where transformed images’ `width` or `height` properties could be `null` if the transform didn’t specify both dimensions. ([#13335](https://github.com/craftcms/cms/issues/13335))
+- Fixed a bug where heading UI elements within field layouts were getting a top border if they were preceeded by conditionally-hidden fields. ([#13308](https://github.com/craftcms/cms/issues/13308))
+- Fixed a bug where new Single sections could get URIs filled in on form submit based on the section name, if the input was blank and hadn’t been directly edited. ([#13350](https://github.com/craftcms/cms/issues/13350), [#13355](https://github.com/craftcms/cms/pull/13355))
+- Fixed a bug where it was possible to drag items beyond the normal page scroll limits. ([#13351](https://github.com/craftcms/cms/issues/13351))
+- Fixed two RCE vulnerabilities.
+
 ## 4.4.14 - 2023-06-13
 
 - The `utils/fix-field-layout-uids` command now adds missing field layout component UUIDs.
