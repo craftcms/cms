@@ -63,6 +63,7 @@
 {% set canUpgradeEdition = craft.app.getCanUpgradeEdition() %}
 {% set licensedEdition = craft.app.getLicensedEdition() %}
 {% set isTrial = licensedEdition is not same as(null) and licensedEdition is not same as(CraftEdition) %}
+{% set trialInfo = craft.cp.trialInfo() %}
 
 {% set contentNotice = (contentNotice ?? block('contentNotice') ?? '')|trim %}
 {% set sidebar = (sidebar ?? block('sidebar') ?? '')|trim %}
@@ -305,21 +306,47 @@
             </div><!-- #main-container -->
 
             <footer id="global-footer">
-                {% set fullEditionName = '{edition} edition'|t('app', {edition: editionName}) ~ (isTrial ? ' ' ~ '(trial)'|t('app')) %}
-                <div id="edition-logo" title="{{ fullEditionName }}">
-                    <div class="edition-name" aria-hidden="true">{{ editionName }}</div>
-                    {{ tag('span', {
-                        class: 'visually-hidden',
-                        text: fullEditionName,
-                    }) }}
-                    {% if isTrial %}
-                        <div class="edition-trial">{{ "Trial"|t('app') }}</div>
-                    {% endif %}
-                </div>
+                {% if trialInfo %}
+                    <div id="trial-info" class="readable">
+                        <span>
+                            {% if trialInfo.hasCraftTrial and trialInfo.trialPluginCount %}
+                                {{ 'Craft Pro and {trialPluginCount, plural, =1{{name}} other{# plugins}} are installed as trials.'|t('app', {
+                                    trialPluginCount: trialInfo.trialPluginCount,
+                                    name: trialInfo.trialPluginNames|first,
+                                }) }}
+                            {% elseif trialInfo.hasCraftTrial %}
+                                {{ 'Craft Pro is installed as a trial.'|t('app') }}
+                            {% else %}
+                                {{ '{trialPluginCount, plural, =1{{name} is installed as a trial} other{# plugins are installed as trials}}.'|t('app', {
+                                    trialPluginCount: trialInfo.trialPluginCount,
+                                    name: trialInfo.trialPluginNames|first,
+                                }) }}
+                            {% endif %}
+                            {% set linkText = 'Purchase {total, plural, =1{license} other{licenses}}'|t('app', {
+                                total: (trialInfo.hasCraftTrial ? 1 : 0) + trialInfo.trialPluginCount,
+                            }) %}
+                            {{ tag('a', {
+                                class: 'go',
+                                href: trialInfo.cartUrl,
+                                target: '_blank',
+                                text: linkText,
+                                aria: {label: linkText},
+                            }) }}
+                        </span>
+                    </div>
+                {% endif %}
                 <div id="app-info">
-                    <span>Craft CMS {{ craft.app.version }}</span>
-                    {% if canUpgradeEdition %}
-                        {% set linkText = isTrial ? 'Buy Craft Pro'|t('app') : 'Upgrade to Craft Pro'|t('app') %}
+                    {% set fullEditionName = '{edition} edition'|t('app', {edition: editionName}) %}
+                    <span>
+                        Craft CMS
+                        <span id="edition-logo" title="{{ fullEditionName }}">
+                            <span aria-hidden="true">{{ editionName }}</span>
+                            <span class="visually-hidden">{{ fullEditionName }}</span>
+                        </span>
+                        {{ craft.app.version }}
+                    </span>
+                    {% if canUpgradeEdition and not isTrial %}
+                        {% set linkText = 'Upgrade to Craft Pro'|t('app') %}
                         <span>
                             <a class="go" href="{{ url('plugin-store/upgrade-craft') }}" aria-label="{{ linkText }}">{{ linkText }}</a>
                         </span>

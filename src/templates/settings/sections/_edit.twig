@@ -313,9 +313,21 @@
         new Craft.HandleGenerator('#name', '#handle');
 
         {% for site in craft.app.sites.getAllSites() %}
-            new Craft.UriFormatGenerator('#name', '#sites tr[data-id="{{ site.handle }}"] textarea[name$="[singleUri]"]');
-            new Craft.UriFormatGenerator('#name', '#sites tr[data-id="{{ site.handle }}"] textarea[name$="[uriFormat]"]', { suffix: '/{slug}' });
-            new Craft.UriFormatGenerator('#name', '#sites tr[data-id="{{ site.handle }}"] input[name$="[template]"]', { suffix: '/_entry' });
+            new Craft.UriFormatGenerator(
+                '#name',
+                '#sites tr[data-id="{{ site.handle }}"] textarea[name$="[singleUri]"]',
+                { updateWhenHidden: true }
+            );
+            new Craft.UriFormatGenerator(
+                '#name',
+                '#sites tr[data-id="{{ site.handle }}"] textarea[name$="[uriFormat]"]',
+                { suffix: '/{slug}', updateWhenHidden: true }
+            );
+            new Craft.UriFormatGenerator(
+                '#name',
+                '#sites tr[data-id="{{ site.handle }}"] input[name$="[template]"]',
+                { suffix: '/_entry', updateWhenHidden: true }
+            );
         {% endfor %}
     {% endjs %}
 {% endif %}

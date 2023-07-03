@@ -235,7 +235,7 @@ class Matrix extends Field implements
 
     /**
      * @var string Propagation method
-     * @phpstan-var self::PROPAGATION_METHOD_NONE|self::PROPAGATION_METHOD_SITE_GROUP|self::PROPAGATION_METHOD_LANGUAGE|self::PROPAGATION_METHOD_ALL
+     * @phpstan-var self::PROPAGATION_METHOD_NONE|self::PROPAGATION_METHOD_SITE_GROUP|self::PROPAGATION_METHOD_LANGUAGE|self::PROPAGATION_METHOD_ALL|self::PROPAGATION_METHOD_CUSTOM
      *
      * This will be set to one of the following:
      *
@@ -539,6 +539,13 @@ class Matrix extends Field implements
      */
     public function getIsTranslatable(?ElementInterface $element = null): bool
     {
+        if ($this->propagationMethod === self::PROPAGATION_METHOD_CUSTOM) {
+            return (
+                $element === null ||
+                Craft::$app->getView()->renderObjectTemplate($this->propagationKeyFormat, $element) !== ''
+            );
+        }
+
         return $this->propagationMethod !== self::PROPAGATION_METHOD_ALL;
     }
 
