@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- The control panel footer now includes a message about active trials, with a link to purchase the licenses.
 - Tags fields now only show up to five suggestions. ([#13322](https://github.com/craftcms/cms/issues/13322))
 - The `up`, `migrate/up`, and `migrate/all` commands now revert any project config changes created by migrations on failure.
 - The `up`, `migrate/up`, and `migrate/all` commands now prompt to restore the backup created at the outset of the command, or recommend restoring a backup, on failure.
