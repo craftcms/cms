@@ -366,95 +366,67 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
   flex-direction: column;
   align-items: center;
   padding: 14px 14px 24px;
+  gap: 14px;
 
   body.has-debug-toolbar & {
     padding-bottom: 66px;
   }
+
+  a {
+    white-space: nowrap;
+  }
 }
 
 #app-info {
-  margin-top: 7px;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  gap: 14px;
+}
+
+#trial-info {
+  padding: 16px 24px;
+  border-radius: $largeBorderRadius;
+  background-color: hsl(212, 40%, 90%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.5),
+    0 0 0 1px hsl(212, 30%, 80%), 0 2px 12px transparentize($grey200, 0.5);
+  text-align: center;
+}
+
+#app-version {
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 12px;
   color: $grey600;
   text-align: center;
+  gap: 8px;
 
-  li {
-    margin: 0 7px;
+  a {
+    color: $grey600;
+    text-decoration: underline;
 
-    a {
+    &.go:hover:after {
       color: $grey600;
-      text-decoration: underline;
-
-      &.go:hover:after {
-        color: $grey600;
-      }
     }
   }
 }
 
 #edition-logo {
+  position: relative;
+  top: -1px;
   user-select: none;
   border: 1px solid $grey600;
   border-radius: 3px;
   display: inline-flex;
-  height: 20px;
   box-sizing: content-box;
   font-size: 11px;
-
-  & > .edition-name,
-  & > .edition-trial {
-    padding: 6px 7px 5px;
-    line-height: 8px;
-  }
-
-  & > .edition-name {
-    font-weight: 600;
-    letter-spacing: 1.7px;
-    padding-right: 5px;
-    text-transform: uppercase;
-    transition: color linear 100ms;
-  }
-
-  & > .edition-trial {
-    display: inline-block;
-    position: relative;
-    @include margin-left(5px);
-    @include padding-left(5px);
-    background-color: $grey600;
-    color: $grey200;
-    border-radius: 0 1px 1px 0;
-    letter-spacing: 1px;
-    @include padding-right(7px);
-    text-transform: lowercase;
-    transition: background linear 100ms;
-
-    &:before {
-      display: block;
-      position: absolute;
-      top: 0;
-      content: '';
-      font-size: 0;
-      width: 0;
-      height: 0;
-      border-style: solid;
-      transition: border-color linear 100ms;
-
-      body.ltr & {
-        left: -10px;
-        border-width: 0 10px 20px 0;
-        border-color: transparent $grey600 transparent transparent;
-      }
-
-      body.rtl & {
-        right: -10px;
-        border-width: 0 0 20px 10px;
-        border-color: transparent transparent transparent $grey600;
-      }
-    }
-  }
+  padding: 6px 7px;
+  line-height: 8px;
+  font-weight: 600;
+  letter-spacing: 1.7px;
+  padding-right: 5px;
+  text-transform: uppercase;
 }
 
 #devmode {

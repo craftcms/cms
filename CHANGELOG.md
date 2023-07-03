@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- The control panel footer now includes a message about active trials, with a link to purchase the licenses.
 - Fixed an error that occurred when passing arguments to an element’s `prev` and `next` fields via GraphQL. ([#13334](https://github.com/craftcms/cms/issues/13334))
 - Fixed an RCE vulnerability.
 
