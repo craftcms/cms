@@ -8,6 +8,7 @@
 - The `up`, `migrate/up`, and `migrate/all` commands now prompt to restore the backup created at the outset of the command, or recommend restoring a backup, on failure.
 - Added `craft\console\controllers\BackupTrait::restore()`.
 - Added `craft\helpers\Component::cleanseConfig()`.
+- `craft\log\ContextProcessor::filterVars()` now supports filtering keys using dot notation and `!` negation. ([#13362](https://github.com/craftcms/cms/pull/13362))
 - Fixed an error that occurred when passing arguments to an element’s `prev` and `next` fields via GraphQL. ([#13334](https://github.com/craftcms/cms/issues/13334))
 - Fixed a bug where Single entries weren’t getting preloaded for template macros, if the template body wasn‘t rendered. ([#13312](https://github.com/craftcms/cms/issues/13312))
 - Fixed a bug where asset folders could get dynamically created for elements with temporary slugs. ([#13311](https://github.com/craftcms/cms/issues/13311))
