@@ -76,6 +76,15 @@ class ElementQuery extends Query implements ElementQueryInterface
     public const EVENT_DEFINE_CACHE_TAGS = 'defineCacheTags';
 
     /**
+     * @event PopulateElementEvent The event that is triggered before an element is populated.
+     *
+     * If [[PopulateElementEvent::$element]] is set by an event handler, the replacement will be returned by [[createElement()]] instead.
+     *
+     * @since 4.5.0
+     */
+    public const EVENT_BEFORE_POPULATE_ELEMENT = 'beforePopulateElement';
+
+    /**
      * @event PopulateElementEvent The event that is triggered after an element is populated.
      *
      * If [[PopulateElementEvent::$element]] is replaced by an event handler, the replacement will be returned by [[createElement()]] instead.
@@ -1894,7 +1903,22 @@ class ElementQuery extends Query implements ElementQueryInterface
             }
         }
 
-        $element = new $class($row);
+        $element = null;
+
+        // Fire a 'beforePopulateElement' event
+        if ($this->hasEventHandlers(self::EVENT_BEFORE_POPULATE_ELEMENT)) {
+            $event = new PopulateElementEvent([
+                'row' => $row,
+            ]);
+            $this->trigger(self::EVENT_BEFORE_POPULATE_ELEMENT, $event);
+
+            $row = $event->row ?? $row;
+            if (isset($event->element)) {
+                $element = $event->element;
+            }
+        }
+
+        $element ??= new $class($row);
         $element->attachBehaviors($behaviors);
 
         // Fire an 'afterPopulateElement' event

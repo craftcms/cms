@@ -16,12 +16,13 @@ use CommerceGuys\Addressing\AddressFormat\PostalCodeType;
 use CommerceGuys\Addressing\Country\CountryRepository;
 use CommerceGuys\Addressing\Formatter\DefaultFormatter;
 use CommerceGuys\Addressing\Formatter\FormatterInterface;
-use CommerceGuys\Addressing\Subdivision\SubdivisionRepository;
 use Craft;
+use craft\addresses\SubdivisionRepository;
 use craft\elements\Address;
 use craft\events\ConfigEvent;
 use craft\events\DefineAddressFieldLabelEvent;
 use craft\events\DefineAddressFieldsEvent;
+use craft\events\DefineAddressSubdivisionsEvent;
 use craft\helpers\ProjectConfig as ProjectConfigHelper;
 use craft\helpers\StringHelper;
 use craft\models\FieldLayout;
@@ -60,6 +61,14 @@ class Addresses extends Component
      * @since 4.3.0
      */
     public const EVENT_DEFINE_FIELD_LABEL = 'defineFieldLabel';
+
+    /**
+     * @event DefineAddressSubdivisionsEvent The event that is triggered when defining subdivisions options for an address field
+     * for a given country code, and optionally administrativeArea and locality.
+     * @see defineAddressSubdivisions()
+     * @since 4.5.0
+     */
+    public const EVENT_DEFINE_ADDRESS_SUBDIVISIONS = 'defineAddressSubdivisions';
 
     /**
      * @var FormatterInterface|null The default address formatter used by [[formatAddress()]]
@@ -122,6 +131,29 @@ class Addresses extends Component
     public function getAddressFormatRepository(): AddressFormatRepository
     {
         return $this->_addressFormatRepository;
+    }
+
+    /**
+     * Returns subdivisions for a field based on its parents.
+     *
+     * @param array $parents
+     * @param array $options
+     * @return array
+     * @since 4.5.0
+     */
+    public function defineAddressSubdivisions(array $parents, array $options = []): array
+    {
+        if ($this->hasEventHandlers(self::EVENT_DEFINE_ADDRESS_SUBDIVISIONS)) {
+            $event = new DefineAddressSubdivisionsEvent([
+                'parents' => $parents,
+                'subdivisions' => $options,
+            ]);
+            $this->trigger(self::EVENT_DEFINE_ADDRESS_SUBDIVISIONS, $event);
+
+            return $event->subdivisions;
+        }
+
+        return $options;
     }
 
     /**
