@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 4
 
-## Unreleased
+## 4.4.15 - 2023-07-03
 
 - The control panel footer now includes a message about active trials, with a link to purchase the licenses.
 - Tags fields now only show up to five suggestions. ([#13322](https://github.com/craftcms/cms/issues/13322))
