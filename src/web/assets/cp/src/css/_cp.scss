@@ -337,14 +337,34 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
   flex-direction: column;
   align-items: center;
   padding: var(--m) var(--m) var(--xl);
+  gap: var(--m);
 
   body.has-debug-toolbar & {
     padding-bottom: calc(var(--xl) + 42px);
   }
+
+  a {
+    white-space: nowrap;
+  }
 }
 
 #app-info {
-  margin-top: var(--xs);
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  gap: var(--m);
+}
+
+#trial-info {
+  padding: 16px var(--xl);
+  border-radius: var(--large-border-radius);
+  background-color: hsl(212, 40%, 90%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.5),
+    0 0 0 1px hsl(212, 30%, 80%), 0 2px 12px transparentize($grey200, 0.5);
+  text-align: center;
+}
+
+#app-version {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -364,62 +384,20 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
 }
 
 #edition-logo {
+  position: relative;
+  top: -1px;
   user-select: none;
   border: 1px solid var(--gray-600);
   border-radius: 3px;
   display: inline-flex;
-  height: toRem(20);
   box-sizing: content-box;
   font-size: 11px;
-
-  & > .edition-name,
-  & > .edition-trial {
-    padding: toRem(6, 7, 5);
-    line-height: var(--s);
-  }
-
-  & > .edition-name {
-    font-weight: 600;
-    letter-spacing: 1.7px;
-    padding-right: toRem(5);
-    text-transform: uppercase;
-  }
-
-  & > .edition-trial {
-    display: inline-block;
-    position: relative;
-    @include margin-left(5px);
-    @include padding-left(5px);
-    background-color: var(--gray-600);
-    color: var(--gray-200);
-    border-radius: 0 1px 1px 0;
-    letter-spacing: 1px;
-    @include padding-right(7px);
-    text-transform: lowercase;
-
-    &:before {
-      display: block;
-      position: absolute;
-      top: 0;
-      content: '';
-      font-size: 0;
-      width: 0;
-      height: 0;
-      border-style: solid;
-
-      body.ltr & {
-        left: -10px;
-        border-width: 0 10px 20px 0;
-        border-color: transparent var(--gray-600) transparent transparent;
-      }
-
-      body.rtl & {
-        right: -10px;
-        border-width: 0 0 20px 10px;
-        border-color: transparent transparent transparent var(--gray-600);
-      }
-    }
-  }
+  padding: 6px 7px;
+  line-height: 8px;
+  font-weight: 600;
+  letter-spacing: 1.7px;
+  padding-right: 5px;
+  text-transform: uppercase;
 }
 
 #devmode {
@@ -1569,7 +1547,7 @@ li.breadcrumb-toggle-wrapper {
   & > h2 {
     flex: 4 0 100%;
 
-    &:not(:first-child) {
+    &:not(:nth-child(-n + 1 of :not(.hidden))) {
       padding-top: var(--xl);
       border-top: 1px solid var(--hairline-color);
     }
