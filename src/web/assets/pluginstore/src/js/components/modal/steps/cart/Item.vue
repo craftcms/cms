@@ -12,9 +12,23 @@
         <!-- Item name -->
         <item-name class="tw-flex-1" :item="item" />
 
-        <!-- Price -->
-        <div class="price tw-w-24 tw-text-right">
-          <strong>{{ item.lineItem.price | currency }}</strong>
+        <div class="tw-text-right">
+          <!-- Price -->
+          <div class="price tw-w-24 tw-text-right">
+            <strong>{{ item.lineItem.price | currency }}</strong>
+          </div>
+
+          <!-- Remove button-->
+          <div>
+            <template v-if="!removeItemLoading">
+              <a role="button" @click="removeFromCart">{{
+                'Remove' | t('app')
+              }}</a>
+            </template>
+            <template v-else>
+              <c-spinner class="sm" />
+            </template>
+          </div>
         </div>
       </div>
 
@@ -56,21 +70,7 @@
         </template>
       </div>
 
-      <!-- Adjustments -->
       <item-adjustments :item="item" />
-
-      <!-- Remove button-->
-      <div
-        class="tw-py-4 tw-text-right tw-border-t tw-border-solid tw-border-gray-200"
-      >
-        <template v-if="!removeItemLoading">
-          <a role="button" @click="removeFromCart">{{ 'Remove' | t('app') }}</a>
-        </template>
-        <template v-else>
-          <c-spinner class="sm" />
-        </template>
-      </div>
-      <!-- /Remove button-->
     </div>
   </div>
 </template>
