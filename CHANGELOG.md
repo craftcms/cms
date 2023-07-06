@@ -1,5 +1,9 @@
 # Release Notes for Craft CMS 4
 
+## Unreleased
+
+- Fixed a bug where entry titles could overflow within Entries fields with “Maintain hierarchy” enabled. ([#13382](https://github.com/craftcms/cms/issues/13382))
+
 ## 4.4.15 - 2023-07-03
 
 - The control panel footer now includes a message about active trials, with a link to purchase the licenses.
