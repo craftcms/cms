@@ -3358,6 +3358,10 @@ $checkboxPadding: $checkboxSize + 4;
     &.flex-wrap {
       flex-wrap: wrap;
     }
+
+    li {
+      max-width: 100%;
+    }
   }
 
   .elements:after {
