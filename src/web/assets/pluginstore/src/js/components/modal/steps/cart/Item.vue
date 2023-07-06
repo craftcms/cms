@@ -8,9 +8,22 @@
     </div>
 
     <div class="tw-flex-1">
-      <div class="tw-flex tw-py-4">
+      <div class="tw-flex tw-justify-between tw-py-4">
         <!-- Item name -->
-        <item-name class="tw-flex-1" :item="item" />
+        <div>
+          <item-name class="tw-flex-1" :item="item" />
+
+          <template
+            v-if="
+              item.lineItem.purchasable.type === 'cms-edition' ||
+              item.lineItem.purchasable.type === 'plugin-edition'
+            "
+          >
+            <div class="tw-mt-1 tw-text-sm tw-text-gray-500">
+              Includes one year of updates.
+            </div>
+          </template>
+        </div>
 
         <div class="tw-text-right">
           <!-- Price -->
