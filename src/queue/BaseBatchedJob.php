@@ -94,7 +94,21 @@ abstract class BaseBatchedJob extends BaseJob
     final protected function totalItems(): int
     {
         if (!isset($this->_totalItems)) {
-            $this->_totalItems = $this->data()->count();
+            // we can't rely on Yii's ->count() as that doesn't take offset and limit into consideration when counting
+            // https://github.com/yiisoft/yii2/issues/13846
+            // https://github.com/craftcms/cms/issues/13387
+            // https://github.com/craftcms/cms/issues/12526
+            $count = $this->data()->count();
+
+            if (isset($this->criteria['offset'])) {
+                $count = max($count - (int)$this->criteria['offset'], 0);
+            }
+
+            if (isset($this->criteria['limit'])) {
+                $count = min((int)$this->criteria['limit'], $count);
+            }
+
+            $this->_totalItems = $count;
         }
         return $this->_totalItems;
     }
