@@ -29,8 +29,17 @@
           lineItemAdustment.sourceSnapshot.type === 'extendedUpdates'
       )"
     >
-      <div :key="itemKey + 'adjustment-' + adjustmentKey">
-        {{ adjustment.amount | currency }}
+      <div class="tw-text-right">
+        <div
+          class="tw-font-bold"
+          :key="itemKey + 'adjustment-' + adjustmentKey"
+        >
+          {{ adjustment.amount | currency }}
+        </div>
+
+        <div class="mt-1">
+          <a @click="removeUpdate()">Remove</a>
+        </div>
       </div>
     </template>
   </div>
@@ -145,6 +154,11 @@
 
       pluginLicenseInfo(pluginHandle) {
         return this.getPluginLicenseInfo(pluginHandle);
+      },
+
+      removeUpdate() {
+        this.selectedExpiryDates[this.itemKey] = '1y';
+        this.onSelectedExpiryDateChange();
       },
     },
   };
