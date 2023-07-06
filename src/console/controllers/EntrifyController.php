@@ -14,8 +14,10 @@ use craft\db\Query;
 use craft\db\Table;
 use craft\elements\Category;
 use craft\elements\Entry;
+use craft\elements\GlobalSet;
 use craft\elements\Tag;
 use craft\elements\User;
+use craft\events\EntrifyEvent;
 use craft\events\SectionEvent;
 use craft\fields\Categories;
 use craft\fields\Entries;
@@ -39,6 +41,10 @@ use yii\helpers\Console;
  */
 class EntrifyController extends Controller
 {
+    // Events
+    // -------------------------------------------------------------------------
+    public const EVENT_AFTER_ENTRIFY = 'onAfterEntrify';
+
     /**
      * @var string|null The section handle that entries should be saved in
      */
@@ -244,6 +250,7 @@ class EntrifyController extends Controller
             "deletePeerCategoryDrafts:$categoryGroup->uid" => "deletePeerEntryDrafts:$section->uid",
         ], $sectionCreated);
 
+        $fieldsConverted = false;
         if (!$projectConfigService->readOnly) {
             if (!$categoryGroup->dateDeleted && $this->confirm("Delete the “{$categoryGroup}” category group?", true)) {
                 $this->do('Deleting category group', function() use ($categoryGroup) {
@@ -278,12 +285,34 @@ class EntrifyController extends Controller
 
                     $this->success(sprintf('Categories %s converted.', $total === 1 ? 'field' : 'fields'));
                     $projectConfigChanged = true;
+                    $fieldsConverted = true;
                 }
             }
         }
 
         if ($projectConfigChanged) {
             $this->_deployTip('categories', $categoryGroup->handle);
+        }
+
+        // Fire a 'onAfterEntrify' event
+        if ($this->hasEventHandlers(self::EVENT_AFTER_ENTRIFY)) {
+            $event = new EntrifyEvent([
+                'elementType' => Category::class,
+                'elementGroup' => [
+                    'from' => $categoryGroup->id,
+                    'to' => [
+                        'sectionId' => $section->id,
+                        'typeId' => $entryType->id,
+                    ],
+                ],
+                'fields' => [
+                    'type' => Categories::class,
+                    'converted' => $fieldsConverted,
+                    'fields' => $fields ?? null,
+                ],
+            ]);
+
+            $this->trigger(self::EVENT_AFTER_ENTRIFY, $event);
         }
 
         return ExitCode::OK;
@@ -384,6 +413,7 @@ class EntrifyController extends Controller
 
         $this->success('Tags converted.');
 
+        $fieldsConverted = false;
         if (!$projectConfigService->readOnly) {
             if (!$tagGroup->dateDeleted && $this->confirm("Delete the “{$tagGroup}” tag group?", true)) {
                 $this->do('Deleting tag group', function() use ($tagGroup) {
@@ -417,12 +447,34 @@ class EntrifyController extends Controller
 
                     $this->success(sprintf('Tags %s converted.', $total === 1 ? 'field' : 'fields'));
                     $projectConfigChanged = true;
+                    $fieldsConverted = true;
                 }
             }
         }
 
         if ($projectConfigChanged) {
             $this->_deployTip('tags', $tagGroup->handle);
+        }
+
+        // Fire a 'onAfterEntrify' event
+        if ($this->hasEventHandlers(self::EVENT_AFTER_ENTRIFY)) {
+            $event = new EntrifyEvent([
+                'elementType' => Tag::class,
+                'elementGroup' => [
+                    'from' => $tagGroup->id,
+                    'to' => [
+                        'sectionId' => $section->id,
+                        'typeId' => $entryType->id,
+                    ],
+                ],
+                'fields' => [
+                    'type' => Tags::class,
+                    'converted' => $fieldsConverted,
+                    'fields' => $fields ?? null,
+                ],
+            ]);
+
+            $this->trigger(self::EVENT_AFTER_ENTRIFY, $event);
         }
 
         return ExitCode::OK;
@@ -537,6 +589,23 @@ class EntrifyController extends Controller
 
         if ($projectConfigChanged) {
             $this->_deployTip('global-set', $globalSet->handle);
+        }
+
+        // Fire a 'onAfterEntrify' event
+        if ($this->hasEventHandlers(self::EVENT_AFTER_ENTRIFY)) {
+            $event = new EntrifyEvent([
+                'elementType' => GlobalSet::class,
+                'elementGroup' => [
+                    'from' => $globalSet->id,
+                    'to' => [
+                        'sectionId' => $section->id,
+                        'typeId' => $entryType->id,
+                    ],
+                ],
+                'fields' => [],
+            ]);
+
+            $this->trigger(self::EVENT_AFTER_ENTRIFY, $event);
         }
 
         return ExitCode::OK;
