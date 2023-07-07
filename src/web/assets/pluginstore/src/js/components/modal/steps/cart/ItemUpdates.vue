@@ -44,7 +44,7 @@
                 <c-dropdown
                   :disabled="itemLoading({itemKey})"
                   v-model="selectedExpiryDates[itemKey]"
-                  :options="itemExpiryDateOptions"
+                  :options="itemUpdateOptions"
                   @input="onSelectedExpiryDateChange"
                 />
               </div>
@@ -139,27 +139,28 @@
         },
       },
 
-      itemExpiryDateOptions() {
-        const item = this.cartItems[this.itemKey];
-        const renewalPrice = item.lineItem.purchasable.renewalPrice;
+      itemUpdateOptions() {
+        const cartItems = this.cartItems;
+        const item = cartItems[this.itemKey];
+        const renewalPrice = parseFloat(item.lineItem.purchasable.renewalPrice);
 
         let options = [];
         let selectedOption = 0;
 
         this.expiryDateOptions.forEach((option, key) => {
-          if (option === item.lineItem.options.expiryDate) {
+          if (option[0] === item.lineItem.options.expiryDate) {
             selectedOption = key;
           }
         });
 
         for (let i = 0; i < this.expiryDateOptions.length; i++) {
           const expiryDateOption = this.expiryDateOptions[i];
-          const optionValue = expiryDateOption[0];
-          const date = Craft.formatDate(expiryDateOption[1]);
-          let label = this.$options.filters.t('Updates until {date}', 'app', {
-            date,
-          });
-          let price = renewalPrice * (i - selectedOption);
+          const value = expiryDateOption[0];
+          const price = renewalPrice * (i - selectedOption);
+          const nbYears = i + 1;
+          let priceDifference = '';
+
+          let label;
 
           if (price !== 0) {
             let sign = '';
@@ -168,17 +169,27 @@
               sign = '+';
             }
 
-            price = this.$options.filters.currency(price);
+            priceDifference =
+              ' (' + sign + this.$options.filters.currency(price) + ')';
+          }
+
+          if (nbYears === 1) {
             label = this.$options.filters.t(
-              'Updates until {date} ({sign}{price})',
+              '1 year of updates (included) {priceDifference}',
               'app',
-              {date, sign, price}
+              {nbYears, priceDifference}
+            );
+          } else {
+            label = this.$options.filters.t(
+              '{nbYears} years of updates {priceDifference}',
+              'app',
+              {nbYears, priceDifference}
             );
           }
 
           options.push({
             label: label,
-            value: optionValue,
+            value: value,
           });
         }
 

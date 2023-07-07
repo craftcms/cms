@@ -49,6 +49,8 @@ class PluginStoreAsset extends AssetBundle
 
         if ($view instanceof View) {
             $view->registerTranslations('app', [
+                '{nbYears} years of updates {priceDifference}',
+                '1 year of updates (included) {priceDifference}',
                 '({period} days)',
                 'Abandoned',
                 'Active Installs',
@@ -129,7 +131,6 @@ class PluginStoreAsset extends AssetBundle
                 'Total releases',
                 'Try for free',
                 'Try',
-                'Updates until {date} ({sign}{price})',
                 'Updates until {date}',
                 'Updates',
                 'Upgrade Craft CMS',

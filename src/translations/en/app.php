@@ -1,6 +1,7 @@
 <?php
 
 return [
+    '{nbYears} years of updates {priceDifference}',
     '(Ungrouped)' => '(Ungrouped)',
     '(blank)' => '(blank)',
     '(trial)' => '(trial)',
@@ -8,6 +9,7 @@ return [
     '({period} days)' => '({period} days)',
     '/path/to/folder' => '/path/to/folder',
     '1 job' => '1 job',
+    '1 year of updates (included) {priceDifference}',
     '<a>Renew now</a> for another year of updates.' => '<a>Renew now</a> for another year of updates.',
     '<span class="visually-hidden">Characters left:</span> {chars, number}' => '<span class="visually-hidden">Characters left:</span> {chars, number}',
     '<strong>Your license has expired!</strong> Renew your {name} license for another year of amazing updates.' => '<strong>Your license has expired!</strong> Renew your {name} license for another year of amazing updates.',
@@ -1645,7 +1647,6 @@ return [
     'Update' => 'Update',
     'Updated at' => 'Updated at',
     'Updater' => 'Updater',
-    'Updates until {date} ({sign}{price})' => 'Updates until {date} ({sign}{price})',
     'Updates until {date}' => 'Updates until {date}',
     'Updates' => 'Updates',
     'Updating Composer dependencies (this may take a minute)…' => 'Updating Composer dependencies (this may take a minute)…',
