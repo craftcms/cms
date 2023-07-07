@@ -1,32 +1,31 @@
 <template>
   <!-- Expiry date -->
-  <div
-    class="tw-border-t tw-border-solid tw-border-gray-200 tw-flex tw-justify-between tw-py-4"
-  >
-    <div>
-      <div class="flex gap-3">
-        <c-lightswitch
-          :id="`item-${itemKey}`"
-          :disabled="itemLoading({itemKey})"
-          v-model:checked="itemsAutoRenew[itemKey]"
-          @input="onChangeAutoRenew(itemKey)"
-        />
 
-        <label :for="`item-${itemKey}`">
-          {{
-            'Auto-renew for {price} annually, starting on {date}.'
-              | t('app', {
-                price: $options.filters.currency(
-                  item.lineItem.purchasable.renewalPrice
-                ),
-                date: $options.filters.formatDate(renewalStartDate),
-              })
-          }}
-        </label>
-      </div>
+  <div class="tw-border-t tw-border-solid tw-border-gray-200 tw-py-4">
+    <div class="flex gap-3">
+      <c-lightswitch
+        :id="`item-${itemKey}`"
+        :disabled="itemLoading({itemKey})"
+        v-model:checked="itemsAutoRenew[itemKey]"
+        @input="onChangeAutoRenew(itemKey)"
+      />
 
+      <label :for="`item-${itemKey}`">
+        {{
+          'Auto-renew for {price} annually, starting on {date}.'
+            | t('app', {
+              price: $options.filters.currency(
+                item.lineItem.purchasable.renewalPrice
+              ),
+              date: $options.filters.formatDate(renewalStartDate),
+            })
+        }}
+      </label>
+    </div>
+
+    <div class="tw-flex tw-justify-between">
       <template v-if="!itemsAutoRenew[itemKey]">
-        <div class="expiry-date flex flex-nowrap">
+        <div class="tw-mt-4 expiry-date flex flex-nowrap">
           <template
             v-if="
               item.lineItem.purchasable.type === 'cms-edition' ||
@@ -37,7 +36,7 @@
             "
           >
             <div>
-              <div class="tw-text-sm tw-font-medium tw-mt-4">
+              <div class="tw-text-sm tw-font-medium">
                 {{ 'Updates' | t('app') }}
               </div>
               <div class="tw-mt-1">
@@ -51,39 +50,41 @@
             </div>
           </template>
         </div>
-      </template>
 
-      <c-spinner v-if="itemLoading({itemKey})" class="tw-mt-4" />
+        <template
+          v-for="(
+            adjustment, adjustmentKey
+          ) in item.lineItem.adjustments.filter(
+            (lineItemAdustment) =>
+              lineItemAdustment.sourceSnapshot.type === 'extendedUpdates'
+          )"
+        >
+          <div class="tw-text-right">
+            <div
+              class="tw-font-bold"
+              :key="itemKey + 'adjustment-' + adjustmentKey"
+            >
+              {{ adjustment.amount | currency }}
+            </div>
+
+            <div class="mt-1">
+              <button
+                :disabled="itemLoading({itemKey})"
+                class="tw-text-blue-600 hover:tw-underline"
+                :class="{
+                  'tw-opacity-50': itemLoading({itemKey}),
+                }"
+                @click="removeUpdate()"
+              >
+                {{ 'Remove' | t('app') }}
+              </button>
+            </div>
+          </div>
+        </template>
+      </template>
     </div>
 
-    <template
-      v-for="(adjustment, adjustmentKey) in item.lineItem.adjustments.filter(
-        (lineItemAdustment) =>
-          lineItemAdustment.sourceSnapshot.type === 'extendedUpdates'
-      )"
-    >
-      <div class="tw-text-right">
-        <div
-          class="tw-font-bold"
-          :key="itemKey + 'adjustment-' + adjustmentKey"
-        >
-          {{ adjustment.amount | currency }}
-        </div>
-
-        <div class="mt-1">
-          <button
-            :disabled="itemLoading({itemKey})"
-            class="tw-text-blue-600 hover:tw-underline"
-            :class="{
-              'tw-opacity-50': itemLoading({itemKey}),
-            }"
-            @click="removeUpdate()"
-          >
-            {{ 'Remove' | t('app') }}
-          </button>
-        </div>
-      </div>
-    </template>
+    <c-spinner v-if="itemLoading({itemKey})" class="tw-mt-4" />
   </div>
 </template>
 <script>
