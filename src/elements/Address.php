@@ -304,6 +304,18 @@ class Address extends Element implements AddressInterface, BlockElementInterface
     }
 
     /**
+     * Sets the owner element.
+     *
+     * @param ElementInterface|null $owner
+     * @since 4.4.16
+     */
+    public function setOwner(?ElementInterface $owner): void
+    {
+        $this->_owner = $owner;
+        $this->ownerId = $owner?->id;
+    }
+
+    /**
      * @inheritdoc
      */
     public function canView(User $user): bool
