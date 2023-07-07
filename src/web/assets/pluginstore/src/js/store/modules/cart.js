@@ -244,6 +244,10 @@ const getters = {
       return state.loadingItems[itemKey];
     };
   },
+
+  totalLoadingItems(state) {
+    return Object.keys(state.loadingItems).length;
+  },
 };
 
 /**

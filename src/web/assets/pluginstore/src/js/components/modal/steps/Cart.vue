@@ -43,6 +43,7 @@
             <!-- Checkout button -->
             <div class="tw-mt-4 tw-py-4 tw-text-right">
               <c-btn
+                :disabled="totalLoadingItems > 0"
                 kind="primary"
                 @click="payment()"
                 :loading="loadingCheckout"
@@ -102,6 +103,7 @@
       ...mapGetters({
         cartItems: 'cart/cartItems',
         cartItemsData: 'cart/cartItemsData',
+        totalLoadingItems: 'cart/totalLoadingItems',
       }),
     },
 

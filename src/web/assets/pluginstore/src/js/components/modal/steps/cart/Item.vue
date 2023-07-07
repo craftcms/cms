@@ -34,9 +34,16 @@
           <!-- Remove button-->
           <div>
             <template v-if="!removeItemLoading">
-              <a role="button" @click="removeFromCart">{{
-                'Remove' | t('app')
-              }}</a>
+              <button
+                :disabled="totalLoadingItems > 0"
+                class="tw-text-blue-600 hover:tw-underline"
+                :class="{
+                  'tw-opacity-50': totalLoadingItems > 0,
+                }"
+                @click="removeFromCart"
+              >
+                {{ 'Remove' | t('app') }}
+              </button>
             </template>
             <template v-else>
               <c-spinner class="sm" />
@@ -59,6 +66,7 @@
   import ItemName from './ItemName';
   import ItemAdjustments from './ItemAdjustments';
   import ItemUpdates from './ItemUpdates.vue';
+  import {mapGetters} from 'vuex';
 
   export default {
     props: {
@@ -82,6 +90,12 @@
       ItemAdjustments,
       ItemName,
       ItemIcon,
+    },
+
+    computed: {
+      ...mapGetters({
+        totalLoadingItems: 'cart/totalLoadingItems',
+      }),
     },
 
     methods: {

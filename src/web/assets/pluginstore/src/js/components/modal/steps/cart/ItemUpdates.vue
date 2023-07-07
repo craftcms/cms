@@ -42,6 +42,7 @@
               </div>
               <div class="tw-mt-1">
                 <c-dropdown
+                  :disabled="itemLoading({itemKey})"
                   v-model="selectedExpiryDates[itemKey]"
                   :options="itemExpiryDateOptions"
                   @input="onSelectedExpiryDateChange"
@@ -70,7 +71,16 @@
         </div>
 
         <div class="mt-1">
-          <a @click="removeUpdate()">{{ 'Remove' | t('app') }}</a>
+          <button
+            :disabled="itemLoading({itemKey})"
+            class="tw-text-blue-600 hover:tw-underline"
+            :class="{
+              'tw-opacity-50': itemLoading({itemKey}),
+            }"
+            @click="removeUpdate()"
+          >
+            {{ 'Remove' | t('app') }}
+          </button>
         </div>
       </div>
     </template>
