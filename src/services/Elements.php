@@ -2834,7 +2834,11 @@ class Elements extends Component
                                 }
                                 $targetSiteId = $result['siteId'];
                                 if (!isset($targetElements[$targetSiteId][$elementId])) {
-                                    $targetElements[$targetSiteId][$elementId] = $query->createElement($result);
+                                    if (isset($map['createElement'])) {
+                                        $targetElements[$targetSiteId][$elementId] = $map['createElement']($query, $result, $sourceElement);
+                                    } else {
+                                        $targetElements[$targetSiteId][$elementId] = $query->createElement($result);
+                                    }
                                 }
                                 $targetElementsForSource[] = $element = $targetElements[$targetSiteId][$elementId];
 
