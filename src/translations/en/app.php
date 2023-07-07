@@ -571,6 +571,7 @@ return [
     'Edit “{title}”' => 'Edit “{title}”',
     'Edit' => 'Edit',
     'Edited' => 'Edited',
+    'Editions' => 'Editions',
     'Eircode' => 'Eircode',
     'Element' => 'Element',
     'Elements duplicated.' => 'Elements duplicated.',

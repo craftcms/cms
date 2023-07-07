@@ -80,6 +80,7 @@ class PluginStoreAsset extends AssetBundle
                 'Descending',
                 'Discover',
                 'Documentation',
+                'Editions' => 'Editions',
                 'For when you’re building a website for yourself or a friend.',
                 'For when you’re building something professionally for a client or team.',
                 'Free',

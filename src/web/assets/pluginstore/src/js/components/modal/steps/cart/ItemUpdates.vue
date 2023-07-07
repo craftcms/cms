@@ -37,7 +37,9 @@
             "
           >
             <div>
-              <div class="tw-text-sm tw-font-medium tw-mt-4">Updates</div>
+              <div class="tw-text-sm tw-font-medium tw-mt-4">
+                {{ 'Updates' | t('app') }}
+              </div>
               <div class="tw-mt-1">
                 <c-dropdown
                   v-model="selectedExpiryDates[itemKey]"
@@ -68,7 +70,7 @@
         </div>
 
         <div class="mt-1">
-          <a @click="removeUpdate()">Remove</a>
+          <a @click="removeUpdate()">{{ 'Remove' | t('app') }}</a>
         </div>
       </div>
     </template>
