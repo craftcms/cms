@@ -4,6 +4,7 @@
 
 - Fixed a bug where entry titles could overflow within Entries fields with “Maintain hierarchy” enabled. ([#13382](https://github.com/craftcms/cms/issues/13382))
 - Fixed a bug where batched jobs with a configured limit could be repeated endlessly. ([#13387](https://github.com/craftcms/cms/issues/13387))
+- Fixed an error that could occur if `null` was passed to `craft\elements\MatrixBlock::setOwner()`.
 
 ## 4.4.15 - 2023-07-03
 
