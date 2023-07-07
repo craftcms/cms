@@ -265,7 +265,7 @@ const actions = {
           item.expiryDate = '1y';
 
           // Set default values
-          item.autoRenew = false;
+          item.autoRenew = true;
 
           switch (item.type) {
             case 'plugin-edition': {
