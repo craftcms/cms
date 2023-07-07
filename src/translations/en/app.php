@@ -1,15 +1,14 @@
 <?php
 
 return [
-    '{nbYears} years of updates {priceDifference}',
     '(Ungrouped)' => '(Ungrouped)',
     '(blank)' => '(blank)',
+    '(included)' => '(included)',
     '(trial)' => '(trial)',
     '({currencyCode}) {currencySymbol}' => '({currencyCode}) {currencySymbol}',
     '({period} days)' => '({period} days)',
     '/path/to/folder' => '/path/to/folder',
     '1 job' => '1 job',
-    '1 year of updates (included) {priceDifference}',
     '<a>Renew now</a> for another year of updates.' => '<a>Renew now</a> for another year of updates.',
     '<span class="visually-hidden">Characters left:</span> {chars, number}' => '<span class="visually-hidden">Characters left:</span> {chars, number}',
     '<strong>Your license has expired!</strong> Renew your {name} license for another year of amazing updates.' => '<strong>Your license has expired!</strong> Renew your {name} license for another year of amazing updates.',
@@ -1959,6 +1958,7 @@ return [
     '{num, number} {num, plural, =1{week} other{weeks}}' => '{num, number} {num, plural, =1{week} other{weeks}}',
     '{num, number} {num, plural, =1{year} other{years}}' => '{num, number} {num, plural, =1{year} other{years}}',
     '{num, number} {section} {num, plural, =1{entry} other{entries}}' => '{num, number} {section} {num, plural, =1{entry} other{entries}}',
+    '{num, number} {num, plural, =1{year} other{years}} of updates' => '{num, number} {num, plural, =1{year} other{years}} of updates',
     '{pct} width' => '{pct} width',
     '{renewalPrice}/year per site for updates after that.' => '{renewalPrice}/year per site for updates after that.',
     '{section} Entry Types' => '{section} Entry Types',

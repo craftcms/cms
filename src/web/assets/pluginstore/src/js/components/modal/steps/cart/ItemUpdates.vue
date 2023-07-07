@@ -175,18 +175,18 @@
               ' (' + sign + this.$options.filters.currency(price) + ')';
           }
 
+          label = this.$options.filters.t(
+            '{num, number} {num, plural, =1{year} other{years}} of updates',
+            'app',
+            {num: nbYears}
+          );
+
           if (nbYears === 1) {
-            label = this.$options.filters.t(
-              '1 year of updates (included) {priceDifference}',
-              'app',
-              {nbYears, priceDifference}
-            );
-          } else {
-            label = this.$options.filters.t(
-              '{nbYears} years of updates {priceDifference}',
-              'app',
-              {nbYears, priceDifference}
-            );
+            label += ` ${this.$options.filters.t('(included)', 'app')}`;
+          }
+
+          if (priceDifference) {
+            label += ` ${priceDifference}`;
           }
 
           options.push({

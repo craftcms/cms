@@ -49,8 +49,7 @@ class PluginStoreAsset extends AssetBundle
 
         if ($view instanceof View) {
             $view->registerTranslations('app', [
-                '{nbYears} years of updates {priceDifference}',
-                '1 year of updates (included) {priceDifference}',
+                '(included)',
                 '({period} days)',
                 'Abandoned',
                 'Active Installs',
@@ -138,6 +137,7 @@ class PluginStoreAsset extends AssetBundle
                 'Version',
                 'Website',
                 'Your cart is empty.',
+                '{num, number} {num, plural, =1{year} other{years}} of updates',
                 '{renewalPrice}/year per site for updates after that.',
             ]);
         }
