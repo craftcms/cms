@@ -49,6 +49,7 @@ class PluginStoreAsset extends AssetBundle
 
         if ($view instanceof View) {
             $view->registerTranslations('app', [
+                '(included)',
                 '({period} days)',
                 'Abandoned',
                 'Active Installs',
@@ -60,6 +61,7 @@ class PluginStoreAsset extends AssetBundle
                 'Added to cart',
                 'Already in your cart',
                 'Ascending',
+                'Auto-renew for {price} annually, starting on {date}.',
                 'Buy now',
                 'Cart',
                 'Categories',
@@ -79,9 +81,11 @@ class PluginStoreAsset extends AssetBundle
                 'Descending',
                 'Discover',
                 'Documentation',
+                'Editions' => 'Editions',
                 'For when you’re building a website for yourself or a friend.',
                 'For when you’re building something professionally for a client or team.',
                 'Free',
+                'Includes one year of updates.',
                 'Install with Composer',
                 'Install',
                 'Installation Instructions',
@@ -126,7 +130,6 @@ class PluginStoreAsset extends AssetBundle
                 'Total releases',
                 'Try for free',
                 'Try',
-                'Updates until {date} ({sign}{price})',
                 'Updates until {date}',
                 'Updates',
                 'Upgrade Craft CMS',
@@ -134,6 +137,7 @@ class PluginStoreAsset extends AssetBundle
                 'Version',
                 'Website',
                 'Your cart is empty.',
+                '{num, number} {num, plural, =1{year} other{years}} of updates',
                 '{renewalPrice}/year per site for updates after that.',
             ]);
         }
