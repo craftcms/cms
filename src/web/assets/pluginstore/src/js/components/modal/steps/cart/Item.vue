@@ -1,7 +1,7 @@
 <template>
   <div
     v-if="item"
-    class="tw-border-b tw-border-solid tw-border-gray-200 md:tw-flex"
+    class="tw-border-b tw-border-solid tw-border-gray-200 md:tw-flex tw-py-2"
   >
     <div class="md:tw-mr-6 tw-pt-4 md:tw-pb-4 md:tw-px-4">
       <item-icon :item="item" />
@@ -20,7 +20,7 @@
             "
           >
             <div class="tw-mt-1 tw-text-sm tw-text-gray-500">
-              Includes one year of updates.
+              {{ 'Includes one year of updates.' | t('app') }}
             </div>
           </template>
         </div>

@@ -3,24 +3,54 @@
   <div
     class="tw-border-t tw-border-solid tw-border-gray-200 tw-flex tw-justify-between tw-py-4"
   >
-    <div class="expiry-date flex flex-nowrap">
-      <template
-        v-if="
-          item.lineItem.purchasable.type === 'cms-edition' ||
-          (item.lineItem.purchasable.type === 'plugin-edition' &&
-            (item.lineItem.options.licenseKey.substring(0, 4) === 'new:' ||
-              (pluginLicenseInfo(item.plugin.handle) &&
-                pluginLicenseInfo(item.plugin.handle).isTrial)))
-        "
-      >
-        <c-dropdown
-          v-model="selectedExpiryDates[itemKey]"
-          :options="itemExpiryDateOptions"
-          @input="onSelectedExpiryDateChange"
+    <div>
+      <div class="flex gap-3">
+        <c-lightswitch
+          :id="`item-${itemKey}`"
+          :disabled="itemLoading({itemKey})"
+          v-model:checked="itemsAutoRenew[itemKey]"
+          @input="onChangeAutoRenew(itemKey)"
         />
+
+        <label :for="`item-${itemKey}`">
+          {{
+            'Auto-renew for {price} annually, starting on {date}.'
+              | t('app', {
+                price: $options.filters.currency(
+                  item.lineItem.purchasable.renewalPrice
+                ),
+                date: $options.filters.formatDate(renewalStartDate),
+              })
+          }}
+        </label>
+      </div>
+
+      <template v-if="!itemsAutoRenew[itemKey]">
+        <div class="expiry-date flex flex-nowrap">
+          <template
+            v-if="
+              item.lineItem.purchasable.type === 'cms-edition' ||
+              (item.lineItem.purchasable.type === 'plugin-edition' &&
+                (item.lineItem.options.licenseKey.substring(0, 4) === 'new:' ||
+                  (pluginLicenseInfo(item.plugin.handle) &&
+                    pluginLicenseInfo(item.plugin.handle).isTrial)))
+            "
+          >
+            <div>
+              <div class="tw-text-sm tw-font-medium tw-mt-4">Updates</div>
+              <div class="tw-mt-1">
+                <c-dropdown
+                  v-model="selectedExpiryDates[itemKey]"
+                  :options="itemExpiryDateOptions"
+                  @input="onSelectedExpiryDateChange"
+                />
+              </div>
+            </div>
+          </template>
+        </div>
       </template>
 
-      <c-spinner v-if="itemLoading" />
+      <c-spinner v-if="itemLoading({itemKey})" class="tw-mt-4" />
     </div>
 
     <template
@@ -59,22 +89,32 @@
       },
     },
 
-    data() {
-      return {
-        itemLoading: false,
-      };
-    },
-
     computed: {
       ...mapState({
         expiryDateOptions: (state) => state.pluginStore.expiryDateOptions,
+        loadingItems: (state) => state.cart.loadingItems,
       }),
 
       ...mapGetters({
         cartItems: 'cart/cartItems',
         cartItemsData: 'cart/cartItemsData',
         getPluginLicenseInfo: 'craft/getPluginLicenseInfo',
+        itemLoading: 'cart/itemLoading',
       }),
+
+      itemsAutoRenew: {
+        get() {
+          return JSON.parse(
+            JSON.stringify(this.$store.state.cart.itemsAutoRenew)
+          );
+        },
+        set(newValue) {
+          this.$store.commit('cart/updateItemsAutoRenew', {
+            orgId: this.orgId,
+            itemsAutoRenew: newValue,
+          });
+        },
+      },
 
       selectedExpiryDates: {
         get() {
@@ -132,14 +172,24 @@
 
         return options;
       },
+
+      renewalStartDate() {
+        return this.expiryDateOptions[0][1];
+      },
     },
 
     methods: {
       onSelectedExpiryDateChange() {
         const itemKey = this.itemKey;
-        this.itemLoading = true;
+
+        this.$store.commit('cart/updateLoadingItem', {
+          itemKey,
+          value: true,
+        });
+
         let item = this.cartItemsData[itemKey];
         item.expiryDate = this.selectedExpiryDates[itemKey];
+
         this.$store
           .dispatch('cart/updateItem', {itemKey, item})
           .catch(() => {
@@ -148,7 +198,27 @@
             );
           })
           .finally(() => {
-            this.itemLoading = false;
+            this.$store.commit('cart/deleteLoadingItem', {itemKey});
+          });
+      },
+
+      onChangeAutoRenew(itemKey) {
+        this.$store.commit('cart/updateLoadingItem', {
+          itemKey,
+          value: true,
+        });
+
+        let item = this.cartItemsData[itemKey];
+        item.autoRenew = this.itemsAutoRenew[itemKey];
+        item.expiryDate = '1y';
+
+        this.$store
+          .dispatch('cart/updateItem', {
+            itemKey,
+            item,
+          })
+          .finally(() => {
+            this.$store.commit('cart/deleteLoadingItem', {itemKey});
           });
       },
 
@@ -158,6 +228,7 @@
 
       removeUpdate() {
         this.selectedExpiryDates[this.itemKey] = '1y';
+        this.itemsAutoRenew[this.itemKey] = true;
         this.onSelectedExpiryDateChange();
       },
     },
