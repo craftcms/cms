@@ -5,7 +5,7 @@
     <div class="flex gap-3">
       <c-lightswitch
         :id="`item-${itemKey}`"
-        :disabled="itemLoading({itemKey})"
+        :disabled="totalLoadingItems > 0"
         v-model:checked="itemsAutoRenew[itemKey]"
         @input="onChangeAutoRenew(itemKey)"
       />
@@ -41,7 +41,7 @@
               </div>
               <div class="tw-mt-1">
                 <c-dropdown
-                  :disabled="itemLoading({itemKey})"
+                  :disabled="totalLoadingItems > 0"
                   v-model="selectedExpiryDates[itemKey]"
                   :options="itemUpdateOptions"
                   @input="onSelectedExpiryDateChange"
@@ -69,10 +69,10 @@
 
             <div class="mt-1">
               <button
-                :disabled="itemLoading({itemKey})"
+                :disabled="totalLoadingItems"
                 class="tw-text-blue-600 hover:tw-underline"
                 :class="{
-                  'tw-opacity-50': itemLoading({itemKey}),
+                  'tw-opacity-50': totalLoadingItems,
                 }"
                 @click="removeUpdate()"
               >
@@ -113,6 +113,7 @@
         cartItemsData: 'cart/cartItemsData',
         getPluginLicenseInfo: 'craft/getPluginLicenseInfo',
         itemLoading: 'cart/itemLoading',
+        totalLoadingItems: 'cart/totalLoadingItems',
       }),
 
       itemsAutoRenew: {
