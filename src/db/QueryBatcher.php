@@ -43,24 +43,20 @@ class QueryBatcher implements Batchable
     public function count(): int
     {
         try {
-            // we can't rely on Yii's ->count() as that doesn't take offset and limit into consideration when counting
-            // https://github.com/yiisoft/yii2/issues/13846
-            // https://github.com/craftcms/cms/issues/13387
-            // https://github.com/craftcms/cms/issues/12526
             $count = $this->query->count(db: $this->db);
-
-            if (isset($this->query->offset)) {
-                $count = max($count - (int)$this->query->offset, 0);
-            }
-
-            if (isset($this->query->limit)) {
-                $count = min((int)$this->query->limit, $count);
-            }
-
-            return $count;
         } catch (QueryAbortedException) {
             return 0;
         }
+
+        // Query::count() doesn't take the offset and limit into account
+        if (isset($this->query->offset)) {
+            $count = max($count - (int)$this->query->offset, 0);
+        }
+        if (isset($this->query->limit)) {
+            $count = min((int)$this->query->limit, $count);
+        }
+
+        return $count;
     }
 
     /**
