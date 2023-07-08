@@ -1128,7 +1128,6 @@ return [
     'Previewing {type} device in {orientation}' => 'Zobrazenie náhľadu {type} zariadenia v {orientation}',
     'Previewing {type} device' => 'Náhľad zariadenia {type}',
     'Previous Page' => 'Predchádzajúca stránka',
-    'Price includes 1 year of updates.' => 'V cene je zahrnutý 1 rok aktualizácií.',
     'Pricing' => 'Ceny',
     'Primary fields' => 'Primárne polia',
     'Primary {type} page' => 'Hlavná {type} stránka',
