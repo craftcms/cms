@@ -1128,7 +1128,6 @@ return [
     'Previewing {type} device in {orientation}' => '{orientation}(으)로 {type} 장치 미리보기 중',
     'Previewing {type} device' => '{type} 장치 미리보기 중',
     'Previous Page' => '이전 페이지',
-    'Price includes 1 year of updates.' => '가격에는 1년간 업데이트가 포함됩니다.',
     'Pricing' => '가격',
     'Primary fields' => '기본 필드',
     'Primary {type} page' => '기본 {type} 페이지',
