@@ -1108,17 +1108,21 @@ class AssetsController extends Controller
             if ($transformId) {
                 $transformer = Craft::createObject(ImageTransformer::class);
                 $transformIndexModel = $transformer->getTransformIndexModelById($transformId);
-                $assetId = $transformIndexModel->assetId;
-                $transform = $transformIndexModel->getTransform();
+                $assetId = $transformIndexModel?->assetId;
+                $transform = $transformIndexModel?->getTransform();
             } else {
                 $assetId = $this->request->getRequiredBodyParam('assetId');
                 $handle = $this->request->getRequiredBodyParam('handle');
                 $transform = ImageTransforms::normalizeTransform($handle);
-                $transformer = $transform->getImageTransformer();
+                $transformer = $transform?->getImageTransformer();
             }
         } catch (\Exception $exception) {
             Craft::$app->getErrorHandler()->logException($exception);
             throw new ServerErrorHttpException('Image transform cannot be created.', 0, $exception);
+        }
+
+        if (!$transform || !$transformer) {
+            throw new NotFoundHttpException();
         }
 
         $asset = Asset::findOne(['id' => $assetId]);
