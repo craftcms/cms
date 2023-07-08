@@ -320,6 +320,15 @@ interface ElementInterface extends ComponentInterface
     public static function sourcePath(string $sourceKey, string $stepKey, ?string $context): ?array;
 
     /**
+     * Modifies a custom source’s config, before it’s returned by [[craft\services\ElementSources::getSources()]]
+     *
+     * @param array $config
+     * @return array
+     * @since 4.5.0
+     */
+    public static function modifyCustomSource(array $config): array;
+
+    /**
      * Returns all of the field layouts associated with elements from the given source.
      *
      * This is used to determine which custom fields should be included in the element index sort menu,

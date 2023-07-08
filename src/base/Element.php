@@ -916,6 +916,14 @@ abstract class Element extends Component implements ElementInterface
 
     /**
      * @inheritdoc
+     */
+    public static function modifyCustomSource(array $config): array
+    {
+        return $config;
+    }
+
+    /**
+     * @inheritdoc
      * @since 3.5.0
      */
     public static function fieldLayouts(string $source): array
