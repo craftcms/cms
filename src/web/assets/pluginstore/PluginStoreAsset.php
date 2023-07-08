@@ -109,7 +109,6 @@ class PluginStoreAsset extends AssetBundle
                 'Plugin Store',
                 'Plugin edition changed.',
                 'Popularity',
-                'Price includes 1 year of updates.',
                 'Pricing',
                 'Reactivate',
                 'Remove',

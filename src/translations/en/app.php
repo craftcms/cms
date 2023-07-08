@@ -1128,7 +1128,6 @@ return [
     'Previewing {type} device in {orientation}' => 'Previewing {type} device in {orientation}',
     'Previewing {type} device' => 'Previewing {type} device',
     'Previous Page' => 'Previous Page',
-    'Price includes 1 year of updates.' => 'Price includes 1 year of updates.',
     'Pricing' => 'Pricing',
     'Primary fields' => 'Primary fields',
     'Primary {type} page' => 'Primary {type} page',
