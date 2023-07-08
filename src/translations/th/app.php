@@ -1128,7 +1128,6 @@ return [
     'Previewing {type} device in {orientation}' => 'กำลังดูตัวอย่างอุปกรณ์ {type} ใน {orientation}',
     'Previewing {type} device' => 'กำลังดูตัวอย่างอุปกรณ์ {type}',
     'Previous Page' => 'Previous Page',
-    'Price includes 1 year of updates.' => 'Price includes 1 year of updates.',
     'Pricing' => 'ราคา',
     'Primary fields' => 'ฟิลด์หลัก',
     'Primary {type} page' => 'Primary {type} page',
