@@ -10,6 +10,8 @@
 - Improved the styling and max height of Selectize inputs. ([#13065](https://github.com/craftcms/cms/discussions/13065), [#13176](https://github.com/craftcms/cms/pull/13176))
 - Selectize inputs now support click-and-drag selection. ([#13273](https://github.com/craftcms/cms/discussions/13273))
 - Selectize single-select inputs now automatically select the current value on focus. ([#13273](https://github.com/craftcms/cms/discussions/13273))
+- It’s now possible to create new entries from entry select modals when a custom source is selected, if the source is configured to only show entries from one section. ([#11499](https://github.com/craftcms/cms/discussions/11499))
+- The Entries index page now shows a primary “New entry” button when a custom source is selected, if the source is configured to only show entries from one section. ([#13390](https://github.com/craftcms/cms/discussions/13390))
 
 ### Accessibility
 - Image assets’ thumbnails and `<img>` tags generated via `craft\element\Asset::getImg()` no longer use the assets’ titles as `alt` fallback values. ([#12854](https://github.com/craftcms/cms/pull/12854))
@@ -42,6 +44,7 @@
 - Added `craft\base\ElementInterface::getThumbSvg()`. ([#13262](https://github.com/craftcms/cms/pull/13262))
 - Added `craft\base\ElementInterface::setDirtyFields()`.
 - Added `craft\base\ElementInterface::setFieldValueFromRequest()`. ([#12935](https://github.com/craftcms/cms/issues/12935))
+- Added `craft\base\ElementInterface::modifyCustomSource()`.
 - Added `craft\base\FieldInterface::normalizeValueFromRequest()`. ([#12935](https://github.com/craftcms/cms/issues/12935))
 - Added `craft\base\FieldLayoutProviderInterface`. ([#13250](https://github.com/craftcms/cms/pull/13250))
 - Added `craft\base\FsInterface::getShowHasUrlSetting()`. ([#13224](https://github.com/craftcms/cms/pull/13224))
