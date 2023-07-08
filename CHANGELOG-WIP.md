@@ -9,7 +9,7 @@
 - Element indexes now use field layouts’ overridden field labels, if all field layouts associated with an element source use the same label. ([#8903](https://github.com/craftcms/cms/discussions/8903))
 - Improved the styling and max height of Selectize inputs. ([#13065](https://github.com/craftcms/cms/discussions/13065), [#13176](https://github.com/craftcms/cms/pull/13176))
 - Selectize inputs now support click-and-drag selection. ([#13273](https://github.com/craftcms/cms/discussions/13273))
-- Selectize single-select inputs now automatically select the current value on focus. ([#13273](https://github.com/craftcms/cms/discussions/13273)) 
+- Selectize single-select inputs now automatically select the current value on focus. ([#13273](https://github.com/craftcms/cms/discussions/13273))
 
 ### Accessibility
 - Image assets’ thumbnails and `<img>` tags generated via `craft\element\Asset::getImg()` no longer use the assets’ titles as `alt` fallback values. ([#12854](https://github.com/craftcms/cms/pull/12854))
@@ -33,7 +33,7 @@
 - Built-in element types’ GraphQL queries now support passing `null` to `relatedToAssets`, `relatedToEntries`, `relatedToUsers`, `relatedToCategories`, `relatedToTags`, and `relatedToAll` arguments. ([#7954](https://github.com/craftcms/cms/issues/7954))
 - Elements now include custom field values when being iterated over, and when being merged. ([#13009](https://github.com/craftcms/cms/issues/13009))
 - Dropdown and Radio Buttons fields now have a “Column Type” setting, which will be set to `varchar` for existing fields, and defaults to “Automatic” for new fields. ([#13025](https://github.com/craftcms/cms/pull/13025), [#12954](https://github.com/craftcms/cms/issues/12954))
-- Successful `users/login` JSON responses now include information about the logged-in user. ([#13374](https://github.com/craftcms/cms/discussions/13374))   
+- Successful `users/login` JSON responses now include information about the logged-in user. ([#13374](https://github.com/craftcms/cms/discussions/13374))
 
 ### Extensibility
 - Filesystem types can now register custom file uploaders. ([#13313](https://github.com/craftcms/cms/pull/13313))
@@ -76,7 +76,7 @@
 - Added `Craft.registerUploaderClass()`. ([#13313](https://github.com/craftcms/cms/pull/13313))
 
 ### System
-- Added support for setting environmental values in a “secrets” PHP file, identified by a `CRAFT_SECRETS_PATH` environment variable. ([#13283](https://github.com/craftcms/cms/pull/13283)) 
+- Added support for setting environmental values in a “secrets” PHP file, identified by a `CRAFT_SECRETS_PATH` environment variable. ([#13283](https://github.com/craftcms/cms/pull/13283))
 - All generated URL param characters are now properly encoded. ([#12796](https://github.com/craftcms/cms/issues/12796))
 - `migrate` commands besides `migrate/create` no longer create the migration directory if it doesn’t exist yet. ([#12732](https://github.com/craftcms/cms/pull/12732))
 - When `content` table columns are resized, if any existing values are too long, all column data is now backed up into a new table, and the overflowing values are set to `null`. ([#13025](https://github.com/craftcms/cms/pull/13025))
