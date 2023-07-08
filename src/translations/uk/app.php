@@ -1128,7 +1128,6 @@ return [
     'Previewing {type} device in {orientation}' => 'Перегляд пристрою ({type}, {orientation})',
     'Previewing {type} device' => 'Перегляд пристрою ({type})',
     'Previous Page' => 'Попередня сторінка',
-    'Price includes 1 year of updates.' => 'У вартість входить 1 рік оновлень.',
     'Pricing' => 'Ціни',
     'Primary fields' => 'Основні поля',
     'Primary {type} page' => 'Основна сторінка ({type})',
