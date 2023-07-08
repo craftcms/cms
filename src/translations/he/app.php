@@ -1128,7 +1128,6 @@ return [
     'Previewing {type} device in {orientation}' => 'תצוגה מקדימה של מכשיר {type} ב{orientation}',
     'Previewing {type} device' => 'תצוגה מקדימה של מכשיר {type}',
     'Previous Page' => 'עמוד קודם',
-    'Price includes 1 year of updates.' => 'המחיר כולל עדכונים לשנה אחת.',
     'Pricing' => 'תמחור',
     'Primary fields' => 'שדות ראשיים',
     'Primary {type} page' => 'עמוד {type} ראשי',
