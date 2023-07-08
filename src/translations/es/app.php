@@ -1128,7 +1128,6 @@ return [
     'Previewing {type} device in {orientation}' => 'Previsualizando el dispositivo de {type} en {orientation}',
     'Previewing {type} device' => 'Previsualizando el dispositivo de {type}',
     'Previous Page' => 'Página anterior',
-    'Price includes 1 year of updates.' => 'El precio incluye 1 año de actualizaciones.',
     'Pricing' => 'Precios',
     'Primary fields' => 'Campos primarios',
     'Primary {type} page' => 'Página de {type} principal',
