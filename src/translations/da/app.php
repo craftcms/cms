@@ -1128,7 +1128,6 @@ return [
     'Previewing {type} device in {orientation}' => 'Forhåndsvisning af {type}-enhed {orientation}',
     'Previewing {type} device' => 'Forhåndsvisning af {type}-enhed',
     'Previous Page' => 'Forrige side',
-    'Price includes 1 year of updates.' => 'Prisen inkluderer 1 år med opdateringer.',
     'Pricing' => 'Priser',
     'Primary fields' => 'Primære felter',
     'Primary {type} page' => 'Primær {type}-side',
