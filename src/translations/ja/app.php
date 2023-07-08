@@ -1128,7 +1128,6 @@ return [
     'Previewing {type} device in {orientation}' => '{orientation}で{type}デバイスをプレビュー中',
     'Previewing {type} device' => '{type}デバイスをプレビュー中',
     'Previous Page' => '前のページ',
-    'Price includes 1 year of updates.' => '価格には1年間のアップデートが含まれます。',
     'Pricing' => '価格設定',
     'Primary fields' => 'プライマリフィールド',
     'Primary {type} page' => 'プライマリの{type}ページ',
