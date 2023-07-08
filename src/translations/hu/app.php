@@ -1128,7 +1128,6 @@ return [
     'Previewing {type} device in {orientation}' => '{orientation} tájolású {type} eszköz előnézete',
     'Previewing {type} device' => '{type} eszköz előnézete',
     'Previous Page' => 'Előző oldal',
-    'Price includes 1 year of updates.' => 'Az ár 1 év frissítést tartalmaz.',
     'Pricing' => 'Árszabás',
     'Primary fields' => 'Elsődleges mezők',
     'Primary {type} page' => 'Elsődleges {type} oldal',
