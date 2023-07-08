@@ -1128,7 +1128,6 @@ return [
     'Previewing {type} device in {orientation}' => 'Предпросмотр устройства ({type}, {orientation})',
     'Previewing {type} device' => 'Предпросмотр устройства ({type})',
     'Previous Page' => 'Предыдущая страница',
-    'Price includes 1 year of updates.' => 'В стоимость входит 1 год обновлений.',
     'Pricing' => 'Цены',
     'Primary fields' => 'Основные поля',
     'Primary {type} page' => 'Основная {type} страница',
