@@ -1128,7 +1128,6 @@ return [
     'Previewing {type} device in {orientation}' => 'Voorbeeld van {type}-apparaat, {orientation}',
     'Previewing {type} device' => 'Voorbeeld van {type}-apparaat',
     'Previous Page' => 'Vorige pagina',
-    'Price includes 1 year of updates.' => 'Prijs is inclusief 1 jaar updates.',
     'Pricing' => 'Prijzen',
     'Primary fields' => 'Primaire velden',
     'Primary {type} page' => 'Primaire {type}-pagina',
