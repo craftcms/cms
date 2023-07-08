@@ -1128,7 +1128,6 @@ return [
     'Previewing {type} device in {orientation}' => '正在以{orientation}模式预览{type}设备',
     'Previewing {type} device' => '预览{type}设备',
     'Previous Page' => '上一页',
-    'Price includes 1 year of updates.' => '价格包括 1 年的更新。',
     'Pricing' => '定价',
     'Primary fields' => '主要字段',
     'Primary {type} page' => '主要{type}页面',
