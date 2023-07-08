@@ -1128,7 +1128,6 @@ return [
     'Previewing {type} device in {orientation}' => '{type} cihazı {orientation} modda önizleniyor',
     'Previewing {type} device' => '{type} cihazı önizleniyor',
     'Previous Page' => 'Önceki Sayfa',
-    'Price includes 1 year of updates.' => 'Fiyata 1 yıllık güncelleme dahildir.',
     'Pricing' => 'Fiyatlandırma',
     'Primary fields' => 'Birincil alanlar',
     'Primary {type} page' => 'Birincil {type} sayfası',
