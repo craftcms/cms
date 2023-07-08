@@ -1128,7 +1128,6 @@ return [
     'Previewing {type} device in {orientation}' => 'Wyświetlanie podglądu urządzenia {type} {orientation}',
     'Previewing {type} device' => 'Wyświetlanie podglądu urządzenia {type}',
     'Previous Page' => 'Poprzednia strona',
-    'Price includes 1 year of updates.' => 'Cena obejmuje 1 rok aktualizacji.',
     'Pricing' => 'Ceny',
     'Primary fields' => 'Pola podstawowe',
     'Primary {type} page' => 'Strona podstawowa {type}',
