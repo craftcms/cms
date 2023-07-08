@@ -1128,7 +1128,6 @@ return [
     'Previewing {type} device in {orientation}' => 'معاينة الجهاز {type} في {orientation}',
     'Previewing {type} device' => 'معاينة الجهاز {type}',
     'Previous Page' => 'الصفحة السابقة',
-    'Price includes 1 year of updates.' => 'السعر يشمل سنة واحدة من التحديثات.',
     'Pricing' => 'التسعير',
     'Primary fields' => 'الحقول الأساسية',
     'Primary {type} page' => 'صفحة {type} أساسية',
