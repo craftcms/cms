@@ -13,6 +13,7 @@ namespace crafttests\unit\helpers\typecast;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  */
 class EnumModel
+{
     /** @phpstan-ignore-next-line */
     public Suit $suit;
     /** @phpstan-ignore-next-line */
