@@ -320,6 +320,15 @@ interface ElementInterface extends ComponentInterface
     public static function sourcePath(string $sourceKey, string $stepKey, ?string $context): ?array;
 
     /**
+     * Modifies a custom source’s config, before it’s returned by [[craft\services\ElementSources::getSources()]]
+     *
+     * @param array $config
+     * @return array
+     * @since 4.5.0
+     */
+    public static function modifyCustomSource(array $config): array;
+
+    /**
      * Returns all of the field layouts associated with elements from the given source.
      *
      * This is used to determine which custom fields should be included in the element index sort menu,
@@ -487,8 +496,11 @@ interface ElementInterface extends ComponentInterface
      * This method aids in the eager-loading of elements when performing an element query. The returned array should
      * contain the following keys:
      * - `elementType` – the fully qualified class name of the element type that should be eager-loaded
-     * - `map` – an array of element ID mappings, where each element is a sub-array with `source` and `target` keys.
-     * - `criteria` *(optional)* – Any criteria parameters that should be applied to the element query when fetching the eager-loaded elements.
+     * - `map` – an array of element ID mappings, where each element is a sub-array with `source` and `target` keys
+     * - `criteria` *(optional)* – any criteria parameters that should be applied to the element query when fetching the
+     *   eager-loaded elements
+     * - `createElement` *(optional)* - an element factory function, which will be passed the element query, the current
+     *   query result data, and the first source element that the result was eager-loaded for
      *
      * ```php
      * use craft\db\Query;

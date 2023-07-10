@@ -2,18 +2,32 @@
 
 ## Unreleased
 
+- Improved performance when loading users with eager-loaded `addresses`. ([#13400](https://github.com/craftcms/cms/issues/13400))
+- Added `craft\elements\Address::setOwner()`.
+- `craft\base\ElementInterface::eagerLoadingMap()` can now include a `createElement` key in the returned array, which defines a target element factory function.
+- Fixed a bug where entry titles could overflow within Entries fields with “Maintain hierarchy” enabled. ([#13382](https://github.com/craftcms/cms/issues/13382))
+- Fixed a bug where batched jobs with a configured limit could be repeated endlessly. ([#13387](https://github.com/craftcms/cms/issues/13387))
+- Fixed an error that could occur if `null` was passed to `craft\elements\MatrixBlock::setOwner()`.
+- Fixed a bug where eager-loaded categories were always loaded in the structure-defined order, even if the Categories field didn’t have “Maintain hierarchy” enabled. ([#13394](https://github.com/craftcms/cms/issues/13394))
+- Fixed a bug where time inputs weren’t handling malformed values properly if ICU 72.1 was installed. ([#13381](https://github.com/craftcms/cms/issues/13381))
+
+## 4.4.15 - 2023-07-03
+
+- The control panel footer now includes a message about active trials, with a link to purchase the licenses.
 - Tags fields now only show up to five suggestions. ([#13322](https://github.com/craftcms/cms/issues/13322))
 - The `up`, `migrate/up`, and `migrate/all` commands now revert any project config changes created by migrations on failure.
 - The `up`, `migrate/up`, and `migrate/all` commands now prompt to restore the backup created at the outset of the command, or recommend restoring a backup, on failure.
 - Added `craft\console\controllers\BackupTrait::restore()`.
 - Added `craft\helpers\Component::cleanseConfig()`.
+- `craft\log\ContextProcessor::filterVars()` now supports filtering keys using dot notation and `!` negation. ([#13362](https://github.com/craftcms/cms/pull/13362))
 - Fixed an error that occurred when passing arguments to an element’s `prev` and `next` fields via GraphQL. ([#13334](https://github.com/craftcms/cms/issues/13334))
 - Fixed a bug where Single entries weren’t getting preloaded for template macros, if the template body wasn‘t rendered. ([#13312](https://github.com/craftcms/cms/issues/13312))
 - Fixed a bug where asset folders could get dynamically created for elements with temporary slugs. ([#13311](https://github.com/craftcms/cms/issues/13311))
-- Fixed a bug where Matrx fields with custom propagation methods were being marked as translatable if the rendered translation key was blank. ([#13329](https://github.com/craftcms/cms/issues/13329))
+- Fixed a bug where Matrix fields with custom propagation methods were being marked as translatable if the rendered translation key was blank. ([#13329](https://github.com/craftcms/cms/issues/13329))
 - Fixed a bug where transformed images’ `width` or `height` properties could be `null` if the transform didn’t specify both dimensions. ([#13335](https://github.com/craftcms/cms/issues/13335))
 - Fixed a bug where heading UI elements within field layouts were getting a top border if they were preceeded by conditionally-hidden fields. ([#13308](https://github.com/craftcms/cms/issues/13308))
 - Fixed a bug where new Single sections could get URIs filled in on form submit based on the section name, if the input was blank and hadn’t been directly edited. ([#13350](https://github.com/craftcms/cms/issues/13350), [#13355](https://github.com/craftcms/cms/pull/13355))
+- Fixed a bug where it was possible to drag items beyond the normal page scroll limits. ([#13351](https://github.com/craftcms/cms/issues/13351))
 - Fixed two RCE vulnerabilities.
 
 ## 4.4.14 - 2023-06-13
