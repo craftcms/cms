@@ -74,6 +74,7 @@ class ElementSources extends Component
      */
     public function getSources(string $elementType, string $context = self::CONTEXT_INDEX, bool $withDisabled = false): array
     {
+        /** @var string|ElementInterface $elementType */
         $nativeSources = $this->_nativeSources($elementType, $context);
         $sourceConfigs = $this->_sourceConfigs($elementType);
 
@@ -93,8 +94,11 @@ class ElementSources extends Component
                         }
                     }
                 } else {
-                    if ($source['type'] === self::TYPE_CUSTOM && !$this->_showCustomSource($source)) {
-                        continue;
+                    if ($source['type'] === self::TYPE_CUSTOM) {
+                        if (!$this->_showCustomSource($source)) {
+                            continue;
+                        }
+                        $source = $elementType::modifyCustomSource($source);
                     }
                     $sources[] = $source;
                 }

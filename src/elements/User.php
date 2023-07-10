@@ -18,6 +18,7 @@ use craft\elements\actions\SuspendUsers;
 use craft\elements\actions\UnsuspendUsers;
 use craft\elements\conditions\ElementConditionInterface;
 use craft\elements\conditions\users\UserCondition;
+use craft\elements\db\AddressQuery;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\db\UserQuery;
 use craft\events\AuthenticateUserEvent;
@@ -474,6 +475,11 @@ class User extends Element implements IdentityInterface
             return [
                 'elementType' => Address::class,
                 'map' => $map,
+                'createElement' => function(AddressQuery $query, array $result, self $source) {
+                    // set the addresses' owners to the source user elements
+                    // (must get set before behaviors - see https://github.com/craftcms/cms/issues/13400)
+                    return $query->createElement(['owner' => $source] + $result);
+                },
             ];
         }
 
