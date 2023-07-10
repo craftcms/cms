@@ -7,6 +7,8 @@
 
 namespace craft\events;
 
+use craft\records\StructureElement;
+
 /**
  * ElementStructureEvent class.
  *
@@ -19,4 +21,9 @@ class ElementStructureEvent extends ModelEvent
      * @var int The structure ID
      */
     public int $structureId;
+
+    /**
+     * @var StructureElement The target structure element record
+     */
+    public StructureElement $targetElementRecord;
 }

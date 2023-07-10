@@ -7,6 +7,8 @@
 
 namespace craft\events;
 
+use craft\records\StructureElement;
+
 /**
  * Move element event class.
  *
@@ -19,4 +21,9 @@ class MoveElementEvent extends ElementEvent
      * @var int The ID of the structure the element is being moved within.
      */
     public int $structureId;
+
+    /**
+     * @var StructureElement The target structure element record
+     */
+    public StructureElement $targetElementRecord;
 }

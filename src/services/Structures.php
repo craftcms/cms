@@ -510,11 +510,12 @@ class Structures extends Component
             $this->trigger(self::EVENT_BEFORE_MOVE_ELEMENT, new MoveElementEvent([
                 'structureId' => $structureId,
                 'element' => $element,
+                'targetElementRecord' => $targetElementRecord,
             ]));
         }
 
         // Tell the element about it
-        if (!$element->beforeMoveInStructure($structureId)) {
+        if (!$element->beforeMoveInStructure($structureId, $targetElementRecord)) {
             $mutex->release($lockName);
             return false;
         }
@@ -546,7 +547,7 @@ class Structures extends Component
             $element->level = $values['level'];
 
             // Tell the element about it
-            $element->afterMoveInStructure($structureId);
+            $element->afterMoveInStructure($structureId, $targetElementRecord);
 
             $transaction->commit();
         } catch (Throwable $e) {
@@ -560,6 +561,7 @@ class Structures extends Component
             $this->trigger(self::EVENT_AFTER_MOVE_ELEMENT, new MoveElementEvent([
                 'structureId' => $structureId,
                 'element' => $element,
+                'targetElementRecord' => $targetElementRecord,
             ]));
         }
 

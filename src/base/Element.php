@@ -66,6 +66,7 @@ use craft\helpers\UrlHelper;
 use craft\i18n\Formatter;
 use craft\models\FieldLayout;
 use craft\models\Site;
+use craft\records\StructureElement;
 use craft\validators\DateTimeValidator;
 use craft\validators\ElementUriValidator;
 use craft\validators\SiteIdValidator;
@@ -5079,11 +5080,12 @@ JS,
     /**
      * @inheritdoc
      */
-    public function beforeMoveInStructure(int $structureId): bool
+    public function beforeMoveInStructure(int $structureId, StructureElement $targetElementRecord): bool
     {
         // Trigger a 'beforeMoveInStructure' event
         $event = new ElementStructureEvent([
             'structureId' => $structureId,
+            'targetElementRecord' => $targetElementRecord,
         ]);
         $this->trigger(self::EVENT_BEFORE_MOVE_IN_STRUCTURE, $event);
 
@@ -5093,12 +5095,13 @@ JS,
     /**
      * @inheritdoc
      */
-    public function afterMoveInStructure(int $structureId): void
+    public function afterMoveInStructure(int $structureId, StructureElement $targetElementRecord): void
     {
         // Trigger an 'afterMoveInStructure' event
         if ($this->hasEventHandlers(self::EVENT_AFTER_MOVE_IN_STRUCTURE)) {
             $this->trigger(self::EVENT_AFTER_MOVE_IN_STRUCTURE, new ElementStructureEvent([
                 'structureId' => $structureId,
+                'targetElementRecord' => $targetElementRecord,
             ]));
         }
 

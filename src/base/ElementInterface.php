@@ -15,6 +15,7 @@ use craft\elements\User;
 use craft\errors\InvalidFieldException;
 use craft\models\FieldLayout;
 use craft\models\Site;
+use craft\records\StructureElement;
 use Illuminate\Support\Collection;
 use Twig\Markup;
 use yii\web\Response;
@@ -1661,16 +1662,18 @@ interface ElementInterface extends ComponentInterface
      * Performs actions before an element is moved within a structure.
      *
      * @param int $structureId The structure ID
+     * @param StructureElement $targetElementRecord The Structure element record for the item to be moved
      * @return bool Whether the element should be moved within the structure
      */
-    public function beforeMoveInStructure(int $structureId): bool;
+    public function beforeMoveInStructure(int $structureId, StructureElement $targetElementRecord): bool;
 
     /**
      * Performs actions after an element is moved within a structure.
      *
      * @param int $structureId The structure ID
+     * @param StructureElement $targetElementRecord The Structure element record for the item moved
      */
-    public function afterMoveInStructure(int $structureId): void;
+    public function afterMoveInStructure(int $structureId, StructureElement $targetElementRecord): void;
 
     /**
      * Returns the string representation of the element.
