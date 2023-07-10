@@ -18,6 +18,13 @@ use yii\web\Response;
 interface ProviderInterface extends SavableComponentInterface
 {
     /**
+     * Get the unique handle for the provider
+     *
+     * @return string
+     */
+    public function getHandle(): string;
+
+    /**
      * Initiate an auth request
      *
      * @param Request $request

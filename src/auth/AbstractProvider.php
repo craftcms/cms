@@ -8,8 +8,49 @@
 namespace craft\auth;
 
 use craft\base\SavableComponent;
+use craft\helpers\Html;
 
 abstract class AbstractProvider extends SavableComponent implements ProviderInterface
 {
     use AuthProviderTrait;
+
+    /**
+     * @inheritDoc
+     */
+    public function getHandle(): string
+    {
+        return $this->handle;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getSiteLoginHtml(?string $label = null, ?string $url = null): string
+    {
+        return Html::a($label ?: "Login via " . $this->name, $url ?: $this->getLoginRequestUrl());
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getCpLoginHtml(?string $label = null, ?string $url = null): string
+    {
+        return Html::a($label ?: "Login via " . $this->name, $url ?: $this->getLoginRequestUrl());
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getSiteLogoutHtml(?string $label = null, ?string $url = null): string
+    {
+        return Html::a($label ?: "Logout via " . $this->name, $url ?: $this->getLogoutRequestUrl());
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getCpLogoutHtml(?string $label = null, ?string $url = null): string
+    {
+        return Html::a($label ?: "Logout via " . $this->name, $url ?: $this->getLogoutRequestUrl());
+    }
 }

@@ -15,11 +15,10 @@ use craft\elements\User;
 use craft\errors\AuthFailedException;
 use craft\errors\AuthProviderNotFoundException;
 use craft\errors\MissingComponentException;
-use craft\events\UserEvent;
+use craft\events\UserAuthEvent;
 use craft\events\UserGroupsAssignEvent;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Component as ComponentHelper;
-use craft\helpers\Db;
 use craft\helpers\ProjectConfig as ProjectConfigHelper;
 use craft\auth\ProviderInterface;
 use craft\helpers\User as UserHelper;
@@ -32,10 +31,53 @@ class Auth extends Component
 {
     const PROJECT_CONFIG_PATH = 'auth';
 
+    /**
+     * @event UserEvent The event that is triggered when populating user groups from an Auth provider.
+     *
+     * ---
+     * ```php
+     * use craft\events\UserGroupsAssignEvent;
+     * use craft\services\Auth;
+     * use yii\base\Event;
+     *
+     * Event::on(
+     *     \some\provider\Type::class,
+     *     Auth::EVENT_POPULATE_USER_GROUPS,
+     *     function(UserGroupsAssignEvent $event) {
+     *         $providerData = $event->sender;
+     *
+     *         // Assign to group 4?
+     *         if ($providerData->some_attribute === 'some_value') {
+     *             $event->groupIds[] = 4;
+     *             $event->newGroupIds[] = 4;
+     *         }
+     *     }
+     * );
+     * ```
+     */
     public const EVENT_POPULATE_USER_GROUPS = 'populateUserGroups';
 
+    /**
+     * @event UserEvent The event that is triggered when populating a user from an Auth provider.
+     *
+     * ---
+     * ```php
+     * use craft\events\UserEvent;
+     * use craft\services\Auth;
+     * use yii\base\Event;
+     *
+     * Event::on(
+     *     \some\provider\Type::class,
+     *     Auth::EVENT_POPULATE_USER,
+     *     function(UserEvent $event) {
+     *         $providerData = $event->sender;
+     *
+     *         $event->user->firstName = $providerData->some_attribute;
+     *     }
+     * );
+     * ```
+     */
     public const EVENT_POPULATE_USER = 'populateUser';
-
 
     /**
      * @var MemoizableArray<ProviderInterface>|null
@@ -216,15 +258,19 @@ class Auth extends Component
     }
 
     /**
-     * Resolve and populate a user from a provider
-     * @param User|null $user
-     * @return User|null
+     * Populate a User
+     *
+     * @param ProviderInterface $provider
+     * @param mixed $data
+     * @param User $user
+     * @return User
      */
-    public function resolveUser(ProviderInterface $provider, ?User $user): User
+    public function populateUser(ProviderInterface $provider, mixed $data, User $user): User
     {
-        // Populate a user based on
-        $event = new UserEvent([
-            'user' => $user ?? new User(),
+        $event = new UserAuthEvent([
+            'user' => $user,
+            'provider' => $provider,
+            'sender' => $data
         ]);
 
         $provider->trigger(self::EVENT_POPULATE_USER, $event);
@@ -233,19 +279,21 @@ class Auth extends Component
     }
 
     /**
-     * Assigns a user to a given list of user groups.
-     *
-     * @param int $userId The user’s ID
-     * @param int[] $groupIds The groups’ IDs. Pass an empty array to remove a user from all groups.
-     * @return bool Whether the users were successfully assigned to the groups.
+     * @param ProviderInterface $provider
+     * @param User $user
+     * @param mixed $data
+     * @return User
+     * @throws \Throwable
+     * @throws \craft\errors\ElementNotFoundException
+     * @throws \yii\base\Exception
      */
-    public function syncUser(ProviderInterface $provider, User $user): User
+    public function syncUser(ProviderInterface $provider, User $user, mixed $data): User
     {
         // Save user
         Craft::$app->getElements()->saveElement($user);
 
         // Assign User Groups
-        $this->assignUserToGroups($provider, $user);
+        $this->assignUserToGroups($provider, $user, $data);
 
         return $user;
     }
@@ -253,10 +301,11 @@ class Auth extends Component
     /**
      * @param ProviderInterface $provider
      * @param User $user
+     * @param mixed $data
      * @return bool
-     * @throws Throwable
+     * @throws \Throwable
      */
-    protected function assignUserToGroups(ProviderInterface $provider, User $user): bool
+    private function assignUserToGroups(ProviderInterface $provider, User $user, mixed $data): bool
     {
         $db = Craft::$app->getDb();
 
@@ -267,11 +316,11 @@ class Auth extends Component
             ->where(['userId' => $user->getId()])
             ->column($db);
 
-        // Populate a user based on
         // TODO - New event that only has these two properties?
         $event = new UserGroupsAssignEvent([
             'userId' => $user->getId(),
             'groupIds' => $groupIds,
+            'data' => $data
         ]);
 
         $provider->trigger(self::EVENT_POPULATE_USER_GROUPS, $event);
