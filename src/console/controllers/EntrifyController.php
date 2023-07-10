@@ -299,10 +299,13 @@ class EntrifyController extends Controller
             $event = new EntrifyEvent([
                 'elementType' => Category::class,
                 'elementGroup' => [
-                    'from' => $categoryGroup->id,
+                    'from' => [
+                        'id' => $categoryGroup->id,
+                        'uid' => $categoryGroup->uid,
+                    ],
                     'to' => [
-                        'sectionId' => $section->id,
-                        'typeId' => $entryType->id,
+                        'section' => $section->uid,
+                        'entryType' => $entryType->uid,
                     ],
                 ],
                 'fields' => [
@@ -461,10 +464,13 @@ class EntrifyController extends Controller
             $event = new EntrifyEvent([
                 'elementType' => Tag::class,
                 'elementGroup' => [
-                    'from' => $tagGroup->id,
+                    'from' => [
+                        'id' => $tagGroup->id,
+                        'uid' => $tagGroup->uid,
+                    ],
                     'to' => [
-                        'sectionId' => $section->id,
-                        'typeId' => $entryType->id,
+                        'section' => $section->uid,
+                        'entryType' => $entryType->uid,
                     ],
                 ],
                 'fields' => [
@@ -596,10 +602,13 @@ class EntrifyController extends Controller
             $event = new EntrifyEvent([
                 'elementType' => GlobalSet::class,
                 'elementGroup' => [
-                    'from' => $globalSet->id,
+                    'from' => [
+                        'id' => $globalSet->id,
+                        'uid' => $globalSet->uid,
+                    ],
                     'to' => [
-                        'sectionId' => $section->id,
-                        'typeId' => $entryType->id,
+                        'section' => $section->uid,
+                        'entryType' => $entryType->uid,
                     ],
                 ],
                 'fields' => [],
