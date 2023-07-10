@@ -32,7 +32,6 @@ final class Typecast
     private const TYPE_ARRAY = 'array';
     private const TYPE_NULL = 'null';
     private const TYPE_DATETIME = DateTime::class;
-    private const TYPE_BACKED_ENUM = BackedEnum::class;
 
     private static array $types = [];
 
@@ -121,10 +120,13 @@ final class Typecast
                 }
                 return;
             default:
-                if (!$value instanceof BackedEnum && is_subclass_of($typeName, self::TYPE_BACKED_ENUM)) {
+                if (
+                    interface_exists(BackedEnum::class) &&
+                    is_subclass_of($typeName, BackedEnum::class) &&
+                    !is_subclass_of($value, $typeName)
+                ) {
                     /** @var BackedEnum $typeName */
                     $value = $typeName::from($value);
-                    return;
                 }
         }
     }
