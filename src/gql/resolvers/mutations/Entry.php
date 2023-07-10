@@ -146,7 +146,7 @@ class Entry extends ElementMutationResolver
         $draftName = $arguments['name'] ?? '';
         $draftNotes = $arguments['notes'] ?? '';
         $provisional = $arguments['provisional'] ?? false;
-        $creatorId = $arguments['creatorId'];
+        $creatorId = $arguments['creatorId'] ?? null;
 
         /** @var EntryElement|DraftBehavior $draft */
         $draft = Craft::$app->getDrafts()->createDraft($entry, $creatorId ?? $entry->getAuthorId(), $draftName, $draftNotes, [], $provisional);
