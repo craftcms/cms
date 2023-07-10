@@ -130,6 +130,8 @@ class Gc extends Component
         $this->deletePartialElements(Tag::class, Table::CONTENT, 'elementId');
         $this->deletePartialElements(User::class, Table::CONTENT, 'elementId');
 
+        $this->_deleteOrphanedSiteEntries();
+
         $this->_deleteOrphanedDraftsAndRevisions();
         $this->_deleteOrphanedSearchIndexes();
         $this->_deleteOrphanedRelations();
@@ -415,6 +417,80 @@ SQL;
         $this->_stdout("done\n", Console::FG_GREEN);
     }
 
+
+    /**
+     * Delete entries orphaned by section changes for the site
+     * (This can happen e.g. if you entrify categories group, change the newly created section settings
+     * so that the entries are not available for one of the sites, push those changes, apply PC
+     * and run the entrification command in the environment you pushed to)
+     * @see https://github.com/craftcms/cms/issues/13383
+     * @return void
+     */
+    private function _deleteOrphanedSiteEntries(): void
+    {
+        $this->_stdout('    > deleting orphaned entries ... ');
+        // for each site
+        // get element_sites elements that are of type Entry that belong to a section that's disabled for this site
+        // type comes from elements table, sectionId comes from entries table
+        // which sites section is enabled for comes from sections_sites table
+
+        $sectionsToCheck = [];
+        $siteIds = [];
+
+        // get all sections
+        $sections = Craft::$app->getSections()->getAllSections();
+
+        // get all site ids
+        foreach (Craft::$app->getSites()->getAllSites() as $site) {
+            $siteIds[] = $site->id;
+        }
+
+        // get sections that are not enabled for given site
+        foreach ($sections as $section) {
+            $sectionSettings = $section->getSiteSettings();
+            foreach ($siteIds as $siteId) {
+                if (!isset($sectionSettings[$siteId])) {
+                    $sectionsToCheck[] = [
+                        'siteId' => $siteId,
+                        'sectionId' => $section->id,
+                    ];
+                }
+            }
+        }
+
+        // use the $sectionsToCheck to delete elements_sites that match the siteId and sectionId
+        $elementsSitesTable = Table::ELEMENTS_SITES;
+        $elementsTable = Table::ELEMENTS;
+        $entriesTable = Table::ENTRIES;
+
+        if ($this->db->getIsMysql()) {
+            $sql = <<<SQL
+DELETE [[es]].* FROM $elementsSitesTable [[es]]
+LEFT JOIN $elementsTable [[el]] ON [[el.id]] = [[es.elementId]]
+LEFT JOIN $entriesTable [[en]] ON [[en.id]] = [[el.id]]
+WHERE [[en.sectionId]] = :sectionId AND [[es.siteId]] = :siteId
+SQL;
+        } else {
+            $sql = <<<SQL
+DELETE FROM $elementsSitesTable
+USING $elementsSitesTable [[es]]
+LEFT JOIN $elementsTable [[el]] ON [[el.id]] = [[es.elementId]]
+LEFT JOIN $entriesTable [[en]] ON [[en.id]] = [[el.id]]
+WHERE
+  $elementsSitesTable.[[id]] = [[es.id]] AND
+  [[en.sectionId]] = :sectionId AND [[es.siteId]] = :siteId
+SQL;
+        }
+
+        foreach ($sectionsToCheck as $params) {
+            $this->db->createCommand($sql, [
+                'sectionId' => $params['sectionId'],
+                'siteId' => $params['siteId'],
+            ])->execute();
+        }
+
+        $this->_stdout("done\n", Console::FG_GREEN);
+    }
 
     /**
      * Deletes any orphaned rows in the `drafts` and `revisions` tables.
