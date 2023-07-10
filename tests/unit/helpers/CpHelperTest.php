@@ -41,14 +41,14 @@ class CpHelperTest extends TestCase
     /**
      *
      */
-    public function testElementHtml(): void
+    public function testElementChipHtml(): void
     {
         /** @var User $user */
         $user = User::findOne(1);
         self::assertInstanceOf(User::class, $user);
 
-        $indexHtml = Cp::elementHtml($user);
-        $fieldHtml = Cp::elementHtml($user, 'field', Cp::ELEMENT_SIZE_SMALL, 'myFieldName');
+        $indexHtml = Cp::elementChipHtml($user);
+        $fieldHtml = Cp::elementChipHtml($user, 'field', Cp::ELEMENT_SIZE_SMALL, 'myFieldName');
 
         // field
         self::assertStringContainsString('removable', $fieldHtml);
@@ -56,26 +56,26 @@ class CpHelperTest extends TestCase
 
         // status
         self::assertStringContainsString('<span class="status', $indexHtml);
-        self::assertStringNotContainsString('<span class="status', Cp::elementHtml($user, 'index', Cp::ELEMENT_SIZE_SMALL, null, false));
+        self::assertStringNotContainsString('<span class="status', Cp::elementChipHtml($user, 'index', Cp::ELEMENT_SIZE_SMALL, null, false));
 
         // thumb
-        self::assertStringContainsString('elementthumb', $indexHtml);
-        self::assertStringNotContainsString('elementthumb', Cp::elementHtml($user, 'index', Cp::ELEMENT_SIZE_SMALL, null, true, false));
+        self::assertStringContainsString('chip-thumb', $indexHtml);
+        self::assertStringNotContainsString('chip-thumb', Cp::elementChipHtml($user, 'index', Cp::ELEMENT_SIZE_SMALL, null, true, false));
 
         // label
         self::assertStringContainsString('<div class="label">', $indexHtml);
-        self::assertStringNotContainsString('<div class="label">', Cp::elementHtml($user, 'index', Cp::ELEMENT_SIZE_SMALL, null, true, true, false));
+        self::assertStringNotContainsString('<div class="label">', Cp::elementChipHtml($user, 'index', Cp::ELEMENT_SIZE_SMALL, null, true, true, false));
 
         // errors
         self::assertStringNotContainsString('error', $indexHtml);
         $user->addError('foo', 'bad error');
-        self::assertStringContainsString('error', Cp::elementHtml($user));
+        self::assertStringContainsString('error', Cp::elementChipHtml($user));
         $user->clearErrors();
 
         // trashed
         self::assertStringNotContainsString('data-trashed', $indexHtml);
         $user->trashed = true;
-        self::assertStringContainsString('data-trashed', Cp::elementHtml($user));
+        self::assertStringContainsString('data-trashed', Cp::elementChipHtml($user));
         $user->trashed = false;
     }
 

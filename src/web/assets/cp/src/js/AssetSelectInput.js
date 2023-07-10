@@ -39,7 +39,7 @@ Craft.AssetSelectInput = Craft.BaseElementSelectInput.extend({
 
   onAddElements: function () {
     this.$elements
-      .find('.elementthumb')
+      .find('.chip-thumb')
       .addClass('open-preview')
       .on('click', (ev) => {
         this.clearOpenPreviewTimeout();

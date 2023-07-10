@@ -375,11 +375,11 @@ class Cp
     }
 
     /**
-     * Renders an element’s HTML.
+     * Renders an element’s chip HTML.
      *
      * @param ElementInterface $element The element to be rendered
-     * @param string $context The context the element is going to be shown in (`index`, `field`, etc.)
-     * @param string $size The size of the element (`small` or `large`)
+     * @param string $context The context the chip is going to be shown in (`index`, `field`, etc.)
+     * @param string $size The size of the chip (`small` or `large`)
      * @param string|null $inputName The `name` attribute that should be set on the hidden input, if `$context` is set to `field`
      * @param bool $showStatus Whether the element status should be shown (if the element type has statuses)
      * @param bool $showThumb Whether the element thumb should be shown (if the element has one)
@@ -390,7 +390,7 @@ class Cp
      * @return string
      * @since 3.5.8
      */
-    public static function elementHtml(
+    public static function elementChipHtml(
         ElementInterface $element,
         string $context = 'index',
         string $size = self::ELEMENT_SIZE_SMALL,
@@ -413,7 +413,7 @@ class Cp
             $thumbSizePx = $size === self::ELEMENT_SIZE_SMALL ? 34 : 120;
             $thumbUrl = $element->getThumbUrl($thumbSizePx);
             $thumbClass = array_filter([
-                'elementthumb',
+                'chip-thumb',
                 $size === self::ELEMENT_SIZE_SMALL && $element->getHasRoundedThumb() ? 'rounded' : null,
             ]);
             if ($thumbUrl !== null) {
@@ -464,7 +464,7 @@ class Cp
         $attributes = ArrayHelper::merge(
             Html::normalizeTagAttributes($element->getHtmlAttributes($context)),
             [
-                'class' => ['element', $size],
+                'class' => ['element', 'chip', $size],
                 'title' => $title,
                 'data' => array_filter([
                     'type' => get_class($element),
@@ -497,11 +497,11 @@ class Cp
         }
 
         if ($showStatus) {
-            $attributes['class'][] = 'hasstatus';
+            $attributes['class'][] = 'has-status';
         }
 
         if ($imgHtml !== null) {
-            $attributes['class'][] = 'hasthumb';
+            $attributes['class'][] = 'has-thumb';
         }
 
         $elementsService = Craft::$app->getElements();
@@ -663,12 +663,12 @@ class Cp
         }
 
         $first = array_shift($elements);
-        $html = static::elementHtml($first, 'index', $size, null, $showStatus, $showThumb, $showLabel, $showDraftName);
+        $html = static::elementChipHtml($first, 'index', $size, null, $showStatus, $showThumb, $showLabel, $showDraftName);
 
         if (!empty($elements)) {
             $otherHtml = '';
             foreach ($elements as $other) {
-                $otherHtml .= static::elementHtml($other, 'index', $size, null, $showStatus, $showThumb, $showLabel, $showDraftName);
+                $otherHtml .= static::elementChipHtml($other, 'index', $size, null, $showStatus, $showThumb, $showLabel, $showDraftName);
             }
             $html .= Html::tag('span', '+' . Craft::$app->getFormatter()->asInteger(count($elements)), [
                 'title' => implode(', ', ArrayHelper::getColumn($elements, 'title')),

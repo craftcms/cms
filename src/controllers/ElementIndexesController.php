@@ -891,7 +891,7 @@ class ElementIndexesController extends BaseElementsController
         }
 
         return $this->asJson([
-            'elementHtml' => Cp::elementHtml($element, $this->context),
+            'elementHtml' => Cp::elementChipHtml($element, $this->context),
             'attributeHtml' => $attributeHtml,
         ]);
     }

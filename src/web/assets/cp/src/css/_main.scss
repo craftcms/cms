@@ -203,7 +203,7 @@ table.editable textarea {
 .menu ul.padded li a.sel:before,
 .menu .flex.padded.sel:before,
 .texticon:before,
-.element:before,
+.chip:before,
 #help:before,
 .secure:before,
 .insecure:before,
@@ -2712,7 +2712,7 @@ table {
 }
 
 .datatablesorthelper,
-.datatablesorthelper .element,
+.datatablesorthelper .chip,
 .datatablesorthelper a {
   cursor: move !important;
 }
@@ -2727,15 +2727,17 @@ table {
   border-bottom: none !important;
 }
 
-/* elements */
+/* chips */
 $smallThumbSize: 34px;
 $largeThumbSize: 120px;
 $statusSize: 10px;
-$baseElementSidePadding: 7px;
-$elementInnerSpacing: 5px;
+$baseChipSidePadding: 7px;
+$chipInnerSpacing: 5px;
 
-.element {
+.chip {
   position: relative;
+  display: flex;
+  flex-direction: row;
   cursor: default;
   user-select: none;
   font-weight: normal;
@@ -2775,8 +2777,8 @@ $elementInnerSpacing: 5px;
   li.sel & {
     cursor: default;
 
-    &.hasthumb {
-      .elementthumb {
+    &.has-thumb {
+      .chip-thumb {
         img {
           box-shadow: 0 0 0 1px transparentize($darkSelColor, 0.9),
             0 6px 4px -4px transparentize($darkSelColor, 0.8);
@@ -2790,8 +2792,8 @@ $elementInnerSpacing: 5px;
     @include shadow;
   }
 
-  &.hasthumb {
-    .elementthumb:not(:empty) {
+  &.has-thumb {
+    .chip-thumb:not(:empty) {
       position: absolute;
       display: flex;
       justify-content: center;
@@ -2816,7 +2818,7 @@ $elementInnerSpacing: 5px;
         }
       }
     }
-    .elementthumb.open-preview {
+    .chip-thumb.open-preview {
       cursor: pointer;
     }
   }
@@ -2828,9 +2830,10 @@ $elementInnerSpacing: 5px;
   }
 
   .label {
-    display: inline-block;
+    display: block;
     overflow: hidden;
     vertical-align: bottom; // https://stackoverflow.com/a/37427386/1688568
+    white-space: nowrap;
     text-overflow: ellipsis;
     max-width: 100%;
 
@@ -2847,33 +2850,33 @@ $elementInnerSpacing: 5px;
   }
 
   &.small,
-  &.large:not(.hasthumb) {
+  &.large:not(.has-thumb) {
     display: inline-block;
-    padding: $baseElementSidePadding;
+    padding: $baseChipSidePadding;
     box-sizing: border-box;
 
-    &.hasstatus {
+    &.has-status {
       @include padding-left(
-        $baseElementSidePadding + $statusSize + $elementInnerSpacing
+        $baseChipSidePadding + $statusSize + $chipInnerSpacing
       );
 
       .status {
         position: absolute;
-        @include left($baseElementSidePadding);
+        @include left($baseChipSidePadding);
         top: calc(50% - 5px);
       }
 
       .icon:not(.delete) {
         position: absolute;
-        @include left($baseElementSidePadding - 1);
+        @include left($baseChipSidePadding - 1);
         top: calc(50% - 11px);
       }
     }
 
-    &.hasthumb {
-      @include padding-left($smallThumbSize + $elementInnerSpacing);
+    &.has-thumb {
+      @include padding-left($smallThumbSize + $chipInnerSpacing);
 
-      .elementthumb:not(:empty) {
+      .chip-thumb:not(:empty) {
         top: calc(50% - 17px);
         @include left(0);
         width: $smallThumbSize;
@@ -2884,40 +2887,39 @@ $elementInnerSpacing: 5px;
         }
       }
 
-      &.hasstatus {
+      &.has-status {
         @include padding-left(
-          $smallThumbSize + $elementInnerSpacing * 2 + $statusSize
+          $smallThumbSize + $chipInnerSpacing * 2 + $statusSize
         );
 
         .status {
-          @include left($smallThumbSize + $elementInnerSpacing);
+          @include left($smallThumbSize + $chipInnerSpacing);
         }
       }
     }
   }
 
-  &.large.hasthumb {
+  &.large.has-thumb {
     display: block;
-    padding: #{$baseElementSidePadding + $largeThumbSize + $elementInnerSpacing}
-      $baseElementSidePadding $baseElementSidePadding;
-    width: #{120px + $baseElementSidePadding + $baseElementSidePadding};
+    padding: #{$baseChipSidePadding + $largeThumbSize + $chipInnerSpacing} $baseChipSidePadding
+      $baseChipSidePadding;
+    width: #{120px + $baseChipSidePadding + $baseChipSidePadding};
     box-sizing: border-box;
 
-    &.hasstatus {
+    &.has-status {
       @include padding-left(
-        $baseElementSidePadding + $statusSize + $elementInnerSpacing
+        $baseChipSidePadding + $statusSize + $chipInnerSpacing
       );
 
       .status {
         position: absolute;
-        @include left($baseElementSidePadding);
-        top: #{$baseElementSidePadding + $largeThumbSize + $elementInnerSpacing +
-          6};
+        @include left($baseChipSidePadding);
+        top: #{$baseChipSidePadding + $largeThumbSize + $chipInnerSpacing + 6};
       }
     }
 
-    .elementthumb:not(:empty) {
-      top: $baseElementSidePadding;
+    .chip-thumb:not(:empty) {
+      top: $baseChipSidePadding;
       @include left(0);
       width: 100%;
       height: $largeThumbSize;
@@ -2946,18 +2948,18 @@ $elementInnerSpacing: 5px;
     }
 
     &.small,
-    &.large:not(.hasthumb) {
+    &.large:not(.has-thumb) {
       .delete {
         position: absolute;
         top: calc(50% - 11px);
-        @include right($baseElementSidePadding);
+        @include right($baseChipSidePadding);
       }
     }
 
-    &.large.hasthumb {
+    &.large.has-thumb {
       .delete {
         position: absolute;
-        @include right($baseElementSidePadding);
+        @include right($baseChipSidePadding);
       }
     }
   }
@@ -3081,7 +3083,7 @@ $checkboxPadding: $checkboxSize + 4;
       cursor: default;
 
       .checkbox {
-        @include margin-right($elementInnerSpacing);
+        @include margin-right($chipInnerSpacing);
       }
     }
   }
@@ -3139,32 +3141,32 @@ $checkboxPadding: $checkboxSize + 4;
       max-width: 226px;
 
       &:hover {
-        .element {
+        .chip {
           background-color: var(--gray-050);
         }
       }
 
-      .element.large.hasthumb {
+      .chip.large.has-thumb {
         width: unset;
       }
 
       &.has-checkbox {
-        .element.hasthumb {
-          &:not(.hasstatus) {
+        .chip.has-thumb {
+          &:not(.has-status) {
             @include padding-left(
-              $baseElementSidePadding + $checkboxSize + $elementInnerSpacing
+              $baseChipSidePadding + $checkboxSize + $chipInnerSpacing
             );
           }
 
-          &.hasstatus {
+          &.has-status {
             @include padding-left(
-              $baseElementSidePadding + $checkboxSize + $elementInnerSpacing +
-                $statusSize + $elementInnerSpacing
+              $baseChipSidePadding + $checkboxSize + $chipInnerSpacing +
+                $statusSize + $chipInnerSpacing
             );
 
             .status {
               @include left(
-                $baseElementSidePadding + $checkboxSize + $elementInnerSpacing
+                $baseChipSidePadding + $checkboxSize + $chipInnerSpacing
               );
             }
           }
@@ -3172,9 +3174,9 @@ $checkboxPadding: $checkboxSize + 4;
 
         .checkbox {
           position: absolute;
-          top: $baseElementSidePadding + $largeThumbSize + $elementInnerSpacing +
+          top: $baseChipSidePadding + $largeThumbSize + $chipInnerSpacing +
             (20px - $checkboxSize) * 0.5;
-          @include left($baseElementSidePadding);
+          @include left($baseChipSidePadding);
         }
       }
 
@@ -3317,7 +3319,7 @@ $checkboxPadding: $checkboxSize + 4;
 
   .row {
     &.draghover {
-      .element {
+      .chip {
         z-index: 2;
         border-radius: 15px;
         box-shadow: inset 0 0 0 2px var(--link-color);
@@ -3355,12 +3357,8 @@ $checkboxPadding: $checkboxSize + 4;
     }
   }
 
-  .elements:after {
-    @include clearafter;
-  }
-
-  .element {
-    @include margin(7px, 7px, 0, 0);
+  .chip {
+    margin-top: var(--s);
   }
 
   .flex,
@@ -3368,21 +3366,8 @@ $checkboxPadding: $checkboxSize + 4;
     clear: both;
   }
 
-  .element {
+  .chip {
     z-index: 1;
-
-    &.small {
-      max-width: 100%;
-
-      .label {
-        display: block;
-        max-width: 100%;
-        box-sizing: border-box;
-        overflow: hidden;
-        white-space: nowrap;
-        text-overflow: ellipsis;
-      }
-    }
   }
 
   .flex {
@@ -3395,7 +3380,7 @@ $checkboxPadding: $checkboxSize + 4;
     li {
       background-position: 0 2px !important;
 
-      .element {
+      .chip {
         margin: 0;
       }
     }
@@ -5180,16 +5165,12 @@ $min2ColWidth: 400px;
           }
 
           .tableview table {
-            .element {
-              display: inline-block;
-            }
-
             tr {
               &.disabled {
                 opacity: 1;
                 color: var(--gray-200);
 
-                .element {
+                .chip {
                   opacity: 0.25;
                 }
               }
@@ -5729,7 +5710,7 @@ $min2ColWidth: 400px;
     display: inline;
   }
 
-  .element.small {
+  .chip.small {
     clear: none;
   }
 
@@ -5754,7 +5735,7 @@ $min2ColWidth: 400px;
   // todo: why are body.ltr and body.rtl needed here?
   body.ltr &,
   body.rtl & {
-    &.elementselect .element {
+    &.elementselect .chip {
       float: none !important;
       display: inline-block;
     }

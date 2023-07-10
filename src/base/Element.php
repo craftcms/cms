@@ -4561,13 +4561,13 @@ abstract class Element extends Component implements ElementInterface
                 }
                 $html = Html::beginTag('ul', ['class' => 'path']);
                 foreach ($ancestors as $ancestor) {
-                    $html .= Html::tag('li', Cp::elementHtml($ancestor));
+                    $html .= Html::tag('li', Cp::elementChipHtml($ancestor));
                 }
                 return $html . Html::endTag('ul');
 
             case 'parent':
                 $parent = $this->getParent();
-                return $parent ? Cp::elementHtml($parent) : '';
+                return $parent ? Cp::elementChipHtml($parent) : '';
 
             case 'link':
                 if (ElementHelper::isDraftOrRevision($this)) {
@@ -4657,7 +4657,7 @@ abstract class Element extends Component implements ElementInterface
                     return '';
                 }
                 $creator = $behavior->getCreator();
-                return $creator ? Cp::elementHtml($creator) : '';
+                return $creator ? Cp::elementChipHtml($creator) : '';
 
             case 'drafts':
                 if (!$this->hasEagerLoadedElements('drafts')) {

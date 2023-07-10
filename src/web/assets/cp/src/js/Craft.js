@@ -2191,7 +2191,7 @@ $.extend(Craft, {
    * @returns {Object}
    */
   getElementInfo: function (element) {
-    var $element = $(element);
+    let $element = $(element);
 
     if (!$element.hasClass('element')) {
       $element = $element.find('.element:first');
@@ -2203,7 +2203,7 @@ $.extend(Craft, {
       label: $element.data('label'),
       status: $element.data('status'),
       url: $element.data('url'),
-      hasThumb: $element.hasClass('hasthumb'),
+      hasThumb: $element.hasClass('has-thumb'),
       $element: $element,
     };
   },
@@ -2215,7 +2215,7 @@ $.extend(Craft, {
    * @param {string} size
    */
   setElementSize: function (element, size) {
-    var $element = $(element);
+    const $element = $(element);
 
     if (size !== 'small' && size !== 'large') {
       size = 'small';
@@ -2225,12 +2225,12 @@ $.extend(Craft, {
       return;
     }
 
-    var otherSize = size === 'small' ? 'large' : 'small';
+    const otherSize = size === 'small' ? 'large' : 'small';
 
     $element.addClass(size).removeClass(otherSize);
 
-    if ($element.hasClass('hasthumb')) {
-      var $oldImg = $element.find('> .elementthumb > img'),
+    if ($element.hasClass('has-thumb')) {
+      const $oldImg = $element.find('> .chip-thumb > img'),
         imgSize = size === 'small' ? '30' : '100',
         $newImg = $('<img/>', {
           sizes: imgSize + 'px',

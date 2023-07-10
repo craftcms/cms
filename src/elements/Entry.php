@@ -1635,7 +1635,7 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
         switch ($attribute) {
             case 'author':
                 $author = $this->getAuthor();
-                return $author ? Cp::elementHtml($author) : '';
+                return $author ? Cp::elementChipHtml($author) : '';
             case 'section':
                 return Html::encode(Craft::t('site', $this->getSection()->name));
             case 'type':

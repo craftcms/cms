@@ -2226,7 +2226,7 @@ JS;
             $size = (isset($context['viewMode']) && $context['viewMode'] === 'thumbs') ? Cp::ELEMENT_SIZE_LARGE : Cp::ELEMENT_SIZE_SMALL;
         }
 
-        return Cp::elementHtml(
+        return Cp::elementChipHtml(
             $context['element'],
             $context['context'] ?? 'index',
             $size,
