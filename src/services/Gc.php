@@ -428,11 +428,7 @@ SQL;
      */
     private function _deleteOrphanedSiteEntries(): void
     {
-        $this->_stdout('    > deleting orphaned entries ... ');
-        // for each site
-        // get element_sites elements that are of type Entry that belong to a section that's disabled for this site
-        // type comes from elements table, sectionId comes from entries table
-        // which sites section is enabled for comes from sections_sites table
+        $this->_stdout('    > deleting orphaned site entries ... ');
 
         $sectionsToCheck = [];
         $siteIds = [];
@@ -458,35 +454,36 @@ SQL;
             }
         }
 
-        // use the $sectionsToCheck to delete elements_sites that match the siteId and sectionId
-        $elementsSitesTable = Table::ELEMENTS_SITES;
-        $elementsTable = Table::ELEMENTS;
-        $entriesTable = Table::ENTRIES;
+        if (!empty($sectionsToCheck)) {
+            $elementsSitesTable = Table::ELEMENTS_SITES;
+            $elementsTable = Table::ELEMENTS;
+            $entriesTable = Table::ENTRIES;
 
-        if ($this->db->getIsMysql()) {
-            $sql = <<<SQL
-DELETE [[es]].* FROM $elementsSitesTable [[es]]
-LEFT JOIN $elementsTable [[el]] ON [[el.id]] = [[es.elementId]]
-LEFT JOIN $entriesTable [[en]] ON [[en.id]] = [[el.id]]
-WHERE [[en.sectionId]] = :sectionId AND [[es.siteId]] = :siteId
-SQL;
-        } else {
-            $sql = <<<SQL
-DELETE FROM $elementsSitesTable
-USING $elementsSitesTable [[es]]
-LEFT JOIN $elementsTable [[el]] ON [[el.id]] = [[es.elementId]]
-LEFT JOIN $entriesTable [[en]] ON [[en.id]] = [[el.id]]
-WHERE
-  $elementsSitesTable.[[id]] = [[es.id]] AND
-  [[en.sectionId]] = :sectionId AND [[es.siteId]] = :siteId
-SQL;
-        }
+            if ($this->db->getIsMysql()) {
+                $sql = <<<SQL
+    DELETE [[es]].* FROM $elementsSitesTable [[es]]
+    LEFT JOIN $elementsTable [[el]] ON [[el.id]] = [[es.elementId]]
+    LEFT JOIN $entriesTable [[en]] ON [[en.id]] = [[el.id]]
+    WHERE [[en.sectionId]] = :sectionId AND [[es.siteId]] = :siteId
+    SQL;
+            } else {
+                $sql = <<<SQL
+    DELETE FROM $elementsSitesTable
+    USING $elementsSitesTable [[es]]
+    LEFT JOIN $elementsTable [[el]] ON [[el.id]] = [[es.elementId]]
+    LEFT JOIN $entriesTable [[en]] ON [[en.id]] = [[el.id]]
+    WHERE
+      $elementsSitesTable.[[id]] = [[es.id]] AND
+      [[en.sectionId]] = :sectionId AND [[es.siteId]] = :siteId
+    SQL;
+            }
 
-        foreach ($sectionsToCheck as $params) {
-            $this->db->createCommand($sql, [
-                'sectionId' => $params['sectionId'],
-                'siteId' => $params['siteId'],
-            ])->execute();
+            foreach ($sectionsToCheck as $params) {
+                $this->db->createCommand($sql, [
+                    'sectionId' => $params['sectionId'],
+                    'siteId' => $params['siteId'],
+                ])->execute();
+            }
         }
 
         $this->_stdout("done\n", Console::FG_GREEN);
