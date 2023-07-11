@@ -36,12 +36,12 @@ use yii\base\Component;
 class Globals extends Component
 {
     /**
-     * @event GlobalSetEvent The event that is triggered before a global set is saved.
+     * @event GlobalSetEvent The event that is triggered before a global set’s configuration is saved.
      */
     public const EVENT_BEFORE_SAVE_GLOBAL_SET = 'beforeSaveGlobalSet';
 
     /**
-     * @event GlobalSetEvent The event that is triggered after a global set is saved.
+     * @event GlobalSetEvent The event that is triggered after a global set’s configuration is saved.
      */
     public const EVENT_AFTER_SAVE_GLOBAL_SET = 'afterSaveGlobalSet';
 
@@ -278,7 +278,7 @@ class Globals extends Component
     }
 
     /**
-     * Saves a global set.
+     * Saves a global set’s configuration.
      *
      * @param GlobalSet $globalSet The global set to be saved
      * @param bool $runValidation Whether the global set should be validated
@@ -327,7 +327,10 @@ class Globals extends Component
     }
 
     /**
-     * Handle global set change
+     * Handle a global set configuration change.
+     *
+     * This may constitute the creation of a new global set, the modification of
+     * an existing one, or—when possible—rescuing a soft-deleted record.
      *
      * @param ConfigEvent $event
      */
@@ -483,7 +486,12 @@ class Globals extends Component
     }
 
     /**
-     * Handle global set getting deleted
+     * Handle deletion of global set’s configuration.
+     *
+     * A global set’s configuration/definition is stored alongside the
+     * corresponding elements, so deleting the element is enough to delete the
+     * set’s configuration. This also means the content of a
+     * soft-deleted set can be restored at the same time as its configuration.
      *
      * @param ConfigEvent $event
      */
