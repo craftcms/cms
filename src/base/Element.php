@@ -3334,15 +3334,51 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
-    public function getThumbUrl(int $size): ?string
+    public function getThumbHtml(int $size): ?string
     {
+        $thumbUrl = $this->getThumbUrl($size);
+
+        if ($thumbUrl !== null) {
+            return Html::tag('div', '', [
+                'class' => $this->getHasCheckeredThumb() ? 'checkered' : null,
+                'data' => [
+                    'sizes' => sprintf('%spx', $size),
+                    'srcset' => sprintf('%s %sw, %s %sw', $thumbUrl, $size, $this->getThumbUrl($size * 2), $size * 2),
+                    'alt' => $this->getThumbAlt(),
+                ],
+            ]);
+        }
+
+        $thumbSvg = $this->thumbSvg();
+        if ($thumbSvg !== null) {
+            $thumbSvg = Html::svg($thumbSvg, false, true);
+            $alt = $this->getThumbAlt();
+            if ($alt !== null) {
+                $thumbSvg = Html::prependToTag($thumbSvg, Html::tag('title', Html::encode($alt)));
+            }
+            $thumbSvg = Html::modifyTagAttributes($thumbSvg, ['role' => 'img']);
+            return Html::tag('div', $thumbSvg);
+        }
+
         return null;
     }
 
     /**
      * @inheritdoc
      */
-    public function getThumbSvg(): ?string
+    public function getThumbUrl(int $size): ?string
+    {
+        return null;
+    }
+
+    /**
+     * Returns the element’s thumbnail SVG contents, which should be used as a fallback when [[getThumbUrl()]]
+     * returns `null`.
+     *
+     * @return string|null
+     * @since 4.5.0
+     */
+    protected function thumbSvg(): ?string
     {
         return null;
     }

@@ -41,10 +41,11 @@
 - Filesystem types can now register custom file uploaders. ([#13313](https://github.com/craftcms/cms/pull/13313))
 - When applying a draft, the canonical elements’ `getDirtyAttributes()` and `getDirtyFields()` methods now return the attribute names and field handles that were modified on the draft for save events. ([#12967](https://github.com/craftcms/cms/issues/12967))
 - Added `craft\addresses\SubdivisionRepository`. ([#13361](https://github.com/craftcms/cms/pull/13361))
-- Added `craft\base\ElementInterface::getThumbSvg()`. ([#13262](https://github.com/craftcms/cms/pull/13262))
+- Added `craft\base\Element::thumbSvg()`. ([#13262](https://github.com/craftcms/cms/pull/13262))
+- Added `craft\base\ElementInterface::getThumbHtml()`.
+- Added `craft\base\ElementInterface::modifyCustomSource()`.
 - Added `craft\base\ElementInterface::setDirtyFields()`.
 - Added `craft\base\ElementInterface::setFieldValueFromRequest()`. ([#12935](https://github.com/craftcms/cms/issues/12935))
-- Added `craft\base\ElementInterface::modifyCustomSource()`.
 - Added `craft\base\FieldInterface::normalizeValueFromRequest()`. ([#12935](https://github.com/craftcms/cms/issues/12935))
 - Added `craft\base\FieldLayoutProviderInterface`. ([#13250](https://github.com/craftcms/cms/pull/13250))
 - Added `craft\base\FsInterface::getShowHasUrlSetting()`. ([#13224](https://github.com/craftcms/cms/pull/13224))
@@ -71,7 +72,7 @@
 - `craft\validators\UniqueValidator` now supports setting an additional filter via the `filter` property. ([#12941](https://github.com/craftcms/cms/pull/12941))
 - `craft\web\UrlManager` no longer triggers its `EVENT_REGISTER_CP_URL_RULES` and `EVENT_REGISTER_SITE_URL_RULES` events until the request is ready to be routed, making it safe to call `UrlManager::addRules()` from plugin/module constructors. ([#13109](https://github.com/craftcms/cms/issues/13109))
 - Deprecated `craft\helpers\ArrayHelper::firstKey()`. `array_key_first()` should be used instead.
-- Deprecated `craft\helpers\Assets::iconPath()`. `craft\helpers\Assets::iconSvg()` or `craft\elements\Asset::getThumbSvg()` should be used instead.
+- Deprecated `craft\helpers\Assets::iconPath()`. `craft\helpers\Assets::iconSvg()` or `craft\elements\Asset::getThumbHtml()` should be used instead.
 - Deprecated `craft\helpers\Assets::iconUrl()`.
 - Deprecated `craft\helpers\UrlHelper::buildQuery()`. `http_build_query()` should be used instead.
 - Deprecated `craft\services\Volumes::ensureTopFolder()`. `craft\services\Assets::getRootFolderByVolumeId()` should be used instead.
