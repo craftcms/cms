@@ -2128,7 +2128,7 @@ class GeneralConfig extends BaseConfig
      * ::: code
      * ```php Static Config
      * // 1 hour
-     * 'previewTokenDuration' => 3600,
+     * ->previewTokenDuration(3600)
      * ```
      * ```shell Environment Override
      * # 1 hour
