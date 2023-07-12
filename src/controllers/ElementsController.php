@@ -25,6 +25,7 @@ use craft\helpers\Db;
 use craft\helpers\ElementHelper;
 use craft\helpers\Html;
 use craft\helpers\UrlHelper;
+use craft\models\ElementActivity;
 use craft\models\FieldLayoutForm;
 use craft\services\Elements;
 use craft\web\Controller;
@@ -695,7 +696,11 @@ class ElementsController extends Controller
         bool $isUnpublishedDraft,
         bool $isDraft,
     ): string {
-        $components = [];
+        $components = [
+            Html::tag('div', options: [
+                'class' => ['activity-container'],
+            ]),
+        ];
 
         // Preview (View will be added later by JS)
         if ($canSave && $previewTargets) {
@@ -966,6 +971,8 @@ JS, [
             ]));
         }
 
+        $elementsService->recordActivity($element, ElementActivity::TYPE_SAVE);
+
         // See if the user happens to have a provisional element. If so delete it.
         $provisional = $element::find()
             ->provisionalDrafts()
@@ -1203,6 +1210,8 @@ JS, [
                 ]));
             }
 
+            $elementsService->recordActivity($element, ElementActivity::TYPE_SAVE);
+
             $creator = $element->getCreator();
 
             $data = [
@@ -1354,6 +1363,8 @@ JS, [
             }
         }
 
+        $elementsService->recordActivity($canonical, ElementActivity::TYPE_SAVE);
+
         if (!$this->request->getAcceptsJson()) {
             // Tell all browser windows about the element save
             $session = Craft::$app->getSession();
@@ -1484,6 +1495,7 @@ JS, [
         }
 
         $canonical = Craft::$app->getRevisions()->revertToRevision($element, $user->id);
+        Craft::$app->getElements()->recordActivity($canonical, ElementActivity::TYPE_SAVE);
 
         return $this->_asSuccess(Craft::t('app', '{type} reverted to past revision.', [
             'type' => $element::displayName(),
@@ -1520,6 +1532,86 @@ JS, [
         $headHtml = $this->getView()->getHeadHtml();
 
         return $this->asJson(compact('html', 'headHtml'));
+    }
+
+    /**
+     * Returns any recent activity for an element, and records that the user is viewing the element.
+     *
+     * @return Response
+     * @since 4.5.0
+     */
+    public function actionRecentActivity(): Response
+    {
+        $element = $this->_element();
+
+        if (!$element || $element->getIsRevision()) {
+            throw new BadRequestHttpException('No element was identified by the request.');
+        }
+
+        $elementsService = Craft::$app->getElements();
+        $currentUser = Craft::$app->getUser()->getIdentity();
+        $activity = $elementsService->getRecentActivity($element, $currentUser->id);
+        $elementsService->recordActivity($element, ElementActivity::TYPE_VIEW, $currentUser);
+
+        return $this->asJson([
+            'activity' => array_map(function(ElementActivity $record) use ($element) {
+                $recordIsCanonical = $record->element->getIsCanonical() || $record->element->isProvisionalDraft;
+                $recordIsCanonicalAndPublished = $recordIsCanonical && !$record->element->getIsUnpublishedDraft();
+                $isSameOrUpstream = $element->id === $record->element->id || $recordIsCanonical;
+
+                if ($record->isActive) {
+                    if ($isSameOrUpstream) {
+                        $messageParams = [
+                            'user' => $record->user->getName(),
+                            'type' => $recordIsCanonicalAndPublished ? $element::lowerDisplayName() : Craft::t('app', 'draft'),
+                        ];
+                        $message = match ($record->type) {
+                            ElementActivity::TYPE_VIEW => Craft::t('app', '{user} is viewing this {type}.', $messageParams),
+                            ElementActivity::TYPE_EDIT, ElementActivity::TYPE_SAVE => Craft::t('app', '{user} is editing this {type}.', $messageParams),
+                        };
+                    } else {
+                        $messageParams = [
+                            'user' => $record->user->getName(),
+                            'type' => $element::lowerDisplayName(),
+                        ];
+                        $message = match ($record->type) {
+                            ElementActivity::TYPE_VIEW => Craft::t('app', '{user} is viewing a draft of this {type}.', $messageParams),
+                            ElementActivity::TYPE_EDIT, ElementActivity::TYPE_SAVE => Craft::t('app', '{user} is editing a draft of this {type}.', $messageParams),
+                        };
+                    }
+                } else {
+                    if ($isSameOrUpstream) {
+                        $messageParams = [
+                            'user' => $record->user->getName(),
+                            'type' => $recordIsCanonicalAndPublished ? $element::lowerDisplayName() : Craft::t('app', 'draft'),
+                            'timestamp' => Craft::$app->getFormatter()->asTimestamp($record->timestamp, 'short', true),
+                        ];
+                        $message = match ($record->type) {
+                            ElementActivity::TYPE_VIEW => Craft::t('app', '{user} viewed this {type} {timestamp}.', $messageParams),
+                            ElementActivity::TYPE_EDIT => Craft::t('app', '{user} edited this {type} {timestamp}.', $messageParams),
+                            ElementActivity::TYPE_SAVE => Craft::t('app', '{user} saved this {type} {timestamp}.', $messageParams),
+                        };
+                    } else {
+                        $messageParams = [
+                            'user' => $record->user->getName(),
+                            'type' => $element::lowerDisplayName(),
+                            'timestamp' => Craft::$app->getFormatter()->asTimestamp($record->timestamp, 'short', true),
+                        ];
+                        $message = match ($record->type) {
+                            ElementActivity::TYPE_VIEW => Craft::t('app', '{user} viewed a draft of this {type} {timestamp}.', $messageParams),
+                            ElementActivity::TYPE_EDIT => Craft::t('app', '{user} edited a draft of this {type} {timestamp}.', $messageParams),
+                            ElementActivity::TYPE_SAVE => Craft::t('app', '{user} saved a draft of this {type} {timestamp}.', $messageParams),
+                        };
+                    }
+                }
+
+                return [
+                    'userThumb' => $record->user->getThumbHtml(26),
+                    'message' => $message,
+                    'active' => $record->isActive,
+                ];
+            }, $activity),
+        ]);
     }
 
     /**

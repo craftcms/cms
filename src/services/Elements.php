@@ -51,6 +51,7 @@ use craft\helpers\ElementHelper;
 use craft\helpers\Queue;
 use craft\helpers\StringHelper;
 use craft\i18n\Translation;
+use craft\models\ElementActivity;
 use craft\queue\jobs\FindAndReplace;
 use craft\queue\jobs\UpdateElementSlugsAndUris;
 use craft\queue\jobs\UpdateSearchIndex;
@@ -2292,6 +2293,146 @@ class Elements extends Component
         }
 
         return true;
+    }
+
+    /**
+     * Returns the recent activity for an element.
+     *
+     * @param ElementInterface $element
+     * @param int|null $excludeUserId
+     * @return ElementActivity[]
+     * @since 4.5.0
+     */
+    public function getRecentActivity(ElementInterface $element, ?int $excludeUserId = null): array
+    {
+        $query = (new Query())
+            ->select(['userId', 'siteId', 'draftId', 'type', 'timestamp'])
+            ->from(Table::ELEMENTACTIVITY)
+            ->where(['elementId' => $element->getCanonicalId()])
+            ->andWhere(['>', 'timestamp', Db::prepareDateForDb(DateTimeHelper::now()->modify('-1 day'))])
+            ->orderBy(['timestamp' => SORT_DESC]);
+
+        if ($excludeUserId) {
+            $query->andWhere(['not', ['userId' => $excludeUserId]]);
+        }
+
+        $results = $query->all();
+
+        if (empty($results)) {
+            return [];
+        }
+
+        // get all the unique users
+        $userIds = array_unique(array_map(fn(array $result) => $result['userId'], $results));
+        $users = User::find()
+            ->id($userIds)
+            ->status(null)
+            ->indexBy('id')
+            ->all();
+
+        $activity = [];
+        /** @var ElementActivity[] $activityByUserId */
+        $activityByUserId = [];
+        $elements = [];
+        $isCanonical = $element->getIsCanonical() || $element->isProvisionalDraft;
+        $elements[$isCanonical ? 0 : $element->draftId][$element->siteId] = $element;
+        $activeCutoff = DateTimeHelper::now()->modify('-2 minutes');
+
+        foreach ($results as $result) {
+            $timestamp = DateTimeHelper::toDateTime($result['timestamp']);
+            $isActive = $timestamp > $activeCutoff;
+
+            // only include up to 5 records, unless there are 5+ active ones
+            if (!$isActive && count($activity) >= 5) {
+                break;
+            }
+
+            // do we already have an activity record for this user?
+            if (isset($activityByUserId[$result['userId']])) {
+                $newerRecord = $activityByUserId[$result['userId']];
+                // edit/save trumps view, if it happened in the past 2 minutes
+                if (
+                    $newerRecord->type === ElementActivity::TYPE_VIEW &&
+                    $result['type'] !== ElementActivity::TYPE_VIEW &&
+                    $isActive
+                ) {
+                    array_splice($activity, array_search($newerRecord, $activity), 1);
+                    unset($activityByUserId[$result['userId']]);
+                } else {
+                    continue;
+                }
+            }
+
+            // fetch the element (draft)
+            $elementKey = $result['draftId'] ?: 0;
+            if (!isset($elements[$elementKey][$result['siteId']])) {
+                $resultElement = $element::find()
+                    ->id($result['draftId'] ? null : $element->getCanonicalId())
+                    ->draftId($result['draftId'])
+                    ->site('*')
+                    ->preferSites([$result['siteId'], $element->siteId])
+                    ->status(null)
+                    ->one();
+
+                // just to be safe...
+                if (!$resultElement) {
+                    Craft::warning(sprintf(
+                        'Couldn’t load %s element %s%s for site %s',
+                        $element::class,
+                        $element->getCanonicalId(),
+                        $result['draftId'] ? " (draft {$result['draftId']})" : '',
+                        $result['siteId'],
+                    ), __METHOD__);
+                    continue;
+                }
+
+                $elements[$elementKey][$result['siteId']] = $resultElement;
+            }
+
+            $activity[] = $activityByUserId[$result['userId']] = new ElementActivity(
+                $users[$result['userId']],
+                $elements[$elementKey][$result['siteId']],
+                $result['type'],
+                DateTimeHelper::toDateTime($result['timestamp']),
+                $isActive,
+            );
+        }
+
+        return $activity;
+    }
+
+    /**
+     * Records activity on an element.
+     *
+     * @param ElementInterface $element
+     * @param ElementActivity::TYPE_* $type $type
+     * @param User|null $user
+     * @since 4.5.0
+     */
+    public function recordActivity(ElementInterface $element, string $type, ?User $user = null): void
+    {
+        if ($user === null) {
+            $user = Craft::$app->getUser()->getIdentity();
+            if (!$user) {
+                throw new InvalidArgumentException('$user must be set if no user is signed in.');
+            }
+        }
+
+        // save => edit, if a provisional draft
+        if ($type === ElementActivity::TYPE_SAVE && $element->isProvisionalDraft) {
+            $type = ElementActivity::TYPE_EDIT;
+        }
+
+        $isCanonical = $element->getIsCanonical() || $element->isProvisionalDraft;
+
+        Db::upsert(Table::ELEMENTACTIVITY, [
+            'elementId' => $element->getCanonicalId(),
+            'userId' => $user->id,
+            'siteId' => $element->siteId,
+            'draftId' => $isCanonical ? null : $element->draftId,
+            'type' => $type,
+            'timestamp' => Db::prepareDateForDb(new DateTime()),
+        ]);
     }
 
     // Element classes

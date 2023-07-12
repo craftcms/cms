@@ -271,6 +271,7 @@ JS;
             'Previewing {type} device',
             'Previous Page',
             'Really delete folder “{folder}”?',
+            'Recent Activity',
             'Refresh',
             'Remove {label}',
             'Remove',

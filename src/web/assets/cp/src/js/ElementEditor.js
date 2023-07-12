@@ -8,6 +8,7 @@ Craft.ElementEditor = Garnish.Base.extend(
   {
     isFullPage: null,
     $container: null,
+    $activityContainer: null,
     $tabContainer: null,
     $contentContainer: null,
     $revisionBtn: null,
@@ -152,6 +153,11 @@ Craft.ElementEditor = Garnish.Base.extend(
       // If this is a revision, we're done here
       if (this.settings.revisionId) {
         return;
+      }
+
+      if (this.isFullPage && Craft.edition === Craft.Pro) {
+        this.$activityContainer = this.$container.find('.activity-container');
+        this._checkActivity();
       }
 
       // Override the serializer to use our own
@@ -1971,6 +1977,54 @@ Craft.ElementEditor = Garnish.Base.extend(
           }
         }
       }
+    },
+
+    _checkActivity: function () {
+      this.queue.push(
+        () =>
+          new Promise((resolve, reject) => {
+            Craft.sendActionRequest('POST', 'elements/recent-activity', {
+              data: {
+                elementType: this.settings.elementType,
+                elementId: this.settings.canonicalId,
+                draftId: this.settings.draftId,
+                siteId: this.settings.siteId,
+                provisional: this.settings.isProvisionalDraft,
+              },
+            })
+              .then(({data}) => {
+                this.$activityContainer.html('');
+                if (data.activity.length) {
+                  $('<h2/>', {
+                    class: 'visually-hidden',
+                    text: Craft.t('app', 'Recent Activity'),
+                  }).appendTo(this.$activityContainer);
+                  const $ul = $('<ul/>').appendTo(this.$activityContainer);
+                  for (let i = 0; i < data.activity.length; i++) {
+                    const activity = data.activity[i];
+                    const $li = $('<li/>', {
+                      title: activity.message,
+                      'aria-label': activity.message,
+                    }).appendTo($ul);
+                    const $thumb = $(activity.userThumb)
+                      .addClass('elementthumb')
+                      .css('z-index', data.activity.length - i)
+                      .appendTo($li);
+                    if (!activity.active) {
+                      $thumb.addClass('faded');
+                    }
+                    Craft.cp.elementThumbLoader.load($li);
+                    $thumb.find('title').remove();
+                  }
+                }
+                setTimeout(() => {
+                  this._checkActivity();
+                }, 60000);
+                resolve();
+              })
+              .catch(reject);
+          })
+      );
     },
   },
   {
