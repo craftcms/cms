@@ -335,6 +335,7 @@ Craft.CP = Garnish.Base.extend(
       }
 
       // Load any element thumbs
+      this.elementThumbLoader.load($('#user-info'));
       this.elementThumbLoader.load(this.$mainContent);
     },
 

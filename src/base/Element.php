@@ -3340,7 +3340,10 @@ abstract class Element extends Component implements ElementInterface
 
         if ($thumbUrl !== null) {
             return Html::tag('div', '', [
-                'class' => $this->getHasCheckeredThumb() ? 'checkered' : null,
+                'class' => array_filter([
+                    'elementthumb',
+                    $this->getHasCheckeredThumb() ? 'checkered' : null,
+                ]),
                 'data' => [
                     'sizes' => sprintf('%spx', $size),
                     'srcset' => sprintf('%s %sw, %s %sw', $thumbUrl, $size, $this->getThumbUrl($size * 2), $size * 2),
@@ -3357,7 +3360,9 @@ abstract class Element extends Component implements ElementInterface
                 $thumbSvg = Html::prependToTag($thumbSvg, Html::tag('title', Html::encode($alt)));
             }
             $thumbSvg = Html::modifyTagAttributes($thumbSvg, ['role' => 'img']);
-            return Html::tag('div', $thumbSvg);
+            return Html::tag('div', $thumbSvg, [
+                'class' => 'elementthumb',
+            ]);
         }
 
         return null;
