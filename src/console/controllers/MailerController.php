@@ -10,7 +10,6 @@ namespace craft\console\controllers;
 use Craft;
 use craft\console\Controller;
 use craft\elements\User;
-use craft\helpers\ArrayHelper;
 use craft\helpers\Console;
 use craft\helpers\MailerHelper;
 use yii\base\InvalidConfigException;
@@ -57,7 +56,7 @@ class MailerController extends Controller
         } else {
             $testToEmailAddress = Craft::$app->getConfig()->getGeneral()->getTestToEmailAddress();
             $to = $this->prompt('Which email address should the test email be sent to?', [
-                'default' => ArrayHelper::firstKey($testToEmailAddress),
+                'default' => array_key_first($testToEmailAddress),
             ]);
         }
 

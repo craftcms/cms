@@ -241,12 +241,21 @@ Craft.StructureTableSorter = Garnish.DragSort.extend(
             oldLevel = $draggee.data('level'),
             newLevel = oldLevel + levelDiff,
             padding = this._basePadding + this._getLevelIndent(newLevel);
+          const $structureTextAlternative = $draggee.find(
+            '[data-text-alternative]'
+          );
+          const altText = Craft.t('app', 'Level {num}', {
+            num: newLevel,
+          });
 
           $draggee.data('level', newLevel);
           $draggee.find('.element').data('level', newLevel);
           $draggee
             .children('[data-titlecell]:first')
             .css('padding-' + Craft.left, padding);
+
+          // Update text alternative
+          $structureTextAlternative.text(altText);
         }
 
         this._positionChanged = true;

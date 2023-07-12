@@ -9,6 +9,7 @@ namespace craft\controllers;
 
 use Craft;
 use craft\base\Element;
+use craft\base\ModelInterface;
 use craft\base\NameTrait;
 use craft\elements\Address;
 use craft\elements\Asset;
@@ -46,6 +47,7 @@ use DateTime;
 use Throwable;
 use yii\base\Exception;
 use yii\base\InvalidArgumentException;
+use yii\base\Model;
 use yii\web\BadRequestHttpException;
 use yii\web\ForbiddenHttpException;
 use yii\web\HttpException;
@@ -187,7 +189,7 @@ class UsersController extends Controller
         $userSession = Craft::$app->getUser();
         if (!$userSession->getIsGuest()) {
             // Too easy.
-            return $this->_handleSuccessfulLogin();
+            return $this->_handleSuccessfulLogin($userSession->getIdentity());
         }
 
         if (!$this->request->getIsPost()) {
@@ -225,7 +227,7 @@ class UsersController extends Controller
             return $this->_handleLoginFailure(null, $user);
         }
 
-        return $this->_handleSuccessfulLogin();
+        return $this->_handleSuccessfulLogin($user);
     }
 
     private function _findLoginUser(string $loginName): ?User
@@ -278,7 +280,7 @@ class UsersController extends Controller
             return null;
         }
 
-        return $this->_handleSuccessfulLogin();
+        return $this->_handleSuccessfulLogin($user);
     }
 
     /**
@@ -337,19 +339,27 @@ class UsersController extends Controller
         $this->requireToken();
 
         $userSession = Craft::$app->getUser();
+        $user = Craft::$app->getUsers()->getUserById($userId);
+        $success = false;
 
-        // Save the original user ID to the session now so User::findIdentity()
-        // knows not to worry if the user isn't active yet
-        Session::set(User::IMPERSONATE_KEY, $prevUserId);
+        if ($user) {
+            // Save the original user ID to the session now so User::findIdentity()
+            // knows not to worry if the user isn't active yet
+            Session::set(User::IMPERSONATE_KEY, $prevUserId);
+            $success = $userSession->login($user);
+            if (!$success) {
+                Session::remove(User::IMPERSONATE_KEY);
+            }
+        }
 
-        if (!$userSession->loginByUserId($userId)) {
-            Session::remove(User::IMPERSONATE_KEY);
+        if (!$success) {
             $this->setFailFlash(Craft::t('app', 'There was a problem impersonating this user.'));
-            Craft::error($userSession->getIdentity()->username . ' tried to impersonate userId: ' . $userId . ' but something went wrong.', __METHOD__);
+            Craft::error(sprintf('%s tried to impersonate userId: %s but something went wrong.',
+                $userSession->getIdentity()->username, $userId), __METHOD__);
             return null;
         }
 
-        return $this->_handleSuccessfulLogin();
+        return $this->_handleSuccessfulLogin($user);
     }
 
     /**
@@ -1185,6 +1195,7 @@ JS,
         return $this->renderTemplate('users/_edit.twig', compact(
             'user',
             'isNewUser',
+            'isCurrentUser',
             'statusLabel',
             'actions',
             'languageOptions',
@@ -2168,9 +2179,10 @@ JS,
      * Redirects the user after a successful login attempt, or if they visited the Login page while they were already
      * logged in.
      *
+     * @param User $user
      * @return Response
      */
-    private function _handleSuccessfulLogin(): Response
+    private function _handleSuccessfulLogin(User $user): Response
     {
         // Get the return URL
         $userSession = Craft::$app->getUser();
@@ -2189,7 +2201,7 @@ JS,
                 $return['csrfTokenValue'] = $this->request->getCsrfToken();
             }
 
-            return $this->asSuccess(data: $return);
+            return $this->asModelSuccess($user, modelName: 'user', data: $return);
         }
 
         return $this->redirectToPostedUrl($userSession->getIdentity(), $returnUrl);
@@ -2680,6 +2692,37 @@ JS,
                 $model->firstName = $firstName ?? $model->firstName;
                 $model->lastName = $lastName ?? $model->lastName;
             }
+        }
+    }
+
+    public function asModelSuccess(
+        ModelInterface|Model $model,
+        ?string $message = null,
+        ?string $modelName = null,
+        array $data = [],
+        ?string $redirect = null,
+    ): Response {
+        $this->clearPassword($model);
+        return parent::asModelSuccess($model, $message, $modelName, $data, $redirect);
+    }
+
+    public function asModelFailure(
+        ModelInterface|Model $model,
+        ?string $message = null,
+        ?string $modelName = null,
+        array $data = [],
+        array $routeParams = [],
+    ): ?Response {
+        $this->clearPassword($model);
+        return parent::asModelFailure($model, $message, $modelName, $data, $routeParams);
+    }
+
+    private function clearPassword(ModelInterface|Model $model): void
+    {
+        if ($model instanceof User) {
+            $model->password = null;
+            $model->newPassword = null;
+            $model->currentPassword = null;
         }
     }
 }
