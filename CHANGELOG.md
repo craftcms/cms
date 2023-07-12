@@ -3,7 +3,6 @@
 ## Unreleased
 
 - Improved performance when loading users with eager-loaded `addresses`. ([#13400](https://github.com/craftcms/cms/issues/13400))
-- It is now possible to manually reload an admin table and adjust its query parameters. ([13389](https://github.com/craftcms/cms/discussions/13389))
 - Added `craft\elements\Address::setOwner()`.
 - `craft\base\ElementInterface::eagerLoadingMap()` can now include a `createElement` key in the returned array, which defines a target element factory function.
 - Fixed a bug where entry titles could overflow within Entries fields with “Maintain hierarchy” enabled. ([#13382](https://github.com/craftcms/cms/issues/13382))
