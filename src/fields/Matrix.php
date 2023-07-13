@@ -819,7 +819,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
             }
         }
 
-        if (!$allBlocksValidate) {
+        if (!$allBlocksValidate && $value instanceof MatrixBlockQuery) {
             // Just in case the blocks weren't already cached
             $value->setCachedResult($blocks);
         }
