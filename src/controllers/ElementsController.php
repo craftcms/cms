@@ -426,6 +426,8 @@ class ElementsController extends Controller
                         'siteStatuses' => $siteStatuses,
                         'siteToken' => (!Craft::$app->getIsLive() || !$element->getSite()->enabled) ? $security->hashData((string)$element->siteId) : null,
                         'visibleLayoutElements' => $form ? $form->getVisibleElements() : [],
+                        'updatedTimestamp' => $element->dateUpdated->getTimestamp(),
+                        'canonicalUpdatedTimestamp' => $canonical->dateUpdated->getTimestamp(),
                     ]
                 )
             );
@@ -1284,6 +1286,8 @@ JS, [
                     'initialDeltaValues' => $view->getInitialDeltaValues(),
                     'headHtml' => $view->getHeadHtml(),
                     'bodyHtml' => $view->getBodyHtml(),
+                    'updatedTimestamp' => $element->dateUpdated->getTimestamp(),
+                    'canonicalUpdatedTimestamp' => $element->getCanonical()->dateUpdated->getTimestamp(),
                 ];
             }
 
@@ -1611,6 +1615,8 @@ JS, [
                     'active' => $record->isActive,
                 ];
             }, $activity),
+            'updatedTimestamp' => $element->dateUpdated->getTimestamp(),
+            'canonicalUpdatedTimestamp' => $element->getCanonical()->dateUpdated->getTimestamp(),
         ]);
     }
 

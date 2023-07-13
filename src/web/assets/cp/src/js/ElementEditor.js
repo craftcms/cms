@@ -1530,6 +1530,11 @@ Craft.ElementEditor = Garnish.Base.extend(
             // re-grab dismissible tips, re-attach listener, hide on re-load
             this.handleDismissibleTips();
 
+            // updated the updatedTimestamp values
+            this.settings.updatedTimestamp = response.data.updatedTimestamp;
+            this.settings.canonicalUpdatedTimestamp =
+              response.data.canonicalUpdatedTimestamp;
+
             this.afterUpdate(data);
 
             if (Craft.broadcaster) {
@@ -2017,6 +2022,44 @@ Craft.ElementEditor = Garnish.Base.extend(
                     $thumb.find('title').remove();
                   }
                 }
+
+                // if the element has been updated upstream, show a notification about it
+                const elementUpdated =
+                  this.settings.updatedTimestamp &&
+                  this.settings.updatedTimestamp !== data.updatedTimestamp;
+                const canonicalUpdated =
+                  this.settings.canonicalUpdatedTimestamp &&
+                  this.settings.canonicalUpdatedTimestamp !==
+                    data.canonicalUpdatedTimestamp;
+
+                if (elementUpdated || canonicalUpdated) {
+                  const $reloadBtn = Craft.ui.createButton({
+                    label: Craft.t('app', 'Reload'),
+                    spinner: true,
+                  });
+
+                  Craft.cp.displayNotice(
+                    Craft.t('app', 'This {type} has been updated.', {
+                      type:
+                        elementUpdated &&
+                        this.settings.draftId &&
+                        !this.settings.isProvisionalDraft
+                          ? Craft.t('app', 'draft')
+                          : Craft.elementTypeNames[this.settings.elementType]
+                          ? Craft.elementTypeNames[this.settings.elementType][2]
+                          : Craft.t('app', 'element'),
+                    }),
+                    {
+                      details: $reloadBtn,
+                    }
+                  );
+                  $reloadBtn.on('click', () => {
+                    window.location.reload();
+                  });
+                }
+                this.settings.updatedTimestamp = data.updatedTimestamp;
+                this.settings.canonicalUpdatedTimestamp =
+                  data.canonicalUpdatedTimestamp;
                 setTimeout(() => {
                   this._checkActivity();
                 }, 60000);
@@ -2051,6 +2094,8 @@ Craft.ElementEditor = Garnish.Base.extend(
       siteStatuses: null,
       siteToken: null,
       visibleLayoutElements: {},
+      updatedTimestamp: null,
+      canonicalUpdatedTimestamp: null,
     },
   }
 );
