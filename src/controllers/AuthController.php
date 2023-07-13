@@ -8,7 +8,6 @@
 namespace craft\controllers;
 
 use Craft;
-use craft\auth\ProviderInterface;
 use craft\elements\User as UserElement;
 use craft\errors\AuthFailedException;
 use craft\errors\AuthProviderNotFoundException;
@@ -48,6 +47,8 @@ class AuthController extends Controller
         'request-session' => self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE,
         'response' => self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE,
     ];
+
+    public $enableCsrfValidation = false;
 
     /**
      * Perform a login request.
@@ -123,15 +124,20 @@ class AuthController extends Controller
      */
     public function actionResponse(string $provider): ?Response
     {
+        // not sure how to handle this but I changed actionLoginResponse
+        // to the default. The IdP in saml can initiate login whick makes this 
+        // session logic difficult to work with
+        // - DS
         switch(Craft::$app->getSession()->get(self::SESSION_KEY)) {
-            case self::REQUEST_TYPE_LOGIN:
-                return $this->actionLoginResponse($provider);
 
             case self::REQUEST_TYPE_SESSION:
                 return $this->actionSessionResponse($provider);
 
             case self::REQUEST_TYPE_LOGOUT:
                 return $this->actionLogoutResponse($provider);
+
+            default:
+                return $this->actionLoginResponse($provider);
         }
 
         return $this->handleFailedResponse();
