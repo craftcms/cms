@@ -9,7 +9,6 @@ Craft.LightSwitch = Garnish.Base.extend(
     $outerContainer: null,
     $innerContainer: null,
     $input: null,
-    $lightswitchInnerContainer: null,
     small: false,
     on: false,
     indeterminate: false,
@@ -36,10 +35,6 @@ Craft.LightSwitch = Garnish.Base.extend(
         '.lightswitch-container:first'
       );
       this.$input = this.$outerContainer.find('input:first');
-
-      this.$lightswitchInnerContainer = this.$outerContainer.parents(
-        '.lightswitch-inner-container'
-      );
 
       // If the input is disabled, go no further
       if (this.$input.prop('disabled')) {
@@ -105,9 +100,6 @@ Craft.LightSwitch = Garnish.Base.extend(
       this.$outerContainer.removeClass('indeterminate');
       this.$outerContainer.attr('aria-checked', 'true');
 
-      this.$lightswitchInnerContainer.addClass('lightswitch-on');
-      this.$lightswitchInnerContainer.removeClass('lightswitch-off');
-
       if (changed && muteEvent !== true) {
         this.onChange();
       }
@@ -139,9 +131,6 @@ Craft.LightSwitch = Garnish.Base.extend(
       this.$outerContainer.removeClass('on');
       this.$outerContainer.removeClass('indeterminate');
       this.$outerContainer.attr('aria-checked', 'false');
-
-      this.$lightswitchInnerContainer.addClass('lightswitch-off');
-      this.$lightswitchInnerContainer.removeClass('lightswitch-on');
 
       if (changed && muteEvent !== true) {
         this.onChange();
