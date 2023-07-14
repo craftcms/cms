@@ -130,7 +130,7 @@ class Gc extends Component
         $this->deletePartialElements(Tag::class, Table::CONTENT, 'elementId');
         $this->deletePartialElements(User::class, Table::CONTENT, 'elementId');
 
-        $this->_deleteOrphanedSiteEntries();
+        $this->_deleteUnsupportedSiteEntries();
 
         $this->_deleteOrphanedDraftsAndRevisions();
         $this->_deleteOrphanedSearchIndexes();
@@ -419,30 +419,21 @@ SQL;
 
 
     /**
-     * Delete entries orphaned by section changes for the site
-     * (This can happen e.g. if you entrify categories group, change the newly created section settings
-     * so that the entries are not available for one of the sites, push those changes, apply PC
-     * and run the entrification command in the environment you pushed to)
-     * @see https://github.com/craftcms/cms/issues/13383
-     * @return void
+     * Deletes entries for sites that aren’t enabled by their section.
+     *
+     * This can happen if you entrify a category group, disable one of the sites in the newly-created section’s
+     * settings, then deploy those changes to another environment, apply project config changes, and re-run the
+     * entrify command. (https://github.com/craftcms/cms/issues/13383)
      */
-    private function _deleteOrphanedSiteEntries(): void
+    private function _deleteUnsupportedSiteEntries(): void
     {
-        $this->_stdout('    > deleting orphaned site entries ... ');
+        $this->_stdout('    > deleting entries in unsupported sites ... ');
 
         $sectionsToCheck = [];
-        $siteIds = [];
-
-        // get all sections
-        $sections = Craft::$app->getSections()->getAllSections();
-
-        // get all site ids
-        foreach (Craft::$app->getSites()->getAllSites() as $site) {
-            $siteIds[] = $site->id;
-        }
+        $siteIds = Craft::$app->getSites()->getAllSiteIds(true);
 
         // get sections that are not enabled for given site
-        foreach ($sections as $section) {
+        foreach (Craft::$app->getSections()->getAllSections() as $section) {
             $sectionSettings = $section->getSiteSettings();
             foreach ($siteIds as $siteId) {
                 if (!isset($sectionSettings[$siteId])) {
@@ -456,22 +447,19 @@ SQL;
 
         if (!empty($sectionsToCheck)) {
             $elementsSitesTable = Table::ELEMENTS_SITES;
-            $elementsTable = Table::ELEMENTS;
             $entriesTable = Table::ENTRIES;
 
             if ($this->db->getIsMysql()) {
                 $sql = <<<SQL
     DELETE [[es]].* FROM $elementsSitesTable [[es]]
-    LEFT JOIN $elementsTable [[el]] ON [[el.id]] = [[es.elementId]]
-    LEFT JOIN $entriesTable [[en]] ON [[en.id]] = [[el.id]]
+    LEFT JOIN $entriesTable [[en]] ON [[en.id]] = [[es.elementId]]
     WHERE [[en.sectionId]] = :sectionId AND [[es.siteId]] = :siteId
     SQL;
             } else {
                 $sql = <<<SQL
     DELETE FROM $elementsSitesTable
     USING $elementsSitesTable [[es]]
-    LEFT JOIN $elementsTable [[el]] ON [[el.id]] = [[es.elementId]]
-    LEFT JOIN $entriesTable [[en]] ON [[en.id]] = [[el.id]]
+    LEFT JOIN $entriesTable [[en]] ON [[en.id]] = [[es.elementId]]
     WHERE
       $elementsSitesTable.[[id]] = [[es.id]] AND
       [[en.sectionId]] = :sectionId AND [[es.siteId]] = :siteId
@@ -479,10 +467,7 @@ SQL;
             }
 
             foreach ($sectionsToCheck as $params) {
-                $this->db->createCommand($sql, [
-                    'sectionId' => $params['sectionId'],
-                    'siteId' => $params['siteId'],
-                ])->execute();
+                $this->db->createCommand($sql, $params)->execute();
             }
         }
 
