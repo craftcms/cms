@@ -1264,7 +1264,7 @@ class User extends Element implements IdentityInterface
     /**
      * @inheritdoc
      */
-    public function getThumbSvg(): ?string
+    protected function thumbSvg(): ?string
     {
         return file_get_contents(Craft::getAlias('@appicons/user.svg'));
     }

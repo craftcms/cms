@@ -955,7 +955,16 @@ interface ElementInterface extends ComponentInterface
     public function getPreviewTargets(): array;
 
     /**
-     * Returns the URL to the element’s thumbnail, if there is one.
+     * Returns the HTML for the element’s thumbnail, if it has one.
+     *
+     * @param int $size The width and height the thumbnail should have.
+     * @return string|null
+     * @since 4.5.0
+     */
+    public function getThumbHtml(int $size): ?string;
+
+    /**
+     * Returns the URL to the element’s thumbnail, if it has one.
      *
      * If this returns `null`, [[getThumbSvg()]] will be checked as a fallback.
      *
@@ -963,15 +972,6 @@ interface ElementInterface extends ComponentInterface
      * @return string|null
      */
     public function getThumbUrl(int $size): ?string;
-
-    /**
-     * Returns the element’s thumbnail SVG contents, which should be used as a fallback when [[getThumbUrl()]]
-     * returns `null`.
-     *
-     * @return string|null
-     * @since 4.5.0
-     */
-    public function getThumbSvg(): ?string;
 
     /**
      * Returns alt text for the element’s thumbnail.
@@ -1702,6 +1702,9 @@ interface ElementInterface extends ComponentInterface
      *
      * @param int $structureId The structure ID
      * @return bool Whether the element should be moved within the structure
+     * @deprecated in 4.5.0. [[\craft\services\Structures::EVENT_BEFORE_INSERT_ELEMENT]] or
+     * [[\craft\services\Structures::EVENT_BEFORE_MOVE_ELEMENT|EVENT_BEFORE_MOVE_ELEMENT]]
+     * should be used instead.
      */
     public function beforeMoveInStructure(int $structureId): bool;
 
@@ -1709,6 +1712,9 @@ interface ElementInterface extends ComponentInterface
      * Performs actions after an element is moved within a structure.
      *
      * @param int $structureId The structure ID
+     * @deprecated in 4.5.0. [[\craft\services\Structures::EVENT_AFTER_INSERT_ELEMENT]] or
+     * [[\craft\services\Structures::EVENT_AFTER_MOVE_ELEMENT|EVENT_AFTER_MOVE_ELEMENT]]
+     * should be used instead.
      */
     public function afterMoveInStructure(int $structureId): void;
 

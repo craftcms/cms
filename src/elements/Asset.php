@@ -2007,7 +2007,7 @@ JS;
     /**
      * @inheritdoc
      */
-    public function getThumbSvg(): ?string
+    protected function thumbSvg(): ?string
     {
         if ($this->isFolder) {
             return file_get_contents(Craft::getAlias('@appicons/folder.svg'));
