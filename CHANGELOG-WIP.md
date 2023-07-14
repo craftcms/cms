@@ -40,7 +40,8 @@
 ### Extensibility
 - Filesystem types can now register custom file uploaders. ([#13313](https://github.com/craftcms/cms/pull/13313))
 - When applying a draft, the canonical elements’ `getDirtyAttributes()` and `getDirtyFields()` methods now return the attribute names and field handles that were modified on the draft for save events. ([#12967](https://github.com/craftcms/cms/issues/12967))
-- It is now possible to manually reload an admin table and adjust its query parameters. ([13389](https://github.com/craftcms/cms/discussions/13389))
+- Admin tables can be configured to pass custom query params to the data endpoint. ([#13416](https://github.com/craftcms/cms/pull/13416))
+- Admin tables can now be programatically reloaded. ([#13416](https://github.com/craftcms/cms/pull/13416))
 - Added `craft\addresses\SubdivisionRepository`. ([#13361](https://github.com/craftcms/cms/pull/13361))
 - Added `craft\base\ElementInterface::getThumbSvg()`. ([#13262](https://github.com/craftcms/cms/pull/13262))
 - Added `craft\base\ElementInterface::setDirtyFields()`.
