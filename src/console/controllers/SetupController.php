@@ -282,7 +282,7 @@ EOD;
 
         if (!$this->password && $this->interactive) {
             $envPassword = App::env('CRAFT_DB_PASSWORD');
-            if ($envPassword && $this->confirm('Use the password provided by $DB_PASSWORD?', true)) {
+            if ($envPassword && $this->confirm('Use the password provided by $CRAFT_DB_PASSWORD?', true)) {
                 $this->password = $envPassword;
             } else {
                 $this->stdout('Database password: ');

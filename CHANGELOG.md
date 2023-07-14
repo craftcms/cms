@@ -3,6 +3,8 @@
 ## Unreleased
 
 - Improved performance when loading users with eager-loaded `addresses`. ([#13400](https://github.com/craftcms/cms/issues/13400))
+- `createDraft` GraphQL mutations now support a `creatorId` argument. ([#13401](https://github.com/craftcms/cms/issues/13401))
+- Garbage collection now deletes entries for sites that aren’t supported by their section. ([#13383](https://github.com/craftcms/cms/issues/13383))
 - Added `craft\elements\Address::setOwner()`.
 - `craft\base\ElementInterface::eagerLoadingMap()` can now include a `createElement` key in the returned array, which defines a target element factory function.
 - Fixed a bug where entry titles could overflow within Entries fields with “Maintain hierarchy” enabled. ([#13382](https://github.com/craftcms/cms/issues/13382))
@@ -11,6 +13,9 @@
 - Fixed a bug where eager-loaded categories were always loaded in the structure-defined order, even if the Categories field didn’t have “Maintain hierarchy” enabled. ([#13394](https://github.com/craftcms/cms/issues/13394))
 - Fixed a bug where time inputs weren’t handling malformed values properly if ICU 72.1 was installed. ([#13381](https://github.com/craftcms/cms/issues/13381))
 - Fixed legacy Live Preview support.
+- Fixed a bug where lightswitch inputs could overflow. ([#13419](https://github.com/craftcms/cms/issues/13419))
+- Fixed a bug where Matrix field validation wasn’t working properly if the field value was eager-loaded. ([#13421](https://github.com/craftcms/cms/issues/13421))
+- Fixed a bug where date and time inputs weren’t always working properly on mobile. ([#13424](https://github.com/craftcms/cms/issues/13424))
 
 ## 4.4.15 - 2023-07-03
 
