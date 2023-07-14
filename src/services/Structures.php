@@ -72,9 +72,9 @@ class Structures extends Component
     /** @since 4.5.0 */
     public const ACTION_APPEND = 'append';
     /** @since 4.5.0 */
-    public const ACTION_INSERT_BEFORE = 'insertBefore';
+    public const ACTION_PLACE_BEFORE = 'placeBefore';
     /** @since 4.5.0 */
-    public const ACTION_INSERT_AFTER = 'insertAfter';
+    public const ACTION_PLACE_AFTER = 'placeAfter';
 
     /**
      * @var int The timeout to pass to [[\yii\mutex\Mutex::acquire()]] when acquiring a lock on the structure.
@@ -388,7 +388,7 @@ class Structures extends Component
             throw new Exception('There was a problem getting the next element.');
         }
 
-        return $this->_doIt($structureId, $element, $nextElementRecord, self::ACTION_INSERT_BEFORE, $mode);
+        return $this->_doIt($structureId, $element, $nextElementRecord, self::ACTION_PLACE_BEFORE, $mode);
     }
 
     /**
@@ -409,7 +409,7 @@ class Structures extends Component
             throw new Exception('There was a problem getting the previous element.');
         }
 
-        return $this->_doIt($structureId, $element, $prevElementRecord, self::ACTION_INSERT_AFTER, $mode);
+        return $this->_doIt($structureId, $element, $prevElementRecord, self::ACTION_PLACE_AFTER, $mode);
     }
 
     /**
@@ -555,11 +555,11 @@ class Structures extends Component
             return false;
         }
 
-        // prepend => prependTo(), append => appendTo()
         $method = match ($action) {
             self::ACTION_PREPEND => 'prependTo',
             self::ACTION_APPEND => 'appendTo',
-            default => $action,
+            self::ACTION_PLACE_BEFORE => 'insertBefore',
+            self::ACTION_PLACE_AFTER => 'insertAfter',
         };
 
         $transaction = Craft::$app->getDb()->beginTransaction();

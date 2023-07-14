@@ -34,8 +34,8 @@ class MoveElementEvent extends ElementEvent
 
     /**
      * @var string The type of structure action being performed (one of [[Structures::ACTION_PREPEND]],
-     * [[Structures::ACTION_APPEND]], [[Structures::ACTION_INSERT_BEFORE]], or
-     * [[Structures::ACTION_INSERT_AFTER]]).
+     * [[Structures::ACTION_APPEND|ACTION_APPEND]], [[Structures::ACTION_PLACE_BEFORE|ACTION_PLACE_BEFORE]],
+     * or [[Structures::ACTION_PLACE_AFTER|ACTION_PLACE_AFTER]]).
      * @phpstan-var Structures::ACTION_*
      * @since 4.5.0
      */
