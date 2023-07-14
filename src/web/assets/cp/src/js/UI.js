@@ -898,8 +898,13 @@ Craft.ui = {
         $option.addClass('sel');
 
         // Update the start/end dates
-        $startDate.datepicker('setDate', $option.data('startDate'));
-        $endDate.datepicker('setDate', $option.data('endDate'));
+        if (!$startDate.hasClass('hasDatepicker')) {
+          $startDate.val($option.data('startDate'));
+          $endDate.val($option.data('endDate'));
+        } else {
+          $startDate.datepicker('setDate', $option.data('startDate'));
+          $endDate.datepicker('setDate', $option.data('endDate'));
+        }
 
         config.onChange(
           $option.data('startDate') || null,
@@ -910,9 +915,24 @@ Craft.ui = {
     });
 
     $dateInputs.on('change', function () {
+      let startDate = null;
+      let endDate = null;
       // Do the start & end dates match one of our options?
-      let startDate = $startDate.datepicker('getDate');
-      let endDate = $endDate.datepicker('getDate');
+      if (!$startDate.hasClass('hasDatepicker')) {
+        let startDateVal = $startDate.val();
+        if (startDateVal !== '') {
+          startDate = new Date(Date.parse(startDateVal));
+        }
+
+        let endDateVal = $endDate.val();
+        if (endDateVal !== '') {
+          endDate = new Date(Date.parse(endDateVal));
+        }
+      } else {
+        startDate = $startDate.datepicker('getDate');
+        endDate = $endDate.datepicker('getDate');
+      }
+
       let startTime = startDate ? startDate.getTime() : null;
       let endTime = endDate ? endDate.getTime() : null;
 
@@ -976,11 +996,27 @@ Craft.ui = {
     }
 
     if (config.startDate) {
-      $startDate.datepicker('setDate', config.startDate);
+      if (!$startDate.hasClass('hasDatepicker')) {
+        // we need the date to be in yyyy-mm-dd format
+        let offset = config.startDate.getTimezoneOffset();
+        let startDate = new Date(
+          config.startDate.getTime() - offset * 60 * 1000
+        );
+        $startDate.val(startDate.toISOString().split('T')[0]);
+      } else {
+        $startDate.datepicker('setDate', config.startDate);
+      }
     }
 
     if (config.endDate) {
-      $endDate.datepicker('setDate', config.endDate);
+      if (!$endDate.hasClass('hasDatepicker')) {
+        // we need the date to be in yyyy-mm-dd format
+        let offset = config.endDate.getTimezoneOffset();
+        let endDate = new Date(config.endDate.getTime() - offset * 60 * 1000);
+        $endDate.val(endDate.toISOString().split('T')[0]);
+      } else {
+        $endDate.datepicker('setDate', config.endDate);
+      }
     }
 
     if (config.startDate || config.endDate) {
