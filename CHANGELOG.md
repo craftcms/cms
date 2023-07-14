@@ -10,6 +10,7 @@
 - Fixed an error that could occur if `null` was passed to `craft\elements\MatrixBlock::setOwner()`.
 - Fixed a bug where eager-loaded categories were always loaded in the structure-defined order, even if the Categories field didn’t have “Maintain hierarchy” enabled. ([#13394](https://github.com/craftcms/cms/issues/13394))
 - Fixed a bug where time inputs weren’t handling malformed values properly if ICU 72.1 was installed. ([#13381](https://github.com/craftcms/cms/issues/13381))
+- Fixed legacy Live Preview support.
 
 ## 4.4.15 - 2023-07-03
 
