@@ -661,6 +661,7 @@ return [
     'In the local temp folder' => 'في مجلد الملفات المؤقتة المحلي',
     'Include your template files' => 'تضمين ملفات القوالب الخاصة بك',
     'Includes activating user accounts, resetting passwords, and changing email addresses.' => 'يتضمن تنشيط حسابات المستخدمين وإعادة تعيين كلمات المرور وتغيير عناوين البريد الإلكتروني.',
+    'Includes read-only access to user data and most content, via element selector modals and other means.' => 'Includes read-only access to user data and most content, via element selector modals and other means.',
     'Includes suspending, unsuspending, and unlocking user accounts.' => 'يتضمن حسابات المستخدمين المعلقة وغير المعلقة والمفتوحة.',
     'Incorrect current password.' => 'كلمة المرور الحالية غير صحيحة.',
     'Incorrect password.' => 'كلمة المرور غير صحيحة.',
