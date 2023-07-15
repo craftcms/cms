@@ -701,38 +701,38 @@ class Matrix extends Field implements
 
         if ($value instanceof EntryQuery) {
             $entries = $value->getCachedResult() ?? (clone $value)->status(null)->limit(null)->all();
+
+            $allEntriesValidate = true;
+            $scenario = $element->getScenario();
+
+            foreach ($entries as $i => $entry) {
+                /** @var Entry $entry */
+                if (
+                    $scenario === Element::SCENARIO_ESSENTIALS ||
+                    ($entry->enabled && $scenario === Element::SCENARIO_LIVE)
+                ) {
+                    $entry->setScenario($scenario);
+                }
+
+                // Don't validate the title if the entry type has a dynamic title format
+                if (!$entry->getType()->hasTitleField) {
+                    $attributes = ArrayHelper::withoutValue($entry->activeAttributes(), 'title');
+                } else {
+                    $attributes = null;
+                }
+
+                if (!$entry->validate($attributes)) {
+                    $element->addModelErrors($entry, "$this->handle[$i]");
+                    $allEntriesValidate = false;
+                }
+            }
+
+            if (!$allEntriesValidate) {
+                // Just in case the entries weren't already cached
+                $value->setCachedResult($entries);
+            }
         } else {
             $entries = $value->all();
-        }
-
-        $allEntriesValidate = true;
-        $scenario = $element->getScenario();
-
-        foreach ($entries as $i => $entry) {
-            /** @var Entry $entry */
-            if (
-                $scenario === Element::SCENARIO_ESSENTIALS ||
-                ($entry->enabled && $scenario === Element::SCENARIO_LIVE)
-            ) {
-                $entry->setScenario($scenario);
-            }
-
-            // Don't validate the title if the entry type has a dynamic title format
-            if (!$entry->getType()->hasTitleField) {
-                $attributes = ArrayHelper::withoutValue($entry->activeAttributes(), 'title');
-            } else {
-                $attributes = null;
-            }
-
-            if (!$entry->validate($attributes)) {
-                $element->addModelErrors($entry, "$this->handle[$i]");
-                $allEntriesValidate = false;
-            }
-        }
-
-        if (!$allEntriesValidate) {
-            // Just in case the entries weren't already cached
-            $value->setCachedResult($entries);
         }
 
         if (
