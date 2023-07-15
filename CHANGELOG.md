@@ -1,5 +1,9 @@
 # Release Notes for Craft CMS 3.x
 
+## Unreleased
+
+- Fixed an RCE vulnerability.
+
 ## 3.8.15 - 2023-07-03
 
 - The control panel footer now includes a message about active trials, with a link to purchase the licenses.
