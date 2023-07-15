@@ -661,6 +661,7 @@ return [
     'In the local temp folder' => 'در پوشه موقت محلی',
     'Include your template files' => 'شامل کردن فایل های قالب شما',
     'Includes activating user accounts, resetting passwords, and changing email addresses.' => 'شامل فعالسازی حساب های کاربری، بازنشانی رمزهای عبور و تغییر پست های الکترونیکی.',
+    'Includes read-only access to user data and most content, via element selector modals and other means.' => 'Includes read-only access to user data and most content, via element selector modals and other means.',
     'Includes suspending, unsuspending, and unlocking user accounts.' => 'شامل به تعلیق در آوردن، از تعلیق خارج کردن و از قفل خارج کردن حساب های کاربری.',
     'Incorrect current password.' => 'رمز عبور فعلی صحیح نیست.',
     'Incorrect password.' => 'رمز عبور صحیح نیست.',
