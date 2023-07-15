@@ -661,6 +661,7 @@ return [
     'In the local temp folder' => '位于本地临时文件夹',
     'Include your template files' => '包含您的模板文件',
     'Includes activating user accounts, resetting passwords, and changing email addresses.' => '包括激活用户帐户、重置密码和更改电子邮件地址。',
+    'Includes read-only access to user data and most content, via element selector modals and other means.' => 'Includes read-only access to user data and most content, via element selector modals and other means.',
     'Includes suspending, unsuspending, and unlocking user accounts.' => '包括暂停、取消暂停和解锁用户帐户。',
     'Incorrect current password.' => '当前密码不正确。',
     'Incorrect password.' => '密码错误。',
