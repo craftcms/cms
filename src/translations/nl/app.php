@@ -661,6 +661,7 @@ return [
     'In the local temp folder' => 'In de lokale tijdelijke map',
     'Include your template files' => 'Opnemen van uw sjabloondocumenten',
     'Includes activating user accounts, resetting passwords, and changing email addresses.' => 'Dit betreft het activeren van gebruikersaccounts, het opnieuw instellen van wachtwoorden en het wijzigen van e-mailadressen.',
+    'Includes read-only access to user data and most content, via element selector modals and other means.' => 'Includes read-only access to user data and most content, via element selector modals and other means.',
     'Includes suspending, unsuspending, and unlocking user accounts.' => 'Omvat het schorsen, opheffing van schorsing en ontgrendelen van gebruikersaccounts.',
     'Incorrect current password.' => 'Huidig wachtwoord is onjuist.',
     'Incorrect password.' => 'Onjuist wachtwoord.',
