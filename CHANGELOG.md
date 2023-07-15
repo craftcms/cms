@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- The “Access the control panel” user permission now includes a warning that the permission grants view-only access to user data and most content.
 - Fixed an RCE vulnerability.
 
 ## 3.8.15 - 2023-07-03
