@@ -506,14 +506,14 @@ class Extension extends AbstractExtension implements GlobalsInterface
      * Reduces an array.
      *
      * @param TwigEnvironment $env
-     * @param $array
-     * @param $arrow
-     * @param $initial
+     * @param mixed $array
+     * @param mixed $arrow
+     * @param mixed $initial
      * @return mixed
      * @throws RuntimeError
      * @since 4.4.16
      */
-    public function reduceFilter(TwigEnvironment $env, $array, $arrow, $initial = null)
+    public function reduceFilter(TwigEnvironment $env, mixed $array, mixed $arrow, mixed $initial = null): mixed
     {
         if (is_string($arrow) && strtolower($arrow) === 'system') {
             throw new RuntimeError('The reduce filter doesn\'t support reducing by system().');
@@ -526,13 +526,13 @@ class Extension extends AbstractExtension implements GlobalsInterface
      * Maps an array.
      *
      * @param TwigEnvironment $env
-     * @param $array
-     * @param $arrow
+     * @param mixed $array
+     * @param mixed $arrow
      * @return array
      * @throws RuntimeError
      * @since 4.4.16
      */
-    public function mapFilter(TwigEnvironment $env, $array, $arrow = null): array
+    public function mapFilter(TwigEnvironment $env, mixed $array, mixed $arrow = null): array
     {
         if (is_string($arrow) && strtolower($arrow) === 'system') {
             throw new RuntimeError('The map filter doesn\'t support mapping by system().');
