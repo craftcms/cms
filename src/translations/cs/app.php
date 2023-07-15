@@ -661,6 +661,7 @@ return [
     'In the local temp folder' => 'V lokálním temp adresáři',
     'Include your template files' => 'Vložit Vaše soubory šablon',
     'Includes activating user accounts, resetting passwords, and changing email addresses.' => 'Zahrnuje aktivaci uživatelských účtů, resetování hesel a změnu e-mailových adres.',
+    'Includes read-only access to user data and most content, via element selector modals and other means.' => 'Includes read-only access to user data and most content, via element selector modals and other means.',
     'Includes suspending, unsuspending, and unlocking user accounts.' => 'Zahrnuje pozastavení, zrušení pozastavení a odemknutí uživatelských účtů.',
     'Incorrect current password.' => 'Nesprávné stávající heslo.',
     'Incorrect password.' => 'Nesprávné heslo.',
