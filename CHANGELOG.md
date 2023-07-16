@@ -16,6 +16,7 @@
 - Fixed a bug where lightswitch inputs could overflow. ([#13419](https://github.com/craftcms/cms/issues/13419))
 - Fixed a bug where Matrix field validation wasn’t working properly if the field value was eager-loaded. ([#13421](https://github.com/craftcms/cms/issues/13421))
 - Fixed a bug where date and time inputs weren’t always working properly on mobile. ([#13424](https://github.com/craftcms/cms/issues/13424))
+- Fixed an RCE vulnerability.
 
 ## 4.4.15 - 2023-07-03
 
