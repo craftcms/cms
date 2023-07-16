@@ -5,7 +5,7 @@
             <li id="{{ id }}-category-{{ category.id }}">
                 {% set indent = (category.level - 1) * 35 %}
                 <div class="row" style="margin-left: -{{ indent }}px; padding-left: {{ indent }}px;">
-                    {%- include "_elements/element" with { element: category, context: 'field' } -%}
+                    {%- include "_elements/chip.twig" with { element: category, context: 'field' } -%}
                 </div>
 
                 {% ifchildren %}

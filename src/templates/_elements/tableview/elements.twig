@@ -41,7 +41,7 @@
                         %}" title="{{ 'Show/hide children'|t('app') }}" aria-label="{{ toggleLabel }}"
                         aria-expanded="{{  element.id not in collapsedElementIds ? 'true' : 'false' }}"></button>
                     {% endif %}
-                    {%- include '_elements/element' with {
+                    {%- include '_elements/chip.twig' with {
                         autoReload: false,
                     } -%}
 

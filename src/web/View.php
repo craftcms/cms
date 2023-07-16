@@ -326,7 +326,7 @@ class View extends \yii\web\View
         }
 
         // Register the control panel hooks
-        $this->hook('cp.elements.element', [$this, '_getCpElementHtml']);
+        $this->hook('cp.elements.chip', [$this, '_elementChipHtml']);
     }
 
     /**
@@ -2209,12 +2209,12 @@ JS;
     }
 
     /**
-     * Returns the HTML for an element in the control panel.
+     * Renders an element’s chip HTML.
      *
      * @param array $context
      * @return string|null
      */
-    private function _getCpElementHtml(array $context): ?string
+    private function _elementChipHtml(array $context): ?string
     {
         if (!isset($context['element'])) {
             return null;

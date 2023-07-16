@@ -11,7 +11,7 @@
 <div id="{{ id }}" class="elementselect tagselect">
     <div class="elements">
         {% for element in elements %}
-            {% include "_elements/element" with { context: 'field' } %}
+            {% include "_elements/chip.twig" with { context: 'field' } %}
         {% endfor %}
     </div>
 
