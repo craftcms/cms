@@ -661,6 +661,7 @@ return [
     'In the local temp folder' => 'I den lokale midlertidige mappen',
     'Include your template files' => 'Inkludere alle malene dine',
     'Includes activating user accounts, resetting passwords, and changing email addresses.' => 'Inkluderer aktivering av brukerkontoer, tilbakestilling av passord og endring av e-postadresser.',
+    'Includes read-only access to user data and most content, via element selector modals and other means.' => 'Includes read-only access to user data and most content, via element selector modals and other means.',
     'Includes suspending, unsuspending, and unlocking user accounts.' => 'Inkluderer suspendering, opphevelse av suspendering og opplåsing av brukerkontoer.',
     'Incorrect current password.' => 'Feil nåværende passord tastet inn.',
     'Incorrect password.' => 'Feil passord.',

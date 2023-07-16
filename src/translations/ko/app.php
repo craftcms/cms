@@ -661,6 +661,7 @@ return [
     'In the local temp folder' => '로컬 임시 폴더 내',
     'Include your template files' => '템플릿 파일을 포함하시겠습니까',
     'Includes activating user accounts, resetting passwords, and changing email addresses.' => '사용자 계정 활성화, 비밀번호 재설정, 이메일 주소 변경이 포함됩니다.',
+    'Includes read-only access to user data and most content, via element selector modals and other means.' => 'Includes read-only access to user data and most content, via element selector modals and other means.',
     'Includes suspending, unsuspending, and unlocking user accounts.' => '사용자 계정 중단, 중단 취소, 잠금 해제가 포함됩니다.',
     'Incorrect current password.' => '현재 비밀번호가 올바르지 않음.',
     'Incorrect password.' => '틀린 비밀번호',

@@ -661,6 +661,7 @@ return [
     'In the local temp folder' => 'בתיקייה מקומית זמנית',
     'Include your template files' => 'כלול את קבצי התבניות שלך',
     'Includes activating user accounts, resetting passwords, and changing email addresses.' => 'כולל הפעלת חשבונות משתמש, איפוס סיסמאות ושינוי כתובות דוא"ל.',
+    'Includes read-only access to user data and most content, via element selector modals and other means.' => 'Includes read-only access to user data and most content, via element selector modals and other means.',
     'Includes suspending, unsuspending, and unlocking user accounts.' => 'כולל השעיה, ביטול השעיה וביטול נעילה של חשבונות משתמש.',
     'Incorrect current password.' => 'סיסמה נוכחית שגויה.',
     'Incorrect password.' => 'סיסמה שגויה',

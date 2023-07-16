@@ -661,6 +661,7 @@ return [
     'In the local temp folder' => 'В локальной временной папке',
     'Include your template files' => 'Включить ваши файлы шаблонов',
     'Includes activating user accounts, resetting passwords, and changing email addresses.' => 'Входит активация учетных записей пользователя, сброс паролей и изменение адресов электронной почты.',
+    'Includes read-only access to user data and most content, via element selector modals and other means.' => 'Includes read-only access to user data and most content, via element selector modals and other means.',
     'Includes suspending, unsuspending, and unlocking user accounts.' => 'Входит приостановка, восстановление и блокировка учетных записей пользователей.',
     'Incorrect current password.' => 'Неправильный текущий пароль.',
     'Incorrect password.' => 'Неправильный пароль.',

@@ -662,6 +662,7 @@ return [
     'In the local temp folder' => 'I den lokale, midlertidige mappe',
     'Include your template files' => 'Inkluder dine skabelonfiler',
     'Includes activating user accounts, resetting passwords, and changing email addresses.' => 'Inkluderer aktivering af brugerkonti, nulstilling af adgangskoder og ændring af e-mailadresser.',
+    'Includes read-only access to user data and most content, via element selector modals and other means.' => 'Includes read-only access to user data and most content, via element selector modals and other means.',
     'Includes suspending, unsuspending, and unlocking user accounts.' => 'Inkluderer suspendering, ophævelse af suspendering og oplåsning af brugerkonti.',
     'Incorrect current password.' => 'Forkert nuværende kodeord.',
     'Incorrect password.' => 'Forkert kodeord.',

@@ -661,6 +661,7 @@ return [
     'In the local temp folder' => 'Yerel geçici klasörde',
     'Include your template files' => 'Şablon dosyaları dahil edilsin mi',
     'Includes activating user accounts, resetting passwords, and changing email addresses.' => 'Kullanıcı hesaplarını etkinleştirmeyi, parolaları sıfırlamayı ve e-posta adreslerini değiştirmeyi içerir.',
+    'Includes read-only access to user data and most content, via element selector modals and other means.' => 'Includes read-only access to user data and most content, via element selector modals and other means.',
     'Includes suspending, unsuspending, and unlocking user accounts.' => 'Kullanıcı hesaplarını askıya almayı, askıya alma durumunu kaldırmayı ve kilidini kaldırmayı içerir.',
     'Incorrect current password.' => 'Geçerli şifre yanlış.',
     'Incorrect password.' => 'Yanlış şifre',

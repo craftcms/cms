@@ -661,6 +661,7 @@ return [
     'In the local temp folder' => 'Nella cartella temporanea locale',
     'Include your template files' => 'Includi i tuoi file template',
     'Includes activating user accounts, resetting passwords, and changing email addresses.' => 'Include l’attivazione degli account utente, il ripristino delle password e la modifica degli indirizzi email.',
+    'Includes read-only access to user data and most content, via element selector modals and other means.' => 'Includes read-only access to user data and most content, via element selector modals and other means.',
     'Includes suspending, unsuspending, and unlocking user accounts.' => 'Include la sospensione, la riattivazione e il blocco degli account utente.',
     'Incorrect current password.' => 'La password attuale non è corretta.',
     'Incorrect password.' => 'Password errata.',

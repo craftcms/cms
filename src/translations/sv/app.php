@@ -661,6 +661,7 @@ return [
     'In the local temp folder' => 'I den lokala tempmappen',
     'Include your template files' => 'Inkludera dina mallfiler',
     'Includes activating user accounts, resetting passwords, and changing email addresses.' => 'Inkluderar aktivering av användarkonton, återställning av lösenord och ändring av e-postadresser.',
+    'Includes read-only access to user data and most content, via element selector modals and other means.' => 'Includes read-only access to user data and most content, via element selector modals and other means.',
     'Includes suspending, unsuspending, and unlocking user accounts.' => 'Inkluderar avstängning, aktivering och upplåsning av användarkonton.',
     'Incorrect current password.' => 'Felaktigt lösenord.',
     'Incorrect password.' => 'Ogiltigt lösenord.',

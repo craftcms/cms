@@ -661,6 +661,7 @@ return [
     'In the local temp folder' => 'A helyi ideiglenes mappában',
     'Include your template files' => 'Tartalmazza a sablon fájljaidat',
     'Includes activating user accounts, resetting passwords, and changing email addresses.' => 'Tartalmazza a felhasználói fiókok aktiválását, a jelszavak visszaállítását és az e-mail-címek módosítását.',
+    'Includes read-only access to user data and most content, via element selector modals and other means.' => 'Includes read-only access to user data and most content, via element selector modals and other means.',
     'Includes suspending, unsuspending, and unlocking user accounts.' => 'Tartalmazza a felhasználói fiókok felfüggesztésének megszüntetését és feloldását.',
     'Incorrect current password.' => 'Nem megfelelő jelenlegi jelszó.',
     'Incorrect password.' => 'Nem megfelelő jelszó.',

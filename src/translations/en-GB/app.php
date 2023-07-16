@@ -661,6 +661,7 @@ return [
     'In the local temp folder' => 'In the local temp folder',
     'Include your template files' => 'Include your template files',
     'Includes activating user accounts, resetting passwords, and changing email addresses.' => 'Includes activating user accounts, resetting passwords and changing email addresses.',
+    'Includes read-only access to user data and most content, via element selector modals and other means.' => 'Includes read-only access to user data and most content, via element selector modals and other means.',
     'Includes suspending, unsuspending, and unlocking user accounts.' => 'Includes suspending, unsuspending and unlocking user accounts.',
     'Incorrect current password.' => 'Incorrect current password.',
     'Incorrect password.' => 'Incorrect password.',

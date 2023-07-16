@@ -661,6 +661,7 @@ return [
     'In the local temp folder' => 'V miestnom dočasnom priečinku',
     'Include your template files' => 'Zahrnúť súbory šablóny',
     'Includes activating user accounts, resetting passwords, and changing email addresses.' => 'Zahŕňa aktiváciu používateľských účtov, obnovenie hesiel a zmeny e-mailových adries.',
+    'Includes read-only access to user data and most content, via element selector modals and other means.' => 'Includes read-only access to user data and most content, via element selector modals and other means.',
     'Includes suspending, unsuspending, and unlocking user accounts.' => 'Zahŕňa pozastavenie, zrušenia pozastavenia a odblokovanie používateľských účtov.',
     'Incorrect current password.' => 'Nesprávne aktuálne heslo.',
     'Incorrect password.' => 'Nesprávne heslo.',
