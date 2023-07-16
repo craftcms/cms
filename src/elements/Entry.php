@@ -324,7 +324,7 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
             }
         }
 
-        // see if specifies any entry types
+        // see if it specifies any entry types
         /** @var TypeConditionRule|null $entryTypeRule */
         $entryTypeRule = ArrayHelper::firstWhere($rules, fn($rule) => $rule instanceof TypeConditionRule);
         $entryTypeOptions = $entryTypeRule?->getValues();
