@@ -407,48 +407,15 @@ class Cp
         $showStatus = $showStatus && ($isDraft || $element::hasStatuses());
 
         // Create the thumb/icon image, if there is one
-        $imgHtml = null;
+        $thumbHtml = null;
 
         if ($showThumb) {
-            $thumbSizePx = $size === self::ELEMENT_SIZE_SMALL ? 34 : 120;
-            $thumbUrl = $element->getThumbUrl($thumbSizePx);
-            $thumbClass = array_filter([
-                'chip-thumb',
-                $size === self::ELEMENT_SIZE_SMALL && $element->getHasRoundedThumb() ? 'rounded' : null,
-            ]);
-            if ($thumbUrl !== null) {
-                $imageSize2x = $thumbSizePx * 2;
-                $thumbUrl2x = $element->getThumbUrl($imageSize2x);
-                if ($element->getHasCheckeredThumb()) {
-                    $thumbClass[] = 'checkered';
-                }
-                $srcsets = [
-                    "$thumbUrl {$thumbSizePx}w",
-                    "$thumbUrl2x {$imageSize2x}w",
-                ];
-                $sizesHtml = "{$thumbSizePx}px";
-                $srcsetHtml = implode(', ', $srcsets);
-                $imgHtml = Html::tag('div', '', [
-                    'class' => $thumbClass,
-                    'data' => [
-                        'sizes' => $sizesHtml,
-                        'srcset' => $srcsetHtml,
-                        'alt' => $element->getThumbAlt(),
-                    ],
+            $thumbSize = $size === self::ELEMENT_SIZE_SMALL ? 34 : 120;
+            $thumbHtml = $element->getThumbHtml($thumbSize);
+            if ($thumbHtml && $size === self::ELEMENT_SIZE_SMALL && $element->getHasRoundedThumb()) {
+                $thumbHtml = Html::modifyTagAttributes($thumbHtml, [
+                    'class' => 'rounded',
                 ]);
-            } else {
-                $thumbSvg = $element->getThumbSvg();
-                if ($thumbSvg !== null) {
-                    $thumbSvg = Html::svg($thumbSvg, false, true);
-                    $alt = $element->getThumbAlt();
-                    if ($alt !== null) {
-                        $thumbSvg = Html::prependToTag($thumbSvg, Html::tag('title', Html::encode($alt)));
-                    }
-                    $thumbSvg = Html::modifyTagAttributes($thumbSvg, ['role' => 'img']);
-                    $imgHtml = Html::tag('div', $thumbSvg, [
-                        'class' => $thumbClass,
-                    ]);
-                }
             }
         }
 
@@ -500,7 +467,7 @@ class Cp
             $attributes['class'][] = 'has-status';
         }
 
-        if ($imgHtml !== null) {
+        if ($thumbHtml !== null) {
             $attributes['class'][] = 'has-thumb';
         }
 
@@ -544,8 +511,8 @@ class Cp
                 ]);
         }
 
-        if ($imgHtml !== null) {
-            $innerHtml .= $imgHtml;
+        if ($thumbHtml !== null) {
+            $innerHtml .= $thumbHtml;
         }
 
         if ($showLabel) {

@@ -294,6 +294,18 @@ class Address extends Element implements AddressInterface, NestedElementInterfac
     }
 
     /**
+     * Sets the owner element.
+     *
+     * @param ElementInterface|null $owner
+     * @since 4.4.16
+     */
+    public function setOwner(?ElementInterface $owner): void
+    {
+        $this->_owner = $owner;
+        $this->ownerId = $owner?->id;
+    }
+
+    /**
      * @inheritdoc
      */
     public function getField(): ?ElementContainerFieldInterface

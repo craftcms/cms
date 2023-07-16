@@ -8,6 +8,7 @@
 
 namespace craft\helpers;
 
+use BackedEnum;
 use DateTime;
 use ReflectionException;
 use ReflectionNamedType;
@@ -118,6 +119,14 @@ final class Typecast
                     $value = $date ?: null;
                 }
                 return;
+            default:
+                if (
+                    is_subclass_of($typeName, BackedEnum::class) &&
+                    !is_subclass_of($value, $typeName)
+                ) {
+                    /** @var BackedEnum $typeName */
+                    $value = $typeName::from($value);
+                }
         }
     }
 

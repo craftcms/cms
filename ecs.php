@@ -10,6 +10,9 @@ return static function(ECSConfig $ecsConfig): void {
         __DIR__ . '/tests',
         __FILE__,
     ]);
+    $ecsConfig->skip([
+        __DIR__ . '/tests/unit/helpers/typecast',
+    ]);
 
     $ecsConfig->parallel();
     $ecsConfig->sets([SetList::CRAFT_CMS_4]);

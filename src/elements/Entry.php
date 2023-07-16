@@ -28,6 +28,8 @@ use craft\elements\actions\NewSiblingBefore;
 use craft\elements\actions\Restore;
 use craft\elements\conditions\ElementConditionInterface;
 use craft\elements\conditions\entries\EntryCondition;
+use craft\elements\conditions\entries\SectionConditionRule;
+use craft\elements\conditions\entries\TypeConditionRule;
 use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\db\EntryQuery;
@@ -294,6 +296,47 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
         }
 
         return $sources;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function modifyCustomSource(array $config): array
+    {
+        try {
+            /** @var EntryCondition $condition */
+            $condition = Craft::$app->getConditions()->createCondition($config['condition']);
+        } catch (InvalidConfigException) {
+            return $config;
+        }
+
+        $rules = $condition->getConditionRules();
+
+        // see if it's limited to one section
+        /** @var SectionConditionRule|null $sectionRule */
+        $sectionRule = ArrayHelper::firstWhere($rules, fn($rule) => $rule instanceof SectionConditionRule);
+        $sectionOptions = $sectionRule?->getValues();
+
+        if ($sectionOptions && count($sectionOptions) === 1) {
+            $section = Craft::$app->getEntries()->getSectionByUid(reset($sectionOptions));
+            if ($section) {
+                $config['data']['handle'] = $section->handle;
+            }
+        }
+
+        // see if it specifies any entry types
+        /** @var TypeConditionRule|null $entryTypeRule */
+        $entryTypeRule = ArrayHelper::firstWhere($rules, fn($rule) => $rule instanceof TypeConditionRule);
+        $entryTypeOptions = $entryTypeRule?->getValues();
+
+        if ($entryTypeOptions) {
+            $entryType = Craft::$app->getEntries()->getEntryTypeByUid(reset($entryTypeOptions));
+            if ($entryType) {
+                $config['data']['entry-type'] = $entryType->handle;
+            }
+        }
+
+        return $config;
     }
 
     /**
