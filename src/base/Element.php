@@ -729,11 +729,18 @@ abstract class Element extends Component implements ElementInterface
      * @event ElementStructureEvent The event that is triggered before the element is moved in a structure.
      *
      * You may set [[\yii\base\ModelEvent::$isValid]] to `false` to prevent the element from getting moved.
+     *
+     * @deprecated in 4.5.0. [[\craft\services\Structures::EVENT_BEFORE_INSERT_ELEMENT]] or
+     * [[\craft\services\Structures::EVENT_BEFORE_MOVE_ELEMENT|EVENT_BEFORE_MOVE_ELEMENT]]
+     * should be used instead.
      */
     public const EVENT_BEFORE_MOVE_IN_STRUCTURE = 'beforeMoveInStructure';
 
     /**
      * @event ElementStructureEvent The event that is triggered after the element is moved in a structure.
+     * @deprecated in 4.5.0. [[\craft\services\Structures::EVENT_AFTER_INSERT_ELEMENT]] or
+     * [[\craft\services\Structures::EVENT_AFTER_MOVE_ELEMENT|EVENT_AFTER_MOVE_ELEMENT]]
+     * should be used instead.
      */
     public const EVENT_AFTER_MOVE_IN_STRUCTURE = 'afterMoveInStructure';
 
@@ -2173,11 +2180,7 @@ abstract class Element extends Component implements ElementInterface
 
         // If this is a field, make sure the value has been normalized before returning the CustomFieldBehavior value
         if ($this->fieldByHandle($name) !== null) {
-            $value = $this->getFieldValue($name);
-            if (is_object($value) && (!interface_exists(UnitEnum::class) || !$value instanceof UnitEnum)) {
-                $value = clone $value;
-            }
-            return $value;
+            return $this->clonedFieldValue($name);
         }
 
         return parent::__get($name);
@@ -2307,7 +2310,7 @@ abstract class Element extends Component implements ElementInterface
             foreach ($fieldLayout->getCustomFieldElements() as $layoutElement) {
                 $field = $layoutElement->getField();
                 if (!isset($fields[$field->handle])) {
-                    $fields[$field->handle] = fn() => $this->getFieldValue($field->handle);
+                    $fields[$field->handle] = fn() => $this->clonedFieldValue($field->handle);
                 }
             }
         }
@@ -4100,6 +4103,15 @@ abstract class Element extends Component implements ElementInterface
         foreach ($values as $fieldHandle => $value) {
             $this->setFieldValue($fieldHandle, $value);
         }
+    }
+
+    private function clonedFieldValue(string $fieldHandle): mixed
+    {
+        $value = $this->getFieldValue($fieldHandle);
+        if (is_object($value) && (!interface_exists(UnitEnum::class) || !$value instanceof UnitEnum)) {
+            return clone $value;
+        }
+        return $value;
     }
 
     /**

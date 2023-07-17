@@ -130,6 +130,8 @@ class Gc extends Component
         $this->deletePartialElements(Tag::class, Table::CONTENT, 'elementId');
         $this->deletePartialElements(User::class, Table::CONTENT, 'elementId');
 
+        $this->_deleteUnsupportedSiteEntries();
+
         $this->_deleteOrphanedDraftsAndRevisions();
         $this->_deleteOrphanedSearchIndexes();
         $this->_deleteOrphanedRelations();
@@ -415,6 +417,62 @@ SQL;
         $this->_stdout("done\n", Console::FG_GREEN);
     }
 
+
+    /**
+     * Deletes entries for sites that aren’t enabled by their section.
+     *
+     * This can happen if you entrify a category group, disable one of the sites in the newly-created section’s
+     * settings, then deploy those changes to another environment, apply project config changes, and re-run the
+     * entrify command. (https://github.com/craftcms/cms/issues/13383)
+     */
+    private function _deleteUnsupportedSiteEntries(): void
+    {
+        $this->_stdout('    > deleting entries in unsupported sites ... ');
+
+        $sectionsToCheck = [];
+        $siteIds = Craft::$app->getSites()->getAllSiteIds(true);
+
+        // get sections that are not enabled for given site
+        foreach (Craft::$app->getSections()->getAllSections() as $section) {
+            $sectionSettings = $section->getSiteSettings();
+            foreach ($siteIds as $siteId) {
+                if (!isset($sectionSettings[$siteId])) {
+                    $sectionsToCheck[] = [
+                        'siteId' => $siteId,
+                        'sectionId' => $section->id,
+                    ];
+                }
+            }
+        }
+
+        if (!empty($sectionsToCheck)) {
+            $elementsSitesTable = Table::ELEMENTS_SITES;
+            $entriesTable = Table::ENTRIES;
+
+            if ($this->db->getIsMysql()) {
+                $sql = <<<SQL
+    DELETE [[es]].* FROM $elementsSitesTable [[es]]
+    LEFT JOIN $entriesTable [[en]] ON [[en.id]] = [[es.elementId]]
+    WHERE [[en.sectionId]] = :sectionId AND [[es.siteId]] = :siteId
+    SQL;
+            } else {
+                $sql = <<<SQL
+    DELETE FROM $elementsSitesTable
+    USING $elementsSitesTable [[es]]
+    LEFT JOIN $entriesTable [[en]] ON [[en.id]] = [[es.elementId]]
+    WHERE
+      $elementsSitesTable.[[id]] = [[es.id]] AND
+      [[en.sectionId]] = :sectionId AND [[es.siteId]] = :siteId
+    SQL;
+            }
+
+            foreach ($sectionsToCheck as $params) {
+                $this->db->createCommand($sql, $params)->execute();
+            }
+        }
+
+        $this->_stdout("done\n", Console::FG_GREEN);
+    }
 
     /**
      * Deletes any orphaned rows in the `drafts` and `revisions` tables.

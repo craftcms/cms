@@ -40,6 +40,8 @@
 ### Extensibility
 - Filesystem types can now register custom file uploaders. ([#13313](https://github.com/craftcms/cms/pull/13313))
 - When applying a draft, the canonical elements’ `getDirtyAttributes()` and `getDirtyFields()` methods now return the attribute names and field handles that were modified on the draft for save events. ([#12967](https://github.com/craftcms/cms/issues/12967))
+- Admin tables can be configured to pass custom query params to the data endpoint. ([#13416](https://github.com/craftcms/cms/pull/13416))
+- Admin tables can now be programatically reloaded. ([#13416](https://github.com/craftcms/cms/pull/13416))
 - Added `craft\addresses\SubdivisionRepository`. ([#13361](https://github.com/craftcms/cms/pull/13361))
 - Added `craft\base\Element::thumbSvg()`. ([#13262](https://github.com/craftcms/cms/pull/13262))
 - Added `craft\base\ElementInterface::getThumbHtml()`.
@@ -55,6 +57,9 @@
 - Added `craft\controllers\AssetsControllerTrait`.
 - Added `craft\elements\db\ElementQuery::EVENT_BEFORE_POPULATE_ELEMENT`.
 - Added `craft\events\DefineAddressSubdivisionsEvent`. ([#13361](https://github.com/craftcms/cms/pull/13361))
+- Added `craft\events\MoveElementEvent::$action`. ([#13429](https://github.com/craftcms/cms/pull/13429))
+- Added `craft\events\MoveElementEvent::$targetElementId`. ([#13429](https://github.com/craftcms/cms/pull/13429))
+- Added `craft\events\MoveElementEvent::getTargetElement()`. ([#13429](https://github.com/craftcms/cms/pull/13429))
 - Added `craft\gql\GqlEntityRegistry::getOrCreate()`. ([#13354](https://github.com/craftcms/cms/pull/13354))
 - Added `craft\helpers\Assets::iconSvg()`.
 - Added `craft\helpers\StringHelper::escapeShortcodes()`. ([#12935](https://github.com/craftcms/cms/issues/12935))
@@ -63,14 +68,26 @@
 - Added `craft\services\Addresses::$formatter`, which can be used to override the default address formatter. ([#13242](https://github.com/craftcms/cms/pull/13242), [#12615](https://github.com/craftcms/cms/discussions/12615))
 - Added `craft\services\Addresses::EVENT_DEFINE_ADDRESS_SUBDIVISIONS`. ([#13361](https://github.com/craftcms/cms/pull/13361))
 - Added `craft\services\Addresses::defineAddressSubdivisions()`. ([#13361](https://github.com/craftcms/cms/pull/13361))
+- Added `craft\services\Structures::ACTION_APPEND`. ([#13429](https://github.com/craftcms/cms/pull/13429))
+- Added `craft\services\Structures::ACTION_PLACE_AFTER`. ([#13429](https://github.com/craftcms/cms/pull/13429))
+- Added `craft\services\Structures::ACTION_PLACE_BEFORE`. ([#13429](https://github.com/craftcms/cms/pull/13429))
+- Added `craft\services\Structures::ACTION_PREPEND`. ([#13429](https://github.com/craftcms/cms/pull/13429))
+- Added `craft\services\Structures::EVENT_AFTER_INSERT_ELEMENT`. ([#13429](https://github.com/craftcms/cms/pull/13429))
+- Added `craft\services\Structures::EVENT_BEFORE_INSERT_ELEMENT`. ([#13429](https://github.com/craftcms/cms/pull/13429))
 - Added `craft\web\CpScreenResponseBehavior::$pageSidebar`, `pageSidebar()`, and `pageSidebarTemplate()`. ([#13019](https://github.com/craftcms/cms/pull/13019), [#12795](https://github.com/craftcms/cms/issues/12795))
 - Added `craft\web\CpScreenResponseBehavior::$slideoutBodyClass`.
 - `craft\helpers\Cp::selectizeFieldHtml()`, `selectizeHtml()`, and `_includes/forms/selectize.twig` now support a `multi` param. ([#13176](https://github.com/craftcms/cms/pull/13176))
 - `craft\helpers\Typecast::properties()` now supports backed enum values. ([#13371](https://github.com/craftcms/cms/pull/13371))
 - `craft\services\Assets::getRootFolderByVolumeId()` now ensures the root folder actually exists, and caches its results internally, improving performance. ([#13297](https://github.com/craftcms/cms/issues/13297))
 - `craft\services\Assets::getThumbUrl()` now has an `$iconFallback` argument, which can be set to `false` to prevent a file icon URL from being returned as a fallback for assets that don’t have image thumbnails.
+- `craft\services\Structures::EVENT_BEFORE_MOVE_ELEMENT` is now cancellable. ([#13429](https://github.com/craftcms/cms/pull/13429))
 - `craft\validators\UniqueValidator` now supports setting an additional filter via the `filter` property. ([#12941](https://github.com/craftcms/cms/pull/12941))
 - `craft\web\UrlManager` no longer triggers its `EVENT_REGISTER_CP_URL_RULES` and `EVENT_REGISTER_SITE_URL_RULES` events until the request is ready to be routed, making it safe to call `UrlManager::addRules()` from plugin/module constructors. ([#13109](https://github.com/craftcms/cms/issues/13109))
+- Deprecated `craft\base\Element::EVENT_AFTER_MOVE_IN_STRUCTURE`. ([#13429](https://github.com/craftcms/cms/pull/13429))
+- Deprecated `craft\base\Element::EVENT_BEFORE_MOVE_IN_STRUCTURE`. ([#13429](https://github.com/craftcms/cms/pull/13429))
+- Deprecated `craft\base\Element::afterMoveInStructure()`. ([#13429](https://github.com/craftcms/cms/pull/13429))
+- Deprecated `craft\base\Element::beforeMoveInStructure()`. ([#13429](https://github.com/craftcms/cms/pull/13429))
+- Deprecated `craft\events\ElementStructureEvent`. ([#13429](https://github.com/craftcms/cms/pull/13429))
 - Deprecated `craft\helpers\ArrayHelper::firstKey()`. `array_key_first()` should be used instead.
 - Deprecated `craft\helpers\Assets::iconPath()`. `craft\helpers\Assets::iconSvg()` or `craft\elements\Asset::getThumbHtml()` should be used instead.
 - Deprecated `craft\helpers\Assets::iconUrl()`.
