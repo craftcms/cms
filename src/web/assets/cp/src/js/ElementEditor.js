@@ -2018,6 +2018,7 @@ Craft.ElementEditor = Garnish.Base.extend(
                       .addClass('elementthumb')
                       .css('z-index', data.activity.length - i)
                       .appendTo($li);
+                    $thumb.find('img,svg').attr('role', 'presentation');
                     Craft.cp.elementThumbLoader.load($li);
                     $thumb.find('title').remove();
                   }

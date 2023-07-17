@@ -5295,6 +5295,8 @@ $min2ColWidth: 400px;
   ul {
     display: flex;
     flex-direction: row;
+    flex-wrap: wrap;
+    gap: var(--xs);
 
     li {
       .elementthumb {
@@ -5315,8 +5317,8 @@ $min2ColWidth: 400px;
         }
       }
 
-      &:not(:first-child) {
-        @include margin-left(-6px);
+      &:not(:last-child) {
+        @include margin-right(-10px);
       }
     }
   }
