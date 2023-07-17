@@ -1563,56 +1563,29 @@ JS, [
                 $recordIsCanonicalAndPublished = $recordIsCanonical && !$record->element->getIsUnpublishedDraft();
                 $isSameOrUpstream = $element->id === $record->element->id || $recordIsCanonical;
 
-                if ($record->isActive) {
-                    if ($isSameOrUpstream) {
-                        $messageParams = [
-                            'user' => $record->user->getName(),
-                            'type' => $recordIsCanonicalAndPublished ? $element::lowerDisplayName() : Craft::t('app', 'draft'),
-                        ];
-                        $message = match ($record->type) {
-                            ElementActivity::TYPE_VIEW => Craft::t('app', '{user} is viewing this {type}.', $messageParams),
-                            ElementActivity::TYPE_EDIT, ElementActivity::TYPE_SAVE => Craft::t('app', '{user} is editing this {type}.', $messageParams),
-                        };
-                    } else {
-                        $messageParams = [
-                            'user' => $record->user->getName(),
-                            'type' => $element::lowerDisplayName(),
-                        ];
-                        $message = match ($record->type) {
-                            ElementActivity::TYPE_VIEW => Craft::t('app', '{user} is viewing a draft of this {type}.', $messageParams),
-                            ElementActivity::TYPE_EDIT, ElementActivity::TYPE_SAVE => Craft::t('app', '{user} is editing a draft of this {type}.', $messageParams),
-                        };
-                    }
+                if ($isSameOrUpstream) {
+                    $messageParams = [
+                        'user' => $record->user->getName(),
+                        'type' => $recordIsCanonicalAndPublished ? $element::lowerDisplayName() : Craft::t('app', 'draft'),
+                    ];
+                    $message = match ($record->type) {
+                        ElementActivity::TYPE_VIEW => Craft::t('app', '{user} is viewing this {type}.', $messageParams),
+                        ElementActivity::TYPE_EDIT, ElementActivity::TYPE_SAVE => Craft::t('app', '{user} is editing this {type}.', $messageParams),
+                    };
                 } else {
-                    if ($isSameOrUpstream) {
-                        $messageParams = [
-                            'user' => $record->user->getName(),
-                            'type' => $recordIsCanonicalAndPublished ? $element::lowerDisplayName() : Craft::t('app', 'draft'),
-                            'timestamp' => Craft::$app->getFormatter()->asTimestamp($record->timestamp, 'short', true),
-                        ];
-                        $message = match ($record->type) {
-                            ElementActivity::TYPE_VIEW => Craft::t('app', '{user} viewed this {type} {timestamp}.', $messageParams),
-                            ElementActivity::TYPE_EDIT => Craft::t('app', '{user} edited this {type} {timestamp}.', $messageParams),
-                            ElementActivity::TYPE_SAVE => Craft::t('app', '{user} saved this {type} {timestamp}.', $messageParams),
-                        };
-                    } else {
-                        $messageParams = [
-                            'user' => $record->user->getName(),
-                            'type' => $element::lowerDisplayName(),
-                            'timestamp' => Craft::$app->getFormatter()->asTimestamp($record->timestamp, 'short', true),
-                        ];
-                        $message = match ($record->type) {
-                            ElementActivity::TYPE_VIEW => Craft::t('app', '{user} viewed a draft of this {type} {timestamp}.', $messageParams),
-                            ElementActivity::TYPE_EDIT => Craft::t('app', '{user} edited a draft of this {type} {timestamp}.', $messageParams),
-                            ElementActivity::TYPE_SAVE => Craft::t('app', '{user} saved a draft of this {type} {timestamp}.', $messageParams),
-                        };
-                    }
+                    $messageParams = [
+                        'user' => $record->user->getName(),
+                        'type' => $element::lowerDisplayName(),
+                    ];
+                    $message = match ($record->type) {
+                        ElementActivity::TYPE_VIEW => Craft::t('app', '{user} is viewing a draft of this {type}.', $messageParams),
+                        ElementActivity::TYPE_EDIT, ElementActivity::TYPE_SAVE => Craft::t('app', '{user} is editing a draft of this {type}.', $messageParams),
+                    };
                 }
 
                 return [
                     'userThumb' => $record->user->getThumbHtml(26),
                     'message' => $message,
-                    'active' => $record->isActive,
                 ];
             }, $activity),
             'updatedTimestamp' => $element->dateUpdated->getTimestamp(),

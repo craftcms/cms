@@ -28,14 +28,12 @@ class ElementActivity
      * @param ElementInterface $element
      * @param self::TYPE_* $type
      * @param DateTime $timestamp
-     * @param bool $isActive,
      */
     public function __construct(
         public User $user,
         public ElementInterface $element,
         public string $type,
         public DateTime $timestamp,
-        public bool $isActive,
     ) {
     }
 }

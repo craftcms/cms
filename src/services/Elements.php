@@ -2309,7 +2309,7 @@ class Elements extends Component
             ->select(['userId', 'siteId', 'draftId', 'type', 'timestamp'])
             ->from(Table::ELEMENTACTIVITY)
             ->where(['elementId' => $element->getCanonicalId()])
-            ->andWhere(['>', 'timestamp', Db::prepareDateForDb(DateTimeHelper::now()->modify('-1 day'))])
+            ->andWhere(['>', 'timestamp', Db::prepareDateForDb(DateTimeHelper::now()->modify('-1 minutef'))])
             ->orderBy(['timestamp' => SORT_DESC]);
 
         if ($excludeUserId) {
@@ -2336,25 +2336,15 @@ class Elements extends Component
         $elements = [];
         $isCanonical = $element->getIsCanonical() || $element->isProvisionalDraft;
         $elements[$isCanonical ? 0 : $element->draftId][$element->siteId] = $element;
-        $activeCutoff = DateTimeHelper::now()->modify('-2 minutes');
 
         foreach ($results as $result) {
-            $timestamp = DateTimeHelper::toDateTime($result['timestamp']);
-            $isActive = $timestamp > $activeCutoff;
-
-            // only include up to 5 records, unless there are 5+ active ones
-            if (!$isActive && count($activity) >= 5) {
-                break;
-            }
-
             // do we already have an activity record for this user?
             if (isset($activityByUserId[$result['userId']])) {
                 $newerRecord = $activityByUserId[$result['userId']];
-                // edit/save trumps view, if it happened in the past 2 minutes
+                // edit/save trumps view
                 if (
                     $newerRecord->type === ElementActivity::TYPE_VIEW &&
-                    $result['type'] !== ElementActivity::TYPE_VIEW &&
-                    $isActive
+                    $result['type'] !== ElementActivity::TYPE_VIEW
                 ) {
                     array_splice($activity, array_search($newerRecord, $activity), 1);
                     unset($activityByUserId[$result['userId']]);
@@ -2394,7 +2384,6 @@ class Elements extends Component
                 $elements[$elementKey][$result['siteId']],
                 $result['type'],
                 DateTimeHelper::toDateTime($result['timestamp']),
-                $isActive,
             );
         }
 

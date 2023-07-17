@@ -1989,6 +1989,9 @@ Craft.ElementEditor = Garnish.Base.extend(
         () =>
           new Promise((resolve, reject) => {
             Craft.sendActionRequest('POST', 'elements/recent-activity', {
+              params: {
+                dontExtendSession: 1,
+              },
               data: {
                 elementType: this.settings.elementType,
                 elementId: this.settings.canonicalId,
@@ -2015,9 +2018,6 @@ Craft.ElementEditor = Garnish.Base.extend(
                       .addClass('elementthumb')
                       .css('z-index', data.activity.length - i)
                       .appendTo($li);
-                    if (!activity.active) {
-                      $thumb.addClass('faded');
-                    }
                     Craft.cp.elementThumbLoader.load($li);
                     $thumb.find('title').remove();
                   }
@@ -2062,7 +2062,7 @@ Craft.ElementEditor = Garnish.Base.extend(
                   data.canonicalUpdatedTimestamp;
                 setTimeout(() => {
                   this._checkActivity();
-                }, 60000);
+                }, 15000);
                 resolve();
               })
               .catch(reject);

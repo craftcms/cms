@@ -5307,16 +5307,6 @@ $min2ColWidth: 400px;
         border: 2px solid var(--white);
         box-shadow: 0 1px 2px 1px transparentize($grey900, 0.9);
 
-        &.faded {
-          box-shadow: 0 1px 2px transparentize($grey900, 0.9);
-
-          img,
-          svg {
-            filter: grayscale(100%);
-            opacity: 0.5;
-          }
-        }
-
         img,
         svg {
           display: block;
