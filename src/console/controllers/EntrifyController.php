@@ -14,10 +14,11 @@ use craft\db\Query;
 use craft\db\Table;
 use craft\elements\Category;
 use craft\elements\Entry;
-use craft\elements\GlobalSet;
 use craft\elements\Tag;
 use craft\elements\User;
-use craft\events\EntrifyEvent;
+use craft\events\EntrifyCategoriesEvent;
+use craft\events\EntrifyGlobalSetEvent;
+use craft\events\EntrifyTagsEvent;
 use craft\events\SectionEvent;
 use craft\fields\Categories;
 use craft\fields\Entries;
@@ -43,7 +44,9 @@ class EntrifyController extends Controller
 {
     // Events
     // -------------------------------------------------------------------------
-    public const EVENT_AFTER_ENTRIFY = 'onAfterEntrify';
+    public const EVENT_ENTRIFY_CATEGORIES = 'onEntrifyCategories';
+    public const EVENT_ENTRIFY_TAGS = 'onEntrifyTags';
+    public const EVENT_ENTRIFY_GLOBAL_SET = 'onEntrifyGlobalSet';
 
     /**
      * @var string|null The section handle that entries should be saved in
@@ -294,28 +297,17 @@ class EntrifyController extends Controller
             $this->_deployTip('categories', $categoryGroup->handle);
         }
 
-        // Fire a 'onAfterEntrify' event
-        if ($this->hasEventHandlers(self::EVENT_AFTER_ENTRIFY)) {
-            $event = new EntrifyEvent([
-                'elementType' => Category::class,
-                'elementGroup' => [
-                    'from' => [
-                        'id' => $categoryGroup->id,
-                        'uid' => $categoryGroup->uid,
-                    ],
-                    'to' => [
-                        'section' => $section->uid,
-                        'entryType' => $entryType->uid,
-                    ],
-                ],
-                'fields' => [
-                    'type' => Categories::class,
-                    'converted' => $fieldsConverted,
-                    'fields' => $fields ?? null,
-                ],
+        // Fire a 'onEntrifyCategories' event
+        if ($this->hasEventHandlers(self::EVENT_ENTRIFY_CATEGORIES)) {
+            $event = new EntrifyCategoriesEvent([
+                'categoryGroup' => $categoryGroup,
+                'section' => $section,
+                'entryType' => $entryType,
+                'fieldsConverted' => $fieldsConverted,
+                'fields' => $fields ?? null,
             ]);
 
-            $this->trigger(self::EVENT_AFTER_ENTRIFY, $event);
+            $this->trigger(self::EVENT_ENTRIFY_CATEGORIES, $event);
         }
 
         return ExitCode::OK;
@@ -459,28 +451,17 @@ class EntrifyController extends Controller
             $this->_deployTip('tags', $tagGroup->handle);
         }
 
-        // Fire a 'onAfterEntrify' event
-        if ($this->hasEventHandlers(self::EVENT_AFTER_ENTRIFY)) {
-            $event = new EntrifyEvent([
-                'elementType' => Tag::class,
-                'elementGroup' => [
-                    'from' => [
-                        'id' => $tagGroup->id,
-                        'uid' => $tagGroup->uid,
-                    ],
-                    'to' => [
-                        'section' => $section->uid,
-                        'entryType' => $entryType->uid,
-                    ],
-                ],
-                'fields' => [
-                    'type' => Tags::class,
-                    'converted' => $fieldsConverted,
-                    'fields' => $fields ?? null,
-                ],
+        // Fire a 'onEntrifyTags' event
+        if ($this->hasEventHandlers(self::EVENT_ENTRIFY_TAGS)) {
+            $event = new EntrifyTagsEvent([
+                'tagGroup' => $tagGroup,
+                'section' => $section,
+                'entryType' => $entryType,
+                'fieldsConverted' => $fieldsConverted,
+                'fields' => $fields ?? null,
             ]);
 
-            $this->trigger(self::EVENT_AFTER_ENTRIFY, $event);
+            $this->trigger(self::EVENT_ENTRIFY_TAGS, $event);
         }
 
         return ExitCode::OK;
@@ -597,24 +578,15 @@ class EntrifyController extends Controller
             $this->_deployTip('global-set', $globalSet->handle);
         }
 
-        // Fire a 'onAfterEntrify' event
-        if ($this->hasEventHandlers(self::EVENT_AFTER_ENTRIFY)) {
-            $event = new EntrifyEvent([
-                'elementType' => GlobalSet::class,
-                'elementGroup' => [
-                    'from' => [
-                        'id' => $globalSet->id,
-                        'uid' => $globalSet->uid,
-                    ],
-                    'to' => [
-                        'section' => $section->uid,
-                        'entryType' => $entryType->uid,
-                    ],
-                ],
-                'fields' => [],
+        // Fire a 'onEntrifyTags' event
+        if ($this->hasEventHandlers(self::EVENT_ENTRIFY_GLOBAL_SET)) {
+            $event = new EntrifyGlobalSetEvent([
+                'globalSet' => $globalSet,
+                'section' => $section,
+                'entryType' => $entryType,
             ]);
 
-            $this->trigger(self::EVENT_AFTER_ENTRIFY, $event);
+            $this->trigger(self::EVENT_ENTRIFY_GLOBAL_SET, $event);
         }
 
         return ExitCode::OK;
