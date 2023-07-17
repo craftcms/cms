@@ -7,6 +7,7 @@
 - Garbage collection now deletes entries for sites that aren’t supported by their section. ([#13383](https://github.com/craftcms/cms/issues/13383))
 - Added `craft\elements\Address::setOwner()`.
 - `craft\base\ElementInterface::eagerLoadingMap()` can now include a `createElement` key in the returned array, which defines a target element factory function.
+- `craft\base\Element::toArray()` now clones custom field values, similar to `__get()`. ([#13392](https://github.com/craftcms/cms/issues/13392))
 - Fixed a bug where entry titles could overflow within Entries fields with “Maintain hierarchy” enabled. ([#13382](https://github.com/craftcms/cms/issues/13382))
 - Fixed a bug where batched jobs with a configured limit could be repeated endlessly. ([#13387](https://github.com/craftcms/cms/issues/13387))
 - Fixed an error that could occur if `null` was passed to `craft\elements\MatrixBlock::setOwner()`.
