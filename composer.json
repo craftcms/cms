@@ -48,7 +48,7 @@
     "twig/twig": "~2.15.3",
     "voku/stringy": "^6.4.0",
     "webonyx/graphql-php": "~14.11.5",
-    "yiisoft/yii2": "~2.0.45.0",
+    "yiisoft/yii2": "~2.0.47.0",
     "yiisoft/yii2-debug": "^2.1.16",
     "yiisoft/yii2-queue": "~2.3.2",
     "yiisoft/yii2-swiftmailer": "^2.1.2"
