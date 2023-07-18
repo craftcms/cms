@@ -966,8 +966,6 @@ interface ElementInterface extends ComponentInterface
     /**
      * Returns the URL to the element’s thumbnail, if it has one.
      *
-     * If this returns `null`, [[getThumbSvg()]] will be checked as a fallback.
-     *
      * @param int $size The maximum width and height the thumbnail should have.
      * @return string|null
      */
