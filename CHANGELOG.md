@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 4
 
-## Unreleased
+## 4.4.16 - 2023-07-18
 
 - The “Access the control panel” user permission now includes a warning that the permission grants view-only access to user data and most content.
 - Added info buttons to “View entries”, “Create entries”, and “Save entries” user permissions, clarifying which actions they allow. ([#13375](https://github.com/craftcms/cms/discussions/13375))
