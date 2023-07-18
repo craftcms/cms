@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Added info buttons to “View entries”, “Create entries”, and “Save entries” user permissions, clarifying which actions they allow. ([#13375](https://github.com/craftcms/cms/discussions/13375))
 - Improved performance when loading users with eager-loaded `addresses`. ([#13400](https://github.com/craftcms/cms/issues/13400))
 - `createDraft` GraphQL mutations now support a `creatorId` argument. ([#13401](https://github.com/craftcms/cms/issues/13401))
 - Garbage collection now deletes entries for sites that aren’t supported by their section. ([#13383](https://github.com/craftcms/cms/issues/13383))
