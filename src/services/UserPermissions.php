@@ -376,6 +376,7 @@ class UserPermissions extends Component
                 ],
                 'accessCp' => [
                     'label' => Craft::t('app', 'Access the control panel'),
+                    'warning' => Craft::t('app', 'Includes read-only access to user data and most content, via element selector modals and other means.'),
                     'nested' => array_merge([
                         'accessCpWhenSystemIsOff' => [
                             'label' => Craft::t('app', 'Access the control panel when the system is offline'),
