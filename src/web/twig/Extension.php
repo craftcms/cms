@@ -895,18 +895,33 @@ class Extension extends AbstractExtension implements GlobalsInterface
      */
     public function replaceFilter(mixed $str, mixed $search, mixed $replace = null): mixed
     {
+        if ($search instanceof Traversable) {
+            $search = iterator_to_array($search);
+        }
+
+        $isRegex = fn(string $s) => (bool)preg_match('/^\/.+\/[a-zA-Z]*$/', $s);
+
         // Are they using the standard Twig syntax?
         if (is_array($search) && $replace === null) {
-            return strtr($str, $search);
+            // If there aren’t any regex patterns, we can safely use strtr()
+            if (!ArrayHelper::contains(array_keys($search), $isRegex)) {
+                return strtr($str, $search);
+            }
+        } else {
+            $search = [$search => $replace];
         }
 
-        // Is this a regular expression?
-        if (preg_match('/^\/.+\/[a-zA-Z]*$/', $search)) {
-            return preg_replace($search, $replace, $str);
+        foreach ($search as $s => $r) {
+            // Is this a regular expression?
+            if ($isRegex($s)) {
+                $str = preg_replace($s, $r, $str);
+            } else {
+                // Otherwise use str_replace
+                $str = str_replace($s, $r, $str);
+            }
         }
 
-        // Otherwise use str_replace
-        return str_replace($search, $replace, $str);
+        return $str;
     }
 
     /**

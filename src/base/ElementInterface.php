@@ -270,8 +270,8 @@ interface ElementInterface extends ComponentInterface
      * - **`status`** – The status color that should be shown beside the source label. Possible values include `green`,
      *   `orange`, `red`, `yellow`, `pink`, `purple`, `blue`, `turquoise`, `light`, `grey`, `black`, and `white`. (Optional)
      * - **`badgeCount`** – The badge count that should be displayed alongside the label. (Optional)
-     * - **`sites`** – An array of site IDs that the source should be shown for, on multi-site element indexes. (Optional;
-     *   by default the source will be shown for all sites.)
+     * - **`sites`** – An array of site IDs or UUIDs that the source should be shown for, on multi-site element indexes.
+     *   (Optional; by default the source will be shown for all sites.)
      * - **`criteria`** – An array of element criteria parameters that the source should use when the source is selected.
      *   (Optional)
      * - **`data`** – An array of `data-X` attributes that should be set on the source’s `<a>` tag in the source list’s,
@@ -318,6 +318,15 @@ interface ElementInterface extends ComponentInterface
      * @since 4.4.12
      */
     public static function sourcePath(string $sourceKey, string $stepKey, ?string $context): ?array;
+
+    /**
+     * Modifies a custom source’s config, before it’s returned by [[craft\services\ElementSources::getSources()]]
+     *
+     * @param array $config
+     * @return array
+     * @since 4.5.0
+     */
+    public static function modifyCustomSource(array $config): array;
 
     /**
      * Returns all of the field layouts associated with elements from the given source.
@@ -946,7 +955,18 @@ interface ElementInterface extends ComponentInterface
     public function getPreviewTargets(): array;
 
     /**
-     * Returns the URL to the element’s thumbnail, if there is one.
+     * Returns the HTML for the element’s thumbnail, if it has one.
+     *
+     * @param int $size The width and height the thumbnail should have.
+     * @return string|null
+     * @since 4.5.0
+     */
+    public function getThumbHtml(int $size): ?string;
+
+    /**
+     * Returns the URL to the element’s thumbnail, if it has one.
+     *
+     * If this returns `null`, [[getThumbSvg()]] will be checked as a fallback.
      *
      * @param int $size The maximum width and height the thumbnail should have.
      * @return string|null
@@ -1343,6 +1363,16 @@ interface ElementInterface extends ComponentInterface
     public function setFieldValue(string $fieldHandle, mixed $value): void;
 
     /**
+     * Sets the value for a given field. The value should have originated from post data.
+     *
+     * @param string $fieldHandle The field handle whose value needs to be set
+     * @param mixed $value The value to set on the field
+     * @throws InvalidFieldException if `$fieldHandle` is an invalid field handle
+     * @since 4.5.0
+     */
+    public function setFieldValueFromRequest(string $fieldHandle, mixed $value): void;
+
+    /**
      * Returns the field handles that have been updated on the canonical element since the last time it was
      * merged into this element.
      *
@@ -1395,6 +1425,16 @@ interface ElementInterface extends ComponentInterface
      * @since 3.4.0
      */
     public function getDirtyFields(): array;
+
+    /**
+     * Sets the list of dirty field handles.
+     *
+     * @param string[] $fieldHandles
+     * @param bool $merge Whether these fields should be merged with existing dirty fields
+     * @see getDirtyFields()
+     * @since 4.5.0
+     */
+    public function setDirtyFields(array $fieldHandles, bool $merge = true): void;
 
     /**
      * Marks all fields and attributes as dirty.
@@ -1662,6 +1702,9 @@ interface ElementInterface extends ComponentInterface
      *
      * @param int $structureId The structure ID
      * @return bool Whether the element should be moved within the structure
+     * @deprecated in 4.5.0. [[\craft\services\Structures::EVENT_BEFORE_INSERT_ELEMENT]] or
+     * [[\craft\services\Structures::EVENT_BEFORE_MOVE_ELEMENT|EVENT_BEFORE_MOVE_ELEMENT]]
+     * should be used instead.
      */
     public function beforeMoveInStructure(int $structureId): bool;
 
@@ -1669,6 +1712,9 @@ interface ElementInterface extends ComponentInterface
      * Performs actions after an element is moved within a structure.
      *
      * @param int $structureId The structure ID
+     * @deprecated in 4.5.0. [[\craft\services\Structures::EVENT_AFTER_INSERT_ELEMENT]] or
+     * [[\craft\services\Structures::EVENT_AFTER_MOVE_ELEMENT|EVENT_AFTER_MOVE_ELEMENT]]
+     * should be used instead.
      */
     public function afterMoveInStructure(int $structureId): void;
 

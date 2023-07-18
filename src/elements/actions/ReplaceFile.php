@@ -42,14 +42,14 @@ class ReplaceFile extends ElementAction
 
             const \$element = \$selectedItems.find('.element');
             const \$fileInput = $('<input type="file" name="replaceFile" class="replaceFile" style="display: none;"/>').appendTo(Garnish.\$bod);
-            const options = Craft.elementIndex._currentUploaderSettings;
-
-            options.url = Craft.getActionUrl('assets/replace-file');
-            options.dropZone = null;
-            options.fileInput = \$fileInput;
-            options.paramName = 'replaceFile';
-
-            const tempUploader = new Craft.Uploader(\$fileInput, options);
+            const settings = Craft.elementIndex._currentUploaderSettings;
+            
+            settings.dropZone = null;
+            settings.fileInput = \$fileInput;
+            settings.paramName = 'replaceFile';
+            settings.replace = true;
+            
+            const tempUploader = Craft.createUploader(Craft.elementIndex.uploader.fsType, \$fileInput, settings);
             tempUploader.setParams({
                 assetId: \$element.data('id')
             });

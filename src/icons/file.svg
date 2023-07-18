@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
-<svg version="1.1" xmlns:sketch="http://www.bohemiancoding.com/sketch/ns"
-	 xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 100 100"
-	 style="enable-background:new 0 0 100 100;" xml:space="preserve">
+<svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
+	 viewBox="0 0 100 100" style="enable-background:new 0 0 100 100;" xml:space="preserve">
 <style type="text/css">
-	.st0{fill-rule:evenodd;clip-rule:evenodd;fill:#FFFFFF;}
-	.st1{fill-rule:evenodd;clip-rule:evenodd;fill:#E4EDF6;}
+	.st0{fill:hsl(212, 50%, 93%);}
+	.st1{fill:#FFFFFF;}
+	.st2{fill:hsl(210, 10%, 53%);}
 </style>
-<path class="st0" d="M64.2,12.5H20.8v75h58.5v-60L64.2,12.5z"/>
-<path class="st1" d="M64.2,12.5H20.8v75h58.5v-60L64.2,12.5z M77.8,86H22.2V14h40.5v15h15V86z"/>
-<!-- EXT -->
+<polygon class="st0" points="65,10.5 18.8,10.5 18.8,89.5 81.3,89.5 81.3,26.7 "/>
+<path class="st1" d="M64.2,12.5H20.8v75h58.5v-60L64.2,12.5z"/>
+<path class="st2" d="M64.2,12.5H20.8v75h58.5v-60L64.2,12.5z M77.8,86H22.2V14h40.5v15h15v57H77.8z"/>
 </svg>

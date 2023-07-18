@@ -1255,10 +1255,18 @@ class User extends Element implements IdentityInterface
         $photo = $this->getPhoto();
 
         if ($photo) {
-            return Craft::$app->getAssets()->getThumbUrl($photo, $size);
+            return Craft::$app->getAssets()->getThumbUrl($photo, $size, iconFallback: false);
         }
 
-        return Craft::$app->getAssetManager()->getPublishedUrl('@app/web/assets/cp/dist', true, 'images/user.svg');
+        return null;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    protected function thumbSvg(): ?string
+    {
+        return file_get_contents(Craft::getAlias('@appicons/user.svg'));
     }
 
     /**

@@ -117,13 +117,7 @@
 
 {% set userPhoto %}
     <div class="header-photo">
-        {{ tag('img', {
-            width: 30,
-            height: 30,
-            sizes: '30px',
-            srcset: "#{currentUser.getThumbUrl(30)} 30w, #{currentUser.getThumbUrl(60)} 60w",
-            alt: currentUser.getThumbAlt(),
-        }) }}
+        {{ currentUser.getThumbHtml(30)|raw }}
     </div>
 {% endset %}
 

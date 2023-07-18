@@ -74,6 +74,7 @@ class ElementSources extends Component
      */
     public function getSources(string $elementType, string $context = self::CONTEXT_INDEX, bool $withDisabled = false): array
     {
+        /** @var string|ElementInterface $elementType */
         $nativeSources = $this->_nativeSources($elementType, $context);
         $sourceConfigs = $this->_sourceConfigs($elementType);
 
@@ -93,8 +94,11 @@ class ElementSources extends Component
                         }
                     }
                 } else {
-                    if ($source['type'] === self::TYPE_CUSTOM && !$this->_showCustomSource($source)) {
-                        continue;
+                    if ($source['type'] === self::TYPE_CUSTOM) {
+                        if (!$this->_showCustomSource($source)) {
+                            continue;
+                        }
+                        $source = $elementType::modifyCustomSource($source);
                     }
                     $sources[] = $source;
                 }
@@ -308,10 +312,12 @@ class ElementSources extends Component
             'source' => $sourceKey,
         ]);
 
-        $processedFieldIds = [];
         $user = Craft::$app->getUser()->getIdentity();
+        $fieldLayouts = $this->getFieldLayoutsForSource($elementType, $sourceKey);
+        /** @var CustomField[][] $groupedFieldElements */
+        $groupedFieldElements = [];
 
-        foreach ($this->getFieldLayoutsForSource($elementType, $sourceKey) as $fieldLayout) {
+        foreach ($fieldLayouts as $fieldLayout) {
             foreach ($fieldLayout->getTabs() as $tab) {
                 // Factor in the user condition for non-admins
                 if ($user && !$user->admin && !($tab->getUserCondition()?->matchElement($user) ?? true)) {
@@ -326,20 +332,20 @@ class ElementSources extends Component
                     $field = $layoutElement->getField();
                     if (
                         $field instanceof PreviewableFieldInterface &&
-                        !isset($processedFieldIds[$field->id])
+                        (!$user || $user->admin || ($layoutElement->getUserCondition()?->matchElement($user) ?? true))
                     ) {
-                        // Factor in the user condition for non-admins
-                        if ($user && !$user->admin && !($layoutElement->getUserCondition()?->matchElement($user) ?? true)) {
-                            continue;
-                        }
-
-                        $event->attributes["field:$field->uid"] = [
-                            'label' => Craft::t('site', $field->name),
-                        ];
-                        $processedFieldIds[$field->id] = true;
+                        $groupedFieldElements[$field->id][] = $layoutElement;
                     }
                 }
             }
+        }
+
+        foreach ($groupedFieldElements as $fieldElements) {
+            $field = $fieldElements[0]->getField();
+            $labels = array_unique(array_map(fn(CustomField $layoutElement) => $layoutElement->label(), $fieldElements));
+            $event->attributes["field:$field->uid"] = [
+                'label' => count($labels) === 1 ? $labels[0] : Craft::t('site', $field->name),
+            ];
         }
 
         $this->trigger(self::EVENT_DEFINE_SOURCE_TABLE_ATTRIBUTES, $event);
