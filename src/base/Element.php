@@ -2173,11 +2173,7 @@ abstract class Element extends Component implements ElementInterface
 
         // If this is a field, make sure the value has been normalized before returning the CustomFieldBehavior value
         if ($this->fieldByHandle($name) !== null) {
-            $value = $this->getFieldValue($name);
-            if (is_object($value) && !$value instanceof UnitEnum) {
-                $value = clone $value;
-            }
-            return $value;
+            return $this->clonedFieldValue($name);
         }
 
         return parent::__get($name);
@@ -2311,7 +2307,7 @@ abstract class Element extends Component implements ElementInterface
             foreach ($fieldLayout->getCustomFieldElements() as $layoutElement) {
                 $field = $layoutElement->getField();
                 if (!isset($fields[$field->handle])) {
-                    $fields[$field->handle] = fn() => $this->getFieldValue($field->handle);
+                    $fields[$field->handle] = fn() => $this->clonedFieldValue($field->handle);
                 }
             }
         }
@@ -4064,6 +4060,15 @@ abstract class Element extends Component implements ElementInterface
         foreach ($values as $fieldHandle => $value) {
             $this->setFieldValue($fieldHandle, $value);
         }
+    }
+
+    private function clonedFieldValue(string $fieldHandle): mixed
+    {
+        $value = $this->getFieldValue($fieldHandle);
+        if (is_object($value) && !$value instanceof UnitEnum) {
+            return clone $value;
+        }
+        return $value;
     }
 
     /**
