@@ -1584,6 +1584,7 @@ JS, [
                 }
 
                 return [
+                    'userId' => $record->user->id,
                     'userThumb' => $record->user->getThumbHtml(26),
                     'message' => $message,
                 ];

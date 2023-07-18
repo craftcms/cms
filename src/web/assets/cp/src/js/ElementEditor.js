@@ -55,6 +55,8 @@ Craft.ElementEditor = Garnish.Base.extend(
 
     hiddenTipsStorageKey: 'Craft-' + Craft.systemUid + '.TipField.hiddenTips',
 
+    activityTooltips: null,
+
     get tipDismissBtn() {
       return this.$container.find('.tip-dismiss-btn');
     },
@@ -222,6 +224,8 @@ Craft.ElementEditor = Garnish.Base.extend(
           }
         });
       }
+
+      this.activityTooltips = {};
     },
 
     _createQueue: function () {
@@ -2001,7 +2005,16 @@ Craft.ElementEditor = Garnish.Base.extend(
               },
             })
               .then(({data}) => {
+                let focusedTooltip = null;
+                if (this.activityTooltips) {
+                  const tooltips = Object.values(this.activityTooltips);
+                  focusedTooltip = tooltips.find(
+                    (t) => t.$trigger[0] === document.activeElement
+                  );
+                }
+
                 this.$activityContainer.html('');
+
                 if (data.activity.length) {
                   $('<h2/>', {
                     class: 'visually-hidden',
@@ -2011,7 +2024,7 @@ Craft.ElementEditor = Garnish.Base.extend(
                   for (let i = 0; i < data.activity.length; i++) {
                     const activity = data.activity[i];
                     const $li = $('<li/>', {
-                      title: activity.message,
+                      tabindex: 0,
                       'aria-label': activity.message,
                     }).appendTo($ul);
                     const $thumb = $(activity.userThumb)
@@ -2021,6 +2034,26 @@ Craft.ElementEditor = Garnish.Base.extend(
                     $thumb.find('img,svg').attr('role', 'presentation');
                     Craft.cp.elementThumbLoader.load($li);
                     $thumb.find('title').remove();
+
+                    if (
+                      typeof this.activityTooltips[activity.userId] ===
+                      'undefined'
+                    ) {
+                      this.activityTooltips[activity.userId] =
+                        new Craft.Tooltip($li, activity.message);
+                    } else {
+                      this.activityTooltips[activity.userId].$trigger = $li;
+                      this.activityTooltips[activity.userId].message =
+                        activity.message;
+
+                      // maintain trigger focus
+                      if (
+                        this.activityTooltips[activity.userId] ===
+                        focusedTooltip
+                      ) {
+                        this.activityTooltips[activity.userId].$trigger.focus();
+                      }
+                    }
                   }
                 }
 

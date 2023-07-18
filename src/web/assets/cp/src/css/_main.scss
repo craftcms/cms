@@ -5299,10 +5299,14 @@ $min2ColWidth: 400px;
     gap: var(--xs);
 
     li {
+      width: 30px;
+      height: 30px;
+      border-radius: 50px;
+
       .elementthumb {
         position: relative;
-        width: 30px;
-        height: 30px;
+        width: 100%;
+        height: 100%;
         border-radius: 50px;
         background: var(--gray-050);
         overflow: hidden;

@@ -45,7 +45,9 @@ export default Base.extend(
         Garnish.HUD.activeHUDs = {};
       }
 
-      this.$shade = $('<div/>', {class: this.settings.shadeClass});
+      if (this.settings.withShade) {
+        this.$shade = $('<div/>', {class: this.settings.shadeClass});
+      }
       this.$hud = $('<div/>', {class: this.settings.hudClass}).data(
         'hud',
         this
@@ -90,7 +92,7 @@ export default Base.extend(
 
       this.addListener(this.$body, 'submit', '_handleSubmit');
 
-      if (this.settings.hideOnShadeClick) {
+      if (this.settings.withShade && this.settings.hideOnShadeClick) {
         this.addListener(this.$shade, 'tap,click', 'hide');
       }
 
@@ -208,11 +210,14 @@ export default Base.extend(
       }
 
       // Move it to the end of <body> so it gets the highest sub-z-index
-      this.$shade.appendTo(Garnish.$bod);
-      this.$hud.appendTo(Garnish.$bod);
+      if (this.settings.withShade) {
+        this.$shade.appendTo(Garnish.$bod);
+        this.$shade.show();
+      }
 
+      this.$hud.appendTo(Garnish.$bod);
       this.$hud.show();
-      this.$shade.show();
+
       this.showing = true;
       Garnish.HUD.activeHUDs[this._namespace] = this;
 
@@ -574,7 +579,10 @@ export default Base.extend(
       this.disable();
 
       this.$hud.hide();
-      this.$shade.hide();
+
+      if (this.settings.withShade) {
+        this.$shade.hide();
+      }
 
       this.showing = false;
       delete Garnish.HUD.activeHUDs[this._namespace];
@@ -625,7 +633,7 @@ export default Base.extend(
         this.$hud.remove();
       }
 
-      if (this.$shade) {
+      if (this.settings.withShade && this.$shade) {
         this.$shade.remove();
       }
 
@@ -650,6 +658,7 @@ export default Base.extend(
       tipWidth: 30,
       minBodyWidth: 200,
       minBodyHeight: 0,
+      withShade: true,
       onShow: $.noop,
       onHide: $.noop,
       onSubmit: $.noop,

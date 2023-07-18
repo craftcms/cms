@@ -80,6 +80,7 @@ import './js/StructureTableSorter.js';
 import './js/TableElementIndexView.js';
 import './js/TagSelectInput.js';
 import './js/ThumbsElementIndexView.js';
+import './js/Tooltip.js';
 import './js/UI.js';
 import './js/Uploader.js';
 import './js/UriFormatGenerator.js';
