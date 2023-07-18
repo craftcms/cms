@@ -742,11 +742,13 @@ class FileHelper extends \yii\helpers\FileHelper
      * Return a file extension for the given MIME type.
      *
      * @param $mimeType
+     * @param $preferShort
+     * @param $magicFile
      * @return string
      * @throws InvalidArgumentException if no known extensions exist for the given MIME type.
      * @since 3.5.15
      */
-    public static function getExtensionByMimeType($mimeType): string
+    public static function getExtensionByMimeType($mimeType, $preferShort = false, $magicFile = null): string
     {
         // cover the ambiguous, web-friendly MIME types up front
         switch (strtolower($mimeType)) {
@@ -769,7 +771,7 @@ class FileHelper extends \yii\helpers\FileHelper
             case 'video/quicktime': return 'mov';
         }
 
-        $extensions = FileHelper::getExtensionsByMimeType($mimeType);
+        $extensions = self::getExtensionsByMimeType($mimeType);
 
         if (empty($extensions)) {
             throw new InvalidArgumentException("No file extensions are known for the MIME Type $mimeType.");
