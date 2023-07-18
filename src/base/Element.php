@@ -3289,18 +3289,19 @@ abstract class Element extends Component implements ElementInterface
      */
     public function getThumbHtml(int $size): ?string
     {
-        $thumbUrl = $this->getThumbUrl($size);
+        $thumbUrl = $this->thumbUrl($size);
 
         if ($thumbUrl !== null) {
             return Html::tag('div', '', [
                 'class' => array_filter([
                     'chip-thumb',
-                    $this->getHasCheckeredThumb() ? 'checkered' : null,
+                    $this->hasCheckeredThumb() ? 'checkered' : null,
+                    $this->hasRoundedThumb() ? 'rounded' : null,
                 ]),
                 'data' => [
                     'sizes' => sprintf('%spx', $size),
-                    'srcset' => sprintf('%s %sw, %s %sw', $thumbUrl, $size, $this->getThumbUrl($size * 2), $size * 2),
-                    'alt' => $this->getThumbAlt(),
+                    'srcset' => sprintf('%s %sw, %s %sw', $thumbUrl, $size, $this->thumbUrl($size * 2), $size * 2),
+                    'alt' => $this->thumbAlt(),
                 ],
             ]);
         }
@@ -3308,7 +3309,7 @@ abstract class Element extends Component implements ElementInterface
         $thumbSvg = $this->thumbSvg();
         if ($thumbSvg !== null) {
             $thumbSvg = Html::svg($thumbSvg, false, true);
-            $alt = $this->getThumbAlt();
+            $alt = $this->thumbAlt();
             if ($alt !== null) {
                 $thumbSvg = Html::prependToTag($thumbSvg, Html::tag('title', Html::encode($alt)));
             }
@@ -3322,9 +3323,13 @@ abstract class Element extends Component implements ElementInterface
     }
 
     /**
-     * @inheritdoc
+     * Returns the URL to the element’s thumbnail, if it has one.
+     *
+     * @param int $size The maximum width and height the thumbnail should have.
+     * @return string|null
+     * @since 5.0.0
      */
-    public function getThumbUrl(int $size): ?string
+    protected function thumbUrl(int $size): ?string
     {
         return null;
     }
@@ -3342,25 +3347,34 @@ abstract class Element extends Component implements ElementInterface
     }
 
     /**
-     * @inheritdoc
+     * Returns alt text for the element’s thumbnail.
+     *
+     * @return string|null
+     * @since 5.0.0
      */
-    public function getThumbAlt(): ?string
+    protected function thumbAlt(): ?string
     {
         return null;
     }
 
     /**
-     * @inheritdoc
+     * Returns whether the element’s thumbnail should have a checkered background.
+     *
+     * @return bool
+     * @since 5.0.0
      */
-    public function getHasCheckeredThumb(): bool
+    protected function hasCheckeredThumb(): bool
     {
         return false;
     }
 
     /**
-     * @inheritdoc
+     * Returns whether the element’s thumbnail should be rounded.
+     *
+     * @return bool
+     * @since 5.0.0
      */
-    public function getHasRoundedThumb(): bool
+    protected function hasRoundedThumb(): bool
     {
         return false;
     }

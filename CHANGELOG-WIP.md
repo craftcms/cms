@@ -121,6 +121,10 @@
 - Added `craft\web\twig\variables\Cp::getEntryTypeOptions()`.
 - All of the `craft\services\Sections` members have been moved into `craft\services\Entries`.
 - Renamed `craft\base\BlockElementInterface` to `NestedElementInterface`, and added a `getField()` method to it.
+- Renamed `craft\base\Element::getHasCheckeredThumb()` to `hasCheckeredThumb()` and made it protected.
+- Renamed `craft\base\Element::getHasRoundedThumb()` to `hasRoundedThumb()` and made it protected.
+- Renamed `craft\base\Element::getThumbAlt()` to `thumbAlt()` and made it protected.
+- Renamed `craft\base\Element::getThumbUrl()` to `thumbUrl()` and made it protected.
 - Renamed `craft\base\FieldInterface::valueType()` to `phpType()`.
 - Renamed `craft\fields\Matrix::$maxBlocks` to `$maxEntries`.
 - Renamed `craft\fields\Matrix::$minBlocks` to `$minEntries`.
