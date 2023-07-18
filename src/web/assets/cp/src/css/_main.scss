@@ -2220,11 +2220,15 @@ div.btn.submit input {
     border-radius: var(--small-border-radius);
     display: flex;
     align-items: center;
+    max-width: 100%;
 
     span {
       padding: 7px 0;
       color: var(--medium-text-color);
       cursor: default;
+      max-width: calc((100% - 34px - 14px) / 2);
+      overflow-wrap: break-word;
+      hyphens: auto;
 
       &[data-toggle='on'] {
         @include padding-right(10px);
@@ -2234,6 +2238,11 @@ div.btn.submit input {
       &[data-toggle='off'] {
         @include padding-left(10px);
         @include margin-right(7px);
+        text-align: right;
+
+        body.rtl & {
+          text-align: left;
+        }
       }
     }
   }
@@ -2278,6 +2287,7 @@ div.btn.submit input {
 
   &:not(.small) {
     border-radius: 11px;
+    min-width: 34px;
     width: 34px;
     height: 22px;
 
@@ -3357,6 +3367,10 @@ $checkboxPadding: $checkboxSize + 4;
 
     &.flex-wrap {
       flex-wrap: wrap;
+    }
+
+    li {
+      max-width: 100%;
     }
   }
 

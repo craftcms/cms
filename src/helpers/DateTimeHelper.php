@@ -878,7 +878,13 @@ class DateTimeHelper
             $format = str_replace('A', '', $format) . 'A';
         }
 
-        return [$value, $format];
+        // replace narrow non-breaking spaces with normal spaces, which are
+        // handled a bit more gracefully by DateTime::createFromFormat()
+        // (see https://github.com/php/php-src/issues/11600)
+        return [
+            str_replace("\u{202f}", ' ', $value),
+            str_replace("\u{202f}", ' ', $format),
+        ];
     }
 
     /**
