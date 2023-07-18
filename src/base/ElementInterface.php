@@ -964,38 +964,6 @@ interface ElementInterface extends ComponentInterface
     public function getThumbHtml(int $size): ?string;
 
     /**
-     * Returns the URL to the element’s thumbnail, if it has one.
-     *
-     * @param int $size The maximum width and height the thumbnail should have.
-     * @return string|null
-     */
-    public function getThumbUrl(int $size): ?string;
-
-    /**
-     * Returns alt text for the element’s thumbnail.
-     *
-     * @return string|null
-     * @since 4.0.0
-     */
-    public function getThumbAlt(): ?string;
-
-    /**
-     * Returns whether the element’s thumbnail should have a checkered background.
-     *
-     * @return bool
-     * @since 3.5.5
-     */
-    public function getHasCheckeredThumb(): bool;
-
-    /**
-     * Returns whether the element’s thumbnail should be rounded.
-     *
-     * @return bool
-     * @since 3.5.5
-     */
-    public function getHasRoundedThumb(): bool;
-
-    /**
      * Returns whether the element is enabled for the current site.
      *
      * This can also be set to an array of site ID/site-enabled mappings.

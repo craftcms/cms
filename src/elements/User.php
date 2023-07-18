@@ -1250,7 +1250,7 @@ class User extends Element implements IdentityInterface
     /**
      * @inheritdoc
      */
-    public function getThumbUrl(int $size): ?string
+    protected function thumbUrl(int $size): ?string
     {
         $photo = $this->getPhoto();
 
@@ -1272,7 +1272,7 @@ class User extends Element implements IdentityInterface
     /**
      * @inheritdoc
      */
-    public function getThumbAlt(): ?string
+    protected function thumbAlt(): ?string
     {
         return $this->getPhoto()?->alt ?? $this->getName();
     }
@@ -1280,7 +1280,7 @@ class User extends Element implements IdentityInterface
     /**
      * @inheritdoc
      */
-    public function getHasRoundedThumb(): bool
+    protected function hasRoundedThumb(): bool
     {
         return true;
     }
