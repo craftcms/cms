@@ -412,11 +412,6 @@ class Cp
         if ($showThumb) {
             $thumbSize = $size === self::ELEMENT_SIZE_SMALL ? 34 : 120;
             $thumbHtml = $element->getThumbHtml($thumbSize);
-            if ($thumbHtml && $size === self::ELEMENT_SIZE_SMALL && $element->getHasRoundedThumb()) {
-                $thumbHtml = Html::modifyTagAttributes($thumbHtml, [
-                    'class' => 'rounded',
-                ]);
-            }
         }
 
         $title = '';
