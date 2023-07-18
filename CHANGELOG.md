@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 3.x
 
-## Unreleased
+## 3.8.16 - 2023-07-18
 
 - The “Access the control panel” user permission now includes a warning that the permission grants view-only access to user data and most content.
 - Fixed an RCE vulnerability.
