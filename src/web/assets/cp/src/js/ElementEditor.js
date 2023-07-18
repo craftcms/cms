@@ -2023,14 +2023,14 @@ Craft.ElementEditor = Garnish.Base.extend(
                   const $ul = $('<ul/>').appendTo(this.$activityContainer);
                   for (let i = 0; i < data.activity.length; i++) {
                     const activity = data.activity[i];
-                    const $li = $('<li/>', {
-                      tabindex: 0,
-                      'aria-label': activity.message,
-                    }).appendTo($ul);
+                    const $li = $('<li/>').appendTo($ul);
+                    const $button = $('<button/>', {
+                      'aria-label': `test name recently active, more details`,
+                    }).appendTo($li);
                     const $thumb = $(activity.userThumb)
                       .addClass('elementthumb')
                       .css('z-index', data.activity.length - i)
-                      .appendTo($li);
+                      .appendTo($button);
                     $thumb.find('img,svg').attr('role', 'presentation');
                     Craft.cp.elementThumbLoader.load($li);
                     $thumb.find('title').remove();
