@@ -2223,10 +2223,11 @@ div.btn.submit input {
     max-width: 100%;
 
     span {
+      flex-grow: 1;
       padding: 7px 0;
       color: var(--medium-text-color);
       cursor: default;
-      max-width: calc((100% - 34px - 14px) / 2);
+      overflow: auto;
       overflow-wrap: break-word;
       hyphens: auto;
 
