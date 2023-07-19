@@ -1536,17 +1536,18 @@ interface ElementInterface extends ComponentInterface
     public function getHtmlAttributes(string $context): array;
 
     /**
-     * Returns the HTML that should be shown for a given attribute in Table View.
+     * Returns the HTML that should be shown for a given attribute in table and card views.
      *
      * ::: tip
-     * Element types that extend [[\craft\base\Element]] should override [[\craft\base\Element::tableAttributeHtml()]]
+     * Element types that extend [[\craft\base\Element]] should override [[\craft\base\Element::attributeHtml()]]
      * instead of this method.
      * :::
      *
      * @param string $attribute The attribute name.
-     * @return string The HTML that should be shown for a given attribute in Table View.
+     * @return string The HTML that should be shown for a given attribute in table and card views.
+     * @since 5.0.0
      */
-    public function getTableAttributeHtml(string $attribute): string;
+    public function getAttributeHtml(string $attribute): string;
 
     /**
      * Returns the HTML for any fields/info that should be shown within the editor sidebar.

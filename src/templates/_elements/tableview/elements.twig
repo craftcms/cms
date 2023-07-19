@@ -60,7 +60,7 @@
                 </th>
             {% else %}
                 <td data-title="{{ attribute[1].label }}" data-attr="{{ attribute[0] }}">
-                    {{- element.getTableAttributeHtml(attribute[0])|raw -}}
+                    {{- element.getAttributeHtml(attribute[0])|raw -}}
                 </td>
             {% endif %}
         {% endfor %}

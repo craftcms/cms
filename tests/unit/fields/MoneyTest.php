@@ -81,7 +81,7 @@ class MoneyTest extends TestCase
             Craft::$app->getFormattingLocale()->id = $locale;
         }
 
-        $html = $this->field->getTableAttributeHtml($value, new Entry());
+        $html = $this->field->getPreviewHtml($value, new Entry());
 
         self::assertIsString($html);
         self::assertEquals($expected, $html);

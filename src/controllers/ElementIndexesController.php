@@ -887,7 +887,7 @@ class ElementIndexesController extends BaseElementsController
         $attributeHtml = [];
 
         foreach ($attributes as [$attribute]) {
-            $attributeHtml[$attribute] = $element->getTableAttributeHtml($attribute);
+            $attributeHtml[$attribute] = $element->getAttributeHtml($attribute);
         }
 
         return $this->asJson([

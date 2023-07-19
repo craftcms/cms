@@ -721,11 +721,11 @@ class ElementHelper
     }
 
     /**
-     * Returns the HTML for a given attribute value, to be shown in an element index view.
+     * Returns the HTML for a given attribute value, to be shown in table and card views.
      *
      * @param mixed $value The field value
      * @return string
-     * @since 4.3.0
+     * @since 5.0.0
      */
     public static function attributeHtml(mixed $value): string
     {

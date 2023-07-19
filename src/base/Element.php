@@ -31,6 +31,7 @@ use craft\elements\exporters\Raw;
 use craft\elements\User;
 use craft\errors\InvalidFieldException;
 use craft\events\AuthorizationCheckEvent;
+use craft\events\DefineAttributeHtmlEvent;
 use craft\events\DefineAttributeKeywordsEvent;
 use craft\events\DefineEagerLoadingMapEvent;
 use craft\events\DefineHtmlEvent;
@@ -52,7 +53,6 @@ use craft\events\RegisterElementTableAttributesEvent;
 use craft\events\RegisterPreviewTargetsEvent;
 use craft\events\SetEagerLoadedElementsEvent;
 use craft\events\SetElementRouteEvent;
-use craft\events\SetElementTableAttributeHtmlEvent;
 use craft\fieldlayoutelements\BaseField;
 use craft\helpers\App;
 use craft\helpers\ArrayHelper;
@@ -220,9 +220,9 @@ abstract class Element extends Component implements ElementInterface
      * ```php
      * use craft\base\Element;
      * use craft\elements\Entry;
+     * use craft\events\DefineAttributeHtmlEvent;
      * use craft\events\PrepareElementQueryForTableAttributeEvent;
      * use craft\events\RegisterElementTableAttributesEvent;
-     * use craft\events\SetElementTableAttributeHtmlEvent;
      * use craft\helpers\Cp;
      * use yii\base\Event;
      *
@@ -250,7 +250,7 @@ abstract class Element extends Component implements ElementInterface
      * Event::on(
      *     Entry::class,
      *     Element::EVENT_SET_TABLE_ATTRIBUTE_HTML,
-     *     function(SetElementTableAttributeHtmlEvent $e) {
+     *     function(DefineAttributeHtmlEvent $e) {
      *         $attribute = $e->attribute;
      *
      *         if ($attribute !== 'authorExpertise') {
@@ -321,9 +321,10 @@ abstract class Element extends Component implements ElementInterface
     public const EVENT_REGISTER_PREVIEW_TARGETS = 'registerPreviewTargets';
 
     /**
-     * @event SetElementTableAttributeHtmlEvent The event that is triggered when defining the HTML to represent a table attribute.
+     * @event DefineAttributeHtmlEvent The event that is triggered when defining an attribute’s HTML for table and card views.
+     * @see getAttributeHtml()
      */
-    public const EVENT_SET_TABLE_ATTRIBUTE_HTML = 'setTableAttributeHtml';
+    public const EVENT_DEFINE_ATTRIBUTE_HTML = 'defineAttributeHtml';
 
     /**
      * @event RegisterElementHtmlAttributesEvent The event that is triggered when registering the HTML attributes that should be included in the element’s DOM representation in the control panel.
@@ -4577,44 +4578,39 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
-    public function getTableAttributeHtml(string $attribute): string
+    public function getAttributeHtml(string $attribute): string
     {
         // Give plugins a chance to set this
-        $event = new SetElementTableAttributeHtmlEvent([
+        $event = new DefineAttributeHtmlEvent([
             'attribute' => $attribute,
         ]);
-        $this->trigger(self::EVENT_SET_TABLE_ATTRIBUTE_HTML, $event);
+        $this->trigger(self::EVENT_DEFINE_ATTRIBUTE_HTML, $event);
 
         if ($event->html !== null) {
             return $event->html;
         }
 
-        return $this->tableAttributeHtml($attribute);
+        return $this->attributeHtml($attribute);
     }
 
     /**
-     * Returns the HTML that should be shown for a given attribute in Table View.
-     *
-     * This method can be used to completely customize what actually shows up within the table’s body for a given
-     * attribute, rather than simply showing the attribute’s raw value.
+     * Returns the HTML that should be shown for a given attribute in table and card views.
      *
      * For example, if your elements have an `email` attribute that you want to wrap in a `mailto:` link, your
-     * getTableAttributesHtml() method could do this:
+     * `attributeHtml()` method could do this:
      *
      * ```php
-     * switch ($attribute) {
-     *     case 'email':
-     *         return $this->email ? Html::mailto(Html::encode($this->email)) : '';
-     *     // ...
-     * }
-     * return parent::tableAttributeHtml($attribute);
+     * return match ($attribute) {
+     *     'email' => $this->email ? Html::mailto(Html::encode($this->email)) : '',
+     *     default => parent::attributeHtml($attribute),
+     * };
      * ```
      *
      * ::: warning
      * All untrusted text should be passed through [[Html::encode()]] to prevent XSS attacks.
      * :::
      *
-     * By default the following will be returned:
+     * By default, the following will be returned:
      *
      * - If the attribute name is `link` or `uri`, it will be linked to the front-end URL.
      * - If the attribute is a custom field handle, it will pass the responsibility off to the field type.
@@ -4622,11 +4618,12 @@ abstract class Element extends Component implements ElementInterface
      * - For anything else, it will output the attribute value as a string.
      *
      * @param string $attribute The attribute name.
-     * @return string The HTML that should be shown for a given attribute in Table View.
+     * @return string The HTML that should be shown for a given attribute in table and card views.
      * @throws InvalidConfigException
-     * @see getTableAttributeHtml()
+     * @see getAttributeHtml()
+     * @since 5.0.0
      */
-    protected function tableAttributeHtml(string $attribute): string
+    protected function attributeHtml(string $attribute): string
     {
         switch ($attribute) {
             case 'ancestors':
@@ -4768,7 +4765,7 @@ abstract class Element extends Component implements ElementInterface
                                 }
                             }
 
-                            return $field->getTableAttributeHtml($value, $this);
+                            return $field->getPreviewHtml($value, $this);
                         }
                     }
 

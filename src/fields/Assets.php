@@ -471,7 +471,7 @@ class Assets extends BaseRelationField
     /**
      * @inheritdoc
      */
-    protected function tableAttributeHtml(Collection $elements): string
+    protected function previewHtml(Collection $elements): string
     {
         return Cp::elementPreviewHtml($elements->all(), Cp::ELEMENT_SIZE_SMALL, false, true, $this->previewMode === self::PREVIEW_MODE_FULL);
     }

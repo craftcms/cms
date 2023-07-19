@@ -169,7 +169,7 @@ class Time extends Field implements PreviewableFieldInterface, SortableFieldInte
     /**
      * @inheritdoc
      */
-    public function getTableAttributeHtml(mixed $value, ElementInterface $element): string
+    public function getPreviewHtml(mixed $value, ElementInterface $element): string
     {
         if (!$value) {
             return '';

@@ -836,24 +836,24 @@ JS, [
     /**
      * @inheritdoc
      */
-    public function getTableAttributeHtml(mixed $value, ElementInterface $element): string
+    public function getPreviewHtml(mixed $value, ElementInterface $element): string
     {
         /** @var ElementQueryInterface|Collection $value */
         if ($value instanceof ElementQueryInterface) {
             $value = $this->_all($value, $element)->collect();
         }
 
-        return $this->tableAttributeHtml($value);
+        return $this->previewHtml($value);
     }
 
     /**
-     * Returns the HTML that should be shown for this field in Table View.
+     * Returns the HTML that should be shown for this field in table and card views.
      *
      * @param Collection $elements
      * @return string
-     * @since 3.6.3
+     * @since 5.0.0
      */
-    protected function tableAttributeHtml(Collection $elements): string
+    protected function previewHtml(Collection $elements): string
     {
         return Cp::elementPreviewHtml($elements->all());
     }
