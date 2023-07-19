@@ -59,8 +59,8 @@ class CpHelperTest extends TestCase
         self::assertStringNotContainsString('<span class="status', Cp::elementChipHtml($user, 'index', Cp::ELEMENT_SIZE_SMALL, null, false));
 
         // thumb
-        self::assertStringContainsString('chip-thumb', $indexHtml);
-        self::assertStringNotContainsString('chip-thumb', Cp::elementChipHtml($user, 'index', Cp::ELEMENT_SIZE_SMALL, null, true, false));
+        self::assertStringContainsString('thumb', $indexHtml);
+        self::assertStringNotContainsString('thumb', Cp::elementChipHtml($user, 'index', Cp::ELEMENT_SIZE_SMALL, null, true, false));
 
         // label
         self::assertStringContainsString('<div class="label">', $indexHtml);

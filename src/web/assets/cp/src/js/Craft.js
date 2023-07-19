@@ -2230,7 +2230,7 @@ $.extend(Craft, {
     $element.addClass(size).removeClass(otherSize);
 
     if ($element.hasClass('has-thumb')) {
-      const $oldImg = $element.find('> .chip-thumb > img'),
+      const $oldImg = $element.find('> .thumb > img'),
         imgSize = size === 'small' ? '30' : '100',
         $newImg = $('<img/>', {
           sizes: imgSize + 'px',

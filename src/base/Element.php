@@ -3294,7 +3294,7 @@ abstract class Element extends Component implements ElementInterface
         if ($thumbUrl !== null) {
             return Html::tag('div', '', [
                 'class' => array_filter([
-                    'chip-thumb',
+                    'thumb',
                     $this->hasCheckeredThumb() ? 'checkered' : null,
                     $this->hasRoundedThumb() ? 'rounded' : null,
                 ]),
@@ -3315,7 +3315,7 @@ abstract class Element extends Component implements ElementInterface
             }
             $thumbSvg = Html::modifyTagAttributes($thumbSvg, ['role' => 'img']);
             return Html::tag('div', $thumbSvg, [
-                'class' => 'chip-thumb',
+                'class' => 'thumb',
             ]);
         }
 

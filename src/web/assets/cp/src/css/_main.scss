@@ -2788,7 +2788,7 @@ $chipInnerSpacing: 5px;
     cursor: default;
 
     &.has-thumb {
-      .chip-thumb {
+      .thumb {
         img {
           box-shadow: 0 0 0 1px transparentize($darkSelColor, 0.9),
             0 6px 4px -4px transparentize($darkSelColor, 0.8);
@@ -2803,7 +2803,7 @@ $chipInnerSpacing: 5px;
   }
 
   &.has-thumb {
-    .chip-thumb:not(:empty) {
+    .thumb:not(:empty) {
       position: absolute;
       display: flex;
       justify-content: center;
@@ -2828,7 +2828,7 @@ $chipInnerSpacing: 5px;
         }
       }
     }
-    .chip-thumb.open-preview {
+    .thumb.open-preview {
       cursor: pointer;
     }
   }
@@ -2886,7 +2886,7 @@ $chipInnerSpacing: 5px;
     &.has-thumb {
       @include padding-left($smallThumbSize + $chipInnerSpacing);
 
-      .chip-thumb:not(:empty) {
+      .thumb:not(:empty) {
         top: calc(50% - 17px);
         @include left(0);
         width: $smallThumbSize;
@@ -2928,7 +2928,7 @@ $chipInnerSpacing: 5px;
       }
     }
 
-    .chip-thumb:not(:empty) {
+    .thumb:not(:empty) {
       top: $baseChipSidePadding;
       @include left(0);
       width: 100%;
