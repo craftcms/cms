@@ -3346,6 +3346,7 @@ abstract class Element extends Component implements ElementInterface
                 'class' => array_filter([
                     'elementthumb',
                     $this->getHasCheckeredThumb() ? 'checkered' : null,
+                    $this->getHasRoundedThumb() ? 'rounded' : null,
                 ]),
                 'data' => [
                     'sizes' => sprintf('%spx', $size),
