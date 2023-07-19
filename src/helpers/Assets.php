@@ -31,7 +31,7 @@ class Assets
     const INDEX_SKIP_ITEMS_PATTERN = '/.*(Thumbs\.db|__MACOSX|__MACOSX\/|__MACOSX\/.*|\.DS_STORE)$/i';
 
     /**
-     * @event SetElementTableAttributeHtmlEvent The event that is triggered when defining an asset’s filename.
+     * @event SetAssetFilenameEvent The event that is triggered when defining an asset’s filename.
      */
     const EVENT_SET_FILENAME = 'setFilename';
 
