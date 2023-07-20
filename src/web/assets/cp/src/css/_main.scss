@@ -5299,9 +5299,11 @@ $min2ColWidth: 400px;
     gap: var(--xs);
 
     li {
-      width: 30px;
-      height: 30px;
-      border-radius: 50px;
+      .activity-container__trigger {
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+      }
 
       .elementthumb {
         position: relative;

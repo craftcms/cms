@@ -2026,6 +2026,7 @@ Craft.ElementEditor = Garnish.Base.extend(
                     const $li = $('<li/>').appendTo($ul);
                     const $button = $('<button/>', {
                       type: 'button',
+                      class: 'activity-container__trigger',
                       'aria-label': `${activity.userName} active, more info`,
                       'aria-expanded': 'false',
                     }).appendTo($li);
