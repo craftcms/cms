@@ -1978,4 +1978,5 @@ return [
     '“{handle}” is a reserved word.' => '“{handle}” is a reserved word.',
     '“{handle}” isn’t a valid handle.' => '“{handle}” isn’t a valid handle.',
     '“{name}” deleted.' => '“{name}” deleted.',
+    'Cards' => 'Cards',
 ];

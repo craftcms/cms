@@ -1,0 +1,13 @@
+{% set elements = elements ?? [] %}
+{% set disabled = disabled ?? null %}
+{% set viewMode = viewMode ?? null %}
+
+<div class="elements">
+  {% for element in elements %}
+    {% set html = craft.cp.elementCard(element) %}
+    {% if disabled %}
+      {% set html = html|removeClass('removable') %}
+    {% endif %}
+    {{ html|raw }}
+  {% endfor %}
+</div>

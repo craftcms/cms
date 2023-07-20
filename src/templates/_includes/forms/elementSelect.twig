@@ -35,6 +35,8 @@
 {% tag 'div' with containerAttributes %}
     {% if maintainHierarchy %}
         {{ include('_elements/structurelist.twig', { elements, id })}}
+    {% elseif viewMode == 'cards' %}
+        {{ include('_elements/cards.twig', { elements, viewMode, disabled }) }}
     {% else %}
         {{ include('_elements/list.twig', { elements, viewMode, disabled }) }}
     {% endif %}

@@ -13,7 +13,7 @@
 <div id="{{ id }}" class="elementselect">
     <div class="elements {% if viewMode == 'large' %}flex-row flex-wrap{% endif %}">
         {% for element in elements %}
-            {% include "_elements/chip.twig" with {
+            {% include "_elements/element.twig" with {
                 context: 'field',
                 size: (viewMode == 'large' ? 'large' : 'small')
             } %}

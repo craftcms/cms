@@ -326,7 +326,7 @@ class View extends \yii\web\View
         }
 
         // Register the control panel hooks
-        $this->hook('cp.elements.chip', [$this, '_elementChipHtml']);
+        $this->hook('cp.elements.element', [$this, '_elementChipHtml']);
     }
 
     /**
@@ -2226,17 +2226,13 @@ JS;
             $size = (isset($context['viewMode']) && $context['viewMode'] === 'thumbs') ? Cp::ELEMENT_SIZE_LARGE : Cp::ELEMENT_SIZE_SMALL;
         }
 
-        return Cp::elementChipHtml(
+        return Cp::elementHtml(
             $context['element'],
-            $context['context'] ?? 'index',
-            $size,
-            $context['name'] ?? null,
-            true,
-            true,
-            true,
-            true,
-            $context['single'] ?? false,
-            $context['autoReload'] ?? true,
+            context: $context['context'] ?? 'index',
+            size: $size,
+            inputName: $context['name'] ?? null,
+            single: $context['single'] ?? false,
+            autoReload: $context['autoReload'] ?? true,
         );
     }
 }

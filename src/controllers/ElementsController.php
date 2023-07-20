@@ -1516,7 +1516,11 @@ JS, [
             $thumbSize = $this->_viewMode === 'thumbs' ? Cp::ELEMENT_SIZE_LARGE : Cp::ELEMENT_SIZE_SMALL;
         }
 
-        $html = Cp::elementChipHtml($element, $context, $thumbSize);
+        $html = Cp::elementHtml(
+            $element,
+            context: $context,
+            size: $thumbSize,
+        );
         $headHtml = $this->getView()->getHeadHtml();
 
         return $this->asJson(compact('html', 'headHtml'));
@@ -1779,7 +1783,7 @@ JS, [
             'element' => $element->toArray($element->attributes()),
         ];
         $response = $this->asSuccess($message, $data, $this->getPostedRedirectUrl($element), [
-            'details' => !$element->dateDeleted ? Cp::elementChipHtml($element) : null,
+            'details' => !$element->dateDeleted ? Cp::elementHtml($element) : null,
         ]);
 
         if ($addAnother && $this->_addAnother) {

@@ -826,7 +826,7 @@ JS, [
             "<div class='elements" . ($size === Cp::ELEMENT_SIZE_LARGE ? ' flex-row flex-wrap' : '') . "'>";
 
         foreach ($value as $relatedElement) {
-            $html .= Cp::elementChipHtml($relatedElement, size: $size);
+            $html .= Cp::elementHtml($relatedElement, size: $size);
         }
 
         $html .= '</div></div>';
@@ -1389,6 +1389,8 @@ JS, [
         if ($this->allowLargeThumbsView) {
             $viewModes['large'] = Craft::t('app', 'Large Thumbnails');
         }
+
+        $viewModes['cards'] = Craft::t('app', 'Cards');
 
         return $viewModes;
     }

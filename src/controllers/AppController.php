@@ -674,7 +674,7 @@ class AppController extends Controller
 
         foreach ($instances as $instance) {
             if (isset($elements[$instance['siteId']])) {
-                $elementHtml[] = Cp::elementChipHtml(
+                $elementHtml[] = Cp::elementHtml(
                     $elements[$instance['siteId']],
                     $instance['context'],
                     $instance['size'],

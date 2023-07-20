@@ -129,21 +129,14 @@ abstract class BaseField extends FieldLayoutElement
         $innerHtml = '';
 
         $label = $this->selectorLabel();
-        $indicatorHtml =
-            ($this->required ? Html::tag('div', '', [
-                'class' => ['fld-indicator'],
-                'title' => Craft::t('app', 'This field is required'),
-                'aria' => ['label' => Craft::t('app', 'This field is required')],
-                'data' => ['icon' => 'asterisk'],
-                'role' => 'img',
-            ]) : '') .
-            ($this->hasConditions() ? Html::tag('div', '', [
-                'class' => ['fld-indicator'],
-                'title' => Craft::t('app', 'This field is conditional'),
-                'aria' => ['label' => Craft::t('app', 'This field is conditional')],
-                'data' => ['icon' => 'condition'],
-                'role' => 'img',
-            ]) : '');
+
+        $indicatorHtml = implode('', array_map(fn(array $indicator) => Html::tag('div', '', [
+            'class' => ['fld-indicator'],
+            'title' => $indicator['label'],
+            'aria' => ['label' => $indicator['label']],
+            'data' => ['icon' => $indicator['icon']],
+            'role' => 'img',
+        ]), $this->selectorIndicators()));
 
         if ($label !== null) {
             $label = Html::encode($label);
@@ -196,6 +189,32 @@ abstract class BaseField extends FieldLayoutElement
     protected function selectorLabel(): ?string
     {
         return $this->showLabel() ? $this->label() : null;
+    }
+
+    /**
+     * Returns the indicators that should be shown within the selector.
+     *
+     * @since 5.0.0
+     */
+    protected function selectorIndicators(): array
+    {
+        $indicators = [];
+
+        if ($this->required) {
+            $indicators[] = [
+                'label' => Craft::t('app', 'This field is required'),
+                'icon' => 'asterisk',
+            ];
+        }
+
+        if ($this->hasConditions()) {
+            $indicators[] = [
+                'label' => Craft::t('app', 'This field is conditional'),
+                'icon' => 'condition',
+            ];
+        }
+
+        return $indicators;
     }
 
     /**

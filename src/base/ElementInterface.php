@@ -773,6 +773,14 @@ interface ElementInterface extends ComponentInterface
     public function setUiLabelPath(array $path): void;
 
     /**
+     * Returns the body HTML for element cards.
+     *
+     * @return string|null
+     * @since 5.0.0
+     */
+    public function getCardBodyHtml(): ?string;
+
+    /**
      * Returns the reference string to this element.
      *
      * @return string|null

@@ -9,6 +9,7 @@ namespace craft\fields;
 
 use Craft;
 use craft\base\ElementInterface;
+use craft\base\ThumbableFieldInterface;
 use craft\elements\Asset;
 use craft\elements\conditions\ElementCondition;
 use craft\elements\db\AssetQuery;
@@ -47,7 +48,7 @@ use yii\base\InvalidConfigException;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
-class Assets extends BaseRelationField
+class Assets extends BaseRelationField implements ThumbableFieldInterface
 {
     /**
      * @since 3.5.11
@@ -473,7 +474,23 @@ class Assets extends BaseRelationField
      */
     protected function previewHtml(Collection $elements): string
     {
-        return Cp::elementPreviewHtml($elements->all(), Cp::ELEMENT_SIZE_SMALL, false, true, $this->previewMode === self::PREVIEW_MODE_FULL);
+        return Cp::elementPreviewHtml(
+            $elements->all(),
+            showLabel: $this->previewMode === self::PREVIEW_MODE_FULL,
+        );
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getThumbHtml(mixed $value, ElementInterface $element, int $size): ?string
+    {
+        /** @var AssetQuery|ElementCollection $value */
+        if ($value instanceof AssetQuery) {
+            $value = (clone $value)->eagerly(__METHOD__);
+        }
+
+        return $value->one()?->getThumbHtml($size);
     }
 
     // Events

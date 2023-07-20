@@ -4,7 +4,7 @@
 
 <div class="elements">
     {% for element in elements %}
-        {% set element = include('_elements/chip.twig', {
+        {% set element = include('_elements/element.twig', {
             context: 'field',
             size: (viewMode == 'large' ? 'large' : 'small')
         }) %}

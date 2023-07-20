@@ -367,7 +367,7 @@ class EntriesController extends BaseEntriesController
             $data['postDate'] = ($entry->postDate ? DateTimeHelper::toIso8601($entry->postDate) : null);
 
             if ($this->request->getIsCpRequest()) {
-                $data['elementHtml'] = Cp::elementChipHtml($entry);
+                $data['elementHtml'] = Cp::elementHtml($entry);
             }
         }
 

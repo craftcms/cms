@@ -2437,7 +2437,7 @@ JS;
         switch ($attribute) {
             case 'uploader':
                 $uploader = $this->getUploader();
-                return $uploader ? Cp::elementChipHtml($uploader) : '';
+                return $uploader ? Cp::elementHtml($uploader) : '';
 
             case 'filename':
                 return Html::tag('span', Html::encode($this->_filename), [
@@ -2664,7 +2664,7 @@ JS;
             },
             Craft::t('app', 'Uploaded by') => function() {
                 $uploader = $this->getUploader();
-                return $uploader ? Cp::elementChipHtml($uploader) : false;
+                return $uploader ? Cp::elementHtml($uploader) : false;
             },
             Craft::t('app', 'Dimensions') => function() {
                 $dimensions = $this->getDimensions();

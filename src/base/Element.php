@@ -20,7 +20,7 @@ use craft\elements\actions\DeleteActionInterface;
 use craft\elements\actions\Duplicate;
 use craft\elements\actions\Edit;
 use craft\elements\actions\SetStatus;
-use craft\elements\actions\View;
+use craft\elements\actions\View as ViewAction;
 use craft\elements\conditions\ElementCondition;
 use craft\elements\conditions\ElementConditionInterface;
 use craft\elements\db\ElementQuery;
@@ -73,6 +73,7 @@ use craft\validators\SiteIdValidator;
 use craft\validators\SlugValidator;
 use craft\validators\StringValidator;
 use craft\web\UploadedFile;
+use craft\web\View;
 use DateTime;
 use Illuminate\Support\Collection;
 use ReflectionClass;
@@ -987,9 +988,9 @@ abstract class Element extends Component implements ElementInterface
         }
 
         // Prepend View?
-        if (static::hasUris() && !$hasActionType(View::class)) {
+        if (static::hasUris() && !$hasActionType(ViewAction::class)) {
             $actions->prepend([
-                'type' => View::class,
+                'type' => ViewAction::class,
                 'label' => Craft::t('app', 'View {type}', [
                     'type' => static::lowerDisplayName(),
                 ]),
@@ -3018,6 +3019,18 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
+    public function getCardBodyHtml(): ?string
+    {
+        return implode("\n", array_map(
+            fn(PreviewableFieldInterface $field)
+                => Html::tag('div', $field->getPreviewHtml($this->getFieldValue($field->handle), $this)),
+            $this->getFieldLayout()?->getCardBodyFields($this),
+        ));
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function getRef(): ?string
     {
         return null;
@@ -3290,6 +3303,14 @@ abstract class Element extends Component implements ElementInterface
      */
     public function getThumbHtml(int $size): ?string
     {
+        $thumbField = $this->getFieldLayout()?->getThumbField();
+        if ($thumbField) {
+            $thumbHtml = $thumbField->getThumbHtml($this->getFieldValue($thumbField->handle), $this, $size);
+            if ($thumbHtml) {
+                return $thumbHtml;
+            }
+        }
+
         $thumbUrl = $this->thumbUrl($size);
 
         if ($thumbUrl !== null) {
@@ -4633,13 +4654,13 @@ abstract class Element extends Component implements ElementInterface
                 }
                 $html = Html::beginTag('ul', ['class' => 'path']);
                 foreach ($ancestors as $ancestor) {
-                    $html .= Html::tag('li', Cp::elementChipHtml($ancestor));
+                    $html .= Html::tag('li', Cp::elementHtml($ancestor));
                 }
                 return $html . Html::endTag('ul');
 
             case 'parent':
                 $parent = $this->getParent();
-                return $parent ? Cp::elementChipHtml($parent) : '';
+                return $parent ? Cp::elementHtml($parent) : '';
 
             case 'link':
                 if (ElementHelper::isDraftOrRevision($this)) {
@@ -4729,7 +4750,7 @@ abstract class Element extends Component implements ElementInterface
                     return '';
                 }
                 $creator = $behavior->getCreator();
-                return $creator ? Cp::elementChipHtml($creator) : '';
+                return $creator ? Cp::elementHtml($creator) : '';
 
             case 'drafts':
                 if (!$this->hasEagerLoadedElements('drafts')) {
@@ -4743,7 +4764,11 @@ abstract class Element extends Component implements ElementInterface
                     $draft->setUiLabel($draft->draftName);
                 }
 
-                return Cp::elementPreviewHtml($drafts, Cp::ELEMENT_SIZE_SMALL, true, false, true, false);
+                return Cp::elementPreviewHtml(
+                    $drafts,
+                    showThumb: false,
+                    showDraftName: false,
+                );
 
             default:
                 // Is this a custom field?

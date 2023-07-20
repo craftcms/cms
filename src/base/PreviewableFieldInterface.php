@@ -13,8 +13,9 @@ namespace craft\base;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
+ * @mixin Field
  */
-interface PreviewableFieldInterface
+interface PreviewableFieldInterface extends FieldInterface
 {
     /**
      * Returns the HTML that should be shown for this field in table and card views.
