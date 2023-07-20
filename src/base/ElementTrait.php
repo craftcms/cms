@@ -46,6 +46,12 @@ trait ElementTrait
     public bool $isProvisionalDraft = false;
 
     /**
+     * @var bool Whether we're in the process of dropping a provisional draft.
+     * @since 4.4.17
+     */
+    public bool $droppingProvisionalDraft = false;
+
+    /**
      * @var string|null The element’s UID
      */
     public ?string $uid = null;

@@ -1182,6 +1182,7 @@ JS, [
 
             if ($this->_dropProvisional) {
                 $element->isProvisionalDraft = false;
+                $element->droppingProvisionalDraft = true;
             }
 
             $element->setScenario(Element::SCENARIO_ESSENTIALS);

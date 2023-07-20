@@ -3390,7 +3390,7 @@ abstract class Element extends Component implements ElementInterface
             ->structureId($this->structureId)
             ->siteId(['not', $this->siteId])
             ->drafts($this->getIsDraft())
-            ->provisionalDrafts($this->isProvisionalDraft)
+            ->provisionalDrafts($this->droppingProvisionalDraft ? null : $this->isProvisionalDraft)
             ->revisions($this->getIsRevision());
     }
 
