@@ -27,6 +27,14 @@ trait AuthProviderTrait
     public ?string $uid = null;
 
     /**
+     * @inheritDoc
+     */
+    public function getHandle(): string
+    {
+        return $this->handle;
+    }
+
+    /**
      * @return string|null
      */
     public function getSiteLoginHtml(): string|null

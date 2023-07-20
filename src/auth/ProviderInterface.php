@@ -7,6 +7,7 @@
 
 namespace craft\auth;
 
+use craft\auth\mapper\UserMapInterface;
 use craft\base\SavableComponentInterface;
 use craft\errors\AuthFailedException;
 use yii\web\Request;

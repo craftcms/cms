@@ -11,6 +11,7 @@ use Craft;
 use craft\elements\User as UserElement;
 use craft\errors\AuthFailedException;
 use craft\errors\AuthProviderNotFoundException;
+use craft\helpers\Json;
 use craft\helpers\User as UserHelper;
 use craft\web\Controller;
 use yii\web\HttpException;
@@ -128,7 +129,7 @@ class AuthController extends Controller
         // to the default. The IdP in saml can initiate login whick makes this 
         // session logic difficult to work with
         // - DS
-        switch(Craft::$app->getSession()->get(self::SESSION_KEY)) {
+        switch (Craft::$app->getSession()->get(self::SESSION_KEY)) {
 
             case self::REQUEST_TYPE_SESSION:
                 return $this->actionSessionResponse($provider);
@@ -236,12 +237,25 @@ class AuthController extends Controller
         );
     }
 
-    protected function handleFailedResponse(?UserElement $user = null, array $routeParams = []): Response
+    protected function handleFailedResponse(?UserElement $user = null, array $routeParams = []): ?Response
     {
         // Delay randomly between 0 and 1.5 seconds.
         usleep(random_int(0, 1500000));
 
-        $message = UserHelper::getAuthFailureMessage($user);
+        $message = UserHelper::getAuthFailureMessage($user) ?? Craft::t('app', 'Auth error');
+
+        // Log some context around the error
+        $user?->hasErrors() ? Craft::error(
+            sprintf(
+                "%s. Errors: %s.",
+                $message,
+                Json::encode($user->getErrors())
+            ),
+            "auth"
+        ) : Craft::error(
+            $message,
+            "auth"
+        );
 
 //        // Fire a 'loginFailure' event
 //        $event = new LoginFailureEvent([

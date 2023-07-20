@@ -155,7 +155,7 @@ class Auth extends Component
             /** @var array $config */
             /** @phpstan-var array{errorMessage:string,expectedType:string,type:string} $config */
             unset($config['type']);
-            return new Exception("Invalid auth provider");
+            throw new Exception("Invalid auth provider");
         }
     }
 

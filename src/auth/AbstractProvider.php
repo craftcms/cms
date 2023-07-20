@@ -12,15 +12,8 @@ use craft\helpers\Html;
 
 abstract class AbstractProvider extends SavableComponent implements ProviderInterface
 {
-    use AuthProviderTrait;
-
-    /**
-     * @inheritDoc
-     */
-    public function getHandle(): string
-    {
-        return $this->handle;
-    }
+    use AuthProviderTrait,
+        AuthUserMapperTrait;
 
     /**
      * @inheritdoc
