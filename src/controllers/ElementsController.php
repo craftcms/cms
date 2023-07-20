@@ -813,11 +813,11 @@ class ElementsController extends Controller
                     ],
                 ]);
                 if (ElementHelper::supportsFieldCopying($element)) {
-                    $components[] = Html::button(Craft::t('app', 'Copy content from site'), [
+                    $components[] = Html::button(Craft::t('app', 'Copy content'), [
                         'type' => 'button',
                         'class' => ['btn', 'copy-all-from-site'],
                         'aria' => [
-                            'label' => Craft::t('app', 'Copy content from site'),
+                            'label' => Craft::t('app', 'Copy content'),
                         ],
                     ]);
                 }

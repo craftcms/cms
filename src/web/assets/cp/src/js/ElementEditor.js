@@ -592,7 +592,7 @@ Craft.ElementEditor = Garnish.Base.extend(
 
       form +=
         '<label>' +
-        Craft.t('app', 'Copy from:') +
+        Craft.t('app', 'From') +
         '</label>' +
         '<input type="hidden" name="copyFromSiteId" id="copyFromSiteId" value="" />' +
         '<button type="submit" class="btn submit">' +
@@ -608,7 +608,16 @@ Craft.ElementEditor = Garnish.Base.extend(
 
       let hudContent =
         `<div class="copy-translation-dialogue">` +
+        `<h2>` +
+        Craft.t('app', 'Copy content from site') +
+        `</h2>` +
         this._getCopyBetweenSitesForm() +
+        `<p class="smalltext">` +
+        Craft.t(
+          'app',
+          'Only translatable (<span class="t9n-indicator" data-icon="language" data-handle="title"></span>) field values will be copied if their content differs from the current.'
+        ) +
+        `</p>` +
         `</div>`;
 
       let hud = new Garnish.HUD($btn, hudContent);
