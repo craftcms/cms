@@ -99,6 +99,8 @@ Craft.Tooltip = Garnish.Base.extend({
       return;
     }
 
+    this.$trigger.attr('aria-expanded', 'true');
+
     if (!this.hud) {
       this.$p = $('<p/>', {text: this._message});
       this.hud = new Garnish.HUD(this._$trigger, this.$p, {
@@ -119,6 +121,8 @@ Craft.Tooltip = Garnish.Base.extend({
     if (!this.showing) {
       return;
     }
+
+    this.$trigger.attr('aria-expanded', 'false');
 
     if (this.hud) {
       this.hud.hide();

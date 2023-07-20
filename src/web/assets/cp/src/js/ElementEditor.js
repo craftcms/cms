@@ -2025,7 +2025,9 @@ Craft.ElementEditor = Garnish.Base.extend(
                     const activity = data.activity[i];
                     const $li = $('<li/>').appendTo($ul);
                     const $button = $('<button/>', {
-                      'aria-label': `test name recently active, more details`,
+                      type: 'button',
+                      'aria-label': `${activity.userName} active, more info`,
+                      'aria-expanded': 'false',
                     }).appendTo($li);
                     const $thumb = $(activity.userThumb)
                       .addClass('elementthumb')
@@ -2040,7 +2042,7 @@ Craft.ElementEditor = Garnish.Base.extend(
                       'undefined'
                     ) {
                       this.activityTooltips[activity.userId] =
-                        new Craft.Tooltip($li, activity.message);
+                        new Craft.Tooltip($button, activity.message);
                     } else {
                       this.activityTooltips[activity.userId].$trigger = $li;
                       this.activityTooltips[activity.userId].message =
