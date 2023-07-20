@@ -11,6 +11,7 @@ use Craft;
 use craft\base\ElementInterface;
 use craft\base\FieldInterface;
 use craft\base\FieldLayoutElement;
+use craft\base\FieldLayoutProviderInterface;
 use craft\base\Model;
 use craft\events\CreateFieldLayoutFormEvent;
 use craft\events\DefineFieldLayoutCustomFieldsEvent;
@@ -204,6 +205,12 @@ class FieldLayout extends Model
      * @var string UID
      */
     public string $uid;
+
+    /**
+     * @var FieldLayoutProviderInterface|null The field layout’s provider.
+     * @since 4.5.0
+     */
+    public ?FieldLayoutProviderInterface $provider = null;
 
     /**
      * @var string[]|null Reserved custom field handles

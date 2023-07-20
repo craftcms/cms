@@ -1464,9 +1464,38 @@ $.extend(Craft, {
    * @param {string} str
    * @param {string} substr
    * @returns {boolean}
+   * @deprecated String.prototype.endsWith() should be used instead
    */
   startsWith: function (str, substr) {
-    return str.substring(0, substr.length) === substr;
+    return str.startsWith(substr);
+  },
+
+  /**
+   * Ensures a string starts with another string.
+   *
+   * @param {string} str
+   * @param {string} substr
+   * @return {string}
+   */
+  ensureStartsWith: function (str, substr) {
+    if (!str.startsWith(substr)) {
+      str = substr + str;
+    }
+    return str;
+  },
+
+  /**
+   * Ensures a string ends with another string.
+   *
+   * @param {string} str
+   * @param {string} substr
+   * @return {string}
+   */
+  ensureEndsWith: function (str, substr) {
+    if (!str.endsWith(substr)) {
+      str += substr;
+    }
+    return str;
   },
 
   /**
@@ -1893,6 +1922,7 @@ $.extend(Craft, {
   _elementIndexClasses: {},
   _elementSelectorModalClasses: {},
   _elementEditorClasses: {},
+  _uploaderClasses: {},
 
   /**
    * Registers an element index class for a given element type.
@@ -1910,6 +1940,24 @@ $.extend(Craft, {
     }
 
     this._elementIndexClasses[elementType] = func;
+  },
+
+  /**
+   * Registers a file uploader class for a given filesystem type.
+   *
+   * @param {string} fsType
+   * @param {function} func
+   */
+  registerUploaderClass: function (fsType, func) {
+    if (typeof this._uploaderClasses[fsType] !== 'undefined') {
+      throw (
+        'An asset uploader class has already been registered for the filesystem type “' +
+        fsType +
+        '”.'
+      );
+    }
+
+    this._uploaderClasses[fsType] = func;
   },
 
   /**
@@ -1966,6 +2014,26 @@ $.extend(Craft, {
     }
 
     return new func(elementType, $container, settings);
+  },
+
+  /**
+   * Creates a file uploader for a given filesystem type.
+   *
+   * @param {string} fsType
+   * @param {jQuery} $container
+   * @param {Object} settings
+   * @returns {Uploader}
+   */
+  createUploader: function (fsType, $container, settings) {
+    const func =
+      typeof this._uploaderClasses[fsType] !== 'undefined'
+        ? this._uploaderClasses[fsType]
+        : Craft.Uploader;
+
+    const uploader = new func($container, settings);
+    uploader.fsType = fsType;
+
+    return uploader;
   },
 
   /**
@@ -2409,7 +2477,7 @@ if (typeof BroadcastChannel !== 'undefined') {
               }
             }
           }
-          new Craft.ElementThumbLoader().load($elements);
+          Craft.cp.elementThumbLoader.load($elements);
         }
       );
     }

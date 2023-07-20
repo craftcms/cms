@@ -7,6 +7,7 @@ import $ from 'jquery';
  */
 Craft.CP = Garnish.Base.extend(
   {
+    elementThumbLoader: null,
     authManager: null,
 
     $nav: null,
@@ -62,6 +63,8 @@ Craft.CP = Garnish.Base.extend(
     resizeTimeout: null,
 
     init: function () {
+      this.elementThumbLoader = new Craft.ElementThumbLoader();
+
       // Is this session going to expire?
       if (Craft.remainingSessionTime !== 0) {
         this.authManager = new Craft.AuthManager();
@@ -330,6 +333,10 @@ Craft.CP = Garnish.Base.extend(
         );
         observer.observe(footer);
       }
+
+      // Load any element thumbs
+      this.elementThumbLoader.load($('#user-info'));
+      this.elementThumbLoader.load(this.$mainContent);
     },
 
     get $contentHeader() {

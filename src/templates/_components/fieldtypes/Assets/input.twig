@@ -61,11 +61,13 @@
     fieldId: fieldId,
     prevalidate: prevalidate ?? false,
     canUpload: canUpload,
+    fsType: fsType,
     defaultFieldLayoutId: defaultFieldLayoutId,
     modalSettings: {
         hideSidebar: hideSidebar ?? false,
         defaultSource: defaultSource ?? null,
         defaultSourcePath: defaultSourcePath ?? null,
+        preferStoredSource: preferStoredSource ?? false,
         showSourcePath: showSourcePath ?? true,
         indexSettings: {
             showFolders: showFolders ?? true,

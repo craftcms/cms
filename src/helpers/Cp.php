@@ -406,37 +406,11 @@ class Cp
         $showStatus = $showStatus && ($isDraft || $element::hasStatuses());
 
         // Create the thumb/icon image, if there is one
+        $thumbHtml = null;
+
         if ($showThumb) {
-            $thumbSizePx = $size === self::ELEMENT_SIZE_SMALL ? 34 : 120;
-            $thumbUrl = $element->getThumbUrl($thumbSizePx);
-        } else {
-            $thumbSizePx = $thumbUrl = null;
-        }
-
-        if ($thumbUrl !== null) {
-            $imageSize2x = $thumbSizePx * 2;
-            $thumbUrl2x = $element->getThumbUrl($imageSize2x);
-
-            $srcsets = [
-                "$thumbUrl {$thumbSizePx}w",
-                "$thumbUrl2x {$imageSize2x}w",
-            ];
-            $sizesHtml = "{$thumbSizePx}px";
-            $srcsetHtml = implode(', ', $srcsets);
-            $imgHtml = Html::tag('div', '', [
-                'class' => array_filter([
-                    'elementthumb',
-                    $element->getHasCheckeredThumb() ? 'checkered' : null,
-                    $size === self::ELEMENT_SIZE_SMALL && $element->getHasRoundedThumb() ? 'rounded' : null,
-                ]),
-                'data' => [
-                    'sizes' => $sizesHtml,
-                    'srcset' => $srcsetHtml,
-                    'alt' => $element->getThumbAlt(),
-                ],
-            ]);
-        } else {
-            $imgHtml = '';
+            $thumbSize = $size === self::ELEMENT_SIZE_SMALL ? 34 : 120;
+            $thumbHtml = $element->getThumbHtml($thumbSize);
         }
 
         $title = '';
@@ -487,7 +461,7 @@ class Cp
             $attributes['class'][] = 'hasstatus';
         }
 
-        if ($thumbUrl !== null) {
+        if ($thumbHtml !== null) {
             $attributes['class'][] = 'hasthumb';
         }
 
@@ -531,7 +505,9 @@ class Cp
                 ]);
         }
 
-        $innerHtml .= $imgHtml;
+        if ($thumbHtml !== null) {
+            $innerHtml .= $thumbHtml;
+        }
 
         if ($showLabel) {
             $innerHtml .= '<div class="label">';

@@ -282,7 +282,7 @@ EOD;
 
         if (!$this->password && $this->interactive) {
             $envPassword = App::env('CRAFT_DB_PASSWORD');
-            if ($envPassword && $this->confirm('Use the password provided by $DB_PASSWORD?', true)) {
+            if ($envPassword && $this->confirm('Use the password provided by $CRAFT_DB_PASSWORD?', true)) {
                 $this->password = $envPassword;
             } else {
                 $this->stdout('Database password: ');
@@ -509,17 +509,17 @@ EOD;
     public function actionPhpSessionTable(): int
     {
         if (Craft::$app->getDb()->tableExists(Table::PHPSESSIONS)) {
-            $this->stdout('The `phpsessions` table already exists.' . PHP_EOL . PHP_EOL, Console::FG_YELLOW);
+            $this->stdout("The `phpsessions` table already exists.\n", Console::FG_YELLOW);
             return ExitCode::OK;
         }
 
         $migration = new CreatePhpSessionTable();
         if ($migration->up() === false) {
-            $this->stderr('An error occurred while creating the `phpsessions` table.' . PHP_EOL . PHP_EOL, Console::FG_RED);
+            $this->stderr("An error occurred while creating the `phpsessions` table.\n", Console::FG_RED);
             return ExitCode::UNSPECIFIED_ERROR;
         }
 
-        $this->stdout('The `phpsessions` table was created successfully.' . PHP_EOL . PHP_EOL, Console::FG_GREEN);
+        $this->stdout("The `phpsessions` table was created successfully.\n", Console::FG_GREEN);
         return ExitCode::OK;
     }
 

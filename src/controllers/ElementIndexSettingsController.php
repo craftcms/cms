@@ -146,6 +146,10 @@ class ElementIndexSettingsController extends BaseElementsController
                     $source += compact('conditionBuilderHtml', 'conditionBuilderJs');
                 }
 
+                if (isset($source['sites']) && $source['sites'] === false) {
+                    $source['sites'] = [];
+                }
+
                 if (isset($source['userGroups']) && $source['userGroups'] === false) {
                     $source['userGroups'] = [];
                 }
@@ -257,6 +261,10 @@ class ElementIndexSettingsController extends BaseElementsController
                             'label' => $postedSettings['label'],
                             'condition' => $conditionsService->createCondition($postedSettings['condition'])->getConfig(),
                         ];
+
+                        if (isset($postedSettings['sites']) && $postedSettings['sites'] !== '*') {
+                            $sourceConfig['sites'] = is_array($postedSettings['sites']) ? $postedSettings['sites'] : false;
+                        }
 
                         if (isset($postedSettings['userGroups']) && $postedSettings['userGroups'] !== '*') {
                             $sourceConfig['userGroups'] = is_array($postedSettings['userGroups']) ? $postedSettings['userGroups'] : false;

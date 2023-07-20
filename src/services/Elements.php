@@ -1106,10 +1106,7 @@ class Elements extends Component
             // Start with the other sites (if any), so we don't update dateLastMerged until the end
             $otherSiteIds = ArrayHelper::withoutValue(array_keys($supportedSites), $element->siteId);
             if (!empty($otherSiteIds)) {
-                $siteElements = $element::find()
-                    ->drafts(null)
-                    ->provisionalDrafts(null)
-                    ->id($element->id)
+                $siteElements = $this->_localizedElementQuery($element)
                     ->siteId($otherSiteIds)
                     ->status(null)
                     ->all();
@@ -1144,6 +1141,23 @@ class Elements extends Component
                 'element' => $element,
             ]));
         }
+    }
+
+    private function _localizedElementQuery(ElementInterface $element): ElementQueryInterface
+    {
+        // use getLocalized() unless it’s eager-loaded
+        $query = $element->getLocalized();
+        if ($query instanceof ElementQueryInterface) {
+            return $query;
+        }
+
+        return $element::find()
+            ->id($element->id ?: false)
+            ->structureId($element->structureId)
+            ->siteId(['not', $element->siteId])
+            ->drafts($element->getIsDraft())
+            ->provisionalDrafts($element->isProvisionalDraft)
+            ->revisions($element->getIsRevision());
     }
 
     /**
@@ -1577,13 +1591,9 @@ class Elements extends Component
             // Propagate it
             $otherSiteIds = ArrayHelper::withoutValue(array_keys($supportedSites), $mainClone->siteId);
             if ($element->id && !empty($otherSiteIds)) {
-                $siteElements = $this->createElementQuery(get_class($element))
-                    ->id($element->id)
+                $siteElements = $this->_localizedElementQuery($element)
                     ->siteId($otherSiteIds)
                     ->status(null)
-                    ->drafts(null)
-                    ->provisionalDrafts(null)
-                    ->revisions(null)
                     ->all();
 
                 foreach ($siteElements as $siteElement) {
@@ -1741,8 +1751,7 @@ class Elements extends Component
                 continue;
             }
 
-            $elementInOtherSite = $this->createElementQuery(get_class($element))
-                ->id($element->id)
+            $elementInOtherSite = $this->_localizedElementQuery($element)
                 ->siteId($siteId)
                 ->one();
 
@@ -2095,6 +2104,8 @@ class Elements extends Component
         // Separate the multi-site elements from the single-site elements
         $multiSiteElementIds = $firstElement::find()
             ->id(array_map(fn(ElementInterface $element) => $element->id, $elements))
+            ->status(null)
+            ->drafts(null)
             ->siteId(['not', $firstElement->siteId])
             ->unique()
             ->select(['elements.id'])
@@ -2130,7 +2141,12 @@ class Elements extends Component
 
             // Resave them
             $this->resaveElements(
-                $firstElement::find()->id($multiSiteElementIds)->site('*')->unique(),
+                $firstElement::find()
+                    ->id($multiSiteElementIds)
+                    ->status(null)
+                    ->drafts(null)
+                    ->site('*')
+                    ->unique(),
                 true,
                 updateSearchIndex: false
             );
@@ -2211,11 +2227,8 @@ class Elements extends Component
                 $otherSiteIds = ArrayHelper::withoutValue(array_keys($supportedSites), $element->siteId);
 
                 if (!empty($otherSiteIds)) {
-                    $siteElements = $this->createElementQuery(get_class($element))
-                        ->id($element->id)
+                    $siteElements = $this->_localizedElementQuery($element)
                         ->siteId($otherSiteIds)
-                        ->drafts(null)
-                        ->provisionalDrafts(null)
                         ->status(null)
                         ->trashed(null)
                         ->all();
@@ -2520,8 +2533,28 @@ class Elements extends Component
      */
     public function getElementTypeByRefHandle(string $refHandle): ?string
     {
-        if (array_key_exists($refHandle, $this->_elementTypesByRefHandle)) {
-            return $this->_elementTypesByRefHandle[$refHandle];
+        if (!isset($this->_elementTypesByRefHandle[$refHandle])) {
+            $class = $this->elementTypeByRefHandle($refHandle);
+
+            // Special cases for categories/tags/globals, if they’ve been entrified
+            if (
+                ($class === Category::class && empty(Craft::$app->getCategories()->getAllGroups())) ||
+                ($class === Tag::class && empty(Craft::$app->getTags()->getAllTagGroups())) ||
+                ($class === GlobalSet::class && empty(Craft::$app->getGlobals()->getAllSets()))
+            ) {
+                $class = Entry::class;
+            }
+
+            $this->_elementTypesByRefHandle[$refHandle] = $class;
+        }
+
+        return $this->_elementTypesByRefHandle[$refHandle] ?: null;
+    }
+
+    private function elementTypeByRefHandle(string $refHandle): string|false
+    {
+        if (is_subclass_of($refHandle, ElementInterface::class)) {
+            return $refHandle;
         }
 
         foreach ($this->getAllElementTypes() as $class) {
@@ -2531,11 +2564,11 @@ class Elements extends Component
                 ($elementRefHandle = $class::refHandle()) !== null &&
                 strcasecmp($elementRefHandle, $refHandle) === 0
             ) {
-                return $this->_elementTypesByRefHandle[$refHandle] = $class;
+                return $class;
             }
         }
 
-        return $this->_elementTypesByRefHandle[$refHandle] = null;
+        return false;
     }
 
     /**
@@ -2568,11 +2601,11 @@ class Elements extends Component
                     $fallback = $fullMatch;
                 }
 
-                // Does it already have a full element type class name?
-                if (
-                    !is_subclass_of($elementType, ElementInterface::class) &&
-                    ($elementType = $this->getElementTypeByRefHandle($elementType)) === null
-                ) {
+                // Swap out the ref handle for the element type
+                $elementType = $this->getElementTypeByRefHandle($elementType);
+
+                // Use the fallback if we couldn't find an element type
+                if ($elementType === null) {
                     return $fallback;
                 }
 
@@ -2984,7 +3017,11 @@ class Elements extends Component
                                 }
                                 $targetSiteId = $result['siteId'];
                                 if (!isset($targetElements[$targetSiteId][$elementId])) {
-                                    $targetElements[$targetSiteId][$elementId] = $query->createElement($result);
+                                    if (isset($map['createElement'])) {
+                                        $targetElements[$targetSiteId][$elementId] = $map['createElement']($query, $result, $sourceElement);
+                                    } else {
+                                        $targetElements[$targetSiteId][$elementId] = $query->createElement($result);
+                                    }
                                 }
                                 $targetElementsForSource[] = $element = $targetElements[$targetSiteId][$elementId];
 
@@ -3036,17 +3073,23 @@ class Elements extends Component
      * @param int $siteId The site ID that the element should be propagated to
      * @param ElementInterface|false|null $siteElement The element loaded for the propagated site (only pass this if you
      * already had a reason to load it). Set to `false` if it is known to not exist yet.
+     * @return ElementInterface The element in the target site
      * @throws Exception if the element couldn't be propagated
      * @throws UnsupportedSiteException if the element doesn’t support `$siteId`
      * @since 3.0.13
      */
-    public function propagateElement(ElementInterface $element, int $siteId, ElementInterface|false|null $siteElement = null): void
-    {
+    public function propagateElement(
+        ElementInterface $element,
+        int $siteId,
+        ElementInterface|false|null $siteElement = null,
+    ): ElementInterface {
         $supportedSites = ArrayHelper::index(ElementHelper::supportedSitesForElement($element), 'siteId');
-        $this->_propagateElement($element, $supportedSites, $siteId, $siteElement);
+        $siteElement = $this->_propagateElement($element, $supportedSites, $siteId, $siteElement);
 
         // Clear caches
         $this->invalidateCachesForElement($element);
+
+        return $siteElement;
     }
 
     /**
@@ -3315,12 +3358,8 @@ class Elements extends Component
 
                 if (!empty($otherSiteIds)) {
                     if (!$isNewElement) {
-                        $siteElements = $this->createElementQuery(get_class($element))
-                            ->id($element->id)
+                        $siteElements = $this->_localizedElementQuery($element)
                             ->siteId($otherSiteIds)
-                            ->drafts(null)
-                            ->provisionalDrafts(null)
-                            ->revisions(null)
                             ->status(null)
                             ->indexBy('siteId')
                             ->all();
@@ -3465,6 +3504,7 @@ class Elements extends Component
      * @param array $supportedSites The element’s supported site info, indexed by site ID
      * @param int $siteId The site ID being propagated to
      * @param ElementInterface|false|null $siteElement The element loaded for the propagated site
+     * @return ElementInterface The element in the target site
      * @throws Exception if the element couldn't be propagated
      */
     private function _propagateElement(
@@ -3472,7 +3512,7 @@ class Elements extends Component
         array $supportedSites,
         int $siteId,
         ElementInterface|false|null $siteElement = null,
-    ) {
+    ): ElementInterface {
         // Make sure the element actually supports the site it's being saved in
         if (!isset($supportedSites[$siteId])) {
             throw new UnsupportedSiteException($element, $siteId, 'Attempting to propagate an element to an unsupported site.');
@@ -3564,6 +3604,8 @@ class Elements extends Component
             Craft::error($error);
             throw new Exception('Couldn’t propagate element to other site.');
         }
+
+        return $siteElement;
     }
 
     /**

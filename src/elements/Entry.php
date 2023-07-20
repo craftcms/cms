@@ -25,6 +25,8 @@ use craft\elements\actions\NewSiblingBefore;
 use craft\elements\actions\Restore;
 use craft\elements\conditions\ElementConditionInterface;
 use craft\elements\conditions\entries\EntryCondition;
+use craft\elements\conditions\entries\SectionConditionRule;
+use craft\elements\conditions\entries\TypeConditionRule;
 use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\db\EntryQuery;
@@ -298,6 +300,47 @@ class Entry extends Element implements ExpirableElementInterface
         }
 
         return $sources;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function modifyCustomSource(array $config): array
+    {
+        try {
+            /** @var EntryCondition $condition */
+            $condition = Craft::$app->getConditions()->createCondition($config['condition']);
+        } catch (InvalidConfigException) {
+            return $config;
+        }
+
+        $rules = $condition->getConditionRules();
+
+        // see if it's limited to one section
+        /** @var SectionConditionRule|null $sectionRule */
+        $sectionRule = ArrayHelper::firstWhere($rules, fn($rule) => $rule instanceof SectionConditionRule);
+        $sectionOptions = $sectionRule?->getValues();
+
+        if ($sectionOptions && count($sectionOptions) === 1) {
+            $section = Craft::$app->getSections()->getSectionByUid(reset($sectionOptions));
+            if ($section) {
+                $config['data']['handle'] = $section->handle;
+            }
+        }
+
+        // see if it specifies any entry types
+        /** @var TypeConditionRule|null $entryTypeRule */
+        $entryTypeRule = ArrayHelper::firstWhere($rules, fn($rule) => $rule instanceof TypeConditionRule);
+        $entryTypeOptions = $entryTypeRule?->getValues();
+
+        if ($entryTypeOptions) {
+            $entryType = Craft::$app->getSections()->getEntryTypeByUid(reset($entryTypeOptions));
+            if ($entryType) {
+                $config['data']['entry-type'] = $entryType->handle;
+            }
+        }
+
+        return $config;
     }
 
     /**
@@ -1317,7 +1360,10 @@ class Entry extends Element implements ExpirableElementInterface
         $section = $this->getSection();
 
         if (!$this->id) {
-            return $user->can("createEntries:$section->uid");
+            return (
+                $section->type !== Section::TYPE_SINGLE &&
+                $user->can("createEntries:$section->uid")
+            );
         }
 
         if ($this->getIsDraft()) {
@@ -1584,6 +1630,8 @@ EOD;
                     'value' => $this->getTypeId(),
                     'options' => $entryTypeOptions,
                     'disabled' => $static,
+                    'attribute' => 'typeId',
+                    'errors' => $this->getErrors('typeId'),
                 ]);
             })();
         }
@@ -1624,6 +1672,7 @@ EOD;
                     'elements' => $parent ? [$parent] : [],
                     'disabled' => $static,
                     'describedBy' => 'parentId-label',
+                    'errors' => $this->getErrors('parentId'),
                 ]);
             })();
         }
@@ -1645,6 +1694,7 @@ EOD;
                         'single' => true,
                         'elements' => $author ? [$author] : null,
                         'disabled' => $static,
+                        'errors' => $this->getErrors('authorId'),
                     ]);
                 })();
             }

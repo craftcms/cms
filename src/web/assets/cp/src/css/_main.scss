@@ -168,8 +168,17 @@ fieldset:last-child,
 }
 
 .offset-drag-helper {
-  @include margin(-50px, 0, 0, -50px);
-  @include padding(60px, 0, 0, 60px);
+  transition: margin linear 200ms, padding linear 200ms;
+}
+
+body.dragging.ltr .offset-drag-helper {
+  margin: -50px 0 0 -50px;
+  padding: 60px 0 0 60px;
+}
+
+body.dragging.rtl .offset-drag-helper {
+  margin: -50px -50px 0 0;
+  padding: 60px 60px 0 0;
 }
 
 img {
@@ -1650,19 +1659,7 @@ ul.icons {
   cursor: pointer;
   color: var(--medium-text-color);
 
-  input {
-    border: 0;
-    padding: 0;
-    height: 32px;
-    box-shadow: none;
-    background-color: transparent;
-    border: none;
-    cursor: pointer;
-    color: var(--medium-text-color);
-    text-align: center;
-  }
-
-  span {
+  .copytextbtn__icon {
     padding: 0;
     width: 13px;
     background: none;
@@ -1676,7 +1673,7 @@ ul.icons {
     border-color: var(--medium-hairline-color);
     color: var(--text-color);
 
-    input {
+    .copytextbtn__value {
       color: var(--text-color);
     }
   }
@@ -1684,9 +1681,8 @@ ul.icons {
   &.small {
     padding: 0 5px;
 
-    input {
-      font-size: 11px !important;
-      height: 20px;
+    .copytextbtn__value {
+      font-size: calc(11rem / 16);
     }
   }
 }
@@ -2211,11 +2207,15 @@ div.btn.submit input {
     border-radius: var(--small-border-radius);
     display: flex;
     align-items: center;
+    max-width: 100%;
 
     span {
       padding: 7px 0;
       color: var(--medium-text-color);
       cursor: default;
+      max-width: calc((100% - 34px - 14px) / 2);
+      overflow-wrap: break-word;
+      hyphens: auto;
 
       &[data-toggle='on'] {
         @include padding-right(10px);
@@ -2225,6 +2225,11 @@ div.btn.submit input {
       &[data-toggle='off'] {
         @include padding-left(10px);
         @include margin-right(7px);
+        text-align: right;
+
+        body.rtl & {
+          text-align: left;
+        }
       }
     }
   }
@@ -2269,6 +2274,7 @@ div.btn.submit input {
 
   &:not(.small) {
     border-radius: 11px;
+    min-width: 34px;
     width: 34px;
     height: 22px;
 
@@ -2744,6 +2750,7 @@ $elementInnerSpacing: 5px;
   user-select: none;
   font-weight: normal;
   border-radius: var(--small-border-radius);
+  max-width: 100%;
 
   .label {
     .segment:after {
@@ -2802,7 +2809,8 @@ $elementInnerSpacing: 5px;
       align-items: center;
       -ms-flex-align: center;
 
-      img {
+      img,
+      svg {
         display: block;
         flex-shrink: 0;
         pointer-events: none;
@@ -2811,8 +2819,11 @@ $elementInnerSpacing: 5px;
         max-height: 100%;
       }
 
-      &.rounded img {
-        border-radius: 50%;
+      &.rounded {
+        img,
+        svg {
+          border-radius: 50%;
+        }
       }
     }
     .elementthumb.open-preview {
@@ -2828,6 +2839,10 @@ $elementInnerSpacing: 5px;
 
   .label {
     display: inline-block;
+    overflow: hidden;
+    vertical-align: bottom; // https://stackoverflow.com/a/37427386/1688568
+    text-overflow: ellipsis;
+    max-width: 100%;
 
     .draft-label {
       display: inline-block;
@@ -3344,6 +3359,10 @@ $checkboxPadding: $checkboxSize + 4;
     &.flex-wrap {
       flex-wrap: wrap;
     }
+
+    li {
+      max-width: 100%;
+    }
   }
 
   .elements:after {
@@ -3399,6 +3418,7 @@ table.editable {
   border: 1px solid var(--gray-200);
 
   th,
+  td.heading,
   td.action {
     color: var(--medium-text-color);
     font-weight: normal;
@@ -3594,7 +3614,7 @@ table.editable {
     .datewrapper,
     .timewrapper {
       display: block;
-      width: 100%;
+      width: calc(100% - 29px);
 
       .text + div[data-icon] {
         top: 6px;
@@ -4430,6 +4450,8 @@ $min2ColWidth: 400px;
         }
 
         & > .datetimewrapper {
+          gap: 0;
+
           & > .datewrapper {
             width: 55%;
           }
@@ -5125,6 +5147,10 @@ $min2ColWidth: 400px;
     padding-top: 14px;
     padding-bottom: 14px;
     text-align: center;
+
+    & + .body {
+      height: calc(100% - 48px) !important;
+    }
   }
 
   .body {
@@ -5439,7 +5465,7 @@ $min2ColWidth: 400px;
 /* logout warning/login/elevated session modals */
 .logoutwarningmodalshade,
 .loginmodalshade {
-  z-index: 101;
+  z-index: 1001;
 }
 
 #logoutwarningmodal,
@@ -5451,7 +5477,7 @@ $min2ColWidth: 400px;
 
 #logoutwarningmodal,
 #loginmodal {
-  z-index: 101;
+  z-index: 1001;
 }
 
 .prompt {
@@ -6518,14 +6544,10 @@ body.reduce-focus-visibility {
 
 .datetimewrapper {
   display: flex;
+  flex-wrap: wrap;
   flex-direction: row;
   align-items: center;
-
-  & > .datewrapper + .timewrapper,
-  & > .timewrapper + .timezone,
-  & > .select {
-    @include margin-left(5px);
-  }
+  gap: 5px;
 }
 
 .clear-btn {
@@ -6733,9 +6755,13 @@ body .selectize-dropdown {
   height: 34px;
 
   &:not(.fullwidth) {
-    max-width: 25em;
-    min-width: 10em;
+    width: 25em;
+    max-width: 100%;
   }
+}
+
+.datetimewrapper .selectize.select:not(.fullwidth) {
+  max-width: calc(100% - 29px);
 }
 
 .selectize.select .selectize-control {
@@ -6805,44 +6831,69 @@ body .selectize-dropdown {
 }
 
 /* menu styles */
-body .selectize-dropdown {
-  margin-top: 1px;
-}
+body {
+  .selectize-dropdown {
+    margin-top: 1px;
 
-body .selectize-dropdown-content {
-  @include menu-styles;
+    [data-selectable],
+    .optgroup-header {
+      @include menu-option-styles;
+    }
 
-  .option {
-    min-height: 18px;
+    .optgroup {
+      &:not(:first-child) {
+        border-top: 1px solid var(--hairline-color);
+      }
+      padding-top: 5px;
+
+      .option {
+        padding-left: 24px;
+      }
+    }
+
+    .optgroup-header {
+      @include h6-styles;
+      margin: 0;
+      padding: 4px 0;
+    }
+
+    .active:not(.selected) {
+      background-color: var(--gray-100);
+    }
+
+    .selected {
+      @include menu-option-active-styles;
+      cursor: default !important;
+
+      .light {
+        color: inherit !important;
+      }
+    }
   }
-}
 
-body .selectize-dropdown-content > div[data-value='new']:before {
-  @include icon;
-  content: 'plus';
-  margin-right: 5px;
-}
+  .selectize-dropdown-content {
+    @include menu-styles;
+    max-height: 70vh;
 
-body .selectize-dropdown-content > div[data-value='new']:after {
-  content: '…';
-}
+    .option {
+      min-height: 18px;
+    }
 
-body .selectize-dropdown [data-selectable],
-body .selectize-dropdown .optgroup-header {
-  @include menu-option-styles;
-}
+    & > div[data-value='new'] {
+      &:before {
+        @include icon;
+        content: 'plus';
+        margin-right: 5px;
+      }
 
-body .selectize-dropdown .optgroup-header {
-  @include h6-styles;
-  margin: 0;
-  padding: 4px 0;
-}
+      &:after {
+        content: '…';
+      }
+    }
+  }
 
-body .selectize-dropdown .active {
-  @include menu-option-active-styles;
-
-  .light {
-    color: inherit !important;
+  &.no-scroll .selectize-dropdown-content {
+    max-height: 200px; // default for selectize
   }
 }
 

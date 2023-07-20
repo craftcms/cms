@@ -820,13 +820,6 @@ JS, [
         }
 
         $html .= '</div></div>';
-
-        $nsId = $view->namespaceInputId($id);
-        $js = <<<JS
-(new Craft.ElementThumbLoader()).load($('#$nsId'));
-JS;
-        $view->registerJs($js);
-
         return $html;
     }
 
@@ -986,6 +979,8 @@ JS;
                     ->revisions(null)
                     ->provisionalDrafts(null)
                     ->status(null)
+                    ->site('*')
+                    ->unique()
                     ->all();
 
                 // Fill in any gaps
@@ -1002,8 +997,8 @@ JS;
             /** @var int|int[]|false|null $targetIds */
             Craft::$app->getRelations()->saveRelations($this, $element, $targetIds);
 
-            // Reset the field value if this is a new element
-            if ($isNew) {
+            // Reset the field value?
+            if ($element->duplicateOf !== null || $element->mergingCanonicalChanges || $isNew) {
                 $element->setFieldValue($this->handle, null);
             }
 

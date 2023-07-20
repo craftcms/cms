@@ -12,6 +12,7 @@ use craft\base\BlockElementInterface;
 use craft\base\Element;
 use craft\base\ElementInterface;
 use craft\db\Table;
+use craft\elements\db\ElementQueryInterface;
 use craft\elements\db\MatrixBlockQuery;
 use craft\fields\Matrix;
 use craft\helpers\ArrayHelper;
@@ -288,6 +289,21 @@ class MatrixBlock extends Element implements BlockElementInterface
     /**
      * @inheritdoc
      */
+    public function getLocalized(): ElementQueryInterface|Collection
+    {
+        $query = parent::getLocalized();
+
+        if ($query instanceof MatrixBlockQuery && $this->ownerId !== null) {
+            // Maintain the same ownerId for queried blocks
+            $query->ownerId($this->ownerId);
+        }
+
+        return $query;
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function getFieldLayout(): ?FieldLayout
     {
         return parent::getFieldLayout() ?? $this->getType()->getFieldLayout();
@@ -340,7 +356,7 @@ class MatrixBlock extends Element implements BlockElementInterface
     public function setOwner(?ElementInterface $owner = null): void
     {
         $this->_owner = $owner;
-        $this->ownerId = $owner->id;
+        $this->ownerId = $owner?->id;
     }
 
     /**

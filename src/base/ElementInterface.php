@@ -21,7 +21,7 @@ use yii\web\Response;
 
 /**
  * ElementInterface defines the common interface to be implemented by element classes.
- * A class implementing this interface should also use [[ElementTrait]] and [[ContentTrait]].
+ * A class implementing this interface should also use [[ElementTrait]].
  *
  * @mixin ElementTrait
  * @mixin CustomFieldBehavior
@@ -270,8 +270,8 @@ interface ElementInterface extends ComponentInterface
      * - **`status`** – The status color that should be shown beside the source label. Possible values include `green`,
      *   `orange`, `red`, `yellow`, `pink`, `purple`, `blue`, `turquoise`, `light`, `grey`, `black`, and `white`. (Optional)
      * - **`badgeCount`** – The badge count that should be displayed alongside the label. (Optional)
-     * - **`sites`** – An array of site IDs that the source should be shown for, on multi-site element indexes. (Optional;
-     *   by default the source will be shown for all sites.)
+     * - **`sites`** – An array of site IDs or UUIDs that the source should be shown for, on multi-site element indexes.
+     *   (Optional; by default the source will be shown for all sites.)
      * - **`criteria`** – An array of element criteria parameters that the source should use when the source is selected.
      *   (Optional)
      * - **`data`** – An array of `data-X` attributes that should be set on the source’s `<a>` tag in the source list’s,
@@ -309,6 +309,26 @@ interface ElementInterface extends ComponentInterface
     public static function findSource(string $sourceKey, ?string $context = null): ?array;
 
     /**
+     * Returns the source path for a given source key, step key, and context.
+     *
+     * @param string $sourceKey
+     * @param string $stepKey
+     * @param string|null $context
+     * @return array[]|null
+     * @since 4.4.12
+     */
+    public static function sourcePath(string $sourceKey, string $stepKey, ?string $context): ?array;
+
+    /**
+     * Modifies a custom source’s config, before it’s returned by [[craft\services\ElementSources::getSources()]]
+     *
+     * @param array $config
+     * @return array
+     * @since 4.5.0
+     */
+    public static function modifyCustomSource(array $config): array;
+
+    /**
      * Returns all of the field layouts associated with elements from the given source.
      *
      * This is used to determine which custom fields should be included in the element index sort menu,
@@ -321,7 +341,7 @@ interface ElementInterface extends ComponentInterface
     public static function fieldLayouts(string $source): array;
 
     /**
-     * Returns the available [element actions](https://craftcms.com/docs/4.x/extend/element-action-types.html) for a
+     * Returns the available [element actions](https://craftcms.com/docs/4.x/extend/element-actions.html) for a
      * given source.
      *
      * The actions can be represented by their fully qualified class name, a config array with the class name
@@ -476,8 +496,11 @@ interface ElementInterface extends ComponentInterface
      * This method aids in the eager-loading of elements when performing an element query. The returned array should
      * contain the following keys:
      * - `elementType` – the fully qualified class name of the element type that should be eager-loaded
-     * - `map` – an array of element ID mappings, where each element is a sub-array with `source` and `target` keys.
-     * - `criteria` *(optional)* – Any criteria parameters that should be applied to the element query when fetching the eager-loaded elements.
+     * - `map` – an array of element ID mappings, where each element is a sub-array with `source` and `target` keys
+     * - `criteria` *(optional)* – any criteria parameters that should be applied to the element query when fetching the
+     *   eager-loaded elements
+     * - `createElement` *(optional)* - an element factory function, which will be passed the element query, the current
+     *   query result data, and the first source element that the result was eager-loaded for
      *
      * ```php
      * use craft\db\Query;
@@ -932,7 +955,16 @@ interface ElementInterface extends ComponentInterface
     public function getPreviewTargets(): array;
 
     /**
-     * Returns the URL to the element’s thumbnail, if there is one.
+     * Returns the HTML for the element’s thumbnail, if it has one.
+     *
+     * @param int $size The width and height the thumbnail should have.
+     * @return string|null
+     * @since 4.5.0
+     */
+    public function getThumbHtml(int $size): ?string;
+
+    /**
+     * Returns the URL to the element’s thumbnail, if it has one.
      *
      * @param int $size The maximum width and height the thumbnail should have.
      * @return string|null
@@ -1668,6 +1700,9 @@ interface ElementInterface extends ComponentInterface
      *
      * @param int $structureId The structure ID
      * @return bool Whether the element should be moved within the structure
+     * @deprecated in 4.5.0. [[\craft\services\Structures::EVENT_BEFORE_INSERT_ELEMENT]] or
+     * [[\craft\services\Structures::EVENT_BEFORE_MOVE_ELEMENT|EVENT_BEFORE_MOVE_ELEMENT]]
+     * should be used instead.
      */
     public function beforeMoveInStructure(int $structureId): bool;
 
@@ -1675,6 +1710,9 @@ interface ElementInterface extends ComponentInterface
      * Performs actions after an element is moved within a structure.
      *
      * @param int $structureId The structure ID
+     * @deprecated in 4.5.0. [[\craft\services\Structures::EVENT_AFTER_INSERT_ELEMENT]] or
+     * [[\craft\services\Structures::EVENT_AFTER_MOVE_ELEMENT|EVENT_AFTER_MOVE_ELEMENT]]
+     * should be used instead.
      */
     public function afterMoveInStructure(int $structureId): void;
 

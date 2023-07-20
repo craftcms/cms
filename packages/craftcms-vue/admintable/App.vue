@@ -79,6 +79,7 @@
             :detail-row-component="detailRowComponent"
             :fields="fields"
             :per-page="perPage"
+            :query-params="queryParams"
             pagination-path="pagination"
             @vuetable:loaded="init"
             @vuetable:loading="loading"
@@ -363,6 +364,9 @@
       onSelect: {
         default: function () {},
       },
+      onQueryParams: {
+        default: function () {},
+      },
     },
 
     data() {
@@ -501,10 +505,6 @@
       },
 
       handleSearch: debounce(function () {
-        if (this.$refs.vuetable) {
-          this.$refs.vuetable.gotoPage(1);
-        }
-
         this.reload();
       }, 350),
 
@@ -538,6 +538,10 @@
       },
 
       reload() {
+        if (this.$refs.vuetable) {
+          this.$refs.vuetable.gotoPage(1);
+        }
+
         this.isLoading = true;
         this.deselectAll();
         this.$refs.vuetable.reload();
@@ -594,6 +598,20 @@
         if (this.onSelect instanceof Function) {
           this.onSelect(checks);
         }
+      },
+
+      queryParams(sortOrder, currentPage, perPage) {
+        let params = {
+          sort: sortOrder,
+          page: currentPage,
+          per_page: perPage,
+        };
+
+        if (this.onQueryParams instanceof Function) {
+          params = this.onQueryParams(params);
+        }
+
+        return params;
       },
     },
 

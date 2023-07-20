@@ -1158,7 +1158,7 @@ JS, [
 
         // If this is a provisional draft, delete the canonical
         if ($element && $element->isProvisionalDraft) {
-            $element = $element->getcanonical(true);
+            $element = $element->getCanonical(true);
         }
 
         if (!$element || $element->getIsDraft() || $element->getIsRevision()) {

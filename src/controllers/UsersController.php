@@ -9,6 +9,7 @@ namespace craft\controllers;
 
 use Craft;
 use craft\base\Element;
+use craft\base\ModelInterface;
 use craft\base\NameTrait;
 use craft\elements\Address;
 use craft\elements\Asset;
@@ -46,6 +47,7 @@ use DateTime;
 use Throwable;
 use yii\base\Exception;
 use yii\base\InvalidArgumentException;
+use yii\base\Model;
 use yii\web\BadRequestHttpException;
 use yii\web\ForbiddenHttpException;
 use yii\web\HttpException;
@@ -187,7 +189,7 @@ class UsersController extends Controller
         $userSession = Craft::$app->getUser();
         if (!$userSession->getIsGuest()) {
             // Too easy.
-            return $this->_handleSuccessfulLogin();
+            return $this->_handleSuccessfulLogin($userSession->getIdentity());
         }
 
         if (!$this->request->getIsPost()) {
@@ -201,8 +203,8 @@ class UsersController extends Controller
         $user = $this->_findLoginUser($loginName);
 
         if (!$user || $user->password === null) {
-            // Delay again to match $user->authenticate()'s delay
-            Craft::$app->getSecurity()->validatePassword('p@ss1w0rd', '$2y$13$nj9aiBeb7RfEfYP3Cum6Revyu14QelGGxwcnFUKXIrQUitSodEPRi');
+            // Match $user->authenticate()'s delay
+            $this->_hashCheck();
             return $this->_handleLoginFailure(User::AUTH_INVALID_CREDENTIALS);
         }
 
@@ -225,7 +227,7 @@ class UsersController extends Controller
             return $this->_handleLoginFailure(null, $user);
         }
 
-        return $this->_handleSuccessfulLogin();
+        return $this->_handleSuccessfulLogin($user);
     }
 
     private function _findLoginUser(string $loginName): ?User
@@ -278,7 +280,7 @@ class UsersController extends Controller
             return null;
         }
 
-        return $this->_handleSuccessfulLogin();
+        return $this->_handleSuccessfulLogin($user);
     }
 
     /**
@@ -337,19 +339,27 @@ class UsersController extends Controller
         $this->requireToken();
 
         $userSession = Craft::$app->getUser();
+        $user = Craft::$app->getUsers()->getUserById($userId);
+        $success = false;
 
-        // Save the original user ID to the session now so User::findIdentity()
-        // knows not to worry if the user isn't active yet
-        Session::set(User::IMPERSONATE_KEY, $prevUserId);
+        if ($user) {
+            // Save the original user ID to the session now so User::findIdentity()
+            // knows not to worry if the user isn't active yet
+            Session::set(User::IMPERSONATE_KEY, $prevUserId);
+            $success = $userSession->login($user);
+            if (!$success) {
+                Session::remove(User::IMPERSONATE_KEY);
+            }
+        }
 
-        if (!$userSession->loginByUserId($userId)) {
-            Session::remove(User::IMPERSONATE_KEY);
+        if (!$success) {
             $this->setFailFlash(Craft::t('app', 'There was a problem impersonating this user.'));
-            Craft::error($userSession->getIdentity()->username . ' tried to impersonate userId: ' . $userId . ' but something went wrong.', __METHOD__);
+            Craft::error(sprintf('%s tried to impersonate userId: %s but something went wrong.',
+                $userSession->getIdentity()->username, $userId), __METHOD__);
             return null;
         }
 
-        return $this->_handleSuccessfulLogin();
+        return $this->_handleSuccessfulLogin($user);
     }
 
     /**
@@ -515,6 +525,9 @@ class UsersController extends Controller
             }
         }
 
+        // keep track of how long email sending takes
+        $time = microtime(true);
+
         // Don't try to send the email if there are already error or there is no user
         try {
             if (empty($errors) && !empty($user) && !Craft::$app->getUsers()->sendPasswordResetEmail($user)) {
@@ -524,12 +537,17 @@ class UsersController extends Controller
             $errors[] = Craft::t('app', 'There was a problem sending the password reset email.');
         }
 
-        if (!empty($errors) && Craft::$app->getConfig()->getGeneral()->preventUserEnumeration) {
-            $list = implode("\n", array_map(function(string $error) {
-                return sprintf('- %s', $error);
-            }, $errors));
-            Craft::warning(sprintf("Password reset email not sent:\n%s", $list), __METHOD__);
-            $errors = [];
+        if (Craft::$app->getConfig()->getGeneral()->preventUserEnumeration) {
+            // Randomly delay the response
+            $this->_randomlyDelayResponse(microtime(true) - $time);
+
+            if (!empty($errors)) {
+                $list = implode("\n", array_map(function(string $error) {
+                    return sprintf('- %s', $error);
+                }, $errors));
+                Craft::warning(sprintf("Password reset email not sent:\n%s", $list), __METHOD__);
+                $errors = [];
+            }
         }
 
         if (empty($errors)) {
@@ -794,7 +812,12 @@ class UsersController extends Controller
     public function actionEditUser(mixed $userId = null, ?User $user = null, ?array $errors = null): Response
     {
         if (!empty($errors)) {
-            $this->setFailFlash(implode(', ', reset($errors)));
+            $firstError = reset($errors);
+            if (is_array($firstError)) {
+                $this->setFailFlash(implode(', ', $firstError));
+            } else {
+                $this->setFailFlash($firstError);
+            }
         }
 
         // Determine which user account we're editing
@@ -1004,7 +1027,9 @@ class UsersController extends Controller
             } elseif ($name) {
                 $title = Craft::t('app', '{user}’s Account', ['user' => $name]);
             } else {
-                $title = Craft::t('app', 'Edit User');
+                $title = Craft::t('app', 'Edit {type}', [
+                    'type' => User::displayName(),
+                ]);
             }
         } else {
             $title = Craft::t('app', 'Create a new user');
@@ -1170,6 +1195,7 @@ JS,
         return $this->renderTemplate('users/_edit.twig', compact(
             'user',
             'isNewUser',
+            'isCurrentUser',
             'statusLabel',
             'actions',
             'languageOptions',
@@ -1444,7 +1470,9 @@ JS,
 
             return $this->asModelFailure(
                 $user,
-                Craft::t('app', 'Couldn’t save user.'),
+                Craft::t('app', 'Couldn’t save {type}.', [
+                    'type' => User::lowerDisplayName(),
+                ]),
                 $userVariable
             );
         }
@@ -1507,8 +1535,8 @@ JS,
                 }
 
                 // Assign user groups and permissions if the current user is allowed to do that
-                $this->_saveUserPermissions($user, $currentUser);
                 $this->_saveUserGroups($user, $currentUser);
+                $this->_saveUserPermissions($user, $currentUser);
 
                 // Fire an 'afterAssignGroupsAndPermissions' event
                 if ($this->hasEventHandlers(self::EVENT_AFTER_ASSIGN_GROUPS_AND_PERMISSIONS)) {
@@ -1544,14 +1572,17 @@ JS,
         $returnCsrfToken = $returnCsrfToken || $loggedIn;
 
         if ($this->request->getAcceptsJson()) {
-            $return = [
-                'id' => $user->id,
-            ];
-            if ($returnCsrfToken && $generalConfig->enableCsrfProtection) {
-                $return['csrfTokenValue'] = $this->request->getCsrfToken();
-            }
-
-            return $this->asSuccess(data: $return);
+            return $this->asModelSuccess(
+                $user,
+                Craft::t('app', '{type} saved.', ['type' => User::displayName()]),
+                $userVariable,
+                array_filter([
+                    'id' => $user->id, // todo: remove
+                    'csrfTokenValue' => $returnCsrfToken && $generalConfig->enableCsrfProtection
+                        ? $this->request->getCsrfToken()
+                        : null,
+                ]),
+            );
         }
 
         if ($isPublicRegistration) {
@@ -1919,11 +1950,15 @@ JS,
         $user->inheritorOnDelete = $transferContentTo;
 
         if (!Craft::$app->getElements()->deleteElement($user)) {
-            $this->setFailFlash(Craft::t('app', 'Couldn’t delete the user.'));
+            $this->setFailFlash(Craft::t('app', 'Couldn’t delete {type}.', [
+                'type' => User::lowerDisplayName(),
+            ]));
             return null;
         }
 
-        $this->setSuccessFlash(Craft::t('app', 'User deleted.'));
+        $this->setSuccessFlash(Craft::t('app', '{type} deleted.', [
+            'type' => User::displayName(),
+        ]));
         return $this->redirectToPostedUrl();
     }
 
@@ -2116,9 +2151,6 @@ JS,
      */
     private function _handleLoginFailure(?string $authError, ?User $user = null): ?Response
     {
-        // Delay randomly between 0 and 1.5 seconds.
-        usleep(random_int(0, 1500000));
-
         $message = UserHelper::getLoginFailureMessage($authError, $user);
 
         // Fire a 'loginFailure' event
@@ -2147,9 +2179,10 @@ JS,
      * Redirects the user after a successful login attempt, or if they visited the Login page while they were already
      * logged in.
      *
+     * @param User $user
      * @return Response
      */
-    private function _handleSuccessfulLogin(): Response
+    private function _handleSuccessfulLogin(User $user): Response
     {
         // Get the return URL
         $userSession = Craft::$app->getUser();
@@ -2168,7 +2201,7 @@ JS,
                 $return['csrfTokenValue'] = $this->request->getCsrfToken();
             }
 
-            return $this->asSuccess(data: $return);
+            return $this->asModelSuccess($user, modelName: 'user', data: $return);
         }
 
         return $this->redirectToPostedUrl($userSession->getIdentity(), $returnUrl);
@@ -2578,6 +2611,7 @@ JS,
      * @param string[] $errors
      * @param string|null $loginName
      * @return Response|null
+     * @throws \Exception
      */
     private function _handleSendPasswordResetError(array $errors, ?string $loginName = null): ?Response
     {
@@ -2614,6 +2648,20 @@ JS,
         ], $templateMode);
     }
 
+    private function _hashCheck()
+    {
+        Craft::$app->getSecurity()->validatePassword('p@ss1w0rd', '$2y$13$nj9aiBeb7RfEfYP3Cum6Revyu14QelGGxwcnFUKXIrQUitSodEPRi');
+    }
+
+    private function _randomlyDelayResponse(float $maxOffset = 0)
+    {
+        // Delay randomly between 0.5 and 1.5 seconds.
+        $max = 1500000 - (int)($maxOffset * 1000000);
+        if ($max > 500000) {
+            usleep(random_int(500000, $max));
+        }
+    }
+
     /**
      * Marks the user’s feature announcements as read.
      *
@@ -2644,6 +2692,37 @@ JS,
                 $model->firstName = $firstName ?? $model->firstName;
                 $model->lastName = $lastName ?? $model->lastName;
             }
+        }
+    }
+
+    public function asModelSuccess(
+        ModelInterface|Model $model,
+        ?string $message = null,
+        ?string $modelName = null,
+        array $data = [],
+        ?string $redirect = null,
+    ): Response {
+        $this->clearPassword($model);
+        return parent::asModelSuccess($model, $message, $modelName, $data, $redirect);
+    }
+
+    public function asModelFailure(
+        ModelInterface|Model $model,
+        ?string $message = null,
+        ?string $modelName = null,
+        array $data = [],
+        array $routeParams = [],
+    ): ?Response {
+        $this->clearPassword($model);
+        return parent::asModelFailure($model, $message, $modelName, $data, $routeParams);
+    }
+
+    private function clearPassword(ModelInterface|Model $model): void
+    {
+        if ($model instanceof User) {
+            $model->password = null;
+            $model->newPassword = null;
+            $model->currentPassword = null;
         }
     }
 }
