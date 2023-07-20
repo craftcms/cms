@@ -19,6 +19,13 @@ Craft.Tooltip = Garnish.Base.extend({
     this.$trigger = $(trigger);
     this.message = message;
 
+    if (
+      this.$trigger[0].tagName !== 'BUTTON' &&
+      this.$trigger.attr('role') !== 'button'
+    ) {
+      console.error('Toggletip buttons need to be <button> elements.');
+    }
+
     // do our own mouseover/mouseout checks since the native ones are unreliable
     this.addListener(Garnish.$bod, 'mousemove', (ev) => {
       if (

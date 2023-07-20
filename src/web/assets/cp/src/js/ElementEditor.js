@@ -2044,7 +2044,7 @@ Craft.ElementEditor = Garnish.Base.extend(
                       this.activityTooltips[activity.userId] =
                         new Craft.Tooltip($button, activity.message);
                     } else {
-                      this.activityTooltips[activity.userId].$trigger = $li;
+                      this.activityTooltips[activity.userId].$trigger = $button;
                       this.activityTooltips[activity.userId].message =
                         activity.message;
 
