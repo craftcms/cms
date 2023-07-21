@@ -177,7 +177,7 @@ class ProjectConfigData extends ReadOnlyProjectConfigData
         foreach ($data as $key => $value) {
             // Traverse further
             if (is_array($value)) {
-                $this->setContainedProjectConfigNames($key, $value);
+                $this->removeContainedProjectConfigNames($key, $value);
             }
         }
     }
