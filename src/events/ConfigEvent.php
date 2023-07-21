@@ -38,4 +38,11 @@ class ConfigEvent extends Event
      * or one of its shortcut methods.
      */
     public ?array $tokenMatches = null;
+
+    /**
+     * @var array The list of removed nested fields. Used to remove meta names of deleted nested fields,
+     * like fields in a matrix block.
+     * @see https://github.com/craftcms/cms/issues/13456
+     */
+    public array $removedNestedFields = [];
 }

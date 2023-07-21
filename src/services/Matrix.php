@@ -304,6 +304,7 @@ class Matrix extends Component
                 foreach ($oldFields as $fieldUid => $fieldData) {
                     if (!array_key_exists($fieldUid, $newFields)) {
                         $fieldsService->applyFieldDelete($fieldUid);
+                        $event->removedNestedFields[] = $fieldUid;
                     }
                 }
 

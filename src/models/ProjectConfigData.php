@@ -83,6 +83,12 @@ class ProjectConfigData extends ReadOnlyProjectConfigData
             }
         }
 
+        if (!empty($event->removedNestedFields)) {
+            foreach ($event->removedNestedFields as $item) {
+                $this->removeContainedProjectConfigNames($item, []);
+            }
+        }
+
         // Mark this path, and any parent paths, as parsed
         $tok = strtok($path, '.');
         $thisPath = '';
