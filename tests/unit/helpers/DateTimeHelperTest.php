@@ -682,7 +682,7 @@ class DateTimeHelperTest extends TestCase
     {
         return [
             [10, 10],
-            [-10, -10]
+            [-10, -10],
         ];
     }
 
