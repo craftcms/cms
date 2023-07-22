@@ -24,7 +24,6 @@ interface ThumbableFieldInterface extends FieldInterface
      * @param ElementInterface $element The element the field is associated with
      * @param int $size The width and height the thumbnail should have.
      * @return string|null
-     * @since 5.0.0
      */
     public function getThumbHtml(mixed $value, ElementInterface $element, int $size): ?string;
 }

@@ -103,7 +103,7 @@ class MyDrafts extends Widget
         ]);
 
         foreach ($drafts as $draft) {
-            $html .= Html::tag('li', Cp::elementHtml($draft), [
+            $html .= Html::tag('li', Cp::elementChipHtml($draft), [
                 'class' => 'widget__list-item',
             ]);
         }

@@ -11,7 +11,10 @@
 <div id="{{ id }}" class="elementselect tagselect">
     <div class="elements">
         {% for element in elements %}
-            {% include "_elements/element.twig" with { context: 'field' } %}
+            {{ elementChip(element, {
+                context: 'field',
+                inputName: (name ?? false) ? "#{name}[]" : null,
+            }) }}
         {% endfor %}
     </div>
 

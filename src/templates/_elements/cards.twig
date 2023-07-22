@@ -4,7 +4,11 @@
 
 <div class="elements">
   {% for element in elements %}
-    {% set html = craft.cp.elementCard(element) %}
+    {% set html = elementCard(element, {
+      context: context ?? 'index',
+      size: size ?? (viewMode == 'large' ? 'large' : 'small'),
+      inputName: inputName ?? ((name ?? false) ? "#{name}[]" : null),
+    }) %}
     {% if disabled %}
       {% set html = html|removeClass('removable') %}
     {% endif %}

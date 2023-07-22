@@ -19,9 +19,7 @@
                         <td data-title="{{ "Created at"|t('app') }}">{{ revision.dateCreated|timestamp('short', withPreposition=false) }}</td>
                         <td data-title="{{ "Created by"|t('app') }}">
                             {% if creator %}
-                                {% include '_elements/element.twig' with {
-                                    element: creator,
-                                } only %}
+                                {{ elementChip(creator) }}
                             {% endif %}
                         </td>
                         <td data-title="{{ 'Notes'|t('app') }}">{{ revision.revisionNotes }}

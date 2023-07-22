@@ -152,6 +152,10 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
               }
             : null,
           ignoreHandleSelector: '.delete',
+          handle:
+            this.settings.viewMode === 'cards'
+              ? '> .card-actions > .move'
+              : null,
           axis: this.getElementSortAxis(),
           collapseDraggees: true,
           magnetStrength: 4,
@@ -166,7 +170,7 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
     },
 
     getElementSortAxis: function () {
-      return this.settings.viewMode === 'list' ? 'y' : null;
+      return ['list', 'cards'].includes(this.settings.viewMode) ? 'y' : null;
     },
 
     canAddMoreElements: function () {
@@ -449,7 +453,10 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
         $element.outerWidth() + parseInt($element.css('margin-' + Craft.right))
       );
 
-      if (this.settings.viewMode === 'list' || this.$elements.length === 0) {
+      if (
+        ['list', 'cards'].includes(this.settings.viewMode) ||
+        this.$elements.length === 0
+      ) {
         animateCss['margin-bottom'] = -(
           $element.outerHeight() + parseInt($element.css('margin-bottom'))
         );

@@ -2216,6 +2216,8 @@ JS;
      */
     private function _elementChipHtml(array $context): ?string
     {
+        Craft::$app->getDeprecator()->log('hook:cp.elements.element', 'The `_elements/element.twig` template and `cp.elements.element` template hook are deprecated. The `elementChip()` function should be used instead.');
+
         if (!isset($context['element'])) {
             return null;
         }

@@ -13,10 +13,11 @@
 <div id="{{ id }}" class="elementselect">
     <div class="elements {% if viewMode == 'large' %}flex-row flex-wrap{% endif %}">
         {% for element in elements %}
-            {% include "_elements/element.twig" with {
+            {{ elementChip(element, {
                 context: 'field',
-                size: (viewMode == 'large' ? 'large' : 'small')
-            } %}
+                size: (viewMode == 'large' ? 'large' : 'small'),
+                inputName: (name ?? false) ? "#{name}[]" : null,
+            }) }}
         {% endfor %}
     </div>
 

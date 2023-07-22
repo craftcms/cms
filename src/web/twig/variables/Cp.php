@@ -8,7 +8,6 @@
 namespace craft\web\twig\variables;
 
 use Craft;
-use craft\base\ElementInterface;
 use craft\base\FsInterface;
 use craft\base\UtilityInterface;
 use craft\enums\LicenseKeyStatus;
@@ -1036,29 +1035,5 @@ class Cp extends Component
     public function fieldLayoutDesigner(FieldLayout $fieldLayout, array $config = []): string
     {
         return CpHelper::fieldLayoutDesignerHtml($fieldLayout, $config);
-    }
-
-    /**
-     * Renders an element chip’s HTML.
-     *
-     * @param ElementInterface $element
-     * @return string
-     * @since 5.0.0
-     */
-    public function elementChip(ElementInterface $element): string
-    {
-        return CpHelper::elementChipHtml($element);
-    }
-
-    /**
-     * Renders an element card’s HTML.
-     *
-     * @param ElementInterface $element
-     * @return string
-     * @since 5.0.0
-     */
-    public function elementCard(ElementInterface $element): string
-    {
-        return CpHelper::elementCardHtml($element);
     }
 }

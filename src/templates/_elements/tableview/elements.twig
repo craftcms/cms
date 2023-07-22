@@ -41,9 +41,10 @@
                         %}" title="{{ 'Show/hide children'|t('app') }}" aria-label="{{ toggleLabel }}"
                         aria-expanded="{{  element.id not in collapsedElementIds ? 'true' : 'false' }}"></button>
                     {% endif %}
-                    {%- include '_elements/element.twig' with {
+                    {{ elementChip(element, {
+                        context: context ?? 'index',
                         autoReload: false,
-                    } -%}
+                    }) }}
 
                     {%- if structure %}
                         {% set textAlternative = 'Level {num}'|t('app', {

@@ -393,64 +393,78 @@ class Cp
     /**
      * Renders an element’s chip HTML.
      *
+     * The following config settings can be passed to `$config`:
+     *
+     * - `autoReload` - Whether the element should auto-reload itself when it’s saved
+     * - `context` - The context the chip is going to be shown in (`index`, `field`, etc.)
+     * - `inputName` - The `name` attribute that should be set on the hidden input, if `context` is set to `field`
+     * - `showDraftName` - Whether to show the draft name beside the label if the element is a draft of a published element
+     * - `showLabel` - Whether the element label should be shown
+     * - `showStatus` - Whether the element status should be shown (if the element type has statuses)
+     * - `showThumb` - Whether the element thumb should be shown (if the element has one)
+     * - `size` - The size of the chip (`small` or `large`)
+     *
      * @param ElementInterface $element The element to be rendered
-     * @param string $context The context the chip is going to be shown in (`index`, `field`, etc.)
-     * @param string $size The size of the chip (`small` or `large`)
-     * @param string|null $inputName The `name` attribute that should be set on the hidden input, if `$context` is set to `field`
-     * @param bool $showStatus Whether the element status should be shown (if the element type has statuses)
-     * @param bool $showThumb Whether the element thumb should be shown (if the element has one)
-     * @param bool $showLabel Whether the element label should be shown
-     * @param bool $showDraftName Whether to show the draft name beside the label if the element is a draft of a published element
-     * @param bool $autoReload Whether the element should auto-reload itself when it’s saved
+     * @param array $config Chip configuration
      * @return string
      * @since 5.0.0
      */
-    public static function elementChipHtml(
-        ElementInterface $element,
-        string $context = 'index',
-        string $size = self::ELEMENT_SIZE_SMALL,
-        ?string $inputName = null,
-        bool $showStatus = true,
-        bool $showThumb = true,
-        bool $showLabel = true,
-        bool $showDraftName = true,
-        bool $autoReload = true,
-    ): string {
-        if ($showThumb) {
-            $thumbSize = $size === self::ELEMENT_SIZE_SMALL ? 34 : 120;
+    public static function elementChipHtml(ElementInterface $element, array $config = []): string
+    {
+        $config += [
+            'autoReload' => true,
+            'context' => 'index',
+            'inputName' => null,
+            'showDraftName' => true,
+            'showLabel' => true,
+            'showStatus' => true,
+            'showThumb' => true,
+            'size' => self::ELEMENT_SIZE_SMALL,
+        ];
+
+        if ($config['showThumb']) {
+            $thumbSize = $config['size'] === self::ELEMENT_SIZE_SMALL ? 34 : 120;
             $thumbHtml = $element->getThumbHtml($thumbSize);
         } else {
             $thumbHtml = null;
         }
 
-        $statusHtml = self::elementStatusHtml($element);
+        $statusHtml = $config['showStatus'] ? self::elementStatusHtml($element) : null;
+
+        $title = implode('', array_map(fn(string $segment) => "$segment → ", $element->getUiLabelPath())) .
+            $element->getUiLabel();
+
+        if (Craft::$app->getIsMultiSite()) {
+            $title .= sprintf(' - %s', Craft::t('site', $element->getSite()->getName()));
+        }
 
         $attributes = ArrayHelper::merge(
-            self::baseElementAttributes($element, $context),
+            self::baseElementAttributes($element, $config['context']),
             [
                 'class' => array_filter([
                     'chip',
-                    $size,
+                    $config['size'],
                     $statusHtml ? 'has-status' : null,
                     $thumbHtml ? 'has-thumb' : null,
                 ]),
+                'title' => $title,
                 'data' => array_filter([
-                    'settings' => $autoReload ? compact(
-                        'context',
-                        'size',
-                        'showStatus',
-                        'showThumb',
-                        'showLabel',
-                        'showDraftName',
-                    ) : false,
+                    'settings' => $config['autoReload'] ? [
+                        'context' => $config['context'],
+                        'size' => $config['size'],
+                        'showStatus' => $config['showStatus'],
+                        'showThumb' => $config['showThumb'],
+                        'showLabel' => $config['showLabel'],
+                        'showDraftName' => $config['showDraftName'],
+                    ] : false,
                 ]),
             ],
         );
 
         $innerHtml = '';
 
-        if ($context === 'field' && $inputName !== null) {
-            $innerHtml .= Html::hiddenInput($inputName, (string)$element->id) .
+        if ($config['context'] === 'field' && $config['inputName'] !== null) {
+            $innerHtml .= Html::hiddenInput($config['inputName'], (string)$element->id) .
                 Html::button('', [
                     'class' => ['delete', 'icon'],
                     'title' => Craft::t('app', 'Remove'),
@@ -466,12 +480,12 @@ class Cp
             $innerHtml .= $thumbHtml;
         }
 
-        if ($showLabel) {
-            $labelHtml = self::elementLabelHtml($element, $showDraftName);
+        if ($config['showLabel']) {
+            $labelHtml = self::elementLabelHtml($element, $config['showDraftName']);
 
             // Should we make the element a link?
             if (
-                $context === 'index' &&
+                $config['context'] === 'index' &&
                 !$element->trashed &&
                 isset($attributes['data']['editable'])
             ) {
@@ -497,11 +511,11 @@ class Cp
 
         // Allow plugins to modify the HTML
         if (Event::hasHandlers(self::class, self::EVENT_DEFINE_ELEMENT_CHIP_HTML)) {
-            $event = new DefineElementHtmlEvent(compact(
-                'element',
-                'context',
-                'html',
-            ));
+            $event = new DefineElementHtmlEvent([
+                'element' => $element,
+                'context' => $config['context'],
+                'html' => $html,
+            ]);
             Event::trigger(self::class, self::EVENT_DEFINE_ELEMENT_CHIP_HTML, $event);
             return $event->html;
         }
@@ -512,27 +526,33 @@ class Cp
     /**
      * Renders an element’s card HTML.
      *
+     * The following config settings can be passed to `$config`:
+     *
+     * - `context` - The context the chip is going to be shown in (`index`, `field`, etc.)
+     * - `inputName` - The `name` attribute that should be set on the hidden input, if `context` is set to `field`
+     * - `autoReload` - Whether the element should auto-reload itself when it’s saved
+     *
      * @param ElementInterface $element The element to be rendered
-     * @param string $context The context the chip is going to be shown in (`index`, `field`, etc.)
-     * @param string|null $inputName The `name` attribute that should be set on the hidden input, if `$context` is set to `field`
-     * @param bool $autoReload Whether the element should auto-reload itself when it’s saved
+     * @param array $config Card configuration
      * @return string
      * @since 5.0.0
      */
-    public static function elementCardHtml(
-        ElementInterface $element,
-        string $context = 'index',
-        ?string $inputName = null,
-        bool $autoReload = true,
-    ): string {
+    public static function elementCardHtml(ElementInterface $element, array $config = []): string
+    {
+        $config += [
+            'context' => 'index',
+            'inputName' => null,
+            'autoReload' => true,
+        ];
+
         $attributes = ArrayHelper::merge(
-            self::baseElementAttributes($element, $context),
+            self::baseElementAttributes($element, $config['context']),
             [
                 'class' => ['card'],
                 'data' => array_filter([
-                    'settings' => $autoReload ? compact(
-                        'context',
-                    ) : false,
+                    'settings' => $config['autoReload'] ? [
+                        'context' => $config['context'],
+                    ] : false,
                 ]),
             ],
         );
@@ -550,28 +570,41 @@ class Cp
             Html::endTag('div') . // .card-body
             Html::endTag('div'); // .card-content
 
-        if ($context === 'field' && $inputName !== null) {
-            $html .= Html::hiddenInput($inputName, (string)$element->id) .
+        if ($config['context'] === 'field' && $config['inputName'] !== null) {
+            $html .=
+                Html::beginTag('div', ['class' => 'card-actions']) .
                 Html::button('', [
-                    'class' => ['delete', 'icon'],
-                    'title' => Craft::t('app', 'Remove'),
+                    'class' => ['btn', 'settings', 'icon', 'menubtn'],
+                ]) .
+                Html::button('', [
+                    'class' => ['move', 'icon'],
+                    'title' => Craft::t('app', 'Reorder'),
                     'aria' => [
-                        'label' => Craft::t('app', 'Remove {label}', [
-                            'label' => $element->getUiLabel(),
-                        ]),
+                        'label' => Craft::t('app', 'Reorder'),
                     ],
-                ]);
+                ]) .
+//                Html::button('', [
+//                    'class' => ['delete', 'icon'],
+//                    'title' => Craft::t('app', 'Remove'),
+//                    'aria' => [
+//                        'label' => Craft::t('app', 'Remove {label}', [
+//                            'label' => $element->getUiLabel(),
+//                        ]),
+//                    ],
+//                ]) .
+                Html::endTag('div') . // .card-actions
+                Html::hiddenInput($config['inputName'], (string)$element->id);
         }
 
         $html .= Html::endTag('div'); // .card
 
         // Allow plugins to modify the HTML
         if (Event::hasHandlers(self::class, self::EVENT_DEFINE_ELEMENT_CARD_HTML)) {
-            $event = new DefineElementHtmlEvent(compact(
-                'element',
-                'context',
-                'html',
-            ));
+            $event = new DefineElementHtmlEvent([
+                'element' => $element,
+                'context' => $config['context'],
+                'html' => $html,
+            ]);
             Event::trigger(self::class, self::EVENT_DEFINE_ELEMENT_CARD_HTML, $event);
             return $event->html;
         }
@@ -581,13 +614,6 @@ class Cp
 
     private static function baseElementAttributes(ElementInterface $element, string $context): array
     {
-        $title = implode('', array_map(fn(string $segment) => "$segment → ", $element->getUiLabelPath())) .
-            $element->getUiLabel();
-
-        if (Craft::$app->getIsMultiSite()) {
-            $title .= sprintf(' - %s', Craft::t('site', $element->getSite()->getName()));
-        }
-
         $elementsService = Craft::$app->getElements();
         $user = Craft::$app->getUser()->getIdentity();
         $editable = $user && $elementsService->canView($element, $user);
@@ -600,7 +626,6 @@ class Cp
                     $context === 'field' ? 'removable' : null,
                     $element->hasErrors() ? 'error' : null,
                 ]),
-                'title' => $title,
                 'data' => array_filter([
                     'type' => get_class($element),
                     'id' => $element->id,
@@ -717,17 +742,16 @@ class Cp
         bool $single = false,
         bool $autoReload = true,
     ): string {
-        $html = static::elementChipHtml(
-            $element,
-            context: $context,
-            size: $size,
-            inputName: $inputName . ($single ? '' : '[]'),
-            showStatus: $showStatus,
-            showThumb: $showThumb,
-            showLabel: $showLabel,
-            showDraftName: $showDraftName,
-            autoReload: $autoReload,
-        );
+        $html = static::elementChipHtml($element, [
+            'autoReload' => $autoReload,
+            'context' => $context,
+            'inputName' => $inputName . ($single ? '' : '[]'),
+            'showDraftName' => $showDraftName,
+            'showLabel' => $showLabel,
+            'showStatus' => $showStatus,
+            'showThumb' => $showThumb,
+            'size' => $size,
+        ]);
 
         // Allow plugins to modify the inner HTML
         if (Event::hasHandlers(self::class, self::EVENT_DEFINE_ELEMENT_INNER_HTML)) {
@@ -777,26 +801,24 @@ class Cp
         }
 
         $first = array_shift($elements);
-        $html = static::elementHtml(
-            $first,
-            size: $size,
-            showStatus: $showStatus,
-            showThumb: $showThumb,
-            showLabel: $showLabel,
-            showDraftName: $showDraftName,
-        );
+        $html = static::elementChipHtml($first, [
+            'showDraftName' => $showDraftName,
+            'showLabel' => $showLabel,
+            'showStatus' => $showStatus,
+            'showThumb' => $showThumb,
+            'size' => $size,
+        ]);
 
         if (!empty($elements)) {
             $otherHtml = '';
             foreach ($elements as $other) {
-                $otherHtml .= static::elementHtml(
-                    $other,
-                    size: $size,
-                    showStatus: $showStatus,
-                    showThumb: $showThumb,
-                    showLabel: $showLabel,
-                    showDraftName: $showDraftName,
-                );
+                $otherHtml .= static::elementChipHtml($other, [
+                    'showDraftName' => $showDraftName,
+                    'showLabel' => $showLabel,
+                    'showStatus' => $showStatus,
+                    'showThumb' => $showThumb,
+                    'size' => $size,
+                ]);
             }
             $html .= Html::tag('span', '+' . Craft::$app->getFormatter()->asInteger(count($elements)), [
                 'title' => implode(', ', ArrayHelper::getColumn($elements, 'title')),

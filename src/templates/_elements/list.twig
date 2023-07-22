@@ -4,9 +4,10 @@
 
 <div class="elements">
     {% for element in elements %}
-        {% set element = include('_elements/element.twig', {
-            context: 'field',
-            size: (viewMode == 'large' ? 'large' : 'small')
+        {% set element = elementChip(element, {
+            context: context ?? 'index',
+            size: size ?? (viewMode == 'large' ? 'large' : 'small'),
+            inputName: inputName ?? ((name ?? false) ? "#{name}[]" : null),
         }) %}
         {% if disabled %}
             {% set element = element|removeClass('removable') %}

@@ -86,7 +86,7 @@
     inset 0 0 0 3px hsla(var(--dark-focus-hsl), 0.7);
   --touch-target-size: 24px; /* Minimum recommended touch target size */
   --elements-busy-top-position: calc(50% - var(--size, 20px) / 2);
-  --lh: 1.4rem;
+  --lh: 1.42em;
 }
 
 body,
@@ -948,7 +948,7 @@ td.right {
 }
 
 .icon.move {
-  display: inline-block;
+  margin-top: -4px !important;
 }
 
 .icon.move:not(.disabled) {
@@ -2987,6 +2987,7 @@ $chipInnerSpacing: 5px;
   position: relative;
   display: flex;
   flex-direction: row;
+  align-items: start;
   width: 100%;
   padding: var(--m);
   gap: var(--l);
@@ -3073,6 +3074,27 @@ $chipInnerSpacing: 5px;
       margin: 0;
       max-height: calc(var(--lh) * var(--max-lines));
       overflow: hidden;
+    }
+  }
+
+  .card-actions {
+    display: flex;
+    flex-direction: row;
+    gap: var(--xs);
+    align-items: center;
+
+    .settings {
+      padding: 0 8px;
+      height: 20px;
+      color: var(--ui-control-color);
+
+      &:before {
+        @include margin-right(0 !important);
+      }
+
+      &:not(:hover):not(:active) {
+        background-color: transparent;
+      }
     }
   }
 }
@@ -5396,7 +5418,6 @@ $min2ColWidth: 400px;
   margin-bottom: 4px;
 
   .icon.move {
-    margin-top: -3px;
     @include margin-right(10px);
     position: relative;
     z-index: 1;
@@ -7346,10 +7367,6 @@ $titlebarBorderRadius: calc(var(--large-border-radius) - 1px);
       &:not(:hover):not(:active) {
         background-color: transparent;
       }
-    }
-
-    & > .move {
-      margin-top: -3px !important;
     }
 
     & > .status {

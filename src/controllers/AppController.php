@@ -647,8 +647,6 @@ class AppController extends Controller
         /** @var string|ElementInterface $elementType */
         $elementType = $this->request->getRequiredBodyParam('type');
         $id = $this->request->getRequiredBodyParam('id');
-        $draftId = $this->request->getBodyParam('draftId');
-        $revisionId = $this->request->getBodyParam('revisionId');
         $instances = $this->request->getRequiredBodyParam('instances');
 
         if (!$id || !is_numeric($id)) {
@@ -674,16 +672,14 @@ class AppController extends Controller
 
         foreach ($instances as $instance) {
             if (isset($elements[$instance['siteId']])) {
-                $elementHtml[] = Cp::elementHtml(
-                    $elements[$instance['siteId']],
-                    $instance['context'],
-                    $instance['size'],
-                    null,
-                    $instance['showStatus'],
-                    $instance['showThumb'],
-                    $instance['showLabel'],
-                    $instance['showDraftName'],
-                );
+                $elementHtml[] = Cp::elementChipHtml($elements[$instance['siteId']], [
+                    'context' => $instance['context'],
+                    'showDraftName' => $instance['showDraftName'],
+                    'showLabel' => $instance['showLabel'],
+                    'showStatus' => $instance['showStatus'],
+                    'showThumb' => $instance['showThumb'],
+                    'size' => $instance['size'],
+                ]);
             } else {
                 $elementHtml[] = null;
             }
