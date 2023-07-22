@@ -1003,7 +1003,7 @@ return [
     'Publish live changes for other authors’ entries' => 'Publicera aktuella förändringar för andra upphovsmäns poster',
     'Publish live changes' => 'Publicera aktuella förändringar',
     'Publish other authors’ drafts' => 'Publicera andra författares utkast',
-    'Purchase {total, plural, =1{license} other{licenses}}' => 'Purchase {total, plural, =1{license} other{licenses}}',
+    'Purchase {total, plural, =1{license} other{licenses}}' => 'Köp {total, plural, =1{licens} other{licenser}}',
     'Pushing announcement to control panel users' => 'Skickar meddelande till kontrollpanelanvändare',
     'Quality must be a number between 1 and 100 (included).' => 'Kvalitet måste vara ett tal mellan 1 och 100 (inkluderat).',
     'Quality' => 'Kvalitet',
