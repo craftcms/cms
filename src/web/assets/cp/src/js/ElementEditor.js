@@ -55,7 +55,6 @@ Craft.ElementEditor = Garnish.Base.extend(
 
     hiddenTipsStorageKey: 'Craft-' + Craft.systemUid + '.TipField.hiddenTips',
 
-    activity: null,
     activityTooltips: null,
 
     get tipDismissBtn() {
@@ -2006,7 +2005,6 @@ Craft.ElementEditor = Garnish.Base.extend(
               },
             })
               .then(({data}) => {
-                let statusMessage = null;
                 let focusedTooltip = null;
                 if (this.activityTooltips) {
                   const tooltips = Object.values(this.activityTooltips);
@@ -2061,19 +2059,6 @@ Craft.ElementEditor = Garnish.Base.extend(
                     }
                   }
                 }
-
-                if (this.activity !== null) {
-                  if (!Craft.compare(this.activity, data.activity)) {
-                    if (data.activity.length) {
-                      statusMessage = Craft.t('app', 'New authors are viewing');
-                    } else {
-                      statusMessage = Craft.t('app', 'No authors are viewing');
-                    }
-                  }
-                }
-                this.activity = data.activity;
-
-                // Update screen reader users about author changes
 
                 // if the element has been updated upstream, show a notification about it
                 const elementUpdated =
