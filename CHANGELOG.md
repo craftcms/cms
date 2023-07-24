@@ -1,5 +1,9 @@
 # Release Notes for Craft CMS 4
 
+## Unreleased
+
+- Fixed a bug where the empty message was being shown incorrectly when loading endpoint data for admin tables. ([#13459](https://github.com/craftcms/cms/issues/13459))
+
 ## 4.4.16.1 - 2023-07-19
 
 - Fixed a bug where lightswitch inputs weren’t always stretching to fit their labels, when there was enough space for it. ([#13452](https://github.com/craftcms/cms/issues/13452))
