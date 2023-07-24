@@ -1516,8 +1516,10 @@ class ElementQuery extends Query implements ElementQueryInterface
         if ($this->archived) {
             $this->subQuery->andWhere(['elements.archived' => true]);
         } else {
-            $this->subQuery->andWhere(['elements.archived' => false]);
-            $this->_applyStatusParam($class);
+            $archivedStatusApplied = $this->_applyStatusParam($class);
+            if (!$archivedStatusApplied) {
+                $this->subQuery->andWhere(['elements.archived' => false]);
+            }
         }
 
         // todo: remove schema version condition after next beakpoint
@@ -2415,7 +2417,7 @@ class ElementQuery extends Query implements ElementQueryInterface
     {
         /** @var string|ElementInterface $class */
         if (!$this->status || !$class::hasStatuses()) {
-            return;
+            return false;
         }
 
         $statuses = $this->status;
@@ -2428,7 +2430,7 @@ class ElementQuery extends Query implements ElementQueryInterface
             $glue = $firstVal;
             array_shift($statuses);
             if (!$statuses) {
-                return;
+                return false;
             }
         } else {
             $glue = 'or';
@@ -2458,6 +2460,8 @@ class ElementQuery extends Query implements ElementQueryInterface
         }
 
         $this->subQuery->andWhere($this->_placeholderCondition($condition));
+
+        return in_array(Element::STATUS_ARCHIVED, $statuses);
     }
 
     /**
