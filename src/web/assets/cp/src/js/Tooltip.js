@@ -11,7 +11,7 @@ Craft.Tooltip = Garnish.Base.extend({
   hud: null,
   $p: null,
   hoverTimeout: null,
-  triggerHit: false, // Whether the trigger is focused
+  triggerHit: false,
   shownViaHover: false,
   ignoreFocus: false,
 
