@@ -10,6 +10,7 @@ namespace craft\web;
 use Craft;
 use craft\base\ModelInterface;
 use craft\elements\User;
+use craft\events\DefineBehaviorsEvent;
 use yii\base\Action;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
@@ -33,6 +34,12 @@ use yii\web\UnauthorizedHttpException;
  */
 abstract class Controller extends \yii\web\Controller
 {
+    /**
+     * @event DefineBehaviorsEvent The event that is triggered when defining the class behaviors
+     * @see behaviors()
+     */
+    public const EVENT_DEFINE_BEHAVIORS = 'defineBehaviors';
+
     public const ALLOW_ANONYMOUS_NEVER = 0;
     public const ALLOW_ANONYMOUS_LIVE = 1;
     public const ALLOW_ANONYMOUS_OFFLINE = 2;
@@ -56,6 +63,37 @@ abstract class Controller extends \yii\web\Controller
      *   that the listed action IDs can be accessed anonymously per the bitwise int assigned to it.
      */
     protected array|bool|int $allowAnonymous = self::ALLOW_ANONYMOUS_NEVER;
+
+    /**
+     * Returns the behaviors to attach to this class.
+     *
+     * See [[behaviors()]] for details about what should be returned.
+     *
+     * Models should override this method instead of [[behaviors()]] so [[EVENT_DEFINE_BEHAVIORS]] handlers can modify the
+     * class-defined behaviors.
+     *
+     * @return array
+     */
+    protected function defineBehaviors(): array
+    {
+        return [];
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function behaviors(): array
+    {
+        $behaviors = $this->defineBehaviors();
+
+        // Give plugins a chance to modify them
+        $event = new DefineBehaviorsEvent([
+            'behaviors' => $behaviors,
+        ]);
+        $this->trigger(self::EVENT_DEFINE_BEHAVIORS, $event);
+
+        return $event->behaviors;
+    }
 
     /**
      * @inheritdoc
