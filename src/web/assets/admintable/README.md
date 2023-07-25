@@ -165,7 +165,31 @@ There are a few special column type that provide extra functionality. To use any
 
 #### Title
 
-The title column allows the use of status, title and URL to create a column similar to that of the title column in element index tables.
+The title column allows the use of `status`, `title` and `url` in the data to create a column similar to that of the title column in element index tables.
+
+```javascript
+var data = [
+  {
+    title: 'My First Item',
+    status: true,
+    url: '/my-first-item',
+  },
+  {
+    title: 'My Second Item',
+    status: false,
+    url: '/my-second-item',
+  }
+];
+
+var columns = [
+  { name: '__slot:title', title: Craft.t('app', 'Title') },
+];
+
+new Craft.VueAdminTable({
+  columns: columns,
+  tableData: data
+});
+```
 
 #### Handle
 
