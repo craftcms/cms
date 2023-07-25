@@ -77,8 +77,9 @@ class TypecastHelperTest extends TestCase
 
         $config = [
             'suit' => 'H',
-            'nullableSuit' => '',
+            /** @phpstan-ignore-next-line */
             'anotherSuit' => Suit::Hearts,
+            'nullableSuit' => '',
         ];
 
         Typecast::properties(EnumModel::class, $config);
@@ -86,6 +87,7 @@ class TypecastHelperTest extends TestCase
         self::assertSame([
             /** @phpstan-ignore-next-line */
             'suit' => Suit::Hearts,
+            /** @phpstan-ignore-next-line */
             'anotherSuit' => Suit::Hearts,
             'nullableSuit' => null,
         ], $config);
