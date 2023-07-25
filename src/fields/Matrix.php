@@ -481,7 +481,7 @@ class Matrix extends Field implements
                             ->trashed(null);
                     }
                 },
-            ]));
+            ], true));
 
             // Set the query up for lazy eager loading
             $query->eagerLoadSourceElement = $element;

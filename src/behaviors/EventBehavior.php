@@ -18,23 +18,43 @@ use yii\base\Event;
  */
 class EventBehavior extends Behavior
 {
+    private array $handledEvents;
+
     /**
-     * @param array<string,callable> $events
+     * @param array<string,callable> $events Event name/handler pairs
+     * @param bool $once Whether the events should only be handled once for the owner object
      * @param array $config
      */
     public function __construct(
         private readonly array $events,
+        private readonly bool $once = false,
         array $config = [],
     ) {
+        if ($this->once) {
+            $this->handledEvents = [];
+        }
+
         parent::__construct($config);
     }
 
     public function events(): array
     {
-        // Pass along the configured event handlers, but send the owner along with the event
         return array_map(
-            fn(callable $handler) => fn(Event $event) => $handler($event, $this->owner),
+            fn(callable $handler) => fn(Event $event) => $this->handleEvent($event, $handler),
             $this->events,
         );
+    }
+
+    private function handleEvent(Event $event, callable $handler): void
+    {
+        if ($this->once) {
+            if (isset($this->handledEvents[$event->name])) {
+                return;
+            }
+            $this->handledEvents[$event->name] = true;
+        }
+
+        // Send the owner along with the event
+        $handler($event, $this->owner);
     }
 }
