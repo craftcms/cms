@@ -646,12 +646,18 @@ JS, [
                 }
             }
 
+            $relationsAlias = sprintf('relations_%s', StringHelper::randomString(10));
+
+            if ($this->sortable && !$this->maintainHierarchy) {
+                $query->orderBy(["$relationsAlias.sortOrder" => SORT_ASC]);
+            }
+
+            // join the relations table via EVENT_BEFORE_PREPARE so it gets joined for cloned queries as well
             $query->attachBehavior(self::class, new EventBehavior([
                 ElementQuery::EVENT_BEFORE_PREPARE => function(
                     CancelableEvent $event,
                     ElementQuery $query,
-                ) use ($element) {
-                    $relationsAlias = sprintf('relations_%s', StringHelper::randomString(10));
+                ) use ($element, $relationsAlias) {
                     $query->innerJoin(
                         [$relationsAlias => DbTable::RELATIONS],
                         [
@@ -668,10 +674,6 @@ JS, [
                             ],
                         ]
                     );
-
-                    if ($this->sortable && !$this->maintainHierarchy && !$query->orderBy) {
-                        $query->orderBy(["$relationsAlias.sortOrder" => SORT_ASC]);
-                    }
 
                     if ($this->maintainHierarchy && $query->id === null) {
                         $structuresService = Craft::$app->getStructures();
@@ -691,7 +693,7 @@ JS, [
                         $query->id(ArrayHelper::getColumn($structureElements, 'id'));
                     }
                 },
-            ]));
+            ], true));
 
             // Set the query up for lazy eager loading
             $query->eagerLoadSourceElement = $element;
