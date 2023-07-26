@@ -630,7 +630,6 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
       for (let i = 0; i < this.$listedFolders.length; i++) {
         const $folder = this.$listedFolders.eq(i);
         const $label = $folder.find('.label');
-        const $title = $label.find('.title');
         const folderId = parseInt($folder.data('folder-id'));
         const folderName = $folder.data('folder-name');
         const label = Craft.t('app', '{name} folder', {
@@ -645,7 +644,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
         if (sourcePath) {
           const $a = $('<a/>', {
             href: Craft.getCpUrl(sourcePath[sourcePath.length - 1].uri),
-            html: $title.html(),
+            html: $label.html(),
             role: 'button',
             'aria-label': label,
           });

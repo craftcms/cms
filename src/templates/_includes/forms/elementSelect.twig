@@ -11,11 +11,11 @@
 {% set sourceElementId = sourceElementId ?? null -%}
 {% set storageKey = storageKey ?? null -%}
 {% set viewMode = viewMode ?? 'list' %}
-{% set sortable = sortable ?? true %}
 {% set prevalidate = prevalidate ?? false %}
 {% set fieldId = fieldId ?? null %}
 {% set single = single ?? false %}
 {% set limit = single ? 1 : (limit ?? null) %}
+{% set sortable = (not limit or limit > 1) and (sortable ?? true) %}
 {% set disabled = (disabled ?? false) ? true : false %}
 {% set maintainHierarchy = maintainHierarchy ?? false %}
 

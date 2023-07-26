@@ -639,54 +639,51 @@ class AppController extends Controller
      * @throws BadRequestHttpException
      * @since 4.0.0
      */
-    public function actionRenderElement(): Response
+    public function actionRenderElements(): Response
     {
         $this->requireCpRequest();
         $this->requireAcceptsJson();
 
-        /** @var string|ElementInterface $elementType */
-        $elementType = $this->request->getRequiredBodyParam('type');
-        $id = $this->request->getRequiredBodyParam('id');
-        $instances = $this->request->getRequiredBodyParam('instances');
-
-        if (!$id || !is_numeric($id)) {
-            throw new BadRequestHttpException("Invalid element ID: $id");
-        }
-
-        $siteIds = [];
-        foreach ($instances as $instance) {
-            $siteIds[$instance['siteId']] = true;
-        }
-
-        $elements = $elementType::find()
-            ->id($id)
-            ->drafts(null)
-            ->provisionalDrafts(null)
-            ->revisions(null)
-            ->siteId(array_keys($siteIds))
-            ->status(null)
-            ->indexBy('siteId')
-            ->all();
+        $criteria = $this->request->getRequiredBodyParam('elements');
 
         $elementHtml = [];
 
-        foreach ($instances as $instance) {
-            if (isset($elements[$instance['siteId']])) {
-                $elementHtml[] = Cp::elementChipHtml($elements[$instance['siteId']], [
-                    'context' => $instance['context'],
-                    'showDraftName' => $instance['showDraftName'],
-                    'showLabel' => $instance['showLabel'],
-                    'showStatus' => $instance['showStatus'],
-                    'showThumb' => $instance['showThumb'],
-                    'size' => $instance['size'],
-                ]);
-            } else {
-                $elementHtml[] = null;
+        foreach ($criteria as $criterion) {
+            /** @var string|ElementInterface $elementType */
+            $elementType = $criterion['type'];
+            $id = $criterion['id'];
+            $siteId = $criterion['siteId'];
+            $instances = $criterion['instances'];
+
+            if (!$id || (!is_numeric($id) && !(is_array($id) && ArrayHelper::isNumeric($id)))) {
+                throw new BadRequestHttpException('Invalid element ID');
+            }
+
+            $elements = $elementType::find()
+                ->id($id)
+                ->fixedOrder()
+                ->drafts(null)
+                ->provisionalDrafts(null)
+                ->revisions(null)
+                ->siteId($siteId)
+                ->status(null)
+                ->indexBy('siteId')
+                ->all();
+
+            foreach ($elements as $element) {
+                foreach ($instances as $key => $instance) {
+                    /** @var 'chip'|'card' $ui */
+                    $ui = $instance['ui'] ?? 'chip';
+                    $elementHtml[$element->id][$key] = match ($ui) {
+                        'chip' => Cp::elementChipHtml($element, $instance),
+                        'card' => Cp::elementCardHtml($element, $instance),
+                    };
+                }
             }
         }
 
         return $this->asJson([
-            'elementHtml' => $elementHtml,
+            'elements' => $elementHtml,
         ]);
     }
 }

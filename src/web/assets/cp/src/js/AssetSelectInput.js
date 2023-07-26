@@ -37,21 +37,24 @@ Craft.AssetSelectInput = Craft.BaseElementSelectInput.extend({
     }
   },
 
-  onAddElements: function () {
-    this.$elements
-      .find('.thumb')
-      .addClass('open-preview')
-      .on('click', (ev) => {
-        this.clearOpenPreviewTimeout();
-        this.openPreviewTimeout = setTimeout(() => {
-          this.openPreview();
-          this.openPreviewTimeout = null;
-        }, 500);
-      })
-      .on('dblclick', (ev) => {
-        this.clearOpenPreviewTimeout();
-      });
-    this.base();
+  defineElementActions: function ($element) {
+    const actions = this.base($element);
+    const viewIndex = actions.findIndex((a) => a.icon === 'share');
+    const previewAction = {
+      icon: 'view',
+      label: Craft.t('app', 'Preview file'),
+      callback: () => {
+        this.openPreview($element);
+      },
+    };
+
+    if (viewIndex !== -1) {
+      actions.splice(viewIndex + 1, 0, previewAction);
+    } else {
+      actions.push(previewAction);
+    }
+
+    return actions;
   },
 
   clearOpenPreviewTimeout: function () {
@@ -61,11 +64,13 @@ Craft.AssetSelectInput = Craft.BaseElementSelectInput.extend({
     }
   },
 
-  openPreview: function () {
+  openPreview: function ($element) {
     if (Craft.PreviewFileModal.openInstance) {
       Craft.PreviewFileModal.openInstance.selfDestruct();
     } else {
-      var $element = this.elementSelect.$focusedItem;
+      if (!$element) {
+        $element = this.elementSelect.$focusedItem;
+      }
 
       if ($element.length) {
         this._loadPreview($element);
@@ -204,19 +209,6 @@ Craft.AssetSelectInput = Craft.BaseElementSelectInput.extend({
 
     var $newElement = element.$element;
 
-    // Make a couple tweaks
-    $newElement.addClass('removable');
-    $newElement.prepend(
-      '<input type="hidden" name="' +
-        this.settings.name +
-        '[]" value="' +
-        element.id +
-        '">' +
-        '<a class="delete icon" title="' +
-        Craft.t('app', 'Remove') +
-        '"></a>'
-    );
-
     $newElement.appendTo(this.$elementsContainer);
 
     var margin = -($newElement.outerWidth() + 10);
@@ -261,18 +253,28 @@ Craft.AssetSelectInput = Craft.BaseElementSelectInput.extend({
   _onUploadComplete: function (event, data) {
     const result = event instanceof CustomEvent ? event.detail : data.result;
 
-    const parameters = {
-      elementId: result.assetId,
-      siteId: this.settings.criteria.siteId,
-      thumbSize: this.settings.viewMode,
-    };
-
-    Craft.sendActionRequest('POST', 'elements/get-element-html', {
-      data: parameters,
+    Craft.sendActionRequest('POST', 'app/render-elements', {
+      data: {
+        elements: [
+          {
+            type: 'craft\\elements\\Asset',
+            id: result.assetId,
+            siteId: this.settings.criteria.siteId,
+            instances: [
+              {
+                context: 'field',
+                ui: ['list', 'large'].includes(this.settings.viewMode)
+                  ? 'chip'
+                  : 'card',
+                size: this.settings.viewMode === 'large' ? 'large' : 'small',
+              },
+            ],
+          },
+        ],
+      },
     })
-      .then((response) => {
-        var html = $(response.data.html);
-        Craft.appendHeadHtml(response.data.headHtml);
+      .then(({data}) => {
+        const html = $(data.elements[result.assetId][0]);
         this.selectUploadedFile(Craft.getElementInfo(html));
 
         // Last file

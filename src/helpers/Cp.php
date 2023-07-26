@@ -422,15 +422,6 @@ class Cp
             'size' => self::ELEMENT_SIZE_SMALL,
         ];
 
-        if ($config['showThumb']) {
-            $thumbSize = $config['size'] === self::ELEMENT_SIZE_SMALL ? 34 : 120;
-            $thumbHtml = $element->getThumbHtml($thumbSize);
-        } else {
-            $thumbHtml = null;
-        }
-
-        $statusHtml = $config['showStatus'] ? self::elementStatusHtml($element) : null;
-
         $title = implode('', array_map(fn(string $segment) => "$segment → ", $element->getUiLabelPath())) .
             $element->getUiLabel();
 
@@ -444,12 +435,11 @@ class Cp
                 'class' => array_filter([
                     'chip',
                     $config['size'],
-                    $statusHtml ? 'has-status' : null,
-                    $thumbHtml ? 'has-thumb' : null,
                 ]),
                 'title' => $title,
                 'data' => array_filter([
                     'settings' => $config['autoReload'] ? [
+                        'ui' => 'chip',
                         'context' => $config['context'],
                         'size' => $config['size'],
                         'showStatus' => $config['showStatus'],
@@ -461,33 +451,27 @@ class Cp
             ],
         );
 
-        $innerHtml = '';
+        $html = Html::beginTag('div', $attributes);
 
-        if ($config['context'] === 'field' && $config['inputName'] !== null) {
-            $innerHtml .= Html::hiddenInput($config['inputName'], (string)$element->id) .
-                Html::button('', [
-                    'class' => ['delete', 'icon'],
-                    'title' => Craft::t('app', 'Remove'),
-                    'aria' => [
-                        'label' => Craft::t('app', 'Remove {label}', [
-                            'label' => $element->getUiLabel(),
-                        ]),
-                    ],
-                ]);
+        if ($config['showThumb']) {
+            $thumbSize = $config['size'] === self::ELEMENT_SIZE_SMALL ? 30 : 120;
+            $html .= $element->getThumbHtml($thumbSize) ?? '';
         }
 
-        if ($thumbHtml !== null) {
-            $innerHtml .= $thumbHtml;
+        $html .= Html::beginTag('div', ['class' => 'chip-content']);
+
+        if ($config['showStatus']) {
+            $html .= self::elementStatusHtml($element) ?? '';
         }
 
         if ($config['showLabel']) {
             $labelHtml = self::elementLabelHtml($element, $config['showDraftName']);
 
-            // Should we make the element a link?
+            // make it a link?
             if (
-                $config['context'] === 'index' &&
                 !$element->trashed &&
-                isset($attributes['data']['editable'])
+                isset($attributes['data']['editable']) &&
+                $config['context'] !== 'modal'
             ) {
                 $cpEditUrl = $element->getCpEditUrl();
                 if ($cpEditUrl) {
@@ -495,7 +479,7 @@ class Cp
                 }
             }
 
-            $innerHtml .= Html::beginTag('div', ['class' => 'label']) .
+            $html .= Html::beginTag('div', ['class' => 'label']) .
                 Html::beginTag('span', ['class' => 'title']) .
                 $labelHtml .
                 (self::elementErrorIcon($element) ?? '') .
@@ -503,11 +487,14 @@ class Cp
                 Html::endTag('div'); // .label
         }
 
-        if ($statusHtml) {
-            $innerHtml .= $statusHtml;
+        $html .= Html::tag('div', options: ['class' => 'chip-actions']);
+
+        if ($config['context'] === 'field' && $config['inputName'] !== null) {
+            $html .= Html::hiddenInput($config['inputName'], (string)$element->id);
         }
 
-        $html = Html::tag('div', $innerHtml, $attributes);
+        $html .= Html::endTag('div') . // .chip-content
+            Html::endTag('div'); // .element
 
         // Allow plugins to modify the HTML
         if (Event::hasHandlers(self::class, self::EVENT_DEFINE_ELEMENT_CHIP_HTML)) {
@@ -545,19 +532,18 @@ class Cp
             'autoReload' => true,
         ];
 
-        $attributes = ArrayHelper::merge(
-            self::baseElementAttributes($element, $config['context']),
-            [
-                'class' => ['card'],
-                'data' => array_filter([
-                    'settings' => $config['autoReload'] ? [
-                        'context' => $config['context'],
-                    ] : false,
-                ]),
-            ],
-        );
-
-        $html = Html::beginTag('div', $attributes) .
+        $html = Html::beginTag('div', ArrayHelper::merge(
+                self::baseElementAttributes($element, $config['context']),
+                [
+                    'class' => ['card'],
+                    'data' => array_filter([
+                        'settings' => $config['autoReload'] ? [
+                            'ui' => 'card',
+                            'context' => $config['context'],
+                        ] : false,
+                    ]),
+                ],
+            )) .
             ($element->getThumbHtml(120) ?? '') .
             Html::beginTag('div', ['class' => 'card-content']) .
             Html::beginTag('div', ['class' => 'card-heading']) .
@@ -568,32 +554,11 @@ class Cp
             Html::beginTag('div', ['class' => 'card-body']) .
             $element->getCardBodyHtml() .
             Html::endTag('div') . // .card-body
-            Html::endTag('div'); // .card-content
+            Html::endTag('div') . // .card-content
+            Html::tag('div', options: ['class' => 'card-actions']);
 
         if ($config['context'] === 'field' && $config['inputName'] !== null) {
-            $html .=
-                Html::beginTag('div', ['class' => 'card-actions']) .
-                Html::button('', [
-                    'class' => ['btn', 'settings', 'icon', 'menubtn'],
-                ]) .
-                Html::button('', [
-                    'class' => ['move', 'icon'],
-                    'title' => Craft::t('app', 'Reorder'),
-                    'aria' => [
-                        'label' => Craft::t('app', 'Reorder'),
-                    ],
-                ]) .
-//                Html::button('', [
-//                    'class' => ['delete', 'icon'],
-//                    'title' => Craft::t('app', 'Remove'),
-//                    'aria' => [
-//                        'label' => Craft::t('app', 'Remove {label}', [
-//                            'label' => $element->getUiLabel(),
-//                        ]),
-//                    ],
-//                ]) .
-                Html::endTag('div') . // .card-actions
-                Html::hiddenInput($config['inputName'], (string)$element->id);
+            $html .= Html::hiddenInput($config['inputName'], (string)$element->id);
         }
 
         $html .= Html::endTag('div'); // .card
@@ -801,13 +766,14 @@ class Cp
         }
 
         $first = array_shift($elements);
-        $html = static::elementChipHtml($first, [
-            'showDraftName' => $showDraftName,
-            'showLabel' => $showLabel,
-            'showStatus' => $showStatus,
-            'showThumb' => $showThumb,
-            'size' => $size,
-        ]);
+        $html = Html::beginTag('div', ['class' => 'inline-chips']) .
+            static::elementChipHtml($first, [
+                'showDraftName' => $showDraftName,
+                'showLabel' => $showLabel,
+                'showStatus' => $showStatus,
+                'showThumb' => $showThumb,
+                'size' => $size,
+            ]);
 
         if (!empty($elements)) {
             $otherHtml = '';
@@ -831,6 +797,7 @@ class Cp
             ]);
         }
 
+        $html .= Html::endTag('div'); // .inline-chips
         return $html;
     }
 

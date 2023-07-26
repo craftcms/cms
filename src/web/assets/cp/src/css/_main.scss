@@ -204,7 +204,6 @@ table.editable textarea {
 .menu ul.padded li a.sel:before,
 .menu .flex.padded.sel:before,
 .texticon:before,
-.chip:before,
 #help:before,
 .secure:before,
 .insecure:before,
@@ -2740,23 +2739,68 @@ table {
 }
 
 /* chips */
-$smallThumbSize: 34px;
-$largeThumbSize: 120px;
-$statusSize: 10px;
-$baseChipSidePadding: 7px;
-$chipInnerSpacing: 5px;
-
 .chip {
   position: relative;
   display: flex;
-  flex-direction: row;
+  align-items: center;
   cursor: default;
-  user-select: none;
   font-weight: normal;
-  border-radius: var(--small-border-radius);
+  padding: var(--xs) var(--s);
   max-width: 100%;
+  gap: var(--xs);
+  border-radius: var(--small-border-radius);
+
+  &.small {
+    flex-direction: row;
+    height: 34px;
+    --thumb-size: 30px;
+
+    & > .thumb {
+      margin: calc(var(--xs) * -1 + 2px) calc(var(--xs) * -1);
+      @include margin-right(2px);
+    }
+  }
+
+  &.large {
+    flex-direction: column;
+    --thumb-size: 120px;
+    min-width: calc(var(--s) * 2 + var(--thumb-size));
+
+    .chip-content {
+      width: 100%;
+    }
+  }
+
+  .chip-content {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: var(--xs);
+
+    .status {
+      margin: 0;
+    }
+  }
 
   .label {
+    display: block;
+    overflow: hidden;
+    vertical-align: bottom; // https://stackoverflow.com/a/37427386/1688568
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    max-width: 100%;
+
+    .draft-label {
+      display: inline-block;
+      @include margin(-1px, 0, -1px, 7px);
+      padding: 1px 5px;
+      font-weight: normal;
+      text-decoration: none !important;
+      color: var(--medium-text-color);
+      background: var(--gray-100);
+      border-radius: var(--large-border-radius);
+    }
+
     .segment:after {
       display: inline-flex !important;
       position: relative;
@@ -2789,12 +2833,10 @@ $chipInnerSpacing: 5px;
   li.sel & {
     cursor: default;
 
-    &.has-thumb {
-      .thumb {
-        img {
-          box-shadow: 0 0 0 1px transparentize($darkSelColor, 0.9),
-            0 6px 4px -4px transparentize($darkSelColor, 0.8);
-        }
+    .thumb {
+      img {
+        box-shadow: 0 0 0 1px transparentize($darkSelColor, 0.9),
+          0 6px 4px -4px transparentize($darkSelColor, 0.8);
       }
     }
   }
@@ -2804,182 +2846,47 @@ $chipInnerSpacing: 5px;
     @include shadow;
   }
 
-  &.has-thumb {
-    .thumb:not(:empty) {
-      position: absolute;
-      display: flex;
-      justify-content: center;
-      -ms-flex-pack: center;
-      align-items: center;
-      -ms-flex-align: center;
+  & > .thumb {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: var(--thumb-size);
+    height: var(--thumb-size);
 
+    &.rounded {
       img,
       svg {
-        display: block;
-        flex-shrink: 0;
-        pointer-events: none;
-        border-radius: var(--small-border-radius);
-        max-width: 100%;
-        max-height: 100%;
-      }
-
-      &.rounded {
-        img,
-        svg {
-          border-radius: 50%;
-        }
-      }
-    }
-    .thumb.open-preview {
-      cursor: pointer;
-    }
-  }
-
-  &.error {
-    [data-icon='alert'] {
-      margin-left: var(--xs);
-    }
-  }
-
-  .label {
-    display: block;
-    overflow: hidden;
-    vertical-align: bottom; // https://stackoverflow.com/a/37427386/1688568
-    white-space: nowrap;
-    text-overflow: ellipsis;
-    max-width: 100%;
-
-    .draft-label {
-      display: inline-block;
-      @include margin(-1px, 0, -1px, 7px);
-      padding: 1px 5px;
-      font-weight: normal;
-      text-decoration: none !important;
-      color: var(--medium-text-color);
-      background: var(--gray-100);
-      border-radius: var(--large-border-radius);
-    }
-  }
-
-  &.small,
-  &.large:not(.has-thumb) {
-    display: inline-block;
-    padding: $baseChipSidePadding;
-    box-sizing: border-box;
-
-    &.has-status {
-      @include padding-left(
-        $baseChipSidePadding + $statusSize + $chipInnerSpacing
-      );
-
-      .status {
-        position: absolute;
-        @include left($baseChipSidePadding);
-        top: calc(50% - 4px);
-      }
-
-      .icon:not(.delete) {
-        position: absolute;
-        @include left($baseChipSidePadding - 1);
-        top: calc(50% - 11px);
+        border: var(--xs) solid transparent;
+        border-radius: 50%;
       }
     }
 
-    &.has-thumb {
-      @include padding-left($smallThumbSize + $chipInnerSpacing);
-
-      .thumb:not(:empty) {
-        top: calc(50% - 17px);
-        @include left(0);
-        width: $smallThumbSize;
-        height: $smallThumbSize;
-
-        &.checkered img {
-          @include checkered-bg(8px);
-        }
-      }
-
-      &.has-status {
-        @include padding-left(
-          $smallThumbSize + $chipInnerSpacing * 2 + $statusSize
-        );
-
-        .status {
-          @include left($smallThumbSize + $chipInnerSpacing);
-        }
-      }
-    }
-  }
-
-  &.large.has-thumb {
-    display: block;
-    padding: #{$baseChipSidePadding + $largeThumbSize + $chipInnerSpacing} $baseChipSidePadding
-      $baseChipSidePadding;
-    width: #{120px + $baseChipSidePadding + $baseChipSidePadding};
-    box-sizing: border-box;
-
-    &.has-status {
-      @include padding-left(
-        $baseChipSidePadding + $statusSize + $chipInnerSpacing
-      );
-
-      .status {
-        position: absolute;
-        @include left($baseChipSidePadding);
-        top: #{$baseChipSidePadding + $largeThumbSize + $chipInnerSpacing + 6};
-      }
+    &.checkered img {
+      @include checkered-bg(8px);
     }
 
-    .thumb:not(:empty) {
-      top: $baseChipSidePadding;
-      @include left(0);
-      width: 100%;
-      height: $largeThumbSize;
-
-      &.checkered img {
-        @include checkered-bg(15px);
-      }
-    }
-
-    .label {
+    img,
+    svg {
       display: block;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      word-wrap: normal;
+      flex-shrink: 0;
+      pointer-events: none;
+      border-radius: var(--small-border-radius);
+      max-width: 100%;
+      max-height: 100%;
     }
   }
+}
 
-  &.removable {
-    .label {
-      @include padding-right(20px);
-    }
+.inline-chips {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--xs);
 
-    .delete:before {
-      color: var(--ui-control-color);
-    }
-
-    &.small,
-    &.large:not(.has-thumb) {
-      .delete {
-        position: absolute;
-        top: calc(50% - 11px);
-        @include right($baseChipSidePadding);
-      }
-    }
-
-    &.large.has-thumb {
-      .delete {
-        position: absolute;
-        @include right($baseChipSidePadding);
-      }
-    }
-  }
-
-  &:not(.removable) {
-    .delete {
-      display: none;
-    }
+  .chip {
+    margin: 0 !important;
   }
 }
 
@@ -2995,20 +2902,6 @@ $chipInnerSpacing: 5px;
   border-radius: var(--large-border-radius);
   background-color: var(--gray-050);
 
-  &:after,
-  & > .thumb:after {
-    display: block;
-    content: '';
-    font-size: 0;
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    box-shadow: inset 0 0 0 1px var(--hairline-color);
-    pointer-events: none;
-  }
-
   &:after {
     border-radius: var(--large-border-radius);
   }
@@ -3016,15 +2909,34 @@ $chipInnerSpacing: 5px;
   & > .thumb {
     position: relative;
     display: flex;
-    align-items: center;
-    justify-content: center;
+    align-items: stretch;
     margin: calc(var(--m) * -1);
     @include margin-right(0);
     width: 120px;
     min-width: 120px; // needed for flex
-    min-height: 80px;
+    min-height: calc(var(--m) * 2 + var(--lh) * 3 + var(--xs));
     background-color: var(--gray-100);
     overflow: hidden;
+
+    &:after {
+      display: block;
+      content: '';
+      font-size: 0;
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      pointer-events: none;
+      @include shadow();
+      width: 10px;
+
+      body.ltr & {
+        right: -10px;
+      }
+
+      body.rtl & {
+        left: -10px;
+      }
+    }
 
     &,
     &:after {
@@ -3039,7 +2951,6 @@ $chipInnerSpacing: 5px;
     img,
     svg {
       width: 100%;
-      height: 100%;
       object-fit: cover;
     }
   }
@@ -3064,6 +2975,10 @@ $chipInnerSpacing: 5px;
         margin: 0;
       }
 
+      h3 {
+        line-height: var(--lh);
+      }
+
       .status {
         position: relative;
         top: 1px;
@@ -3075,27 +2990,29 @@ $chipInnerSpacing: 5px;
       margin: 0;
       max-height: calc(var(--lh) * var(--max-lines));
       overflow: hidden;
+      text-wrap: pretty;
     }
   }
+}
 
-  .card-actions {
-    display: flex;
-    flex-direction: row;
-    gap: var(--xs);
-    align-items: center;
+.chip > .chip-content > .chip-actions,
+.card > .card-actions {
+  display: flex;
+  flex-direction: row;
+  gap: var(--xs);
+  align-items: center;
 
-    .settings {
-      padding: 0 8px;
-      height: 20px;
-      color: var(--ui-control-color);
+  .settings {
+    padding: 0 8px;
+    height: 20px;
+    color: var(--ui-control-color);
 
-      &:before {
-        @include margin-right(0 !important);
-      }
+    &:before {
+      @include margin-right(0 !important);
+    }
 
-      &:not(:hover):not(:active) {
-        background-color: transparent;
-      }
+    &:not(:hover):not(:active) {
+      background-color: transparent;
     }
   }
 }
@@ -3212,7 +3129,7 @@ $checkboxPadding: $checkboxSize + 4;
       cursor: default;
 
       .checkbox {
-        @include margin-right($chipInnerSpacing);
+        @include margin-right(5px);
       }
     }
   }
@@ -3275,40 +3192,6 @@ $checkboxPadding: $checkboxSize + 4;
         }
       }
 
-      .chip.large.has-thumb {
-        width: unset;
-      }
-
-      &.has-checkbox {
-        .chip.has-thumb {
-          &:not(.has-status) {
-            @include padding-left(
-              $baseChipSidePadding + $checkboxSize + $chipInnerSpacing
-            );
-          }
-
-          &.has-status {
-            @include padding-left(
-              $baseChipSidePadding + $checkboxSize + $chipInnerSpacing +
-                $statusSize + $chipInnerSpacing
-            );
-
-            .status {
-              @include left(
-                $baseChipSidePadding + $checkboxSize + $chipInnerSpacing
-              );
-            }
-          }
-        }
-
-        .checkbox {
-          position: absolute;
-          top: $baseChipSidePadding + $largeThumbSize + $chipInnerSpacing +
-            (20px - $checkboxSize) * 0.5;
-          @include left($baseChipSidePadding);
-        }
-      }
-
       &.sel {
         a {
           cursor: pointer !important;
@@ -3317,6 +3200,18 @@ $checkboxPadding: $checkboxSize + 4;
             text-decoration: underline;
           }
         }
+      }
+
+      .chip .chip-content {
+        @include padding-left(calc(#{$checkboxSize} + var(--s)));
+      }
+
+      .checkbox {
+        position: absolute;
+        top: calc(
+          var(--xs) + 120px + var(--xs) + (20px - #{$checkboxSize}) * 0.5
+        );
+        @include left(var(--s));
       }
     }
   }
@@ -3469,15 +3364,10 @@ $checkboxPadding: $checkboxSize + 4;
 
   .elements {
     display: flex;
-    flex-direction: column;
     align-items: flex-start;
 
-    &.flex-row {
-      flex-direction: row;
-    }
-
-    &.flex-wrap {
-      flex-wrap: wrap;
+    &:not(.inline-chips) {
+      flex-direction: column;
     }
 
     li {

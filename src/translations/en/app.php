@@ -215,6 +215,7 @@ return [
     'Canton' => 'Canton',
     'Can’t run Craft CMS' => 'Can’t run Craft CMS',
     'Captions/Subtitles' => 'Captions/Subtitles',
+    'Cards' => 'Cards',
     'Cart' => 'Cart',
     'Categories' => 'Categories',
     'Category Group - {name}' => 'Category Group - {name}',
@@ -1698,6 +1699,7 @@ return [
     'View assets uploaded by other users' => 'View assets uploaded by other users',
     'View category group - {categoryGroup}' => 'View category group - {categoryGroup}',
     'View global set - {globalSet}' => 'View global set - {globalSet}',
+    'View in a new tab' => 'View in a new tab',
     'View other users’ {type}' => 'View other users’ {type}',
     'View section - {section}' => 'View section - {section}',
     'View site' => 'View site',
@@ -1978,5 +1980,4 @@ return [
     '“{handle}” is a reserved word.' => '“{handle}” is a reserved word.',
     '“{handle}” isn’t a valid handle.' => '“{handle}” isn’t a valid handle.',
     '“{name}” deleted.' => '“{name}” deleted.',
-    'Cards' => 'Cards',
 ];
