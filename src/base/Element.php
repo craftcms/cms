@@ -3315,7 +3315,10 @@ abstract class Element extends Component implements ElementInterface
             }
             $thumbSvg = Html::modifyTagAttributes($thumbSvg, ['role' => 'img']);
             return Html::tag('div', $thumbSvg, [
-                'class' => 'elementthumb',
+                'class' => array_filter([
+                    'elementthumb',
+                    $this->hasRoundedThumb() ? 'rounded' : null,
+                ]),
             ]);
         }
 
