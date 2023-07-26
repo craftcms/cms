@@ -2744,6 +2744,7 @@ table {
   display: flex;
   align-items: center;
   cursor: default;
+  user-select: none;
   font-weight: normal;
   padding: var(--xs) var(--s);
   max-width: 100%;
@@ -2901,9 +2902,19 @@ table {
   gap: var(--l);
   border-radius: var(--large-border-radius);
   background-color: var(--gray-050);
+  cursor: default;
+  user-select: none;
 
   &:after {
     border-radius: var(--large-border-radius);
+  }
+
+  &.sel {
+    --link-color: var(--white);
+    --ui-control-color: var(--white);
+    @include custom-color-focus-ring(hsl(var(--light-focus-hsl)));
+    color: var(--white);
+    background-color: var(--dark-sel-color) !important;
   }
 
   & > .thumb {

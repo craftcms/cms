@@ -63,12 +63,6 @@ Craft.AssetSelectorModal = Craft.BaseElementSelectorModal.extend(
 
       if ($selectedElements.length && this.settings.transforms.length) {
         allowTransforms = true;
-
-        for (let i = 0; i < $selectedElements.length; i++) {
-          if (!$('.element.has-thumb:first', $selectedElements[i]).length) {
-            break;
-          }
-        }
       }
 
       var MenuBtn = null;

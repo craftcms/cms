@@ -324,6 +324,7 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @event DefineAttributeHtmlEvent The event that is triggered when defining an attribute’s HTML for table and card views.
      * @see getAttributeHtml()
+     * @since 5.0.0
      */
     public const EVENT_DEFINE_ATTRIBUTE_HTML = 'defineAttributeHtml';
 

@@ -640,26 +640,10 @@ class FieldLayout extends Model
     }
 
     /**
-     * Returns the first custom field by field type.
-     *
-     * @template T of FieldInterface
-     * @param class-string<T> $class
-     * @return T|null
-     */
-    public function getFirstCustomFieldByType(string $class): ?FieldInterface
-    {
-        /** @var CustomField|null $layoutElement */
-        $layoutElement = $this->_element(fn(FieldLayoutElement $layoutElement) => (
-            $layoutElement instanceof CustomField &&
-            $layoutElement->getField() instanceof $class
-        ));
-        return $layoutElement?->getField();
-    }
-
-    /**
      * Returns the field layout’s designated thumbnail field.
      *
      * @return ThumbableFieldInterface|null
+     * @since 5.0.0
      */
     public function getThumbField(): ?ThumbableFieldInterface
     {

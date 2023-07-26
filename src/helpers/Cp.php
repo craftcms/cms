@@ -693,7 +693,7 @@ class Cp
      * @param bool $autoReload Whether the element should auto-reload itself when it’s saved
      * @return string
      * @since 3.5.8
-     * @deprecated in 5.0.0. [[elementChipHtml()]] should be used instead.
+     * @deprecated in 5.0.0. [[elementChipHtml()]] or [[elementCardHtml()]] should be used instead.
      */
     public static function elementHtml(
         ElementInterface $element,
