@@ -216,7 +216,7 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
             return $this->columnType;
         }
 
-        $maxLength = max([1, ...array_map(fn(array $option) => strlen($option['value']), $this->options())]);
+        $maxLength = max([1, ...array_map(fn(array $option) => isset($option['value']) ? strlen($option['value']) : 0, $this->options())]);
         return $maxLength === 1 ? Schema::TYPE_CHAR : sprintf('%s(%s)', Schema::TYPE_STRING, $maxLength);
     }
 
