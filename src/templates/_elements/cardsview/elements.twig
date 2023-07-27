@@ -1,0 +1,11 @@
+{% apply spaceless %}
+  {% for element in elements %}
+    {% set card = elementCard(element, {
+      context: context ?? 'index',
+    }) %}
+    {% if element.id in disabledElementIds %}
+      {% set card = card|attr({class: 'disabled'}) %}
+    {% endif %}
+    {{ card|raw }}
+  {% endfor %}
+{% endapply -%}

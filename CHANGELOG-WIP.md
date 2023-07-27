@@ -1,14 +1,14 @@
 # Release Notes for Craft CMS 5.0 (WIP)
 
 ### Content Management
-- Added element card views. ([#6024](https://github.com/craftcms/cms/pull/6024))
 - All elements can now have thumbnails, provided by Assets fields. ([#12484](https://github.com/craftcms/cms/discussions/12484), [#12706](https://github.com/craftcms/cms/discussions/12706))
-- Relational fields now have the option to use card views.
+- Element indexes and relational fields now have the option to use card views. ([#6024](https://github.com/craftcms/cms/pull/6024))
 - Selected elements within relational fields now include a context menu with “View in a new tab”, “Edit”, and “Remove” options.
 - Selected elements within relational fields now include a dedicated drag handle.
 - Selected assets within Assets fields now include a “Preview file” option within their context menu.
 - Selected assets within Assets fields no longer open the file preview modal when their thumbnail is clicked on. The “Preview file” context menu option, or <kbd>Shift</kbd> + <kbd>Spacebar</kbd> keyboard shortcut can be used instead.
 - Improved the styling of element chips.
+- Table views are no longer available for element indexes on mobile.
 
 ### Accessibility
 - Improved source item navigation for screen readers. ([#12054](https://github.com/craftcms/cms/pull/12054))

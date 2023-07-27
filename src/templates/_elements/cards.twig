@@ -2,7 +2,7 @@
 {% set disabled = disabled ?? null %}
 {% set viewMode = viewMode ?? null %}
 
-<div class="elements">
+<div class="elements card-grid">
   {% for element in elements %}
     {% set html = elementCard(element, {
       context: context ?? 'index',

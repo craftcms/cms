@@ -429,7 +429,7 @@ pre code {
 }
 
 /* links */
-a {
+a[href] {
   color: var(--link-color);
   cursor: pointer;
 
@@ -440,14 +440,14 @@ a {
   body.underline-links & {
     text-decoration: underline;
   }
+
+  &:hover {
+    text-decoration: underline;
+  }
 }
 
-a:hover {
-  text-decoration: underline;
-}
-
-a.sel,
-li.sel a {
+a[href].sel,
+li.sel a[href] {
   cursor: default !important;
   text-decoration: none;
 }
@@ -2897,7 +2897,7 @@ table {
   display: flex;
   flex-direction: row;
   align-items: start;
-  width: 100%;
+  max-width: 600px;
   padding: var(--m);
   gap: var(--l);
   border-radius: var(--large-border-radius);
@@ -2909,7 +2909,8 @@ table {
     border-radius: var(--large-border-radius);
   }
 
-  &.sel {
+  &.sel,
+  li.sel & {
     --link-color: var(--white);
     --ui-control-color: var(--white);
     @include custom-color-focus-ring(hsl(var(--light-focus-hsl)));
@@ -2987,6 +2988,7 @@ table {
       }
 
       h3 {
+        font-weight: 600;
         line-height: var(--lh);
       }
 
@@ -3003,6 +3005,16 @@ table {
       overflow: hidden;
       text-wrap: pretty;
     }
+  }
+}
+
+.card-grid {
+  display: grid !important;
+  gap: var(--s) !important;
+  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+
+  .card {
+    margin: 0 !important;
   }
 }
 
@@ -3126,8 +3138,8 @@ $checkboxPadding: $checkboxSize + 4;
   }
 
   .header {
-    margin: -22px -22px 24px;
-    padding: 14px 24px;
+    margin: calc(var(--xl) * -1 + 2px) calc(var(--padding) * -1 + 2px) var(--xl);
+    padding: 14px var(--padding);
     background-color: var(--gray-050);
     box-shadow: none;
     border-radius: var(--small-border-radius);
@@ -3189,7 +3201,7 @@ $checkboxPadding: $checkboxSize + 4;
   // thumbs views
   .thumbsview {
     display: grid;
-    gap: 5px;
+    gap: var(--s);
     grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
 
     li {

@@ -101,13 +101,15 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
     get viewMode() {
       if (this._viewMode === 'structure' && !this.canSortByStructure()) {
-        return 'table';
+        // return the default
+        return this.validateViewMode(null);
       }
-      return this._viewMode;
+
+      return this.validateViewMode(this._viewMode);
     },
 
     set viewMode(viewMode) {
-      this._viewMode = viewMode;
+      this._viewMode = viewMode ? this.validateViewMode(viewMode) : null;
     },
 
     /**
@@ -1787,7 +1789,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
     },
 
     getSelectedViewMode: function () {
-      return this.getSelectedSourceState('mode') || 'table';
+      return this.validateViewMode(this.getSelectedSourceState('mode') || null);
     },
 
     /**
@@ -2123,20 +2125,28 @@ Craft.BaseElementIndex = Garnish.Base.extend(
     },
 
     getViewModesForSource: function () {
-      var viewModes = [];
+      const viewModes = [];
 
-      if (Garnish.hasAttr(this.$source, 'data-has-structure')) {
+      if (!Garnish.isMobileBrowser(true)) {
+        if (Garnish.hasAttr(this.$source, 'data-has-structure')) {
+          viewModes.push({
+            mode: 'structure',
+            title: Craft.t('app', 'Display in a structured table'),
+            icon: Craft.orientation === 'rtl' ? 'structurertl' : 'structure',
+          });
+        }
+
         viewModes.push({
-          mode: 'structure',
-          title: Craft.t('app', 'Display in a structured table'),
-          icon: Craft.orientation === 'rtl' ? 'structurertl' : 'structure',
+          mode: 'table',
+          title: Craft.t('app', 'Display in a table'),
+          icon: 'list',
         });
       }
 
       viewModes.push({
-        mode: 'table',
-        title: Craft.t('app', 'Display in a table'),
-        icon: 'list',
+        mode: 'cards',
+        title: Craft.t('app', 'Display as cards'),
+        icon: 'cards',
       });
 
       if (this.$source && Garnish.hasAttr(this.$source, 'data-has-thumbs')) {
@@ -2151,6 +2161,10 @@ Craft.BaseElementIndex = Garnish.Base.extend(
     },
 
     doesSourceHaveViewMode: function (viewMode) {
+      if (!this.sourceViewModes) {
+        return false;
+      }
+
       for (var i = 0; i < this.sourceViewModes.length; i++) {
         if (this.sourceViewModes[i].mode === viewMode) {
           return true;
@@ -2158,6 +2172,18 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       }
 
       return false;
+    },
+
+    validateViewMode: function (viewMode) {
+      if (viewMode && this.doesSourceHaveViewMode(viewMode)) {
+        return viewMode;
+      }
+
+      if (this.sourceViewModes && this.sourceViewModes.length) {
+        return this.sourceViewModes[0].mode;
+      }
+
+      return this.doesSourceHaveViewMode('table') ? 'table' : 'cards';
     },
 
     selectViewMode: function (viewMode, force) {
@@ -2206,6 +2232,8 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         case 'table':
         case 'structure':
           return Craft.TableElementIndexView;
+        case 'cards':
+          return Craft.CardsElementIndexView;
         case 'thumbs':
           return Craft.ThumbsElementIndexView;
         default:
@@ -3539,10 +3567,14 @@ const ViewMenu = Garnish.Base.extend({
     if (this.$sortField) {
       if (this.elementIndex.viewMode === 'structure') {
         this.$sortField.addClass('hidden');
-        this.$tableColumnsField.addClass('first-child');
+        if (this.$tableColumnsField) {
+          this.$tableColumnsField.addClass('first-child');
+        }
       } else {
         this.$sortField.removeClass('hidden');
-        this.$tableColumnsField.removeClass('first-child');
+        if (this.$tableColumnsField) {
+          this.$tableColumnsField.removeClass('first-child');
+        }
       }
     }
 
@@ -3659,8 +3691,12 @@ const ViewMenu = Garnish.Base.extend({
   _buildMenu: function () {
     const $metaContainer = $('<div class="meta"/>').appendTo(this.$container);
     this.$sortField = this._createSortField().appendTo($metaContainer);
-    this.$tableColumnsField =
-      this._createTableColumnsField().appendTo($metaContainer);
+
+    if (!Garnish.isMobileBrowser(true)) {
+      this.$tableColumnsField =
+        this._createTableColumnsField().appendTo($metaContainer);
+    }
+
     this.updateSortField();
 
     this.$sortAttributeSelect.focus();

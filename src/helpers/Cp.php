@@ -465,23 +465,9 @@ class Cp
         }
 
         if ($config['showLabel']) {
-            $labelHtml = self::elementLabelHtml($element, $config['showDraftName']);
-
-            // make it a link?
-            if (
-                !$element->trashed &&
-                isset($attributes['data']['editable']) &&
-                $config['context'] !== 'modal'
-            ) {
-                $cpEditUrl = $element->getCpEditUrl();
-                if ($cpEditUrl) {
-                    $labelHtml = Html::a($labelHtml, $cpEditUrl);
-                }
-            }
-
             $html .= Html::beginTag('div', ['class' => 'label']) .
                 Html::beginTag('span', ['class' => 'title']) .
-                $labelHtml .
+                self::elementLabelHtml($element, $config, $attributes) .
                 (self::elementErrorIcon($element) ?? '') .
                 Html::endTag('span') . // .title
                 Html::endTag('div'); // .label
@@ -532,23 +518,25 @@ class Cp
             'autoReload' => true,
         ];
 
-        $html = Html::beginTag('div', ArrayHelper::merge(
-                self::baseElementAttributes($element, $config['context']),
-                [
-                    'class' => ['card'],
-                    'data' => array_filter([
-                        'settings' => $config['autoReload'] ? [
-                            'ui' => 'card',
-                            'context' => $config['context'],
-                        ] : false,
-                    ]),
-                ],
-            )) .
+        $attributes = ArrayHelper::merge(
+            self::baseElementAttributes($element, $config['context']),
+            [
+                'class' => ['card'],
+                'data' => array_filter([
+                    'settings' => $config['autoReload'] ? [
+                        'ui' => 'card',
+                        'context' => $config['context'],
+                    ] : false,
+                ]),
+            ],
+        );
+
+        $html = Html::beginTag('div', $attributes) .
             ($element->getThumbHtml(120) ?? '') .
             Html::beginTag('div', ['class' => 'card-content']) .
             Html::beginTag('div', ['class' => 'card-heading']) .
             (self::elementStatusHtml($element) ?? '') .
-            Html::tag('h3', self::elementLabelHtml($element, true)) .
+            Html::tag('h3', self::elementLabelHtml($element, $config, $attributes)) .
             (self::elementErrorIcon($element) ?? '') .
             Html::endTag('div') . // .card-heading
             Html::beginTag('div', ['class' => 'card-body']) .
@@ -600,6 +588,7 @@ class Cp
                     'status' => $element->getStatus(),
                     'label' => (string)$element,
                     'url' => $element->getUrl(),
+                    'cp-url' => $editable ? $element->getCpEditUrl() : null,
                     'level' => $element->level,
                     'trashed' => $element->trashed,
                     'editable' => $editable,
@@ -643,22 +632,27 @@ class Cp
         ]);
     }
 
-    private static function elementLabelHtml(ElementInterface $element, bool $showDraftName): string
+    private static function elementLabelHtml(ElementInterface $element, array $config, array $attributes): string
     {
-        $html = implode('', array_map(
+        $content = implode('', array_map(
             fn(string $segment) => Html::tag('span', Html::encode($segment), ['class' => 'segment']),
             $element->getUiLabelPath()
         )) .
             Html::encode($element->getUiLabel());
 
-        if ($showDraftName && $element->getIsDraft() && !$element->getIsUnpublishedDraft()) {
+        // show the draft name?
+        if (($config['showDraftName'] ?? true) && $element->getIsDraft() && !$element->getIsUnpublishedDraft()) {
             /** @var DraftBehavior|ElementInterface $element */
-            $html .= Html::tag('span', $element->draftName ?: Craft::t('app', 'Draft'), [
+            $content .= Html::tag('span', $element->draftName ?: Craft::t('app', 'Draft'), [
                 'class' => 'draft-label',
             ]);
         }
 
-        return $html;
+        return Html::tag('a', $content, [
+            'class' => 'label-link',
+            'href' => !$element->trashed && $config['context'] !== 'modal'
+                ? ($attributes['data']['cp-url'] ?? null) : null,
+        ]);
     }
 
     private static function elementErrorIcon(ElementInterface $element): ?string

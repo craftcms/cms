@@ -177,7 +177,7 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
     },
 
     getElementSortAxis: function () {
-      return ['list', 'cards'].includes(this.settings.viewMode) ? 'y' : null;
+      return ['list'].includes(this.settings.viewMode) ? 'y' : null;
     },
 
     canAddMoreElements: function () {
@@ -749,6 +749,14 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
           if (typeof data.elements[elements[i].id] !== 'undefined') {
             elements[i].$modalElement = elements[i].$element;
             elements[i].$element = $(data.elements[elements[i].id][0]);
+          }
+        }
+      } else {
+        // add the link hrefs in
+        for (let element of elements) {
+          const url = element.$element.data('cp-url');
+          if (url) {
+            element.$element.find('.label-link').attr('href', url);
           }
         }
       }

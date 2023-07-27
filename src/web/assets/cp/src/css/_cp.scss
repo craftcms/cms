@@ -794,8 +794,8 @@ li.breadcrumb-toggle-wrapper {
 
 #crumbs,
 #header {
-  padding-left: var(--xl);
-  padding-right: var(--xl);
+  padding-left: var(--padding);
+  padding-right: var(--padding);
 }
 
 #primary-nav-toggle {
@@ -937,7 +937,7 @@ li.breadcrumb-toggle-wrapper {
   flex-direction: row;
   align-items: flex-start;
   width: calc(100vw - #{$sidebarWidth});
-  padding: 0 var(--xl) 48px;
+  padding: 0 var(--padding) 48px;
   box-sizing: border-box;
 
   // for the Dashboard and any other full-page grids:
@@ -1033,7 +1033,7 @@ li.breadcrumb-toggle-wrapper {
   border-radius: var(--large-border-radius);
   position: relative;
   background-clip: padding-box;
-  padding: var(--xl);
+  padding: var(--xl) var(--padding);
   word-wrap: break-word;
 
   & > hr {
@@ -1046,8 +1046,9 @@ li.breadcrumb-toggle-wrapper {
   position: sticky;
   bottom: 0;
   z-index: 1;
-  margin: 25px calc((var(--xl) * -1) + 2px) calc((var(--xl) * -1) + 2px); // 1px extra on top is intentional
-  padding: var(--s) var(--xl);
+  margin: calc(var(--xl) + 1px) calc(var(--padding) * -1 + 2px)
+    calc(var(--xl) * -1 + 2px);
+  padding: var(--s) var(--padding);
   background-color: var(--gray-050);
   border-radius: var(--small-border-radius);
   box-sizing: border-box;
@@ -1270,11 +1271,9 @@ li.breadcrumb-toggle-wrapper {
 
 // Tighten up the padding at < 768
 @media only screen and (max-width: 767px) {
-  #crumbs,
-  #header,
-  #main-content {
-    padding-left: 10px !important;
-    padding-right: 10px !important;
+  :root {
+    --padding: var(--s);
+    --neg-padding: calc(var(--s) * -1);
   }
 
   #tabs ul li {
