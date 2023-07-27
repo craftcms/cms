@@ -8,10 +8,6 @@
     {% set selectizeOptions = selectizeOptions|merge({
         plugins: (selectizeOptions.plugins ?? [])|push('remove_button')
     }) %}
-{% else %}
-    {% set selectizeOptions = selectizeOptions|merge({
-        plugins: (selectizeOptions.plugins ?? [])|push('select_on_focus')
-    }) %}
 {% endif %}
 
 {# Normalize the options #}
