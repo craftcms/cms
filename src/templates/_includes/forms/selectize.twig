@@ -146,7 +146,31 @@
             }
             {% endif %}
         }
-    }
+    };
+
+    const positionDropdown = () => {
+        const selectize = $select.data('selectize');
+
+        // adjust dropdown position - if there's not enough space to display it below the field
+        // display it above the field
+        const bodyHeight = $('body').height();
+        const windowInnerHeight = window.innerHeight;
+        let offsetAdjustment = 0;
+        if (bodyHeight > windowInnerHeight) {
+            offsetAdjustment = bodyHeight - windowInnerHeight;
+        }
+
+        const controlOffset = selectize.settings.dropdownParent === 'body' ? selectize.$control.offset() : selectize.$control.position();
+        const controlHeight = selectize.$control.outerHeight();
+        const dropdownHeight = selectize.$dropdown.outerHeight();
+        const exceededWindowHeight = (controlOffset.top - offsetAdjustment + controlHeight + dropdownHeight) > windowInnerHeight;
+
+        if (exceededWindowHeight) {
+            selectize.$dropdown.css({
+                top: controlOffset.top - dropdownHeight - 4,
+            });
+        }
+    };
 
     $select.selectize($.extend({
         searchField: ['text', 'hint', 'value', 'keywords'],
@@ -178,30 +202,8 @@
                     this.$control_input.attr(attr.name, attr.value);
                 });
         },
-        onDropdownOpen: function() {
-            // adjust dropdown position - if there's not enough space to display it below the field
-            // display it above the field
-            const bodyHeight = $('body').height();
-            const windowInnerHeight = window.innerHeight;
-            let offsetAdjustment = 0;
-            if (bodyHeight > windowInnerHeight) {
-                offsetAdjustment = bodyHeight - windowInnerHeight;
-            }
-
-            const controlOffset = this.settings.dropdownParent === 'body' ? this.$control.offset() : this.$control.position();
-            const controlHeight = this.$control.outerHeight();
-            const dropdownHeight = this.$dropdown.outerHeight();
-            const exceededWindowHeight = (controlOffset.top - offsetAdjustment + controlHeight + dropdownHeight) > windowInnerHeight;
-
-            if (exceededWindowHeight) {
-                this.$dropdown.css({
-                    top: controlOffset.top - dropdownHeight - 4,
-                });
-            }
-        },
-        onDropdownClose: function() {
-            $select.trigger('change');
-        },
+        onDropdownOpen: positionDropdown,
+        onItemAdd: positionDropdown,
     }, {{ selectizeOptions|json_encode|raw }}));
 
     onChange();
