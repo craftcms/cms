@@ -429,7 +429,7 @@ pre code {
 }
 
 /* links */
-a[href] {
+a[href]:not(.btn) {
   color: var(--link-color);
   cursor: pointer;
 
