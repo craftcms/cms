@@ -2,16 +2,18 @@
 {% set disabled = disabled ?? null %}
 {% set viewMode = viewMode ?? null %}
 
-<div class="elements card-grid">
+<ul class="elements card-grid">
   {% for element in elements %}
-    {% set html = elementCard(element, {
-      context: context ?? 'index',
-      size: size ?? (viewMode == 'large' ? 'large' : 'small'),
-      inputName: inputName ?? ((name ?? false) ? "#{name}[]" : null),
-    }) %}
-    {% if disabled %}
-      {% set html = html|removeClass('removable') %}
-    {% endif %}
-    {{ html|raw }}
+    <li>
+      {% set html = elementCard(element, {
+        context: context ?? 'index',
+        size: size ?? (viewMode == 'large' ? 'large' : 'small'),
+        inputName: inputName ?? ((name ?? false) ? "#{name}[]" : null),
+      }) %}
+      {% if disabled %}
+        {% set html = html|removeClass('removable') %}
+      {% endif %}
+      {{ html|raw }}
+    </li>
   {% endfor %}
-</div>
+</ul>

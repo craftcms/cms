@@ -144,8 +144,12 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
           filter: this.settings.selectable
             ? () => {
                 // Only return all the selected items if the target item is selected
-                if (this.elementSort.$targetItem.hasClass('sel')) {
-                  return this.elementSelect.getSelectedItems();
+                if (
+                  this.elementSort.$targetItem
+                    .children('.element')
+                    .hasClass('sel')
+                ) {
+                  return this.elementSelect.getSelectedItems().parent('li');
                 } else {
                   return this.elementSort.$targetItem;
                 }
@@ -361,7 +365,7 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
       }
 
       if (this.settings.sortable) {
-        this.elementSort.addItems($elements);
+        this.elementSort.addItems($elements.parent('li'));
       }
 
       if (this.settings.editable) {
@@ -548,15 +552,13 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
       $elements.children('input').prop('disabled', true);
 
       // Move the focus to the next element in the list, if there is one
-      let $nextDeleteBtn;
+      let $nextElement;
       if (this.settings.selectable) {
         const lastElementIndex = this.$elements.index($elements.last());
-        $nextDeleteBtn = this.$elements
-          .eq(lastElementIndex + 1)
-          .find('.delete');
+        $nextElement = this.$elements.eq(lastElementIndex + 1);
       }
-      if ($nextDeleteBtn.length) {
-        $nextDeleteBtn.focus();
+      if ($nextElement.length) {
+        $nextElement.focus();
       } else {
         this.focusNextLogicalElement();
       }
@@ -589,7 +591,7 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
         $('[name]', $element).removeAttr('name');
         this.removeElements($element);
         this.animateElementAway($element, () => {
-          $element.remove();
+          $element.parent('li').remove();
         });
       }
     },
@@ -894,7 +896,7 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
     },
 
     appendElement: function ($element) {
-      $element.appendTo(this.$elementsContainer);
+      $('<li/>').append($element).appendTo(this.$elementsContainer);
     },
 
     animateElementIntoPlace: function ($modalElement, $inputElement) {

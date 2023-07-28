@@ -2,16 +2,18 @@
 {% set disabled = disabled ?? null %}
 {% set viewMode = viewMode ?? null %}
 
-<div class="elements">
-    {% for element in elements %}
-        {% set element = elementChip(element, {
-            context: context ?? 'index',
-            size: size ?? (viewMode == 'large' ? 'large' : 'small'),
-            inputName: inputName ?? ((name ?? false) ? "#{name}[]" : null),
-        }) %}
-        {% if disabled %}
-            {% set element = element|removeClass('removable') %}
-        {% endif %}
-        {{ element|raw }}
-    {% endfor %}
-</div>
+<ul class="elements">
+  {% for element in elements %}
+    <li>
+      {% set element = elementChip(element, {
+        context: context ?? 'index',
+        size: size ?? (viewMode == 'large' ? 'large' : 'small'),
+        inputName: inputName ?? ((name ?? false) ? "#{name}[]" : null),
+      }) %}
+      {% if disabled %}
+        {% set element = element|removeClass('removable') %}
+      {% endif %}
+      {{ element|raw }}
+    </li>
+  {% endfor %}
+</ul>

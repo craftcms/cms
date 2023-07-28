@@ -465,12 +465,7 @@ class Cp
         }
 
         if ($config['showLabel']) {
-            $html .= Html::beginTag('div', ['class' => 'label']) .
-                Html::beginTag('span', ['class' => 'title']) .
-                self::elementLabelHtml($element, $config, $attributes) .
-                (self::elementErrorIcon($element) ?? '') .
-                Html::endTag('span') . // .title
-                Html::endTag('div'); // .label
+            $html .= self::elementLabelHtml('div', $element, $config, $attributes);
         }
 
         $html .= Html::tag('div', options: ['class' => 'chip-actions']);
@@ -536,8 +531,7 @@ class Cp
             Html::beginTag('div', ['class' => 'card-content']) .
             Html::beginTag('div', ['class' => 'card-heading']) .
             (self::elementStatusHtml($element) ?? '') .
-            Html::tag('h3', self::elementLabelHtml($element, $config, $attributes)) .
-            (self::elementErrorIcon($element) ?? '') .
+            self::elementLabelHtml('h3', $element, $config, $attributes) .
             Html::endTag('div') . // .card-heading
             Html::beginTag('div', ['class' => 'card-body']) .
             $element->getCardBodyHtml() .
@@ -632,7 +626,7 @@ class Cp
         ]);
     }
 
-    private static function elementLabelHtml(ElementInterface $element, array $config, array $attributes): string
+    private static function elementLabelHtml(string $tag, ElementInterface $element, array $config, array $attributes): string
     {
         $content = implode('', array_map(
             fn(string $segment) => Html::tag('span', Html::encode($segment), ['class' => 'segment']),
@@ -648,28 +642,18 @@ class Cp
             ]);
         }
 
-        return Html::tag('a', $content, [
-            'class' => 'label-link',
-            'href' => !$element->trashed && $config['context'] !== 'modal'
-                ? ($attributes['data']['cp-url'] ?? null) : null,
-        ]);
-    }
-
-    private static function elementErrorIcon(ElementInterface $element): ?string
-    {
-        if (!$element->hasErrors()) {
-            return null;
-        }
-
-        return Html::tag('span', '', [
-            'data' => [
-                'icon' => 'alert',
-            ],
-            'aria' => [
-                'label' => Craft::t('app', 'Error'),
-            ],
-            'role' => 'img',
-        ]);
+        return Html::beginTag($tag, ['class' => 'label']) .
+            Html::tag('a', $content, [
+                'class' => 'label-link',
+                'href' => !$element->trashed && $config['context'] !== 'modal'
+                    ? ($attributes['data']['cp-url'] ?? null) : null,
+            ]) .
+            ($element->hasErrors() ? Html::tag('span', '', [
+                'data' => ['icon' => 'alert'],
+                'aria' => ['label' => Craft::t('app', 'Error')],
+                'role' => 'img',
+            ]) : '') .
+            Html::endTag($tag); // .label
     }
 
     /**

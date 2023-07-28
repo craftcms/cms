@@ -63,7 +63,9 @@ Craft.BaseElementIndexView = Garnish.Base.extend(
             multi: this.settings.multiSelect,
             vertical: this.isVerticalList(),
             handle:
-              this.settings.context === 'index' ? this.getSelectHandle() : null,
+              this.settings.context === 'index'
+                ? '.checkbox, .element:first'
+                : null,
             filter: ':not(a):not(.toggle)',
             checkboxMode: this.settings.checkboxMode,
             onSelectionChange: this.onSelectionChange.bind(this),
@@ -135,16 +137,12 @@ Craft.BaseElementIndexView = Garnish.Base.extend(
       }
     },
 
-    getSelectHandle: function () {
-      return '.checkbox, .element:first';
-    },
-
     canSelectElement: function ($element) {
       if ($element.hasClass('disabled')) {
         return false;
       }
       if (this.settings.canSelectElement) {
-        return this.settings.cangElement($element);
+        return this.settings.canSelectElement($element);
       }
       return !!$element.data('id');
     },

@@ -2143,12 +2143,6 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         });
       }
 
-      viewModes.push({
-        mode: 'cards',
-        title: Craft.t('app', 'Display as cards'),
-        icon: 'cards',
-      });
-
       if (this.$source && Garnish.hasAttr(this.$source, 'data-has-thumbs')) {
         viewModes.push({
           mode: 'thumbs',
@@ -2156,6 +2150,12 @@ Craft.BaseElementIndex = Garnish.Base.extend(
           icon: 'grid',
         });
       }
+
+      viewModes.push({
+        mode: 'cards',
+        title: Craft.t('app', 'Display as cards'),
+        icon: 'cards',
+      });
 
       return viewModes;
     },

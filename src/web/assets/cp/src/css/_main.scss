@@ -429,7 +429,7 @@ pre code {
 }
 
 /* links */
-a[href]:not(.btn) {
+a {
   color: var(--link-color);
   cursor: pointer;
 
@@ -437,17 +437,24 @@ a[href]:not(.btn) {
     cursor: default;
   }
 
-  body.underline-links & {
-    text-decoration: underline;
-  }
-
+  body.underline-links &,
   &:hover {
     text-decoration: underline;
   }
 }
 
-a[href].sel,
-li.sel a[href] {
+a:not([href]) {
+  color: inherit;
+  cursor: inherit;
+
+  body.underline-links &,
+  &:hover {
+    text-decoration: none;
+  }
+}
+
+a.sel,
+li.sel a {
   cursor: default !important;
   text-decoration: none;
 }
@@ -2773,6 +2780,7 @@ table {
   }
 
   .chip-content {
+    overflow: hidden;
     display: flex;
     flex-direction: row;
     align-items: center;
@@ -2780,38 +2788,6 @@ table {
 
     .status {
       margin: 0;
-    }
-  }
-
-  .label {
-    display: block;
-    overflow: hidden;
-    vertical-align: bottom; // https://stackoverflow.com/a/37427386/1688568
-    white-space: nowrap;
-    text-overflow: ellipsis;
-    max-width: 100%;
-
-    .draft-label {
-      display: inline-block;
-      @include margin(-1px, 0, -1px, 7px);
-      padding: 1px 5px;
-      font-weight: normal;
-      text-decoration: none !important;
-      color: var(--medium-text-color);
-      background: var(--gray-100);
-      border-radius: var(--large-border-radius);
-    }
-
-    .segment:after {
-      display: inline-flex !important;
-      position: relative;
-      top: -2px;
-      @include margin(0, 5px, 0, 2px);
-      @include angle(right, var(--light-text-color), 1px);
-
-      .sel & {
-        @include angle(right, var(--white), 1px);
-      }
     }
   }
 
@@ -2896,7 +2872,7 @@ table {
   position: relative;
   display: flex;
   flex-direction: row;
-  align-items: start;
+  align-items: stretch;
   max-width: 600px;
   padding: var(--m);
   gap: var(--l);
@@ -2963,6 +2939,7 @@ table {
     img,
     svg {
       width: 100%;
+      max-height: 120px;
       object-fit: cover;
     }
   }
@@ -2976,18 +2953,23 @@ table {
   }
 
   .card-content {
+    flex: 1 0 0 !important;
+    overflow: hidden;
+    position: relative;
+
     .card-heading {
       display: flex;
       flex-direction: row;
       align-items: center;
       gap: 5px;
 
-      .status,
-      h3 {
+      .status {
         margin: 0;
+        flex: 0 0 10px;
       }
 
       h3 {
+        margin: 0;
         font-weight: 600;
         line-height: var(--lh);
       }
@@ -3006,6 +2988,11 @@ table {
       text-wrap: pretty;
     }
   }
+
+  & > .card-actions > * {
+    position: relative;
+    top: -1px;
+  }
 }
 
 .card-grid {
@@ -3013,30 +3000,88 @@ table {
   gap: var(--s) !important;
   grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
 
-  .card {
-    margin: 0 !important;
+  & > li {
+    border-radius: var(--large-border-radius);
+    height: 100%;
+
+    & > .card {
+      margin: 0 !important;
+      height: 100%;
+    }
   }
 }
 
-.chip > .chip-content > .chip-actions,
-.card > .card-actions {
-  display: flex;
-  flex-direction: row;
-  gap: var(--xs);
-  align-items: center;
+.chip,
+.card {
+  .label {
+    display: flex;
+    align-items: center;
+    gap: var(--xs);
+    overflow: hidden;
+    vertical-align: bottom; // https://stackoverflow.com/a/37427386/1688568
+    white-space: nowrap;
+    text-overflow: ellipsis;
 
-  .settings {
-    padding: 0 8px;
-    height: 20px;
-    color: var(--ui-control-color);
-
-    &:before {
-      @include margin-right(0 !important);
+    .label-link {
+      flex: 1 1 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
 
-    &:not(:hover):not(:active) {
-      background-color: transparent;
+    .draft-label {
+      display: inline-block;
+      @include margin(-1px, 0, -1px, 7px);
+      padding: 1px 5px;
+      font-weight: normal;
+      text-decoration: none !important;
+      color: var(--medium-text-color);
+      background: var(--gray-100);
+      border-radius: var(--large-border-radius);
     }
+
+    .segment:after {
+      display: inline-flex !important;
+      position: relative;
+      top: -2px;
+      @include margin(0, 5px, 0, 2px);
+      @include angle(right, var(--light-text-color), 1px);
+
+      .sel & {
+        @include angle(right, var(--white), 1px);
+      }
+    }
+  }
+
+  & > .chip-content > .chip-actions,
+  & > .card-actions {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    @include margin-right(-4px);
+
+    &:empty {
+      display: none;
+    }
+
+    & > * {
+      @include touch-target;
+    }
+
+    .settings {
+      color: var(--ui-control-color);
+
+      &:before {
+        @include margin-right(0 !important);
+      }
+
+      &:not(:hover):not(:active) {
+        background-color: transparent;
+      }
+    }
+  }
+
+  &.error .label .label-link {
+    color: var(--error-color);
   }
 }
 
@@ -3208,6 +3253,7 @@ $checkboxPadding: $checkboxSize + 4;
       position: relative;
       @include margin(0, 1px, 1px, 0);
       max-width: 226px;
+      border-radius: var(--large-border-radius);
 
       &:hover {
         .chip {
