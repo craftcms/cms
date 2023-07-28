@@ -8,6 +8,10 @@
     {% set selectizeOptions = selectizeOptions|merge({
         plugins: (selectizeOptions.plugins ?? [])|push('remove_button')
     }) %}
+{% else %}
+    {% set selectizeOptions = selectizeOptions|merge({
+        plugins: (selectizeOptions.plugins ?? [])|push('select_on_focus')
+    }) %}
 {% endif %}
 
 {# Normalize the options #}
@@ -168,6 +172,11 @@
         }
     };
 
+    {% if not multi %}
+        const selectizeDropdownOpenEvent = new Event("selectizedropdownopen");
+        const selectizeDropdownCloseEvent = new Event("selectizedropdownclose");
+    {% endif %}
+
     $select.selectize($.extend({
         searchField: ['text', 'hint', 'value', 'keywords'],
         render: {
@@ -198,7 +207,17 @@
                     this.$control_input.attr(attr.name, attr.value);
                 });
         },
-        onDropdownOpen: positionDropdown,
+        onDropdownOpen: function() {
+            positionDropdown();
+            {% if not multi %}
+                $select[0].dispatchEvent(selectizeDropdownOpenEvent);
+            {% endif %}
+        },
+        onDropdownClose: function() {
+            {% if not multi %}
+                $select[0].dispatchEvent(selectizeDropdownCloseEvent);
+            {% endif %}
+        },
         onItemAdd: positionDropdown,
     }, {{ selectizeOptions|json_encode|raw }}));
 

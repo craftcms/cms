@@ -260,6 +260,27 @@ Craft.ElementEditor = Garnish.Base.extend(
       // Listen for events on the body when editing a full page form, so we don’t miss events from Live Preview
       const $target = this.isFullPage ? Garnish.$bod : this.$container;
 
+      // we're now using selectize select_on_focus plugin which clears the dropdown's value on dropdown open;
+      // that triggers a change event which triggers saving a draft and causes conditional fields/tabs to misbehave;
+      // because of that, we are now emitting selectize dropdown open and close events;
+      // we pause listening for changes on dropdown open (it happens before the focus event, so before the value is cleared)
+      // and we resume on dropdown close to register the change in value (if one actually occurred);
+      this.addListener(
+        $target.find('.selectized'),
+        'selectizedropdownopen',
+        (ev) => {
+          this.pause();
+        }
+      );
+
+      this.addListener(
+        $target.find('.selectized'),
+        'selectizedropdownclose',
+        (ev) => {
+          this.resume(false);
+        }
+      );
+
       this.addListener(
         $target,
         'keypress,keyup,change,focus,blur,click,mousedown,mouseup',
@@ -267,12 +288,15 @@ Craft.ElementEditor = Garnish.Base.extend(
           if ($(ev.target).is(this.statusIcons())) {
             return;
           }
-          clearTimeout(this.timeout);
-          // If they are typing, wait half a second before checking the form
-          if (['keypress', 'keyup', 'change'].includes(ev.type)) {
-            this.timeout = setTimeout(this.checkForm.bind(this), 500);
-          } else {
-            this.checkForm();
+
+          if (this.pauseLevel == 0) {
+            clearTimeout(this.timeout);
+            // If they are typing, wait half a second before checking the form
+            if (['keypress', 'keyup', 'change'].includes(ev.type)) {
+              this.timeout = setTimeout(this.checkForm.bind(this), 500);
+            } else {
+              this.checkForm();
+            }
           }
         }
       );
@@ -296,7 +320,7 @@ Craft.ElementEditor = Garnish.Base.extend(
       this.stopListeningForChanges();
     },
 
-    resume: function () {
+    resume: function (checkBeforeListening = true) {
       if (this.pauseLevel === 0) {
         throw 'Craft.ElementEditor::resume() should only be called after pause().';
       }
@@ -306,7 +330,10 @@ Craft.ElementEditor = Garnish.Base.extend(
       this.pauseLevel--;
       if (this.pauseLevel === 0) {
         if (this.enableAutosave) {
-          this.checkForm();
+          // prevent double-calling save draft on resuming after selectize dropdown closed
+          if (checkBeforeListening) {
+            this.checkForm();
+          }
           this.listenForChanges();
         }
       }
