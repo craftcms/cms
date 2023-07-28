@@ -103,9 +103,11 @@ class AddressField extends BaseField
             if (field.prop('nodeName') !== 'SELECT') {
                 break;
             }
+
+            let oldFieldVal = field.val();
             const spinner = $('#' + Craft.namespaceId(name + '-spinner', $namespace));
             field.off().on('change', () => {
-                if (!field.val()) {
+                if (!field.val() || oldFieldVal === field.val()) {
                     return;
                 }
                 spinner.removeClass('hidden');
@@ -133,9 +135,9 @@ class AddressField extends BaseField
                     );
                     \$addressFields.eq(0).replaceWith(response.data.fieldsHtml);
                     \$addressFields.remove();
-                    initFields(values);
                     Craft.appendHeadHtml(response.data.headHtml);
                     Craft.appendBodyHtml(response.data.bodyHtml);
+                    initFields(values);
                     if (activeElementId) {
                         $('#' + activeElementId).focus();                        
                     }
