@@ -51,35 +51,11 @@ trait AuthProviderTrait
     }
 
     /**
-     * @return string|null
-     */
-    public function getSiteLogoutHtml(): string|null
-    {
-        return null;
-    }
-
-    /**
-     * @return string|null
-     */
-    public function getCpLogoutHtml(): string|null
-    {
-        return null;
-    }
-
-    /**
      * @inheritDoc
      */
     public function getLoginRequestUrl(): string | null
     {
         return UrlHelper::actionUrl('auth/request-login', ['provider' => $this->handle], null, false);
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function getLogoutRequestUrl(): string | null
-    {
-        return UrlHelper::actionUrl('auth/request-logout', ['provider' => $this->handle], null, false);
     }
 
     /**
@@ -97,22 +73,15 @@ trait AuthProviderTrait
     {
         return UrlHelper::actionUrl('auth/response', ['provider' => $this->handle], null, false);
     }
+
+    /**
+     * @inheritDoc
+     */
+    public function getLoginResponseUrl(): string | null
+    {
+        return UrlHelper::actionUrl('auth/login-response', ['provider' => $this->handle], null, false);
+    }
 //
-//    /**
-//     * @inheritDoc
-//     */
-//    public function getLoginResponseUrl(): string | null
-//    {
-//        return UrlHelper::actionUrl('auth/response', ['provider' => $this->handle], null, false);
-//    }
-//
-//    /**
-//     * @inheritDoc
-//     */
-//    public function getLogoutResponseUrl(): string | null
-//    {
-//        return UrlHelper::actionUrl('auth/response', ['provider' => $this->handle], null, false);
-//    }
 //
 //    /**
 //     * @inheritDoc

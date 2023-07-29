@@ -48,17 +48,6 @@ interface ProviderInterface extends SavableComponentInterface
     public function handleLoginRequest(Request $request, Response $response): Response;
 
     /**
-     * Initiate a logout request
-     *
-     * @param Request $request
-     * @param Response $response
-     *
-     * @throws AuthFailedException
-     * @return bool
-     */
-    public function handleLogoutRequest(Request $request, Response $response): Response;
-
-    /**
      * Handle an auth response
      *
      * @throws AuthFailedException
@@ -75,14 +64,6 @@ interface ProviderInterface extends SavableComponentInterface
     public function handleLoginResponse(): bool;
 
     /**
-     * Handle a logout response
-     *
-     * @throws AuthFailedException
-     * @return bool
-     */
-    public function handleLogoutResponse(): bool;
-
-    /**
      * @return string|null The site login HTML
      */
     public function getSiteLoginHtml(): string | null;
@@ -93,24 +74,9 @@ interface ProviderInterface extends SavableComponentInterface
     public function getCpLoginHtml(): string | null;
 
     /**
-     * @return string|null The site logout HTML
-     */
-    public function getSiteLogoutHtml(): string | null;
-
-    /**
-     * @return string|null The admin logout HTML
-     */
-    public function getCpLogoutHtml(): string | null;
-
-    /**
      * @return string|null The login request URL
      */
     public function getLoginRequestUrl(): string | null;
-
-    /**
-     * @return string|null The logout request URL
-     */
-    public function getLogoutRequestUrl(): string | null;
 
     /**
      * @return string|null The auth request URL
@@ -122,15 +88,10 @@ interface ProviderInterface extends SavableComponentInterface
      */
     public function getResponseUrl(): string | null;
 
-//    /**
-//     * @return string|null The login response URL
-//     */
-//    public function getLoginResponseUrl(): string | null;
-//
-//    /**
-//     * @return string|null The logout response URL
-//     */
-//    public function getLogoutResponseUrl(): string | null;
+    /**
+     * @return string|null The login response URL
+     */
+    public function getLoginResponseUrl(): string | null;
 //
 //    /**
 //     * @return string|null The auth response URL

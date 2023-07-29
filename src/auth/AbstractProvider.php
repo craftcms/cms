@@ -31,19 +31,4 @@ abstract class AbstractProvider extends SavableComponent implements ProviderInte
         return Html::a($label ?: "Login via " . $this->name, $url ?: $this->getLoginRequestUrl());
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function getSiteLogoutHtml(?string $label = null, ?string $url = null): string
-    {
-        return Html::a($label ?: "Logout via " . $this->name, $url ?: $this->getLogoutRequestUrl());
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getCpLogoutHtml(?string $label = null, ?string $url = null): string
-    {
-        return Html::a($label ?: "Logout via " . $this->name, $url ?: $this->getLogoutRequestUrl());
-    }
 }

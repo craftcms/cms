@@ -31,11 +31,6 @@ class AuthController extends Controller
     const REQUEST_TYPE_LOGIN = "Login";
 
     /**
-     * A request type where a user should be logged out of Craft
-     */
-    const REQUEST_TYPE_LOGOUT = "Logout";
-
-    /**
      * A request type where only the identity session check should be performed
      */
     const REQUEST_TYPE_SESSION = "Session";
@@ -47,6 +42,7 @@ class AuthController extends Controller
         'request-login' => self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE,
         'request-session' => self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE,
         'response' => self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE,
+        'login-response' => self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE,
     ];
 
     public $enableCsrfValidation = false;
@@ -68,27 +64,6 @@ class AuthController extends Controller
 
         try {
             return $authProvider->handleLoginRequest($this->request, $this->response);
-        } catch (AuthFailedException $exception) {
-            throw new HttpException(400, $exception->getMessage(), previous: $exception);
-        }
-    }
-
-    /**
-     * Perform a logout request.
-     *
-     * @param string $provider
-     * @return null|Response
-     * @throws AuthProviderNotFoundException
-     * @throws \craft\errors\MissingComponentException
-     */
-    public function actionRequestLogout(string $provider): ?Response
-    {
-        $authProvider = Craft::$app->getAuth()->getProviderByHandle($provider);
-
-        Craft::$app->getSession()->set(self::SESSION_KEY, self::REQUEST_TYPE_LOGOUT);
-
-        try {
-            return $authProvider->handleLogoutRequest($this->request, $this->response);
         } catch (AuthFailedException $exception) {
             throw new HttpException(400, $exception->getMessage(), previous: $exception);
         }
@@ -119,23 +94,17 @@ class AuthController extends Controller
     /**
      * Handle the identity provider response.
      *
+     * TODO I don't think this is needed
      * @param string $provider
      * @return Response|null
      * @throws \craft\errors\MissingComponentException
      */
     public function actionResponse(string $provider): ?Response
     {
-        // not sure how to handle this but I changed actionLoginResponse
-        // to the default. The IdP in saml can initiate login whick makes this 
-        // session logic difficult to work with
-        // - DS
         switch (Craft::$app->getSession()->get(self::SESSION_KEY)) {
 
             case self::REQUEST_TYPE_SESSION:
                 return $this->actionSessionResponse($provider);
-
-            case self::REQUEST_TYPE_LOGOUT:
-                return $this->actionLogoutResponse($provider);
 
             default:
                 return $this->actionLoginResponse($provider);
@@ -150,21 +119,6 @@ class AuthController extends Controller
 
         try {
             if ($authProvider->handleLoginResponse()) {
-                return $this->handleSuccessfulResponse();
-            }
-        } catch (AuthFailedException $exception) {
-            return $this->handleFailedResponse($exception->identity);
-        }
-
-        return $this->handleFailedResponse();
-    }
-
-    public function actionLogoutResponse(string $provider): ?Response
-    {
-        $authProvider = Craft::$app->getAuth()->getProviderByHandle($provider);
-
-        try {
-            if ($authProvider->handleLogoutResponse()) {
                 return $this->handleSuccessfulResponse();
             }
         } catch (AuthFailedException $exception) {
