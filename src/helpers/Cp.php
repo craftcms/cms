@@ -475,7 +475,7 @@ class Cp
         }
 
         if ($config['showLabel']) {
-            $html .= self::elementLabelHtml('div', $element, $config, $attributes);
+            $html .= self::elementLabelHtml($element, $config, $attributes);
         }
 
         $html .= Html::tag('div', options: ['class' => 'chip-actions']);
@@ -548,7 +548,7 @@ class Cp
                 'aria' => ['label' => Craft::t('app', 'Select')],
             ]) : '') .
             (self::elementStatusHtml($element) ?? '') .
-            self::elementLabelHtml('h3', $element, $config, $attributes) .
+            self::elementLabelHtml($element, $config, $attributes) .
             Html::endTag('div') . // .card-heading
             Html::beginTag('div', ['class' => 'card-body']) .
             $element->getCardBodyHtml() .
@@ -643,7 +643,7 @@ class Cp
         ]);
     }
 
-    private static function elementLabelHtml(string $tag, ElementInterface $element, array $config, array $attributes): string
+    private static function elementLabelHtml(ElementInterface $element, array $config, array $attributes): string
     {
         $content = implode('', array_map(
             fn(string $segment) => Html::tag('span', Html::encode($segment), ['class' => 'segment']),
@@ -659,7 +659,7 @@ class Cp
             ]);
         }
 
-        return Html::beginTag($tag, ['class' => 'label']) .
+        return Html::beginTag('div', ['class' => 'label']) .
             Html::tag('a', $content, [
                 'class' => 'label-link',
                 'href' => !$element->trashed && $config['context'] !== 'modal'
@@ -670,7 +670,7 @@ class Cp
                 'aria' => ['label' => Craft::t('app', 'Error')],
                 'role' => 'img',
             ]) : '') .
-            Html::endTag($tag); // .label
+            Html::endTag('div'); // .label
     }
 
     /**
