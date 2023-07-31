@@ -2615,6 +2615,10 @@ table {
 
           &.sel,
           &.active-drop-target {
+            --text-color: var(--white);
+            --medium-dark-text-color: var(--white);
+            --medium-text-color: var(--white);
+            --light-text-color: var(--white);
             --link-color: var(--white);
             --ui-control-color: var(--white);
             @include custom-color-focus-ring(hsl(var(--light-focus-hsl)));
@@ -2792,6 +2796,10 @@ table {
   &.sel,
   li.sel &,
   li.active-drop-target & {
+    --text-color: var(--white);
+    --medium-dark-text-color: var(--white);
+    --medium-text-color: var(--white);
+    --light-text-color: var(--white);
     --link-color: var(--white);
     --ui-control-color: var(--white);
     @include custom-color-focus-ring(hsl(var(--light-focus-hsl)));
@@ -2878,6 +2886,10 @@ table {
 
   &.sel,
   li.sel & {
+    --text-color: var(--white);
+    --medium-dark-text-color: var(--white);
+    --medium-text-color: var(--white);
+    --light-text-color: var(--white);
     --link-color: var(--white);
     --ui-control-color: var(--white);
     @include custom-color-focus-ring(hsl(var(--light-focus-hsl)));

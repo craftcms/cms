@@ -5,6 +5,7 @@
 - Fixed a bug where `Craft.BaseElementIndexView::this.canSelectElement()` wasn’t getting applied for lazy-loaded elements.
 - Fixed a bug where element thumbnails weren’t getting loaded for expanded relational field previews within element indexes.
 - Fixed an error that occurred when deleting a volume with a missing filesystem type.
+- Fixed a bug where Color field values were illegible within selected element index rows.
 
 ## 4.4.16.1 - 2023-07-19
 
