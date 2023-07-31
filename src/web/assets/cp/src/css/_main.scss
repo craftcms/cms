@@ -3153,7 +3153,7 @@ $checkboxPadding: $checkboxSize + 4;
 
   &.main {
     .source-path {
-      margin: -22px -22px 24px;
+      margin: -22px calc(var(--padding) * -1 + 2px) 24px;
     }
   }
 
