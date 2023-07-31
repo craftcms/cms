@@ -311,11 +311,11 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
             for (let action of safeActions) {
               const $li = $('<li/>').appendTo($ul);
               const $a = $('<a/>', {
-                type: 'button',
-                role: 'button',
+                role: action.url ? null : 'button',
                 'data-icon': action.icon,
                 'aria-label': action.label,
                 text: action.label,
+                href: action.url,
               })
                 .appendTo($li)
                 .data('actionCallback', action.callback);
@@ -419,6 +419,7 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
           callback: () => {
             window.open(url);
           },
+          url: url,
         });
       }
 
