@@ -538,18 +538,22 @@ export default Base.extend(
      * @param {object} $item
      */
     setFocusableItem: function ($item) {
-      if (this.$focusable) {
-        this.$focusable.removeAttr('tabindex');
-      }
+      if (this.settings.makeFocusable) {
+        if (this.$focusable) {
+          this.$focusable.removeAttr('tabindex');
+        }
 
-      this.$focusable = $item.attr('tabindex', '0');
+        this.$focusable = $item.attr('tabindex', '0');
+      }
     },
 
     /**
      * Sets the focus on an item.
      */
     focusItem: function ($item, preventScroll) {
-      $item[0].focus({preventScroll: !!preventScroll});
+      if (this.settings.makeFocusable) {
+        $item[0].focus({preventScroll: !!preventScroll});
+      }
       this.$focusedItem = $item;
       this.trigger('focusItem', {item: $item});
     },
@@ -799,7 +803,9 @@ export default Base.extend(
         } else {
           // just set the new item to be focusable
           this.setFocusableItem($item);
-          $item.focus();
+          if (this.settings.makeFocusable) {
+            $item.focus();
+          }
           this.$focusedItem = $item;
           this.trigger('focusItem', {item: $item});
         }
@@ -880,6 +886,7 @@ export default Base.extend(
       handle: null,
       filter: null,
       checkboxMode: false,
+      makeFocusable: true,
       onSelectionChange: $.noop,
     },
 
