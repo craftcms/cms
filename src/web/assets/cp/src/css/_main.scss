@@ -3194,11 +3194,10 @@ $checkboxPadding: $checkboxSize + 4;
     }
 
     .selectallcontainer {
+      display: flex;
+      align-items: center;
+      gap: 5px;
       cursor: default;
-
-      .checkbox {
-        @include margin-right(5px);
-      }
     }
   }
 
