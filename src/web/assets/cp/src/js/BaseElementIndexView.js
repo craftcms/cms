@@ -49,11 +49,7 @@ Craft.BaseElementIndexView = Garnish.Base.extend(
       if (this.settings.selectable) {
         this.elementSelect = new Garnish.Select(
           this.$elementContainer,
-          $(
-            $elements
-              .toArray()
-              .filter((element) => this.canSelectElement($(element)))
-          ),
+          this.filterSelectableElements($elements),
           {
             multi: this.settings.multiSelect,
             vertical: this.isVerticalList(),
@@ -68,7 +64,9 @@ Craft.BaseElementIndexView = Garnish.Base.extend(
         );
 
         this._handleEnableElements = (ev) => {
-          this.elementSelect.addItems(ev.elements);
+          this.elementSelect.addItems(
+            this.filterSelectableElements($(ev.elements))
+          );
         };
 
         this._handleDisableElements = (ev) => {
@@ -130,6 +128,14 @@ Craft.BaseElementIndexView = Garnish.Base.extend(
         this.addListener(this.$scroller, 'scroll', 'maybeLoadMore');
         this.maybeLoadMore();
       }
+    },
+
+    filterSelectableElements: function ($elements) {
+      return $(
+        $elements
+          .toArray()
+          .filter((element) => this.canSelectElement($(element)))
+      );
     },
 
     canSelectElement: function ($element) {
@@ -311,7 +317,9 @@ Craft.BaseElementIndexView = Garnish.Base.extend(
           Craft.appendFootHtml(response.data.footHtml);
 
           if (this.elementSelect) {
-            this.elementSelect.addItems($newElements.filter(':not(.disabled)'));
+            this.elementSelect.addItems(
+              this.filterSelectableElements($newElements)
+            );
             this.elementIndex.updateActionTriggers();
           }
 
