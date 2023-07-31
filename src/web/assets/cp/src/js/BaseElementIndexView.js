@@ -52,17 +52,14 @@ Craft.BaseElementIndexView = Garnish.Base.extend(
       Craft.cp.elementThumbLoader.load($elements);
 
       if (this.settings.selectable) {
+        console.log($elements);
         this.elementSelect = new Garnish.Select(
           this.$elementContainer,
           this.filterSelectableElements($elements),
           {
             multi: this.settings.multiSelect,
             vertical: this.isVerticalList(),
-            handle:
-              this.settings.context === 'index'
-                ? '.checkbox, .element:first'
-                : null,
-            filter: ':not(a):not(.toggle)',
+            filter: ':not(a[href]):not(.toggle):not(.btn)',
             checkboxMode: this.settings.checkboxMode,
             onSelectionChange: this.onSelectionChange.bind(this),
           }
@@ -136,17 +133,25 @@ Craft.BaseElementIndexView = Garnish.Base.extend(
     },
 
     filterSelectableElements: function ($elements) {
-      return $(
-        $elements
-          .toArray()
-          .filter((element) => this.canSelectElement($(element)))
-      );
+      const selectable = [];
+
+      for (let i = 0; i < $elements.length; i++) {
+        const $element = $elements.eq(i);
+        if ($element.hasClass('disabled')) {
+          continue;
+        }
+        if (this.canSelectElement($element)) {
+          selectable.push($element[0]);
+        } else {
+          // make sure it doesn't have a checkbox
+          $element.find('.checkbox').remove();
+        }
+      }
+
+      return $(selectable);
     },
 
     canSelectElement: function ($element) {
-      if ($element.hasClass('disabled')) {
-        return false;
-      }
       if (this.settings.canSelectElement) {
         return this.settings.canSelectElement($element);
       }

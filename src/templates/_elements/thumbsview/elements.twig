@@ -10,8 +10,8 @@
       {{ elementChip(element, {
         context: context ?? 'index',
         size: 'large',
+        checkbox: showCheckboxes,
       }) }}
-      {% if showCheckboxes %}<div class="checkbox" title="{{ 'Select'|t('app') }}" aria-label="{{ 'Select'|t('app') }}"></div>{% endif %}
     {% endtag %}
   {% endfor %}
 

@@ -166,6 +166,7 @@ fieldset:last-child,
 
 .draghelper {
   box-sizing: border-box;
+  list-style-type: none;
 }
 
 .offset-drag-helper {
@@ -1533,11 +1534,8 @@ ul.icons {
 
 .disabled {
   opacity: 0.25;
-}
-
-.disabled,
-.disabled .btn {
-  cursor: default;
+  pointer-events: none;
+  user-select: none;
 }
 
 .btn,
@@ -2756,7 +2754,8 @@ table {
   padding: var(--xs) var(--s);
   max-width: 100%;
   gap: var(--xs);
-  border-radius: var(--small-border-radius);
+  border-radius: var(--large-border-radius);
+  background-color: var(--gray-050);
 
   &.small {
     flex-direction: row;
@@ -2764,7 +2763,7 @@ table {
     --thumb-size: 30px;
 
     & > .thumb {
-      margin: calc(var(--xs) * -1 + 2px) calc(var(--xs) * -1);
+      margin: calc(var(--xs) * -1 + 2px) calc(var(--s) * -1 + 2px);
       @include margin-right(2px);
     }
   }
@@ -2780,7 +2779,6 @@ table {
   }
 
   .chip-content {
-    overflow: hidden;
     display: flex;
     flex-direction: row;
     align-items: center;
@@ -2789,11 +2787,6 @@ table {
     .status {
       margin: 0;
     }
-  }
-
-  &:focus,
-  li:focus & {
-    background-color: var(--gray-050);
   }
 
   &.sel,
@@ -2847,7 +2840,6 @@ table {
     svg {
       display: block;
       flex-shrink: 0;
-      pointer-events: none;
       border-radius: var(--small-border-radius);
       max-width: 100%;
       max-height: 100%;
@@ -2873,7 +2865,6 @@ table {
   display: flex;
   flex-direction: row;
   align-items: stretch;
-  max-width: 600px;
   padding: var(--m);
   gap: var(--l);
   border-radius: var(--large-border-radius);
@@ -2913,7 +2904,6 @@ table {
       position: absolute;
       top: 0;
       bottom: 0;
-      pointer-events: none;
       @include shadow();
       width: 10px;
 
@@ -2973,11 +2963,6 @@ table {
         font-weight: 600;
         line-height: var(--lh);
       }
-
-      .status {
-        position: relative;
-        top: 1px;
-      }
     }
 
     .card-body > * {
@@ -2989,16 +2974,17 @@ table {
     }
   }
 
-  & > .card-actions > * {
+  & > .card-actions {
+    align-items: flex-start !important;
     position: relative;
-    top: -1px;
+    top: -2px;
   }
 }
 
 .card-grid {
   display: grid !important;
-  gap: var(--s) !important;
-  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+  gap: var(--xs) !important;
+  grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
 
   & > li {
     border-radius: var(--large-border-radius);
@@ -3013,17 +2999,20 @@ table {
 
 .chip,
 .card {
+  // prevent double focus ring (chip/card already gets it)
+  .checkbox:before {
+    box-shadow: none !important;
+  }
+
   .label {
     display: flex;
     align-items: center;
     gap: var(--xs);
     overflow: hidden;
-    vertical-align: bottom; // https://stackoverflow.com/a/37427386/1688568
-    white-space: nowrap;
-    text-overflow: ellipsis;
 
     .label-link {
       flex: 1 1 0;
+      white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
     }
@@ -3077,6 +3066,10 @@ table {
       &:not(:hover):not(:active) {
         background-color: transparent;
       }
+    }
+
+    .move {
+      margin-top: -2px !important;
     }
   }
 
@@ -3240,13 +3233,17 @@ $checkboxPadding: $checkboxSize + 4;
     .enabled-label {
       margin-left: var(--xs);
     }
+
+    .chip {
+      background-color: transparent;
+    }
   }
 
   // thumbs views
   .thumbsview {
     display: grid;
-    gap: var(--s);
-    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: var(--xs);
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
 
     li {
       position: relative;
@@ -3268,18 +3265,6 @@ $checkboxPadding: $checkboxSize + 4;
             text-decoration: underline;
           }
         }
-      }
-
-      .chip .chip-content {
-        @include padding-left(calc(#{$checkboxSize} + var(--s)));
-      }
-
-      .checkbox {
-        position: absolute;
-        top: calc(
-          var(--xs) + 120px + var(--xs) + (20px - #{$checkboxSize}) * 0.5
-        );
-        @include left(var(--s));
       }
     }
   }
@@ -5205,7 +5190,7 @@ $min2ColWidth: 400px;
   padding-bottom: 50px;
   user-select: none;
 
-  .header {
+  & > .header {
     padding-top: 14px;
     padding-bottom: 14px;
     text-align: center;
@@ -5251,24 +5236,20 @@ $min2ColWidth: 400px;
             min-height: calc(100% - 48px);
           }
 
+          .header {
+            margin: 0 0 var(--m);
+          }
+
           .tableview table {
             tr {
-              &.disabled {
-                opacity: 1;
-                color: var(--gray-200);
-
-                .chip {
-                  opacity: 0.25;
-                }
-              }
-
               th,
               td {
                 cursor: default;
               }
 
-              td:first-child {
-                @include padding-left(7px);
+              // prevent double focus ring (the row already gets it)
+              .checkbox:before {
+                box-shadow: none !important;
               }
             }
           }
@@ -6238,14 +6219,21 @@ div.checkbox:before {
 input.checkbox:disabled + label,
 div.checkbox.disabled:before,
 div.checkbox.disabled + label {
-  opacity: 0.25;
+  opacity: 0.25 !important;
 }
 
 input.checkbox:checked + label:before,
 div.checkbox.checked:before,
 .sel div.checkbox:before,
 input.checkbox:indeterminate + label:before,
-div.checkbox.indeterminate:before {
+div.checkbox.indeterminate:before,
+.elementselectormodal
+  .body
+  .content
+  .main
+  .elements
+  .disabled
+  .checkbox:before {
   @include icon;
   line-height: var(--checkbox-size);
   color: var(--gray-900);
@@ -6253,7 +6241,14 @@ div.checkbox.indeterminate:before {
 
 input.checkbox:checked:not(:indeterminate) + label:before,
 div.checkbox.checked:not(.indeterminate):before,
-.sel div.checkbox:not(.indeterminate):before {
+.sel div.checkbox:not(.indeterminate):before,
+.elementselectormodal
+  .body
+  .content
+  .main
+  .elements
+  .disabled
+  .checkbox:before {
   content: 'check';
   font-size: 15px;
 }

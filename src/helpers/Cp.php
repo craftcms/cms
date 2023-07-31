@@ -413,6 +413,7 @@ class Cp
     {
         $config += [
             'autoReload' => true,
+            'checkbox' => false,
             'context' => 'index',
             'inputName' => null,
             'showDraftName' => true,
@@ -440,6 +441,7 @@ class Cp
                 'data' => array_filter([
                     'settings' => $config['autoReload'] ? [
                         'ui' => 'chip',
+                        'checkbox' => $config['checkbox'],
                         'context' => $config['context'],
                         'size' => $config['size'],
                         'showStatus' => $config['showStatus'],
@@ -459,6 +461,14 @@ class Cp
         }
 
         $html .= Html::beginTag('div', ['class' => 'chip-content']);
+
+        if ($config['checkbox']) {
+            $html .= Html::tag('div', options: [
+                'class' => 'checkbox',
+                'title' => Craft::t('app', 'Select'),
+                'aria' => ['label' => Craft::t('app', 'Select')],
+            ]);
+        }
 
         if ($config['showStatus']) {
             $html .= self::elementStatusHtml($element) ?? '';
@@ -508,6 +518,7 @@ class Cp
     public static function elementCardHtml(ElementInterface $element, array $config = []): string
     {
         $config += [
+            'checkbox' => false,
             'context' => 'index',
             'inputName' => null,
             'autoReload' => true,
@@ -519,8 +530,9 @@ class Cp
                 'class' => ['card'],
                 'data' => array_filter([
                     'settings' => $config['autoReload'] ? [
-                        'ui' => 'card',
+                        'checkbox' => $config['checkbox'],
                         'context' => $config['context'],
+                        'ui' => 'card',
                     ] : false,
                 ]),
             ],
@@ -530,6 +542,11 @@ class Cp
             ($element->getThumbHtml(120) ?? '') .
             Html::beginTag('div', ['class' => 'card-content']) .
             Html::beginTag('div', ['class' => 'card-heading']) .
+            ($config['checkbox'] ? Html::tag('div', options: [
+                'class' => 'checkbox',
+                'title' => Craft::t('app', 'Select'),
+                'aria' => ['label' => Craft::t('app', 'Select')],
+            ]) : '') .
             (self::elementStatusHtml($element) ?? '') .
             self::elementLabelHtml('h3', $element, $config, $attributes) .
             Html::endTag('div') . // .card-heading

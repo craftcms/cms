@@ -13,6 +13,7 @@
 ### Accessibility
 - Improved source item navigation for screen readers. ([#12054](https://github.com/craftcms/cms/pull/12054))
 - Content tab menus are now implemented as disclosure menus. ([#12963](https://github.com/craftcms/cms/pull/12963))
+- Element selection modals now show checkboxes for selectable elements.
 
 ### Administration
 - Field layouts can now designate an Assets field as the source for elements’ thumbnails. ([#12484](https://github.com/craftcms/cms/discussions/12484), [#12706](https://github.com/craftcms/cms/discussions/12706))

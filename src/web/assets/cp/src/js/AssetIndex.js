@@ -298,7 +298,8 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
         });
 
         // will the user be allowed to move items in this folder?
-        const canMoveSubItems = !!currentFolder.canMoveSubItems;
+        const canMoveSubItems =
+          this.context === 'index' && !!currentFolder.canMoveSubItems;
         this.settings.selectable = this.settings.selectable || canMoveSubItems;
         this.settings.multiSelect =
           this.settings.multiSelect || canMoveSubItems;

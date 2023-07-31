@@ -9,6 +9,7 @@
         context: context ?? 'index',
         size: size ?? (viewMode == 'large' ? 'large' : 'small'),
         inputName: inputName ?? ((name ?? false) ? "#{name}[]" : null),
+        checkbox: showCheckboxes ?? false,
       }) %}
       {% if disabled %}
         {% set element = element|removeClass('removable') %}

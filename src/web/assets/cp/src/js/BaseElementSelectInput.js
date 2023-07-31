@@ -133,6 +133,7 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
         this.elementSelect = new Garnish.Select({
           multi: this.settings.sortable,
           filter: ':not(a):not(button)',
+          checkboxMode: true,
         });
       }
     },
@@ -160,9 +161,9 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
             switch (this.settings.viewMode) {
               case 'list':
               case 'large':
-                return '> .chip-content > .chip-actions > .move';
+                return '> .element > .chip-content > .chip-actions > .move';
               case 'cards':
-                return '> .card-actions > .move';
+                return '> .element > .card-actions > .move';
               default:
                 return null;
             }
@@ -499,6 +500,7 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
                       : 'card',
                     size:
                       this.settings.viewMode === 'large' ? 'large' : 'small',
+                    checkbox: true,
                   },
                 ],
               },
@@ -647,6 +649,7 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
     },
 
     getModalSettings: function () {
+      console.log('limit', this.settings.limit);
       return $.extend(
         {
           closeOtherModals: false,
@@ -700,18 +703,7 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
       this.modal.disableSelectBtn();
       this.modal.showFooterSpinner();
 
-      // do we need to load the elements with the correct UI?
-      const [modalUiType, modalUiSize] = (() => {
-        switch (this.modal.elementIndex.getSelectedViewMode()) {
-          case 'table':
-          case 'structure':
-            return ['chip', 'small'];
-          case 'thumbs':
-            return ['chip', 'large'];
-          default:
-            return [null, null];
-        }
-      })();
+      // re-render the elements even if the view modes match, to be sure we have all the correct settings
       const [inputUiType, inputUiSize] = (() => {
         switch (this.settings.viewMode) {
           case 'large':
@@ -722,44 +714,34 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
             return ['chip', 'small'];
         }
       })();
-
-      if (modalUiType !== inputUiType || modalUiSize !== inputUiSize) {
-        const {data} = await Craft.sendActionRequest(
-          'POST',
-          'app/render-elements',
-          {
-            data: {
-              elements: [
-                {
-                  type: this.settings.elementType,
-                  id: elements.map((e) => e.id),
-                  siteId: elements[0].siteId,
-                  instances: [
-                    {
-                      context: 'field',
-                      ui: inputUiType,
-                      size: inputUiSize,
-                    },
-                  ],
-                },
-              ],
-            },
-          }
-        );
-
-        for (let i = 0; i < elements.length; i++) {
-          if (typeof data.elements[elements[i].id] !== 'undefined') {
-            elements[i].$modalElement = elements[i].$element;
-            elements[i].$element = $(data.elements[elements[i].id][0]);
-          }
+      const {data} = await Craft.sendActionRequest(
+        'POST',
+        'app/render-elements',
+        {
+          data: {
+            elements: [
+              {
+                type: this.settings.elementType,
+                id: elements.map((e) => e.id),
+                siteId: elements[0].siteId,
+                instances: [
+                  {
+                    checkbox: true,
+                    context: 'field',
+                    ui: inputUiType,
+                    size: inputUiSize,
+                  },
+                ],
+              },
+            ],
+          },
         }
-      } else {
-        // add the link hrefs in
-        for (let element of elements) {
-          const url = element.$element.data('cp-url');
-          if (url) {
-            element.$element.find('.label-link').attr('href', url);
-          }
+      );
+
+      for (let i = 0; i < elements.length; i++) {
+        if (typeof data.elements[elements[i].id] !== 'undefined') {
+          elements[i].$modalElement = elements[i].$element;
+          elements[i].$element = $(data.elements[elements[i].id][0]);
         }
       }
 

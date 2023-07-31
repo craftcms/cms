@@ -670,7 +670,7 @@ class ElementIndexesController extends BaseElementsController
         }
 
         $disabledElementIds = $this->request->getParam('disabledElementIds', []);
-        $showCheckboxes = !empty($this->actions);
+        $showCheckboxes = !empty($this->actions) || $this->request->getParam('showCheckboxes');
 
         if ($this->sourceKey) {
             $responseData['html'] = $elementType::indexHtml(

@@ -11,15 +11,17 @@
 {% set disabled = (disabled ?? false) ? true : false %}
 
 <div id="{{ id }}" class="elementselect">
-    <div class="elements {% if viewMode == 'large' %}inline-chips{% endif %}">
+    <ul class="elements {% if viewMode == 'large' %}inline-chips{% endif %}">
         {% for element in elements %}
-            {{ elementChip(element, {
-                context: 'field',
-                size: (viewMode == 'large' ? 'large' : 'small'),
-                inputName: (name ?? false) ? "#{name}[]" : null,
-            }) }}
+            <li>
+                {{ elementChip(element, {
+                    context: 'field',
+                    size: (viewMode == 'large' ? 'large' : 'small'),
+                    inputName: (name ?? false) ? "#{name}[]" : null,
+                }) }}
+            </li>
         {% endfor %}
-    </div>
+    </ul>
 
     <div class="flex">
         {% if sources %}

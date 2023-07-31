@@ -112,6 +112,17 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       this._viewMode = viewMode ? this.validateViewMode(viewMode) : null;
     },
 
+    get selectable() {
+      return !!(this.actions || this.settings.selectable);
+    },
+
+    get multiSelect() {
+      return !!(
+        this.actions ||
+        (this.settings.selectable && this.settings.multiSelect)
+      );
+    },
+
     /**
      * Constructor
      */
@@ -1351,6 +1362,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         disabledElementIds: this.settings.disabledElementIds,
         viewState: $.extend({}, this.getSelectedSourceState()),
         paginated: this._isViewPaginated() ? 1 : 0,
+        showCheckboxes: this.selectable,
       };
 
       // override viewState.mode in case it's different from what's stored
@@ -1587,10 +1599,9 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       this.showingActionTriggers = false;
     },
 
-    updateActionTriggers: function () {
-      // Do we have an action UI to update?
-      if (this.actions) {
-        var totalSelected = this.view.getSelectedElements().length;
+    updateSelectAllCheckbox: function () {
+      if (this.$selectAllCheckbox) {
+        const totalSelected = this.view.getSelectedElements().length;
 
         if (totalSelected !== 0) {
           if (totalSelected === this.view.getEnabledElements().length) {
@@ -1602,11 +1613,21 @@ Craft.BaseElementIndex = Garnish.Base.extend(
             this.$selectAllCheckbox.removeClass('checked');
             this.$selectAllCheckbox.attr('aria-checked', 'mixed');
           }
-
-          this.showActionTriggers();
         } else {
           this.$selectAllCheckbox.removeClass('indeterminate checked');
           this.$selectAllCheckbox.attr('aria-checked', 'false');
+        }
+      }
+    },
+
+    updateActionTriggers: function () {
+      // Do we have an action UI to update?
+      if (this.actions) {
+        const totalSelected = this.view.getSelectedElements().length;
+
+        if (totalSelected !== 0) {
+          this.showActionTriggers();
+        } else {
           this.hideActionTriggers();
         }
       }
@@ -2652,6 +2673,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
     },
 
     _handleSelectionChange: function () {
+      this.updateSelectAllCheckbox();
       this.updateActionTriggers();
       this.onSelectionChange();
     },
@@ -2877,11 +2899,13 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         '.selectallcontainer:first'
       );
 
-      if (response.actions && response.actions.length) {
+      if (this.multiSelect || (response.actions && response.actions.length)) {
         if (this.$selectAllContainer.length) {
-          this.actions = response.actions;
-          this.actionsHeadHtml = response.actionsHeadHtml;
-          this.actionsBodyHtml = response.actionsBodyHtml;
+          if (response.actions && response.actions.length) {
+            this.actions = response.actions;
+            this.actionsHeadHtml = response.actionsHeadHtml;
+            this.actionsBodyHtml = response.actionsBodyHtml;
+          }
 
           // Create the select all checkbox
           this.$selectAllCheckbox = $('<div class="checkbox"/>')
@@ -2931,8 +2955,6 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       // Create the view
       // -------------------------------------------------------------
 
-      // Should we make the view selectable?
-      const selectable = this.actions || this.settings.selectable;
       const settings = Object.assign(
         {
           context: this.settings.context,
@@ -2941,10 +2963,10 @@ Craft.BaseElementIndex = Garnish.Base.extend(
               ? this.settings.batchSize
               : null,
           params: params,
-          selectable: selectable,
-          multiSelect: this.actions || this.settings.multiSelect,
+          selectable: this.selectable,
+          multiSelect: this.multiSelect,
           canSelectElement: this.settings.canSelectElement,
-          checkboxMode: !!this.actions,
+          checkboxMode: this.selectable,
           onSelectionChange: this._handleSelectionChange.bind(this),
         },
         this.getViewSettings()
@@ -2956,7 +2978,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       // -------------------------------------------------------------
 
       if (this._autoSelectElements) {
-        if (selectable) {
+        if (this.selectable) {
           for (var i = 0; i < this._autoSelectElements.length; i++) {
             this.view.selectElementById(this._autoSelectElements[i]);
           }
