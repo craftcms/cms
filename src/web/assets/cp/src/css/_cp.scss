@@ -1286,6 +1286,11 @@ li.breadcrumb-toggle-wrapper {
       @include margin-left(-7px);
     }
   }
+
+  .card-grid {
+    display: flex !important;
+    flex-direction: column;
+  }
 }
 
 @media print {
