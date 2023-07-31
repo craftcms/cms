@@ -2913,7 +2913,11 @@ JS;
     public function afterDelete(): void
     {
         if (!$this->keepFileOnDelete) {
-            $this->getVolume()->deleteFile($this->getPath());
+            try {
+                $this->getVolume()->deleteFile($this->getPath());
+            } catch (InvalidConfigException|NotSupportedException) {
+                // NBD
+            }
         }
 
         Craft::$app->getImageTransforms()->deleteAllTransformData($this);
