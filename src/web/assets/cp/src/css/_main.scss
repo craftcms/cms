@@ -2808,10 +2808,12 @@ table {
   }
 
   &.sel,
-  li.sel & {
+  .sel & {
     cursor: default;
 
     .thumb {
+      filter: brightness(0.85);
+
       img {
         box-shadow: 0 0 0 1px transparentize($darkSelColor, 0.9),
           0 6px 4px -4px transparentize($darkSelColor, 0.8);
@@ -2895,6 +2897,11 @@ table {
     @include custom-color-focus-ring(hsl(var(--light-focus-hsl)));
     color: var(--white);
     background-color: var(--dark-sel-color) !important;
+
+    & > .thumb {
+      background-color: var(--dark-sel-color) !important;
+      filter: brightness(0.85);
+    }
   }
 
   & > .thumb {
