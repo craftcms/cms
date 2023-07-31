@@ -2869,11 +2869,10 @@ $checkboxPadding: $checkboxSize + 4;
     }
 
     .selectallcontainer {
+      display: flex;
+      align-items: center;
+      gap: $elementInnerSpacing;
       cursor: default;
-
-      .checkbox {
-        @include margin-right($elementInnerSpacing);
-      }
     }
   }
 
