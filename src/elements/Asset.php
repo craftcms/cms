@@ -1422,16 +1422,16 @@ class Asset extends Element
     /**
      * @inheritdoc
      */
-    public function getAdditionalButtons(): string
+    public function getAdditionalMenuItems(): array
     {
         $volume = $this->getVolume();
         $user = Craft::$app->getUser()->getIdentity();
         $view = Craft::$app->getView();
 
-        $html = Html::beginTag('div', ['class' => 'btngroup']);
+        $html = [];
 
         if (($url = $this->getUrl()) !== null) {
-            $html .= Html::a(Craft::t('app', 'View'), $url, [
+            $html[] = Html::a(Craft::t('app', 'View'), $url, [
                 'class' => 'btn',
                 'target' => '_blank',
                 'data' => [
@@ -1440,7 +1440,7 @@ class Asset extends Element
             ]);
         }
 
-        $html .= Html::button(Craft::t('app', 'Download'), [
+        $html[] = Html::button(Craft::t('app', 'Download'), [
             'id' => 'download-btn',
             'class' => 'btn',
             'data' => [
@@ -1464,13 +1464,11 @@ $('#download-btn').on('click', () => {
 JS;
         $view->registerJs($js);
 
-        $html .= Html::endTag('div');
-
         if (
             $user->can("replaceFiles:$volume->uid") &&
             ($user->id === $this->uploaderId || $user->can("replacePeerFiles:$volume->uid"))
         ) {
-            $html .= Html::button(Craft::t('app', 'Replace file'), [
+            $html[] = Html::button(Craft::t('app', 'Replace file'), [
                 'id' => 'replace-btn',
                 'class' => 'btn',
                 'data' => [
@@ -1531,7 +1529,7 @@ JS;
             $view->registerJs($js);
         }
 
-        return $html . parent::getAdditionalButtons();
+        return $html + parent::getAdditionalMenuItems();
     }
 
     /**

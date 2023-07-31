@@ -162,6 +162,13 @@ class CpScreenResponseBehavior extends Behavior
     public $additionalButtons = null;
 
     /**
+     * @var string|callable|null Additional menu items’ HTML.
+     *
+     * @see additionalMenu()
+     */
+    public $additionalMenu = null;
+
+    /**
      * @var string|callable|null The content HTML.
      * @see content()
      * @see contentTemplate()
@@ -515,6 +522,18 @@ class CpScreenResponseBehavior extends Behavior
         return $this->additionalButtons(
             fn() => Craft::$app->getView()->renderTemplate($template, $variables, View::TEMPLATE_MODE_CP)
         );
+    }
+
+    /**
+     * Sets the additional menu's HTML.
+     *
+     * @param callable|string|null $value
+     * @return Response
+     */
+    public function additionalMenu(callable|string|null $value): Response
+    {
+        $this->additionalMenu = $value;
+        return $this->owner;
     }
 
     /**

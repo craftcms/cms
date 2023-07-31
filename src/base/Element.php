@@ -33,6 +33,7 @@ use craft\events\AuthorizationCheckEvent;
 use craft\events\DefineAttributeKeywordsEvent;
 use craft\events\DefineEagerLoadingMapEvent;
 use craft\events\DefineHtmlEvent;
+use craft\events\DefineMenuComponentEvent;
 use craft\events\DefineMetadataEvent;
 use craft\events\DefineUrlEvent;
 use craft\events\DefineValueEvent;
@@ -336,6 +337,13 @@ abstract class Element extends Component implements ElementInterface
      * @since 4.0.0
      */
     public const EVENT_DEFINE_ADDITIONAL_BUTTONS = 'defineAdditionalButtons';
+
+    /**
+     * @event DefineMenuComponentEvent The event that is triggered when defining items for the additional menu that shows at the top of the element’s edit page.
+     * @see getAdditionalMenuItems()
+     * @since 5.0.0
+     */
+    public const EVENT_DEFINE_ADDITIONAL_MENU_ITEMS = 'defineAdditionalMenuItems';
 
     /**
      * @event DefineHtmlEvent The event that is triggered when defining the HTML for the editor sidebar.
@@ -3227,6 +3235,17 @@ abstract class Element extends Component implements ElementInterface
         $event = new DefineHtmlEvent();
         $this->trigger(self::EVENT_DEFINE_ADDITIONAL_BUTTONS, $event);
         return $event->html;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getAdditionalMenuItems(): array
+    {
+        // Fire a defineAdditionalMenuItems event
+        $event = new DefineMenuComponentEvent();
+        $this->trigger(self::EVENT_DEFINE_ADDITIONAL_MENU_ITEMS, $event);
+        return $event->components;
     }
 
     /**

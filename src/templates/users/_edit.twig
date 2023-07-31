@@ -30,6 +30,48 @@
 {% hook "cp.users.edit" %}
 
 {% block actionButton %}
+    {% if actions|length %}
+        <div>
+            {{ forms.button({
+                class: 'menubtn',
+                attributes: {
+                    id: 'additional-menu-btn',
+                    title: 'Actions'|t('app'),
+                    aria: {
+                        label: 'Actions'|t('app'),
+                    },
+                    data: {
+                        icon: 'settings',
+                    },
+                },
+                spinner: true,
+            }) }}
+            <div class="menu">
+                {% for actionList in actions %}
+                    {% if not loop.first %}<hr>{% endif %}
+                    <ul>
+                        {% for actionItem in actionList %}
+                            <li>
+                                {{ tag('a', {
+                                    id: actionItem.id ?? false,
+                                    class: [
+                                        (actionItem.action ?? false) ? 'formsubmit',
+                                        (actionItem.destructive ?? false) ? 'error',
+                                    ]|filter,
+                                    data: {
+                                        action: actionItem.action ?? false,
+                                        confirm: actionItem.confirm ?? false,
+                                    },
+                                    text: actionItem.label,
+                                }) }}
+                            </li>
+                        {% endfor %}
+                    </ul>
+                {% endfor %}
+            </div>
+        </div>
+    {% endif %}
+
     {% if not currentUser.can('registerUsers') or CraftEdition != CraftPro %}
         <button type="button" class="btn submit formsubmit" data-form="userform">{{ 'Save'|t('app') }}</button>
     {% else %}
@@ -349,47 +391,6 @@
                     <h5 class="heading">{{ "Status"|t('app') }}</h5>
                     <div class="value flex">
                         <div class="flex-grow"><span class="status {{ user.getStatus() }}"></span> {{ statusLabel }}</div>
-                        {% if actions|length %}
-                            <div>
-                                {{ forms.button({
-                                    class: 'menubtn',
-                                    attributes: {
-                                        id: 'action-menubtn',
-                                        title: 'Actions'|t('app'),
-                                        aria: {
-                                            label: 'Actions'|t('app'),
-                                        },
-                                        data: {
-                                            icon: 'settings',
-                                        },
-                                    },
-                                    spinner: true,
-                                }) }}
-                                <div class="menu">
-                                    {% for actionList in actions %}
-                                        {% if not loop.first %}<hr>{% endif %}
-                                        <ul>
-                                            {% for actionItem in actionList %}
-                                                <li>
-                                                    {{ tag('a', {
-                                                        id: actionItem.id ?? false,
-                                                        class: [
-                                                            (actionItem.action ?? false) ? 'formsubmit',
-                                                            (actionItem.destructive ?? false) ? 'error',
-                                                        ]|filter,
-                                                        data: {
-                                                            action: actionItem.action ?? false,
-                                                            confirm: actionItem.confirm ?? false,
-                                                        },
-                                                        text: actionItem.label,
-                                                    }) }}
-                                                </li>
-                                            {% endfor %}
-                                        </ul>
-                                    {% endfor %}
-                                </div>
-                            </div>
-                        {% endif %}
                     </div>
                 </div>
 

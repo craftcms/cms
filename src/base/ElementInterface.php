@@ -927,6 +927,14 @@ interface ElementInterface extends ComponentInterface
     public function getAdditionalButtons(): string;
 
     /**
+     * Returns additional items for the disclosure menu that shows at the top of the element’s edit page.
+     *
+     * @return array
+     * @since 5.0.0
+     */
+    public function getAdditionalMenuItems(): array;
+
+    /**
      * Returns the additional locations that should be available for previewing the element, besides its primary [[getUrl()|URL]].
      *
      * Each target should be represented by a sub-array with the following keys:

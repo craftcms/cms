@@ -5576,6 +5576,30 @@ $min2ColWidth: 400px;
   display: none;
   position: absolute;
 
+  &.additional-menu {
+    padding: 0;
+
+    li {
+      display: flex;
+      flex-direction: column;
+      flex-grow: 1;
+    }
+
+    .btn,
+    a {
+      background-color: transparent;
+      border-radius: 0;
+      max-width: 100%;
+      text-align: center;
+      margin: 0;
+      justify-content: start;
+
+      &:hover {
+        @include menu-option-active-styles;
+      }
+    }
+  }
+
   h6 {
     &:first-child {
       margin-top: 14px !important;

@@ -16,6 +16,8 @@ Craft.ElementEditor = Garnish.Base.extend(
     $expandSiteStatusesBtn: null,
     $statusIcon: null,
     $previewBtn: null,
+    $additionalMenuBtn: null,
+    additionalMenu: null,
 
     $editMetaBtn: null,
     metaHud: null,
@@ -102,7 +104,11 @@ Craft.ElementEditor = Garnish.Base.extend(
 
       this.$revisionBtn = this.$container.find('.context-btn');
       this.$revisionLabel = this.$container.find('.revision-label');
-      this.$previewBtn = this.$container.find('.preview-btn');
+      this.$additionalMenuBtn = this.$container.find('#additional-menu-btn');
+      let additionalMenuId = this.$additionalMenuBtn.attr('aria-controls');
+      this.$additionalMenuBtn.disclosureMenu();
+      this.additionalMenu = $('#' + additionalMenuId);
+      this.$previewBtn = this.additionalMenu.find('.preview-btn');
 
       const $spinnerContainer = this.isFullPage
         ? $('#page-title')
@@ -134,7 +140,7 @@ Craft.ElementEditor = Garnish.Base.extend(
           this.addListener(this.$previewBtn, 'click', 'openPreview');
         }
 
-        const $previewBtnContainer = this.$container.find(
+        const $previewBtnContainer = this.additionalMenu.find(
           '.preview-btn-container'
         );
 

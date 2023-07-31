@@ -121,6 +121,7 @@ class CpScreenResponseFormatter extends Component implements ResponseFormatterIn
         $contextMenu = is_callable($behavior->contextMenu) ? call_user_func($behavior->contextMenu) : $behavior->contextMenu;
         $addlButtons = is_callable($behavior->additionalButtons) ? call_user_func($behavior->additionalButtons) : $behavior->additionalButtons;
         $altActions = is_callable($behavior->altActions) ? call_user_func($behavior->altActions) : $behavior->altActions;
+        $addlMenu = is_callable($behavior->additionalMenu) ? call_user_func($behavior->additionalMenu) : $behavior->additionalMenu;
         $notice = is_callable($behavior->notice) ? call_user_func($behavior->notice) : $behavior->notice;
         $content = is_callable($behavior->content) ? call_user_func($behavior->content) : ($behavior->content ?? '');
         $sidebar = is_callable($behavior->sidebar) ? call_user_func($behavior->sidebar) : $behavior->sidebar;
@@ -149,6 +150,7 @@ class CpScreenResponseFormatter extends Component implements ResponseFormatterIn
                 'contextMenu' => $contextMenu,
                 'submitButtonLabel' => $behavior->submitButtonLabel,
                 'additionalButtons' => $addlButtons,
+                'additionalMenu' => $addlMenu,
                 'tabs' => $behavior->tabs,
                 'fullPageForm' => (bool)$behavior->action,
                 'mainAttributes' => $behavior->mainAttributes,
