@@ -1270,13 +1270,14 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
         }
 
         if (!isset($this->_owner)) {
-            if (!isset($this->ownerId)) {
+            $ownerId = $this->ownerId ?? $this->primaryOwnerId;
+            if (!$ownerId) {
                 throw new InvalidConfigException('Entry is missing its owner ID');
             }
 
-            $this->_owner = Craft::$app->getElements()->getElementById($this->ownerId, null, $this->siteId);
+            $this->_owner = Craft::$app->getElements()->getElementById($ownerId, null, $this->siteId);
             if (!isset($this->_owner)) {
-                throw new InvalidConfigException('Invalid owner ID: ' . $this->ownerId);
+                throw new InvalidConfigException("Invalid owner ID: $ownerId");
             }
         }
 
