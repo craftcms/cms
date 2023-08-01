@@ -122,7 +122,7 @@ class AuthController extends Controller
                 return $this->handleSuccessfulResponse();
             }
         } catch (AuthFailedException $exception) {
-            return $this->handleFailedResponse($exception->identity);
+            return $this->handleFailedResponse($exception);
         }
 
         return $this->handleFailedResponse();
@@ -137,7 +137,7 @@ class AuthController extends Controller
                 return $this->handleSuccessfulResponse();
             }
         } catch (AuthFailedException $exception) {
-            return $this->handleFailedResponse($exception->identity);
+            return $this->handleFailedResponse($exception);
         }
 
         return $this->handleFailedResponse();
@@ -191,12 +191,24 @@ class AuthController extends Controller
         );
     }
 
-    protected function handleFailedResponse(?UserElement $user = null, array $routeParams = []): ?Response
+    /**
+     * @param \Exception|null $exception
+     * @throws HttpException
+     */
+    protected function handleFailedResponse(\Exception $exception = null)
     {
         // Delay randomly between 0 and 1.5 seconds.
         usleep(random_int(0, 1500000));
 
-        $message = UserHelper::getAuthFailureMessage($user) ?? Craft::t('app', 'Auth error');
+        $user = null;
+        $message = Craft::t('app', 'Auth error');
+
+        if ($exception instanceof AuthFailedException) {
+            $user = $exception->identity;
+            $message =
+                UserHelper::getAuthFailureMessage($exception->identity) ??
+                $message;
+        }
 
         // Log some context around the error
         $user?->hasErrors() ? Craft::error(
@@ -211,26 +223,6 @@ class AuthController extends Controller
             "auth"
         );
 
-//        // Fire a 'loginFailure' event
-//        $event = new LoginFailureEvent([
-//            'authError' => $authError,
-//            'message' => $message,
-//            'user' => $user,
-//        ]);
-//        $this->trigger(self::EVENT_LOGIN_FAILURE, $event);
-
-        return $this->asFailure(
-            $message,
-            data: [
-                'errorCode' => $user->authError ?? "unknown",
-            ],
-            routeParams: array_merge(
-                $routeParams,
-                [
-                    'errorCode' => $user->authError ?? "unknown",
-                    'errorMessage' => $message,
-                ]
-            )
-        );
+        throw new HttpException(500, $message, null, $exception);
     }
 }

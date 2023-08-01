@@ -21,6 +21,7 @@ use craft\helpers\ArrayHelper;
 use craft\helpers\Component as ComponentHelper;
 use craft\helpers\ProjectConfig as ProjectConfigHelper;
 use craft\auth\ProviderInterface;
+use craft\helpers\StringHelper;
 use craft\helpers\User as UserHelper;
 use yii\base\Component;
 use yii\base\Exception;
@@ -289,13 +290,55 @@ class Auth extends Component
      */
     public function syncUser(ProviderInterface $provider, User $user, mixed $data): User
     {
+        // Ensure the user is active
+        if ($user->getStatus() !== User::STATUS_ACTIVE) {
+            $this->enableUser($user);
+        }
+
+        if (!$user->getId()) {
+            if (!$user->username || Craft::$app->getConfig()->getGeneral()->useEmailAsUsername) {
+                $user->username = $user->email;
+            }
+        }
+
         // Save user
-        Craft::$app->getElements()->saveElement($user);
+        if (!Craft::$app->getElements()->saveElement($user)) {
+            throw new AuthFailedException(
+                $provider,
+                $user,
+                sprintf(
+                    "Failed to save user: %s",
+                    StringHelper::toString($user->getFirstErrors(), ', ')
+                )
+            );
+        }
 
         // Assign User Groups
         $this->assignUserToGroups($provider, $user, $data);
 
         return $user;
+    }
+
+    /**
+     * @param User $user
+     * @throws \Throwable
+     */
+    private function enableUser(User $user)
+    {
+        if (!$user->getId() || Craft::$app->getUsers()->activateUser($user)) {
+            $user->enabled = true;
+            $user->archived = false;
+
+            $user->active = true;
+            $user->pending = false;
+            $user->locked = false;
+            $user->suspended = false;
+            $user->verificationCode = null;
+            $user->verificationCodeIssuedDate = null;
+            $user->invalidLoginCount = null;
+            $user->lastInvalidLoginDate = null;
+            $user->lockoutDate = null;
+        }
     }
 
     /**
