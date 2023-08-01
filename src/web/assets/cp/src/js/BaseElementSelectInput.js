@@ -133,7 +133,6 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
         this.elementSelect = new Garnish.Select({
           multi: this.settings.sortable,
           filter: ':not(a):not(button)',
-          checkboxMode: true,
           // prevent keyboard focus since element selection is only needed for drag-n-drop
           makeFocusable: false,
         });
