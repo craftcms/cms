@@ -1441,6 +1441,10 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
 
         $section = $this->getSection();
 
+        if (!$section) {
+            return false;
+        }
+
         if (!$user->can("viewEntries:$section->uid")) {
             return false;
         }
@@ -1470,6 +1474,10 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
         }
 
         $section = $this->getSection();
+
+        if (!$section) {
+            return false;
+        }
 
         if (!$this->id) {
             return (
@@ -1504,6 +1512,10 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
     {
         $section = $this->getSection();
 
+        if (!$section) {
+            return false;
+        }
+
         return (
             $section->type !== Section::TYPE_SINGLE &&
             $user->can("createEntries:$section->uid") &&
@@ -1517,6 +1529,10 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
     public function canDelete(User $user): bool
     {
         $section = $this->getSection();
+
+        if (!$section) {
+            return false;
+        }
 
         if ($section->type === Section::TYPE_SINGLE && !$this->getIsDraft()) {
             return false;
@@ -1549,7 +1565,13 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
      */
     public function canDeleteForSite(User $user): bool
     {
-        return $this->getSection()->propagationMethod === Section::PROPAGATION_METHOD_CUSTOM;
+        $section = $this->getSection();
+
+        if (!$section) {
+            return false;
+        }
+
+        return $section->propagationMethod === Section::PROPAGATION_METHOD_CUSTOM;
     }
 
     /**
