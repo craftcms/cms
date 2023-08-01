@@ -3435,6 +3435,7 @@ $checkboxPadding: $checkboxSize + 4;
   .elements {
     display: flex;
     align-items: flex-start;
+    gap: var(--xs);
 
     &:not(.inline-chips) {
       flex-direction: column;
