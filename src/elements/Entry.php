@@ -891,6 +891,14 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
     /**
      * @inheritdoc
      */
+    protected function shouldValidateTitle(): bool
+    {
+        return $this->getType()->hasTitleField;
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function getSupportedSites(): array
     {
         if (isset($this->fieldId)) {
@@ -1028,9 +1036,15 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
             return null;
         }
 
+        $section = $this->getSection();
+
+        if (!$section) {
+            return null;
+        }
+
         // Make sure the section is set to have URLs for this site
         $siteId = Craft::$app->getSites()->getCurrentSite()->id;
-        $sectionSiteSettings = $this->getSection()->getSiteSettings();
+        $sectionSiteSettings = $section->getSiteSettings();
 
         if (!isset($sectionSiteSettings[$siteId]) || !$sectionSiteSettings[$siteId]->hasUrls) {
             return null;
@@ -1063,10 +1077,16 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
      */
     protected function previewTargets(): array
     {
+        $section = $this->getSection();
+
+        if (!$section) {
+            return [];
+        }
+
         return array_map(function($previewTarget) {
             $previewTarget['label'] = Craft::t('site', $previewTarget['label']);
             return $previewTarget;
-        }, $this->getSection()->previewTargets);
+        }, $section->previewTargets);
     }
 
     /**
@@ -1589,7 +1609,7 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
      */
     public function hasRevisions(): bool
     {
-        return $this->getSection()->enableVersioning;
+        return $this->getSection()?->enableVersioning ?? false;
     }
 
     /**
@@ -1598,6 +1618,10 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
     protected function cpEditUrl(): ?string
     {
         $section = $this->getSection();
+
+        if (!$section) {
+            return null;
+        }
 
         $path = sprintf('entries/%s/%s', $section->handle, $this->getCanonicalId());
 
@@ -1630,36 +1654,52 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
      */
     public function prepareEditScreen(Response $response, string $containerId): void
     {
-        $section = $this->getSection();
+        if ($this->fieldId) {
+            $crumbs = [];
+            $owner = $this->getOwner();
 
-        $crumbs = [
-            [
-                'label' => Craft::t('app', 'Entries'),
-                'url' => 'entries',
-            ],
-        ];
-
-        if ($section->type === Section::TYPE_SINGLE) {
-            $crumbs[] = [
-                'label' => Craft::t('app', 'Singles'),
-                'url' => 'entries/singles',
-            ];
+            do {
+                array_unshift($crumbs, ['html' => Cp::elementHtml($owner)]);
+                if (!$owner instanceof NestedElementInterface) {
+                    break;
+                }
+                $owner = $owner->getOwner();
+                if (!$owner) {
+                    break;
+                }
+            } while (true);
         } else {
-            $crumbs[] = [
-                'label' => Craft::t('site', $section->name),
-                'url' => "entries/$section->handle",
+            $section = $this->getSection();
+
+            $crumbs = [
+                [
+                    'label' => Craft::t('app', 'Entries'),
+                    'url' => 'entries',
+                ],
             ];
 
-            if ($section->type === Section::TYPE_STRUCTURE) {
-                $elementsService = Craft::$app->getElements();
-                $user = Craft::$app->getUser()->getIdentity();
+            if ($section->type === Section::TYPE_SINGLE) {
+                $crumbs[] = [
+                    'label' => Craft::t('app', 'Singles'),
+                    'url' => 'entries/singles',
+                ];
+            } else {
+                $crumbs[] = [
+                    'label' => Craft::t('site', $section->name),
+                    'url' => "entries/$section->handle",
+                ];
 
-                foreach ($this->getCanonical()->getAncestors()->all() as $ancestor) {
-                    if ($elementsService->canView($ancestor, $user)) {
-                        $crumbs[] = [
-                            'label' => $ancestor->title,
-                            'url' => $ancestor->getCpEditUrl(),
-                        ];
+                if ($section->type === Section::TYPE_STRUCTURE) {
+                    $elementsService = Craft::$app->getElements();
+                    $user = Craft::$app->getUser()->getIdentity();
+
+                    foreach ($this->getCanonical()->getAncestors()->all() as $ancestor) {
+                        if ($elementsService->canView($ancestor, $user)) {
+                            $crumbs[] = [
+                                'label' => $ancestor->title,
+                                'url' => $ancestor->getCpEditUrl(),
+                            ];
+                        }
                     }
                 }
             }
@@ -1725,7 +1765,7 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
         $section = $this->getSection();
         $user = Craft::$app->getUser()->getIdentity();
 
-        if ($section->type !== Section::TYPE_SINGLE) {
+        if ($section?->type !== Section::TYPE_SINGLE) {
             // Type
             $fields[] = (function() use ($static, $view) {
                 $entryTypes = $this->getAvailableEntryTypes();
@@ -1775,7 +1815,7 @@ EOD;
         $fields[] = $this->slugFieldHtml($static);
 
         // Parent
-        if ($section->type === Section::TYPE_STRUCTURE && $section->maxLevels !== 1) {
+        if ($section?->type === Section::TYPE_STRUCTURE && $section->maxLevels !== 1) {
             $fields[] = (function() use ($static, $section) {
                 if ($parentId = $this->getParentId()) {
                     $parent = Craft::$app->getEntries()->getEntryById($parentId, $this->siteId, [
@@ -1812,7 +1852,7 @@ EOD;
             })();
         }
 
-        if ($section->type !== Section::TYPE_SINGLE) {
+        if ($section && $section->type !== Section::TYPE_SINGLE) {
             // Author
             if (Craft::$app->getEdition() === Craft::Pro && $user->can("viewPeerEntries:$section->uid")) {
                 $fields[] = (function() use ($static, $section) {

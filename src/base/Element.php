@@ -3134,12 +3134,11 @@ abstract class Element extends Component implements ElementInterface
      */
     public function getCpEditUrl(): ?string
     {
-        $cpEditUrl = $this->cpEditUrl();
-
-        if (!$cpEditUrl) {
+        if (!$this->id) {
             return null;
         }
 
+        $cpEditUrl = $this->cpEditUrl() ?? sprintf('edit/%s', $this->getCanonicalId());
         $params = [];
 
         if (Craft::$app->getIsMultiSite()) {
