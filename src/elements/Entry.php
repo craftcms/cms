@@ -1659,7 +1659,7 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
             $owner = $this->getOwner();
 
             do {
-                array_unshift($crumbs, ['html' => Cp::elementHtml($owner)]);
+                array_unshift($crumbs, ['html' => Cp::elementChipHtml($owner)]);
                 if (!$owner instanceof NestedElementInterface) {
                     break;
                 }
