@@ -78,6 +78,22 @@ class EntryType extends Model implements FieldLayoutProviderInterface
     /**
      * @inheritdoc
      */
+    public function init(): void
+    {
+        parent::init();
+
+        if ($this->titleFormat === '') {
+            $this->titleFormat = null;
+        }
+
+        if ($this->titleTranslationKeyFormat === '') {
+            $this->titleTranslationKeyFormat = null;
+        }
+    }
+
+    /**
+     * @inheritdoc
+     */
     protected function defineBehaviors(): array
     {
         return [
@@ -129,12 +145,6 @@ class EntryType extends Model implements FieldLayoutProviderInterface
             'message' => Craft::t('yii', '{attribute} "{value}" has already been taken.'),
         ];
         $rules[] = [['fieldLayout'], 'validateFieldLayout'];
-
-        $rules[] = [
-            ['titleFormat'],
-            'required',
-            'when' => fn() => !$this->hasTitleField,
-        ];
 
         return $rules;
     }
@@ -209,8 +219,8 @@ class EntryType extends Model implements FieldLayoutProviderInterface
             'handle' => $this->handle,
             'hasTitleField' => $this->hasTitleField,
             'titleTranslationMethod' => $this->titleTranslationMethod,
-            'titleTranslationKeyFormat' => $this->titleTranslationKeyFormat ?: null,
-            'titleFormat' => $this->titleFormat ?: null,
+            'titleTranslationKeyFormat' => $this->titleTranslationKeyFormat,
+            'titleFormat' => $this->titleFormat,
         ];
 
         $fieldLayout = $this->getFieldLayout();

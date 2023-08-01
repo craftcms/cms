@@ -1965,26 +1965,34 @@ EOD;
     public function updateTitle(): void
     {
         $entryType = $this->getType();
-        if (!$entryType->hasTitleField) {
-            // Make sure that the locale has been loaded in case the title format has any Date/Time fields
-            Craft::$app->getLocale();
-            // Set Craft to the entry’s site’s language, in case the title format has any static translations
-            $language = Craft::$app->language;
-            $locale = Craft::$app->getLocale();
-            $formattingLocale = Craft::$app->getFormattingLocale();
-            $site = $this->getSite();
-            $tempLocale = Craft::$app->getI18n()->getLocaleById($site->language);
-            Craft::$app->language = $site->language;
-            Craft::$app->set('locale', $tempLocale);
-            Craft::$app->set('formattingLocale', $tempLocale);
-            $title = Craft::$app->getView()->renderObjectTemplate($entryType->titleFormat, $this);
-            if ($title !== '') {
-                $this->title = $title;
-            }
-            Craft::$app->language = $language;
-            Craft::$app->set('locale', $locale);
-            Craft::$app->set('formattingLocale', $formattingLocale);
+
+        if ($entryType->hasTitleField) {
+            return;
         }
+
+        if (!$entryType->titleFormat) {
+            $this->title = null;
+            return;
+        }
+
+        // Make sure that the locale has been loaded in case the title format has any Date/Time fields
+        Craft::$app->getLocale();
+        // Set Craft to the entry’s site’s language, in case the title format has any static translations
+        $language = Craft::$app->language;
+        $locale = Craft::$app->getLocale();
+        $formattingLocale = Craft::$app->getFormattingLocale();
+        $site = $this->getSite();
+        $tempLocale = Craft::$app->getI18n()->getLocaleById($site->language);
+        Craft::$app->language = $site->language;
+        Craft::$app->set('locale', $tempLocale);
+        Craft::$app->set('formattingLocale', $tempLocale);
+        $title = Craft::$app->getView()->renderObjectTemplate($entryType->titleFormat, $this);
+        if ($title !== '') {
+            $this->title = $title;
+        }
+        Craft::$app->language = $language;
+        Craft::$app->set('locale', $locale);
+        Craft::$app->set('formattingLocale', $formattingLocale);
     }
 
     /**

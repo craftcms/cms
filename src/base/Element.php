@@ -2421,11 +2421,26 @@ abstract class Element extends Component implements ElementInterface
         $rules[] = [['dateCreated', 'dateUpdated'], DateTimeValidator::class, 'on' => [self::SCENARIO_DEFAULT, self::SCENARIO_LIVE]];
         $rules[] = [['isFresh'], BooleanValidator::class];
 
-        if (static::hasTitles()) {
-            $rules[] = [['title'], 'trim', 'on' => [self::SCENARIO_DEFAULT, self::SCENARIO_LIVE]];
-            $rules[] = [['title'], StringValidator::class, 'max' => 255, 'disallowMb4' => true, 'on' => [self::SCENARIO_DEFAULT, self::SCENARIO_LIVE]];
-            $rules[] = [['title'], 'required', 'on' => [self::SCENARIO_DEFAULT, self::SCENARIO_LIVE]];
-        }
+        $rules[] = [
+            ['title'],
+            'trim',
+            'on' => [self::SCENARIO_DEFAULT, self::SCENARIO_LIVE],
+            'when' => fn() => $this->shouldValidateTitle(),
+        ];
+        $rules[] = [
+            ['title'],
+            StringValidator::class,
+            'max' => 255,
+            'disallowMb4' => true,
+            'on' => [self::SCENARIO_DEFAULT, self::SCENARIO_LIVE],
+            'when' => fn() => $this->shouldValidateTitle(),
+        ];
+        $rules[] = [
+            ['title'],
+            'required',
+            'on' => [self::SCENARIO_DEFAULT, self::SCENARIO_LIVE],
+            'when' => fn() => $this->shouldValidateTitle(),
+        ];
 
         if (static::hasUris()) {
             try {
@@ -2446,6 +2461,16 @@ abstract class Element extends Component implements ElementInterface
         }
 
         return $rules;
+    }
+
+    /**
+     * Returns whether the element’s `title` attribute should be validated
+     * @return bool
+     * @since 5.0.0
+     */
+    protected function shouldValidateTitle(): bool
+    {
+        return static::hasTitles();
     }
 
     /**
