@@ -93,7 +93,7 @@ class m230617_070415_entrify_matrix_blocks extends Migration
                     'name' => $this->uniqueName($blockTypeConfig['name'], $entryTypeNames),
                     'handle' => $this->uniqueHandle($blockTypeConfig['handle'], $entryTypeHandles),
                     'hasTitleField' => false,
-                    'titleFormat' => '{id}',
+                    'titleFormat' => null,
                 ]);
 
                 $fieldLayoutUid = ArrayHelper::firstKey($blockTypeConfig['fieldLayouts'] ?? []);
@@ -208,31 +208,6 @@ SQL,
                 ['type' => 'craft\elements\MatrixBlock'],
                 updateTimestamp: false,
             );
-
-            if ($this->db->getIsMysql()) {
-                $this->execute(sprintf(
-                    <<<SQL
-UPDATE %s AS [[elements_sites]]
-INNER JOIN %s AS [[entries]] ON [[entries.id]] = [[elements_sites.elementId]]
-SET [[elements_sites.title]] = [[elements_sites.elementId]]
-WHERE [[elements_sites.title]] IS NULL 
-SQL,
-                    Table::ELEMENTS_SITES,
-                    Table::ENTRIES,
-                ));
-            } else {
-                $this->execute(sprintf(
-                    <<<SQL
-UPDATE %s AS [[elements_sites]] 
-SET [[title]] = [[elementId]]
-FROM %s AS [[entries]]
-WHERE [[entries.id]] = [[elements_sites.elementId]] AND
-[[elements_sites.title]] IS NULL
-SQL,
-                    Table::ELEMENTS_SITES,
-                    Table::ENTRIES,
-                ));
-            }
         }
 
         // drop the old Matrix tables

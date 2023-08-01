@@ -21,6 +21,7 @@
 - Field layouts can now override custom fields’ handles.
 - Most custom fields can now be included multiple times within the same field layout. ([#8497](https://github.com/craftcms/cms/discussions/8497))
 - Entry types are now managed independently of sections.
+- Entry types are no longer required to have a Title Format, if the Title field isn’t shown.
 - Matrix fields now manage nested entries, rather than Matrix blocks. During the upgrade, existing Matrix block types will be converted to entry types; their nested fields will be made global; and Matrix blocks will be converted to entries.
 - Added support for defining custom locale aliases, via a new `localeAliases` config setting. ([#12705](https://github.com/craftcms/cms/pull/12705))
 - Removed the concept of field groups.
@@ -51,6 +52,7 @@
 - Added the `elementChip()` and `elementCard()` global functions for control panel templates.
 - The `assets/move-asset` and `assets/move-folder` actions no longer include `success` keys in responses. ([#12159](https://github.com/craftcms/cms/pull/12159))
 - The `assets/upload` controller action now includes `errors` object in failure responses. ([#12159](https://github.com/craftcms/cms/pull/12159))
+- Added `craft\base\Element::shouldValidateTitle()`.
 - Added `craft\base\ElementContainerFieldInterface`, which should be implemented by fields which contain nested elements, such as Matrix.
 - Added `craft\base\ElementInterface::getCardBodyHtml()`.
 - Added `craft\base\ElementInterface::setLazyEagerLoadedElements()`.
@@ -158,6 +160,7 @@
 - Renamed `craft\web\CpScreenResponseBehavior::$notice()` and `notice()` to `$noticeHtml` and `noticeHtml()`. ([#13037](https://github.com/craftcms/cms/pull/13037))
 - Renamed `craft\web\CpScreenResponseBehavior::$pageSidebar()` and `pageSidebar()` to `$pageSidebarHtml` and `pageSidebarHtml()`. ([#13037](https://github.com/craftcms/cms/pull/13037))
 - Renamed `craft\web\CpScreenResponseBehavior::$sidebar()` and `sidebar()` to `$metaSidebarHtml` and `metaSidebarHtml()`. ([#13037](https://github.com/craftcms/cms/pull/13037))
+- `craft\base\Element::getCpEditUrl()` now returns a URL to `edit/<ID>` if `cpEditUrl()` returns `null`.
 - `craft\base\ElementInterface::getEagerLoadedElementCount()` can now return `null` for counts that haven’t been eager-loaded yet.
 - `craft\db\Connection::getSupportsMb4()` is now dynamic for MySQL installs, based on whether the `elements_sites` table has an `mb4` charset.
 - `craft\elements\Entry::getSection()` can now return `null`, for nested entries.
