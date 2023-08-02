@@ -481,7 +481,7 @@ class ProjectConfig extends Component
         return true;
     }
 
-    private function _setInternal(string $path, mixed $value, ?string $message, bool $updateTimestamp, bool $force): bool
+    private function _setInternal(string $path, mixed $value, ?string $message = null, bool $updateTimestamp = true, bool $force = false): bool
     {
         if (is_array($value)) {
             $value = ProjectConfigHelper::cleanupConfig($value);
@@ -1621,7 +1621,8 @@ class ProjectConfig extends Component
     {
         if (!$this->readOnly) {
             foreach ($this->getCurrentWorkingConfig()->getProjectConfigNameChanges() as $uid => $name) {
-                $this->set(self::PATH_META_NAMES . '.' . $uid, $name);
+                // call _setInternal() so we avoid recursive calls to _saveConfigAfterRequest() via set()
+                $this->_setInternal(sprintf('%s.%s', self::PATH_META_NAMES, $uid), $name, updateTimestamp: false);
             }
         }
     }
