@@ -1286,7 +1286,6 @@ return [
     'The field type “{type}” could not be found.' => 'Det gick inte att hitta fälttypen “{type}”.',
     'The file failed to upload to the server properly.' => 'Det gick inte att överföra filen till servern.',
     'The file “{name}” does not appear to be an image.' => 'Filen “{name}” verkar inte vara en bild.',
-    'The file “{path}” does not appear to be an image.' => 'Filen “{path}” verkar inte vara en bild.',
     'The following <a href="{url}">aliases</a> are defined:' => 'Följande <a href="{url}">alias</a> är definierade:',
     'The following items were not indexed.' => 'Följande objekt har inte indexerats.',
     'The following licensing issues can be resolved with a single purchase on Craft Console.' => 'Följande problem med licensfel kan lösas med ett enda köp på Craft Console.',
