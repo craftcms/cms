@@ -1464,7 +1464,6 @@ return [
     'The field type “{type}” could not be found.' => 'Поле типу «{type}» не виявлено.',
     'The file failed to upload to the server properly.' => 'Файл не було завантажено на сервер належним чином.',
     'The file “{name}” does not appear to be an image.' => 'Схоже, файл «{name}» не є зображенням.',
-    'The file “{path}” does not appear to be an image.' => 'Схоже, файл «{path}» не є зображенням.',
     'The filesystem doesn’t contain any files.' => 'Файлова система не містить файлів.',
     'The following <a href="{url}">aliases</a> are defined:' => 'Визначені такі <a href="{url}">псевдоніми</a>:',
     'The following licensing issues can be resolved with a single purchase on Craft Console.' => 'Щоб усунути ці проблеми з ліцензуванням, необхідно придбати ліцензію в Craft Console.',
