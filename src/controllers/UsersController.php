@@ -871,7 +871,9 @@ class UsersController extends Controller
                     $statusLabel = $user->archived ? Craft::t('app', 'Archived') : Craft::t('app', 'Disabled');
                     if (Craft::$app->getElements()->canSave($user)) {
                         $statusActions[] = [
-                            'action' => 'users/enable-user',
+                            'data' => [
+                                'action' => 'users/enable-user',
+                            ],
                             'label' => Craft::t('app', 'Enable'),
                         ];
                     }
@@ -883,7 +885,9 @@ class UsersController extends Controller
                     if ($user->email) {
                         if ($user->pending || $canAdministrateUsers) {
                             $statusActions[] = [
-                                'action' => 'users/send-activation-email',
+                                'data' => [
+                                    'action' => 'users/send-activation-email',
+                                ],
                                 'label' => Craft::t('app', 'Send activation email'),
                             ];
                         }
@@ -891,12 +895,16 @@ class UsersController extends Controller
                             // Only need to show the "Copy activation URL" option if they don't have a password
                             if (!$user->password) {
                                 $statusActions[] = [
-                                    'id' => 'copy-passwordreset-url',
+                                    'options' => [
+                                        'id' => 'copy-passwordreset-url',
+                                    ],
                                     'label' => Craft::t('app', 'Copy activation URL…'),
                                 ];
                             }
                             $statusActions[] = [
-                                'action' => 'users/activate-user',
+                                'data' => [
+                                    'action' => 'users/activate-user',
+                                ],
                                 'label' => Craft::t('app', 'Activate account'),
                             ];
                         }
@@ -906,7 +914,9 @@ class UsersController extends Controller
                     $statusLabel = Craft::t('app', 'Suspended');
                     if (Craft::$app->getUsers()->canSuspend($currentUser, $user)) {
                         $statusActions[] = [
-                            'action' => 'users/unsuspend-user',
+                            'data' => [
+                                'action' => 'users/unsuspend-user',
+                            ],
                             'label' => Craft::t('app', 'Unsuspend'),
                         ];
                     }
@@ -924,7 +934,9 @@ class UsersController extends Controller
                             )
                         ) {
                             $statusActions[] = [
-                                'action' => 'users/unlock-user',
+                                'data' => [
+                                    'action' => 'users/unlock-user',
+                                ],
                                 'label' => Craft::t('app', 'Unlock'),
                             ];
                         }
@@ -934,12 +946,16 @@ class UsersController extends Controller
 
                     if (!$isCurrentUser) {
                         $statusActions[] = [
-                            'action' => 'users/send-password-reset-email',
+                            'data' => [
+                                'action' => 'users/send-password-reset-email',
+                            ],
                             'label' => Craft::t('app', 'Send password reset email'),
                         ];
                         if ($canAdministrateUsers) {
                             $statusActions[] = [
-                                'id' => 'copy-passwordreset-url',
+                                'options' => [
+                                    'id' => 'copy-passwordreset-url',
+                                ],
                                 'label' => Craft::t('app', 'Copy password reset URL…'),
                             ];
                         }
@@ -950,20 +966,26 @@ class UsersController extends Controller
             if (!$isCurrentUser) {
                 if (Craft::$app->getUsers()->canImpersonate($currentUser, $user)) {
                     $sessionActions[] = [
-                        'action' => 'users/impersonate',
+                        'data' => [
+                            'action' => 'users/impersonate',
+                        ],
                         'label' => $name
                             ? Craft::t('app', 'Sign in as {user}', ['user' => $user->getName()])
                             : Craft::t('app', 'Sign in as user'),
                     ];
                     $sessionActions[] = [
-                        'id' => 'copy-impersonation-url',
+                        'options' => [
+                            'id' => 'copy-impersonation-url',
+                        ],
                         'label' => Craft::t('app', 'Copy impersonation URL…'),
                     ];
                 }
 
                 if (Craft::$app->getUsers()->canSuspend($currentUser, $user) && $user->active && !$user->suspended) {
                     $destructiveActions[] = [
-                        'action' => 'users/suspend-user',
+                        'data' => [
+                            'action' => 'users/suspend-user',
+                        ],
                         'label' => Craft::t('app', 'Suspend'),
                     ];
                 }
@@ -973,15 +995,19 @@ class UsersController extends Controller
             if (!$user->admin || $currentUser->admin) {
                 if (($isCurrentUser || $canAdministrateUsers) && ($user->active || $user->pending)) {
                     $destructiveActions[] = [
-                        'action' => 'users/deactivate-user',
+                        'data' => [
+                            'action' => 'users/deactivate-user',
+                            'confirm' => Craft::t('app', 'Deactivating a user revokes their ability to sign in. Are you sure you want to continue?'),
+                        ],
                         'label' => Craft::t('app', 'Deactivate…'),
-                        'confirm' => Craft::t('app', 'Deactivating a user revokes their ability to sign in. Are you sure you want to continue?'),
                     ];
                 }
 
                 if ($isCurrentUser || $currentUser->can('deleteUsers')) {
                     $destructiveActions[] = [
-                        'id' => 'delete-btn',
+                        'options' => [
+                            'id' => 'delete-btn',
+                        ],
                         'label' => Craft::t('app', 'Delete…'),
                     ];
                 }
@@ -998,15 +1024,15 @@ class UsersController extends Controller
         ]);
         $this->trigger(self::EVENT_REGISTER_USER_ACTIONS, $event);
 
-        $actions = array_filter([
+        $additionalMenuComponents = array_filter(array_merge(
             $event->statusActions,
             $event->miscActions,
             $event->sessionActions,
             array_map(function(array $action): array {
-                $action['destructive'] = true;
+                $action['data']['destructive'] = true;
                 return $action;
             }, $event->destructiveActions),
-        ]);
+        ));
 
         // Set the appropriate page title
         // ---------------------------------------------------------------------
@@ -1186,7 +1212,7 @@ JS,
             'user',
             'isNewUser',
             'statusLabel',
-            'actions',
+            'additionalMenuComponents',
             'languageOptions',
             'localeOptions',
             'userLanguage',
