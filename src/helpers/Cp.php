@@ -440,14 +440,14 @@ class Cp
                 'title' => $title,
                 'data' => array_filter([
                     'settings' => $config['autoReload'] ? [
-                        'ui' => 'chip',
                         'checkbox' => $config['checkbox'],
                         'context' => $config['context'],
-                        'size' => $config['size'],
+                        'showDraftName' => $config['showDraftName'],
+                        'showLabel' => $config['showLabel'],
                         'showStatus' => $config['showStatus'],
                         'showThumb' => $config['showThumb'],
-                        'showLabel' => $config['showLabel'],
-                        'showDraftName' => $config['showDraftName'],
+                        'size' => $config['size'],
+                        'ui' => 'chip',
                     ] : false,
                 ]),
             ],
@@ -518,10 +518,10 @@ class Cp
     public static function elementCardHtml(ElementInterface $element, array $config = []): string
     {
         $config += [
+            'autoReload' => true,
             'checkbox' => false,
             'context' => 'index',
             'inputName' => null,
-            'autoReload' => true,
         ];
 
         $attributes = ArrayHelper::merge(
