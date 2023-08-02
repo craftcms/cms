@@ -1245,7 +1245,7 @@ class Users extends Component
                 $elementsService->deleteElement($user);
                 Craft::info("Just deleted pending user $user->username ($user->id), because they took too long to activate their account.", __METHOD__);
             } catch (UserException $e) {
-                Craft::info($e->getMessage(), __METHOD__);
+                Craft::warning($e->getMessage(), __METHOD__);
             }
         }
     }
