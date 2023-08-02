@@ -3,6 +3,7 @@
 ## Unreleased
 
 - Fixed a bug where `Craft.BaseElementIndexView::this.canSelectElement()` wasn’t getting applied for lazy-loaded elements.
+- Fixed an information disclosure vulnerability.
 
 ## 3.8.16 - 2023-07-18
 
