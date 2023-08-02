@@ -415,6 +415,7 @@ class Cp
             'autoReload' => true,
             'checkbox' => false,
             'context' => 'index',
+            'id' => sprintf('chip-%s', StringHelper::randomString(10)),
             'inputName' => null,
             'showDraftName' => true,
             'showLabel' => true,
@@ -431,7 +432,7 @@ class Cp
         }
 
         $attributes = ArrayHelper::merge(
-            self::baseElementAttributes($element, $config['context']),
+            self::baseElementAttributes($element, $config),
             [
                 'class' => array_filter([
                     'chip',
@@ -442,6 +443,7 @@ class Cp
                     'settings' => $config['autoReload'] ? [
                         'checkbox' => $config['checkbox'],
                         'context' => $config['context'],
+                        'id' => Craft::$app->getView()->namespaceInputId($config['id']),
                         'showDraftName' => $config['showDraftName'],
                         'showLabel' => $config['showLabel'],
                         'showStatus' => $config['showStatus'],
@@ -521,17 +523,19 @@ class Cp
             'autoReload' => true,
             'checkbox' => false,
             'context' => 'index',
+            'id' => sprintf('card-%s', StringHelper::randomString(10)),
             'inputName' => null,
         ];
 
         $attributes = ArrayHelper::merge(
-            self::baseElementAttributes($element, $config['context']),
+            self::baseElementAttributes($element, $config),
             [
                 'class' => ['card'],
                 'data' => array_filter([
                     'settings' => $config['autoReload'] ? [
                         'checkbox' => $config['checkbox'],
                         'context' => $config['context'],
+                        'id' => Craft::$app->getView()->namespaceInputId($config['id']),
                         'ui' => 'card',
                     ] : false,
                 ]),
@@ -576,18 +580,19 @@ class Cp
         return $html;
     }
 
-    private static function baseElementAttributes(ElementInterface $element, string $context): array
+    private static function baseElementAttributes(ElementInterface $element, array $config): array
     {
         $elementsService = Craft::$app->getElements();
         $user = Craft::$app->getUser()->getIdentity();
         $editable = $user && $elementsService->canView($element, $user);
 
         return ArrayHelper::merge(
-            Html::normalizeTagAttributes($element->getHtmlAttributes($context)),
+            Html::normalizeTagAttributes($element->getHtmlAttributes($config['context'])),
             [
+                'id' => $config['id'],
                 'class' => array_filter([
                     'element',
-                    $context === 'field' ? 'removable' : null,
+                    $config['context'] === 'field' ? 'removable' : null,
                     $element->hasErrors() ? 'error' : null,
                 ]),
                 'data' => array_filter([
@@ -603,9 +608,9 @@ class Cp
                     'level' => $element->level,
                     'trashed' => $element->trashed,
                     'editable' => $editable,
-                    'savable' => $editable && $context === 'index' && $elementsService->canSave($element),
-                    'duplicatable' => $editable && $context === 'index' && $elementsService->canDuplicate($element),
-                    'deletable' => $editable && $context === 'index' && $elementsService->canDelete($element),
+                    'savable' => $editable && $config['context'] === 'index' && $elementsService->canSave($element),
+                    'duplicatable' => $editable && $config['context'] === 'index' && $elementsService->canDuplicate($element),
+                    'deletable' => $editable && $config['context'] === 'index' && $elementsService->canDelete($element),
                 ]),
             ],
         );
@@ -659,7 +664,10 @@ class Cp
             ]);
         }
 
-        return Html::beginTag('div', ['class' => 'label']) .
+        return Html::beginTag('div', [
+                'id' => sprintf('%s-label', $config['id']),
+                'class' => 'label',
+            ]) .
             Html::tag('a', $content, [
                 'class' => 'label-link',
                 'href' => !$element->trashed && $config['context'] !== 'modal'

@@ -284,6 +284,7 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
 
       for (let i = 0; i < $elements.length; i++) {
         const $element = $elements.eq(i);
+        const $label = $element.find('.label');
         const $actions = $element.find(actionSelector).empty();
         const actions = this.defineElementActions($element);
 
@@ -300,6 +301,7 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
             class: 'btn settings menubtn',
             title: Craft.t('app', 'Actions'),
             'aria-controls': actionMenuId,
+            'aria-describedby': $label.attr('id'),
           }).appendTo($actions);
           const $menu = $('<div/>', {
             id: actionMenuId,
@@ -356,6 +358,7 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
             class: 'move icon',
             title: Craft.t('app', 'Reorder'),
             'aria-label': Craft.t('app', 'Reorder'),
+            'aria-describedby': $label.attr('id'),
           }).appendTo($actions);
         }
       }
@@ -502,7 +505,6 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
                       : 'card',
                     size:
                       this.settings.viewMode === 'large' ? 'large' : 'small',
-                    checkbox: true,
                   },
                 ],
               },
@@ -728,7 +730,6 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
                 siteId: elements[0].siteId,
                 instances: [
                   {
-                    checkbox: true,
                     context: 'field',
                     ui: inputUiType,
                     size: inputUiSize,

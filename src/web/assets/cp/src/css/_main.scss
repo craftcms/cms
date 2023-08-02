@@ -2965,6 +2965,7 @@ table {
     flex: 1 0 0 !important;
     overflow: hidden;
     position: relative;
+    --focus-ring: var(--inner-focus-ring);
 
     .card-heading {
       display: flex;
