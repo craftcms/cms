@@ -5598,6 +5598,11 @@ $min2ColWidth: 400px;
         @include menu-option-active-styles;
       }
     }
+
+    hr {
+      max-width: 100%;
+      margin: 5px 0;
+    }
   }
 
   h6 {

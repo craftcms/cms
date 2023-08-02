@@ -30,6 +30,26 @@
 {% hook "cp.users.edit" %}
 
 {% block actionButton %}
+    {% if not currentUser.can('registerUsers') or CraftEdition != CraftPro %}
+        <button type="button" class="btn submit formsubmit" data-form="userform">{{ 'Save'|t('app') }}</button>
+    {% else %}
+        <div class="btngroup">
+            <button type="button" class="btn submit formsubmit" data-form="userform">{{ 'Save'|t('app') }}</button>
+            <button type="button" class="btn submit menubtn" data-form="userform"></button>
+            <div class="menu">
+                <ul>
+                    <li>
+                        <a class="formsubmit" data-redirect="{{ (isNewUser ? 'users/{id}' : user.getCpEditUrl())|hash }}">
+                            {{ forms.optionShortcutLabel('S') }}
+                            {{ "Save and continue editing"|t('app') }}
+                        </a>
+                    </li>
+                    <li><a class="formsubmit" data-redirect="{{ 'users/new#'|hash }}">{{ "Save and add another"|t('app') }}</a></li>
+                </ul>
+            </div>
+        </div>
+    {% endif %}
+
     {% if actions|length %}
         <div>
             {{ forms.button({
@@ -71,27 +91,6 @@
             </div>
         </div>
     {% endif %}
-
-    {% if not currentUser.can('registerUsers') or CraftEdition != CraftPro %}
-        <button type="button" class="btn submit formsubmit" data-form="userform">{{ 'Save'|t('app') }}</button>
-    {% else %}
-        <div class="btngroup">
-            <button type="button" class="btn submit formsubmit" data-form="userform">{{ 'Save'|t('app') }}</button>
-            <button type="button" class="btn submit menubtn" data-form="userform"></button>
-            <div class="menu">
-                <ul>
-                    <li>
-                        <a class="formsubmit" data-redirect="{{ (isNewUser ? 'users/{id}' : user.getCpEditUrl())|hash }}">
-                            {{ forms.optionShortcutLabel('S') }}
-                            {{ "Save and continue editing"|t('app') }}
-                        </a>
-                    </li>
-                    <li><a class="formsubmit" data-redirect="{{ 'users/new#'|hash }}">{{ "Save and add another"|t('app') }}</a></li>
-                </ul>
-            </div>
-        </div>
-    {% endif %}
-
 {% endblock %}
 
 {% block content %}

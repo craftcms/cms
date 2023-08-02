@@ -387,15 +387,23 @@ class ElementsController extends Controller
                 $canSave,
                 $canSaveCanonical,
                 $canCreateDrafts,
+                $previewTargets,
+                $enablePreview,
                 $isCurrent,
                 $isUnpublishedDraft,
                 $isDraft
             ))
-            ->additionalMenu(fn() => $this->_additionalMenu(
+            ->additionalMenuComponents(fn() => $this->_additionalMenuComponents(
                 $element,
-                $canSave,
-                $previewTargets,
-                $enablePreview
+                $canonical,
+                $type,
+                $redirectUrl,
+                $isCurrent,
+                $isUnpublishedDraft,
+                $isDraft,
+                $canDeleteForSite,
+                $canDeleteCanonical,
+                $canDeleteDraft
             ))
             ->notice($element->isProvisionalDraft ? fn() => $this->_draftNotice() : null)
             ->prepareScreen(
@@ -509,54 +517,6 @@ class ElementsController extends Controller
                         ]);
                     }
                 }
-
-                if ($canDeleteForSite) {
-                    $response->addAltAction(Craft::t('app', 'Delete {type} for this site', [
-                        'type' => $isUnpublishedDraft ? Craft::t('app', 'draft') : $type,
-                    ]), [
-                        'destructive' => true,
-                        'action' => 'elements/delete-for-site',
-                        'redirect' => "$redirectUrl#",
-                        'confirm' => Craft::t('app', 'Are you sure you want to delete the {type} for this site?', [
-                            'type' => $isUnpublishedDraft ? Craft::t('app', 'draft') : $type,
-                        ]),
-                    ]);
-                }
-
-                if ($canDeleteCanonical) {
-                    $response->addAltAction(Craft::t('app', 'Delete {type}', [
-                        'type' => $isUnpublishedDraft ? Craft::t('app', 'draft') : $type,
-                    ]), [
-                        'destructive' => true,
-                        'action' => $isUnpublishedDraft ? 'elements/delete-draft' : 'elements/delete',
-                        'redirect' => "$redirectUrl#",
-                        'confirm' => Craft::t('app', 'Are you sure you want to delete this {type}?', [
-                            'type' => $isUnpublishedDraft ? Craft::t('app', 'draft') : $type,
-                        ]),
-                    ]);
-                }
-            } elseif ($isDraft && $canDeleteDraft) {
-                if ($canDeleteForSite) {
-                    $response->addAltAction(Craft::t('app', 'Delete {type} for this site', [
-                        'type' => Craft::t('app', 'draft'),
-                    ]), [
-                        'destructive' => true,
-                        'action' => 'elements/delete-for-site',
-                        'redirect' => "$redirectUrl#",
-                        'confirm' => Craft::t('app', 'Are you sure you want to delete the {type} for this site?', compact('type')),
-                    ]);
-                }
-
-                $response->addAltAction(Craft::t('app', 'Delete {type}', [
-                    'type' => Craft::t('app', 'draft'),
-                ]), [
-                    'destructive' => true,
-                    'action' => 'elements/delete-draft',
-                    'redirect' => $canonical->getCpEditUrl(),
-                    'confirm' => Craft::t('app', 'Are you sure you want to delete this {type}?', [
-                        'type' => Craft::t('app', 'draft'),
-                    ]),
-                ]);
             }
         }
 
@@ -692,11 +652,34 @@ class ElementsController extends Controller
         bool $canSave,
         bool $canSaveCanonical,
         bool $canCreateDrafts,
+        ?array $previewTargets,
+        bool $enablePreview,
         bool $isCurrent,
         bool $isUnpublishedDraft,
         bool $isDraft,
     ): string {
         $components = [];
+
+        // Preview (View will be added later by JS)
+        if ($canSave && $previewTargets) {
+            $components[] =
+                Html::beginTag('div', [
+                    'class' => ['preview-btn-container', 'btngroup'],
+                ]) .
+                ($enablePreview
+                    ? Html::beginTag('button', [
+                        'type' => 'button',
+                        'class' => ['preview-btn', 'btn'],
+                        'aria' => [
+                            'label' => Craft::t('app', 'Preview'),
+                        ],
+                    ]) .
+                    Html::tag('span', Craft::t('app', 'Preview'), ['class' => 'label']) .
+                    Html::tag('span', options: ['class' => ['spinner', 'spinner-absolute']]) .
+                    Html::endTag('button')
+                    : '') .
+                Html::endTag('div');
+        }
 
         // Create a draft
         if ($isCurrent && !$isUnpublishedDraft && $canCreateDrafts) {
@@ -754,74 +737,114 @@ class ElementsController extends Controller
         return implode("\n", array_filter($components));
     }
 
-    private function _additionalMenu(
+    /**
+     * Returns a list of components for the additional menu
+     *
+     * Component array should consist of:
+     * 'tag' => a|button
+     * 'label' => {text to show in the a or button element; can be an empty string}
+     * 'data' => {data attributes; optional}
+     * 'aria' => {aria attributes; optional}
+     * 'options' => {any other attributes, e.g. class; optional}
+     *
+     * @param ElementInterface $element
+     * @param ElementInterface $canonical
+     * @param string $type
+     * @param string $redirectUrl
+     * @param bool $isCurrent
+     * @param bool $isUnpublishedDraft
+     * @param bool $isDraft
+     * @param bool $canDeleteForSite
+     * @param bool $canDeleteCanonical
+     * @param bool $canDeleteDraft
+     * @return array
+     */
+    private function _additionalMenuComponents(
         ElementInterface $element,
-        bool $canSave,
-        ?array $previewTargets,
-        bool $enablePreview,
-    ): string {
+        ElementInterface $canonical,
+        string $type,
+        string $redirectUrl,
+        bool $isCurrent,
+        bool $isUnpublishedDraft,
+        bool $isDraft,
+        bool $canDeleteForSite,
+        bool $canDeleteCanonical,
+        bool $canDeleteDraft,
+    ): array {
         $components = [];
 
-        // Preview (View will be added later by JS)
-        if ($canSave && $previewTargets) {
-            $components[] =
-                Html::beginTag('div', [
-                    'class' => ['preview-btn-container'],
-                ]) .
-                ($enablePreview
-                    ? Html::beginTag('button', [
-                        'type' => 'button',
-                        'class' => ['preview-btn', 'btn'],
-                        'aria' => [
-                            'label' => Craft::t('app', 'Preview'),
-                        ],
-                    ]) .
-                    Html::tag('span', Craft::t('app', 'Preview'), ['class' => 'label']) .
-                    Html::tag('span', options: ['class' => ['spinner', 'spinner-absolute']]) .
-                    Html::endTag('button')
-                    : '') .
-                Html::endTag('div');
-        }
-
-        $components = array_merge($components, $element->getAdditionalMenuItems());
-
-        if (!empty($components)) {
-            $additionalMenuId = 'menu' . random_int(100000,999999);
-            $menuBtn = Html::button('', [
-                'class' => 'btn',
-                'id' => 'additional-menu-btn',
-                'title' => Craft::t('app', 'Additional Menu'),
-                'aria' => [
-                    'label' => Craft::t('app', 'Additional Menu'),
-                    'controls' => $additionalMenuId,
-                ],
-                'data' => [
-                    'icon' => 'settings',
-                    'disclosure-trigger' => true,
-                ],
-                'role' => 'combobox',
-            ]);
-
-            $menuStart = Html::beginTag('div', [
-                    'id' => $additionalMenuId,
-                    'class' => ['menu menu--disclosure', 'additional-menu'],
-                ]) .
-                Html::beginTag('ul');
-
-            $menuItems = [];
-            foreach ($components as $component) {
-                $menuItems[] = Html::beginTag('li') . $component . Html::endTag('li');
+        if ($isCurrent) {
+            if ($canDeleteForSite) {
+                $components[] = [
+                    'tag' => 'a',
+                    'label' => Craft::t('app', 'Delete {type} for this site', [
+                        'type' => $isUnpublishedDraft ? Craft::t('app', 'draft') : $type,
+                    ]),
+                    'data' => [
+                        'destructive' => true,
+                        'action' => 'elements/delete-for-site',
+                        'redirect' => "$redirectUrl#",
+                        'confirm' => Craft::t('app', 'Are you sure you want to delete the {type} for this site?', [
+                            'type' => $isUnpublishedDraft ? Craft::t('app', 'draft') : $type,
+                        ]),
+                    ],
+                ];
             }
 
-            $menuEnd = Html::endTag('ul') .
-                Html::endTag('div');
+            if ($canDeleteCanonical) {
+                $components[] = [
+                    'tag' => 'a',
+                    'label' => Craft::t('app', 'Delete {type}', [
+                        'type' => $isUnpublishedDraft ? Craft::t('app', 'draft') : $type,
+                    ]),
+                    'options' => [
+                        'class' => ['myTestClass'],
+                    ],
+                    'data' => [
+                        'destructive' => true,
+                        'action' => $isUnpublishedDraft ? 'elements/delete-draft' : 'elements/delete',
+                        'redirect' => "$redirectUrl#",
+                        'confirm' => Craft::t('app', 'Are you sure you want to delete this {type}?', [
+                            'type' => $isUnpublishedDraft ? Craft::t('app', 'draft') : $type,
+                        ]),
+                    ],
+                ];
+            }
+        } elseif ($isDraft && $canDeleteDraft) {
+            if ($canDeleteForSite) {
+                $components[] = [
+                    'tag' => 'a',
+                    'label' => Craft::t('app', 'Delete {type} for this site', [
+                        'type' => Craft::t('app', 'draft'),
+                    ]),
+                    'data' => [
+                        'destructive' => true,
+                        'action' => 'elements/delete-for-site',
+                        'redirect' => "$redirectUrl#",
+                        'confirm' => Craft::t('app', 'Are you sure you want to delete the {type} for this site?',
+                            compact('type')
+                        ),
+                    ],
+                ];
+            }
 
-
-            return $menuBtn . "\n" . $menuStart . implode("\n", array_filter($menuItems)) . "\n" . $menuEnd;
+            $components[] = [
+                'tag' => 'a',
+                'label' => Craft::t('app', 'Delete {type}', [
+                    'type' => Craft::t('app', 'draft'),
+                ]),
+                'data' => [
+                    'destructive' => true,
+                    'action' => 'elements/delete-draft',
+                    'redirect' => $canonical->getCpEditUrl(),
+                    'confirm' => Craft::t('app', 'Are you sure you want to delete this {type}?', [
+                        'type' => Craft::t('app', 'draft'),
+                    ]),
+                ],
+            ];
         }
 
-
-        return '';
+        return array_merge($components, $element->getAdditionalMenuComponents());
     }
 
     private function _prepareEditor(

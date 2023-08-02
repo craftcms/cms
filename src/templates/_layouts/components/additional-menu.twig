@@ -1,0 +1,74 @@
+{% set menuId = 'menu' ~ random(100000,999999) %}
+
+{% set safeComponents = additionalMenuComponents|filter(a => not (a.data.destructive ?? false)) %}
+{% set destructiveComponents = additionalMenuComponents|filter(a => a.data.destructive ?? false) %}
+
+{% macro renderComponent(component, destructive) %}
+    {% set dataAttrs = [] %}
+    {% if component.data is defined and component.data is not empty %}
+        {% for key,value in component.data %}
+            {% set dataAttrs = dataAttrs|merge({(key): (value)}) %}
+        {% endfor %}
+    {% endif %}
+
+    {% set ariaAttrs = [] %}
+    {% if component.aria is defined and component.aria is not empty %}
+        {% for key,value in component.aria %}
+            {% set ariaAttrs = ariaAttrs|merge({(key): (value)}) %}
+        {% endfor %}
+    {% endif %}
+
+    {% set otherAttrs = [] %}
+    {% set additionalClasses = [] %}
+    {% if component.options is defined and component.options is not empty %}
+        {% for key,value in component.options %}
+            {% if key == 'class' %}
+                {% if component.options.class is iterable %}
+                    {% set additionalClasses = value %}
+                {% else %}
+                    {% set additionalClasses = value|split(',') %}
+                {% endif %}
+            {% else %}
+                {% set otherAttrs = otherAttrs|merge({(key): (value)}) %}
+            {% endif %}
+        {% endfor %}
+    {% endif %}
+
+    {% set componentAttributes = {
+        class: [
+            'formsubmit',
+            (destructive ?? false) ? 'error'
+        ]|merge(additionalClasses),
+        data: dataAttrs,
+        aria: ariaAttrs,
+    }|merge(otherAttrs) %}
+
+    <{{ component.tag }} {{ attr(componentAttributes) }}>
+        {{ component.label }}
+    </{{ component.tag }}>
+
+{% endmacro %}
+
+{% if safeComponents is not empty or destructiveComponents is not empty %}
+    <button class="btn" id="additional-menu-btn" title="{{ 'Additional Menu'|t('app') }}"
+            aria-label="{{ 'Additional Menu'|t('app') }}" aria-controls="{{ menuId }}"
+            data-icon="settings" data-disclosure-trigger="true" role="listbox" type="button"></button>
+
+    <div id="{{ menuId }}" class="menu additional-menu">
+        <ul>
+            {% for component in safeComponents %}
+                <li>
+                    {{ _self.renderComponent(component, false) }}
+                </li>
+            {% endfor %}
+            {% if safeComponents is not empty and destructiveComponents is not empty %}
+                <hr />
+            {% endif %}
+            {% for component in destructiveComponents %}
+                <li>
+                    {{ _self.renderComponent(component, true) }}
+                </li>
+            {% endfor %}
+        </ul>
+    </div>
+{% endif %}

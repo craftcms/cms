@@ -932,7 +932,7 @@ interface ElementInterface extends ComponentInterface
      * @return array
      * @since 5.0.0
      */
-    public function getAdditionalMenuItems(): array;
+    public function getAdditionalMenuComponents(): array;
 
     /**
      * Returns the additional locations that should be available for previewing the element, besides its primary [[getUrl()|URL]].

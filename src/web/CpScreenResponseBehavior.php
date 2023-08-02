@@ -162,11 +162,11 @@ class CpScreenResponseBehavior extends Behavior
     public $additionalButtons = null;
 
     /**
-     * @var string|callable|null Additional menu items’ HTML.
+     * @var array|callable|null Additional menu items.
      *
-     * @see additionalMenu()
+     * @see additionalMenuComponents()
      */
-    public $additionalMenu = null;
+    public $additionalMenuComponents = null;
 
     /**
      * @var string|callable|null The content HTML.
@@ -525,14 +525,14 @@ class CpScreenResponseBehavior extends Behavior
     }
 
     /**
-     * Sets the additional menu's HTML.
+     * Sets the components to show in the additional menu.
      *
-     * @param callable|string|null $value
+     * @param callable|array|null $value
      * @return Response
      */
-    public function additionalMenu(callable|string|null $value): Response
+    public function additionalMenuComponents(callable|array|null $value): Response
     {
-        $this->additionalMenu = $value;
+        $this->additionalMenuComponents = $value;
         return $this->owner;
     }
 

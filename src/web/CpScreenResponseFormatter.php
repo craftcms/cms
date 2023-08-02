@@ -121,7 +121,7 @@ class CpScreenResponseFormatter extends Component implements ResponseFormatterIn
         $contextMenu = is_callable($behavior->contextMenu) ? call_user_func($behavior->contextMenu) : $behavior->contextMenu;
         $addlButtons = is_callable($behavior->additionalButtons) ? call_user_func($behavior->additionalButtons) : $behavior->additionalButtons;
         $altActions = is_callable($behavior->altActions) ? call_user_func($behavior->altActions) : $behavior->altActions;
-        $addlMenu = is_callable($behavior->additionalMenu) ? call_user_func($behavior->additionalMenu) : $behavior->additionalMenu;
+        $addlMenuComponents = is_callable($behavior->additionalMenuComponents) ? call_user_func($behavior->additionalMenuComponents) : $behavior->additionalMenuComponents;
         $notice = is_callable($behavior->notice) ? call_user_func($behavior->notice) : $behavior->notice;
         $content = is_callable($behavior->content) ? call_user_func($behavior->content) : ($behavior->content ?? '');
         $sidebar = is_callable($behavior->sidebar) ? call_user_func($behavior->sidebar) : $behavior->sidebar;
@@ -150,7 +150,15 @@ class CpScreenResponseFormatter extends Component implements ResponseFormatterIn
                 'contextMenu' => $contextMenu,
                 'submitButtonLabel' => $behavior->submitButtonLabel,
                 'additionalButtons' => $addlButtons,
-                'additionalMenu' => $addlMenu,
+                'additionalMenuComponents' => array_map(function(array $component) use ($security): array {
+                    if (isset($component['options']['redirect'])) {
+                        $component['options']['redirect'] = $security->hashData($component['options']['redirect']);
+                    }
+                    if (isset($component['data']['redirect'])) {
+                        $component['data']['redirect'] = $security->hashData($component['data']['redirect']);
+                    }
+                    return $component;
+                }, $addlMenuComponents ?? []),
                 'tabs' => $behavior->tabs,
                 'fullPageForm' => (bool)$behavior->action,
                 'mainAttributes' => $behavior->mainAttributes,

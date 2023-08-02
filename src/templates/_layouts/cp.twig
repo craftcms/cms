@@ -71,7 +71,7 @@
 {% set toolbar = (toolbar ?? block('toolbar') ?? '')|trim %}
 {% set actionButton = (block('actionButton') ?? '')|trim %}
 {% set additionalButtons = additionalButtons ?? null %}
-{% set additionalMenu = additionalMenu ?? null %}
+{% set additionalMenuComponents = additionalMenuComponents ?? [] %}
 {% set details = (details ?? block('details') ?? '')|trim %}
 {% set footer = (footer ?? block('footer') ?? '')|trim %}
 {% set crumbs = crumbs ?? null %}
@@ -218,11 +218,11 @@
                                             {{ toolbar|raw }}
                                         </div>
                                     {% endif %}
-                                    {% if actionButton or additionalButtons or additionalMenu %}
+                                    {% if actionButton or additionalButtons or additionalMenuComponents %}
                                         <div id="action-buttons" class="flex">
                                             {{ additionalButtons|raw }}
-                                            {{ additionalMenu|raw }}
                                             {{ actionButton|raw }}
+                                            {% include '_layouts/components/additional-menu' with additionalMenuComponents %}
                                         </div>
                                     {% endif %}
                                 {% endblock %}

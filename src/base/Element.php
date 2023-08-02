@@ -340,7 +340,7 @@ abstract class Element extends Component implements ElementInterface
 
     /**
      * @event DefineMenuComponentEvent The event that is triggered when defining items for the additional menu that shows at the top of the element’s edit page.
-     * @see getAdditionalMenuItems()
+     * @see getAdditionalMenuComponents()
      * @since 5.0.0
      */
     public const EVENT_DEFINE_ADDITIONAL_MENU_ITEMS = 'defineAdditionalMenuItems';
@@ -3240,7 +3240,7 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
-    public function getAdditionalMenuItems(): array
+    public function getAdditionalMenuComponents(): array
     {
         // Fire a defineAdditionalMenuItems event
         $event = new DefineMenuComponentEvent();
