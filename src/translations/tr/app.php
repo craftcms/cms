@@ -1459,7 +1459,6 @@ return [
     'The field type “{type}” could not be found.' => '"{type}" adlı alan türü bulunamadı.',
     'The file failed to upload to the server properly.' => 'Dosya sunucuya düzgün bir şekilde yüklenemedi.',
     'The file “{name}” does not appear to be an image.' => '“{name}” dosyası resim olarak görünmüyor.',
-    'The file “{path}” does not appear to be an image.' => '“{path}” dosyası resim olarak görünmüyor.',
     'The filesystem doesn’t contain any files.' => 'Dosya sistemi herhangi bir dosya içermiyor.',
     'The following <a href="{url}">aliases</a> are defined:' => 'Aşağıdaki <a href="{url}"> takma adlar </a> tanımlanmıştır:',
     'The following licensing issues can be resolved with a single purchase on Craft Console.' => 'Aşağıdaki lisanslama sorunları, Craft Console üzerinden yapılacak tek bir satın alma ile çözülebilir.',
