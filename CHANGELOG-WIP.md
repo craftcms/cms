@@ -62,6 +62,7 @@
 - Added `craft\events\MoveElementEvent::getTargetElement()`. ([#13429](https://github.com/craftcms/cms/pull/13429))
 - Added `craft\gql\GqlEntityRegistry::getOrCreate()`. ([#13354](https://github.com/craftcms/cms/pull/13354))
 - Added `craft\helpers\Assets::iconSvg()`.
+- Added `craft\services\ProjectConfig::$cacheDuration`. ([#13164](https://github.com/craftcms/cms/issues/13164))
 - Added `craft\helpers\StringHelper::escapeShortcodes()`. ([#12935](https://github.com/craftcms/cms/issues/12935))
 - Added `craft\helpers\StringHelper::unescapeShortcodes()`. ([#12935](https://github.com/craftcms/cms/issues/12935))
 - Added `craft\models\FieldLayout::$provider`. ([#13250](https://github.com/craftcms/cms/pull/13250))
