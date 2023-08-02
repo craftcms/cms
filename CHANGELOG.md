@@ -1,5 +1,16 @@
 # Release Notes for Craft CMS 4
 
+## Unreleased
+
+- Fixed a bug where `Craft.BaseElementIndexView::this.canSelectElement()` wasn’t getting applied for lazy-loaded elements.
+- Fixed a bug where element thumbnails weren’t getting loaded for expanded relational field previews within element indexes.
+- Fixed an error that occurred when deleting a volume with a missing filesystem type.
+- Fixed a bug where Color field values were illegible within selected element index rows.
+
+## 4.4.16.1 - 2023-07-19
+
+- Fixed a bug where lightswitch inputs weren’t always stretching to fit their labels, when there was enough space for it. ([#13452](https://github.com/craftcms/cms/issues/13452))
+
 ## 4.4.16 - 2023-07-18
 
 - The “Access the control panel” user permission now includes a warning that the permission grants view-only access to user data and most content.
