@@ -9,7 +9,7 @@
 - Fixed a bug where multi-site content could be overwritten when creating a draft. ([#13451](https://github.com/craftcms/cms/issues/13451))
 - Fixed a bug where some nested component names weren’t getting deleted from the `meta.__names__` array in the project config. ([#13456](https://github.com/craftcms/cms/issues/13456))
 - Fixed a bug where `craft\helpers\DateTimeHelper::toDateInterval()` didn’t support negative integers. ([#13463](https://github.com/craftcms/cms/pull/13463))
-- Fixed a bug where the empty message was being shown incorrectly when loading endpoint data for admin tables. ([#13459](https://github.com/craftcms/cms/issues/13459))
+- Fixed a bug where admin tables were initially displaying an empty results message rather than a loading spinner, when the initial data was loading via Ajax. ([#13459](https://github.com/craftcms/cms/issues/13459))
 - Fixed an information disclosure vulnerability.
 
 ## 4.4.16.1 - 2023-07-19
