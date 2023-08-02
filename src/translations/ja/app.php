@@ -1459,7 +1459,6 @@ return [
     'The field type “{type}” could not be found.' => 'フィールドタイプ「{type}」が見つかりませんでした。',
     'The file failed to upload to the server properly.' => 'ファイルをサーバーに正しくアップロードできませんでした。',
     'The file “{name}” does not appear to be an image.' => 'ファイル「{name}」は画像ではないようです。',
-    'The file “{path}” does not appear to be an image.' => 'ファイル「{path}」は画像ではない可能性があります。',
     'The filesystem doesn’t contain any files.' => 'ファイルシステムにファイルが含まれていません。',
     'The following <a href="{url}">aliases</a> are defined:' => '次の<a href="{url}">エイリアス</a>が定義されています。',
     'The following licensing issues can be resolved with a single purchase on Craft Console.' => '次のライセンスの問題は、Craftコンソールで一度購入すると解決されます。',
