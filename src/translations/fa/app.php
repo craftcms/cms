@@ -1464,7 +1464,6 @@ return [
     'The field type “{type}” could not be found.' => 'نوع فیلد "{type}" نتوانست پیدا شود.',
     'The file failed to upload to the server properly.' => 'آپلود صحیح فایل به سرور با شکست مواجه شد.',
     'The file “{name}” does not appear to be an image.' => 'به نظر نمی رسد که فایل "{name}" یک تصویر باشد.',
-    'The file “{path}” does not appear to be an image.' => 'به نظر نمی رسد که فایل "{path}" یک تصویر باشد.',
     'The filesystem doesn’t contain any files.' => 'فایل سیستم حاوی هیچ فایلی نیست.',
     'The following <a href="{url}">aliases</a> are defined:' => '<a href="{url}">نام‌های مستعار</a> زیر تعریف شده است:',
     'The following licensing issues can be resolved with a single purchase on Craft Console.' => 'مشکلات مربوط به مجوز زیر را می توان با یک خرید در کنسول کرافت حل کرد.',
