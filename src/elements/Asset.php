@@ -1435,13 +1435,11 @@ class Asset extends Element
             $userSession->checkPermission("editImages:$volume->uid") &&
             ($userSession->getId() == $this->uploaderId || $userSession->checkPermission("editPeerImages:$volume->uid"))
         );
-        $isMobile = Craft::$app->getRequest()->isMobileBrowser(true);
 
         $components = [];
 
         if (($url = $this->getUrl()) !== null) {
             $components[] = [
-                'tag' => 'a',
                 'label' => Craft::t('app', 'View'),
                 'options' => [
                     'href' => $url,
@@ -1557,7 +1555,10 @@ JS;
                 'label' => Craft::t('app', 'Preview'),
                 'options' => [
                     'id' => 'preview-btn',
-                    'class' => ['btn', 'preview-btn'],
+                    'class' => ['btn'],
+                ],
+                'data' => [
+                    'icon' => 'view',
                 ],
             ];
 

@@ -776,7 +776,6 @@ class ElementsController extends Controller
         if ($isCurrent) {
             if ($canDeleteForSite) {
                 $components[] = [
-                    'tag' => 'a',
                     'label' => Craft::t('app', 'Delete {type} for this site', [
                         'type' => $isUnpublishedDraft ? Craft::t('app', 'draft') : $type,
                     ]),
@@ -793,7 +792,6 @@ class ElementsController extends Controller
 
             if ($canDeleteCanonical) {
                 $components[] = [
-                    'tag' => 'a',
                     'label' => Craft::t('app', 'Delete {type}', [
                         'type' => $isUnpublishedDraft ? Craft::t('app', 'draft') : $type,
                     ]),
@@ -813,7 +811,6 @@ class ElementsController extends Controller
         } elseif ($isDraft && $canDeleteDraft) {
             if ($canDeleteForSite) {
                 $components[] = [
-                    'tag' => 'a',
                     'label' => Craft::t('app', 'Delete {type} for this site', [
                         'type' => Craft::t('app', 'draft'),
                     ]),
@@ -829,7 +826,6 @@ class ElementsController extends Controller
             }
 
             $components[] = [
-                'tag' => 'a',
                 'label' => Craft::t('app', 'Delete {type}', [
                     'type' => Craft::t('app', 'draft'),
                 ]),
