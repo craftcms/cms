@@ -1464,7 +1464,6 @@ return [
     'The field type “{type}” could not be found.' => 'A(z) {type} mezőtípus nem található.',
     'The file failed to upload to the server properly.' => 'A fájlt nem sikerült helyesen betölteni a kiszolgálóra.',
     'The file “{name}” does not appear to be an image.' => 'A “{name}” fájl valószínűleg nem kép.',
-    'The file “{path}” does not appear to be an image.' => 'A(z) {path} fájl nem tűnik képnek.',
     'The filesystem doesn’t contain any files.' => 'A fájlrendszer nem tartalmaz fájlokat.',
     'The following <a href="{url}">aliases</a> are defined:' => 'Az alábbi <a href="{url}">aliasok</a> vannak definiálva:',
     'The following licensing issues can be resolved with a single purchase on Craft Console.' => 'Az alábbi licencelési problémák megoldhatók a Craft Console-nál történő egyetlen vásárlással.',
