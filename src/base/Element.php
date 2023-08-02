@@ -3477,7 +3477,9 @@ abstract class Element extends Component implements ElementInterface
             ->structureId($this->structureId)
             ->siteId(['not', $this->siteId])
             ->drafts($this->getIsDraft())
-            ->provisionalDrafts($this->isProvisionalDraft)
+            // the provisionalDraft state could have just changed (e.g. `elements/save-draft`)
+            // so don't filter based on one or the other
+            ->provisionalDrafts(null)
             ->revisions($this->getIsRevision());
     }
 

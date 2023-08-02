@@ -6,6 +6,10 @@
 - Fixed a bug where element thumbnails weren’t getting loaded for expanded relational field previews within element indexes.
 - Fixed an error that occurred when deleting a volume with a missing filesystem type.
 - Fixed a bug where Color field values were illegible within selected element index rows.
+- Fixed a bug where multi-site content could be overwritten when creating a draft. ([#13451](https://github.com/craftcms/cms/issues/13451))
+- Fixed a bug where some nested component names weren’t getting deleted from the `meta.__names__` array in the project config. ([#13456](https://github.com/craftcms/cms/issues/13456))
+- Fixed a bug where `craft\helpers\DateTimeHelper::toDateInterval()` didn’t support negative integers. ([#13463](https://github.com/craftcms/cms/pull/13463))
+- Fixed an information disclosure vulnerability.
 
 ## 4.4.16.1 - 2023-07-19
 
