@@ -279,6 +279,8 @@ interface ElementInterface extends ComponentInterface
      *   the attribute. (Optional)
      * - **`defaultSort`** – A string identifying the sort attribute that should be selected by default, or an array where
      *   the first value identifies the sort attribute, and the second determines which direction to sort by. (Optional)
+     * - **`defaultFilter`** – An element condition instance or config, which should be used by default when the source
+     *   is first selected.
      * - **`hasThumbs`** – A bool that defines whether this source supports Thumbs View. (Use your element’s
      *   [[getThumbUrl()]] method to define your elements’ thumb URL.) (Optional)
      * - **`structureId`** – The ID of the Structure that contains the elements in this source. If set, Structure View
