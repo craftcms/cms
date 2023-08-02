@@ -7,6 +7,7 @@
 - Element slideouts now show their sidebar content full-screen for elements without a field layout, rather than having an empty body. ([#13056](https://github.com/craftcms/cms/pull/13056), [#13053](https://github.com/craftcms/cms/issues/13053))
 - Relational fields no longer track the previously-selected element(s) when something outside the field is clicked on. ([#13123](https://github.com/craftcms/cms/issues/13123))
 - Element indexes now use field layouts’ overridden field labels, if all field layouts associated with an element source use the same label. ([#8903](https://github.com/craftcms/cms/discussions/8903))
+- Element indexes now track souces’ filters in the URL, so they can be sharable and persisted when navigating back to the index page via the browser history. ([#13499](https://github.com/craftcms/cms/pull/13499))
 - Improved the styling and max height of Selectize inputs. ([#13065](https://github.com/craftcms/cms/discussions/13065), [#13176](https://github.com/craftcms/cms/pull/13176))
 - Selectize inputs now support click-and-drag selection. ([#13273](https://github.com/craftcms/cms/discussions/13273))
 - Selectize single-select inputs now automatically select the current value on focus. ([#13273](https://github.com/craftcms/cms/discussions/13273))
@@ -42,6 +43,7 @@
 - When applying a draft, the canonical elements’ `getDirtyAttributes()` and `getDirtyFields()` methods now return the attribute names and field handles that were modified on the draft for save events. ([#12967](https://github.com/craftcms/cms/issues/12967))
 - Admin tables can be configured to pass custom query params to the data endpoint. ([#13416](https://github.com/craftcms/cms/pull/13416))
 - Admin tables can now be programatically reloaded. ([#13416](https://github.com/craftcms/cms/pull/13416))
+- Native element sources can now define a `defaultFilter` key, which defines the default filter condition that should be applied when the source is selected. ([#13499](https://github.com/craftcms/cms/pull/13499))
 - Added `craft\addresses\SubdivisionRepository`. ([#13361](https://github.com/craftcms/cms/pull/13361))
 - Added `craft\base\Element::thumbSvg()`. ([#13262](https://github.com/craftcms/cms/pull/13262))
 - Added `craft\base\ElementInterface::getThumbHtml()`.
