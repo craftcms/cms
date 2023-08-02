@@ -1447,7 +1447,7 @@ class Asset extends Element
                     'target' => '_blank',
                 ],
                 'data' => [
-                    'icon' => 'preview',
+                    'icon' => 'share',
                 ],
             ];
         }
@@ -1586,6 +1586,9 @@ JS;
                 'options' => [
                     'id' => 'edit-btn',
                     'class' => ['btn', 'edit-btn'],
+                ],
+                'data' => [
+                    'icon' => 'edit',
                 ],
             ];
 

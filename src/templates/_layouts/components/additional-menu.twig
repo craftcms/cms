@@ -11,17 +11,16 @@
     <div id="{{ menuId }}" class="menu additional-menu">
         <ul>
             {% for component in safeComponents %}
-                <li>
-                    {{ _self.renderComponent(component, false) }}
-                </li>
+                {{ _self.renderComponent(component, false) }}
             {% endfor %}
             {% if safeComponents is not empty and destructiveComponents is not empty %}
-                <hr />
+                {% set lastItem = safeComponents|last %}
+                {% if lastItem.tag != 'hr' %}
+                    <hr />
+                {% endif %}
             {% endif %}
             {% for component in destructiveComponents %}
-                <li>
-                    {{ _self.renderComponent(component, true) }}
-                </li>
+                {{ _self.renderComponent(component, true) }}
             {% endfor %}
         </ul>
     </div>
@@ -69,8 +68,14 @@
         aria: ariaAttrs,
     }|merge(otherAttrs) %}
 
-    <{{ tag }} {{ attr(componentAttributes) }}>
-    {{ component.label }}
-    </{{ tag }}>
+    {% if tag == 'hr' %}
+        <hr />
+    {% else %}
+        <li>
+            <{{ tag }} {{ attr(componentAttributes) }}>
+                {{ component.label }}
+            </{{ tag }}>
+        </li>
+    {% endif %}
 
 {% endmacro %}

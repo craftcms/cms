@@ -10,7 +10,7 @@ namespace craft\events;
 use yii\base\Event;
 
 /**
- * DefineMenuComponentEvent is used to define the HTML for components that are added to the additional menu.
+ * DefineMenuComponentEvent is used to define the list of components that are added to the additional menu.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 5.0.0
@@ -18,7 +18,7 @@ use yii\base\Event;
 class DefineMenuComponentEvent extends Event
 {
     /**
-     * @var array The array of UI components HTML
+     * @var array The array of components to be added to the additional menu
      */
     public array $components = [];
 }

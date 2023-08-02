@@ -741,8 +741,8 @@ class ElementsController extends Controller
      * Returns a list of components for the additional menu
      *
      * Component array should consist of:
-     * 'tag' => a|button
      * 'label' => {text to show in the a or button element; can be an empty string}
+     * 'tag' => {optional, defaults to "a"}
      * 'data' => {data attributes; optional}
      * 'aria' => {aria attributes; optional}
      * 'options' => {any other attributes, e.g. class; optional}

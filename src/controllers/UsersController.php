@@ -1026,8 +1026,11 @@ class UsersController extends Controller
 
         $additionalMenuComponents = array_filter(array_merge(
             $event->statusActions,
+            (!empty($event->statusActions) ? [['tag' => 'hr']] : []),
             $event->miscActions,
+            (!empty($event->miscActions) ? [['tag' => 'hr']] : []),
             $event->sessionActions,
+            (!empty($event->sessionActions) ? [['tag' => 'hr']] : []),
             array_map(function(array $action): array {
                 $action['data']['destructive'] = true;
                 return $action;
