@@ -1464,7 +1464,6 @@ return [
     'The field type “{type}” could not be found.' => 'Felttypen “{type}” findes ikke.',
     'The file failed to upload to the server properly.' => 'Filen kunne ikke uploades til serveren.',
     'The file “{name}” does not appear to be an image.' => 'Filen “{name}” ser ikke ud til at være et billede.',
-    'The file “{path}” does not appear to be an image.' => 'Filen “{path}” ser ikke ud til at være et billede.',
     'The filesystem doesn’t contain any files.' => 'Filsystemet indeholder ingen filer.',
     'The following <a href="{url}">aliases</a> are defined:' => 'Følgende <a href="{url}">aliaser</a> er defineret:',
     'The following licensing issues can be resolved with a single purchase on Craft Console.' => 'Følgende licensproblemer kan løses med et enkelt køb på Craft Console.',
