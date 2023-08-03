@@ -2210,10 +2210,11 @@ div.btn.submit input {
     max-width: 100%;
 
     span {
+      flex-grow: 1;
       padding: 7px 0;
       color: var(--medium-text-color);
       cursor: default;
-      max-width: calc((100% - 34px - 14px) / 2);
+      overflow: auto;
       overflow-wrap: break-word;
       hyphens: auto;
 
@@ -2609,6 +2610,10 @@ table {
 
           &.sel,
           &.active-drop-target {
+            --text-color: var(--white);
+            --medium-dark-text-color: var(--white);
+            --medium-text-color: var(--white);
+            --light-text-color: var(--white);
             --link-color: var(--white);
             --ui-control-color: var(--white);
             @include custom-color-focus-ring(hsl(var(--light-focus-hsl)));
@@ -2774,6 +2779,10 @@ $elementInnerSpacing: 5px;
   &.sel,
   li.sel &,
   li.active-drop-target & {
+    --text-color: var(--white);
+    --medium-dark-text-color: var(--white);
+    --medium-text-color: var(--white);
+    --light-text-color: var(--white);
     --link-color: var(--white);
     --ui-control-color: var(--white);
     @include custom-color-focus-ring(hsl(var(--light-focus-hsl)));
@@ -3088,11 +3097,10 @@ $checkboxPadding: $checkboxSize + 4;
     }
 
     .selectallcontainer {
+      display: flex;
+      align-items: center;
+      gap: $elementInnerSpacing;
       cursor: default;
-
-      .checkbox {
-        @include margin-right($elementInnerSpacing);
-      }
     }
   }
 
@@ -6140,6 +6148,36 @@ div.checkbox {
   min-height: 16px;
   cursor: pointer;
 
+  &,
+  &:before {
+    // set the border radius on the container too, for (some) focus rings
+    border-radius: var(--small-border-radius);
+  }
+
+  &:before {
+    display: block;
+    position: absolute;
+    @include left(0);
+    top: 0;
+    width: var(--checkbox-size) !important;
+    height: var(--checkbox-size);
+    box-sizing: border-box;
+    content: '';
+    font-size: 0;
+    background-color: hsl(212, 50%, 99%);
+    border: 1px solid transparentize($inputColor, 0.6);
+    background-clip: padding-box;
+  }
+
+  &:empty {
+    @include padding-left(var(--checkbox-size));
+
+    &:after {
+      content: '';
+      font-size: 0;
+    }
+  }
+
   .info {
     height: 16px;
   }
@@ -6148,35 +6186,6 @@ div.checkbox {
 input.checkbox:disabled + label,
 .disabled div.checkbox {
   cursor: default;
-}
-
-input.checkbox + label:empty,
-div.checkbox:empty {
-  @include padding-left(var(--checkbox-size));
-}
-
-input.checkbox + label:empty:after,
-div.checkbox:empty:after {
-  content: '';
-  font-size: 0;
-}
-
-/* fixes a RTL bug */
-input.checkbox + label:before,
-div.checkbox:before {
-  display: block;
-  position: absolute;
-  @include left(0);
-  top: 0;
-  width: var(--checkbox-size) !important;
-  height: var(--checkbox-size);
-  box-sizing: border-box;
-  content: '';
-  font-size: 0;
-  background-color: hsl(212, 50%, 99%);
-  border: 1px solid transparentize($inputColor, 0.6);
-  background-clip: padding-box;
-  border-radius: var(--small-border-radius);
 }
 
 input.checkbox:disabled + label,
