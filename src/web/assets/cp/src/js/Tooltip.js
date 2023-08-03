@@ -73,7 +73,13 @@ Craft.Tooltip = Garnish.Base.extend({
       this.hide();
     });
     this._$trigger.on('activate', () => {
-      this.toggle();
+      // If it's currently shown via hover, keep showing it and remove shownViaHover
+      if (this.showing && this.shownViaHover) {
+        this.shownViaHover = false;
+      } else {
+        this.toggle();
+      }
+
       this.ignoreFocus = true;
       this._$trigger.focus();
       this.ignoreFocus = false;
