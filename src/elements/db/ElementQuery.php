@@ -1516,8 +1516,11 @@ class ElementQuery extends Query implements ElementQueryInterface
         if ($this->archived) {
             $this->subQuery->andWhere(['elements.archived' => true]);
         } else {
-            $archivedStatusApplied = $this->_applyStatusParam($class);
-            if (!$archivedStatusApplied) {
+            $this->_applyStatusParam($class);
+
+            // only set archived=false if 'archived' doesn't show up in the status param
+            // (_applyStatusParam() will normalize $this->status to an array if applicable)
+            if (!is_array($this->status) || !in_array(Element::STATUS_ARCHIVED, $this->status)) {
                 $this->subQuery->andWhere(['elements.archived' => false]);
             }
         }
@@ -2417,20 +2420,22 @@ class ElementQuery extends Query implements ElementQueryInterface
     {
         /** @var string|ElementInterface $class */
         if (!$this->status || !$class::hasStatuses()) {
-            return false;
+            return;
         }
 
-        $statuses = $this->status;
-        if (!is_array($statuses)) {
-            $statuses = is_string($statuses) ? StringHelper::split($statuses) : [$statuses];
+        // Normalize the status param
+        if (!is_array($this->status)) {
+            $this->status = is_string($this->status) ? StringHelper::split($this->status) : [$this->status];
         }
+
+        $statuses = array_merge($this->status);
 
         $firstVal = strtolower(reset($statuses));
         if (in_array($firstVal, ['not', 'or'])) {
             $glue = $firstVal;
             array_shift($statuses);
             if (!$statuses) {
-                return false;
+                return;
             }
         } else {
             $glue = 'or';
@@ -2460,8 +2465,6 @@ class ElementQuery extends Query implements ElementQueryInterface
         }
 
         $this->subQuery->andWhere($this->_placeholderCondition($condition));
-
-        return in_array(Element::STATUS_ARCHIVED, $statuses);
     }
 
     /**
