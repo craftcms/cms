@@ -79,6 +79,7 @@
             :detail-row-component="detailRowComponent"
             :fields="fields"
             :per-page="perPage"
+            :no-data-template="noDataTemplate"
             :query-params="queryParams"
             pagination-path="pagination"
             @vuetable:loaded="init"
@@ -765,6 +766,12 @@
           loadingClass: 'loading',
           tableClass: tableClass,
         };
+      },
+
+      noDataTemplate() {
+        return this.isLoading
+          ? '<div class="spinner"></div>'
+          : '<div class="zilch">' + this.emptyMessage + '</div>';
       },
     },
 

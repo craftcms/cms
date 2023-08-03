@@ -77,6 +77,7 @@ class TypecastHelperTest extends TestCase
 
         $config = [
             'suit' => 'H',
+            'anotherSuit' => Suit::Hearts,
             'nullableSuit' => '',
         ];
 
@@ -84,6 +85,7 @@ class TypecastHelperTest extends TestCase
 
         self::assertSame([
             'suit' => Suit::Hearts,
+            'anotherSuit' => Suit::Hearts,
             'nullableSuit' => null,
         ], $config);
     }

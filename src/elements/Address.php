@@ -172,7 +172,7 @@ class Address extends Element implements AddressInterface, NestedElementInterfac
      * @var string Two-letter country code
      * @see https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2
      */
-    public string $countryCode = 'US';
+    public string $countryCode;
 
     /**
      * @var string|null Administrative area
@@ -235,6 +235,11 @@ class Address extends Element implements AddressInterface, NestedElementInterfac
     public function init(): void
     {
         parent::init();
+
+        if (!isset($this->countryCode)) {
+            $this->countryCode = Craft::$app->getConfig()->getGeneral()->defaultCountryCode;
+        }
+
         $this->normalizeNames();
     }
 
