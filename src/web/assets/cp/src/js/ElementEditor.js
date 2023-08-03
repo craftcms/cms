@@ -2057,7 +2057,9 @@ Craft.ElementEditor = Garnish.Base.extend(
                     const $button = $('<button/>', {
                       type: 'button',
                       class: 'activity-container__trigger',
-                      'aria-label': `${activity.userName} active, more info`,
+                      'aria-label': Craft.t('app', '{name} active, more info', {
+                        name: activity.userName,
+                      }),
                       'aria-expanded': 'false',
                     }).appendTo($li);
                     const $thumb = $(activity.userThumb)
