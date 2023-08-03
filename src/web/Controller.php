@@ -37,6 +37,7 @@ abstract class Controller extends \yii\web\Controller
     /**
      * @event DefineBehaviorsEvent The event that is triggered when defining the class behaviors
      * @see behaviors()
+     * @since 4.5.0
      */
     public const EVENT_DEFINE_BEHAVIORS = 'defineBehaviors';
 
@@ -69,10 +70,11 @@ abstract class Controller extends \yii\web\Controller
      *
      * See [[behaviors()]] for details about what should be returned.
      *
-     * Models should override this method instead of [[behaviors()]] so [[EVENT_DEFINE_BEHAVIORS]] handlers can modify the
-     * class-defined behaviors.
+     * Controllers should override this method instead of [[behaviors()]] so [[EVENT_DEFINE_BEHAVIORS]] handlers can
+     * modify the class-defined behaviors.
      *
      * @return array
+     * @since 4.5.0
      */
     protected function defineBehaviors(): array
     {
