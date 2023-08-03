@@ -85,7 +85,7 @@ abstract class Controller extends \yii\web\Controller
     /**
      * @inheritdoc
      */
-    public function behaviors()
+    public function behaviors(): array
     {
         $behaviors = $this->defineBehaviors();
 
