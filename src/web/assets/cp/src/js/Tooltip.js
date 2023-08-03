@@ -116,7 +116,8 @@ Craft.Tooltip = Garnish.Base.extend({
 
     if (!this.hud) {
       this.$p = $('<p/>', {text: this._message});
-      this.hud = new Garnish.HUD(this._$trigger, this.$p, {
+      this.hud = new Craft.Tooltip.HUD(this._$trigger, this.$p, {
+        hudClass: 'hud tooltip-hud',
         withShade: false,
         onShow: () => {
           this.onShow();
@@ -152,9 +153,26 @@ Craft.Tooltip = Garnish.Base.extend({
 
   onShow: function () {
     clearTimeout(this.hoverTimeout);
+    this.$p.text(this.message);
   },
 
   onHide: function () {
     clearTimeout(this.hoverTimeout);
+    this.$p.text('');
+  },
+});
+
+Craft.Tooltip.HUD = Garnish.HUD.extend({
+  init: function (trigger, bodyContents, settings) {
+    this.base(trigger, bodyContents, settings);
+    this.$hud.attr('role', 'status');
+  },
+
+  showContainer: function () {
+    this.$hud.removeClass('visually-hidden');
+  },
+
+  hideContainer: function () {
+    this.$hud.addClass('visually-hidden');
   },
 });
