@@ -8,6 +8,7 @@
 namespace craft\services;
 
 use Craft;
+use craft\base\conditions\ConditionInterface;
 use craft\base\ElementInterface;
 use craft\base\PreviewableFieldInterface;
 use craft\base\SortableFieldInterface;
@@ -366,17 +367,25 @@ class ElementSources extends Component
         /** @phpstan-var class-string<ElementInterface>|ElementInterface $elementType */
         $sources = $elementType::sources($context);
         $normalized = [];
+
         foreach ($sources as $source) {
-            if (isset($source['type'])) {
-                $normalized[] = $source;
-            } elseif (array_key_exists('heading', $source)) {
-                $source['type'] = self::TYPE_HEADING;
-                $normalized[] = $source;
-            } elseif (isset($source['key'])) {
-                $source['type'] = self::TYPE_NATIVE;
-                $normalized[] = $source;
+            if (!isset($source['type'])) {
+                if (array_key_exists('heading', $source)) {
+                    $source['type'] = self::TYPE_HEADING;
+                } elseif (isset($source['key'])) {
+                    $source['type'] = self::TYPE_NATIVE;
+                } else {
+                    continue;
+                }
             }
+
+            if (isset($source['defaultFilter']) && $source['defaultFilter'] instanceof ConditionInterface) {
+                $source['defaultFilter'] = $source['defaultFilter']->getConfig();
+            }
+
+            $normalized[] = $source;
         }
+
         return $normalized;
     }
 

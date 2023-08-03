@@ -1463,7 +1463,6 @@ return [
     'The field type “{type}” could not be found.' => 'The field type “{type}” could not be found.',
     'The file failed to upload to the server properly.' => 'The file failed to upload to the server properly.',
     'The file “{name}” does not appear to be an image.' => 'The file “{name}” does not appear to be an image.',
-    'The file “{path}” does not appear to be an image.' => 'The file “{path}” does not appear to be an image.',
     'The filesystem doesn’t contain any files.' => 'The filesystem doesn’t contain any files.',
     'The following <a href="{url}">aliases</a> are defined:' => 'The following <a href="{url}">aliases</a> are defined:',
     'The following licensing issues can be resolved with a single purchase on Craft Console.' => 'The following licensing issues can be resolved with a single purchase on Craft Console.',
