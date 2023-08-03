@@ -2,6 +2,24 @@
 
 ## Unreleased
 
+- Fixed a bug where `Craft.BaseElementIndexView::this.canSelectElement()` wasn’t getting applied for lazy-loaded elements.
+- Fixed a bug where element thumbnails weren’t getting loaded for expanded relational field previews within element indexes.
+- Fixed an error that occurred when deleting a volume with a missing filesystem type.
+- Fixed a bug where Color field values were illegible within selected element index rows.
+- Fixed a bug where multi-site content could be overwritten when creating a draft. ([#13451](https://github.com/craftcms/cms/issues/13451))
+- Fixed a bug where some nested component names weren’t getting deleted from the `meta.__names__` array in the project config. ([#13456](https://github.com/craftcms/cms/issues/13456))
+- Fixed a bug where `craft\helpers\DateTimeHelper::toDateInterval()` didn’t support negative integers. ([#13463](https://github.com/craftcms/cms/pull/13463))
+- Fixed a bug where admin tables were initially displaying an empty results message rather than a loading spinner, when the initial data was loading via Ajax. ([#13459](https://github.com/craftcms/cms/issues/13459))
+- Fixed an information disclosure vulnerability.
+
+## 4.4.16.1 - 2023-07-19
+
+- Fixed a bug where lightswitch inputs weren’t always stretching to fit their labels, when there was enough space for it. ([#13452](https://github.com/craftcms/cms/issues/13452))
+
+## 4.4.16 - 2023-07-18
+
+- The “Access the control panel” user permission now includes a warning that the permission grants view-only access to user data and most content.
+- Added info buttons to “View entries”, “Create entries”, and “Save entries” user permissions, clarifying which actions they allow. ([#13375](https://github.com/craftcms/cms/discussions/13375))
 - Improved performance when loading users with eager-loaded `addresses`. ([#13400](https://github.com/craftcms/cms/issues/13400))
 - `createDraft` GraphQL mutations now support a `creatorId` argument. ([#13401](https://github.com/craftcms/cms/issues/13401))
 - Garbage collection now deletes entries for sites that aren’t supported by their section. ([#13383](https://github.com/craftcms/cms/issues/13383))

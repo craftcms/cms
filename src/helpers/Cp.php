@@ -411,11 +411,6 @@ class Cp
         if ($showThumb) {
             $thumbSize = $size === self::ELEMENT_SIZE_SMALL ? 34 : 120;
             $thumbHtml = $element->getThumbHtml($thumbSize);
-            if ($thumbHtml && $size === self::ELEMENT_SIZE_SMALL && $element->getHasRoundedThumb()) {
-                $thumbHtml = Html::modifyTagAttributes($thumbHtml, [
-                    'class' => 'rounded',
-                ]);
-            }
         }
 
         $title = '';
@@ -640,7 +635,10 @@ class Cp
                 'title' => implode(', ', ArrayHelper::getColumn($elements, 'title')),
                 'class' => 'btn small',
                 'role' => 'button',
-                'onclick' => 'jQuery(this).replaceWith(' . Json::encode($otherHtml) . ')',
+                'onclick' => sprintf(
+                    'const r=jQuery(%s);jQuery(this).replaceWith(r);Craft.cp.elementThumbLoader.load(r);',
+                    Json::encode($otherHtml),
+                ),
             ]);
         }
 
