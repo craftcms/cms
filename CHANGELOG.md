@@ -11,6 +11,7 @@
 - Fixed a bug where some nested component names weren’t getting deleted from the `meta.__names__` array in the project config. ([#13456](https://github.com/craftcms/cms/issues/13456))
 - Fixed a bug where `craft\helpers\DateTimeHelper::toDateInterval()` didn’t support negative integers. ([#13463](https://github.com/craftcms/cms/pull/13463))
 - Fixed a bug where admin tables were initially displaying an empty results message rather than a loading spinner, when the initial data was loading via Ajax. ([#13459](https://github.com/craftcms/cms/issues/13459))
+- Fixed a bug where garbage collection could terminate prematurely if an exception was thrown when deleting a pending user. ([#13490](https://github.com/craftcms/cms/issues/13490))
 - Fixed an information disclosure vulnerability.
 
 ## 4.4.16.1 - 2023-07-19
