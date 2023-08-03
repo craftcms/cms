@@ -2087,6 +2087,15 @@ Craft.ElementEditor = Garnish.Base.extend(
                   }
                 }
 
+                // hide any tooltips that are no longer relevant
+                for (let userId of Object.keys(this.activityTooltips)) {
+                  if (
+                    !data.activity.find((activity) => activity.userId == userId)
+                  ) {
+                    this.activityTooltips[userId].hide();
+                  }
+                }
+
                 // if the element has been updated upstream, show a notification about it
                 const elementUpdated =
                   this.settings.updatedTimestamp &&
