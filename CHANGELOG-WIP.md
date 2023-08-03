@@ -77,6 +77,8 @@
 - Added `craft\services\Structures::ACTION_PREPEND`. ([#13429](https://github.com/craftcms/cms/pull/13429))
 - Added `craft\services\Structures::EVENT_AFTER_INSERT_ELEMENT`. ([#13429](https://github.com/craftcms/cms/pull/13429))
 - Added `craft\services\Structures::EVENT_BEFORE_INSERT_ELEMENT`. ([#13429](https://github.com/craftcms/cms/pull/13429))
+- Added `craft\web\Controller::EVENT_DEFINE_BEHAVIORS`. ([#13477](https://github.com/craftcms/cms/pull/13477))
+- Added `craft\web\Controller::defineBehaviors()`. ([#13477](https://github.com/craftcms/cms/pull/13477))
 - Added `craft\web\CpScreenResponseBehavior::$pageSidebar`, `pageSidebar()`, and `pageSidebarTemplate()`. ([#13019](https://github.com/craftcms/cms/pull/13019), [#12795](https://github.com/craftcms/cms/issues/12795))
 - Added `craft\web\CpScreenResponseBehavior::$slideoutBodyClass`.
 - `craft\helpers\Cp::selectizeFieldHtml()`, `selectizeHtml()`, and `_includes/forms/selectize.twig` now support a `multi` param. ([#13176](https://github.com/craftcms/cms/pull/13176))
