@@ -1286,7 +1286,6 @@ return [
     'The field type “{type}” could not be found.' => 'Impossibile individuare il tipo di campo "{type}".',
     'The file failed to upload to the server properly.' => 'Impossibile caricare il file sul server.',
     'The file “{name}” does not appear to be an image.' => 'Il file "{name}" non sembra essere un\'immagine.',
-    'The file “{path}” does not appear to be an image.' => 'Il file "{path}" non sembra essere un\'immagine.',
     'The following <a href="{url}">aliases</a> are defined:' => 'I seguenti <a href="{url}">alias</a> sono definiti:',
     'The following items were not indexed.' => 'I seguenti elementi non sono stati indicizzati.',
     'The following licensing issues can be resolved with a single purchase on Craft Console.' => 'I seguenti problemi di licenza possono essere risolti con un singolo acquisto sulla Console Craft.',

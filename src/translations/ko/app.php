@@ -1286,7 +1286,6 @@ return [
     'The field type “{type}” could not be found.' => '필드 형식 “{type}”을(를) 찾을 수 없습니다.',
     'The file failed to upload to the server properly.' => '파일이 서버에 올바르게 업로드되지 않았습니다.',
     'The file “{name}” does not appear to be an image.' => '“{name}” 파일은 이미지가 아닌 것 같습니다.',
-    'The file “{path}” does not appear to be an image.' => '“{path}” 파일은 이미지가 아닌 것 같습니다.',
     'The following <a href="{url}">aliases</a> are defined:' => '다음 <a href="{url}">별칭</a>이 정의되어 있습니다:',
     'The following items were not indexed.' => '다음 항목은 인덱싱되지 않았습니다.',
     'The following licensing issues can be resolved with a single purchase on Craft Console.' => '다음 라이선스 문제는 Craft 콘솔에서 하나를 구입하면 해결됩니다.',

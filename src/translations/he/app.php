@@ -1286,7 +1286,6 @@ return [
     'The field type “{type}” could not be found.' => 'סוג השדה "{type}" לא נמצא.',
     'The file failed to upload to the server properly.' => 'נכשלה העלאת הקובץ לשרת.',
     'The file “{name}” does not appear to be an image.' => 'נראה שהקובץ “{name}” אינו תמונה.',
-    'The file “{path}” does not appear to be an image.' => 'לא נראה שהקובץ “{path}” הוא קובץ תמונה.',
     'The following <a href="{url}">aliases</a> are defined:' => 'ה<a href="{url}">כינויים</a> הבאים מוגדרים:',
     'The following items were not indexed.' => 'הפריטים הבאים אינם מסומנים באינדקס.',
     'The following licensing issues can be resolved with a single purchase on Craft Console.' => 'בעיות הרישוי שלהלן ניתנות לפתרון באמצעות רכישה בודדת ב-Craft Console.',

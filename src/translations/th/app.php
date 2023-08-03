@@ -1286,7 +1286,6 @@ return [
     'The field type “{type}” could not be found.' => 'The field type “{type}” could not be found.',
     'The file failed to upload to the server properly.' => 'The file failed to upload to the server properly.',
     'The file “{name}” does not appear to be an image.' => 'The file “{name}” does not appear to be an image.',
-    'The file “{path}” does not appear to be an image.' => 'The file “{path}” does not appear to be an image.',
     'The following <a href="{url}">aliases</a> are defined:' => 'The following <a href="{url}">aliases</a> are defined:',
     'The following items were not indexed.' => 'The following items were not indexed.',
     'The following licensing issues can be resolved with a single purchase on Craft Console.' => 'ปัญหาด้านใบอนุญาตต่อไปนี้สามารถแก้ไขได้ด้วยการซื้อเพียงครั้งเดียวบน Craft Console',
