@@ -85,7 +85,10 @@ trait ControllerTrait
     public function runAction($id, $params = [])
     {
         try {
-            return parent::runAction($id, $params) ?? ExitCode::OK;
+            // *should* only be an int, but there are exceptions :/
+            /** @var int|null $response */
+            $response = parent::runAction($id, $params);
+            return $response ?? ExitCode::OK;
         } finally {
             if (isset($this->isolationMutexName)) {
                 Craft::$app->getMutex()->release($this->isolationMutexName);
