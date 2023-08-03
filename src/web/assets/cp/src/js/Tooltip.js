@@ -13,7 +13,6 @@ Craft.Tooltip = Garnish.Base.extend({
   hoverTimeout: null,
   triggerHit: false,
   shownViaHover: false,
-  ignoreFocus: false,
 
   init: function (trigger, message) {
     this.$trigger = $(trigger);
@@ -64,11 +63,6 @@ Craft.Tooltip = Garnish.Base.extend({
 
     this._$trigger = $trigger;
 
-    this._$trigger.on('focus', () => {
-      if (!this.ignoreFocus) {
-        this.show();
-      }
-    });
     this._$trigger.on('blur', () => {
       this.hide();
     });
@@ -80,9 +74,7 @@ Craft.Tooltip = Garnish.Base.extend({
         this.toggle();
       }
 
-      this.ignoreFocus = true;
       this._$trigger.focus();
-      this.ignoreFocus = false;
     });
 
     if (this.hud) {
