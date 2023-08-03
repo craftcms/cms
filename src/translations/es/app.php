@@ -1464,7 +1464,6 @@ return [
     'The field type “{type}” could not be found.' => 'No se ha podido encontrar el tipo de campo “{type}”.',
     'The file failed to upload to the server properly.' => 'El archivo no se cargó en el servidor correctamente.',
     'The file “{name}” does not appear to be an image.' => 'Parece que el archivo “{name}” no es una imagen.',
-    'The file “{path}” does not appear to be an image.' => 'Parece que el archivo “{path}” no es una imagen.',
     'The filesystem doesn’t contain any files.' => 'El sistema de archivos no contiene archivos.',
     'The following <a href="{url}">aliases</a> are defined:' => 'Se definen los <a href="{url}">alias</a> siguientes:',
     'The following licensing issues can be resolved with a single purchase on Craft Console.' => 'Los siguientes problemas de licencias se pueden resolver con una sola compra en Craft Console.',
