@@ -359,7 +359,7 @@ class RepairController extends Controller
         foreach ($metaNamesConfig as $key => $value) {
             // if the meta name uuid doesn't exist anywhere else in the project config - remove it from the meta names
             if (!str_contains($jsonConfig, $key)) {
-                $this->stdout("    - Removing meta name for UID $key ($value) ..." . PHP_EOL);
+                $this->stdout("    - Found orphaned meta name for UID $key ($value) ..." . PHP_EOL);
                 unset($metaNamesConfig[$key]);
                 $metaNamesChanged = true;
             }
@@ -369,7 +369,7 @@ class RepairController extends Controller
         }
 
         $this->stdout('Finished cleaning project config meta names' . PHP_EOL, Console::FG_GREEN);
-        
+
         return ExitCode::OK;
     }
 }
