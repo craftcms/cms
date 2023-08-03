@@ -273,7 +273,7 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
         }
 
         // remove settings that shouldn't be here
-        unset($config['allowMultipleSources'], $config['allowLimit'], $config['allowLargeThumbsView']);
+        unset($config['allowMultipleSources'], $config['allowLimit'], $config['allowLargeThumbsView'], $config['sortable']);
         if ($this->allowMultipleSources) {
             unset($config['source']);
         } else {
@@ -374,7 +374,7 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
         $settings = parent::getSettings();
 
         // cleanup
-        unset($settings['allowMultipleSources'], $settings['allowLimit'], $settings['allowLargeThumbsView']);
+        unset($settings['allowMultipleSources'], $settings['allowLimit'], $settings['allowLargeThumbsView'], $settings['sortable']);
         if ($this->allowMultipleSources) {
             unset($settings['source']);
         } else {
@@ -582,7 +582,7 @@ JS, [
                 ]
             );
 
-            if ($this->sortable) {
+            if ($this->sortable && !$this->maintainHierarchy) {
                 $query->orderBy(['relations.sortOrder' => SORT_ASC]);
             }
 
@@ -803,22 +803,22 @@ JS, [
             return '<p class="light">' . Craft::t('app', 'Nothing selected.') . '</p>';
         }
 
+        $size = Cp::ELEMENT_SIZE_SMALL;
+        $viewMode = $this->viewMode();
+        if ($viewMode == 'large') {
+            $size = Cp::ELEMENT_SIZE_LARGE;
+        }
+
         $view = Craft::$app->getView();
         $id = $this->getInputId();
-        $html = "<div id='$id' class='elementselect'><div class='elements'>";
+        $html = "<div id='$id' class='elementselect'>" .
+            "<div class='elements" . ($size === Cp::ELEMENT_SIZE_LARGE ? ' flex-row flex-wrap' : '') . "'>";
 
         foreach ($value as $relatedElement) {
-            $html .= Cp::elementHtml($relatedElement);
+            $html .= Cp::elementHtml($relatedElement, size: $size);
         }
 
         $html .= '</div></div>';
-
-        $nsId = $view->namespaceInputId($id);
-        $js = <<<JS
-(new Craft.ElementThumbLoader()).load($('#$nsId'));
-JS;
-        $view->registerJs($js);
-
         return $html;
     }
 
@@ -970,6 +970,8 @@ JS;
                     ->revisions(null)
                     ->provisionalDrafts(null)
                     ->status(null)
+                    ->site('*')
+                    ->unique()
                     ->all();
 
                 // Fill in any gaps
@@ -986,8 +988,8 @@ JS;
             /** @var int|int[]|false|null $targetIds */
             Craft::$app->getRelations()->saveRelations($this, $element, $targetIds);
 
-            // Reset the field value if this is a new element
-            if ($isNew) {
+            // Reset the field value?
+            if ($element->duplicateOf !== null || $element->mergingCanonicalChanges || $isNew) {
                 $element->setFieldValue($this->handle, null);
             }
 
@@ -1244,7 +1246,7 @@ JS;
             'limit' => $this->allowLimit ? $this->maxRelations : null,
             'viewMode' => $this->viewMode(),
             'selectionLabel' => $this->selectionLabel ? Craft::t('site', $this->selectionLabel) : static::defaultSelectionLabel(),
-            'sortable' => $this->sortable,
+            'sortable' => $this->sortable && !$this->maintainHierarchy,
             'prevalidate' => $this->validateRelatedElements,
             'modalSettings' => [
                 'defaultSiteId' => $element->siteId ?? null,

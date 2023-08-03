@@ -83,11 +83,6 @@ export default Base.extend(
         this.$hud.css('position', 'absolute');
       }
 
-      // Hide the HUD until it gets positioned
-      this.$hud.css('opacity', 0);
-      this.show();
-      this.$hud.css('opacity', 1);
-
       this.addListener(this.$body, 'submit', '_handleSubmit');
 
       if (this.settings.hideOnShadeClick) {
@@ -147,6 +142,15 @@ export default Base.extend(
           this.$nextFocusableElement.focus();
         }
       });
+
+      if (this.settings.showOnInit) {
+        // Hide the HUD until it gets positioned
+        this.$hud.css('opacity', 0);
+        this.show();
+        this.$hud.css('opacity', 1);
+      } else {
+        this.$hud.appendTo(Garnish.$bod).hide();
+      }
     },
 
     /**
@@ -654,6 +658,7 @@ export default Base.extend(
       onHide: $.noop,
       onSubmit: $.noop,
       closeBtn: null,
+      showOnInit: true,
       closeOtherHUDs: true,
       hideOnEsc: true,
       hideOnShadeClick: true,

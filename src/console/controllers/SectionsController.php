@@ -229,7 +229,7 @@ class SectionsController extends Controller
         if ($saveEntryType) {
             $this->do('Saving the entry type', function() use ($entryType, $sourceFieldLayout) {
                 if ($sourceFieldLayout) {
-                    $fieldLayout = FieldLayout::createFromConfig($sourceFieldLayout->getConfig());
+                    $fieldLayout = FieldLayout::createFromConfig($sourceFieldLayout->getConfig() ?? []);
                     foreach ($fieldLayout->getTabs() as $tab) {
                         $tab->uid = StringHelper::UUID();
                         foreach ($tab->getElements() as $element) {

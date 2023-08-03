@@ -10,9 +10,7 @@ namespace craft\elements\actions;
 use Craft;
 use craft\base\ElementAction;
 use craft\base\ElementInterface;
-use craft\db\Table;
 use craft\elements\db\ElementQueryInterface;
-use craft\helpers\Db;
 use craft\helpers\Html;
 
 /**
@@ -185,24 +183,13 @@ JS, [static::class]);
                             $elementsService->canView($descendant, $user) &&
                             $elementsService->canDelete($descendant, $user)
                         ) {
-                            $elementsService->deleteElement($descendant);
+                            $elementsService->deleteElement($descendant, $this->hard);
                             $deletedElementIds[$descendant->id] = true;
                         }
                     }
                 }
-                $elementsService->deleteElement($element);
+                $elementsService->deleteElement($element, $this->hard);
                 $deletedElementIds[$element->id] = true;
-            }
-        }
-
-        if ($this->hard) {
-            if (!empty($deletedElementIds)) {
-                Db::delete(Table::ELEMENTS, [
-                    'id' => array_keys($deletedElementIds),
-                ]);
-                Db::delete(Table::SEARCHINDEX, [
-                    'elementId' => array_keys($deletedElementIds),
-                ]);
             }
         }
 

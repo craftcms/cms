@@ -10,6 +10,7 @@ namespace craft\behaviors;
 use Craft;
 use craft\base\ElementInterface;
 use craft\base\FieldInterface;
+use craft\base\FieldLayoutProviderInterface;
 use craft\models\FieldLayout;
 use yii\base\Behavior;
 use yii\base\InvalidConfigException;
@@ -115,13 +116,22 @@ class FieldLayoutBehavior extends Behavior
         try {
             $id = $this->getFieldLayoutId();
         } catch (InvalidConfigException) {
-            return $this->_fieldLayout = new FieldLayout([
+            $id = null;
+        }
+
+        if ($id) {
+            $fieldLayout = Craft::$app->getFields()->getLayoutById($id);
+            if (!$fieldLayout) {
+                throw new InvalidConfigException('Invalid field layout ID: ' . $id);
+            }
+        } else {
+            $fieldLayout = new FieldLayout([
                 'type' => $this->elementType,
             ]);
         }
 
-        if (($fieldLayout = Craft::$app->getFields()->getLayoutById($id)) === null) {
-            throw new InvalidConfigException('Invalid field layout ID: ' . $id);
+        if ($this->owner instanceof FieldLayoutProviderInterface) {
+            $fieldLayout->provider = $this->owner;
         }
 
         return $this->_fieldLayout = $fieldLayout;

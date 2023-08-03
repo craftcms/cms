@@ -10,6 +10,8 @@ namespace craft\web\twig\variables;
 use Craft;
 use craft\base\FsInterface;
 use craft\base\UtilityInterface;
+use craft\enums\LicenseKeyStatus;
+use craft\errors\InvalidPluginException;
 use craft\events\FormActionsEvent;
 use craft\events\RegisterCpNavItemsEvent;
 use craft\events\RegisterCpSettingsEvent;
@@ -496,6 +498,105 @@ class Cp extends Component
     public function getAlerts(): array
     {
         return CpHelper::alerts(Craft::$app->getRequest()->getPathInfo());
+    }
+
+    /**
+     * Returns info about the active trials.
+     *
+     * @return array|null
+     * @since 4.4.15
+     */
+    public function trialInfo(): ?array
+    {
+        $cache = Craft::$app->getCache();
+        $updatesService = Craft::$app->getUpdates();
+
+        if (!$cache->exists('licenseInfo') && $updatesService->getIsUpdateInfoCached()) {
+            return null;
+        }
+
+        $resolvableLicenseItems = [];
+        $hasCraftTrial = false;
+        $trialPluginCount = 0;
+        $trialPluginNames = [];
+        $allLicenseInfo = $cache->get('licenseInfo') ?: [];
+        $pluginsService = Craft::$app->getPlugins();
+
+        foreach ($allLicenseInfo as $handle => $licenseInfo) {
+            $isCraft = $handle === 'craft';
+
+            if ($isCraft) {
+                $editions = ['solo', 'pro'];
+                $currentEdition = Craft::$app->getEditionHandle();
+            } else {
+                if (!str_starts_with($handle, 'plugin-')) {
+                    continue;
+                }
+                $handle = StringHelper::removeLeft($handle, 'plugin-');
+
+                try {
+                    $pluginInfo = $pluginsService->getPluginInfo($handle);
+                } catch (InvalidPluginException $e) {
+                    continue;
+                }
+
+                $plugin = $pluginsService->getPlugin($handle);
+                if (!$plugin) {
+                    continue;
+                }
+
+                $pluginName = $plugin->name;
+                $editions = $plugin::editions();
+                $currentEdition = $pluginInfo['edition'];
+            }
+
+            $resolvableLicenseItem = null;
+
+            if ($licenseInfo['status'] === LicenseKeyStatus::Trial) {
+                $resolvableLicenseItem = array_filter([
+                    'type' => $isCraft ? 'cms-edition' : 'plugin-edition',
+                    'plugin' => !$isCraft ? $handle : null,
+                    'licenseId' => $licenseInfo['id'],
+                    'edition' => $currentEdition,
+                ]);
+            } elseif ($licenseInfo['edition'] !== $currentEdition) {
+                $currentEditionIdx = array_search($currentEdition, $editions);
+                $licenseEditionIdx = array_search($licenseInfo['edition'], $editions);
+                if ($currentEditionIdx !== false && $licenseEditionIdx !== false && $currentEditionIdx > $licenseEditionIdx) {
+                    $resolvableLicenseItem = [
+                        'type' => $isCraft ? 'cms-edition' : 'plugin-edition',
+                        'edition' => $currentEdition,
+                        'licenseId' => $licenseInfo['id'],
+                    ];
+                }
+            }
+
+            if ($resolvableLicenseItem) {
+                $resolvableLicenseItems[] = $resolvableLicenseItem;
+                if ($isCraft) {
+                    $hasCraftTrial = true;
+                } else {
+                    $trialPluginCount++;
+                    /** @phpstan-ignore-next-line */
+                    $trialPluginNames[] = $pluginName;
+                }
+            }
+        }
+
+        if (empty($resolvableLicenseItems)) {
+            return null;
+        }
+
+        $consoleUrl = rtrim(Craft::$app->getPluginStore()->craftIdEndpoint, '/');
+
+        return [
+            'hasCraftTrial' => $hasCraftTrial,
+            'trialPluginCount' => $trialPluginCount,
+            'trialPluginNames' => $trialPluginNames,
+            'cartUrl' => UrlHelper::urlWithParams("$consoleUrl/cart/new", [
+                'items' => $resolvableLicenseItems,
+            ]),
+        ];
     }
 
     /**

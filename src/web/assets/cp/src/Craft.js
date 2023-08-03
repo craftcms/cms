@@ -16,6 +16,7 @@ import './js/BaseElementIndexView.js';
 import './js/BaseElementSelectInput.js';
 import './js/BaseElementSelectorModal.js';
 import './js/BaseInputGenerator.js';
+import './js/BaseUploader.js';
 
 // Slideouts
 import './js/Slideout.js';
@@ -24,6 +25,9 @@ import './js/ElementEditorSlideout.js';
 
 // Tabs
 import './js/Tabs.js';
+
+// Element thumb loader
+import './js/ElementThumbLoader.js';
 
 // Finally load the remaining files
 import './js/Accordion';
@@ -34,6 +38,7 @@ import './js/AssetIndex.js';
 import './js/AssetMover.js';
 import './js/AssetSelectInput.js';
 import './js/AssetSelectorModal.js';
+import './js/AssetsFieldSettings';
 import './js/AuthManager.js';
 import './js/CP.js';
 import './js/CategoryIndex.js';
@@ -48,7 +53,6 @@ import './js/EditableTable.js';
 import './js/ElementActionTrigger.js';
 import './js/ElementEditor.js';
 import './js/ElementFieldSettings.js';
-import './js/ElementThumbLoader.js';
 import './js/ElevatedSessionForm.js';
 import './js/ElevatedSessionManager.js';
 import './js/EntryIndex.js';

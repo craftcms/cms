@@ -872,8 +872,8 @@ class EntryQuery extends ElementQuery
             }
         }
 
-        $this->_applyAuthParam($this->editable, 'viewEntries', 'viewPeerEntries');
-        $this->_applyAuthParam($this->savable, 'saveEntries', 'savePeerEntries');
+        $this->_applyAuthParam($this->editable, 'viewEntries', 'viewPeerEntries', 'viewPeerEntryDrafts');
+        $this->_applyAuthParam($this->savable, 'saveEntries', 'savePeerEntries', 'savePeerEntryDrafts');
         $this->_applySectionIdParam();
         $this->_applyRefParam();
 
@@ -931,10 +931,15 @@ class EntryQuery extends ElementQuery
      * @param bool|null $value
      * @param string $permissionPrefix
      * @param string $peerPermissionPrefix
+     * @param string $peerDraftPermissionPrefix
      * @throws QueryAbortedException
      */
-    private function _applyAuthParam(?bool $value, string $permissionPrefix, string $peerPermissionPrefix): void
-    {
+    private function _applyAuthParam(
+        ?bool $value,
+        string $permissionPrefix,
+        string $peerPermissionPrefix,
+        string $peerDraftPermissionPrefix,
+    ): void {
         if ($value === null) {
             return;
         }
@@ -945,69 +950,71 @@ class EntryQuery extends ElementQuery
             throw new QueryAbortedException();
         }
 
+        $sections = Craft::$app->getSections()->getAllSections();
+
+        if (empty($sections)) {
+            return;
+        }
+
+        $sectionConditions = [];
         $fullyAuthorizedSectionIds = [];
-        $partiallyAuthorizedSectionIds = [];
-        $unauthorizedSectionIds = [];
 
-        foreach (Craft::$app->getSections()->getAllSections() as $section) {
-            if ($section->type === Section::TYPE_SINGLE) {
-                // Singles don't have peer permissions
-                if ($user->can("$permissionPrefix:$section->uid")) {
-                    $fullyAuthorizedSectionIds[] = $section->id;
-                } else {
-                    $unauthorizedSectionIds[] = $section->id;
+        foreach ($sections as $section) {
+            if (!$user->can("$permissionPrefix:$section->uid")) {
+                continue;
+            }
+
+            $excludePeerEntries = $section->type !== Section::TYPE_SINGLE && !$user->can("$peerPermissionPrefix:$section->uid");
+            $excludePeerDrafts = $this->drafts !== false && !$user->can("$peerDraftPermissionPrefix:$section->uid");
+
+            if ($excludePeerEntries || $excludePeerDrafts) {
+                $sectionCondition = [
+                    'and',
+                    ['entries.sectionId' => $section->id],
+                ];
+                if ($excludePeerEntries) {
+                    $sectionCondition[] = ['entries.authorId' => $user->id];
                 }
+                if ($excludePeerDrafts) {
+                    $sectionCondition[] = [
+                        'or',
+                        ['elements.draftId' => null],
+                        ['drafts.creatorId' => $user->id],
+                    ];
+                }
+                $sectionConditions[] = $sectionCondition;
             } else {
-                if ($user->can("$peerPermissionPrefix:$section->uid")) {
-                    $fullyAuthorizedSectionIds[] = $section->id;
-                } elseif ($user->can("$permissionPrefix:$section->uid")) {
-                    $partiallyAuthorizedSectionIds[] = $section->id;
-                } else {
-                    $unauthorizedSectionIds[] = $section->id;
+                $fullyAuthorizedSectionIds[] = $section->id;
+            }
+        }
+
+        if (!empty($fullyAuthorizedSectionIds)) {
+            if (count($fullyAuthorizedSectionIds) === count($sections)) {
+                // They have access to everything
+                if (!$value) {
+                    throw new QueryAbortedException();
                 }
+                return;
             }
+
+            $sectionConditions[] = ['entries.sectionId' => $fullyAuthorizedSectionIds];
         }
 
-        if ($value) {
-            if (!$fullyAuthorizedSectionIds && !$partiallyAuthorizedSectionIds) {
+        if (empty($sectionConditions)) {
+            // They don't have access to anything
+            if ($value) {
                 throw new QueryAbortedException();
             }
-
-            $this->subQuery->andWhere(array_filter([
-                'or',
-                $fullyAuthorizedSectionIds
-                    ? ['entries.sectionId' => $fullyAuthorizedSectionIds]
-                    : null,
-                $partiallyAuthorizedSectionIds
-                    ? [
-                    'entries.sectionId' => $partiallyAuthorizedSectionIds,
-                    'entries.authorId' => $user->id,
-                ]
-                    : null,
-            ]));
-        } else {
-            if (!$unauthorizedSectionIds && !$partiallyAuthorizedSectionIds) {
-                throw new QueryAbortedException();
-            }
-
-            $this->subQuery->andWhere(array_filter([
-                'or',
-                $unauthorizedSectionIds
-                    ? ['entries.sectionId' => $unauthorizedSectionIds]
-                    : null,
-                $partiallyAuthorizedSectionIds
-                    ? [
-                        'and',
-                        ['entries.sectionId' => $partiallyAuthorizedSectionIds],
-                        [
-                            'or',
-                            ['not', ['entries.authorId' => $user->id]],
-                            ['entries.authorId' => null],
-                        ],
-                    ]
-                    : null,
-            ]));
+            return;
         }
+
+        $condition = ['or', ...$sectionConditions];
+
+        if (!$value) {
+            $condition = ['not', $condition];
+        }
+
+        $this->subQuery->andWhere($condition);
     }
 
     /**

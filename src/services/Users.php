@@ -798,6 +798,7 @@ class Users extends Component
         }
 
         $originalUser = clone $user;
+        $user->setScenario(User::SCENARIO_ACTIVATION);
         $user->active = true;
         $user->pending = false;
         $user->locked = false;
@@ -1188,6 +1189,7 @@ class Users extends Component
         $userRecord->save();
 
         $originalUser = clone $user;
+        $user->setScenario(User::SCENARIO_ACTIVATION);
         $user->pending = $userRecord->pending;
         $user->verificationCode = $hashedCode;
         $user->verificationCodeIssuedDate = $issueDate;

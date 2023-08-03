@@ -41,16 +41,15 @@ class AddressType extends Generator implements GeneratorInterface, SingleGenerat
      */
     public static function generateType(mixed $context): ObjectType
     {
-        // Users don't have different types, so the context for a user will be the same every time.
-        $context = $context ?: Craft::$app->getFields()->getLayoutByType(AddressElement::class);
-
         $typeName = AddressElement::gqlTypeNameByContext(null);
-        $contentFieldGqlTypes = self::getContentFields($context);
-        $addressFields = array_merge(AddressInterface::getFieldDefinitions(), $contentFieldGqlTypes);
 
-        return GqlEntityRegistry::getEntity($typeName) ?: GqlEntityRegistry::createEntity($typeName, new Address([
+        return GqlEntityRegistry::getOrCreate($typeName, fn() => new Address([
             'name' => $typeName,
-            'fields' => function() use ($addressFields, $typeName) {
+            'fields' => function() use ($context, $typeName) {
+                // Users don't have different types, so the context for a user will be the same every time.
+                $context ??= Craft::$app->getFields()->getLayoutByType(AddressElement::class);
+                $contentFieldGqlTypes = self::getContentFields($context);
+                $addressFields = array_merge(AddressInterface::getFieldDefinitions(), $contentFieldGqlTypes);
                 return Craft::$app->getGql()->prepareFieldDefinitions($addressFields, $typeName);
             },
         ]));

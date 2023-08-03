@@ -76,7 +76,10 @@ export default Base.extend({
     let layerIndex;
 
     $(this.layers).each(function (index) {
-      if (this.$container.get(0) === $(layer).get(0)) {
+      if (
+        this.$container !== null &&
+        this.$container.get(0) === $(layer).get(0)
+      ) {
         layerIndex = index;
         return false;
       }

@@ -170,7 +170,20 @@ abstract class Controller extends \yii\web\Controller
             return false;
         }
 
-        // Enforce $allowAnonymous
+        $this->_enforceAllowAnonymous($action);
+
+        return true;
+    }
+
+    private function _enforceAllowAnonymous(Action $action): void
+    {
+        $isCpRequest = $this->request->getIsCpRequest();
+
+        // If a valid site token was passed, grant them access
+        if (!$isCpRequest && $this->request->hasValidSiteToken()) {
+            return;
+        }
+
         $isLive = Craft::$app->getIsLive();
         $test = $isLive ? self::ALLOW_ANONYMOUS_LIVE : self::ALLOW_ANONYMOUS_OFFLINE;
 
@@ -182,7 +195,7 @@ abstract class Controller extends \yii\web\Controller
 
         if (!($test & $allowAnonymous)) {
             // If this is a control panel request, make sure they have access to the control panel
-            if ($this->request->getIsCpRequest()) {
+            if ($isCpRequest) {
                 $this->requireLogin();
                 $this->requirePermission('accessCp');
             } elseif (Craft::$app->getUser()->getIsGuest()) {
@@ -208,8 +221,6 @@ abstract class Controller extends \yii\web\Controller
                 }
             }
         }
-
-        return true;
     }
 
     /**

@@ -228,9 +228,9 @@ class GeneralConfig extends BaseConfig
      *
      * ```php Static Config
      * // Nothing bug GIFs!
-     * 'allowedFileExtensions' => [
+     * ->allowedFileExtensions([
      *     'gif',
-     * ],
+     * ])
      * ```
      *
      * @see extraAllowedFileExtensions
@@ -393,7 +393,7 @@ class GeneralConfig extends BaseConfig
      *
      * ::: code
      * ```php Static Config
-     * 'autosaveDrafts' => false,
+     * ->autosaveDrafts(false)
      * ```
      * ```shell Environment Override
      * CRAFT_AUTOSAVE_DRAFTS=false
@@ -429,12 +429,13 @@ class GeneralConfig extends BaseConfig
      * When set to `null` (default), Craft will run `mysqldump` or `pg_dump`, provided that those libraries are in the `$PATH` variable
      * for the system user running the web server.
      *
-     * You may provide your own command optionally using several tokens Craft will swap out at runtime:
+     * You may provide your own command, which can include several tokens Craft will substitute at runtime:
      *
-     * - `{path}` - the target backup file path
+     * - `{file}` - the target backup file path
      * - `{port}` - the current database port
      * - `{server}` - the current database hostname
-     * - `{user}` - the user to connect to the database
+     * - `{user}` - user that was used to connect to the database
+     * - `{password}` - password for the specified `{user}`
      * - `{database}` - the current database name
      * - `{schema}` - the current database schema (if any)
      *
@@ -826,7 +827,7 @@ class GeneralConfig extends BaseConfig
      * ::: code
      * ```php Static Config
      * // One week
-     * 'defaultTokenDuration' => 604800,
+     * ->defaultTokenDuration(604800)
      * ```
      * ```shell Environment Override
      * # One week
@@ -1231,7 +1232,7 @@ class GeneralConfig extends BaseConfig
      *
      * ::: code
      * ```php Static Config
-     * 'extraLastNamePrefixes' => ['Dal', 'Van Der'],
+     * ->extraLastNamePrefixes(['Dal', 'Van Der'])
      * ```
      * ```shell Environment Override
      * CRAFT_EXTRA_LAST_NAME_PREFIXES="Dal,Van Der"
@@ -1248,7 +1249,7 @@ class GeneralConfig extends BaseConfig
      *
      * ::: code
      * ```php Static Config
-     * 'extraNameSalutations' => ['Lady', 'Sire'],
+     * ->extraNameSalutations(['Lady', 'Sire'])
      * ```
      * ```shell Environment Override
      * CRAFT_EXTRA_NAME_SALUTATIONS=Lady,Sire
@@ -1265,7 +1266,7 @@ class GeneralConfig extends BaseConfig
      *
      * ::: code
      * ```php Static Config
-     * 'extraNameSuffixes' => ['CCNA', 'OBE'],
+     * ->extraNameSuffixes(['CCNA', 'OBE'])
      * ```
      * ```shell Environment Override
      * CRAFT_EXTRA_NAME_SUFFIXES=CCNA,OBE
@@ -1470,7 +1471,7 @@ class GeneralConfig extends BaseConfig
      * ::: code
      * ```php Static Config
      * // 1 day
-     * 'invalidLoginWindowDuration' => 86400,
+     * ->invalidLoginWindowDuration(86400)
      * ```
      * ```shell Environment Override
      * # 1 day
@@ -1492,7 +1493,7 @@ class GeneralConfig extends BaseConfig
      * ::: code
      * ```php Static Config
      * // 1 day
-     * 'invalidUserTokenPath' => 'nope',
+     * ->invalidUserTokenPath('nope')
      * ```
      * ```shell Environment Override
      * # 1 day
@@ -1751,7 +1752,7 @@ class GeneralConfig extends BaseConfig
      * ::: code
      * ```php Static Config
      * // 25MB
-     * 'maxUploadFileSize' => 26214400,
+     * ->maxUploadFileSize(26214400)
      * ```
      * ```shell Environment Override
      * # 25MB
@@ -2127,7 +2128,7 @@ class GeneralConfig extends BaseConfig
      * ::: code
      * ```php Static Config
      * // 1 hour
-     * 'previewTokenDuration' => 3600,
+     * ->previewTokenDuration(3600)
      * ```
      * ```shell Environment Override
      * # 1 hour
@@ -2176,7 +2177,7 @@ class GeneralConfig extends BaseConfig
      * ::: code
      * ```php Static Config
      * // 2 weeks
-     * 'purgePendingUsersDuration' => 1209600,
+     * ->purgePendingUsersDuration(1209600)
      * ```
      * ```shell Environment Override
      * # 2 weeks
@@ -2198,7 +2199,7 @@ class GeneralConfig extends BaseConfig
      * ::: code
      * ```php Static Config
      * // 1 week
-     * 'purgeStaleUserSessionDuration' => 604800,
+     * ->purgeStaleUserSessionDuration(604800)
      * ```
      * ```shell Environment Override
      * # 1 week
@@ -2468,7 +2469,8 @@ class GeneralConfig extends BaseConfig
     public bool $sanitizeCpImageUploads = true;
 
     /**
-     * @var 'None'|'Lax'|'Strict'|null The [SameSite](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Set-Cookie/SameSite) value that should be set on Craft cookies, if any.
+     * @var string|null The [SameSite](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Set-Cookie/SameSite) value that should be set on Craft cookies, if any.
+     * @phpstan-var 'None'|'Lax'|'Strict'|null
      *
      * This can be set to `'None'`, `'Lax'`, `'Strict'`, or `null`.
      *
@@ -3009,7 +3011,7 @@ class GeneralConfig extends BaseConfig
      * ::: code
      * ```php Static Config
      * // 3 hours
-     * 'userSessionDuration' => 10800,
+     * ->userSessionDuration(10800)
      * ```
      * ```shell Environment Override
      * # 3 hours
@@ -3051,7 +3053,7 @@ class GeneralConfig extends BaseConfig
      * ::: code
      * ```php Static Config
      * // 1 hour
-     * 'verificationCodeDuration' => 3600,
+     * ->verificationCodeDuration(3600)
      * ```
      * ```shell Environment Override
      * # 1 hour
@@ -3444,12 +3446,13 @@ class GeneralConfig extends BaseConfig
      * When set to `null` (default), Craft will run `mysqldump` or `pg_dump`, provided that those libraries are in the `$PATH` variable
      * for the system user running the web server.
      *
-     * You may provide your own command optionally using several tokens Craft will swap out at runtime:
+     * You may provide your own command, which can include several tokens Craft will substitute at runtime:
      *
-     * - `{path}` - the target backup file path
+     * - `{file}` - the target backup file path
      * - `{port}` - the current database port
      * - `{server}` - the current database hostname
-     * - `{user}` - the user to connect to the database
+     * - `{user}` - user that was used to connect to the database
+     * - `{password}` - password for the specified `{user}`
      * - `{database}` - the current database name
      * - `{schema}` - the current database schema (if any)
      *

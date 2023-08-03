@@ -230,7 +230,7 @@ Craft.PreviewFileModal = Garnish.Modal.extend(
         })
         .catch(({response}) => {
           onResponse();
-          alert(response.data.message);
+          Craft.cp.displayError(response.data.message);
           this.hide();
         });
     },

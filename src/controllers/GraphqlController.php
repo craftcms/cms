@@ -18,6 +18,7 @@ use craft\helpers\Json;
 use craft\helpers\UrlHelper;
 use craft\models\GqlSchema;
 use craft\models\GqlToken;
+use craft\models\Site;
 use craft\services\Gql as GqlService;
 use craft\web\assets\graphiql\GraphiqlAsset;
 use craft\web\Controller;
@@ -59,13 +60,17 @@ class GraphqlController extends Controller
             throw new NotFoundHttpException(Craft::t('yii', 'Page not found.'));
         }
 
-        Craft::$app->requireEdition(Craft::Pro);
-
         if ($action->id === 'api') {
             $this->enableCsrfValidation = false;
         }
 
-        return parent::beforeAction($action);
+        if (!parent::beforeAction($action)) {
+            return false;
+        }
+
+        Craft::$app->requireEdition(Craft::Pro);
+
+        return true;
     }
 
     /**
@@ -109,6 +114,9 @@ class GraphqlController extends Controller
 
         $gqlService = Craft::$app->getGql();
         $schema = $this->_schema($gqlService);
+
+        $this->_enforceSiteAccess($schema);
+
         $query = $operationName = $variables = null;
 
         // Check the body if it's a POST request
@@ -280,6 +288,45 @@ class GraphqlController extends Controller
         }
 
         return $token->getIsValid() ? $token : null;
+    }
+
+    /**
+     * Enforce site access based on used schema.
+     *
+     * @param GqlSchema $schema
+     * @return void
+     * @throws ForbiddenHttpException
+     * @throws \craft\errors\SiteNotFoundException
+     */
+    private function _enforceSiteAccess(GqlSchema $schema): void
+    {
+        $sitesService = Craft::$app->getSites();
+        $allowedSites = GqlHelper::getAllowedSites($schema);
+        $allowedSiteIds = array_flip(array_map(fn(Site $site) => $site->id, $allowedSites));
+
+        // check if schema has access to the current site
+        $currentSite = $sitesService->getCurrentSite();
+        if (isset($allowedSiteIds[$currentSite->id])) {
+            return;
+        }
+
+        // if not, check if it has access to the primary site (if different from the current site)
+        $primarySite = $sitesService->getPrimarySite();
+        if ($currentSite->id !== $primarySite->id && isset($allowedSiteIds[$primarySite->id])) {
+            $sitesService->setCurrentSite($primarySite);
+            return;
+        }
+
+        // otherwise, loop through all sites until we find one that the token has access to
+        foreach ($sitesService->getAllSites() as $site) {
+            if (isset($allowedSiteIds[$site->id])) {
+                $sitesService->setCurrentSite($site);
+                return;
+            }
+        }
+
+        // no allowed sites could be found, so throw a ForbiddenHttpException
+        throw new ForbiddenHttpException(sprintf('Schema doesn’t have access to the “%s” site.', $currentSite->getName()));
     }
 
     /**

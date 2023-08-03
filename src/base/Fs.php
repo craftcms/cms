@@ -60,6 +60,22 @@ abstract class Fs extends SavableComponent implements FsInterface
     /**
      * @inheritdoc
      */
+    public function getShowHasUrlSetting(): bool
+    {
+        return static::$showHasUrlSetting;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getShowUrlSetting(): bool
+    {
+        return static::$showUrlSetting;
+    }
+
+    /**
+     * @inheritdoc
+     */
     protected function defineRules(): array
     {
         $rules = parent::defineRules();

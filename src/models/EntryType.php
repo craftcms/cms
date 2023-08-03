@@ -9,6 +9,7 @@ namespace craft\models;
 
 use Craft;
 use craft\base\Field;
+use craft\base\FieldLayoutProviderInterface;
 use craft\base\Model;
 use craft\behaviors\FieldLayoutBehavior;
 use craft\elements\Entry;
@@ -25,7 +26,7 @@ use yii\base\InvalidConfigException;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
-class EntryType extends Model
+class EntryType extends Model implements FieldLayoutProviderInterface
 {
     /**
      * @var int|null ID
@@ -130,14 +131,14 @@ class EntryType extends Model
             UniqueValidator::class,
             'targetClass' => EntryTypeRecord::class,
             'targetAttribute' => ['name', 'sectionId'],
-            'comboNotUnique' => Craft::t('yii', '{attribute} "{value}" has already been taken.'),
+            'message' => Craft::t('yii', '{attribute} "{value}" has already been taken.'),
         ];
         $rules[] = [
             ['handle'],
             UniqueValidator::class,
             'targetClass' => EntryTypeRecord::class,
             'targetAttribute' => ['handle', 'sectionId'],
-            'comboNotUnique' => Craft::t('yii', '{attribute} "{value}" has already been taken.'),
+            'message' => Craft::t('yii', '{attribute} "{value}" has already been taken.'),
         ];
         $rules[] = [['fieldLayout'], 'validateFieldLayout'];
 
@@ -175,6 +176,16 @@ class EntryType extends Model
     public function __toString(): string
     {
         return (string)$this->handle ?: static::class;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getFieldLayout(): FieldLayout
+    {
+        /** @var FieldLayoutBehavior $behavior */
+        $behavior = $this->getBehavior('fieldLayout');
+        return $behavior->getFieldLayout();
     }
 
     /**

@@ -56,7 +56,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
     siteMenu: null,
     siteId: null,
 
-    _sourcePath: null,
+    sourcePaths: null,
     $sourcePathOuterContainer: null,
     $sourcePathInnerContainer: null,
     $sourcePathOverflowBtnContainer: null,
@@ -113,6 +113,8 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       this.elementType = elementType;
       this.$container = $container;
       this.setSettings(settings, Craft.BaseElementIndex.defaults);
+
+      this.sourcePaths = {};
 
       // Define an ID prefix that can be used for dynamically created elements
       // ---------------------------------------------------------------------
@@ -346,15 +348,70 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       // Select the initial source + source path
       // ---------------------------------------------------------------------
 
+      // Grab the localStorage step key up front, so we don's lose track of it when the default source's default
+      // source path is selected
+      const stepKey = this.getSelectedSourceState('sourcePathStep');
+
       this.selectDefaultSource();
 
       const sourcePath = this.getDefaultSourcePath();
-      if (sourcePath !== null) {
-        this.sourcePath = sourcePath;
+
+      // If no default source path was explicitly configured, use the localStorage key
+      if (!sourcePath && stepKey) {
+        this.loadSourcePathByKey(stepKey).then((sourcePath) => {
+          if (sourcePath) {
+            // Filter out any source path steps that are above the source's root
+            const lastSourceKey = this.sourceKey.split('/').slice(-1)[0];
+            const sourceRootIndex = sourcePath.findIndex(
+              (p) => p.key === lastSourceKey
+            );
+            if (sourceRootIndex !== -1) {
+              this.sourcePath = sourcePath.slice(sourceRootIndex);
+            }
+          }
+          this.afterSetInitialSource(queryParams);
+        });
+      } else {
+        if (sourcePath) {
+          this.sourcePath = sourcePath;
+        }
+        this.afterSetInitialSource(queryParams);
       }
+    },
+
+    afterInit: function () {
+      this.onAfterInit();
+    },
+
+    loadSourcePathByKey: function (stepKey) {
+      return new Promise((resolve, reject) => {
+        // If the step key is equal to the current source key, then it represents the root. No source path needed.
+        if (stepKey === this.sourceKey) {
+          resolve([]);
+          return;
+        }
+
+        const params = this.getViewParams();
+        params.stepKey = stepKey;
+
+        Craft.sendActionRequest('POST', 'element-indexes/source-path', {
+          data: params,
+        })
+          .then(({data}) => {
+            resolve(data.sourcePath);
+          })
+          .catch(reject);
+      });
+    },
+
+    afterSetInitialSource: function (queryParams) {
+      // Resize handler
+      // ---------------------------------------------------------------------
+
       if (this.settings.context === 'index') {
         this.addListener(Garnish.$win, 'resize', 'handleResize');
       }
+
       this.handleResize();
 
       // Respect initial search
@@ -365,6 +422,24 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       if (queryParams.search) {
         this.startSearching();
         this.searchText = queryParams.search;
+      }
+
+      // Respect the initial filters
+      // ---------------------------------------------------------------------
+
+      if (queryParams.filters) {
+        this.createFilterHud({
+          showOnInit: false,
+          serialized: queryParams.filters,
+        });
+      } else if (
+        this.$source.data('default-filter') &&
+        !this.filterHudExists()
+      ) {
+        this.createFilterHud({
+          showOnInit: false,
+          conditionConfig: this.$source.data('default-filter'),
+        });
       }
 
       // Select the default sort attribute/direction
@@ -386,10 +461,6 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       this.setPage(Craft.pageNum);
 
       this.updateElements(true);
-    },
-
-    afterInit: function () {
-      this.onAfterInit();
     },
 
     handleResize: function () {
@@ -561,6 +632,16 @@ Craft.BaseElementIndex = Garnish.Base.extend(
     },
 
     getDefaultSourceKey: function () {
+      if (
+        this.settings.preferStoredSource &&
+        this.instanceState.selectedSource
+      ) {
+        // Discard the defaults and go with localStorage
+        this.settings.defaultSource = null;
+        this.settings.defaultSourcePath = null;
+        return this.instanceState.selectedSource;
+      }
+
       let sourceKey = null;
 
       if (this.settings.defaultSource) {
@@ -594,6 +675,14 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         }
       }
 
+      if (!sourceKey) {
+        // If we couldn't resolve a default source, clear out the defaultSource and defaultSourcePath
+        // settings, as defaultSourcePath is expected to be relative to defaultSource
+        // (https://github.com/craftcms/cms/issues/13072)
+        this.settings.defaultSource = null;
+        this.settings.defaultSourcePath = null;
+      }
+
       return sourceKey ?? this.instanceState.selectedSource;
     },
 
@@ -601,7 +690,16 @@ Craft.BaseElementIndex = Garnish.Base.extend(
      * @returns {Object[]|null}
      */
     getDefaultSourcePath: function () {
-      return this.settings.defaultSourcePath;
+      // @link https://github.com/craftcms/cms/issues/13006
+      if (
+        this.settings.defaultSourcePath !== null &&
+        this.settings.defaultSourcePath[0] !== undefined &&
+        this.settings.defaultSourcePath[0].canView === true
+      ) {
+        return this.settings.defaultSourcePath;
+      } else {
+        return null;
+      }
     },
 
     getDefaultExpandedSources: function () {
@@ -612,14 +710,15 @@ Craft.BaseElementIndex = Garnish.Base.extend(
      * @returns {Object[]}
      */
     get sourcePath() {
-      return this._sourcePath || [];
+      return this.sourcePaths[this.sourceKey] || [];
     },
 
     /**
      * @param {Object[]|null} sourcePath
      */
     set sourcePath(sourcePath) {
-      this._sourcePath = sourcePath && sourcePath.length ? sourcePath : null;
+      this.sourcePaths[this.sourceKey] =
+        sourcePath && sourcePath.length ? sourcePath : null;
 
       if (this.$sourcePathOuterContainer) {
         this.$sourcePathOuterContainer.remove();
@@ -629,7 +728,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         this.$sourcePathActionsBtn = null;
       }
 
-      if (this._sourcePath && this.settings.showSourcePath) {
+      if (this.sourcePaths[this.sourceKey] && this.settings.showSourcePath) {
         const actions = this.getSourcePathActions();
 
         this.$sourcePathOuterContainer = $('<div/>', {
@@ -809,6 +908,16 @@ Craft.BaseElementIndex = Garnish.Base.extend(
           );
         }
       }
+
+      // Store the source path
+      this.setSelecetedSourceState(
+        'sourcePathStep',
+        (this.sourcePaths[this.sourceKey]
+          ? this.sourcePaths[this.sourceKey][
+              this.sourcePaths[this.sourceKey].length - 1
+            ].key
+          : null) || null
+      );
 
       this.onSourcePathChange();
     },
@@ -1280,8 +1389,11 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       if (
         this.filterHuds[this.siteId] &&
         this.filterHuds[this.siteId][this.sourceKey] &&
-        this.filterHuds[this.siteId][this.sourceKey].serialized
+        (this.filterHuds[this.siteId][this.sourceKey].conditionConfig ||
+          this.filterHuds[this.siteId][this.sourceKey].serialized)
       ) {
+        params.filterConfig =
+          this.filterHuds[this.siteId][this.sourceKey].conditionConfig;
         params.filters =
           this.filterHuds[this.siteId][this.sourceKey].serialized;
       }
@@ -1870,7 +1982,9 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       this.updateViewMenu();
       this.updateFilterBtn();
 
-      this.sourcePath = this.$source.data('default-source-path');
+      this.sourcePath =
+        this.sourcePaths[this.sourceKey] ||
+        this.$source.data('default-source-path');
 
       this.onSelectSource();
 
@@ -2241,6 +2355,25 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         this._activeElement = document.activeElement;
         document.activeElement.blur();
       }
+
+      let elementsHeight = this.$elements.height();
+      let windowHeight = window.innerHeight;
+      let scrollTop = $(document).scrollTop();
+
+      if (this.settings.context == 'modal') {
+        windowHeight = this.$elements.parents('.modal').height();
+        scrollTop = this.$elements.scrollParent().scrollTop();
+      }
+
+      if (elementsHeight > windowHeight) {
+        let positionTop = Math.floor(scrollTop + windowHeight / 2) - 100;
+        positionTop = Math.floor((positionTop / elementsHeight) * 100);
+
+        document.documentElement.style.setProperty(
+          '--elements-busy-top-position',
+          positionTop + '%'
+        );
+      }
     },
 
     setIndexAvailable: function () {
@@ -2474,7 +2607,22 @@ Craft.BaseElementIndex = Garnish.Base.extend(
               .data('sites')
               .toString()
               .split(',')
-              .indexOf(this.siteId.toString()) !== -1)
+              .some((siteId) => {
+                if (siteId == this.siteId) {
+                  return true;
+                }
+                // maybe UUIDs were used
+                if (siteId != parseInt(siteId)) {
+                  const site = Craft.sites.find(
+                    (site) => site.id == this.siteId
+                  );
+                  if (site && siteId == site.uid) {
+                    return true;
+                  }
+                }
+
+                return false;
+              }))
         ) {
           $source.parent().removeClass('hidden');
           this.$visibleSources = this.$visibleSources.add($source);
@@ -2735,7 +2883,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
               'aria-label': Craft.t('app', 'Select all'),
             });
 
-          this.addListener(this.$selectAllCheckbox, 'click', function () {
+          this.addListener(this.$selectAllContainer, 'click', function () {
             if (this.view.getSelectedElements().length === 0) {
               this.view.selectAllElements();
             } else {
@@ -3099,24 +3247,42 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       }
     },
 
+    filterHudExists: function () {
+      return (
+        this.filterHuds[this.siteId] &&
+        this.filterHuds[this.siteId][this.sourceKey]
+      );
+    },
+
     showFilterHud: function () {
-      if (!this.filterHuds[this.siteId]) {
-        this.filterHuds[this.siteId] = {};
-      }
-      if (!this.filterHuds[this.siteId][this.sourceKey]) {
-        this.filterHuds[this.siteId][this.sourceKey] = new FilterHud(
-          this,
-          this.sourceKey,
-          this.siteId
-        );
-        this.updateFilterBtn();
+      if (!this.filterHudExists()) {
+        this.createFilterHud();
       } else {
         this.filterHuds[this.siteId][this.sourceKey].show();
       }
     },
 
+    createFilterHud: function (settings) {
+      if (!this.filterHuds[this.siteId]) {
+        this.filterHuds[this.siteId] = {};
+      }
+
+      this.filterHuds[this.siteId][this.sourceKey] = new FilterHud(
+        this,
+        this.sourceKey,
+        this.siteId,
+        settings
+      );
+
+      this.updateFilterBtn();
+    },
+
     updateFilterBtn: function () {
       this.$filterBtn.removeClass('active');
+
+      if (this.settings.context === 'index') {
+        Craft.setQueryParam('filters', null);
+      }
 
       if (
         this.filterHuds[this.siteId] &&
@@ -3134,11 +3300,15 @@ Craft.BaseElementIndex = Garnish.Base.extend(
               : 'false'
           );
 
-        if (
-          this.filterHuds[this.siteId][this.sourceKey].showing ||
-          this.filterHuds[this.siteId][this.sourceKey].hasRules()
-        ) {
+        if (this.filterHuds[this.siteId][this.sourceKey].isActive) {
           this.$filterBtn.addClass('active');
+
+          if (this.settings.context === 'index') {
+            Craft.setQueryParam(
+              'filters',
+              this.filterHuds[this.siteId][this.sourceKey].serialized
+            );
+          }
         }
       } else {
         this.$filterBtn.attr('aria-controls', null);
@@ -3169,6 +3339,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       defaultSiteId: null,
       defaultSource: null,
       defaultSourcePath: null,
+      preferStoredSource: false,
       showSourcePath: true,
       canHaveDrafts: false,
 
@@ -3425,7 +3596,7 @@ const ViewMenu = Garnish.Base.extend({
       .createSelect({
         options: this.elementIndex.getSortOptions(this.$source).map((o) => {
           return {
-            label: o.label,
+            label: Craft.escapeHtml(o.label),
             value: o.attr,
           };
         }),
@@ -3610,15 +3781,30 @@ const FilterHud = Garnish.HUD.extend({
   siteId: null,
   id: null,
   loading: true,
+  conditionConfig: null,
   serialized: null,
   $clearBtn: null,
   cleared: false,
 
-  init: function (elementIndex, sourceKey, siteId) {
+  get isActive() {
+    return this.showing || this.conditionConfig || this.serialized;
+  },
+
+  init: function (elementIndex, sourceKey, siteId, settings) {
     this.elementIndex = elementIndex;
     this.sourceKey = sourceKey;
     this.siteId = siteId;
     this.id = `filter-${Math.floor(Math.random() * 1000000000)}`;
+
+    if (settings) {
+      if (settings.conditionConfig) {
+        this.conditionConfig = settings.conditionConfig;
+        delete settings.conditionConfig;
+      } else if (settings.serialized) {
+        this.serialized = settings.serialized;
+        delete settings.serialized;
+      }
+    }
 
     const $loadingContent = $('<div/>')
       .append(
@@ -3634,9 +3820,16 @@ const FilterHud = Garnish.HUD.extend({
         })
       );
 
-    this.base(this.elementIndex.$filterBtn, $loadingContent, {
-      hudClass: 'hud element-filter-hud loading',
-    });
+    this.base(
+      this.elementIndex.$filterBtn,
+      $loadingContent,
+      Object.assign(
+        {
+          hudClass: 'hud element-filter-hud loading',
+        },
+        settings
+      )
+    );
 
     this.$hud.attr({
       id: this.id,
@@ -3656,6 +3849,8 @@ const FilterHud = Garnish.HUD.extend({
         elementType: this.elementIndex.elementType,
         source: this.sourceKey,
         condition: this.elementIndex.settings.condition,
+        conditionConfig: this.conditionConfig,
+        serialized: this.serialized,
         id: `${this.id}-filters`,
       },
     })
@@ -3697,6 +3892,12 @@ const FilterHud = Garnish.HUD.extend({
           this.updateSizeAndPosition(true);
         });
         this.setFocus();
+
+        if (this.conditionConfig) {
+          // conditionConfig => serialized
+          this.conditionConfig = null;
+          this.serialized = this.serialize();
+        }
       })
       .catch(() => {
         Craft.cp.displayError(Craft.t('app', 'A server error occurred.'));
