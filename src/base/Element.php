@@ -3346,6 +3346,7 @@ abstract class Element extends Component implements ElementInterface
                 'class' => array_filter([
                     'elementthumb',
                     $this->getHasCheckeredThumb() ? 'checkered' : null,
+                    $this->getHasRoundedThumb() ? 'rounded' : null,
                 ]),
                 'data' => [
                     'sizes' => sprintf('%spx', $size),
@@ -3476,7 +3477,9 @@ abstract class Element extends Component implements ElementInterface
             ->structureId($this->structureId)
             ->siteId(['not', $this->siteId])
             ->drafts($this->getIsDraft())
-            ->provisionalDrafts($this->isProvisionalDraft)
+            // the provisionalDraft state could have just changed (e.g. `elements/save-draft`)
+            // so don't filter based on one or the other
+            ->provisionalDrafts(null)
             ->revisions($this->getIsRevision());
     }
 
@@ -4616,7 +4619,7 @@ abstract class Element extends Component implements ElementInterface
      * attribute, rather than simply showing the attribute’s raw value.
      *
      * For example, if your elements have an `email` attribute that you want to wrap in a `mailto:` link, your
-     * getTableAttributesHtml() method could do this:
+     * `tableAttributeHtml()` method could do this:
      *
      * ```php
      * switch ($attribute) {
