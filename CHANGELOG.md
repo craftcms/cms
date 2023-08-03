@@ -3,6 +3,7 @@
 ## Unreleased
 
 - Fixed a bug where `Craft.BaseElementIndexView::this.canSelectElement()` wasn’t getting applied for lazy-loaded elements.
+- Fixed a bug where setting an element query’s `status` praam to `archived` would always yield zero results. ([#13465](https://github.com/craftcms/cms/issues/13465))
 - Fixed a bug where element thumbnails weren’t getting loaded for expanded relational field previews within element indexes.
 - Fixed an error that occurred when deleting a volume with a missing filesystem type.
 - Fixed a bug where Color field values were illegible within selected element index rows.
