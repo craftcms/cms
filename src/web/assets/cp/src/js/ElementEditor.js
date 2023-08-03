@@ -2040,7 +2040,10 @@ Craft.ElementEditor = Garnish.Base.extend(
                   );
                 }
 
-                this.$activityContainer.html('');
+                this.$activityContainer
+                  .html('')
+                  .attr('role', 'region')
+                  .attr('aria-label', Craft.t('app', 'Recent Activity'));
 
                 if (data.activity.length) {
                   $('<h2/>', {
