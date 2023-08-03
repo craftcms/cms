@@ -18,6 +18,7 @@ use craft\elements\Entry;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Console;
 use craft\helpers\ElementHelper;
+use craft\helpers\ProjectConfig as ProjectConfigHelper;
 use craft\models\Section;
 use craft\records\StructureElement;
 use craft\services\ProjectConfig;
@@ -328,5 +329,47 @@ class RepairController extends Controller
         }
 
         return $value;
+    }
+
+    /**
+     * Cleans orphaned references from the project config meta names array.
+     *
+     * @return int
+     * @throws \craft\errors\BusyResourceException
+     * @throws \craft\errors\StaleResourceException
+     * @throws \yii\base\ErrorException
+     * @throws \yii\base\Exception
+     * @throws \yii\base\InvalidConfigException
+     * @throws \yii\base\NotSupportedException
+     * @throws \yii\web\ServerErrorHttpException
+     */
+    public function actionProjectConfigCleanMetaNames(): int
+    {
+        $projectConfigService = Craft::$app->getProjectConfig();
+
+        $config = $projectConfigService->get();
+        $metaNamesConfig = $projectConfigService->get(ProjectConfig::PATH_META_NAMES);
+
+        unset($config['meta']['__names__']); // ideally, this should be unset dynamically
+        $jsonConfig = ProjectConfigHelper::encodeValueAsString($config);
+
+        $this->stdout('Cleaning project config meta names ...' . PHP_EOL);
+
+        $metaNamesChanged = false;
+        foreach ($metaNamesConfig as $key => $value) {
+            // if the meta name uuid doesn't exist anywhere else in the project config - remove it from the meta names
+            if (!str_contains($jsonConfig, $key)) {
+                $this->stdout("    - Removing meta name for UID $key ($value) ..." . PHP_EOL);
+                unset($metaNamesConfig[$key]);
+                $metaNamesChanged = true;
+            }
+        }
+        if ($metaNamesChanged) {
+            $projectConfigService->set(ProjectConfig::PATH_META_NAMES, $metaNamesConfig);
+        }
+
+        $this->stdout('Finished cleaning project config meta names' . PHP_EOL, Console::FG_GREEN);
+        
+        return ExitCode::OK;
     }
 }
