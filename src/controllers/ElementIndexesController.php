@@ -339,6 +339,12 @@ class ElementIndexesController extends BaseElementsController
         }
         $this->response->setDownloadHeaders($filename);
 
+        if ($exporter::canIncludeDisabledEagerloadables()) {
+            $exporter->setIncludeDisabledEagerloadables(
+                $this->request->getBodyParam('includeDisabledEagerloadables', false)
+            );
+        }
+
         $export = $exporter->export($this->elementQuery);
 
         if ($exporter::isFormattable()) {
@@ -830,6 +836,7 @@ class ElementIndexesController extends BaseElementsController
                 'type' => get_class($exporter),
                 'name' => $exporter::displayName(),
                 'formattable' => $exporter::isFormattable(),
+                'canIncludeDisabledEagerloadables' => $exporter::canIncludeDisabledEagerloadables(),
             ];
         }
 
