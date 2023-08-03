@@ -1516,8 +1516,13 @@ class ElementQuery extends Query implements ElementQueryInterface
         if ($this->archived) {
             $this->subQuery->andWhere(['elements.archived' => true]);
         } else {
-            $this->subQuery->andWhere(['elements.archived' => false]);
             $this->_applyStatusParam($class);
+
+            // only set archived=false if 'archived' doesn't show up in the status param
+            // (_applyStatusParam() will normalize $this->status to an array if applicable)
+            if (!is_array($this->status) || !in_array(Element::STATUS_ARCHIVED, $this->status)) {
+                $this->subQuery->andWhere(['elements.archived' => false]);
+            }
         }
 
         // todo: remove schema version condition after next beakpoint
@@ -2418,10 +2423,12 @@ class ElementQuery extends Query implements ElementQueryInterface
             return;
         }
 
-        $statuses = $this->status;
-        if (!is_array($statuses)) {
-            $statuses = is_string($statuses) ? StringHelper::split($statuses) : [$statuses];
+        // Normalize the status param
+        if (!is_array($this->status)) {
+            $this->status = is_string($this->status) ? StringHelper::split($this->status) : [$this->status];
         }
+
+        $statuses = array_merge($this->status);
 
         $firstVal = strtolower(reset($statuses));
         if (in_array($firstVal, ['not', 'or'])) {
