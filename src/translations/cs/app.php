@@ -1459,7 +1459,6 @@ return [
     'The field type “{type}” could not be found.' => 'Pole typu „{type}“ nelze najít.',
     'The file failed to upload to the server properly.' => 'Soubor nebyl řádně nahrán na server.',
     'The file “{name}” does not appear to be an image.' => 'Soubor „{name}“ se nejeví jako obrázek.',
-    'The file “{path}” does not appear to be an image.' => 'Zdá se, že soubor „{path}“ není obrázek.',
     'The filesystem doesn’t contain any files.' => 'Souborový systém neobsahuje žádné soubory.',
     'The following <a href="{url}">aliases</a> are defined:' => 'Jsou definovány následující <a href="{url}">aliasy</a>:',
     'The following licensing issues can be resolved with a single purchase on Craft Console.' => 'Následující problémy s licencí lze vyřešit jediným nákupem v Craft Console.',

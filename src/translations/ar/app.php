@@ -1459,7 +1459,6 @@ return [
     'The field type “{type}” could not be found.' => 'تعذر العثور على نوع الحقل "{type}".',
     'The file failed to upload to the server properly.' => 'فشل تحميل الملف إلى الخادم بشكل صحيح.',
     'The file “{name}” does not appear to be an image.' => 'الملف“{name}” لا يبدو كصورة.',
-    'The file “{path}” does not appear to be an image.' => 'لا يظهر الملف “{path}” كصورة.',
     'The filesystem doesn’t contain any files.' => 'لا يحتوي نظام الملفات على أي ملفات.',
     'The following <a href="{url}">aliases</a> are defined:' => 'تم تحديد <a href="{url}"> الأسماء المستعارة </a> التالية:',
     'The following licensing issues can be resolved with a single purchase on Craft Console.' => 'يمكن حل مشكلات الترخيص التالية بعملية شراء واحدة في Craft Console.',
