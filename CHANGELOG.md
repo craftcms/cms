@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- The `project-config/rebuild` command now rebuilds the `meta.__names__` array from scratch. ([#13456](https://github.com/craftcms/cms/issues/13456))
 - Fixed a bug where `Craft.BaseElementIndexView::this.canSelectElement()` wasn’t getting applied for lazy-loaded elements.
 - Fixed a bug where setting an element query’s `status` praam to `archived` would always yield zero results. ([#13465](https://github.com/craftcms/cms/issues/13465))
 - Fixed a bug where element thumbnails weren’t getting loaded for expanded relational field previews within element indexes.
@@ -14,6 +15,7 @@
 - Fixed a bug where garbage collection could terminate prematurely if an exception was thrown when deleting a pending user. ([#13490](https://github.com/craftcms/cms/issues/13490))
 - Fixed an error that occurred if the `purify` Twig filter was applied to a `null` value. ([#13495](https://github.com/craftcms/cms/issues/13495))
 - Fixed an error that could occur if a console controller’s `runAction()` method returned `null`.
+- Fixed a bug where image transforms weren’t respecting their `format` settings. ([#13493](https://github.com/craftcms/cms/issues/13493))
 - Fixed an information disclosure vulnerability.
 
 ## 4.4.16.1 - 2023-07-19
