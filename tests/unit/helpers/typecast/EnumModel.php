@@ -15,5 +15,8 @@ namespace crafttests\unit\helpers\typecast;
 class EnumModel
 {
     public Suit $suit;
+
+    public Suit $anotherSuit;
+
     public ?Suit $nullableSuit;
 }

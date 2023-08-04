@@ -272,6 +272,12 @@ class ProjectConfig extends Component
     private array $_configFileList = [];
 
     /**
+     * @var int|null The project config cache duration. If null, the <config4:cacheDuration> config setting will be used.
+     * @since 4.5.0
+     */
+    public ?int $cacheDuration = null;
+
+    /**
      * @var bool Whether to write out updated YAML changes at the end of the request
      */
     private bool $_updateYaml = false;
@@ -1809,7 +1815,7 @@ class ProjectConfig extends Component
                 $current = Json::decode(StringHelper::decdec($value));
             }
             return ProjectConfigHelper::cleanupConfig($data);
-        }, null, $this->getCacheDependency());
+        }, $this->cacheDuration, $this->getCacheDependency());
 
         return Craft::createObject(ReadOnlyProjectConfigData::class, ['data' => $data]);
     }

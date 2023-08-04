@@ -5025,6 +5025,10 @@ $min2ColWidth: 400px;
   display: none;
   top: 0;
 
+  &.tooltip-hud {
+    display: block;
+  }
+
   &.has-footer .tip-bottom {
     background-image: url(../images/hudtip_bottom_gray.png);
   }
@@ -5340,6 +5344,51 @@ $min2ColWidth: 400px;
       position: absolute;
       top: 0;
       @include right(-24px);
+    }
+  }
+}
+
+/* recent activity container */
+.activity-container {
+  &:not(:last-child) {
+    @include margin-right(var(--s));
+  }
+
+  ul {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: var(--xs);
+
+    li {
+      .activity-btn {
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        display: block;
+
+        .elementthumb {
+          position: relative;
+          width: 100%;
+          height: 100%;
+          border-radius: 50px;
+          background: var(--gray-050);
+          overflow: hidden;
+          border: 2px solid var(--white);
+          box-shadow: 0 1px 2px 1px transparentize($grey900, 0.9);
+
+          img,
+          svg {
+            display: block;
+            width: 100%;
+            height: 100%;
+          }
+        }
+      }
+
+      &:not(:last-child) {
+        @include margin-right(-10px);
+      }
     }
   }
 }
@@ -6196,6 +6245,36 @@ div.checkbox {
   min-height: 16px;
   cursor: pointer;
 
+  &,
+  &:before {
+    // set the border radius on the container too, for (some) focus rings
+    border-radius: var(--small-border-radius);
+  }
+
+  &:before {
+    display: block;
+    position: absolute;
+    @include left(0);
+    top: 0;
+    width: var(--checkbox-size) !important;
+    height: var(--checkbox-size);
+    box-sizing: border-box;
+    content: '';
+    font-size: 0;
+    background-color: hsl(212, 50%, 99%);
+    border: 1px solid transparentize($inputColor, 0.6);
+    background-clip: padding-box;
+  }
+
+  &:empty {
+    @include padding-left(var(--checkbox-size));
+
+    &:after {
+      content: '';
+      font-size: 0;
+    }
+  }
+
   .info {
     height: 16px;
   }
@@ -6204,35 +6283,6 @@ div.checkbox {
 input.checkbox:disabled + label,
 .disabled div.checkbox {
   cursor: default;
-}
-
-input.checkbox + label:empty,
-div.checkbox:empty {
-  @include padding-left(var(--checkbox-size));
-}
-
-input.checkbox + label:empty:after,
-div.checkbox:empty:after {
-  content: '';
-  font-size: 0;
-}
-
-/* fixes a RTL bug */
-input.checkbox + label:before,
-div.checkbox:before {
-  display: block;
-  position: absolute;
-  @include left(0);
-  top: 0;
-  width: var(--checkbox-size) !important;
-  height: var(--checkbox-size);
-  box-sizing: border-box;
-  content: '';
-  font-size: 0;
-  background-color: hsl(212, 50%, 99%);
-  border: 1px solid transparentize($inputColor, 0.6);
-  background-clip: padding-box;
-  border-radius: var(--small-border-radius);
 }
 
 input.checkbox:disabled + label,

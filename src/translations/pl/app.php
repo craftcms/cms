@@ -1463,7 +1463,6 @@ return [
     'The field type “{type}” could not be found.' => 'Nie można znaleźć typu pola {type}.',
     'The file failed to upload to the server properly.' => 'Plik nie został poprawnie przesłany na serwer.',
     'The file “{name}” does not appear to be an image.' => 'Plik {name} nie wydaje się być obrazkiem.',
-    'The file “{path}” does not appear to be an image.' => 'Plik {path} nie wydaje się być obrazkiem.',
     'The filesystem doesn’t contain any files.' => 'System plików nie zawiera żadnych plików.',
     'The following <a href="{url}">aliases</a> are defined:' => 'Zdefiniowane są następujące <a href="{url}">aliasy</a>:',
     'The following licensing issues can be resolved with a single purchase on Craft Console.' => 'Następujące problemy z licencjami można rozwiązać za pomocą jednego zakupu w Craft Console.',

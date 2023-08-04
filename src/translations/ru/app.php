@@ -1463,7 +1463,6 @@ return [
     'The field type “{type}” could not be found.' => 'Поле типа «{type}» не обнаружено.',
     'The file failed to upload to the server properly.' => 'Файл не был загружен на сервер должным образом.',
     'The file “{name}” does not appear to be an image.' => 'Файл «{name}», по видимому, не является изображением.',
-    'The file “{path}” does not appear to be an image.' => 'Вероятно, файл «{path}» не является изображением.',
     'The filesystem doesn’t contain any files.' => 'Файловая система не содержит файлов.',
     'The following <a href="{url}">aliases</a> are defined:' => 'Заданы следующие <a href="{url}">псевдонимы</a>:',
     'The following licensing issues can be resolved with a single purchase on Craft Console.' => 'Чтобы устранить указанные проблемы с лицензированием, необходимо приобрести лицензию в Craft Console.',

@@ -63,23 +63,21 @@ class ProjectConfigData extends ReadOnlyProjectConfigData
         $projectConfig = Craft::$app->getProjectConfig();
         $valueChanged = $triggerUpdate || $projectConfig->forceUpdate || ProjectConfigHelper::encodeValueAsString($oldValue) !== ProjectConfigHelper::encodeValueAsString($newValue);
 
-        if ($newValue === null && is_array($oldValue)) {
-            $this->removeContainedProjectConfigNames(pathinfo($path, PATHINFO_EXTENSION), $oldValue);
-        } elseif (is_array($newValue)) {
-            $this->setContainedProjectConfigNames(pathinfo($path, PATHINFO_EXTENSION), $newValue);
-        }
+        if ($valueChanged) {
+            $this->updateContainedProjectConfigNames(pathinfo($path, PATHINFO_EXTENSION), $oldValue, $newValue);
 
-        if ($valueChanged && !$projectConfig->muteEvents) {
-            $event = new ConfigEvent(compact('path', 'oldValue', 'newValue'));
-            if ($newValue === null && $oldValue !== null) {
-                // Fire a 'removeItem' event
-                $projectConfig->trigger(ProjectConfigService::EVENT_REMOVE_ITEM, $event);
-            } elseif ($oldValue === null && $newValue !== null) {
-                // Fire an 'addItem' event
-                $projectConfig->trigger(ProjectConfigService::EVENT_ADD_ITEM, $event);
-            } else {
-                // Fire an 'updateItem' event
-                $projectConfig->trigger(ProjectConfigService::EVENT_UPDATE_ITEM, $event);
+            if (!$projectConfig->muteEvents) {
+                $event = new ConfigEvent(compact('path', 'oldValue', 'newValue'));
+                if ($newValue === null && $oldValue !== null) {
+                    // Fire a 'removeItem' event
+                    $projectConfig->trigger(ProjectConfigService::EVENT_REMOVE_ITEM, $event);
+                } elseif ($oldValue === null && $newValue !== null) {
+                    // Fire an 'addItem' event
+                    $projectConfig->trigger(ProjectConfigService::EVENT_ADD_ITEM, $event);
+                } else {
+                    // Fire an 'updateItem' event
+                    $projectConfig->trigger(ProjectConfigService::EVENT_UPDATE_ITEM, $event);
+                }
             }
         }
 
@@ -141,11 +139,38 @@ class ProjectConfigData extends ReadOnlyProjectConfigData
         return $this->projectConfigNameChanges;
     }
 
+    private function updateContainedProjectConfigNames(string $lastPathSegment, mixed $oldValue, mixed $newValue): void
+    {
+        // Normalize both values to arrays
+        $newValue = is_array($newValue) ? $newValue : [];
+        $oldValue = is_array($oldValue) ? $oldValue : [];
+
+        if (StringHelper::isUUID($lastPathSegment)) {
+            if (isset($newValue['name'])) {
+                // Set/update it
+                $this->projectConfigNameChanges[$lastPathSegment] = $newValue['name'];
+            } elseif (isset($oldValue['name'])) {
+                // Remove it
+                $this->projectConfigNameChanges[$lastPathSegment] = null;
+            }
+        }
+
+        $keys = array_unique(array_merge(
+            array_keys($newValue),
+            array_keys($oldValue),
+        ));
+
+        foreach ($keys as $key) {
+            $this->updateContainedProjectConfigNames($key, $oldValue[$key] ?? [], $newValue[$key] ?? []);
+        }
+    }
+
     /**
      * Set all the contained project config names to the buffer.
      *
      * @param string $lastPathSegment
      * @param array $data
+     * @deprecated in 4.4.17
      */
     protected function setContainedProjectConfigNames(string $lastPathSegment, array $data): void
     {
@@ -166,6 +191,7 @@ class ProjectConfigData extends ReadOnlyProjectConfigData
      *
      * @param string $lastPathSegment
      * @param array $data
+     * @deprecated in 4.4.17
      */
     protected function removeContainedProjectConfigNames(string $lastPathSegment, array $data): void
     {
@@ -176,7 +202,7 @@ class ProjectConfigData extends ReadOnlyProjectConfigData
         foreach ($data as $key => $value) {
             // Traverse further
             if (is_array($value)) {
-                $this->setContainedProjectConfigNames($key, $value);
+                $this->removeContainedProjectConfigNames($key, $value);
             }
         }
     }

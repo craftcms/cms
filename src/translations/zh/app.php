@@ -1463,7 +1463,6 @@ return [
     'The field type “{type}” could not be found.' => '无法找到字段类型“{type}”。',
     'The file failed to upload to the server properly.' => '文件未能正确上传到服务器。',
     'The file “{name}” does not appear to be an image.' => '文件 “{name}” 似乎不是图像。',
-    'The file “{path}” does not appear to be an image.' => '文件 “{path}” 似乎不是图像。',
     'The filesystem doesn’t contain any files.' => '文件夹系统不包含任何文件。',
     'The following <a href="{url}">aliases</a> are defined:' => '定义了以下<a href="{url}">别名</a>：',
     'The following licensing issues can be resolved with a single purchase on Craft Console.' => '以下许可问题可以通过在 Craft Console 上进行一次购买解决。',

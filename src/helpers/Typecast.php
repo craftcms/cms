@@ -121,8 +121,8 @@ final class Typecast
                 return;
             default:
                 if (
-                    is_subclass_of($typeName, BackedEnum::class) &&
-                    !is_subclass_of($value, $typeName)
+                    is_scalar($value) &&
+                    is_subclass_of($typeName, BackedEnum::class)
                 ) {
                     /** @var BackedEnum $typeName */
                     $value = $typeName::from($value);
