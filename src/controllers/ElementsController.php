@@ -973,7 +973,7 @@ JS, [
             ]));
         }
 
-        $elementsService->recordActivity($element, ElementActivity::TYPE_SAVE);
+        $elementsService->trackActivity($element, ElementActivity::TYPE_SAVE);
 
         // See if the user happens to have a provisional element. If so delete it.
         $provisional = $element::find()
@@ -1212,7 +1212,7 @@ JS, [
                 ]));
             }
 
-            $elementsService->recordActivity($element, ElementActivity::TYPE_SAVE);
+            $elementsService->trackActivity($element, ElementActivity::TYPE_SAVE);
 
             $creator = $element->getCreator();
 
@@ -1367,7 +1367,7 @@ JS, [
             }
         }
 
-        $elementsService->recordActivity($canonical, ElementActivity::TYPE_SAVE);
+        $elementsService->trackActivity($canonical, ElementActivity::TYPE_SAVE);
 
         if (!$this->request->getAcceptsJson()) {
             // Tell all browser windows about the element save
@@ -1499,7 +1499,7 @@ JS, [
         }
 
         $canonical = Craft::$app->getRevisions()->revertToRevision($element, $user->id);
-        Craft::$app->getElements()->recordActivity($canonical, ElementActivity::TYPE_SAVE);
+        Craft::$app->getElements()->trackActivity($canonical, ElementActivity::TYPE_SAVE);
 
         return $this->_asSuccess(Craft::t('app', '{type} reverted to past revision.', [
             'type' => $element::displayName(),
@@ -1555,7 +1555,7 @@ JS, [
         $elementsService = Craft::$app->getElements();
         $currentUser = Craft::$app->getUser()->getIdentity();
         $activity = $elementsService->getRecentActivity($element, $currentUser->id);
-        $elementsService->recordActivity($element, ElementActivity::TYPE_VIEW, $currentUser);
+        $elementsService->trackActivity($element, ElementActivity::TYPE_VIEW, $currentUser);
 
         return $this->asJson([
             'activity' => array_map(function(ElementActivity $record) use ($element) {

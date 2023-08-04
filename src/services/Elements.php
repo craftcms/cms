@@ -2391,14 +2391,14 @@ class Elements extends Component
     }
 
     /**
-     * Records activity on an element.
+     * Tracks new activity for an element.
      *
      * @param ElementInterface $element
      * @param ElementActivity::TYPE_* $type $type
      * @param User|null $user
      * @since 4.5.0
      */
-    public function recordActivity(ElementInterface $element, string $type, ?User $user = null): void
+    public function trackActivity(ElementInterface $element, string $type, ?User $user = null): void
     {
         if ($user === null) {
             $user = Craft::$app->getUser()->getIdentity();
