@@ -103,6 +103,7 @@ class Gc extends Component
         $this->_purgePendingUsers();
         $this->_deleteStaleSessions();
         $this->_deleteStaleAnnouncements();
+        $this->_deleteStaleElementActivity();
 
         // elements should always go first
         $this->hardDeleteElements();
@@ -417,6 +418,15 @@ SQL;
         $this->_stdout("done\n", Console::FG_GREEN);
     }
 
+    /**
+     * Deletes any stale element activity logs.
+     */
+    private function _deleteStaleElementActivity(): void
+    {
+        $this->_stdout('    > deleting stale element activity records ... ');
+        Db::delete(Table::ELEMENTACTIVITY, ['<', 'timestamp', Db::prepareDateForDb(new DateTime('1 minute ago'))]);
+        $this->_stdout("done\n", Console::FG_GREEN);
+    }
 
     /**
      * Deletes entries for sites that aren’t enabled by their section.
