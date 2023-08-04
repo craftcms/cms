@@ -2309,7 +2309,7 @@ class Elements extends Component
             ->select(['userId', 'siteId', 'draftId', 'type', 'timestamp'])
             ->from(Table::ELEMENTACTIVITY)
             ->where(['elementId' => $element->getCanonicalId()])
-            ->andWhere(['>', 'timestamp', Db::prepareDateForDb(DateTimeHelper::now()->modify('-1 minutef'))])
+            ->andWhere(['>', 'timestamp', Db::prepareDateForDb(DateTimeHelper::now()->modify('-1 minute'))])
             ->orderBy(['timestamp' => SORT_DESC]);
 
         if ($excludeUserId) {
