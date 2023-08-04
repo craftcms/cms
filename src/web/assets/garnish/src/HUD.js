@@ -151,7 +151,8 @@ export default Base.extend(
         this.show();
         this.$hud.css('opacity', 1);
       } else {
-        this.$hud.appendTo(Garnish.$bod).hide();
+        this.$hud.appendTo(Garnish.$bod);
+        this.hideContainer();
       }
     },
 
@@ -220,7 +221,7 @@ export default Base.extend(
       }
 
       this.$hud.appendTo(Garnish.$bod);
-      this.$hud.show();
+      this.showContainer();
 
       this.showing = true;
       Garnish.HUD.activeHUDs[this._namespace] = this;
@@ -262,6 +263,10 @@ export default Base.extend(
 
         this.updateSizeAndPosition(true);
       }
+    },
+
+    showContainer: function () {
+      this.$hud.show();
     },
 
     onShow: function () {
@@ -581,8 +586,7 @@ export default Base.extend(
       }
 
       this.disable();
-
-      this.$hud.hide();
+      this.hideContainer();
 
       if (this.settings.withShade) {
         this.$shade.hide();
@@ -602,6 +606,10 @@ export default Base.extend(
       }
 
       this.onHide();
+    },
+
+    hideContainer: function () {
+      this.$hud.hide();
     },
 
     onHide: function () {

@@ -2040,7 +2040,10 @@ Craft.ElementEditor = Garnish.Base.extend(
                   );
                 }
 
-                this.$activityContainer.html('');
+                this.$activityContainer
+                  .html('')
+                  .attr('role', 'region')
+                  .attr('aria-label', Craft.t('app', 'Recent Activity'));
 
                 if (data.activity.length) {
                   $('<h2/>', {
@@ -2050,14 +2053,19 @@ Craft.ElementEditor = Garnish.Base.extend(
                   const $ul = $('<ul/>').appendTo(this.$activityContainer);
                   for (let i = 0; i < data.activity.length; i++) {
                     const activity = data.activity[i];
-                    const $li = $('<li/>', {
-                      tabindex: 0,
-                      'aria-label': activity.message,
-                    }).appendTo($ul);
+                    const $li = $('<li/>').appendTo($ul);
+                    const $button = $('<button/>', {
+                      type: 'button',
+                      class: 'activity-container__trigger',
+                      'aria-label': Craft.t('app', '{name} active, more info', {
+                        name: activity.userName,
+                      }),
+                      'aria-expanded': 'false',
+                    }).appendTo($li);
                     const $thumb = $(activity.userThumb)
                       .addClass('elementthumb')
                       .css('z-index', data.activity.length - i)
-                      .appendTo($li);
+                      .appendTo($button);
                     $thumb.find('img,svg').attr('role', 'presentation');
                     Craft.cp.elementThumbLoader.load($li);
                     $thumb.find('title').remove();
@@ -2067,9 +2075,9 @@ Craft.ElementEditor = Garnish.Base.extend(
                       'undefined'
                     ) {
                       this.activityTooltips[activity.userId] =
-                        new Craft.Tooltip($li, activity.message);
+                        new Craft.Tooltip($button, activity.message);
                     } else {
-                      this.activityTooltips[activity.userId].$trigger = $li;
+                      this.activityTooltips[activity.userId].$trigger = $button;
                       this.activityTooltips[activity.userId].message =
                         activity.message;
 
@@ -2081,6 +2089,15 @@ Craft.ElementEditor = Garnish.Base.extend(
                         this.activityTooltips[activity.userId].$trigger.focus();
                       }
                     }
+                  }
+                }
+
+                // hide any tooltips that are no longer relevant
+                for (let userId of Object.keys(this.activityTooltips)) {
+                  if (
+                    !data.activity.find((activity) => activity.userId == userId)
+                  ) {
+                    this.activityTooltips[userId].hide();
                   }
                 }
 

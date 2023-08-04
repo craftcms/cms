@@ -13,11 +13,17 @@ Craft.Tooltip = Garnish.Base.extend({
   hoverTimeout: null,
   triggerHit: false,
   shownViaHover: false,
-  ignoreFocus: false,
 
   init: function (trigger, message) {
     this.$trigger = $(trigger);
     this.message = message;
+
+    if (
+      this.$trigger[0].tagName !== 'BUTTON' &&
+      this.$trigger.attr('role') !== 'button'
+    ) {
+      console.error('Toggletip buttons need to be <button> elements.');
+    }
 
     // do our own mouseover/mouseout checks since the native ones are unreliable
     this.addListener(Garnish.$bod, 'mousemove', (ev) => {
@@ -57,19 +63,18 @@ Craft.Tooltip = Garnish.Base.extend({
 
     this._$trigger = $trigger;
 
-    this._$trigger.on('focus', () => {
-      if (!this.ignoreFocus) {
-        this.show();
-      }
-    });
     this._$trigger.on('blur', () => {
       this.hide();
     });
     this._$trigger.on('activate', () => {
-      this.toggle();
-      this.ignoreFocus = true;
+      // If it's currently shown via hover, keep showing it and remove shownViaHover
+      if (this.showing && this.shownViaHover) {
+        this.shownViaHover = false;
+      } else {
+        this.toggle();
+      }
+
       this._$trigger.focus();
-      this.ignoreFocus = false;
     });
 
     if (this.hud) {
@@ -99,9 +104,12 @@ Craft.Tooltip = Garnish.Base.extend({
       return;
     }
 
+    this.$trigger.attr('aria-expanded', 'true');
+
     if (!this.hud) {
       this.$p = $('<p/>', {text: this._message});
-      this.hud = new Garnish.HUD(this._$trigger, this.$p, {
+      this.hud = new Craft.Tooltip.HUD(this._$trigger, this.$p, {
+        hudClass: 'hud tooltip-hud',
         withShade: false,
         onShow: () => {
           this.onShow();
@@ -120,6 +128,8 @@ Craft.Tooltip = Garnish.Base.extend({
       return;
     }
 
+    this.$trigger.attr('aria-expanded', 'false');
+
     if (this.hud) {
       this.hud.hide();
     }
@@ -135,9 +145,26 @@ Craft.Tooltip = Garnish.Base.extend({
 
   onShow: function () {
     clearTimeout(this.hoverTimeout);
+    this.$p.text(this.message);
   },
 
   onHide: function () {
     clearTimeout(this.hoverTimeout);
+    this.$p.text('');
+  },
+});
+
+Craft.Tooltip.HUD = Garnish.HUD.extend({
+  init: function (trigger, bodyContents, settings) {
+    this.base(trigger, bodyContents, settings);
+    this.$hud.attr('role', 'status');
+  },
+
+  showContainer: function () {
+    this.$hud.removeClass('visually-hidden');
+  },
+
+  hideContainer: function () {
+    this.$hud.addClass('visually-hidden');
   },
 });
