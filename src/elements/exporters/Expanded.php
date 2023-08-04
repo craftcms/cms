@@ -53,7 +53,7 @@ class Expanded extends ElementExporter
                     $eagerLoadableFields[] = [
                         'path' => $field->handle,
                         'criteria' => [
-                            'status' => [Element::STATUS_ENABLED, Element::STATUS_DISABLED],
+                            'status' => null,
                         ],
                     ];
                 } else {
