@@ -1,12 +1,25 @@
 # Release Notes for Craft CMS 5.0 (WIP)
 
 ### Content Management
+- All elements can now have thumbnails, provided by Assets fields. ([#12484](https://github.com/craftcms/cms/discussions/12484), [#12706](https://github.com/craftcms/cms/discussions/12706))
+- Element indexes and relational fields now have the option to use card views. ([#6024](https://github.com/craftcms/cms/pull/6024))
+- Selected elements within relational fields now include a context menu with “View in a new tab”, “Edit”, and “Remove” options.
+- Selected elements within relational fields now include a dedicated drag handle.
+- Selected assets within Assets fields now include a “Preview file” option within their context menu.
+- Selected assets within Assets fields no longer open the file preview modal when their thumbnail is clicked on. The “Preview file” context menu option, or <kbd>Shift</kbd> + <kbd>Spacebar</kbd> keyboard shortcut can be used instead.
+- Improved the styling of element chips.
+- Table views are no longer available for element indexes on mobile.
 
 ### Accessibility
 - Improved source item navigation for screen readers. ([#12054](https://github.com/craftcms/cms/pull/12054))
 - Content tab menus are now implemented as disclosure menus. ([#12963](https://github.com/craftcms/cms/pull/12963))
+- Element selection modals now show checkboxes for selectable elements.
+- Elements within relational fields are no longer focusable at the container level.
+- Relational fields now use the proper list semantics.
 
 ### Administration
+- Field layouts can now designate an Assets field as the source for elements’ thumbnails. ([#12484](https://github.com/craftcms/cms/discussions/12484), [#12706](https://github.com/craftcms/cms/discussions/12706))
+- Field layouts can now choose to include custom fields’ contents in element cards. ([#12484](https://github.com/craftcms/cms/discussions/12484), [#6024](https://github.com/craftcms/cms/pull/6024))
 - Field layouts can now override custom fields’ handles.
 - Most custom fields can now be included multiple times within the same field layout. ([#8497](https://github.com/craftcms/cms/discussions/8497))
 - Entry types are now managed independently of sections.
@@ -38,10 +51,12 @@
 - All core element query param methods now return `static` instead of `self`. ([#11868](https://github.com/craftcms/cms/pull/11868))
 - Migrations that modify the project config no longer need to worry about whether the same changes were already applied to the incoming project config YAML files.
 - Selectize menus no longer apply special styling to options with the value `new`. The `_includes/forms/selectize.twig` control panel template should be used instead (or `craft\helpers\Cp::selectizeHtml()`/`selectizeFieldHtml()`), which will append an styled “Add” option when `addOptionFn` and `addOptionLabel` settings are passed. ([#11946](https://github.com/craftcms/cms/issues/11946))
+- Added the `elementChip()` and `elementCard()` global functions for control panel templates.
 - The `assets/move-asset` and `assets/move-folder` actions no longer include `success` keys in responses. ([#12159](https://github.com/craftcms/cms/pull/12159))
 - The `assets/upload` controller action now includes `errors` object in failure responses. ([#12159](https://github.com/craftcms/cms/pull/12159))
 - Added `craft\base\Element::shouldValidateTitle()`.
 - Added `craft\base\ElementContainerFieldInterface`, which should be implemented by fields which contain nested elements, such as Matrix.
+- Added `craft\base\ElementInterface::getCardBodyHtml()`.
 - Added `craft\base\ElementInterface::setLazyEagerLoadedElements()`.
 - Added `craft\base\ElementTrait::$eagerLoadInfo`.
 - Added `craft\base\ElementTrait::$elementQueryResult`.
@@ -54,6 +69,7 @@
 - Added `craft\base\FieldLayoutProviderInterface::getHandle()`.
 - Added `craft\base\FieldTrait::$layoutElement`.
 - Added `craft\base\NestedElementInterface`, which should be implemented by element types which could be nested by other elements.
+- Added `craft\base\ThumbableFieldInterface`.
 - Added `craft\base\conditions\ConditionInterface::createConditionRule()`.
 - Added `craft\behaviors\EventBehavior`.
 - Added `craft\controllers\EntryTypesController`.
@@ -103,6 +119,8 @@
 - Added `craft\fields\conditions\FieldConditionRuleTrait::fieldInstances()`.
 - Added `craft\fields\conditions\FieldConditionRuleTrait::setLayoutElementUid()`.
 - Added `craft\helpers\ArrayHelper::lastValue()`.
+- Added `craft\helpers\Cp::elementCardHtml()`.
+- Added `craft\helpers\Cp::elementChipHtml()`.
 - Added `craft\helpers\Db::defaultCollation()`.
 - Added `craft\helpers\Db::prepareForJsonColumn()`.
 - Added `craft\helpers\Gql::getSchemaContainedSections()`.
@@ -110,6 +128,8 @@
 - Added `craft\i18n\Locale::$aliasOf`.
 - Added `craft\i18n\Locale::setDisplayName()`.
 - Added `craft\migrations\BaseContentRefactorMigration`.
+- Added `craft\models\FieldLayout::getCardBodyFields()`.
+- Added `craft\models\FieldLayout::getThumbField()`.
 - Added `craft\models\Section::getCpEditUrl()`.
 - Added `craft\services\Entries::refreshEntryTypes()`.
 - Added `craft\services\Fields::$fieldContext`, which replaces `craft\services\Content::$fieldContext`.
@@ -123,11 +143,17 @@
 - Added `craft\web\twig\variables\Cp::getEntryTypeOptions()`.
 - All of the `craft\services\Sections` members have been moved into `craft\services\Entries`.
 - Renamed `craft\base\BlockElementInterface` to `NestedElementInterface`, and added a `getField()` method to it.
+- Renamed `craft\base\Element::EVENT_SET_TABLE_ATTRIBUTE_HTML` to `EVENT_DEFINE_ATTRIBUTE_HTML`.
 - Renamed `craft\base\Element::getHasCheckeredThumb()` to `hasCheckeredThumb()` and made it protected.
 - Renamed `craft\base\Element::getHasRoundedThumb()` to `hasRoundedThumb()` and made it protected.
 - Renamed `craft\base\Element::getThumbAlt()` to `thumbAlt()` and made it protected.
 - Renamed `craft\base\Element::getThumbUrl()` to `thumbUrl()` and made it protected.
+- Renamed `craft\base\Element::tableAttributeHtml()` to `attributeHtml()`.
+- Renamed `craft\base\ElementInterface::getTableAttributeHtml()` to `getAttributeHtml()`.
 - Renamed `craft\base\FieldInterface::valueType()` to `phpType()`.
+- Renamed `craft\base\PreviewableFieldInterface::getTableAttributeHtml()` to `getPreviewHtml()`.
+- Renamed `craft\events\SetElementTableAttributeHtmlEvent` to `DefineAttributeHtmlEvent`.
+- Renamed `craft\fields\BaseRelationField::tableAttributeHtml()` to `previewHtml()`.
 - Renamed `craft\fields\Matrix::$maxBlocks` to `$maxEntries`.
 - Renamed `craft\fields\Matrix::$minBlocks` to `$minEntries`.
 - Renamed `craft\web\CpScreenResponseBehavior::$additionalButtons()` and `additionalButtons()` to `$additionalButtonsHtml` and `additionalButtonsHtml()`. ([#13037](https://github.com/craftcms/cms/pull/13037))
@@ -146,6 +172,10 @@
 - `craft\i18n\I18N::getPrimarySiteLocale()` is now deprecated. `craft\models\Site::getLocale()` should be used instead.
 - `craft\i18n\I18N::getPrimarySiteLocaleId()` is now deprecated. `craft\models\Site::$language` should be used instead.
 - `craft\services\ProjectConfig::saveModifiedConfigData()` no longer has a `$writeExternalConfig` argument, and no longer writes out updated project config YAML files.
+- Deprecated the `_elements/element.twig` control panel template. `elementChip()` or `elementCard()` should be used instead.
+- Deprecated the `cp.elements.element` control panel template hook.
+- Deprecated `craft\events\DefineElementInnerHtmlEvent`.
+- Deprecated `craft\helpers\Cp::elementHtml()`. `elementChipHtml()` or `elementCardHtml()` should be used instead.
 - Removed `craft\base\ApplicationTrait::getMatrix()`.
 - Removed `craft\base\Element::$contentId`.
 - Removed `craft\base\ElementInterface::getContentTable()`.
@@ -228,6 +258,7 @@
 - Removed `craft\services\ProjectConfig::PATH_MATRIX_BLOCK_TYPES`.
 - Removed `craft\services\ProjectConfig::updateStoredConfigAfterRequest()`.
 - Removed `craft\services\Sections::reorderEntryTypes()`.
+- Added `Craft.BaseElementSelectInput::defineElementActions()`.
 
 ### System
 - Craft now requires PHP 8.1 or later.

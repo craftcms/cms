@@ -620,6 +620,8 @@ Craft.FieldLayoutDesigner.Element = Garnish.Base.extend({
   isField: false,
   attribute: null,
   requirable: false,
+  thumbable: false,
+  previewable: false,
   hasCustomWidth: false,
   hasSettings: false,
   settingsNamespace: null,
@@ -637,8 +639,12 @@ Craft.FieldLayoutDesigner.Element = Garnish.Base.extend({
       this.$container,
       'is-multi-instance'
     );
-    this.requirable =
-      this.isField && Garnish.hasAttr(this.$container, 'data-requirable');
+
+    if (this.isField) {
+      this.requirable = Garnish.hasAttr(this.$container, 'data-requirable');
+      this.thumbable = Garnish.hasAttr(this.$container, 'data-thumbable');
+      this.previewable = Garnish.hasAttr(this.$container, 'data-previewable');
+    }
 
     if (this.isField) {
       this.attribute = this.$container.data('attribute');
@@ -669,16 +675,15 @@ Craft.FieldLayoutDesigner.Element = Garnish.Base.extend({
     this.settingsNamespace = this.$container
       .data('settings-namespace')
       .replace(/\bELEMENT_UID\b/g, this.uid);
-    let settingsHtml = (this.$container.data('settings-html') || '').replace(
+    const settingsHtml = (this.$container.data('settings-html') || '').replace(
       /\bELEMENT_UID\b/g,
       this.uid
     );
-    let isRequired =
-      this.requirable && this.$container.hasClass('fld-required');
     this.hasCustomWidth =
       this.tab.designer.settings.customizableUi &&
       Garnish.hasAttr(this.$container, 'data-has-custom-width');
-    this.hasSettings = settingsHtml || this.requirable;
+    this.hasSettings =
+      settingsHtml || this.requirable || this.thumbable || this.previewable;
 
     if (this.hasSettings) {
       // create the setting container
@@ -696,7 +701,7 @@ Craft.FieldLayoutDesigner.Element = Garnish.Base.extend({
 
       const showSettings = () => {
         if (!this.slideout) {
-          this.createSettings(settingsHtml, isRequired);
+          this.createSettings(settingsHtml);
         } else {
           this.slideout.open();
         }
@@ -737,7 +742,7 @@ Craft.FieldLayoutDesigner.Element = Garnish.Base.extend({
     }
   },
 
-  createSettings: function (settingsHtml, isRequired) {
+  createSettings: function (settingsHtml) {
     const settingsJs = (this.$container.data('settings-js') || '').replace(
       /\bELEMENT_UID\b/g,
       this.uid
@@ -753,15 +758,46 @@ Craft.FieldLayoutDesigner.Element = Garnish.Base.extend({
     });
 
     const $fieldsContainer = this.slideout.$container.find('.fields:first');
+    let $extraFields = $();
 
     if (this.requirable) {
-      Craft.ui
-        .createLightswitchField({
+      $extraFields = $extraFields.add(
+        Craft.ui.createLightswitchField({
           label: Craft.t('app', 'Required'),
           name: `${this.settingsNamespace}[required]`,
-          on: isRequired,
+          on: this.config.required,
         })
-        .prependTo($fieldsContainer);
+      );
+    }
+
+    if (this.thumbable) {
+      $extraFields = $extraFields.add(
+        Craft.ui.createLightswitchField({
+          label: Craft.t(
+            'app',
+            'Use this field’s values for element thumbnails'
+          ),
+          name: `${this.settingsNamespace}[providesThumbs]`,
+          on: this.config.providesThumbs,
+        })
+      );
+    }
+
+    if (this.previewable) {
+      $extraFields = $extraFields.add(
+        Craft.ui.createLightswitchField({
+          label: Craft.t('app', 'Include this field in element cards'),
+          name: `${this.settingsNamespace}[includeInCards]`,
+          on: this.config.includeInCards,
+        })
+      );
+    }
+
+    if ($extraFields.length) {
+      if ($fieldsContainer.is(':parent')) {
+        $fieldsContainer.append('<hr/>');
+      }
+      $extraFields.appendTo($fieldsContainer);
     }
 
     if (this.isField) {
@@ -790,6 +826,36 @@ Craft.FieldLayoutDesigner.Element = Garnish.Base.extend({
         this.$editBtn.detach();
         this.$container.html($(response.data.selectorHtml).html());
         this.initUi();
+
+        if (this.config.providesThumbs) {
+          // make sure this is the only one
+          const $fields = this.tab.designer.$tabContainer.find('.fld-field');
+          for (let i = 0; i < $fields.length; i++) {
+            const $field = $fields.eq(i);
+            const element = $field.data('fld-element');
+            if (element && element !== this && element.config.providesThumbs) {
+              element.config = Object.assign({}, element.config, {
+                providesThumbs: false,
+              });
+              element.$container
+                .find('.fld-indicator[data-icon=asset]')
+                .remove();
+              if (element.slideout) {
+                const ls = element.slideout.$container
+                  .find('[name$="[providesThumbs]"]')
+                  .closest('.lightswitch')
+                  .data('lightswitch');
+                if (!ls) {
+                  console.warn(
+                    'Couldn’t find the Lightswitch instance for field'
+                  );
+                } else {
+                  ls.turnOff();
+                }
+              }
+            }
+          }
+        }
       })
       .catch((e) => {
         Craft.cp.displayError();
@@ -797,21 +863,8 @@ Craft.FieldLayoutDesigner.Element = Garnish.Base.extend({
       })
       .finally(() => {
         $submitBtn.removeClass('loading');
-        this.updateRequiredClass();
         this.slideout.close();
       });
-  },
-
-  updateRequiredClass: function () {
-    if (!this.requirable) {
-      return;
-    }
-
-    if (this.config.required) {
-      this.$container.addClass('fld-required');
-    } else {
-      this.$container.removeClass('fld-required');
-    }
   },
 
   get index() {

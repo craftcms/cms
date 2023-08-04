@@ -10,20 +10,20 @@ namespace craft\events;
 use yii\base\Event;
 
 /**
- * SetElementTableAttributeHtmlEvent class.
+ * DefineAttributeHtmlEvent class.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0.0
+ * @since 5.0.0
  */
-class SetElementTableAttributeHtmlEvent extends Event
+class DefineAttributeHtmlEvent extends Event
 {
     /**
-     * @var string The table attribute associated with this event.
+     * @var string The attribute associated with this event.
      */
     public string $attribute;
 
     /**
-     * @var string|null The HTML to represent a table attribute.
+     * @var string|null The attribute’s HTML.
      */
     public ?string $html = null;
 }

@@ -633,13 +633,14 @@ abstract class Field extends SavableComponent implements FieldInterface
     }
 
     /**
-     * Returns the HTML that should be shown for this field in Table View.
+     * Returns the HTML that should be shown for this field in table and card views.
      *
      * @param mixed $value The field’s value
      * @param ElementInterface $element The element the field is associated with
-     * @return string The HTML that should be shown for this field in Table View
+     * @return string The HTML that should be shown for this field in table and card views
+     * @since 5.0.0
      */
-    public function getTableAttributeHtml(mixed $value, ElementInterface $element): string
+    public function getPreviewHtml(mixed $value, ElementInterface $element): string
     {
         return ElementHelper::attributeHtml($value);
     }

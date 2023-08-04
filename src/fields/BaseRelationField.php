@@ -822,13 +822,14 @@ JS, [
             $size = Cp::ELEMENT_SIZE_LARGE;
         }
 
-        $view = Craft::$app->getView();
         $id = $this->getInputId();
         $html = "<div id='$id' class='elementselect'>" .
-            "<div class='elements" . ($size === Cp::ELEMENT_SIZE_LARGE ? ' flex-row flex-wrap' : '') . "'>";
+            "<div class='elements" . ($size === Cp::ELEMENT_SIZE_LARGE ? ' inline-chips' : '') . "'>";
 
         foreach ($value as $relatedElement) {
-            $html .= Cp::elementHtml($relatedElement, size: $size);
+            $html .= Cp::elementChipHtml($relatedElement, [
+                'size' => $size,
+            ]);
         }
 
         $html .= '</div></div>';
@@ -838,24 +839,24 @@ JS, [
     /**
      * @inheritdoc
      */
-    public function getTableAttributeHtml(mixed $value, ElementInterface $element): string
+    public function getPreviewHtml(mixed $value, ElementInterface $element): string
     {
         /** @var ElementQueryInterface|Collection $value */
         if ($value instanceof ElementQueryInterface) {
             $value = $this->_all($value, $element)->collect();
         }
 
-        return $this->tableAttributeHtml($value);
+        return $this->previewHtml($value);
     }
 
     /**
-     * Returns the HTML that should be shown for this field in Table View.
+     * Returns the HTML that should be shown for this field in table and card views.
      *
      * @param Collection $elements
      * @return string
-     * @since 3.6.3
+     * @since 5.0.0
      */
-    protected function tableAttributeHtml(Collection $elements): string
+    protected function previewHtml(Collection $elements): string
     {
         return Cp::elementPreviewHtml($elements->all());
     }
@@ -1391,6 +1392,8 @@ JS, [
         if ($this->allowLargeThumbsView) {
             $viewModes['large'] = Craft::t('app', 'Large Thumbnails');
         }
+
+        $viewModes['cards'] = Craft::t('app', 'Cards');
 
         return $viewModes;
     }

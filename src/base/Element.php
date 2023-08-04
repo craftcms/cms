@@ -20,7 +20,7 @@ use craft\elements\actions\DeleteActionInterface;
 use craft\elements\actions\Duplicate;
 use craft\elements\actions\Edit;
 use craft\elements\actions\SetStatus;
-use craft\elements\actions\View;
+use craft\elements\actions\View as ViewAction;
 use craft\elements\conditions\ElementCondition;
 use craft\elements\conditions\ElementConditionInterface;
 use craft\elements\db\ElementQuery;
@@ -31,6 +31,7 @@ use craft\elements\exporters\Raw;
 use craft\elements\User;
 use craft\errors\InvalidFieldException;
 use craft\events\AuthorizationCheckEvent;
+use craft\events\DefineAttributeHtmlEvent;
 use craft\events\DefineAttributeKeywordsEvent;
 use craft\events\DefineEagerLoadingMapEvent;
 use craft\events\DefineHtmlEvent;
@@ -52,7 +53,6 @@ use craft\events\RegisterElementTableAttributesEvent;
 use craft\events\RegisterPreviewTargetsEvent;
 use craft\events\SetEagerLoadedElementsEvent;
 use craft\events\SetElementRouteEvent;
-use craft\events\SetElementTableAttributeHtmlEvent;
 use craft\fieldlayoutelements\BaseField;
 use craft\helpers\App;
 use craft\helpers\ArrayHelper;
@@ -73,6 +73,7 @@ use craft\validators\SiteIdValidator;
 use craft\validators\SlugValidator;
 use craft\validators\StringValidator;
 use craft\web\UploadedFile;
+use craft\web\View;
 use DateTime;
 use Illuminate\Support\Collection;
 use ReflectionClass;
@@ -220,9 +221,9 @@ abstract class Element extends Component implements ElementInterface
      * ```php
      * use craft\base\Element;
      * use craft\elements\Entry;
+     * use craft\events\DefineAttributeHtmlEvent;
      * use craft\events\PrepareElementQueryForTableAttributeEvent;
      * use craft\events\RegisterElementTableAttributesEvent;
-     * use craft\events\SetElementTableAttributeHtmlEvent;
      * use craft\helpers\Cp;
      * use yii\base\Event;
      *
@@ -250,7 +251,7 @@ abstract class Element extends Component implements ElementInterface
      * Event::on(
      *     Entry::class,
      *     Element::EVENT_SET_TABLE_ATTRIBUTE_HTML,
-     *     function(SetElementTableAttributeHtmlEvent $e) {
+     *     function(DefineAttributeHtmlEvent $e) {
      *         $attribute = $e->attribute;
      *
      *         if ($attribute !== 'authorExpertise') {
@@ -321,9 +322,11 @@ abstract class Element extends Component implements ElementInterface
     public const EVENT_REGISTER_PREVIEW_TARGETS = 'registerPreviewTargets';
 
     /**
-     * @event SetElementTableAttributeHtmlEvent The event that is triggered when defining the HTML to represent a table attribute.
+     * @event DefineAttributeHtmlEvent The event that is triggered when defining an attribute’s HTML for table and card views.
+     * @see getAttributeHtml()
+     * @since 5.0.0
      */
-    public const EVENT_SET_TABLE_ATTRIBUTE_HTML = 'setTableAttributeHtml';
+    public const EVENT_DEFINE_ATTRIBUTE_HTML = 'defineAttributeHtml';
 
     /**
      * @event RegisterElementHtmlAttributesEvent The event that is triggered when registering the HTML attributes that should be included in the element’s DOM representation in the control panel.
@@ -986,9 +989,9 @@ abstract class Element extends Component implements ElementInterface
         }
 
         // Prepend View?
-        if (static::hasUris() && !$hasActionType(View::class)) {
+        if (static::hasUris() && !$hasActionType(ViewAction::class)) {
             $actions->prepend([
-                'type' => View::class,
+                'type' => ViewAction::class,
                 'label' => Craft::t('app', 'View {type}', [
                     'type' => static::lowerDisplayName(),
                 ]),
@@ -3042,6 +3045,18 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
+    public function getCardBodyHtml(): ?string
+    {
+        return implode("\n", array_map(
+            fn(PreviewableFieldInterface $field)
+                => Html::tag('div', $field->getPreviewHtml($this->getFieldValue($field->handle), $this)),
+            $this->getFieldLayout()?->getCardBodyFields($this),
+        ));
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function getRef(): ?string
     {
         return null;
@@ -3313,12 +3328,20 @@ abstract class Element extends Component implements ElementInterface
      */
     public function getThumbHtml(int $size): ?string
     {
+        $thumbField = $this->getFieldLayout()?->getThumbField();
+        if ($thumbField) {
+            $thumbHtml = $thumbField->getThumbHtml($this->getFieldValue($thumbField->handle), $this, $size);
+            if ($thumbHtml) {
+                return $thumbHtml;
+            }
+        }
+
         $thumbUrl = $this->thumbUrl($size);
 
         if ($thumbUrl !== null) {
             return Html::tag('div', '', [
                 'class' => array_filter([
-                    'elementthumb',
+                    'thumb',
                     $this->hasCheckeredThumb() ? 'checkered' : null,
                     $this->hasRoundedThumb() ? 'rounded' : null,
                 ]),
@@ -3340,7 +3363,7 @@ abstract class Element extends Component implements ElementInterface
             $thumbSvg = Html::modifyTagAttributes($thumbSvg, ['role' => 'img']);
             return Html::tag('div', $thumbSvg, [
                 'class' => array_filter([
-                    'elementthumb',
+                    'thumb',
                     $this->hasRoundedThumb() ? 'rounded' : null,
                 ]),
             ]);
@@ -4606,44 +4629,39 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
-    public function getTableAttributeHtml(string $attribute): string
+    public function getAttributeHtml(string $attribute): string
     {
         // Give plugins a chance to set this
-        $event = new SetElementTableAttributeHtmlEvent([
+        $event = new DefineAttributeHtmlEvent([
             'attribute' => $attribute,
         ]);
-        $this->trigger(self::EVENT_SET_TABLE_ATTRIBUTE_HTML, $event);
+        $this->trigger(self::EVENT_DEFINE_ATTRIBUTE_HTML, $event);
 
         if ($event->html !== null) {
             return $event->html;
         }
 
-        return $this->tableAttributeHtml($attribute);
+        return $this->attributeHtml($attribute);
     }
 
     /**
-     * Returns the HTML that should be shown for a given attribute in Table View.
-     *
-     * This method can be used to completely customize what actually shows up within the table’s body for a given
-     * attribute, rather than simply showing the attribute’s raw value.
+     * Returns the HTML that should be shown for a given attribute in table and card views.
      *
      * For example, if your elements have an `email` attribute that you want to wrap in a `mailto:` link, your
-     * `tableAttributeHtml()` method could do this:
+     * `attributeHtml()` method could do this:
      *
      * ```php
-     * switch ($attribute) {
-     *     case 'email':
-     *         return $this->email ? Html::mailto(Html::encode($this->email)) : '';
-     *     // ...
-     * }
-     * return parent::tableAttributeHtml($attribute);
+     * return match ($attribute) {
+     *     'email' => $this->email ? Html::mailto(Html::encode($this->email)) : '',
+     *     default => parent::attributeHtml($attribute),
+     * };
      * ```
      *
      * ::: warning
      * All untrusted text should be passed through [[Html::encode()]] to prevent XSS attacks.
      * :::
      *
-     * By default the following will be returned:
+     * By default, the following will be returned:
      *
      * - If the attribute name is `link` or `uri`, it will be linked to the front-end URL.
      * - If the attribute is a custom field handle, it will pass the responsibility off to the field type.
@@ -4651,11 +4669,12 @@ abstract class Element extends Component implements ElementInterface
      * - For anything else, it will output the attribute value as a string.
      *
      * @param string $attribute The attribute name.
-     * @return string The HTML that should be shown for a given attribute in Table View.
+     * @return string The HTML that should be shown for a given attribute in table and card views.
      * @throws InvalidConfigException
-     * @see getTableAttributeHtml()
+     * @see getAttributeHtml()
+     * @since 5.0.0
      */
-    protected function tableAttributeHtml(string $attribute): string
+    protected function attributeHtml(string $attribute): string
     {
         switch ($attribute) {
             case 'ancestors':
@@ -4665,13 +4684,13 @@ abstract class Element extends Component implements ElementInterface
                 }
                 $html = Html::beginTag('ul', ['class' => 'path']);
                 foreach ($ancestors as $ancestor) {
-                    $html .= Html::tag('li', Cp::elementHtml($ancestor));
+                    $html .= Html::tag('li', Cp::elementChipHtml($ancestor));
                 }
                 return $html . Html::endTag('ul');
 
             case 'parent':
                 $parent = $this->getParent();
-                return $parent ? Cp::elementHtml($parent) : '';
+                return $parent ? Cp::elementChipHtml($parent) : '';
 
             case 'link':
                 if (ElementHelper::isDraftOrRevision($this)) {
@@ -4761,7 +4780,7 @@ abstract class Element extends Component implements ElementInterface
                     return '';
                 }
                 $creator = $behavior->getCreator();
-                return $creator ? Cp::elementHtml($creator) : '';
+                return $creator ? Cp::elementChipHtml($creator) : '';
 
             case 'drafts':
                 if (!$this->hasEagerLoadedElements('drafts')) {
@@ -4775,7 +4794,11 @@ abstract class Element extends Component implements ElementInterface
                     $draft->setUiLabel($draft->draftName);
                 }
 
-                return Cp::elementPreviewHtml($drafts, Cp::ELEMENT_SIZE_SMALL, true, false, true, false);
+                return Cp::elementPreviewHtml(
+                    $drafts,
+                    showThumb: false,
+                    showDraftName: false,
+                );
 
             default:
                 // Is this a custom field?
@@ -4797,7 +4820,7 @@ abstract class Element extends Component implements ElementInterface
                                 }
                             }
 
-                            return $field->getTableAttributeHtml($value, $this);
+                            return $field->getPreviewHtml($value, $this);
                         }
                     }
 

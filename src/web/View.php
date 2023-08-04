@@ -326,7 +326,7 @@ class View extends \yii\web\View
         }
 
         // Register the control panel hooks
-        $this->hook('cp.elements.element', [$this, '_getCpElementHtml']);
+        $this->hook('cp.elements.element', [$this, '_elementChipHtml']);
     }
 
     /**
@@ -2209,13 +2209,15 @@ JS;
     }
 
     /**
-     * Returns the HTML for an element in the control panel.
+     * Renders an element’s chip HTML.
      *
      * @param array $context
      * @return string|null
      */
-    private function _getCpElementHtml(array $context): ?string
+    private function _elementChipHtml(array $context): ?string
     {
+        Craft::$app->getDeprecator()->log('hook:cp.elements.element', 'The `_elements/element.twig` template and `cp.elements.element` template hook are deprecated. The `elementChip()` function should be used instead.');
+
         if (!isset($context['element'])) {
             return null;
         }
@@ -2228,15 +2230,11 @@ JS;
 
         return Cp::elementHtml(
             $context['element'],
-            $context['context'] ?? 'index',
-            $size,
-            $context['name'] ?? null,
-            true,
-            true,
-            true,
-            true,
-            $context['single'] ?? false,
-            $context['autoReload'] ?? true,
+            context: $context['context'] ?? 'index',
+            size: $size,
+            inputName: $context['name'] ?? null,
+            single: $context['single'] ?? false,
+            autoReload: $context['autoReload'] ?? true,
         );
     }
 }

@@ -101,13 +101,26 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
     get viewMode() {
       if (this._viewMode === 'structure' && !this.canSortByStructure()) {
-        return 'table';
+        // return the default
+        return this.validateViewMode(null);
       }
-      return this._viewMode;
+
+      return this.validateViewMode(this._viewMode);
     },
 
     set viewMode(viewMode) {
-      this._viewMode = viewMode;
+      this._viewMode = viewMode ? this.validateViewMode(viewMode) : null;
+    },
+
+    get selectable() {
+      return !!(this.actions || this.settings.selectable);
+    },
+
+    get multiSelect() {
+      return !!(
+        this.actions ||
+        (this.settings.selectable && this.settings.multiSelect)
+      );
     },
 
     /**
@@ -1359,6 +1372,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         disabledElementIds: this.settings.disabledElementIds,
         viewState: $.extend({}, this.getSelectedSourceState()),
         paginated: this._isViewPaginated() ? 1 : 0,
+        showCheckboxes: this.selectable,
       };
 
       // override viewState.mode in case it's different from what's stored
@@ -1598,10 +1612,9 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       this.showingActionTriggers = false;
     },
 
-    updateActionTriggers: function () {
-      // Do we have an action UI to update?
-      if (this.actions) {
-        var totalSelected = this.view.getSelectedElements().length;
+    updateSelectAllCheckbox: function () {
+      if (this.$selectAllCheckbox) {
+        const totalSelected = this.view.getSelectedElements().length;
 
         if (totalSelected !== 0) {
           if (totalSelected === this.view.getEnabledElements().length) {
@@ -1613,11 +1626,21 @@ Craft.BaseElementIndex = Garnish.Base.extend(
             this.$selectAllCheckbox.removeClass('checked');
             this.$selectAllCheckbox.attr('aria-checked', 'mixed');
           }
-
-          this.showActionTriggers();
         } else {
           this.$selectAllCheckbox.removeClass('indeterminate checked');
           this.$selectAllCheckbox.attr('aria-checked', 'false');
+        }
+      }
+    },
+
+    updateActionTriggers: function () {
+      // Do we have an action UI to update?
+      if (this.actions) {
+        const totalSelected = this.view.getSelectedElements().length;
+
+        if (totalSelected !== 0) {
+          this.showActionTriggers();
+        } else {
           this.hideActionTriggers();
         }
       }
@@ -1800,7 +1823,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
     },
 
     getSelectedViewMode: function () {
-      return this.getSelectedSourceState('mode') || 'table';
+      return this.validateViewMode(this.getSelectedSourceState('mode') || null);
     },
 
     /**
@@ -2144,21 +2167,23 @@ Craft.BaseElementIndex = Garnish.Base.extend(
     },
 
     getViewModesForSource: function () {
-      var viewModes = [];
+      const viewModes = [];
 
-      if (Garnish.hasAttr(this.$source, 'data-has-structure')) {
+      if (!Garnish.isMobileBrowser(true)) {
+        if (Garnish.hasAttr(this.$source, 'data-has-structure')) {
+          viewModes.push({
+            mode: 'structure',
+            title: Craft.t('app', 'Display in a structured table'),
+            icon: Craft.orientation === 'rtl' ? 'structurertl' : 'structure',
+          });
+        }
+
         viewModes.push({
-          mode: 'structure',
-          title: Craft.t('app', 'Display in a structured table'),
-          icon: Craft.orientation === 'rtl' ? 'structurertl' : 'structure',
+          mode: 'table',
+          title: Craft.t('app', 'Display in a table'),
+          icon: 'list',
         });
       }
-
-      viewModes.push({
-        mode: 'table',
-        title: Craft.t('app', 'Display in a table'),
-        icon: 'list',
-      });
 
       if (this.$source && Garnish.hasAttr(this.$source, 'data-has-thumbs')) {
         viewModes.push({
@@ -2168,10 +2193,20 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         });
       }
 
+      viewModes.push({
+        mode: 'cards',
+        title: Craft.t('app', 'Display as cards'),
+        icon: 'cards',
+      });
+
       return viewModes;
     },
 
     doesSourceHaveViewMode: function (viewMode) {
+      if (!this.sourceViewModes) {
+        return false;
+      }
+
       for (var i = 0; i < this.sourceViewModes.length; i++) {
         if (this.sourceViewModes[i].mode === viewMode) {
           return true;
@@ -2179,6 +2214,18 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       }
 
       return false;
+    },
+
+    validateViewMode: function (viewMode) {
+      if (viewMode && this.doesSourceHaveViewMode(viewMode)) {
+        return viewMode;
+      }
+
+      if (this.sourceViewModes && this.sourceViewModes.length) {
+        return this.sourceViewModes[0].mode;
+      }
+
+      return this.doesSourceHaveViewMode('table') ? 'table' : 'cards';
     },
 
     selectViewMode: function (viewMode, force) {
@@ -2227,6 +2274,8 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         case 'table':
         case 'structure':
           return Craft.TableElementIndexView;
+        case 'cards':
+          return Craft.CardsElementIndexView;
         case 'thumbs':
           return Craft.ThumbsElementIndexView;
         default:
@@ -2645,6 +2694,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
     },
 
     _handleSelectionChange: function () {
+      this.updateSelectAllCheckbox();
       this.updateActionTriggers();
       this.onSelectionChange();
     },
@@ -2870,11 +2920,13 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         '.selectallcontainer:first'
       );
 
-      if (response.actions && response.actions.length) {
+      if (this.multiSelect || (response.actions && response.actions.length)) {
         if (this.$selectAllContainer.length) {
-          this.actions = response.actions;
-          this.actionsHeadHtml = response.actionsHeadHtml;
-          this.actionsBodyHtml = response.actionsBodyHtml;
+          if (response.actions && response.actions.length) {
+            this.actions = response.actions;
+            this.actionsHeadHtml = response.actionsHeadHtml;
+            this.actionsBodyHtml = response.actionsBodyHtml;
+          }
 
           // Create the select all checkbox
           this.$selectAllCheckbox = $('<div class="checkbox"/>')
@@ -2924,8 +2976,6 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       // Create the view
       // -------------------------------------------------------------
 
-      // Should we make the view selectable?
-      const selectable = this.actions || this.settings.selectable;
       const settings = Object.assign(
         {
           context: this.settings.context,
@@ -2934,10 +2984,10 @@ Craft.BaseElementIndex = Garnish.Base.extend(
               ? this.settings.batchSize
               : null,
           params: params,
-          selectable: selectable,
-          multiSelect: this.actions || this.settings.multiSelect,
+          selectable: this.selectable,
+          multiSelect: this.multiSelect,
           canSelectElement: this.settings.canSelectElement,
-          checkboxMode: !!this.actions,
+          checkboxMode: this.selectable,
           onSelectionChange: this._handleSelectionChange.bind(this),
         },
         this.getViewSettings()
@@ -2949,7 +2999,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       // -------------------------------------------------------------
 
       if (this._autoSelectElements) {
-        if (selectable) {
+        if (this.selectable) {
           for (var i = 0; i < this._autoSelectElements.length; i++) {
             this.view.selectElementById(this._autoSelectElements[i]);
           }
@@ -3582,10 +3632,14 @@ const ViewMenu = Garnish.Base.extend({
     if (this.$sortField) {
       if (this.elementIndex.viewMode === 'structure') {
         this.$sortField.addClass('hidden');
-        this.$tableColumnsField.addClass('first-child');
+        if (this.$tableColumnsField) {
+          this.$tableColumnsField.addClass('first-child');
+        }
       } else {
         this.$sortField.removeClass('hidden');
-        this.$tableColumnsField.removeClass('first-child');
+        if (this.$tableColumnsField) {
+          this.$tableColumnsField.removeClass('first-child');
+        }
       }
     }
 
@@ -3702,8 +3756,12 @@ const ViewMenu = Garnish.Base.extend({
   _buildMenu: function () {
     const $metaContainer = $('<div class="meta"/>').appendTo(this.$container);
     this.$sortField = this._createSortField().appendTo($metaContainer);
-    this.$tableColumnsField =
-      this._createTableColumnsField().appendTo($metaContainer);
+
+    if (!Garnish.isMobileBrowser(true)) {
+      this.$tableColumnsField =
+        this._createTableColumnsField().appendTo($metaContainer);
+    }
+
     this.updateSortField();
 
     this.$sortAttributeSelect.focus();

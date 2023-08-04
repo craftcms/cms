@@ -1,5 +1,4 @@
 {% apply spaceless %}
-
   {% for element in elements %}
     {% tag 'li' with {
       class: element.id in disabledElementIds ? 'disabled' : null,
@@ -7,12 +6,10 @@
         id: element.id,
       },
     } %}
-      {{ elementChip(element, {
+      {{ elementCard(element, {
         context: context ?? 'index',
-        size: 'large',
         checkbox: showCheckboxes,
       }) }}
     {% endtag %}
   {% endfor %}
-
 {% endapply -%}

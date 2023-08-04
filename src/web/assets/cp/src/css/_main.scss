@@ -86,6 +86,7 @@
     inset 0 0 0 3px hsla(var(--dark-focus-hsl), 0.7);
   --touch-target-size: 24px; /* Minimum recommended touch target size */
   --elements-busy-top-position: calc(50% - var(--size, 20px) / 2);
+  --lh: 1.42em;
 }
 
 body,
@@ -103,7 +104,7 @@ body {
   width: 100vw;
   overflow-x: hidden;
   @include fontSize(14);
-  line-height: 1.42;
+  line-height: var(--lh);
   color: var(--text-color);
   -webkit-font-smoothing: subpixel-antialiased;
 }
@@ -165,6 +166,7 @@ fieldset:last-child,
 
 .draghelper {
   box-sizing: border-box;
+  list-style-type: none;
 }
 
 .offset-drag-helper {
@@ -203,7 +205,6 @@ table.editable textarea {
 .menu ul.padded li a.sel:before,
 .menu .flex.padded.sel:before,
 .texticon:before,
-.element:before,
 #help:before,
 .secure:before,
 .insecure:before,
@@ -437,13 +438,20 @@ a {
     cursor: default;
   }
 
-  body.underline-links & {
+  body.underline-links &,
+  &:hover {
     text-decoration: underline;
   }
 }
 
-a:hover {
-  text-decoration: underline;
+a:not([href]) {
+  color: inherit;
+  cursor: inherit;
+
+  body.underline-links &,
+  &:hover {
+    text-decoration: none;
+  }
 }
 
 a.sel,
@@ -947,7 +955,7 @@ td.right {
 }
 
 .icon.move {
-  display: inline-block;
+  margin-top: -4px !important;
 }
 
 .icon.move:not(.disabled) {
@@ -1526,11 +1534,8 @@ ul.icons {
 
 .disabled {
   opacity: 0.25;
-}
-
-.disabled,
-.disabled .btn {
-  cursor: default;
+  pointer-events: none;
+  user-select: none;
 }
 
 .btn,
@@ -2727,7 +2732,7 @@ table {
 }
 
 .datatablesorthelper,
-.datatablesorthelper .element,
+.datatablesorthelper .chip,
 .datatablesorthelper a {
   cursor: move !important;
 }
@@ -2742,38 +2747,50 @@ table {
   border-bottom: none !important;
 }
 
-/* elements */
-$smallThumbSize: 34px;
-$largeThumbSize: 120px;
-$statusSize: 10px;
-$baseElementSidePadding: 7px;
-$elementInnerSpacing: 5px;
-
-.element {
+/* chips */
+.chip {
   position: relative;
+  display: flex;
+  align-items: center;
   cursor: default;
   user-select: none;
   font-weight: normal;
-  border-radius: var(--small-border-radius);
+  padding: var(--xs) var(--s);
   max-width: 100%;
+  gap: var(--xs);
+  border-radius: var(--large-border-radius);
+  background-color: var(--gray-050);
 
-  .label {
-    .segment:after {
-      display: inline-flex !important;
-      position: relative;
-      top: -2px;
-      @include margin(0, 5px, 0, 2px);
-      @include angle(right, var(--light-text-color), 1px);
+  &.small {
+    flex-direction: row;
+    height: 34px;
+    --thumb-size: 30px;
 
-      .sel & {
-        @include angle(right, var(--white), 1px);
-      }
+    & > .thumb {
+      margin: calc(var(--xs) * -1 + 2px) calc(var(--s) * -1 + 2px);
+      @include margin-right(2px);
     }
   }
 
-  &:focus,
-  li:focus & {
-    background-color: var(--gray-050);
+  &.large {
+    flex-direction: column;
+    --thumb-size: 120px;
+    min-width: calc(var(--s) * 2 + var(--thumb-size));
+
+    .chip-content {
+      width: 100%;
+    }
+  }
+
+  .chip-content {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: var(--xs);
+
+    .status {
+      margin: 0;
+    }
   }
 
   &.sel,
@@ -2791,15 +2808,15 @@ $elementInnerSpacing: 5px;
   }
 
   &.sel,
-  li.sel & {
+  .sel & {
     cursor: default;
 
-    &.hasthumb {
-      .elementthumb {
-        img {
-          box-shadow: 0 0 0 1px transparentize($darkSelColor, 0.9),
-            0 6px 4px -4px transparentize($darkSelColor, 0.8);
-        }
+    .thumb {
+      filter: brightness(0.85);
+
+      img {
+        box-shadow: 0 0 0 1px transparentize($darkSelColor, 0.9),
+          0 6px 4px -4px transparentize($darkSelColor, 0.8);
       }
     }
   }
@@ -2809,49 +2826,214 @@ $elementInnerSpacing: 5px;
     @include shadow;
   }
 
-  &.hasthumb {
-    .elementthumb:not(:empty) {
-      position: absolute;
-      display: flex;
-      justify-content: center;
-      -ms-flex-pack: center;
-      align-items: center;
-      -ms-flex-align: center;
+  & > .thumb {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: var(--thumb-size);
+    height: var(--thumb-size);
 
+    &.rounded {
       img,
       svg {
-        display: block;
-        flex-shrink: 0;
-        pointer-events: none;
-        border-radius: var(--small-border-radius);
-        max-width: 100%;
-        max-height: 100%;
-      }
-
-      &.rounded {
-        img,
-        svg {
-          border-radius: 50%;
-        }
+        border: var(--xs) solid transparent;
+        border-radius: 50%;
       }
     }
-    .elementthumb.open-preview {
-      cursor: pointer;
+
+    &.checkered img {
+      @include checkered-bg(8px);
+    }
+
+    img,
+    svg {
+      display: block;
+      flex-shrink: 0;
+      border-radius: var(--small-border-radius);
+      max-width: 100%;
+      max-height: 100%;
+    }
+  }
+}
+
+.inline-chips {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--xs);
+
+  .chip {
+    margin: 0 !important;
+  }
+}
+
+/** cards */
+.card {
+  position: relative;
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+  padding: var(--m);
+  gap: var(--l);
+  border-radius: var(--large-border-radius);
+  background-color: var(--gray-050);
+  cursor: default;
+  user-select: none;
+
+  &:after {
+    border-radius: var(--large-border-radius);
+  }
+
+  &.sel,
+  li.sel & {
+    --text-color: var(--white);
+    --medium-dark-text-color: var(--white);
+    --medium-text-color: var(--white);
+    --light-text-color: var(--white);
+    --link-color: var(--white);
+    --ui-control-color: var(--white);
+    @include custom-color-focus-ring(hsl(var(--light-focus-hsl)));
+    color: var(--white);
+    background-color: var(--dark-sel-color) !important;
+
+    & > .thumb {
+      background-color: var(--dark-sel-color) !important;
+      filter: brightness(0.85);
     }
   }
 
-  &.error {
-    [data-icon='alert'] {
-      margin-left: var(--xs);
+  & > .thumb {
+    position: relative;
+    display: flex;
+    align-items: stretch;
+    margin: calc(var(--m) * -1);
+    @include margin-right(0);
+    width: 120px;
+    min-width: 120px; // needed for flex
+    min-height: calc(var(--m) * 2 + var(--lh) * 3 + var(--xs));
+    background-color: var(--gray-100);
+    overflow: hidden;
+
+    &:after {
+      display: block;
+      content: '';
+      font-size: 0;
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      @include shadow();
+      width: 10px;
+
+      body.ltr & {
+        right: -10px;
+      }
+
+      body.rtl & {
+        left: -10px;
+      }
     }
+
+    &,
+    &:after {
+      @include border-radius(
+        var(--large-border-radius),
+        0,
+        0,
+        var(--large-border-radius)
+      );
+    }
+
+    img,
+    svg {
+      width: 100%;
+      max-height: 120px;
+      object-fit: cover;
+    }
+  }
+
+  .card-content,
+  .card-body {
+    display: flex;
+    flex-direction: column;
+    gap: var(--xs);
+    flex: 1;
+  }
+
+  .card-content {
+    flex: 1 0 0 !important;
+    overflow: hidden;
+    position: relative;
+    --focus-ring: var(--inner-focus-ring);
+
+    .card-heading {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      gap: 5px;
+
+      .status {
+        margin: 0;
+        flex: 0 0 10px;
+      }
+
+      .label {
+        font-weight: 600;
+      }
+    }
+
+    .card-body > * {
+      --max-lines: 2;
+      margin: 0;
+      max-height: calc(var(--lh) * var(--max-lines));
+      overflow: hidden;
+      text-wrap: pretty;
+    }
+  }
+
+  & > .card-actions {
+    align-items: flex-start !important;
+    position: relative;
+    top: -2px;
+  }
+}
+
+.card-grid {
+  display: grid !important;
+  gap: var(--xs) !important;
+  grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+
+  & > li {
+    border-radius: var(--large-border-radius);
+    height: 100%;
+
+    & > .card {
+      margin: 0 !important;
+      height: 100%;
+    }
+  }
+}
+
+.chip,
+.card {
+  // prevent double focus ring (chip/card already gets it)
+  .checkbox:before {
+    box-shadow: none !important;
   }
 
   .label {
-    display: inline-block;
+    display: flex;
+    align-items: center;
+    gap: var(--xs);
     overflow: hidden;
-    vertical-align: bottom; // https://stackoverflow.com/a/37427386/1688568
-    text-overflow: ellipsis;
-    max-width: 100%;
+
+    .label-link {
+      flex: 1 1 0;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
 
     .draft-label {
       display: inline-block;
@@ -2863,128 +3045,54 @@ $elementInnerSpacing: 5px;
       background: var(--gray-100);
       border-radius: var(--large-border-radius);
     }
-  }
 
-  &.small,
-  &.large:not(.hasthumb) {
-    display: inline-block;
-    padding: $baseElementSidePadding;
-    box-sizing: border-box;
+    .segment:after {
+      display: inline-flex !important;
+      position: relative;
+      top: -2px;
+      @include margin(0, 5px, 0, 2px);
+      @include angle(right, var(--light-text-color), 1px);
 
-    &.hasstatus {
-      @include padding-left(
-        $baseElementSidePadding + $statusSize + $elementInnerSpacing
-      );
-
-      .status {
-        position: absolute;
-        @include left($baseElementSidePadding);
-        top: calc(50% - 5px);
-      }
-
-      .icon:not(.delete) {
-        position: absolute;
-        @include left($baseElementSidePadding - 1);
-        top: calc(50% - 11px);
-      }
-    }
-
-    &.hasthumb {
-      @include padding-left($smallThumbSize + $elementInnerSpacing);
-
-      .elementthumb:not(:empty) {
-        top: calc(50% - 17px);
-        @include left(0);
-        width: $smallThumbSize;
-        height: $smallThumbSize;
-
-        &.checkered img {
-          @include checkered-bg(8px);
-        }
-      }
-
-      &.hasstatus {
-        @include padding-left(
-          $smallThumbSize + $elementInnerSpacing * 2 + $statusSize
-        );
-
-        .status {
-          @include left($smallThumbSize + $elementInnerSpacing);
-        }
+      .sel & {
+        @include angle(right, var(--white), 1px);
       }
     }
   }
 
-  &.large.hasthumb {
-    display: block;
-    padding: #{$baseElementSidePadding + $largeThumbSize + $elementInnerSpacing}
-      $baseElementSidePadding $baseElementSidePadding;
-    width: #{120px + $baseElementSidePadding + $baseElementSidePadding};
-    box-sizing: border-box;
+  & > .chip-content > .chip-actions,
+  & > .card-actions {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    @include margin-right(-4px);
 
-    &.hasstatus {
-      @include padding-left(
-        $baseElementSidePadding + $statusSize + $elementInnerSpacing
-      );
-
-      .status {
-        position: absolute;
-        @include left($baseElementSidePadding);
-        top: #{$baseElementSidePadding + $largeThumbSize + $elementInnerSpacing +
-          6};
-      }
-    }
-
-    .elementthumb:not(:empty) {
-      top: $baseElementSidePadding;
-      @include left(0);
-      width: 100%;
-      height: $largeThumbSize;
-
-      &.checkered img {
-        @include checkered-bg(15px);
-      }
-    }
-
-    .label {
-      display: block;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      word-wrap: normal;
-    }
-  }
-
-  &.removable {
-    .label {
-      @include padding-right(20px);
-    }
-
-    .delete:before {
-      color: var(--ui-control-color);
-    }
-
-    &.small,
-    &.large:not(.hasthumb) {
-      .delete {
-        position: absolute;
-        top: calc(50% - 11px);
-        @include right($baseElementSidePadding);
-      }
-    }
-
-    &.large.hasthumb {
-      .delete {
-        position: absolute;
-        @include right($baseElementSidePadding);
-      }
-    }
-  }
-
-  &:not(.removable) {
-    .delete {
+    &:empty {
       display: none;
     }
+
+    & > * {
+      @include touch-target;
+    }
+
+    .settings {
+      color: var(--ui-control-color);
+
+      &:before {
+        @include margin-right(0 !important);
+      }
+
+      &:not(:hover):not(:active) {
+        background-color: transparent;
+      }
+    }
+
+    .move {
+      margin-top: -2px !important;
+    }
+  }
+
+  &.error .label .label-link {
+    color: var(--error-color);
   }
 }
 
@@ -3044,7 +3152,7 @@ $checkboxPadding: $checkboxSize + 4;
 
   &.main {
     .source-path {
-      margin: -22px -22px 24px;
+      margin: -22px calc(var(--padding) * -1 + 2px) 24px;
     }
   }
 
@@ -3086,8 +3194,8 @@ $checkboxPadding: $checkboxSize + 4;
   }
 
   .header {
-    margin: -22px -22px 24px;
-    padding: 14px 24px;
+    margin: calc(var(--xl) * -1 + 2px) calc(var(--padding) * -1 + 2px) var(--xl);
+    padding: 14px var(--padding);
     background-color: var(--gray-050);
     box-shadow: none;
     border-radius: var(--small-border-radius);
@@ -3099,7 +3207,7 @@ $checkboxPadding: $checkboxSize + 4;
     .selectallcontainer {
       display: flex;
       align-items: center;
-      gap: $elementInnerSpacing;
+      gap: 5px;
       cursor: default;
     }
   }
@@ -3143,56 +3251,27 @@ $checkboxPadding: $checkboxSize + 4;
     .enabled-label {
       margin-left: var(--xs);
     }
+
+    .chip {
+      background-color: transparent;
+    }
   }
 
   // thumbs views
   .thumbsview {
     display: grid;
-    gap: 5px;
-    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: var(--xs);
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
 
     li {
       position: relative;
       @include margin(0, 1px, 1px, 0);
       max-width: 226px;
+      border-radius: var(--large-border-radius);
 
       &:hover {
-        .element {
+        .chip {
           background-color: var(--gray-050);
-        }
-      }
-
-      .element.large.hasthumb {
-        width: unset;
-      }
-
-      &.has-checkbox {
-        .element.hasthumb {
-          &:not(.hasstatus) {
-            @include padding-left(
-              $baseElementSidePadding + $checkboxSize + $elementInnerSpacing
-            );
-          }
-
-          &.hasstatus {
-            @include padding-left(
-              $baseElementSidePadding + $checkboxSize + $elementInnerSpacing +
-                $statusSize + $elementInnerSpacing
-            );
-
-            .status {
-              @include left(
-                $baseElementSidePadding + $checkboxSize + $elementInnerSpacing
-              );
-            }
-          }
-        }
-
-        .checkbox {
-          position: absolute;
-          top: $baseElementSidePadding + $largeThumbSize + $elementInnerSpacing +
-            (20px - $checkboxSize) * 0.5;
-          @include left($baseElementSidePadding);
         }
       }
 
@@ -3335,7 +3414,7 @@ $checkboxPadding: $checkboxSize + 4;
 
   .row {
     &.draghover {
-      .element {
+      .chip {
         z-index: 2;
         border-radius: 15px;
         box-shadow: inset 0 0 0 2px var(--link-color);
@@ -3353,19 +3432,14 @@ $checkboxPadding: $checkboxSize + 4;
 .elementselect {
   position: relative;
   min-height: 34px;
-  margin-top: -7px;
 
   .elements {
     display: flex;
-    flex-direction: column;
     align-items: flex-start;
+    gap: var(--xs);
 
-    &.flex-row {
-      flex-direction: row;
-    }
-
-    &.flex-wrap {
-      flex-wrap: wrap;
+    &:not(.inline-chips) {
+      flex-direction: column;
     }
 
     li {
@@ -3373,12 +3447,9 @@ $checkboxPadding: $checkboxSize + 4;
     }
   }
 
-  .elements:after {
-    @include clearafter;
-  }
-
-  .element {
-    @include margin(7px, 7px, 0, 0);
+  .chip:not(:first-child),
+  .card:not(:first-child) {
+    margin-top: var(--s);
   }
 
   .flex,
@@ -3386,21 +3457,8 @@ $checkboxPadding: $checkboxSize + 4;
     clear: both;
   }
 
-  .element {
+  .chip {
     z-index: 1;
-
-    &.small {
-      max-width: 100%;
-
-      .label {
-        display: block;
-        max-width: 100%;
-        box-sizing: border-box;
-        overflow: hidden;
-        white-space: nowrap;
-        text-overflow: ellipsis;
-      }
-    }
   }
 
   .flex {
@@ -3413,7 +3471,7 @@ $checkboxPadding: $checkboxSize + 4;
     li {
       background-position: 0 2px !important;
 
-      .element {
+      .chip {
         margin: 0;
       }
     }
@@ -5155,7 +5213,7 @@ $min2ColWidth: 400px;
   padding-bottom: 50px;
   user-select: none;
 
-  .header {
+  & > .header {
     padding-top: 14px;
     padding-bottom: 14px;
     text-align: center;
@@ -5201,28 +5259,20 @@ $min2ColWidth: 400px;
             min-height: calc(100% - 48px);
           }
 
+          .header {
+            margin: 0 0 var(--m);
+          }
+
           .tableview table {
-            .element {
-              display: inline-block;
-            }
-
             tr {
-              &.disabled {
-                opacity: 1;
-                color: var(--gray-200);
-
-                .element {
-                  opacity: 0.25;
-                }
-              }
-
               th,
               td {
                 cursor: default;
               }
 
-              td:first-child {
-                @include padding-left(7px);
+              // prevent double focus ring (the row already gets it)
+              .checkbox:before {
+                box-shadow: none !important;
               }
             }
           }
@@ -5376,7 +5426,6 @@ $min2ColWidth: 400px;
   margin-bottom: 4px;
 
   .icon.move {
-    margin-top: -3px;
     @include margin-right(10px);
     position: relative;
     z-index: 1;
@@ -5796,7 +5845,7 @@ $min2ColWidth: 400px;
     display: inline;
   }
 
-  .element.small {
+  .chip.small {
     clear: none;
   }
 
@@ -5821,7 +5870,7 @@ $min2ColWidth: 400px;
   // todo: why are body.ltr and body.rtl needed here?
   body.ltr &,
   body.rtl & {
-    &.elementselect .element {
+    &.elementselect .chip {
       float: none !important;
       display: inline-block;
     }
@@ -6239,14 +6288,21 @@ input.checkbox:disabled + label,
 input.checkbox:disabled + label,
 div.checkbox.disabled:before,
 div.checkbox.disabled + label {
-  opacity: 0.25;
+  opacity: 0.25 !important;
 }
 
 input.checkbox:checked + label:before,
 div.checkbox.checked:before,
 .sel div.checkbox:before,
 input.checkbox:indeterminate + label:before,
-div.checkbox.indeterminate:before {
+div.checkbox.indeterminate:before,
+.elementselectormodal
+  .body
+  .content
+  .main
+  .elements
+  .disabled
+  .checkbox:before {
   @include icon;
   line-height: var(--checkbox-size);
   color: var(--gray-900);
@@ -6254,7 +6310,14 @@ div.checkbox.indeterminate:before {
 
 input.checkbox:checked:not(:indeterminate) + label:before,
 div.checkbox.checked:not(.indeterminate):before,
-.sel div.checkbox:not(.indeterminate):before {
+.sel div.checkbox:not(.indeterminate):before,
+.elementselectormodal
+  .body
+  .content
+  .main
+  .elements
+  .disabled
+  .checkbox:before {
   content: 'check';
   font-size: 15px;
 }
@@ -7327,10 +7390,6 @@ $titlebarBorderRadius: calc(var(--large-border-radius) - 1px);
       &:not(:hover):not(:active) {
         background-color: transparent;
       }
-    }
-
-    & > .move {
-      margin-top: -3px !important;
     }
 
     & > .status {

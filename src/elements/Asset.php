@@ -2420,24 +2420,24 @@ JS;
     /**
      * @inheritdoc
      */
-    public function getTableAttributeHtml(string $attribute): string
+    public function getAttributeHtml(string $attribute): string
     {
         if ($this->isFolder) {
             return '';
         }
 
-        return parent::getTableAttributeHtml($attribute);
+        return parent::getAttributeHtml($attribute);
     }
 
     /**
      * @inheritdoc
      */
-    protected function tableAttributeHtml(string $attribute): string
+    protected function attributeHtml(string $attribute): string
     {
         switch ($attribute) {
             case 'uploader':
                 $uploader = $this->getUploader();
-                return $uploader ? Cp::elementHtml($uploader) : '';
+                return $uploader ? Cp::elementChipHtml($uploader) : '';
 
             case 'filename':
                 return Html::tag('span', Html::encode($this->_filename), [
@@ -2467,7 +2467,7 @@ JS;
                 return $this->locationHtml();
         }
 
-        return parent::tableAttributeHtml($attribute);
+        return parent::attributeHtml($attribute);
     }
 
     /**
@@ -2664,7 +2664,7 @@ JS;
             },
             Craft::t('app', 'Uploaded by') => function() {
                 $uploader = $this->getUploader();
-                return $uploader ? Cp::elementHtml($uploader) : false;
+                return $uploader ? Cp::elementChipHtml($uploader) : false;
             },
             Craft::t('app', 'Dimensions') => function() {
                 $dimensions = $this->getDimensions();

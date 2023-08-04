@@ -298,7 +298,8 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
         });
 
         // will the user be allowed to move items in this folder?
-        const canMoveSubItems = !!currentFolder.canMoveSubItems;
+        const canMoveSubItems =
+          this.context === 'index' && !!currentFolder.canMoveSubItems;
         this.settings.selectable = this.settings.selectable || canMoveSubItems;
         this.settings.multiSelect =
           this.settings.multiSelect || canMoveSubItems;
@@ -630,7 +631,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
       for (let i = 0; i < this.$listedFolders.length; i++) {
         const $folder = this.$listedFolders.eq(i);
         const $label = $folder.find('.label');
-        const $title = $label.find('.title');
+        const $link = $label.find('.label-link');
         const folderId = parseInt($folder.data('folder-id'));
         const folderName = $folder.data('folder-name');
         const label = Craft.t('app', '{name} folder', {
@@ -643,14 +644,12 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
         }
         const sourcePath = $folder.data('source-path');
         if (sourcePath) {
-          const $a = $('<a/>', {
+          $link.attr({
             href: Craft.getCpUrl(sourcePath[sourcePath.length - 1].uri),
-            html: $title.html(),
             role: 'button',
             'aria-label': label,
           });
-          $label.empty().append($a);
-          this.addListener($a, 'activate', (ev) => {
+          this.addListener($link, 'activate', (ev) => {
             this.sourcePath = sourcePath;
             this.clearSearch(false);
             this.updateElements().then(() => {

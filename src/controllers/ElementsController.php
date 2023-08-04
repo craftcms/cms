@@ -81,9 +81,6 @@ class ElementsController extends Controller
     private array $_visibleLayoutElements;
     private ?string $_selectedTab = null;
     private bool $_prevalidate;
-    private ?string $_context = null;
-    private ?string $_thumbSize = null;
-    private ?string $_viewMode = null;
 
     /**
      * @inheritdoc
@@ -120,9 +117,6 @@ class ElementsController extends Controller
         $this->_visibleLayoutElements = $this->_param('visibleLayoutElements') ?? [];
         $this->_selectedTab = $this->_param('selectedTab');
         $this->_prevalidate = (bool)$this->_param('prevalidate');
-        $this->_context = $this->_param('context');
-        $this->_thumbSize = $this->_param('thumbSize');
-        $this->_viewMode = $this->_param('viewMode');
 
         unset($this->_attributes['failMessage']);
         unset($this->_attributes['redirect']);
@@ -1513,38 +1507,6 @@ JS, [
     }
 
     /**
-     * Returns the HTML for a single element
-     *
-     * @return Response
-     * @throws BadRequestHttpException
-     * @throws ForbiddenHttpException
-     */
-    public function actionGetElementHtml(): Response
-    {
-        $this->requireAcceptsJson();
-
-        $element = $this->_element();
-
-        if (!$element) {
-            throw new BadRequestHttpException('No element was identified by the request.');
-        }
-
-        $this->element = $element;
-
-        $context = $this->_context ?? 'field';
-        $thumbSize = $this->_thumbSize;
-
-        if (!in_array($thumbSize, [Cp::ELEMENT_SIZE_SMALL, Cp::ELEMENT_SIZE_LARGE], true)) {
-            $thumbSize = $this->_viewMode === 'thumbs' ? Cp::ELEMENT_SIZE_LARGE : Cp::ELEMENT_SIZE_SMALL;
-        }
-
-        $html = Cp::elementHtml($element, $context, $thumbSize);
-        $headHtml = $this->getView()->getHeadHtml();
-
-        return $this->asJson(compact('html', 'headHtml'));
-    }
-
-    /**
      * Returns any recent activity for an element, and records that the user is viewing the element.
      *
      * @return Response
@@ -1858,7 +1820,7 @@ JS, [
             'element' => $element->toArray($element->attributes()),
         ];
         $response = $this->asSuccess($message, $data, $this->getPostedRedirectUrl($element), [
-            'details' => !$element->dateDeleted ? Cp::elementHtml($element) : null,
+            'details' => !$element->dateDeleted ? Cp::elementChipHtml($element) : null,
         ]);
 
         if ($addAnother && $this->_addAnother) {

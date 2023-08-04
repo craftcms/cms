@@ -652,7 +652,7 @@ class Matrix extends Field implements
             }
         }
 
-        $view->registerJs($js);
+        $view->registerJs("(() => {\n$js\n})();");
 
         return $view->renderTemplate('_components/fieldtypes/Matrix/input.twig',
             [

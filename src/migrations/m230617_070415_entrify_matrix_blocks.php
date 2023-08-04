@@ -3,6 +3,8 @@
 namespace craft\migrations;
 
 use Craft;
+use craft\base\PreviewableFieldInterface;
+use craft\base\ThumbableFieldInterface;
 use craft\db\Migration;
 use craft\db\Query;
 use craft\db\Table;
@@ -100,6 +102,9 @@ class m230617_070415_entrify_matrix_blocks extends Migration
                 $fieldLayout = $fieldLayoutUid ? $fieldsService->getLayoutByUid($fieldLayoutUid) : new FieldLayout();
                 $fieldLayout->type = Entry::class;
                 $entryType->setFieldLayout($fieldLayout);
+                /** @var PreviewableFieldInterface|null $thumbField */
+                $thumbField = null;
+                $foundPreviewableField = false;
 
                 foreach ($fieldLayout?->getCustomFieldElements() ?? [] as $layoutElement) {
                     $subField = $layoutElement->getField();
@@ -134,6 +139,18 @@ class m230617_070415_entrify_matrix_blocks extends Migration
                     ], [
                         'uid' => $subField->uid,
                     ], updateTimestamp: false);
+
+                    if (!$thumbField && $subField instanceof ThumbableFieldInterface) {
+                        $layoutElement->providesThumbs = true;
+                        $thumbField = $subField;
+                    } elseif (!$foundPreviewableField && $subField instanceof PreviewableFieldInterface) {
+                        $layoutElement->includeInCards = true;
+                        $foundPreviewableField = true;
+                    }
+                }
+
+                if (!$foundPreviewableField && $thumbField instanceof PreviewableFieldInterface) {
+                    $thumbField->layoutElement->includeInCards = true;
                 }
             }
 

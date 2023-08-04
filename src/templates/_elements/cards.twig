@@ -2,19 +2,19 @@
 {% set disabled = disabled ?? null %}
 {% set viewMode = viewMode ?? null %}
 
-<ul class="elements">
+<ul class="elements card-grid">
   {% for element in elements %}
     <li>
-      {% set element = elementChip(element, {
+      {% set html = elementCard(element, {
         context: context ?? 'index',
         size: size ?? (viewMode == 'large' ? 'large' : 'small'),
         inputName: inputName ?? ((name ?? false) ? "#{name}[]" : null),
         checkbox: showCheckboxes ?? false,
       }) %}
       {% if disabled %}
-        {% set element = element|removeClass('removable') %}
+        {% set html = html|removeClass('removable') %}
       {% endif %}
-      {{ element|raw }}
+      {{ html|raw }}
     </li>
   {% endfor %}
 </ul>

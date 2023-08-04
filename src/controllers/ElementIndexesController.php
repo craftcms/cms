@@ -694,7 +694,7 @@ class ElementIndexesController extends BaseElementsController
         }
 
         $disabledElementIds = $this->request->getParam('disabledElementIds', []);
-        $showCheckboxes = !empty($this->actions);
+        $showCheckboxes = !empty($this->actions) || $this->request->getParam('showCheckboxes');
 
         if ($this->sourceKey) {
             $responseData['html'] = $elementType::indexHtml(
@@ -911,11 +911,13 @@ class ElementIndexesController extends BaseElementsController
         $attributeHtml = [];
 
         foreach ($attributes as [$attribute]) {
-            $attributeHtml[$attribute] = $element->getTableAttributeHtml($attribute);
+            $attributeHtml[$attribute] = $element->getAttributeHtml($attribute);
         }
 
         return $this->asJson([
-            'elementHtml' => Cp::elementHtml($element, $this->context),
+            'elementHtml' => Cp::elementChipHtml($element, [
+                'context' => $this->context,
+            ]),
             'attributeHtml' => $attributeHtml,
         ]);
     }

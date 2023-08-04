@@ -1659,7 +1659,7 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
             $owner = $this->getOwner();
 
             do {
-                array_unshift($crumbs, ['html' => Cp::elementHtml($owner)]);
+                array_unshift($crumbs, ['html' => Cp::elementChipHtml($owner)]);
                 if (!$owner instanceof NestedElementInterface) {
                     break;
                 }
@@ -1736,12 +1736,12 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
     /**
      * @inheritdoc
      */
-    protected function tableAttributeHtml(string $attribute): string
+    protected function attributeHtml(string $attribute): string
     {
         switch ($attribute) {
             case 'author':
                 $author = $this->getAuthor();
-                return $author ? Cp::elementHtml($author) : '';
+                return $author ? Cp::elementChipHtml($author) : '';
             case 'section':
                 return Html::encode(Craft::t('site', $this->getSection()->name));
             case 'type':
@@ -1751,7 +1751,7 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
                     return Craft::t('app', 'Unknown');
                 }
             default:
-                return parent::tableAttributeHtml($attribute);
+                return parent::attributeHtml($attribute);
         }
     }
 

@@ -10,6 +10,8 @@ namespace craft\fieldlayoutelements;
 use Craft;
 use craft\base\ElementInterface;
 use craft\base\FieldInterface;
+use craft\base\PreviewableFieldInterface;
+use craft\base\ThumbableFieldInterface;
 use craft\errors\FieldNotFoundException;
 use craft\helpers\ArrayHelper;
 
@@ -29,6 +31,18 @@ class CustomField extends BaseField
      * @since 5.0.0
      */
     public ?string $handle = null;
+
+    /**
+     * @var bool Whether this field should be used to define element thumbnails.
+     * @since 5.0.0
+     */
+    public bool $providesThumbs = false;
+
+    /**
+     * @var bool Whether this field’s contents should be included in element cards.
+     * @since 5.0.0
+     */
+    public bool $includeInCards = false;
 
     /**
      * @var FieldInterface|null The custom field this layout field is based on.
@@ -150,8 +164,34 @@ class CustomField extends BaseField
         return ArrayHelper::merge(parent::selectorAttributes(), [
             'data' => [
                 'id' => $this->_field->id,
+                'thumbable' => $this->_field instanceof ThumbableFieldInterface,
+                'previewable' => $this->_field instanceof PreviewableFieldInterface,
             ],
         ]);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    protected function selectorIndicators(): array
+    {
+        $indicators = parent::selectorIndicators();
+
+        if ($this->_field instanceof ThumbableFieldInterface && $this->providesThumbs) {
+            $indicators[] = [
+                'label' => Craft::t('app', 'This field provides thumbnails for elements'),
+                'icon' => 'asset',
+            ];
+        }
+
+        if ($this->_field instanceof PreviewableFieldInterface && $this->includeInCards) {
+            $indicators[] = [
+                'label' => Craft::t('app', 'This field is included in element cards'),
+                'icon' => 'check',
+            ];
+        }
+
+        return $indicators;
     }
 
     /**

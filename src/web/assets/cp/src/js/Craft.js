@@ -2191,7 +2191,7 @@ $.extend(Craft, {
    * @returns {Object}
    */
   getElementInfo: function (element) {
-    var $element = $(element);
+    let $element = $(element);
 
     if (!$element.hasClass('element')) {
       $element = $element.find('.element:first');
@@ -2203,7 +2203,7 @@ $.extend(Craft, {
       label: $element.data('label'),
       status: $element.data('status'),
       url: $element.data('url'),
-      hasThumb: $element.hasClass('hasthumb'),
+      hasThumb: $element.hasClass('has-thumb'),
       $element: $element,
     };
   },
@@ -2215,7 +2215,7 @@ $.extend(Craft, {
    * @param {string} size
    */
   setElementSize: function (element, size) {
-    var $element = $(element);
+    const $element = $(element);
 
     if (size !== 'small' && size !== 'large') {
       size = 'small';
@@ -2225,12 +2225,12 @@ $.extend(Craft, {
       return;
     }
 
-    var otherSize = size === 'small' ? 'large' : 'small';
+    const otherSize = size === 'small' ? 'large' : 'small';
 
     $element.addClass(size).removeClass(otherSize);
 
-    if ($element.hasClass('hasthumb')) {
-      var $oldImg = $element.find('> .elementthumb > img'),
+    if ($element.hasClass('has-thumb')) {
+      const $oldImg = $element.find('> .thumb > img'),
         imgSize = size === 'small' ? '30' : '100',
         $newImg = $('<img/>', {
           sizes: imgSize + 'px',
@@ -2441,40 +2441,49 @@ if (typeof BroadcastChannel !== 'undefined') {
       if (!$elements.length) {
         return;
       }
-      const data = {
-        type: $elements.data('type'),
-        id: ev.data.id,
-        instances: [],
-      };
+      const elementsBySite = {};
       for (let i = 0; i < $elements.length; i++) {
         const $element = $elements.eq(i);
-        data.instances.push(
-          Object.assign(
-            {
-              siteId: $element.data('site-id'),
-            },
-            $element.data('settings')
-          )
-        );
+        const siteId = $element.data('site-id');
+        if (typeof elementsBySite[siteId] === 'undefined') {
+          elementsBySite[siteId] = {
+            key: i,
+            type: $element.data('type'),
+            id: ev.data.id,
+            siteId,
+            instances: [],
+          };
+        }
+        elementsBySite[siteId].instances.push($element.data('settings'));
       }
-      Craft.sendActionRequest('POST', 'app/render-element', {data}).then(
+      const data = {
+        elements: Object.values(elementsBySite),
+      };
+      Craft.sendActionRequest('POST', 'app/render-elements', {data}).then(
         ({data}) => {
-          for (let i = 0; i < $elements.length; i++) {
-            const $element = $elements.eq(i);
-            if (data.elementHtml[i]) {
-              const $replacement = $(data.elementHtml[i]);
-              for (let attribute of $replacement[0].attributes) {
-                if (attribute.name === 'class') {
-                  $element.addClass(attribute.value);
-                } else {
-                  $element.attr(attribute.name, attribute.value);
-                }
+          const instances = data.elements[ev.data.id] || {};
+          for (let key of Object.keys(instances)) {
+            const $element = $elements.eq(key);
+            const $replacement = $(instances[key]);
+            for (let attribute of $replacement[0].attributes) {
+              if (attribute.name === 'class') {
+                $element.addClass(attribute.value);
+              } else {
+                $element.attr(attribute.name, attribute.value);
               }
-              const $inputs = $element.find('input,button').detach();
-              $element.html($replacement.html());
-              if ($inputs.length) {
-                $inputs.prependTo($element);
-              }
+            }
+            const $actions = $element
+              .find('.chip-actions,.card-actions')
+              .detach();
+            const $inputs = $element.find('input,button').detach();
+            $element.html($replacement.html());
+            if ($actions.length) {
+              $element
+                .find('.chip-actions,.card-actions')
+                .replaceWith($actions);
+            }
+            if ($inputs.length) {
+              $inputs.appendTo($element);
             }
           }
           Craft.cp.elementThumbLoader.load($elements);
