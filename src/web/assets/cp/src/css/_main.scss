@@ -4967,6 +4967,10 @@ $min2ColWidth: 400px;
   display: none;
   top: 0;
 
+  &.tooltip-hud {
+    display: block;
+  }
+
   &.has-footer .tip-bottom {
     background-image: url(../images/hudtip_bottom_gray.png);
   }
@@ -5290,6 +5294,51 @@ $min2ColWidth: 400px;
       position: absolute;
       top: 0;
       @include right(-24px);
+    }
+  }
+}
+
+/* recent activity container */
+.activity-container {
+  &:not(:last-child) {
+    @include margin-right(var(--s));
+  }
+
+  ul {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: var(--xs);
+
+    li {
+      .activity-btn {
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        display: block;
+
+        .elementthumb {
+          position: relative;
+          width: 100%;
+          height: 100%;
+          border-radius: 50px;
+          background: var(--gray-050);
+          overflow: hidden;
+          border: 2px solid var(--white);
+          box-shadow: 0 1px 2px 1px transparentize($grey900, 0.9);
+
+          img,
+          svg {
+            display: block;
+            width: 100%;
+            height: 100%;
+          }
+        }
+      }
+
+      &:not(:last-child) {
+        @include margin-right(-10px);
+      }
     }
   }
 }

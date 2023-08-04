@@ -1,6 +1,8 @@
 # Release Notes for Craft CMS 4.5 (WIP)
 
 ### Content Management
+- Entry and category edit pages now show other authors who are currently editing the same element. ([#13420](https://github.com/craftcms/cms/pull/13420))
+- Entry and category edit pages now display a notification when the element has been saved by another author. ([#13420](https://github.com/craftcms/cms/pull/13420))
 - Table fields can now have a “Row heading” column. ([#13231](https://github.com/craftcms/cms/pull/13231))
 - Table fields now have a “Static Rows” setting. ([#13231](https://github.com/craftcms/cms/pull/13231))
 - Table fields no longer show a heading row, if all heading values are blank. ([#13231](https://github.com/craftcms/cms/pull/13231))
@@ -73,6 +75,8 @@
 - Added `craft\services\Addresses::$formatter`, which can be used to override the default address formatter. ([#13242](https://github.com/craftcms/cms/pull/13242), [#12615](https://github.com/craftcms/cms/discussions/12615))
 - Added `craft\services\Addresses::EVENT_DEFINE_ADDRESS_SUBDIVISIONS`. ([#13361](https://github.com/craftcms/cms/pull/13361))
 - Added `craft\services\Addresses::defineAddressSubdivisions()`. ([#13361](https://github.com/craftcms/cms/pull/13361))
+- Added `craft\services\Elements::getRecentActivity()`. ([#13420](https://github.com/craftcms/cms/pull/13420))
+- Added `craft\services\Elements::trackActivity()`. ([#13420](https://github.com/craftcms/cms/pull/13420))
 - Added `craft\services\Structures::ACTION_APPEND`. ([#13429](https://github.com/craftcms/cms/pull/13429))
 - Added `craft\services\Structures::ACTION_PLACE_AFTER`. ([#13429](https://github.com/craftcms/cms/pull/13429))
 - Added `craft\services\Structures::ACTION_PLACE_BEFORE`. ([#13429](https://github.com/craftcms/cms/pull/13429))
@@ -103,6 +107,7 @@
 - Added `Craft.BaseUploader`. ([#13313](https://github.com/craftcms/cms/pull/13313))
 - Added `Craft.createUploader()`. ([#13313](https://github.com/craftcms/cms/pull/13313))
 - Added `Craft.registerUploaderClass()`. ([#13313](https://github.com/craftcms/cms/pull/13313))
+- Added `Craft.Tooltip`.
 
 ### System
 - Added support for setting environmental values in a “secrets” PHP file, identified by a `CRAFT_SECRETS_PATH` environment variable. ([#13283](https://github.com/craftcms/cms/pull/13283))

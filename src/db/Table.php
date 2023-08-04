@@ -41,6 +41,8 @@ abstract class Table
     public const DEPRECATIONERRORS = '{{%deprecationerrors}}';
     /** @since 3.2.0 */
     public const DRAFTS = '{{%drafts}}';
+    /** @since 4.5.0 */
+    public const ELEMENTACTIVITY = '{{%elementactivity}}';
     public const ELEMENTS = '{{%elements}}';
     public const ELEMENTS_SITES = '{{%elements_sites}}';
     public const RESOURCEPATHS = '{{%resourcepaths}}';
