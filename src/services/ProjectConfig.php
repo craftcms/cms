@@ -1200,12 +1200,15 @@ class ProjectConfig extends Component
             $this->set($path, $value, 'Project config rebuild', false, true);
         }
 
+        // Reset the component name map
+        $this->set(self::PATH_META_NAMES, []);
+        $this->_processProjectConfigNameChanges();
+
         // Make sure we save it all.
         $this->_saveConfigAfterRequest();
         $this->updateConfigVersion();
 
         if ($this->writeYamlAutomatically) {
-            $this->_processProjectConfigNameChanges();
             $this->updateYamlFiles();
         }
 
