@@ -400,6 +400,59 @@ class ArrayHelper extends \yii\helpers\ArrayHelper
     }
 
     /**
+     * Returns a copy of a multidimensional associative array without the deepest key defined in the $keys array.
+     *
+     * For example
+     * ```php
+     * // Array we want to remove nested key from
+     * $array = ['foodTypes' => [
+     *      'fruits' => [
+     *          'citrus' => ['lemon', 'orange'],
+     *          'stone' => ['plum', 'peach'],
+     *      ],
+     *      'vegetables' => [
+     *          'root' => ['carrot', 'radish'],
+     *          'leaf' => ['spinach', 'lettuce'],
+     *      ],
+     * ]];
+     *
+     * // Call the method
+     * $withoutStoneFruits = \craft\helpers\ArrayHelper::withoutNestedKey($array, ['foodTypes', 'fruits', 'stone']);
+     *
+     * // Result $withoutStoneFruits
+     * ['foodTypes' => [
+     *      'fruits' => [
+     *          'citrus' => ['lemon', 'orange'],
+     *      ],
+     *      'vegetables' => [
+     *          'root' => ['carrot', 'radish'],
+     *          'leaf' => ['spinach', 'lettuce'],
+     *      ],
+     * ]];
+     *
+     * ```
+     *
+     * @param array $array
+     * @param array $keys
+     * @param int $level
+     * @return array
+     * @since 4.4.17
+     */
+    public static function withoutNestedKey(array $array, array $keys, int $level = 0): array
+    {
+        if ($level >= count($keys)) {
+            return $array;
+        }
+        if (isset($array[$keys[$level]]) && $level == count($keys) - 1) {
+            static::remove($array, $keys[$level]);
+        } elseif (isset($array[$keys[$level]])) {
+            $array[$keys[$level]] = self::withoutNestedKey($array[$keys[$level]], $keys, $level + 1);
+        }
+
+        return $array;
+    }
+
+    /**
      * Returns a copy of an array without items matching the given value.
      *
      * @param array $array

@@ -342,6 +342,7 @@ class RepairController extends Controller
      * @throws \yii\base\InvalidConfigException
      * @throws \yii\base\NotSupportedException
      * @throws \yii\web\ServerErrorHttpException
+     * @since 4.4.17
      */
     public function actionProjectConfigCleanMetaNames(): int
     {
@@ -350,7 +351,8 @@ class RepairController extends Controller
         $config = $projectConfigService->get();
         $metaNamesConfig = $projectConfigService->get(ProjectConfig::PATH_META_NAMES);
 
-        unset($config['meta']['__names__']); // ideally, this should be unset dynamically
+        // remove ['meta']['__names__'] from the config before we search through it
+        $config = ArrayHelper::withoutNestedKey($config, explode('.', ProjectConfig::PATH_META_NAMES));
         $jsonConfig = ProjectConfigHelper::encodeValueAsString($config);
 
         $this->stdout('Cleaning project config meta names ...' . PHP_EOL);
