@@ -436,14 +436,6 @@ Craft.BaseElementIndex = Garnish.Base.extend(
           showOnInit: false,
           serialized: queryParams.filters,
         });
-      } else if (
-        this.$source.data('default-filter') &&
-        !this.filterHudExists()
-      ) {
-        this.createFilterHud({
-          showOnInit: false,
-          conditionConfig: this.$source.data('default-filter'),
-        });
       }
 
       // Select the default sort attribute/direction
@@ -1983,7 +1975,15 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
       this.updateSourceMenu();
       this.updateViewMenu();
-      this.updateFilterBtn();
+
+      if (!this.filterHudExists() && this.$source.data('default-filter')) {
+        this.createFilterHud({
+          showOnInit: false,
+          conditionConfig: this.$source.data('default-filter'),
+        });
+      } else {
+        this.updateFilterBtn();
+      }
 
       this.sourcePath =
         this.sourcePaths[this.sourceKey] ||

@@ -289,6 +289,15 @@ class Install extends Migration
             'dateLastMerged' => $this->dateTime(),
             'saved' => $this->boolean()->notNull()->defaultValue(true),
         ]);
+        $this->createTable(Table::ELEMENTACTIVITY, [
+            'elementId' => $this->integer()->notNull(),
+            'userId' => $this->integer()->notNull(),
+            'siteId' => $this->integer()->notNull(),
+            'draftId' => $this->integer()->null(),
+            'type' => $this->string()->notNull(),
+            'timestamp' => $this->dateTime(),
+            'PRIMARY KEY([[elementId]], [[userId]], [[type]])',
+        ]);
         $this->createTable(Table::ELEMENTS, [
             'id' => $this->primaryKey(),
             'canonicalId' => $this->integer(),
@@ -762,6 +771,7 @@ class Install extends Migration
         $this->createIndex(null, Table::DEPRECATIONERRORS, ['key', 'fingerprint'], true);
         $this->createIndex(null, Table::DRAFTS, ['creatorId', 'provisional'], false);
         $this->createIndex(null, Table::DRAFTS, ['saved'], false);
+        $this->createIndex(null, Table::ELEMENTACTIVITY, ['elementId', 'timestamp', 'userId'], false);
         $this->createIndex(null, Table::ELEMENTS, ['dateDeleted'], false);
         $this->createIndex(null, Table::ELEMENTS, ['fieldLayoutId'], false);
         $this->createIndex(null, Table::ELEMENTS, ['type'], false);
@@ -936,6 +946,10 @@ class Install extends Migration
         $this->addForeignKey(null, Table::CRAFTIDTOKENS, ['userId'], Table::USERS, ['id'], 'CASCADE', null);
         $this->addForeignKey(null, Table::DRAFTS, ['creatorId'], Table::USERS, ['id'], 'SET NULL', null);
         $this->addForeignKey(null, Table::DRAFTS, ['canonicalId'], Table::ELEMENTS, ['id'], 'CASCADE', null);
+        $this->addForeignKey(null, Table::ELEMENTACTIVITY, ['elementId'], Table::ELEMENTS, ['id'], 'CASCADE', null);
+        $this->addForeignKey(null, Table::ELEMENTACTIVITY, ['userId'], Table::USERS, ['id'], 'CASCADE', null);
+        $this->addForeignKey(null, Table::ELEMENTACTIVITY, ['siteId'], Table::SITES, ['id'], 'CASCADE', null);
+        $this->addForeignKey(null, Table::ELEMENTACTIVITY, ['draftId'], Table::DRAFTS, ['id'], 'CASCADE', null);
         $this->addForeignKey(null, Table::ELEMENTS, ['canonicalId'], Table::ELEMENTS, ['id'], 'SET NULL');
         $this->addForeignKey(null, Table::ELEMENTS, ['draftId'], Table::DRAFTS, ['id'], 'CASCADE', null);
         $this->addForeignKey(null, Table::ELEMENTS, ['revisionId'], Table::REVISIONS, ['id'], 'CASCADE', null);

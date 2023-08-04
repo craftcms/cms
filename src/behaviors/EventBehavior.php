@@ -14,7 +14,7 @@ use yii\base\Event;
  * Event behavior adds events to an object that will carry on to clones of the owner.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 5.0.0
+ * @since 4.5.0
  */
 class EventBehavior extends Behavior
 {
