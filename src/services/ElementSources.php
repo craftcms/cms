@@ -379,14 +379,24 @@ class ElementSources extends Component
                 }
             }
 
-            if (isset($source['defaultFilter']) && $source['defaultFilter'] instanceof ConditionInterface) {
-                $source['defaultFilter'] = $source['defaultFilter']->getConfig();
-            }
-
+            $this->normalizeNativeSource($source);
             $normalized[] = $source;
         }
 
         return $normalized;
+    }
+
+    private function normalizeNativeSource(array &$source): void
+    {
+        if (isset($source['defaultFilter']) && $source['defaultFilter'] instanceof ConditionInterface) {
+            $source['defaultFilter'] = $source['defaultFilter']->getConfig();
+        }
+
+        if (isset($source['nested'])) {
+            foreach ($source['nested'] as &$nested) {
+                $this->normalizeNativeSource($nested);
+            }
+        }
     }
 
     /**

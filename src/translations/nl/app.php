@@ -1464,7 +1464,6 @@ return [
     'The field type “{type}” could not be found.' => 'Kan het veldtype \'{type}\' niet vinden.',
     'The file failed to upload to the server properly.' => 'Het bestand is niet correct naar de server geüpload.',
     'The file “{name}” does not appear to be an image.' => 'Het bestand “{name}” lijkt geen beeld te zijn.',
-    'The file “{path}” does not appear to be an image.' => 'Het bestand “{path}” lijkt geen afbeelding te zijn.',
     'The filesystem doesn’t contain any files.' => 'Het bestandssysteem bevat geen bestanden.',
     'The following <a href="{url}">aliases</a> are defined:' => 'De volgende <a href="{url}">aliassen</a> zijn gedefinieerd:',
     'The following licensing issues can be resolved with a single purchase on Craft Console.' => 'De volgende licentieproblemen kunnen worden opgelost met een enkele aankoop in Craft Console.',
