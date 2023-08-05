@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- `meta.__names__` values in the project config are now updated throughout the process of applying incoming project config changes, rather than at the end of the request.
 - The `project-config/rebuild` command now rebuilds the `meta.__names__` array from scratch. ([#13456](https://github.com/craftcms/cms/issues/13456))
 - Fixed a bug where `Craft.BaseElementIndexView::this.canSelectElement()` wasn’t getting applied for lazy-loaded elements.
 - Fixed a bug where setting an element query’s `status` praam to `archived` would always yield zero results. ([#13465](https://github.com/craftcms/cms/issues/13465))
