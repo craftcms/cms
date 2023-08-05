@@ -63,9 +63,11 @@ class ProjectConfigData extends ReadOnlyProjectConfigData
         $projectConfig = Craft::$app->getProjectConfig();
         $valueChanged = $triggerUpdate || $projectConfig->forceUpdate || ProjectConfigHelper::encodeValueAsString($oldValue) !== ProjectConfigHelper::encodeValueAsString($newValue);
 
-        if ($valueChanged) {
+        if ($valueChanged || $force) {
             $this->updateContainedProjectConfigNames(pathinfo($path, PATHINFO_EXTENSION), $oldValue, $newValue);
+        }
 
+        if ($valueChanged) {
             if (!$projectConfig->muteEvents) {
                 $event = new ConfigEvent(compact('path', 'oldValue', 'newValue'));
                 if ($newValue === null && $oldValue !== null) {
