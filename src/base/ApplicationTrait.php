@@ -455,6 +455,8 @@ trait ApplicationTrait
     /**
      * Invokes a callback method when Craft is fully initialized.
      *
+     * If Craft is already fully initialized, the callback will be invoked immediately.
+     *
      * @param callable $callback
      * @since 4.3.5
      */

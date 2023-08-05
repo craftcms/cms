@@ -115,7 +115,9 @@ class ProjectConfig extends Component
     public const PATH_GRAPHQL_PUBLIC_TOKEN = self::PATH_GRAPHQL . '.' . 'publicToken';
     public const PATH_GRAPHQL_SCHEMAS = self::PATH_GRAPHQL . '.' . 'schemas';
     public const PATH_IMAGE_TRANSFORMS = 'imageTransforms';
-    public const PATH_META_NAMES = 'meta.__names__';
+    /** @since 4.4.17 */
+    public const PATH_META = 'meta';
+    public const PATH_META_NAMES = self::PATH_META . '.__names__';
     public const PATH_PLUGINS = 'plugins';
     public const PATH_ROUTES = 'routes';
     public const PATH_SCHEMA_VERSION = self::PATH_SYSTEM . '.schemaVersion';
@@ -636,7 +638,10 @@ class ProjectConfig extends Component
         $this->_applyingExternalChanges = true;
 
         $changes = $this->_getPendingChanges($configData);
-        $incomingConfig = Craft::createObject(ReadOnlyProjectConfigData::class, ['data' => $configData]);
+        $incomingConfig = Craft::createObject(ReadOnlyProjectConfigData::class, [
+            'data' => $configData,
+            'projectConfig' => $this,
+        ]);
 
         $this->_applyChanges($changes, $this->getCurrentWorkingConfig(), $incomingConfig);
     }
@@ -778,8 +783,6 @@ class ProjectConfig extends Component
      */
     public function saveModifiedConfigData(): void
     {
-        $this->_processProjectConfigNameChanges();
-
         if (!empty($this->_appliedChanges)) {
             $deltaChanges = [];
             $db = Craft::$app->getDb();
@@ -1198,6 +1201,10 @@ class ProjectConfig extends Component
         $this->readOnly = false;
 
         $config = $this->getInternalConfig()->export();
+
+        // don't touch `meta`
+        unset($config[self::PATH_META]);
+
         $config[self::PATH_CATEGORY_GROUPS] = $this->_getCategoryGroupData();
         $config[self::PATH_DATE_MODIFIED] = DateTimeHelper::currentTimeStamp();
         $config[self::PATH_ELEMENT_SOURCES] = $this->_getElementSourceData($config[self::PATH_ELEMENT_SOURCES] ?? []);
@@ -1222,9 +1229,12 @@ class ProjectConfig extends Component
         ]);
         $this->trigger(self::EVENT_REBUILD, $event);
 
+        // Reset the component name map
+        $this->_setInternal(self::PATH_META_NAMES, [], updateTimestamp: false, force: true);
+
         // Process the changes
         foreach ($event->config as $path => $value) {
-            $this->set($path, $value, 'Project config rebuild', false, true);
+            $this->_setInternal($path, $value, 'Project config rebuild', updateTimestamp: false, force: true);
         }
 
         // Make sure we save it all.
@@ -1232,7 +1242,6 @@ class ProjectConfig extends Component
         $this->updateConfigVersion();
 
         if ($this->writeYamlAutomatically) {
-            $this->_processProjectConfigNameChanges();
             $this->writeYamlFiles();
         }
 
@@ -1645,18 +1654,32 @@ class ProjectConfig extends Component
     }
 
     /**
-     * Process any queued up project config name changes.
+     * Sets a UUID/name mapping on the working config.
      *
-     * @throws \yii\db\Exception
+     * @param string $uid
+     * @param string $name
+     * @since 4.4.17
      */
-    private function _processProjectConfigNameChanges(): void
+    public function setNameMapping(string $uid, string $name): void
     {
-        if (!$this->readOnly) {
-            foreach ($this->getCurrentWorkingConfig()->getProjectConfigNameChanges() as $uid => $name) {
-                // call _setInternal() so we avoid recursive calls to _saveConfigAfterRequest() via set()
-                $this->_setInternal(sprintf('%s.%s', self::PATH_META_NAMES, $uid), $name, updateTimestamp: false);
-            }
-        }
+        $this->setNameMappingInternal($uid, $name);
+    }
+
+    /**
+     * Removes a UUID/name mapping on the working config.
+     *
+     * @param string $uid
+     * @since 4.4.17
+     */
+    public function removeNameMapping(string $uid): void
+    {
+        $this->setNameMappingInternal($uid, null);
+    }
+
+    private function setNameMappingInternal(string $uid, ?string $name): void
+    {
+        // call _setInternal() so we avoid recursive calls to _saveConfigAfterRequest() via set()
+        $this->_setInternal(sprintf('%s.%s', self::PATH_META_NAMES, $uid), $name, updateTimestamp: false);
     }
 
     /**
@@ -1751,7 +1774,10 @@ class ProjectConfig extends Component
     protected function getCurrentWorkingConfig(): ProjectConfigData
     {
         if ($this->_currentWorkingConfig === null) {
-            $this->_currentWorkingConfig = Craft::createObject(ProjectConfigData::class, ['data' => $this->getInternalConfig()->export()]);
+            $this->_currentWorkingConfig = Craft::createObject(ProjectConfigData::class, [
+                'data' => $this->getInternalConfig()->export(),
+                'projectConfig' => $this,
+            ]);
         }
 
         return $this->_currentWorkingConfig;
@@ -1765,11 +1791,15 @@ class ProjectConfig extends Component
     private function _loadInternalConfig(): ReadOnlyProjectConfigData
     {
         if (!Craft::$app->getIsInstalled()) {
-            return Craft::createObject(ReadOnlyProjectConfigData::class);
+            return Craft::createObject(ReadOnlyProjectConfigData::class, [
+                'projectConfig' => $this,
+            ]);
         }
 
         if (version_compare(Craft::$app->getInfo()->schemaVersion, '3.1.1', '<')) {
-            return Craft::createObject(ReadOnlyProjectConfigData::class);
+            return Craft::createObject(ReadOnlyProjectConfigData::class, [
+                'projectConfig' => $this,
+            ]);
         }
 
         if (version_compare(Craft::$app->getInfo()->schemaVersion, '3.4.4', '<')) {
@@ -1790,7 +1820,10 @@ class ProjectConfig extends Component
                 }
             }
 
-            return Craft::createObject(ReadOnlyProjectConfigData::class, ['data' => $data]);
+            return Craft::createObject(ReadOnlyProjectConfigData::class, [
+                'data' => $data,
+                'projectConfig' => $this,
+            ]);
         }
 
         // See if we can get away with using the cached data
@@ -1817,7 +1850,10 @@ class ProjectConfig extends Component
             return ProjectConfigHelper::cleanupConfig($data);
         }, $this->cacheDuration, $this->getCacheDependency());
 
-        return Craft::createObject(ReadOnlyProjectConfigData::class, ['data' => $data]);
+        return Craft::createObject(ReadOnlyProjectConfigData::class, [
+            'data' => $data,
+            'projectConfig' => $this,
+        ]);
     }
 
     /**

@@ -1274,12 +1274,8 @@ class User extends Element implements IdentityInterface
      */
     protected function thumbSvg(): ?string
     {
-        $name = $this->getName();
-        $words = StringHelper::splitOnWords($name);
-        if (count($words) > 2) {
-            $words = [$words[0], end($words)];
-        }
-        $initials = implode('', array_map(fn($word) => mb_strtoupper(mb_substr($word, 0, 1)), $words));
+        $names = array_filter([$this->firstName, $this->lastName]) ?: [$this->getName()];
+        $initials = implode('', array_map(fn($name) => mb_strtoupper(mb_substr($name, 0, 1)), $names));
 
         // Choose a color based on the UUID
         $uid = strtolower($this->uid ?? '00ff');
