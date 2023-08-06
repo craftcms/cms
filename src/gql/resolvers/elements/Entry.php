@@ -9,10 +9,10 @@ namespace craft\gql\resolvers\elements;
 
 use Craft;
 use craft\elements\db\ElementQuery;
+use craft\elements\ElementCollection;
 use craft\elements\Entry as EntryElement;
 use craft\gql\base\ElementResolver;
 use craft\helpers\Gql as GqlHelper;
-use Illuminate\Support\Collection;
 use yii\base\UnknownMethodException;
 
 /**
@@ -54,7 +54,7 @@ class Entry extends ElementResolver
         $pairs = GqlHelper::extractAllowedEntitiesFromSchema('read');
 
         if (!isset($pairs['sections'])) {
-            return Collection::empty();
+            return ElementCollection::empty();
         }
 
         $sectionUids = array_flip($pairs['sections']);

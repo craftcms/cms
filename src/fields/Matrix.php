@@ -49,7 +49,6 @@ use craft\validators\ArrayValidator;
 use craft\web\assets\matrix\MatrixAsset;
 use craft\web\View;
 use GraphQL\Type\Definition\Type;
-use Illuminate\Support\Collection;
 use Throwable;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
@@ -501,7 +500,7 @@ class Matrix extends Field implements
      */
     public function serializeValue(mixed $value, ?ElementInterface $element = null): mixed
     {
-        /** @var EntryQuery|Collection $value */
+        /** @var EntryQuery|ElementCollection $value */
         $serialized = [];
         $new = 0;
 
@@ -685,7 +684,7 @@ class Matrix extends Field implements
      */
     public function isValueEmpty(mixed $value, ElementInterface $element): bool
     {
-        /** @var EntryQuery|Collection $value */
+        /** @var EntryQuery|ElementCollection $value */
         return $value->count() === 0;
     }
 
@@ -696,7 +695,7 @@ class Matrix extends Field implements
      */
     public function validateEntries(ElementInterface $element): void
     {
-        /** @var EntryQuery|Collection $value */
+        /** @var EntryQuery|ElementCollection $value */
         $value = $element->getFieldValue($this->handle);
 
         if ($value instanceof EntryQuery) {
@@ -764,7 +763,7 @@ class Matrix extends Field implements
      */
     protected function searchKeywords(mixed $value, ElementInterface $element): string
     {
-        /** @var EntryQuery|Collection $value */
+        /** @var EntryQuery|ElementCollection $value */
         $keywords = [];
 
         foreach ($value->all() as $entry) {
@@ -784,7 +783,7 @@ class Matrix extends Field implements
      */
     public function getStaticHtml(mixed $value, ElementInterface $element): string
     {
-        /** @var EntryQuery|Collection $value */
+        /** @var EntryQuery|ElementCollection $value */
         $entries = $value->all();
 
         if (empty($entries)) {
@@ -942,7 +941,7 @@ class Matrix extends Field implements
 
         // Repopulate the entry query if this is a new element
         if ($resetValue || $isNew) {
-            /** @var EntryQuery|Collection $value */
+            /** @var EntryQuery|ElementCollection $value */
             $value = $element->getFieldValue($this->handle);
             if ($value instanceof EntryQuery) {
                 $this->_populateQuery($value, $element);
@@ -963,9 +962,9 @@ class Matrix extends Field implements
     {
         $elementsService = Craft::$app->getElements();
 
-        /** @var EntryQuery|Collection $value */
+        /** @var EntryQuery|ElementCollection $value */
         $value = $owner->getFieldValue($this->handle);
-        if ($value instanceof Collection) {
+        if ($value instanceof ElementCollection) {
             $entries = $value->all();
             $saveAll = true;
         } else {
@@ -1183,9 +1182,9 @@ class Matrix extends Field implements
         bool $force = false,
     ): void {
         $elementsService = Craft::$app->getElements();
-        /** @var EntryQuery|Collection $value */
+        /** @var EntryQuery|ElementCollection $value */
         $value = $source->getFieldValue($this->handle);
-        if ($value instanceof Collection) {
+        if ($value instanceof ElementCollection) {
             $entries = $value->all();
         } else {
             $entries = $value->getCachedResult() ?? (clone $value)->status(null)->all();

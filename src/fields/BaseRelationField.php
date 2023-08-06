@@ -40,7 +40,6 @@ use craft\services\Elements;
 use craft\services\ElementSources;
 use DateTime;
 use GraphQL\Type\Definition\Type;
-use Illuminate\Support\Collection;
 use yii\base\Event;
 use yii\base\InvalidConfigException;
 use yii\db\Expression;
@@ -508,7 +507,7 @@ JS, [
     public function validateRelationCount(ElementInterface $element): void
     {
         if ($this->allowLimit && ($this->minRelations || $this->maxRelations)) {
-            /** @var ElementQueryInterface|Collection $value */
+            /** @var ElementQueryInterface|ElementCollection $value */
             $value = $element->getFieldValue($this->handle);
 
             $arrayValidator = new NumberValidator([
@@ -543,7 +542,7 @@ JS, [
         $sourceValidates = self::$_relatedElementValidates[$sourceId][$element->siteId] ?? null;
         self::$_relatedElementValidates[$sourceId][$element->siteId] = true;
 
-        /** @var ElementQueryInterface|Collection $value */
+        /** @var ElementQueryInterface|ElementCollection $value */
         $value = $element->getFieldValue($this->handle);
         $errorCount = 0;
 
@@ -607,7 +606,7 @@ JS, [
      */
     public function isValueEmpty(mixed $value, ElementInterface $element): bool
     {
-        /** @var ElementQueryInterface|Collection $value */
+        /** @var ElementQueryInterface|ElementCollection $value */
         if ($value instanceof ElementQueryInterface) {
             return !$this->_all($value, $element)->exists();
         }
@@ -715,8 +714,8 @@ JS, [
      */
     public function serializeValue(mixed $value, ?ElementInterface $element = null): mixed
     {
-        /** @var ElementQueryInterface|Collection $value */
-        if ($value instanceof Collection) {
+        /** @var ElementQueryInterface|ElementCollection $value */
+        if ($value instanceof ElementCollection) {
             return $value->map(fn(ElementInterface $element) => $element->id)->all();
         }
 
@@ -784,10 +783,10 @@ JS, [
      */
     protected function searchKeywords(mixed $value, ElementInterface $element): string
     {
-        /** @var ElementQuery|Collection $value */
+        /** @var ElementQuery|ElementCollection $value */
         $titles = [];
 
-        if ($value instanceof Collection) {
+        if ($value instanceof ElementCollection) {
             $value = $value->all();
         } else {
             $value = $this->_all($value, $element)->all();
@@ -805,8 +804,8 @@ JS, [
      */
     public function getStaticHtml(mixed $value, ElementInterface $element): string
     {
-        /** @var ElementQueryInterface|Collection $value */
-        if ($value instanceof Collection) {
+        /** @var ElementQueryInterface|ElementCollection $value */
+        if ($value instanceof ElementCollection) {
             $value = $value->all();
         } else {
             $value = $this->_all($value, $element)->all();
@@ -841,7 +840,7 @@ JS, [
      */
     public function getPreviewHtml(mixed $value, ElementInterface $element): string
     {
-        /** @var ElementQueryInterface|Collection $value */
+        /** @var ElementQueryInterface|ElementCollection $value */
         if ($value instanceof ElementQueryInterface) {
             $value = $this->_all($value, $element)->collect();
         }
@@ -852,11 +851,11 @@ JS, [
     /**
      * Returns the HTML that should be shown for this field in table and card views.
      *
-     * @param Collection $elements
+     * @param ElementCollection $elements
      * @return string
      * @since 5.0.0
      */
-    protected function previewHtml(Collection $elements): string
+    protected function previewHtml(ElementCollection $elements): string
     {
         return Cp::elementPreviewHtml($elements->all());
     }
@@ -956,11 +955,11 @@ JS, [
             ($element->isFieldDirty($this->handle) || $this->maintainHierarchy) &&
             (!$element->propagating || $this->localizeRelations)
         ) {
-            /** @var ElementQueryInterface|Collection $value */
+            /** @var ElementQueryInterface|ElementCollection $value */
             $value = $element->getFieldValue($this->handle);
 
             // $value will be an element query and its $id will be set if we're saving new relations
-            if ($value instanceof Collection) {
+            if ($value instanceof ElementCollection) {
                 $targetIds = $value->map(fn(ElementInterface $element) => $element->id)->all();
             } elseif (
                 is_array($value->id) &&

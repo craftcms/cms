@@ -1637,14 +1637,15 @@ class ElementQuery extends Query implements ElementQueryInterface
 
     /**
      * @param YiiConnection|null $db
-     * @return Collection
+     * @return ElementCollection
      */
-    public function collect(?YiiConnection $db = null): Collection
+    public function collect(?YiiConnection $db = null): ElementCollection
     {
+        /** @phpstan-ignore-next-line */
         return $this->eagerLoad() ?? ElementCollection::make($this->all($db));
     }
 
-    private function eagerLoad(bool $count = false, array $criteria = []): Collection|int|null
+    private function eagerLoad(bool $count = false, array $criteria = []): ElementCollection|int|null
     {
         if (!$this->eagerly || !isset($this->eagerLoadSourceElement->elementQueryResult, $this->eagerLoadHandle)) {
             return null;

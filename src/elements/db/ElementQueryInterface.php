@@ -9,9 +9,7 @@ namespace craft\elements\db;
 
 use craft\base\ElementInterface;
 use craft\db\Query;
-use craft\models\Site;
-use craft\search\SearchQuery;
-use Illuminate\Support\Collection;
+use craft\elements\ElementCollection;
 use yii\base\Arrayable;
 use yii\db\Connection;
 use yii\db\QueryInterface;
@@ -1473,10 +1471,10 @@ interface ElementQueryInterface extends QueryInterface, Arrayable
      *
      * @param Connection|null $db The database connection used to generate the SQL statement.
      * If this parameter is not given, the `db` application component will be used.
-     * @return Collection A collection of the resulting elements.
+     * @return ElementCollection A collection of the resulting elements.
      * @since 4.0.0
      */
-    public function collect(?Connection $db = null): Collection;
+    public function collect(?Connection $db = null): ElementCollection;
 
     /**
      * Executes the query and returns a single row of result.

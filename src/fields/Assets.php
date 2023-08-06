@@ -38,7 +38,6 @@ use craft\services\ElementSources;
 use craft\services\Gql as GqlService;
 use craft\web\UploadedFile;
 use GraphQL\Type\Definition\Type;
-use Illuminate\Support\Collection;
 use Twig\Error\RuntimeError;
 use yii\base\InvalidConfigException;
 
@@ -472,7 +471,7 @@ class Assets extends BaseRelationField implements ThumbableFieldInterface
     /**
      * @inheritdoc
      */
-    protected function previewHtml(Collection $elements): string
+    protected function previewHtml(ElementCollection $elements): string
     {
         return Cp::elementPreviewHtml(
             $elements->all(),

@@ -11,11 +11,11 @@ use craft\behaviors\CustomFieldBehavior;
 use craft\elements\conditions\ElementConditionInterface;
 use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
+use craft\elements\ElementCollection;
 use craft\elements\User;
 use craft\errors\InvalidFieldException;
 use craft\models\FieldLayout;
 use craft\models\Site;
-use Illuminate\Support\Collection;
 use Twig\Markup;
 use yii\web\Response;
 
@@ -980,9 +980,9 @@ interface ElementInterface extends ComponentInterface
     /**
      * Returns the same element in other locales.
      *
-     * @return ElementQueryInterface|Collection
+     * @return ElementQueryInterface|ElementCollection
      */
-    public function getLocalized(): ElementQueryInterface|Collection;
+    public function getLocalized(): ElementQueryInterface|ElementCollection;
 
     /**
      * Returns the next element relative to this one, from a given set of criteria.
@@ -1041,31 +1041,31 @@ interface ElementInterface extends ComponentInterface
      * Returns the element’s ancestors.
      *
      * @param int|null $dist
-     * @return ElementQueryInterface|Collection
+     * @return ElementQueryInterface|ElementCollection
      */
-    public function getAncestors(?int $dist = null): ElementQueryInterface|Collection;
+    public function getAncestors(?int $dist = null): ElementQueryInterface|ElementCollection;
 
     /**
      * Returns the element’s descendants.
      *
      * @param int|null $dist
-     * @return ElementQueryInterface|Collection
+     * @return ElementQueryInterface|ElementCollection
      */
-    public function getDescendants(?int $dist = null): ElementQueryInterface|Collection;
+    public function getDescendants(?int $dist = null): ElementQueryInterface|ElementCollection;
 
     /**
      * Returns the element’s children.
      *
-     * @return ElementQueryInterface|Collection
+     * @return ElementQueryInterface|ElementCollection
      */
-    public function getChildren(): ElementQueryInterface|Collection;
+    public function getChildren(): ElementQueryInterface|ElementCollection;
 
     /**
      * Returns all of the element’s siblings.
      *
-     * @return ElementQueryInterface|Collection
+     * @return ElementQueryInterface|ElementCollection
      */
-    public function getSiblings(): ElementQueryInterface|Collection;
+    public function getSiblings(): ElementQueryInterface|ElementCollection;
 
     /**
      * Returns the element’s previous sibling.
@@ -1449,9 +1449,9 @@ interface ElementInterface extends ComponentInterface
      * Returns the eager-loaded elements for a given handle.
      *
      * @param string $handle The handle of the eager-loaded elements
-     * @return Collection|null The eager-loaded elements, or null if they hadn't been eager-loaded
+     * @return ElementCollection|null The eager-loaded elements, or null if they hadn't been eager-loaded
      */
-    public function getEagerLoadedElements(string $handle): ?Collection;
+    public function getEagerLoadedElements(string $handle): ?ElementCollection;
 
     /**
      * Sets some eager-loaded elements on a given handle.

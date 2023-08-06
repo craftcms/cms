@@ -73,8 +73,6 @@ use craft\validators\SiteIdValidator;
 use craft\validators\SlugValidator;
 use craft\validators\StringValidator;
 use craft\web\UploadedFile;
-use craft\web\View;
-use DateTime;
 use Illuminate\Support\Collection;
 use ReflectionClass;
 use Throwable;
@@ -2036,7 +2034,7 @@ abstract class Element extends Component implements ElementInterface
     private ElementInterface|false|null $_nextSibling = null;
 
     /**
-     * @var array<string,Collection>
+     * @var array<string,ElementCollection>
      * @see getEagerLoadedElements()
      * @see setEagerLoadedElements()
      */
@@ -3478,7 +3476,7 @@ abstract class Element extends Component implements ElementInterface
      * @inheritdoc
      * @since 3.5.0
      */
-    public function getLocalized(): ElementQueryInterface|Collection
+    public function getLocalized(): ElementQueryInterface|ElementCollection
     {
         // Eager-loaded?
         if (($localized = $this->getEagerLoadedElements('localized')) !== null) {
@@ -3596,7 +3594,7 @@ abstract class Element extends Component implements ElementInterface
             } else {
                 $ancestors = $this->getAncestors(1);
                 // Eager-loaded?
-                if ($ancestors instanceof Collection) {
+                if ($ancestors instanceof ElementCollection) {
                     $this->_parent = $ancestors->first();
                 } else {
                     $this->_parent = $ancestors
@@ -3707,7 +3705,7 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
-    public function getAncestors(?int $dist = null): ElementQueryInterface|Collection
+    public function getAncestors(?int $dist = null): ElementQueryInterface|ElementCollection
     {
         // Eager-loaded?
         if (($ancestors = $this->getEagerLoadedElements('ancestors')) !== null) {
@@ -3727,7 +3725,7 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
-    public function getDescendants(?int $dist = null): ElementQueryInterface|Collection
+    public function getDescendants(?int $dist = null): ElementQueryInterface|ElementCollection
     {
         // Eager-loaded?
         if (($descendants = $this->getEagerLoadedElements('descendants')) !== null) {
@@ -3747,7 +3745,7 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
-    public function getChildren(): ElementQueryInterface|Collection
+    public function getChildren(): ElementQueryInterface|ElementCollection
     {
         // Eager-loaded?
         if (($children = $this->getEagerLoadedElements('children')) !== null) {
@@ -3760,7 +3758,7 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
-    public function getSiblings(): ElementQueryInterface|Collection
+    public function getSiblings(): ElementQueryInterface|ElementCollection
     {
         return static::find()
             ->structureId($this->structureId)
@@ -3818,7 +3816,7 @@ abstract class Element extends Component implements ElementInterface
     public function getHasDescendants(): bool
     {
         $descendants = $this->getDescendants();
-        if ($descendants instanceof Collection) {
+        if ($descendants instanceof ElementCollection) {
             return $descendants->isNotEmpty();
         }
         return $descendants->exists();
@@ -3830,7 +3828,7 @@ abstract class Element extends Component implements ElementInterface
     public function getTotalDescendants(): int
     {
         $descendants = $this->getDescendants();
-        if ($descendants instanceof Collection) {
+        if ($descendants instanceof ElementCollection) {
             return $descendants->count();
         }
         return $descendants->count();
@@ -4453,7 +4451,7 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
-    public function getEagerLoadedElements(string $handle): ?Collection
+    public function getEagerLoadedElements(string $handle): ?ElementCollection
     {
         if (!isset($this->_eagerLoadedElements[$handle])) {
             return null;
@@ -4499,6 +4497,7 @@ abstract class Element extends Component implements ElementInterface
                 $this->trigger(self::EVENT_SET_EAGER_LOADED_ELEMENTS, $event);
                 if (!$event->handled) {
                     // No takers. Just store it in the internal array then.
+                    /** @phpstan-ignore-next-line */
                     $this->_eagerLoadedElements[$handle] = ElementCollection::make($elements);
                 }
         }
@@ -4679,7 +4678,7 @@ abstract class Element extends Component implements ElementInterface
         switch ($attribute) {
             case 'ancestors':
                 $ancestors = $this->getAncestors();
-                if (!$ancestors instanceof Collection || $ancestors->isEmpty()) {
+                if (!$ancestors instanceof ElementCollection || $ancestors->isEmpty()) {
                     return '';
                 }
                 $html = Html::beginTag('ul', ['class' => 'path']);
