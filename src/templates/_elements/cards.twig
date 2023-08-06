@@ -7,7 +7,6 @@
     <li>
       {% set html = elementCard(element, {
         context: context ?? 'index',
-        size: size ?? (viewMode == 'large' ? 'large' : 'small'),
         inputName: inputName ?? ((name ?? false) ? "#{name}[]" : null),
         checkbox: showCheckboxes ?? false,
       }) %}
