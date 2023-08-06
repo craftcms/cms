@@ -415,7 +415,7 @@ class Cp
             'autoReload' => true,
             'checkbox' => false,
             'context' => 'index',
-            'id' => sprintf('chip-%s', StringHelper::randomString(10)),
+            'id' => sprintf('chip-%s', mt_rand()),
             'inputName' => null,
             'showDraftName' => true,
             'showLabel' => true,
@@ -523,7 +523,7 @@ class Cp
             'autoReload' => true,
             'checkbox' => false,
             'context' => 'index',
-            'id' => sprintf('card-%s', StringHelper::randomString(10)),
+            'id' => sprintf('card-%s', mt_rand()),
             'inputName' => null,
         ];
 
