@@ -50,7 +50,7 @@ class CpHelperTest extends TestCase
         $indexHtml = Cp::elementChipHtml($user);
         $fieldHtml = Cp::elementChipHtml($user, [
             'context' => 'field',
-            'inputName' => 'myFieldName',
+            'inputName' => 'myFieldName[]',
         ]);
 
         // field
@@ -66,8 +66,9 @@ class CpHelperTest extends TestCase
         self::assertStringNotContainsString('thumb', Cp::elementChipHtml($user, ['showThumb' => false]));
 
         // label
-        self::assertStringContainsString('<div class="label">', $indexHtml);
-        self::assertStringNotContainsString('<div class="label">', Cp::elementChipHtml($user, ['showLabel' => false]));
+        $labelPattern = '/<div id="[^"]+" class="label">/';
+        self::assertEquals(1, preg_match($labelPattern, $indexHtml));
+        self::assertEquals(0, preg_match($labelPattern, Cp::elementChipHtml($user, ['showLabel' => false])));
 
         // errors
         self::assertStringNotContainsString('error', $indexHtml);
@@ -79,6 +80,48 @@ class CpHelperTest extends TestCase
         self::assertStringNotContainsString('data-trashed', $indexHtml);
         $user->trashed = true;
         self::assertStringContainsString('data-trashed', Cp::elementChipHtml($user));
+        $user->trashed = false;
+    }
+
+    /**
+     *
+     */
+    public function testElementHtml(): void
+    {
+        /** @var User $user */
+        $user = User::findOne(1);
+        self::assertInstanceOf(User::class, $user);
+
+        $indexHtml = Cp::elementHtml($user);
+        $fieldHtml = Cp::elementHtml($user, 'field', inputName: 'myFieldName');
+
+        // field
+        self::assertStringContainsString('removable', $fieldHtml);
+        self::assertStringContainsString('name="myFieldName[]"', $fieldHtml);
+
+        // status
+        self::assertStringContainsString('<span class="status', $indexHtml);
+        self::assertStringNotContainsString('<span class="status', Cp::elementHtml($user, showStatus: false));
+
+        // thumb
+        self::assertStringContainsString('thumb', $indexHtml);
+        self::assertStringNotContainsString('thumb', Cp::elementHtml($user, showThumb: false));
+
+        // label
+        $labelPattern = '/<div id="[^"]+" class="label">/';
+        self::assertEquals(1, preg_match($labelPattern, $indexHtml));
+        self::assertEquals(0, preg_match($labelPattern, Cp::elementHtml($user, showLabel: false)));
+
+        // errors
+        self::assertStringNotContainsString('error', $indexHtml);
+        $user->addError('foo', 'bad error');
+        self::assertStringContainsString('error', Cp::elementHtml($user));
+        $user->clearErrors();
+
+        // trashed
+        self::assertStringNotContainsString('data-trashed', $indexHtml);
+        $user->trashed = true;
+        self::assertStringContainsString('data-trashed', Cp::elementHtml($user));
         $user->trashed = false;
     }
 
