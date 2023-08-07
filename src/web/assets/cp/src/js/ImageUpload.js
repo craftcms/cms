@@ -79,8 +79,10 @@ Craft.ImageUpload = Garnish.Base.extend(
     },
 
     refreshImage: function (response) {
-      $(this.settings.containerSelector).replaceWith(response.html);
+      const $container = $(response.html);
+      $(this.settings.containerSelector).replaceWith($container);
       this.settings.onAfterRefreshImage(response);
+      Craft.cp.elementThumbLoader.load($container);
       this.initImageUpload();
     },
 

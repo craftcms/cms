@@ -2,7 +2,13 @@
 {% if volume %}
     <div class="user-photo" data-user="{{ user.id }}">
         <div id="current-photo">
-            {{ user.getThumbHtml(100)|raw }}
+            {% if user.photoId %}
+                {{ user.getThumbHtml(100)|raw }}
+            {% else %}
+                {{ svg('@appicons/user.svg')|prepend(tag('title', {
+                    text: user.getName(),
+                })) }}
+            {% endif %}
         </div>
         <div class="user-photo-controls">
             <input type="file" name="photo" class="hidden" />
