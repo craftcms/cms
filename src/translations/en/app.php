@@ -1861,7 +1861,7 @@ return [
     'draft' => 'draft',
     'drafts' => 'drafts',
     'eight' => 'eight',
-    'element',
+    'element' => 'element',
     'ends with' => 'ends with',
     'entries' => 'entries',
     'entry' => 'entry',
