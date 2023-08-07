@@ -43,6 +43,8 @@ abstract class Table
     /** @since 4.5.0 */
     public const ELEMENTACTIVITY = '{{%elementactivity}}';
     public const ELEMENTS = '{{%elements}}';
+    /** @since 5.0.0 */
+    public const ELEMENTS_OWNERS = '{{%elements_owners}}';
     public const ELEMENTS_SITES = '{{%elements_sites}}';
     public const RESOURCEPATHS = '{{%resourcepaths}}';
     /** @since 3.2.0 */
@@ -50,8 +52,6 @@ abstract class Table
     public const SEQUENCES = '{{%sequences}}';
     public const SYSTEMMESSAGES = '{{%systemmessages}}';
     public const ENTRIES = '{{%entries}}';
-    /** @since 5.0.0 */
-    public const ENTRIES_OWNERS = '{{%entries_owners}}';
     public const ENTRYTYPES = '{{%entrytypes}}';
     public const FIELDLAYOUTS = '{{%fieldlayouts}}';
     public const FIELDS = '{{%fields}}';

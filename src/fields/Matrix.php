@@ -127,12 +127,12 @@ class Matrix extends Field implements
         $existsQuery = (new Query())
             ->from(["entries_$ns" => DbTable::ENTRIES])
             ->innerJoin(["elements_$ns" => DbTable::ELEMENTS], "[[elements_$ns.id]] = [[entries_$ns.id]]")
-            ->innerJoin(["entries_owners_$ns" => DbTable::ENTRIES_OWNERS], "[[entries_owners_$ns.entryId]] = [[elements_$ns.id]]")
+            ->innerJoin(["elements_owners_$ns" => DbTable::ELEMENTS_OWNERS], "[[elements_owners_$ns.elementId]] = [[elements_$ns.id]]")
             ->andWhere([
                 "entries_$ns.fieldId" => $field->id,
                 "elements_$ns.enabled" => true,
                 "elements_$ns.dateDeleted" => null,
-                "[[entries_owners_$ns.ownerId]]" => new Expression('[[elements.id]]'),
+                "[[elements_owners_$ns.ownerId]]" => new Expression('[[elements.id]]'),
             ]);
 
         if ($value === 'not :empty:') {
@@ -817,17 +817,17 @@ class Matrix extends Field implements
         // Return any relation data on these elements, defined with this field
         $map = (new Query())
             ->select([
-                'source' => 'entries_owners.ownerId',
+                'source' => 'elements_owners.ownerId',
                 'target' => 'entries.id',
             ])
             ->from(['entries' => DbTable::ENTRIES])
-            ->innerJoin(['entries_owners' => DbTable::ENTRIES_OWNERS], [
+            ->innerJoin(['elements_owners' => DbTable::ELEMENTS_OWNERS], [
                 'and',
-                '[[entries_owners.entryId]] = [[entries.id]]',
-                ['entries_owners.ownerId' => $sourceElementIds],
+                '[[elements_owners.elementId]] = [[entries.id]]',
+                ['elements_owners.ownerId' => $sourceElementIds],
             ])
             ->where(['entries.fieldId' => $this->id])
-            ->orderBy(['entries_owners.sortOrder' => SORT_ASC])
+            ->orderBy(['elements_owners.sortOrder' => SORT_ASC])
             ->all();
 
         return [
@@ -999,7 +999,7 @@ class Matrix extends Field implements
                     if ($entry->getIsDraft()) {
                         $canonicalEntryId = $entry->getCanonicalId();
                         Craft::$app->getDrafts()->removeDraftData($entry);
-                        Db::delete(Table::ENTRIES_OWNERS, [
+                        Db::delete(Table::ELEMENTS_OWNERS, [
                             'entryId' => $canonicalEntryId,
                             'ownerId' => $owner->id,
                         ]);
@@ -1007,7 +1007,7 @@ class Matrix extends Field implements
                 } elseif ((int)$entry->sortOrder !== $sortOrder) {
                     // Just update its sortOrder
                     $entry->sortOrder = $sortOrder;
-                    Db::update(Table::ENTRIES_OWNERS, [
+                    Db::update(Table::ELEMENTS_OWNERS, [
                         'sortOrder' => $sortOrder,
                     ], [
                         'entryId' => $entry->id,
@@ -1154,7 +1154,7 @@ class Matrix extends Field implements
         }
 
         if ($deleteOwnership) {
-            Db::delete(Table::ENTRIES_OWNERS, [
+            Db::delete(Table::ELEMENTS_OWNERS, [
                 'entryId' => $deleteOwnership,
                 'ownerId' => $owner->id,
             ]);
@@ -1218,7 +1218,7 @@ class Matrix extends Field implements
                 } elseif (!$force && $entry->primaryOwnerId === $target->id) {
                     // Only the entry ownership was duplicated, so just update its sort order for the target element
                     // (use upsert in case the row doesn’t exist though)
-                    Db::upsert(Table::ENTRIES_OWNERS, [
+                    Db::upsert(Table::ELEMENTS_OWNERS, [
                         'entryId' => $entry->id,
                         'ownerId' => $target->id,
                         'sortOrder' => $entry->sortOrder,
@@ -1315,13 +1315,13 @@ class Matrix extends Field implements
         Craft::$app->getDb()->createCommand(sprintf(
             <<<SQL
 INSERT INTO %s ([[entryId]], [[ownerId]], [[sortOrder]]) 
-SELECT [[o.entryId]], :draftId, [[o.sortOrder]] 
+SELECT [[o.elementId]], :draftId, [[o.sortOrder]] 
 FROM %s AS [[o]]
-INNER JOIN %s AS [[b]] ON [[b.id]] = [[o.entryId]] AND [[b.primaryOwnerId]] = :canonicalId AND [[b.fieldId]] = :fieldId
+INNER JOIN %s AS [[b]] ON [[b.id]] = [[o.elementId]] AND [[b.primaryOwnerId]] = :canonicalId AND [[b.fieldId]] = :fieldId
 WHERE [[o.ownerId]] = :canonicalId
 SQL,
-            Table::ENTRIES_OWNERS,
-            Table::ENTRIES_OWNERS,
+            Table::ELEMENTS_OWNERS,
+            Table::ELEMENTS_OWNERS,
             Table::ENTRIES,
         ), [
             ':draftId' => $draft->id,
@@ -1363,7 +1363,7 @@ SQL,
             $ownershipData[] = [$entryRevisionId, $revision->id, $entry->sortOrder];
         }
 
-        Db::batchInsert(Table::ENTRIES_OWNERS, ['entryId', 'ownerId', 'sortOrder'], $ownershipData);
+        Db::batchInsert(Table::ELEMENTS_OWNERS, ['entryId', 'ownerId', 'sortOrder'], $ownershipData);
     }
 
     /**

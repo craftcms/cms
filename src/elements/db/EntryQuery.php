@@ -1183,20 +1183,20 @@ class EntryQuery extends ElementQuery
         ]);
 
         if (!empty($this->fieldId) || !empty($this->ownerId) || !empty($this->primaryOwnerId)) {
-            // Join in the entries_owners table
+            // Join in the elements_owners table
             $ownersCondition = [
                 'and',
-                '[[entries_owners.entryId]] = [[elements.id]]',
-                $this->ownerId ? ['entries_owners.ownerId' => $this->ownerId] : '[[entries_owners.ownerId]] = [[entries.primaryOwnerId]]',
+                '[[elements_owners.elementId]] = [[elements.id]]',
+                $this->ownerId ? ['elements_owners.ownerId' => $this->ownerId] : '[[elements_owners.ownerId]] = [[entries.primaryOwnerId]]',
             ];
 
             $this->query
                 ->addSelect([
-                    'entries_owners.ownerId',
-                    'entries_owners.sortOrder',
+                    'elements_owners.ownerId',
+                    'elements_owners.sortOrder',
                 ])
-                ->innerJoin(['entries_owners' => Table::ENTRIES_OWNERS], $ownersCondition);
-            $this->subQuery->innerJoin(['entries_owners' => Table::ENTRIES_OWNERS], $ownersCondition);
+                ->innerJoin(['elements_owners' => Table::ELEMENTS_OWNERS], $ownersCondition);
+            $this->subQuery->innerJoin(['elements_owners' => Table::ELEMENTS_OWNERS], $ownersCondition);
 
             if ($this->fieldId) {
                 $this->subQuery->andWhere(['entries.fieldId' => $this->fieldId]);
@@ -1213,7 +1213,7 @@ class EntryQuery extends ElementQuery
             if (!$allowOwnerDrafts || !$allowOwnerRevisions) {
                 $this->subQuery->innerJoin(
                     ['owners' => Table::ELEMENTS],
-                    $this->ownerId ? '[[owners.id]] = [[entries_owners.ownerId]]' : '[[owners.id]] = [[entries.primaryOwnerId]]'
+                    $this->ownerId ? '[[owners.id]] = [[elements_owners.ownerId]]' : '[[owners.id]] = [[entries.primaryOwnerId]]'
                 );
 
                 if (!$allowOwnerDrafts) {
@@ -1225,7 +1225,7 @@ class EntryQuery extends ElementQuery
                 }
             }
 
-            $this->defaultOrderBy = ['entries_owners.sortOrder' => SORT_ASC];
+            $this->defaultOrderBy = ['elements_owners.sortOrder' => SORT_ASC];
         } else {
             $this->_applySectionIdParam();
         }

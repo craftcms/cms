@@ -769,7 +769,7 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
     public bool $deletedWithOwner = false;
 
     /**
-     * @var bool Whether to save the entry’s row in the `entries_owners` table in [[afterSave()]].
+     * @var bool Whether to save the entry’s row in the `elements_owners` table in [[afterSave()]].
      * @since 5.0.0
      */
     public bool $saveOwnership = true;
@@ -2146,13 +2146,13 @@ EOD;
             // ownerId will be null when creating a revision
             if (isset($this->fieldId, $this->ownerId) && $this->saveOwnership) {
                 if ($isNew) {
-                    Db::insert(Table::ENTRIES_OWNERS, [
+                    Db::insert(Table::ELEMENTS_OWNERS, [
                         'entryId' => $this->id,
                         'ownerId' => $this->ownerId,
                         'sortOrder' => $this->sortOrder ?? 0,
                     ]);
                 } else {
-                    Db::update(Table::ENTRIES_OWNERS, [
+                    Db::update(Table::ELEMENTS_OWNERS, [
                         'sortOrder' => $this->sortOrder ?? 0,
                     ], [
                         'entryId' => $this->id,

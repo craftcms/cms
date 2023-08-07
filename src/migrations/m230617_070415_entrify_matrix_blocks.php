@@ -38,11 +38,11 @@ class m230617_070415_entrify_matrix_blocks extends Migration
         $this->addColumn(Table::ENTRIES, 'fieldId', $this->integer()->after('primaryOwnerId'));
         $this->addColumn(Table::ENTRIES, 'deletedWithOwner', $this->boolean()->null()->after('deletedWithEntryType'));
 
-        $this->createTable(Table::ENTRIES_OWNERS, [
-            'entryId' => $this->integer()->notNull(),
+        $this->createTable(Table::ELEMENTS_OWNERS, [
+            'elementId' => $this->integer()->notNull(),
             'ownerId' => $this->integer()->notNull(),
             'sortOrder' => $this->smallInteger()->unsigned()->notNull(),
-            'PRIMARY KEY([[entryId]], [[ownerId]])',
+            'PRIMARY KEY([[elementId]], [[ownerId]])',
         ]);
 
         $this->createIndex(null, Table::ENTRIES, ['primaryOwnerId'], false);
@@ -50,8 +50,8 @@ class m230617_070415_entrify_matrix_blocks extends Migration
 
         $this->addForeignKey(null, Table::ENTRIES, ['fieldId'], Table::FIELDS, ['id'], 'CASCADE', null);
         $this->addForeignKey(null, Table::ENTRIES, ['primaryOwnerId'], Table::ELEMENTS, ['id'], 'CASCADE', null);
-        $this->addForeignKey(null, Table::ENTRIES_OWNERS, ['entryId'], Table::ENTRIES, ['id'], 'CASCADE', null);
-        $this->addForeignKey(null, Table::ENTRIES_OWNERS, ['ownerId'], Table::ELEMENTS, ['id'], 'CASCADE', null);
+        $this->addForeignKey(null, Table::ELEMENTS_OWNERS, ['elementId'], Table::ELEMENTS, ['id'], 'CASCADE', null);
+        $this->addForeignKey(null, Table::ELEMENTS_OWNERS, ['ownerId'], Table::ELEMENTS, ['id'], 'CASCADE', null);
 
         $projectConfig = Craft::$app->getProjectConfig();
         $fieldsService = Craft::$app->getFields();
@@ -215,7 +215,7 @@ SQL,
 INSERT INTO %s
 SELECT * FROM %s
 SQL,
-                Table::ENTRIES_OWNERS,
+                Table::ELEMENTS_OWNERS,
                 '{{%matrixblocks_owners}}',
             ));
 
