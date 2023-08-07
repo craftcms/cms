@@ -45,6 +45,7 @@ use craft\helpers\Session;
 use craft\i18n\Formatter;
 use craft\i18n\I18N;
 use craft\i18n\Locale;
+use craft\log\Dispatcher;
 use craft\mail\Mailer;
 use craft\markdown\GithubMarkdown;
 use craft\markdown\Markdown;
@@ -1222,6 +1223,17 @@ trait ApplicationTrait
     {
         /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->get('locale');
+    }
+
+    /**
+     * Returns the log dispatcher component.
+     *
+     * @return Dispatcher the log dispatcher application component.
+     */
+    public function getLog(): Dispatcher
+    {
+        /** @noinspection PhpIncompatibleReturnTypeInspection */
+        return $this->get('log');
     }
 
     /**
