@@ -135,12 +135,15 @@
 
     computed: {
       githubActivityTitle() {
-        return this.$options.filters.t(
-          'Activity <small>({period} days)</small>',
-          'app',
-          {
+        return (
+          this.$options.filters.t('Activity', 'app', {
             period: this.issueStats.period,
-          }
+          }) +
+          ' <small>' +
+          this.$options.filters.t('({period} days)', 'app', {
+            period: this.issueStats.period,
+          }) +
+          '</small>'
         );
       },
 

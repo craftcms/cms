@@ -41,11 +41,7 @@ class RenameFile extends ElementAction
         activate: \$selectedItems => {
             const \$element = \$selectedItems.find('.element')
             const assetId = \$element.data('id');
-            let oldName = \$element.data('url').split('/').pop();
-
-            if (oldName.indexOf('?') !== -1) {
-                oldName = oldName.split('?').shift();
-            }
+            let oldName = \$element.data('filename');
 
             const newName = prompt($prompt, oldName);
 

@@ -25,6 +25,7 @@ use craft\helpers\UrlHelper;
 use craft\queue\QueueLogBehavior;
 use IntlDateFormatter;
 use IntlException;
+use ReflectionClass;
 use Throwable;
 use yii\base\Component;
 use yii\base\ErrorException;
@@ -35,6 +36,7 @@ use yii\base\InvalidConfigException;
 use yii\base\InvalidRouteException;
 use yii\base\Response as BaseResponse;
 use yii\db\Exception as DbException;
+use yii\debug\Module as YiiDebugModule;
 use yii\debug\panels\AssetPanel;
 use yii\debug\panels\DbPanel;
 use yii\debug\panels\LogPanel;
@@ -313,32 +315,6 @@ class Application extends \yii\web\Application
     /**
      * @inheritdoc
      */
-    public function setVendorPath($path): void
-    {
-        parent::setVendorPath($path);
-
-        // Override the @bower and @npm aliases if using asset-packagist.org
-        // todo: remove this whenever Yii is updated with support for asset-packagist.org
-        $altBowerPath = $this->getVendorPath() . DIRECTORY_SEPARATOR . 'bower-asset';
-        $altNpmPath = $this->getVendorPath() . DIRECTORY_SEPARATOR . 'npm-asset';
-        if (is_dir($altBowerPath)) {
-            Craft::setAlias('@bower', $altBowerPath);
-        }
-        if (is_dir($altNpmPath)) {
-            Craft::setAlias('@npm', $altNpmPath);
-        }
-
-        // Override where Yii should find its asset deps
-        $assetsPath = Craft::getAlias('@craft') . '/web/assets';
-        Craft::setAlias('@bower/jquery/dist', $assetsPath . '/jquery/dist');
-        Craft::setAlias('@bower/inputmask/dist', $assetsPath . '/inputmask/dist');
-        Craft::setAlias('@bower/punycode', $assetsPath . '/punycode/dist');
-        Craft::setAlias('@bower/yii2-pjax', $assetsPath . '/yii2pjax/dist');
-    }
-
-    /**
-     * @inheritdoc
-     */
     public function get($id, $throwException = true): ?object
     {
         // Is this the first time the queue component is requested?
@@ -433,9 +409,13 @@ class Application extends \yii\web\Application
         $svg = rawurlencode(file_get_contents(dirname(__DIR__) . '/icons/c-debug.svg'));
         DebugModule::setYiiLogo("data:image/svg+xml;charset=utf-8,$svg");
 
+        // Determine the base path using reflection in case it wasn't loaded from @vendor
+        $ref = new ReflectionClass(YiiDebugModule::class);
+        $basePath = dirname($ref->getFileName());
+
         $this->setModule('debug', [
             'class' => DebugModule::class,
-            'basePath' => '@vendor/yiisoft/yii2-debug/src',
+            'basePath' => $basePath,
             'allowedIPs' => ['*'],
             'panels' => [
                 'config' => false,

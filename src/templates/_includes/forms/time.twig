@@ -2,6 +2,7 @@
 {% set id = (id ?? "time#{random()}") ~ '-time' -%}
 {% set name = name ?? null -%}
 {% set value = value ?? null -%}
+{% set timeZone = timeZone ?? null %}
 {% set outputTzParam = outputTzParam ?? true %}
 {% set isMobile = craft.app.request.isMobileBrowser %}
 {% set isDateTime = isDateTime ?? false %}
@@ -33,7 +34,7 @@
         autocomplete: false,
         size: 10,
         placeholder: ' ',
-        value: value ? value|time(isMobile ? 'H:i' : 'short') : '',
+        value: value ? value|time(isMobile ? 'H:i' : 'short', timeZone) : '',
         inputAttributes: {
             aria: {
                 label: isDateTime ? 'Time'|t('app') : false,

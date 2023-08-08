@@ -473,7 +473,10 @@ class ImageTransforms
         }
 
         // Save it!
-        $tempFilename = sprintf('%s.%s', uniqid($asset->getFilename(false), true), $format);
+
+        // It's important that the temp filename has the target file extension, as craft\image\Raster::saveAs() uses it
+        // to determine the options that should be passed to Imagine\Image\ManipulatorInterface::save().
+        $tempFilename = FileHelper::uniqueName(sprintf('%s.%s', $asset->getFilename(false), $format));
         $tempPath = Craft::$app->getPath()->getTempPath() . DIRECTORY_SEPARATOR . $tempFilename;
         $image->saveAs($tempPath);
         clearstatcache(true, $tempPath);

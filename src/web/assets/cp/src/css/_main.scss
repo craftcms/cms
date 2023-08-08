@@ -2180,11 +2180,16 @@ div.btn.submit input {
     border-radius: var(--small-border-radius);
     display: flex;
     align-items: center;
+    max-width: 100%;
 
     span {
+      flex-grow: 1;
       padding: 7px 0;
       color: var(--medium-text-color);
       cursor: default;
+      overflow: auto;
+      overflow-wrap: break-word;
+      hyphens: auto;
 
       &[data-toggle='on'] {
         @include padding-right(10px);
@@ -2194,6 +2199,11 @@ div.btn.submit input {
       &[data-toggle='off'] {
         @include padding-left(10px);
         @include margin-right(7px);
+        text-align: right;
+
+        body.rtl & {
+          text-align: left;
+        }
       }
     }
   }
@@ -2238,6 +2248,7 @@ div.btn.submit input {
 
   &:not(.small) {
     border-radius: 11px;
+    min-width: 34px;
     width: 34px;
     height: 22px;
 
@@ -2572,6 +2583,10 @@ table {
 
           &.sel,
           &.active-drop-target {
+            --text-color: var(--white);
+            --medium-dark-text-color: var(--white);
+            --medium-text-color: var(--white);
+            --light-text-color: var(--white);
             --link-color: var(--white);
             --ui-control-color: var(--white);
             @include custom-color-focus-ring(hsl(var(--light-focus-hsl)));
@@ -2737,6 +2752,10 @@ $elementInnerSpacing: 5px;
   &.sel,
   li.sel &,
   li.active-drop-target & {
+    --text-color: var(--white);
+    --medium-dark-text-color: var(--white);
+    --medium-text-color: var(--white);
+    --light-text-color: var(--white);
     --link-color: var(--white);
     --ui-control-color: var(--white);
     @include custom-color-focus-ring(hsl(var(--light-focus-hsl)));
@@ -2772,7 +2791,8 @@ $elementInnerSpacing: 5px;
       align-items: center;
       -ms-flex-align: center;
 
-      img {
+      img,
+      svg {
         display: block;
         flex-shrink: 0;
         pointer-events: none;
@@ -2781,8 +2801,11 @@ $elementInnerSpacing: 5px;
         max-height: 100%;
       }
 
-      &.rounded img {
-        border-radius: 50%;
+      &.rounded {
+        img,
+        svg {
+          border-radius: 50%;
+        }
       }
     }
     .elementthumb.open-preview {
@@ -3047,11 +3070,10 @@ $checkboxPadding: $checkboxSize + 4;
     }
 
     .selectallcontainer {
+      display: flex;
+      align-items: center;
+      gap: $elementInnerSpacing;
       cursor: default;
-
-      .checkbox {
-        @include margin-right($elementInnerSpacing);
-      }
     }
   }
 
@@ -3318,6 +3340,10 @@ $checkboxPadding: $checkboxSize + 4;
     &.flex-wrap {
       flex-wrap: wrap;
     }
+
+    li {
+      max-width: 100%;
+    }
   }
 
   .elements:after {
@@ -3373,6 +3399,7 @@ table.editable {
   border: 1px solid var(--gray-200);
 
   th,
+  td.heading,
   td.action {
     color: var(--medium-text-color);
     font-weight: normal;
@@ -4913,6 +4940,10 @@ $min2ColWidth: 400px;
   display: none;
   top: 0;
 
+  &.tooltip-hud {
+    display: block;
+  }
+
   &.has-footer .tip-bottom {
     background-image: url(../images/hudtip_bottom_gray.png);
   }
@@ -5236,6 +5267,51 @@ $min2ColWidth: 400px;
       position: absolute;
       top: 0;
       @include right(-24px);
+    }
+  }
+}
+
+/* recent activity container */
+.activity-container {
+  &:not(:last-child) {
+    @include margin-right(var(--s));
+  }
+
+  ul {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: var(--xs);
+
+    li {
+      .activity-btn {
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        display: block;
+
+        .elementthumb {
+          position: relative;
+          width: 100%;
+          height: 100%;
+          border-radius: 50px;
+          background: var(--gray-050);
+          overflow: hidden;
+          border: 2px solid var(--white);
+          box-shadow: 0 1px 2px 1px transparentize($grey900, 0.9);
+
+          img,
+          svg {
+            display: block;
+            width: 100%;
+            height: 100%;
+          }
+        }
+      }
+
+      &:not(:last-child) {
+        @include margin-right(-10px);
+      }
     }
   }
 }
@@ -6094,6 +6170,36 @@ div.checkbox {
   min-height: 16px;
   cursor: pointer;
 
+  &,
+  &:before {
+    // set the border radius on the container too, for (some) focus rings
+    border-radius: var(--small-border-radius);
+  }
+
+  &:before {
+    display: block;
+    position: absolute;
+    @include left(0);
+    top: 0;
+    width: var(--checkbox-size) !important;
+    height: var(--checkbox-size);
+    box-sizing: border-box;
+    content: '';
+    font-size: 0;
+    background-color: hsl(212, 50%, 99%);
+    border: 1px solid transparentize($inputColor, 0.6);
+    background-clip: padding-box;
+  }
+
+  &:empty {
+    @include padding-left(var(--checkbox-size));
+
+    &:after {
+      content: '';
+      font-size: 0;
+    }
+  }
+
   .info {
     height: 16px;
   }
@@ -6102,35 +6208,6 @@ div.checkbox {
 input.checkbox:disabled + label,
 .disabled div.checkbox {
   cursor: default;
-}
-
-input.checkbox + label:empty,
-div.checkbox:empty {
-  @include padding-left(var(--checkbox-size));
-}
-
-input.checkbox + label:empty:after,
-div.checkbox:empty:after {
-  content: '';
-  font-size: 0;
-}
-
-/* fixes a RTL bug */
-input.checkbox + label:before,
-div.checkbox:before {
-  display: block;
-  position: absolute;
-  @include left(0);
-  top: 0;
-  width: var(--checkbox-size) !important;
-  height: var(--checkbox-size);
-  box-sizing: border-box;
-  content: '';
-  font-size: 0;
-  background-color: hsl(212, 50%, 99%);
-  border: 1px solid transparentize($inputColor, 0.6);
-  background-clip: padding-box;
-  border-radius: var(--small-border-radius);
 }
 
 input.checkbox:disabled + label,
@@ -6778,44 +6855,69 @@ body .selectize-dropdown {
 }
 
 /* menu styles */
-body .selectize-dropdown {
-  margin-top: 1px;
-}
+body {
+  .selectize-dropdown {
+    margin-top: 1px;
 
-body .selectize-dropdown-content {
-  @include menu-styles;
+    [data-selectable],
+    .optgroup-header {
+      @include menu-option-styles;
+    }
 
-  .option {
-    min-height: 18px;
+    .optgroup {
+      &:not(:first-child) {
+        border-top: 1px solid var(--hairline-color);
+      }
+      padding-top: 5px;
+
+      .option {
+        padding-left: 24px;
+      }
+    }
+
+    .optgroup-header {
+      @include h6-styles;
+      margin: 0;
+      padding: 4px 0;
+    }
+
+    .active:not(.selected) {
+      background-color: var(--gray-100);
+    }
+
+    .selected {
+      @include menu-option-active-styles;
+      cursor: default !important;
+
+      .light {
+        color: inherit !important;
+      }
+    }
   }
-}
 
-body .selectize-dropdown-content > div[data-value='new']:before {
-  @include icon;
-  content: 'plus';
-  margin-right: 5px;
-}
+  .selectize-dropdown-content {
+    @include menu-styles;
+    max-height: 70vh;
 
-body .selectize-dropdown-content > div[data-value='new']:after {
-  content: '…';
-}
+    .option {
+      min-height: 18px;
+    }
 
-body .selectize-dropdown [data-selectable],
-body .selectize-dropdown .optgroup-header {
-  @include menu-option-styles;
-}
+    & > div[data-value='new'] {
+      &:before {
+        @include icon;
+        content: 'plus';
+        margin-right: 5px;
+      }
 
-body .selectize-dropdown .optgroup-header {
-  @include h6-styles;
-  margin: 0;
-  padding: 4px 0;
-}
+      &:after {
+        content: '…';
+      }
+    }
+  }
 
-body .selectize-dropdown .active {
-  @include menu-option-active-styles;
-
-  .light {
-    color: inherit !important;
+  &.no-scroll .selectize-dropdown-content {
+    max-height: 200px; // default for selectize
   }
 }
 

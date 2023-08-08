@@ -25,6 +25,7 @@ use craft\helpers\Db;
 use craft\helpers\ElementHelper;
 use craft\helpers\Html;
 use craft\helpers\UrlHelper;
+use craft\models\ElementActivity;
 use craft\models\FieldLayoutForm;
 use craft\services\Elements;
 use craft\web\Controller;
@@ -106,7 +107,7 @@ class ElementsController extends Controller
         $this->_draftId = $this->_param('draftId');
         $this->_revisionId = $this->_param('revisionId');
         $this->_siteId = $this->_param('siteId');
-        $this->_enabled = $this->_param('enabled');
+        $this->_enabled = $this->_param('enabled') ?? true;
         $this->_enabledForSite = $this->_param('enabledForSite');
         $this->_slug = $this->_param('slug');
         $this->_fresh = (bool)$this->_param('fresh');
@@ -425,6 +426,8 @@ class ElementsController extends Controller
                         'siteStatuses' => $siteStatuses,
                         'siteToken' => (!Craft::$app->getIsLive() || !$element->getSite()->enabled) ? $security->hashData((string)$element->siteId) : null,
                         'visibleLayoutElements' => $form ? $form->getVisibleElements() : [],
+                        'updatedTimestamp' => $element->dateUpdated->getTimestamp(),
+                        'canonicalUpdatedTimestamp' => $canonical->dateUpdated->getTimestamp(),
                     ]
                 )
             );
@@ -695,7 +698,11 @@ class ElementsController extends Controller
         bool $isUnpublishedDraft,
         bool $isDraft,
     ): string {
-        $components = [];
+        $components = [
+            Html::tag('div', options: [
+                'class' => ['activity-container'],
+            ]),
+        ];
 
         // Preview (View will be added later by JS)
         if ($canSave && $previewTargets) {
@@ -966,6 +973,8 @@ JS, [
             ]));
         }
 
+        $elementsService->trackActivity($element, ElementActivity::TYPE_SAVE);
+
         // See if the user happens to have a provisional element. If so delete it.
         $provisional = $element::find()
             ->provisionalDrafts()
@@ -1066,7 +1075,7 @@ JS, [
 
         // If this is a provisional draft, delete the canonical
         if ($element && $element->isProvisionalDraft) {
-            $element = $element->getcanonical(true);
+            $element = $element->getCanonical(true);
         }
 
         if (!$element || $element->getIsDraft() || $element->getIsRevision()) {
@@ -1203,6 +1212,8 @@ JS, [
                 ]));
             }
 
+            $elementsService->trackActivity($element, ElementActivity::TYPE_SAVE);
+
             $creator = $element->getCreator();
 
             $data = [
@@ -1275,6 +1286,8 @@ JS, [
                     'initialDeltaValues' => $view->getInitialDeltaValues(),
                     'headHtml' => $view->getHeadHtml(),
                     'bodyHtml' => $view->getBodyHtml(),
+                    'updatedTimestamp' => $element->dateUpdated->getTimestamp(),
+                    'canonicalUpdatedTimestamp' => $element->getCanonical()->dateUpdated->getTimestamp(),
                 ];
             }
 
@@ -1353,6 +1366,8 @@ JS, [
                 $mutex->release($lockKey);
             }
         }
+
+        $elementsService->trackActivity($canonical, ElementActivity::TYPE_SAVE);
 
         if (!$this->request->getAcceptsJson()) {
             // Tell all browser windows about the element save
@@ -1484,6 +1499,7 @@ JS, [
         }
 
         $canonical = Craft::$app->getRevisions()->revertToRevision($element, $user->id);
+        Craft::$app->getElements()->trackActivity($canonical, ElementActivity::TYPE_SAVE);
 
         return $this->_asSuccess(Craft::t('app', '{type} reverted to past revision.', [
             'type' => $element::displayName(),
@@ -1520,6 +1536,63 @@ JS, [
         $headHtml = $this->getView()->getHeadHtml();
 
         return $this->asJson(compact('html', 'headHtml'));
+    }
+
+    /**
+     * Returns any recent activity for an element, and records that the user is viewing the element.
+     *
+     * @return Response
+     * @since 4.5.0
+     */
+    public function actionRecentActivity(): Response
+    {
+        $element = $this->_element();
+
+        if (!$element || $element->getIsRevision()) {
+            throw new BadRequestHttpException('No element was identified by the request.');
+        }
+
+        $elementsService = Craft::$app->getElements();
+        $currentUser = Craft::$app->getUser()->getIdentity();
+        $activity = $elementsService->getRecentActivity($element, $currentUser->id);
+        $elementsService->trackActivity($element, ElementActivity::TYPE_VIEW, $currentUser);
+
+        return $this->asJson([
+            'activity' => array_map(function(ElementActivity $record) use ($element) {
+                $recordIsCanonical = $record->element->getIsCanonical() || $record->element->isProvisionalDraft;
+                $recordIsCanonicalAndPublished = $recordIsCanonical && !$record->element->getIsUnpublishedDraft();
+                $isSameOrUpstream = $element->id === $record->element->id || $recordIsCanonical;
+
+                if ($isSameOrUpstream) {
+                    $messageParams = [
+                        'user' => $record->user->getName(),
+                        'type' => $recordIsCanonicalAndPublished ? $element::lowerDisplayName() : Craft::t('app', 'draft'),
+                    ];
+                    $message = match ($record->type) {
+                        ElementActivity::TYPE_VIEW => Craft::t('app', '{user} is viewing this {type}.', $messageParams),
+                        ElementActivity::TYPE_EDIT, ElementActivity::TYPE_SAVE => Craft::t('app', '{user} is editing this {type}.', $messageParams),
+                    };
+                } else {
+                    $messageParams = [
+                        'user' => $record->user->getName(),
+                        'type' => $element::lowerDisplayName(),
+                    ];
+                    $message = match ($record->type) {
+                        ElementActivity::TYPE_VIEW => Craft::t('app', '{user} is viewing a draft of this {type}.', $messageParams),
+                        ElementActivity::TYPE_EDIT, ElementActivity::TYPE_SAVE => Craft::t('app', '{user} is editing a draft of this {type}.', $messageParams),
+                    };
+                }
+
+                return [
+                    'userId' => $record->user->id,
+                    'userName' => $record->user->getName(),
+                    'userThumb' => $record->user->getThumbHtml(26),
+                    'message' => $message,
+                ];
+            }, $activity),
+            'updatedTimestamp' => $element->dateUpdated->getTimestamp(),
+            'canonicalUpdatedTimestamp' => $element->getCanonical()->dateUpdated->getTimestamp(),
+        ]);
     }
 
     /**
@@ -1687,7 +1760,7 @@ JS, [
             }
 
             $element->setEnabledForSite($this->_enabledForSite);
-        } elseif (isset($this->_enabled)) {
+        } else {
             $element->enabled = $this->_enabled;
         }
 

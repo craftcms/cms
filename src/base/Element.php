@@ -729,11 +729,18 @@ abstract class Element extends Component implements ElementInterface
      * @event ElementStructureEvent The event that is triggered before the element is moved in a structure.
      *
      * You may set [[\yii\base\ModelEvent::$isValid]] to `false` to prevent the element from getting moved.
+     *
+     * @deprecated in 4.5.0. [[\craft\services\Structures::EVENT_BEFORE_INSERT_ELEMENT]] or
+     * [[\craft\services\Structures::EVENT_BEFORE_MOVE_ELEMENT|EVENT_BEFORE_MOVE_ELEMENT]]
+     * should be used instead.
      */
     public const EVENT_BEFORE_MOVE_IN_STRUCTURE = 'beforeMoveInStructure';
 
     /**
      * @event ElementStructureEvent The event that is triggered after the element is moved in a structure.
+     * @deprecated in 4.5.0. [[\craft\services\Structures::EVENT_AFTER_INSERT_ELEMENT]] or
+     * [[\craft\services\Structures::EVENT_AFTER_MOVE_ELEMENT|EVENT_AFTER_MOVE_ELEMENT]]
+     * should be used instead.
      */
     public const EVENT_AFTER_MOVE_IN_STRUCTURE = 'afterMoveInStructure';
 
@@ -904,6 +911,22 @@ abstract class Element extends Component implements ElementInterface
     public static function findSource(string $sourceKey, ?string $context = null): ?array
     {
         return null;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function sourcePath(string $sourceKey, string $stepKey, ?string $context): ?array
+    {
+        return null;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function modifyCustomSource(array $config): array
+    {
+        return $config;
     }
 
     /**
@@ -2157,11 +2180,7 @@ abstract class Element extends Component implements ElementInterface
 
         // If this is a field, make sure the value has been normalized before returning the CustomFieldBehavior value
         if ($this->fieldByHandle($name) !== null) {
-            $value = $this->getFieldValue($name);
-            if (is_object($value) && (!interface_exists(UnitEnum::class) || !$value instanceof UnitEnum)) {
-                $value = clone $value;
-            }
-            return $value;
+            return $this->clonedFieldValue($name);
         }
 
         return parent::__get($name);
@@ -2291,7 +2310,7 @@ abstract class Element extends Component implements ElementInterface
             foreach ($fieldLayout->getCustomFieldElements() as $layoutElement) {
                 $field = $layoutElement->getField();
                 if (!isset($fields[$field->handle])) {
-                    $fields[$field->handle] = fn() => $this->getFieldValue($field->handle);
+                    $fields[$field->handle] = fn() => $this->clonedFieldValue($field->handle);
                 }
             }
         }
@@ -3318,7 +3337,57 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
+    public function getThumbHtml(int $size): ?string
+    {
+        $thumbUrl = $this->getThumbUrl($size);
+
+        if ($thumbUrl !== null) {
+            return Html::tag('div', '', [
+                'class' => array_filter([
+                    'elementthumb',
+                    $this->getHasCheckeredThumb() ? 'checkered' : null,
+                    $this->getHasRoundedThumb() ? 'rounded' : null,
+                ]),
+                'data' => [
+                    'sizes' => sprintf('%spx', $size),
+                    'srcset' => sprintf('%s %sw, %s %sw', $thumbUrl, $size, $this->getThumbUrl($size * 2), $size * 2),
+                    'alt' => $this->getThumbAlt(),
+                ],
+            ]);
+        }
+
+        $thumbSvg = $this->thumbSvg();
+        if ($thumbSvg !== null) {
+            $thumbSvg = Html::svg($thumbSvg, false, true);
+            $alt = $this->getThumbAlt();
+            if ($alt !== null) {
+                $thumbSvg = Html::prependToTag($thumbSvg, Html::tag('title', Html::encode($alt)));
+            }
+            $thumbSvg = Html::modifyTagAttributes($thumbSvg, ['role' => 'img']);
+            return Html::tag('div', $thumbSvg, [
+                'class' => 'elementthumb',
+            ]);
+        }
+
+        return null;
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function getThumbUrl(int $size): ?string
+    {
+        return null;
+    }
+
+    /**
+     * Returns the element’s thumbnail SVG contents, which should be used as a fallback when [[getThumbUrl()]]
+     * returns `null`.
+     *
+     * @return string|null
+     * @since 4.5.0
+     */
+    protected function thumbSvg(): ?string
     {
         return null;
     }
@@ -3408,7 +3477,9 @@ abstract class Element extends Component implements ElementInterface
             ->structureId($this->structureId)
             ->siteId(['not', $this->siteId])
             ->drafts($this->getIsDraft())
-            ->provisionalDrafts($this->isProvisionalDraft)
+            // the provisionalDraft state could have just changed (e.g. `elements/save-draft`)
+            // so don't filter based on one or the other
+            ->provisionalDrafts(null)
             ->revisions($this->getIsRevision());
     }
 
@@ -3997,6 +4068,30 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
+    public function getIsSlugTranslatable(): bool
+    {
+        return true;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getSlugTranslationDescription(): ?string
+    {
+        return ElementHelper::translationDescription(Field::TRANSLATION_METHOD_SITE);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getSlugTranslationKey(): string
+    {
+        return ElementHelper::translationKey($this, Field::TRANSLATION_METHOD_SITE);
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function getFieldValues(?array $fieldHandles = null): array
     {
         $values = [];
@@ -4035,6 +4130,15 @@ abstract class Element extends Component implements ElementInterface
         foreach ($values as $fieldHandle => $value) {
             $this->setFieldValue($fieldHandle, $value);
         }
+    }
+
+    private function clonedFieldValue(string $fieldHandle): mixed
+    {
+        $value = $this->getFieldValue($fieldHandle);
+        if (is_object($value) && (!interface_exists(UnitEnum::class) || !$value instanceof UnitEnum)) {
+            return clone $value;
+        }
+        return $value;
     }
 
     /**
@@ -4259,7 +4363,12 @@ abstract class Element extends Component implements ElementInterface
     public function setFieldValuesFromRequest(string $paramNamespace = ''): void
     {
         $this->setFieldParamNamespace($paramNamespace);
-        $values = Craft::$app->getRequest()->getBodyParam($paramNamespace, []);
+
+        if (isset($this->_fieldParamNamePrefix)) {
+            $values = Craft::$app->getRequest()->getBodyParam($paramNamespace, []);
+        } else {
+            $values = Craft::$app->getRequest()->getBodyParams();
+        }
 
         // Run through this multiple times, in case any fields become visible as a result of other field value changes
         $processedFields = [];
@@ -4280,7 +4389,6 @@ abstract class Element extends Component implements ElementInterface
                     $value = $values[$field->handle];
                 } elseif (
                     isset($this->_fieldParamNamePrefix) &&
-                    $this->_fieldParamNamePrefix !== '' &&
                     UploadedFile::getInstancesByName("$this->_fieldParamNamePrefix.$field->handle")
                 ) {
                     // A file was uploaded for this field
@@ -4307,7 +4415,7 @@ abstract class Element extends Component implements ElementInterface
      */
     public function setFieldParamNamespace(string $namespace): void
     {
-        $this->_fieldParamNamePrefix = $namespace;
+        $this->_fieldParamNamePrefix = $namespace !== '' ? $namespace : null;
     }
 
     /**
@@ -4487,7 +4595,11 @@ abstract class Element extends Component implements ElementInterface
      */
     public function getHtmlAttributes(string $context): array
     {
-        $htmlAttributes = $this->htmlAttributes($context);
+        $htmlAttributes = ArrayHelper::merge($this->htmlAttributes($context), [
+            'data' => [
+                'disallow-status' => !$this->showStatusField(),
+            ],
+        ]);
 
         // Give plugins a chance to modify them
         $event = new RegisterElementHtmlAttributesEvent([
@@ -4535,7 +4647,7 @@ abstract class Element extends Component implements ElementInterface
      * attribute, rather than simply showing the attribute’s raw value.
      *
      * For example, if your elements have an `email` attribute that you want to wrap in a `mailto:` link, your
-     * getTableAttributesHtml() method could do this:
+     * `tableAttributeHtml()` method could do this:
      *
      * ```php
      * switch ($attribute) {
@@ -4728,7 +4840,7 @@ abstract class Element extends Component implements ElementInterface
                 Html::tag('h2', Craft::t('app', 'Metadata'), ['class' => 'visually-hidden']);
         }
 
-        if (!$static && static::hasStatuses()) {
+        if (!$static && static::hasStatuses() && $this->showStatusField()) {
             // Is this a multi-site element?
             $components[] = $this->statusFieldHtml();
         }
@@ -4797,7 +4909,8 @@ JS,
         return Cp::textFieldHtml([
             'label' => Craft::t('app', 'Slug'),
             'siteId' => $this->siteId,
-            'translationDescription' => Craft::t('app', 'This field is translated for each site.'),
+            'translatable' => $this->getIsSlugTranslatable(),
+            'translationDescription' => $this->getSlugTranslationDescription(),
             'id' => 'slug',
             'name' => 'slug',
             'autocorrect' => false,
@@ -4806,6 +4919,19 @@ JS,
             'disabled' => $static,
             'errors' => array_merge($this->getErrors('slug'), $this->getErrors('uri')),
         ]);
+    }
+
+    /**
+     * Whether status field should be shown for this element.
+     * If set to `false`, status can't be updated via editing entry, action or resave command.
+     * `true` for all elements by default for backwards compatibility.
+     *
+     * @return bool
+     * @since 4.5.0
+     */
+    protected function showStatusField(): bool
+    {
+        return true;
     }
 
     /**

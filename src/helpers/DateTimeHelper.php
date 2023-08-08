@@ -654,7 +654,7 @@ class DateTimeHelper
         if (is_numeric($value)) {
             // Use DateTime::diff() so the years/months/days/hours/minutes values are all populated correctly
             $now = static::now(new DateTimeZone('UTC'));
-            $then = (clone $now)->modify("+$value seconds");
+            $then = (clone $now)->modify(sprintf('%s%s seconds', $value < 0 ? '-' : '+', abs($value)));
             return $now->diff($then);
         }
 
@@ -878,7 +878,13 @@ class DateTimeHelper
             $format = str_replace('A', '', $format) . 'A';
         }
 
-        return [$value, $format];
+        // replace narrow non-breaking spaces with normal spaces, which are
+        // handled a bit more gracefully by DateTime::createFromFormat()
+        // (see https://github.com/php/php-src/issues/11600)
+        return [
+            str_replace("\u{202f}", ' ', $value),
+            str_replace("\u{202f}", ' ', $format),
+        ];
     }
 
     /**

@@ -228,9 +228,9 @@ class GeneralConfig extends BaseConfig
      *
      * ```php Static Config
      * // Nothing bug GIFs!
-     * 'allowedFileExtensions' => [
+     * ->allowedFileExtensions([
      *     'gif',
-     * ],
+     * ])
      * ```
      *
      * @see extraAllowedFileExtensions
@@ -393,7 +393,7 @@ class GeneralConfig extends BaseConfig
      *
      * ::: code
      * ```php Static Config
-     * 'autosaveDrafts' => false,
+     * ->autosaveDrafts(false)
      * ```
      * ```shell Environment Override
      * CRAFT_AUTOSAVE_DRAFTS=false
@@ -694,6 +694,25 @@ class GeneralConfig extends BaseConfig
     public string $defaultCookieDomain = '';
 
     /**
+     * @var string The two-letter country code that addresses will be set to by default.
+     *
+     * See <https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2> for a list of acceptable country codes.
+     *
+     * ::: code
+     * ```php Static Config
+     * ->defaultCountryCode('GB')
+     * ```
+     * ```shell Environment Override
+     * CRAFT_DEFAULT_COUNTRY_CODE=GB
+     * ```
+     * :::
+     *
+     * @group System
+     * @since 4.5.0
+     */
+    public string $defaultCountryCode = 'US';
+
+    /**
      * @var string|null The default language the control panel should use for users who haven’t set a preferred language yet.
      *
      * ::: code
@@ -827,7 +846,7 @@ class GeneralConfig extends BaseConfig
      * ::: code
      * ```php Static Config
      * // One week
-     * 'defaultTokenDuration' => 604800,
+     * ->defaultTokenDuration(604800)
      * ```
      * ```shell Environment Override
      * # One week
@@ -1232,7 +1251,7 @@ class GeneralConfig extends BaseConfig
      *
      * ::: code
      * ```php Static Config
-     * 'extraLastNamePrefixes' => ['Dal', 'Van Der'],
+     * ->extraLastNamePrefixes(['Dal', 'Van Der'])
      * ```
      * ```shell Environment Override
      * CRAFT_EXTRA_LAST_NAME_PREFIXES="Dal,Van Der"
@@ -1249,7 +1268,7 @@ class GeneralConfig extends BaseConfig
      *
      * ::: code
      * ```php Static Config
-     * 'extraNameSalutations' => ['Lady', 'Sire'],
+     * ->extraNameSalutations(['Lady', 'Sire'])
      * ```
      * ```shell Environment Override
      * CRAFT_EXTRA_NAME_SALUTATIONS=Lady,Sire
@@ -1266,7 +1285,7 @@ class GeneralConfig extends BaseConfig
      *
      * ::: code
      * ```php Static Config
-     * 'extraNameSuffixes' => ['CCNA', 'OBE'],
+     * ->extraNameSuffixes(['CCNA', 'OBE'])
      * ```
      * ```shell Environment Override
      * CRAFT_EXTRA_NAME_SUFFIXES=CCNA,OBE
@@ -1471,7 +1490,7 @@ class GeneralConfig extends BaseConfig
      * ::: code
      * ```php Static Config
      * // 1 day
-     * 'invalidLoginWindowDuration' => 86400,
+     * ->invalidLoginWindowDuration(86400)
      * ```
      * ```shell Environment Override
      * # 1 day
@@ -1493,7 +1512,7 @@ class GeneralConfig extends BaseConfig
      * ::: code
      * ```php Static Config
      * // 1 day
-     * 'invalidUserTokenPath' => 'nope',
+     * ->invalidUserTokenPath('nope')
      * ```
      * ```shell Environment Override
      * # 1 day
@@ -1752,7 +1771,7 @@ class GeneralConfig extends BaseConfig
      * ::: code
      * ```php Static Config
      * // 25MB
-     * 'maxUploadFileSize' => 26214400,
+     * ->maxUploadFileSize(26214400)
      * ```
      * ```shell Environment Override
      * # 25MB
@@ -2128,7 +2147,7 @@ class GeneralConfig extends BaseConfig
      * ::: code
      * ```php Static Config
      * // 1 hour
-     * 'previewTokenDuration' => 3600,
+     * ->previewTokenDuration(3600)
      * ```
      * ```shell Environment Override
      * # 1 hour
@@ -2177,7 +2196,7 @@ class GeneralConfig extends BaseConfig
      * ::: code
      * ```php Static Config
      * // 2 weeks
-     * 'purgePendingUsersDuration' => 1209600,
+     * ->purgePendingUsersDuration(1209600)
      * ```
      * ```shell Environment Override
      * # 2 weeks
@@ -2199,7 +2218,7 @@ class GeneralConfig extends BaseConfig
      * ::: code
      * ```php Static Config
      * // 1 week
-     * 'purgeStaleUserSessionDuration' => 604800,
+     * ->purgeStaleUserSessionDuration(604800)
      * ```
      * ```shell Environment Override
      * # 1 week
@@ -3011,7 +3030,7 @@ class GeneralConfig extends BaseConfig
      * ::: code
      * ```php Static Config
      * // 3 hours
-     * 'userSessionDuration' => 10800,
+     * ->userSessionDuration(10800)
      * ```
      * ```shell Environment Override
      * # 3 hours
@@ -3053,7 +3072,7 @@ class GeneralConfig extends BaseConfig
      * ::: code
      * ```php Static Config
      * // 1 hour
-     * 'verificationCodeDuration' => 3600,
+     * ->verificationCodeDuration(3600)
      * ```
      * ```shell Environment Override
      * # 1 hour
@@ -3745,6 +3764,27 @@ class GeneralConfig extends BaseConfig
     public function defaultCookieDomain(string $value): self
     {
         $this->defaultCookieDomain = $value;
+        return $this;
+    }
+
+    /**
+     * The two-letter country code that addresses will be set to by default.
+     *
+     * See <https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2> for a list of acceptable country codes.
+     *
+     * ```php
+     * ->defaultCountryCode('GB')
+     * ```
+     *
+     * @group System
+     * @param string $value
+     * @return self
+     * @see $defaultCountryCode
+     * @since 4.5.0
+     */
+    public function defaultCountryCode(string $value): self
+    {
+        $this->defaultCountryCode = $value;
         return $this;
     }
 
