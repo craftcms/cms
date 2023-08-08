@@ -35,6 +35,7 @@
 - The “My Account” page no longer shows a “Require a password reset on next login” checkbox.
 - The Asset Indexes utility no longer shows the “Cache remote images” option on ephemeral environments. ([#13202](https://github.com/craftcms/cms/issues/13202))
 - It’s now possible to configure UK addresses to show a “County” field. ([#13361](https://github.com/craftcms/cms/pull/13361))
+- The “Login Page Logo” and “Site Icon” general settings’ image previews now have checkered backgrounds. ([#13210](https://github.com/craftcms/cms/discussions/13210), [#13229](https://github.com/craftcms/cms/pull/13229)) 
 
 ### Development
 - Added a new `_globals` global Twig variable for front-end templates, which can be used to store custom values in a global scope. ([#13050](https://github.com/craftcms/cms/pull/13050), [#12951](https://github.com/craftcms/cms/discussions/12951))
