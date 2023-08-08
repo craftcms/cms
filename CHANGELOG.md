@@ -1,9 +1,9 @@
 # Release Notes for Craft CMS 3.x
 
-## Unreleased
+## 3.8.17 - 2023-08-08
 
 - Fixed a bug where `Craft.BaseElementIndexView::this.canSelectElement()` wasn’t getting applied for lazy-loaded elements.
-- Fixed a bug where setting an element query’s `status` praam to `archived` would always yield zero results. ([#13465](https://github.com/craftcms/cms/issues/13465))
+- Fixed a bug where setting an element query’s `status` param to `archived` would always yield zero results. ([#13465](https://github.com/craftcms/cms/issues/13465))
 - Fixed a bug where `update` commands could fail on some environments.
 - Fixed an information disclosure vulnerability.
 
@@ -154,7 +154,7 @@
 - It’s now possible to sort asset indexes by image width and height. ([#12653](https://github.com/craftcms/cms/pull/12653))
 
 ### Administration
-- Most licensing isuses are now consolidated into a single control panel alert, with a button to resolve them all with a single purchase on Craft Console. ([#12768](https://github.com/craftcms/cms/pull/12768))
+- Most licensing issues are now consolidated into a single control panel alert, with a button to resolve them all with a single purchase on Craft Console. ([#12768](https://github.com/craftcms/cms/pull/12768))
 - Added the `users/unlock` console command. ([#12345](https://github.com/craftcms/cms/discussions/12345))
 - The `utils/prune-revisions` console command now has a `--section` option. ([#8783](https://github.com/craftcms/cms/discussions/8783))
 
