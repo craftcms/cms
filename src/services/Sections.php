@@ -1622,8 +1622,6 @@ SQL)->execute();
                 'titleTranslationMethod',
                 'titleTranslationKeyFormat',
                 'titleFormat',
-                'slugTranslationMethod',
-                'slugTranslationKeyFormat',
                 'showStatusField',
                 'uid',
             ])
