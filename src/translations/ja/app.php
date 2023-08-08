@@ -1337,6 +1337,7 @@ return [
     'Show the debug toolbar in the control panel' => 'コントロールパネルにデバッグツールバーを表示',
     'Show the debug toolbar on the front end' => 'フロントエンドにデバッグツールバーを表示',
     'Show the site menu' => 'サイトメニューを表示する',
+    'Show the Status field' => 'Show the Status field',
     'Show them indefinitely' => '無期限に表示',
     'Show thumbnails and titles' => 'サムネイルとタイトルを表示',
     'Show thumbnails only' => 'サムネイルのみを表示',

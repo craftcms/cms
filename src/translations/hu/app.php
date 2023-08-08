@@ -1337,6 +1337,7 @@ return [
     'Show the debug toolbar in the control panel' => 'A hibakereső eszköztár megjelenítése a Vezérlőpulton',
     'Show the debug toolbar on the front end' => 'A hibakereső eszköztár megjelenítése az előtérben',
     'Show the site menu' => 'Webhelymenü megjelenítése',
+    'Show the Status field' => 'Show the Status field',
     'Show them indefinitely' => 'Tartós megjelenítés',
     'Show thumbnails and titles' => 'Miniatűrök és címek megjelenítése',
     'Show thumbnails only' => 'Csak miniatűrök megjelenítése',

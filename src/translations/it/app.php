@@ -1337,6 +1337,7 @@ return [
     'Show the debug toolbar in the control panel' => 'Mostra la barra degli strumenti per il debug nel pannello di controllo',
     'Show the debug toolbar on the front end' => 'Mostra la barra degli strumenti per il debug in primo piano',
     'Show the site menu' => 'Mostra il menu del sito',
+    'Show the Status field' => 'Show the Status field',
     'Show them indefinitely' => 'Mostrale senza limiti di tempo',
     'Show thumbnails and titles' => 'Mostra miniature e titoli',
     'Show thumbnails only' => 'Mostra solo le miniature',

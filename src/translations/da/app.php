@@ -1337,6 +1337,7 @@ return [
     'Show the debug toolbar in the control panel' => 'Vis værktøjslinjen til fejlfinding i kontrolpanelet',
     'Show the debug toolbar on the front end' => 'Vis værktøjslinjen til fejlfinding i front-end',
     'Show the site menu' => 'Vis sitemenuen',
+    'Show the Status field' => 'Show the Status field',
     'Show them indefinitely' => 'Vis dem uendeligt',
     'Show thumbnails and titles' => 'Vis miniaturer og titler',
     'Show thumbnails only' => 'Vis kun miniaturer',

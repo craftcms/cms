@@ -1337,6 +1337,7 @@ return [
     'Show the debug toolbar in the control panel' => 'Hata ayıklama araç çubuğunu kontrol panelinde göster',
     'Show the debug toolbar on the front end' => 'Hata ayıklama araç çubuğunu ön uçta göster',
     'Show the site menu' => 'Site menüsünde göster',
+    'Show the Status field' => 'Show the Status field',
     'Show them indefinitely' => 'Süresiz olarak göster',
     'Show thumbnails and titles' => 'Kapak resimlerini ve başlıkları göster',
     'Show thumbnails only' => 'Sadece kapak resimlerini göster',

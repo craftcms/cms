@@ -1337,6 +1337,7 @@ return [
     'Show the debug toolbar in the control panel' => 'Mostrar a barra de ferramentas de depuração no painel de controlo',
     'Show the debug toolbar on the front end' => 'Mostrar a barra de ferramentas de depuração no front end',
     'Show the site menu' => 'Mostrar o menu do site',
+    'Show the Status field' => 'Show the Status field',
     'Show them indefinitely' => 'Mostrar por tempo indeterminado',
     'Show thumbnails and titles' => 'Mostrar miniaturas e títulos',
     'Show thumbnails only' => 'Mostrar apenas miniaturas',
