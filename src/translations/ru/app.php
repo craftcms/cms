@@ -1337,6 +1337,7 @@ return [
     'Show the debug toolbar in the control panel' => 'Показать панель отладки в панели управления',
     'Show the debug toolbar on the front end' => 'Показать панель отладки во входном интерфейсе',
     'Show the site menu' => 'Показать меню сайта',
+    'Show the Status field' => 'Show the Status field',
     'Show them indefinitely' => 'Не закрывать',
     'Show thumbnails and titles' => 'Показать эскизы и заголовки',
     'Show thumbnails only' => 'Показать только эскизы',
