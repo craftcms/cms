@@ -46,7 +46,7 @@ class Dispatcher extends \yii\log\Dispatcher
     }
 
     /**
-     * @return Array[]
+     * @return array<MonologTarget|array>
      */
     public function getTargets(): array
     {
