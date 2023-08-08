@@ -107,7 +107,7 @@ class ElementsController extends Controller
         $this->_draftId = $this->_param('draftId');
         $this->_revisionId = $this->_param('revisionId');
         $this->_siteId = $this->_param('siteId');
-        $this->_enabled = $this->_param('enabled');
+        $this->_enabled = $this->_param('enabled') ?? true;
         $this->_enabledForSite = $this->_param('enabledForSite');
         $this->_slug = $this->_param('slug');
         $this->_fresh = (bool)$this->_param('fresh');
@@ -1760,7 +1760,7 @@ JS, [
             }
 
             $element->setEnabledForSite($this->_enabledForSite);
-        } elseif (isset($this->_enabled)) {
+        } else {
             $element->enabled = $this->_enabled;
         }
 

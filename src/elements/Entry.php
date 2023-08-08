@@ -1756,6 +1756,20 @@ EOD;
         return implode("\n", $fields);
     }
 
+    /**
+     * @inheritdoc
+     */
+    public function showStatusField(): bool
+    {
+        try {
+            $showStatusField = $this->getType()->showStatusField;
+        } catch (InvalidConfigException $e) {
+            $showStatusField = true;
+        }
+
+        return $showStatusField;
+    }
+
     private function _parentOptionCriteria(Section $section): array
     {
         $parentOptionCriteria = [

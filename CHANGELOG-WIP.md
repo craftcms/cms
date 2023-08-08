@@ -28,6 +28,8 @@
 
 ### Administration
 - Added the “Slug Translation Method” setting to entry types. ([#8962](https://github.com/craftcms/cms/discussions/8962), [#13291](https://github.com/craftcms/cms/pull/13291))
+- Added the “Show the Status field” setting to entry types. ([#12837](https://github.com/craftcms/cms/discussions/12837), [#13265](https://github.com/craftcms/cms/pull/13265))
+- Entry types created via the `entrify/global-set` command now have “Show the Status field” disabled by default. ([#12837](https://github.com/craftcms/cms/discussions/12837))
 - Added the `defaultCountryCode` config setting. ([#13478](https://github.com/craftcms/cms/discussions/13478))
 - Custom element sources can now be configured to only appear for certain sites. ([#13344](https://github.com/craftcms/cms/discussions/13344))
 - The “My Account” page no longer shows a “Require a password reset on next login” checkbox.
@@ -50,6 +52,7 @@
 - Admin tables can now be programatically reloaded. ([#13416](https://github.com/craftcms/cms/pull/13416))
 - Native element sources can now define a `defaultFilter` key, which defines the default filter condition that should be applied when the source is selected. ([#13499](https://github.com/craftcms/cms/pull/13499))
 - Added `craft\addresses\SubdivisionRepository`. ([#13361](https://github.com/craftcms/cms/pull/13361))
+- Added `craft\base\Element::showStatusField()`. ([#13265](https://github.com/craftcms/cms/pull/13265))
 - Added `craft\base\Element::thumbSvg()`. ([#13262](https://github.com/craftcms/cms/pull/13262))
 - Added `craft\base\ElementInterface::getIsSlugTranslatable()`.
 - Added `craft\base\ElementInterface::getSlugTranslationDescription()`.

@@ -96,6 +96,12 @@ class EntryType extends Model implements FieldLayoutProviderInterface
     public ?string $slugTranslationKeyFormat = null;
 
     /**
+     * @var bool Whether to show the Status field
+     * @since 4.5.0
+     */
+    public bool $showStatusField = true;
+
+    /**
      * @var string|null UID
      */
     public ?string $uid = null;
@@ -122,6 +128,7 @@ class EntryType extends Model implements FieldLayoutProviderInterface
             'handle' => Craft::t('app', 'Handle'),
             'name' => Craft::t('app', 'Name'),
             'titleFormat' => Craft::t('app', 'Title Format'),
+            'showStatusField' => Craft::t('app', 'Show the Status field'),
         ];
     }
 
@@ -247,6 +254,7 @@ class EntryType extends Model implements FieldLayoutProviderInterface
             'titleFormat' => $this->titleFormat ?: null,
             'slugTranslationMethod' => $this->slugTranslationMethod,
             'slugTranslationKeyFormat' => $this->slugTranslationKeyFormat ?: null,
+            'showStatusField' => $this->showStatusField,
             'sortOrder' => (int)$this->sortOrder,
             'section' => $this->getSection()->uid,
         ];

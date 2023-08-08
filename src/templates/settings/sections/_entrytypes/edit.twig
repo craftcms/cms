@@ -53,13 +53,13 @@
 
     {% endif %}
 
-    {{ forms.checkboxField({
+    {{ forms.lightswitchField({
         first: (section.type == 'single'),
         label: "Show the Title field"|t('app'),
         name: 'hasTitleField',
         toggle: 'title-container',
         reverseToggle: '#titleFormat-container, .fld-title-field-icon',
-        checked: entryType.hasTitleField
+        on: entryType.hasTitleField,
     }) }}
 
     {% if craft.app.getIsMultiSite() %}
@@ -144,6 +144,14 @@
             }) }}
         </div>
     {% endif %}
+
+    {{ forms.lightswitchField({
+        label: "Show the Status field"|t('app'),
+        id: 'showStatusField',
+        name: 'showStatusField',
+        on: entryType.showStatusField,
+        errors: entryType.getErrors('showStatusField')
+    }) }}
 
     <hr>
 

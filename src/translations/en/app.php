@@ -1337,6 +1337,7 @@ return [
     'Show the debug toolbar in the control panel' => 'Show the debug toolbar in the control panel',
     'Show the debug toolbar on the front end' => 'Show the debug toolbar on the front end',
     'Show the site menu' => 'Show the site menu',
+    'Show the Status field' => 'Show the Status field',
     'Show them indefinitely' => 'Show them indefinitely',
     'Show thumbnails and titles' => 'Show thumbnails and titles',
     'Show thumbnails only' => 'Show thumbnails only',
