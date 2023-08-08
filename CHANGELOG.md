@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 4
 
-## Unreleased
+## 4.4.17 - 2023-08-08
 
 - `meta.__names__` values in the project config are now updated throughout the process of applying incoming project config changes, rather than at the end of the request.
 - The `project-config/rebuild` command now rebuilds the `meta.__names__` array from scratch. ([#13456](https://github.com/craftcms/cms/issues/13456))
