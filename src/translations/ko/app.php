@@ -1337,6 +1337,7 @@ return [
     'Show the debug toolbar in the control panel' => '제어판에 디버그 도구 모음 표시',
     'Show the debug toolbar on the front end' => '프런트 엔드에 디버그 도구 모음 표시',
     'Show the site menu' => '사이트 메뉴 표시',
+    'Show the Status field' => 'Show the Status field',
     'Show them indefinitely' => '무기한 표시',
     'Show thumbnails and titles' => '썸네일 및 제목 표시',
     'Show thumbnails only' => '썸네일만 표시',
