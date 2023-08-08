@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 3.x
 
-## Unreleased
+## 3.8.17 - 2023-08-08
 
 - Fixed a bug where `Craft.BaseElementIndexView::this.canSelectElement()` wasn’t getting applied for lazy-loaded elements.
 - Fixed a bug where setting an element query’s `status` param to `archived` would always yield zero results. ([#13465](https://github.com/craftcms/cms/issues/13465))
