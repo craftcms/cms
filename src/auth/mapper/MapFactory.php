@@ -15,34 +15,34 @@ use yii\base\InvalidConfigException;
 class MapFactory
 {
     /**
-     * @param string|array|UserMapInterface $config
+     * @param string|array|callable|UserMapInterface $mapper
      * @param string $defaultClass
      * @return UserMapInterface
      * @throws InvalidConfigException
      */
-    public static function createUserMap(string|array|UserMapInterface $config, string $defaultClass = UserAttributesMapper::class): UserMapInterface
+    public static function createUserMap(string|array|callable|UserMapInterface $mapper, string $defaultClass = UserAttributesMapper::class): UserMapInterface
     {
-        if ($config instanceof UserMapInterface) {
-            return $config;
+        if (is_callable($mapper)) {
+            return $mapper;
         }
 
         // Normalize the config
-        if (is_string($config)) {
-            $class = $config;
-            $config = [];
+        if (is_string($mapper)) {
+            $class = $mapper;
+            $mapper = [];
         } else {
             // Apply defaults?
-            if (is_array($config)) {
-                $config = ArrayHelper::merge(
+            if (is_array($mapper)) {
+                $mapper = ArrayHelper::merge(
                     [
-                        'type' => $defaultClass
+                        'class' => $defaultClass
                     ],
-                    $config
+                    $mapper
                 );
             }
 
-            $class = $config['type'] ?? $config['class'];
-            unset($config['type'], $config['__class']);
+            $class = $mapper['class'] ?? $mapper['class'];
+            unset($mapper['type'], $mapper['__class']);
         }
 
         // Validate class
@@ -51,10 +51,10 @@ class MapFactory
         }
 
         // Typecast the properties
-        Typecast::properties($class, $config);
+        Typecast::properties($class, $mapper);
 
         // Instantiate and return
-        $config['class'] = $class;
-        return Craft::createObject($config);
+        $mapper['class'] = $class;
+        return Craft::createObject($mapper);
     }
 }

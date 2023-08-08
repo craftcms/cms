@@ -24,7 +24,7 @@ class IdpAttributeUserMap extends Component implements UserMapInterface
     /**
      * @inheritDoc
      */
-    public function map(User $user, mixed $data): void
+    public function __invoke(User $user, mixed $data): User
     {
         $value = ArrayHelper::getValue($data, $this->idpProperty);
 
@@ -37,9 +37,11 @@ class IdpAttributeUserMap extends Component implements UserMapInterface
                 "auth"
             );
 
-            return;
+            return $user;
         }
 
         $this->setValue($user, $value);
+
+        return $user;
     }
 }

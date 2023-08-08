@@ -14,7 +14,7 @@ interface UserMapInterface
     /**
      * @param User $user
      * @param mixed $data
-     * @return void
+     * @return User
      */
-    public function map(User $user, mixed $data): void;
+    public function __invoke(User $user, mixed $data): User;
 }

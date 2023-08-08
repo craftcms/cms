@@ -22,11 +22,6 @@ trait AuthProviderTrait
     public ?string $handle = null;
 
     /**
-     * @var string|null UID
-     */
-    public ?string $uid = null;
-
-    /**
      * @inheritDoc
      */
     public function getHandle(): string
@@ -53,17 +48,9 @@ trait AuthProviderTrait
     /**
      * @inheritDoc
      */
-    public function getLoginRequestUrl(): string | null
+    public function getRequestUrl(): string | null
     {
-        return UrlHelper::actionUrl('auth/request-login', ['provider' => $this->handle], null, false);
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function getAuthRequestUrl(): string | null
-    {
-        return UrlHelper::actionUrl('auth/request-session', ['provider' => $this->handle], null, false);
+        return UrlHelper::actionUrl('auth/request', ['provider' => $this->handle], null, false);
     }
 
     /**
@@ -73,21 +60,4 @@ trait AuthProviderTrait
     {
         return UrlHelper::actionUrl('auth/response', ['provider' => $this->handle], null, false);
     }
-
-    /**
-     * @inheritDoc
-     */
-    public function getLoginResponseUrl(): string | null
-    {
-        return UrlHelper::actionUrl('auth/login-response', ['provider' => $this->handle], null, false);
-    }
-//
-//
-//    /**
-//     * @inheritDoc
-//     */
-//    public function getAuthResponseUrl(): string | null
-//    {
-//        return UrlHelper::actionUrl('auth/response', ['provider' => $this->handle], null, false);
-//    }
 }

@@ -22,8 +22,10 @@ class ExplicitValueUserMap extends Component implements UserMapInterface
     /**
      * @inheritDoc
      */
-    public function map(User $user, mixed $data): void
+    public function __invoke(User $user, mixed $data): User
     {
         $this->setValue($user, $this->value);
+
+        return $user;
     }
 }

@@ -7,20 +7,27 @@
 
 namespace craft\auth;
 
-use craft\base\SavableComponent;
 use craft\helpers\Html;
+use yii\base\Component;
 
-abstract class AbstractProvider extends SavableComponent implements ProviderInterface
+abstract class AbstractProvider extends Component implements ProviderInterface
 {
-    use AuthProviderTrait,
-        AuthUserMapperTrait;
+    use AuthProviderTrait;
+
+    /**
+     * @return $this
+     */
+    protected function getProvider(): static
+    {
+        return $this;
+    }
 
     /**
      * @inheritdoc
      */
     public function getSiteLoginHtml(?string $label = null, ?string $url = null): string
     {
-        return Html::a($label ?: "Login via " . $this->name, $url ?: $this->getLoginRequestUrl());
+        return Html::a($label ?: "Login via " . $this->name, $url ?: $this->getRequestUrl());
     }
 
     /**
@@ -28,7 +35,6 @@ abstract class AbstractProvider extends SavableComponent implements ProviderInte
      */
     public function getCpLoginHtml(?string $label = null, ?string $url = null): string
     {
-        return Html::a($label ?: "Login via " . $this->name, $url ?: $this->getLoginRequestUrl());
+        return Html::a($label ?: "Login via " . $this->name, $url ?: $this->getRequestUrl());
     }
-
 }

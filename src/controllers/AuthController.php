@@ -8,7 +8,6 @@
 namespace craft\controllers;
 
 use Craft;
-use craft\elements\User as UserElement;
 use craft\errors\AuthFailedException;
 use craft\errors\AuthProviderNotFoundException;
 use craft\helpers\Json;
@@ -19,30 +18,32 @@ use yii\web\Response;
 
 class AuthController extends Controller
 {
-    /**
-     * The session key used to store the type of request made.  The request type is retrieved
-     * when a response comes back.
-     */
-    const SESSION_KEY = "Auth";
-
-    /**
-     * A request type where a user should be logged into Craft
-     */
-    const REQUEST_TYPE_LOGIN = "Login";
-
-    /**
-     * A request type where only the identity session check should be performed
-     */
-    const REQUEST_TYPE_SESSION = "Session";
+//    /**
+//     * The session key used to store the type of request made.  The request type is retrieved
+//     * when a response comes back.
+//     */
+//    const SESSION_KEY = "Auth";
+//
+//    /**
+//     * A request type where a user should be logged into Craft
+//     */
+//    const REQUEST_TYPE_LOGIN = "Login";
+//
+//    /**
+//     * A request type where only the identity session check should be performed
+//     */
+//    const REQUEST_TYPE_SESSION = "Session";
 
     /**
      * @inheritdoc
      */
     protected array|bool|int $allowAnonymous = [
-        'request-login' => self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE,
-        'request-session' => self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE,
+        'request' => self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE,
         'response' => self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE,
-        'login-response' => self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE,
+//        'request-login' => self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE,
+//        'request-session' => self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE,
+//        'response' => self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE,
+//        'login-response' => self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE,
     ];
 
     public $enableCsrfValidation = false;
@@ -56,84 +57,29 @@ class AuthController extends Controller
      * @throws HttpException
      * @throws \craft\errors\MissingComponentException
      */
-    public function actionRequestLogin(string $provider): ?Response
+    public function actionRequest(string $provider): ?Response
     {
         $authProvider = Craft::$app->getAuth()->getProviderByHandle($provider);
 
-        Craft::$app->getSession()->set(self::SESSION_KEY, self::REQUEST_TYPE_LOGIN);
-
         try {
-            return $authProvider->handleLoginRequest($this->request, $this->response);
+            return $authProvider->handleRequest(
+                $this->request,
+                $this->response
+            );
         } catch (AuthFailedException $exception) {
             throw new HttpException(400, $exception->getMessage(), previous: $exception);
         }
     }
 
-    /**
-     * Perform a session request.
-     *
-     * @param string $provider
-     * @return Response
-     * @throws AuthProviderNotFoundException
-     * @throws HttpException
-     * @throws \craft\errors\MissingComponentException
-     */
-    public function actionRequestSession(string $provider): Response
-    {
-        $authProvider = Craft::$app->getAuth()->getProviderByHandle($provider);
-
-        Craft::$app->getSession()->set(self::SESSION_KEY, self::REQUEST_TYPE_SESSION);
-
-        try {
-            return $authProvider->handleAuthRequest($this->request, $this->response);
-        } catch (AuthFailedException $exception) {
-            throw new HttpException(400, $exception->getMessage(), previous: $exception);
-        }
-    }
-
-    /**
-     * Handle the identity provider response.
-     *
-     * TODO I don't think this is needed
-     * @param string $provider
-     * @return Response|null
-     * @throws \craft\errors\MissingComponentException
-     */
     public function actionResponse(string $provider): ?Response
     {
-        switch (Craft::$app->getSession()->get(self::SESSION_KEY)) {
-
-            case self::REQUEST_TYPE_SESSION:
-                return $this->actionSessionResponse($provider);
-
-            default:
-                return $this->actionLoginResponse($provider);
-        }
-
-        return $this->handleFailedResponse();
-    }
-
-    public function actionLoginResponse(string $provider): ?Response
-    {
         $authProvider = Craft::$app->getAuth()->getProviderByHandle($provider);
 
         try {
-            if ($authProvider->handleLoginResponse()) {
-                return $this->handleSuccessfulResponse();
-            }
-        } catch (AuthFailedException $exception) {
-            return $this->handleFailedResponse($exception);
-        }
-
-        return $this->handleFailedResponse();
-    }
-
-    public function actionSessionResponse(string $provider): ?Response
-    {
-        $authProvider = Craft::$app->getAuth()->getProviderByHandle($provider);
-
-        try {
-            if ($authProvider->handleAuthResponse()) {
+            if ($authProvider->handleResponse(
+                $this->request,
+                $this->response
+            )) {
                 return $this->handleSuccessfulResponse();
             }
         } catch (AuthFailedException $exception) {

@@ -7,16 +7,11 @@
 
 namespace craft\auth;
 
-use craft\auth\mapper\UserMapInterface;
-use craft\base\SavableComponentInterface;
 use craft\errors\AuthFailedException;
 use yii\web\Request;
 use yii\web\Response;
 
-/**
- * AuthHandler handles successful authentication via Yii auth component
- */
-interface ProviderInterface extends SavableComponentInterface
+interface ProviderInterface
 {
     /**
      * Get the unique handle for the provider
@@ -26,42 +21,26 @@ interface ProviderInterface extends SavableComponentInterface
     public function getHandle(): string;
 
     /**
-     * Initiate an auth request
+     * Handle a request to authenticate against an identity provider
      *
      * @param Request $request
      * @param Response $response
-     *
-     * @throws AuthFailedException
      * @return Response
+     *
+     * @throws AuthFailedException
      */
-    public function handleAuthRequest(Request $request, Response $response): Response;
+    public function handleRequest(Request $request, Response $response): Response;
 
     /**
-     * Initiate an login request
+     * Handle the response from an identity provider
      *
      * @param Request $request
      * @param Response $response
+     * @return bool
      *
      * @throws AuthFailedException
-     * @return bool
      */
-    public function handleLoginRequest(Request $request, Response $response): Response;
-
-    /**
-     * Handle an auth response
-     *
-     * @throws AuthFailedException
-     * @return bool
-     */
-    public function handleAuthResponse(): bool;
-
-    /**
-     * Handle a login response
-     *
-     * @throws AuthFailedException
-     * @return bool
-     */
-    public function handleLoginResponse(): bool;
+    public function handleResponse(Request $request, Response $response): bool;
 
     /**
      * @return string|null The site login HTML
@@ -74,27 +53,12 @@ interface ProviderInterface extends SavableComponentInterface
     public function getCpLoginHtml(): string | null;
 
     /**
-     * @return string|null The login request URL
-     */
-    public function getLoginRequestUrl(): string | null;
-
-    /**
      * @return string|null The auth request URL
      */
-    public function getAuthRequestUrl(): string | null;
+    public function getRequestUrl(): string | null;
 
     /**
      * @return string|null The response URL
      */
     public function getResponseUrl(): string | null;
-
-    /**
-     * @return string|null The login response URL
-     */
-    public function getLoginResponseUrl(): string | null;
-//
-//    /**
-//     * @return string|null The auth response URL
-//     */
-//    public function getAuthResponseUrl(): string | null;
 }

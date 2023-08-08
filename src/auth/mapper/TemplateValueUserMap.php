@@ -23,7 +23,7 @@ class TemplateValueUserMap extends Component implements UserMapInterface
     /**
      * @inheritDoc
      */
-    public function map(User $user, mixed $data): void
+    public function __invoke(User $user, mixed $data): User
     {
         $value = Craft::$app->view->renderObjectTemplate(
             $this->template,
@@ -35,5 +35,7 @@ class TemplateValueUserMap extends Component implements UserMapInterface
         );
 
         $this->setValue($user, $value);
+
+        return $user;
     }
 }

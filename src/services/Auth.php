@@ -14,24 +14,14 @@ use craft\db\Table;
 use craft\elements\User;
 use craft\errors\AuthFailedException;
 use craft\errors\AuthProviderNotFoundException;
-use craft\errors\MissingComponentException;
-use craft\events\UserAuthEvent;
-use craft\events\UserGroupsAssignEvent;
-use craft\helpers\ArrayHelper;
-use craft\helpers\Component as ComponentHelper;
-use craft\helpers\ProjectConfig as ProjectConfigHelper;
 use craft\auth\ProviderInterface;
-use craft\helpers\StringHelper;
 use craft\helpers\User as UserHelper;
 use yii\base\Component;
-use yii\base\Exception;
 use yii\base\InvalidConfigException;
-use Throwable;
+use craft\records\Auth as AuthRecord;
 
 class Auth extends Component
 {
-    const PROJECT_CONFIG_PATH = 'auth';
-
     /**
      * @event UserEvent The event that is triggered when populating user groups from an Auth provider.
      *
@@ -119,19 +109,14 @@ class Auth extends Component
     }
 
     /**
-     * @param array $baseProviders
+     * @param array $configs
      * @return MemoizableArray<ProviderInterface>
+     * @throws InvalidConfigException
      */
-    private function initProviders(array $baseProviders = []): MemoizableArray
+    private function initProviders(array $configs = []): MemoizableArray
     {
-        $configs = ArrayHelper::merge(
-            $baseProviders,
-            Craft::$app->getProjectConfig()->get(self::PROJECT_CONFIG_PATH) ?? []
-        );
-
         $providers = array_map(function(string $handle, array $config) {
             $config['handle'] = $handle;
-            $config['settings'] = ProjectConfigHelper::unpackAssociativeArrays($config['settings'] ?? []);
             return $this->createAuthProvider($config);
         }, array_keys($configs), $configs);
 
@@ -141,44 +126,28 @@ class Auth extends Component
     /**
      * Creates an auth provider from a given config.
      *
-     * @template T as ProviderInterface
-     * @param string|array $config The auth provider’s class name, or its config, with a `type` value and optionally a `settings` value
-     * @phpstan-param class-string<T>|array{type:class-string<T>} $config
-     * @return T The filesystem
+     * @param mixed $config
+     * @return ProviderInterface
+     * @throws InvalidConfigException
      */
     public function createAuthProvider(mixed $config): ProviderInterface
     {
-        try {
-            return ComponentHelper::createComponent($config, ProviderInterface::class);
-        } catch (MissingComponentException|InvalidConfigException $e) {
-            $config['errorMessage'] = $e->getMessage();
-            $config['expectedType'] = $config['type'] ?? 'ProviderInterface';
-            /** @var array $config */
-            /** @phpstan-var array{errorMessage:string,expectedType:string,type:string} $config */
-            unset($config['type']);
-            throw new Exception("Invalid auth provider");
-        }
-    }
-
-    /**
-     * Removes a filesystem.
-     *
-     * @param ProviderInterface $provider The auth provider to remove
-     * @return bool
-     * @throws Throwable
-     */
-    public function removeAuthProvider(ProviderInterface $provider): bool
-    {
-        if (!$provider->beforeDelete()) {
-            return false;
+        if ($config instanceof ProviderInterface) {
+            return $config;
         }
 
-        Craft::$app->getProjectConfig()->remove(sprintf('%s.%s', static::PROJECT_CONFIG_PATH, $provider->handle), "Remove the “{$provider->handle}” auth provider");
+        if (is_string($config)) {
+            $config = ['class' => $config];
+        }
 
-        // Clear caches
-        $this->_providers = null;
+        $provider = Craft::createObject($config);
 
-        return true;
+        // Verify the created object instance
+        if ($provider instanceof ProviderInterface) {
+            return $provider;
+        }
+
+        throw new InvalidConfigException('Provider must implement "ProviderInterface"');
     }
 
     /**
@@ -220,6 +189,66 @@ class Auth extends Component
     }
 
     /**
+     * Find a user based on the identity provider and identity id
+     *
+     * @param ProviderInterface $provider
+     * @param string $idpIdentifier
+     * @return User|null
+     */
+    public function findUser(ProviderInterface $provider, string $idpIdentifier): ?User
+    {
+        $userId = (new Query())
+            ->select([
+                'userId'
+            ])
+            ->from([
+                Table::AUTH
+            ])
+            ->where(
+                [
+                    'provider' => $provider->getHandle(),
+                    'identityId' => $idpIdentifier,
+                ]
+            )
+            ->scalar();
+
+        if (!$userId) {
+            return null;
+        }
+
+        return Craft::$app->getUsers()->getUserById($userId);
+    }
+
+    /**
+     * Assigns a user to an identity
+     *
+     * @param User $user
+     * @param ProviderInterface $provider
+     * @param string $idpIdentifier
+     * @return bool
+     */
+    public function linkUserToIdentity(User $user, ProviderInterface $provider, string $idpIdentifier): bool
+    {
+        $authRecord = AuthRecord::find()
+            ->where([
+                'provider' => $provider->getHandle(),
+                'identityId' => $idpIdentifier,
+                'userId' => $user->getId(),
+            ])
+            ->one();
+
+        if (!$authRecord) {
+            $authRecord = new AuthRecord([
+                'provider' => $provider->getHandle(),
+                'identityId' => $idpIdentifier,
+                'userId' => $user->getId(),
+            ]);
+        }
+
+        return $authRecord->save();
+    }
+
+    /**
      * @param ProviderInterface $provider
      * @param User $user
      * @param int|null $sessionDuration
@@ -227,7 +256,7 @@ class Auth extends Component
      * @return bool
      * @throws AuthFailedException
      */
-    public function loginUser(ProviderInterface $provider, User $user, ?int $sessionDuration = null, bool $rememberMe = false, ): bool
+    public function loginUser(ProviderInterface $provider, User $user, ?int $sessionDuration = null, bool $rememberMe = false): bool
     {
         $userSession = Craft::$app->getUser();
         if (!$userSession->getIsGuest()) {
@@ -256,121 +285,5 @@ class Auth extends Component
         }
 
         return true;
-    }
-
-    /**
-     * Populate a User
-     *
-     * @param ProviderInterface $provider
-     * @param mixed $data
-     * @param User $user
-     * @return User
-     */
-    public function populateUser(ProviderInterface $provider, mixed $data, User $user): User
-    {
-        $event = new UserAuthEvent([
-            'user' => $user,
-            'provider' => $provider,
-            'sender' => $data
-        ]);
-
-        $provider->trigger(self::EVENT_POPULATE_USER, $event);
-
-        return $event->user;
-    }
-
-    /**
-     * @param ProviderInterface $provider
-     * @param User $user
-     * @param mixed $data
-     * @return User
-     * @throws \Throwable
-     * @throws \craft\errors\ElementNotFoundException
-     * @throws \yii\base\Exception
-     */
-    public function syncUser(ProviderInterface $provider, User $user, mixed $data): User
-    {
-        // Ensure the user is active
-        if ($user->getStatus() !== User::STATUS_ACTIVE) {
-            $this->enableUser($user);
-        }
-
-        if (!$user->getId()) {
-            if (!$user->username || Craft::$app->getConfig()->getGeneral()->useEmailAsUsername) {
-                $user->username = $user->email;
-            }
-        }
-
-        // Save user
-        if (!Craft::$app->getElements()->saveElement($user)) {
-            throw new AuthFailedException(
-                $provider,
-                $user,
-                sprintf(
-                    "Failed to save user: %s",
-                    StringHelper::toString($user->getFirstErrors(), ', ')
-                )
-            );
-        }
-
-        // Assign User Groups
-        $this->assignUserToGroups($provider, $user, $data);
-
-        return $user;
-    }
-
-    /**
-     * @param User $user
-     * @throws \Throwable
-     */
-    private function enableUser(User $user)
-    {
-        if (!$user->getId() || Craft::$app->getUsers()->activateUser($user)) {
-            $user->enabled = true;
-            $user->archived = false;
-
-            $user->active = true;
-            $user->pending = false;
-            $user->locked = false;
-            $user->suspended = false;
-            $user->verificationCode = null;
-            $user->verificationCodeIssuedDate = null;
-            $user->invalidLoginCount = null;
-            $user->lastInvalidLoginDate = null;
-            $user->lockoutDate = null;
-        }
-    }
-
-    /**
-     * @param ProviderInterface $provider
-     * @param User $user
-     * @param mixed $data
-     * @return bool
-     * @throws \Throwable
-     */
-    private function assignUserToGroups(ProviderInterface $provider, User $user, mixed $data): bool
-    {
-        $db = Craft::$app->getDb();
-
-        // Get the current groups
-        $groupIds = (new Query())
-            ->select(['groupId'])
-            ->from([Table::USERGROUPS_USERS])
-            ->where(['userId' => $user->getId()])
-            ->column($db);
-
-        // TODO - New event that only has these two properties?
-        $event = new UserGroupsAssignEvent([
-            'userId' => $user->getId(),
-            'groupIds' => $groupIds,
-            'data' => $data
-        ]);
-
-        $provider->trigger(self::EVENT_POPULATE_USER_GROUPS, $event);
-
-        return Craft::$app->getUsers()->assignUserToGroups(
-            $user->getId(),
-            $event->groupIds
-        );
     }
 }
