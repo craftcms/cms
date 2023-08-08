@@ -52,7 +52,7 @@ class Entry extends ElementMutationResolver
 
         // If saving an entry for a site and the enabled status is provided, honor it.
         if (array_key_exists('enabled', $arguments)) {
-            if ($entry->showStatusField()) {
+            if ($entry->getType()->showStatusField) {
                 if (!empty($arguments['siteId'])) {
                     $entry->setEnabledForSite([$arguments['siteId'] => $arguments['enabled']]);
                     // Set the global status to true if it's currently disabled,
