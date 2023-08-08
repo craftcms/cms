@@ -5,7 +5,7 @@
  * @license https://craftcms.github.io/license/
  */
 
-namespace craft\auth\mapper;
+namespace craft\auth\provider\mapper;
 
 use Craft;
 use craft\helpers\ArrayHelper;

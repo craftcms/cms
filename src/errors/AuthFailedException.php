@@ -7,7 +7,7 @@
 
 namespace craft\errors;
 
-use craft\auth\ProviderInterface;
+use craft\auth\provider\ProviderInterface;
 use Throwable;
 use yii\base\Exception;
 use yii\web\IdentityInterface;

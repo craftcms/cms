@@ -7,7 +7,7 @@
 
 namespace craft\events;
 
-use craft\auth\ProviderInterface;
+use craft\auth\provider\ProviderInterface;
 
 /**
  * User Auth event class.

@@ -1,5 +1,6 @@
 
 An example provider
+
 ```php
 
 'components' => [

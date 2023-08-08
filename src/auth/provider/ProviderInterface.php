@@ -5,7 +5,7 @@
  * @license https://craftcms.github.io/license/
  */
 
-namespace craft\auth;
+namespace craft\auth\provider;
 
 use craft\errors\AuthFailedException;
 use yii\web\Request;
@@ -43,22 +43,18 @@ interface ProviderInterface
     public function handleResponse(Request $request, Response $response): bool;
 
     /**
+     * HTML that we present an unauthenticated user to log in to the site.  Typically, this would b
+     * a button or form
+     *
      * @return string|null The site login HTML
      */
     public function getSiteLoginHtml(): string | null;
 
     /**
+     * HTML that we present an unauthenticated user to log in to the admin panel.  Typically, this would b
+     * a button or form
+     *
      * @return string|null The admin login HTML
      */
     public function getCpLoginHtml(): string | null;
-
-    /**
-     * @return string|null The auth request URL
-     */
-    public function getRequestUrl(): string | null;
-
-    /**
-     * @return string|null The response URL
-     */
-    public function getResponseUrl(): string | null;
 }

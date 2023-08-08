@@ -5,7 +5,7 @@
  * @license https://craftcms.github.io/license/
  */
 
-namespace craft\auth;
+namespace craft\auth\provider;
 
 use craft\helpers\UrlHelper;
 
@@ -43,21 +43,5 @@ trait AuthProviderTrait
     public function getCpLoginHtml(): string|null
     {
         return null;
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function getRequestUrl(): string | null
-    {
-        return UrlHelper::actionUrl('auth/request', ['provider' => $this->handle], null, false);
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function getResponseUrl(): string | null
-    {
-        return UrlHelper::actionUrl('auth/response', ['provider' => $this->handle], null, false);
     }
 }

@@ -5,11 +5,14 @@
  * @license https://craftcms.github.io/license/
  */
 
-namespace craft\auth;
+namespace craft\auth\provider;
 
 use craft\helpers\Html;
 use yii\base\Component;
 
+/**
+ *
+ */
 abstract class AbstractProvider extends Component implements ProviderInterface
 {
     use AuthProviderTrait;

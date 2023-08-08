@@ -5,10 +5,10 @@
  * @license https://craftcms.github.io/license/
  */
 
-namespace craft\auth;
+namespace craft\auth\provider;
 
 use Craft;
-use craft\auth\mapper\UserAttributesMapper;
+use craft\auth\provider\mapper\UserAttributesMapper;
 use craft\db\Query;
 use craft\db\Table;
 use craft\elements\User;
@@ -17,8 +17,13 @@ use craft\events\UserAuthEvent;
 use craft\events\UserGroupsAssignEvent;
 use craft\helpers\ArrayHelper;
 use craft\helpers\StringHelper;
+use craft\helpers\UrlHelper;
 use craft\services\Auth;
 
+/**
+ * We should always trust an external provider; therefore we need to perform additional
+ * operations such as finding, populating and linking a Craft user.
+ */
 abstract class AbstractExternalProvider extends AbstractProvider
 {
     /**
@@ -83,6 +88,26 @@ abstract class AbstractExternalProvider extends AbstractProvider
      * ```
      */
     public $assignUserGroups = null;
+
+    /**
+     * The URL that we will re-direct the user to for authentication
+     *
+     * @return string|null The auth request URL
+     */
+    protected function getRequestUrl(): ?string
+    {
+        return UrlHelper::actionUrl('auth/request', ['provider' => $this->handle], null, false);
+    }
+
+    /**
+     * The URL that the IdP should send the authentication response to
+     *
+     * @return string|null The response URL
+     */
+    protected function getResponseUrl(): ?string
+    {
+        return UrlHelper::actionUrl('auth/response', ['provider' => $this->handle], null, false);
+    }
 
     /**
      * @param array $data

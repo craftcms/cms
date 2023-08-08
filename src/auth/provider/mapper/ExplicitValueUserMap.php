@@ -5,7 +5,7 @@
  * @license https://craftcms.github.io/license/
  */
 
-namespace craft\auth\mapper;
+namespace craft\auth\provider\mapper;
 
 use craft\base\Component;
 use craft\elements\User;

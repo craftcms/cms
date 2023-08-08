@@ -8,17 +8,17 @@
 namespace craft\services;
 
 use Craft;
+use craft\auth\provider\ProviderInterface;
 use craft\base\MemoizableArray;
 use craft\db\Query;
 use craft\db\Table;
 use craft\elements\User;
 use craft\errors\AuthFailedException;
 use craft\errors\AuthProviderNotFoundException;
-use craft\auth\ProviderInterface;
 use craft\helpers\User as UserHelper;
+use craft\records\Auth as AuthRecord;
 use yii\base\Component;
 use yii\base\InvalidConfigException;
-use craft\records\Auth as AuthRecord;
 
 class Auth extends Component
 {
