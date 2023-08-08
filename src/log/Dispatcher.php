@@ -46,7 +46,7 @@ class Dispatcher extends \yii\log\Dispatcher
     }
 
     /**
-     * @return MonologTarget[]
+     * @return array<MonologTarget|array>
      */
     public function getTargets(): array
     {
@@ -67,6 +67,7 @@ class Dispatcher extends \yii\log\Dispatcher
             static::TARGET_QUEUE,
         ])->mapWithKeys(function($name) {
             $config = $this->monologTargetConfig + [
+                'class' => MonologTarget::class,
                 'name' => $name,
                 'enabled' => false,
                 'extractExceptionTrace' => !App::devMode(),
@@ -74,14 +75,14 @@ class Dispatcher extends \yii\log\Dispatcher
                 'level' => App::devMode() ? LogLevel::INFO : LogLevel::WARNING,
             ];
 
-            return [$name => new MonologTarget($config)];
+            return [$name => $config];
         });
 
         // Queue is enabled via QueueLogBehavior
         if ($isConsoleRequest) {
-            $targets->get(static::TARGET_CONSOLE)->enabled = true;
+            $targets->get(static::TARGET_CONSOLE)['enabled'] = true;
         } else {
-            $targets->get(static::TARGET_WEB)->enabled = true;
+            $targets->get(static::TARGET_WEB)['enabled'] = true;
         }
 
         return $targets->all();
