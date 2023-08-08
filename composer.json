@@ -32,7 +32,7 @@
     "ext-pcre": "*",
     "ext-pdo": "*",
     "ext-zip": "*",
-    "composer/composer": "2.2.19",
+    "composer/composer": "^2.2.19",
     "craftcms/plugin-installer": "~1.6.0",
     "craftcms/server-check": "~1.2.0",
     "creocoder/yii2-nested-sets": "~0.9.0",
