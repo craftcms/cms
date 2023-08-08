@@ -1621,8 +1621,6 @@ SQL)->execute();
                 'titleTranslationMethod',
                 'titleTranslationKeyFormat',
                 'titleFormat',
-                'slugTranslationMethod',
-                'slugTranslationKeyFormat',
                 'uid',
             ])
             ->from([Table::ENTRYTYPES])
