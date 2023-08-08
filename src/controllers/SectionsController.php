@@ -36,10 +36,14 @@ class SectionsController extends Controller
      */
     public function beforeAction($action): bool
     {
+        if (!parent::beforeAction($action)) {
+            return false;
+        }
+
         // All section actions require an admin
         $this->requireAdmin();
 
-        return parent::beforeAction($action);
+        return true;
     }
 
     /**
@@ -335,6 +339,8 @@ class SectionsController extends Controller
         $entryType->titleTranslationMethod = $this->request->getBodyParam('titleTranslationMethod', $entryType->titleTranslationMethod);
         $entryType->titleTranslationKeyFormat = $this->request->getBodyParam('titleTranslationKeyFormat', $entryType->titleTranslationKeyFormat);
         $entryType->titleFormat = $this->request->getBodyParam('titleFormat', $entryType->titleFormat);
+        $entryType->slugTranslationMethod = $this->request->getBodyParam('slugTranslationMethod', $entryType->slugTranslationMethod);
+        $entryType->slugTranslationKeyFormat = $this->request->getBodyParam('slugTranslationKeyFormat', $entryType->slugTranslationKeyFormat);
         $entryType->showStatusField = $this->request->getBodyParam('showStatusField', $entryType->showStatusField);
 
         // Set the field layout

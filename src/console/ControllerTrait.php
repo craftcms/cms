@@ -17,6 +17,7 @@ use craft\mutex\Mutex as CraftMutex;
 use yii\base\Action;
 use yii\base\InvalidRouteException;
 use yii\console\Exception;
+use yii\console\ExitCode;
 use yii\redis\Mutex as RedisMutex;
 
 /**
@@ -84,7 +85,10 @@ trait ControllerTrait
     public function runAction($id, $params = [])
     {
         try {
-            return parent::runAction($id, $params);
+            // *should* only be an int, but there are exceptions :/
+            /** @var int|null $response */
+            $response = parent::runAction($id, $params);
+            return $response ?? ExitCode::OK;
         } finally {
             if (isset($this->isolationMutexName)) {
                 Craft::$app->getMutex()->release($this->isolationMutexName);

@@ -8,6 +8,7 @@
 namespace craft\log;
 
 use Craft;
+use craft\helpers\ArrayHelper;
 use Illuminate\Support\Collection;
 use Monolog\Processor\ProcessorInterface;
 use yii\helpers\VarDumper;
@@ -92,8 +93,7 @@ class ContextProcessor implements ProcessorInterface
 
     protected function filterVars(array $vars = []): array
     {
-        $filtered = Collection::make($GLOBALS)
-            ->filter(fn($value, $key) => in_array($key, $vars, true));
+        $filtered = Collection::make(ArrayHelper::filter($GLOBALS, $vars));
 
         // Workaround for codeception testing until these gets addressed:
         // https://github.com/yiisoft/yii-core/issues/49

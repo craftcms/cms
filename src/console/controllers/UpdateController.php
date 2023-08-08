@@ -21,6 +21,7 @@ use craft\models\Update;
 use craft\models\Updates;
 use craft\models\Updates as UpdatesModel;
 use Symfony\Component\Process\Exception\ProcessFailedException;
+use Symfony\Component\Process\PhpExecutableFinder;
 use Symfony\Component\Process\Process;
 use Throwable;
 use yii\base\InvalidConfigException;
@@ -177,7 +178,7 @@ class UpdateController extends Controller
 
         // Run migrations?
         if (!$this->_migrate()) {
-            if ($this->_restoreDb()) {
+            if ($this->restore()) {
                 $this->_revertComposerChanges();
             }
             return ExitCode::UNSPECIFIED_ERROR;
@@ -415,41 +416,14 @@ class UpdateController extends Controller
 
         $this->stdout('Applying new migrations ... ', Console::FG_YELLOW);
 
-        $process = new Process([PHP_BINARY, $script, 'migrate/all', '--no-backup', '--no-content']);
+        $php = (new PhpExecutableFinder())->find() ?: 'php';
+        $process = new Process([$php, $script, 'migrate/all', '--no-backup', '--no-content']);
         $process->setTimeout(null);
         try {
             $process->mustRun();
         } catch (ProcessFailedException $e) {
             $this->stderr('error: ' . $e->getMessage() . PHP_EOL . PHP_EOL, Console::FG_RED);
             $this->stdout('Output:' . PHP_EOL . PHP_EOL . $process->getOutput() . PHP_EOL . PHP_EOL);
-            return false;
-        }
-
-        $this->stdout('done' . PHP_EOL, Console::FG_GREEN);
-        return true;
-    }
-
-    /**
-     * Attempts to restore the database after a migration failure.
-     *
-     * @return bool
-     */
-    private function _restoreDb(): bool
-    {
-        if (
-            !$this->backupPath ||
-            ($this->interactive && !$this->confirm('Restore the database backup?', true))
-        ) {
-            return false;
-        }
-
-        $this->stdout('Restoring the database backup ... ', Console::FG_YELLOW);
-
-        try {
-            Craft::$app->getDb()->restore($this->backupPath);
-        } catch (Throwable $e) {
-            $this->stdout('error: ' . $e->getMessage() . PHP_EOL, Console::FG_RED);
-            $this->stdout('You can manually restore the backup file located at ' . $this->backupPath . PHP_EOL);
             return false;
         }
 
@@ -506,7 +480,8 @@ class UpdateController extends Controller
 
         $this->stdout('Reverting Composer changes ... ', Console::FG_YELLOW);
 
-        $process = new Process([PHP_BINARY, $script, 'update/composer-install']);
+        $php = (new PhpExecutableFinder())->find() ?: 'php';
+        $process = new Process([$php, $script, 'update/composer-install']);
         $process->setTimeout(null);
         try {
             $process->mustRun();

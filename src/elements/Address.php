@@ -182,7 +182,7 @@ class Address extends Element implements AddressInterface, BlockElementInterface
      * @var string Two-letter country code
      * @see https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2
      */
-    public string $countryCode = 'US';
+    public string $countryCode;
 
     /**
      * @var string|null Administrative area
@@ -245,6 +245,11 @@ class Address extends Element implements AddressInterface, BlockElementInterface
     public function init(): void
     {
         parent::init();
+
+        if (!isset($this->countryCode)) {
+            $this->countryCode = Craft::$app->getConfig()->getGeneral()->defaultCountryCode;
+        }
+
         $this->normalizeNames();
     }
 
@@ -301,6 +306,18 @@ class Address extends Element implements AddressInterface, BlockElementInterface
         }
 
         return $this->_owner;
+    }
+
+    /**
+     * Sets the owner element.
+     *
+     * @param ElementInterface|null $owner
+     * @since 4.4.16
+     */
+    public function setOwner(?ElementInterface $owner): void
+    {
+        $this->_owner = $owner;
+        $this->ownerId = $owner?->id;
     }
 
     /**

@@ -9,6 +9,7 @@ namespace craft\services;
 
 use Craft;
 use craft\base\Element;
+use craft\base\Field;
 use craft\base\MemoizableArray;
 use craft\db\Query;
 use craft\db\Table;
@@ -1150,6 +1151,8 @@ SQL)->execute();
             $entryTypeRecord->titleTranslationMethod = $data['titleTranslationMethod'] ?? '';
             $entryTypeRecord->titleTranslationKeyFormat = $data['titleTranslationKeyFormat'] ?? null;
             $entryTypeRecord->titleFormat = $data['titleFormat'];
+            $entryTypeRecord->slugTranslationMethod = $data['slugTranslationMethod'] ?? Field::TRANSLATION_METHOD_SITE;
+            $entryTypeRecord->slugTranslationKeyFormat = $data['slugTranslationKeyFormat'] ?? null;
             $entryTypeRecord->showStatusField = $data['showStatusField'];
             $entryTypeRecord->sortOrder = $data['sortOrder'];
             $entryTypeRecord->sectionId = $section->id;
@@ -1607,7 +1610,7 @@ SQL)->execute();
      */
     private function _createEntryTypeQuery(): Query
     {
-        return (new Query())
+        $query = (new Query())
             ->select([
                 'id',
                 'sectionId',
@@ -1619,11 +1622,23 @@ SQL)->execute();
                 'titleTranslationMethod',
                 'titleTranslationKeyFormat',
                 'titleFormat',
+                'slugTranslationMethod',
+                'slugTranslationKeyFormat',
                 'showStatusField',
                 'uid',
             ])
             ->from([Table::ENTRYTYPES])
             ->where(['dateDeleted' => null]);
+
+        // todo: remove after the next breakpoint
+        if (Craft::$app->getDb()->columnExists(Table::ENTRYTYPES, 'slugTranslationMethod')) {
+            $query->addSelect([
+                'slugTranslationMethod',
+                'slugTranslationKeyFormat',
+            ]);
+        }
+
+        return $query;
     }
 
     /**

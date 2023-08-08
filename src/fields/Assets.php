@@ -356,7 +356,7 @@ class Assets extends BaseRelationField
      */
     public function validateFileSize(ElementInterface $element): void
     {
-        $maxSize = AssetsHelper::getMaxUploadSize();
+        $maxSize = Craft::$app->getConfig()->getGeneral()->maxUploadFileSize;
 
         $filenames = [];
 
@@ -706,10 +706,13 @@ class Assets extends BaseRelationField
         $variables = parent::inputTemplateVariables($value, $element);
 
         $uploadVolume = $this->_uploadVolume();
+        $uploadFs = $uploadVolume?->getFs();
+        $variables['fsType'] = $uploadFs::class;
         $variables['showFolders'] = !$this->restrictLocation || $this->allowSubfolders;
         $variables['canUpload'] = (
             $this->allowUploads &&
             $uploadVolume &&
+            $uploadFs &&
             Craft::$app->getUser()->checkPermission("saveAssets:$uploadVolume->uid")
         );
         $variables['defaultFieldLayoutId'] = $uploadVolume->fieldLayoutId ?? null;
@@ -850,9 +853,6 @@ class Assets extends BaseRelationField
 
         $assetsService = Craft::$app->getAssets();
         $rootFolder = $assetsService->getRootFolderByVolumeId($volume->id);
-        if (!$rootFolder) {
-            $rootFolder = Craft::$app->getVolumes()->ensureTopFolder($volume);
-        }
 
         // Are we looking for the root folder?
         $subpath = trim($subpath ?? '', '/');
@@ -899,7 +899,7 @@ class Assets extends BaseRelationField
 
         // Ensure that the folder exists
         if (!$folder) {
-            if (!$isDynamic && !$createDynamicFolders) {
+            if (!$createDynamicFolders) {
                 throw new InvalidSubpathException($subpath);
             }
 

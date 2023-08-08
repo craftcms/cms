@@ -1476,7 +1476,7 @@ class Request extends \yii\web\Request
 
         // Sort by scores descending
         arsort($scores, SORT_NUMERIC);
-        $first = ArrayHelper::firstKey($scores);
+        $first = array_key_first($scores);
         $siteScore = reset($scores);
         return $sites[$first];
     }

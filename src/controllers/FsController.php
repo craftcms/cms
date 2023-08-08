@@ -33,10 +33,14 @@ class FsController extends Controller
      */
     public function beforeAction($action): bool
     {
+        if (!parent::beforeAction($action)) {
+            return false;
+        }
+
         // All asset volume actions require an admin
         $this->requireAdmin();
 
-        return parent::beforeAction($action);
+        return true;
     }
 
     /**
