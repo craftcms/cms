@@ -1337,6 +1337,7 @@ return [
     'Show the debug toolbar in the control panel' => 'Debug-Symbolleiste im Control Panel anzeigen',
     'Show the debug toolbar on the front end' => 'Debug-Symbolleiste im Front-End anzeigen',
     'Show the site menu' => 'Site-Menü anzeigen',
+    'Show the Status field' => 'Show the Status field',
     'Show them indefinitely' => 'Unbegrenzt anzeigen',
     'Show thumbnails and titles' => 'Thumbnails und Titel anzeigen',
     'Show thumbnails only' => 'Nur Thumbnails anzeigen',
