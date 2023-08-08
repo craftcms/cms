@@ -43,6 +43,7 @@
             sites: (source.sites ?? false) ? source.sites|join(',') : false,
             'override-status': (source.criteria.status ?? false) ? true : false,
             disabled: source.disabled ?? false,
+            'default-filter': source.defaultFilter ?? false,
         }|merge(source.data ?? {}),
         html: _self.sourceInnerHtml(source)
     }) }}

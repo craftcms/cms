@@ -8,6 +8,10 @@
     {% set selectizeOptions = selectizeOptions|merge({
         plugins: (selectizeOptions.plugins ?? [])|push('remove_button')
     }) %}
+{% else %}
+    {% set selectizeOptions = selectizeOptions|merge({
+        plugins: (selectizeOptions.plugins ?? [])|push('select_on_focus')
+    }) %}
 {% endif %}
 
 {# Normalize the options #}
@@ -142,7 +146,36 @@
             }
             {% endif %}
         }
-    }
+    };
+
+    const positionDropdown = () => {
+        const selectize = $select.data('selectize');
+
+        // adjust dropdown position - if there's not enough space to display it below the field
+        // display it above the field
+        const bodyHeight = $('body').height();
+        const windowInnerHeight = window.innerHeight;
+        let offsetAdjustment = 0;
+        if (bodyHeight > windowInnerHeight) {
+            offsetAdjustment = bodyHeight - windowInnerHeight;
+        }
+
+        const controlOffset = selectize.settings.dropdownParent === 'body' ? selectize.$control.offset() : selectize.$control.position();
+        const controlHeight = selectize.$control.outerHeight();
+        const dropdownHeight = selectize.$dropdown.outerHeight();
+        const exceededWindowHeight = (controlOffset.top - offsetAdjustment + controlHeight + dropdownHeight) > windowInnerHeight;
+
+        if (exceededWindowHeight) {
+            selectize.$dropdown.css({
+                top: controlOffset.top - dropdownHeight - 4,
+            });
+        }
+    };
+
+    {% if not multi %}
+        const selectizeDropdownOpenEvent = new Event("selectizedropdownopen");
+        const selectizeDropdownCloseEvent = new Event("selectizedropdownclose");
+    {% endif %}
 
     $select.selectize($.extend({
         searchField: ['text', 'hint', 'value', 'keywords'],
@@ -175,29 +208,17 @@
                 });
         },
         onDropdownOpen: function() {
-            // adjust dropdown position - if there's not enough space to display it below the field
-            // display it above the field
-            const bodyHeight = $('body').height();
-            const windowInnerHeight = window.innerHeight;
-            let offsetAdjustment = 0;
-            if (bodyHeight > windowInnerHeight) {
-                offsetAdjustment = bodyHeight - windowInnerHeight;
-            }
-
-            const controlOffset = this.settings.dropdownParent === 'body' ? this.$control.offset() : this.$control.position();
-            const controlHeight = this.$control.outerHeight();
-            const dropdownHeight = this.$dropdown.outerHeight();
-            const exceededWindowHeight = (controlOffset.top - offsetAdjustment + controlHeight + dropdownHeight) > windowInnerHeight;
-
-            if (exceededWindowHeight) {
-                this.$dropdown.css({
-                    top: controlOffset.top - dropdownHeight - 4,
-                });
-            }
+            positionDropdown();
+            {% if not multi %}
+                $select[0].dispatchEvent(selectizeDropdownOpenEvent);
+            {% endif %}
         },
         onDropdownClose: function() {
-            $select.trigger('change');
+            {% if not multi %}
+                $select[0].dispatchEvent(selectizeDropdownCloseEvent);
+            {% endif %}
         },
+        onItemAdd: positionDropdown,
     }, {{ selectizeOptions|json_encode|raw }}));
 
     onChange();

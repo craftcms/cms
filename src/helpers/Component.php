@@ -82,6 +82,27 @@ class Component
     }
 
     /**
+     * Cleanses a component config of any `on X` or `as X` keys.
+     *
+     * @param array $config
+     * @return array
+     * @since 4.4.15
+     */
+    public static function cleanseConfig(array $config): array
+    {
+        foreach ($config as $key => $value) {
+            if (is_string($key) && (str_starts_with($key, 'on ') || str_starts_with($key, 'as '))) {
+                unset($config[$key]);
+                continue;
+            }
+            if (is_array($value)) {
+                $config[$key] = static::cleanseConfig($value);
+            }
+        }
+        return $config;
+    }
+
+    /**
      * Instantiates and populates a component, and ensures that it is an instance of a given interface.
      *
      * @template T of ComponentInterface

@@ -452,7 +452,7 @@ Craft.EditableTable = Garnish.Base.extend(
               Craft.ui
                 .createColorInput({
                   name: name,
-                  value: value,
+                  value: typeof value !== 'object' ? value : null,
                   small: true,
                 })
                 .appendTo($cell);
@@ -517,7 +517,7 @@ Craft.EditableTable = Garnish.Base.extend(
               Craft.ui
                 .createTextInput({
                   name: name,
-                  value: value,
+                  value: typeof value !== 'object' ? value : null,
                   type: col.type,
                   placeholder: col.placeholder || null,
                 })
@@ -528,7 +528,7 @@ Craft.EditableTable = Garnish.Base.extend(
               $('<textarea/>', {
                 name: name,
                 rows: col.rows || 1,
-                val: value,
+                val: typeof value !== 'object' ? value : null,
                 placeholder: col.placeholder,
               }).appendTo($cell);
           }

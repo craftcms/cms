@@ -61,7 +61,7 @@ use yii\db\Expression;
 class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragmentFieldInterface
 {
     /**
-     * @event SectionEvent The event that is triggered before a section is saved.
+     * @event BlockTypesEvent The event that is triggered when setting the field’s block types
      * @since 3.1.27
      */
     public const EVENT_SET_FIELD_BLOCK_TYPES = 'setFieldBlockTypes';
@@ -120,7 +120,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
 
     /**
      * @var string Propagation method
-     * @phpstan-var self::PROPAGATION_METHOD_NONE|self::PROPAGATION_METHOD_SITE_GROUP|self::PROPAGATION_METHOD_LANGUAGE|self::PROPAGATION_METHOD_ALL
+     * @phpstan-var self::PROPAGATION_METHOD_NONE|self::PROPAGATION_METHOD_SITE_GROUP|self::PROPAGATION_METHOD_LANGUAGE|self::PROPAGATION_METHOD_ALL|self::PROPAGATION_METHOD_CUSTOM
      *
      * This will be set to one of the following:
      *
@@ -575,7 +575,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
                 'type' => $block->getType()->handle,
                 'enabled' => $block->enabled,
                 'collapsed' => $block->collapsed,
-                'fields' => $block->getSerializedFieldValues(),
+                'fields' => fn() => $block->getSerializedFieldValues(),
             ];
         }
 
@@ -649,6 +649,13 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
      */
     public function getIsTranslatable(?ElementInterface $element = null): bool
     {
+        if ($this->propagationMethod === self::PROPAGATION_METHOD_CUSTOM) {
+            return (
+                $element === null ||
+                Craft::$app->getView()->renderObjectTemplate($this->propagationKeyFormat, $element) !== ''
+            );
+        }
+
         return $this->propagationMethod !== self::PROPAGATION_METHOD_ALL;
     }
 
@@ -808,27 +815,29 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
             $blocks = $value->all();
         }
 
-        $allBlocksValidate = true;
-        $scenario = $element->getScenario();
+        if ($value instanceof MatrixBlockQuery) {
+            $allBlocksValidate = true;
+            $scenario = $element->getScenario();
 
-        foreach ($blocks as $i => $block) {
-            /** @var MatrixBlock $block */
-            if (
-                $scenario === Element::SCENARIO_ESSENTIALS ||
-                ($block->enabled && $scenario === Element::SCENARIO_LIVE)
-            ) {
-                $block->setScenario($scenario);
+            foreach ($blocks as $i => $block) {
+                /** @var MatrixBlock $block */
+                if (
+                    $scenario === Element::SCENARIO_ESSENTIALS ||
+                    ($block->enabled && $scenario === Element::SCENARIO_LIVE)
+                ) {
+                    $block->setScenario($scenario);
+                }
+
+                if (!$block->validate()) {
+                    $element->addModelErrors($block, "$this->handle[$i]");
+                    $allBlocksValidate = false;
+                }
             }
 
-            if (!$block->validate()) {
-                $element->addModelErrors($block, "$this->handle[$i]");
-                $allBlocksValidate = false;
+            if (!$allBlocksValidate) {
+                // Just in case the blocks weren't already cached
+                $value->setCachedResult($blocks);
             }
-        }
-
-        if (!$allBlocksValidate) {
-            // Just in case the blocks weren't already cached
-            $value->setCachedResult($blocks);
         }
 
         if (

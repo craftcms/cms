@@ -13,7 +13,9 @@ const state = {
   activeTrialPlugins: [],
   cart: null,
   cartPlugins: [],
+  itemsAutoRenew: {},
   selectedExpiryDates: {},
+  loadingItems: {},
 };
 
 /**
@@ -231,6 +233,21 @@ const getters = {
       }
     });
   },
+
+  /**
+   * Item loading.
+   * @param state
+   * @returns {(function(*): (boolean))|*}
+   */
+  itemLoading(state) {
+    return ({itemKey}) => {
+      return state.loadingItems[itemKey];
+    };
+  },
+
+  totalLoadingItems(state) {
+    return Object.keys(state.loadingItems).length;
+  },
 };
 
 /**
@@ -252,7 +269,7 @@ const actions = {
           item.expiryDate = '1y';
 
           // Set default values
-          item.autoRenew = false;
+          item.autoRenew = true;
 
           switch (item.type) {
             case 'plugin-edition': {
@@ -719,11 +736,16 @@ const mutations = {
     state.cart = cartResponseData.cart;
 
     const selectedExpiryDates = {};
+    const itemsAutoRenew = {};
+
     state.cart.lineItems.forEach((lineItem, key) => {
       selectedExpiryDates[key] = lineItem.options.expiryDate;
+      itemsAutoRenew[key] = lineItem.options.autoRenew;
     });
 
     state.selectedExpiryDates = selectedExpiryDates;
+    state.itemsAutoRenew = itemsAutoRenew;
+    // state.loadingItems = {};
   },
 
   updateCartPlugins(state, {pluginsResponseData}) {
@@ -732,6 +754,25 @@ const mutations = {
 
   updateSelectedExpiryDates(state, selectedExpiryDates) {
     state.selectedExpiryDates = selectedExpiryDates;
+  },
+
+  updateItemsAutoRenew(state, {itemsAutoRenew}) {
+    state.itemsAutoRenew = itemsAutoRenew;
+  },
+
+  updateLoadingItem(state, {itemKey, value}) {
+    const loadingItems = JSON.parse(JSON.stringify(state.loadingItems));
+
+    loadingItems[itemKey] = value;
+
+    state.loadingItems = loadingItems;
+  },
+
+  deleteLoadingItem(state, {itemKey}) {
+    const loadingItems = JSON.parse(JSON.stringify(state.loadingItems));
+    delete loadingItems[itemKey];
+
+    state.loadingItems = loadingItems;
   },
 };
 

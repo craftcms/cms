@@ -78,9 +78,19 @@ class ImageTransformer extends Component implements ImageTransformerInterface, E
     public function getTransformUrl(Asset $asset, ImageTransform $imageTransform, bool $immediately): string
     {
         $fs = $asset->getVolume()->getTransformFs();
+        $mimeType = $asset->getMimeType();
+        $generalConfig = Craft::$app->getConfig()->getGeneral();
 
         if (!$fs->hasUrls) {
             throw new NotSupportedException('The asset’s volume’s transform filesystem doesn’t have URLs.');
+        }
+
+        if ($mimeType === 'image/gif' && !$generalConfig->transformGifs) {
+            throw new NotSupportedException('GIF files shouldn’t be transformed.');
+        }
+
+        if ($mimeType === 'image/svg+xml' && !$generalConfig->transformSvgs) {
+            throw new NotSupportedException('SVG files shouldn’t be transformed.');
         }
 
         $index = $this->getTransformIndex($asset, $imageTransform);
@@ -193,8 +203,8 @@ class ImageTransformer extends Component implements ImageTransformerInterface, E
 
         try {
             $asset->getVolume()->getTransformFs()->deleteFile($path);
-        } catch (InvalidConfigException) {
-            // nbd
+        } catch (InvalidConfigException|NotSupportedException) {
+            // NBD
         }
     }
 
