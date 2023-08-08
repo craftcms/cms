@@ -1608,7 +1608,7 @@ SQL)->execute();
      */
     private function _createEntryTypeQuery(): Query
     {
-        return (new Query())
+        $query = (new Query())
             ->select([
                 'id',
                 'sectionId',
@@ -1626,6 +1626,16 @@ SQL)->execute();
             ])
             ->from([Table::ENTRYTYPES])
             ->where(['dateDeleted' => null]);
+
+        // todo: remove after the next breakpoint
+        if (Craft::$app->getDb()->columnExists(Table::ENTRYTYPES, 'slugTranslationMethod')) {
+            $query->addSelect([
+                'slugTranslationMethod',
+                'slugTranslationKeyFormat',
+            ]);
+        }
+
+        return $query;
     }
 
     /**
