@@ -64,7 +64,7 @@ class ElementQuery extends Query implements ElementQueryInterface
     public const EVENT_BEFORE_PREPARE = 'beforePrepare';
 
     /**
-     * @event Event An event that is triggered at the end of preparing an element query for the query builder.
+     * @event CancelableEvent An event that is triggered at the end of preparing an element query for the query builder.
      */
     public const EVENT_AFTER_PREPARE = 'afterPrepare';
 
@@ -1419,8 +1419,13 @@ class ElementQuery extends Query implements ElementQueryInterface
         if ($this->archived) {
             $this->subQuery->andWhere(['elements.archived' => true]);
         } else {
-            $this->subQuery->andWhere(['elements.archived' => false]);
             $this->_applyStatusParam($class);
+
+            // only set archived=false if 'archived' doesn't show up in the status param
+            // (_applyStatusParam() will normalize $this->status to an array if applicable)
+            if (!is_array($this->status) || !in_array(Element::STATUS_ARCHIVED, $this->status)) {
+                $this->subQuery->andWhere(['elements.archived' => false]);
+            }
         }
 
         if ($this->trashed === false) {
@@ -2297,11 +2302,12 @@ class ElementQuery extends Query implements ElementQueryInterface
             return;
         }
 
-        /** @var string[]|string|null $statuses */
-        $statuses = $this->status;
-        if (!is_array($statuses)) {
-            $statuses = $statuses ? StringHelper::split($statuses) : [];
+        // Normalize the status param
+        if (!is_array($this->status)) {
+            $this->status = StringHelper::split($this->status);
         }
+
+        $statuses = array_merge($this->status);
 
         $firstVal = strtolower(reset($statuses));
         if (in_array($firstVal, ['not', 'or'])) {

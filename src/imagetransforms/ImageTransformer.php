@@ -193,8 +193,8 @@ class ImageTransformer extends Component implements ImageTransformerInterface, E
 
         try {
             $asset->getVolume()->getTransformFs()->deleteFile($path);
-        } catch (InvalidConfigException) {
-            // nbd
+        } catch (InvalidConfigException|NotSupportedException) {
+            // NBD
         }
     }
 

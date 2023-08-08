@@ -801,14 +801,18 @@ class Extension extends AbstractExtension implements GlobalsInterface
     /**
      * Purifies the given HTML using HTML Purifier.
      *
-     * @param string $html The HTML to be purified
+     * @param string|null $html The HTML to be purified
      * @param string|array|null $config The HTML Purifier config. This can either be the name of a JSON file within
      * `config/htmlpurifier/` (sans `.json` extension) or a config array.
-     * @return string The purified HTML
+     * @return string|null The purified HTML
      * @since 3.4.0
      */
-    public function purifyFilter(string $html, array|string|null $config = null): string
+    public function purifyFilter(?string $html, array|string|null $config = null): ?string
     {
+        if ($html === null) {
+            return null;
+        }
+
         if (is_string($config)) {
             $path = Craft::$app->getPath()->getConfigPath() . DIRECTORY_SEPARATOR . 'htmlpurifier' .
                 DIRECTORY_SEPARATOR . $config . '.json';

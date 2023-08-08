@@ -659,7 +659,10 @@ class Cp
                 'title' => implode(', ', ArrayHelper::getColumn($elements, 'title')),
                 'class' => 'btn small',
                 'role' => 'button',
-                'onclick' => 'jQuery(this).replaceWith(' . Json::encode($otherHtml) . ')',
+                'onclick' => sprintf(
+                    'const r=jQuery(%s);jQuery(this).replaceWith(r);Craft.cp.elementThumbLoader.load(r);',
+                    Json::encode($otherHtml),
+                ),
             ]);
         }
 
