@@ -15,16 +15,7 @@ class m230531_123004_add_entry_type_show_status_field extends Migration
      */
     public function safeUp(): bool
     {
-        $table = $this->db->schema->getTableSchema(Table::ENTRYTYPES);
-
-        if (!isset($table->columns['showStatusField'])) {
-            $this->addColumn(
-                Table::ENTRYTYPES,
-                'showStatusField',
-                $this->boolean()->defaultValue(true)->after('titleFormat'),
-            );
-        }
-
+        $this->addColumn(Table::ENTRYTYPES, 'showStatusField', $this->boolean()->defaultValue(true)->after('slugTranslationKeyFormat'));
         return true;
     }
 
@@ -33,10 +24,7 @@ class m230531_123004_add_entry_type_show_status_field extends Migration
      */
     public function safeDown(): bool
     {
-        $table = $this->db->schema->getTableSchema(Table::ENTRYTYPES);
-        if (isset($table->columns['showStatusField'])) {
-            $this->dropColumn(Table::ENTRYTYPES, 'showStatusField');
-        }
+        $this->dropColumn(Table::ENTRYTYPES, 'showStatusField');
         return true;
     }
 }

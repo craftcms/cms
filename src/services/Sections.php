@@ -1153,7 +1153,7 @@ SQL)->execute();
             $entryTypeRecord->titleFormat = $data['titleFormat'];
             $entryTypeRecord->slugTranslationMethod = $data['slugTranslationMethod'] ?? Field::TRANSLATION_METHOD_SITE;
             $entryTypeRecord->slugTranslationKeyFormat = $data['slugTranslationKeyFormat'] ?? null;
-            $entryTypeRecord->showStatusField = $data['showStatusField'];
+            $entryTypeRecord->showStatusField = $data['showStatusField'] ?? true;
             $entryTypeRecord->sortOrder = $data['sortOrder'];
             $entryTypeRecord->sectionId = $section->id;
             $entryTypeRecord->uid = $entryTypeUid;
@@ -1622,7 +1622,6 @@ SQL)->execute();
                 'titleTranslationMethod',
                 'titleTranslationKeyFormat',
                 'titleFormat',
-                'showStatusField',
                 'uid',
             ])
             ->from([Table::ENTRYTYPES])
@@ -1633,6 +1632,7 @@ SQL)->execute();
             $query->addSelect([
                 'slugTranslationMethod',
                 'slugTranslationKeyFormat',
+                'showStatusField',
             ]);
         }
 

@@ -215,7 +215,6 @@ return [
     'Bug reports and feature requests' => 'Bug reports and feature requests',
     'Buy now' => 'Buy now',
     'Buy {name}' => 'Buy {name}',
-    'By default, entries show their status field and give you the ability to change it. You can turn it off for this entry type.' => 'By default, entries show their status field and give you the ability to change it. You can turn it off for this entry type.',
     'Bytes' => 'Bytes',
     'Cache remote images' => 'Cache remote images',
     'Caches' => 'Caches',
