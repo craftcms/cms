@@ -4,6 +4,7 @@
 
 - Fixed a bug where `Craft.BaseElementIndexView::this.canSelectElement()` wasn’t getting applied for lazy-loaded elements.
 - Fixed a bug where setting an element query’s `status` praam to `archived` would always yield zero results. ([#13465](https://github.com/craftcms/cms/issues/13465))
+- Fixed a bug where `update` commands could fail on some environments.
 - Fixed an information disclosure vulnerability.
 
 ## 3.8.16 - 2023-07-18
