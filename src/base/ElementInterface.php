@@ -1299,6 +1299,18 @@ interface ElementInterface extends ComponentInterface
     public function getTitleTranslationDescription(): ?string;
 
     /**
+     * Returns the Title’s translation key.
+     *
+     * When saving an element on a multi-site Craft install, if `$propagate` is `true` for [[\craft\services\Elements::saveElement()]],
+     * then `getTitleTranslationKey()` will be called for each site the element should be propagated to.
+     * If the method returns the same value as it did for the initial site, then the initial site’s title will be copied over
+     * to the target site.
+     *
+     * @return string The translation key
+     */
+    public function getTitleTranslationKey(): string;
+
+    /**
      * Returns whether the Slug field should be shown as translatable in the UI.
      *
      * Note this method has no effect on whether slugs will get copied over to other
@@ -1329,18 +1341,6 @@ interface ElementInterface extends ComponentInterface
      * @since 4.5.0
      */
     public function getSlugTranslationKey(): string;
-
-    /**
-     * Returns the Title’s translation key.
-     *
-     * When saving an element on a multi-site Craft install, if `$propagate` is `true` for [[\craft\services\Elements::saveElement()]],
-     * then `getTitleTranslationKey()` will be called for each site the element should be propagated to.
-     * If the method returns the same value as it did for the initial site, then the initial site’s title will be copied over
-     * to the target site.
-     *
-     * @return string The translation key
-     */
-    public function getTitleTranslationKey(): string;
 
     /**
      * Returns whether a field is empty.

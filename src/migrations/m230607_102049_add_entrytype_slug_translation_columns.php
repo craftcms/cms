@@ -16,23 +16,8 @@ class m230607_102049_add_entrytype_slug_translation_columns extends Migration
      */
     public function safeUp(): bool
     {
-        $table = $this->db->schema->getTableSchema(Table::ENTRYTYPES);
-
-        if (!isset($table->columns['slugTranslationMethod'])) {
-            $this->addColumn(
-                Table::ENTRYTYPES,
-                'slugTranslationMethod',
-                $this->string()->notNull()->defaultValue(Field::TRANSLATION_METHOD_SITE)->after('titleFormat'),
-            );
-        }
-        if (!isset($table->columns['slugTranslationKeyFormat'])) {
-            $this->addColumn(
-                Table::ENTRYTYPES,
-                'slugTranslationKeyFormat',
-                $this->text()->after('slugTranslationMethod'),
-            );
-        }
-
+        $this->addColumn(Table::ENTRYTYPES, 'slugTranslationMethod', $this->string()->notNull()->defaultValue(Field::TRANSLATION_METHOD_SITE)->after('titleFormat'));
+        $this->addColumn(Table::ENTRYTYPES, 'slugTranslationKeyFormat', $this->text()->after('slugTranslationMethod'));
         return true;
     }
 
@@ -41,13 +26,8 @@ class m230607_102049_add_entrytype_slug_translation_columns extends Migration
      */
     public function safeDown(): bool
     {
-        $table = $this->db->schema->getTableSchema(Table::ENTRYTYPES);
-        if (isset($table->columns['slugTranslationMethod'])) {
-            $this->dropColumn(Table::ENTRYTYPES, 'slugTranslationMethod');
-        }
-        if (isset($table->columns['slugTranslationKeyFormat'])) {
-            $this->dropColumn(Table::ENTRYTYPES, 'slugTranslationKeyFormat');
-        }
+        $this->dropColumn(Table::ENTRYTYPES, 'slugTranslationMethod');
+        $this->dropColumn(Table::ENTRYTYPES, 'slugTranslationKeyFormat');
         return true;
     }
 }
