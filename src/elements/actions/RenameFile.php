@@ -41,11 +41,7 @@ class RenameFile extends ElementAction
         activate: \$selectedItems => {
             const \$element = \$selectedItems.find('.element')
             const assetId = \$element.data('id');
-            let oldName = \$element.data('url').split('/').pop();
-
-            if (oldName.indexOf('?') !== -1) {
-                oldName = oldName.split('?').shift();
-            }
+            let oldName = \$element.data('filename');
 
             const newName = prompt($prompt, oldName);
 
@@ -56,9 +52,15 @@ class RenameFile extends ElementAction
 
             Craft.elementIndex.setIndexBusy();
 
+            let currentFolderId = Craft.elementIndex.\$source.data('folder-id');
+            const currentFolder = Craft.elementIndex.sourcePath[Craft.elementIndex.sourcePath.length - 1];
+            if (currentFolder && currentFolder.folderId) {
+              currentFolderId = currentFolder.folderId;
+            }
+
             const data = {
                 assetId:   assetId,
-                folderId: Craft.elementIndex.\$source.data('folder-id'),
+                folderId: currentFolderId,
                 filename: newName
             };
             

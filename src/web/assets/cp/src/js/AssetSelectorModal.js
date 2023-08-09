@@ -155,15 +155,13 @@ Craft.AssetSelectorModal = Craft.BaseElementSelectorModal.extend(
 
       Craft.sendActionRequest('POST', 'assets/generate-transform', {data})
         .then((response) => {
-          Craft.AssetSelectorModal.transformUrls[transform][elementId] = false;
-          if (response.data.url) {
-            Craft.AssetSelectorModal.transformUrls[transform][elementId] =
-              response.data.url;
-          }
+          Craft.AssetSelectorModal.transformUrls[transform][elementId] =
+            response.data.url || false;
         })
-        .catch(({response}) => {
+        .catch(() => {
           Craft.AssetSelectorModal.transformUrls[transform][elementId] = false;
-
+        })
+        .finally(() => {
           // More to load?
           if (imageIdsWithMissingUrls.length) {
             this.fetchMissingTransformUrls(

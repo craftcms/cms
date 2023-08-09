@@ -427,7 +427,7 @@ Craft.FieldLayoutDesigner.Tab = Garnish.Base.extend({
 
   applySettings: function () {
     if (!this.slideout.$container.find('[name$="[name]"]').val()) {
-      alert(Craft.t('app', 'You must specify a tab name.'));
+      Craft.cp.displayError(Craft.t('app', 'You must specify a tab name.'));
       return;
     }
 
@@ -450,7 +450,6 @@ Craft.FieldLayoutDesigner.Tab = Garnish.Base.extend({
         this.updateConfig((config) =>
           $.extend(response.data.config, {elements: config.elements})
         );
-        debugger;
         const $label = this.$container.find('.tabs .tab span');
         const $indicator = $label.children('.fld-indicator');
         if (response.data.hasConditions) {
@@ -1102,10 +1101,12 @@ Craft.FieldLayoutDesigner.TabDrag = Craft.FieldLayoutDesigner.BaseDrag.extend({
 
     return $(`
 <div class="fld-tab fld-insertion" style="height: ${this.$draggee.height()}px;">
-  <div class="tabs"><div class="tab sel draggable" style="width: ${$tab.width()}px; height: ${$tab.height()}px;"></div></div>
-  <div class="fld-tabcontent" style="height: ${this.$draggee
-    .find('.fld-tabcontent')
-    .height()}px;"></div>
+  <div class="tabs"><div class="tab sel draggable" style="width: ${$tab.outerWidth()}px; height: ${
+      $tab.outerHeight() + 2
+    }px;"></div></div>
+  <div class="fld-tabcontent" style="height: ${
+    this.$draggee.find('.fld-tabcontent').height() - 2
+  }px;"></div>
 </div>
 `);
   },

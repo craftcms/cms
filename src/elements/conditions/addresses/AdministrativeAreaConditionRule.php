@@ -111,32 +111,18 @@ class AdministrativeAreaConditionRule extends BaseMultiSelectConditionRule imple
         ]);
 
         $multiSelectId = 'multiselect';
-        $namespacedId = Craft::$app->getView()->namespaceInputId($multiSelectId);
-
-        $js = <<<JS
-$('#$namespacedId').selectize({
-    plugins: ['remove_button'],
-    create: true, // Must allow creation since administrive area field on addresses could be free text input
-    dropdownParent: 'body',
-    onDropdownClose: () => {
-        htmx.trigger(htmx.find('#$namespacedId'), 'change');
-    },
-});
-JS;
-        Craft::$app->getView()->registerJs($js);
 
         $adminSelectize =
             Html::hiddenLabel(Html::encode($this->getLabel()), $multiSelectId) .
-            Cp::multiSelectHtml([
+            Cp::selectizeHtml([
                 'id' => $multiSelectId,
                 'class' => 'selectize fullwidth',
                 'name' => 'values',
                 'values' => $this->getValues(),
                 'options' => $this->options(),
-                'inputAttributes' => [
-                    'style' => [
-                        'display' => 'none', // Hide it before selectize does its thing
-                    ],
+                'multi' => true,
+                'selectizeOptions' => [
+                    'create' => true, // Must allow creation since administrative area field on addresses could be free text input
                 ],
             ]);
 

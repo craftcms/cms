@@ -14,15 +14,25 @@ class m210624_222934_drop_deprecated_tables extends Migration
      */
     public function safeUp(): bool
     {
-        $this->dropTableIfExists('{{%entrydrafterrors}}');
-        $this->dropTableIfExists('{{%entryversionerrors}}');
-        $this->dropTableIfExists('{{%entrydrafts}}');
-        $this->dropTableIfExists('{{%entryversions}}');
-        $this->dropTableIfExists('{{%projectconfignames}}');
-        $this->dropTableIfExists('{{%templatecacheelements}}');
-        $this->dropTableIfExists('{{%templatecachequeries}}');
-        $this->dropTableIfExists('{{%templatecachecriteria}}');
-        $this->dropTableIfExists('{{%templatecaches}}');
+        $tables = [
+            '{{%entrydrafterrors}}',
+            '{{%entryversionerrors}}',
+            '{{%entrydrafts}}',
+            '{{%entryversions}}',
+            '{{%projectconfignames}}',
+            '{{%templatecacheelements}}',
+            '{{%templatecachequeries}}',
+            '{{%templatecachecriteria}}',
+            '{{%templatecaches}}',
+        ];
+
+        foreach ($tables as $table) {
+            if ($this->db->tableExists($table)) {
+                $this->dropAllForeignKeysToTable($table);
+                $this->dropTable($table);
+            }
+        }
+
         return true;
     }
 

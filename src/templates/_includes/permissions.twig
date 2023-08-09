@@ -19,7 +19,7 @@
                 {% set checked = true %}
             {% else %}
                 {% if subject %}
-                    {% if craft.app.request.isPost %}
+                    {% if craft.app.request.getActionSegments() == ['users', 'save-user'] %}
                         {% set checked = permissionName in craft.app.request.getBodyParam('permissions', []) %}
                     {% else %}
                         {% set checked = subject.can(permissionName) %}

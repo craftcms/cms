@@ -117,6 +117,7 @@ Craft.CustomizeSourcesModal = Garnish.Modal.extend({
     this.elementTypeName = response.elementTypeName;
     this.conditionBuilderHtml = response.conditionBuilderHtml;
     this.conditionBuilderJs = response.conditionBuilderJs;
+    this.sites = response.sites;
     this.userGroups = response.userGroups;
 
     if (response.headHtml) {
@@ -516,10 +517,7 @@ Craft.CustomizeSourcesModal.BaseSource = Garnish.Base.extend({
 
     this.$item.data('source', this);
 
-    this.addListener(this.$itemLabel, 'click', 'select');
-    this.addListener(this.$itemLabel, 'keypress', (e) =>
-      Garnish.handleActivatingKeypress(e, this.select.bind(this))
-    );
+    this.addListener(this.$itemLabel, 'activate', this.select);
   },
 
   isHeading: function () {
@@ -639,7 +637,7 @@ Craft.CustomizeSourcesModal.Source =
           name: `sources[${this.sourceData.key}][defaultSort][0]`,
           options: this.sourceData.sortOptions.map((o) => {
             return {
-              label: o.label,
+              label: Craft.escapeHtml(o.label),
               value: o.attr,
             };
           }),
@@ -850,6 +848,25 @@ Craft.CustomizeSourcesModal.CustomSource =
       this.createSortField($container);
       this.createTableAttributesField($container);
 
+      if (Craft.sites.length > 1) {
+        Craft.ui
+          .createCheckboxSelectField({
+            label: Craft.t('app', 'Sites'),
+            instructions: Craft.t(
+              'app',
+              'Choose which sites this source should be visible for.'
+            ),
+            name: `sources[${this.sourceData.key}][sites]`,
+            options: Craft.sites.map((site) => ({
+              label: site.name,
+              value: site.uid,
+            })),
+            values: this.sourceData.sites || '*',
+            showAllOption: true,
+          })
+          .appendTo($container);
+      }
+
       if (this.modal.userGroups.length) {
         Craft.ui
           .createCheckboxSelectField({
@@ -877,10 +894,7 @@ Craft.CustomizeSourcesModal.CustomSource =
         .appendTo($container);
 
       this.addListener(this.$labelInput, 'input', 'handleLabelInputChange');
-      this.addListener(this.$deleteBtn, 'click', 'destroy');
-      this.addListener(this.$deleteBtn, 'keypress', (e) => {
-        Garnish.handleActivatingKeypress(e, this.destroy.bind(this));
-      });
+      this.addListener(this.$deleteBtn, 'activate', 'destroy');
     },
 
     availableTableAttributes: function () {
@@ -955,10 +969,7 @@ Craft.CustomizeSourcesModal.Heading =
         .appendTo($container);
 
       this.addListener(this.$labelInput, 'input', 'handleLabelInputChange');
-      this.addListener(this.$deleteBtn, 'click', 'destroy');
-      this.addListener(this.$deleteBtn, 'keypress', (e) => {
-        Garnish.handleActivatingKeypress(e, this.destroy.bind(this));
-      });
+      this.addListener(this.$deleteBtn, 'activate', 'destroy');
     },
 
     handleLabelInputChange: function () {

@@ -10,6 +10,7 @@ namespace craft\web;
 use Craft;
 use craft\base\ModelInterface;
 use craft\elements\User;
+use craft\events\DefineBehaviorsEvent;
 use yii\base\Action;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
@@ -33,6 +34,13 @@ use yii\web\UnauthorizedHttpException;
  */
 abstract class Controller extends \yii\web\Controller
 {
+    /**
+     * @event DefineBehaviorsEvent The event that is triggered when defining the class behaviors
+     * @see behaviors()
+     * @since 4.5.0
+     */
+    public const EVENT_DEFINE_BEHAVIORS = 'defineBehaviors';
+
     public const ALLOW_ANONYMOUS_NEVER = 0;
     public const ALLOW_ANONYMOUS_LIVE = 1;
     public const ALLOW_ANONYMOUS_OFFLINE = 2;
@@ -56,6 +64,38 @@ abstract class Controller extends \yii\web\Controller
      *   that the listed action IDs can be accessed anonymously per the bitwise int assigned to it.
      */
     protected array|bool|int $allowAnonymous = self::ALLOW_ANONYMOUS_NEVER;
+
+    /**
+     * Returns the behaviors to attach to this class.
+     *
+     * See [[behaviors()]] for details about what should be returned.
+     *
+     * Controllers should override this method instead of [[behaviors()]] so [[EVENT_DEFINE_BEHAVIORS]] handlers can
+     * modify the class-defined behaviors.
+     *
+     * @return array
+     * @since 4.5.0
+     */
+    protected function defineBehaviors(): array
+    {
+        return [];
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function behaviors()
+    {
+        $behaviors = $this->defineBehaviors();
+
+        // Give plugins a chance to modify them
+        $event = new DefineBehaviorsEvent([
+            'behaviors' => $behaviors,
+        ]);
+        $this->trigger(self::EVENT_DEFINE_BEHAVIORS, $event);
+
+        return $event->behaviors;
+    }
 
     /**
      * @inheritdoc
@@ -132,7 +172,20 @@ abstract class Controller extends \yii\web\Controller
             return false;
         }
 
-        // Enforce $allowAnonymous
+        $this->_enforceAllowAnonymous($action);
+
+        return true;
+    }
+
+    private function _enforceAllowAnonymous(Action $action): void
+    {
+        $isCpRequest = $this->request->getIsCpRequest();
+
+        // If a valid site token was passed, grant them access
+        if (!$isCpRequest && $this->request->hasValidSiteToken()) {
+            return;
+        }
+
         $isLive = Craft::$app->getIsLive();
         $test = $isLive ? self::ALLOW_ANONYMOUS_LIVE : self::ALLOW_ANONYMOUS_OFFLINE;
 
@@ -144,7 +197,7 @@ abstract class Controller extends \yii\web\Controller
 
         if (!($test & $allowAnonymous)) {
             // If this is a control panel request, make sure they have access to the control panel
-            if ($this->request->getIsCpRequest()) {
+            if ($isCpRequest) {
                 $this->requireLogin();
                 $this->requirePermission('accessCp');
             } elseif (Craft::$app->getUser()->getIsGuest()) {
@@ -170,8 +223,6 @@ abstract class Controller extends \yii\web\Controller
                 }
             }
         }
-
-        return true;
     }
 
     /**

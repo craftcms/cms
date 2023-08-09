@@ -79,17 +79,44 @@ new Craft.VueAdminTable({
 });
 ```
 
+### Properties
+
+| Name          |                                                                                             |
+|---------------|---------------------------------------------------------------------------------------------|
+| instance      | The Vue instance (table is wrapped in a skeleton Vue app).                                  |
+| $table        | The instance of the VueAdminTable component. Gives direct access to properties and methods. |
+
+### Methods
+
+| Name     |                        |
+|----------|------------------------|
+| reload() | Reload the table data. |
+
+#### `reload()` example
+
+```js
+const adminTable = new Craft.VueAdminTable({
+    // ...
+});
+
+// Reload table every 15 seconds
+setInterval(function() {
+    adminTable.reload();
+}, 15000);
+```
+
 ### Events
 
 #### JS Events
 
-| Name         | Data             | Scenario                                                                                                                             |
-| ------------ | ---------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
-| onSelect     | Array of IDs     | When a checkbox or select all is selected or de-selected.                                                                            |
-| onData       | Array of objects | On successful load or page change.                                                                                                   |
-| onLoaded     | -                | When the table has loaded (regardless of data loading).                                                                              |
-| onLoading    | -                | When the table is in a loading state.                                                                                                |
-| onPagination | Object           | When pagination has loaded (also occurs on first load). Object contains pagination information (e.g. current page, total pages etc). |
+| Name          | Data             | Return | Scenario                                                                                                                             |
+|---------------| ---------------- |--------|--------------------------------------------------------------------------------------------------------------------------------------|
+| onSelect      | Array of IDs     |        | When a checkbox or select all is selected or de-selected.                                                                            |
+| onData        | Array of objects |        | On successful load or page change.                                                                                                   |
+| onLoaded      | -                |        | When the table has loaded (regardless of data loading).                                                                              |
+| onLoading     | -                |        | When the table is in a loading state.                                                                                                |
+| onPagination  | Object           |        | When pagination has loaded (also occurs on first load). Object contains pagination information (e.g. current page, total pages etc). |
+| onQueryParams | Object           | Object | Called when the query parameters are being generated for the table data enpoint.                                                     |
 
 Example usage:
 
@@ -97,7 +124,13 @@ Example usage:
 new Craft.VueAdminTable({
   // ...
   onLoaded: function() { console.log('LOADED!'); },
-  onData: function(data) { console.log('Data:', data); }
+  onData: function(data) { console.log('Data:', data); },
+  onQueryParams: function(params) { 
+    console.log('Query Params:', params); 
+    
+    params.foo = 'bar';
+    return params; 
+  },
   // ...
 });
 ```
@@ -165,7 +198,31 @@ There are a few special column type that provide extra functionality. To use any
 
 #### Title
 
-The title column allows the use of status, title and URL to create a column similar to that of the title column in element index tables.
+The title column allows the use of `status`, `title` and `url` in the data to create a column similar to that of the title column in element index tables.
+
+```javascript
+var data = [
+  {
+    title: 'My First Item',
+    status: true,
+    url: '/my-first-item',
+  },
+  {
+    title: 'My Second Item',
+    status: false,
+    url: '/my-second-item',
+  }
+];
+
+var columns = [
+  { name: '__slot:title', title: Craft.t('app', 'Title') },
+];
+
+new Craft.VueAdminTable({
+  columns: columns,
+  tableData: data
+});
+```
 
 #### Handle
 

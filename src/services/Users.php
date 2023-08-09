@@ -41,6 +41,7 @@ use Throwable;
 use yii\base\Component;
 use yii\base\Exception;
 use yii\base\InvalidArgumentException;
+use yii\base\UserException;
 
 /**
  * The Users service provides APIs for managing users.
@@ -798,6 +799,7 @@ class Users extends Component
         }
 
         $originalUser = clone $user;
+        $user->setScenario(User::SCENARIO_ACTIVATION);
         $user->active = true;
         $user->pending = false;
         $user->locked = false;
@@ -1188,6 +1190,7 @@ class Users extends Component
         $userRecord->save();
 
         $originalUser = clone $user;
+        $user->setScenario(User::SCENARIO_ACTIVATION);
         $user->pending = $userRecord->pending;
         $user->verificationCode = $hashedCode;
         $user->verificationCodeIssuedDate = $issueDate;
@@ -1237,9 +1240,13 @@ class Users extends Component
         $elementsService = Craft::$app->getElements();
 
         foreach (Db::each($query) as $user) {
-            /** @var User $user */
-            $elementsService->deleteElement($user);
-            Craft::info("Just deleted pending user $user->username ($user->id), because they took too long to activate their account.", __METHOD__);
+            try {
+                /** @var User $user */
+                $elementsService->deleteElement($user);
+                Craft::info("Just deleted pending user $user->username ($user->id), because they took too long to activate their account.", __METHOD__);
+            } catch (UserException $e) {
+                Craft::warning($e->getMessage(), __METHOD__);
+            }
         }
     }
 

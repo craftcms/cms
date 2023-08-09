@@ -376,6 +376,7 @@ class UserPermissions extends Component
                 ],
                 'accessCp' => [
                     'label' => Craft::t('app', 'Access the control panel'),
+                    'warning' => Craft::t('app', 'Includes read-only access to user data and most content, via element selector modals and other means.'),
                     'nested' => array_merge([
                         'accessCpWhenSystemIsOff' => [
                             'label' => Craft::t('app', 'Access the control panel when the system is offline'),
@@ -409,7 +410,9 @@ class UserPermissions extends Component
             'heading' => Craft::t('app', 'Users'),
             'permissions' => [
                 'editUsers' => [
-                    'label' => Craft::t('app', 'Edit users'),
+                    'label' => Craft::t('app', 'Edit {type}', [
+                        'type' => User::pluralLowerDisplayName(),
+                    ]),
                     'nested' => array_merge(
                         [
                             'registerUsers' => [
@@ -507,12 +510,19 @@ class UserPermissions extends Component
                 $sectionPermissions = [
                     "viewEntries:$section->uid" => [
                         'label' => Craft::t('app', 'View {type}', ['type' => $pluralType]),
+                        'info' => Craft::t('app', 'Allows viewing existing {type} and creating drafts for them.', [
+                            'type' => $pluralType,
+                        ]),
                         'nested' => [
                             "createEntries:$section->uid" => [
                                 'label' => Craft::t('app', 'Create {type}', ['type' => $pluralType]),
+                                'info' => Craft::t('app', 'Allows creating drafts of new {type}.', ['type' => $pluralType]),
                             ],
                             "saveEntries:$section->uid" => [
                                 'label' => Craft::t('app', 'Save {type}', ['type' => $pluralType]),
+                                'info' => Craft::t('app', 'Allows fully saving canonical {type} (directly or by applying drafts).', [
+                                    'type' => $pluralType,
+                                ]),
                             ],
                             "deleteEntries:$section->uid" => [
                                 'label' => Craft::t('app', 'Delete {type}', ['type' => $pluralType]),

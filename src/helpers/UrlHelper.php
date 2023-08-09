@@ -69,6 +69,7 @@ class UrlHelper
      * @param array $params
      * @return string
      * @since 3.3.0
+     * @deprecated in 4.5.0. `http_build_query()` should be used instead.
      */
     public static function buildQuery(array $params): string
     {
@@ -84,7 +85,6 @@ class UrlHelper
         $params = [];
         foreach (explode('&', $query) as $param) {
             [$n, $v] = array_pad(explode('=', $param, 2), 2, '');
-            $n = urldecode($n);
             $v = str_replace(['%2F', '%7B', '%7D'], ['/', '{', '}'], $v);
             $params[] = $v !== '' ? "$n=$v" : $n;
         }
@@ -115,7 +115,7 @@ class UrlHelper
         $fragment = $fragment ?? $baseFragment;
 
         // Append to the base URL and return
-        if (($query = static::buildQuery($params)) !== '') {
+        if (($query = http_build_query($params)) !== '') {
             $url .= '?' . $query;
         }
         if ($fragment !== null) {
@@ -141,7 +141,7 @@ class UrlHelper
         unset($params[$param]);
 
         // Rebuild
-        if (($query = static::buildQuery($params)) !== '') {
+        if (($query = http_build_query($params)) !== '') {
             $url .= '?' . $query;
         }
         if ($fragment !== null) {
@@ -672,7 +672,7 @@ class UrlHelper
      */
     private static function _buildUrl(string $url, array $params, ?string $fragment): string
     {
-        if (($query = static::buildQuery($params)) !== '') {
+        if (($query = http_build_query($params)) !== '') {
             $url .= '?' . $query;
         }
 

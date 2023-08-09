@@ -49,7 +49,7 @@
           .catch(({response}) => {
             if (response.data.errors) {
               var errors = this.flattenErrors(response.data.errors);
-              alert(
+              Craft.cp.displayError(
                 Craft.t('app', 'Could not create the group:') +
                   '\n\n' +
                   errors.join('\n')
@@ -79,7 +79,7 @@
           .catch(({response}) => {
             if (response.data.errors) {
               var errors = this.flattenErrors(response.data.errors);
-              alert(
+              Craft.cp.displayError(
                 Craft.t('app', 'Could not rename the group:') +
                   '\n\n' +
                   errors.join('\n')

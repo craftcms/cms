@@ -13,6 +13,7 @@ use craft\elements\db\ElementQuery;
 use craft\gql\base\ElementResolver;
 use craft\helpers\Gql as GqlHelper;
 use Illuminate\Support\Collection;
+use yii\base\UnknownMethodException;
 
 /**
  * Class Asset
@@ -41,7 +42,13 @@ class Asset extends ElementResolver
         }
 
         foreach ($arguments as $key => $value) {
-            $query->$key($value);
+            try {
+                $query->$key($value);
+            } catch (UnknownMethodException $e) {
+                if ($value !== null) {
+                    throw $e;
+                }
+            }
         }
 
         $pairs = GqlHelper::extractAllowedEntitiesFromSchema('read');

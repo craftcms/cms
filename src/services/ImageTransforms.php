@@ -261,7 +261,7 @@ class ImageTransforms extends Component
             $transformRecord->interlace = $data['interlace'];
             $transformRecord->format = $data['format'];
             $transformRecord->fill = $data['fill'] ?? null;
-            $transformRecord->upscale = $data['upscale'] ?? null;
+            $transformRecord->upscale = $data['upscale'] ?? true;
             $transformRecord->uid = $transformUid;
 
             $transformRecord->save(false);

@@ -10,7 +10,6 @@ namespace crafttests\unit\mail;
 use Craft;
 use craft\elements\User;
 use craft\errors\SiteNotFoundException;
-use craft\helpers\ArrayHelper;
 use craft\mail\Message;
 use craft\models\SystemMessage;
 use craft\test\TestCase;
@@ -89,7 +88,7 @@ class MailerTest extends TestCase
 
         self::assertSame(
             $this->mailer->from,
-            ArrayHelper::firstKey($this->tester->grabLastSentEmail()->getFrom())
+            array_key_first($this->tester->grabLastSentEmail()->getFrom())
         );
     }
 

@@ -53,6 +53,7 @@ use craft\helpers\Queue;
 use craft\helpers\StringHelper;
 use craft\helpers\UrlHelper;
 use craft\i18n\Translation;
+use craft\models\ElementActivity;
 use craft\queue\jobs\FindAndReplace;
 use craft\queue\jobs\UpdateElementSlugsAndUris;
 use craft\queue\jobs\UpdateSearchIndex;
@@ -63,6 +64,7 @@ use craft\validators\HandleValidator;
 use craft\validators\SlugValidator;
 use craft\web\Application;
 use DateTime;
+use Illuminate\Support\Collection;
 use Throwable;
 use UnitEnum;
 use yii\base\Behavior;
@@ -1107,10 +1109,7 @@ class Elements extends Component
             // Start with the other sites (if any), so we don't update dateLastMerged until the end
             $otherSiteIds = ArrayHelper::withoutValue(array_keys($supportedSites), $element->siteId);
             if (!empty($otherSiteIds)) {
-                $siteElements = $element::find()
-                    ->drafts(null)
-                    ->provisionalDrafts(null)
-                    ->id($element->id)
+                $siteElements = $this->_localizedElementQuery($element)
                     ->siteId($otherSiteIds)
                     ->status(null)
                     ->all();
@@ -1147,6 +1146,23 @@ class Elements extends Component
         }
     }
 
+    private function _localizedElementQuery(ElementInterface $element): ElementQueryInterface
+    {
+        // use getLocalized() unless it’s eager-loaded
+        $query = $element->getLocalized();
+        if ($query instanceof ElementQueryInterface) {
+            return $query;
+        }
+
+        return $element::find()
+            ->id($element->id ?: false)
+            ->structureId($element->structureId)
+            ->siteId(['not', $element->siteId])
+            ->drafts($element->getIsDraft())
+            ->provisionalDrafts($element->isProvisionalDraft)
+            ->revisions($element->getIsRevision());
+    }
+
     /**
      * Updates the canonical element from a given derivative, such as a draft or revision.
      *
@@ -1166,6 +1182,20 @@ class Elements extends Component
         // "Duplicate" the derivative element with the canonical element’s ID, UID, and content ID
         $canonical = $element->getCanonical();
 
+        $changedAttributes = (new Query())
+            ->select(['siteId', 'attribute', 'propagated', 'userId'])
+            ->from([Table::CHANGEDATTRIBUTES])
+            ->where(['elementId' => $element->id])
+            ->all();
+
+        $changedFields = (new Query())
+            ->select(['siteId', 'fieldId', 'propagated', 'userId'])
+            ->from([Table::CHANGEDFIELDS])
+            ->where(['elementId' => $element->id])
+            ->all();
+
+        $fieldsService = Craft::$app->getFields();
+
         $newAttributes += [
             'id' => $canonical->id,
             'uid' => $canonical->uid,
@@ -1179,27 +1209,24 @@ class Elements extends Component
             'revisionId' => null,
             'isProvisionalDraft' => false,
             'updatingFromDerivative' => true,
+            'dirtyAttributes' => Collection::make($changedAttributes)
+                ->where('siteId', $element->siteId)
+                ->pluck('attribute')
+                ->all(),
+            'dirtyFields' => Collection::make($changedFields)
+                ->where('siteId', $element->siteId)
+                ->map(fn(array $field) => $fieldsService->getFieldById($field['fieldId'])?->handle)
+                ->filter()
+                ->all(),
         ];
 
         $updatedCanonical = $this->duplicateElement($element, $newAttributes);
 
-        $attributes = (new Query())
-            ->select(['siteId', 'attribute', 'propagated', 'userId'])
-            ->from([Table::CHANGEDATTRIBUTES])
-            ->where(['elementId' => $element->id])
-            ->all();
-
-        $fields = (new Query())
-            ->select(['siteId', 'fieldId', 'propagated', 'userId'])
-            ->from([Table::CHANGEDFIELDS])
-            ->where(['elementId' => $element->id])
-            ->all();
-
-        Craft::$app->on(Application::EVENT_AFTER_REQUEST, function() use ($canonical, $updatedCanonical, $attributes, $fields) {
+        Craft::$app->on(Application::EVENT_AFTER_REQUEST, function() use ($canonical, $updatedCanonical, $changedAttributes, $changedFields) {
             // Update change tracking for the canonical element
             $timestamp = Db::prepareDateForDb($updatedCanonical->dateUpdated);
 
-            foreach ($attributes as $attribute) {
+            foreach ($changedAttributes as $attribute) {
                 Db::upsert(Table::CHANGEDATTRIBUTES, [
                     'elementId' => $canonical->id,
                     'siteId' => $attribute['siteId'],
@@ -1210,7 +1237,7 @@ class Elements extends Component
                 ]);
             }
 
-            foreach ($fields as $field) {
+            foreach ($changedFields as $field) {
                 Db::upsert(Table::CHANGEDFIELDS, [
                     'elementId' => $canonical->id,
                     'siteId' => $field['siteId'],
@@ -1358,13 +1385,6 @@ class Elements extends Component
                 /** @var ElementInterface $element */
                 $position++;
 
-                $element->setScenario(Element::SCENARIO_ESSENTIALS);
-                $supportedSites = ArrayHelper::index(ElementHelper::supportedSitesForElement($element), 'siteId');
-                $supportedSiteIds = array_keys($supportedSites);
-                $elementSiteIds = $siteIds !== null ? array_intersect($siteIds, $supportedSiteIds) : $supportedSiteIds;
-                /** @var string|ElementInterface $elementType */
-                $elementType = get_class($element);
-
                 // Fire a 'beforePropagateElement' event
                 if ($this->hasEventHandlers(self::EVENT_BEFORE_PROPAGATE_ELEMENT)) {
                     $this->trigger(self::EVENT_BEFORE_PROPAGATE_ELEMENT, new BatchElementActionEvent([
@@ -1373,6 +1393,13 @@ class Elements extends Component
                         'position' => $position,
                     ]));
                 }
+
+                $element->setScenario(Element::SCENARIO_ESSENTIALS);
+                $supportedSites = ArrayHelper::index(ElementHelper::supportedSitesForElement($element), 'siteId');
+                $supportedSiteIds = array_keys($supportedSites);
+                $elementSiteIds = $siteIds !== null ? array_intersect($siteIds, $supportedSiteIds) : $supportedSiteIds;
+                /** @var string|ElementInterface $elementType */
+                $elementType = get_class($element);
 
                 $e = null;
                 try {
@@ -1383,7 +1410,8 @@ class Elements extends Component
                             // Make sure the site element wasn't updated more recently than the main one
                             $siteElement = $this->getElementById($element->id, $elementType, $siteId);
                             if ($siteElement === null || $siteElement->dateUpdated < $element->dateUpdated) {
-                                $this->_propagateElement($element, $supportedSites, $siteId, $siteElement ?? false);
+                                $siteElement ??= false;
+                                $this->_propagateElement($element, $supportedSites, $siteId, $siteElement);
                             }
                         }
                     }
@@ -1489,12 +1517,14 @@ class Elements extends Component
             throw new UnsupportedSiteException($element, $mainClone->siteId, 'Attempting to duplicate an element in an unsupported site.');
         }
 
-        // Clone any field values that are objects
+        // Clone any field values that are objects (without affecting the dirty fields)
+        $dirtyFields = $mainClone->getDirtyFields();
         foreach ($mainClone->getFieldValues() as $handle => $value) {
             if (is_object($value) && (!interface_exists(UnitEnum::class) || !$value instanceof UnitEnum)) {
                 $mainClone->setFieldValue($handle, clone $value);
             }
         }
+        $mainClone->setDirtyFields($dirtyFields, false);
 
         // If we are duplicating a draft as another draft, create a new draft row
         if ($mainClone->draftId && $mainClone->draftId === $element->draftId) {
@@ -1565,13 +1595,9 @@ class Elements extends Component
             // Propagate it
             $otherSiteIds = ArrayHelper::withoutValue(array_keys($supportedSites), $mainClone->siteId);
             if ($element->id && !empty($otherSiteIds)) {
-                $siteElements = $this->createElementQuery(get_class($element))
-                    ->id($element->id)
+                $siteElements = $this->_localizedElementQuery($element)
                     ->siteId($otherSiteIds)
                     ->status(null)
-                    ->drafts(null)
-                    ->provisionalDrafts(null)
-                    ->revisions(null)
                     ->all();
 
                 foreach ($siteElements as $siteElement) {
@@ -1729,8 +1755,7 @@ class Elements extends Component
                 continue;
             }
 
-            $elementInOtherSite = $this->createElementQuery(get_class($element))
-                ->id($element->id)
+            $elementInOtherSite = $this->_localizedElementQuery($element)
                 ->siteId($siteId)
                 ->one();
 
@@ -2083,6 +2108,8 @@ class Elements extends Component
         // Separate the multi-site elements from the single-site elements
         $multiSiteElementIds = $firstElement::find()
             ->id(array_map(fn(ElementInterface $element) => $element->id, $elements))
+            ->status(null)
+            ->drafts(null)
             ->siteId(['not', $firstElement->siteId])
             ->unique()
             ->select(['elements.id'])
@@ -2118,7 +2145,12 @@ class Elements extends Component
 
             // Resave them
             $this->resaveElements(
-                $firstElement::find()->id($multiSiteElementIds)->site('*')->unique(),
+                $firstElement::find()
+                    ->id($multiSiteElementIds)
+                    ->status(null)
+                    ->drafts(null)
+                    ->site('*')
+                    ->unique(),
                 true,
                 updateSearchIndex: false
             );
@@ -2199,11 +2231,8 @@ class Elements extends Component
                 $otherSiteIds = ArrayHelper::withoutValue(array_keys($supportedSites), $element->siteId);
 
                 if (!empty($otherSiteIds)) {
-                    $siteElements = $this->createElementQuery(get_class($element))
-                        ->id($element->id)
+                    $siteElements = $this->_localizedElementQuery($element)
                         ->siteId($otherSiteIds)
-                        ->drafts(null)
-                        ->provisionalDrafts(null)
                         ->status(null)
                         ->trashed(null)
                         ->all();
@@ -2269,6 +2298,135 @@ class Elements extends Component
         }
 
         return true;
+    }
+
+    /**
+     * Returns the recent activity for an element.
+     *
+     * @param ElementInterface $element
+     * @param int|null $excludeUserId
+     * @return ElementActivity[]
+     * @since 4.5.0
+     */
+    public function getRecentActivity(ElementInterface $element, ?int $excludeUserId = null): array
+    {
+        $query = (new Query())
+            ->select(['userId', 'siteId', 'draftId', 'type', 'timestamp'])
+            ->from(Table::ELEMENTACTIVITY)
+            ->where(['elementId' => $element->getCanonicalId()])
+            ->andWhere(['>', 'timestamp', Db::prepareDateForDb(DateTimeHelper::now()->modify('-1 minute'))])
+            ->orderBy(['timestamp' => SORT_DESC]);
+
+        if ($excludeUserId) {
+            $query->andWhere(['not', ['userId' => $excludeUserId]]);
+        }
+
+        $results = $query->all();
+
+        if (empty($results)) {
+            return [];
+        }
+
+        // get all the unique users
+        $userIds = array_unique(array_map(fn(array $result) => $result['userId'], $results));
+        $users = User::find()
+            ->id($userIds)
+            ->status(null)
+            ->indexBy('id')
+            ->all();
+
+        $activity = [];
+        /** @var ElementActivity[] $activityByUserId */
+        $activityByUserId = [];
+        $elements = [];
+        $isCanonical = $element->getIsCanonical() || $element->isProvisionalDraft;
+        $elements[$isCanonical ? 0 : $element->draftId][$element->siteId] = $element;
+
+        foreach ($results as $result) {
+            // do we already have an activity record for this user?
+            if (isset($activityByUserId[$result['userId']])) {
+                $newerRecord = $activityByUserId[$result['userId']];
+                // edit/save trumps view
+                if (
+                    $newerRecord->type === ElementActivity::TYPE_VIEW &&
+                    $result['type'] !== ElementActivity::TYPE_VIEW
+                ) {
+                    array_splice($activity, array_search($newerRecord, $activity), 1);
+                    unset($activityByUserId[$result['userId']]);
+                } else {
+                    continue;
+                }
+            }
+
+            // fetch the element (draft)
+            $elementKey = $result['draftId'] ?: 0;
+            if (!isset($elements[$elementKey][$result['siteId']])) {
+                $resultElement = $element::find()
+                    ->id($result['draftId'] ? null : $element->getCanonicalId())
+                    ->draftId($result['draftId'])
+                    ->site('*')
+                    ->preferSites([$result['siteId'], $element->siteId])
+                    ->status(null)
+                    ->one();
+
+                // just to be safe...
+                if (!$resultElement) {
+                    Craft::warning(sprintf(
+                        'Couldn’t load %s element %s%s for site %s',
+                        $element::class,
+                        $element->getCanonicalId(),
+                        $result['draftId'] ? " (draft {$result['draftId']})" : '',
+                        $result['siteId'],
+                    ), __METHOD__);
+                    continue;
+                }
+
+                $elements[$elementKey][$result['siteId']] = $resultElement;
+            }
+
+            $activity[] = $activityByUserId[$result['userId']] = new ElementActivity(
+                $users[$result['userId']],
+                $elements[$elementKey][$result['siteId']],
+                $result['type'],
+                DateTimeHelper::toDateTime($result['timestamp']),
+            );
+        }
+
+        return $activity;
+    }
+
+    /**
+     * Tracks new activity for an element.
+     *
+     * @param ElementInterface $element
+     * @param ElementActivity::TYPE_* $type $type
+     * @param User|null $user
+     * @since 4.5.0
+     */
+    public function trackActivity(ElementInterface $element, string $type, ?User $user = null): void
+    {
+        if ($user === null) {
+            $user = Craft::$app->getUser()->getIdentity();
+            if (!$user) {
+                throw new InvalidArgumentException('$user must be set if no user is signed in.');
+            }
+        }
+
+        // save => edit, if a provisional draft
+        if ($type === ElementActivity::TYPE_SAVE && $element->isProvisionalDraft) {
+            $type = ElementActivity::TYPE_EDIT;
+        }
+
+        $isCanonical = $element->getIsCanonical() || $element->isProvisionalDraft;
+
+        Db::upsert(Table::ELEMENTACTIVITY, [
+            'elementId' => $element->getCanonicalId(),
+            'userId' => $user->id,
+            'siteId' => $element->siteId,
+            'draftId' => $isCanonical ? null : $element->draftId,
+            'type' => $type,
+            'timestamp' => Db::prepareDateForDb(new DateTime()),
+        ]);
     }
 
     // Element classes
@@ -2341,8 +2499,28 @@ class Elements extends Component
      */
     public function getElementTypeByRefHandle(string $refHandle): ?string
     {
-        if (array_key_exists($refHandle, $this->_elementTypesByRefHandle)) {
-            return $this->_elementTypesByRefHandle[$refHandle];
+        if (!isset($this->_elementTypesByRefHandle[$refHandle])) {
+            $class = $this->elementTypeByRefHandle($refHandle);
+
+            // Special cases for categories/tags/globals, if they’ve been entrified
+            if (
+                ($class === Category::class && empty(Craft::$app->getCategories()->getAllGroups())) ||
+                ($class === Tag::class && empty(Craft::$app->getTags()->getAllTagGroups())) ||
+                ($class === GlobalSet::class && empty(Craft::$app->getGlobals()->getAllSets()))
+            ) {
+                $class = Entry::class;
+            }
+
+            $this->_elementTypesByRefHandle[$refHandle] = $class;
+        }
+
+        return $this->_elementTypesByRefHandle[$refHandle] ?: null;
+    }
+
+    private function elementTypeByRefHandle(string $refHandle): string|false
+    {
+        if (is_subclass_of($refHandle, ElementInterface::class)) {
+            return $refHandle;
         }
 
         foreach ($this->getAllElementTypes() as $class) {
@@ -2352,11 +2530,11 @@ class Elements extends Component
                 ($elementRefHandle = $class::refHandle()) !== null &&
                 strcasecmp($elementRefHandle, $refHandle) === 0
             ) {
-                return $this->_elementTypesByRefHandle[$refHandle] = $class;
+                return $class;
             }
         }
 
-        return $this->_elementTypesByRefHandle[$refHandle] = null;
+        return false;
     }
 
     /**
@@ -2389,11 +2567,11 @@ class Elements extends Component
                     $fallback = $fullMatch;
                 }
 
-                // Does it already have a full element type class name?
-                if (
-                    !is_subclass_of($elementType, ElementInterface::class) &&
-                    ($elementType = $this->getElementTypeByRefHandle($elementType)) === null
-                ) {
+                // Swap out the ref handle for the element type
+                $elementType = $this->getElementTypeByRefHandle($elementType);
+
+                // Use the fallback if we couldn't find an element type
+                if ($elementType === null) {
                     return $fallback;
                 }
 
@@ -2805,7 +2983,11 @@ class Elements extends Component
                                 }
                                 $targetSiteId = $result['siteId'];
                                 if (!isset($targetElements[$targetSiteId][$elementId])) {
-                                    $targetElements[$targetSiteId][$elementId] = $query->createElement($result);
+                                    if (isset($map['createElement'])) {
+                                        $targetElements[$targetSiteId][$elementId] = $map['createElement']($query, $result, $sourceElement);
+                                    } else {
+                                        $targetElements[$targetSiteId][$elementId] = $query->createElement($result);
+                                    }
                                 }
                                 $targetElementsForSource[] = $element = $targetElements[$targetSiteId][$elementId];
 
@@ -2857,17 +3039,23 @@ class Elements extends Component
      * @param int $siteId The site ID that the element should be propagated to
      * @param ElementInterface|false|null $siteElement The element loaded for the propagated site (only pass this if you
      * already had a reason to load it). Set to `false` if it is known to not exist yet.
+     * @return ElementInterface The element in the target site
      * @throws Exception if the element couldn't be propagated
      * @throws UnsupportedSiteException if the element doesn’t support `$siteId`
      * @since 3.0.13
      */
-    public function propagateElement(ElementInterface $element, int $siteId, ElementInterface|false|null $siteElement = null): void
-    {
+    public function propagateElement(
+        ElementInterface $element,
+        int $siteId,
+        ElementInterface|false|null $siteElement = null,
+    ): ElementInterface {
         $supportedSites = ArrayHelper::index(ElementHelper::supportedSitesForElement($element), 'siteId');
         $this->_propagateElement($element, $supportedSites, $siteId, $siteElement);
 
         // Clear caches
         $this->invalidateCachesForElement($element);
+
+        return $siteElement;
     }
 
     /**
@@ -3137,12 +3325,8 @@ class Elements extends Component
 
                 if (!empty($otherSiteIds)) {
                     if (!$isNewElement) {
-                        $siteElements = $this->createElementQuery(get_class($element))
-                            ->id($element->id)
+                        $siteElements = $this->_localizedElementQuery($element)
                             ->siteId($otherSiteIds)
-                            ->drafts(null)
-                            ->provisionalDrafts(null)
-                            ->revisions(null)
                             ->status(null)
                             ->indexBy('siteId')
                             ->all();
@@ -3297,7 +3481,7 @@ class Elements extends Component
         ElementInterface $element,
         array $supportedSites,
         int $siteId,
-        ElementInterface|false|null $siteElement = null,
+        ElementInterface|false|null &$siteElement = null,
         bool $crossSiteValidate = false,
     ): bool {
         // Make sure the element actually supports the site it's being saved in
@@ -3353,9 +3537,17 @@ class Elements extends Component
             $siteElement->title = $element->title;
         }
 
-        // Copy the dirty attributes (except title, which may be translatable)
+        // Copy the slug value?
+        if (
+            $element->slug !== null &&
+            $siteElement->getSlugTranslationKey() === $element->getSlugTranslationKey()
+        ) {
+            $siteElement->slug = $element->slug;
+        }
+
+        // Copy the dirty attributes (except title and slug, which may be translatable)
         $siteElement->setDirtyAttributes(array_filter($element->getDirtyAttributes(), function(string $attribute): bool {
-            return $attribute !== 'title';
+            return $attribute !== 'title' && $attribute !== 'slug';
         }));
 
         // Copy any non-translatable field values

@@ -153,7 +153,7 @@ class Schema extends \yii\db\mysql\Schema
     public function getDefaultBackupCommand(?array $ignoreTables = null): string
     {
         $useSingleTransaction = true;
-        $serverVersion = App::normalizeVersion(Craft::$app->getDb()->getSchema()->getServerVersion());
+        $serverVersion = App::normalizeVersion($this->getServerVersion());
 
         $isMySQL5 = version_compare($serverVersion, '8', '<');
         $isMySQL8 = version_compare($serverVersion, '8', '>=');
@@ -181,28 +181,25 @@ class Schema extends \yii\db\mysql\Schema
             $defaultArgs .= ' --single-transaction';
         }
 
-        // If the server is MySQL 5.x, we need to see what version of mysqldump is installed (5.x or 8.x)
-        if ($isMySQL5) {
-            // Find out if the db supports column-statistics
-            $shellCommand = new ShellCommand();
+        // Find out if the db/dump client supports column-statistics
+        $shellCommand = new ShellCommand();
 
-            if (Platform::isWindows()) {
-                $shellCommand->setCommand('mysqldump --help | findstr "column-statistics"');
-            } else {
-                $shellCommand->setCommand('mysqldump --help | grep "column-statistics"');
-            }
+        if (Platform::isWindows()) {
+            $shellCommand->setCommand('mysqldump --help | findstr "column-statistics"');
+        } else {
+            $shellCommand->setCommand('mysqldump --help | grep "column-statistics"');
+        }
 
-            // If we don't have proc_open, maybe we've got exec
-            if (!function_exists('proc_open') && function_exists('exec')) {
-                $shellCommand->useExec = true;
-            }
+        // If we don't have proc_open, maybe we've got exec
+        if (!function_exists('proc_open') && function_exists('exec')) {
+            $shellCommand->useExec = true;
+        }
 
-            $success = $shellCommand->execute();
+        $success = $shellCommand->execute();
 
-            // if there was output, then they're running mysqldump 8.x against a 5.x database.
-            if ($success && $shellCommand->getOutput()) {
-                $defaultArgs .= ' --skip-column-statistics';
-            }
+        // if there was output, then column-statistics is supported and we should disable it
+        if ($success && $shellCommand->getOutput()) {
+            $defaultArgs .= ' --column-statistics=0';
         }
 
         if ($ignoreTables === null) {

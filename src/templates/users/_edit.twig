@@ -14,7 +14,7 @@
 {% set requireEmailVerification = craft.app.projectConfig.get('users.requireEmailVerification') ?? true %}
 {% set canAdministrateUsers = currentUser.can('administrateUsers') %}
 
-{% if craft.app.request.isPost %}
+{% if craft.app.request.getActionSegments() == ['users', 'save-user'] %}
     {% set currentGroupIds = craft.app.request.getBodyParam('groups') ?: [] %}
 {% else %}
     {% set currentGroupIds = user.getGroups()|column('id') %}
@@ -59,7 +59,7 @@
         'accept-charset': 'UTF-8',
         data: {
             saveshortcut: true,
-            'saveshortcut-redirect':  (user.getIsCurrent() ? 'myaccount' : (CraftEdition == CraftPro and currentUser.can('editUsers') ? 'users/{id}' : 'dashboard'))|hash,
+            'saveshortcut-redirect':  (isCurrentUser ? 'myaccount' : (CraftEdition == CraftPro and currentUser.can('editUsers') ? 'users/{id}' : 'dashboard'))|hash,
             'saveshortcut-scroll': true,
             'confirm-unload': true,
             delta: true,
@@ -89,7 +89,7 @@
                     name: 'email',
                     value: user.email,
                     type: 'email',
-                    errors: user.getErrors('email')|merge(user.getErrors('unverifiedEmail')),
+                    errors: user.getErrors('email'),
                     inputAttributes: {
                         data: {lpignore: 'true'},
                     },
@@ -98,9 +98,10 @@
                 {{ forms.checkboxField({
                     label: 'Send an activation email now'|t('app'),
                     name: 'sendActivationEmail',
+                    checked: (user.hasErrors() and craft.app.request.getBodyParam('sendActivationEmail')),
                 }) }}
 
-            {% elseif user.getIsCurrent() or canAdministrateUsers %}
+            {% elseif isCurrentUser or canAdministrateUsers %}
                 <hr>
 
                 {{ forms.textField({
@@ -117,7 +118,7 @@
                     },
                 }) }}
 
-                {% if user.getIsCurrent() %}
+                {% if isCurrentUser %}
                     {{ forms.passwordField({
                         label: "New Password"|t('app'),
                         id: 'newPassword',
@@ -126,7 +127,7 @@
                         errors: user.getErrors('newPassword'),
                         inputAttributes: {
                             data: {
-                                lpignore: user.getIsCurrent() ? false : 'true',
+                                lpignore: isCurrentUser ? false : 'true',
                             }|filter,
                         },
                     }) }}
@@ -136,7 +137,7 @@
                     {% endjs %}
                 {% endif %}
 
-                {% if canAdministrateUsers and (user.pending or user.active) %}
+                {% if canAdministrateUsers and (user.pending or user.active) and not isCurrentUser %}
                     {{ forms.checkboxField({
                         label: "Require a password reset on next login"|t('app'),
                         name: 'passwordResetRequired',
@@ -211,7 +212,7 @@
             </div>
         {% endif %}
 
-        {% if user.getIsCurrent() %}
+        {% if isCurrentUser %}
             <div id="prefs" class="flex-fields hidden">
                 <h2>{{ 'General'|t('app') }}</h2>
 
@@ -431,7 +432,7 @@
 {% endblock %}
 
 {% js %}
-    {% if user.getIsCurrent() %}
+    {% if isCurrentUser %}
         var changeSidebarPicture = true;
     {% else %}
         var changeSidebarPicture = false;
