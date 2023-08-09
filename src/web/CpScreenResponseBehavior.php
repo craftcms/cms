@@ -200,6 +200,7 @@ class CpScreenResponseBehavior extends Behavior
      * @var string|callable|null The errors summary HTML (DEV-212).
      * @see errorsSummary()
      * @see errorsSummaryTemplate()
+     * @since 4.5.0
      */
     public $errorsSummary = null;
 
@@ -649,6 +650,7 @@ class CpScreenResponseBehavior extends Behavior
      *
      * @param callable|string|null $value
      * @return Response
+     * @since 4.5.0
      */
     public function errorsSummary(callable|string|null $value): Response
     {
@@ -662,6 +664,7 @@ class CpScreenResponseBehavior extends Behavior
      * @param string $template
      * @param array $variables
      * @return Response
+     * @since 4.5.0
      */
     public function errorsSummaryTemplate(string $template, array $variables = []): Response
     {
