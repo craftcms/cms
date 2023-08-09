@@ -84,6 +84,7 @@
 - Added `craft\services\Addresses::$formatter`, which can be used to override the default address formatter. ([#13242](https://github.com/craftcms/cms/pull/13242), [#12615](https://github.com/craftcms/cms/discussions/12615))
 - Added `craft\services\Addresses::EVENT_DEFINE_ADDRESS_SUBDIVISIONS`. ([#13361](https://github.com/craftcms/cms/pull/13361))
 - Added `craft\services\Addresses::defineAddressSubdivisions()`. ([#13361](https://github.com/craftcms/cms/pull/13361))
+- Added `craft\services\Elements::collectCacheInfoForElement()`.
 - Added `craft\services\Elements::getRecentActivity()`. ([#13420](https://github.com/craftcms/cms/pull/13420))
 - Added `craft\services\Elements::trackActivity()`. ([#13420](https://github.com/craftcms/cms/pull/13420))
 - Added `craft\services\ProjectConfig::$cacheDuration`. ([#13164](https://github.com/craftcms/cms/issues/13164))

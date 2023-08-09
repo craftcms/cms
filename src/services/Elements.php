@@ -617,6 +617,35 @@ class Elements extends Component
     }
 
     /**
+     ** Stores cache invalidation info for a given element.
+     *
+     * @param ElementInterface $element
+     * @since 4.5.0
+     */
+    public function collectCacheInfoForElement(ElementInterface $element): void
+    {
+        // Ignore if we're not currently collecting tags
+        if (!isset($this->_cacheTags)) {
+            return;
+        }
+
+        $class = get_class($element);
+        $this->collectCacheTags([
+            'element',
+            "element::$class",
+            "element::$class::$element->id",
+        ]);
+
+        // If the element is expirable, register its expiry date
+        if (
+            $element instanceof ExpirableElementInterface &&
+            ($expiryDate = $element->getExpiryDate()) !== null
+        ) {
+            $this->setCacheExpiryDate($expiryDate);
+        }
+    }
+
+    /**
      * Stops collecting element invalidation info, and returns a [[TagDependency]] and recommended max cache duration
      * that should be used when saving the cache data.
      *
