@@ -603,12 +603,14 @@ Craft.CpScreenSlideout = Craft.Slideout.extend(
         Craft.ui.clearErrorsFromField($field);
       });
       Craft.ui.clearErrorsSummary(this.$body);
-      // clear error indicator from tabs dropdown menu
-      var $tabMenuBtn = this.tabManager.$menuBtn;
-      if ($tabMenuBtn.length) {
-        if ($tabMenuBtn.hasClass('error')) {
-          $tabMenuBtn.removeClass('error');
-          $tabMenuBtn.find('span[data-icon="alert"]').remove();
+      if (this.tabManager) {
+        // clear error indicator from tabs dropdown menu
+        const $tabMenuBtn = this.tabManager.$menuBtn;
+        if ($tabMenuBtn.length) {
+          if ($tabMenuBtn.hasClass('error')) {
+            $tabMenuBtn.removeClass('error');
+            $tabMenuBtn.find('span[data-icon="alert"]').remove();
+          }
         }
       }
     },
