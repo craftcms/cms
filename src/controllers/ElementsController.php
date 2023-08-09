@@ -396,7 +396,7 @@ class ElementsController extends Controller
                 $isDraft
             ))
             ->notice($element->isProvisionalDraft ? fn() => $this->_draftNotice() : null)
-            ->errorsSummary(fn() => $this->_errorsSummary($element))
+            ->errorSummary(fn() => $this->_errorSummary($element))
             ->prepareScreen(
                 fn(Response $response, string $containerId) => $this->_prepareEditor(
                     $element,
@@ -877,7 +877,7 @@ JS, [
      * @param ElementInterface $element
      * @return string
      */
-    private function _errorsSummary(ElementInterface $element): string
+    private function _errorSummary(ElementInterface $element): string
     {
         $html = '';
 
@@ -927,7 +927,7 @@ JS, [
                 ]);
 
                 $html = Html::beginTag('div', [
-                        'class' => ['errors-summary'],
+                        'class' => ['error-summary'],
                         'tabindex' => '-1',
                     ]) .
                     Html::beginTag('div') .
@@ -1979,7 +1979,7 @@ JS, [
             'modelName' => 'element',
             'element' => $element->toArray($element->attributes()),
             'errors' => $element->getErrors(),
-            'errorsSummary' => $this->_errorsSummary($element),
+            'errorSummary' => $this->_errorSummary($element),
         ];
 
         return $this->asFailure($message, $data, ['element' => $element]);

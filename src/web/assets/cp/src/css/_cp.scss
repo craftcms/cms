@@ -1519,7 +1519,7 @@ li.breadcrumb-toggle-wrapper {
   }
 }
 
-.errors-summary {
+.error-summary {
   margin-bottom: var(--l);
   padding: var(--l) var(--xl) var(--xl);
   box-sizing: border-box;
@@ -1547,14 +1547,6 @@ li.breadcrumb-toggle-wrapper {
 
     &:hover {
       color: var(--link-color);
-    }
-  }
-}
-
-body.underline-links .errors-summary {
-  & > ul.errors li a {
-    em {
-      font-style: italic;
     }
   }
 }

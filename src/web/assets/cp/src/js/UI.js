@@ -1232,17 +1232,17 @@ Craft.ui = {
     $field.children('ul.errors').remove();
   },
 
-  clearErrorsSummary: function ($body) {
-    $body.prev('.errors-summary').remove();
+  clearErrorSummary: function ($body) {
+    $body.prev('.error-summary').remove();
   },
 
-  setFocusOnErrorsSummary: function ($body, namespace = '') {
-    const errorsSummaryContainer = $body.find('.errors-summary');
-    if (errorsSummaryContainer.length > 0) {
-      errorsSummaryContainer.focus();
+  setFocusOnErrorSummary: function ($body, namespace = '') {
+    const errorSummaryContainer = $body.find('.error-summary');
+    if (errorSummaryContainer.length > 0) {
+      errorSummaryContainer.focus();
 
       // start listening for clicks on summary errors
-      errorsSummaryContainer.find('a').on('click', (ev) => {
+      errorSummaryContainer.find('a').on('click', (ev) => {
         if ($(ev.currentTarget).hasClass('cross-site-validate') == false) {
           ev.preventDefault();
           this.anchorSummaryErrorToField(ev.currentTarget, $body, namespace);

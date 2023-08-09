@@ -198,11 +198,11 @@ class CpScreenResponseBehavior extends Behavior
 
     /**
      * @var string|callable|null The errors summary HTML (DEV-212).
-     * @see errorsSummary()
-     * @see errorsSummaryTemplate()
+     * @see errorSummary()
+     * @see errorSummaryTemplate()
      * @since 4.5.0
      */
-    public $errorsSummary = null;
+    public $errorSummary = null;
 
     /**
      * Sets a callable that will be called before other properties are added to the screen.
@@ -652,9 +652,9 @@ class CpScreenResponseBehavior extends Behavior
      * @return Response
      * @since 4.5.0
      */
-    public function errorsSummary(callable|string|null $value): Response
+    public function errorSummary(callable|string|null $value): Response
     {
-        $this->errorsSummary = $value;
+        $this->errorSummary = $value;
         return $this->owner;
     }
 
@@ -666,9 +666,9 @@ class CpScreenResponseBehavior extends Behavior
      * @return Response
      * @since 4.5.0
      */
-    public function errorsSummaryTemplate(string $template, array $variables = []): Response
+    public function errorSummaryTemplate(string $template, array $variables = []): Response
     {
-        return $this->errorsSummary(
+        return $this->errorSummary(
             fn() => Craft::$app->getView()->renderTemplate($template, $variables, View::TEMPLATE_MODE_CP)
         );
     }
