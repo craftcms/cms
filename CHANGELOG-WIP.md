@@ -138,3 +138,4 @@
 - Loosened the Composer constraint to `^2.2.19`. ([#13396](https://github.com/craftcms/cms/discussions/13396))
 - Internal Composer operations now use a bundled `composer.phar` file, rather than Composer’s PHP API. ([#13519](https://github.com/craftcms/cms/pull/13519))
 - Updated Selectize to 0.15.2. ([#13273](https://github.com/craftcms/cms/discussions/13273))
+- Fixed a bug where PM times were getting converted to AM for Greek locales. ([#9942](https://github.com/craftcms/cms/issues/9942))
