@@ -3,6 +3,7 @@
 ### Content Management
 - Entry and category edit pages now show other authors who are currently editing the same element. ([#13420](https://github.com/craftcms/cms/pull/13420))
 - Entry and category edit pages now display a notification when the element has been saved by another author. ([#13420](https://github.com/craftcms/cms/pull/13420))
+- Entry and category edit pages now display a validation error summary at the top of the page, including a mention of errors from other sites. ([#11569](https://github.com/craftcms/cms/issues/11569), [#12125](https://github.com/craftcms/cms/pull/12125))
 - Table fields can now have a “Row heading” column. ([#13231](https://github.com/craftcms/cms/pull/13231))
 - Table fields now have a “Static Rows” setting. ([#13231](https://github.com/craftcms/cms/pull/13231))
 - Table fields no longer show a heading row, if all heading values are blank. ([#13231](https://github.com/craftcms/cms/pull/13231))
@@ -94,6 +95,7 @@
 - Added `craft\services\Structures::EVENT_BEFORE_INSERT_ELEMENT`. ([#13429](https://github.com/craftcms/cms/pull/13429))
 - Added `craft\web\Controller::EVENT_DEFINE_BEHAVIORS`. ([#13477](https://github.com/craftcms/cms/pull/13477))
 - Added `craft\web\Controller::defineBehaviors()`. ([#13477](https://github.com/craftcms/cms/pull/13477))
+- Added `craft\web\CpScreenResponseBehavior::$errorSummary`, `errorSummary()`, and `errorSummaryTemplate()`. ([#12125](https://github.com/craftcms/cms/pull/12125))
 - Added `craft\web\CpScreenResponseBehavior::$pageSidebar`, `pageSidebar()`, and `pageSidebarTemplate()`. ([#13019](https://github.com/craftcms/cms/pull/13019), [#12795](https://github.com/craftcms/cms/issues/12795))
 - Added `craft\web\CpScreenResponseBehavior::$slideoutBodyClass`.
 - `craft\helpers\Cp::selectizeFieldHtml()`, `selectizeHtml()`, and `_includes/forms/selectize.twig` now support a `multi` param. ([#13176](https://github.com/craftcms/cms/pull/13176))
