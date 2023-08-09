@@ -668,7 +668,7 @@ return [
     'Forgot your password?' => 'Nie pamiętasz hasła?',
     'Format' => 'Format',
     'Formatting Locale' => 'Ustawienie regionalne formatowania',
-    'Found {num, number} {num, plural, =1{error} other{errors}}' => 'Found {num, number} {num, plural, =1{error} other{errors}}',
+    'Found {num, number} {num, plural, =1{error} other{errors}}' => 'Znaleziono {num, number} {num, plural, =1{błąd} few{błędy} other{błędów}}',
     'Free' => 'Bezpłatnie',
     'From {date}' => 'Od {date}',
     'From' => 'Od',
