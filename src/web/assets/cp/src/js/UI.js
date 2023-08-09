@@ -1237,7 +1237,7 @@ Craft.ui = {
   },
 
   setFocusOnErrorsSummary: function ($body, namespace = '') {
-    var errorsSummaryContainer = $body.find('.errors-summary');
+    const errorsSummaryContainer = $body.find('.errors-summary');
     if (errorsSummaryContainer.length > 0) {
       errorsSummaryContainer.focus();
 
@@ -1319,10 +1319,10 @@ Craft.ui = {
   findTabAnchorForField: function ($container, $body, namespace) {
     namespace = this._getPreppedNamespace(namespace);
 
-    var fieldTabDiv = $container.parents(
+    const fieldTabDiv = $container.parents(
       `div[id^=${namespace}tab][role="tabpanel"]`
     );
-    var fieldTabAnchor = $body
+    const fieldTabAnchor = $body
       .find('[role="tablist"]')
       .find('a[href="#' + fieldTabDiv.attr('id') + '"]');
 
