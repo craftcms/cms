@@ -1406,7 +1406,8 @@ class Elements extends Component
                             // Make sure the site element wasn't updated more recently than the main one
                             $siteElement = $this->getElementById($element->id, $elementType, $siteId);
                             if ($siteElement === null || $siteElement->dateUpdated < $element->dateUpdated) {
-                                $this->_propagateElement($element, $supportedSites, $siteId, $siteElement ?? false);
+                                $siteElement ??= false;
+                                $this->_propagateElement($element, $supportedSites, $siteId, $siteElement);
                             }
                         }
                     }
@@ -3045,7 +3046,7 @@ class Elements extends Component
         ElementInterface|false|null $siteElement = null,
     ): ElementInterface {
         $supportedSites = ArrayHelper::index(ElementHelper::supportedSitesForElement($element), 'siteId');
-        $siteElement = $this->_propagateElement($element, $supportedSites, $siteId, $siteElement);
+        $this->_propagateElement($element, $supportedSites, $siteId, $siteElement);
 
         // Clear caches
         $this->invalidateCachesForElement($element);
@@ -3465,15 +3466,14 @@ class Elements extends Component
      * @param array $supportedSites The element’s supported site info, indexed by site ID
      * @param int $siteId The site ID being propagated to
      * @param ElementInterface|false|null $siteElement The element loaded for the propagated site
-     * @return ElementInterface The element in the target site
      * @throws Exception if the element couldn't be propagated
      */
     private function _propagateElement(
         ElementInterface $element,
         array $supportedSites,
         int $siteId,
-        ElementInterface|false|null $siteElement = null,
-    ): ElementInterface {
+        ElementInterface|false|null &$siteElement = null,
+    ) {
         // Make sure the element actually supports the site it's being saved in
         if (!isset($supportedSites[$siteId])) {
             throw new UnsupportedSiteException($element, $siteId, 'Attempting to propagate an element to an unsupported site.');
@@ -3573,8 +3573,6 @@ class Elements extends Component
             Craft::error($error);
             throw new Exception('Couldn’t propagate element to other site.');
         }
-
-        return $siteElement;
     }
 
     /**
