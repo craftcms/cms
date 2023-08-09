@@ -105,6 +105,8 @@
 - `craft\services\Assets::getThumbUrl()` now has an `$iconFallback` argument, which can be set to `false` to prevent a file icon URL from being returned as a fallback for assets that don’t have image thumbnails.
 - `craft\services\Structures::EVENT_BEFORE_MOVE_ELEMENT` is now cancellable. ([#13429](https://github.com/craftcms/cms/pull/13429))
 - `craft\validators\UniqueValidator` now supports setting an additional filter via the `filter` property. ([#12941](https://github.com/craftcms/cms/pull/12941))
+- `craft\web\Response::setCacheHeaders()` now has `$duration` and `$overwrite` arguments.
+- `craft\web\Response::setNoCacheHeaders()` now has an `$overwrite` argument.
 - `craft\web\UrlManager` no longer triggers its `EVENT_REGISTER_CP_URL_RULES` and `EVENT_REGISTER_SITE_URL_RULES` events until the request is ready to be routed, making it safe to call `UrlManager::addRules()` from plugin/module constructors. ([#13109](https://github.com/craftcms/cms/issues/13109))
 - Deprecated `craft\base\Element::EVENT_AFTER_MOVE_IN_STRUCTURE`. ([#13429](https://github.com/craftcms/cms/pull/13429))
 - Deprecated `craft\base\Element::EVENT_BEFORE_MOVE_IN_STRUCTURE`. ([#13429](https://github.com/craftcms/cms/pull/13429))

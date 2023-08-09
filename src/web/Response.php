@@ -77,30 +77,53 @@ class Response extends \yii\web\Response
     /**
      * Sets headers that will instruct the client to cache this response.
      *
+     * @param int $duration The total cache duration, in seconds. Defaults to 1 year.
+     * @param bool $overwrite Whether the headers should overwrite existing headers, if already set
      * @return self self reference
      */
-    public function setCacheHeaders(): self
+    public function setCacheHeaders(int $duration = 31536000, bool $overwrite = true): self
     {
-        $cacheTime = 31536000; // 1 year
-        $this->getHeaders()
-            ->set('Expires', gmdate('D, d M Y H:i:s', time() + $cacheTime) . ' GMT')
-            ->set('Pragma', 'cache')
-            ->set('Cache-Control', 'max-age=' . $cacheTime);
+        if ($duration <= 0) {
+            $this->setNoCacheHeaders($overwrite);
+            return $this;
+        }
+
+        if ($overwrite) {
+            $this->getHeaders()
+                ->set('Expires', sprintf('%s GMT', gmdate('D, d M Y H:i:s', time() + $duration)))
+                ->set('Pragma', 'cache')
+                ->set('Cache-Control', "max-age=$duration");
+        } else {
+            $this->getHeaders()
+                ->setDefault('Expires', sprintf('%s GMT', gmdate('D, d M Y H:i:s', time() + $duration)))
+                ->setDefault('Pragma', 'cache')
+                ->setDefault('Cache-Control', "max-age=$duration");
+        }
+
         return $this;
     }
 
     /**
      * Sets headers that will instruct the client to not cache this response.
      *
+     * @param bool $overwrite Whether the headers should overwrite existing headers, if already set
      * @return self self reference
      * @since 3.5.0
      */
-    public function setNoCacheHeaders(): self
+    public function setNoCacheHeaders(bool $overwrite = true): self
     {
-        $this->getHeaders()
-            ->set('Expires', '0')
-            ->set('Pragma', 'no-cache')
-            ->set('Cache-Control', 'no-cache, no-store, must-revalidate');
+        if ($overwrite) {
+            $this->getHeaders()
+                ->set('Expires', '0')
+                ->set('Pragma', 'no-cache')
+                ->set('Cache-Control', 'no-cache, no-store, must-revalidate');
+        } else {
+            $this->getHeaders()
+                ->setDefault('Expires', '0')
+                ->setDefault('Pragma', 'no-cache')
+                ->setDefault('Cache-Control', 'no-cache, no-store, must-revalidate');
+        }
+
         return $this;
     }
 
