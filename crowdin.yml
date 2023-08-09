@@ -8,7 +8,6 @@ files:
     type: php
     excluded_target_languages:
       - cy
-      - el
       - id
       - ky
 commit_message: '[ci skip]'
