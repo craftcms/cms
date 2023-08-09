@@ -173,20 +173,16 @@ class FieldLayout extends Model
     {
         $tabConfigs = ArrayHelper::remove($config, 'tabs');
         $layout = new self($config);
-        $tabs = [];
 
         if (is_array($tabConfigs)) {
-            foreach ($tabConfigs as $tabConfig) {
-                $tab = FieldLayoutTab::createFromConfig(['layout' => $layout] + $tabConfig);
-
-                // Ignore empty tabs
-                if (!empty($tab->getElements())) {
-                    $tabs[] = $tab;
-                }
-            }
+            $layout->setTabs(array_values(array_map(
+                fn(array $tabConfig) => FieldLayoutTab::createFromConfig(['layout' => $layout] + $tabConfig),
+                $tabConfigs,
+            )));
+        } else {
+            $layout->setTabs([]);
         }
 
-        $layout->setTabs($tabs);
         return $layout;
     }
 
@@ -512,14 +508,10 @@ class FieldLayout extends Model
      */
     public function getConfig(): ?array
     {
-        $tabConfigs = [];
-
-        foreach ($this->getTabs() as $tab) {
-            $tabConfig = $tab->getConfig();
-            if (!empty($tabConfig['elements'])) {
-                $tabConfigs[] = $tabConfig;
-            }
-        }
+        $tabConfigs = array_values(array_map(
+            fn(FieldLayoutTab $tab) => $tab->getConfig(),
+            $this->getTabs(),
+        ));
 
         if (empty($tabConfigs)) {
             return null;
