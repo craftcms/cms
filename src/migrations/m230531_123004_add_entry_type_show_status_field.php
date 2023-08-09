@@ -15,7 +15,7 @@ class m230531_123004_add_entry_type_show_status_field extends Migration
      */
     public function safeUp(): bool
     {
-        $this->addColumn(Table::ENTRYTYPES, 'showStatusField', $this->boolean()->defaultValue(true)->after('slugTranslationKeyFormat'));
+        $this->addColumn(Table::ENTRYTYPES, 'showStatusField', $this->boolean()->defaultValue(true)->after('titleFormat'));
         return true;
     }
 
