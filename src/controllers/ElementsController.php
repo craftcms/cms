@@ -909,7 +909,9 @@ JS, [
                     } else {
                         $error = Markdown::processParagraph(htmlspecialchars($error));
                         $errorItem .= Html::a(Craft::t('app', $error), '#', [
-                            'data-field-error-key' => $key,
+                            'data' => [
+                                'field-error-key' => $key,
+                            ],
                         ]);
                     }
 
@@ -920,7 +922,7 @@ JS, [
             }
 
             if (!empty($errorsList)) {
-                $heading = Craft::t('app', 'Found {num, number} {num, plural, =1{error} other{errors}}:', [
+                $heading = Craft::t('app', 'Found {num, number} {num, plural, =1{error} other{errors}}', [
                     'num' => count($errorsList),
                 ]);
 

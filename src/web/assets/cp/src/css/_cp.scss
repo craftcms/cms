@@ -1521,11 +1521,11 @@ li.breadcrumb-toggle-wrapper {
 
 .errors-summary {
   margin-bottom: var(--l);
-  padding: var(--l) var(--xl);
+  padding: var(--l) var(--xl) var(--xl);
   box-sizing: border-box;
   box-shadow: 0 0 0 1px #cdd8e4, 0 2px 12px rgba(205, 216, 228, 0.5);
   border-radius: var(--large-border-radius);
-  background-color: var(--white);
+  background-color: var(--gray-050);
 
   .notification-icon {
     color: var(--error-color);
@@ -1542,15 +1542,11 @@ li.breadcrumb-toggle-wrapper {
     color: var(--text-color);
 
     em {
-      text-decoration: underline;
+      font-weight: 600;
     }
 
     &:hover {
-      text-decoration: none;
-
-      em {
-        color: var(--link-color);
-      }
+      color: var(--link-color);
     }
   }
 }

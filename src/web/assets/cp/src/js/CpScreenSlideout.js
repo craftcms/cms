@@ -228,25 +228,8 @@ Craft.CpScreenSlideout = Craft.Slideout.extend(
           .finally(() => {
             this.hideLoadSpinner();
             this.cancelToken = null;
-
-            // this is needed so that we can clear errors after slideout was initiated with
-            // a prevalidate param and we see the errors before we take any action;
-            // without this, on first save attempt errors would show as duplicated
-            // because $fieldsWithErrors is empty at the time of first clearErrors()
-            this.findSlideoutErrorsOnPrevalidatedLoad();
           });
       });
-    },
-
-    findSlideoutErrorsOnPrevalidatedLoad: function () {
-      const errorLists = this.$body.find('ul.errors');
-      let errorFields = [];
-      errorLists.each(function (index, value) {
-        errorFields.push($(value).parent('.field'));
-      });
-      if (errorFields.length > 0) {
-        this.fieldsWithErrors = errorFields;
-      }
     },
 
     getParams: function () {
@@ -543,8 +526,6 @@ Craft.CpScreenSlideout = Craft.Slideout.extend(
       Craft.cp.displayError(data.message);
       if (data.errors) {
         this.showErrors(data.errors);
-        this.showErrorsSummary(data.errorsSummary);
-        Craft.ui.setFocusOnErrorsSummary(this.$container, this.namespace);
       }
     },
 
@@ -555,45 +536,10 @@ Craft.CpScreenSlideout = Craft.Slideout.extend(
       this.clearErrors();
 
       Object.entries(errors).forEach(([name, fieldErrors]) => {
-        const $field = Craft.ui.findFieldByErrorKey(
-          this.$container,
-          name,
-          this.namespace
-        );
+        const $field = this.$container.find(`[data-attribute="${name}"]`);
         if ($field) {
           Craft.ui.addErrorsToField($field, fieldErrors);
           this.fieldsWithErrors.push($field);
-
-          var $tabMenuBtn = this.tabManager.$menuBtn;
-          if ($tabMenuBtn.length) {
-            if ($tabMenuBtn.hasClass('error') == false) {
-              $tabMenuBtn.addClass('error');
-              $('<span/>', {
-                'data-icon': 'alert',
-              }).appendTo($tabMenuBtn);
-            }
-          }
-          // mark the tab as having errors
-          var $fieldTabAnchor = Craft.ui.findTabAnchorForField(
-            $field,
-            this.$container,
-            this.namespace
-          );
-          if (
-            $fieldTabAnchor !== undefined &&
-            $fieldTabAnchor.hasClass('error') == false
-          ) {
-            $fieldTabAnchor.addClass('error');
-            $fieldTabAnchor
-              .find('.tab-label')
-              .append(
-                '<span data-icon="alert">' +
-                  '<span class="visually-hidden">' +
-                  Craft.t('app', 'This tab contains errors') +
-                  '</span>' +
-                  '</span>'
-              );
-          }
         }
       });
     },
@@ -602,26 +548,6 @@ Craft.CpScreenSlideout = Craft.Slideout.extend(
       this.fieldsWithErrors.forEach(($field) => {
         Craft.ui.clearErrorsFromField($field);
       });
-      Craft.ui.clearErrorsSummary(this.$body);
-      if (this.tabManager) {
-        // clear error indicator from tabs dropdown menu
-        const $tabMenuBtn = this.tabManager.$menuBtn;
-        if ($tabMenuBtn.length) {
-          if ($tabMenuBtn.hasClass('error')) {
-            $tabMenuBtn.removeClass('error');
-            $tabMenuBtn.find('span[data-icon="alert"]').remove();
-          }
-        }
-      }
-    },
-
-    /**
-     * @param {string} errors
-     */
-    showErrorsSummary: function (errorsSummary) {
-      if (errorsSummary.length > 0) {
-        this.$body.before(errorsSummary);
-      }
     },
 
     isDirty: function () {
