@@ -97,7 +97,7 @@ class Response extends \yii\web\Response
             $this->getHeaders()
                 ->setDefault('Expires', sprintf('%s GMT', gmdate('D, d M Y H:i:s', time() + $duration)))
                 ->setDefault('Pragma', 'cache')
-                ->setDefault('Cache-Control', "max-age=$duration");
+                ->setDefault('Cache-Control', "public, max-age=$duration");
         }
 
         return $this;
