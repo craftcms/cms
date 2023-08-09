@@ -197,6 +197,7 @@ JS;
             'Folder renamed.',
             'Folder renamed.',
             'Format',
+            'Found {num, number} {num, plural, =1{error} other{errors}}:',
             'From {date}',
             'From',
             'Give your tab a name.',

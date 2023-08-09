@@ -48,8 +48,10 @@ use craft\helpers\Component as ComponentHelper;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
 use craft\helpers\ElementHelper;
+use craft\helpers\Html;
 use craft\helpers\Queue;
 use craft\helpers\StringHelper;
+use craft\helpers\UrlHelper;
 use craft\i18n\Translation;
 use craft\models\ElementActivity;
 use craft\queue\jobs\FindAndReplace;
@@ -1053,6 +1055,7 @@ class Elements extends Component
         bool $propagate = true,
         ?bool $updateSearchIndex = null,
         bool $forceTouch = false,
+        ?bool $crossSiteValidate = false,
     ): bool {
         // Force propagation for new elements
         $propagate = !$element->id || $propagate;
@@ -1067,6 +1070,7 @@ class Elements extends Component
             $propagate,
             $updateSearchIndex,
             forceTouch: $forceTouch,
+            crossSiteValidate: $crossSiteValidate,
         );
         $element->duplicateOf = $duplicateOf;
         return $success;
@@ -3077,6 +3081,7 @@ class Elements extends Component
         ?bool $updateSearchIndex = null,
         ?array $supportedSites = null,
         bool $forceTouch = false,
+        bool $crossSiteValidate = false,
     ): bool {
         /** @var ElementInterface|DraftBehavior|RevisionBehavior $element */
         $isNewElement = !$element->id;
@@ -3333,7 +3338,9 @@ class Elements extends Component
                         // Skip the initial site
                         if ($siteId != $element->siteId) {
                             $siteElement = $siteElements[$siteId] ?? false;
-                            $this->_propagateElement($element, $supportedSites, $siteId, $siteElement);
+                            if (!$this->_propagateElement($element, $supportedSites, $siteId, $siteElement, crossSiteValidate: $crossSiteValidate)) {
+                                return false;
+                            }
                         }
                     }
                 }
@@ -3466,6 +3473,8 @@ class Elements extends Component
      * @param array $supportedSites The element’s supported site info, indexed by site ID
      * @param int $siteId The site ID being propagated to
      * @param ElementInterface|false|null $siteElement The element loaded for the propagated site
+     * @param bool $crossSiteValidate Whether we should "live" validate the element across all sites
+     * @retrun bool
      * @throws Exception if the element couldn't be propagated
      */
     private function _propagateElement(
@@ -3473,7 +3482,8 @@ class Elements extends Component
         array $supportedSites,
         int $siteId,
         ElementInterface|false|null &$siteElement = null,
-    ) {
+        bool $crossSiteValidate = false,
+    ): bool {
         // Make sure the element actually supports the site it's being saved in
         if (!isset($supportedSites[$siteId])) {
             throw new UnsupportedSiteException($element, $siteId, 'Attempting to propagate an element to an unsupported site.');
@@ -3562,17 +3572,74 @@ class Elements extends Component
 
         // Save it
         $siteElement->setScenario(Element::SCENARIO_ESSENTIALS);
+
+        // validate element against "live" scenario across all sites, if element is enabled for the site
+        if ($crossSiteValidate && $siteElement->enabled && $siteElement->getEnabledForSite()) {
+            $siteElement->setScenario(Element::SCENARIO_LIVE);
+        }
+
         $siteElement->propagating = true;
 
-        if ($this->_saveElementInternal($siteElement, true, false, null, $supportedSites) === false) {
-            // Log the errors
-            $error = 'Couldn’t propagate element to other site due to validation errors:';
-            foreach ($siteElement->getFirstErrors() as $attributeError) {
-                $error .= "\n- " . $attributeError;
+        if ($this->_saveElementInternal($siteElement, true, false, null, $supportedSites, crossSiteValidate: $crossSiteValidate) === false) {
+            // if the element we're trying to save has validation errors, notify original element about them
+            if ($siteElement->hasErrors()) {
+                return $this->_crossSiteValidationErrors($siteElement, $element);
+            } else {
+                // Log the errors
+                $error = 'Couldn’t propagate element to other site due to validation errors:';
+                foreach ($siteElement->getFirstErrors() as $attributeError) {
+                    $error .= "\n- " . $attributeError;
+                }
+                Craft::error($error);
+                throw new Exception('Couldn’t propagate element to other site.');
             }
-            Craft::error($error);
-            throw new Exception('Couldn’t propagate element to other site.');
         }
+
+        return true;
+    }
+
+    /**
+     * @param ElementInterface $siteElement
+     * @param ElementInterface $element
+     * @return bool
+     * @throws Throwable
+     */
+    private function _crossSiteValidationErrors(
+        ElementInterface $siteElement,
+        ElementInterface $element,
+    ): bool {
+        // get site we're propagating to
+        $propagateToSite = Craft::$app->getSites()->getSiteById($siteElement->siteId);
+        $user = Craft::$app->getUser()->getIdentity();
+        $message = Craft::t('app', 'Validation errors for site: “{siteName}“', [
+            'siteName' => $propagateToSite?->name,
+        ]);
+
+        // check user can edit this element for the site that throws validation error on propagation
+        if ($user &&
+            Craft::$app->getIsMultiSite() &&
+            $user->can("editSite:{$propagateToSite?->uid}") &&
+            $siteElement->canSave($user)
+        ) {
+            $queryParams = ArrayHelper::without(Craft::$app->getRequest()->getQueryParams(), 'site');
+            $url = UrlHelper::url($siteElement->getCpEditUrl(), $queryParams + ['prevalidate' => 1]);
+            $message = Html::beginTag('a', [
+                'href' => $url,
+                'class' => 'cross-site-validate',
+                'target' => '_blank',
+            ]) .
+                $message .
+                Html::tag('span', '', [
+                    'data-icon' => 'external',
+                    'aria-label' => Craft::t('app', 'Open the full edit page in a new tab'),
+                    'role' => 'img',
+                ]) .
+                Html::endTag('a');
+        }
+
+        $element->addError('global', $message);
+
+        return false;
     }
 
     /**

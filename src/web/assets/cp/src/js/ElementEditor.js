@@ -226,6 +226,10 @@ Craft.ElementEditor = Garnish.Base.extend(
       }
 
       this.activityTooltips = {};
+
+      if (this.isFullPage) {
+        Craft.ui.setFocusOnErrorSummary(this.$container);
+      }
     },
 
     _createQueue: function () {
