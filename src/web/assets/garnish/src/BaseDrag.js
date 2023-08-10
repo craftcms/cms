@@ -348,7 +348,11 @@ export default Base.extend(
 
         if (typeof this.settings.handle === 'string') {
           // https://github.com/craftcms/cms/issues/12896
-          return $(this.settings.handle, item).first();
+          const selector = this.settings.handle
+            .split(',')
+            .map((s) => Craft.ensureEndsWith(Craft.trim(s), ':first'))
+            .join(',');
+          return $(selector, item);
         }
 
         if (typeof this.settings.handle === 'function') {
@@ -420,9 +424,28 @@ export default Base.extend(
      */
     _scrollWindow: function () {
       this._.scrollPos = Garnish.$scrollContainer[this.scrollProperty]();
-      Garnish.$scrollContainer[this.scrollProperty](
-        this._.scrollPos + this.scrollDist
-      );
+      this._.scrollTargetPos = this._.scrollPos + this.scrollDist;
+      if (this._.scrollTargetPos < 0) {
+        this._.scrollTargetPos = 0;
+      } else {
+        this._.$scrollContainer =
+          Garnish.$scrollContainer[0] === Garnish.$win[0]
+            ? Garnish.$bod
+            : Garnish.$scrollContainer;
+        if (this.scrollAxis === 'Y') {
+          this._.scrollMax =
+            this._.$scrollContainer[0].clientHeight -
+            Garnish.$scrollContainer.height();
+        } else {
+          this._.scrollMax =
+            this._.$scrollContainer[0].clientWidth -
+            Garnish.$scrollContainer.width();
+        }
+        if (this._.scrollTargetPos > this._.scrollMax) {
+          this._.scrollTargetPos = this._.scrollMax;
+        }
+      }
+      Garnish.$scrollContainer[this.scrollProperty](this._.scrollTargetPos);
 
       this['mouse' + this.scrollAxis] -=
         this._.scrollPos - Garnish.$scrollContainer[this.scrollProperty]();

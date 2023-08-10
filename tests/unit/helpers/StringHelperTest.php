@@ -1574,6 +1574,28 @@ class StringHelperTest extends TestCase
     }
 
     /**
+     * @dataProvider escapeShortcodesDataProvider
+     *
+     * @param string $expected
+     * @param string $str
+     */
+    public function testEscapeShortcodes(string $expected, string $str)
+    {
+        self::assertSame($expected, StringHelper::escapeShortcodes($str));
+    }
+
+    /**
+     * @dataProvider unescapeShortcodesDataProvider
+     *
+     * @param string $expected
+     * @param string $str
+     */
+    public function testUnescapeShortcodes(string $expected, string $str)
+    {
+        self::assertSame($expected, StringHelper::unescapeShortcodes($str));
+    }
+
+    /**
      * @return array
      */
     public function substrDataDataProvider(): array
@@ -4228,6 +4250,26 @@ class StringHelperTest extends TestCase
         return [
             ['Baby you light my 🔥! 😃', 'Baby you light my :fire:! :smiley:'],
             ['Test — em – en - dashes 🤞', 'Test — em – en - dashes :hand_with_index_and_middle_fingers_crossed:'],
+        ];
+    }
+
+    /**
+     * @return array
+     */
+    public function escapeShortcodesDataProvider(): array
+    {
+        return [
+            ['\\:100\\: \\:1234\\: 🔥', ':100: :1234: 🔥'],
+        ];
+    }
+
+    /**
+     * @return array
+     */
+    public function unescapeShortcodesDataProvider(): array
+    {
+        return [
+            [':100: :1234: 🔥', '\\:100\\: \\:1234\\: 🔥'],
         ];
     }
 }

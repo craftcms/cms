@@ -10,6 +10,7 @@ namespace craft\models;
 use Craft;
 use craft\base\BaseFsInterface;
 use craft\base\Field;
+use craft\base\FieldLayoutProviderInterface;
 use craft\base\FsInterface;
 use craft\base\Model;
 use craft\behaviors\FieldLayoutBehavior;
@@ -32,7 +33,7 @@ use yii\base\InvalidConfigException;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.0.0
  */
-class Volume extends Model implements BaseFsInterface
+class Volume extends Model implements BaseFsInterface, FieldLayoutProviderInterface
 {
     /**
      * @var int|null ID
@@ -186,8 +187,14 @@ class Volume extends Model implements BaseFsInterface
         $fieldLayout = $this->getFieldLayout();
         $fieldLayout->reservedFieldHandles = [
             'alt',
+            'extension',
+            'filename',
             'folder',
+            'height',
+            'kind',
+            'size',
             'volume',
+            'width',
         ];
 
         if (!$fieldLayout->validate()) {
@@ -198,7 +205,7 @@ class Volume extends Model implements BaseFsInterface
     /**
      * @inheritdoc
      */
-    public function getFieldLayout(): ?FieldLayout
+    public function getFieldLayout(): FieldLayout
     {
         /** @var FieldLayoutBehavior $behavior */
         $behavior = $this->getBehavior('fieldLayout');
@@ -347,10 +354,9 @@ class Volume extends Model implements BaseFsInterface
             'sortOrder' => $this->sortOrder,
         ];
 
-        if (
-            ($fieldLayout = $this->getFieldLayout()) &&
-            ($fieldLayoutConfig = $fieldLayout->getConfig())
-        ) {
+        $fieldLayout = $this->getFieldLayout();
+        $fieldLayoutConfig = $fieldLayout->getConfig();
+        if ($fieldLayoutConfig) {
             $config['fieldLayouts'] = [
                 $fieldLayout->uid => $fieldLayoutConfig,
             ];

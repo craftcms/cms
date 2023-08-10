@@ -153,7 +153,7 @@ class Schema extends \yii\db\mysql\Schema
     public function getDefaultBackupCommand(?array $ignoreTables = null): string
     {
         $useSingleTransaction = true;
-        $serverVersion = App::normalizeVersion(Craft::$app->getDb()->getSchema()->getServerVersion());
+        $serverVersion = App::normalizeVersion($this->getServerVersion());
 
         $isMySQL5 = version_compare($serverVersion, '8', '<');
         $isMySQL8 = version_compare($serverVersion, '8', '>=');

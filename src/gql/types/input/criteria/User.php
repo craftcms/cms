@@ -26,7 +26,7 @@ class User extends InputObjectType
     {
         $typeName = 'UserCriteriaInput';
 
-        return GqlEntityRegistry::getEntity($typeName) ?: GqlEntityRegistry::createEntity($typeName, new InputObjectType([
+        return GqlEntityRegistry::getOrCreate($typeName, fn() => new InputObjectType([
             'name' => $typeName,
             'fields' => function() {
                 return UserArguments::getArguments();

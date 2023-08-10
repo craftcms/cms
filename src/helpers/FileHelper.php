@@ -53,6 +53,9 @@ class FileHelper extends \yii\helpers\FileHelper
      */
     public static function normalizePath($path, $ds = DIRECTORY_SEPARATOR): string
     {
+        // Remove any file protocol wrappers
+        $path = StringHelper::removeLeft($path, 'file://');
+
         // Is this a UNC network share path?
         $isUnc = (str_starts_with($path, '//') || str_starts_with($path, '\\\\'));
 
@@ -261,7 +264,7 @@ class FileHelper extends \yii\helpers\FileHelper
         // Strip any characters not allowed.
         $filename = str_replace($disallowedChars, '', strip_tags($filename));
 
-        if (Craft::$app->getDb()->getIsMysql()) {
+        if (!Craft::$app->getDb()->getSupportsMb4()) {
             // Strip emojis
             $filename = StringHelper::replaceMb4($filename, '');
         }
@@ -851,26 +854,42 @@ class FileHelper extends \yii\helpers\FileHelper
      * Return a file extension for the given MIME type.
      *
      * @param string $mimeType
+     * @param bool $preferShort
+     * @param string|null $magicFile
      * @return string
      * @throws InvalidArgumentException if no known extensions exist for the given MIME type.
      * @since 3.5.15
      */
-    public static function getExtensionByMimeType(string $mimeType): string
+    public static function getExtensionByMimeType($mimeType, $preferShort = false, $magicFile = null): string
     {
-        $extensions = FileHelper::getExtensionsByMimeType($mimeType);
+        // cover the ambiguous, web-friendly MIME types up front
+        switch (strtolower($mimeType)) {
+            case 'application/msword': return 'doc';
+            case 'application/x-yaml': return 'yml';
+            case 'application/xml': return 'xml';
+            case 'audio/mp4': return 'm4a';
+            case 'audio/mpeg': return 'mp3';
+            case 'audio/ogg': return 'ogg';
+            case 'image/heic': return 'heic';
+            case 'image/jpeg': return 'jpg';
+            case 'image/svg+xml': return 'svg';
+            case 'image/tiff': return 'tif';
+            case 'text/calendar': return 'ics';
+            case 'text/html': return 'html';
+            case 'text/markdown': return 'md';
+            case 'text/plain': return 'txt';
+            case 'video/mp4': return 'mp4';
+            case 'video/mpeg': return 'mpg';
+            case 'video/quicktime': return 'mov';
+        }
+
+        $extensions = self::getExtensionsByMimeType($mimeType);
 
         if (empty($extensions)) {
             throw new InvalidArgumentException("No file extensions are known for the MIME Type $mimeType.");
         }
 
-        $extension = reset($extensions);
-
-        // Manually correct for some types.
-        return match ($extension) {
-            'svgz' => 'svg',
-            'jpe' => 'jpg',
-            default => $extension,
-        };
+        return reset($extensions);
     }
 
     /**

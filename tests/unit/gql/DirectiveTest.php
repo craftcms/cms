@@ -197,8 +197,7 @@ class DirectiveTest extends TestCase
             ]),
         ]));
 
-        if (!GqlEntityRegistry::getEntity($directiveName)) {
-            GqlEntityRegistry::createEntity($directiveName, $className::create());
-        }
+        /** @var string|Directive $className */
+        GqlEntityRegistry::getOrCreate($directiveName, fn() => $className::create());
     }
 }

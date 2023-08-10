@@ -202,7 +202,6 @@ class MigrateController extends BaseMigrateController
             }
 
             $this->migrationPath = $this->getMigrator()->migrationPath;
-            FileHelper::createDirectory($this->migrationPath);
         }
 
         // Make sure that the project config YAML exists in case any migrations need to check incoming YAML values
@@ -211,8 +210,12 @@ class MigrateController extends BaseMigrateController
             $projectConfig->regenerateExternalConfig();
         }
 
-        if (!$this->traitBeforeAction($action)) {
-            return false;
+        try {
+            if (!$this->traitBeforeAction($action)) {
+                return false;
+            }
+        } catch (InvalidConfigException $e) {
+            // migrations folder not created, but we don't mind.
         }
 
         return true;
@@ -359,6 +362,10 @@ class MigrateController extends BaseMigrateController
                     $this->stdout(PHP_EOL . "$applied from $total " . ($applied === 1 ? 'migration was' : 'migrations were') . ' applied.' . PHP_EOL, Console::FG_RED);
                     $this->stdout(PHP_EOL . 'Migration failed. The rest of the migrations are canceled.' . PHP_EOL, Console::FG_RED);
                     Craft::$app->disableMaintenanceMode();
+                    Craft::$app->getProjectConfig()->reset();
+                    if (!$this->restore()) {
+                        $this->stdout("\nRestore a database backup before trying again.\n", Console::FG_RED);
+                    }
                     return ExitCode::UNSPECIFIED_ERROR;
                 }
                 $applied++;
@@ -409,6 +416,14 @@ class MigrateController extends BaseMigrateController
         }
 
         $res = parent::actionUp($limit);
+
+        if ($res === ExitCode::UNSPECIFIED_ERROR) {
+            Craft::$app->getProjectConfig()->reset();
+            if (!$this->restore()) {
+                $this->stdout("\nRestore a database backup before trying again.\n", Console::FG_RED);
+            }
+            return $res;
+        }
 
         if ($res === ExitCode::OK && empty($this->getNewMigrations())) {
             // Update any schema versions.
