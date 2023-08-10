@@ -70,7 +70,7 @@ class Dispatcher extends \yii\log\Dispatcher
                 'name' => $name,
                 'enabled' => false,
                 'extractExceptionTrace' => !App::devMode(),
-                'allowLineBreaks' => App::devMode(),
+                'allowLineBreaks' => App::devMode() && !App::env('CRAFT_SINGLE_LINE_LOGS'),
                 'level' => App::devMode() ? LogLevel::INFO : LogLevel::WARNING,
             ];
 
