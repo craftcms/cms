@@ -9,6 +9,7 @@
 ### Development
 
 ### Extensibility
+- `craft\services\Assets::getAllDescendantFolders()` now has an `$asTree` argument. ([#13535](https://github.com/craftcms/cms/discussions/13535))
 
 ### System
 - Updated Yii to 2.0.48.1. ([#13444](https://github.com/craftcms/cms/pull/13444))
