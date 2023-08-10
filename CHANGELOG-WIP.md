@@ -104,6 +104,7 @@
 - Added `craft\web\CpScreenResponseBehavior::$slideoutBodyClass`.
 - Added `craft\web\Response::$defaultFormatters`. ([#13541](https://github.com/craftcms/cms/pull/13541))
 - `craft\elements\actions\NewChild` is no longer triggerable on elements that have a `data-disallow-new-children` attribute. ([#13539](https://github.com/craftcms/cms/discussions/13539))
+- `craft\elements\actions\SetStatus` is no longer triggerable on elements that have a `data-disallow-status` attribute.
 - `craft\helpers\Cp::selectizeFieldHtml()`, `selectizeHtml()`, and `_includes/forms/selectize.twig` now support a `multi` param. ([#13176](https://github.com/craftcms/cms/pull/13176))
 - `craft\helpers\Typecast::properties()` now supports backed enum values. ([#13371](https://github.com/craftcms/cms/pull/13371))
 - `craft\services\Assets::getRootFolderByVolumeId()` now ensures the root folder actually exists, and caches its results internally, improving performance. ([#13297](https://github.com/craftcms/cms/issues/13297))
