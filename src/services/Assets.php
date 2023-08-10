@@ -524,7 +524,7 @@ class Assets extends Component
         VolumeFolder $parentFolder,
         string $orderBy = 'path',
         bool $withParent = true,
-        bool $asTree = false,
+        bool $asTree = false
     ): array {
         $query = $this->createFolderQuery()
             ->where([
