@@ -1,5 +1,9 @@
 # Release Notes for Craft CMS 4
 
+## Unreleased
+
+- Fixed a bug where icons within secondary buttons were illegible when active.
+
 ## 4.4.17 - 2023-08-08
 
 - `meta.__names__` values in the project config are now updated throughout the process of applying incoming project config changes, rather than at the end of the request.
