@@ -1867,6 +1867,7 @@ ul.icons {
   &.submit,
   &.secondary {
     color: var(--white) !important;
+    --ui-control-active-color: var(--white);
     @include light-on-dark-text;
   }
 
