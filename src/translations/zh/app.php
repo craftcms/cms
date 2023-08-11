@@ -748,7 +748,7 @@ return [
     'Inactive' => '停用',
     'Include your template files' => '包含您的模板文件',
     'Includes activating/deactivating user accounts, resetting passwords, and changing email addresses.' => '包括激活/停用用户帐户、重置密码和更改电子邮件地址。',
-    'Includes one year of updates.' => '包含一年的更新。',
+    'Includes one year of updates.' => '含一年的更新。',
     'Includes read-only access to user data and most content, via element selector modals and other means.' => '包括通过元素选择器模式和其他方式对用户数据和大部分内容进行只读访问。',
     'Includes suspending, unsuspending, and unlocking user accounts.' => '包括暂停、取消暂停和解锁用户帐户。',
     'Incorrect current password.' => '当前密码不正确。',
