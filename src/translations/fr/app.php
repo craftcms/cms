@@ -2003,7 +2003,7 @@ return [
     '{user} is editing a draft of this {type}.' => '{user} est en train d\'éditer un brouillon de ce {type}.',
     '{user} is editing this {type}.' => '{user} est en train d\'éditer ce {type}.',
     '{user} is viewing a draft of this {type}.' => '{user} est en train de consulter un brouillon de ce {type}.',
-    '{user} is viewing this {type}.' => '{user} est en train de regarder ce {type}.',
+    '{user} is viewing this {type}.' => '{user} est en train de consulter ce {type}.',
     '{user}’s Account' => 'Compte de {user}',
     '{value} is not a valid language.' => '{value} n’est pas une langue valide.',
     '{value} is not a valid site language.' => '{value} n’est pas une langue valide pour le site.',
