@@ -1430,7 +1430,7 @@ return [
     'Temp Uploads Location' => '임시 업로드 위치',
     'Temp files' => '임시 파일',
     'Template caches' => '템플릿 캐시',
-    'Template that defines the Slug field’s custom “translation key” format. {type} slugs will be copied to all sites that produce the same key. For example, to make slugs translatable based on the first two characters of the site handle, you could enter `{site.handle[:2]}`.' => '슬러그 필드의 사용자 정의 "번역 키" 형식을 정의하는 템플릿입니다. {type} 슬러그는 동일한 키를 생성하는 모든 사이트에 복사됩니다. 예를 들어, 사이트 핸들의 처음 두 문자를 기반으로 슬러그를 번역할 수 있도록 하려면 `{site.handle[:2]}`을(를) 입력할 수 있습니다.',
+    'Template that defines the Slug field’s custom “translation key” format. {type} slugs will be copied to all sites that produce the same key. For example, to make slugs translatable based on the first two characters of the site handle, you could enter `{site.handle[:2]}`.' => '슬러그 필드의 사용자 정의 "번역 키" 형식을 정의하는 템플릿입니다. {type} 슬러그는 동일한 키를 생성하는 모든 사이트에 복사됩니다. 예를 들어, 사이트 핸들의 처음 두 문자를 기반으로 슬러그를 번역할 수 있도록 하려면 `{site.handle[:2]}`를 입력할 수 있습니다.',
     'Template that defines the Title field’s custom “translation key” format. {type} titles will be copied to all sites that produce the same key. For example, to make titles translatable based on the first two characters of the site handle, you could enter `{site.handle[:2]}`.' => '제목 필드의 사용자 정의 "번역 키" 형식을 정의하는 템플릿입니다. {type} 제목은 동일한 키를 생성하는 모든 사이트에 복사됩니다. 예를 들어, 사이트 핸들의 처음 두 문자를 기반으로 제목을 번역할 수 있도록 하려면 `{site.handle[:2]}`을(를) 입력할 수 있습니다.',
     'Template that defines the field’s custom “propagation key” format. Blocks will be saved to all sites that produce the same key.' => '필드의 사용자 정의 "전파 키" 형식을 정의하는 템플릿입니다. 블록은 동일한 키를 생성하는 모든 사이트에 저장됩니다.',
     'Template' => '템플릿',
