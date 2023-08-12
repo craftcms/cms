@@ -1966,7 +1966,7 @@ return [
     '{num, number} {num, plural, =1{notification} other{notifications}}' => '{num, number} {num, plural, one {} =1{avisering} other{aviseringar}}',
     '{num, number} {num, plural, =1{second} other{seconds}}' => '{num, number} {num, plural, =1{sekund} other{sekunder}}',
     '{num, number} {num, plural, =1{week} other{weeks}}' => '{num, number} {num, plural, =1{vecka} other{veckor}}',
-    '{num, number} {num, plural, =1{year} other{years}} of updates' => '{num, number} {num, plural, =1{year} other{years}} of updates',
+    '{num, number} {num, plural, =1{year} other{years}} of updates' => '{num, number} {num, plural, =1{år} other{år}} av uppdateringar',
     '{num, number} {num, plural, =1{year} other{years}}' => '{num, number} {num, plural, =1{år} other{år}}',
     '{num, number} {section} {num, plural, =1{entry} other{entries}}' => '{num, number} {section} {num, plural, =1{post} other{poster}}',
     '{pct} width' => '{pct} bredd',
