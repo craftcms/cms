@@ -660,7 +660,7 @@ return [
     'In the local temp folder' => 'ローカルの一時フォルダ内',
     'Include your template files' => 'あなたのテンプレートファイルを含める',
     'Includes activating user accounts, resetting passwords, and changing email addresses.' => 'ユーザーアカウントの有効化、パスワードのリセット、メールアドレスの変更が含まれます。',
-    'Includes read-only access to user data and most content, via element selector modals and other means.' => 'Includes read-only access to user data and most content, via element selector modals and other means.',
+    'Includes read-only access to user data and most content, via element selector modals and other means.' => 'エレメントセレクタモダールおよびその他の手段による、セレクタユーザーデータへの読み取り専用アクセスとほとんどのコンテンツが含まれます。',
     'Includes suspending, unsuspending, and unlocking user accounts.' => 'ユーザーアカウントの停止、停止解除、ロック解除が含まれます。',
     'Incorrect current password.' => '現在のパスワードは正しくありません。',
     'Incorrect password.' => 'パスワードが間違っています。',
