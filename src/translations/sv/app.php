@@ -1819,7 +1819,7 @@ return [
     'Your Email' => 'Din e-postadress',
     'Your account doesn’t have permission to access the control panel when the system is offline.' => 'Ditt konto har inte behörighet att komma åt kontrollpanelen när systemet är offline.',
     'Your account doesn’t have permission to access the site when the system is offline.' => 'Ditt konto har inte behörighet att komma åt sajten när systemet är offline.',
-    'Your cart is empty.' => 'Your cart is empty.',
+    'Your cart is empty.' => 'Din varukorg är tom.',
     'Your changes could not be stored.' => 'Dina ändringar kunde inte sparas.',
     'Your changes have been stored.' => 'Dina ändringar har sparats.',
     'Your composer.json file could not be located. Try setting the CRAFT_COMPOSER_PATH constant in index.php to its location on the server.' => 'Det gick inte att hitta filen composer.json. Prova att ställa in konstanten CRAFT_COMPOSER_PATH i index.php till dess plats på servern.',
