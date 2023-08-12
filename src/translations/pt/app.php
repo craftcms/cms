@@ -300,7 +300,7 @@ return [
     'Couldn’t apply new migrations.' => 'Não foi possível aplicar novas migrações.',
     'Couldn’t backup the database. How would you like to proceed?' => 'Não foi possível criar uma cópia de segurança da base de dados. Como gostaria de resolver a situação?',
     'Couldn’t create {type}.' => 'Não foi possível criar {type}.',
-    'Couldn’t delete all {type}.' => 'Couldn’t delete all {type}.',
+    'Couldn’t delete all {type}.' => 'Não foi possível eliminar todos os elementos do tipo {type}.',
     'Couldn’t delete {type}.' => 'Não foi possível eliminar {type}.',
     'Couldn’t delete “{name}”.' => 'Não foi possível excluir "{name}".',
     'Couldn’t disable plugin.' => 'Não foi possível desativar o plugin.',
