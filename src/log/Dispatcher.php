@@ -46,7 +46,7 @@ class Dispatcher extends \yii\log\Dispatcher
     }
 
     /**
-     * @return array<MonologTarget|array>
+     * @return array<MonologTarget>
      */
     public function getTargets(): array
     {
@@ -75,7 +75,7 @@ class Dispatcher extends \yii\log\Dispatcher
                 'level' => App::devMode() ? LogLevel::INFO : LogLevel::WARNING,
             ];
 
-            return [$name => $config];
+            return [$name => Craft::createObject(MonologTarget::class, $config)];
         });
 
         // Queue is enabled via QueueLogBehavior
