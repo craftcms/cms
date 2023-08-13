@@ -4,6 +4,9 @@
 
 - Fixed a bug where icons within secondary buttons were illegible when active.
 
+## Unreleased (4.5)
+- Fixed multiple issues with Selectize inputs.
+
 ## 4.5.0-beta.1 - 2023-08-10
 
 ### Content Management
