@@ -1201,14 +1201,9 @@ class View extends \yii\web\View
      */
     public function registerJsFile($url, $options = [], $key = null): void
     {
-        // If 'depends' is specified, ignore it for now because the file will
-        // get registered as an asset bundle
-        if (empty($options['depends'])) {
-            $key = $key ?: $url;
-            if (isset($this->_registeredJsFiles[$key])) {
-                return;
-            }
-            $this->_registeredJsFiles[$key] = true;
+        // If the file lives within cpresources/, ignore it because it came from an asset bundle
+        if (!str_starts_with($url, $this->assetManager->baseUrl)) {
+            $this->_registeredJsFiles[$key ?: $url] = true;
         }
 
         parent::registerJsFile($url, $options, $key);
