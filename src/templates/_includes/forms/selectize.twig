@@ -19,16 +19,17 @@
     value: k,
     label: o.label is defined ? o.label : o,
 }) %}
+{% set options = options|map(o => o|merge({
+    data: (o.data ?? {})|merge(o.data.data ?? {})
+})) %}
 
 {% if includeEnvVars ?? false %}
     {% if allowedEnvValues is not defined %}
         {% set allowedEnvValues = options|filter(o => o.optgroup is not defined)|map(o => o.value) %}
     {% endif %}
-    {% set options = options|map(o => o.data.data.hint is defined ? o : o|merge({
+    {% set options = options|map(o => o.data.hint is defined ? o : o|merge({
         data: {
-            data: {
-                hint: o.value,
-            }
+            hint: o.value,
         },
     }, recursive=true)) %}
 {% endif %}
@@ -42,17 +43,13 @@
             {value: '', label: ' '},
         ] %}
     {% endif %}
-    {% set options = options|merge([
-        {
-            label: addOptionLabel ,
-            value: '__add__',
-            data: {
-                data: {
-                    addOption: true,
-                },
-            },
+    {% set options = options|push({
+        label: addOptionLabel ,
+        value: '__add__',
+        data: {
+            addOption: true,
         },
-    ]) %}
+    }) %}
 {% endif %}
 
 {% if includeEnvVars ?? false %}
@@ -68,32 +65,44 @@
 
 {% js %}
 (() => {
+    const id = {{ id|namespaceInputId|json_encode|raw }};
+
+    const hasData = (data, option) => {
+        return typeof data[option] !== 'undefined' || typeof data[option.toLowerCase()] !== 'undefined';
+    };
+    const getData = (data, option) => {
+        if (typeof data[option] !== 'undefined') {
+            return data[option];
+        }
+        return data[option.toLowerCase()];
+    };
     const label = (data, showHint) => {
         let label = '';
-        if (data.addOption) {
+        if (hasData(data, 'addOption')) {
             label += '<span class="icon add"></span> ';
         }
         const status = (() => {
-            if (typeof data.status !== 'undefined') {
-                return data.status;
+            if (hasData(data, 'status')) {
+                return getData(data, 'status');
             }
-            if (typeof data.boolean !== 'undefined') {
-                return data.boolean ? 'green' : 'white';
+            if (hasData(data, 'boolean')) {
+                return getData(data, 'boolean') ? 'green' : 'white';
             }
             return null;
         })();
         if (status) {
             label += `<span class="status ${status}"></span>`;
         }
-        label += `<span>${Craft.escapeHtml(data.text)}</span>`;
-        if (showHint && typeof data.hint === 'string' && data.hint !== '') {
-            const langAttr = data.hintLang ? ` lang="${data.hintLang}"` : '';
-            label += `<span class="light"${langAttr}>– ${Craft.escapeHtml(data.hint)}</span>`;
+        label += `<span>${Craft.escapeHtml(getData(data, 'text'))}</span>`;
+        if (showHint && hasData(data, 'hint') && getData(data, 'hint') !== '') {
+            const hintLang = getData(data, 'hintLang');
+            const langAttr = hintLang ? ` lang="${hintLang}"` : '';
+            label += `<span class="light"${langAttr}>– ${Craft.escapeHtml(getData(data, 'hint'))}</span>`;
         }
         return `<div class="flex flex-nowrap">${label}</div>`;
     };
 
-    const $select = $("#{{ id|namespaceInputId|e('js') }}");
+    const $select = $(`#${id}`);
 
     const onChange = () => {
         const selectize = $select.data('selectize');
@@ -114,12 +123,6 @@
 
             {% if addOptionFn is defined and addOptionLabel is defined %}
             if ($item.data('add-option')) {
-                if (isSelect) {
-                    selectize.setValue('', true);
-                } else {
-                    selectize.removeItem('__add__');
-                }
-
                 selectize.close();
                 selectize.blur();
 
@@ -143,6 +146,14 @@
                         selectize.addItem(item.value, true);
                     }
                 }, selectize);
+
+                Garnish.requestAnimationFrame(() => {
+                    if (isSelect) {
+                        selectize.setValue({{ ((options|first).value ?? '')|json_encode|raw }}, true);
+                    } else {
+                        selectize.removeItem('__add__');
+                    }
+                });
             }
             {% endif %}
         }
@@ -160,10 +171,10 @@
             },
             item: data => {
                 const attrs = ['class="item"'];
-                if (typeof data.boolean !== 'undefined') {
-                    attrs.push(`data-boolean="${data.boolean ? '1' : ''}"`);
+                if (hasData(data, 'boolean')) {
+                    attrs.push(`data-boolean="${getData(data, 'boolean') ? '1' : ''}"`);
                 }
-                if (typeof data.addOption !== 'undefined') {
+                if (hasData(data, 'addOption')) {
                     attrs.push('data-add-option="1"');
                 }
                 return `<div ${attrs.join(' ')}>${label(data, false)}</div>`;

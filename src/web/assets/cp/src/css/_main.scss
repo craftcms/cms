@@ -5769,6 +5769,9 @@ $min2ColWidth: 400px;
 }
 
 /* selectize */
+.selectize-control.single .selectize-input:not(.no-arrow)::after {
+  display: none;
+}
 
 /* ----------------------------------------
 /*  Fields
