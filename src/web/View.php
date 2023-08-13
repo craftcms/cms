@@ -8,6 +8,7 @@
 namespace craft\web;
 
 use Craft;
+use craft\events\AssetBundleEvent;
 use craft\events\CreateTwigEvent;
 use craft\events\RegisterTemplateRootsEvent;
 use craft\events\TemplateEvent;
@@ -96,6 +97,12 @@ class View extends \yii\web\View
      * @event TemplateEvent The event that is triggered after a page template gets rendered
      */
     public const EVENT_AFTER_RENDER_PAGE_TEMPLATE = 'afterRenderPageTemplate';
+
+    /**
+     * @event AssetBundleEvent The event that is triggered after an asset bundle is registered
+     * @since 4.5.0
+     */
+    public const EVENT_AFTER_REGISTER_ASSET_BUNDLE = 'afterRegisterAssetBundle';
 
     /**
      * @const TEMPLATE_MODE_CP
@@ -2042,6 +2049,24 @@ JS;
         }
         $this->_registeredAssetBundles[$name] = true;
         parent::registerAssetFiles($name);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function registerAssetBundle($name, $position = null)
+    {
+        $bundle = parent::registerAssetBundle($name, $position);
+
+        if ($this->hasEventHandlers(self::EVENT_AFTER_REGISTER_ASSET_BUNDLE)) {
+            $this->trigger(self::EVENT_AFTER_REGISTER_ASSET_BUNDLE, new AssetBundleEvent([
+                'bundleName' => $name,
+                'position' => $position,
+                'bundle' => $bundle,
+            ]));
+        }
+
+        return $bundle;
     }
 
     /**
