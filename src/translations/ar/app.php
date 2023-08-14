@@ -667,7 +667,7 @@ return [
     'Forgot your password?' => 'هل نسيت كلمة المرور؟',
     'Format' => 'التنسيق',
     'Formatting Locale' => 'تنسيق الإعدادات المحلية',
-    'Found {num, number} {num, plural, =1{error} other{errors}}' => 'Found {num, number} {num, plural, =1{error} other{errors}}',
+    'Found {num, number} {num, plural, =1{error} other{errors}}' => 'تم العثور على {num, number} من {num, plural, =1{الأخطاء} other{الأخطاء}}',
     'Free' => 'حر',
     'From {date}' => 'من {date}',
     'From' => 'من',
