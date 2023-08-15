@@ -4,7 +4,8 @@
 
 - Fixed a bug where icons within secondary buttons were illegible when active.
 
-## Unreleased (4.5)
+## 4.5.0-beta.2 - 2023-08-15
+
 - Added `craft\events\AssetBundleEvent`.
 - Added `craft\web\View::EVENT_AFTER_REGISTER_ASSET_BUNDLE`.
 - Added support for the `CRAFT_LOG_ALLOW_LINE_BREAKS` environment variable. ([#13544](https://github.com/craftcms/cms/pull/13544))
