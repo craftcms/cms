@@ -1287,6 +1287,7 @@ interface ElementInterface extends ComponentInterface
      * to the target site.
      *
      * @return string The translation key
+     * @since 3.5.0
      */
     public function getTitleTranslationKey(): string;
 
