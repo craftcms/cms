@@ -3,9 +3,9 @@
 return [
     '(Ungrouped)' => '(Nezoskupené)',
     '(blank)' => '(prázdne)',
-    '(included)' => '(included)',
+    '(included)' => '(vrátane)',
     '({currencyCode}) {currencySymbol}' => '({currencyCode}) {currencySymbol}',
-    '({period} days)' => '({period} days)',
+    '({period} days)' => '({period} dni)',
     '/path/to/folder' => '/cesta/k/priečinku',
     '1 job' => '1 úloha',
     '<a>Renew now</a> for another year of updates.' => '<a>Obnoviť teraz</a> pre ďalší rok aktualizácií.',
