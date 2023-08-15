@@ -545,6 +545,7 @@
 
         this.isLoading = true;
         this.deselectAll();
+        this.$refs.vuetable.normalizeFields();
         this.$refs.vuetable.reload();
       },
 
