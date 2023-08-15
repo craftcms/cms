@@ -149,3 +149,4 @@
 - Internal Composer operations now use a bundled `composer.phar` file, rather than Composer’s PHP API. ([#13519](https://github.com/craftcms/cms/pull/13519))
 - Updated Selectize to 0.15.2. ([#13273](https://github.com/craftcms/cms/discussions/13273))
 - Fixed a bug where PM times were getting converted to AM for Greek locales. ([#9942](https://github.com/craftcms/cms/issues/9942))
+- Fixed a bug where <kbd>Command</kbd>/<kbd>Ctrl</kbd> + clicks on “New entry” button menu options would open the Entries index page in a new tab, and redirect to the Edit Entry page in the current tab. ([#13550](https://github.com/craftcms/cms/issues/13550))
