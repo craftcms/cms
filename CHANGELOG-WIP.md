@@ -75,6 +75,7 @@
 - Added `craft\behaviors\EventBehavior`. ([#13502](https://github.com/craftcms/cms/discussions/13502))
 - Added `craft\controllers\AssetsControllerTrait`.
 - Added `craft\elements\db\ElementQuery::EVENT_BEFORE_POPULATE_ELEMENT`.
+- Added `craft\events\AssetBundleEvent`.
 - Added `craft\events\DefineAddressSubdivisionsEvent`. ([#13361](https://github.com/craftcms/cms/pull/13361))
 - Added `craft\events\MoveElementEvent::$action`. ([#13429](https://github.com/craftcms/cms/pull/13429))
 - Added `craft\events\MoveElementEvent::$targetElementId`. ([#13429](https://github.com/craftcms/cms/pull/13429))
@@ -103,6 +104,7 @@
 - Added `craft\web\CpScreenResponseBehavior::$pageSidebar`, `pageSidebar()`, and `pageSidebarTemplate()`. ([#13019](https://github.com/craftcms/cms/pull/13019), [#12795](https://github.com/craftcms/cms/issues/12795))
 - Added `craft\web\CpScreenResponseBehavior::$slideoutBodyClass`.
 - Added `craft\web\Response::$defaultFormatters`. ([#13541](https://github.com/craftcms/cms/pull/13541))
+- Added `craft\web\View::EVENT_AFTER_REGISTER_ASSET_BUNDLE`.
 - `craft\elements\actions\NewChild` is no longer triggerable on elements that have a `data-disallow-new-children` attribute. ([#13539](https://github.com/craftcms/cms/discussions/13539))
 - `craft\elements\actions\SetStatus` is no longer triggerable on elements that have a `data-disallow-status` attribute.
 - `craft\helpers\Cp::selectizeFieldHtml()`, `selectizeHtml()`, and `_includes/forms/selectize.twig` now support a `multi` param. ([#13176](https://github.com/craftcms/cms/pull/13176))

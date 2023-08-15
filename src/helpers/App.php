@@ -1031,8 +1031,8 @@ class App
 
         if ($request->getIsCpRequest()) {
             $headers = $request->getHeaders();
-            $config['registeredAssetBundles'] = explode(',', $headers->get('X-Registered-Asset-Bundles', ''));
-            $config['registeredJsFiles'] = explode(',', $headers->get('X-Registered-Js-Files', ''));
+            $config['registeredAssetBundles'] = array_filter(explode(',', $headers->get('X-Registered-Asset-Bundles', '')));
+            $config['registeredJsFiles'] = array_filter(explode(',', $headers->get('X-Registered-Js-Files', '')));
         }
 
         return $config;
