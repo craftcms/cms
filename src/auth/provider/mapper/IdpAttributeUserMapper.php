@@ -12,7 +12,10 @@ use craft\base\Component;
 use craft\elements\User;
 use craft\helpers\ArrayHelper;
 
-class IdpAttributeUserMap extends Component implements UserMapInterface
+/**
+ * Set a value from the IdP as a User's attribute
+ */
+class IdpAttributeUserMapper extends Component implements UserMapInterface
 {
     use SetUserValueTrait;
 

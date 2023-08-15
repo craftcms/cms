@@ -7,8 +7,6 @@
 
 namespace craft\auth\provider;
 
-use craft\helpers\UrlHelper;
-
 trait AuthProviderTrait
 {
     /**

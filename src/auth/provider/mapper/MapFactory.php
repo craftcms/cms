@@ -35,7 +35,7 @@ class MapFactory
             if (is_array($mapper)) {
                 $mapper = ArrayHelper::merge(
                     [
-                        'class' => $defaultClass
+                        'class' => $defaultClass,
                     ],
                     $mapper
                 );

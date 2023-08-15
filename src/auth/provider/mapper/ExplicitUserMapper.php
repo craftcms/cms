@@ -7,34 +7,27 @@
 
 namespace craft\auth\provider\mapper;
 
-use Craft;
 use craft\base\Component;
 use craft\elements\User;
 
-class TemplateValueUserMap extends Component implements UserMapInterface
+/**
+ * Set an explicit value as a User's attribute
+ */
+class ExplicitUserMapper extends Component implements UserMapInterface
 {
     use SetUserValueTrait;
 
     /**
      * @var mixed
      */
-    public string $template;
+    public mixed $value = null;
 
     /**
      * @inheritDoc
      */
     public function __invoke(User $user, mixed $data): User
     {
-        $value = Craft::$app->view->renderObjectTemplate(
-            $this->template,
-            [
-                'property' => $this->craftProperty,
-                'user' => $user,
-                'data' => $data
-            ]
-        );
-
-        $this->setValue($user, $value);
+        $this->setValue($user, $this->value);
 
         return $user;
     }

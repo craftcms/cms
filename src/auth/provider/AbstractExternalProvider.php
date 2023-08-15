@@ -16,6 +16,7 @@ use craft\errors\AuthFailedException;
 use craft\events\UserAuthEvent;
 use craft\events\UserGroupsAssignEvent;
 use craft\helpers\ArrayHelper;
+use craft\helpers\Html;
 use craft\helpers\StringHelper;
 use craft\helpers\UrlHelper;
 use craft\services\Auth;
@@ -107,6 +108,22 @@ abstract class AbstractExternalProvider extends AbstractProvider
     protected function getResponseUrl(): ?string
     {
         return UrlHelper::actionUrl('auth/response', ['provider' => $this->handle], null, false);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getSiteLoginHtml(?string $label = null, ?string $url = null): string
+    {
+        return Html::a($label ?: "Login via " . $this->name, $url ?: $this->getRequestUrl());
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getCpLoginHtml(?string $label = null, ?string $url = null): string
+    {
+        return Html::a($label ?: "Login via " . $this->name, $url ?: $this->getRequestUrl());
     }
 
     /**
@@ -214,14 +231,14 @@ abstract class AbstractExternalProvider extends AbstractProvider
         // TODO - New event that only has these two properties?
         $event = new UserGroupsAssignEvent([
             'userId' => $user->getId(),
-            'groupIds' => $groupIds
+            'groupIds' => $groupIds,
         ]);
 
         $this->trigger(Auth::EVENT_POPULATE_USER_GROUPS, $event);
 
         return Craft::$app->getUsers()->assignUserToGroups(
             $user->getId(),
-            $event->groupIds
+            $event->groupIds,
         );
     }
 
@@ -290,7 +307,7 @@ abstract class AbstractExternalProvider extends AbstractProvider
         $event = new UserAuthEvent([
             'user' => $user,
             'provider' => $this,
-            'sender' => $data
+            'sender' => $data,
         ]);
 
         $this->trigger(Auth::EVENT_POPULATE_USER, $event);
@@ -314,7 +331,7 @@ abstract class AbstractExternalProvider extends AbstractProvider
 
         if (is_string($callback)) {
             $callback = [
-                'class' => $callback
+                'class' => $callback,
             ];
         }
 
@@ -322,7 +339,7 @@ abstract class AbstractExternalProvider extends AbstractProvider
             if ($defaultClass) {
                 $callback = ArrayHelper::merge(
                     [
-                        'class' => $defaultClass
+                        'class' => $defaultClass,
                     ],
                     $callback
                 );

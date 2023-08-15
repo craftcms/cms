@@ -8,13 +8,11 @@
 namespace craft\errors;
 
 use craft\auth\provider\ProviderInterface;
+use craft\elements\User;
 use Throwable;
 use yii\base\Exception;
-use yii\web\IdentityInterface;
 
 /**
- * Class RouteNotFoundException
- *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 5.0.0
  */
@@ -26,20 +24,20 @@ class AuthFailedException extends Exception
     public ProviderInterface $provider;
 
     /**
-     * @var ?IdentityInterface
+     * @var ?User
      */
-    public ?IdentityInterface $identity;
+    public ?User $identity;
 
     /**
      * Constructor
      *
      * @param ProviderInterface $provider
-     * @param IdentityInterface|null $identity
+     * @param User|null $identity
      * @param string $message
      * @param int $code
      * @param Throwable|null $previous
      */
-    public function __construct(ProviderInterface $provider, ?IdentityInterface $identity = null, string $message = '', int $code = 0, ?Throwable $previous = null)
+    public function __construct(ProviderInterface $provider, ?User $identity = null, string $message = '', int $code = 0, ?Throwable $previous = null)
     {
         $this->provider = $provider;
         $this->identity = $identity;

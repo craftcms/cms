@@ -18,32 +18,12 @@ use yii\web\Response;
 
 class AuthController extends Controller
 {
-//    /**
-//     * The session key used to store the type of request made.  The request type is retrieved
-//     * when a response comes back.
-//     */
-//    const SESSION_KEY = "Auth";
-//
-//    /**
-//     * A request type where a user should be logged into Craft
-//     */
-//    const REQUEST_TYPE_LOGIN = "Login";
-//
-//    /**
-//     * A request type where only the identity session check should be performed
-//     */
-//    const REQUEST_TYPE_SESSION = "Session";
-
     /**
      * @inheritdoc
      */
     protected array|bool|int $allowAnonymous = [
         'request' => self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE,
         'response' => self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE,
-//        'request-login' => self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE,
-//        'request-session' => self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE,
-//        'response' => self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE,
-//        'login-response' => self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE,
     ];
 
     public $enableCsrfValidation = false;
@@ -93,7 +73,7 @@ class AuthController extends Controller
      * @param string|null $message
      * @return Response|null
      */
-    protected function handleFailedRequest(?string $message = null,): ?Response
+    protected function handleFailedRequest(?string $message = null): ?Response
     {
         return $this->asFailure(
             $message ?? Craft::t('app', 'Unable to initiate an auth request.')
@@ -168,7 +148,7 @@ class AuthController extends Controller
             $message,
             "auth"
         );
-
-        throw new HttpException(500, $message, null, $exception);
+ 
+        throw new HttpException(500, $message, 0, $exception);
     }
 }

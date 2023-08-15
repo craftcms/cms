@@ -11,6 +11,9 @@ use craft\elements\User;
 use yii\base\BaseObject;
 use yii\base\InvalidConfigException;
 
+/**
+ * Set multiple User attributes
+ */
 class UserAttributesMapper extends BaseObject implements UserMapInterface
 {
     /**
@@ -21,7 +24,7 @@ class UserAttributesMapper extends BaseObject implements UserMapInterface
     /**
      * @var string
      */
-    public string $defaultAttributeClass = IdpAttributeUserMap::class;
+    public string $defaultAttributeClass = IdpAttributeUserMapper::class;
 
     /**
      * @param array $attributes

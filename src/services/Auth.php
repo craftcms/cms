@@ -199,10 +199,10 @@ class Auth extends Component
     {
         $userId = (new Query())
             ->select([
-                'userId'
+                'userId',
             ])
             ->from([
-                Table::AUTH
+                Table::AUTH,
             ])
             ->where(
                 [
