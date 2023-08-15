@@ -7,6 +7,7 @@
 ## Unreleased (4.5)
 - Added `craft\events\AssetBundleEvent`.
 - Added `craft\web\View::EVENT_AFTER_REGISTER_ASSET_BUNDLE`.
+- Added support for the `CRAFT_LOG_ALLOW_LINE_BREAKS` environment variable. ([#13544](https://github.com/craftcms/cms/pull/13544))
 - Fixed multiple issues with Selectize inputs.
 - Fixed a bug where <kbd>Command</kbd>/<kbd>Ctrl</kbd> + clicks on “New entry” button menu options would open the Entries index page in a new tab, and redirect to the Edit Entry page in the current tab. ([#13550](https://github.com/craftcms/cms/issues/13550))
 
