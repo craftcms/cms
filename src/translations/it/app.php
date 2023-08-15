@@ -1951,7 +1951,7 @@ Congratulazioni! Craft ti ha inviato una email con successo. Ecco le impostazion
     '{filename} isn’t selectable for this field.' => '{filename} non è selezionabile per questo campo.',
     '{first, number}-{last, number} of {total, number} {total, plural, =1{{item}} other{{items}}}' => '{first, number}–{last, number} di {total, number} {total, plural, =1{{item}} other{{items}}}',
     '{first}-{last} of {total}' => '{first}–{last} di {total}',
-    '{name} active, more info' => '{name} attivo, maggiori info',
+    '{name} active, more info' => '{name} in attività, maggiori info',
     '{name} folder' => 'Cartella {name}',
     '{name} has been added, but an error occurred when installing it.' => '{name} è stato aggiunto, ma si è verificato un errore durante l\'installazione.',
     '{name} is licensed for the {licenseEdition} edition, but the {currentEdition} edition is installed.' => '{name} is licensed for the {licenseEdition} edition, but the {currentEdition} edition is installed.',
