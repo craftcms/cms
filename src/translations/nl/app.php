@@ -1568,7 +1568,7 @@ return [
     'This week' => 'Deze week',
     'This year' => 'Dit jaar',
     'This {type} doesn’t have revisions.' => 'Deze {type} heeft geen revisies.',
-    'This {type} has been updated.' => 'Deze/dit{type} is bijgewerkt.',
+    'This {type} has been updated.' => 'Deze/dit {type} is bijgewerkt.',
     'Time Zone' => 'Tijdzone',
     'Time fields are better suited for managing Time-only values.' => 'Tijdvelden zijn beter geschikt voor het beheer van alleen-tijdwaarden.',
     'Time to reserve' => 'Te reserveren tijd',
