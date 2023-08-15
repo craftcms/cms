@@ -667,7 +667,7 @@ return [
     'Forgot your password?' => 'Passwort vergessen?',
     'Format' => 'Format',
     'Formatting Locale' => 'Formatierungsgebietschema',
-    'Found {num, number} {num, plural, =1{error} other{errors}}' => '{num, number} {num, plural, =1{error} other{errors}} Fehler gefunden',
+    'Found {num, number} {num, plural, =1{error} other{errors}}' => '{num, number} {num, plural, one {}=1{Fehler} other{Fehler}} gefunden',
     'Free' => 'Kostenlos',
     'From {date}' => 'Vom {date}',
     'From' => 'Von',
