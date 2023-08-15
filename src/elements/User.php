@@ -1040,7 +1040,7 @@ class User extends Element implements IdentityInterface
                 // Was that one bad password too many?
                 if ($this->locked && !Craft::$app->getConfig()->getGeneral()->preventUserEnumeration) {
                     // Will set the authError to either AccountCooldown or AccountLocked
-                    $this->authError = $UserHelper::getAuthStatus($this);
+                    $this->authError = UserHelper::getAuthStatus($this);
                 } else {
                     $this->authError = self::AUTH_INVALID_CREDENTIALS;
                 }
