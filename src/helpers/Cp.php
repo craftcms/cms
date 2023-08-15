@@ -665,6 +665,7 @@ class Cp
         $warningId = $config['warningId'] ?? "$id-warning";
         $errorsId = $config['errorsId'] ?? "$id-errors";
         $statusId = $config['statusId'] ?? "$id-status";
+        $tabindex = $config['includeTabindex'] ?? true;
 
         $instructions = $config['instructions'] ?? null;
         $tip = $config['tip'] ?? null;
@@ -776,8 +777,7 @@ class Cp
                     'data' => [
                         'attribute' => $attribute,
                     ],
-                    'tabindex' => -1,
-                ],
+                ] + ($tabindex ? ['tabindex' => -1] : []),
                 $config['fieldAttributes'] ?? []
             )) .
             (($label && $fieldset)
@@ -1249,6 +1249,8 @@ class Cp
                 $config['warning'] = Craft::t('app', 'The `@web` alias is not recommended if it is determined automatically.');
             }
         }
+
+        $config['includeTabindex'] = false;
 
         return static::fieldHtml('template:_includes/forms/autosuggest.twig', $config);
     }
