@@ -11,6 +11,7 @@
 - Fixed multiple issues with Selectize inputs.
 - Fixed a bug where <kbd>Command</kbd>/<kbd>Ctrl</kbd> + clicks on “New entry” button menu options would open the Entries index page in a new tab, and redirect to the Edit Entry page in the current tab. ([#13550](https://github.com/craftcms/cms/issues/13550))
 - Fixed a bug where autosuggest fields weren’t mouse-selectable. ([#13553](https://github.com/craftcms/cms/issues/13553))
+- Fixed a bug where `craft\events\MoveElementEvent::$targetElementId` was getting set incorrectly. ([#13552](https://github.com/craftcms/cms/issues/13552))
 
 ## 4.5.0-beta.1 - 2023-08-10
 
