@@ -1575,7 +1575,7 @@ return [
     'This week' => 'Cette semaine',
     'This year' => 'Cette année',
     'This {type} doesn’t have revisions.' => 'Ce {type} n\'a pas de révisions.',
-    'This {type} has been updated.' => 'Ce {type} a été mis à jour.',
+    'This {type} has been updated.' => '{type} mis(e) à jour.',
     'Time Zone' => 'Fuseau horaire',
     'Time fields are better suited for managing Time-only values.' => 'Les champs de temps sont mieux adaptés à la gestion des valeurs de temps uniquement.',
     'Time to reserve' => 'Temps à réserver',
