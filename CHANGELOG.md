@@ -8,6 +8,7 @@
 - Added `craft\events\AssetBundleEvent`.
 - Added `craft\web\View::EVENT_AFTER_REGISTER_ASSET_BUNDLE`.
 - Fixed multiple issues with Selectize inputs.
+- Fixed a bug where <kbd>Command</kbd>/<kbd>Ctrl</kbd> + clicks on “New entry” button menu options would open the Entries index page in a new tab, and redirect to the Edit Entry page in the current tab. ([#13550](https://github.com/craftcms/cms/issues/13550))
 
 ## 4.5.0-beta.1 - 2023-08-10
 
