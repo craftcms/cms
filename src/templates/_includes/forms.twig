@@ -314,7 +314,10 @@
 
 
 {% macro autosuggestField(config) %}
-    {% set config = config|merge({id: config.id ?? "autosuggest#{random()}"}) %}
+    {% set config = config|merge({
+        id: config.id ?? "autosuggest#{random()}",
+        tabindex: false,
+    }) %}
 
     {# Suggest an environment variable / alias? #}
     {% if (config.suggestEnvVars ?? false) %}
@@ -335,8 +338,6 @@
             }) %}
         {% endif %}
     {% endif %}
-
-    {% set config = config|merge({includeTabindex: false}) %}
 
     {{ _self.field(config, 'template:_includes/forms/autosuggest') }}
 {% endmacro %}

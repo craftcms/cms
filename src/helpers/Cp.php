@@ -665,7 +665,6 @@ class Cp
         $warningId = $config['warningId'] ?? "$id-warning";
         $errorsId = $config['errorsId'] ?? "$id-errors";
         $statusId = $config['statusId'] ?? "$id-status";
-        $tabindex = $config['includeTabindex'] ?? true;
 
         $instructions = $config['instructions'] ?? null;
         $tip = $config['tip'] ?? null;
@@ -766,7 +765,6 @@ class Cp
             $labelHtml = '';
         }
 
-
         $containerTag = $fieldset ? 'fieldset' : 'div';
 
         return
@@ -777,7 +775,8 @@ class Cp
                     'data' => [
                         'attribute' => $attribute,
                     ],
-                ] + ($tabindex ? ['tabindex' => -1] : []),
+                    'tabindex' => $config['tabindex'] ?? -1,
+                ],
                 $config['fieldAttributes'] ?? []
             )) .
             (($label && $fieldset)
@@ -1250,7 +1249,7 @@ class Cp
             }
         }
 
-        $config['includeTabindex'] = false;
+        $config['tabindex'] = false;
 
         return static::fieldHtml('template:_includes/forms/autosuggest.twig', $config);
     }
