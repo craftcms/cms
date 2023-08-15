@@ -85,6 +85,12 @@ abstract class Api
             $headers['X-Craft-Plugin-Licenses'] = implode(',', $pluginLicenses);
         }
 
+        // Craft Cloud
+        $craftCloudProjectId = App::env('CRAFT_CLOUD_PROJECT_ID');
+        if ($craftCloudProjectId) {
+            $headers['X-Craft-Cloud-Project-Id'] = $craftCloudProjectId;
+        }
+
         return $headers;
     }
 
