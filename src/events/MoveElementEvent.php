@@ -62,7 +62,6 @@ class MoveElementEvent extends ElementEvent
                 ->site('*')
                 ->preferSites([$this->element->siteId])
                 ->status(null)
-                ->status(null)
                 ->drafts(null)
                 ->provisionalDrafts(null)
                 ->revisions(null)
