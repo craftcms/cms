@@ -69,8 +69,8 @@
 
     {% set componentAttributes = {
         class: [
-            'formsubmit',
-            (destructive ?? false) ? 'error'
+            (destructive ?? false) ? 'error',
+            (dataAttrs.action ?? false) ? 'formsubmit'
         ]|merge(additionalClasses),
         data: dataAttrs,
         aria: ariaAttrs,
