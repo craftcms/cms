@@ -25,6 +25,7 @@ use craft\helpers\Db;
 use craft\helpers\ElementHelper;
 use craft\helpers\Html;
 use craft\helpers\UrlHelper;
+use craft\models\ElementActivity;
 use craft\models\FieldLayoutForm;
 use craft\services\Elements;
 use craft\web\Controller;
@@ -374,13 +375,13 @@ class ElementsController extends Controller
             ->editUrl($element->getCpEditUrl())
             ->docTitle($docTitle)
             ->title($title)
-            ->contextMenu(fn() => $this->_contextMenu(
+            ->contextMenuHtml(fn() => $this->_contextMenu(
                 $element,
                 $isMultiSiteElement,
                 $isUnpublishedDraft,
                 $propSiteIds
             ))
-            ->additionalButtons(fn() => $this->_additionalButtons(
+            ->additionalButtonsHtml(fn() => $this->_additionalButtons(
                 $element,
                 $canonical,
                 $isRevision,
@@ -405,14 +406,15 @@ class ElementsController extends Controller
                 $canDeleteCanonical,
                 $canDeleteDraft
             ))
-            ->notice($element->isProvisionalDraft ? fn() => $this->_draftNotice() : null)
+            ->noticeHtml($element->isProvisionalDraft ? fn() => $this->_draftNotice() : null)
             ->prepareScreen(
                 fn(Response $response, string $containerId) => $this->_prepareEditor(
                     $element,
+                    $isUnpublishedDraft,
                     $canSave,
                     $response,
                     $containerId,
-                    fn(?FieldLayoutForm $form) => $this->_editorContent($element, $isUnpublishedDraft, $canSave, $form),
+                    fn(?FieldLayoutForm $form) => $this->_editorContent($element, $canSave, $form),
                     fn(?FieldLayoutForm $form) => $this->_editorSidebar($element, $mergeCanonicalChanges, $canSave),
                     fn(?FieldLayoutForm $form) => [
                         'additionalSites' => $addlEditableSites,
@@ -436,6 +438,8 @@ class ElementsController extends Controller
                         'siteStatuses' => $siteStatuses,
                         'siteToken' => (!Craft::$app->getIsLive() || !$element->getSite()->enabled) ? $security->hashData((string)$element->siteId) : null,
                         'visibleLayoutElements' => $form ? $form->getVisibleElements() : [],
+                        'updatedTimestamp' => $element->dateUpdated->getTimestamp(),
+                        'canonicalUpdatedTimestamp' => $canonical->dateUpdated->getTimestamp(),
                     ]
                 )
             );
@@ -658,7 +662,11 @@ class ElementsController extends Controller
         bool $isUnpublishedDraft,
         bool $isDraft,
     ): string {
-        $components = [];
+        $components = [
+            Html::tag('div', options: [
+                'class' => ['activity-container'],
+            ]),
+        ];
 
         // Preview (View will be added later by JS)
         if ($canSave && $previewTargets) {
@@ -842,6 +850,7 @@ class ElementsController extends Controller
 
     private function _prepareEditor(
         ElementInterface $element,
+        bool $isUnpublishedDraft,
         bool $canSave,
         Response $response,
         string $containerId,
@@ -853,38 +862,21 @@ class ElementsController extends Controller
         $form = $fieldLayout?->createForm($element, !$canSave, [
             'registerDeltas' => true,
         ]);
+        $contentHtml = $contentFn($form);
+        $sidebarHtml = $sidebarFn($form);
 
-        /** @var Response|CpScreenResponseBehavior $response */
-        $response
-            ->tabs($form?->getTabMenu() ?? [])
-            ->content($contentFn($form))
-            ->sidebar($sidebarFn($form));
-
-        if ($canSave && !$element->getIsRevision()) {
-            $this->view->registerJsWithVars(fn($settingsJs) => <<<JS
-new Craft.ElementEditor($('#$containerId'), $settingsJs);
-JS, [
-                $jsSettingsFn($form),
+        if ($contentHtml === '' && $sidebarHtml !== '') {
+            $contentHtml = Html::tag('div', $sidebarHtml, [
+                'class' => 'details',
             ]);
-        }
-
-        // Give the element a chance to do things here too
-        $element->prepareEditScreen($response, $containerId);
-    }
-
-    private function _editorContent(
-        ElementInterface $element,
-        bool $isUnpublishedDraft,
-        bool $canSave,
-        ?FieldLayoutForm $form,
-    ): string {
-        $components = [];
-
-        if ($form) {
-            $components[] = $form->render();
+            $sidebarHtml = '';
+            /** @var Response|CpScreenResponseBehavior $response */
+            $response->slideoutBodyClass = 'so-full-details';
         }
 
         if ($canSave) {
+            $components = [];
+
             if ($element->id) {
                 $components[] = Html::hiddenInput('elementId', (string)$element->getCanonicalId());
             }
@@ -900,9 +892,35 @@ JS, [
             if ($isUnpublishedDraft && $this->_fresh) {
                 $components[] = Html::hiddenInput('fresh', '1');
             }
+
+            $components[] = $contentHtml;
+            $contentHtml = implode("\n", $components);
         }
 
-        $html = implode("\n", $components);
+        /** @var Response|CpScreenResponseBehavior $response */
+        $response
+            ->tabs($form?->getTabMenu() ?? [])
+            ->contentHtml($contentHtml)
+            ->metaSidebarHtml($sidebarHtml);
+
+        if ($canSave && !$element->getIsRevision()) {
+            $this->view->registerJsWithVars(fn($settingsJs) => <<<JS
+new Craft.ElementEditor($('#$containerId'), $settingsJs);
+JS, [
+                $jsSettingsFn($form),
+            ]);
+        }
+
+        // Give the element a chance to do things here too
+        $element->prepareEditScreen($response, $containerId);
+    }
+
+    private function _editorContent(
+        ElementInterface $element,
+        bool $canSave,
+        ?FieldLayoutForm $form,
+    ): string {
+        $html = $form?->render() ?? '';
 
         // Trigger a defineEditorContent event
         if ($this->hasEventHandlers(self::EVENT_DEFINE_EDITOR_CONTENT)) {
@@ -915,7 +933,7 @@ JS, [
             $html = $event->html;
         }
 
-        return $html;
+        return trim($html);
     }
 
     private function _editorSidebar(
@@ -941,7 +959,7 @@ JS, [
             $components[] = Cp::metadataHtml($element->getMetadata());
         }
 
-        return implode("\n", $components);
+        return trim(implode("\n", $components));
     }
 
     private function _draftNotice(): string
@@ -1021,6 +1039,8 @@ JS, [
                 'type' => $element::lowerDisplayName(),
             ]));
         }
+
+        $elementsService->trackActivity($element, ElementActivity::TYPE_SAVE);
 
         // See if the user happens to have a provisional element. If so delete it.
         $provisional = $element::find()
@@ -1259,6 +1279,8 @@ JS, [
                 ]));
             }
 
+            $elementsService->trackActivity($element, ElementActivity::TYPE_SAVE);
+
             $creator = $element->getCreator();
 
             $data = [
@@ -1331,6 +1353,8 @@ JS, [
                     'initialDeltaValues' => $view->getInitialDeltaValues(),
                     'headHtml' => $view->getHeadHtml(),
                     'bodyHtml' => $view->getBodyHtml(),
+                    'updatedTimestamp' => $element->dateUpdated->getTimestamp(),
+                    'canonicalUpdatedTimestamp' => $element->getCanonical()->dateUpdated->getTimestamp(),
                 ];
             }
 
@@ -1409,6 +1433,8 @@ JS, [
                 $mutex->release($lockKey);
             }
         }
+
+        $elementsService->trackActivity($canonical, ElementActivity::TYPE_SAVE);
 
         if (!$this->request->getAcceptsJson()) {
             // Tell all browser windows about the element save
@@ -1540,6 +1566,7 @@ JS, [
         }
 
         $canonical = Craft::$app->getRevisions()->revertToRevision($element, $user->id);
+        Craft::$app->getElements()->trackActivity($canonical, ElementActivity::TYPE_SAVE);
 
         return $this->_asSuccess(Craft::t('app', '{type} reverted to past revision.', [
             'type' => $element::displayName(),
@@ -1576,6 +1603,63 @@ JS, [
         $headHtml = $this->getView()->getHeadHtml();
 
         return $this->asJson(compact('html', 'headHtml'));
+    }
+
+    /**
+     * Returns any recent activity for an element, and records that the user is viewing the element.
+     *
+     * @return Response
+     * @since 4.5.0
+     */
+    public function actionRecentActivity(): Response
+    {
+        $element = $this->_element();
+
+        if (!$element || $element->getIsRevision()) {
+            throw new BadRequestHttpException('No element was identified by the request.');
+        }
+
+        $elementsService = Craft::$app->getElements();
+        $currentUser = Craft::$app->getUser()->getIdentity();
+        $activity = $elementsService->getRecentActivity($element, $currentUser->id);
+        $elementsService->trackActivity($element, ElementActivity::TYPE_VIEW, $currentUser);
+
+        return $this->asJson([
+            'activity' => array_map(function(ElementActivity $record) use ($element) {
+                $recordIsCanonical = $record->element->getIsCanonical() || $record->element->isProvisionalDraft;
+                $recordIsCanonicalAndPublished = $recordIsCanonical && !$record->element->getIsUnpublishedDraft();
+                $isSameOrUpstream = $element->id === $record->element->id || $recordIsCanonical;
+
+                if ($isSameOrUpstream) {
+                    $messageParams = [
+                        'user' => $record->user->getName(),
+                        'type' => $recordIsCanonicalAndPublished ? $element::lowerDisplayName() : Craft::t('app', 'draft'),
+                    ];
+                    $message = match ($record->type) {
+                        ElementActivity::TYPE_VIEW => Craft::t('app', '{user} is viewing this {type}.', $messageParams),
+                        ElementActivity::TYPE_EDIT, ElementActivity::TYPE_SAVE => Craft::t('app', '{user} is editing this {type}.', $messageParams),
+                    };
+                } else {
+                    $messageParams = [
+                        'user' => $record->user->getName(),
+                        'type' => $element::lowerDisplayName(),
+                    ];
+                    $message = match ($record->type) {
+                        ElementActivity::TYPE_VIEW => Craft::t('app', '{user} is viewing a draft of this {type}.', $messageParams),
+                        ElementActivity::TYPE_EDIT, ElementActivity::TYPE_SAVE => Craft::t('app', '{user} is editing a draft of this {type}.', $messageParams),
+                    };
+                }
+
+                return [
+                    'userId' => $record->user->id,
+                    'userName' => $record->user->getName(),
+                    'userThumb' => $record->user->getThumbHtml(26),
+                    'message' => $message,
+                ];
+            }, $activity),
+            'updatedTimestamp' => $element->dateUpdated->getTimestamp(),
+            'canonicalUpdatedTimestamp' => $element->getCanonical()->dateUpdated->getTimestamp(),
+        ]);
     }
 
     /**

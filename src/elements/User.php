@@ -101,6 +101,26 @@ class User extends Element implements IdentityInterface
 
     public const IMPERSONATE_KEY = 'Craft.UserSessionService.prevImpersonateUserId';
 
+    private static array $photoColors = [
+        'red-100',
+        'orange-200',
+        'amber-200',
+        'yellow-200',
+        'lime-200',
+        'green-200',
+        'emerald-200',
+        'teal-200',
+        'cyan-200',
+        'sky-200',
+        'blue-200',
+        'indigo-200',
+        'violet-200',
+        'purple-200',
+        'fuchsia-200',
+        'pink-100',
+        'rose-200',
+    ];
+
     // User statuses
     // -------------------------------------------------------------------------
 
@@ -1252,21 +1272,64 @@ class User extends Element implements IdentityInterface
     /**
      * @inheritdoc
      */
-    public function getThumbUrl(int $size): ?string
+    protected function thumbUrl(int $size): ?string
     {
         $photo = $this->getPhoto();
 
         if ($photo) {
-            return Craft::$app->getAssets()->getThumbUrl($photo, $size);
+            return Craft::$app->getAssets()->getThumbUrl($photo, $size, iconFallback: false);
         }
 
-        return Craft::$app->getAssetManager()->getPublishedUrl('@app/web/assets/cp/dist', true, 'images/user.svg');
+        return null;
     }
 
     /**
      * @inheritdoc
      */
-    public function getThumbAlt(): ?string
+    protected function thumbSvg(): ?string
+    {
+        $names = array_filter([$this->firstName, $this->lastName]) ?: [$this->getName()];
+        $initials = implode('', array_map(fn($name) => mb_strtoupper(mb_substr($name, 0, 1)), $names));
+
+        // Choose a color based on the UUID
+        $uid = strtolower($this->uid ?? '00ff');
+        $color1Index = (int)base_convert(substr($uid, 0, 2), 16, 10);
+        $color2Index = (int)base_convert(substr($uid, 2, 2), 16, 10);
+        if ($color2Index >= $color1Index - 1 && $color2Index <= $color1Index + 1) {
+            $color2Index = $color1Index + 2;
+        }
+        $totalColors = count(self::$photoColors);
+        $color1 = self::$photoColors[$color1Index % $totalColors];
+        $color2 = self::$photoColors[$color2Index % $totalColors];
+
+        $gradientId = sprintf('gradient-%s', StringHelper::randomString(10));
+
+        return <<<XML
+<svg version="1.1" baseProfile="full" width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <linearGradient id="$gradientId" x1="0" y1="1" x2="1"  y2="0">
+        <stop class="stop1" offset="0%" />
+        <stop class="stop2" offset="100%" />
+      </linearGradient>
+    </defs>
+    <style>
+      <![CDATA[
+        .stop1 { stop-color: var(--$color1); }
+        .stop2 { stop-color: var(--$color2); }
+      ]]>
+    </style>
+    </defs>
+    <circle cx="50" cy="50" r="50" fill="url(#$gradientId)"/>
+    <text x="50" y="69" font-size="46" font-family="sans-serif" text-anchor="middle" fill="var(--white)" fill-opacity="0.4">$initials</text>
+    <text x="50" y="66" font-size="46" font-family="sans-serif" text-anchor="middle" fill="var(--black)" fill-opacity="0.65">$initials</text>
+</svg>
+XML;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    protected function thumbAlt(): ?string
     {
         return $this->getPhoto()?->alt ?? $this->getName();
     }
@@ -1274,7 +1337,7 @@ class User extends Element implements IdentityInterface
     /**
      * @inheritdoc
      */
-    public function getHasRoundedThumb(): bool
+    protected function hasRoundedThumb(): bool
     {
         return true;
     }
@@ -1784,11 +1847,11 @@ class User extends Element implements IdentityInterface
 
             case 'preferredLanguage':
                 $language = $this->getPreferredLanguage();
-                return $language ? (new Locale($language))->getDisplayName(Craft::$app->language) : '';
+                return $language ? Craft::$app->getI18n()->getLocaleById($language)->getDisplayName(Craft::$app->language) : '';
 
             case 'preferredLocale':
                 $locale = $this->getPreferredLocale();
-                return $locale ? (new Locale($locale))->getDisplayName(Craft::$app->language) : '';
+                return $locale ? Craft::$app->getI18n()->getLocaleById($locale)->getDisplayName(Craft::$app->language) : '';
         }
 
         return parent::tableAttributeHtml($attribute);

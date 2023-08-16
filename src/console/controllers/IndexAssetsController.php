@@ -16,6 +16,7 @@ use craft\errors\AssetNotIndexableException;
 use craft\errors\FsObjectNotFoundException;
 use craft\errors\MissingAssetException;
 use craft\errors\MissingVolumeFolderException;
+use craft\helpers\App;
 use craft\helpers\Db;
 use craft\models\FsListing;
 use craft\models\Volume;
@@ -58,7 +59,9 @@ class IndexAssetsController extends Controller
     public function options($actionID): array
     {
         $options = parent::options($actionID);
-        $options[] = 'cacheRemoteImages';
+        if (!App::isEphemeral()) {
+            $options[] = 'cacheRemoteImages';
+        }
         $options[] = 'createMissingAssets';
         $options[] = 'deleteMissingAssets';
         return $options;

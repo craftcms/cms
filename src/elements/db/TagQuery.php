@@ -108,10 +108,10 @@ class TagQuery extends ElementQuery
      * ```
      *
      * @param mixed $value The property value
-     * @return self self reference
+     * @return static self reference
      * @uses $groupId
      */
-    public function group(mixed $value): self
+    public function group(mixed $value): static
     {
         if (Db::normalizeParam($value, function($item) {
             if (is_string($item)) {
@@ -160,10 +160,10 @@ class TagQuery extends ElementQuery
      * ```
      *
      * @param mixed $value The property value
-     * @return self self reference
+     * @return static self reference
      * @uses $groupId
      */
-    public function groupId(mixed $value): self
+    public function groupId(mixed $value): static
     {
         $this->groupId = $value;
         return $this;

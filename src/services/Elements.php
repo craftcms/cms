@@ -51,6 +51,7 @@ use craft\helpers\ElementHelper;
 use craft\helpers\Queue;
 use craft\helpers\StringHelper;
 use craft\i18n\Translation;
+use craft\models\ElementActivity;
 use craft\queue\jobs\FindAndReplace;
 use craft\queue\jobs\UpdateElementSlugsAndUris;
 use craft\queue\jobs\UpdateSearchIndex;
@@ -61,6 +62,7 @@ use craft\validators\HandleValidator;
 use craft\validators\SlugValidator;
 use craft\web\Application;
 use DateTime;
+use Illuminate\Support\Collection;
 use Throwable;
 use UnitEnum;
 use yii\base\Behavior;
@@ -1176,6 +1178,20 @@ class Elements extends Component
         // "Duplicate" the derivative element with the canonical element’s ID, UID, and content ID
         $canonical = $element->getCanonical();
 
+        $changedAttributes = (new Query())
+            ->select(['siteId', 'attribute', 'propagated', 'userId'])
+            ->from([Table::CHANGEDATTRIBUTES])
+            ->where(['elementId' => $element->id])
+            ->all();
+
+        $changedFields = (new Query())
+            ->select(['siteId', 'fieldId', 'propagated', 'userId'])
+            ->from([Table::CHANGEDFIELDS])
+            ->where(['elementId' => $element->id])
+            ->all();
+
+        $fieldsService = Craft::$app->getFields();
+
         $newAttributes += [
             'id' => $canonical->id,
             'uid' => $canonical->uid,
@@ -1189,27 +1205,24 @@ class Elements extends Component
             'revisionId' => null,
             'isProvisionalDraft' => false,
             'updatingFromDerivative' => true,
+            'dirtyAttributes' => Collection::make($changedAttributes)
+                ->where('siteId', $element->siteId)
+                ->pluck('attribute')
+                ->all(),
+            'dirtyFields' => Collection::make($changedFields)
+                ->where('siteId', $element->siteId)
+                ->map(fn(array $field) => $fieldsService->getFieldById($field['fieldId'])?->handle)
+                ->filter()
+                ->all(),
         ];
 
         $updatedCanonical = $this->duplicateElement($element, $newAttributes);
 
-        $attributes = (new Query())
-            ->select(['siteId', 'attribute', 'propagated', 'userId'])
-            ->from([Table::CHANGEDATTRIBUTES])
-            ->where(['elementId' => $element->id])
-            ->all();
-
-        $fields = (new Query())
-            ->select(['siteId', 'fieldId', 'propagated', 'userId'])
-            ->from([Table::CHANGEDFIELDS])
-            ->where(['elementId' => $element->id])
-            ->all();
-
-        Craft::$app->on(Application::EVENT_AFTER_REQUEST, function() use ($canonical, $updatedCanonical, $attributes, $fields) {
+        Craft::$app->on(Application::EVENT_AFTER_REQUEST, function() use ($canonical, $updatedCanonical, $changedAttributes, $changedFields) {
             // Update change tracking for the canonical element
             $timestamp = Db::prepareDateForDb($updatedCanonical->dateUpdated);
 
-            foreach ($attributes as $attribute) {
+            foreach ($changedAttributes as $attribute) {
                 Db::upsert(Table::CHANGEDATTRIBUTES, [
                     'elementId' => $canonical->id,
                     'siteId' => $attribute['siteId'],
@@ -1220,7 +1233,7 @@ class Elements extends Component
                 ]);
             }
 
-            foreach ($fields as $field) {
+            foreach ($changedFields as $field) {
                 Db::upsert(Table::CHANGEDFIELDS, [
                     'elementId' => $canonical->id,
                     'siteId' => $field['siteId'],
@@ -1499,12 +1512,14 @@ class Elements extends Component
             throw new UnsupportedSiteException($element, $mainClone->siteId, 'Attempting to duplicate an element in an unsupported site.');
         }
 
-        // Clone any field values that are objects
+        // Clone any field values that are objects (without affecting the dirty fields)
+        $dirtyFields = $mainClone->getDirtyFields();
         foreach ($mainClone->getFieldValues() as $handle => $value) {
-            if (is_object($value) && (!interface_exists(UnitEnum::class) || !$value instanceof UnitEnum)) {
+            if (is_object($value) && !$value instanceof UnitEnum) {
                 $mainClone->setFieldValue($handle, clone $value);
             }
         }
+        $mainClone->setDirtyFields($dirtyFields, false);
 
         // If we are duplicating a draft as another draft, create a new draft row
         if ($mainClone->draftId && $mainClone->draftId === $element->draftId) {
@@ -1617,7 +1632,7 @@ class Elements extends Component
 
                     // Clone any field values that are objects
                     foreach ($siteClone->getFieldValues() as $handle => $value) {
-                        if (is_object($value) && (!interface_exists(UnitEnum::class) || !$value instanceof UnitEnum)) {
+                        if (is_object($value) && !$value instanceof UnitEnum) {
                             $siteClone->setFieldValue($handle, clone $value);
                         }
                     }
@@ -2278,6 +2293,135 @@ class Elements extends Component
         }
 
         return true;
+    }
+
+    /**
+     * Returns the recent activity for an element.
+     *
+     * @param ElementInterface $element
+     * @param int|null $excludeUserId
+     * @return ElementActivity[]
+     * @since 4.5.0
+     */
+    public function getRecentActivity(ElementInterface $element, ?int $excludeUserId = null): array
+    {
+        $query = (new Query())
+            ->select(['userId', 'siteId', 'draftId', 'type', 'timestamp'])
+            ->from(Table::ELEMENTACTIVITY)
+            ->where(['elementId' => $element->getCanonicalId()])
+            ->andWhere(['>', 'timestamp', Db::prepareDateForDb(DateTimeHelper::now()->modify('-1 minute'))])
+            ->orderBy(['timestamp' => SORT_DESC]);
+
+        if ($excludeUserId) {
+            $query->andWhere(['not', ['userId' => $excludeUserId]]);
+        }
+
+        $results = $query->all();
+
+        if (empty($results)) {
+            return [];
+        }
+
+        // get all the unique users
+        $userIds = array_unique(array_map(fn(array $result) => $result['userId'], $results));
+        $users = User::find()
+            ->id($userIds)
+            ->status(null)
+            ->indexBy('id')
+            ->all();
+
+        $activity = [];
+        /** @var ElementActivity[] $activityByUserId */
+        $activityByUserId = [];
+        $elements = [];
+        $isCanonical = $element->getIsCanonical() || $element->isProvisionalDraft;
+        $elements[$isCanonical ? 0 : $element->draftId][$element->siteId] = $element;
+
+        foreach ($results as $result) {
+            // do we already have an activity record for this user?
+            if (isset($activityByUserId[$result['userId']])) {
+                $newerRecord = $activityByUserId[$result['userId']];
+                // edit/save trumps view
+                if (
+                    $newerRecord->type === ElementActivity::TYPE_VIEW &&
+                    $result['type'] !== ElementActivity::TYPE_VIEW
+                ) {
+                    array_splice($activity, array_search($newerRecord, $activity), 1);
+                    unset($activityByUserId[$result['userId']]);
+                } else {
+                    continue;
+                }
+            }
+
+            // fetch the element (draft)
+            $elementKey = $result['draftId'] ?: 0;
+            if (!isset($elements[$elementKey][$result['siteId']])) {
+                $resultElement = $element::find()
+                    ->id($result['draftId'] ? null : $element->getCanonicalId())
+                    ->draftId($result['draftId'])
+                    ->site('*')
+                    ->preferSites([$result['siteId'], $element->siteId])
+                    ->status(null)
+                    ->one();
+
+                // just to be safe...
+                if (!$resultElement) {
+                    Craft::warning(sprintf(
+                        'Couldn’t load %s element %s%s for site %s',
+                        $element::class,
+                        $element->getCanonicalId(),
+                        $result['draftId'] ? " (draft {$result['draftId']})" : '',
+                        $result['siteId'],
+                    ), __METHOD__);
+                    continue;
+                }
+
+                $elements[$elementKey][$result['siteId']] = $resultElement;
+            }
+
+            $activity[] = $activityByUserId[$result['userId']] = new ElementActivity(
+                $users[$result['userId']],
+                $elements[$elementKey][$result['siteId']],
+                $result['type'],
+                DateTimeHelper::toDateTime($result['timestamp']),
+            );
+        }
+
+        return $activity;
+    }
+
+    /**
+     * Tracks new activity for an element.
+     *
+     * @param ElementInterface $element
+     * @param ElementActivity::TYPE_* $type $type
+     * @param User|null $user
+     * @since 4.5.0
+     */
+    public function trackActivity(ElementInterface $element, string $type, ?User $user = null): void
+    {
+        if ($user === null) {
+            $user = Craft::$app->getUser()->getIdentity();
+            if (!$user) {
+                throw new InvalidArgumentException('$user must be set if no user is signed in.');
+            }
+        }
+
+        // save => edit, if a provisional draft
+        if ($type === ElementActivity::TYPE_SAVE && $element->isProvisionalDraft) {
+            $type = ElementActivity::TYPE_EDIT;
+        }
+
+        $isCanonical = $element->getIsCanonical() || $element->isProvisionalDraft;
+
+        Db::upsert(Table::ELEMENTACTIVITY, [
+            'elementId' => $element->getCanonicalId(),
+            'userId' => $user->id,
+            'siteId' => $element->siteId,
+            'draftId' => $isCanonical ? null : $element->draftId,
+            'type' => $type,
+            'timestamp' => Db::prepareDateForDb(new DateTime()),
+        ]);
     }
 
     // Element classes

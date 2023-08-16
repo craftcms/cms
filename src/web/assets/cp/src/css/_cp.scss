@@ -691,7 +691,8 @@ li.breadcrumb-toggle-wrapper {
 .header-photo {
   padding: 5px 0;
 
-  img {
+  img,
+  svg {
     display: block;
     width: 30px;
     height: 30px;
@@ -960,6 +961,7 @@ li.breadcrumb-toggle-wrapper {
 }
 
 #sidebar {
+  position: relative;
   box-sizing: border-box;
   padding: 0 31px;
   width: $sidebarWidth;
@@ -1092,6 +1094,7 @@ li.breadcrumb-toggle-wrapper {
   @include padding-right(var(--xl));
   @include padding-left(var(--m));
   width: $detailsWidth + 38;
+  z-index: 1;
 
   &.fixed {
     position: fixed;
@@ -1100,6 +1103,8 @@ li.breadcrumb-toggle-wrapper {
   }
 
   .details {
+    margin-bottom: 11.5em;
+
     .meta {
       border-radius: var(--large-border-radius);
 
@@ -1263,6 +1268,10 @@ li.breadcrumb-toggle-wrapper {
   #details {
     padding: 0 !important;
     margin-top: var(--m);
+
+    .details {
+      margin-bottom: auto;
+    }
   }
 }
 

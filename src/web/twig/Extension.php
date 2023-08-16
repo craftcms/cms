@@ -801,14 +801,18 @@ class Extension extends AbstractExtension implements GlobalsInterface
     /**
      * Purifies the given HTML using HTML Purifier.
      *
-     * @param string $html The HTML to be purified
+     * @param string|null $html The HTML to be purified
      * @param string|array|null $config The HTML Purifier config. This can either be the name of a JSON file within
      * `config/htmlpurifier/` (sans `.json` extension) or a config array.
-     * @return string The purified HTML
+     * @return string|null The purified HTML
      * @since 3.4.0
      */
-    public function purifyFilter(string $html, array|string|null $config = null): string
+    public function purifyFilter(?string $html, array|string|null $config = null): ?string
     {
+        if ($html === null) {
+            return null;
+        }
+
         if (is_string($config)) {
             $path = Craft::$app->getPath()->getConfigPath() . DIRECTORY_SEPARATOR . 'htmlpurifier' .
                 DIRECTORY_SEPARATOR . $config . '.json';
@@ -895,18 +899,33 @@ class Extension extends AbstractExtension implements GlobalsInterface
      */
     public function replaceFilter(mixed $str, mixed $search, mixed $replace = null): mixed
     {
+        if ($search instanceof Traversable) {
+            $search = iterator_to_array($search);
+        }
+
+        $isRegex = fn(string $s) => (bool)preg_match('/^\/.+\/[a-zA-Z]*$/', $s);
+
         // Are they using the standard Twig syntax?
         if (is_array($search) && $replace === null) {
-            return strtr($str, $search);
+            // If there aren’t any regex patterns, we can safely use strtr()
+            if (!ArrayHelper::contains(array_keys($search), $isRegex)) {
+                return strtr($str, $search);
+            }
+        } else {
+            $search = [$search => $replace];
         }
 
-        // Is this a regular expression?
-        if (preg_match('/^\/.+\/[a-zA-Z]*$/', $search)) {
-            return preg_replace($search, $replace, $str);
+        foreach ($search as $s => $r) {
+            // Is this a regular expression?
+            if ($isRegex($s)) {
+                $str = preg_replace($s, $r, $str);
+            } else {
+                // Otherwise use str_replace
+                $str = str_replace($s, $r, $str);
+            }
         }
 
-        // Otherwise use str_replace
-        return str_replace($search, $replace, $str);
+        return $str;
     }
 
     /**
@@ -935,7 +954,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
         }
 
         $date = twig_date_converter($env, $date, $timezone);
-        $formatter = $locale ? (new Locale($locale))->getFormatter() : Craft::$app->getFormatter();
+        $formatter = $locale ? Craft::$app->getI18n()->getLocaleById($locale)->getFormatter() : Craft::$app->getFormatter();
         $fmtTimeZone = $formatter->timeZone;
         $formatter->timeZone = $timezone !== null ? $date->getTimezone()->getName() : $formatter->timeZone;
         $formatted = $formatter->asDate(DateTime::createFromInterface($date), $format);
@@ -1030,7 +1049,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
         }
 
         $date = twig_date_converter($env, $date, $timezone);
-        $formatter = $locale ? (new Locale($locale))->getFormatter() : Craft::$app->getFormatter();
+        $formatter = $locale ? Craft::$app->getI18n()->getLocaleById($locale)->getFormatter() : Craft::$app->getFormatter();
         $fmtTimeZone = $formatter->timeZone;
         $formatter->timeZone = $timezone !== null ? $date->getTimezone()->getName() : $formatter->timeZone;
         $formatted = $formatter->asTime(DateTime::createFromInterface($date), $format);
@@ -1060,7 +1079,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
         }
 
         $date = twig_date_converter($env, $date, $timezone);
-        $formatter = $locale ? (new Locale($locale))->getFormatter() : Craft::$app->getFormatter();
+        $formatter = $locale ? Craft::$app->getI18n()->getLocaleById($locale)->getFormatter() : Craft::$app->getFormatter();
         $fmtTimeZone = $formatter->timeZone;
         $formatter->timeZone = $timezone !== null ? $date->getTimezone()->getName() : $formatter->timeZone;
         $formatted = $formatter->asDatetime(DateTime::createFromInterface($date), $format);
