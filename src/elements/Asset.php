@@ -1549,72 +1549,77 @@ JS;
             $view->registerJs($js);
         }
 
-        if ($previewable) {
+        if ($previewable || $editable) {
             $components[] = [
-                'tag' => 'button',
-                'label' => Craft::t('app', 'Preview'),
-                'options' => [
-                    'id' => 'preview-btn',
-                    'class' => ['btn'],
-                ],
-                'data' => [
-                    'icon' => 'view',
-                ],
+                'tag' => 'hr',
             ];
+            if ($previewable) {
+                $components[] = [
+                    'tag' => 'button',
+                    'label' => Craft::t('app', 'Preview'),
+                    'options' => [
+                        'id' => 'preview-btn',
+                        'class' => ['btn'],
+                    ],
+                    'data' => [
+                        'icon' => 'view',
+                    ],
+                ];
 
-            $previewBtnId = $view->namespaceInputId('preview-btn');
-            $settings = [];
-            $width = $this->getWidth();
-            $height = $this->getHeight();
-            if ($width && $height) {
-                $settings['startingWidth'] = $width;
-                $settings['startingHeight'] = $height;
-            }
-            $jsSettings = Json::encode($settings);
-            $js = <<<JS
-$('#$previewBtnId').on('click', () => {
-    new Craft.PreviewFileModal($this->id, null, $jsSettings);
-});
-JS;
-            $view->registerJs($js);
-        }
-
-        if ($editable) {
-            $components[] = [
-                'tag' => 'button',
-                'label' => Craft::t('app', 'Edit Image'),
-                'options' => [
-                    'id' => 'edit-btn',
-                    'class' => ['btn', 'edit-btn'],
-                ],
-                'data' => [
-                    'icon' => 'edit',
-                ],
-            ];
-
-            $editBtnId = $view->namespaceInputId('edit-btn');
-            $updatePreviewThumbJs = $this->_updatePreviewThumbJs();
-            $js = <<<JS
-$('#$editBtnId').on('click', () => {
-    new Craft.AssetImageEditor($this->id, {
-        allowDegreeFractions: Craft.isImagick,
-        onSave: data => {
-            if (data.newAssetId) {
-                // If this is within an Assets field’s editor slideout, replace the selected asset 
-                const slideout = $('#$editBtnId').closest('[data-slideout]').data('slideout');
-                if (slideout && slideout.settings.elementSelectInput) {
-                    slideout.settings.elementSelectInput.replaceElement(slideout.\$element.data('id'), data.newAssetId)
-                        .catch(() => {});
+                $previewBtnId = $view->namespaceInputId('preview-btn');
+                $settings = [];
+                $width = $this->getWidth();
+                $height = $this->getHeight();
+                if ($width && $height) {
+                    $settings['startingWidth'] = $width;
+                    $settings['startingHeight'] = $height;
                 }
-                return;
+                $jsSettings = Json::encode($settings);
+                $js = <<<JS
+    $('#$previewBtnId').on('click', () => {
+        new Craft.PreviewFileModal($this->id, null, $jsSettings);
+    });
+    JS;
+                $view->registerJs($js);
             }
 
-            $updatePreviewThumbJs
-        },
+            if ($editable) {
+                $components[] = [
+                    'tag' => 'button',
+                    'label' => Craft::t('app', 'Edit Image'),
+                    'options' => [
+                        'id' => 'edit-btn',
+                        'class' => ['btn', 'edit-btn'],
+                    ],
+                    'data' => [
+                        'icon' => 'edit',
+                    ],
+                ];
+
+                $editBtnId = $view->namespaceInputId('edit-btn');
+                $updatePreviewThumbJs = $this->_updatePreviewThumbJs();
+                $js = <<<JS
+    $('#$editBtnId').on('click', () => {
+        new Craft.AssetImageEditor($this->id, {
+            allowDegreeFractions: Craft.isImagick,
+            onSave: data => {
+                if (data.newAssetId) {
+                    // If this is within an Assets field’s editor slideout, replace the selected asset 
+                    const slideout = $('#$editBtnId').closest('[data-slideout]').data('slideout');
+                    if (slideout && slideout.settings.elementSelectInput) {
+                        slideout.settings.elementSelectInput.replaceElement(slideout.\$element.data('id'), data.newAssetId)
+                            .catch(() => {});
+                    }
+                    return;
+                }
+    
+                $updatePreviewThumbJs
+            },
+        });
     });
-});
-JS;
-            $view->registerJs($js);
+    JS;
+                $view->registerJs($js);
+            }
         }
 
         return array_merge($components, parent::getAdditionalMenuComponents());

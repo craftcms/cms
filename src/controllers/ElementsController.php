@@ -795,9 +795,6 @@ class ElementsController extends Controller
                     'label' => Craft::t('app', 'Delete {type}', [
                         'type' => $isUnpublishedDraft ? Craft::t('app', 'draft') : $type,
                     ]),
-                    'options' => [
-                        'class' => ['myTestClass'],
-                    ],
                     'data' => [
                         'destructive' => true,
                         'action' => $isUnpublishedDraft ? 'elements/delete-draft' : 'elements/delete',
