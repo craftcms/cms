@@ -1467,8 +1467,9 @@ class Asset extends Element
             ],
         ];
 
+        $downloadBtnId = $view->namespaceInputId('download-btn');
         $js = <<<JS
-$('#download-btn').on('click', () => {
+$('#$downloadBtnId').on('click', () => {
         const \$form = Craft.createForm().appendTo(Garnish.\$bod);
         \$form.append(Craft.getCsrfInput());
         $('<input/>', {type: 'hidden', name: 'action', value: 'assets/download-asset'}).appendTo(\$form);
@@ -1498,8 +1499,9 @@ JS;
 
             $dimensionsLabel = Html::encode(Craft::t('app', 'Dimensions'));
             $updatePreviewThumbJs = $this->_updatePreviewThumbJs();
+            $replaceBtnId = $view->namespaceInputId('replace-btn');
             $js = <<<JS
-$('#replace-btn').on('click', () => {
+$('#$replaceBtnId').on('click', () => {
     const \$fileInput = $('<input/>', {type: 'file', name: 'replaceFile', class: 'replaceFile hidden'}).appendTo(Garnish.\$bod);
     const uploader = new Craft.Uploader(\$fileInput, {
         url: Craft.getActionUrl('assets/replace-file'),

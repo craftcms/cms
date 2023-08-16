@@ -106,7 +106,9 @@ Craft.ElementEditor = Garnish.Base.extend(
       this.$revisionLabel = this.$container.find('.revision-label');
       this.$previewBtn = this.$container.find('.preview-btn');
 
-      this.$additionalMenuBtn = this.$container.find('#additional-menu-btn');
+      this.$additionalMenuBtn = this.$container.find(
+        '#' + this.namespaceId('additional-menu-btn')
+      );
       let additionalMenuId = this.$additionalMenuBtn.attr('aria-controls');
       this.$additionalMenuBtn.disclosureMenu();
       this.additionalMenu = $('#' + additionalMenuId);

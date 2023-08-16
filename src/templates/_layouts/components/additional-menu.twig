@@ -1,7 +1,15 @@
 {% set menuId = 'menu' ~ random(100000,999999) %}
+{% if fullPage is not defined %}
+    {% set fullPage = true %}
+{% endif %}
 
 {% set safeComponents = additionalMenuComponents|filter(a => not (a.data.destructive ?? false)) %}
-{% set destructiveComponents = additionalMenuComponents|filter(a => a.data.destructive ?? false) %}
+{# we're not showing destructive actions in the slideout #}
+{% if fullPage %}
+    {% set destructiveComponents = additionalMenuComponents|filter(a => a.data.destructive ?? false) %}
+{% else %}
+    {% set destructiveComponents = [] %}
+{% endif %}
 
 {% if safeComponents is not empty or destructiveComponents is not empty %}
     <button class="btn" id="additional-menu-btn" title="{{ 'Additional Menu'|t('app') }}"

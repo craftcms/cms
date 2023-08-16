@@ -88,6 +88,11 @@ class CpScreenResponseFormatter extends Component implements ResponseFormatterIn
 
         $sidebar = $behavior->sidebar ? $view->namespaceInputs($behavior->sidebar, $namespace) : null;
 
+        $additionalMenu = $view->namespaceInputs(fn() => $view->renderTemplate('_layouts/components/additional-menu.twig', [
+            'additionalMenuComponents' => is_callable($behavior->additionalMenuComponents) ? call_user_func($behavior->additionalMenuComponents) : $behavior->additionalMenuComponents,
+            'fullPage' => false,
+        ], View::TEMPLATE_MODE_CP), $namespace);
+
         $response->data = [
             'editUrl' => $behavior->editUrl,
             'namespace' => $namespace,
@@ -97,6 +102,7 @@ class CpScreenResponseFormatter extends Component implements ResponseFormatterIn
             'formAttributes' => $behavior->formAttributes,
             'action' => $behavior->action,
             'submitButtonLabel' => $behavior->submitButtonLabel,
+            'additionalMenu' => $additionalMenu,
             'content' => $content,
             'sidebar' => $sidebar,
             'headHtml' => $view->getHeadHtml(),

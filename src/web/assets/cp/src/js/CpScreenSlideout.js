@@ -296,6 +296,10 @@ Craft.CpScreenSlideout = Craft.Slideout.extend(
           this.hasCpLink = false;
         }
 
+        if (data.additionalMenu) {
+          $(data.additionalMenu).insertAfter(this.$editLink);
+        }
+
         if (data.sidebar) {
           this.$container.addClass('has-sidebar');
           this.$sidebarBtn.removeClass('hidden');
