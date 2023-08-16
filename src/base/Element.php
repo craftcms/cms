@@ -343,7 +343,7 @@ abstract class Element extends Component implements ElementInterface
      * @see getAdditionalMenuComponents()
      * @since 5.0.0
      */
-    public const EVENT_DEFINE_ADDITIONAL_MENU_ITEMS = 'defineAdditionalMenuItems';
+    public const EVENT_DEFINE_ADDITIONAL_MENU_COMPONENTS = 'defineAdditionalMenuComponents';
 
     /**
      * @event DefineHtmlEvent The event that is triggered when defining the HTML for the editor sidebar.
@@ -3242,9 +3242,9 @@ abstract class Element extends Component implements ElementInterface
      */
     public function getAdditionalMenuComponents(): array
     {
-        // Fire a defineAdditionalMenuItems event
+        // Fire a defineAdditionalMenuComponents event
         $event = new DefineMenuComponentEvent();
-        $this->trigger(self::EVENT_DEFINE_ADDITIONAL_MENU_ITEMS, $event);
+        $this->trigger(self::EVENT_DEFINE_ADDITIONAL_MENU_COMPONENTS, $event);
         return $event->components;
     }
 
