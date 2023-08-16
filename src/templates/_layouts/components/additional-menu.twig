@@ -14,9 +14,9 @@
 {% if safeComponents is not empty or destructiveComponents is not empty %}
     <button class="btn" id="additional-menu-btn" title="{{ 'Additional Menu'|t('app') }}"
             aria-label="{{ 'Additional Menu'|t('app') }}" aria-controls="{{ menuId }}"
-            data-icon="ellipsis" data-disclosure-trigger="true" role="listbox" type="button"></button>
+            data-icon="ellipsis" data-disclosure-trigger="true" role="combobox" type="button"></button>
 
-    <div id="{{ menuId }}" class="menu additional-menu">
+    <div id="{{ menuId }}" class="menu menu--disclosure additional-menu">
         <ul>
             {% for component in safeComponents %}
                 {{ _self.renderComponent(component, false) }}

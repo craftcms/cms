@@ -109,9 +109,7 @@ Craft.ElementEditor = Garnish.Base.extend(
       this.$additionalMenuBtn = this.$container.find(
         '#' + this.namespaceId('additional-menu-btn')
       );
-      let additionalMenuId = this.$additionalMenuBtn.attr('aria-controls');
       this.$additionalMenuBtn.disclosureMenu();
-      this.additionalMenu = $('#' + additionalMenuId);
 
       const $spinnerContainer = this.isFullPage
         ? $('#page-title')

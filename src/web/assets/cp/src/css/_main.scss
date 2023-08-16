@@ -5722,6 +5722,7 @@ $min2ColWidth: 400px;
 }
 
 .menu:not(.menu--disclosure) ul li a:not(.sel):not(.disabled):hover,
+.menu.additional-menu.menu--disclosure ul li a:not(.sel):not(.disabled):hover,
 .menu:not(.menu--disclosure):not(:hover) ul li a:not(.disabled).hover {
   @include menu-option-active-styles;
   --text-color: var(--white);
