@@ -2625,6 +2625,8 @@ $.extend($.fn, {
 
       let $form = $anchor.attr('data-form')
         ? $('#' + $anchor.attr('data-form'))
+        : $btn.attr('data-form')
+        ? $('#' + $btn.attr('data-form'))
         : $anchor.closest('form');
 
       Craft.submitForm($form, {
