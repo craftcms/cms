@@ -3243,9 +3243,15 @@ abstract class Element extends Component implements ElementInterface
     public function getAdditionalMenuComponents(): array
     {
         // Fire a defineAdditionalMenuComponents event
-        $event = new DefineMenuComponentEvent();
-        $this->trigger(self::EVENT_DEFINE_ADDITIONAL_MENU_COMPONENTS, $event);
-        return $event->components;
+        if ($this->hasEventHandlers(self::EVENT_DEFINE_ADDITIONAL_MENU_COMPONENTS)) {
+            $event = new DefineMenuComponentEvent([
+                'element' => $this,
+            ]);
+            $this->trigger(self::EVENT_DEFINE_ADDITIONAL_MENU_COMPONENTS, $event);
+            return $event->components;
+        }
+
+        return [];
     }
 
     /**

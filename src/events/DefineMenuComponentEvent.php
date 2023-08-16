@@ -7,6 +7,7 @@
 
 namespace craft\events;
 
+use craft\base\Element;
 use yii\base\Event;
 
 /**
@@ -17,6 +18,11 @@ use yii\base\Event;
  */
 class DefineMenuComponentEvent extends Event
 {
+    /**
+     * @var Element|null The element the additional menu components are for
+     */
+    public ?Element $element = null;
+
     /**
      * @var array The array of components to be added to the additional menu
      */
