@@ -1039,7 +1039,8 @@ JS, [
         }
 
         try {
-            $success = $elementsService->saveElement($element, crossSiteValidate: Craft::$app->getIsMultiSite());
+            // crossSiteValidate only if it's multisite and element supports drafts
+            $success = $elementsService->saveElement($element, crossSiteValidate: (Craft::$app->getIsMultiSite() && $element->canCreateDrafts($user)));
         } catch (UnsupportedSiteException $e) {
             $element->addError('siteId', $e->getMessage());
             $success = false;
