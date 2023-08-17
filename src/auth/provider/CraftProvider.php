@@ -35,7 +35,7 @@ class CraftProvider extends AbstractProvider
             "_login/form",
             [
                 'provider' => $this,
-                'actionPath' => 'auth/request'
+                'actionPath' => 'auth/request',
             ],
             View::TEMPLATE_MODE_CP
         );
