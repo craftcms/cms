@@ -316,7 +316,6 @@
 {% macro autosuggestField(config) %}
     {% set config = config|merge({
         id: config.id ?? "autosuggest#{random()}",
-        tabindex: false,
     }) %}
 
     {# Suggest an environment variable / alias? #}
