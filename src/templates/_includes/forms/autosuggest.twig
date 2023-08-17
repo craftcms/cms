@@ -30,6 +30,8 @@
         @focus="updateFilteredOptions"
         @blur="onBlur"
         @input="onInputChange"
+        @opened="onOpened"
+        @closed="onClosed"
         v-model="inputProps.initialValue"
     >
         <template slot-scope="{suggestion}">
@@ -78,6 +80,22 @@ new Vue({
         onInputChange(q) {
             this.query = (q || '').toLowerCase();
             this.updateFilteredOptions();
+        },
+        onOpened() {
+            let $element = $(this.$el);
+
+            // hacky but works
+            let $tabindexParent = $element.parents('[tabindex="-1"]');
+            if ($tabindexParent.length > 0) {
+                this.$refs.tabindexParent = $tabindexParent;
+                $tabindexParent.removeAttr('tabindex');
+            }
+        },
+        onClosed() {
+            if (this.$refs.tabindexParent !== undefined) {
+                this.$refs.tabindexParent.attr('tabindex', '-1');
+                this.$refs.tabindexParent = null;
+            }
         },
         updateFilteredOptions() {
             if (this.query === '') {
