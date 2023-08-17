@@ -31,15 +31,17 @@ class AuthController extends Controller
     /**
      * Perform a login request.
      *
-     * @param string $provider
+     * @param string|null $provider
      * @return Response|null
      * @throws AuthProviderNotFoundException
      * @throws HttpException
      * @throws \craft\errors\MissingComponentException
      */
-    public function actionRequest(string $provider): ?Response
+    public function actionRequest(?string $provider = null): ?Response
     {
-        $authProvider = Craft::$app->getAuth()->getProviderByHandle($provider);
+        $authProvider = Craft::$app->getAuth()->getProviderByHandle(
+            $provider ?? $this->request->getRequiredParam('provider')
+        );
 
         try {
             return $authProvider->handleRequest(
@@ -51,9 +53,11 @@ class AuthController extends Controller
         }
     }
 
-    public function actionResponse(string $provider): ?Response
+    public function actionResponse(?string $provider = null): ?Response
     {
-        $authProvider = Craft::$app->getAuth()->getProviderByHandle($provider);
+        $authProvider = Craft::$app->getAuth()->getProviderByHandle(
+            $provider ?? $this->request->getRequiredParam('provider')
+        );
 
         try {
             if ($authProvider->handleResponse(
