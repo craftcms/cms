@@ -46,8 +46,8 @@ class CraftProvider extends AbstractProvider
      */
     public function handleRequest(Request $request, Response $response): Response
     {
-        $loginName = $request->getRequiredBodyParam('username');
-        $password = $request->getRequiredBodyParam('password');
+        $loginName = $request->getBodyParam('username');
+        $password = $request->getBodyParam('password');
         $rememberMe = (bool)$request->getBodyParam('rememberMe');
 
         throw new Exception("Request handling is not implemented");
