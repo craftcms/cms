@@ -10,6 +10,7 @@
 - Admin table properties are now reactive. ([#13558](https://github.com/craftcms/cms/pull/13558), [#13520](https://github.com/craftcms/cms/discussions/13520))
 - Fixed a bug where element edit pages were displaying sidebar content incorrectly if there weren’t any normal form fields. ([#13567](https://github.com/craftcms/cms/issues/13567))
 - Fixed a bug where it wasn’t possible to save elements which didn’t support drafts, if they contained cross-site validation errors. ([#13568](https://github.com/craftcms/cms/pull/13568))
+- Fixed a bug where autosuggest fields within slideouts weren’t mouse-selectable. ([#13553](https://github.com/craftcms/cms/issues/13553))
 
 ## 4.5.0-beta.2 - 2023-08-15
 
