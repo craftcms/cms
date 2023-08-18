@@ -4,6 +4,7 @@
 
 - Fixed a bug where icons within secondary buttons were illegible when active.
 - Fixed a bug where the `|replace` filter was treating search strings as regular expressions even if they were invalid. ([#12956](https://github.com/craftcms/cms/issues/12956))
+- Fixed a bug where it wasn’t possible to save elements which didn’t support drafts, if they contained cross-site validation errors. ([#13568](https://github.com/craftcms/cms/pull/13568))
 
 ## Unreleased (4.5)
 
