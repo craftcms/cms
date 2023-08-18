@@ -14,19 +14,21 @@ Craft.VueAdminTable = Garnish.Base.extend(
     init: function (settings) {
       this.setSettings(settings, Craft.VueAdminTable.defaults);
 
-      const props = this.settings;
+      const _this = this;
 
       this.instance = new Vue({
         components: {
           AdminTable,
         },
         data() {
-          return {};
+          return {
+            props: _this.settings,
+          };
         },
-        render: (h) => {
+        render(h) {
           return h(AdminTable, {
             ref: 'admin-table',
-            props: props,
+            props: this.props,
           });
         },
       });
@@ -36,7 +38,6 @@ Craft.VueAdminTable = Garnish.Base.extend(
 
       return this.instance;
     },
-
     reload() {
       this.$table.reload();
     },

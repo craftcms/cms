@@ -3,6 +3,12 @@
 ## Unreleased
 
 - Fixed a bug where icons within secondary buttons were illegible when active.
+- Fixed a bug where the `|replace` filter was treating search strings as regular expressions even if they were invalid. ([#12956](https://github.com/craftcms/cms/issues/12956))
+
+## Unreleased (4.5)
+
+- Admin table properties are now reactive. ([#13558](https://github.com/craftcms/cms/pull/13558), [#13520](https://github.com/craftcms/cms/discussions/13520))
+- Fixed a bug where element edit pages were displaying sidebar content incorrectly if there weren’t any normal form fields. ([#13567](https://github.com/craftcms/cms/issues/13567))
 
 ## 4.5.0-beta.2 - 2023-08-15
 

@@ -55,6 +55,7 @@
 - When applying a draft, the canonical elements’ `getDirtyAttributes()` and `getDirtyFields()` methods now return the attribute names and field handles that were modified on the draft for save events. ([#12967](https://github.com/craftcms/cms/issues/12967))
 - Admin tables can be configured to pass custom query params to the data endpoint. ([#13416](https://github.com/craftcms/cms/pull/13416))
 - Admin tables can now be programatically reloaded. ([#13416](https://github.com/craftcms/cms/pull/13416))
+- Admin table properties are now reactive. ([#13558](https://github.com/craftcms/cms/pull/13558), [#13520](https://github.com/craftcms/cms/discussions/13520))
 - Native element sources can now define a `defaultFilter` key, which defines the default filter condition that should be applied when the source is selected. ([#13499](https://github.com/craftcms/cms/pull/13499))
 - Added `craft\addresses\SubdivisionRepository`. ([#13361](https://github.com/craftcms/cms/pull/13361))
 - Added `craft\base\Element::showStatusField()`. ([#13265](https://github.com/craftcms/cms/pull/13265))
