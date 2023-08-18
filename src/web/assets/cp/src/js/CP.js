@@ -153,57 +153,7 @@ Craft.CP = Garnish.Base.extend(
         this.$primaryForm = $('form[data-saveshortcut]:first');
       }
 
-      // Does the primary form support the save shortcut?
-      if (
-        this.$primaryForm.length &&
-        Garnish.hasAttr(this.$primaryForm, 'data-saveshortcut')
-      ) {
-        let shortcuts = [];
-        let actions = this.$primaryForm.data('actions');
-        if (typeof actions === 'undefined') {
-          shortcuts.push([
-            {
-              keyCode: Garnish.S_KEY,
-              ctrl: true,
-            },
-            {
-              redirect: this.$primaryForm.data('saveshortcut-redirect'),
-              retainScroll: Garnish.hasAttr(
-                this.$primaryForm,
-                'saveshortcut-scroll'
-              ),
-            },
-          ]);
-        } else {
-          for (let i = 0; i < actions.length; i++) {
-            let action = actions[i];
-            if (!action.shortcut) {
-              continue;
-            }
-            shortcuts.push([
-              {
-                keyCode: Garnish.S_KEY,
-                ctrl: true,
-                shift: !!action.shift,
-              },
-              {
-                action: action.action,
-                redirect: action.redirect,
-                confirm: action.confirm,
-                params: action.params,
-                data: action.data,
-                retainScroll: action.retainScroll,
-              },
-            ]);
-          }
-        }
-        for (let i = 0; i < shortcuts.length; i++) {
-          Garnish.uiLayerManager.registerShortcut(shortcuts[i][0], () => {
-            this.submitPrimaryForm(shortcuts[i][1]);
-          });
-        }
-      }
-
+      this.initShortcuts();
       this.initTabs();
 
       if (this.tabManager) {
@@ -560,6 +510,59 @@ Craft.CP = Garnish.Base.extend(
       const newState = expanded ? 'false' : 'true';
       this.$sidebarToggle.attr('aria-expanded', newState);
       Garnish.$bod.toggleClass('showing-sidebar');
+    },
+
+    initShortcuts: function () {
+      // Does the primary form support the save shortcut?
+      if (
+        this.$primaryForm.length &&
+        Garnish.hasAttr(this.$primaryForm, 'data-saveshortcut')
+      ) {
+        let shortcuts = [];
+        let actions = this.$primaryForm.data('actions');
+        if (typeof actions === 'undefined') {
+          shortcuts.push([
+            {
+              keyCode: Garnish.S_KEY,
+              ctrl: true,
+            },
+            {
+              redirect: this.$primaryForm.data('saveshortcut-redirect'),
+              retainScroll: Garnish.hasAttr(
+                this.$primaryForm,
+                'saveshortcut-scroll'
+              ),
+            },
+          ]);
+        } else {
+          for (let i = 0; i < actions.length; i++) {
+            let action = actions[i];
+            if (!action.shortcut) {
+              continue;
+            }
+            shortcuts.push([
+              {
+                keyCode: Garnish.S_KEY,
+                ctrl: true,
+                shift: !!action.shift,
+              },
+              {
+                action: action.action,
+                redirect: action.redirect,
+                confirm: action.confirm,
+                params: action.params,
+                data: action.data,
+                retainScroll: action.retainScroll,
+              },
+            ]);
+          }
+        }
+        for (let i = 0; i < shortcuts.length; i++) {
+          Garnish.uiLayerManager.registerShortcut(shortcuts[i][0], () => {
+            this.submitPrimaryForm(shortcuts[i][1]);
+          });
+        }
+      }
     },
 
     initTabs: function () {
@@ -1616,6 +1619,7 @@ Craft.CP.Notification = Garnish.Base.extend({
       (document.activeElement === this.$container[0] ||
         $.contains(this.$container[0], document.activeElement))
     ) {
+      Craft.cp.initShortcuts();
       $(this.originalActiveElement).focus();
     }
 
