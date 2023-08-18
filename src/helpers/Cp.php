@@ -765,7 +765,6 @@ class Cp
             $labelHtml = '';
         }
 
-
         $containerTag = $fieldset ? 'fieldset' : 'div';
 
         return
@@ -776,7 +775,7 @@ class Cp
                     'data' => [
                         'attribute' => $attribute,
                     ],
-                    'tabindex' => -1,
+                    'tabindex' => $config['tabindex'] ?? -1,
                 ],
                 $config['fieldAttributes'] ?? []
             )) .
@@ -1249,6 +1248,8 @@ class Cp
                 $config['warning'] = Craft::t('app', 'The `@web` alias is not recommended if it is determined automatically.');
             }
         }
+
+        $config['tabindex'] = false;
 
         return static::fieldHtml('template:_includes/forms/autosuggest.twig', $config);
     }

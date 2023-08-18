@@ -170,13 +170,13 @@ Craft.EntryIndex = Craft.BaseElementIndex.extend({
             const $li = $('<li/>').appendTo($ul);
             const $a = $('<a/>', {
               role: anchorRole === 'button' ? 'button' : null,
-              href: '#', // Allows for click listener and tab order
+              href: Craft.getUrl(`entries/${section.handle}/new`),
               type: anchorRole === 'button' ? 'button' : null,
               text: Craft.t('app', 'New {section} entry', {
                 section: section.name,
               }),
             }).appendTo($li);
-            this.addListener($a, 'click', () => {
+            this.addListener($a, 'activate', () => {
               $menuBtn.data('trigger').hide();
               this._createEntry(section.id);
             });

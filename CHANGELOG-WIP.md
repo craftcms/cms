@@ -134,6 +134,7 @@
 
 ### System
 - Added support for setting environmental values in a “secrets” PHP file, identified by a `CRAFT_SECRETS_PATH` environment variable. ([#13283](https://github.com/craftcms/cms/pull/13283))
+- Added support for the `CRAFT_LOG_ALLOW_LINE_BREAKS` environment variable. ([#13544](https://github.com/craftcms/cms/pull/13544))
 - All generated URL param characters are now properly encoded. ([#12796](https://github.com/craftcms/cms/issues/12796))
 - `migrate` commands besides `migrate/create` no longer create the migration directory if it doesn’t exist yet. ([#12732](https://github.com/craftcms/cms/pull/12732))
 - When `content` table columns are resized, if any existing values are too long, all column data is now backed up into a new table, and the overflowing values are set to `null`. ([#13025](https://github.com/craftcms/cms/pull/13025))
@@ -148,3 +149,4 @@
 - Internal Composer operations now use a bundled `composer.phar` file, rather than Composer’s PHP API. ([#13519](https://github.com/craftcms/cms/pull/13519))
 - Updated Selectize to 0.15.2. ([#13273](https://github.com/craftcms/cms/discussions/13273))
 - Fixed a bug where PM times were getting converted to AM for Greek locales. ([#9942](https://github.com/craftcms/cms/issues/9942))
+- Fixed a bug where <kbd>Command</kbd>/<kbd>Ctrl</kbd> + clicks on “New entry” button menu options would open the Entries index page in a new tab, and redirect to the Edit Entry page in the current tab. ([#13550](https://github.com/craftcms/cms/issues/13550))
