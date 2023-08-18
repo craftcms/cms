@@ -65,6 +65,7 @@ export default Base.extend(
       }
 
       this.$container.appendTo(Garnish.$bod);
+      Craft.initUiElements(this.$container);
       this.addDisclosureMenuEventListeners();
     },
 

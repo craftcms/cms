@@ -1552,6 +1552,8 @@ XML;
                         $statusActions[] = [
                             'data' => [
                                 'action' => 'users/enable-user',
+                                'form' => 'userform',
+                                'params' => ['userId' => $this->id],
                             ],
                             'label' => Craft::t('app', 'Enable'),
                         ];
@@ -1566,6 +1568,7 @@ XML;
                                 'data' => [
                                     'action' => 'users/send-activation-email',
                                     'form' => 'userform',
+                                    'params' => ['userId' => $this->id],
                                 ],
                                 'label' => Craft::t('app', 'Send activation email'),
                             ];
@@ -1584,6 +1587,7 @@ XML;
                                 'data' => [
                                     'action' => 'users/activate-user',
                                     'form' => 'userform',
+                                    'params' => ['userId' => $this->id],
                                 ],
                                 'label' => Craft::t('app', 'Activate account'),
                             ];
@@ -1596,6 +1600,7 @@ XML;
                             'data' => [
                                 'action' => 'users/unsuspend-user',
                                 'form' => 'userform',
+                                'params' => ['userId' => $this->id],
                             ],
                             'label' => Craft::t('app', 'Unsuspend'),
                         ];
@@ -1616,6 +1621,7 @@ XML;
                                 'data' => [
                                     'action' => 'users/unlock-user',
                                     'form' => 'userform',
+                                    'params' => ['userId' => $this->id],
                                 ],
                                 'label' => Craft::t('app', 'Unlock'),
                             ];
@@ -1627,6 +1633,7 @@ XML;
                             'data' => [
                                 'action' => 'users/send-password-reset-email',
                                 'form' => 'userform',
+                                'params' => ['userId' => $this->id],
                             ],
                             'label' => Craft::t('app', 'Send password reset email'),
                         ];
@@ -1649,6 +1656,7 @@ XML;
                             'action' => 'users/impersonate',
                             'redirect' => Craft::$app->getSecurity()->hashData(Craft::$app->getConfig()->getGeneral()->getPostCpLoginRedirect()),
                             'form' => 'userform',
+                            'params' => ['userId' => $this->id],
                         ],
                         'label' => trim($this->getName())
                             ? Craft::t('app', 'Sign in as {user}', ['user' => $this->getName()])
@@ -1667,6 +1675,7 @@ XML;
                         'data' => [
                             'action' => 'users/suspend-user',
                             'form' => 'userform',
+                            'params' => ['userId' => $this->id],
                         ],
                         'label' => Craft::t('app', 'Suspend'),
                     ];
@@ -1680,6 +1689,7 @@ XML;
                         'data' => [
                             'action' => 'users/deactivate-user',
                             'form' => 'userform',
+                            'params' => ['userId' => $this->id],
                             'confirm' => Craft::t('app', 'Deactivating a user revokes their ability to sign in. Are you sure you want to continue?'),
                         ],
                         'label' => Craft::t('app', 'Deactivate…'),

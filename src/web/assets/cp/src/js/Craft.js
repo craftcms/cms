@@ -1897,7 +1897,6 @@ $.extend(Craft, {
     $('.fieldtoggle', $container).fieldtoggle();
     $('.lightswitch', $container).lightswitch();
     $('.nicetext', $container).nicetext();
-    $('.formsubmit', $container).formsubmit();
     $('.menubtn:not([data-disclosure-trigger])', $container).menubtn();
     $('[data-disclosure-trigger]', $container).disclosureMenu();
     $('.datetimewrapper', $container).datetime();
@@ -1905,6 +1904,7 @@ $.extend(Craft, {
       '.datewrapper > input[type="date"], .timewrapper > input[type="time"]',
       $container
     ).datetimeinput();
+    $('.formsubmit', $container).formsubmit();
 
     // Open outbound links in new windows
     // hat tip: https://stackoverflow.com/a/2911045/1688568
@@ -2265,10 +2265,12 @@ $.extend(Craft, {
       return;
     }
 
+    const namespace = options.namespace ?? null;
+
     if (options.action) {
       $('<input/>', {
         type: 'hidden',
-        name: 'action',
+        name: this.namespaceInputName('action', namespace),
         val: options.action,
       }).appendTo($form);
     }
@@ -2276,7 +2278,7 @@ $.extend(Craft, {
     if (options.redirect) {
       $('<input/>', {
         type: 'hidden',
-        name: 'redirect',
+        name: this.namespaceInputName('redirect', namespace),
         val: options.redirect,
       }).appendTo($form);
     }
@@ -2286,7 +2288,7 @@ $.extend(Craft, {
         let value = options.params[name];
         $('<input/>', {
           type: 'hidden',
-          name: name,
+          name: this.namespaceInputName(name, namespace),
           val: value,
         }).appendTo($form);
       }
@@ -2662,16 +2664,32 @@ $.extend($.fn, {
         ? $btn.data('menu').$anchor
         : $btn;
 
-      let $form = $anchor.attr('data-form')
-        ? $('#' + $anchor.attr('data-form'))
-        : $btn.attr('data-form')
-        ? $('#' + $btn.attr('data-form'))
-        : $anchor.closest('form');
+      let isFullPage = $anchor.parents('.slideout').length == 0;
+      let $form = null;
+      let namespace = null;
+
+      if (isFullPage) {
+        $form = $anchor.attr('data-form')
+          ? $('#' + $anchor.attr('data-form'))
+          : $btn.attr('data-form')
+          ? $('#' + $btn.attr('data-form'))
+          : $anchor.closest('form');
+      } else {
+        $form = $anchor.closest('form');
+        namespace = $anchor.parents('.slideout').data('cpScreen').namespace;
+      }
+
+      // if we're in the slideout, and in a disclosure menu,
+      // make sure we close the menu on clicking action
+      if (!isFullPage && $anchor.data('trigger')) {
+        $anchor.data('trigger').hide();
+      }
 
       Craft.submitForm($form, {
         confirm: $btn.data('confirm'),
         action: $btn.data('action'),
         redirect: $btn.data('redirect'),
+        namespace: namespace,
         params: params,
         data: $.extend(
           {

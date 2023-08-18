@@ -19,7 +19,7 @@
     <div id="{{ menuId }}" class="menu menu--disclosure additional-menu">
         <ul>
             {% for component in safeComponents %}
-                {{ _self.renderComponent(component, false) }}
+                {{ _self.renderComponent(component, false, loop.last) }}
             {% endfor %}
             {% if safeComponents is not empty and destructiveComponents is not empty %}
                 {% set lastItem = safeComponents|last %}
@@ -28,13 +28,13 @@
                 {% endif %}
             {% endif %}
             {% for component in destructiveComponents %}
-                {{ _self.renderComponent(component, true) }}
+                {{ _self.renderComponent(component, true, loop.last) }}
             {% endfor %}
         </ul>
     </div>
 {% endif %}
 
-{% macro renderComponent(component, destructive) %}
+{% macro renderComponent(component, destructive, isLast = false) %}
     {% set tag = component.tag ?? 'a' %}
 
     {% set dataAttrs = [] %}
@@ -77,7 +77,9 @@
     }|merge(otherAttrs) %}
 
     {% if tag == 'hr' %}
-        <hr />
+        {% if not isLast %}
+            <hr />
+        {% endif %}
     {% else %}
         <li>
             <{{ tag }} {{ attr(componentAttributes) }}>
