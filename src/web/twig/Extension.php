@@ -905,7 +905,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
         }
 
         // Is this a regular expression?
-        if (preg_match('/^\/.+\/[a-zA-Z]*$/', $search)) {
+        if (preg_match('/^\/[^\/]+\/[imsxADSUXJun]*$/', $search)) {
             return preg_replace($search, $replace, $str);
         }
 
