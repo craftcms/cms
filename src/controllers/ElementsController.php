@@ -800,7 +800,7 @@ class ElementsController extends Controller
         $contentHtml = $contentFn($form);
         $sidebarHtml = $sidebarFn($form);
 
-        if ($contentHtml === '' && $sidebarHtml !== '') {
+        if ($contentHtml === '' && $sidebarHtml !== '' && $this->request->getAcceptsJson()) {
             $contentHtml = Html::tag('div', $sidebarHtml, [
                 'class' => 'details',
             ]);
