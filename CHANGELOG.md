@@ -4,6 +4,10 @@
 
 - Fixed a bug where icons within secondary buttons were illegible when active.
 
+## Unreleased (4.5)
+
+- Admin table properties are now reactive. ([#13558](https://github.com/craftcms/cms/pull/13558), [#13520](https://github.com/craftcms/cms/discussions/13520))
+
 ## 4.5.0-beta.2 - 2023-08-15
 
 - Added `craft\events\AssetBundleEvent`.
