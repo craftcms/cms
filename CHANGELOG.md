@@ -3,6 +3,7 @@
 ## Unreleased
 
 - Fixed a bug where icons within secondary buttons were illegible when active.
+- Fixed a bug where the `|replace` filter was treating search strings as regular expressions even if they were invalid. ([#12956](https://github.com/craftcms/cms/issues/12956))
 
 ## Unreleased (4.5)
 
