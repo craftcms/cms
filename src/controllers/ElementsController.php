@@ -1040,7 +1040,6 @@ JS, [
 
         try {
             $namespace = $this->request->getHeaders()->get('X-Craft-Namespace');
-            $test = $namespace === null && Craft::$app->getIsMultiSite() && $elementsService->canCreateDrafts($element, $user);
             // crossSiteValidate only if it's multisite, element supports drafts and we're not in a slideout
             $success = $elementsService->saveElement(
                 $element,
