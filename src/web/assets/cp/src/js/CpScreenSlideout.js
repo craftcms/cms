@@ -536,7 +536,12 @@ Craft.CpScreenSlideout = Craft.Slideout.extend(
       this.clearErrors();
 
       Object.entries(errors).forEach(([name, fieldErrors]) => {
-        const $field = this.$container.find(`[data-attribute="${name}"]`);
+        const $field = Craft.ui.findFieldByErrorKey(
+          this.$container,
+          name,
+          this.namespace
+        );
+
         if ($field) {
           Craft.ui.addErrorsToField($field, fieldErrors);
           this.fieldsWithErrors.push($field);

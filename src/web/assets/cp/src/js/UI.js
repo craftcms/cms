@@ -1329,6 +1329,55 @@ Craft.ui = {
     return $(fieldTabAnchor);
   },
 
+  findFieldByErrorKey: function ($body, fieldErrorKey, namespace) {
+    if (fieldErrorKey !== undefined) {
+      namespace = this._getPreppedNamespace(namespace);
+      // get the field handle from error key
+      var errorKeyParts = fieldErrorKey.split(/[\[\]\.]/).filter((n) => n);
+
+      // define regex for searching for field id
+      if (errorKeyParts[0] !== undefined) {
+        var idRegex = new RegExp(
+          `^` + namespace + `(fields-)?` + errorKeyParts[0] + `.*-field`
+        );
+        if (errorKeyParts[2] !== undefined) {
+          idRegex = new RegExp(
+            `^` +
+              namespace +
+              `(fields-)?` +
+              errorKeyParts[0] +
+              `.*-` +
+              errorKeyParts[2] +
+              `-field`
+          );
+        }
+      }
+
+      // find field based on error key
+      if (idRegex !== undefined) {
+        if (errorKeyParts[2] !== undefined) {
+          var fieldContainer = $body
+            .find(`[data-attribute="${errorKeyParts[0]}"]`)
+            .find(`[data-attribute="${errorKeyParts[2]}"]`);
+        } else {
+          var fieldContainer = $body
+            .find(`[data-attribute="${errorKeyParts[0]}"]`)
+            .filter(function () {
+              return this.id.match(idRegex);
+            });
+        }
+
+        if (fieldContainer.length > 1 && errorKeyParts[1] !== undefined) {
+          fieldContainer = fieldContainer[errorKeyParts[1]];
+        } else {
+          fieldContainer = fieldContainer[0];
+        }
+      }
+    }
+
+    return $(fieldContainer);
+  },
+
   getAutofocusValue: function (autofocus) {
     return autofocus && !Garnish.isMobileBrowser(true) ? 'autofocus' : null;
   },
