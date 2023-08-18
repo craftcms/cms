@@ -14,9 +14,11 @@ use craft\base\ElementExporterInterface;
 use craft\base\ElementInterface;
 use craft\elements\actions\DeleteActionInterface;
 use craft\elements\actions\Restore;
+use craft\elements\Asset;
 use craft\elements\conditions\ElementCondition;
 use craft\elements\conditions\ElementConditionInterface;
 use craft\elements\conditions\ElementConditionRuleInterface;
+use craft\elements\db\AssetQuery;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\exporters\Raw;
 use craft\events\ElementActionEvent;
@@ -642,6 +644,34 @@ class ElementIndexesController extends BaseElementsController
                 }
             }
         }
+
+        // if there's includeFolderIds param, get IDs of assets in the folders we're supposed to include
+        // e.g. if you go to the assets index page, select a folder and some assets and click "export"
+        $includeFolderIds = $this->request->getBodyParam('includeFolderIds');
+        if (!empty($includeFolderIds) && $elementType === Asset::class) {
+            $ids = [];
+            foreach ($includeFolderIds as $includeFolderId) {
+                /** @var AssetQuery $query */
+                $assetsFromSubfolders = (clone $query)
+                    ->id(null)
+                    ->folderId($includeFolderId)
+                    ->includeSubfolders(true)
+                    ->ids();
+                $ids = array_merge($ids, $assetsFromSubfolders);
+            }
+
+            if (!empty($ids)) {
+                if (empty($query->id)) {
+                    $query->id($ids);
+                } else {
+                    $query->id(array_merge($query->id, $ids));
+                }
+
+                /** @var AssetQuery $query */
+                $query->includeSubfolders(true);
+            }
+        }
+
 
         return $query;
     }

@@ -3062,6 +3062,10 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       }
     },
 
+    getExportFolderIds: function () {
+      return [];
+    },
+
     _showExportHud: function () {
       this.$exportBtn.addClass('active');
       this.$exportBtn.attr('aria-expanded', 'true');
@@ -3108,10 +3112,13 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       });
       $typeSelect.trigger('change');
 
-      // Only show the Limit field if there aren't any selected elements
-      var selectedElementIds = this.view.getSelectedElementIds();
+      // Only show the Limit field if there aren't any selected elements or folders
+      var selectedElementIds = this.view
+        .getSelectedElementIds()
+        .filter((id) => id);
+      var selectedFolderIds = this.getExportFolderIds();
 
-      if (!selectedElementIds.length) {
+      if (!selectedElementIds.length && !selectedFolderIds.length) {
         var $limitField = Craft.ui
           .createTextField({
             label: Craft.t('app', 'Limit'),
@@ -3160,10 +3167,19 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
         if (selectedElementIds.length) {
           params.criteria.id = selectedElementIds;
-        } else {
+        }
+
+        if (selectedFolderIds.length) {
+          params.includeFolderIds = selectedFolderIds;
+        }
+
+        if (!selectedElementIds.length && !selectedFolderIds.length) {
           var limit = parseInt($limitField.find('input').val());
           if (limit && !isNaN(limit)) {
             params.criteria.limit = limit;
+          }
+          if (this.elementType == 'craft\\elements\\Asset') {
+            params.criteria.includeSubfolders = true;
           }
         }
 

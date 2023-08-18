@@ -972,6 +972,19 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
         top: offset,
       });
     },
+
+    getExportFolderIds: function () {
+      let folderIds = [];
+      let selectedRows = this.view.getSelectedElements();
+      for (let i = 0; i < selectedRows.length; i++) {
+        let $row = $(selectedRows[i]);
+        if ($row.data('id') === '') {
+          folderIds.push($row.find('.element').data('folderId'));
+        }
+      }
+
+      return folderIds;
+    },
   },
   {
     defaults: {
