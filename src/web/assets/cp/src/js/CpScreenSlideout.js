@@ -540,6 +540,38 @@ Craft.CpScreenSlideout = Craft.Slideout.extend(
         if ($field) {
           Craft.ui.addErrorsToField($field, fieldErrors);
           this.fieldsWithErrors.push($field);
+
+          var $tabMenuBtn = this.tabManager.$menuBtn;
+          if ($tabMenuBtn.length) {
+            if ($tabMenuBtn.hasClass('error') == false) {
+              $tabMenuBtn.addClass('error');
+              $('<span/>', {
+                'data-icon': 'alert',
+              }).appendTo($tabMenuBtn);
+            }
+          }
+
+          // mark the tab as having errors
+          var $fieldTabAnchor = Craft.ui.findTabAnchorForField(
+            $field,
+            this.$container,
+            this.namespace
+          );
+          if (
+            $fieldTabAnchor !== undefined &&
+            $fieldTabAnchor.hasClass('error') == false
+          ) {
+            $fieldTabAnchor.addClass('error');
+            $fieldTabAnchor
+              .find('.tab-label')
+              .append(
+                '<span data-icon="alert">' +
+                  '<span class="visually-hidden">' +
+                  Craft.t('app', 'This tab contains errors') +
+                  '</span>\n' +
+                  '</span>'
+              );
+          }
         }
       });
     },
@@ -548,6 +580,17 @@ Craft.CpScreenSlideout = Craft.Slideout.extend(
       this.fieldsWithErrors.forEach(($field) => {
         Craft.ui.clearErrorsFromField($field);
       });
+
+      // clear error indicator from tabs dropdown menu
+      if (this.tabManager !== null) {
+        var $tabMenuBtn = this.tabManager.$menuBtn;
+        if ($tabMenuBtn.length) {
+          if ($tabMenuBtn.hasClass('error')) {
+            $tabMenuBtn.removeClass('error');
+            $tabMenuBtn.find('span[data-icon="alert"]').remove();
+          }
+        }
+      }
     },
 
     isDirty: function () {
