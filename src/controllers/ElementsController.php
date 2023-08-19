@@ -1039,10 +1039,11 @@ JS, [
         }
 
         try {
-            // crossSiteValidate only if it's multisite and element supports drafts
+            $namespace = $this->request->getHeaders()->get('X-Craft-Namespace');
+            // crossSiteValidate only if it's multisite, element supports drafts and we're not in a slideout
             $success = $elementsService->saveElement(
                 $element,
-                crossSiteValidate: (Craft::$app->getIsMultiSite() && $elementsService->canCreateDrafts($element, $user)),
+                crossSiteValidate: ($namespace === null && Craft::$app->getIsMultiSite() && $elementsService->canCreateDrafts($element, $user)),
             );
         } catch (UnsupportedSiteException $e) {
             $element->addError('siteId', $e->getMessage());
@@ -1431,7 +1432,8 @@ JS, [
             $element->setScenario(Element::SCENARIO_LIVE);
         }
 
-        if (!$elementsService->saveElement($element, crossSiteValidate: Craft::$app->getIsMultiSite())) {
+        $namespace = $this->request->getHeaders()->get('X-Craft-Namespace');
+        if (!$elementsService->saveElement($element, crossSiteValidate: ($namespace === null && Craft::$app->getIsMultiSite()))) {
             return $this->_asAppyDraftFailure($element);
         }
 
