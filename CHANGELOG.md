@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Fixed an error that occurred when exporting assets, if a subfolder was selected. ([#13570](https://github.com/craftcms/cms/issues/13570))
 - Fixed a bug where icons within secondary buttons were illegible when active.
 - Fixed a bug where the `|replace` filter was treating search strings as regular expressions even if they were invalid. ([#12956](https://github.com/craftcms/cms/issues/12956))
 
