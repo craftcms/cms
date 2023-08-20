@@ -2105,10 +2105,21 @@ JS,
         $fieldLayout = Craft::$app->getFields()->assembleLayoutFromPost();
         $fieldLayout->type = User::class;
         $fieldLayout->reservedFieldHandles = [
+            'active',
+            'addresses',
+            'admin',
+            'email',
             'firstName',
+            'friendlyName',
             'groups',
             'lastName',
+            'locked',
+            'name',
+            'password',
+            'pending',
             'photo',
+            'suspended',
+            'username',
         ];
 
         if (!Craft::$app->getUsers()->saveLayout($fieldLayout)) {

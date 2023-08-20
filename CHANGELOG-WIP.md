@@ -40,6 +40,7 @@
 - It’s now possible to configure UK addresses to show a “County” field. ([#13361](https://github.com/craftcms/cms/pull/13361))
 - The “Login Page Logo” and “Site Icon” general settings’ image previews now have checkered backgrounds. ([#13210](https://github.com/craftcms/cms/discussions/13210), [#13229](https://github.com/craftcms/cms/pull/13229))
 - Empty field layout tabs are no longer pruned out. ([#13132](https://github.com/craftcms/cms/issues/13132))
+- `active`, `addresses`, `admin`, `email`, `friendlyName`, `locked`, `name`, `password`, `pending`, `suspended`, and `username` are now reserved user field handles. ([#13579](https://github.com/craftcms/cms/issues/13579))
 
 ### Development
 - Added a new `_globals` global Twig variable for front-end templates, which can be used to store custom values in a global scope. ([#13050](https://github.com/craftcms/cms/pull/13050), [#12951](https://github.com/craftcms/cms/discussions/12951))
