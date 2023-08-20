@@ -2105,10 +2105,10 @@ JS,
         $fieldLayout = Craft::$app->getFields()->assembleLayoutFromPost();
         $fieldLayout->type = User::class;
         $fieldLayout->reservedFieldHandles = [
-            'groups',
-            'photo',
             'firstName',
+            'groups',
             'lastName',
+            'photo',
         ];
 
         if (!Craft::$app->getUsers()->saveLayout($fieldLayout)) {
