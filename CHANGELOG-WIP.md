@@ -31,6 +31,7 @@
 ### Administration
 - Added the “Slug Translation Method” setting to entry types. ([#8962](https://github.com/craftcms/cms/discussions/8962), [#13291](https://github.com/craftcms/cms/pull/13291))
 - Added the “Show the Status field” setting to entry types. ([#12837](https://github.com/craftcms/cms/discussions/12837), [#13265](https://github.com/craftcms/cms/pull/13265))
+- Added the `setup/cloud` command, which prepares a Craft install to be deployed to Craft Cloud.
 - Added the `setup/message-tables` command, which can be run to set the project up for database-stored static translations via [DbMessageSource](https://www.yiiframework.com/doc/api/2.0/yii-i18n-dbmessagesource). ([#13542](https://github.com/craftcms/cms/pull/13542))
 - Entry types created via the `entrify/global-set` command now have “Show the Status field” disabled by default. ([#12837](https://github.com/craftcms/cms/discussions/12837))
 - Added the `defaultCountryCode` config setting. ([#13478](https://github.com/craftcms/cms/discussions/13478))
