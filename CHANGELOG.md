@@ -6,6 +6,7 @@
 - Fixed a bug where icons within secondary buttons were illegible when active.
 - Fixed a bug where the `|replace` filter was treating search strings as regular expressions even if they were invalid. ([#12956](https://github.com/craftcms/cms/issues/12956))
 - Fixed a bug where user groups without “Edit users” permission were being granted “Assign users to [group name]” when upgrading to Craft 4.
+- Fixed a bug where keyboard shortcuts weren’t getting reactivated when control panel notifications were dismissed. ([#13574](https://github.com/craftcms/cms/issues/13574))
 
 ## 4.4.17 - 2023-08-08
 
