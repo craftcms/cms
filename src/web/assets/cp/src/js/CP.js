@@ -1484,6 +1484,7 @@ Craft.CP.Notification = Garnish.Base.extend({
   $container: null,
   $closeBtn: null,
   originalActiveElement: null,
+  _hasUiElements: false,
 
   init: function (type, message, settings) {
     this.type = type;
@@ -1534,8 +1535,8 @@ Craft.CP.Notification = Garnish.Base.extend({
         .append(this.settings.details)
         .appendTo($main);
 
-      const $focusableElement = $detailsContainer.find('button,input');
-      if ($focusableElement.length) {
+      this._hasUiElements = !!$detailsContainer.find('button,input');
+      if (this._hasUiElements) {
         Garnish.uiLayerManager.addLayer(this.$container);
         Garnish.uiLayerManager.registerShortcut(Garnish.ESC_KEY, () => {
           this.close();
@@ -1609,6 +1610,10 @@ Craft.CP.Notification = Garnish.Base.extend({
     }
 
     this.closing = true;
+
+    if (this._hasUiElements) {
+      Garnish.uiLayerManager.removeLayer(this.$container);
+    }
 
     if (
       this.originalActiveElement &&
