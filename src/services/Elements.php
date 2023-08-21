@@ -72,6 +72,7 @@ use yii\base\Component;
 use yii\base\Exception;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidCallException;
+use yii\base\InvalidConfigException;
 use yii\caching\TagDependency;
 
 /**
@@ -3123,6 +3124,7 @@ class Elements extends Component
         $propagate = $propagate && $element::isLocalized() && Craft::$app->getIsMultiSite();
         $originalPropagateAll = $element->propagateAll;
         $originalFirstSave = $element->firstSave;
+        $originalDateUpdated = $element->dateUpdated;
 
         $element->firstSave = (
             !$element->getIsDraft() &&
@@ -3270,8 +3272,6 @@ class Elements extends Component
                 $dateUpdated = DateTimeHelper::toDateTime($elementRecord->dateUpdated);
 
                 if ($dateUpdated === false) {
-                    $element->firstSave = $originalFirstSave;
-                    $element->propagateAll = $originalPropagateAll;
                     throw new Exception('There was a problem calculating dateUpdated.');
                 }
 
@@ -3368,7 +3368,7 @@ class Elements extends Component
                         if ($siteId != $element->siteId) {
                             $siteElement = $siteElements[$siteId] ?? false;
                             if (!$this->_propagateElement($element, $supportedSites, $siteId, $siteElement, crossSiteValidate: $crossSiteValidate)) {
-                                return false;
+                                throw new InvalidConfigException();
                             }
                         }
                     }
@@ -3389,6 +3389,10 @@ class Elements extends Component
             $transaction->rollBack();
             $element->firstSave = $originalFirstSave;
             $element->propagateAll = $originalPropagateAll;
+            $element->dateUpdated = $originalDateUpdated;
+            if ($e instanceof InvalidConfigException) {
+                return false;
+            }
             throw $e;
         } finally {
             $this->_updateSearchIndex = $oldUpdateSearchIndex;
