@@ -7,6 +7,7 @@
 
 namespace craft\console\controllers;
 
+use Composer\IO\ConsoleIO;
 use Composer\Util\Platform;
 use Craft;
 use craft\config\DbConfig;
@@ -24,6 +25,12 @@ use craft\migrations\CreatePhpSessionTable;
 use m150207_210500_i18n_init;
 use PDOException;
 use Seld\CliPrompt\CliPrompt;
+use Symfony\Component\Console\Helper\HelperSet;
+use Symfony\Component\Console\Helper\QuestionHelper;
+use Symfony\Component\Console\Input\StringInput;
+use Symfony\Component\Console\Output\StreamOutput;
+use Symfony\Component\Process\PhpExecutableFinder;
+use Symfony\Component\Process\Process;
 use Throwable;
 use yii\base\InvalidConfigException;
 use yii\console\ExitCode;
@@ -575,6 +582,61 @@ EOD;
         }
 
         $this->stdout('The `cache` table was created successfully.' . PHP_EOL . PHP_EOL, Console::FG_GREEN);
+        return ExitCode::OK;
+    }
+
+    /**
+     * Prepares the Craft install to be deployed to Craft Cloud.
+     *
+     * @return int
+     * @since 4.5.0
+     */
+    public function actionCloud(): int
+    {
+        if (!$this->interactive) {
+            $this->stderr("The setup/cloud command must be run interactively.\n");
+            return ExitCode::UNSPECIFIED_ERROR;
+        }
+
+        $moduleInstalled = class_exists('craft\cloud\Module');
+        $message = $this->markdownToAnsi(sprintf('%s the `craftcms/cloud` extension …',
+            $moduleInstalled ? 'Updating' : 'Installing',
+        ));
+        $this->stdout(" → $message\n\n");
+
+        $input = new StringInput('');
+        $input->setInteractive(false);
+        $output = new StreamOutput(fopen('php://output', 'w'));
+        $io = new ConsoleIO($input, $output, new HelperSet([new QuestionHelper()]));
+
+        Craft::$app->getComposer()->install([
+            'craftcms/cloudo' => '^1.0.0',
+        ], $io);
+
+        $message = sprintf('Extension %s', $moduleInstalled ? 'updated' : 'installed');
+        $this->stdout("\n ✓ $message\n" . PHP_EOL . PHP_EOL, Console::FG_GREEN);
+
+        $message = $this->markdownToAnsi('Running `cloud/setup` …');
+        $this->stdout(" → $message\n\n");
+
+        try {
+            $script = $this->request->getScriptFile();
+        } catch (InvalidConfigException $e) {
+            $this->stdout('Error determining the `craft` executable: ' . $e->getMessage() . PHP_EOL, Console::FG_RED);
+            return ExitCode::UNSPECIFIED_ERROR;
+        }
+
+        $process = new Process([
+            (new PhpExecutableFinder())->find() ?: 'php',
+            $script,
+            'cloud/setup',
+        ]);
+        $process->setTty(true);
+        $process->setTimeout(null);
+        $process->mustRun();
+
+        $this->stdout("\n ✓ The install is new prepared for Craft Cloud\n", Console::FG_GREEN);
+
         return ExitCode::OK;
     }
 

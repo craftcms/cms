@@ -7,6 +7,7 @@
 
 ## Unreleased (4.5)
 
+- Added the `setup/cloud` command.
 - Admin table properties are now reactive. ([#13558](https://github.com/craftcms/cms/pull/13558), [#13520](https://github.com/craftcms/cms/discussions/13520))
 - Elements are no longer cross-site-validated when saved from a slideout.
 - Fixed a bug where element edit pages were displaying sidebar content incorrectly if there weren’t any normal form fields. ([#13567](https://github.com/craftcms/cms/issues/13567))
