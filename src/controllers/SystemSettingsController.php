@@ -40,10 +40,14 @@ class SystemSettingsController extends Controller
      */
     public function beforeAction($action): bool
     {
+        if (!parent::beforeAction($action)) {
+            return false;
+        }
+
         // All system setting actions require an admin
         $this->requireAdmin();
 
-        return parent::beforeAction($action);
+        return true;
     }
 
     /**
@@ -253,7 +257,9 @@ class SystemSettingsController extends Controller
         }
 
         if ($globalSet->id) {
-            $title = trim($globalSet->name) ?: Craft::t('app', 'Edit Global Set');
+            $title = trim($globalSet->name) ?: Craft::t('app', 'Edit {type}', [
+                'type' => GlobalSet::displayName(),
+            ]);
         } else {
             $title = Craft::t('app', 'Create a new global set');
         }

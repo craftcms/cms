@@ -10,7 +10,6 @@ namespace crafttests\unit\mail;
 use Craft;
 use craft\elements\User;
 use craft\errors\SiteNotFoundException;
-use craft\helpers\ArrayHelper;
 use craft\mail\Message;
 use craft\models\SystemMessage;
 use craft\test\TestCase;
@@ -89,20 +88,8 @@ class MailerTest extends TestCase
 
         self::assertSame(
             $this->mailer->from,
-            ArrayHelper::firstKey($this->tester->grabLastSentEmail()->getFrom())
+            array_key_first($this->tester->grabLastSentEmail()->getFrom())
         );
-    }
-
-    /**
-     * Test whether trying to send an email to nobody throws an exception.
-     */
-    public function testRequiresTo(): void
-    {
-        $this->_sendMail();
-        $this->expectExceptionMessage('An email must have a');
-
-        // Since the mock mailer simply stores the data, we won't trigger an exception until we try to unpack the message
-        $this->tester->grabLastSentEmail()->toString();
     }
 
     /**

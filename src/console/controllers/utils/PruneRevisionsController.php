@@ -63,7 +63,7 @@ class PruneRevisionsController extends Controller
     {
         $sectionIds = [];
         if ($this->section) {
-            $sectionsService = Craft::$app->getSections();
+            $sectionsService = Craft::$app->getEntries();
             $sectionHandles = StringHelper::split($this->section);
             foreach ($sectionHandles as $sectionHandle) {
                 $section = $sectionsService->getSectionByHandle($sectionHandle);

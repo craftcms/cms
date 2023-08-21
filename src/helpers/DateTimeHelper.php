@@ -654,7 +654,7 @@ class DateTimeHelper
         if (is_numeric($value)) {
             // Use DateTime::diff() so the years/months/days/hours/minutes values are all populated correctly
             $now = static::now(new DateTimeZone('UTC'));
-            $then = (clone $now)->modify("+$value seconds");
+            $then = (clone $now)->modify(sprintf('%s%s seconds', $value < 0 ? '-' : '+', abs($value)));
             return $now->diff($then);
         }
 
@@ -807,11 +807,14 @@ class DateTimeHelper
     {
         $value = trim($value);
 
-        // First see if it's in YYYY-MM-DD or YYYY-MM-DD HH:MM:SS.MU formats
-        if (preg_match('/^\d{4}-\d{2}-\d{2}( \d{2}:\d{2}:\d{2}\.\d+)?$/', $value, $match)) {
+        // First see if it's in YYYY-MM-DD, YYYY-MM-DD HH:MM:SS, or YYYY-MM-DD HH:MM:SS.MU formats
+        if (preg_match('/^\d{4}-\d{2}-\d{2}( \d{2}:\d{2}:\d{2}(\.\d+)?)?$/', $value, $match)) {
             $format = 'Y-m-d';
             if (!empty($match[1])) {
-                $format .= ' H:i:s.u';
+                $format .= ' H:i:s';
+                if (!empty($match[2])) {
+                    $format .= '.u';
+                }
             }
             return [$value, $format];
         }
@@ -878,7 +881,13 @@ class DateTimeHelper
             $format = str_replace('A', '', $format) . 'A';
         }
 
-        return [$value, $format];
+        // replace narrow non-breaking spaces with normal spaces, which are
+        // handled a bit more gracefully by DateTime::createFromFormat()
+        // (see https://github.com/php/php-src/issues/11600)
+        return [
+            str_replace("\u{202f}", ' ', $value),
+            str_replace("\u{202f}", ' ', $format),
+        ];
     }
 
     /**

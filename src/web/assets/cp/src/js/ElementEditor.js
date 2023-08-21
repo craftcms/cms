@@ -8,6 +8,7 @@ Craft.ElementEditor = Garnish.Base.extend(
   {
     isFullPage: null,
     $container: null,
+    $activityContainer: null,
     $tabContainer: null,
     $contentContainer: null,
     $revisionBtn: null,
@@ -53,6 +54,8 @@ Craft.ElementEditor = Garnish.Base.extend(
     scrollY: null,
 
     hiddenTipsStorageKey: 'Craft-' + Craft.systemUid + '.TipField.hiddenTips',
+
+    activityTooltips: null,
 
     get tipDismissBtn() {
       return this.$container.find('.tip-dismiss-btn');
@@ -154,6 +157,11 @@ Craft.ElementEditor = Garnish.Base.extend(
         return;
       }
 
+      if (this.isFullPage && Craft.edition === Craft.Pro) {
+        this.$activityContainer = this.$container.find('.activity-container');
+        this._checkActivity();
+      }
+
       // Override the serializer to use our own
       this.$container.data('serializer', () => this.serializeForm(true));
       this.$container.data('initialSerializedValue', this.serializeForm(true));
@@ -216,6 +224,8 @@ Craft.ElementEditor = Garnish.Base.extend(
           }
         });
       }
+
+      this.activityTooltips = {};
     },
 
     _createQueue: function () {
@@ -260,6 +270,27 @@ Craft.ElementEditor = Garnish.Base.extend(
       // Listen for events on the body when editing a full page form, so we don’t miss events from Live Preview
       const $target = this.isFullPage ? Garnish.$bod : this.$container;
 
+      // we're now using selectize select_on_focus plugin which clears the dropdown's value on dropdown open;
+      // that triggers a change event which triggers saving a draft and causes conditional fields/tabs to misbehave;
+      // because of that, we are now emitting selectize dropdown open and close events;
+      // we pause listening for changes on dropdown open (it happens before the focus event, so before the value is cleared)
+      // and we resume on dropdown close to register the change in value (if one actually occurred);
+      this.addListener(
+        $target.find('.selectized'),
+        'selectizedropdownopen',
+        (ev) => {
+          this.pause();
+        }
+      );
+
+      this.addListener(
+        $target.find('.selectized'),
+        'selectizedropdownclose',
+        (ev) => {
+          this.resume(false);
+        }
+      );
+
       this.addListener(
         $target,
         'keypress,keyup,change,focus,blur,click,mousedown,mouseup',
@@ -267,12 +298,15 @@ Craft.ElementEditor = Garnish.Base.extend(
           if ($(ev.target).is(this.statusIcons())) {
             return;
           }
-          clearTimeout(this.timeout);
-          // If they are typing, wait half a second before checking the form
-          if (['keypress', 'keyup', 'change'].includes(ev.type)) {
-            this.timeout = setTimeout(this.checkForm.bind(this), 500);
-          } else {
-            this.checkForm();
+
+          if (this.pauseLevel == 0) {
+            clearTimeout(this.timeout);
+            // If they are typing, wait half a second before checking the form
+            if (['keypress', 'keyup', 'change'].includes(ev.type)) {
+              this.timeout = setTimeout(this.checkForm.bind(this), 500);
+            } else {
+              this.checkForm();
+            }
           }
         }
       );
@@ -296,7 +330,7 @@ Craft.ElementEditor = Garnish.Base.extend(
       this.stopListeningForChanges();
     },
 
-    resume: function () {
+    resume: function (checkBeforeListening = true) {
       if (this.pauseLevel === 0) {
         throw 'Craft.ElementEditor::resume() should only be called after pause().';
       }
@@ -306,7 +340,10 @@ Craft.ElementEditor = Garnish.Base.extend(
       this.pauseLevel--;
       if (this.pauseLevel === 0) {
         if (this.enableAutosave) {
-          this.checkForm();
+          // prevent double-calling save draft on resuming after selectize dropdown closed
+          if (checkBeforeListening) {
+            this.checkForm();
+          }
           this.listenForChanges();
         }
       }
@@ -1216,6 +1253,11 @@ Craft.ElementEditor = Garnish.Base.extend(
           data: preparedData,
         })
           .then((response) => {
+            // capture the new selected tab ID, in case it just changed
+            const newSelectedTabId = this.$contentContainer
+              .children('[data-layout-tab]:not(.hidden)')
+              .data('id');
+
             this._afterSaveDraft();
 
             const createdProvisionalDraft = !this.settings.draftId;
@@ -1470,10 +1512,32 @@ Craft.ElementEditor = Garnish.Base.extend(
             this.settings.visibleLayoutElements = visibleLayoutElements;
 
             // Update the tabs
+            let tabManager;
             if (this.isFullPage) {
               Craft.cp.updateTabs(response.data.tabs);
+              tabManager = Craft.cp.tabManager;
             } else {
               this.slideout.updateTabs(response.data.tabs);
+              tabManager = this.slideout.tabManager;
+            }
+
+            // was a new tab selected after the autosave request was kicked off?
+            if (
+              selectedTabId &&
+              newSelectedTabId &&
+              selectedTabId !== newSelectedTabId
+            ) {
+              const $newSelectedTab = tabManager.$tabs.filter(
+                `[data-id="${newSelectedTabId}"]`
+              );
+              if ($newSelectedTab.length) {
+                // if the new tab is visible - switch to it
+                tabManager.selectTab($newSelectedTab);
+              } else {
+                // if the new tab is not visible (e.g. hidden by a condition)
+                // switch to the first tab
+                tabManager.selectTab(tabManager.$tabs.first());
+              }
             }
 
             Craft.appendHeadHtml(response.data.headHtml);
@@ -1496,6 +1560,11 @@ Craft.ElementEditor = Garnish.Base.extend(
 
             // re-grab dismissible tips, re-attach listener, hide on re-load
             this.handleDismissibleTips();
+
+            // updated the updatedTimestamp values
+            this.settings.updatedTimestamp = response.data.updatedTimestamp;
+            this.settings.canonicalUpdatedTimestamp =
+              response.data.canonicalUpdatedTimestamp;
 
             this.afterUpdate(data);
 
@@ -1945,6 +2014,139 @@ Craft.ElementEditor = Garnish.Base.extend(
         }
       }
     },
+
+    _checkActivity: function () {
+      this.queue.push(
+        () =>
+          new Promise((resolve, reject) => {
+            Craft.sendActionRequest('POST', 'elements/recent-activity', {
+              params: {
+                dontExtendSession: 1,
+              },
+              data: {
+                elementType: this.settings.elementType,
+                elementId: this.settings.canonicalId,
+                draftId: this.settings.draftId,
+                siteId: this.settings.siteId,
+                provisional: this.settings.isProvisionalDraft,
+              },
+            })
+              .then(({data}) => {
+                let focusedTooltip = null;
+                if (this.activityTooltips) {
+                  const tooltips = Object.values(this.activityTooltips);
+                  focusedTooltip = tooltips.find(
+                    (t) => t.$trigger[0] === document.activeElement
+                  );
+                }
+
+                this.$activityContainer
+                  .html('')
+                  .attr('role', 'region')
+                  .attr('aria-label', Craft.t('app', 'Recent Activity'));
+
+                if (data.activity.length) {
+                  $('<h2/>', {
+                    class: 'visually-hidden',
+                    text: Craft.t('app', 'Recent Activity'),
+                  }).appendTo(this.$activityContainer);
+                  const $ul = $('<ul/>').appendTo(this.$activityContainer);
+                  for (let i = 0; i < data.activity.length; i++) {
+                    const activity = data.activity[i];
+                    const $li = $('<li/>').appendTo($ul);
+                    const $button = $('<button/>', {
+                      type: 'button',
+                      class: 'activity-btn',
+                      'aria-label': Craft.t('app', '{name} active, more info', {
+                        name: activity.userName,
+                      }),
+                      'aria-expanded': 'false',
+                    }).appendTo($li);
+                    const $thumb = $(activity.userThumb)
+                      .addClass('elementthumb')
+                      .css('z-index', data.activity.length - i)
+                      .appendTo($button);
+                    $thumb.find('img,svg').attr('role', 'presentation');
+                    Craft.cp.elementThumbLoader.load($li);
+                    $thumb.find('title').remove();
+
+                    if (
+                      typeof this.activityTooltips[activity.userId] ===
+                      'undefined'
+                    ) {
+                      this.activityTooltips[activity.userId] =
+                        new Craft.Tooltip($button, activity.message);
+                    } else {
+                      this.activityTooltips[activity.userId].$trigger = $button;
+                      this.activityTooltips[activity.userId].message =
+                        activity.message;
+
+                      // maintain trigger focus
+                      if (
+                        this.activityTooltips[activity.userId] ===
+                        focusedTooltip
+                      ) {
+                        this.activityTooltips[activity.userId].$trigger.focus();
+                      }
+                    }
+                  }
+                }
+
+                // hide any tooltips that are no longer relevant
+                for (let userId of Object.keys(this.activityTooltips)) {
+                  if (
+                    !data.activity.find((activity) => activity.userId == userId)
+                  ) {
+                    this.activityTooltips[userId].hide();
+                  }
+                }
+
+                // if the element has been updated upstream, show a notification about it
+                const elementUpdated =
+                  this.settings.updatedTimestamp &&
+                  this.settings.updatedTimestamp !== data.updatedTimestamp;
+                const canonicalUpdated =
+                  this.settings.canonicalUpdatedTimestamp &&
+                  this.settings.canonicalUpdatedTimestamp !==
+                    data.canonicalUpdatedTimestamp;
+
+                if (elementUpdated || canonicalUpdated) {
+                  const $reloadBtn = Craft.ui.createButton({
+                    label: Craft.t('app', 'Reload'),
+                    spinner: true,
+                  });
+
+                  Craft.cp.displayNotice(
+                    Craft.t('app', 'This {type} has been updated.', {
+                      type:
+                        elementUpdated &&
+                        this.settings.draftId &&
+                        !this.settings.isProvisionalDraft
+                          ? Craft.t('app', 'draft')
+                          : Craft.elementTypeNames[this.settings.elementType]
+                          ? Craft.elementTypeNames[this.settings.elementType][2]
+                          : Craft.t('app', 'element'),
+                    }),
+                    {
+                      details: $reloadBtn,
+                    }
+                  );
+                  $reloadBtn.on('click', () => {
+                    window.location.reload();
+                  });
+                }
+                this.settings.updatedTimestamp = data.updatedTimestamp;
+                this.settings.canonicalUpdatedTimestamp =
+                  data.canonicalUpdatedTimestamp;
+                setTimeout(() => {
+                  this._checkActivity();
+                }, 15000);
+                resolve();
+              })
+              .catch(reject);
+          })
+      );
+    },
   },
   {
     defaults: {
@@ -1970,6 +2172,8 @@ Craft.ElementEditor = Garnish.Base.extend(
       siteStatuses: null,
       siteToken: null,
       visibleLayoutElements: {},
+      updatedTimestamp: null,
+      canonicalUpdatedTimestamp: null,
     },
   }
 );

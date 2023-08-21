@@ -11,6 +11,7 @@ use Craft;
 use craft\helpers\Cp;
 use Twig\Extension\AbstractExtension;
 use Twig\Extension\GlobalsInterface;
+use Twig\TwigFunction;
 
 /**
  * Control panel Twig extension
@@ -30,6 +31,17 @@ class CpExtension extends AbstractExtension implements GlobalsInterface
             'CraftSolo' => Craft::Solo,
             'CraftPro' => Craft::Pro,
             'requestedSite' => Cp::requestedSite(),
+        ];
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getFunctions(): array
+    {
+        return [
+            new TwigFunction('elementCard', [Cp::class, 'elementCardHtml'], ['is_safe' => ['html']]),
+            new TwigFunction('elementChip', [Cp::class, 'elementChipHtml'], ['is_safe' => ['html']]),
         ];
     }
 }

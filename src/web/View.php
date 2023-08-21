@@ -21,9 +21,11 @@ use craft\helpers\StringHelper;
 use craft\web\twig\CpExtension;
 use craft\web\twig\Environment;
 use craft\web\twig\Extension;
+use craft\web\twig\FeExtension;
 use craft\web\twig\GlobalsExtension;
 use craft\web\twig\SinglePreloaderExtension;
 use craft\web\twig\TemplateLoader;
+use LogicException;
 use Throwable;
 use Twig\Error\LoaderError as TwigLoaderError;
 use Twig\Error\RuntimeError as TwigRuntimeError;
@@ -324,7 +326,7 @@ class View extends \yii\web\View
         }
 
         // Register the control panel hooks
-        $this->hook('cp.elements.element', [$this, '_getCpElementHtml']);
+        $this->hook('cp.elements.element', [$this, '_elementChipHtml']);
     }
 
     /**
@@ -359,6 +361,7 @@ class View extends \yii\web\View
         if ($this->_templateMode === self::TEMPLATE_MODE_CP) {
             $twig->addExtension(new CpExtension());
         } elseif (Craft::$app->getIsInstalled()) {
+            $twig->addExtension(new FeExtension());
             $twig->addExtension(new GlobalsExtension());
 
             if (Craft::$app->getConfig()->getGeneral()->preloadSingles) {
@@ -402,12 +405,20 @@ class View extends \yii\web\View
 
         $this->_twigExtensions[$class] = $extension;
 
-        // Add it to any existing Twig environments
         if (isset($this->_cpTwig)) {
-            $this->_cpTwig->addExtension($extension);
+            try {
+                $this->_cpTwig->addExtension($extension);
+            } catch (LogicException) {
+                $this->_cpTwig = null;
+            }
         }
+
         if (isset($this->_siteTwig)) {
-            $this->_siteTwig->addExtension($extension);
+            try {
+                $this->_siteTwig->addExtension($extension);
+            } catch (LogicException) {
+                $this->_siteTwig = null;
+            }
         }
     }
 
@@ -580,7 +591,7 @@ class View extends \yii\web\View
     {
         // If there are no dynamic tags, just return the template
         if (!str_contains($template, '{')) {
-            return $template;
+            return trim($template);
         }
 
         $oldTemplateMode = $this->templateMode;
@@ -636,7 +647,7 @@ class View extends \yii\web\View
             // Render it!
             /** @var TwigTemplate $templateObj */
             $templateObj = $this->_objectTemplates[$cacheKey];
-            return $templateObj->render($variables);
+            return trim($templateObj->render($variables));
         } finally {
             $this->_renderingTemplate = $lastRenderingTemplate;
             $twig->setDefaultEscaperStrategy();
@@ -2198,13 +2209,15 @@ JS;
     }
 
     /**
-     * Returns the HTML for an element in the control panel.
+     * Renders an element’s chip HTML.
      *
      * @param array $context
      * @return string|null
      */
-    private function _getCpElementHtml(array $context): ?string
+    private function _elementChipHtml(array $context): ?string
     {
+        Craft::$app->getDeprecator()->log('hook:cp.elements.element', 'The `_elements/element.twig` template and `cp.elements.element` template hook are deprecated. The `elementChip()` function should be used instead.');
+
         if (!isset($context['element'])) {
             return null;
         }
@@ -2217,15 +2230,11 @@ JS;
 
         return Cp::elementHtml(
             $context['element'],
-            $context['context'] ?? 'index',
-            $size,
-            $context['name'] ?? null,
-            true,
-            true,
-            true,
-            true,
-            $context['single'] ?? false,
-            $context['autoReload'] ?? true,
+            context: $context['context'] ?? 'index',
+            size: $size,
+            inputName: $context['name'] ?? null,
+            single: $context['single'] ?? false,
+            autoReload: $context['autoReload'] ?? true,
         );
     }
 }

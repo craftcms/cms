@@ -7,6 +7,7 @@
 
 namespace craft\base;
 
+use craft\elements\db\EagerLoadInfo;
 use DateTime;
 
 /**
@@ -17,6 +18,18 @@ use DateTime;
  */
 trait ElementTrait
 {
+    /**
+     * @var ElementInterface[]|null All elements that the element was queried with.
+     * @since 5.0.0
+     */
+    public ?array $elementQueryResult = null;
+
+    /**
+     * @var EagerLoadInfo|null Info about the eager loading setup used to query this element.
+     * @since 5.0.0
+     */
+    public ?EagerLoadInfo $eagerLoadInfo = null;
+
     /**
      * @var int|null The element’s ID
      */
@@ -65,11 +78,6 @@ trait ElementTrait
      * @var int|null The element’s structure ID
      */
     public ?int $structureId = null;
-
-    /**
-     * @var int|null The element’s content row ID
-     */
-    public ?int $contentId = null;
 
     /**
      * @var bool Whether the element is enabled

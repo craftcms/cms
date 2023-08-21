@@ -531,6 +531,11 @@ class ExtensionTest extends TestCase
             'foo qux baz',
             '{{ "foo bar baz"|replace("bar", "qux") }}'
         );
+
+        $this->testRenderResult(
+            'foo zar zazzy',
+            '{{ "foo bar baz"|replace({"/b(\\\w+)/": "z$1", zaz: "zazzy"}) }}',
+        );
     }
 
     /**

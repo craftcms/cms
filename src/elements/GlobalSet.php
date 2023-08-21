@@ -9,6 +9,7 @@ namespace craft\elements;
 
 use Craft;
 use craft\base\Element;
+use craft\base\FieldLayoutProviderInterface;
 use craft\behaviors\FieldLayoutBehavior;
 use craft\elements\db\GlobalSetQuery;
 use craft\helpers\UrlHelper;
@@ -25,8 +26,13 @@ use yii\base\InvalidConfigException;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
-class GlobalSet extends Element
+class GlobalSet extends Element implements FieldLayoutProviderInterface
 {
+    /**
+     * @since 4.4.6
+     */
+    public const SCENARIO_SAVE_SET = 'saveSet';
+
     /**
      * @inheritdoc
      */
@@ -65,14 +71,6 @@ class GlobalSet extends Element
     public static function refHandle(): ?string
     {
         return 'globalset';
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public static function hasContent(): bool
-    {
-        return true;
     }
 
     /**
@@ -136,30 +134,10 @@ class GlobalSet extends Element
      * @inheritdoc
      * @since 3.3.0
      */
-    public static function gqlTypeNameByContext(mixed $context): string
-    {
-        /** @var self $context */
-        return $context->handle . '_GlobalSet';
-    }
-
-    /**
-     * @inheritdoc
-     * @since 3.3.0
-     */
     public static function gqlScopesByContext(mixed $context): array
     {
         /** @var self $context */
         return ['globalsets.' . $context->uid];
-    }
-
-    /**
-     * @inheritdoc
-     * @since 3.5.0
-     */
-    public static function gqlMutationNameByContext(mixed $context): string
-    {
-        /** @var self $context */
-        return 'save_' . $context->handle . '_GlobalSet';
     }
 
     /**
@@ -246,7 +224,26 @@ class GlobalSet extends Element
     /**
      * @inheritdoc
      */
-    public function getFieldLayout(): ?FieldLayout
+    public function scenarios(): array
+    {
+        $scenarios = parent::scenarios();
+        $scenarios[self::SCENARIO_SAVE_SET] = $scenarios[self::SCENARIO_DEFAULT];
+
+        return $scenarios;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getHandle(): ?string
+    {
+        return $this->handle;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getFieldLayout(): FieldLayout
     {
         /** @var FieldLayoutBehavior $behavior */
         $behavior = $this->getBehavior('fieldLayout');
@@ -267,7 +264,7 @@ class GlobalSet extends Element
      */
     public function getGqlTypeName(): string
     {
-        return static::gqlTypeNameByContext($this);
+        return "{$this->handle}_GlobalSet";
     }
 
     // Events

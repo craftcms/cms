@@ -9,13 +9,13 @@ namespace craft\helpers;
 
 use Craft;
 use craft\base\ElementInterface;
-use craft\elements\Entry as EntryElement;
 use craft\errors\GqlException;
 use craft\gql\base\Directive;
 use craft\gql\ElementQueryConditionBuilder;
 use craft\gql\GqlEntityRegistry;
-use craft\models\EntryType as EntryTypeModel;
+use craft\models\EntryType;
 use craft\models\GqlSchema;
+use craft\models\Section;
 use craft\models\Site;
 use craft\services\Gql as GqlService;
 use GraphQL\Language\AST\ListValueNode;
@@ -48,14 +48,16 @@ class Gql
             return false;
         }
 
-        if (!is_array($components)) {
-            $components = [$components];
-        }
-
-        $scope = (array)$schema->scope;
-
-        foreach ($components as $component) {
-            if (empty(preg_grep('/^' . preg_quote($component, '/') . '\:/i', $scope))) {
+        foreach ((array)$components as $component) {
+            $component = strtolower($component);
+            $found = false;
+            foreach ($schema->scope as $scopeComponent) {
+                if (str_starts_with(strtolower($scopeComponent), $component)) {
+                    $found = true;
+                    break;
+                }
+            }
+            if (!$found) {
                 return false;
             }
         }
@@ -98,7 +100,13 @@ class Gql
             return false;
         }
 
-        return !empty(preg_grep('/^' . preg_quote($component, '/') . '\:' . preg_quote($action, '/') . '$/i', (array)$schema->scope));
+        $search = strtolower("$component:$action");
+        foreach ($schema->scope as $scopeComponent) {
+            if (strtolower($scopeComponent) === $search) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
@@ -116,34 +124,18 @@ class Gql
             return [];
         }
 
-        $scope = (array)$schema->scope;
         $actions = [];
+        $search = sprintf('%s:', strtolower($entity));
+        $searchLen = strlen($search);
 
-        foreach (preg_grep('/^' . preg_quote($entity, '/') . '\:.*$/i', $scope) as $component) {
-            $parts = explode(':', $component);
-            $actions[end($parts)] = true;
+        foreach ($schema->scope as $scopeComponent) {
+            if (str_starts_with(strtolower($scopeComponent), $search)) {
+                $action = substr($scopeComponent, $searchLen);
+                $actions[$action] = true;
+            }
         }
 
         return array_keys($actions);
-    }
-
-    /**
-     * Return true if active schema can mutate entries.
-     *
-     * @param GqlSchema|null $schema The GraphQL schema. If none is provided, the active schema will be used.
-     * @return bool
-     * @since 3.5.0
-     */
-    public static function canMutateEntries(?GqlSchema $schema = null): bool
-    {
-        $allowedEntities = self::extractAllowedEntitiesFromSchema('edit', $schema);
-
-        // Singles don't have the `edit` action.
-        if (!isset($allowedEntities['entrytypes'])) {
-            $allowedEntities = self::extractAllowedEntitiesFromSchema('save', $schema);
-        }
-
-        return isset($allowedEntities['entrytypes']);
     }
 
     /**
@@ -207,7 +199,7 @@ class Gql
     public static function canQueryEntries(?GqlSchema $schema = null): bool
     {
         $allowedEntities = self::extractAllowedEntitiesFromSchema('read', $schema);
-        return isset($allowedEntities['sections'], $allowedEntities['entrytypes']);
+        return isset($allowedEntities['sections']);
     }
 
     /**
@@ -281,13 +273,9 @@ class Gql
      */
     public static function getUnionType(string $typeName, array $includedTypes, ?callable $resolveFunction = null): mixed
     {
-        if (!$resolveFunction) {
-            $resolveFunction = function(ElementInterface $value) {
-                return $value->getGqlTypeName();
-            };
-        }
+        $resolveFunction ??= fn(ElementInterface $value) => $value->getGqlTypeName();
 
-        return GqlEntityRegistry::getEntity($typeName) ?: GqlEntityRegistry::createEntity($typeName, new UnionType([
+        return GqlEntityRegistry::getOrCreate($typeName, fn() => new UnionType([
             'name' => $typeName,
             'types' => $includedTypes,
             'resolveType' => $resolveFunction,
@@ -582,13 +570,36 @@ class Gql
     /**
      * Return all entry types a given (or loaded) schema contains.
      *
-     * @return EntryTypeModel[]
+     * @return EntryType[]
      */
     public static function getSchemaContainedEntryTypes(?GqlSchema $schema = null): array
     {
+        $entryTypes = [];
+
+        foreach (Craft::$app->getEntries()->getAllSections() as $section) {
+            if (self::isSchemaAwareOf("sections.$section->uid", $schema)) {
+                foreach ($section->getEntryTypes() as $entryType) {
+                    if (!isset($entryTypes[$entryType->uid])) {
+                        $entryTypes[$entryType->uid] = $entryType;
+                    }
+                }
+            }
+        }
+
+        return array_values($entryTypes);
+    }
+
+    /**
+     * Returns all sections a given (or loaded) schema contains.
+     *
+     * @return Section[]
+     * @since 5.0.0
+     */
+    public static function getSchemaContainedSections(?GqlSchema $schema = null): array
+    {
         return array_filter(
-            Craft::$app->getSections()->getAllEntryTypes(),
-            static fn($entryType) => self::isSchemaAwareOf(EntryElement::gqlScopesByContext($entryType), $schema)
+            Craft::$app->getEntries()->getAllSections(),
+            fn(Section $section) => self::isSchemaAwareOf("sections.$section->uid", $schema),
         );
     }
 

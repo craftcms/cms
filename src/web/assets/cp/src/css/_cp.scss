@@ -266,6 +266,10 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
   padding-bottom: var(--xl);
   overflow: visible;
 
+  body.has-debug-toolbar & {
+    padding-bottom: calc(42px + var(--xl));
+  }
+
   li {
     &:not(.has-subnav) > a.sel {
       color: var(--gray-800);
@@ -333,10 +337,34 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
   flex-direction: column;
   align-items: center;
   padding: var(--m) var(--m) var(--xl);
+  gap: var(--m);
+
+  body.has-debug-toolbar & {
+    padding-bottom: calc(var(--xl) + 42px);
+  }
+
+  a {
+    white-space: nowrap;
+  }
 }
 
 #app-info {
-  margin-top: var(--xs);
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  gap: var(--m);
+}
+
+#trial-info {
+  padding: 16px var(--xl);
+  border-radius: var(--large-border-radius);
+  background-color: hsl(212, 40%, 90%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.5),
+    0 0 0 1px hsl(212, 30%, 80%), 0 2px 12px transparentize($grey200, 0.5);
+  text-align: center;
+}
+
+#app-version {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -356,62 +384,20 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
 }
 
 #edition-logo {
+  position: relative;
+  top: -1px;
   user-select: none;
   border: 1px solid var(--gray-600);
   border-radius: 3px;
   display: inline-flex;
-  height: toRem(20);
   box-sizing: content-box;
   font-size: 11px;
-
-  & > .edition-name,
-  & > .edition-trial {
-    padding: toRem(6, 7, 5);
-    line-height: var(--s);
-  }
-
-  & > .edition-name {
-    font-weight: 600;
-    letter-spacing: 1.7px;
-    padding-right: toRem(5);
-    text-transform: uppercase;
-  }
-
-  & > .edition-trial {
-    display: inline-block;
-    position: relative;
-    @include margin-left(5px);
-    @include padding-left(5px);
-    background-color: var(--gray-600);
-    color: var(--gray-200);
-    border-radius: 0 1px 1px 0;
-    letter-spacing: 1px;
-    @include padding-right(7px);
-    text-transform: lowercase;
-
-    &:before {
-      display: block;
-      position: absolute;
-      top: 0;
-      content: '';
-      font-size: 0;
-      width: 0;
-      height: 0;
-      border-style: solid;
-
-      body.ltr & {
-        left: -10px;
-        border-width: 0 10px 20px 0;
-        border-color: transparent var(--gray-600) transparent transparent;
-      }
-
-      body.rtl & {
-        right: -10px;
-        border-width: 0 0 20px 10px;
-        border-color: transparent transparent transparent var(--gray-600);
-      }
-    }
-  }
+  padding: 6px 7px;
+  line-height: 8px;
+  font-weight: 600;
+  letter-spacing: 1.7px;
+  padding-right: 5px;
+  text-transform: uppercase;
 }
 
 #devmode {
@@ -705,7 +691,8 @@ li.breadcrumb-toggle-wrapper {
 .header-photo {
   padding: 5px 0;
 
-  img {
+  img,
+  svg {
     display: block;
     width: 30px;
     height: 30px;
@@ -735,6 +722,10 @@ li.breadcrumb-toggle-wrapper {
   @include left(8px);
   width: calc(100% - 16px);
   z-index: 101;
+
+  body.has-debug-toolbar & {
+    bottom: 50px;
+  }
 
   @media only screen and (min-width: $minHorizontalUiWidth) {
     width: 350px;
@@ -776,12 +767,14 @@ li.breadcrumb-toggle-wrapper {
 
       .notification-message {
         font-weight: bold;
+        word-break: normal;
+        overflow-wrap: anywhere;
       }
 
       .notification-details {
         margin-top: var(--xs);
 
-        .element {
+        .chip {
           border: 1px solid $hairlineColor;
         }
       }
@@ -801,8 +794,8 @@ li.breadcrumb-toggle-wrapper {
 
 #crumbs,
 #header {
-  padding-left: var(--xl);
-  padding-right: var(--xl);
+  padding-left: var(--padding);
+  padding-right: var(--padding);
 }
 
 #primary-nav-toggle {
@@ -944,7 +937,7 @@ li.breadcrumb-toggle-wrapper {
   flex-direction: row;
   align-items: flex-start;
   width: calc(100vw - #{$sidebarWidth});
-  padding: 0 var(--xl) 48px;
+  padding: 0 var(--padding) 48px;
   box-sizing: border-box;
 
   // for the Dashboard and any other full-page grids:
@@ -968,6 +961,7 @@ li.breadcrumb-toggle-wrapper {
 }
 
 #sidebar {
+  position: relative;
   box-sizing: border-box;
   padding: 0 31px;
   width: $sidebarWidth;
@@ -1039,7 +1033,7 @@ li.breadcrumb-toggle-wrapper {
   border-radius: var(--large-border-radius);
   position: relative;
   background-clip: padding-box;
-  padding: var(--xl);
+  padding: var(--xl) var(--padding);
   word-wrap: break-word;
 
   & > hr {
@@ -1052,8 +1046,9 @@ li.breadcrumb-toggle-wrapper {
   position: sticky;
   bottom: 0;
   z-index: 1;
-  margin: 25px calc((var(--xl) * -1) + 2px) calc((var(--xl) * -1) + 2px); // 1px extra on top is intentional
-  padding: var(--s) var(--xl);
+  margin: calc(var(--xl) + 1px) calc(var(--padding) * -1 + 2px)
+    calc(var(--xl) * -1 + 2px);
+  padding: var(--s) var(--padding);
   background-color: var(--gray-050);
   border-radius: var(--small-border-radius);
   box-sizing: border-box;
@@ -1100,6 +1095,7 @@ li.breadcrumb-toggle-wrapper {
   @include padding-right(var(--xl));
   @include padding-left(var(--m));
   width: $detailsWidth + 38;
+  z-index: 1;
 
   &.fixed {
     position: fixed;
@@ -1108,6 +1104,8 @@ li.breadcrumb-toggle-wrapper {
   }
 
   .details {
+    margin-bottom: 11.5em;
+
     .meta {
       border-radius: var(--large-border-radius);
 
@@ -1271,16 +1269,18 @@ li.breadcrumb-toggle-wrapper {
   #details {
     padding: 0 !important;
     margin-top: var(--m);
+
+    .details {
+      margin-bottom: auto;
+    }
   }
 }
 
 // Tighten up the padding at < 768
 @media only screen and (max-width: 767px) {
-  #crumbs,
-  #header,
-  #main-content {
-    padding-left: 10px !important;
-    padding-right: 10px !important;
+  :root {
+    --padding: var(--s);
+    --neg-padding: calc(var(--s) * -1);
   }
 
   #tabs ul li {
@@ -1292,6 +1292,11 @@ li.breadcrumb-toggle-wrapper {
     & + li {
       @include margin-left(-7px);
     }
+  }
+
+  .card-grid {
+    display: flex !important;
+    flex-direction: column;
   }
 }
 
@@ -1555,7 +1560,7 @@ li.breadcrumb-toggle-wrapper {
   & > h2 {
     flex: 4 0 100%;
 
-    &:not(:first-child) {
+    &:not(:nth-child(-n + 1 of :not(.hidden))) {
       padding-top: var(--xl);
       border-top: 1px solid var(--hairline-color);
     }

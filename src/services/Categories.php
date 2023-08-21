@@ -232,6 +232,7 @@ class Categories extends Component
      */
     public function getGroupSiteSettings(int $groupId): array
     {
+        /** @var CategoryGroup_SiteSettingsRecord[] $results */
         $results = CategoryGroup_SiteSettingsRecord::find()
             ->where(['groupId' => $groupId])
             ->all();
@@ -621,7 +622,7 @@ FROM $elementsTable [[elements]]
 WHERE $conditionSql
 SQL)->execute();
                 $db->createCommand(<<<SQL
-UPDATE $elementsTable
+UPDATE $elementsTable [[elements]]
 SET [[dateDeleted]] = '$now'
 FROM $categoriesTable [[categories]]
 WHERE $conditionSql

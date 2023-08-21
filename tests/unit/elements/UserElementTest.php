@@ -95,8 +95,12 @@ class UserElementTest extends TestCase
         $user->username = $this->activeUser->username;
         $user->email = $this->activeUser->email;
 
+        // Set invalid value, as it should get cleared when activating user.
+        $user->fullName = 'invalid://';
+
         $activated = Craft::$app->getUsers()->activateUser($user);
         self::assertFalse($activated);
+        self::assertFalse($user->hasErrors('fullName'));
         self::assertTrue($user->hasErrors('username'));
         self::assertTrue($user->hasErrors('email'));
 

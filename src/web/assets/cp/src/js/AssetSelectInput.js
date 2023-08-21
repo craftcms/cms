@@ -11,7 +11,6 @@ Craft.AssetSelectInput = Craft.BaseElementSelectInput.extend({
 
   init: function () {
     this.base.apply(this, arguments);
-
     if (this.settings.canUpload) {
       this._attachUploader();
     }
@@ -38,21 +37,24 @@ Craft.AssetSelectInput = Craft.BaseElementSelectInput.extend({
     }
   },
 
-  onAddElements: function () {
-    this.$elements
-      .find('.elementthumb')
-      .addClass('open-preview')
-      .on('click', (ev) => {
-        this.clearOpenPreviewTimeout();
-        this.openPreviewTimeout = setTimeout(() => {
-          this.openPreview();
-          this.openPreviewTimeout = null;
-        }, 500);
-      })
-      .on('dblclick', (ev) => {
-        this.clearOpenPreviewTimeout();
-      });
-    this.base();
+  defineElementActions: function ($element) {
+    const actions = this.base($element);
+    const viewIndex = actions.findIndex((a) => a.icon === 'share');
+    const previewAction = {
+      icon: 'view',
+      label: Craft.t('app', 'Preview file'),
+      callback: () => {
+        this.openPreview($element);
+      },
+    };
+
+    if (viewIndex !== -1) {
+      actions.splice(viewIndex + 1, 0, previewAction);
+    } else {
+      actions.push(previewAction);
+    }
+
+    return actions;
   },
 
   clearOpenPreviewTimeout: function () {
@@ -62,11 +64,13 @@ Craft.AssetSelectInput = Craft.BaseElementSelectInput.extend({
     }
   },
 
-  openPreview: function () {
+  openPreview: function ($element) {
     if (Craft.PreviewFileModal.openInstance) {
       Craft.PreviewFileModal.openInstance.selfDestruct();
     } else {
-      var $element = this.elementSelect.$focusedItem;
+      if (!$element) {
+        $element = this.elementSelect.$focusedItem;
+      }
 
       if ($element.length) {
         this._loadPreview($element);
@@ -115,22 +119,6 @@ Craft.AssetSelectInput = Craft.BaseElementSelectInput.extend({
       $('<div class="progress-shade"></div>').appendTo(this.$container)
     );
 
-    var options = {
-      url: Craft.getActionUrl('assets/upload'),
-      dropZone: this.$container,
-      formData: {
-        fieldId: this.settings.fieldId,
-      },
-    };
-
-    if (this.settings.sourceElementId) {
-      options.formData.elementId = this.settings.sourceElementId;
-    }
-
-    if (this.settings.criteria.siteId) {
-      options.formData.siteId = this.settings.criteria.siteId;
-    }
-
     if (this.$addElementBtn) {
       this.$uploadBtn = $('<button/>', {
         type: 'button',
@@ -146,7 +134,7 @@ Craft.AssetSelectInput = Craft.BaseElementSelectInput.extend({
             ? Craft.t('app', 'Upload a file')
             : Craft.t('app', 'Upload files'),
       }).insertAfter(this.$addElementBtn);
-      options.fileInput = $('<input/>', {
+      this.$fileInput = $('<input/>', {
         type: 'file',
         class: 'hidden',
         multiple: this.settings.limit != 1,
@@ -156,14 +144,10 @@ Craft.AssetSelectInput = Craft.BaseElementSelectInput.extend({
       Garnish.$win.trigger('resize');
     }
 
-    // If CSRF protection isn't enabled, these won't be defined.
-    if (
-      typeof Craft.csrfTokenName !== 'undefined' &&
-      typeof Craft.csrfTokenValue !== 'undefined'
-    ) {
-      // Add the CSRF token
-      options.formData[Craft.csrfTokenName] = Craft.csrfTokenValue;
-    }
+    var options = {
+      dropZone: this.$container,
+      fileInput: this.$fileInput,
+    };
 
     if (typeof this.settings.criteria.kind !== 'undefined') {
       options.allowedKinds = this.settings.criteria.kind;
@@ -177,7 +161,17 @@ Craft.AssetSelectInput = Craft.BaseElementSelectInput.extend({
     options.events.fileuploaddone = this._onUploadComplete.bind(this);
     options.events.fileuploadfail = this._onUploadFailure.bind(this);
 
-    this.uploader = new Craft.Uploader(this.$container, options);
+    this.uploader = Craft.createUploader(
+      this.settings.fsType,
+      this.$container,
+      options
+    );
+
+    this.uploader.setParams({
+      elementId: this.settings.sourceElementId,
+      siteId: this.settings.criteria.siteId,
+      fieldId: this.settings.fieldId,
+    });
 
     if (this.$uploadBtn) {
       this.$uploadBtn.on('click', (ev) => {
@@ -215,19 +209,6 @@ Craft.AssetSelectInput = Craft.BaseElementSelectInput.extend({
 
     var $newElement = element.$element;
 
-    // Make a couple tweaks
-    $newElement.addClass('removable');
-    $newElement.prepend(
-      '<input type="hidden" name="' +
-        this.settings.name +
-        '[]" value="' +
-        element.id +
-        '">' +
-        '<a class="delete icon" title="' +
-        Craft.t('app', 'Remove') +
-        '"></a>'
-    );
-
     $newElement.appendTo(this.$elementsContainer);
 
     var margin = -($newElement.outerWidth() + 10);
@@ -260,7 +241,9 @@ Craft.AssetSelectInput = Craft.BaseElementSelectInput.extend({
    * On upload progress.
    */
   _onUploadProgress: function (event, data) {
-    var progress = parseInt((data.loaded / data.total) * 100, 10);
+    data = event instanceof CustomEvent ? event.detail : data;
+
+    var progress = parseInt(Math.min(data.loaded / data.total, 1) * 100, 10);
     this.progressBar.setProgressPercentage(progress);
   },
 
@@ -268,54 +251,68 @@ Craft.AssetSelectInput = Craft.BaseElementSelectInput.extend({
    * On a file being uploaded.
    */
   _onUploadComplete: function (event, data) {
-    if (data.result.error) {
-      alert(data.result.error);
-      this.progressBar.hideProgressBar();
-      this.$container.removeClass('uploading');
-    } else {
-      var parameters = {
-        elementId: data.result.assetId,
-        siteId: this.settings.criteria.siteId,
-        thumbSize: this.settings.viewMode,
-      };
+    const result = event instanceof CustomEvent ? event.detail : data.result;
 
-      Craft.sendActionRequest('POST', 'elements/get-element-html', {
-        data: parameters,
+    Craft.sendActionRequest('POST', 'app/render-elements', {
+      data: {
+        elements: [
+          {
+            type: 'craft\\elements\\Asset',
+            id: result.assetId,
+            siteId: this.settings.criteria.siteId,
+            instances: [
+              {
+                context: 'field',
+                ui: ['list', 'large'].includes(this.settings.viewMode)
+                  ? 'chip'
+                  : 'card',
+                size: this.settings.viewMode === 'large' ? 'large' : 'small',
+              },
+            ],
+          },
+        ],
+      },
+    })
+      .then(({data}) => {
+        const html = $(data.elements[result.assetId][0]);
+        this.selectUploadedFile(Craft.getElementInfo(html));
+
+        // Last file
+        if (this.uploader.isLastUpload()) {
+          this.progressBar.hideProgressBar();
+          this.$container.removeClass('uploading');
+          this.$container.trigger('change');
+        }
       })
-        .then((response) => {
-          var html = $(response.data.html);
-          Craft.appendHeadHtml(response.data.headHtml);
-          this.selectUploadedFile(Craft.getElementInfo(html));
+      .catch(({response}) => {
+        Craft.cp.displayError(response.data.message);
+      });
 
-          // Last file
-          if (this.uploader.isLastUpload()) {
-            this.progressBar.hideProgressBar();
-            this.$container.removeClass('uploading');
-            this.$container.trigger('change');
-          }
-        })
-        .catch(({response}) => {
-          alert(response.data.message);
-        });
-
-      Craft.cp.runQueue();
-    }
+    Craft.cp.runQueue();
   },
 
   /**
    * On Upload Failure.
    */
   _onUploadFailure: function (event, data) {
-    const response = data.response();
-    let {message, filename} = response?.jqXHR?.responseJSON || {};
+    const response =
+      event instanceof CustomEvent ? event.detail : data?.jqXHR?.responseJSON;
+
+    let {message, filename, errors} = response || {};
+
+    let errorMessages = errors ? Object.values(errors).flat() : [];
 
     if (!message) {
-      message = filename
-        ? Craft.t('app', 'Upload failed for “{filename}”.', {filename})
-        : Craft.t('app', 'Upload failed.');
+      if (errorMessages.length) {
+        message = errorMessages.join('\n');
+      } else if (filename) {
+        message = Craft.t('app', 'Upload failed for “{filename}”.', {filename});
+      } else {
+        message = Craft.t('app', 'Upload failed.');
+      }
     }
 
-    alert(message);
+    Craft.cp.displayError(message);
     this.progressBar.hideProgressBar();
     this.$container.removeClass('uploading');
   },

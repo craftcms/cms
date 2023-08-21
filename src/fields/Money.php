@@ -12,25 +12,22 @@ use craft\base\ElementInterface;
 use craft\base\Field;
 use craft\base\PreviewableFieldInterface;
 use craft\base\SortableFieldInterface;
-use craft\elements\db\ElementQuery;
-use craft\elements\db\ElementQueryInterface;
 use craft\fields\conditions\NumberFieldConditionRule;
 use craft\gql\types\Money as MoneyType;
 use craft\helpers\Db;
-use craft\helpers\ElementHelper;
 use craft\helpers\MoneyHelper;
 use craft\validators\MoneyValidator;
 use GraphQL\Type\Definition\Type;
 use Money\Currencies\ISOCurrencies;
 use Money\Currency;
 use Money\Money as MoneyLibrary;
+use yii\db\Schema;
 
 /**
  * Money field type
  *
  * @property-read array $contentGqlMutationArgumentType
  * @property-read array[] $elementValidationRules
- * @property-read string[] $contentColumnType
  * @property-read null|string $settingsHtml
  * @property-read null $elementConditionRuleType
  * @property-read mixed $contentGqlType
@@ -50,7 +47,7 @@ class Money extends Field implements PreviewableFieldInterface, SortableFieldInt
     /**
      * @inheritdoc
      */
-    public static function valueType(): string
+    public static function phpType(): string
     {
         return sprintf('\\%s', MoneyLibrary::class);
     }
@@ -153,9 +150,18 @@ class Money extends Field implements PreviewableFieldInterface, SortableFieldInt
     /**
      * @inheritdoc
      */
-    public function getContentColumnType(): string
+    public static function dbType(): string
     {
-        return Db::getNumericalColumnType($this->min, $this->max, 0);
+        return Schema::TYPE_DECIMAL;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function queryCondition(array $instances, mixed $value, array &$params): ?array
+    {
+        $valueSql = static::valueSql($instances);
+        return Db::parseMoneyParam($valueSql, $instances[0]->currency, $value);
     }
 
     /**
@@ -303,23 +309,9 @@ class Money extends Field implements PreviewableFieldInterface, SortableFieldInt
     /**
      * @inheritdoc
      */
-    public function getTableAttributeHtml(mixed $value, ElementInterface $element): string
+    public function getPreviewHtml(mixed $value, ElementInterface $element): string
     {
         return MoneyHelper::toString($value) ?: '';
-    }
-
-    /**
-     * @param ElementQueryInterface $query
-     * @param mixed $value
-     * @return void
-     */
-    public function modifyElementsQuery(ElementQueryInterface $query, mixed $value): void
-    {
-        /** @var ElementQuery $query */
-        if ($value !== null) {
-            $column = ElementHelper::fieldColumnFromField($this);
-            $query->subQuery->andWhere(Db::parseMoneyParam("content.$column", $this->currency, $value));
-        }
     }
 
     /**

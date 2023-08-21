@@ -31,7 +31,7 @@ class RadioButtons extends BaseOptionsField implements SortableFieldInterface
     /**
      * @inheritdoc
      */
-    public static function valueType(): string
+    public static function phpType(): string
     {
         return sprintf('\\%s', SingleOptionFieldData::class);
     }

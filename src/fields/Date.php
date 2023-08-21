@@ -12,14 +12,12 @@ use craft\base\ElementInterface;
 use craft\base\Field;
 use craft\base\PreviewableFieldInterface;
 use craft\base\SortableFieldInterface;
-use craft\elements\db\ElementQuery;
-use craft\elements\db\ElementQueryInterface;
 use craft\fields\conditions\DateFieldConditionRule;
 use craft\gql\directives\FormatDateTime;
 use craft\gql\types\DateTime as DateTimeType;
+use craft\helpers\ArrayHelper;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
-use craft\helpers\ElementHelper;
 use craft\helpers\Gql;
 use craft\helpers\Html;
 use craft\i18n\Locale;
@@ -49,9 +47,29 @@ class Date extends Field implements PreviewableFieldInterface, SortableFieldInte
     /**
      * @inheritdoc
      */
-    public static function valueType(): string
+    public static function phpType(): string
     {
         return sprintf('\\%s|null', DateTime::class);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function dbType(): array|string
+    {
+        return [
+            'date' => Schema::TYPE_DATETIME,
+            'tz' => Schema::TYPE_STRING,
+        ];
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function queryCondition(array $instances, mixed $value, array &$params): ?array
+    {
+        $valueSql = static::valueSql($instances);
+        return Db::parseDateParam($valueSql, $value);
     }
 
     /**
@@ -167,21 +185,6 @@ class Date extends Field implements PreviewableFieldInterface, SortableFieldInte
     /**
      * @inheritdoc
      */
-    public function getContentColumnType(): array|string
-    {
-        if ($this->showTimeZone) {
-            return [
-                'date' => Schema::TYPE_DATETIME,
-                'tz' => Schema::TYPE_STRING,
-            ];
-        }
-
-        return Schema::TYPE_DATETIME;
-    }
-
-    /**
-     * @inheritdoc
-     */
     public function getSettingsHtml(): ?string
     {
         if ($this->showDate && !$this->showTime) {
@@ -260,6 +263,7 @@ class Date extends Field implements PreviewableFieldInterface, SortableFieldInte
             'describedBy' => $this->describedBy,
             'name' => $this->handle,
             'value' => $value,
+            'timeZone' => $this->showTimeZone ? false : null,
             'outputTzParam' => false,
             'minuteIncrement' => $this->minuteIncrement,
             'isDateTime' => $this->showTime,
@@ -314,21 +318,36 @@ class Date extends Field implements PreviewableFieldInterface, SortableFieldInte
     /**
      * @inheritdoc
      */
-    public function getTableAttributeHtml(mixed $value, ElementInterface $element): string
+    public function getPreviewHtml(mixed $value, ElementInterface $element): string
     {
+        /** @var DateTime|null $value */
         if (!$value) {
             return '';
         }
 
+        $formatter = Craft::$app->getFormatter();
+
         if ($this->showDate && $this->showTime) {
-            return Craft::$app->getFormatter()->asDatetime($value, Locale::LENGTH_SHORT);
+            if ($this->showTimeZone) {
+                $timeZone = $formatter->timeZone;
+                $formatter->timeZone = $value->getTimezone()->getName();
+                $html = sprintf(
+                    '%s %s',
+                    $formatter->asDatetime($value, Locale::LENGTH_SHORT),
+                    $value->format('T')
+                );
+                $formatter->timeZone = $timeZone;
+                return $html;
+            }
+
+            return $formatter->asDatetime($value, Locale::LENGTH_SHORT);
         }
 
         if ($this->showDate) {
-            return Craft::$app->getFormatter()->asDate($value, Locale::LENGTH_SHORT);
+            return $formatter->asDate($value, Locale::LENGTH_SHORT);
         }
 
-        return Craft::$app->getFormatter()->asTime($value, Locale::LENGTH_SHORT);
+        return $formatter->asTime($value, Locale::LENGTH_SHORT);
     }
 
     /**
@@ -348,10 +367,9 @@ class Date extends Field implements PreviewableFieldInterface, SortableFieldInte
             return $value;
         }
 
-        // Is this coming from the DB?
+        // tz => timezone
         if (is_array($value) && array_key_exists('tz', $value)) {
-            $timeZone = $value['tz'];
-            $value = $value['date'];
+            $value['timezone'] = ArrayHelper::remove($value, 'tz');
         }
 
         if (
@@ -367,8 +385,8 @@ class Date extends Field implements PreviewableFieldInterface, SortableFieldInte
             return null;
         }
 
-        if ($this->showTimeZone && (isset($timeZone) || (is_array($value) && isset($value['timezone'])))) {
-            $date->setTimezone(new DateTimeZone($timeZone ?? $value['timezone']));
+        if ($this->showTimeZone && is_array($value) && !empty($value['timezone'])) {
+            $date->setTimezone(new DateTimeZone($value['timezone']));
         }
 
         return $date;
@@ -383,15 +401,17 @@ class Date extends Field implements PreviewableFieldInterface, SortableFieldInte
             return null;
         }
 
-        /** @var DateTime $value */
-        if (!$this->showTimeZone) {
-            return Db::prepareDateForDb($value);
+        $serialized = [
+            'date' => Db::prepareDateForDb($value),
+        ];
+
+        if ($this->showTimeZone) {
+            $serialized += [
+                'tz' => $value->getTimezone()->getName(),
+            ];
         }
 
-        return [
-            'date' => Db::prepareDateForDb($value),
-            'tz' => $value->getTimezone()->getName(),
-        ];
+        return $serialized;
     }
 
     /**
@@ -400,18 +420,6 @@ class Date extends Field implements PreviewableFieldInterface, SortableFieldInte
     public function getElementConditionRuleType(): array|string|null
     {
         return DateFieldConditionRule::class;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function modifyElementsQuery(ElementQueryInterface $query, mixed $value): void
-    {
-        /** @var ElementQuery $query */
-        if ($value !== null) {
-            $column = ElementHelper::fieldColumnFromField($this);
-            $query->subQuery->andWhere(Db::parseDateParam("content.$column", $value));
-        }
     }
 
     /**

@@ -8,11 +8,10 @@
 namespace craft\helpers;
 
 use Craft;
-use craft\base\BlockElementInterface;
 use craft\base\Element;
 use craft\base\ElementInterface;
 use craft\base\Field;
-use craft\base\FieldInterface;
+use craft\base\NestedElementInterface;
 use craft\db\Query;
 use craft\db\Table;
 use craft\errors\OperationAbortedException;
@@ -324,6 +323,43 @@ class ElementHelper
     }
 
     /**
+     * Returns the site statuses for a given element.
+     *
+     * @param ElementInterface $element The element to return site statuses for
+     * @param bool $editableOnly Whether to only return statuses for sites the user has access to
+     * @return array<int,bool> The site statuses, indexed by site ID
+     * @since 4.4.7
+     */
+    public static function siteStatusesForElement(ElementInterface $element, bool $editableOnly = false): array
+    {
+        $supportedSites = static::supportedSitesForElement($element, true);
+        $propagatedSites = array_values(array_filter($supportedSites, fn($site) => $site['propagate']));
+        $propagatedSiteIds = array_map(fn($site) => $site['siteId'], $propagatedSites);
+
+        if ($editableOnly) {
+            $propagatedSiteIds = array_intersect($propagatedSiteIds, Craft::$app->getSites()->getEditableSiteIds());
+        }
+
+        if (!$element->enabled || !$element->id) {
+            // If the element isn't saved yet, assume other sites will share its current status
+            $defaultStatus = !$element->id && $element->enabled && $element->getEnabledForSite();
+            return array_combine($propagatedSiteIds, array_map(fn() => $defaultStatus, $propagatedSiteIds));
+        }
+
+        $siteStatusesQuery = $element::find()
+            ->drafts($element->getIsDraft())
+            ->provisionalDrafts($element->isProvisionalDraft)
+            ->revisions($element->getIsRevision())
+            ->id($element->id)
+            ->siteId($propagatedSiteIds)
+            ->status(null)
+            ->asArray()
+            ->select(['elements_sites.siteId', 'elements_sites.enabled']);
+
+        return array_map(fn($enabled) => (bool)$enabled, $siteStatusesQuery->pairs());
+    }
+
+    /**
      * Returns whether changes should be tracked for the given element.
      *
      * @param ElementInterface $element
@@ -401,7 +437,7 @@ class ElementHelper
      */
     public static function rootElement(ElementInterface $element): ElementInterface
     {
-        if ($element instanceof BlockElementInterface) {
+        if ($element instanceof NestedElementInterface) {
             $owner = $element->getOwner();
             if ($owner) {
                 return static::rootElement($owner);
@@ -660,41 +696,6 @@ class ElementHelper
     }
 
     /**
-     * Returns the content column name for a given field.
-     *
-     * @param FieldInterface $field
-     * @param string|null $columnKey
-     * @return string|null
-     * @since 3.7.0
-     */
-    public static function fieldColumnFromField(FieldInterface $field, ?string $columnKey = null): ?string
-    {
-        if ($field::hasContentColumn()) {
-            return static::fieldColumn($field->columnPrefix, $field->handle, $field->columnSuffix, $columnKey);
-        }
-
-        return null;
-    }
-
-    /**
-     * Returns the content column name based on the given field attributes.
-     *
-     * @param string|null $columnPrefix
-     * @param string $handle
-     * @param string|null $columnSuffix
-     * @param string|null $columnKey
-     * @return string
-     * @since 3.7.0
-     */
-    public static function fieldColumn(?string $columnPrefix, string $handle, ?string $columnSuffix, ?string $columnKey = null): string
-    {
-        return ($columnPrefix ?? Craft::$app->getContent()->fieldColumnPrefix) .
-            $handle .
-            ($columnKey ? "_$columnKey" : '') .
-            ($columnSuffix ? "_$columnSuffix" : '');
-    }
-
-    /**
      * Returns whether the attribute on the given element is empty.
      *
      * @param ElementInterface $element
@@ -720,11 +721,11 @@ class ElementHelper
     }
 
     /**
-     * Returns the HTML for a given attribute value, to be shown in an element index view.
+     * Returns the HTML for a given attribute value, to be shown in table and card views.
      *
      * @param mixed $value The field value
      * @return string
-     * @since 4.3.0
+     * @since 5.0.0
      */
     public static function attributeHtml(mixed $value): string
     {

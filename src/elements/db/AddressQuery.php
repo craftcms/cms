@@ -7,6 +7,7 @@
 
 namespace craft\elements\db;
 
+use Craft;
 use craft\base\ElementInterface;
 use craft\db\QueryAbortedException;
 use craft\db\Table;
@@ -108,10 +109,10 @@ class AddressQuery extends ElementQuery
      * ```
      *
      * @param string|string[]|null $value The property value
-     * @return self self reference
+     * @return static self reference
      * @uses $administrativeArea
      */
-    public function administrativeArea(array|string|null $value): self
+    public function administrativeArea(array|string|null $value): static
     {
         $this->administrativeArea = $value;
 
@@ -138,10 +139,10 @@ class AddressQuery extends ElementQuery
      * ```
      *
      * @param ElementInterface $owner The owner element
-     * @return self self reference
+     * @return static self reference
      * @uses $ownerId
      */
-    public function owner(ElementInterface $owner): self
+    public function owner(ElementInterface $owner): static
     {
         $this->ownerId = [$owner->id];
         return $this;
@@ -174,10 +175,10 @@ class AddressQuery extends ElementQuery
      * ```
      *
      * @param int|int[]|null $value The property value
-     * @return self self reference
+     * @return static self reference
      * @uses $ownerId
      */
-    public function ownerId(array|int|null $value): self
+    public function ownerId(array|int|null $value): static
     {
         $this->ownerId = $value;
         return $this;
@@ -212,10 +213,10 @@ class AddressQuery extends ElementQuery
      * ```
      *
      * @param string|string[]|null $value The property value
-     * @return self self reference
+     * @return static self reference
      * @uses $countryCode
      */
-    public function countryCode(array|string|null $value): self
+    public function countryCode(array|string|null $value): static
     {
         $this->countryCode = $value;
 
@@ -227,6 +228,10 @@ class AddressQuery extends ElementQuery
      */
     protected function beforePrepare(): bool
     {
+        if (!parent::beforePrepare()) {
+            return false;
+        }
+
         $this->_normalizeOwnerId();
 
         $this->joinElementTable(Table::ADDRESSES);
@@ -266,7 +271,7 @@ class AddressQuery extends ElementQuery
             $this->subQuery->andWhere(['addresses.administrativeArea' => $this->administrativeArea]);
         }
 
-        return parent::beforePrepare();
+        return true;
     }
 
     /**
@@ -302,5 +307,15 @@ class AddressQuery extends ElementQuery
         }
 
         return $tags;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    protected function fieldLayouts(): array
+    {
+        return [
+            Craft::$app->getAddresses()->getLayout(),
+        ];
     }
 }

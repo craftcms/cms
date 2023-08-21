@@ -19,6 +19,7 @@ use mikehaertl\shellcommand\Command as ShellCommand;
 use PDO;
 use PDOException;
 use yii\base\ErrorException;
+use yii\base\InvalidArgumentException;
 use yii\base\NotSupportedException;
 use yii\db\Exception;
 
@@ -62,6 +63,31 @@ class Schema extends \yii\db\mysql\Schema
         $this->typeMap['mediumtext'] = self::TYPE_MEDIUMTEXT;
         $this->typeMap['longtext'] = self::TYPE_LONGTEXT;
         $this->typeMap['enum'] = self::TYPE_ENUM;
+    }
+
+    /**
+     * Returns whether a table supports 4-byte characters.
+     *
+     * @param string $table The table to check
+     * @return bool
+     * @throws InvalidArgumentException if $table is invalid
+     * @since 5.0.0
+     */
+    public function supportsMb4(string $table): bool
+    {
+        $tableSchema = $this->getTableSchema($table);
+        if (!$tableSchema) {
+            throw new InvalidArgumentException("Invalid table: $table");
+        }
+        foreach ($tableSchema->columns as $column) {
+            // collation names always start with the charset name,
+            // so if a collation includes "mb4" we can safely assume the table has an mb4 charset
+            /** @var ColumnSchema $column */
+            if (isset($column->collation) && str_contains($column->collation, 'mb4')) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
@@ -153,7 +179,7 @@ class Schema extends \yii\db\mysql\Schema
     public function getDefaultBackupCommand(?array $ignoreTables = null): string
     {
         $useSingleTransaction = true;
-        $serverVersion = App::normalizeVersion(Craft::$app->getDb()->getSchema()->getServerVersion());
+        $serverVersion = App::normalizeVersion($this->getServerVersion());
 
         $isMySQL5 = version_compare($serverVersion, '8', '<');
         $isMySQL8 = version_compare($serverVersion, '8', '>=');
@@ -181,28 +207,25 @@ class Schema extends \yii\db\mysql\Schema
             $defaultArgs .= ' --single-transaction';
         }
 
-        // If the server is MySQL 5.x, we need to see what version of mysqldump is installed (5.x or 8.x)
-        if ($isMySQL5) {
-            // Find out if the db supports column-statistics
-            $shellCommand = new ShellCommand();
+        // Find out if the db/dump client supports column-statistics
+        $shellCommand = new ShellCommand();
 
-            if (Platform::isWindows()) {
-                $shellCommand->setCommand('mysqldump --help | findstr "column-statistics"');
-            } else {
-                $shellCommand->setCommand('mysqldump --help | grep "column-statistics"');
-            }
+        if (Platform::isWindows()) {
+            $shellCommand->setCommand('mysqldump --help | findstr "column-statistics"');
+        } else {
+            $shellCommand->setCommand('mysqldump --help | grep "column-statistics"');
+        }
 
-            // If we don't have proc_open, maybe we've got exec
-            if (!function_exists('proc_open') && function_exists('exec')) {
-                $shellCommand->useExec = true;
-            }
+        // If we don't have proc_open, maybe we've got exec
+        if (!function_exists('proc_open') && function_exists('exec')) {
+            $shellCommand->useExec = true;
+        }
 
-            $success = $shellCommand->execute();
+        $success = $shellCommand->execute();
 
-            // if there was output, then they're running mysqldump 8.x against a 5.x database.
-            if ($success && $shellCommand->getOutput()) {
-                $defaultArgs .= ' --skip-column-statistics';
-            }
+        // if there was output, then column-statistics is supported and we should disable it
+        if ($success && $shellCommand->getOutput()) {
+            $defaultArgs .= ' --column-statistics=0';
         }
 
         if ($ignoreTables === null) {
@@ -301,6 +324,18 @@ class Schema extends \yii\db\mysql\Schema
         }
 
         return null;
+    }
+
+    /**
+     * @param array $info
+     * @return ColumnSchema
+     */
+    protected function loadColumnSchema($info): ColumnSchema
+    {
+        /** @var ColumnSchema $column */
+        $column = parent::loadColumnSchema($info);
+        $column->collation = $info['collation'] ?? null;
+        return $column;
     }
 
     /**

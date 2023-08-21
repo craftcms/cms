@@ -7,7 +7,6 @@
 
 namespace crafttests\unit\helpers\dbhelper;
 
-use Codeception\Test\Unit;
 use Craft;
 use craft\db\Query;
 use craft\db\Table;
@@ -74,7 +73,7 @@ class DbHelperTest extends TestCase
 
     /**
      * @dataProvider parseParamDataProvider
-     * @param string|array $expected
+     * @param array|null $expected
      * @param string $column
      * @param mixed $value
      * @param string $defaultOperator
@@ -82,7 +81,7 @@ class DbHelperTest extends TestCase
      * @param string|null $columnType
      */
     public function testParseParam(
-        string|array $expected,
+        ?array $expected,
         string $column,
         mixed $value,
         string $defaultOperator = '=',
@@ -118,20 +117,6 @@ class DbHelperTest extends TestCase
     public function testEscapeForLike(string $expected, string $value): void
     {
         self::assertSame($expected, Db::escapeForLike($value));
-    }
-
-    /**
-     * @dataProvider extractGlueDataProvider
-     *
-     * @param string|null $expectedGlue
-     * @param mixed $expectedValue
-     * @param mixed $value
-     */
-    public function testExtractGlue(?string $expectedGlue, $expectedValue, $value): void
-    {
-        $glue = Db::extractGlue($value);
-        self::assertEquals($expectedGlue, $glue);
-        self::assertEquals($expectedValue, $value);
     }
 
     /**
@@ -425,27 +410,27 @@ class DbHelperTest extends TestCase
                 'raaa',
             ],
             [
-                '',
+                null,
                 'foo',
                 'not',
             ],
             [
-                '',
+                null,
                 'foo',
                 [],
             ],
             [
-                '',
+                null,
                 '',
                 '',
             ],
             [
-                '',
+                null,
                 'foo',
                 null,
             ],
             [
-                '',
+                null,
                 'foo',
                 '',
             ],
@@ -580,21 +565,6 @@ class DbHelperTest extends TestCase
             ['\\_foo', '_foo'],
             ['foo\\_bar', 'foo_bar'],
             ['foo\\_', 'foo_'],
-        ];
-    }
-
-    /**
-     * @return array
-     */
-    public function extractGlueDataProvider(): array
-    {
-        return [
-            ['and', ['foo', 'bar'], ['and', 'foo', 'bar']],
-            ['or', ['foo', 'bar'], ['or', 'foo', 'bar']],
-            ['not', ['foo', 'bar'], ['not', 'foo', 'bar']],
-            ['and', ['foo', 'bar'], ['AND', 'foo', 'bar']],
-            [null, ['foo', 'bar'], ['foo', 'bar']],
-            [null, 'foo', 'foo'],
         ];
     }
 
@@ -762,7 +732,9 @@ class DbHelperTest extends TestCase
     {
         return [
             [1, Schema::TYPE_CHAR],
+            [5, sprintf('%s(5)', Schema::TYPE_CHAR)],
             [255, Schema::TYPE_STRING],
+            [50, sprintf('%s(50)', Schema::TYPE_STRING)],
             [false, Schema::TYPE_MONEY],
             [false, Schema::TYPE_BOOLEAN],
         ];

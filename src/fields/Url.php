@@ -55,9 +55,17 @@ class Url extends Field implements PreviewableFieldInterface
     /**
      * @inheritdoc
      */
-    public static function valueType(): string
+    public static function phpType(): string
     {
         return 'string|null';
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function dbType(): string
+    {
+        return Schema::TYPE_STRING;
     }
 
     /**
@@ -105,14 +113,6 @@ class Url extends Field implements PreviewableFieldInterface
         $rules[] = [['types', 'maxLength'], 'required'];
         $rules[] = [['maxLength'], 'number', 'integerOnly' => true, 'min' => 10];
         return $rules;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getContentColumnType(): string
-    {
-        return Schema::TYPE_STRING . "($this->maxLength)";
     }
 
     /**
@@ -326,6 +326,7 @@ JS;
                 UrlValidator::class,
                 'pattern' => '/' . implode('|', $patterns) . '/i',
             ],
+            ['string', 'max' => $this->maxLength],
         ];
     }
 
@@ -340,7 +341,7 @@ JS;
     /**
      * @inheritdoc
      */
-    public function getTableAttributeHtml(mixed $value, ElementInterface $element): string
+    public function getPreviewHtml(mixed $value, ElementInterface $element): string
     {
         if (!$value) {
             return '';

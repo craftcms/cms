@@ -20,6 +20,7 @@ use craft\i18n\Locale;
 use GraphQL\Type\Definition\Type;
 use Throwable;
 use yii\base\InvalidArgumentException;
+use yii\db\Schema;
 
 /**
  * Number represents a Number field.
@@ -53,9 +54,26 @@ class Number extends Field implements PreviewableFieldInterface, SortableFieldIn
     /**
      * @inheritdoc
      */
-    public static function valueType(): string
+    public static function phpType(): string
     {
         return 'int|float|null';
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function dbType(): string
+    {
+        return Schema::TYPE_DECIMAL;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function queryCondition(array $instances, mixed $value, array &$params): ?array
+    {
+        $valueSql = static::valueSql($instances);
+        return Db::parseNumericParam($valueSql, $value, columnType: static::dbType());
     }
 
     /**
@@ -161,14 +179,6 @@ class Number extends Field implements PreviewableFieldInterface, SortableFieldIn
             [
                 'field' => $this,
             ]);
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getContentColumnType(): string
-    {
-        return Db::getNumericalColumnType($this->min, $this->max, $this->decimals);
     }
 
     /**
@@ -296,7 +306,7 @@ JS;
     /**
      * @inheritdoc
      */
-    public function getTableAttributeHtml(mixed $value, ElementInterface $element): string
+    public function getPreviewHtml(mixed $value, ElementInterface $element): string
     {
         if ($value === null) {
             return '';

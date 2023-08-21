@@ -140,6 +140,13 @@ class Asset extends Element
     public const EVENT_AFTER_GENERATE_TRANSFORM = 'afterGenerateTransform';
 
     /**
+     * @event DefineAssetUrlEvent The event that is triggered before defining the asset’s URL.
+     * @see getUrl()
+     * @since 4.4.7
+     */
+    public const EVENT_BEFORE_DEFINE_URL = 'beforeDefineUrl';
+
+    /**
      * @event DefineAssetUrlEvent The event that is triggered when defining the asset’s URL.
      * @see getUrl()
      * @since 4.0.0
@@ -246,14 +253,6 @@ class Asset extends Element
     /**
      * @inheritdoc
      */
-    public static function hasContent(): bool
-    {
-        return true;
-    }
-
-    /**
-     * @inheritdoc
-     */
     public static function hasTitles(): bool
     {
         return true;
@@ -326,12 +325,13 @@ class Asset extends Element
     }
 
     /**
-     * @inheritdoc
-     * @since 3.3.0
+     * Returns the GraphQL type name that assets should use, based on their volume.
+     *
+     * @since 5.0.0
      */
-    public static function gqlTypeNameByContext(mixed $context): string
+    public static function gqlTypeName(Volume $volume): string
     {
-        return $context->handle . '_Asset';
+        return sprintf('%s_Asset', $volume->handle);
     }
 
     /**
@@ -341,16 +341,6 @@ class Asset extends Element
     public static function gqlScopesByContext(mixed $context): array
     {
         return ['volumes.' . $context->uid];
-    }
-
-    /**
-     * @inheritdoc
-     * @since 3.5.0
-     */
-    public static function gqlMutationNameByContext(mixed $context): string
-    {
-        /** @var Volume $context */
-        return 'save_' . $context->handle . '_Asset';
     }
 
     /**
@@ -405,21 +395,46 @@ class Asset extends Element
         return null;
     }
 
+    public static function sourcePath(string $sourceKey, string $stepKey, ?string $context): ?array
+    {
+        if (!preg_match('/^folder:([\w\-]+)$/', $stepKey, $match)) {
+            return null;
+        }
+
+        $folder = Craft::$app->getAssets()->getFolderByUid($match[1]);
+
+        if (!$folder) {
+            return null;
+        }
+
+        $path = [$folder->getSourcePathInfo()];
+
+        while ($parent = $folder->getParent()) {
+            array_unshift($path, $parent->getSourcePathInfo());
+            $folder = $parent;
+        }
+
+        return $path;
+    }
+
     /**
      * @inheritdoc
-     * @since 3.5.0
      */
-    protected static function defineFieldLayouts(string $source): array
+    protected static function defineFieldLayouts(?string $source): array
     {
-        $fieldLayouts = [];
-        if (
-            preg_match('/^volume:(.+)$/', $source, $matches) &&
-            ($volume = Craft::$app->getVolumes()->getVolumeByUid($matches[1])) &&
-            $fieldLayout = $volume->getFieldLayout()
-        ) {
-            $fieldLayouts[] = $fieldLayout;
+        if ($source !== null) {
+            $volumes = [];
+            if (preg_match('/^volume:(.+)$/', $source, $matches)) {
+                $volume = Craft::$app->getVolumes()->getVolumeByUid($matches[1]);
+                if ($volume) {
+                    $volumes[] = $volume;
+                }
+            }
+        } else {
+            $volumes = Craft::$app->getVolumes()->getAllVolumes();
         }
-        return $fieldLayouts;
+
+        return array_map(fn(Volume $volume) => $volume->getFieldLayout(), $volumes);
     }
 
     /**
@@ -688,11 +703,17 @@ class Asset extends Element
             }
         }
 
-        if (!self::isFolderIndex()) {
-            $assets = array_merge($assets, $elementQuery->all());
+        // if it's a 'foldersOnly' request, or we have enough folders to hit the query limit,
+        // return the folders directly
+        if (
+            self::isFolderIndex() ||
+            count($assets) === (int)$elementQuery->limit
+        ) {
+            return $assets;
         }
 
-        return $assets;
+        // otherwise merge in the resulting assets
+        return array_merge($assets, $elementQuery->all());
     }
 
     /**
@@ -773,7 +794,7 @@ class Asset extends Element
     {
         if (
             is_array($assetQuery->orderBy) &&
-            is_string($firstOrderByCol = ArrayHelper::firstKey($assetQuery->orderBy)) &&
+            is_string($firstOrderByCol = array_key_first($assetQuery->orderBy)) &&
             in_array($firstOrderByCol, ['title', 'filename'])
         ) {
             $sortDir = $assetQuery->orderBy[$firstOrderByCol];
@@ -851,8 +872,8 @@ class Asset extends Element
     private static function _assembleSourceInfoForFolder(VolumeFolder $folder, ?User $user = null): array
     {
         $volume = $folder->getVolume();
-
-        if ($volume->getFs() instanceof Temp) {
+        $fs = $volume->getFs();
+        if ($fs instanceof Temp) {
             $volumeHandle = 'temp';
         } elseif (!$folder->parentId) {
             $volumeHandle = $volume->handle ?? false;
@@ -884,6 +905,7 @@ class Asset extends Element
                 'can-upload' => $folder->volumeId === null || $canUpload,
                 'can-move-to' => $canMoveTo,
                 'can-move-peer-files-to' => $canMovePeerFilesTo,
+                'fs-type' => $fs::class,
             ],
         ];
 
@@ -1445,46 +1467,68 @@ JS;
 
             $dimensionsLabel = Html::encode(Craft::t('app', 'Dimensions'));
             $updatePreviewThumbJs = $this->_updatePreviewThumbJs();
+            $fsClass = addslashes($this->fs::class);
             $js = <<<JS
 $('#replace-btn').on('click', () => {
     const \$fileInput = $('<input/>', {type: 'file', name: 'replaceFile', class: 'replaceFile hidden'}).appendTo(Garnish.\$bod);
-    const uploader = new Craft.Uploader(\$fileInput, {
-        url: Craft.getActionUrl('assets/replace-file'),
+    const uploader = Craft.createUploader('{$fsClass}', \$fileInput, {
         dropZone: null,
         fileInput: \$fileInput,
         paramName: 'replaceFile',
+        replace: true,
         events: {
             fileuploadstart: () => {
                 $('#thumb-container').addClass('loading');
             },
             fileuploaddone: (event, data) => {
-                if (data.result.error) {
-                    $('#thumb-container').removeClass('loading');
-                    alert(data.result.error);
-                } else {
-                    $('#new-filename').val(data.result.filename);
-                    $('#file-size-value')
-                        .text(data.result.formattedSize)
-                        .attr('title', data.result.formattedSizeInBytes);
-                    let \$dimensionsVal = $('#dimensions-value');
-                    if (data.result.dimensions) {
-                        if (!\$dimensionsVal.length) {
-                            $(
-                                '<div class="data">' +
-                                '<dt class="heading">$dimensionsLabel</div>' +
-                                '<dd id="dimensions-value" class="value"></div>' +
-                                '</div>'
-                            ).appendTo($('#details > .meta.read-only'));
-                            \$dimensionsVal = $('#dimensions-value');
-                        }
-                        \$dimensionsVal.text(data.result.dimensions);
-                    } else if (\$dimensionsVal.length) {
-                        \$dimensionsVal.parent().remove();
+                const result = event instanceof CustomEvent ? event.detail : data.result;
+                
+                $('#new-filename').val(result.filename);
+                $('#file-size-value')
+                    .text(result.formattedSize)
+                    .attr('title', result.formattedSizeInBytes);
+                let \$dimensionsVal = $('#dimensions-value');
+                if (result.dimensions) {
+                    if (!\$dimensionsVal.length) {
+                        $(
+                            '<div class="data">' +
+                            '<dt class="heading">$dimensionsLabel</div>' +
+                            '<dd id="dimensions-value" class="value"></div>' +
+                            '</div>'
+                        ).appendTo($('#details > .meta.read-only'));
+                        \$dimensionsVal = $('#dimensions-value');
                     }
-                    $updatePreviewThumbJs
-                    Craft.cp.runQueue();
+                    \$dimensionsVal.text(result.dimensions);
+                } else if (\$dimensionsVal.length) {
+                    \$dimensionsVal.parent().remove();
                 }
-            }
+                $updatePreviewThumbJs
+                Craft.cp.runQueue();
+                if (result.error) {
+                    $('#thumb-container').removeClass('loading');
+                    alert(result.error);
+                } else {
+
+                }
+            },
+            fileuploadfail: (event, data) => {
+                const response = event instanceof Event
+                    ? event.detail
+                    : data?.jqXHR?.responseJSON;
+                
+                let {message, filename} = response || {};
+                
+                if (!message) {
+                    message = filename
+                        ? Craft.t('app', 'Replace file failed for “{filename}”.', {filename})
+                        : Craft.t('app', 'Replace file failed.');
+                }
+                
+              Craft.cp.displayError(message);
+            },
+            fileuploadalways: (event, data) => {
+                $('#thumb-container').removeClass('loading');
+            },
         }
     });
     uploader.setParams({
@@ -1527,7 +1571,7 @@ JS;
                 'width' => $this->getWidth(),
                 'height' => $this->getHeight(),
                 'srcset' => $sizes ? $this->getSrcset($sizes) : false,
-                'alt' => $this->alt ?? $this->title,
+                'alt' => $this->thumbAlt(),
             ]);
         } else {
             $img = null;
@@ -1821,7 +1865,18 @@ JS;
             return null;
         }
 
-        $url = $this->_url($transform, $immediately);
+        // Give plugins/modules a chance to provide a custom URL
+        $event = new DefineAssetUrlEvent([
+            'transform' => $transform,
+            'asset' => $this,
+        ]);
+        $this->trigger(self::EVENT_BEFORE_DEFINE_URL, $event);
+        $url = $event->url;
+
+        // If DefineAssetUrlEvent::$url is set to null, only respect that if $handled is true
+        if ($url === null && !$event->handled) {
+            $url = $this->_url($transform, $immediately);
+        }
 
         // Give plugins/modules a chance to customize it
         if ($this->hasEventHandlers(self::EVENT_DEFINE_URL)) {
@@ -1849,16 +1904,10 @@ JS;
         $volume = $this->getVolume();
         $transform = $transform ?? $this->_transform;
 
-        if ($transform) {
-            $mimeType = $this->getMimeType();
-            $generalConfig = Craft::$app->getConfig()->getGeneral();
-            if (
-                ($mimeType === 'image/gif' && !$generalConfig->transformGifs) ||
-                ($mimeType === 'image/svg+xml' && !$generalConfig->transformSvgs) ||
-                !Image::canManipulateAsImage(pathinfo($this->getFilename(), PATHINFO_EXTENSION))
-            ) {
-                $transform = null;
-            }
+        if ($transform &&
+            !Image::canManipulateAsImage(pathinfo($this->getFilename(), PATHINFO_EXTENSION))
+        ) {
+            $transform = null;
         }
 
         if ($transform) {
@@ -1927,10 +1976,10 @@ JS;
     /**
      * @inheritdoc
      */
-    public function getThumbUrl(int $size): ?string
+    protected function thumbUrl(int $size): ?string
     {
         if ($this->isFolder) {
-            return Craft::$app->getAssetManager()->getPublishedUrl('@app/web/assets/cp/dist', true, 'images/folder.svg');
+            return null;
         }
 
         if ($this->getWidth() && $this->getHeight()) {
@@ -1939,16 +1988,33 @@ JS;
             $width = $height = $size;
         }
 
-        return Craft::$app->getAssets()->getThumbUrl($this, $width, $height);
+        return Craft::$app->getAssets()->getThumbUrl($this, $width, $height, false);
     }
 
     /**
      * @inheritdoc
      */
-    public function getThumbAlt(): ?string
+    protected function thumbSvg(): ?string
+    {
+        if ($this->isFolder) {
+            return file_get_contents(Craft::getAlias('@appicons/folder.svg'));
+        }
+
+        return Assets::iconSvg($this->getExtension());
+    }
+
+    /**
+     * @inheritdoc
+     */
+    protected function thumbAlt(): ?string
     {
         if ($this->isFolder) {
             return null;
+        }
+
+        $extension = $this->getExtension();
+        if (!Image::canManipulateAsImage($extension)) {
+            return $extension;
         }
 
         return $this->alt;
@@ -1957,7 +2023,7 @@ JS;
     /**
      * @inheritdoc
      */
-    public function getHasCheckeredThumb(): bool
+    protected function hasCheckeredThumb(): bool
     {
         if ($this->isFolder) {
             return false;
@@ -1992,7 +2058,7 @@ JS;
         return Html::tag('img', '', [
             'sizes' => "{$thumbSizes[0][0]}px",
             'srcset' => implode(', ', $srcsets),
-            'alt' => $this->alt ?? $this->title,
+            'alt' => $this->thumbAlt(),
         ]);
     }
 
@@ -2354,24 +2420,24 @@ JS;
     /**
      * @inheritdoc
      */
-    public function getTableAttributeHtml(string $attribute): string
+    public function getAttributeHtml(string $attribute): string
     {
         if ($this->isFolder) {
             return '';
         }
 
-        return parent::getTableAttributeHtml($attribute);
+        return parent::getAttributeHtml($attribute);
     }
 
     /**
      * @inheritdoc
      */
-    protected function tableAttributeHtml(string $attribute): string
+    protected function attributeHtml(string $attribute): string
     {
         switch ($attribute) {
             case 'uploader':
                 $uploader = $this->getUploader();
-                return $uploader ? Cp::elementHtml($uploader) : '';
+                return $uploader ? Cp::elementChipHtml($uploader) : '';
 
             case 'filename':
                 return Html::tag('span', Html::encode($this->_filename), [
@@ -2401,7 +2467,7 @@ JS;
                 return $this->locationHtml();
         }
 
-        return parent::tableAttributeHtml($attribute);
+        return parent::attributeHtml($attribute);
     }
 
     /**
@@ -2433,7 +2499,7 @@ JS;
                     'class' => array_filter([
                         'preview-thumb-container',
                         'button-fade',
-                        $this->getHasCheckeredThumb() ? 'checkered' : null,
+                        $this->hasCheckeredThumb() ? 'checkered' : null,
                     ]),
                 ]) .
                 Html::tag('div', $this->getPreviewThumbImg(350, 190), [
@@ -2598,7 +2664,7 @@ JS;
             },
             Craft::t('app', 'Uploaded by') => function() {
                 $uploader = $this->getUploader();
-                return $uploader ? Cp::elementHtml($uploader) : false;
+                return $uploader ? Cp::elementChipHtml($uploader) : false;
             },
             Craft::t('app', 'Dimensions') => function() {
                 $dimensions = $this->getDimensions();
@@ -2639,7 +2705,7 @@ JS;
      */
     public function getGqlTypeName(): string
     {
-        return static::gqlTypeNameByContext($this->getVolume());
+        return static::gqlTypeName($this->getVolume());
     }
 
     /**
@@ -2847,7 +2913,11 @@ JS;
     public function afterDelete(): void
     {
         if (!$this->keepFileOnDelete) {
-            $this->getVolume()->deleteFile($this->getPath());
+            try {
+                $this->getVolume()->deleteFile($this->getPath());
+            } catch (InvalidConfigException|NotSupportedException) {
+                // NBD
+            }
         }
 
         Craft::$app->getImageTransforms()->deleteAllTransformData($this);
@@ -2904,6 +2974,7 @@ JS;
             'data' => [
                 'kind' => $this->kind,
                 'alt' => $this->alt,
+                'filename' => $this->filename,
             ],
         ];
 
@@ -3049,7 +3120,7 @@ JS;
 
                 $tempPath = $this->tempFilePath;
             } else {
-                $tempFilename = uniqid(pathinfo($filename, PATHINFO_FILENAME), true) . '.' . pathinfo($filename, PATHINFO_EXTENSION);
+                $tempFilename = FileHelper::uniqueName($filename);
                 $tempPath = Craft::$app->getPath()->getTempPath() . DIRECTORY_SEPARATOR . $tempFilename;
                 Assets::downloadFile($oldVolume, $oldPath, $tempPath);
             }

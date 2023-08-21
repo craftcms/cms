@@ -25,6 +25,11 @@ class Dropdown extends BaseOptionsField implements SortableFieldInterface
     /**
      * @inheritdoc
      */
+    protected static bool $optgroups = true;
+
+    /**
+     * @inheritdoc
+     */
     public static function displayName(): string
     {
         return Craft::t('app', 'Dropdown');
@@ -33,15 +38,10 @@ class Dropdown extends BaseOptionsField implements SortableFieldInterface
     /**
      * @inheritdoc
      */
-    public static function valueType(): string
+    public static function phpType(): string
     {
         return sprintf('\\%s', SingleOptionFieldData::class);
     }
-
-    /**
-     * @inheritdoc
-     */
-    protected bool $optgroups = true;
 
     /**
      * @inheritdoc

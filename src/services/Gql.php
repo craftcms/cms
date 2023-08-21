@@ -9,6 +9,7 @@ namespace craft\services;
 
 use Craft;
 use craft\base\ElementInterface as BaseElementInterface;
+use craft\base\FieldInterface;
 use craft\base\GqlInlineFragmentFieldInterface;
 use craft\behaviors\FieldLayoutBehavior;
 use craft\db\Query as DbQuery;
@@ -39,7 +40,6 @@ use craft\gql\interfaces\elements\Asset as AssetInterface;
 use craft\gql\interfaces\elements\Category as CategoryInterface;
 use craft\gql\interfaces\elements\Entry as EntryInterface;
 use craft\gql\interfaces\elements\GlobalSet as GlobalSetInterface;
-use craft\gql\interfaces\elements\MatrixBlock as MatrixBlockInterface;
 use craft\gql\interfaces\elements\Tag as TagInterface;
 use craft\gql\interfaces\elements\User as UserInterface;
 use craft\gql\mutations\Asset as AssetMutation;
@@ -69,6 +69,7 @@ use craft\helpers\Gql as GqlHelper;
 use craft\helpers\Json;
 use craft\helpers\ProjectConfig as ProjectConfigHelper;
 use craft\helpers\StringHelper;
+use craft\models\FieldLayout;
 use craft\models\GqlSchema;
 use craft\models\GqlToken;
 use craft\models\Section;
@@ -89,6 +90,7 @@ use Throwable;
 use yii\base\Component;
 use yii\base\Exception;
 use yii\base\InvalidArgumentException;
+use yii\base\UnknownMethodException;
 use yii\caching\TagDependency;
 
 /**
@@ -327,9 +329,10 @@ class Gql extends Component
     private ?GqlSchema $_schema = null;
 
     /**
-     * @var array Cache of content fields by element class
+     * @var array Content arguments by element class
+     * @see getOrSetContentArguments()
      */
-    private array $_contentFieldCache = [];
+    private array $_contentArguments = [];
 
     /**
      * @var TypeManager|null GQL type manager
@@ -655,7 +658,7 @@ class Gql extends Component
         $label = Craft::t('app', 'All elements');
         $queries[$label] = $components['query'] ?? [];
 
-        // Entries
+        // Sections
         // ---------------------------------------------------------------------
         $components = $this->_getSectionSchemaComponents();
         $label = Craft::t('app', 'Entries');
@@ -672,7 +675,7 @@ class Gql extends Component
         // Global Sets
         // ---------------------------------------------------------------------
         $components = $this->_getGlobalSetSchemaComponents();
-        $label = Craft::t('app', 'Global sets');
+        $label = Craft::t('app', 'Global Sets');
         $queries[$label] = $components['query'] ?? [];
         $mutations[$label] = $components['mutation'] ?? [];
 
@@ -720,7 +723,7 @@ class Gql extends Component
     {
         $this->_schema = null;
         $this->_schemaDef = null;
-        $this->_contentFieldCache = [];
+        $this->_contentArguments = [];
         $this->_typeDefinitions = [];
         TypeLoader::flush();
         GqlEntityRegistry::flush();
@@ -1135,40 +1138,104 @@ class Gql extends Component
         return $schemas;
     }
 
+    /**
+     * Returns the content arguments
+     *
+     * @param string $elementType
+     * @phpstorm-param class-string<BaseElementInterface> $elementType
+     * @param callable $setter
+     * @phpstan-param callable():array $setter
+     * @return array
+     * @since 5.0.0
+     */
+    public function getOrSetContentArguments(string $elementType, callable $setter): array
+    {
+        if (!isset($this->_contentArguments[$elementType])) {
+            $this->_contentArguments[$elementType] = $setter();
+        }
+        return $this->_contentArguments[$elementType];
+    }
 
     /**
-     * Return the content arguments based on an element class and contexts for it.
+     * Returns the content arguments for a given element type and field layouts.
+     *
+     * @param string $elementType
+     * @phpstorm-param class-string<BaseElementInterface> $elementType
+     * @param FieldLayout[] $fieldLayouts
+     * @return array
+     * @since 5.0.0
+     */
+    public function defineContentArgumentsForFieldLayouts(string $elementType, array $fieldLayouts): array
+    {
+        $fields = [];
+        $handledFieldLayouts = [];
+
+        foreach ($fieldLayouts as $fieldLayout) {
+            // avoid checking the same field layout more than once
+            if (isset($fieldLayout->uid)) {
+                if (isset($handledFieldLayouts[$fieldLayout->uid])) {
+                    continue;
+                }
+                $handledFieldLayouts[$fieldLayout->uid] = true;
+            }
+
+            array_push($fields, ...$fieldLayout->getCustomFields());
+        }
+
+        return $this->defineContentArgumentsForFields($elementType, $fields);
+    }
+
+    /**
+     * Returns the content arguments for a given element type and custom fields.
+     *
+     * @param string $elementType
+     * @phpstorm-param class-string<BaseElementInterface> $elementType
+     * @param FieldInterface[] $fields
+     * @return array
+     * @since 5.0.0
+     */
+    public function defineContentArgumentsForFields(string $elementType, array $fields): array
+    {
+        $arguments = [];
+        $elementQuery = Craft::$app->getElements()->createElementQuery($elementType);
+
+        foreach ($fields as $field) {
+            if (
+                !isset($arguments[$field->handle]) &&
+                !$field instanceof GqlInlineFragmentFieldInterface &&
+                !method_exists($elementQuery, $field->handle)
+            ) {
+                $arguments[$field->handle] = $field->getContentGqlQueryArgumentType();
+            }
+        }
+
+        return $arguments;
+    }
+
+    /**
+     * Returns the content arguments for an element class based on the given contexts.
      *
      * @param array $contexts
      * @param string $elementType
-     * @phpstan-param class-string<\craft\base\ElementInterface> $elementType
+     * @phpstan-param class-string<BaseElementInterface> $elementType
      * @return array
      */
     public function getContentArguments(array $contexts, string $elementType): array
     {
         /** @var FieldLayoutBehavior[] $contexts */
         /** @var string|BaseElementInterface $elementType */
-        /** @phpstan-var class-string<BaseElementInterface>|BaseElementInterface $elementType */
-        if (!array_key_exists($elementType, $this->_contentFieldCache)) {
-            $elementQuery = Craft::$app->getElements()->createElementQuery($elementType);
-            $contentArguments = [];
-
+        return $this->getOrSetContentArguments($elementType, function() use ($contexts, $elementType): array {
+            $fields = [];
             foreach ($contexts as $context) {
-                if (!GqlHelper::isSchemaAwareOf($elementType::gqlScopesByContext($context))) {
-                    continue;
-                }
-
-                foreach ($context->getCustomFields() as $contentField) {
-                    if (!$contentField instanceof GqlInlineFragmentFieldInterface && !method_exists($elementQuery, $contentField->handle)) {
-                        $contentArguments[$contentField->handle] = $contentField->getContentGqlQueryArgumentType();
+                if (GqlHelper::isSchemaAwareOf($elementType::gqlScopesByContext($context))) {
+                    try {
+                        array_push($fields, ...$context->getCustomFields());
+                    } catch (UnknownMethodException) {
                     }
                 }
             }
-
-            $this->_contentFieldCache[$elementType] = $contentArguments;
-        }
-
-        return $this->_contentFieldCache[$elementType];
+            return $this->defineContentArgumentsForFields($elementType, $fields);
+        });
     }
 
     /**
@@ -1296,7 +1363,6 @@ class Gql extends Component
             AddressInterface::class,
             ElementInterface::class,
             EntryInterface::class,
-            MatrixBlockInterface::class,
             AssetInterface::class,
             UserInterface::class,
             GlobalSetInterface::class,
@@ -1444,56 +1510,48 @@ class Gql extends Component
         ];
     }
 
-
     /**
-     * Return section permissions.
+     * Return the available schema components for sections.
      *
      * @return array
      */
     private function _getSectionSchemaComponents(): array
     {
-        $sortedEntryTypes = [];
-
-        foreach (Craft::$app->getSections()->getAllEntryTypes() as $entryType) {
-            $sortedEntryTypes[$entryType->sectionId][] = $entryType;
-        }
-
         $queryComponents = [];
         $mutationComponents = [];
 
-        if (!empty($sortedEntryTypes)) {
-            foreach (Craft::$app->getSections()->getAllSections() as $section) {
-                if (!isset($sortedEntryTypes[$section->id])) {
-                    continue;
-                }
+        foreach (Craft::$app->getEntries()->getAllSections() as $section) {
+            $name = Craft::t('site', $section->name);
+            $prefix = "sections.$section->uid";
 
-                $query = ['label' => Craft::t('app', 'Section - {section}', ['section' => Craft::t('site', $section->name)])];
-                $mutate = ['label' => Craft::t('app', 'Section - {section}', ['section' => Craft::t('site', $section->name)])];
+            $queryComponents["$prefix:read"] = [
+                'label' => Craft::t('app', 'View section - {section}', ['section' => $name]),
+            ];
 
-                foreach ($sortedEntryTypes[$section->id] as $entryType) {
-                    $suffix = 'entrytypes.' . $entryType->uid;
-
-                    if ($section->type == Section::TYPE_SINGLE) {
-                        $mutate['nested'][$suffix . ':save'] = ['label' => Craft::t('app', 'Edit “{entryType}”', ['entryType' => Craft::t('site', $entryType->name)])];
-                    } else {
-                        $mutate['nested'][$suffix . ':edit'] = [
-                            'label' => Craft::t('app', 'Edit entries with the “{entryType}” entry type', ['entryType' => Craft::t('site', $entryType->name)]),
-                            'nested' => [
-                                $suffix . ':create' => ['label' => Craft::t('app', 'Create entries with the “{entryType}” entry type', ['entryType' => Craft::t('site', $entryType->name)])],
-                                $suffix . ':save' => ['label' => Craft::t('app', 'Save entries with the “{entryType}” entry type', ['entryType' => Craft::t('site', $entryType->name)])],
-                                $suffix . ':delete' => ['label' => Craft::t('app', 'Delete entries with the “{entryType}” entry type', ['entryType' => Craft::t('site', $entryType->name)])],
-                            ],
-                        ];
-                    }
-
-                    $query['nested'][$suffix . ':read'] = [
-                        'label' => Craft::t('app', 'View entries with the “{entryType}” entry type', ['entryType' => Craft::t('site', $entryType->name)]),
-                    ];
-                }
-
-                $queryComponents['sections.' . $section->uid . ':read'] = $query;
-                $mutationComponents['sections.' . $section->uid . ':edit'] = $mutate;
+            if ($section->type === Section::TYPE_SINGLE) {
+                $nested = [
+                    "$prefix:save" => [
+                        'label' => Craft::t('app', 'Save the “{section}” entry', ['section' => $name]),
+                    ],
+                ];
+            } else {
+                $nested = [
+                    "$prefix:create" => [
+                        'label' => Craft::t('app', 'Create entries in the “{section}” section', ['section' => $name]),
+                    ],
+                    "$prefix:save" => [
+                        'label' => Craft::t('app', 'Save entries in the “{section}” section', ['section' => $name]),
+                    ],
+                    "$prefix:delete" => [
+                        'label' => Craft::t('app', 'Delete entries in the “{section}” section', ['section' => $name]),
+                    ],
+                ];
             }
+
+            $mutationComponents["$prefix:edit"] = [
+                'label' => Craft::t('app', 'Edit section - {section}', ['section' => $name]),
+                'nested' => $nested,
+            ];
         }
 
         return [

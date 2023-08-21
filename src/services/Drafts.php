@@ -299,7 +299,7 @@ class Drafts extends Component
                     $elementsService->mergeCanonicalChanges($draft);
                 }
 
-                // "Duplicate" the draft with the canonical element’s ID, UID, and content ID
+                // "Duplicate" the draft with the canonical element’s ID and UID
                 $newCanonical = $elementsService->updateCanonicalElement($draft, [
                     'revisionNotes' => $draftNotes ?: Craft::t('app', 'Applied “{name}”', ['name' => $draft->draftName]),
                 ]);

@@ -216,6 +216,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
             new TwigFilter('length', [$this, 'lengthFilter'], ['needs_environment' => true]),
             new TwigFilter('lcfirst', [$this, 'lcfirstFilter']),
             new TwigFilter('literal', [$this, 'literalFilter']),
+            new TwigFilter('map', [$this, 'mapFilter'], ['needs_environment' => true]),
             new TwigFilter('markdown', [$this, 'markdownFilter'], ['is_safe' => ['html']]),
             new TwigFilter('md', [$this, 'markdownFilter'], ['is_safe' => ['html']]),
             new TwigFilter('merge', [$this, 'mergeFilter']),
@@ -234,6 +235,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
             new TwigFilter('prepend', [$this, 'prependFilter'], ['is_safe' => ['html']]),
             new TwigFilter('purify', [$this, 'purifyFilter'], ['is_safe' => ['html']]),
             new TwigFilter('push', [$this, 'pushFilter']),
+            new TwigFilter('reduce', [$this, 'reduceFilter'], ['needs_environment' => true]),
             new TwigFilter('removeClass', [$this, 'removeClassFilter'], ['is_safe' => ['html']]),
             new TwigFilter('replace', [$this, 'replaceFilter']),
             new TwigFilter('rss', [$this, 'rssFilter'], ['needs_environment' => true]),
@@ -500,6 +502,45 @@ class Extension extends AbstractExtension implements GlobalsInterface
         return twig_sort_filter($env, $array, $arrow);
     }
 
+    /**
+     * Reduces an array.
+     *
+     * @param TwigEnvironment $env
+     * @param mixed $array
+     * @param mixed $arrow
+     * @param mixed $initial
+     * @return mixed
+     * @throws RuntimeError
+     * @since 4.4.16
+     */
+    public function reduceFilter(TwigEnvironment $env, mixed $array, mixed $arrow, mixed $initial = null): mixed
+    {
+        if (is_string($arrow) && strtolower($arrow) === 'system') {
+            throw new RuntimeError('The reduce filter doesn\'t support reducing by system().');
+        }
+
+        return twig_array_reduce($env, $array, $arrow, $initial);
+    }
+
+    /**
+     * Maps an array.
+     *
+     * @param TwigEnvironment $env
+     * @param mixed $array
+     * @param mixed $arrow
+     * @return array
+     * @throws RuntimeError
+     * @since 4.4.16
+     */
+    public function mapFilter(TwigEnvironment $env, mixed $array, mixed $arrow = null): array
+    {
+        if (is_string($arrow) && strtolower($arrow) === 'system') {
+            throw new RuntimeError('The map filter doesn\'t support mapping by system().');
+        }
+
+        return twig_array_map($env, $array, $arrow);
+    }
+
 
     /**
      * Formats the value as a currency number.
@@ -760,14 +801,18 @@ class Extension extends AbstractExtension implements GlobalsInterface
     /**
      * Purifies the given HTML using HTML Purifier.
      *
-     * @param string $html The HTML to be purified
+     * @param string|null $html The HTML to be purified
      * @param string|array|null $config The HTML Purifier config. This can either be the name of a JSON file within
      * `config/htmlpurifier/` (sans `.json` extension) or a config array.
-     * @return string The purified HTML
+     * @return string|null The purified HTML
      * @since 3.4.0
      */
-    public function purifyFilter(string $html, array|string|null $config = null): string
+    public function purifyFilter(?string $html, array|string|null $config = null): ?string
     {
+        if ($html === null) {
+            return null;
+        }
+
         if (is_string($config)) {
             $path = Craft::$app->getPath()->getConfigPath() . DIRECTORY_SEPARATOR . 'htmlpurifier' .
                 DIRECTORY_SEPARATOR . $config . '.json';
@@ -854,18 +899,33 @@ class Extension extends AbstractExtension implements GlobalsInterface
      */
     public function replaceFilter(mixed $str, mixed $search, mixed $replace = null): mixed
     {
+        if ($search instanceof Traversable) {
+            $search = iterator_to_array($search);
+        }
+
+        $isRegex = fn(string $s) => (bool)preg_match('/^\/.+\/[a-zA-Z]*$/', $s);
+
         // Are they using the standard Twig syntax?
         if (is_array($search) && $replace === null) {
-            return strtr($str, $search);
+            // If there aren’t any regex patterns, we can safely use strtr()
+            if (!ArrayHelper::contains(array_keys($search), $isRegex)) {
+                return strtr($str, $search);
+            }
+        } else {
+            $search = [$search => $replace];
         }
 
-        // Is this a regular expression?
-        if (preg_match('/^\/.+\/[a-zA-Z]*$/', $search)) {
-            return preg_replace($search, $replace, $str);
+        foreach ($search as $s => $r) {
+            // Is this a regular expression?
+            if ($isRegex($s)) {
+                $str = preg_replace($s, $r, $str);
+            } else {
+                // Otherwise use str_replace
+                $str = str_replace($s, $r, $str);
+            }
         }
 
-        // Otherwise use str_replace
-        return str_replace($search, $replace, $str);
+        return $str;
     }
 
     /**
@@ -894,7 +954,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
         }
 
         $date = twig_date_converter($env, $date, $timezone);
-        $formatter = $locale ? (new Locale($locale))->getFormatter() : Craft::$app->getFormatter();
+        $formatter = $locale ? Craft::$app->getI18n()->getLocaleById($locale)->getFormatter() : Craft::$app->getFormatter();
         $fmtTimeZone = $formatter->timeZone;
         $formatter->timeZone = $timezone !== null ? $date->getTimezone()->getName() : $formatter->timeZone;
         $formatted = $formatter->asDate(DateTime::createFromInterface($date), $format);
@@ -989,7 +1049,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
         }
 
         $date = twig_date_converter($env, $date, $timezone);
-        $formatter = $locale ? (new Locale($locale))->getFormatter() : Craft::$app->getFormatter();
+        $formatter = $locale ? Craft::$app->getI18n()->getLocaleById($locale)->getFormatter() : Craft::$app->getFormatter();
         $fmtTimeZone = $formatter->timeZone;
         $formatter->timeZone = $timezone !== null ? $date->getTimezone()->getName() : $formatter->timeZone;
         $formatted = $formatter->asTime(DateTime::createFromInterface($date), $format);
@@ -1019,7 +1079,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
         }
 
         $date = twig_date_converter($env, $date, $timezone);
-        $formatter = $locale ? (new Locale($locale))->getFormatter() : Craft::$app->getFormatter();
+        $formatter = $locale ? Craft::$app->getI18n()->getLocaleById($locale)->getFormatter() : Craft::$app->getFormatter();
         $fmtTimeZone = $formatter->timeZone;
         $formatter->timeZone = $timezone !== null ? $date->getTimezone()->getName() : $formatter->timeZone;
         $formatted = $formatter->asDatetime(DateTime::createFromInterface($date), $format);
@@ -1045,9 +1105,14 @@ class Extension extends AbstractExtension implements GlobalsInterface
      * @param iterable $arr
      * @param callable|null $arrow
      * @return array
+     * @throws RuntimeError
      */
     public function filterFilter(TwigEnvironment $env, iterable $arr, ?callable $arrow = null): array
     {
+        if (is_string($arrow) && strtolower($arrow) === 'system') {
+            throw new RuntimeError('The filter filter doesn\'t support filtering by system().');
+        }
+
         /** @var array|Traversable $arr */
         if ($arrow === null) {
             if ($arr instanceof Traversable) {

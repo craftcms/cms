@@ -8,15 +8,15 @@
 namespace craft\fields;
 
 use Craft;
-use craft\base\BlockElementInterface;
 use craft\base\conditions\ConditionInterface;
 use craft\base\EagerLoadingFieldInterface;
 use craft\base\Element;
 use craft\base\ElementInterface;
 use craft\base\Field;
+use craft\base\NestedElementInterface;
 use craft\base\PreviewableFieldInterface;
+use craft\behaviors\EventBehavior;
 use craft\db\Query;
-use craft\db\QueryAbortedException;
 use craft\db\Table as DbTable;
 use craft\elements\conditions\ElementCondition;
 use craft\elements\conditions\ElementConditionInterface;
@@ -25,6 +25,7 @@ use craft\elements\db\ElementQueryInterface;
 use craft\elements\db\ElementRelationParamParser;
 use craft\elements\ElementCollection;
 use craft\errors\SiteNotFoundException;
+use craft\events\CancelableEvent;
 use craft\events\ElementCriteriaEvent;
 use craft\events\ElementEvent;
 use craft\fields\conditions\RelationalFieldConditionRule;
@@ -39,7 +40,6 @@ use craft\services\Elements;
 use craft\services\ElementSources;
 use DateTime;
 use GraphQL\Type\Definition\Type;
-use Illuminate\Support\Collection;
 use yii\base\Event;
 use yii\base\InvalidConfigException;
 use yii\db\Expression;
@@ -58,14 +58,6 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
      * @since 3.4.16
      */
     public const EVENT_DEFINE_SELECTION_CRITERIA = 'defineSelectionCriteria';
-
-    /**
-     * @inheritdoc
-     */
-    public static function hasContentColumn(): bool
-    {
-        return false;
-    }
 
     /**
      * @inheritdoc
@@ -99,9 +91,88 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
     /**
      * @inheritdoc
      */
-    public static function valueType(): string
+    public static function phpType(): string
     {
         return sprintf('\\%s|\\%s<\\%s>', ElementQueryInterface::class, ElementCollection::class, ElementInterface::class);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function dbType(): array|string|null
+    {
+        return null;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function queryCondition(array $instances, mixed $value, array &$params): array|false
+    {
+        /** @var self $field */
+        $field = reset($instances);
+
+        if (!is_array($value)) {
+            $value = [$value];
+        }
+
+        $conditions = [];
+
+        if (isset($value[0]) && in_array($value[0], [':notempty:', ':empty:', 'not :empty:'])) {
+            $emptyCondition = array_shift($value);
+            if ($emptyCondition === 'not :empty:') {
+                $emptyCondition = ':notempty:';
+            }
+
+            $ns = $field->handle . '_' . StringHelper::randomString(5);
+            $condition = [
+                'exists', (new Query())
+                    ->from(["relations_$ns" => DbTable::RELATIONS])
+                    ->innerJoin(["elements_$ns" => DbTable::ELEMENTS], "[[elements_$ns.id]] = [[relations_$ns.targetId]]")
+                    ->leftJoin(["elements_sites_$ns" => DbTable::ELEMENTS_SITES], "[[elements_sites_$ns.elementId]] = [[elements_$ns.id]]")
+                    ->where("[[relations_$ns.sourceId]] = [[elements.id]]")
+                    ->andWhere([
+                        'or',
+                        ["relations_$ns.sourceSiteId" => null],
+                        ["relations_$ns.sourceSiteId" => new Expression('[[elements_sites.siteId]]')],
+                    ])
+                    ->andWhere([
+                        "relations_$ns.fieldId" => $field->id,
+                        "elements_$ns.enabled" => true,
+                        "elements_$ns.dateDeleted" => null,
+                        "elements_sites_$ns.siteId" => $field->_targetSiteId() ?? new Expression('[[elements_sites.siteId]]'),
+                        "elements_sites_$ns.enabled" => true,
+                    ]),
+            ];
+
+            if ($emptyCondition === ':notempty:') {
+                $conditions[] = $condition;
+            } else {
+                $conditions[] = ['not', $condition];
+            }
+        }
+
+        if (!empty($value)) {
+            $parser = new ElementRelationParamParser([
+                'fields' => [
+                    $field->handle => $field,
+                ],
+            ]);
+            $condition = $parser->parse([
+                'targetElement' => $value,
+                'field' => $field->handle,
+            ]);
+            if ($condition !== false) {
+                $conditions[] = $condition;
+            }
+        }
+
+        if (empty($conditions)) {
+            return false;
+        }
+
+        array_unshift($conditions, 'or');
+        return $conditions;
     }
 
     /**
@@ -273,7 +344,7 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
         }
 
         // remove settings that shouldn't be here
-        unset($config['allowMultipleSources'], $config['allowLimit'], $config['allowLargeThumbsView']);
+        unset($config['allowMultipleSources'], $config['allowLimit'], $config['allowLargeThumbsView'], $config['sortable']);
         if ($this->allowMultipleSources) {
             unset($config['source']);
         } else {
@@ -374,7 +445,7 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
         $settings = parent::getSettings();
 
         // cleanup
-        unset($settings['allowMultipleSources'], $settings['allowLimit'], $settings['allowLargeThumbsView']);
+        unset($settings['allowMultipleSources'], $settings['allowLimit'], $settings['allowLargeThumbsView'], $settings['sortable']);
         if ($this->allowMultipleSources) {
             unset($settings['source']);
         } else {
@@ -436,7 +507,7 @@ JS, [
     public function validateRelationCount(ElementInterface $element): void
     {
         if ($this->allowLimit && ($this->minRelations || $this->maxRelations)) {
-            /** @var ElementQueryInterface|Collection $value */
+            /** @var ElementQueryInterface|ElementCollection $value */
             $value = $element->getFieldValue($this->handle);
 
             $arrayValidator = new NumberValidator([
@@ -471,7 +542,7 @@ JS, [
         $sourceValidates = self::$_relatedElementValidates[$sourceId][$element->siteId] ?? null;
         self::$_relatedElementValidates[$sourceId][$element->siteId] = true;
 
-        /** @var ElementQueryInterface|Collection $value */
+        /** @var ElementQueryInterface|ElementCollection $value */
         $value = $element->getFieldValue($this->handle);
         $errorCount = 0;
 
@@ -535,7 +606,7 @@ JS, [
      */
     public function isValueEmpty(mixed $value, ElementInterface $element): bool
     {
-        /** @var ElementQueryInterface|Collection $value */
+        /** @var ElementQueryInterface|ElementCollection $value */
         if ($value instanceof ElementQueryInterface) {
             return !$this->_all($value, $element)->exists();
         }
@@ -565,27 +636,6 @@ JS, [
                 ->id(array_values(array_filter($value)))
                 ->fixedOrder();
         } elseif ($value !== '' && $element && $element->id) {
-            $query->innerJoin(
-                ['relations' => DbTable::RELATIONS],
-                [
-                    'and',
-                    '[[relations.targetId]] = [[elements.id]]',
-                    [
-                        'relations.sourceId' => $element->id,
-                        'relations.fieldId' => $this->id,
-                    ],
-                    [
-                        'or',
-                        ['relations.sourceSiteId' => null],
-                        ['relations.sourceSiteId' => $element->siteId],
-                    ],
-                ]
-            );
-
-            if ($this->sortable) {
-                $query->orderBy(['relations.sortOrder' => SORT_ASC]);
-            }
-
             if (!$this->allowMultipleSources && $this->source) {
                 $source = ElementHelper::findSource($class, $this->source, ElementSources::CONTEXT_FIELD);
 
@@ -595,24 +645,59 @@ JS, [
                 }
             }
 
-            if ($this->maintainHierarchy) {
-                $structuresService = Craft::$app->getStructures();
+            $relationsAlias = sprintf('relations_%s', StringHelper::randomString(10));
 
-                /** @var ElementInterface[] $structureElements */
-                $structureElements = (clone($query))
-                    ->status(null)
-                    ->all();
-
-                // Fill in any gaps
-                $structuresService->fillGapsInElements($structureElements);
-
-                // Enforce the branch limit
-                if ($this->branchLimit) {
-                    $structuresService->applyBranchLimitToElements($structureElements, $this->branchLimit);
-                }
-
-                $query->id(ArrayHelper::getColumn($structureElements, 'id'));
+            if ($this->sortable && !$this->maintainHierarchy) {
+                $query->orderBy(["$relationsAlias.sortOrder" => SORT_ASC]);
             }
+
+            // join the relations table via EVENT_BEFORE_PREPARE so it gets joined for cloned queries as well
+            $query->attachBehavior(self::class, new EventBehavior([
+                ElementQuery::EVENT_BEFORE_PREPARE => function(
+                    CancelableEvent $event,
+                    ElementQuery $query,
+                ) use ($element, $relationsAlias) {
+                    $query->innerJoin(
+                        [$relationsAlias => DbTable::RELATIONS],
+                        [
+                            'and',
+                            "[[$relationsAlias.targetId]] = [[elements.id]]",
+                            [
+                                "$relationsAlias.sourceId" => $element->id,
+                                "$relationsAlias.fieldId" => $this->id,
+                            ],
+                            [
+                                'or',
+                                ["$relationsAlias.sourceSiteId" => null],
+                                ["$relationsAlias.sourceSiteId" => $element->siteId],
+                            ],
+                        ]
+                    );
+
+                    if ($this->maintainHierarchy && $query->id === null) {
+                        $structuresService = Craft::$app->getStructures();
+
+                        $structureElements = (clone($query))
+                            ->status(null)
+                            ->all();
+
+                        // Fill in any gaps
+                        $structuresService->fillGapsInElements($structureElements);
+
+                        // Enforce the branch limit
+                        if ($this->branchLimit) {
+                            $structuresService->applyBranchLimitToElements($structureElements, $this->branchLimit);
+                        }
+
+                        $query->id(ArrayHelper::getColumn($structureElements, 'id'));
+                    }
+                },
+            ], true));
+
+            // Set the query up for lazy eager loading
+            $query->eagerLoadSourceElement = $element;
+            $providerHandle = $element->getFieldLayout()?->provider?->getHandle();
+            $query->eagerLoadHandle = $providerHandle ? "$providerHandle:$this->handle" : $this->handle;
         } else {
             $query->id(false);
         }
@@ -629,8 +714,8 @@ JS, [
      */
     public function serializeValue(mixed $value, ?ElementInterface $element = null): mixed
     {
-        /** @var ElementQueryInterface|Collection $value */
-        if ($value instanceof Collection) {
+        /** @var ElementQueryInterface|ElementCollection $value */
+        if ($value instanceof ElementCollection) {
             return $value->map(fn(ElementInterface $element) => $element->id)->all();
         }
 
@@ -643,79 +728,6 @@ JS, [
     public function getElementConditionRuleType(): array|string|null
     {
         return RelationalFieldConditionRule::class;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function modifyElementsQuery(ElementQueryInterface $query, mixed $value): void
-    {
-        if (empty($value)) {
-            return;
-        }
-
-        if (!is_array($value)) {
-            $value = [$value];
-        }
-
-        /** @var ElementQuery $query */
-        $conditions = [];
-
-        if (isset($value[0]) && in_array($value[0], [':notempty:', ':empty:', 'not :empty:'])) {
-            $emptyCondition = array_shift($value);
-            if ($emptyCondition === 'not :empty:') {
-                $emptyCondition = ':notempty:';
-            }
-
-            $ns = $this->handle . '_' . StringHelper::randomString(5);
-            $condition = [
-                'exists', (new Query())
-                    ->from(["relations_$ns" => DbTable::RELATIONS])
-                    ->innerJoin(["elements_$ns" => DbTable::ELEMENTS], "[[elements_$ns.id]] = [[relations_$ns.targetId]]")
-                    ->leftJoin(["elements_sites_$ns" => DbTable::ELEMENTS_SITES], "[[elements_sites_$ns.elementId]] = [[elements_$ns.id]]")
-                    ->where("[[relations_$ns.sourceId]] = [[elements.id]]")
-                    ->andWhere([
-                        'or',
-                        ["relations_$ns.sourceSiteId" => null],
-                        ["relations_$ns.sourceSiteId" => new Expression('[[elements_sites.siteId]]')],
-                    ])
-                    ->andWhere([
-                        "relations_$ns.fieldId" => $this->id,
-                        "elements_$ns.enabled" => true,
-                        "elements_$ns.dateDeleted" => null,
-                        "elements_sites_$ns.siteId" => $this->_targetSiteId() ?? new Expression('[[elements_sites.siteId]]'),
-                        "elements_sites_$ns.enabled" => true,
-                    ]),
-            ];
-
-            if ($emptyCondition === ':notempty:') {
-                $conditions[] = $condition;
-            } else {
-                $conditions[] = ['not', $condition];
-            }
-        }
-
-        if (!empty($value)) {
-            $parser = new ElementRelationParamParser([
-                'fields' => [
-                    $this->handle => $this,
-                ],
-            ]);
-            $condition = $parser->parse([
-                'targetElement' => $value,
-                'field' => $this->handle,
-            ]);
-            if ($condition !== false) {
-                $conditions[] = $condition;
-            }
-        }
-
-        if (empty($conditions)) {
-            throw new QueryAbortedException();
-        }
-
-        array_unshift($conditions, 'or');
-        $query->subQuery->andWhere($conditions);
     }
 
     /**
@@ -771,10 +783,10 @@ JS, [
      */
     protected function searchKeywords(mixed $value, ElementInterface $element): string
     {
-        /** @var ElementQuery|Collection $value */
+        /** @var ElementQuery|ElementCollection $value */
         $titles = [];
 
-        if ($value instanceof Collection) {
+        if ($value instanceof ElementCollection) {
             $value = $value->all();
         } else {
             $value = $this->_all($value, $element)->all();
@@ -792,8 +804,8 @@ JS, [
      */
     public function getStaticHtml(mixed $value, ElementInterface $element): string
     {
-        /** @var ElementQueryInterface|Collection $value */
-        if ($value instanceof Collection) {
+        /** @var ElementQueryInterface|ElementCollection $value */
+        if ($value instanceof ElementCollection) {
             $value = $value->all();
         } else {
             $value = $this->_all($value, $element)->all();
@@ -803,46 +815,47 @@ JS, [
             return '<p class="light">' . Craft::t('app', 'Nothing selected.') . '</p>';
         }
 
-        $view = Craft::$app->getView();
+        $size = Cp::ELEMENT_SIZE_SMALL;
+        $viewMode = $this->viewMode();
+        if ($viewMode == 'large') {
+            $size = Cp::ELEMENT_SIZE_LARGE;
+        }
+
         $id = $this->getInputId();
-        $html = "<div id='$id' class='elementselect'><div class='elements'>";
+        $html = "<div id='$id' class='elementselect'>" .
+            "<div class='elements" . ($size === Cp::ELEMENT_SIZE_LARGE ? ' inline-chips' : '') . "'>";
 
         foreach ($value as $relatedElement) {
-            $html .= Cp::elementHtml($relatedElement);
+            $html .= Cp::elementChipHtml($relatedElement, [
+                'size' => $size,
+            ]);
         }
 
         $html .= '</div></div>';
-
-        $nsId = $view->namespaceInputId($id);
-        $js = <<<JS
-(new Craft.ElementThumbLoader()).load($('#$nsId'));
-JS;
-        $view->registerJs($js);
-
         return $html;
     }
 
     /**
      * @inheritdoc
      */
-    public function getTableAttributeHtml(mixed $value, ElementInterface $element): string
+    public function getPreviewHtml(mixed $value, ElementInterface $element): string
     {
-        /** @var ElementQueryInterface|Collection $value */
+        /** @var ElementQueryInterface|ElementCollection $value */
         if ($value instanceof ElementQueryInterface) {
             $value = $this->_all($value, $element)->collect();
         }
 
-        return $this->tableAttributeHtml($value);
+        return $this->previewHtml($value);
     }
 
     /**
-     * Returns the HTML that should be shown for this field in Table View.
+     * Returns the HTML that should be shown for this field in table and card views.
      *
-     * @param Collection $elements
+     * @param ElementCollection $elements
      * @return string
-     * @since 3.6.3
+     * @since 5.0.0
      */
-    protected function tableAttributeHtml(Collection $elements): string
+    protected function previewHtml(ElementCollection $elements): string
     {
         return Cp::elementPreviewHtml($elements->all());
     }
@@ -942,11 +955,11 @@ JS;
             ($element->isFieldDirty($this->handle) || $this->maintainHierarchy) &&
             (!$element->propagating || $this->localizeRelations)
         ) {
-            /** @var ElementQueryInterface|Collection $value */
+            /** @var ElementQueryInterface|ElementCollection $value */
             $value = $element->getFieldValue($this->handle);
 
             // $value will be an element query and its $id will be set if we're saving new relations
-            if ($value instanceof Collection) {
+            if ($value instanceof ElementCollection) {
                 $targetIds = $value->map(fn(ElementInterface $element) => $element->id)->all();
             } elseif (
                 is_array($value->id) &&
@@ -970,6 +983,8 @@ JS;
                     ->revisions(null)
                     ->provisionalDrafts(null)
                     ->status(null)
+                    ->site('*')
+                    ->unique()
                     ->all();
 
                 // Fill in any gaps
@@ -986,8 +1001,8 @@ JS;
             /** @var int|int[]|false|null $targetIds */
             Craft::$app->getRelations()->saveRelations($this, $element, $targetIds);
 
-            // Reset the field value if this is a new element
-            if ($isNew) {
+            // Reset the field value?
+            if ($element->duplicateOf !== null || $element->mergingCanonicalChanges || $isNew) {
                 $element->setFieldValue($this->handle, null);
             }
 
@@ -1005,6 +1020,7 @@ JS;
                             'elementId' => $element->id,
                             'siteId' => $siteId,
                             'fieldId' => $this->id,
+                            'layoutElementUid' => $this->layoutElement->uid,
                             'dateUpdated' => $timestamp,
                             'propagated' => $element->propagating,
                             'userId' => $userId,
@@ -1202,7 +1218,7 @@ JS;
             if ($element->id) {
                 $disabledElementIds[] = $element->getCanonicalId();
             }
-            if ($element instanceof BlockElementInterface) {
+            if ($element instanceof NestedElementInterface) {
                 $el = $element;
                 do {
                     try {
@@ -1213,7 +1229,7 @@ JS;
                     } catch (InvalidConfigException) {
                         break;
                     }
-                } while ($el instanceof BlockElementInterface);
+                } while ($el instanceof NestedElementInterface);
             }
         }
 
@@ -1244,7 +1260,7 @@ JS;
             'limit' => $this->allowLimit ? $this->maxRelations : null,
             'viewMode' => $this->viewMode(),
             'selectionLabel' => $this->selectionLabel ? Craft::t('site', $this->selectionLabel) : static::defaultSelectionLabel(),
-            'sortable' => $this->sortable,
+            'sortable' => $this->sortable && !$this->maintainHierarchy,
             'prevalidate' => $this->validateRelatedElements,
             'modalSettings' => [
                 'defaultSiteId' => $element->siteId ?? null,
@@ -1375,6 +1391,8 @@ JS;
         if ($this->allowLargeThumbsView) {
             $viewModes['large'] = Craft::t('app', 'Large Thumbnails');
         }
+
+        $viewModes['cards'] = Craft::t('app', 'Cards');
 
         return $viewModes;
     }

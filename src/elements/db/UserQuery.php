@@ -10,6 +10,7 @@ namespace craft\elements\db;
 use Craft;
 use craft\db\Query;
 use craft\db\QueryAbortedException;
+use craft\db\QueryParam;
 use craft\db\Table;
 use craft\elements\User;
 use craft\helpers\Db;
@@ -252,10 +253,10 @@ class UserQuery extends ElementQuery
      * ```
      *
      * @param bool $value The property value (defaults to true)
-     * @return self self reference
+     * @return static self reference
      * @uses $admin
      */
-    public function admin(bool $value = true): self
+    public function admin(bool $value = true): static
     {
         $this->admin = $value;
         return $this;
@@ -281,11 +282,11 @@ class UserQuery extends ElementQuery
      * ```
      *
      * @param bool|null $value The property value (defaults to true)
-     * @return self self reference
+     * @return static self reference
      * @uses $authors
      * @since 4.0.0
      */
-    public function authors(?bool $value = true): self
+    public function authors(?bool $value = true): static
     {
         $this->authors = $value;
         return $this;
@@ -311,11 +312,11 @@ class UserQuery extends ElementQuery
      * ```
      *
      * @param bool|null $value The property value (defaults to true)
-     * @return self self reference
+     * @return static self reference
      * @uses $assetUploaders
      * @since 4.0.0
      */
-    public function assetUploaders(?bool $value = true): self
+    public function assetUploaders(?bool $value = true): static
     {
         $this->assetUploaders = $value;
         return $this;
@@ -341,10 +342,10 @@ class UserQuery extends ElementQuery
      * ```
      *
      * @param bool $value The property value (defaults to true)
-     * @return self self reference
+     * @return static self reference
      * @uses $hasPhoto
      */
-    public function hasPhoto(bool $value = true): self
+    public function hasPhoto(bool $value = true): static
     {
         $this->hasPhoto = $value;
         return $this;
@@ -372,10 +373,10 @@ class UserQuery extends ElementQuery
      * ```
      *
      * @param mixed $value The property value
-     * @return self self reference
+     * @return static self reference
      * @uses $can
      */
-    public function can(mixed $value): self
+    public function can(mixed $value): static
     {
         $this->can = $value;
         return $this;
@@ -412,10 +413,10 @@ class UserQuery extends ElementQuery
      * ```
      *
      * @param mixed $value The property value
-     * @return self self reference
+     * @return static self reference
      * @uses $groupId
      */
-    public function group(mixed $value): self
+    public function group(mixed $value): static
     {
         // If the value is a group handle, swap it with the user group
         if (is_string($value) && ($group = Craft::$app->getUserGroups()->getGroupByHandle($value))) {
@@ -427,14 +428,14 @@ class UserQuery extends ElementQuery
         })) {
             $this->groupId = $value;
         } else {
-            $glue = Db::extractGlue($value);
+            $operator = QueryParam::extractOperator($value);
             $this->groupId = (new Query())
                 ->select(['id'])
                 ->from([Table::USERGROUPS])
                 ->where(Db::parseParam('handle', $value))
                 ->column();
-            if ($this->groupId && $glue !== null) {
-                array_unshift($this->groupId, $glue);
+            if ($this->groupId && $operator !== null) {
+                array_unshift($this->groupId, $operator);
             }
         }
 
@@ -471,10 +472,10 @@ class UserQuery extends ElementQuery
      * ```
      *
      * @param mixed $value The property value
-     * @return self self reference
+     * @return static self reference
      * @uses $groupId
      */
-    public function groupId(mixed $value): self
+    public function groupId(mixed $value): static
     {
         $this->groupId = $value;
         return $this;
@@ -508,10 +509,10 @@ class UserQuery extends ElementQuery
      * ```
      *
      * @param mixed $value The property value
-     * @return self self reference
+     * @return static self reference
      * @uses $email
      */
-    public function email(mixed $value): self
+    public function email(mixed $value): static
     {
         $this->email = $value;
         return $this;
@@ -550,10 +551,10 @@ class UserQuery extends ElementQuery
      * ```
      *
      * @param mixed $value The property value
-     * @return self self reference
+     * @return static self reference
      * @uses $username
      */
-    public function username(mixed $value): self
+    public function username(mixed $value): static
     {
         $this->username = $value;
         return $this;
@@ -586,11 +587,11 @@ class UserQuery extends ElementQuery
      * ```
      *
      * @param mixed $value The property value
-     * @return self self reference
+     * @return static self reference
      * @uses $fullName
      * @since 4.0.0
      */
-    public function fullName(mixed $value): self
+    public function fullName(mixed $value): static
     {
         $this->fullName = $value;
         return $this;
@@ -623,10 +624,10 @@ class UserQuery extends ElementQuery
      * ```
      *
      * @param mixed $value The property value
-     * @return self self reference
+     * @return static self reference
      * @uses $firstName
      */
-    public function firstName(mixed $value): self
+    public function firstName(mixed $value): static
     {
         $this->firstName = $value;
         return $this;
@@ -659,10 +660,10 @@ class UserQuery extends ElementQuery
      * ```
      *
      * @param mixed $value The property value
-     * @return self self reference
+     * @return static self reference
      * @uses $lastName
      */
-    public function lastName(mixed $value): self
+    public function lastName(mixed $value): static
     {
         $this->lastName = $value;
         return $this;
@@ -701,10 +702,10 @@ class UserQuery extends ElementQuery
      * ```
      *
      * @param mixed $value The property value
-     * @return self self reference
+     * @return static self reference
      * @uses $lastLoginDate
      */
-    public function lastLoginDate(mixed $value): self
+    public function lastLoginDate(mixed $value): static
     {
         $this->lastLoginDate = $value;
         return $this;
@@ -742,9 +743,9 @@ class UserQuery extends ElementQuery
      *     ->all();
      * ```
      */
-    public function status(array|string|null $value): self
+    public function status(array|string|null $value): static
     {
-        /** @var self */
+        /** @var static */
         return parent::status($value);
     }
 
@@ -776,11 +777,11 @@ class UserQuery extends ElementQuery
      * ```
      *
      * @param bool $value The property value (defaults to true)
-     * @return self self reference
+     * @return static self reference
      * @uses $withGroups
      * @since 3.6.0
      */
-    public function withGroups(bool $value = true): self
+    public function withGroups(bool $value = true): static
     {
         $this->withGroups = $value;
         return $this;
@@ -791,6 +792,10 @@ class UserQuery extends ElementQuery
      */
     protected function beforePrepare(): bool
     {
+        if (!parent::beforePrepare()) {
+            return false;
+        }
+
         // See if 'group' was set to an invalid handle
         if ($this->groupId === []) {
             return false;
@@ -931,7 +936,7 @@ class UserQuery extends ElementQuery
             $this->subQuery->andWhere(Db::parseDateParam('users.lastLoginDate', $this->lastLoginDate));
         }
 
-        return parent::beforePrepare();
+        return true;
     }
 
     /**

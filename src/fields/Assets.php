@@ -9,6 +9,7 @@ namespace craft\fields;
 
 use Craft;
 use craft\base\ElementInterface;
+use craft\base\ThumbableFieldInterface;
 use craft\elements\Asset;
 use craft\elements\conditions\ElementCondition;
 use craft\elements\db\AssetQuery;
@@ -37,7 +38,6 @@ use craft\services\ElementSources;
 use craft\services\Gql as GqlService;
 use craft\web\UploadedFile;
 use GraphQL\Type\Definition\Type;
-use Illuminate\Support\Collection;
 use Twig\Error\RuntimeError;
 use yii\base\InvalidConfigException;
 
@@ -47,7 +47,7 @@ use yii\base\InvalidConfigException;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
-class Assets extends BaseRelationField
+class Assets extends BaseRelationField implements ThumbableFieldInterface
 {
     /**
      * @since 3.5.11
@@ -92,7 +92,7 @@ class Assets extends BaseRelationField
     /**
      * @inheritdoc
      */
-    public static function valueType(): string
+    public static function phpType(): string
     {
         return sprintf('\\%s|\\%s<\\%s>', AssetQuery::class, ElementCollection::class, Asset::class);
     }
@@ -356,7 +356,7 @@ class Assets extends BaseRelationField
      */
     public function validateFileSize(ElementInterface $element): void
     {
-        $maxSize = AssetsHelper::getMaxUploadSize();
+        $maxSize = Craft::$app->getConfig()->getGeneral()->maxUploadFileSize;
 
         $filenames = [];
 
@@ -471,9 +471,25 @@ class Assets extends BaseRelationField
     /**
      * @inheritdoc
      */
-    protected function tableAttributeHtml(Collection $elements): string
+    protected function previewHtml(ElementCollection $elements): string
     {
-        return Cp::elementPreviewHtml($elements->all(), Cp::ELEMENT_SIZE_SMALL, false, true, $this->previewMode === self::PREVIEW_MODE_FULL);
+        return Cp::elementPreviewHtml(
+            $elements->all(),
+            showLabel: $this->previewMode === self::PREVIEW_MODE_FULL,
+        );
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getThumbHtml(mixed $value, ElementInterface $element, int $size): ?string
+    {
+        /** @var AssetQuery|ElementCollection $value */
+        if ($value instanceof AssetQuery) {
+            $value = (clone $value)->eagerly(__METHOD__);
+        }
+
+        return $value->one()?->getThumbHtml($size);
     }
 
     // Events
@@ -706,10 +722,13 @@ class Assets extends BaseRelationField
         $variables = parent::inputTemplateVariables($value, $element);
 
         $uploadVolume = $this->_uploadVolume();
+        $uploadFs = $uploadVolume?->getFs();
+        $variables['fsType'] = $uploadFs::class;
         $variables['showFolders'] = !$this->restrictLocation || $this->allowSubfolders;
         $variables['canUpload'] = (
             $this->allowUploads &&
             $uploadVolume &&
+            $uploadFs &&
             Craft::$app->getUser()->checkPermission("saveAssets:$uploadVolume->uid")
         );
         $variables['defaultFieldLayoutId'] = $uploadVolume->fieldLayoutId ?? null;
@@ -728,6 +747,7 @@ class Assets extends BaseRelationField
                 $variables['defaultSourcePath'] = array_map(function(VolumeFolder $folder) {
                     return $folder->getSourcePathInfo();
                 }, $folders);
+                $variables['preferStoredSource'] = true;
             }
         }
 
@@ -849,9 +869,6 @@ class Assets extends BaseRelationField
 
         $assetsService = Craft::$app->getAssets();
         $rootFolder = $assetsService->getRootFolderByVolumeId($volume->id);
-        if (!$rootFolder) {
-            $rootFolder = Craft::$app->getVolumes()->ensureTopFolder($volume);
-        }
 
         // Are we looking for the root folder?
         $subpath = trim($subpath ?? '', '/');
@@ -898,7 +915,7 @@ class Assets extends BaseRelationField
 
         // Ensure that the folder exists
         if (!$folder) {
-            if (!$isDynamic && !$createDynamicFolders) {
+            if (!$createDynamicFolders) {
                 throw new InvalidSubpathException($subpath);
             }
 

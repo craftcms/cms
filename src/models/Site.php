@@ -283,7 +283,8 @@ class Site extends Model
         if ($this->language === Craft::$app->language) {
             return Craft::$app->getLocale();
         }
-        return new Locale($this->language);
+
+        return Craft::$app->getI18n()->getLocaleById($this->language);
     }
 
     /**

@@ -196,7 +196,7 @@ class ViewTest extends TestCase
             CraftTest::normalizePathSeparators($this->view->templatesPath)
         );
         self::assertSame(
-            ['html', 'twig'],
+            ['twig', 'html'],
             $this->getInaccessibleProperty($this->view, '_defaultTemplateExtensions')
         );
 
@@ -492,7 +492,7 @@ TWIG;
         return [
             ['@craftunittemplates/template.twig', '@craftunittemplates', 'template'],
             ['@craftunittemplates/index.html', '@craftunittemplates', 'index'],
-            ['@craftunittemplates/doubleindex/index.html', '@craftunittemplates/doubleindex', 'index'],
+            ['@craftunittemplates/doubleindex/index.twig', '@craftunittemplates/doubleindex', 'index'],
 
             // Index is found by default
             ['@craftunittemplates/index.html', '@craftunittemplates', ''],
@@ -536,6 +536,10 @@ TWIG;
 
             // Test basic arrays
             ['foo=bar', 'foo={foo}', ['foo' => 'bar']],
+
+            // Make sure resulting templates are trimmed
+            ['foo', ' foo ', $model],
+            ['Example Param', ' {exampleParam}', $model],
         ];
     }
 
@@ -673,12 +677,13 @@ TWIG;
     /**
      * @param string $basePath
      * @param string $name
+     * @param bool $publicOnly
      * @return string|null
      * @throws ReflectionException
      */
-    private function _resolveTemplate(string $basePath, string $name): ?string
+    private function _resolveTemplate(string $basePath, string $name, bool $publicOnly = false): ?string
     {
-        $path = $this->invokeMethod($this->view, '_resolveTemplate', [$basePath, $name]);
+        $path = $this->invokeMethod($this->view, '_resolveTemplate', [$basePath, $name, $publicOnly]);
         if ($path !== null) {
             $path = CraftTest::normalizePathSeparators($path);
         }

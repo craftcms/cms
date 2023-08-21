@@ -5,10 +5,11 @@ namespace craft\elements;
 use CommerceGuys\Addressing\AddressFormat\AddressField;
 use CommerceGuys\Addressing\AddressInterface;
 use Craft;
-use craft\base\BlockElementInterface;
 use craft\base\Element;
+use craft\base\ElementContainerFieldInterface;
 use craft\base\ElementInterface;
 use craft\base\NameTrait;
+use craft\base\NestedElementInterface;
 use craft\elements\conditions\addresses\AddressCondition;
 use craft\elements\conditions\ElementConditionInterface;
 use craft\elements\db\AddressQuery;
@@ -27,9 +28,14 @@ use yii\base\InvalidConfigException;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.0.0
  */
-class Address extends Element implements AddressInterface, BlockElementInterface
+class Address extends Element implements AddressInterface, NestedElementInterface
 {
     use NameTrait;
+
+    /**
+     * @since 5.0.0
+     */
+    public const GQL_TYPE_NAME = 'Address';
 
     /**
      * @inheritdoc
@@ -67,14 +73,6 @@ class Address extends Element implements AddressInterface, BlockElementInterface
      * @inheritdoc
      */
     public static function trackChanges(): bool
-    {
-        return true;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public static function hasContent(): bool
     {
         return true;
     }
@@ -160,14 +158,6 @@ class Address extends Element implements AddressInterface, BlockElementInterface
     }
 
     /**
-     * @inheritdoc
-     */
-    public static function gqlTypeNameByContext(mixed $context): string
-    {
-        return 'Address';
-    }
-
-    /**
      * @var int|null Owner ID
      */
     public ?int $ownerId = null;
@@ -182,7 +172,7 @@ class Address extends Element implements AddressInterface, BlockElementInterface
      * @var string Two-letter country code
      * @see https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2
      */
-    public string $countryCode = 'US';
+    public string $countryCode;
 
     /**
      * @var string|null Administrative area
@@ -245,6 +235,11 @@ class Address extends Element implements AddressInterface, BlockElementInterface
     public function init(): void
     {
         parent::init();
+
+        if (!isset($this->countryCode)) {
+            $this->countryCode = Craft::$app->getConfig()->getGeneral()->defaultCountryCode;
+        }
+
         $this->normalizeNames();
     }
 
@@ -301,6 +296,26 @@ class Address extends Element implements AddressInterface, BlockElementInterface
         }
 
         return $this->_owner;
+    }
+
+    /**
+     * Sets the owner element.
+     *
+     * @param ElementInterface|null $owner
+     * @since 4.4.16
+     */
+    public function setOwner(?ElementInterface $owner): void
+    {
+        $this->_owner = $owner;
+        $this->ownerId = $owner?->id;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getField(): ?ElementContainerFieldInterface
+    {
+        return null;
     }
 
     /**
@@ -464,6 +479,15 @@ class Address extends Element implements AddressInterface, BlockElementInterface
     public function getLocale(): string
     {
         return 'und';
+    }
+
+    /**
+     * @inheritdoc
+     * @since 3.3.0
+     */
+    public function getGqlTypeName(): string
+    {
+        return self::GQL_TYPE_NAME;
     }
 
     /**

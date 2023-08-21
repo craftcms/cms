@@ -25,6 +25,7 @@ use craft\helpers\Db;
 use craft\helpers\ElementHelper;
 use craft\helpers\Html;
 use craft\helpers\UrlHelper;
+use craft\models\ElementActivity;
 use craft\models\FieldLayoutForm;
 use craft\services\Elements;
 use craft\web\Controller;
@@ -80,9 +81,6 @@ class ElementsController extends Controller
     private array $_visibleLayoutElements;
     private ?string $_selectedTab = null;
     private bool $_prevalidate;
-    private ?string $_context = null;
-    private ?string $_thumbSize = null;
-    private ?string $_viewMode = null;
 
     /**
      * @inheritdoc
@@ -119,9 +117,6 @@ class ElementsController extends Controller
         $this->_visibleLayoutElements = $this->_param('visibleLayoutElements') ?? [];
         $this->_selectedTab = $this->_param('selectedTab');
         $this->_prevalidate = (bool)$this->_param('prevalidate');
-        $this->_context = $this->_param('context');
-        $this->_thumbSize = $this->_param('thumbSize');
-        $this->_viewMode = $this->_param('viewMode');
 
         unset($this->_attributes['failMessage']);
         unset($this->_attributes['redirect']);
@@ -158,6 +153,12 @@ class ElementsController extends Controller
 
         if (!$url) {
             throw new ServerErrorHttpException('The element doesn’t have an edit page.');
+        }
+
+        if (str_starts_with($url, UrlHelper::cpUrl('edit'))) {
+            return $this->runAction('edit', [
+                'elementId' => $element->id,
+            ]);
         }
 
         return $this->redirect($url);
@@ -361,22 +362,7 @@ class ElementsController extends Controller
 
         // Site statuses
         if ($canEditMultipleSites) {
-            if ($element->enabled && $element->id) {
-                $siteStatusesQuery = $element::find()
-                    ->drafts($isDraft)
-                    ->provisionalDrafts($element->isProvisionalDraft)
-                    ->revisions($isRevision)
-                    ->id($element->id)
-                    ->siteId($propEditableSiteIds)
-                    ->status(null)
-                    ->asArray()
-                    ->select(['elements_sites.siteId', 'elements_sites.enabled']);
-                $siteStatuses = array_map(fn($enabled) => (bool)$enabled, $siteStatusesQuery->pairs());
-            } else {
-                // If the element isn't saved yet, assume other sites will share its current status
-                $defaultStatus = !$element->id && $element->enabled && $enabledForSite;
-                $siteStatuses = array_combine($propEditableSiteIds, array_map(fn() => $defaultStatus, $propEditableSiteIds));
-            }
+            $siteStatuses = ElementHelper::siteStatusesForElement($element, true);
         } else {
             $siteStatuses = [
                 $element->siteId => $element->enabled,
@@ -389,13 +375,13 @@ class ElementsController extends Controller
             ->editUrl($element->getCpEditUrl())
             ->docTitle($docTitle)
             ->title($title)
-            ->contextMenu(fn() => $this->_contextMenu(
+            ->contextMenuHtml(fn() => $this->_contextMenu(
                 $element,
                 $isMultiSiteElement,
                 $isUnpublishedDraft,
                 $propSiteIds
             ))
-            ->additionalButtons(fn() => $this->_additionalButtons(
+            ->additionalButtonsHtml(fn() => $this->_additionalButtons(
                 $element,
                 $canonical,
                 $isRevision,
@@ -408,14 +394,15 @@ class ElementsController extends Controller
                 $isUnpublishedDraft,
                 $isDraft
             ))
-            ->notice($element->isProvisionalDraft ? fn() => $this->_draftNotice() : null)
+            ->noticeHtml($element->isProvisionalDraft ? fn() => $this->_draftNotice() : null)
             ->prepareScreen(
                 fn(Response $response, string $containerId) => $this->_prepareEditor(
                     $element,
+                    $isUnpublishedDraft,
                     $canSave,
                     $response,
                     $containerId,
-                    fn(?FieldLayoutForm $form) => $this->_editorContent($element, $isUnpublishedDraft, $canSave, $form),
+                    fn(?FieldLayoutForm $form) => $this->_editorContent($element, $canSave, $form),
                     fn(?FieldLayoutForm $form) => $this->_editorSidebar($element, $mergeCanonicalChanges, $canSave),
                     fn(?FieldLayoutForm $form) => [
                         'additionalSites' => $addlEditableSites,
@@ -437,8 +424,10 @@ class ElementsController extends Controller
                         'revisionId' => $element->revisionId,
                         'siteId' => $element->siteId,
                         'siteStatuses' => $siteStatuses,
-                        'siteToken' => !$element->getSite()->enabled ? $security->hashData((string)$element->siteId) : null,
+                        'siteToken' => (!Craft::$app->getIsLive() || !$element->getSite()->enabled) ? $security->hashData((string)$element->siteId) : null,
                         'visibleLayoutElements' => $form ? $form->getVisibleElements() : [],
+                        'updatedTimestamp' => $element->dateUpdated->getTimestamp(),
+                        'canonicalUpdatedTimestamp' => $canonical->dateUpdated->getTimestamp(),
                     ]
                 )
             );
@@ -709,7 +698,11 @@ class ElementsController extends Controller
         bool $isUnpublishedDraft,
         bool $isDraft,
     ): string {
-        $components = [];
+        $components = [
+            Html::tag('div', options: [
+                'class' => ['activity-container'],
+            ]),
+        ];
 
         // Preview (View will be added later by JS)
         if ($canSave && $previewTargets) {
@@ -790,6 +783,7 @@ class ElementsController extends Controller
 
     private function _prepareEditor(
         ElementInterface $element,
+        bool $isUnpublishedDraft,
         bool $canSave,
         Response $response,
         string $containerId,
@@ -801,38 +795,21 @@ class ElementsController extends Controller
         $form = $fieldLayout?->createForm($element, !$canSave, [
             'registerDeltas' => true,
         ]);
+        $contentHtml = $contentFn($form);
+        $sidebarHtml = $sidebarFn($form);
 
-        /** @var Response|CpScreenResponseBehavior $response */
-        $response
-            ->tabs($form?->getTabMenu() ?? [])
-            ->content($contentFn($form))
-            ->sidebar($sidebarFn($form));
-
-        if ($canSave && !$element->getIsRevision()) {
-            $this->view->registerJsWithVars(fn($settingsJs) => <<<JS
-new Craft.ElementEditor($('#$containerId'), $settingsJs);
-JS, [
-                $jsSettingsFn($form),
+        if ($contentHtml === '' && $sidebarHtml !== '') {
+            $contentHtml = Html::tag('div', $sidebarHtml, [
+                'class' => 'details',
             ]);
-        }
-
-        // Give the element a chance to do things here too
-        $element->prepareEditScreen($response, $containerId);
-    }
-
-    private function _editorContent(
-        ElementInterface $element,
-        bool $isUnpublishedDraft,
-        bool $canSave,
-        ?FieldLayoutForm $form,
-    ): string {
-        $components = [];
-
-        if ($form) {
-            $components[] = $form->render();
+            $sidebarHtml = '';
+            /** @var Response|CpScreenResponseBehavior $response */
+            $response->slideoutBodyClass = 'so-full-details';
         }
 
         if ($canSave) {
+            $components = [];
+
             if ($element->id) {
                 $components[] = Html::hiddenInput('elementId', (string)$element->getCanonicalId());
             }
@@ -848,9 +825,35 @@ JS, [
             if ($isUnpublishedDraft && $this->_fresh) {
                 $components[] = Html::hiddenInput('fresh', '1');
             }
+
+            $components[] = $contentHtml;
+            $contentHtml = implode("\n", $components);
         }
 
-        $html = implode("\n", $components);
+        /** @var Response|CpScreenResponseBehavior $response */
+        $response
+            ->tabs($form?->getTabMenu() ?? [])
+            ->contentHtml($contentHtml)
+            ->metaSidebarHtml($sidebarHtml);
+
+        if ($canSave && !$element->getIsRevision()) {
+            $this->view->registerJsWithVars(fn($settingsJs) => <<<JS
+new Craft.ElementEditor($('#$containerId'), $settingsJs);
+JS, [
+                $jsSettingsFn($form),
+            ]);
+        }
+
+        // Give the element a chance to do things here too
+        $element->prepareEditScreen($response, $containerId);
+    }
+
+    private function _editorContent(
+        ElementInterface $element,
+        bool $canSave,
+        ?FieldLayoutForm $form,
+    ): string {
+        $html = $form?->render() ?? '';
 
         // Trigger a defineEditorContent event
         if ($this->hasEventHandlers(self::EVENT_DEFINE_EDITOR_CONTENT)) {
@@ -863,7 +866,7 @@ JS, [
             $html = $event->html;
         }
 
-        return $html;
+        return trim($html);
     }
 
     private function _editorSidebar(
@@ -889,7 +892,7 @@ JS, [
             $components[] = Cp::metadataHtml($element->getMetadata());
         }
 
-        return implode("\n", $components);
+        return trim(implode("\n", $components));
     }
 
     private function _draftNotice(): string
@@ -969,6 +972,8 @@ JS, [
                 'type' => $element::lowerDisplayName(),
             ]));
         }
+
+        $elementsService->trackActivity($element, ElementActivity::TYPE_SAVE);
 
         // See if the user happens to have a provisional element. If so delete it.
         $provisional = $element::find()
@@ -1070,7 +1075,7 @@ JS, [
 
         // If this is a provisional draft, delete the canonical
         if ($element && $element->isProvisionalDraft) {
-            $element = $element->getcanonical(true);
+            $element = $element->getCanonical(true);
         }
 
         if (!$element || $element->getIsDraft() || $element->getIsRevision()) {
@@ -1207,6 +1212,8 @@ JS, [
                 ]));
             }
 
+            $elementsService->trackActivity($element, ElementActivity::TYPE_SAVE);
+
             $creator = $element->getCreator();
 
             $data = [
@@ -1279,6 +1286,8 @@ JS, [
                     'initialDeltaValues' => $view->getInitialDeltaValues(),
                     'headHtml' => $view->getHeadHtml(),
                     'bodyHtml' => $view->getBodyHtml(),
+                    'updatedTimestamp' => $element->dateUpdated->getTimestamp(),
+                    'canonicalUpdatedTimestamp' => $element->getCanonical()->dateUpdated->getTimestamp(),
                 ];
             }
 
@@ -1357,6 +1366,8 @@ JS, [
                 $mutex->release($lockKey);
             }
         }
+
+        $elementsService->trackActivity($canonical, ElementActivity::TYPE_SAVE);
 
         if (!$this->request->getAcceptsJson()) {
             // Tell all browser windows about the element save
@@ -1488,6 +1499,7 @@ JS, [
         }
 
         $canonical = Craft::$app->getRevisions()->revertToRevision($element, $user->id);
+        Craft::$app->getElements()->trackActivity($canonical, ElementActivity::TYPE_SAVE);
 
         return $this->_asSuccess(Craft::t('app', '{type} reverted to past revision.', [
             'type' => $element::displayName(),
@@ -1495,35 +1507,60 @@ JS, [
     }
 
     /**
-     * Returns the HTML for a single element
+     * Returns any recent activity for an element, and records that the user is viewing the element.
      *
      * @return Response
-     * @throws BadRequestHttpException
-     * @throws ForbiddenHttpException
+     * @since 4.5.0
      */
-    public function actionGetElementHtml(): Response
+    public function actionRecentActivity(): Response
     {
-        $this->requireAcceptsJson();
-
         $element = $this->_element();
 
-        if (!$element) {
+        if (!$element || $element->getIsRevision()) {
             throw new BadRequestHttpException('No element was identified by the request.');
         }
 
-        $this->element = $element;
+        $elementsService = Craft::$app->getElements();
+        $currentUser = Craft::$app->getUser()->getIdentity();
+        $activity = $elementsService->getRecentActivity($element, $currentUser->id);
+        $elementsService->trackActivity($element, ElementActivity::TYPE_VIEW, $currentUser);
 
-        $context = $this->_context ?? 'field';
-        $thumbSize = $this->_thumbSize;
+        return $this->asJson([
+            'activity' => array_map(function(ElementActivity $record) use ($element) {
+                $recordIsCanonical = $record->element->getIsCanonical() || $record->element->isProvisionalDraft;
+                $recordIsCanonicalAndPublished = $recordIsCanonical && !$record->element->getIsUnpublishedDraft();
+                $isSameOrUpstream = $element->id === $record->element->id || $recordIsCanonical;
 
-        if (!in_array($thumbSize, [Cp::ELEMENT_SIZE_SMALL, Cp::ELEMENT_SIZE_LARGE], true)) {
-            $thumbSize = $this->_viewMode === 'thumbs' ? Cp::ELEMENT_SIZE_LARGE : Cp::ELEMENT_SIZE_SMALL;
-        }
+                if ($isSameOrUpstream) {
+                    $messageParams = [
+                        'user' => $record->user->getName(),
+                        'type' => $recordIsCanonicalAndPublished ? $element::lowerDisplayName() : Craft::t('app', 'draft'),
+                    ];
+                    $message = match ($record->type) {
+                        ElementActivity::TYPE_VIEW => Craft::t('app', '{user} is viewing this {type}.', $messageParams),
+                        ElementActivity::TYPE_EDIT, ElementActivity::TYPE_SAVE => Craft::t('app', '{user} is editing this {type}.', $messageParams),
+                    };
+                } else {
+                    $messageParams = [
+                        'user' => $record->user->getName(),
+                        'type' => $element::lowerDisplayName(),
+                    ];
+                    $message = match ($record->type) {
+                        ElementActivity::TYPE_VIEW => Craft::t('app', '{user} is viewing a draft of this {type}.', $messageParams),
+                        ElementActivity::TYPE_EDIT, ElementActivity::TYPE_SAVE => Craft::t('app', '{user} is editing a draft of this {type}.', $messageParams),
+                    };
+                }
 
-        $html = Cp::elementHtml($element, $context, $thumbSize);
-        $headHtml = $this->getView()->getHeadHtml();
-
-        return $this->asJson(compact('html', 'headHtml'));
+                return [
+                    'userId' => $record->user->id,
+                    'userName' => $record->user->getName(),
+                    'userThumb' => $record->user->getThumbHtml(26),
+                    'message' => $message,
+                ];
+            }, $activity),
+            'updatedTimestamp' => $element->dateUpdated->getTimestamp(),
+            'canonicalUpdatedTimestamp' => $element->getCanonical()->dateUpdated->getTimestamp(),
+        ]);
     }
 
     /**
@@ -1618,7 +1655,7 @@ JS, [
                         ->one();
                 }
 
-                if (!isset($element)) {
+                if (!isset($element) || !$this->_canSave($element, $user)) {
                     $element = $elementType::find()
                         ->id($elementId)
                         ->siteId($siteId)
@@ -1783,7 +1820,7 @@ JS, [
             'element' => $element->toArray($element->attributes()),
         ];
         $response = $this->asSuccess($message, $data, $this->getPostedRedirectUrl($element), [
-            'details' => !$element->dateDeleted ? Cp::elementHtml($element) : null,
+            'details' => !$element->dateDeleted ? Cp::elementChipHtml($element) : null,
         ]);
 
         if ($addAnother && $this->_addAnother) {

@@ -24,6 +24,16 @@ class MultiSelect extends BaseOptionsField
     /**
      * @inheritdoc
      */
+    protected static bool $multi = true;
+
+    /**
+     * @inheritdoc
+     */
+    protected static bool $optgroups = true;
+
+    /**
+     * @inheritdoc
+     */
     public static function displayName(): string
     {
         return Craft::t('app', 'Multi-select');
@@ -32,20 +42,10 @@ class MultiSelect extends BaseOptionsField
     /**
      * @inheritdoc
      */
-    public static function valueType(): string
+    public static function phpType(): string
     {
         return sprintf('\\%s', MultiOptionsFieldData::class);
     }
-
-    /**
-     * @inheritdoc
-     */
-    protected bool $multi = true;
-
-    /**
-     * @inheritdoc
-     */
-    protected bool $optgroups = true;
 
     /**
      * @inheritdoc
@@ -57,30 +57,14 @@ class MultiSelect extends BaseOptionsField
             Craft::$app->getView()->setInitialDeltaValue($this->handle, null);
         }
 
-        $id = $this->getInputId();
-
-        $view = Craft::$app->getView();
-        $view->registerJsWithVars(fn($id) => <<<JS
-$('#' + $id).selectize({
-  plugins: ['remove_button'],
-  dropdownParent: 'body',
-});
-JS, [
-            $view->namespaceInputId($id),
-        ]);
-
-        return Cp::multiSelectHtml([
-            'id' => $id,
+        return Cp::selectizeHtml([
+            'id' => $this->getInputId(),
             'describedBy' => $this->describedBy,
             'class' => 'selectize',
             'name' => $this->handle,
             'values' => $this->encodeValue($value),
             'options' => $this->translatedOptions(true, $value, $element),
-            'inputAttributes' => [
-                'style' => [
-                    'display' => 'none', // Hide it before selectize does its thing
-                ],
-            ],
+            'multi' => true,
         ]);
     }
 
