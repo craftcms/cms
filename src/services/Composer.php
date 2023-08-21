@@ -201,11 +201,13 @@ class Composer extends Component
         $process->setTimeout(null);
 
         try {
-            $process->mustRun();
-        } catch (ProcessFailedException $e) {
-            $io->write($process->getOutput());
-            $io->writeError($process->getErrorOutput());
-            throw $e;
+            $process->mustRun(function($type, $buffer) use ($io): void {
+                if ($type === Process::ERR) {
+                    $io->writeErrorRaw($buffer, false);
+                } else {
+                    $io->writeRaw($buffer, false);
+                }
+            });
         } finally {
             unlink($pharPath);
         }
