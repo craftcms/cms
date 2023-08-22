@@ -60,7 +60,13 @@ class SetStatus extends ElementAction
 (() => {
     new Craft.ElementActionTrigger({
         type: $type,
-        validateSelection: \$selectedItems => Garnish.hasAttr(\$selectedItems.find('.element'), 'data-savable'),
+        validateSelection: (selectedItems) => {
+            const element = selectedItems.find('.element');
+            return (
+                Garnish.hasAttr(element, 'data-savable') &&
+                !Garnish.hasAttr(element, 'data-disallow-status')
+            );
+        },
     });
 })();
 JS, [static::class]);
