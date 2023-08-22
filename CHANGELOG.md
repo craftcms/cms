@@ -18,6 +18,7 @@
 - Fixed a bug where it wasn’t possible to save elements which didn’t support drafts, if they contained cross-site validation errors. ([#13568](https://github.com/craftcms/cms/pull/13568))
 - Fixed a bug where autosuggest fields within slideouts weren’t mouse-selectable. ([#13553](https://github.com/craftcms/cms/issues/13553))
 - Fixed DB cache support for PostgreSQL.
+- Fixed an error that occurred when uploading an image directly to an Assets field within a newly-created Matrix block. ([#13585](https://github.com/craftcms/cms/issues/13585))
 
 ## 4.5.0-beta.2 - 2023-08-15
 
