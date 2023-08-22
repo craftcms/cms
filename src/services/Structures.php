@@ -532,7 +532,7 @@ class Structures extends Component
             self::MODE_UPDATE => [self::EVENT_BEFORE_MOVE_ELEMENT, self::EVENT_AFTER_MOVE_ELEMENT],
         };
 
-        $targetElementId = $targetElementRecord->isRoot() ? null : $targetElementRecord->id;
+        $targetElementId = $targetElementRecord->isRoot() ? null : $targetElementRecord->elementId;
 
         if ($this->hasEventHandlers($beforeEvent)) {
             // Fire a 'beforeInsertElement' or 'beforeMoveElement' event

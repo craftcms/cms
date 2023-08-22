@@ -227,6 +227,10 @@ class SectionsController extends Controller
         }
 
         if ($saveEntryType) {
+            if ($this->fromGlobalSet) {
+                $entryType->showStatusField = false;
+            }
+
             $this->do('Saving the entry type', function() use ($entryType, $sourceFieldLayout) {
                 if ($sourceFieldLayout) {
                     $fieldLayout = FieldLayout::createFromConfig($sourceFieldLayout->getConfig() ?? []);

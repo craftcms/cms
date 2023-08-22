@@ -759,10 +759,10 @@ $.extend(Craft, {
 
   _actionHeaders: function () {
     let headers = {
-      'X-Registered-Asset-Bundles': Object.keys(
-        Craft.registeredAssetBundles
-      ).join(','),
-      'X-Registered-Js-Files': Object.keys(Craft.registeredJsFiles).join(','),
+      'X-Registered-Asset-Bundles': [
+        ...new Set(Craft.registeredAssetBundles),
+      ].join(','),
+      'X-Registered-Js-Files': [...new Set(Craft.registeredJsFiles)].join(','),
     };
 
     if (Craft.csrfTokenValue) {

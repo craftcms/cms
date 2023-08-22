@@ -765,7 +765,6 @@ class Cp
             $labelHtml = '';
         }
 
-
         $containerTag = $fieldset ? 'fieldset' : 'div';
 
         return
@@ -776,6 +775,7 @@ class Cp
                     'data' => [
                         'attribute' => $attribute,
                     ],
+                    'tabindex' => -1,
                 ],
                 $config['fieldAttributes'] ?? []
             )) .
@@ -1589,10 +1589,7 @@ JS, [
             'customizableUi' => true,
         ];
 
-        $tabs = array_values(array_filter(
-            $fieldLayout->getTabs(),
-            fn(FieldLayoutTab $tab) => !empty($tab->getElements())
-        ));
+        $tabs = array_values($fieldLayout->getTabs());
 
         if (!$config['customizableTabs']) {
             $tab = array_shift($tabs) ?? new FieldLayoutTab([
