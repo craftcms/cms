@@ -1949,7 +1949,7 @@ return [
     '{filename} isn’t selectable for this field.' => '{filename}はこのフィールドに対して選択できません。',
     '{first, number}-{last, number} of {total, number} {total, plural, =1{{item}} other{{items}}}' => '{first, number}–{last, number}/{total, number} {total, plural, =1{{item}} other{{items}}}',
     '{first}-{last} of {total}' => '{first}–{last}/{total}',
-    '{name} active, more info' => '有効な{name}、詳細情報',
+    '{name} active, more info' => '{name}がアクティブ、詳細情報',
     '{name} folder' => '{name}フォルダ',
     '{name} has been added, but an error occurred when installing it.' => '{name}が追加されましたが、インストール時にエラーが発生しました。',
     '{name} is licensed for the {licenseEdition} edition, but the {currentEdition} edition is installed.' => '{name}は{licenseEdition}エディション用のライセンスですが、{currentEdition}エディションがインストールされています。',
