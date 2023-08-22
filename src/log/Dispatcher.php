@@ -61,31 +61,25 @@ class Dispatcher extends \yii\log\Dispatcher
             return [];
         }
 
-        $targets = Collection::make([
+        return Collection::make([
             static::TARGET_WEB,
             static::TARGET_CONSOLE,
             static::TARGET_QUEUE,
-        ])->mapWithKeys(function($name) {
+        ])->mapWithKeys(function($name) use ($isConsoleRequest) {
             $allowLineBreaks = (bool) (App::env('CRAFT_LOG_ALLOW_LINE_BREAKS') ?? App::devMode());
             $config = $this->monologTargetConfig + [
                 'class' => MonologTarget::class,
                 'name' => $name,
-                'enabled' => false,
+                'enabled' => match ($isConsoleRequest) {
+                    true => $name === static::TARGET_CONSOLE,
+                    false => $name === static::TARGET_WEB,
+                },
                 'extractExceptionTrace' => !App::devMode(),
                 'allowLineBreaks' => $allowLineBreaks,
                 'level' => App::devMode() ? LogLevel::INFO : LogLevel::WARNING,
             ];
 
-            return [$name => Craft::createObject(MonologTarget::class, $config)];
-        });
-
-        // Queue is enabled via QueueLogBehavior
-        if ($isConsoleRequest) {
-            $targets->get(static::TARGET_CONSOLE)['enabled'] = true;
-        } else {
-            $targets->get(static::TARGET_WEB)['enabled'] = true;
-        }
-
-        return $targets->all();
+            return [$name => Craft::createObject($config)];
+        })->all();
     }
 }
