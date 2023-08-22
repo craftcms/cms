@@ -9,7 +9,6 @@ namespace craft\helpers;
 
 use Craft;
 use craft\base\ElementInterface;
-use craft\base\ExpirableElementInterface;
 use craft\db\Paginator;
 use craft\web\twig\variables\Paginate;
 use craft\web\View;
@@ -108,23 +107,7 @@ class Template
     {
         // Include this element in any active caches
         if ($object instanceof ElementInterface) {
-            $elementsService = Craft::$app->getElements();
-            if ($elementsService->getIsCollectingCacheInfo()) {
-                $class = get_class($object);
-                $elementsService->collectCacheTags([
-                    'element',
-                    "element::$class",
-                    "element::$class::$object->id",
-                ]);
-
-                // If the element is expirable, register its expiry date
-                if (
-                    $object instanceof ExpirableElementInterface &&
-                    ($expiryDate = $object->getExpiryDate()) !== null
-                ) {
-                    $elementsService->setCacheExpiryDate($expiryDate);
-                }
-            }
+            Craft::$app->getElements()->collectCacheInfoForElement($object);
         }
 
         if (

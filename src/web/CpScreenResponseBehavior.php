@@ -81,6 +81,12 @@ class CpScreenResponseBehavior extends Behavior
     public array $tabs = [];
 
     /**
+     * @var string|null Class that should be added to the slideout body.
+     * @since 4.5.0
+     */
+    public ?string $slideoutBodyClass = null;
+
+    /**
      * @var array Custom attributes to add to the `<main>` tag.
      *
      * See [[\yii\helpers\BaseHtml::renderTagAttributes()]] for supported attribute syntaxes.
@@ -169,11 +175,19 @@ class CpScreenResponseBehavior extends Behavior
     public $content = null;
 
     /**
-     * @var string|callable|null The sidebar HTML.
+     * @var string|callable|null The right-hand sidebar HTML.
      * @see sidebar()
      * @see sidebarTemplate()
      */
     public $sidebar = null;
+
+    /**
+     * @var string|callable|null The left-hand page sidebar HTML (only used by full-page screens).
+     * @see pageSidebar()
+     * @see pageSidebarTemplate()
+     * @since 4.5.0
+     */
+    public $pageSidebar = null;
 
     /**
      * @var string|callable|null The content notice HTML.
@@ -181,6 +195,14 @@ class CpScreenResponseBehavior extends Behavior
      * @see noticeTemplate()
      */
     public $notice = null;
+
+    /**
+     * @var string|callable|null The errors summary HTML (DEV-212).
+     * @see errorSummary()
+     * @see errorSummaryTemplate()
+     * @since 4.5.0
+     */
+    public $errorSummary = null;
 
     /**
      * Sets a callable that will be called before other properties are added to the screen.
@@ -544,7 +566,7 @@ class CpScreenResponseBehavior extends Behavior
     }
 
     /**
-     * Sets the sidebar HTML.
+     * Sets the right-hand sidebar HTML.
      *
      * @param callable|string|null $value
      * @return Response
@@ -556,7 +578,7 @@ class CpScreenResponseBehavior extends Behavior
     }
 
     /**
-     * Sets a template that should be used to render the sidebar HTML.
+     * Sets a template that should be used to render the right-hand sidebar HTML.
      *
      * @param string $template
      * @param array $variables
@@ -565,6 +587,34 @@ class CpScreenResponseBehavior extends Behavior
     public function sidebarTemplate(string $template, array $variables = []): Response
     {
         return $this->sidebar(
+            fn() => Craft::$app->getView()->renderTemplate($template, $variables, View::TEMPLATE_MODE_CP)
+        );
+    }
+
+    /**
+     * Sets the left-hand page sidebar HTML (only used by full-page screens).
+     *
+     * @param callable|string|null $value
+     * @return Response
+     * @since 4.5.0
+     */
+    public function pageSidebar(callable|string|null $value): Response
+    {
+        $this->pageSidebar = $value;
+        return $this->owner;
+    }
+
+    /**
+     * Sets a template that should be used to render the left-hand page sidebar HTML (only used by full-page screens).
+     *
+     * @param string $template
+     * @param array $variables
+     * @return Response
+     * @since 4.5.0
+     */
+    public function pageSidebarTemplate(string $template, array $variables = []): Response
+    {
+        return $this->pageSidebar(
             fn() => Craft::$app->getView()->renderTemplate($template, $variables, View::TEMPLATE_MODE_CP)
         );
     }
@@ -591,6 +641,34 @@ class CpScreenResponseBehavior extends Behavior
     public function noticeTemplate(string $template, array $variables = []): Response
     {
         return $this->notice(
+            fn() => Craft::$app->getView()->renderTemplate($template, $variables, View::TEMPLATE_MODE_CP)
+        );
+    }
+
+    /**
+     * Sets the errors summary HTML.
+     *
+     * @param callable|string|null $value
+     * @return Response
+     * @since 4.5.0
+     */
+    public function errorSummary(callable|string|null $value): Response
+    {
+        $this->errorSummary = $value;
+        return $this->owner;
+    }
+
+    /**
+     * Sets a template that should be used to render the errors summary HTML.
+     *
+     * @param string $template
+     * @param array $variables
+     * @return Response
+     * @since 4.5.0
+     */
+    public function errorSummaryTemplate(string $template, array $variables = []): Response
+    {
+        return $this->errorSummary(
             fn() => Craft::$app->getView()->renderTemplate($template, $variables, View::TEMPLATE_MODE_CP)
         );
     }

@@ -2,7 +2,6 @@
 
 namespace craft\base\conditions;
 
-use Craft;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Cp;
 use craft\helpers\Db;
@@ -86,32 +85,16 @@ abstract class BaseMultiSelectConditionRule extends BaseConditionRule
     protected function inputHtml(): string
     {
         $multiSelectId = 'multiselect';
-        $namespacedId = Craft::$app->getView()->namespaceInputId($multiSelectId);
-
-        $js = <<<JS
-$('#$namespacedId').selectize({
-    plugins: ['remove_button'],
-    dropdownParent: 'body',
-    onDropdownClose: () => {
-        htmx.trigger(htmx.find('#$namespacedId'), 'change');
-    },
-});
-JS;
-        Craft::$app->getView()->registerJs($js);
 
         return
             Html::hiddenLabel(Html::encode($this->getLabel()), $multiSelectId) .
-            Cp::multiSelectHtml([
+            Cp::selectizeHtml([
                 'id' => $multiSelectId,
-                'class' => 'selectize flex-grow',
+                'class' => 'flex-grow',
                 'name' => 'values',
                 'values' => $this->_values,
                 'options' => $this->options(),
-                'inputAttributes' => [
-                    'style' => [
-                        'display' => 'none', // Hide it before selectize does its thing
-                    ],
-                ],
+                'multi' => true,
             ]);
     }
 

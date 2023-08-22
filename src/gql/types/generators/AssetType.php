@@ -56,13 +56,12 @@ class AssetType extends Generator implements GeneratorInterface, SingleGenerator
     public static function generateType(mixed $context): ObjectType
     {
         $typeName = AssetElement::gqlTypeNameByContext($context);
-        $contentFieldGqlTypes = self::getContentFields($context);
 
-        $assetFields = array_merge(AssetInterface::getFieldDefinitions(), $contentFieldGqlTypes);
-
-        return GqlEntityRegistry::getEntity($typeName) ?: GqlEntityRegistry::createEntity($typeName, new Asset([
+        return GqlEntityRegistry::getOrCreate($typeName, fn() => new Asset([
             'name' => $typeName,
-            'fields' => function() use ($assetFields, $typeName) {
+            'fields' => function() use ($context, $typeName) {
+                $contentFieldGqlTypes = self::getContentFields($context);
+                $assetFields = array_merge(AssetInterface::getFieldDefinitions(), $contentFieldGqlTypes);
                 return Craft::$app->getGql()->prepareFieldDefinitions($assetFields, $typeName);
             },
         ]));

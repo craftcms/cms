@@ -75,6 +75,7 @@
 {% set footer = (footer ?? block('footer') ?? '')|trim %}
 {% set crumbs = crumbs ?? null %}
 {% set tabs = (tabs ?? [])|length > 1 ? tabs : null %}
+{% set errorSummary = errorSummary ?? null %}
 
 {% set mainContentClasses = [
     sidebar ? 'has-sidebar',
@@ -117,13 +118,7 @@
 
 {% set userPhoto %}
     <div class="header-photo">
-        {{ tag('img', {
-            width: 30,
-            height: 30,
-            sizes: '30px',
-            srcset: "#{currentUser.getThumbUrl(30)} 30w, #{currentUser.getThumbUrl(60)} 60w",
-            alt: currentUser.getThumbAlt(),
-        }) }}
+        {{ currentUser.getThumbHtml(30)|raw }}
     </div>
 {% endset %}
 
@@ -249,6 +244,9 @@
                                 <h2 id="content-heading"></h2>
                             {% endif %}
                             {% block main %}
+                                {% if errorSummary is not empty %}
+                                    {{ errorSummary is defined ? errorSummary|raw }}
+                                {% endif %}
                                 <div id="content" class="content-pane">
                                     {% if contentNotice or tabs %}
                                         <header id="content-header" class="pane-header">

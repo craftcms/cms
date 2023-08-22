@@ -45,7 +45,9 @@ export default Base.extend(
         Garnish.HUD.activeHUDs = {};
       }
 
-      this.$shade = $('<div/>', {class: this.settings.shadeClass});
+      if (this.settings.withShade) {
+        this.$shade = $('<div/>', {class: this.settings.shadeClass});
+      }
       this.$hud = $('<div/>', {class: this.settings.hudClass}).data(
         'hud',
         this
@@ -83,14 +85,9 @@ export default Base.extend(
         this.$hud.css('position', 'absolute');
       }
 
-      // Hide the HUD until it gets positioned
-      this.$hud.css('opacity', 0);
-      this.show();
-      this.$hud.css('opacity', 1);
-
       this.addListener(this.$body, 'submit', '_handleSubmit');
 
-      if (this.settings.hideOnShadeClick) {
+      if (this.settings.withShade && this.settings.hideOnShadeClick) {
         this.addListener(this.$shade, 'tap,click', 'hide');
       }
 
@@ -147,6 +144,16 @@ export default Base.extend(
           this.$nextFocusableElement.focus();
         }
       });
+
+      if (this.settings.showOnInit) {
+        // Hide the HUD until it gets positioned
+        this.$hud.css('opacity', 0);
+        this.show();
+        this.$hud.css('opacity', 1);
+      } else {
+        this.$hud.appendTo(Garnish.$bod);
+        this.hideContainer();
+      }
     },
 
     /**
@@ -208,11 +215,14 @@ export default Base.extend(
       }
 
       // Move it to the end of <body> so it gets the highest sub-z-index
-      this.$shade.appendTo(Garnish.$bod);
-      this.$hud.appendTo(Garnish.$bod);
+      if (this.settings.withShade) {
+        this.$shade.appendTo(Garnish.$bod);
+        this.$shade.show();
+      }
 
-      this.$hud.show();
-      this.$shade.show();
+      this.$hud.appendTo(Garnish.$bod);
+      this.showContainer();
+
       this.showing = true;
       Garnish.HUD.activeHUDs[this._namespace] = this;
 
@@ -253,6 +263,10 @@ export default Base.extend(
 
         this.updateSizeAndPosition(true);
       }
+    },
+
+    showContainer: function () {
+      this.$hud.show();
     },
 
     onShow: function () {
@@ -572,9 +586,11 @@ export default Base.extend(
       }
 
       this.disable();
+      this.hideContainer();
 
-      this.$hud.hide();
-      this.$shade.hide();
+      if (this.settings.withShade) {
+        this.$shade.hide();
+      }
 
       this.showing = false;
       delete Garnish.HUD.activeHUDs[this._namespace];
@@ -590,6 +606,10 @@ export default Base.extend(
       }
 
       this.onHide();
+    },
+
+    hideContainer: function () {
+      this.$hud.hide();
     },
 
     onHide: function () {
@@ -625,7 +645,7 @@ export default Base.extend(
         this.$hud.remove();
       }
 
-      if (this.$shade) {
+      if (this.settings.withShade && this.$shade) {
         this.$shade.remove();
       }
 
@@ -650,10 +670,12 @@ export default Base.extend(
       tipWidth: 30,
       minBodyWidth: 200,
       minBodyHeight: 0,
+      withShade: true,
       onShow: $.noop,
       onHide: $.noop,
       onSubmit: $.noop,
       closeBtn: null,
+      showOnInit: true,
       closeOtherHUDs: true,
       hideOnEsc: true,
       hideOnShadeClick: true,

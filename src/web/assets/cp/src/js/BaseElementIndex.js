@@ -424,6 +424,16 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         this.searchText = queryParams.search;
       }
 
+      // Respect the initial filters
+      // ---------------------------------------------------------------------
+
+      if (queryParams.filters) {
+        this.createFilterHud({
+          showOnInit: false,
+          serialized: queryParams.filters,
+        });
+      }
+
       // Select the default sort attribute/direction
       // ---------------------------------------------------------------------
 
@@ -1371,8 +1381,11 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       if (
         this.filterHuds[this.siteId] &&
         this.filterHuds[this.siteId][this.sourceKey] &&
-        this.filterHuds[this.siteId][this.sourceKey].serialized
+        (this.filterHuds[this.siteId][this.sourceKey].conditionConfig ||
+          this.filterHuds[this.siteId][this.sourceKey].serialized)
       ) {
+        params.filterConfig =
+          this.filterHuds[this.siteId][this.sourceKey].conditionConfig;
         params.filters =
           this.filterHuds[this.siteId][this.sourceKey].serialized;
       }
@@ -1959,7 +1972,15 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
       this.updateSourceMenu();
       this.updateViewMenu();
-      this.updateFilterBtn();
+
+      if (!this.filterHudExists() && this.$source.data('default-filter')) {
+        this.createFilterHud({
+          showOnInit: false,
+          conditionConfig: this.$source.data('default-filter'),
+        });
+      } else {
+        this.updateFilterBtn();
+      }
 
       this.sourcePath =
         this.sourcePaths[this.sourceKey] ||
@@ -2586,7 +2607,22 @@ Craft.BaseElementIndex = Garnish.Base.extend(
               .data('sites')
               .toString()
               .split(',')
-              .indexOf(this.siteId.toString()) !== -1)
+              .some((siteId) => {
+                if (siteId == this.siteId) {
+                  return true;
+                }
+                // maybe UUIDs were used
+                if (siteId != parseInt(siteId)) {
+                  const site = Craft.sites.find(
+                    (site) => site.id == this.siteId
+                  );
+                  if (site && siteId == site.uid) {
+                    return true;
+                  }
+                }
+
+                return false;
+              }))
         ) {
           $source.parent().removeClass('hidden');
           this.$visibleSources = this.$visibleSources.add($source);
@@ -3211,24 +3247,42 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       }
     },
 
+    filterHudExists: function () {
+      return (
+        this.filterHuds[this.siteId] &&
+        this.filterHuds[this.siteId][this.sourceKey]
+      );
+    },
+
     showFilterHud: function () {
-      if (!this.filterHuds[this.siteId]) {
-        this.filterHuds[this.siteId] = {};
-      }
-      if (!this.filterHuds[this.siteId][this.sourceKey]) {
-        this.filterHuds[this.siteId][this.sourceKey] = new FilterHud(
-          this,
-          this.sourceKey,
-          this.siteId
-        );
-        this.updateFilterBtn();
+      if (!this.filterHudExists()) {
+        this.createFilterHud();
       } else {
         this.filterHuds[this.siteId][this.sourceKey].show();
       }
     },
 
+    createFilterHud: function (settings) {
+      if (!this.filterHuds[this.siteId]) {
+        this.filterHuds[this.siteId] = {};
+      }
+
+      this.filterHuds[this.siteId][this.sourceKey] = new FilterHud(
+        this,
+        this.sourceKey,
+        this.siteId,
+        settings
+      );
+
+      this.updateFilterBtn();
+    },
+
     updateFilterBtn: function () {
       this.$filterBtn.removeClass('active');
+
+      if (this.settings.context === 'index') {
+        Craft.setQueryParam('filters', null);
+      }
 
       if (
         this.filterHuds[this.siteId] &&
@@ -3246,11 +3300,15 @@ Craft.BaseElementIndex = Garnish.Base.extend(
               : 'false'
           );
 
-        if (
-          this.filterHuds[this.siteId][this.sourceKey].showing ||
-          this.filterHuds[this.siteId][this.sourceKey].hasRules()
-        ) {
+        if (this.filterHuds[this.siteId][this.sourceKey].isActive) {
           this.$filterBtn.addClass('active');
+
+          if (this.settings.context === 'index') {
+            Craft.setQueryParam(
+              'filters',
+              this.filterHuds[this.siteId][this.sourceKey].serialized
+            );
+          }
         }
       } else {
         this.$filterBtn.attr('aria-controls', null);
@@ -3723,15 +3781,30 @@ const FilterHud = Garnish.HUD.extend({
   siteId: null,
   id: null,
   loading: true,
+  conditionConfig: null,
   serialized: null,
   $clearBtn: null,
   cleared: false,
 
-  init: function (elementIndex, sourceKey, siteId) {
+  get isActive() {
+    return this.showing || this.conditionConfig || this.serialized;
+  },
+
+  init: function (elementIndex, sourceKey, siteId, settings) {
     this.elementIndex = elementIndex;
     this.sourceKey = sourceKey;
     this.siteId = siteId;
     this.id = `filter-${Math.floor(Math.random() * 1000000000)}`;
+
+    if (settings) {
+      if (settings.conditionConfig) {
+        this.conditionConfig = settings.conditionConfig;
+        delete settings.conditionConfig;
+      } else if (settings.serialized) {
+        this.serialized = settings.serialized;
+        delete settings.serialized;
+      }
+    }
 
     const $loadingContent = $('<div/>')
       .append(
@@ -3747,9 +3820,16 @@ const FilterHud = Garnish.HUD.extend({
         })
       );
 
-    this.base(this.elementIndex.$filterBtn, $loadingContent, {
-      hudClass: 'hud element-filter-hud loading',
-    });
+    this.base(
+      this.elementIndex.$filterBtn,
+      $loadingContent,
+      Object.assign(
+        {
+          hudClass: 'hud element-filter-hud loading',
+        },
+        settings
+      )
+    );
 
     this.$hud.attr({
       id: this.id,
@@ -3769,6 +3849,8 @@ const FilterHud = Garnish.HUD.extend({
         elementType: this.elementIndex.elementType,
         source: this.sourceKey,
         condition: this.elementIndex.settings.condition,
+        conditionConfig: this.conditionConfig,
+        serialized: this.serialized,
         id: `${this.id}-filters`,
       },
     })
@@ -3810,6 +3892,12 @@ const FilterHud = Garnish.HUD.extend({
           this.updateSizeAndPosition(true);
         });
         this.setFocus();
+
+        if (this.conditionConfig) {
+          // conditionConfig => serialized
+          this.conditionConfig = null;
+          this.serialized = this.serialize();
+        }
       })
       .catch(() => {
         Craft.cp.displayError(Craft.t('app', 'A server error occurred.'));

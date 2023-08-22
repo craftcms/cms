@@ -91,6 +91,17 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
       Garnish.requestAnimationFrame(() => {
         this._initialized = true;
       });
+
+      if (this.elementSelect) {
+        this.addListener(Garnish.$win, 'mousedown', (ev) => {
+          if (
+            !this.$container.is(ev.target) &&
+            !this.$container.find(ev.target).length
+          ) {
+            this.elementSelect.deselectAll();
+          }
+        });
+      }
     },
 
     get totalSelected() {
