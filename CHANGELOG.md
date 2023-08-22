@@ -1,36 +1,6 @@
 # Release Notes for Craft CMS 4
 
-## Unreleased
-
-- Fixed an error that occurred when exporting assets, if a subfolder was selected. ([#13570](https://github.com/craftcms/cms/issues/13570))
-- Fixed a bug where icons within secondary buttons were illegible when active.
-- Fixed a bug where the `|replace` filter was treating search strings as regular expressions even if they were invalid. ([#12956](https://github.com/craftcms/cms/issues/12956))
-- Fixed a bug where user groups without “Edit users” permission were being granted “Assign users to [group name]” when upgrading to Craft 4.
-- Fixed a bug where keyboard shortcuts weren’t getting reactivated when control panel notifications were dismissed. ([#13574](https://github.com/craftcms/cms/issues/13574))
-- Fixed a bug where a “This element has been updated” notification would be displayed when an element save was attempted, but had cross-site validation errors.
-
-## Unreleased (4.5)
-
-- Added the `setup/cloud` command.
-- Admin table properties are now reactive. ([#13558](https://github.com/craftcms/cms/pull/13558), [#13520](https://github.com/craftcms/cms/discussions/13520))
-- Elements are no longer cross-site-validated when saved from a slideout.
-- Fixed a bug where element edit pages were displaying sidebar content incorrectly if there weren’t any normal form fields. ([#13567](https://github.com/craftcms/cms/issues/13567))
-- Fixed a bug where it wasn’t possible to save elements which didn’t support drafts, if they contained cross-site validation errors. ([#13568](https://github.com/craftcms/cms/pull/13568))
-- Fixed a bug where autosuggest fields within slideouts weren’t mouse-selectable. ([#13553](https://github.com/craftcms/cms/issues/13553))
-- Fixed DB cache support for PostgreSQL.
-- Fixed an error that occurred when uploading an image directly to an Assets field within a newly-created Matrix block. ([#13585](https://github.com/craftcms/cms/issues/13585))
-
-## 4.5.0-beta.2 - 2023-08-15
-
-- Added `craft\events\AssetBundleEvent`.
-- Added `craft\web\View::EVENT_AFTER_REGISTER_ASSET_BUNDLE`.
-- Added support for the `CRAFT_LOG_ALLOW_LINE_BREAKS` environment variable. ([#13544](https://github.com/craftcms/cms/pull/13544))
-- Fixed multiple issues with Selectize inputs.
-- Fixed a bug where <kbd>Command</kbd>/<kbd>Ctrl</kbd> + clicks on “New entry” button menu options would open the Entries index page in a new tab, and redirect to the Edit Entry page in the current tab. ([#13550](https://github.com/craftcms/cms/issues/13550))
-- Fixed a bug where autosuggest fields weren’t mouse-selectable. ([#13553](https://github.com/craftcms/cms/issues/13553))
-- Fixed a bug where `craft\events\MoveElementEvent::$targetElementId` was getting set incorrectly. ([#13552](https://github.com/craftcms/cms/issues/13552))
-
-## 4.5.0-beta.1 - 2023-08-10
+## 4.5.0 - 2023-08-22
 
 ### Content Management
 - Entry and category edit pages now show other authors who are currently editing the same element. ([#13420](https://github.com/craftcms/cms/pull/13420))
@@ -63,6 +33,7 @@
 ### Administration
 - Added the “Slug Translation Method” setting to entry types. ([#8962](https://github.com/craftcms/cms/discussions/8962), [#13291](https://github.com/craftcms/cms/pull/13291))
 - Added the “Show the Status field” setting to entry types. ([#12837](https://github.com/craftcms/cms/discussions/12837), [#13265](https://github.com/craftcms/cms/pull/13265))
+- Added the `setup/cloud` command, which prepares a Craft install to be deployed to Craft Cloud.
 - Added the `setup/message-tables` command, which can be run to set the project up for database-stored static translations via [DbMessageSource](https://www.yiiframework.com/doc/api/2.0/yii-i18n-dbmessagesource). ([#13542](https://github.com/craftcms/cms/pull/13542))
 - Entry types created via the `entrify/global-set` command now have “Show the Status field” disabled by default. ([#12837](https://github.com/craftcms/cms/discussions/12837))
 - Added the `defaultCountryCode` config setting. ([#13478](https://github.com/craftcms/cms/discussions/13478))
@@ -72,6 +43,7 @@
 - It’s now possible to configure UK addresses to show a “County” field. ([#13361](https://github.com/craftcms/cms/pull/13361))
 - The “Login Page Logo” and “Site Icon” general settings’ image previews now have checkered backgrounds. ([#13210](https://github.com/craftcms/cms/discussions/13210), [#13229](https://github.com/craftcms/cms/pull/13229))
 - Empty field layout tabs are no longer pruned out. ([#13132](https://github.com/craftcms/cms/issues/13132))
+- `active`, `addresses`, `admin`, `email`, `friendlyName`, `locked`, `name`, `password`, `pending`, `suspended`, and `username` are now reserved user field handles. ([#13579](https://github.com/craftcms/cms/issues/13579))
 
 ### Development
 - Added a new `_globals` global Twig variable for front-end templates, which can be used to store custom values in a global scope. ([#13050](https://github.com/craftcms/cms/pull/13050), [#12951](https://github.com/craftcms/cms/discussions/12951))
@@ -87,6 +59,7 @@
 - When applying a draft, the canonical elements’ `getDirtyAttributes()` and `getDirtyFields()` methods now return the attribute names and field handles that were modified on the draft for save events. ([#12967](https://github.com/craftcms/cms/issues/12967))
 - Admin tables can be configured to pass custom query params to the data endpoint. ([#13416](https://github.com/craftcms/cms/pull/13416))
 - Admin tables can now be programatically reloaded. ([#13416](https://github.com/craftcms/cms/pull/13416))
+- Admin table properties are now reactive. ([#13558](https://github.com/craftcms/cms/pull/13558), [#13520](https://github.com/craftcms/cms/discussions/13520))
 - Native element sources can now define a `defaultFilter` key, which defines the default filter condition that should be applied when the source is selected. ([#13499](https://github.com/craftcms/cms/pull/13499))
 - Added `craft\addresses\SubdivisionRepository`. ([#13361](https://github.com/craftcms/cms/pull/13361))
 - Added `craft\base\Element::showStatusField()`. ([#13265](https://github.com/craftcms/cms/pull/13265))
@@ -107,6 +80,7 @@
 - Added `craft\behaviors\EventBehavior`. ([#13502](https://github.com/craftcms/cms/discussions/13502))
 - Added `craft\controllers\AssetsControllerTrait`.
 - Added `craft\elements\db\ElementQuery::EVENT_BEFORE_POPULATE_ELEMENT`.
+- Added `craft\events\AssetBundleEvent`.
 - Added `craft\events\DefineAddressSubdivisionsEvent`. ([#13361](https://github.com/craftcms/cms/pull/13361))
 - Added `craft\events\MoveElementEvent::$action`. ([#13429](https://github.com/craftcms/cms/pull/13429))
 - Added `craft\events\MoveElementEvent::$targetElementId`. ([#13429](https://github.com/craftcms/cms/pull/13429))
@@ -135,6 +109,7 @@
 - Added `craft\web\CpScreenResponseBehavior::$pageSidebar`, `pageSidebar()`, and `pageSidebarTemplate()`. ([#13019](https://github.com/craftcms/cms/pull/13019), [#12795](https://github.com/craftcms/cms/issues/12795))
 - Added `craft\web\CpScreenResponseBehavior::$slideoutBodyClass`.
 - Added `craft\web\Response::$defaultFormatters`. ([#13541](https://github.com/craftcms/cms/pull/13541))
+- Added `craft\web\View::EVENT_AFTER_REGISTER_ASSET_BUNDLE`.
 - `craft\elements\actions\NewChild` is no longer triggerable on elements that have a `data-disallow-new-children` attribute. ([#13539](https://github.com/craftcms/cms/discussions/13539))
 - `craft\elements\actions\SetStatus` is no longer triggerable on elements that have a `data-disallow-status` attribute.
 - `craft\helpers\Cp::selectizeFieldHtml()`, `selectizeHtml()`, and `_includes/forms/selectize.twig` now support a `multi` param. ([#13176](https://github.com/craftcms/cms/pull/13176))
@@ -164,20 +139,29 @@
 
 ### System
 - Added support for setting environmental values in a “secrets” PHP file, identified by a `CRAFT_SECRETS_PATH` environment variable. ([#13283](https://github.com/craftcms/cms/pull/13283))
+- Added support for the `CRAFT_LOG_ALLOW_LINE_BREAKS` environment variable. ([#13544](https://github.com/craftcms/cms/pull/13544))
 - All generated URL param characters are now properly encoded. ([#12796](https://github.com/craftcms/cms/issues/12796))
 - `migrate` commands besides `migrate/create` no longer create the migration directory if it doesn’t exist yet. ([#12732](https://github.com/craftcms/cms/pull/12732))
 - When `content` table columns are resized, if any existing values are too long, all column data is now backed up into a new table, and the overflowing values are set to `null`. ([#13025](https://github.com/craftcms/cms/pull/13025))
 - When `content` table columns are renamed, if an existing column with the same name already exists, the original column data is now backed up into a new table and then deleted from the `content` table. ([#13025](https://github.com/craftcms/cms/pull/13025))
 - Plain Text and Table fields no longer convert emoji to shortcodes on PostgreSQL.
+- Reduced the size of control panel Ajax request headers.
 - Improved GraphQL performance. ([#13354](https://github.com/craftcms/cms/pull/13354))
+- Fixed an error that occurred when exporting assets, if a subfolder was selected. ([#13570](https://github.com/craftcms/cms/issues/13570))
+- Fixed a bug where icons within secondary buttons were illegible when active.
+- Fixed a bug where the `|replace` filter was treating search strings as regular expressions even if they were invalid. ([#12956](https://github.com/craftcms/cms/issues/12956))
+- Fixed a bug where user groups without “Edit users” permission were being granted “Assign users to [group name]” when upgrading to Craft 4.
+- Fixed a bug where keyboard shortcuts weren’t getting reactivated when control panel notifications were dismissed. ([#13574](https://github.com/craftcms/cms/issues/13574))
 - Fixed a bug where Plain Text and Table fields were converting posted shortcode-looking strings to emoji. ([#12935](https://github.com/craftcms/cms/issues/12935))
 - Fixed a bug where `craft\elements\Asset::getUrl()` was returning invalid URLs for GIF and SVG assets within filesystems without base URLs, if the `transformGifs` or `transformSvgs` config settings were disabled. ([#13306](https://github.com/craftcms/cms/issues/13306))
 - Fixed a bug where the GraphQL API wasn’t enforcing schema site selections for the requested site. ([#13346](https://github.com/craftcms/cms/pull/13346))
+- Fixed a bug where PM times were getting converted to AM for Greek locales. ([#9942](https://github.com/craftcms/cms/issues/9942))
+- Fixed a bug where <kbd>Command</kbd>/<kbd>Ctrl</kbd> + clicks on “New entry” button menu options would open the Entries index page in a new tab, and redirect to the Edit Entry page in the current tab. ([#13550](https://github.com/craftcms/cms/issues/13550))
+- Fixed DB cache support for PostgreSQL.
 - Updated Yii to 2.0.48.1. ([#13445](https://github.com/craftcms/cms/pull/13445))
 - Loosened the Composer constraint to `^2.2.19`. ([#13396](https://github.com/craftcms/cms/discussions/13396))
 - Internal Composer operations now use a bundled `composer.phar` file, rather than Composer’s PHP API. ([#13519](https://github.com/craftcms/cms/pull/13519))
 - Updated Selectize to 0.15.2. ([#13273](https://github.com/craftcms/cms/discussions/13273))
-- Fixed a bug where PM times were getting converted to AM for Greek locales. ([#9942](https://github.com/craftcms/cms/issues/9942))
 
 ## 4.4.17 - 2023-08-08
 
