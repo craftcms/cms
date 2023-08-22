@@ -1167,7 +1167,8 @@ class View extends \yii\web\View
 
         foreach ($bufferedJsFiles as $files) {
             foreach (array_keys($files) as $key) {
-                unset($this->_registeredJsFiles[$key]);
+                $hash = $this->resourceHash($key);
+                unset($this->_registeredJsFiles[$hash]);
             }
         }
 
@@ -1210,7 +1211,11 @@ class View extends \yii\web\View
     {
         // If the file lives within cpresources/, ignore it because it came from an asset bundle
         if (!str_starts_with($url, $this->assetManager->baseUrl)) {
-            $this->_registeredJsFiles[$key ?: $url] = true;
+            $hash = $this->resourceHash($key ?: $url);
+            if (isset($this->_registeredJsFiles[$hash])) {
+                return;
+            }
+            $this->_registeredJsFiles[$hash] = true;
         }
 
         parent::registerJsFile($url, $options, $key);
@@ -2044,10 +2049,11 @@ JS;
     protected function registerAssetFiles($name): void
     {
         // Don't re-register bundles
-        if (isset($this->_registeredAssetBundles[$name])) {
+        $hash = $this->resourceHash($name);
+        if (isset($this->_registeredAssetBundles[$hash])) {
             return;
         }
-        $this->_registeredAssetBundles[$name] = true;
+        $this->_registeredAssetBundles[$hash] = true;
         parent::registerAssetFiles($name);
     }
 
@@ -2205,6 +2211,11 @@ JS;
         return $this->_templateRoots[$which] = $roots;
     }
 
+    private function resourceHash(string $key): string
+    {
+        return sprintf('%x', crc32($key));
+    }
+
     /**
      * @param string $property
      * @param string[] $names
@@ -2218,10 +2229,10 @@ JS;
         $js = "if (typeof Craft !== 'undefined') {\n";
         foreach (array_keys($names) as $name) {
             if ($name) {
-                $jsName = Json::encode(str_replace(['<', '>'], '', $name));
+                $jsName = Json::encode($name);
                 // WARNING: the curly braces are needed here no matter what PhpStorm thinks
                 // https://youtrack.jetbrains.com/issue/WI-60044
-                $js .= "  Craft.{$property}[$jsName] = true;\n";
+                $js .= "  Craft.{$property}.push($jsName);\n";
             }
         }
         $js .= '}';
