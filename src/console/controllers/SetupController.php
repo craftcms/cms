@@ -610,7 +610,7 @@ EOD;
         $io = new ConsoleIO($input, $output, new HelperSet([new QuestionHelper()]));
 
         Craft::$app->getComposer()->install([
-            'craftcms/cloudo' => '^1.0.0',
+            'craftcms/cloud' => '^1.0.0',
         ], $io);
 
         $message = sprintf('Extension %s', $moduleInstalled ? 'updated' : 'installed');
@@ -635,7 +635,7 @@ EOD;
         $process->setTimeout(null);
         $process->mustRun();
 
-        $this->stdout("\n ✓ The install is new prepared for Craft Cloud\n", Console::FG_GREEN);
+        $this->stdout("\n ✓ The install is now prepared for Craft Cloud\n", Console::FG_GREEN);
 
         return ExitCode::OK;
     }
