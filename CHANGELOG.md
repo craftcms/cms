@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 4
 
-## Unreleased
+## 4.5.1 - 2023-08-23
 
 - Control panel notifications no longer block page keyboard shortcuts. ([#13591](https://github.com/craftcms/cms/issues/13591))
 - `Garnish.uiLayerManager.addLayer()` now supports a `bubble` option, which allows non-matching keyboard shortcuts to bubble up to the parent layer.
