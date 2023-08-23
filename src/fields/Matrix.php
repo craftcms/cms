@@ -575,7 +575,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
                 'type' => $block->getType()->handle,
                 'enabled' => $block->enabled,
                 'collapsed' => $block->collapsed,
-                'fields' => fn() => $block->getSerializedFieldValues(),
+                'fields' => $block->getSerializedFieldValues(),
             ];
         }
 

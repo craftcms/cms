@@ -1537,7 +1537,9 @@ Craft.CP.Notification = Garnish.Base.extend({
 
       this._hasUiElements = !!$detailsContainer.find('button,input');
       if (this._hasUiElements) {
-        Garnish.uiLayerManager.addLayer(this.$container);
+        Garnish.uiLayerManager.addLayer(this.$container, {
+          bubble: true,
+        });
         Garnish.uiLayerManager.registerShortcut(Garnish.ESC_KEY, () => {
           this.close();
         });
