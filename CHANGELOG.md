@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Fixed an error that could occur when Craft was performing a Composer operation, if no `HOME` environment variable was set for PHP. ([#13590](https://github.com/craftcms/cms/issues/13590))
 - Fixed a bug where `craft\fields\Matrix::serializeValue()` was setting `fields` keys to a closure. ([#13592](https://github.com/craftcms/cms/issues/13592))
 
 ## 4.5.0 - 2023-08-22
