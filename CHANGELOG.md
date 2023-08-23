@@ -1,5 +1,9 @@
 # Release Notes for Craft CMS 4
 
+## Unreleased
+
+- Fixed a bug where `craft\fields\Matrix::serializeValue()` was setting `fields` keys to a closure. ([#13592](https://github.com/craftcms/cms/issues/13592))
+
 ## 4.5.0 - 2023-08-22
 
 ### Content Management
