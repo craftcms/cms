@@ -40,16 +40,31 @@ export default Base.extend({
    * Registers a new UI layer.
    *
    * @param {jQuery|HTMLElement} [container]
+   * @param {Object} [options]
    */
-  addLayer: function (container) {
+  addLayer: function (container, options) {
+    if ($.isPlainObject(container)) {
+      options = container;
+      container = null;
+    }
+
+    options = Object.assign(
+      {
+        bubble: false,
+      },
+      options || {}
+    );
+
     this.layers.push({
       $container: container ? $(container) : null,
       shortcuts: [],
       isModal: container ? $(container).attr('aria-modal') === 'true' : false,
+      options: options,
     });
     this.trigger('addLayer', {
       layer: this.layer,
       $container: this.currentLayer.$container,
+      options: options,
     });
     return this;
   },
@@ -72,14 +87,11 @@ export default Base.extend({
   },
 
   getLayerIndex: function (layer) {
-    const $layer = $(layer);
+    layer = $(layer).get(0);
     let layerIndex;
 
     $(this.layers).each(function (index) {
-      if (
-        this.$container !== null &&
-        this.$container.get(0) === $(layer).get(0)
-      ) {
+      if (this.$container !== null && this.$container.get(0) === layer) {
         layerIndex = index;
         return false;
       }
@@ -137,8 +149,12 @@ export default Base.extend({
     };
   },
 
-  triggerShortcut: function (ev) {
-    const shortcut = this.layers[this.layer].shortcuts.find(
+  triggerShortcut: function (ev, layerIndex) {
+    if (typeof layerIndex === 'undefined') {
+      layerIndex = this.layer;
+    }
+    const layer = this.layers[layerIndex];
+    const shortcut = layer.shortcuts.find(
       (s) =>
         s.shortcut.keyCode === ev.keyCode &&
         s.shortcut.ctrl === Garnish.isCtrlKeyPressed(ev) &&
@@ -149,6 +165,8 @@ export default Base.extend({
     if (shortcut) {
       ev.preventDefault();
       shortcut.callback(ev);
+    } else if (layer.options.bubble && layerIndex > 0) {
+      this.triggerShortcut(ev, layerIndex - 1);
     }
   },
 });
