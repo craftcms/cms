@@ -1,5 +1,9 @@
 # Release Notes for Craft CMS 3.x
 
+## Unreleased
+
+- Fixed an error that could occur when Craft was performing a Composer operation, if no `HOME` environment variable was set for PHP. ([#13590](https://github.com/craftcms/cms/issues/13590))
+
 ## 3.9.0 - 2023-08-22
 
 - Updated Yii to 2.0.48.1. ([#13444](https://github.com/craftcms/cms/pull/13444))
