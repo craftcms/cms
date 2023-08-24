@@ -1537,14 +1537,18 @@ Craft.CP.Notification = Garnish.Base.extend({
 
       this._hasUiElements = !!$detailsContainer.find('button,input');
       if (this._hasUiElements) {
-        Garnish.uiLayerManager.addLayer(this.$container, {
-          bubble: true,
-        });
-        Garnish.uiLayerManager.registerShortcut(Garnish.ESC_KEY, () => {
-          this.close();
-        });
         this.originalActiveElement = document.activeElement;
         this.$container.attr('tabindex', '-1').focus();
+
+        // Delay adding the layer in case a slideout needs to unregister its own layer
+        Garnish.requestAnimationFrame(() => {
+          Garnish.uiLayerManager.addLayer(this.$container, {
+            bubble: true,
+          });
+          Garnish.uiLayerManager.registerShortcut(Garnish.ESC_KEY, () => {
+            this.close();
+          });
+        });
       }
     }
 

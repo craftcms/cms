@@ -7,6 +7,7 @@
 - Fixed a bug where default user avatars were getting black backgrounds when displayed within Vue apps. ([#13597](https://github.com/craftcms/cms/issues/13597))
 - Fixed a bug where the Username and Email fields weren’t required for public registrations forms, if “Deactivate users by default” was enabled. ([#13596](https://github.com/craftcms/cms/issues/13596))
 - Fixed a bug where switching sites when editing a global site wasn’t working. ([#12796](https://github.com/craftcms/cms/issues/12796), [#13603](https://github.com/craftcms/cms/issues/13603))
+- Fixed a bug where page shortcuts weren’t working after a related element was saved via a slideout. ([#13601](https://github.com/craftcms/cms/issues/13601))
 
 ## 4.5.1 - 2023-08-23
 
