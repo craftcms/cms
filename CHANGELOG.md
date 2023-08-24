@@ -3,6 +3,7 @@
 ## Unreleased
 
 - Fixed a bug where control panel notifications weren’t always closing automatically if they contained interactive elements. ([#13591](https://github.com/craftcms/cms/issues/13591))
+- Fixed a bug where default user avatars were getting black backgrounds when displayed within Vue apps. ([#13597](https://github.com/craftcms/cms/issues/13597))
 
 ## 4.5.1 - 2023-08-23
 
