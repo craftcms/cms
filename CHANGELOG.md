@@ -1,5 +1,9 @@
 # Release Notes for Craft CMS 4
 
+## Unreleased
+
+- Fixed a bug where control panel notifications weren’t always closing automatically if they contained interactive elements. ([#13591](https://github.com/craftcms/cms/issues/13591))
+
 ## 4.5.1 - 2023-08-23
 
 - Control panel notifications no longer block page keyboard shortcuts. ([#13591](https://github.com/craftcms/cms/issues/13591))

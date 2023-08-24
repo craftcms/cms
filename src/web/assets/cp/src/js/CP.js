@@ -1545,12 +1545,6 @@ Craft.CP.Notification = Garnish.Base.extend({
         });
         this.originalActiveElement = document.activeElement;
         this.$container.attr('tabindex', '-1').focus();
-        this.$container.on('keydown', (ev) => {
-          if (ev.keyCode === Garnish.ESC_KEY) {
-            ev.stopPropagation();
-            this.close();
-          }
-        });
       }
     }
 
@@ -1585,11 +1579,11 @@ Craft.CP.Notification = Garnish.Base.extend({
     this.delayedClose();
 
     this.$container.on(
-      'keypress keyup change focus blur click mousedown mouseup',
+      'keypress keyup change focus click mousedown mouseup',
       (ev) => {
         if (ev.target != this.$closeBtn[0]) {
           this.$container.off(
-            'keypress keyup change focus blur click mousedown mouseup'
+            'keypress keyup change focus click mousedown mouseup'
           );
           this.preventDelayedClose();
         }
