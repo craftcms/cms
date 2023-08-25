@@ -7,9 +7,6 @@
 
 namespace craft\services;
 
-use Composer\IO\IOInterface;
-use Composer\IO\NullIO;
-use Composer\Json\JsonFile;
 use Craft;
 use craft\helpers\FileHelper;
 use craft\helpers\Json;
@@ -98,17 +95,13 @@ class Composer extends Component
      * Installs a given set of packages with Composer.
      *
      * @param array|null $requirements Package name/version pairs, or set to null to run the equivalent of `composer install`
-     * @param IOInterface|null $io The IO object that Composer should be instantiated with
+     * @param callable|null $callback The callback that should be passed to `Process::run()`.
      * @throws Throwable if something goes wrong
      */
-    public function install(?array $requirements, ?IOInterface $io = null): void
+    public function install(?array $requirements, ?callable $callback = null): void
     {
         if ($requirements !== null) {
             $this->backupComposerFiles();
-        }
-
-        if ($io === null) {
-            $io = new NullIO();
         }
 
         // Get composer.json
@@ -124,14 +117,14 @@ class Composer extends Component
         $this->ensurePluginInstallerIsAllowed($jsonPath);
 
         if ($requirements !== null) {
-            $this->updateRequirements($io, $jsonPath, $requirements);
+            $this->updateRequirements($jsonPath, $requirements);
             $command = array_merge(['update'], array_keys($requirements), ['--with-all-dependencies']);
         } else {
             $command = ['install'];
         }
 
         try {
-            $this->runComposerCommand($io, $jsonPath, $command);
+            $this->runComposerCommand($jsonPath, $command, $callback);
         } catch (Throwable $e) {
             file_put_contents($jsonPath, $backup);
             throw $e;
@@ -142,18 +135,14 @@ class Composer extends Component
      * Uninstalls a given set of packages with Composer.
      *
      * @param string[] $packages Package names
-     * @param IOInterface|null $io The IO object that Composer should be instantiated with
+     * @param callable|null $callback The callback that should be passed to `Process::run()`.
      * @throws Throwable if something goes wrong
      */
-    public function uninstall(array $packages, ?IOInterface $io = null): void
+    public function uninstall(array $packages, ?callable $callback = null): void
     {
         $this->backupComposerFiles();
 
         $packages = array_map('strtolower', $packages);
-
-        if ($io === null) {
-            $io = new NullIO();
-        }
 
         // Get composer.json
         $jsonPath = $this->getJsonPath();
@@ -167,7 +156,7 @@ class Composer extends Component
         $command = array_merge(['remove'], $packages);
 
         try {
-            $this->runComposerCommand($io, $jsonPath, $command);
+            $this->runComposerCommand($jsonPath, $command, $callback);
         } catch (Throwable $e) {
             file_put_contents($jsonPath, $backup);
             throw $e;
@@ -175,12 +164,12 @@ class Composer extends Component
     }
 
     /**
-     * @param IOInterface $io
      * @param string $jsonPath
      * @param string[] $command
+     * @param callable|null $callback
      * @throws ProcessFailedException
      */
-    private function runComposerCommand(IOInterface $io, string $jsonPath, array $command): void
+    private function runComposerCommand(string $jsonPath, array $command, ?callable $callback): void
     {
         // Copy composer.phar into storage/
         $pharPath = sprintf('%s/composer.phar', Craft::$app->getPath()->getRuntimePath());
@@ -201,13 +190,7 @@ class Composer extends Component
         $process->setTimeout(null);
 
         try {
-            $process->mustRun(function($type, $buffer) use ($io): void {
-                if ($type === Process::ERR) {
-                    $io->writeErrorRaw($buffer, false);
-                } else {
-                    $io->writeRaw($buffer, false);
-                }
-            });
+            $process->mustRun($callback);
         } finally {
             unlink($pharPath);
         }
@@ -225,8 +208,8 @@ class Composer extends Component
      */
     private function ensurePluginStoreRepo(string $jsonPath): void
     {
-        $json = new JsonFile($jsonPath);
-        $config = $json->read();
+        $json = file_get_contents($jsonPath);
+        $config = Json::decode($json);
         $craftRepoKey = $this->_findCraftRepo($config);
 
         // If it already exists and is marked as non-canonical, we're done
@@ -259,10 +242,10 @@ class Composer extends Component
      * @param string $jsonPath
      * @since 3.7.42
      */
-    protected function ensurePluginInstallerIsAllowed(string $jsonPath): void
+    private function ensurePluginInstallerIsAllowed(string $jsonPath): void
     {
-        $json = new JsonFile($jsonPath);
-        $config = $json->read();
+        $json = file_get_contents($jsonPath);
+        $config = Json::decode($json);
         $allowPlugins = $config['config']['allow-plugins'] ?? [];
 
         if ($allowPlugins === true) {
@@ -296,14 +279,13 @@ class Composer extends Component
     /**
      * Updates the composer.json file with new requirements
      *
-     * @param IOInterface $io
      * @param string $jsonPath
      * @param array $requirements
      */
-    protected function updateRequirements(IOInterface $io, string $jsonPath, array $requirements): void
+    private function updateRequirements(string $jsonPath, array $requirements): void
     {
-        $json = new JsonFile($jsonPath);
-        $config = $json->read();
+        $json = file_get_contents($jsonPath);
+        $config = Json::decode($json);
 
         foreach ($requirements as $package => $constraint) {
             if ($constraint === false) {
@@ -345,7 +327,7 @@ class Composer extends Component
     /**
      * Backs up the composer.json and composer.lock files to `storage/composer-backups/`
      */
-    protected function backupComposerFiles(): void
+    private function backupComposerFiles(): void
     {
         $backupsDir = Craft::$app->getPath()->getComposerBackupsPath();
         $jsonBackupPath = $backupsDir . DIRECTORY_SEPARATOR . 'composer.json';

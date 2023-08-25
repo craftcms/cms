@@ -7,7 +7,6 @@
 
 namespace craft\controllers;
 
-use Composer\IO\BufferIO;
 use Craft;
 use craft\errors\MigrateException;
 use craft\errors\MigrationException;
@@ -16,6 +15,7 @@ use craft\helpers\Json;
 use craft\web\assets\updater\UpdaterAsset;
 use craft\web\Controller;
 use craft\web\Response as CraftResponse;
+use Symfony\Component\Process\Process;
 use Throwable;
 use yii\base\Exception;
 use yii\base\Exception as YiiException;
@@ -167,17 +167,19 @@ abstract class BaseUpdaterController extends Controller
     {
         // Preload JsonResponseFormatter because the Yii 2.0.44 version requires a newer version of yii\helper\BaseJson
         class_exists(JsonResponseFormatter::class);
-
-        $io = new BufferIO();
+        $output = '';
 
         try {
-            Craft::$app->getComposer()->install($this->data['requirements'], $io);
-            Craft::info("Updated Composer requirements.\nOutput: " . $io->getOutput(), __METHOD__);
+            Craft::$app->getComposer()->install($this->data['requirements'], function($type, $buffer) use (&$output) {
+                if ($type === Process::OUT) {
+                    $output .= $buffer;
+                }
+            });
+            Craft::info("Updated Composer requirements.\nOutput: $output", __METHOD__);
         } catch (Throwable $e) {
-            Craft::error('Error updating Composer requirements: ' . $e->getMessage() . "\nOutput: " . $io->getOutput(), __METHOD__);
+            Craft::error('Error updating Composer requirements: ' . $e->getMessage() . "\nOutput: $output", __METHOD__);
             Craft::$app->getErrorHandler()->logException($e);
 
-            $output = $io->getOutput();
             if (str_contains($output, 'Your requirements could not be resolved to an installable set of packages.')) {
                 $error = Craft::t('app', 'Composer was unable to install the updates due to a dependency conflict.');
             } else {
@@ -198,16 +200,20 @@ abstract class BaseUpdaterController extends Controller
     public function actionComposerRemove(): Response
     {
         $packages = [$this->data['packageName']];
-        $io = new BufferIO();
+        $output = '';
 
         try {
-            Craft::$app->getComposer()->uninstall($packages, $io);
-            Craft::info("Updated Composer requirements.\nOutput: " . $io->getOutput(), __METHOD__);
+            Craft::$app->getComposer()->uninstall($packages, function($type, $buffer) use (&$output) {
+                if ($type === Process::OUT) {
+                    $output .= $buffer;
+                }
+            });
+            Craft::info("Updated Composer requirements.\nOutput: $output", __METHOD__);
             $this->data['removed'] = true;
         } catch (Throwable $e) {
-            Craft::error('Error updating Composer requirements: ' . $e->getMessage() . "\nOutput: " . $io->getOutput(), __METHOD__);
+            Craft::error('Error updating Composer requirements: ' . $e->getMessage() . "\nOutput: $output", __METHOD__);
             Craft::$app->getErrorHandler()->logException($e);
-            return $this->sendComposerError(Craft::t('app', 'Composer was unable to remove the plugin.'), $e, $io->getOutput());
+            return $this->sendComposerError(Craft::t('app', 'Composer was unable to remove the plugin.'), $e, $output);
         }
 
         return $this->send($this->postComposerInstallState());

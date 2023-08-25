@@ -7,13 +7,13 @@
 
 namespace craft\console;
 
-use Composer\Util\Platform;
 use Composer\Util\Silencer;
 use Craft;
 use craft\base\Model;
 use craft\helpers\App;
 use craft\helpers\Console;
 use craft\mutex\Mutex as CraftMutex;
+use Symfony\Component\Process\Process;
 use yii\base\Action;
 use yii\base\InvalidRouteException;
 use yii\console\Exception;
@@ -172,7 +172,7 @@ MD
     protected function checkTty(): void
     {
         // Don't treat this as interactive if it doesn't appear to be a TTY shell
-        if ($this->interactive && !Platform::isTty()) {
+        if ($this->interactive && !Process::isTtySupported()) {
             $this->interactive = false;
         }
     }
@@ -186,7 +186,7 @@ MD
      */
     protected function checkRootUser(): bool
     {
-        if (Platform::isWindows() || !function_exists('exec') || App::env('CRAFT_ALLOW_SUPERUSER')) {
+        if (App::isWindows() || !function_exists('exec') || App::env('CRAFT_ALLOW_SUPERUSER')) {
             return true;
         }
 

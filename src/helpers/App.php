@@ -768,6 +768,16 @@ class App
     }
 
     /**
+     * Returns whether Craft is running on a Windows environment
+     *
+     * @since 5.0.0
+     */
+    public static function isWindows(): bool
+    {
+        return defined('PHP_WINDOWS_VERSION_BUILD');
+    }
+
+    /**
      * Returns whether Craft is logging to stdout/stderr.
      *
      * @return bool

@@ -18,6 +18,7 @@
 - Selectize menus no longer apply special styling to options with the value `new`. The `_includes/forms/selectize.twig` control panel template should be used instead (or `craft\helpers\Cp::selectizeHtml()`/`selectizeFieldHtml()`), which will append an styled “Add” option when `addOptionFn` and `addOptionLabel` settings are passed. ([#11946](https://github.com/craftcms/cms/issues/11946))
 - The `assets/move-asset` and `assets/move-folder` actions no longer include `success` keys in responses. ([#12159](https://github.com/craftcms/cms/pull/12159))
 - The `assets/upload` controller action now includes `errors` object in failure responses. ([#12159](https://github.com/craftcms/cms/pull/12159))
+- Added `craft\helpers\App::isWindows()`.
 - Added `craft\i18n\Locale::$aliasOf`.
 - Added `craft\i18n\Locale::setDisplayName()`.
 - Renamed `craft\base\Element::getHasCheckeredThumb()` to `hasCheckeredThumb()` and made it protected.
