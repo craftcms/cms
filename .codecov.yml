@@ -23,17 +23,9 @@ comment: off
 github_checks:
   annotations: false
 ignore:
-  - 'src/web/assets'
-  - 'src/test/internal'
-  - 'src/config'
-  - 'src/icons'
-  - 'src/test/internal'
-  - 'src/migrations'
-  - 'src/templates'
-  - 'src/translations'
-  - 'src/views'
-  - 'src/web/assets'
   - 'bootstrap'
   - 'lib'
+  - 'src/config'
+  - 'src'
   - 'tests'
   - 'vendor'
