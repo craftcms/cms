@@ -451,6 +451,7 @@ class Controller extends YiiController
 
         try {
             $action();
+            $this->stdout('✓', Console::FG_GREEN, Console::BOLD);
         } catch (Throwable $e) {
             $this->stdout('✕' . PHP_EOL, Console::FG_RED, Console::BOLD);
             $this->stdout("   Error: {$e->getMessage()}" . PHP_EOL, Console::FG_RED);
@@ -460,7 +461,6 @@ class Controller extends YiiController
             }
         }
 
-        $this->stdout('✓', Console::FG_GREEN, Console::BOLD);
         if ($withDuration) {
             $duration = sprintf('%.3f', microtime(true) - $time);
             $this->stdout(" (time: {$duration}s)", Console::FG_GREY);
