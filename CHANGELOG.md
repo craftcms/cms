@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 4
 
-## Unreleased
+## 4.5.2 - 2023-08-24
 
 - `craft\helpers\UrlHelper::buildQuery()` is no longer deprecated. ([#12796](https://github.com/craftcms/cms/issues/12796))
 - Fixed a bug where control panel notifications weren’t always closing automatically if they contained interactive elements. ([#13591](https://github.com/craftcms/cms/issues/13591))
