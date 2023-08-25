@@ -308,19 +308,6 @@ class App
     }
 
     /**
-     * Returns whether Craft is running within [Nitro](https://getnitro.sh) v1.
-     *
-     * @return bool
-     * @since 3.4.19
-     * @deprecated in 3.7.9.
-     */
-    public static function isNitro(): bool
-    {
-        return static::env('CRAFT_NITRO') === '1';
-    }
-
-
-    /**
      * Returns an array of all known Craft editions’ IDs.
      *
      * @return array All the known Craft editions’ IDs.
