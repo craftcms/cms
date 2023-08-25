@@ -1008,6 +1008,8 @@ class UsersController extends Controller
         ]);
         $this->trigger(self::EVENT_REGISTER_USER_ACTIONS, $event);
 
+        $user = $event->user;
+
         $actions = array_filter([
             $event->statusActions,
             $event->miscActions,
