@@ -439,7 +439,7 @@ class Controller extends YiiController
      * @param bool $throwOnError Whether to throw an exception on error, or just print the error message
      * @since 4.3.5
      */
-    public function do(string $description, callable $action, bool $withDuration = false, bool $throwOnError = false): void
+    public function do(string $description, callable $action, bool $withDuration = false, bool $throwOnError = true): void
     {
         $this->stdout(' → ', Console::FG_GREY);
         $this->stdout($this->markdownToAnsi($description));
