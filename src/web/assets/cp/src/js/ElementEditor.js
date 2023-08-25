@@ -1111,8 +1111,12 @@ Craft.ElementEditor = Garnish.Base.extend(
 
       if (removeActionParams && !this.settings.isUnpublishedDraft) {
         // Remove action and redirect params
-        const actionName = this.namespaceInputName('action');
-        const redirectName = this.namespaceInputName('redirect');
+        const actionName = encodeURIComponent(
+          this.namespaceInputName('action')
+        );
+        const redirectName = encodeURIComponent(
+          this.namespaceInputName('redirect')
+        );
         data = data.replace(
           new RegExp(`&${Craft.escapeRegex(actionName)}=[^&]*`),
           ''

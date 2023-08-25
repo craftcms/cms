@@ -3,6 +3,7 @@
 ## Unreleased
 
 - Fixed a bug where custom fields could be marked as changed within element editor slideouts, if they modified their input values on initialization. ([craftcms/ckeditor#128](https://github.com/craftcms/ckeditor/issues/128))
+- Fixed a bug where elements were getting saved a second time after being converted to a provisional draft within a slideout. ([#13604](https://github.com/craftcms/cms/issues/13604))
 - Fixed a JavaScript error. ([#13605](https://github.com/craftcms/cms/issues/13605))
 
 ## 4.5.2 - 2023-08-24
