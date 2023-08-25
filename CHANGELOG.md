@@ -1,5 +1,29 @@
 # Release Notes for Craft CMS 4
 
+## Unreleased
+
+- Fixed a bug where custom fields could be marked as changed within element editor slideouts, if they modified their input values on initialization. ([craftcms/ckeditor#128](https://github.com/craftcms/ckeditor/issues/128))
+- Fixed a bug where elements were getting saved a second time after being converted to a provisional draft within a slideout. ([#13604](https://github.com/craftcms/cms/issues/13604))
+- Fixed a JavaScript error. ([#13605](https://github.com/craftcms/cms/issues/13605))
+
+## 4.5.2 - 2023-08-24
+
+- `craft\helpers\UrlHelper::buildQuery()` is no longer deprecated. ([#12796](https://github.com/craftcms/cms/issues/12796))
+- Fixed a bug where control panel notifications weren’t always closing automatically if they contained interactive elements. ([#13591](https://github.com/craftcms/cms/issues/13591))
+- Fixed a bug where default user avatars were getting black backgrounds when displayed within Vue apps. ([#13597](https://github.com/craftcms/cms/issues/13597))
+- Fixed a bug where the Username and Email fields weren’t required for public registrations forms, if “Deactivate users by default” was enabled. ([#13596](https://github.com/craftcms/cms/issues/13596))
+- Fixed a bug where switching sites when editing a global site wasn’t working. ([#12796](https://github.com/craftcms/cms/issues/12796), [#13603](https://github.com/craftcms/cms/issues/13603))
+- Fixed a bug where page shortcuts weren’t working after a related element was saved via a slideout. ([#13601](https://github.com/craftcms/cms/issues/13601))
+
+## 4.5.1 - 2023-08-23
+
+- Control panel notifications no longer block page keyboard shortcuts. ([#13591](https://github.com/craftcms/cms/issues/13591))
+- `Garnish.uiLayerManager.addLayer()` now supports a `bubble` option, which allows non-matching keyboard shortcuts to bubble up to the parent layer.
+- Fixed an error that could occur when Craft was performing a Composer operation, if no `HOME` environment variable was set for PHP. ([#13590](https://github.com/craftcms/cms/issues/13590))
+- Fixed a bug where `craft\fields\Matrix::serializeValue()` was setting `fields` keys to a closure. ([#13592](https://github.com/craftcms/cms/issues/13592))
+- Fixed a bug where time values weren’t saving properly for Greek locales. ([#9942](https://github.com/craftcms/cms/issues/9942))
+- Fixed a bug where the “Status” lightswitch would always be enabled on edit pages for single-site elements. ([#13595](https://github.com/craftcms/cms/issues/13595))
+
 ## 4.5.0 - 2023-08-22
 
 ### Content Management

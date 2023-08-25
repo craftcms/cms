@@ -108,7 +108,7 @@ class ElementsController extends Controller
         $this->_draftId = $this->_param('draftId');
         $this->_revisionId = $this->_param('revisionId');
         $this->_siteId = $this->_param('siteId');
-        $this->_enabled = $this->_param('enabled') ?? true;
+        $this->_enabled = $this->_param('enabled', true);
         $this->_enabledForSite = $this->_param('enabledForSite');
         $this->_slug = $this->_param('slug');
         $this->_fresh = (bool)$this->_param('fresh');
@@ -135,11 +135,16 @@ class ElementsController extends Controller
 
     /**
      * @param string $name
+     * @param mixed $default
      * @return mixed
      */
-    private function _param(string $name): mixed
+    private function _param(string $name, mixed $default = null): mixed
     {
-        return ArrayHelper::remove($this->_attributes, $name) ?? $this->request->getQueryParam($name);
+        $value = ArrayHelper::remove($this->_attributes, $name) ?? $this->request->getQueryParam($name);
+        if ($value === null && $default !== null && $this->request->getIsPost()) {
+            return $default;
+        }
+        return $value;
     }
 
     /**
@@ -1848,7 +1853,7 @@ JS, [
             }
 
             $element->setEnabledForSite($this->_enabledForSite);
-        } else {
+        } elseif (isset($this->_enabled)) {
             $element->enabled = $this->_enabled;
         }
 

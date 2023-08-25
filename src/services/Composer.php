@@ -186,7 +186,12 @@ class Composer extends Component
             '--no-interaction',
         ]);
 
-        $process = new Process($command);
+        $homePath = Craft::$app->getPath()->getRuntimePath() . DIRECTORY_SEPARATOR . 'composer';
+        FileHelper::createDirectory($homePath);
+
+        $process = new Process($command, null, [
+            'COMPOSER_HOME' => $homePath,
+        ]);
         $process->setTimeout(null);
 
         try {
