@@ -166,6 +166,14 @@ Craft.ElementEditor = Garnish.Base.extend(
       this.$container.data('serializer', () => this.serializeForm(true));
       this.$container.data('initialSerializedValue', this.serializeForm(true));
 
+      // Re-record the initial values once the fields have had a chance to initialize
+      Garnish.requestAnimationFrame(() => {
+        this.$container.data(
+          'initialSerializedValue',
+          this.serializeForm(true)
+        );
+      });
+
       if (this.isFullPage) {
         this.addListener(this.$container, 'submit', 'handleSubmit');
       }
