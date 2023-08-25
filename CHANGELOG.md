@@ -1,5 +1,9 @@
 # Release Notes for Craft CMS 4
 
+## Unreleased
+
+- Fixed a JavaScript error. ([#13605](https://github.com/craftcms/cms/issues/13605))
+
 ## 4.5.2 - 2023-08-24
 
 - `craft\helpers\UrlHelper::buildQuery()` is no longer deprecated. ([#12796](https://github.com/craftcms/cms/issues/12796))

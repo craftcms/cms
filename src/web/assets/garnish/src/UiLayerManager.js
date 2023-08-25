@@ -15,6 +15,9 @@ export default Base.extend({
       {
         $container: Garnish.$bod,
         shortcuts: [],
+        options: {
+          bubble: false,
+        },
       },
     ];
     this.addListener(Garnish.$bod, 'keydown', 'triggerShortcut');
