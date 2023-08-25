@@ -7,6 +7,7 @@
 
 namespace craft\helpers;
 
+use Closure;
 use Craft;
 use craft\behaviors\SessionBehavior;
 use craft\cache\FileCache;
@@ -33,6 +34,8 @@ use craft\web\User as WebUser;
 use craft\web\View;
 use HTMLPurifier_Encoder;
 use ReflectionClass;
+use ReflectionFunction;
+use ReflectionNamedType;
 use ReflectionProperty;
 use yii\base\Event;
 use yii\base\Exception;
@@ -673,7 +676,6 @@ class App
      * Sets PHP’s memory limit to the maximum specified by the
      * <config4:phpMaxMemoryLimit> config setting, and gives the script an
      * unlimited amount of time to execute.
-     *
      */
     public static function maxPowerCaptain(): void
     {
@@ -687,6 +689,37 @@ class App
         // Try to reset time limit
         if (!function_exists('set_time_limit') || !@set_time_limit(0)) {
             Craft::warning('set_time_limit() is not available', __METHOD__);
+        }
+    }
+
+    /**
+     * Calls the given closure with all error reporting silenced, and returns its response.
+     *
+     * @param Closure|string $callable
+     * @param int|null $mask Error levels to suppress, default value NULL indicates all warnings and below.
+     * @return mixed
+     * @since 5.0.0
+     */
+    public static function silence(Closure|string $callable, ?int $mask = null): mixed
+    {
+        // loosely based on Composer\Util\Silencer
+        if (!isset($mask)) {
+            $mask = E_WARNING | E_NOTICE | E_USER_WARNING | E_USER_NOTICE | E_DEPRECATED | E_USER_DEPRECATED | E_STRICT;
+        }
+
+        $old = error_reporting();
+        error_reporting($old & ~$mask);
+
+        try {
+            $returnType = (new ReflectionFunction($callable))->getReturnType();
+            if ($returnType instanceof ReflectionNamedType && $returnType->getName() === 'void') {
+                $callable();
+                return null;
+            } else {
+                return $callable();
+            }
+        } finally {
+            error_reporting($old);
         }
     }
 

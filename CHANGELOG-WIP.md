@@ -19,6 +19,7 @@
 - The `assets/move-asset` and `assets/move-folder` actions no longer include `success` keys in responses. ([#12159](https://github.com/craftcms/cms/pull/12159))
 - The `assets/upload` controller action now includes `errors` object in failure responses. ([#12159](https://github.com/craftcms/cms/pull/12159))
 - Added `craft\helpers\App::isWindows()`.
+- Added `craft\helpers\App::silence()`.
 - Added `craft\i18n\Locale::$aliasOf`.
 - Added `craft\i18n\Locale::setDisplayName()`.
 - Renamed `craft\base\Element::getHasCheckeredThumb()` to `hasCheckeredThumb()` and made it protected.
@@ -36,4 +37,7 @@
 
 ### System
 - Craft now requires PHP 8.1 or later.
+- Craft now requires the Symfony Filesystem component directly.
+- Craft now requires `composer/semver` directly.
+- Craft no longer requires `composer/composer`.
 - The `defaultTemplateExtensions` config setting now lists `twig` before `html` by default. ([#11809](https://github.com/craftcms/cms/discussions/11809))

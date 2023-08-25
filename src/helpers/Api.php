@@ -7,11 +7,11 @@
 
 namespace craft\helpers;
 
-use Composer\Repository\PlatformRepository;
 use Craft;
 use craft\enums\LicenseKeyStatus;
 use craft\errors\InvalidLicenseKeyException;
 use ErrorException;
+use Imagick;
 
 /**
  * Craftnet API helper.
@@ -102,18 +102,37 @@ abstract class Api
      */
     public static function platformVersions(bool $useComposerOverrides = false): array
     {
-        // Let Composer's PlatformRepository do most of the work
-        if ($useComposerOverrides) {
-            $overrides = Craft::$app->getComposer()->getConfig()['config']['platform'] ?? [];
-        } else {
-            $overrides = [];
-        }
+        $versions = [
+            'php' => App::phpVersion(),
+        ];
 
-        $repo = new PlatformRepository([], $overrides);
+        // loosely based on Composer\Repository\PlatformRepository::initialize()
+        foreach (get_loaded_extensions() as $name) {
+            if (in_array($name, ['standard', 'Core'])) {
+                continue;
+            }
 
-        $versions = [];
-        foreach ($repo->getPackages() as $package) {
-            $versions[$package->getName()] = $package->getPrettyVersion();
+            $extName = sprintf('ext-%s', str_replace(' ', '-', strtolower($name)));
+            $extVersion = phpversion($name);
+            $versions[$extName] = App::normalizeVersion(is_string($extVersion) ? $extVersion : '0');
+
+            switch ($name) {
+                case 'curl':
+                    $versions["lib-$name"] = App::normalizeVersion(curl_version()['version']);
+                    break;
+                case 'gd':
+                    $versions["lib-$name"] = App::normalizeVersion(GD_VERSION);
+                    break;
+                case 'iconv':
+                    $versions["lib-$name"] = App::normalizeVersion(ICONV_VERSION);
+                    break;
+                case 'intl':
+                    $versions['lib-icu'] = App::normalizeVersion(INTL_ICU_VERSION);
+                    break;
+                case 'imagick':
+                    $versions["lib-$name-imagemagick"] = App::normalizeVersion((new Imagick())->getVersion()['versionString']);
+                    break;
+            }
         }
 
         // Also include the Composer PHP requirement
