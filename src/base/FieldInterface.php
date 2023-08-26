@@ -8,6 +8,7 @@
 namespace craft\base;
 
 use craft\elements\db\ElementQueryInterface;
+use craft\enums\AttributeStatus;
 use craft\models\GqlSchema;
 use GraphQL\Type\Definition\Type;
 use yii\base\Component as YiiComponent;
@@ -171,17 +172,17 @@ interface FieldInterface extends SavableComponentInterface
      *
      * If the field has a known status, an array should be returned with two elements:
      *
-     * - The status class (modified, outdated, or conflicted)
+     * - A [[\craft\enums\AttributeStatus]] case
      * - The status label
      *
      * For example:
      *
      * ```php
-     * return ['modified', 'The field has been modified.');
+     * return [AttributeStatus::Modified, 'The field has been modified.');
      * ```
      *
      * @param ElementInterface $element
-     * @return array|null
+     * @return array{0:AttributeStatus|value-of<AttributeStatus>,1:string}|null
      * @since 3.7.0
      */
     public function getStatus(ElementInterface $element): ?array;

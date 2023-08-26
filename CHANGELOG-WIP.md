@@ -108,6 +108,7 @@
 - Added `craft\elements\db\ElementQuery::wasCountEagerLoaded()`.
 - Added `craft\elements\db\ElementQuery::wasEagerLoaded()`.
 - Added `craft\elements\db\ElementQueryInterface::fieldLayouts()`
+- Added `craft\enums\AttributeStatus`.
 - Added `craft\enums\TimePeriod`.
 - Added `craft\events\DefineEntryTypesForFieldEvent`.
 - Added `craft\fieldlayoutelements\CustomField::$handle`.
@@ -176,6 +177,7 @@
 - `craft\fields\BaseOptionsField::$multi` and `$optgroups` properties are now static.
 - `craft\gql\mutations\Entry::createSaveMutations()` now accepts a `$section` argument.
 - `craft\helpers\Db::parseParam()`, `parseDateParam()`, `parseMoneyParam()`, and `parseNumericParam()` now return `null` instead of an empty string if no condition should be applied.
+- `craft\helpers\StringHelper::toString()` now supports backed enums.
 - `craft\i18n\I18N::getPrimarySiteLocale()` is now deprecated. `craft\models\Site::getLocale()` should be used instead.
 - `craft\i18n\I18N::getPrimarySiteLocaleId()` is now deprecated. `craft\models\Site::$language` should be used instead.
 - `craft\services\Plugins::getPluginLicenseKeyStatus()` now returns a `craft\enums\LicenseKeyStatus` case.
@@ -186,6 +188,8 @@
 - Deprecated `craft\helpers\Cp::elementHtml()`. `elementChipHtml()` or `elementCardHtml()` should be used instead.
 - Removed `craft\base\ApplicationTrait::getMatrix()`.
 - Removed `craft\base\Element::$contentId`.
+- Removed `craft\base\Element::ATTR_STATUS_MODIFIED`. `craft\enums\AttributeStatus::Modified` should be used instead.
+- Removed `craft\base\Element::ATTR_STATUS_OUTDATED`. `craft\enums\AttributeStatus::Outdated` should be used instead.
 - Removed `craft\base\ElementInterface::getContentTable()`.
 - Removed `craft\base\ElementInterface::getFieldColumnPrefix()`.
 - Removed `craft\base\ElementInterface::gqlMutationNameByContext()`.

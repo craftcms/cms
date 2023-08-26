@@ -949,7 +949,7 @@ class Cp
             ($status
                 ? Html::beginTag('div', [
                     'id' => $statusId,
-                    'class' => ['status-badge', $status[0]],
+                    'class' => ['status-badge', StringHelper::toString($status[0])],
                     'title' => $status[1],
                 ]) .
                 Html::tag('span', $status[1], [

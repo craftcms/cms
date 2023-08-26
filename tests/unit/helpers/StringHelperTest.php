@@ -8,6 +8,7 @@
 namespace crafttests\unit\helpers;
 
 use Codeception\Test\Unit;
+use craft\enums\LicenseKeyStatus;
 use craft\helpers\StringHelper;
 use craft\test\mockclasses\ToString;
 use craft\test\TestCase;
@@ -2069,6 +2070,7 @@ class StringHelperTest extends TestCase
             ['ima string', new ToString('ima string')],
             ['t,e,s,t', ['t', 'e', 's', 't']],
             ['t|e|s|t', ['t', 'e', 's', 't'], '|'],
+            ['valid', LicenseKeyStatus::Valid],
         ];
     }
 
