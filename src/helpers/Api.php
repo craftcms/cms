@@ -210,9 +210,9 @@ abstract class Api
             $allCombinedInfo = explode(',', reset($headers['x-craft-license-info']));
             foreach ($allCombinedInfo as $combinedInfo) {
                 [$handle, $combinedValues] = explode(':', $combinedInfo, 2);
-                if ($combinedValues === LicenseKeyStatus::Invalid) {
+                if ($combinedValues === LicenseKeyStatus::Invalid->value) {
                     // invalid license
-                    $licenseStatus = LicenseKeyStatus::Invalid;
+                    $licenseStatus = LicenseKeyStatus::Invalid->value;
                     $licenseId = $licenseEdition = $timestamp = null;
                 } else {
                     [$licenseId, $licenseEdition, $licenseStatus] = explode(';', $combinedValues, 3);

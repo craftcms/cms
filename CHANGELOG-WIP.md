@@ -171,11 +171,13 @@
 - `craft\db\Connection::getSupportsMb4()` is now dynamic for MySQL installs, based on whether the `elements_sites` table has an `mb4` charset.
 - `craft\elemens\db\ElementQueryInterface::collect()` now has an `ElementCollection` return type, rather than `Collection`.
 - `craft\elements\Entry::getSection()` can now return `null`, for nested entries.
+- `craft\enums\LicenseKeyStatus` is now an enum.
 - `craft\fields\BaseOptionsField::$multi` and `$optgroups` properties are now static.
 - `craft\gql\mutations\Entry::createSaveMutations()` now accepts a `$section` argument.
 - `craft\helpers\Db::parseParam()`, `parseDateParam()`, `parseMoneyParam()`, and `parseNumericParam()` now return `null` instead of an empty string if no condition should be applied.
 - `craft\i18n\I18N::getPrimarySiteLocale()` is now deprecated. `craft\models\Site::getLocale()` should be used instead.
 - `craft\i18n\I18N::getPrimarySiteLocaleId()` is now deprecated. `craft\models\Site::$language` should be used instead.
+- `craft\services\Plugins::getPluginLicenseKeyStatus()` now returns a `craft\enums\LicenseKeyStatus` case.
 - `craft\services\ProjectConfig::saveModifiedConfigData()` no longer has a `$writeExternalConfig` argument, and no longer writes out updated project config YAML files.
 - Deprecated the `_elements/element.twig` control panel template. `elementChip()` or `elementCard()` should be used instead.
 - Deprecated the `cp.elements.element` control panel template hook.
@@ -258,6 +260,7 @@
 - Removed `craft\services\Fields::saveGroup()`.
 - Removed `craft\services\Fields::updateColumn()`.
 - Removed `craft\services\Matrix`.
+- Removed `craft\services\Plugins::setPluginLicenseKeyStatus()`.
 - Removed `craft\services\ProjectConfig::PATH_MATRIX_BLOCK_TYPES`.
 - Removed `craft\services\ProjectConfig::PATH_MATRIX_BLOCK_TYPES`.
 - Removed `craft\services\ProjectConfig::PATH_MATRIX_BLOCK_TYPES`.

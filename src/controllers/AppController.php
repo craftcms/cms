@@ -569,7 +569,7 @@ class AppController extends Controller
                             'isEnabled' => false,
                             'licenseKey' => $pluginLicenseInfo['key'],
                             'licensedEdition' => $pluginLicenseInfo['edition'],
-                            'licenseKeyStatus' => LicenseKeyStatus::Valid,
+                            'licenseKeyStatus' => LicenseKeyStatus::Valid->value,
                             'licenseIssues' => [],
                             'name' => $pluginInfo['name'],
                             'description' => $pluginInfo['shortDescription'],

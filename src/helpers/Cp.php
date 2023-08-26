@@ -159,12 +159,12 @@ class Cp
                     $version = $pluginInfo['version'];
                 }
 
-                if ($licenseInfo['status'] === LicenseKeyStatus::Invalid) {
+                if ($licenseInfo['status'] === LicenseKeyStatus::Invalid->value) {
                     // invalid license
                     $alerts[] = Craft::t('app', 'The {name} license is invalid.', [
                         'name' => $name,
                     ]);
-                } elseif ($licenseInfo['status'] === LicenseKeyStatus::Trial && !$canTestEditions) {
+                } elseif ($licenseInfo['status'] === LicenseKeyStatus::Trial->value && !$canTestEditions) {
                     // no trials allowed
                     $resolvableLicenseAlerts[] = Craft::t('app', '{name} requires purchase.', [
                         'name' => $name,
@@ -175,7 +175,7 @@ class Cp
                         'licenseId' => $licenseInfo['id'],
                         'edition' => $currentEdition,
                     ]);
-                } elseif ($licenseInfo['status'] === LicenseKeyStatus::Mismatched) {
+                } elseif ($licenseInfo['status'] === LicenseKeyStatus::Mismatched->value) {
                     if ($isCraft) {
                         // wrong domain
                         $licensedDomain = $cache->get('licensedDomain');
@@ -246,7 +246,7 @@ class Cp
                         }
                         $alerts[] = "$message $cta";
                     }
-                } elseif ($licenseInfo['status'] === LicenseKeyStatus::Astray) {
+                } elseif ($licenseInfo['status'] === LicenseKeyStatus::Astray->value) {
                     // updated too far
                     $resolvableLicenseAlerts[] = Craft::t('app', '{name} isn’t licensed to run version {version}.', [
                         'name' => $name,
