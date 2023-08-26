@@ -67,7 +67,7 @@ class ElementQuery extends Query implements ElementQueryInterface
     public const EVENT_BEFORE_PREPARE = 'beforePrepare';
 
     /**
-     * @event Event An event that is triggered at the end of preparing an element query for the query builder.
+     * @event CancelableEvent An event that is triggered at the end of preparing an element query for the query builder.
      */
     public const EVENT_AFTER_PREPARE = 'afterPrepare';
 

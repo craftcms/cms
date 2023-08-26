@@ -68,7 +68,13 @@ class NewChild extends ElementAction
     let trigger = new Craft.ElementActionTrigger({
         type: $type,
         bulk: false,
-        validateSelection: \$selectedItems => !$maxLevels || $maxLevels > \$selectedItems.find('.element').data('level'),
+        validateSelection: (selectedItems) => {
+            const element = selectedItems.find('.element');
+            return (
+                (!$maxLevels || $maxLevels > element.data('level')) &&
+                !Garnish.hasAttr(element, 'data-disallow-new-children')
+            );
+        },
         activate: \$selectedItems => {
             const url = Craft.getUrl($newChildUrl, 'parentId=' + \$selectedItems.find('.element').data('id'));
             Craft.redirectTo(url);

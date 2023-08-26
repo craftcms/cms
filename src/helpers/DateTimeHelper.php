@@ -868,11 +868,25 @@ class DateTimeHelper
         // Replace the localized "AM" and "PM"
         $am = $formattingLocale->getAMName();
         $pm = $formattingLocale->getPMName();
+        $m = [$am, $pm];
 
-        if (preg_match('/(.*)(' . preg_quote($am, '/') . '|' . preg_quote($pm, '/') . ')(.*)/iu', $value, $matches)) {
+        // account for AM/PM names that might be normalized for jQuery Timepicker
+        $amAlt = preg_replace('/[\s.]/', '', $am);
+        $pmAlt = preg_replace('/[\s.]/', '', $pm);
+
+        if ($amAlt !== $am) {
+            $m[] = $amAlt;
+        }
+        if ($pmAlt !== $pm) {
+            $m[] = $pmAlt;
+        }
+
+        $quoted = implode('|', array_map(fn($v) => preg_quote($v, '/'), $m));
+
+        if (preg_match("/(.*)($quoted)(.*)/iu", $value, $matches)) {
             $value = $matches[1] . $matches[3];
 
-            if (mb_strtolower($matches[2]) === mb_strtolower($am)) {
+            if (in_array(mb_strtolower($matches[2]), [mb_strtolower($am), mb_strtolower($amAlt)])) {
                 $value .= 'AM';
             } else {
                 $value .= 'PM';

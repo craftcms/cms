@@ -48,8 +48,10 @@ use craft\helpers\Component as ComponentHelper;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
 use craft\helpers\ElementHelper;
+use craft\helpers\Html;
 use craft\helpers\Queue;
 use craft\helpers\StringHelper;
+use craft\helpers\UrlHelper;
 use craft\i18n\Translation;
 use craft\models\ElementActivity;
 use craft\queue\jobs\FindAndReplace;
@@ -70,6 +72,7 @@ use yii\base\Component;
 use yii\base\Exception;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidCallException;
+use yii\base\InvalidConfigException;
 use yii\caching\TagDependency;
 
 /**
@@ -615,6 +618,35 @@ class Elements extends Component
     }
 
     /**
+     ** Stores cache invalidation info for a given element.
+     *
+     * @param ElementInterface $element
+     * @since 4.5.0
+     */
+    public function collectCacheInfoForElement(ElementInterface $element): void
+    {
+        // Ignore if we're not currently collecting tags
+        if (!isset($this->_cacheTags)) {
+            return;
+        }
+
+        $class = get_class($element);
+        $this->collectCacheTags([
+            'element',
+            "element::$class",
+            "element::$class::$element->id",
+        ]);
+
+        // If the element is expirable, register its expiry date
+        if (
+            $element instanceof ExpirableElementInterface &&
+            ($expiryDate = $element->getExpiryDate()) !== null
+        ) {
+            $this->setCacheExpiryDate($expiryDate);
+        }
+    }
+
+    /**
      * Stops collecting element invalidation info, and returns a [[TagDependency]] and recommended max cache duration
      * that should be used when saving the cache data.
      *
@@ -1053,6 +1085,7 @@ class Elements extends Component
         bool $propagate = true,
         ?bool $updateSearchIndex = null,
         bool $forceTouch = false,
+        ?bool $crossSiteValidate = false,
     ): bool {
         // Force propagation for new elements
         $propagate = !$element->id || $propagate;
@@ -1067,6 +1100,7 @@ class Elements extends Component
             $propagate,
             $updateSearchIndex,
             forceTouch: $forceTouch,
+            crossSiteValidate: $crossSiteValidate,
         );
         $element->duplicateOf = $duplicateOf;
         return $success;
@@ -1402,7 +1436,8 @@ class Elements extends Component
                             // Make sure the site element wasn't updated more recently than the main one
                             $siteElement = $this->getElementById($element->id, $elementType, $siteId);
                             if ($siteElement === null || $siteElement->dateUpdated < $element->dateUpdated) {
-                                $this->_propagateElement($element, $supportedSites, $siteId, $siteElement ?? false);
+                                $siteElement ??= false;
+                                $this->_propagateElement($element, $supportedSites, $siteId, $siteElement);
                             }
                         }
                     }
@@ -3055,7 +3090,7 @@ class Elements extends Component
         ElementInterface|false|null $siteElement = null,
     ): ElementInterface {
         $supportedSites = ArrayHelper::index(ElementHelper::supportedSitesForElement($element), 'siteId');
-        $siteElement = $this->_propagateElement($element, $supportedSites, $siteId, $siteElement);
+        $this->_propagateElement($element, $supportedSites, $siteId, $siteElement);
 
         // Clear caches
         $this->invalidateCachesForElement($element);
@@ -3086,6 +3121,7 @@ class Elements extends Component
         ?bool $updateSearchIndex = null,
         ?array $supportedSites = null,
         bool $forceTouch = false,
+        bool $crossSiteValidate = false,
     ): bool {
         /** @var ElementInterface|DraftBehavior|RevisionBehavior $element */
         $isNewElement = !$element->id;
@@ -3098,6 +3134,7 @@ class Elements extends Component
         $propagate = $propagate && $element::isLocalized() && Craft::$app->getIsMultiSite();
         $originalPropagateAll = $element->propagateAll;
         $originalFirstSave = $element->firstSave;
+        $originalDateUpdated = $element->dateUpdated;
 
         $element->firstSave = (
             !$element->getIsDraft() &&
@@ -3248,8 +3285,6 @@ class Elements extends Component
                 $dateUpdated = DateTimeHelper::toDateTime($elementRecord->dateUpdated);
 
                 if ($dateUpdated === false) {
-                    $element->firstSave = $originalFirstSave;
-                    $element->propagateAll = $originalPropagateAll;
                     throw new Exception('There was a problem calculating dateUpdated.');
                 }
 
@@ -3357,7 +3392,9 @@ class Elements extends Component
                         // Skip the initial site
                         if ($siteId != $element->siteId) {
                             $siteElement = $siteElements[$siteId] ?? false;
-                            $this->_propagateElement($element, $supportedSites, $siteId, $siteElement);
+                            if (!$this->_propagateElement($element, $supportedSites, $siteId, $siteElement, crossSiteValidate: $crossSiteValidate)) {
+                                throw new InvalidConfigException();
+                            }
                         }
                     }
                 }
@@ -3377,6 +3414,10 @@ class Elements extends Component
             $transaction->rollBack();
             $element->firstSave = $originalFirstSave;
             $element->propagateAll = $originalPropagateAll;
+            $element->dateUpdated = $originalDateUpdated;
+            if ($e instanceof InvalidConfigException) {
+                return false;
+            }
             throw $e;
         } finally {
             $this->_updateSearchIndex = $oldUpdateSearchIndex;
@@ -3479,15 +3520,17 @@ class Elements extends Component
      * @param array $supportedSites The element’s supported site info, indexed by site ID
      * @param int $siteId The site ID being propagated to
      * @param ElementInterface|false|null $siteElement The element loaded for the propagated site
-     * @return ElementInterface The element in the target site
+     * @param bool $crossSiteValidate Whether we should "live" validate the element across all sites
+     * @retrun bool
      * @throws Exception if the element couldn't be propagated
      */
     private function _propagateElement(
         ElementInterface $element,
         array $supportedSites,
         int $siteId,
-        ElementInterface|false|null $siteElement = null,
-    ): ElementInterface {
+        ElementInterface|false|null &$siteElement = null,
+        bool $crossSiteValidate = false,
+    ): bool {
         // Make sure the element actually supports the site it's being saved in
         if (!isset($supportedSites[$siteId])) {
             throw new UnsupportedSiteException($element, $siteId, 'Attempting to propagate an element to an unsupported site.');
@@ -3539,9 +3582,17 @@ class Elements extends Component
             $siteElement->title = $element->title;
         }
 
-        // Copy the dirty attributes (except title, which may be translatable)
+        // Copy the slug value?
+        if (
+            $element->slug !== null &&
+            $siteElement->getSlugTranslationKey() === $element->getSlugTranslationKey()
+        ) {
+            $siteElement->slug = $element->slug;
+        }
+
+        // Copy the dirty attributes (except title and slug, which may be translatable)
         $siteElement->setDirtyAttributes(array_filter($element->getDirtyAttributes(), function(string $attribute): bool {
-            return $attribute !== 'title';
+            return $attribute !== 'title' && $attribute !== 'slug';
         }));
 
         // Copy any non-translatable field values
@@ -3568,19 +3619,74 @@ class Elements extends Component
 
         // Save it
         $siteElement->setScenario(Element::SCENARIO_ESSENTIALS);
-        $siteElement->propagating = true;
 
-        if ($this->_saveElementInternal($siteElement, true, false, null, $supportedSites) === false) {
-            // Log the errors
-            $error = 'Couldn’t propagate element to other site due to validation errors:';
-            foreach ($siteElement->getFirstErrors() as $attributeError) {
-                $error .= "\n- " . $attributeError;
-            }
-            Craft::error($error);
-            throw new Exception('Couldn’t propagate element to other site.');
+        // validate element against "live" scenario across all sites, if element is enabled for the site
+        if ($crossSiteValidate && $siteElement->enabled && $siteElement->getEnabledForSite()) {
+            $siteElement->setScenario(Element::SCENARIO_LIVE);
         }
 
-        return $siteElement;
+        $siteElement->propagating = true;
+
+        if ($this->_saveElementInternal($siteElement, true, false, null, $supportedSites, crossSiteValidate: $crossSiteValidate) === false) {
+            // if the element we're trying to save has validation errors, notify original element about them
+            if ($siteElement->hasErrors()) {
+                return $this->_crossSiteValidationErrors($siteElement, $element);
+            } else {
+                // Log the errors
+                $error = 'Couldn’t propagate element to other site due to validation errors:';
+                foreach ($siteElement->getFirstErrors() as $attributeError) {
+                    $error .= "\n- " . $attributeError;
+                }
+                Craft::error($error);
+                throw new Exception('Couldn’t propagate element to other site.');
+            }
+        }
+
+        return true;
+    }
+
+    /**
+     * @param ElementInterface $siteElement
+     * @param ElementInterface $element
+     * @return bool
+     * @throws Throwable
+     */
+    private function _crossSiteValidationErrors(
+        ElementInterface $siteElement,
+        ElementInterface $element,
+    ): bool {
+        // get site we're propagating to
+        $propagateToSite = Craft::$app->getSites()->getSiteById($siteElement->siteId);
+        $user = Craft::$app->getUser()->getIdentity();
+        $message = Craft::t('app', 'Validation errors for site: “{siteName}“', [
+            'siteName' => $propagateToSite?->name,
+        ]);
+
+        // check user can edit this element for the site that throws validation error on propagation
+        if ($user &&
+            Craft::$app->getIsMultiSite() &&
+            $user->can("editSite:{$propagateToSite?->uid}") &&
+            $siteElement->canSave($user)
+        ) {
+            $queryParams = ArrayHelper::without(Craft::$app->getRequest()->getQueryParams(), 'site');
+            $url = UrlHelper::url($siteElement->getCpEditUrl(), $queryParams + ['prevalidate' => 1]);
+            $message = Html::beginTag('a', [
+                'href' => $url,
+                'class' => 'cross-site-validate',
+                'target' => '_blank',
+            ]) .
+                $message .
+                Html::tag('span', '', [
+                    'data-icon' => 'external',
+                    'aria-label' => Craft::t('app', 'Open the full edit page in a new tab'),
+                    'role' => 'img',
+                ]) .
+                Html::endTag('a');
+        }
+
+        $element->addError('global', $message);
+
+        return false;
     }
 
     /**

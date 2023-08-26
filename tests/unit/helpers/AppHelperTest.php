@@ -308,6 +308,18 @@ class AppHelperTest extends TestCase
     }
 
     /**
+     *
+     */
+    public function testSilence(): void
+    {
+        self::assertSame('foo', App::silence(fn() => 'foo'));
+        self::assertNull(App::silence(function() {
+        }));
+        self::assertNull(App::silence(function(): void {
+        }));
+    }
+
+    /**
      * @todo More needed here to test with constant and invalid file path.
      * See coverage report for more info.
      */

@@ -7,7 +7,6 @@
 
 namespace craft\console\controllers;
 
-use Composer\IO\BufferIO;
 use Craft;
 use craft\console\Controller;
 use craft\elements\User;
@@ -21,6 +20,7 @@ use craft\models\Update;
 use craft\models\Updates;
 use craft\models\Updates as UpdatesModel;
 use Symfony\Component\Process\Exception\ProcessFailedException;
+use Symfony\Component\Process\PhpExecutableFinder;
 use Symfony\Component\Process\Process;
 use Throwable;
 use yii\base\InvalidConfigException;
@@ -195,14 +195,18 @@ class UpdateController extends Controller
     public function actionComposerInstall(): int
     {
         $this->stdout('Performing Composer install ... ', Console::FG_YELLOW);
-        $io = new BufferIO();
+        $output = '';
 
         try {
-            Craft::$app->getComposer()->install(null, $io);
+            Craft::$app->getComposer()->install(null, function($type, $buffer) use (&$output) {
+                if ($type === Process::OUT) {
+                    $output .= $buffer;
+                }
+            });
         } catch (Throwable $e) {
             Craft::$app->getErrorHandler()->logException($e);
             $this->stderr('error: ' . $e->getMessage() . PHP_EOL . PHP_EOL, Console::FG_RED);
-            $this->stdout('Output:' . PHP_EOL . PHP_EOL . $io->getOutput() . PHP_EOL . PHP_EOL);
+            $this->stdout('Output:' . PHP_EOL . PHP_EOL . $output . PHP_EOL . PHP_EOL);
             return ExitCode::UNSPECIFIED_ERROR;
         }
 
@@ -374,16 +378,19 @@ class UpdateController extends Controller
     private function _performUpdate(array $requirements): bool
     {
         $this->stdout('Performing update with Composer ... ', Console::FG_YELLOW);
-        $io = new BufferIO();
-
         $composerService = Craft::$app->getComposer();
+        $output = '';
 
         try {
-            $composerService->install($requirements, $io);
+            $composerService->install($requirements, function($type, $buffer) use (&$output) {
+                if ($type === Process::OUT) {
+                    $output .= $buffer;
+                }
+            });
         } catch (Throwable $e) {
             Craft::$app->getErrorHandler()->logException($e);
             $this->stderr('error: ' . $e->getMessage() . PHP_EOL . PHP_EOL, Console::FG_RED);
-            $this->stdout('Output:' . PHP_EOL . PHP_EOL . $io->getOutput() . PHP_EOL . PHP_EOL);
+            $this->stdout('Output:' . PHP_EOL . PHP_EOL . $output . PHP_EOL . PHP_EOL);
             return false;
         }
 
@@ -415,7 +422,8 @@ class UpdateController extends Controller
 
         $this->stdout('Applying new migrations ... ', Console::FG_YELLOW);
 
-        $process = new Process([PHP_BINARY, $script, 'migrate/all', '--no-backup', '--no-content']);
+        $php = (new PhpExecutableFinder())->find() ?: 'php';
+        $process = new Process([$php, $script, 'migrate/all', '--no-backup', '--no-content']);
         $process->setTimeout(null);
         try {
             $process->mustRun();
@@ -478,7 +486,8 @@ class UpdateController extends Controller
 
         $this->stdout('Reverting Composer changes ... ', Console::FG_YELLOW);
 
-        $process = new Process([PHP_BINARY, $script, 'update/composer-install']);
+        $php = (new PhpExecutableFinder())->find() ?: 'php';
+        $process = new Process([$php, $script, 'update/composer-install']);
         $process->setTimeout(null);
         try {
             $process->mustRun();

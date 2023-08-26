@@ -20,6 +20,7 @@ use Exception;
 use GraphQL\Error\Error;
 use GraphQL\Type\Definition\ResolveInfo;
 use Throwable;
+use yii\base\InvalidConfigException;
 
 /**
  * Class Entry
@@ -50,15 +51,23 @@ class Entry extends ElementMutationResolver
 
         // If saving an entry for a site and the enabled status is provided, honor it.
         if (array_key_exists('enabled', $arguments)) {
-            if (!empty($arguments['siteId'])) {
-                $entry->setEnabledForSite([$arguments['siteId'] => $arguments['enabled']]);
-                // Set the global status to true if it's currently disabled,
-                // and we're enabling entry for a site
-                if ($arguments['enabled'] && !$entry->enabled) {
+            try {
+                $showStatusField = $entry->getType()->showStatusField;
+            } catch (InvalidConfigException) {
+                $showStatusField = true;
+            }
+
+            if ($showStatusField) {
+                if (!empty($arguments['siteId'])) {
+                    $entry->setEnabledForSite([$arguments['siteId'] => $arguments['enabled']]);
+                    // Set the global status to true if it's currently disabled,
+                    // and we're enabling entry for a site
+                    if ($arguments['enabled'] && !$entry->enabled) {
+                        $entry->enabled = $arguments['enabled'];
+                    }
+                } else {
                     $entry->enabled = $arguments['enabled'];
                 }
-            } else {
-                $entry->enabled = $arguments['enabled'];
             }
             unset($arguments['enabled']);
         }

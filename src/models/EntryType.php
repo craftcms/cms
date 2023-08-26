@@ -71,6 +71,25 @@ class EntryType extends Model implements FieldLayoutProviderInterface
     public ?string $titleFormat = null;
 
     /**
+     * @var string Slug translation method
+     * @phpstan-var Field::TRANSLATION_METHOD_NONE|Field::TRANSLATION_METHOD_SITE|Field::TRANSLATION_METHOD_SITE_GROUP|Field::TRANSLATION_METHOD_LANGUAGE|Field::TRANSLATION_METHOD_CUSTOM
+     * @since 4.5.0
+     */
+    public string $slugTranslationMethod = Field::TRANSLATION_METHOD_SITE;
+
+    /**
+     * @var string|null Slug translation key format
+     * @since 4.5.0
+     */
+    public ?string $slugTranslationKeyFormat = null;
+
+    /**
+     * @var bool Whether to show the Status field
+     * @since 4.5.0
+     */
+    public bool $showStatusField = true;
+
+    /**
      * @var string|null UID
      */
     public ?string $uid = null;
@@ -88,6 +107,10 @@ class EntryType extends Model implements FieldLayoutProviderInterface
 
         if ($this->titleTranslationKeyFormat === '') {
             $this->titleTranslationKeyFormat = null;
+        }
+
+        if ($this->slugTranslationKeyFormat === '') {
+            $this->slugTranslationKeyFormat = null;
         }
     }
 
@@ -113,6 +136,7 @@ class EntryType extends Model implements FieldLayoutProviderInterface
             'handle' => Craft::t('app', 'Handle'),
             'name' => Craft::t('app', 'Name'),
             'titleFormat' => Craft::t('app', 'Title Format'),
+            'showStatusField' => Craft::t('app', 'Show the Status field'),
         ];
     }
 
@@ -221,6 +245,9 @@ class EntryType extends Model implements FieldLayoutProviderInterface
             'titleTranslationMethod' => $this->titleTranslationMethod,
             'titleTranslationKeyFormat' => $this->titleTranslationKeyFormat,
             'titleFormat' => $this->titleFormat,
+            'slugTranslationMethod' => $this->slugTranslationMethod,
+            'slugTranslationKeyFormat' => $this->slugTranslationKeyFormat,
+            'showStatusField' => $this->showStatusField,
         ];
 
         $fieldLayout = $this->getFieldLayout();
