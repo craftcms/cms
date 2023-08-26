@@ -32,6 +32,7 @@ use craft\web\Controller;
 use craft\web\CpScreenResponseBehavior;
 use craft\web\View;
 use Throwable;
+use yii\helpers\Markdown;
 use yii\web\BadRequestHttpException;
 use yii\web\ForbiddenHttpException;
 use yii\web\Response;
@@ -104,7 +105,7 @@ class ElementsController extends Controller
         $this->_draftId = $this->_param('draftId');
         $this->_revisionId = $this->_param('revisionId');
         $this->_siteId = $this->_param('siteId');
-        $this->_enabled = $this->_param('enabled');
+        $this->_enabled = $this->_param('enabled', true);
         $this->_enabledForSite = $this->_param('enabledForSite');
         $this->_slug = $this->_param('slug');
         $this->_fresh = (bool)$this->_param('fresh');
@@ -128,11 +129,16 @@ class ElementsController extends Controller
 
     /**
      * @param string $name
+     * @param mixed $default
      * @return mixed
      */
-    private function _param(string $name): mixed
+    private function _param(string $name, mixed $default = null): mixed
     {
-        return ArrayHelper::remove($this->_attributes, $name) ?? $this->request->getQueryParam($name);
+        $value = ArrayHelper::remove($this->_attributes, $name) ?? $this->request->getQueryParam($name);
+        if ($value === null && $default !== null && $this->request->getIsPost()) {
+            return $default;
+        }
+        return $value;
     }
 
     /**
@@ -395,6 +401,7 @@ class ElementsController extends Controller
                 $isDraft
             ))
             ->noticeHtml($element->isProvisionalDraft ? fn() => $this->_draftNotice() : null)
+            ->errorSummary(fn() => $this->_errorSummary($element))
             ->prepareScreen(
                 fn(Response $response, string $containerId) => $this->_prepareEditor(
                     $element,
@@ -798,7 +805,7 @@ class ElementsController extends Controller
         $contentHtml = $contentFn($form);
         $sidebarHtml = $sidebarFn($form);
 
-        if ($contentHtml === '' && $sidebarHtml !== '') {
+        if ($contentHtml === '' && $sidebarHtml !== '' && $this->request->getAcceptsJson()) {
             $contentHtml = Html::tag('div', $sidebarHtml, [
                 'class' => 'details',
             ]);
@@ -867,6 +874,86 @@ JS, [
         }
 
         return trim($html);
+    }
+
+    /**
+     * Return html for errors summary box
+     *
+     * @param ElementInterface $element
+     * @return string
+     */
+    private function _errorSummary(ElementInterface $element): string
+    {
+        $html = '';
+
+        if ($element->hasErrors()) {
+            $allErrors = $element->getErrors();
+            $allKeys = array_keys($allErrors);
+
+            // only show "top-level" errors
+            // if you e.g. have an assets field which is set to validate related assets,
+            // you should only see the top-level "Fix validation errors on the related asset" error
+            // and not the details of what's wrong with the selected asset;
+            foreach ($allKeys as $key) {
+                $lastNestedKey = substr_replace($key, '', strrpos($key, '.'));
+                $lastNestedKey = substr_replace($lastNestedKey, '', strrpos($lastNestedKey, '['));
+                if (!empty($lastNestedKey)) {
+                    if (in_array($lastNestedKey, $allKeys)) {
+                        unset($allErrors[$key]);
+                    }
+                }
+            }
+            $errorsList = [];
+            foreach ($allErrors as $key => $errors) {
+                foreach ($errors as $error) {
+                    $errorItem = Html::beginTag('li');
+
+                    // this is true in case of e.g. cross site validation error
+                    if (preg_match('/^\s?\<a /', $error)) {
+                        $errorItem .= $error;
+                    } else {
+                        $error = Markdown::processParagraph(htmlspecialchars($error));
+                        $errorItem .= Html::a(Craft::t('app', $error), '#', [
+                            'data' => [
+                                'field-error-key' => $key,
+                            ],
+                        ]);
+                    }
+
+                    $errorItem .= Html::endTag('li');
+
+                    $errorsList[] = $errorItem;
+                }
+            }
+
+            if (!empty($errorsList)) {
+                $heading = Craft::t('app', 'Found {num, number} {num, plural, =1{error} other{errors}}', [
+                    'num' => count($errorsList),
+                ]);
+
+                $html = Html::beginTag('div', [
+                        'class' => ['error-summary'],
+                        'tabindex' => '-1',
+                    ]) .
+                    Html::beginTag('div') .
+                    Html::tag('span', '', [
+                        'class' => 'notification-icon',
+                        'data-icon' => 'alert',
+                        'aria-label' => 'error',
+                        'role' => 'img',
+                    ]) .
+                    Html::tag('h2', $heading) .
+                    Html::endTag('div') .
+                    Html::beginTag('ul', [
+                        'class' => ['errors'],
+                    ]) .
+                    implode('', $errorsList) .
+                    Html::endTag('ul') .
+                    Html::endTag('div');
+            }
+        }
+
+        return $html;
     }
 
     private function _editorSidebar(
@@ -957,7 +1044,12 @@ JS, [
         }
 
         try {
-            $success = $elementsService->saveElement($element);
+            $namespace = $this->request->getHeaders()->get('X-Craft-Namespace');
+            // crossSiteValidate only if it's multisite, element supports drafts and we're not in a slideout
+            $success = $elementsService->saveElement(
+                $element,
+                crossSiteValidate: ($namespace === null && Craft::$app->getIsMultiSite() && $elementsService->canCreateDrafts($element, $user)),
+            );
         } catch (UnsupportedSiteException $e) {
             $element->addError('siteId', $e->getMessage());
             $success = false;
@@ -1345,7 +1437,8 @@ JS, [
             $element->setScenario(Element::SCENARIO_LIVE);
         }
 
-        if (!$elementsService->saveElement($element)) {
+        $namespace = $this->request->getHeaders()->get('X-Craft-Namespace');
+        if (!$elementsService->saveElement($element, crossSiteValidate: ($namespace === null && Craft::$app->getIsMultiSite()))) {
             return $this->_asAppyDraftFailure($element);
         }
 
@@ -1865,6 +1958,7 @@ JS, [
             'modelName' => 'element',
             'element' => $element->toArray($element->attributes()),
             'errors' => $element->getErrors(),
+            'errorSummary' => $this->_errorSummary($element),
         ];
 
         return $this->asFailure($message, $data, ['element' => $element]);

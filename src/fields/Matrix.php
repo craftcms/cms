@@ -510,7 +510,7 @@ class Matrix extends Field implements
                 'type' => $entry->getType()->handle,
                 'enabled' => $entry->enabled,
                 'collapsed' => $entry->collapsed,
-                'fields' => fn() => $entry->getSerializedFieldValues(),
+                'fields' => $entry->getSerializedFieldValues(),
             ];
         }
 

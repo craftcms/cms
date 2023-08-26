@@ -141,6 +141,8 @@
 - Added `craft\services\ProjectConfig::flush()`.
 - Added `craft\services\ProjectConfig::writeYamlFiles()`.
 - Added `craft\web\twig\variables\Cp::getEntryTypeOptions()`.
+- Added `craft\helpers\App::isWindows()`.
+- Added `craft\helpers\App::silence()`.
 - All of the `craft\services\Sections` members have been moved into `craft\services\Entries`.
 - Renamed `craft\base\BlockElementInterface` to `NestedElementInterface`, and added a `getField()` method to it.
 - Renamed `craft\base\Element::EVENT_SET_TABLE_ATTRIBUTE_HTML` to `EVENT_DEFINE_ATTRIBUTE_HTML`.
@@ -265,5 +267,8 @@
 
 ### System
 - Craft now requires PHP 8.1 or later.
+- Craft now requires the Symfony Filesystem component directly.
+- Craft now requires `composer/semver` directly.
+- Craft no longer requires `composer/composer`.
 - New database tables now default to the `utf8mb4` charset, and the `utf8mb4_0900_ai_ci` or `utf8mb4_unicode_ci` collation, on MySQL. Existing installs should run `db/convert-charset` after upgrading, to ensure all tables have consistent charsets and collations. ([#11823](https://github.com/craftcms/cms/discussions/11823))
 - The `defaultTemplateExtensions` config setting now lists `twig` before `html` by default. ([#11809](https://github.com/craftcms/cms/discussions/11809))

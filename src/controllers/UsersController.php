@@ -1448,6 +1448,8 @@ JS,
         // Don't validate required custom fields if it's public registration
         if (!$isPublicRegistration || ($userSettings['validateOnPublicRegistration'] ?? false)) {
             $user->setScenario(Element::SCENARIO_LIVE);
+        } elseif ($isPublicRegistration) {
+            $user->setScenario(User::SCENARIO_REGISTRATION);
         }
 
         // Manually validate the user so we can pass $clearErrors=false
@@ -2105,10 +2107,21 @@ JS,
         $fieldLayout = Craft::$app->getFields()->assembleLayoutFromPost();
         $fieldLayout->type = User::class;
         $fieldLayout->reservedFieldHandles = [
-            'groups',
-            'photo',
+            'active',
+            'addresses',
+            'admin',
+            'email',
             'firstName',
+            'friendlyName',
+            'groups',
             'lastName',
+            'locked',
+            'name',
+            'password',
+            'pending',
+            'photo',
+            'suspended',
+            'username',
         ];
 
         if (!Craft::$app->getUsers()->saveLayout($fieldLayout)) {

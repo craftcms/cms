@@ -7,6 +7,7 @@
 
 namespace craft\helpers;
 
+use Closure;
 use Craft;
 use craft\behaviors\SessionBehavior;
 use craft\cache\FileCache;
@@ -33,6 +34,8 @@ use craft\web\User as WebUser;
 use craft\web\View;
 use HTMLPurifier_Encoder;
 use ReflectionClass;
+use ReflectionFunction;
+use ReflectionNamedType;
 use ReflectionProperty;
 use yii\base\Event;
 use yii\base\Exception;
@@ -306,19 +309,6 @@ class App
 
         return null;
     }
-
-    /**
-     * Returns whether Craft is running within [Nitro](https://getnitro.sh) v1.
-     *
-     * @return bool
-     * @since 3.4.19
-     * @deprecated in 3.7.9.
-     */
-    public static function isNitro(): bool
-    {
-        return static::env('CRAFT_NITRO') === '1';
-    }
-
 
     /**
      * Returns an array of all known Craft editions’ IDs.
@@ -686,7 +676,6 @@ class App
      * Sets PHP’s memory limit to the maximum specified by the
      * <config4:phpMaxMemoryLimit> config setting, and gives the script an
      * unlimited amount of time to execute.
-     *
      */
     public static function maxPowerCaptain(): void
     {
@@ -700,6 +689,37 @@ class App
         // Try to reset time limit
         if (!function_exists('set_time_limit') || !@set_time_limit(0)) {
             Craft::warning('set_time_limit() is not available', __METHOD__);
+        }
+    }
+
+    /**
+     * Calls the given closure with all error reporting silenced, and returns its response.
+     *
+     * @param Closure|string $callable
+     * @param int|null $mask Error levels to suppress, default value NULL indicates all warnings and below.
+     * @return mixed
+     * @since 5.0.0
+     */
+    public static function silence(Closure|string $callable, ?int $mask = null): mixed
+    {
+        // loosely based on Composer\Util\Silencer
+        if (!isset($mask)) {
+            $mask = E_WARNING | E_NOTICE | E_USER_WARNING | E_USER_NOTICE | E_DEPRECATED | E_USER_DEPRECATED | E_STRICT;
+        }
+
+        $old = error_reporting();
+        error_reporting($old & ~$mask);
+
+        try {
+            $returnType = (new ReflectionFunction($callable))->getReturnType();
+            if ($returnType instanceof ReflectionNamedType && $returnType->getName() === 'void') {
+                $callable();
+                return null;
+            } else {
+                return $callable();
+            }
+        } finally {
+            error_reporting($old);
         }
     }
 
@@ -765,6 +785,16 @@ class App
     public static function isEphemeral(): bool
     {
         return self::parseBooleanEnv('$CRAFT_EPHEMERAL') === true;
+    }
+
+    /**
+     * Returns whether Craft is running on a Windows environment
+     *
+     * @since 5.0.0
+     */
+    public static function isWindows(): bool
+    {
+        return defined('PHP_WINDOWS_VERSION_BUILD');
     }
 
     /**
@@ -1031,8 +1061,8 @@ class App
 
         if ($request->getIsCpRequest()) {
             $headers = $request->getHeaders();
-            $config['registeredAssetBundles'] = explode(',', $headers->get('X-Registered-Asset-Bundles', ''));
-            $config['registeredJsFiles'] = explode(',', $headers->get('X-Registered-Js-Files', ''));
+            $config['registeredAssetBundles'] = array_filter(explode(',', $headers->get('X-Registered-Asset-Bundles', '')));
+            $config['registeredJsFiles'] = array_filter(explode(',', $headers->get('X-Registered-Js-Files', '')));
         }
 
         return $config;

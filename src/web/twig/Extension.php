@@ -903,7 +903,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
             $search = iterator_to_array($search);
         }
 
-        $isRegex = fn(string $s) => (bool)preg_match('/^\/.+\/[a-zA-Z]*$/', $s);
+        $isRegex = fn(string $s) => (bool)preg_match('/^\/[^\/]+\/[imsxADSUXJun]*$/', $s);
 
         // Are they using the standard Twig syntax?
         if (is_array($search) && $replace === null) {
