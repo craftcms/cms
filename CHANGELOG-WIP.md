@@ -108,6 +108,7 @@
 - Added `craft\elements\db\ElementQuery::wasCountEagerLoaded()`.
 - Added `craft\elements\db\ElementQuery::wasEagerLoaded()`.
 - Added `craft\elements\db\ElementQueryInterface::fieldLayouts()`
+- Added `craft\enums\TimePeriod`.
 - Added `craft\events\DefineEntryTypesForFieldEvent`.
 - Added `craft\fieldlayoutelements\CustomField::$handle`.
 - Added `craft\fields\Matrix::$entryUriFormat`.
@@ -207,6 +208,7 @@
 - Removed `craft\elements\MatrixBlock`.
 - Removed `craft\elements\db\ElementQuery::$contentTable`.
 - Removed `craft\elements\db\MatrixBlockQuery`.
+- Removed `craft\enums\PeriodType`.
 - Removed `craft\errors\MatrixBlockTypeNotFoundException`.
 - Removed `craft\events\BlockTypesEvent`.
 - Removed `craft\events\FieldGroupEvent`.
