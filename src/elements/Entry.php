@@ -33,6 +33,7 @@ use craft\elements\conditions\entries\TypeConditionRule;
 use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\db\EntryQuery;
+use craft\enums\PropagationMethod;
 use craft\events\DefineEntryTypesEvent;
 use craft\events\ElementCriteriaEvent;
 use craft\helpers\ArrayHelper;
@@ -462,7 +463,7 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
                     ];
                 }
 
-                if ($section->propagationMethod === Section::PROPAGATION_METHOD_CUSTOM && $section->getHasMultiSiteEntries()) {
+                if ($section->propagationMethod === PropagationMethod::Custom && $section->getHasMultiSiteEntries()) {
                     $actions[] = DeleteForSite::class;
                 }
             }
@@ -914,7 +915,7 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
         // figure out which sites the entry is currently saved in
         if (
             ($this->duplicateOf->id ?? $this->id) &&
-            $section->propagationMethod === Section::PROPAGATION_METHOD_CUSTOM
+            $section->propagationMethod === PropagationMethod::Custom
         ) {
             if ($this->id) {
                 $currentSites = self::find()
@@ -949,19 +950,19 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
 
         foreach ($section->getSiteSettings() as $siteSettings) {
             switch ($section->propagationMethod) {
-                case Section::PROPAGATION_METHOD_NONE:
+                case PropagationMethod::None:
                     $include = $siteSettings->siteId == $this->siteId;
                     $propagate = true;
                     break;
-                case Section::PROPAGATION_METHOD_SITE_GROUP:
+                case PropagationMethod::SiteGroup:
                     $include = $allSites[$siteSettings->siteId]->groupId == $allSites[$this->siteId]->groupId;
                     $propagate = true;
                     break;
-                case Section::PROPAGATION_METHOD_LANGUAGE:
+                case PropagationMethod::Language:
                     $include = $allSites[$siteSettings->siteId]->language == $allSites[$this->siteId]->language;
                     $propagate = true;
                     break;
-                case Section::PROPAGATION_METHOD_CUSTOM:
+                case PropagationMethod::Custom:
                     $include = true;
                     // Only actually propagate to this site if it's the current site, or the entry has been assigned
                     // a status for this site, or the entry already exists for this site
@@ -1617,7 +1618,7 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
             return false;
         }
 
-        return $section->propagationMethod === Section::PROPAGATION_METHOD_CUSTOM;
+        return $section->propagationMethod === PropagationMethod::Custom;
     }
 
     /**

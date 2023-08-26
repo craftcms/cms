@@ -14,6 +14,7 @@ use craft\base\MemoizableArray;
 use craft\db\Query;
 use craft\db\Table;
 use craft\elements\Entry;
+use craft\enums\PropagationMethod;
 use craft\errors\EntryTypeNotFoundException;
 use craft\errors\SectionNotFoundException;
 use craft\events\ConfigEvent;
@@ -551,7 +552,7 @@ class Entries extends Component
 
         // Main section settings
         if ($section->type === Section::TYPE_SINGLE) {
-            $section->propagationMethod = Section::PROPAGATION_METHOD_ALL;
+            $section->propagationMethod = PropagationMethod::All;
         }
 
         // Assemble the section config
@@ -638,7 +639,7 @@ class Entries extends Component
             $sectionRecord->handle = $data['handle'];
             $sectionRecord->type = $data['type'];
             $sectionRecord->enableVersioning = (bool)$data['enableVersioning'];
-            $sectionRecord->propagationMethod = $data['propagationMethod'] ?? Section::PROPAGATION_METHOD_ALL;
+            $sectionRecord->propagationMethod = $data['propagationMethod'] ?? PropagationMethod::All->value;
             $sectionRecord->defaultPlacement = $data['defaultPlacement'] ?? Section::DEFAULT_PLACEMENT_END;
             $sectionRecord->previewTargets = isset($data['previewTargets']) && is_array($data['previewTargets'])
                 ? ProjectConfigHelper::unpackAssociativeArray($data['previewTargets'])

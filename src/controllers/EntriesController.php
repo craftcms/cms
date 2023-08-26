@@ -10,6 +10,7 @@ namespace craft\controllers;
 use Craft;
 use craft\base\Element;
 use craft\elements\Entry;
+use craft\enums\PropagationMethod;
 use craft\errors\InvalidElementException;
 use craft\errors\UnsupportedSiteException;
 use craft\helpers\ArrayHelper;
@@ -77,7 +78,7 @@ class EntriesController extends BaseEntriesController
 
         if (!in_array($site->id, $editableSiteIds)) {
             // If there’s more than one possibility and entries doesn’t propagate to all sites, let the user choose
-            if (count($editableSiteIds) > 1 && $section->propagationMethod !== Section::PROPAGATION_METHOD_ALL) {
+            if (count($editableSiteIds) > 1 && $section->propagationMethod !== PropagationMethod::All) {
                 return $this->renderTemplate('_special/sitepicker.twig', [
                     'siteIds' => $editableSiteIds,
                     'baseUrl' => "entries/$section->handle/new",
