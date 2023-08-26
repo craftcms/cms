@@ -208,7 +208,10 @@
 - Removed `craft\elements\MatrixBlock`.
 - Removed `craft\elements\db\ElementQuery::$contentTable`.
 - Removed `craft\elements\db\MatrixBlockQuery`.
+- Removed `craft\enums\PatchManifestFileAction`.
 - Removed `craft\enums\PeriodType`.
+- Removed `craft\enums\PluginUpdateStatus`.
+- Removed `craft\enums\VersionUpdateStatus`.
 - Removed `craft\errors\MatrixBlockTypeNotFoundException`.
 - Removed `craft\events\BlockTypesEvent`.
 - Removed `craft\events\FieldGroupEvent`.
