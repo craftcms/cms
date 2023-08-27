@@ -12,6 +12,7 @@ use craft\base\Model;
 use craft\db\Query;
 use craft\db\Table;
 use craft\elements\Entry;
+use craft\enums\PropagationMethod;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Db;
 use craft\helpers\ProjectConfig as ProjectConfigHelper;
@@ -84,19 +85,19 @@ class Section extends Model
     public bool $enableVersioning = true;
 
     /**
-     * @var string Propagation method
-     * @phpstan-var self::PROPAGATION_METHOD_NONE|self::PROPAGATION_METHOD_SITE_GROUP|self::PROPAGATION_METHOD_LANGUAGE|self::PROPAGATION_METHOD_ALL|self::PROPAGATION_METHOD_CUSTOM
+     * @var PropagationMethod Propagation method
      *
      * This will be set to one of the following:
      *
-     * - `none` – Only save entries in the site they were created in
-     * - `siteGroup` – Save entries to other sites in the same site group
-     * - `language` – Save entries to other sites with the same language
-     * - `all` – Save entries to all sites enabled for this section
+     *  - [[PropagationMethod::None]] – Only save entries in the site they were created in
+     *  - [[PropagationMethod::SiteGroup]] – Save  entries to other sites in the same site group
+     *  - [[PropagationMethod::Language]] – Save entries to other sites with the same language
+     *  - [[PropagationMethod::Custom]] – Save entries to other sites based on a custom [[$propagationKeyFormat|propagation key format]]
+     *  - [[PropagationMethod::All]] – Save entries to all sites supported by the owner element
      *
      * @since 3.2.0
      */
-    public string $propagationMethod = self::PROPAGATION_METHOD_ALL;
+    public PropagationMethod $propagationMethod = PropagationMethod::All;
 
     /**
      * @var string Default placement
@@ -172,15 +173,6 @@ class Section extends Model
                 self::TYPE_SINGLE,
                 self::TYPE_CHANNEL,
                 self::TYPE_STRUCTURE,
-            ],
-        ];
-        $rules[] = [
-            ['propagationMethod'], 'in', 'range' => [
-                self::PROPAGATION_METHOD_NONE,
-                self::PROPAGATION_METHOD_SITE_GROUP,
-                self::PROPAGATION_METHOD_LANGUAGE,
-                self::PROPAGATION_METHOD_ALL,
-                self::PROPAGATION_METHOD_CUSTOM,
             ],
         ];
         $rules[] = [['name', 'handle'], UniqueValidator::class, 'targetClass' => SectionRecord::class];
@@ -354,7 +346,7 @@ class Section extends Model
         return (
             Craft::$app->getIsMultiSite() &&
             count($this->getSiteSettings()) > 1 &&
-            $this->propagationMethod !== self::PROPAGATION_METHOD_NONE
+            $this->propagationMethod !== PropagationMethod::None
         );
     }
 
@@ -383,7 +375,7 @@ class Section extends Model
             'type' => $this->type,
             'entryTypes' => array_map(fn(EntryType $entryType) => $entryType->uid, $this->getEntryTypes()),
             'enableVersioning' => $this->enableVersioning,
-            'propagationMethod' => $this->propagationMethod,
+            'propagationMethod' => $this->propagationMethod->value,
             'siteSettings' => [],
             'defaultPlacement' => $this->defaultPlacement ?? self::DEFAULT_PLACEMENT_END,
         ];

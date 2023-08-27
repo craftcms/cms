@@ -557,7 +557,7 @@ class Cp extends Component
 
             $resolvableLicenseItem = null;
 
-            if ($licenseInfo['status'] === LicenseKeyStatus::Trial) {
+            if ($licenseInfo['status'] === LicenseKeyStatus::Trial->value) {
                 $resolvableLicenseItem = array_filter([
                     'type' => $isCraft ? 'cms-edition' : 'plugin-edition',
                     'plugin' => !$isCraft ? $handle : null,

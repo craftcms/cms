@@ -14,6 +14,7 @@ use craft\base\PreviewableFieldInterface;
 use craft\base\ThumbableFieldInterface;
 use craft\errors\FieldNotFoundException;
 use craft\helpers\ArrayHelper;
+use craft\helpers\StringHelper;
 
 /**
  * CustomField represents a custom field that can be included in field layouts.
@@ -252,7 +253,7 @@ class CustomField extends BaseField
     protected function statusClass(?ElementInterface $element = null, bool $static = false): ?string
     {
         if ($element && ($status = $this->_field->getStatus($element))) {
-            return $status[0];
+            return StringHelper::toString($status[0]);
         }
         return null;
     }

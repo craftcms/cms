@@ -13,6 +13,7 @@ use craft\base\FieldLayoutElement;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Cp;
 use craft\helpers\Html;
+use craft\helpers\StringHelper;
 
 /**
  * BaseField is the base class for native and custom fields that can be included in field layouts.
@@ -473,7 +474,7 @@ abstract class BaseField extends FieldLayoutElement
     protected function statusClass(?ElementInterface $element = null, bool $static = false): ?string
     {
         if ($element && ($status = $element->getAttributeStatus($this->attribute()))) {
-            return $status[0];
+            return StringHelper::toString($status[0]);
         }
         return null;
     }

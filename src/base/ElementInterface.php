@@ -13,6 +13,7 @@ use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\ElementCollection;
 use craft\elements\User;
+use craft\enums\AttributeStatus;
 use craft\errors\InvalidFieldException;
 use craft\models\FieldLayout;
 use craft\models\Site;
@@ -1163,7 +1164,7 @@ interface ElementInterface extends ComponentInterface
      * Returns the status of a given attribute.
      *
      * @param string $attribute
-     * @return array|null
+     * @return array{0:AttributeStatus|value-of<AttributeStatus>,1:string}|null
      * @since 3.4.0
      */
     public function getAttributeStatus(string $attribute): ?array;

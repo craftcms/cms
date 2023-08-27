@@ -9,6 +9,7 @@ namespace craft\base;
 
 use Craft;
 use craft\elements\db\ElementQueryInterface;
+use craft\enums\AttributeStatus;
 use craft\events\DefineFieldHtmlEvent;
 use craft\events\DefineFieldKeywordsEvent;
 use craft\events\FieldElementEvent;
@@ -478,14 +479,14 @@ abstract class Field extends SavableComponent implements FieldInterface
     {
         if ($element->isFieldModified($this->handle)) {
             return [
-                Element::ATTR_STATUS_MODIFIED,
+                AttributeStatus::Modified,
                 Craft::t('app', 'This field has been modified.'),
             ];
         }
 
         if ($element->isFieldOutdated($this->handle)) {
             return [
-                Element::ATTR_STATUS_OUTDATED,
+                AttributeStatus::Outdated,
                 Craft::t('app', 'This field was updated in the Current revision.'),
             ];
         }

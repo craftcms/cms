@@ -7,6 +7,7 @@
 
 namespace craft\helpers;
 
+use BackedEnum;
 use Craft;
 use HTMLPurifier_Config;
 use IteratorAggregate;
@@ -1709,6 +1710,10 @@ class StringHelper extends \yii\helpers\StringHelper
             }
 
             return implode($glue, $stringValues);
+        }
+
+        if ($object instanceof BackedEnum) {
+            return $object->value;
         }
 
         return '';

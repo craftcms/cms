@@ -108,6 +108,9 @@
 - Added `craft\elements\db\ElementQuery::wasCountEagerLoaded()`.
 - Added `craft\elements\db\ElementQuery::wasEagerLoaded()`.
 - Added `craft\elements\db\ElementQueryInterface::fieldLayouts()`
+- Added `craft\enums\AttributeStatus`.
+- Added `craft\enums\PropagationMethod`.
+- Added `craft\enums\TimePeriod`.
 - Added `craft\events\DefineEntryTypesForFieldEvent`.
 - Added `craft\fieldlayoutelements\CustomField::$handle`.
 - Added `craft\fields\Matrix::$entryUriFormat`.
@@ -164,6 +167,7 @@
 - Renamed `craft\web\CpScreenResponseBehavior::$notice()` and `notice()` to `$noticeHtml` and `noticeHtml()`. ([#13037](https://github.com/craftcms/cms/pull/13037))
 - Renamed `craft\web\CpScreenResponseBehavior::$pageSidebar()` and `pageSidebar()` to `$pageSidebarHtml` and `pageSidebarHtml()`. ([#13037](https://github.com/craftcms/cms/pull/13037))
 - Renamed `craft\web\CpScreenResponseBehavior::$sidebar()` and `sidebar()` to `$metaSidebarHtml` and `metaSidebarHtml()`. ([#13037](https://github.com/craftcms/cms/pull/13037))
+- `craft\base\ConfigurableComponent::getSettings()` now converts backed enum cases to their values.
 - `craft\base\Element::getCpEditUrl()` now returns a URL to `edit/<ID>` if `cpEditUrl()` returns `null`.
 - `craft\base\ElementInterface::getAncestors()`, `getDescendants()`, `getChildren()`, and `getSiblings()` now have `ElementQueryInterface|ElementCollection` return types, rather than `ElementQueryInterface|Collection`.
 - `craft\base\ElementInterface::getEagerLoadedElementCount()` can now return `null` for counts that haven’t been eager-loaded yet.
@@ -171,11 +175,16 @@
 - `craft\db\Connection::getSupportsMb4()` is now dynamic for MySQL installs, based on whether the `elements_sites` table has an `mb4` charset.
 - `craft\elemens\db\ElementQueryInterface::collect()` now has an `ElementCollection` return type, rather than `Collection`.
 - `craft\elements\Entry::getSection()` can now return `null`, for nested entries.
+- `craft\enums\LicenseKeyStatus` is now an enum.
 - `craft\fields\BaseOptionsField::$multi` and `$optgroups` properties are now static.
+- `craft\fields\Matrix::$propagationMethod` now has a type of `craft\enums\PropagationMethod`.
 - `craft\gql\mutations\Entry::createSaveMutations()` now accepts a `$section` argument.
 - `craft\helpers\Db::parseParam()`, `parseDateParam()`, `parseMoneyParam()`, and `parseNumericParam()` now return `null` instead of an empty string if no condition should be applied.
+- `craft\helpers\StringHelper::toString()` now supports backed enums.
 - `craft\i18n\I18N::getPrimarySiteLocale()` is now deprecated. `craft\models\Site::getLocale()` should be used instead.
 - `craft\i18n\I18N::getPrimarySiteLocaleId()` is now deprecated. `craft\models\Site::$language` should be used instead.
+- `craft\models\Section::$propagationMethod` now has a type of `craft\enums\PropagationMethod`.
+- `craft\services\Plugins::getPluginLicenseKeyStatus()` now returns a `craft\enums\LicenseKeyStatus` case.
 - `craft\services\ProjectConfig::saveModifiedConfigData()` no longer has a `$writeExternalConfig` argument, and no longer writes out updated project config YAML files.
 - Deprecated the `_elements/element.twig` control panel template. `elementChip()` or `elementCard()` should be used instead.
 - Deprecated the `cp.elements.element` control panel template hook.
@@ -183,6 +192,8 @@
 - Deprecated `craft\helpers\Cp::elementHtml()`. `elementChipHtml()` or `elementCardHtml()` should be used instead.
 - Removed `craft\base\ApplicationTrait::getMatrix()`.
 - Removed `craft\base\Element::$contentId`.
+- Removed `craft\base\Element::ATTR_STATUS_MODIFIED`. `craft\enums\AttributeStatus::Modified` should be used instead.
+- Removed `craft\base\Element::ATTR_STATUS_OUTDATED`. `craft\enums\AttributeStatus::Outdated` should be used instead.
 - Removed `craft\base\ElementInterface::getContentTable()`.
 - Removed `craft\base\ElementInterface::getFieldColumnPrefix()`.
 - Removed `craft\base\ElementInterface::gqlMutationNameByContext()`.
@@ -205,10 +216,19 @@
 - Removed `craft\elements\MatrixBlock`.
 - Removed `craft\elements\db\ElementQuery::$contentTable`.
 - Removed `craft\elements\db\MatrixBlockQuery`.
+- Removed `craft\enums\PatchManifestFileAction`.
+- Removed `craft\enums\PeriodType`.
+- Removed `craft\enums\PluginUpdateStatus`.
+- Removed `craft\enums\VersionUpdateStatus`.
 - Removed `craft\errors\MatrixBlockTypeNotFoundException`.
 - Removed `craft\events\BlockTypesEvent`.
 - Removed `craft\events\FieldGroupEvent`.
 - Removed `craft\fields\Matrix::EVENT_SET_FIELD_BLOCK_TYPES`.
+- Removed `craft\fields\Matrix::PROPAGATION_METHOD_ALL`. `craft\enums\PropagationMethod::All` should be used instead.
+- Removed `craft\fields\Matrix::PROPAGATION_METHOD_CUSTOM`. `craft\enums\PropagationMethod::Custom` should be used instead.
+- Removed `craft\fields\Matrix::PROPAGATION_METHOD_LANGUAGE`. `craft\enums\PropagationMethod::Language` should be used instead.
+- Removed `craft\fields\Matrix::PROPAGATION_METHOD_NONE`. `craft\enums\PropagationMethod::None` should be used instead.
+- Removed `craft\fields\Matrix::PROPAGATION_METHOD_SITE_GROUP`. `craft\enums\PropagationMethod::SiteGroup` should be used instead.
 - Removed `craft\fields\Matrix::contentTable`.
 - Removed `craft\fields\Matrix::getBlockTypeFields()`.
 - Removed `craft\fields\Matrix::getBlockTypes()`.
@@ -229,6 +249,11 @@
 - Removed `craft\models\EntryType::getSection()`.
 - Removed `craft\models\FieldGroup`.
 - Removed `craft\models\MatrixBlockType`.
+- Removed `craft\models\Section::PROPAGATION_METHOD_ALL`. `craft\enums\PropagationMethod::All` should be used instead.
+- Removed `craft\models\Section::PROPAGATION_METHOD_CUSTOM`. `craft\enums\PropagationMethod::Custom` should be used instead.
+- Removed `craft\models\Section::PROPAGATION_METHOD_LANGUAGE`. `craft\enums\PropagationMethod::Language` should be used instead.
+- Removed `craft\models\Section::PROPAGATION_METHOD_NONE`. `craft\enums\PropagationMethod::None` should be used instead.
+- Removed `craft\models\Section::PROPAGATION_METHOD_SITE_GROUP`. `craft\enums\PropagationMethod::SiteGroup` should be used instead.
 - Removed `craft\records\EntryType::getSection()`.
 - Removed `craft\records\Field::getGroup()`.
 - Removed `craft\records\Field::getOldColumnSuffix()`.
@@ -258,6 +283,7 @@
 - Removed `craft\services\Fields::saveGroup()`.
 - Removed `craft\services\Fields::updateColumn()`.
 - Removed `craft\services\Matrix`.
+- Removed `craft\services\Plugins::setPluginLicenseKeyStatus()`.
 - Removed `craft\services\ProjectConfig::PATH_MATRIX_BLOCK_TYPES`.
 - Removed `craft\services\ProjectConfig::PATH_MATRIX_BLOCK_TYPES`.
 - Removed `craft\services\ProjectConfig::PATH_MATRIX_BLOCK_TYPES`.
