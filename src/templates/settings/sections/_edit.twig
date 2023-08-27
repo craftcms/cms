@@ -233,7 +233,7 @@
             {{ forms.selectField({
                 label: 'Propagation Method'|t('app'),
                 instructions: 'Of the enabled sites above, which sites should entries in this section be saved to?'|t('app'),
-                warning: section.id and section.propagationMethod != 'none' and section.siteSettings|length > 1 ? 'Changing this may result in data loss.'|t('app'),
+                warning: section.id and section.propagationMethod.value != 'none' and section.siteSettings|length > 1 ? 'Changing this may result in data loss.'|t('app'),
                 id: 'propagationMethod',
                 name: 'propagationMethod',
                 options: [
@@ -243,7 +243,7 @@
                     { value: 'all', label: 'Save entries to all sites enabled for this section'|t('app') },
                     { value: 'custom', label: 'Let each entry choose which sites it should be saved to'|t('app') },
                 ],
-                value: section.propagationMethod
+                value: section.propagationMethod.value
             }) }}
         </div>
     {% endif %}

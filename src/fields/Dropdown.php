@@ -8,9 +8,9 @@
 namespace craft\fields;
 
 use Craft;
-use craft\base\Element;
 use craft\base\ElementInterface;
 use craft\base\SortableFieldInterface;
+use craft\enums\AttributeStatus;
 use craft\fields\data\SingleOptionFieldData;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Cp;
@@ -56,7 +56,7 @@ class Dropdown extends BaseOptionsField implements SortableFieldInterface
 
         if (!$value->valid && $this->defaultValue() !== null) {
             return [
-                Element::ATTR_STATUS_MODIFIED,
+                AttributeStatus::Modified,
                 Craft::t('app', 'This field has been modified.'),
             ];
         }

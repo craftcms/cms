@@ -29,6 +29,7 @@ use craft\elements\ElementCollection;
 use craft\elements\exporters\Expanded;
 use craft\elements\exporters\Raw;
 use craft\elements\User;
+use craft\enums\AttributeStatus;
 use craft\errors\InvalidFieldException;
 use craft\events\AuthorizationCheckEvent;
 use craft\events\DefineAttributeHtmlEvent;
@@ -156,12 +157,6 @@ abstract class Element extends Component implements ElementInterface
 
     public const SCENARIO_ESSENTIALS = 'essentials';
     public const SCENARIO_LIVE = 'live';
-
-    // Attribute/Field Statuses
-    // -------------------------------------------------------------------------
-
-    public const ATTR_STATUS_MODIFIED = 'modified';
-    public const ATTR_STATUS_OUTDATED = 'outdated';
 
     // Events
     // -------------------------------------------------------------------------
@@ -3928,14 +3923,14 @@ abstract class Element extends Component implements ElementInterface
     {
         if ($this->isAttributeModified($attribute)) {
             return [
-                self::ATTR_STATUS_MODIFIED,
+                AttributeStatus::Modified,
                 Craft::t('app', 'This field has been modified.'),
             ];
         }
 
         if ($this->isAttributeOutdated($attribute)) {
             return [
-                self::ATTR_STATUS_OUTDATED,
+                AttributeStatus::Outdated,
                 Craft::t('app', 'This field was updated in the Current revision.'),
             ];
         }

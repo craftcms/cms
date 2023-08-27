@@ -25,6 +25,7 @@ use craft\elements\db\ElementQueryInterface;
 use craft\elements\db\EntryQuery;
 use craft\elements\ElementCollection;
 use craft\elements\Entry;
+use craft\enums\PropagationMethod;
 use craft\errors\InvalidFieldException;
 use craft\events\CancelableEvent;
 use craft\events\DefineEntryTypesForFieldEvent;
@@ -70,15 +71,6 @@ class Matrix extends Field implements
      * @since 5.0.0
      */
     public const EVENT_DEFINE_ENTRY_TYPES = 'defineEntryTypes';
-
-    public const PROPAGATION_METHOD_NONE = 'none';
-    public const PROPAGATION_METHOD_SITE_GROUP = 'siteGroup';
-    public const PROPAGATION_METHOD_LANGUAGE = 'language';
-    /**
-     * @since 3.7.0
-     */
-    public const PROPAGATION_METHOD_CUSTOM = 'custom';
-    public const PROPAGATION_METHOD_ALL = 'all';
 
     /**
      * @inheritdoc
@@ -162,13 +154,14 @@ class Matrix extends Field implements
     /**
      * Returns the site IDs that are supported by entries for the given propagation method and owner element.
      *
-     * @param string $propagationMethod
+     * @param PropagationMethod $propagationMethod
      * @param ElementInterface $owner
      * @param string|null $propagationKeyFormat
      * @return int[]
+     * @since 5.0.0
      */
     public static function supportedSiteIds(
-        string $propagationMethod,
+        PropagationMethod $propagationMethod,
         ElementInterface $owner,
         ?string $propagationKeyFormat = null,
     ): array {
@@ -180,22 +173,22 @@ class Matrix extends Field implements
         $view = Craft::$app->getView();
         $elementsService = Craft::$app->getElements();
 
-        if ($propagationMethod === self::PROPAGATION_METHOD_CUSTOM && $propagationKeyFormat !== null) {
+        if ($propagationMethod === PropagationMethod::Custom && $propagationKeyFormat !== null) {
             $propagationKey = $view->renderObjectTemplate($propagationKeyFormat, $owner);
         }
 
         foreach ($ownerSiteIds as $siteId) {
             switch ($propagationMethod) {
-                case self::PROPAGATION_METHOD_NONE:
+                case PropagationMethod::None:
                     $include = $siteId == $owner->siteId;
                     break;
-                case self::PROPAGATION_METHOD_SITE_GROUP:
+                case PropagationMethod::SiteGroup:
                     $include = $allSites[$siteId]->groupId == $allSites[$owner->siteId]->groupId;
                     break;
-                case self::PROPAGATION_METHOD_LANGUAGE:
+                case PropagationMethod::Language:
                     $include = $allSites[$siteId]->language == $allSites[$owner->siteId]->language;
                     break;
-                case self::PROPAGATION_METHOD_CUSTOM:
+                case PropagationMethod::Custom:
                     if (!isset($propagationKey)) {
                         $include = true;
                     } else {
@@ -233,19 +226,19 @@ class Matrix extends Field implements
     public ?string $entryUriFormat = null;
 
     /**
-     * @var string Propagation method
-     * @phpstan-var self::PROPAGATION_METHOD_NONE|self::PROPAGATION_METHOD_SITE_GROUP|self::PROPAGATION_METHOD_LANGUAGE|self::PROPAGATION_METHOD_ALL|self::PROPAGATION_METHOD_CUSTOM
+     * @var PropagationMethod Propagation method
      *
      * This will be set to one of the following:
      *
-     * - `none` – Only save entries in the site they were created in
-     * - `siteGroup` – Save  entries to other sites in the same site group
-     * - `language` – Save entries to other sites with the same language
-     * - `all` – Save entries to all sites supported by the owner element
+     * - [[PropagationMethod::None]] – Only save entries in the site they were created in
+     * - [[PropagationMethod::SiteGroup]] – Save  entries to other sites in the same site group
+     * - [[PropagationMethod::Language]] – Save entries to other sites with the same language
+     * - [[PropagationMethod::Custom]] – Save entries to other sites based on a custom [[$propagationKeyFormat|propagation key format]]
+     * - [[PropagationMethod::All]] – Save entries to all sites supported by the owner element
      *
      * @since 3.2.0
      */
-    public string $propagationMethod = self::PROPAGATION_METHOD_ALL;
+    public PropagationMethod $propagationMethod = PropagationMethod::All;
 
     /**
      * @var string|null The field’s propagation key format, if [[propagationMethod]] is `custom`
@@ -311,15 +304,6 @@ class Matrix extends Field implements
     protected function defineRules(): array
     {
         $rules = parent::defineRules();
-        $rules[] = [
-            ['propagationMethod'], 'in', 'range' => [
-                self::PROPAGATION_METHOD_NONE,
-                self::PROPAGATION_METHOD_SITE_GROUP,
-                self::PROPAGATION_METHOD_LANGUAGE,
-                self::PROPAGATION_METHOD_CUSTOM,
-                self::PROPAGATION_METHOD_ALL,
-            ],
-        ];
         $rules[] = [['entryTypes'], ArrayValidator::class, 'min' => 1, 'skipOnEmpty' => false];
         $rules[] = [['minEntries', 'maxEntries'], 'integer', 'min' => 0];
         return $rules;
@@ -538,14 +522,14 @@ class Matrix extends Field implements
      */
     public function getIsTranslatable(?ElementInterface $element = null): bool
     {
-        if ($this->propagationMethod === self::PROPAGATION_METHOD_CUSTOM) {
+        if ($this->propagationMethod === PropagationMethod::Custom) {
             return (
                 $element === null ||
                 Craft::$app->getView()->renderObjectTemplate($this->propagationKeyFormat, $element) !== ''
             );
         }
 
-        return $this->propagationMethod !== self::PROPAGATION_METHOD_ALL;
+        return $this->propagationMethod !== PropagationMethod::All;
     }
 
     /**
@@ -558,15 +542,15 @@ class Matrix extends Field implements
         }
 
         switch ($this->propagationMethod) {
-            case self::PROPAGATION_METHOD_NONE:
+            case PropagationMethod::None:
                 return Craft::t('app', 'Entries will only be saved in the {site} site.', [
                     'site' => Craft::t('site', $element->getSite()->getName()),
                 ]);
-            case self::PROPAGATION_METHOD_SITE_GROUP:
+            case PropagationMethod::SiteGroup:
                 return Craft::t('app', 'Entries will be saved across all sites in the {group} site group.', [
                     'group' => Craft::t('site', $element->getSite()->getGroup()->getName()),
                 ]);
-            case self::PROPAGATION_METHOD_LANGUAGE:
+            case PropagationMethod::Language:
                 $language = Craft::$app->getI18n()->getLocaleById($element->getSite()->language)
                     ->getDisplayName(Craft::$app->language);
                 return Craft::t('app', 'Entries will be saved across all {language}-language sites.', [
@@ -897,7 +881,8 @@ class Matrix extends Field implements
     {
         // If the propagation method just changed, resave all the entries
         if (isset($this->oldSettings)) {
-            $oldPropagationMethod = $this->oldSettings['propagationMethod'] ?? self::PROPAGATION_METHOD_ALL;
+            $oldPropagationMethod = PropagationMethod::tryFrom($this->oldSettings['propagationMethod'] ?? '')
+                ?? PropagationMethod::All;
             $oldPropagationKeyFormat = $this->oldSettings['propagationKeyFormat'] ?? null;
             if ($this->propagationMethod !== $oldPropagationMethod || $this->propagationKeyFormat !== $oldPropagationKeyFormat) {
                 Queue::push(new ApplyNewPropagationMethod([
@@ -1028,7 +1013,7 @@ class Matrix extends Field implements
 
             // Should we duplicate the entries to other sites?
             if (
-                $this->propagationMethod !== self::PROPAGATION_METHOD_ALL &&
+                $this->propagationMethod !== PropagationMethod::All &&
                 ($owner->propagateAll || !empty($owner->newSiteIds))
             ) {
                 // Find the owner's site IDs that *aren't* supported by this site's entries
@@ -1245,7 +1230,7 @@ class Matrix extends Field implements
         }
 
         // Duplicate entries for other sites as well?
-        if ($checkOtherSites && $this->propagationMethod !== Matrix::PROPAGATION_METHOD_ALL) {
+        if ($checkOtherSites && $this->propagationMethod !== PropagationMethod::All) {
             // Find the target's site IDs that *aren't* supported by this site's entries
             $targetSiteIds = ArrayHelper::getColumn(ElementHelper::supportedSitesForElement($target), 'siteId');
             $fieldSiteIds = self::supportedSiteIds($this->propagationMethod, $target, $this->propagationKeyFormat);
