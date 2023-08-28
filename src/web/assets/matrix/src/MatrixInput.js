@@ -695,7 +695,7 @@
             value = Craft.getText(this._inputPreviewText($input));
           }
 
-          if (value instanceof Array) {
+          if (Array.isArray(value)) {
             value = value.join(', ');
           }
 

@@ -373,14 +373,10 @@ Craft.CP = Garnish.Base.extend(
 
       for (let i = 0; i < $forms.length; i++) {
         const $form = $forms.eq(i);
-        let serialized;
         if (!$form.data('initialSerializedValue')) {
-          if (typeof $form.data('serializer') === 'function') {
-            serialized = $form.data('serializer')();
-          } else {
-            serialized = $form.serialize();
-          }
-          $form.data('initialSerializedValue', serialized);
+          const serializer =
+            $form.data('serializer') || (() => $form.serialize());
+          $form.data('initialSerializedValue', serializer());
         }
         this.addListener($form, 'submit', function (ev) {
           if (Garnish.hasAttr($form, 'data-confirm-unload')) {
@@ -388,15 +384,11 @@ Craft.CP = Garnish.Base.extend(
           }
           if (Garnish.hasAttr($form, 'data-delta')) {
             ev.preventDefault();
-            let serialized;
-            if (typeof $form.data('serializer') === 'function') {
-              serialized = $form.data('serializer')();
-            } else {
-              serialized = $form.serialize();
-            }
+            const serializer =
+              $form.data('serializer') || (() => $form.serialize());
             const data = Craft.findDeltaData(
               $form.data('initialSerializedValue'),
-              serialized,
+              serializer(),
               $form.data('delta-names'),
               null,
               $form.data('initial-delta-values'),
@@ -1005,7 +997,7 @@ Craft.CP = Garnish.Base.extend(
     displayAlerts: function (alerts) {
       this.$alerts.remove();
 
-      if (Garnish.isArray(alerts) && alerts.length) {
+      if (Array.isArray(alerts) && alerts.length) {
         this.$alerts = $('<ul id="alerts"/>').prependTo($('#page-container'));
 
         for (let alert of alerts) {
@@ -1086,7 +1078,7 @@ Craft.CP = Garnish.Base.extend(
 
       // Callback function?
       if (typeof callback === 'function') {
-        if (!Garnish.isArray(this.checkForUpdatesCallbacks)) {
+        if (!Array.isArray(this.checkForUpdatesCallbacks)) {
           this.checkForUpdatesCallbacks = [];
         }
 
@@ -1102,7 +1094,7 @@ Craft.CP = Garnish.Base.extend(
           this.updateUtilitiesBadge();
           this.checkingForUpdates = false;
 
-          if (Garnish.isArray(this.checkForUpdatesCallbacks)) {
+          if (Array.isArray(this.checkForUpdatesCallbacks)) {
             var callbacks = this.checkForUpdatesCallbacks;
             this.checkForUpdatesCallbacks = null;
 
