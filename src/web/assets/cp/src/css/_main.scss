@@ -934,10 +934,6 @@ td.right {
   color: var(--error-color) !important;
 }
 
-.icon.move {
-  margin-top: -4px !important;
-}
-
 .icon.move:not(.disabled) {
   cursor: move;
 }
@@ -7361,7 +7357,7 @@ $titlebarBorderRadius: calc(var(--large-border-radius) - 1px);
       @include margin(0, 0, 0, 5px);
     }
 
-    & .settings {
+    .settings {
       padding: 0 8px;
       height: 20px;
       color: var(--ui-control-color);
@@ -7373,6 +7369,10 @@ $titlebarBorderRadius: calc(var(--large-border-radius) - 1px);
       &:not(:hover):not(:active) {
         background-color: transparent;
       }
+    }
+
+    .move {
+      margin-top: -4px !important;
     }
 
     & > .status {
