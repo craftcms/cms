@@ -997,7 +997,7 @@ Craft.CP = Garnish.Base.extend(
     displayAlerts: function (alerts) {
       this.$alerts.remove();
 
-      if (Garnish.isArray(alerts) && alerts.length) {
+      if (Array.isArray(alerts) && alerts.length) {
         this.$alerts = $('<ul id="alerts"/>').prependTo($('#page-container'));
 
         for (let alert of alerts) {
@@ -1078,7 +1078,7 @@ Craft.CP = Garnish.Base.extend(
 
       // Callback function?
       if (typeof callback === 'function') {
-        if (!Garnish.isArray(this.checkForUpdatesCallbacks)) {
+        if (!Array.isArray(this.checkForUpdatesCallbacks)) {
           this.checkForUpdatesCallbacks = [];
         }
 
@@ -1094,7 +1094,7 @@ Craft.CP = Garnish.Base.extend(
           this.updateUtilitiesBadge();
           this.checkingForUpdates = false;
 
-          if (Garnish.isArray(this.checkForUpdatesCallbacks)) {
+          if (Array.isArray(this.checkForUpdatesCallbacks)) {
             var callbacks = this.checkForUpdatesCallbacks;
             this.checkForUpdatesCallbacks = null;
 
