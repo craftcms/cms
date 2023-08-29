@@ -1775,7 +1775,10 @@ $.extend(Craft, {
    * @returns {string}
    */
   namespaceId: function (id, namespace) {
-    return Craft.formatInputId(namespace ? `${namespace}-${id}` : id);
+    return (
+      (namespace ? `${Craft.formatInputId(namespace)}-` : '') +
+      Craft.formatInputId(id)
+    );
   },
 
   randomString: function (length) {
