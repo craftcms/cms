@@ -2120,12 +2120,14 @@ abstract class Element extends Component implements ElementInterface
             return (string)$this->title;
         }
 
-        if ($this->id) {
-            return (string)$this->id;
-        }
-
         try {
-            return static::displayName();
+            if ($this->id) {
+                return sprintf('%s %s', static::displayName(), $this->id);
+            }
+
+            return Craft::t('app', 'New {type}', [
+                'type' => static::displayName(),
+            ]);
         } catch (Throwable $e) {
             ErrorHandler::convertExceptionToError($e);
         }
