@@ -89,7 +89,6 @@ Craft.FieldToggle = Garnish.Base.extend({
 
   findTargets: function () {
     if (this.type === 'select' || this.type === 'fieldset') {
-      var toggleVal = this.getToggleVal();
       this._$target = $(
         this.normalizeTargetSelector(this.targetPrefix + this.getToggleVal())
       );
