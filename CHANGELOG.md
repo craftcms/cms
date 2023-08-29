@@ -1,12 +1,18 @@
 # Release Notes for Craft CMS 4
 
-## Unreleased
+## 4.5.3 - 2023-08-29
 
 - Fixed a bug where custom fields could be marked as changed within element editor slideouts, if they modified their input values on initialization. ([craftcms/ckeditor#128](https://github.com/craftcms/ckeditor/issues/128))
 - Fixed a bug where elements were getting saved a second time after being converted to a provisional draft within a slideout. ([#13604](https://github.com/craftcms/cms/issues/13604))
 - Fixed a JavaScript error. ([#13605](https://github.com/craftcms/cms/issues/13605))
 - Fixed support for storing PHP session info in the database on PostgreSQL.
 - Fixed a bug where search inputs within element selector modals weren’t getting focus rings.
+- Fixed a bug where boolean menu inputs were initially treating `null` values as `true`.
+- Fixed a bug where boolean menu inputs weren’t toggling other fields. ([#13613](https://github.com/craftcms/cms/issues/13613))
+- Fixed a bug where `Craft.namespaceId()` wasn’t working properly if the namespace ended in a `]` character.
+- Fixed a bug where the `|replace` Twig filter wasn’t identifying regular expressions that contained escaped slashes. ([#13618](https://github.com/craftcms/cms/issues/13618))
+- Fixed a bug where entries that were cloned from a provisional draft weren’t getting propagated to other sites initially. ([#13599](https://github.com/craftcms/cms/issues/13599))
+- Fixed an error that could occur when cloning a multi-site provisional draft that contained nested Matrix/Neo/Super Table blocks.
 
 ## 4.5.2 - 2023-08-24
 

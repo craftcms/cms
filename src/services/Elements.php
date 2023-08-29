@@ -1510,6 +1510,7 @@ class Elements extends Component
         $mainClone = clone $element;
         $mainClone->id = null;
         $mainClone->uid = StringHelper::UUID();
+        $mainClone->draftId = null;
         $mainClone->siteSettingsId = null;
         $mainClone->root = null;
         $mainClone->lft = null;
@@ -1681,7 +1682,7 @@ class Elements extends Component
                         }
                     }
 
-                    if (!$this->_saveElementInternal($siteClone, false, false)) {
+                    if (!$this->_saveElementInternal($siteClone, false, false, supportedSites: $supportedSites)) {
                         throw new InvalidElementException($siteClone, "Element $element->id could not be duplicated for site $siteElement->siteId: " . implode(', ', $siteClone->getFirstErrors()));
                     }
 
