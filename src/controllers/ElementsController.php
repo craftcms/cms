@@ -1125,12 +1125,10 @@ JS, [
             throw new ForbiddenHttpException('User not authorized to duplicate this element.');
         }
 
-        $clonedElement = clone $element;
-        $clonedElement->draftId = null;
-        $clonedElement->isProvisionalDraft = false;
-
         try {
-            $newElement = $elementsService->duplicateElement($clonedElement);
+            $newElement = $elementsService->duplicateElement($element, [
+                'isProvisionalDraft' => false,
+            ]);
         } catch (InvalidElementException $e) {
             return $this->_asFailure($e->element, Craft::t('app', 'Couldn’t duplicate {type}.', [
                 'type' => $element::lowerDisplayName(),
