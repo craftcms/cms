@@ -11,6 +11,8 @@
 - Fixed a bug where boolean menu inputs weren’t toggling other fields. ([#13613](https://github.com/craftcms/cms/issues/13613))
 - Fixed a bug where `Craft.namespaceId()` wasn’t working properly if the namespace ended in a `]` character.
 - Fixed a bug where the `|replace` Twig filter wasn’t identifying regular expressions that contained escaped slashes. ([#13618](https://github.com/craftcms/cms/issues/13618))
+- Fixed a bug where entries that were cloned from a provisional draft weren’t getting propagated to other sites initially. ([#13599](https://github.com/craftcms/cms/issues/13599))
+- Fixed an error that could occur when cloning a multi-site provisional draft that contained nested Matrix/Neo/Super Table blocks.
 
 ## 4.5.2 - 2023-08-24
 
