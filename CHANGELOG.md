@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 4
 
-## Unreleased
+## 4.5.3 - 2023-08-29
 
 - Fixed a bug where custom fields could be marked as changed within element editor slideouts, if they modified their input values on initialization. ([craftcms/ckeditor#128](https://github.com/craftcms/ckeditor/issues/128))
 - Fixed a bug where elements were getting saved a second time after being converted to a provisional draft within a slideout. ([#13604](https://github.com/craftcms/cms/issues/13604))
