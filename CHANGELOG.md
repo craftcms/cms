@@ -10,6 +10,7 @@
 - Fixed a bug where boolean menu inputs were initially treating `null` values as `true`.
 - Fixed a bug where boolean menu inputs weren’t toggling other fields. ([#13613](https://github.com/craftcms/cms/issues/13613))
 - Fixed a bug where `Craft.namespaceId()` wasn’t working properly if the namespace ended in a `]` character.
+- Fixed a bug where the `|replace` Twig filter wasn’t identifying regular expressions that contained escaped slashes. ([#13618](https://github.com/craftcms/cms/issues/13618))
 
 ## 4.5.2 - 2023-08-24
 
