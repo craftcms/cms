@@ -132,6 +132,7 @@
 - Added `craft\i18n\Locale::setDisplayName()`.
 - Added `craft\migrations\BaseContentRefactorMigration`.
 - Added `craft\models\FieldLayout::getCardBodyFields()`.
+- Added `craft\models\FieldLayout::getElementByUid()`.
 - Added `craft\models\FieldLayout::getThumbField()`.
 - Added `craft\models\Section::getCpEditUrl()`.
 - Added `craft\services\Entries::refreshEntryTypes()`.
