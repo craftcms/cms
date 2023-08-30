@@ -64,7 +64,6 @@ use craft\validators\HandleValidator;
 use craft\validators\SlugValidator;
 use craft\web\Application;
 use DateTime;
-use Illuminate\Support\Collection;
 use Throwable;
 use UnitEnum;
 use yii\base\Behavior;
@@ -1239,16 +1238,17 @@ class Elements extends Component
             'revisionId' => null,
             'isProvisionalDraft' => false,
             'updatingFromDerivative' => true,
-            'dirtyAttributes' => Collection::make($changedAttributes)
-                ->where('siteId', $element->siteId)
-                ->pluck('attribute')
-                ->all(),
-            'dirtyFields' => Collection::make($changedFields)
-                ->where('siteId', $element->siteId)
-                ->map(fn(array $field) => $fieldsService->getFieldById($field['fieldId'])?->handle)
-                ->filter()
-                ->all(),
+            'dirtyAttributes' => [],
+            'dirtyFields' => [],
         ];
+
+        foreach ($changedAttributes as $attribute) {
+            $newAttributes['siteAttributes'][$attribute['siteId']]['dirtyAttributes'][] = $attribute['attribute'];
+        }
+
+        foreach ($changedFields as $field) {
+            $newAttributes['siteAttributes'][$field['siteId']]['dirtyFields'][] = $fieldsService->getFieldById($field['fieldId'])?->handle;
+        }
 
         $updatedCanonical = $this->duplicateElement($element, $newAttributes);
 
@@ -1482,7 +1482,8 @@ class Elements extends Component
      *
      * @template T of ElementInterface
      * @param T $element the element to duplicate
-     * @param array $newAttributes any attributes to apply to the duplicate
+     * @param array $newAttributes any attributes to apply to the duplicate. This can contain a `siteAttributes` key,
+     * set to an array of site-specific attribute array, indexed by site IDs.
      * @param bool $placeInStructure whether to position the cloned element after the original one in its structure.
      * (This will only happen if the duplicated element is canonical.)
      * @param bool $trackDuplication whether to keep track of the duplication from [[Elements::$duplicatedElementIds]]
@@ -1525,9 +1526,15 @@ class Elements extends Component
         $behaviors = ArrayHelper::remove($newAttributes, 'behaviors', []);
         $mainClone->setRevisionNotes(ArrayHelper::remove($newAttributes, 'revisionNotes'));
 
+        // Extract any attributes that are meant for other sites
+        $siteAttributes = ArrayHelper::remove($newAttributes, 'siteAttributes') ?? [];
+
         // Note: must use Craft::configure() rather than setAttributes() here,
         // so we're not limited to whatever attributes() returns
-        Craft::configure($mainClone, $newAttributes);
+        Craft::configure($mainClone, ArrayHelper::merge(
+            $newAttributes,
+            $siteAttributes[$mainClone->siteId] ?? [],
+        ));
 
         // Attach behaviors
         foreach ($behaviors as $name => $behavior) {
@@ -1657,15 +1664,20 @@ class Elements extends Component
 
                     // Note: must use Craft::configure() rather than setAttributes() here,
                     // so we're not limited to whatever attributes() returns
-                    Craft::configure($siteClone, $newAttributes);
+                    Craft::configure($siteClone, ArrayHelper::merge(
+                        $newAttributes,
+                        $siteAttributes[$siteElement->siteId] ?? [],
+                    ));
                     $siteClone->siteId = $siteElement->siteId;
 
-                    // Clone any field values that are objects
+                    // Clone any field values that are objects (without affecting the dirty fields)
+                    $dirtyFields = $siteClone->getDirtyFields();
                     foreach ($siteClone->getFieldValues() as $handle => $value) {
                         if (is_object($value) && !$value instanceof UnitEnum) {
                             $siteClone->setFieldValue($handle, clone $value);
                         }
                     }
+                    $siteClone->setDirtyFields($dirtyFields, false);
 
                     if ($element::hasUris()) {
                         // Make sure it has a valid slug
