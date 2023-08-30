@@ -43,6 +43,7 @@ use craft\events\ElementQueryEvent;
 use craft\events\InvalidateElementCachesEvent;
 use craft\events\MergeElementsEvent;
 use craft\events\RegisterComponentTypesEvent;
+use craft\fieldlayoutelements\CustomField;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Component as ComponentHelper;
 use craft\helpers\DateTimeHelper;
@@ -1247,7 +1248,10 @@ class Elements extends Component
         }
 
         foreach ($changedFields as $field) {
-            $newAttributes['siteAttributes'][$field['siteId']]['dirtyFields'][] = $fieldsService->getFieldById($field['fieldId'])?->handle;
+            $layoutElement = $element->getFieldLayout()?->getElementByUid($field['layoutElementUid']);
+            if ($layoutElement instanceof CustomField) {
+                $newAttributes['siteAttributes'][$field['siteId']]['dirtyFields'][] = $layoutElement->getField()->handle;
+            }
         }
 
         $updatedCanonical = $this->duplicateElement($element, $newAttributes);

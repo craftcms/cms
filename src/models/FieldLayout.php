@@ -523,6 +523,19 @@ class FieldLayout extends Model
     }
 
     /**
+     * Returns a layout element by its UID.
+     *
+     * @param string $uid
+     * @return FieldLayoutElement|null
+     * @since 5.0.0
+     */
+    public function getElementByUid(string $uid): ?FieldLayoutElement
+    {
+        $filter = fn(FieldLayoutElement $layoutElement) => $layoutElement->uid === $uid;
+        return $this->_element($filter);
+    }
+
+    /**
      * Returns the layout elements of a given type.
      *
      * @template T
