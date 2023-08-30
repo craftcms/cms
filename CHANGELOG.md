@@ -1,5 +1,10 @@
 # Release Notes for Craft CMS 4
 
+## Unreleased
+
+- Fixed a bug where changed fields weren’t being tracked properly when applying a draft for a multi-site entry.
+- `craft\services\Elements::duplicateElement()` now supports passing a `siteAttributes` array to the `$attributes` argument, for setting site-specific attributes.
+
 ## 4.5.3 - 2023-08-29
 
 - Fixed a bug where custom fields could be marked as changed within element editor slideouts, if they modified their input values on initialization. ([craftcms/ckeditor#128](https://github.com/craftcms/ckeditor/issues/128))
