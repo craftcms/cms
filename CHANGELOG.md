@@ -245,7 +245,7 @@
 - Fixed a bug where date and time inputs weren’t always working properly on mobile. ([#13424](https://github.com/craftcms/cms/issues/13424))
 - Fixed an RCE vulnerability.
 
-## 4.4.15 - 2023-07-03
+## 4.4.15 - 2023-07-03 [CRITICAL]
 
 - The control panel footer now includes a message about active trials, with a link to purchase the licenses.
 - Tags fields now only show up to five suggestions. ([#13322](https://github.com/craftcms/cms/issues/13322))
