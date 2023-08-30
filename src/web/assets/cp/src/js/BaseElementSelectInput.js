@@ -653,7 +653,6 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
     },
 
     getModalSettings: function () {
-      console.log('limit', this.settings.limit);
       return $.extend(
         {
           closeOtherModals: false,

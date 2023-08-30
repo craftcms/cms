@@ -52,7 +52,6 @@ Craft.BaseElementIndexView = Garnish.Base.extend(
       Craft.cp.elementThumbLoader.load($elements);
 
       if (this.settings.selectable) {
-        console.log($elements);
         this.elementSelect = new Garnish.Select(
           this.$elementContainer,
           this.filterSelectableElements($elements),
