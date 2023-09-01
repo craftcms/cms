@@ -57,6 +57,7 @@
 - Added `craft\base\Element::shouldValidateTitle()`.
 - Added `craft\base\ElementContainerFieldInterface`, which should be implemented by fields which contain nested elements, such as Matrix.
 - Added `craft\base\ElementInterface::getCardBodyHtml()`.
+- Added `craft\base\ElementInterface::hasDrafts()`.
 - Added `craft\base\ElementInterface::setLazyEagerLoadedElements()`.
 - Added `craft\base\ElementTrait::$eagerLoadInfo`.
 - Added `craft\base\ElementTrait::$elementQueryResult`.

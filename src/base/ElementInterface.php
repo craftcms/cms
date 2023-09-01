@@ -64,6 +64,14 @@ interface ElementInterface extends ComponentInterface
     public static function refHandle(): ?string;
 
     /**
+     * Returns whether element indexes should show the “Drafts” status option.
+     *
+     * @return bool
+     * @since 5.0.0
+     */
+    public static function hasDrafts(): bool;
+
+    /**
      * Returns whether Craft should keep track of attribute and custom field changes made to this element type,
      * including when the last time they were changed, and who was logged-in at the time.
      *
