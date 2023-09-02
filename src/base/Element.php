@@ -3077,11 +3077,12 @@ abstract class Element extends Component implements ElementInterface
      */
     public function getCardBodyHtml(): ?string
     {
-        return implode("\n", array_map(
-            fn(PreviewableFieldInterface $field)
-                => Html::tag('div', $field->getPreviewHtml($this->getFieldValue($field->handle), $this)),
-            $this->getFieldLayout()?->getCardBodyFields($this),
+        $previews = array_filter(array_map(
+            fn(PreviewableFieldInterface $field) => $field->getPreviewHtml($this->getFieldValue($field->handle), $this),
+            $this->getFieldLayout()?->getCardBodyFields($this) ?? [],
         ));
+
+        return implode("\n", array_map(fn(string $preview) => Html::tag('div', $preview), $previews));
     }
 
     /**

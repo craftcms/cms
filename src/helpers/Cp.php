@@ -553,23 +553,23 @@ class Cp
             ],
         );
 
+        $headingContent = self::elementLabelHtml($element, $config, $attributes);
+        $bodyContent = $element->getCardBodyHtml() ?? '';
+
         $html = Html::beginTag('div', $attributes) .
             ($element->getThumbHtml(120) ?? '') .
             Html::beginTag('div', ['class' => 'card-content']) .
-            Html::beginTag('div', ['class' => 'card-heading']) .
+            ($headingContent !== '' ? Html::tag('div', $headingContent, ['class' => 'card-heading']) : '') .
+            ($bodyContent !== '' ? Html::tag('div', $bodyContent, ['class' => 'card-body']) : '') .
+            Html::endTag('div') . // .card-content
+            Html::beginTag('div', ['class' => 'card-actions-container']) .
+            Html::beginTag('div', ['class' => 'card-actions']) .
+            (self::elementStatusHtml($element) ?? '') .
             ($config['selectable'] ? Html::tag('div', options: [
                 'class' => 'checkbox',
                 'title' => Craft::t('app', 'Select'),
                 'aria' => ['label' => Craft::t('app', 'Select')],
             ]) : '') .
-            (self::elementStatusHtml($element) ?? '') .
-            self::elementLabelHtml($element, $config, $attributes) .
-            Html::endTag('div') . // .card-heading
-            Html::beginTag('div', ['class' => 'card-body']) .
-            $element->getCardBodyHtml() .
-            Html::endTag('div') . // .card-body
-            Html::endTag('div') . // .card-content
-            Html::beginTag('div', ['class' => 'card-actions']) .
             ($config['sortable'] ? Html::button('', [
                 'class' => ['move', 'icon'],
                 'title' => Craft::t('app', 'Reorder'),
@@ -577,7 +577,8 @@ class Cp
                     'label' => Craft::t('app', 'Reorder'),
                 ],
             ]) : '') .
-            Html::endTag('div'); // .card-actions
+            Html::endTag('div') . // .card-actions
+            Html::endTag('div'); // .card-actions-container
 
         if ($config['context'] === 'field' && $config['inputName'] !== null) {
             $html .= Html::hiddenInput($config['inputName'], (string)$element->id);
@@ -683,21 +684,25 @@ class Cp
             ]);
         }
 
-        return Html::beginTag('div', [
-                'id' => sprintf('%s-label', $config['id']),
-                'class' => 'label',
-            ]) .
-            Html::tag('a', $content, [
+        $content = ($content !== '' ? Html::tag('a', $content, [
                 'class' => 'label-link',
                 'href' => !$element->trashed && $config['context'] !== 'modal'
                     ? ($attributes['data']['cp-url'] ?? null) : null,
-            ]) .
+            ]) : '') .
             ($element->hasErrors() ? Html::tag('span', '', [
                 'data' => ['icon' => 'alert'],
                 'aria' => ['label' => Craft::t('app', 'Error')],
                 'role' => 'img',
-            ]) : '') .
-            Html::endTag('div'); // .label
+            ]) : '');
+
+        if ($content === '') {
+            return '';
+        }
+
+        return Html::tag('div', $content, [
+            'id' => sprintf('%s-label', $config['id']),
+            'class' => 'label',
+        ]);
     }
 
     /**

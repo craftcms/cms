@@ -2771,7 +2771,7 @@ table {
     display: flex;
     flex-direction: row;
     align-items: center;
-    gap: var(--xs);
+    gap: var(--s);
 
     .status {
       margin: 0;
@@ -2939,7 +2939,7 @@ table {
   }
 
   .card-content,
-  .card-body {
+  .card-content .card-body {
     display: flex;
     flex-direction: column;
     gap: var(--xs);
@@ -2968,19 +2968,25 @@ table {
       }
     }
 
-    .card-body > * {
-      --max-lines: 2;
-      margin: 0;
-      max-height: calc(var(--lh) * var(--max-lines));
-      overflow: hidden;
-      text-wrap: pretty;
+    .card-body {
+      &:empty {
+        display: none;
+      }
+
+      & > * {
+        --max-lines: 2;
+        margin: 0;
+        max-height: calc(var(--lh) * var(--max-lines));
+        overflow: hidden;
+        text-wrap: pretty;
+      }
     }
   }
 
-  & > .card-actions {
+  & > .card-actions-container {
+    display: flex;
     align-items: flex-start !important;
     position: relative;
-    top: -2px;
   }
 }
 
@@ -3045,18 +3051,25 @@ table {
   }
 
   & > .chip-content > .chip-actions,
-  & > .card-actions {
+  & > .card-actions-container > .card-actions {
     display: flex;
     flex-direction: row;
     align-items: center;
-    @include margin-right(-4px);
+    gap: var(--s);
+    min-height: var(--lh);
 
     &:empty {
       display: none;
     }
 
-    & > * {
+    & > .status {
+      margin: 0;
+    }
+
+    & > .move,
+    & > .menubtn {
       @include touch-target;
+      margin: 0 -4px;
     }
 
     .settings {

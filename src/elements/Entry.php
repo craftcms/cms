@@ -1073,6 +1073,21 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
     /**
      * @inheritdoc
      */
+    public function getUiLabel(): string
+    {
+        if ($this->fieldId) {
+            $entryType = $this->getType();
+            if (!$entryType->hasTitleField && !$entryType->titleFormat) {
+                return '';
+            }
+        }
+
+        return parent::getUiLabel();
+    }
+
+    /**
+     * @inheritdoc
+     */
     protected function uiLabel(): ?string
     {
         if (!$this->fieldId && (!isset($this->title) || trim($this->title) === '')) {

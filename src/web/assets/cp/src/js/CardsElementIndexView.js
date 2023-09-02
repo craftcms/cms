@@ -24,7 +24,7 @@ Craft.CardsElementIndexView = Craft.BaseElementIndexView.extend({
             }
           : null,
         ignoreHandleSelector: null,
-        handle: '> .element > .card-actions > .move',
+        handle: '> .element > .card-actions-container > .card-actions > .move',
         collapseDraggees: true,
         magnetStrength: 4,
         helperLagBase: 1.5,
