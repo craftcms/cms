@@ -37,9 +37,9 @@ class RenameFile extends ElementAction
     new Craft.ElementActionTrigger({
         type: $type,
         bulk: false,
-        validateSelection: \$selectedItems => Garnish.hasAttr(\$selectedItems.find('.element'), 'data-movable'),
-        activate: \$selectedItems => {
-            const \$element = \$selectedItems.find('.element')
+        validateSelection: (selectedItems, elementIndex) => Garnish.hasAttr(selectedItems.find('.element'), 'data-movable'),
+        activate: (selectedItems, elementIndex) => {
+            const \$element = selectedItems.find('.element')
             const assetId = \$element.data('id');
             let oldName = \$element.data('filename');
 
@@ -50,10 +50,10 @@ class RenameFile extends ElementAction
                 return;
             }
 
-            Craft.elementIndex.setIndexBusy();
+            elementIndex.setIndexBusy();
 
-            let currentFolderId = Craft.elementIndex.\$source.data('folder-id');
-            const currentFolder = Craft.elementIndex.sourcePath[Craft.elementIndex.sourcePath.length - 1];
+            let currentFolderId = elementIndex.\$source.data('folder-id');
+            const currentFolder = elementIndex.sourcePath[elementIndex.sourcePath.length - 1];
             if (currentFolder && currentFolder.folderId) {
               currentFolderId = currentFolder.folderId;
             }
@@ -68,12 +68,12 @@ class RenameFile extends ElementAction
                 .then(response => {
                     if (response.data.conflict) {
                         alert(response.data.conflict);
-                        this.activate(\$selectedItems);
+                        this.activate(selectedItems);
                         return;
                     }
 
                     if (response.data.success) {
-                        Craft.elementIndex.updateElements();
+                        elementIndex.updateElements();
 
                         // If assets were just merged we should get the reference tags updated right away
                         Craft.cp.runQueue();
@@ -83,7 +83,7 @@ class RenameFile extends ElementAction
                     alert(response.data.message)
                 })
                 .finally(() => {
-                    Craft.elementIndex.setIndexAvailable();
+                    elementIndex.setIndexAvailable();
                 });
         },
     });

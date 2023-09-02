@@ -18,6 +18,7 @@ use craft\behaviors\DraftBehavior;
 use craft\controllers\ElementIndexesController;
 use craft\db\Connection;
 use craft\db\FixedOrderExpression;
+use craft\db\Query;
 use craft\db\Table;
 use craft\elements\actions\Delete;
 use craft\elements\actions\DeleteForSite;
@@ -865,7 +866,7 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
     protected function defineRules(): array
     {
         $rules = parent::defineRules();
-        $rules[] = [['sectionId', 'fieldId', 'primaryOwnerId', 'typeId', 'sortOrder', 'authorId'], 'number', 'integerOnly' => true];
+        $rules[] = [['sectionId', 'fieldId', 'ownerId', 'primaryOwnerId', 'typeId', 'sortOrder', 'authorId'], 'number', 'integerOnly' => true];
         $rules[] = [
             ['sectionId'],
             'required',
@@ -1074,7 +1075,7 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
      */
     protected function uiLabel(): ?string
     {
-        if (!isset($this->title) || trim($this->title) === '') {
+        if (!$this->fieldId && (!isset($this->title) || trim($this->title) === '')) {
             return Craft::t('app', 'Untitled entry');
         }
 
@@ -1223,11 +1224,19 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
             return null;
         }
 
-        $field = Craft::$app->getFields()->getFieldById($this->fieldId);
+        $field = $this->getOwner()->getFieldLayout()->getFieldById($this->fieldId);
         if (!$field instanceof ElementContainerFieldInterface) {
             throw new InvalidConfigException("Invalid field ID: $this->fieldId");
         }
         return $field;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getSortOrder(): ?int
+    {
+        return $this->sortOrder;
     }
 
     /**
@@ -1454,20 +1463,27 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
      */
     public function createAnother(): ?self
     {
-        $section = $this->getSection();
-
         /** @var self $entry */
         $entry = Craft::createObject([
             'class' => self::class,
             'sectionId' => $this->sectionId,
+            'fieldId' => $this->fieldId,
+            'primaryOwnerId' => $this->primaryOwnerId ?? $this->ownerId,
+            'ownerId' => $this->primaryOwnerId ?? $this->ownerId,
+            'sortOrder' => null,
             'typeId' => $this->typeId,
             'siteId' => $this->siteId,
         ]);
 
-        // Set the default status based on the section's settings
-        /** @var Section_SiteSettings $siteSettings */
-        $siteSettings = ArrayHelper::firstWhere($section->getSiteSettings(), 'siteId', $this->siteId);
-        $enabled = $siteSettings->enabledByDefault;
+        $section = $this->getSection();
+        if ($section) {
+            // Set the default status based on the section's settings
+            /** @var Section_SiteSettings $siteSettings */
+            $siteSettings = ArrayHelper::firstWhere($section->getSiteSettings(), 'siteId', $this->siteId);
+            $enabled = $siteSettings->enabledByDefault;
+        } else {
+            $enabled = true;
+        }
 
         if (Craft::$app->getIsMultiSite() && count($entry->getSupportedSites()) > 1) {
             $entry->enabled = true;
@@ -1478,7 +1494,7 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
         }
 
         // Structure parent
-        if ($section->type === Section::TYPE_STRUCTURE && $section->maxLevels !== 1) {
+        if ($section?->type === Section::TYPE_STRUCTURE && $section->maxLevels !== 1) {
             $entry->setParentId($this->getParentId());
         }
 
@@ -1565,6 +1581,10 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
      */
     public function canDuplicate(User $user): bool
     {
+        if (parent::canDuplicate($user)) {
+            return true;
+        }
+
         $section = $this->getSection();
 
         if (!$section) {
@@ -1583,6 +1603,10 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
      */
     public function canDelete(User $user): bool
     {
+        if (parent::canDelete($user)) {
+            return true;
+        }
+
         $section = $this->getSection();
 
         if (!$section) {
@@ -1591,10 +1615,6 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
 
         if ($section->type === Section::TYPE_SINGLE && !$this->getIsDraft()) {
             return false;
-        }
-
-        if (parent::canDelete($user)) {
-            return true;
         }
 
         if ($this->getIsDraft() && $this->getIsDerivative()) {
@@ -1620,6 +1640,10 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
      */
     public function canDeleteForSite(User $user): bool
     {
+        if (parent::canDeleteForSite($user)) {
+            return true;
+        }
+
         $section = $this->getSection();
 
         if (!$section) {
@@ -1654,7 +1678,8 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
         $section = $this->getSection();
 
         if (!$section) {
-            return null;
+            // use the generic element editor URL
+            return ElementHelper::elementEditorUrl($this, false);
         }
 
         $path = sprintf('entries/%s/%s', $section->handle, $this->getCanonicalId());
@@ -2193,17 +2218,28 @@ EOD;
 
             // ownerId will be null when creating a revision
             if (isset($this->fieldId, $this->ownerId) && $this->saveOwnership) {
+                if (($isNew && $this->getIsCanonical()) || !isset($this->sortOrder)) {
+                    $max = (new Query())
+                        ->from(['eo' => Table::ELEMENTS_OWNERS])
+                        ->innerJoin(['e' => Table::ENTRIES], '[[e.id]] = [[eo.elementId]]')
+                        ->where([
+                            'eo.ownerId' => $this->ownerId,
+                            'e.fieldId' => $this->fieldId,
+                        ])
+                        ->max('sortOrder');
+                    $this->sortOrder = $max ? $max + 1 : 1;
+                }
                 if ($isNew) {
                     Db::insert(Table::ELEMENTS_OWNERS, [
-                        'entryId' => $this->id,
+                        'elementId' => $this->id,
                         'ownerId' => $this->ownerId,
-                        'sortOrder' => $this->sortOrder ?? 0,
+                        'sortOrder' => $this->sortOrder,
                     ]);
                 } else {
                     Db::update(Table::ELEMENTS_OWNERS, [
-                        'sortOrder' => $this->sortOrder ?? 0,
+                        'sortOrder' => $this->sortOrder,
                     ], [
-                        'entryId' => $this->id,
+                        'elementId' => $this->id,
                         'ownerId' => $this->ownerId,
                     ]);
                 }

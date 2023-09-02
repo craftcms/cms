@@ -35,4 +35,11 @@ interface NestedElementInterface extends ElementInterface
      * @throws InvalidConfigException if the element is misconfigured
      */
     public function getField(): ?ElementContainerFieldInterface;
+
+    /**
+     * Returns the element’s sort order, if it has one.
+     *
+     * @return int|null
+     */
+    public function getSortOrder(): ?int;
 }

@@ -1284,7 +1284,7 @@ ul.icons {
 
 .toolbar {
   position: relative;
-  margin-bottom: 14px;
+  margin-bottom: var(--s);
   min-height: 34px;
 
   &.flex,
@@ -2399,7 +2399,9 @@ h2 + .actions {
 /* ----------------------------------------*/
 
 .tablepane {
-  margin: -22px -22px -10px;
+  margin: calc(var(--pane-padding, 22px) * -1)
+    calc(var(--pane-padding, 22px) * -1)
+    calc(var(--pane-padding, 24px) * -1 + var(--pane-padding, var(--m)));
   overflow-x: auto;
 
   table.data {
@@ -2487,12 +2489,20 @@ table {
         th,
         td {
           &:first-child {
-            @include border-top-left-radius(var(--small-border-radius));
-            @include border-bottom-left-radius(var(--small-border-radius));
+            @include border-top-left-radius(
+              var(--border-radius, var(--small-border-radius))
+            );
+            @include border-bottom-left-radius(
+              var(--border-radius, var(--small-border-radius))
+            );
           }
           &:last-child {
-            @include border-top-right-radius(var(--small-border-radius));
-            @include border-bottom-right-radius(var(--small-border-radius));
+            @include border-top-right-radius(
+              var(--border-radius, var(--small-border-radius))
+            );
+            @include border-bottom-right-radius(
+              var(--border-radius, var(--small-border-radius))
+            );
           }
         }
       }
@@ -2508,8 +2518,8 @@ table {
 
       th:not(.orderable),
       td {
-        padding-top: 15px;
-        padding-bottom: 15px;
+        padding-top: var(--pane-padding, var(--m));
+        padding-bottom: var(--pane-padding, var(--m));
       }
 
       th {
@@ -2518,8 +2528,7 @@ table {
 
         &.orderable {
           position: relative;
-          padding-left: 0;
-          padding-right: 0;
+          padding: 0 !important;
 
           body:not(.dragging) &:not(.ordered):hover {
             background-color: var(--gray-100);
@@ -2532,7 +2541,7 @@ table {
               button:after {
                 @include angle(up);
                 position: absolute;
-                @include right(10px);
+                @include right(var(--m));
                 top: calc(50% - 3px);
               }
 
@@ -2544,10 +2553,10 @@ table {
 
           button {
             position: relative;
-            @include padding-right(26px);
+            @include padding-right(35px);
             font: inherit;
             width: 100%;
-            padding: 14px;
+            padding: var(--pane-padding, var(--m)) var(--m);
             @include alignleft;
 
             &:focus {
@@ -2977,7 +2986,7 @@ table {
 
 .card-grid {
   display: grid !important;
-  gap: var(--xs) !important;
+  gap: var(--s) !important;
   grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
 
   & > li {
@@ -3137,6 +3146,49 @@ $checkboxPadding: $checkboxSize + 4;
       margin-bottom: 2px;
     }
   }
+
+  &.pane {
+    .toolbar {
+      position: relative;
+      z-index: 2;
+      margin: calc(var(--pane-padding) * -1) calc(var(--pane-padding) * -1)
+        var(--pane-padding) !important;
+      border-radius: calc(var(--large-border-radius) - 1px)
+        calc(var(--large-border-radius) - 1px) 0 0;
+      padding: var(--pane-padding);
+      box-shadow: 0 1px 0 var(--hairline-color);
+      background-color: var(--gray-050);
+    }
+
+    .header {
+      padding-top: var(--pane-padding);
+      padding-bottom: var(--pane-padding);
+      background-color: transparent;
+      border-bottom: 1px solid var(--hairline-color);
+    }
+
+    .elements {
+      --border-radius: 0;
+
+      .tableview table.data thead {
+        th,
+        td {
+          border-bottom: 1px solid var(--hairline-color);
+          &:not(.ordered) {
+            background-color: transparent;
+          }
+        }
+      }
+    }
+
+    .footer {
+      border-radius: 0 0 calc(var(--large-border-radius) - 1px)
+        calc(var(--large-border-radius) - 1px) !important;
+      box-shadow: none;
+      border-top: 1px solid var(--hairline-color);
+      background: transparent;
+    }
+  }
 }
 
 .elements {
@@ -3149,7 +3201,7 @@ $checkboxPadding: $checkboxSize + 4;
   }
 
   &.busy {
-    min-height: 200px;
+    min-height: 72px;
 
     &:after {
       display: block;
@@ -3157,8 +3209,8 @@ $checkboxPadding: $checkboxSize + 4;
       font-size: 0;
       position: absolute;
       top: 0;
-      left: -24px;
-      width: calc(100% + #{24 + 24}px);
+      left: calc(var(--pane-padding, 24px) * -1);
+      width: calc(100% + var(--pane-padding, 24px) + var(--pane-padding, 24px));
       height: 100%;
       background: transparentize($white, 0.25);
       border-radius: var(--large-border-radius);
@@ -3171,10 +3223,10 @@ $checkboxPadding: $checkboxSize + 4;
 
   .header {
     margin: calc(var(--xl) * -1 + 2px) calc(var(--padding) * -1 + 2px) var(--xl);
-    padding: 14px var(--padding);
+    padding: var(--s);
     background-color: var(--gray-050);
     box-shadow: none;
-    border-radius: var(--small-border-radius);
+    border-radius: var(--border-radius, var(--small-border-radius));
 
     &:after {
       content: '';
@@ -3999,10 +4051,12 @@ ul.tree,
 /* ----------------------------------------*/
 
 .pane {
+  --pane-padding: var(--xl);
+  --border: 1px solid var(--hairline-color);
   @include pane;
   position: relative;
   margin: 14px 0;
-  padding: 24px;
+  padding: var(--pane-padding);
   border-radius: var(--large-border-radius);
   word-wrap: break-word;
   box-sizing: border-box;
@@ -4012,6 +4066,31 @@ ul.tree,
     background-color: var(--gray-050);
     border: 1px solid var(--hairline-color);
     box-shadow: none;
+  }
+
+  &.dashed {
+    background-color: transparent !important;
+    box-shadow: none;
+    border: 1px dashed var(--medium-hairline-color) !important;
+  }
+
+  &.hairline {
+    background-color: transparent !important;
+    box-shadow: none;
+    border: 1px solid #{transparentize($inputColor, 0.75)} !important;
+  }
+
+  &.padding-xs {
+    --pane-padding: var(--xs);
+  }
+  &.padding-s {
+    --pane-padding: var(--s);
+  }
+  &.padding-m {
+    --pane-padding: var(--m);
+  }
+  &.padding-l {
+    --pane-padding: var(--l);
   }
 
   &.loading {
@@ -4830,16 +4909,6 @@ $min2ColWidth: 400px;
 .header,
 .hud-header,
 .footer,
-.hud-footer,
-.body {
-  &:after {
-    @include clearafter;
-  }
-}
-
-.header,
-.hud-header,
-.footer,
 .hud-footer {
   position: relative;
   z-index: 1;
@@ -4867,7 +4936,7 @@ $min2ColWidth: 400px;
 .footer,
 .hud-footer {
   border-radius: 0 0 var(--large-border-radius) var(--large-border-radius);
-  padding: var(--s) var(--xl);
+  padding: var(--s) var(--pane-padding, var(--xl));
   box-shadow: inset 0 1px 0 var(--hairline-color);
 
   &.flex {
@@ -4887,11 +4956,13 @@ $min2ColWidth: 400px;
 .pane,
 .modal .body {
   .header {
-    margin: -24px -24px 24px;
+    margin: calc(var(--pane-padding, 24px) * -1)
+      calc(var(--pane-padding, 24px) * -1) var(--pane-padding, 24px);
   }
 
   .footer {
-    margin: 24px -24px -24px;
+    margin: var(--pane-padding, 24px) calc(var(--pane-padding, 24px) * -1)
+      calc(var(--pane-padding, 24px) * -1);
   }
 }
 

@@ -698,6 +698,24 @@ class FieldLayout extends Model
     }
 
     /**
+     * Returns a custom field by its ID.
+     *
+     * @param int $id The field ID.
+     * @return FieldInterface|null
+     * @since 5.0.0
+     */
+    public function getFieldById(int $id): ?FieldInterface
+    {
+        foreach ($this->getCustomFields() as $field) {
+            if ($field->id === $id) {
+                return $field;
+            }
+        }
+
+        return null;
+    }
+
+    /**
      * Returns a custom field by its handle.
      *
      * @param string $handle The field handle.

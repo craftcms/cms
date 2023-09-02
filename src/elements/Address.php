@@ -18,6 +18,7 @@ use craft\fieldlayoutelements\addresses\OrganizationField;
 use craft\fieldlayoutelements\addresses\OrganizationTaxIdField;
 use craft\fieldlayoutelements\BaseNativeField;
 use craft\fieldlayoutelements\FullNameField;
+use craft\helpers\Html;
 use craft\models\FieldLayout;
 use craft\records\Address as AddressRecord;
 use yii\base\InvalidConfigException;
@@ -321,6 +322,14 @@ class Address extends Element implements AddressInterface, NestedElementInterfac
     /**
      * @inheritdoc
      */
+    public function getSortOrder(): ?int
+    {
+        return null;
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function canView(User $user): bool
     {
         if (parent::canView($user)) {
@@ -588,6 +597,15 @@ class Address extends Element implements AddressInterface, NestedElementInterfac
 
     /**
      * @inheritdoc
+     */
+    public function getCardBodyHtml(): ?string
+    {
+        return Html::tag('div', Craft::$app->getAddresses()->formatAddress($this)) .
+            parent::getCardBodyHtml();
+    }
+
+    /**
+     * @inheritdoc
      * @throws InvalidConfigException
      */
     public function afterSave(bool $isNew): void
@@ -637,6 +655,6 @@ class Address extends Element implements AddressInterface, NestedElementInterfac
      */
     public function getFieldLayout(): ?FieldLayout
     {
-        return Craft::$app->getAddresses()->getLayout();
+        return Craft::$app->getAddresses()->getFieldLayout();
     }
 }

@@ -24,6 +24,7 @@ use craft\fieldlayoutelements\CustomField;
 use craft\models\FieldLayout;
 use craft\models\FieldLayoutTab;
 use craft\models\Site;
+use craft\services\ElementSources;
 use craft\web\twig\TemplateLoaderException;
 use craft\web\View;
 use yii\base\Event;
@@ -413,7 +414,8 @@ class Cp
     {
         $config += [
             'autoReload' => true,
-            'checkbox' => false,
+            'selectable' => false,
+            'sortable' => false,
             'context' => 'index',
             'id' => sprintf('chip-%s', mt_rand()),
             'inputName' => null,
@@ -441,7 +443,7 @@ class Cp
                 'title' => $title,
                 'data' => array_filter([
                     'settings' => $config['autoReload'] ? [
-                        'checkbox' => $config['checkbox'],
+                        'selectable' => $config['selectable'],
                         'context' => $config['context'],
                         'id' => Craft::$app->getView()->namespaceInputId($config['id']),
                         'showDraftName' => $config['showDraftName'],
@@ -464,7 +466,7 @@ class Cp
 
         $html .= Html::beginTag('div', ['class' => 'chip-content']);
 
-        if ($config['checkbox']) {
+        if ($config['selectable']) {
             $html .= Html::tag('div', options: [
                 'class' => 'checkbox',
                 'title' => Craft::t('app', 'Select'),
@@ -480,7 +482,15 @@ class Cp
             $html .= self::elementLabelHtml($element, $config, $attributes);
         }
 
-        $html .= Html::tag('div', options: ['class' => 'chip-actions']);
+        $html .= Html::beginTag('div', ['class' => 'chip-actions']) .
+            ($config['sortable'] ? Html::button('', [
+                'class' => ['move', 'icon'],
+                'title' => Craft::t('app', 'Reorder'),
+                'aria' => [
+                    'label' => Craft::t('app', 'Reorder'),
+                ],
+            ]) : '') .
+            Html::endTag('div'); // .chip-actions
 
         if ($config['context'] === 'field' && $config['inputName'] !== null) {
             $html .= Html::hiddenInput($config['inputName'], (string)$element->id);
@@ -521,7 +531,8 @@ class Cp
     {
         $config += [
             'autoReload' => true,
-            'checkbox' => false,
+            'selectable' => false,
+            'sortable' => false,
             'context' => 'index',
             'id' => sprintf('card-%s', mt_rand()),
             'inputName' => null,
@@ -533,7 +544,7 @@ class Cp
                 'class' => ['card'],
                 'data' => array_filter([
                     'settings' => $config['autoReload'] ? [
-                        'checkbox' => $config['checkbox'],
+                        'selectable' => $config['selectable'],
                         'context' => $config['context'],
                         'id' => Craft::$app->getView()->namespaceInputId($config['id']),
                         'ui' => 'card',
@@ -546,7 +557,7 @@ class Cp
             ($element->getThumbHtml(120) ?? '') .
             Html::beginTag('div', ['class' => 'card-content']) .
             Html::beginTag('div', ['class' => 'card-heading']) .
-            ($config['checkbox'] ? Html::tag('div', options: [
+            ($config['selectable'] ? Html::tag('div', options: [
                 'class' => 'checkbox',
                 'title' => Craft::t('app', 'Select'),
                 'aria' => ['label' => Craft::t('app', 'Select')],
@@ -558,7 +569,15 @@ class Cp
             $element->getCardBodyHtml() .
             Html::endTag('div') . // .card-body
             Html::endTag('div') . // .card-content
-            Html::tag('div', options: ['class' => 'card-actions']);
+            Html::beginTag('div', ['class' => 'card-actions']) .
+            ($config['sortable'] ? Html::button('', [
+                'class' => ['move', 'icon'],
+                'title' => Craft::t('app', 'Reorder'),
+                'aria' => [
+                    'label' => Craft::t('app', 'Reorder'),
+                ],
+            ]) : '') .
+            Html::endTag('div'); // .card-actions
 
         if ($config['context'] === 'field' && $config['inputName'] !== null) {
             $html .= Html::hiddenInput($config['inputName'], (string)$element->id);
@@ -608,9 +627,9 @@ class Cp
                     'level' => $element->level,
                     'trashed' => $element->trashed,
                     'editable' => $editable,
-                    'savable' => $editable && $config['context'] === 'index' && $elementsService->canSave($element),
-                    'duplicatable' => $editable && $config['context'] === 'index' && $elementsService->canDuplicate($element),
-                    'deletable' => $editable && $config['context'] === 'index' && $elementsService->canDelete($element),
+                    'savable' => $editable && self::contextIsAdministrative($config['context']) && $elementsService->canSave($element),
+                    'duplicatable' => $editable && self::contextIsAdministrative($config['context']) && $elementsService->canDuplicate($element),
+                    'deletable' => $editable && self::contextIsAdministrative($config['context']) && $elementsService->canDelete($element),
                 ]),
             ],
         );
@@ -805,16 +824,183 @@ class Cp
     }
 
     /**
+     * Returns the HTML for an element index.
+     *
+     * @param class-string<ElementInterface> $elementType
+     * @param array $config
+     * @return string
+     * @since 5.0.0
+     */
+    public static function elementIndexHtml(string $elementType, array $config = []): string
+    {
+        $config += [
+            'context' => 'index',
+            'id' => sprintf('element-index-%s', mt_rand()),
+            'class' => null,
+            'sources' => null,
+            'showStatusMenu' => 'auto',
+            'showSiteMenu' => 'auto',
+            'registerJs' => true,
+            'jsSettings' => [],
+        ];
+
+        if ($config['showStatusMenu'] !== 'auto') {
+            $config['showStatusMenu'] = (bool)$config['showStatusMenu'];
+        }
+        if ($config['showSiteMenu'] !== 'auto') {
+            $config['showSiteMenu'] = (bool)$config['showSiteMenu'];
+        }
+
+        if ($config['sources'] !== false) {
+            if (is_array($config['sources'])) {
+                $indexedSourceKeys = array_flip($config['sources']);
+                $allSources = Craft::$app->getElementSources()->getSources($elementType, $config['context']);
+                $sources = [];
+
+                foreach ($allSources as $source) {
+                    if ($source['type'] === ElementSources::TYPE_HEADING) {
+                        $sources[] = $source;
+                    } elseif (isset($indexedSourceKeys[$source['key']])) {
+                        $sources[] = $source;
+                        // Unset so we can keep track of which keys couldn't be found
+                        unset($indexedSourceKeys[$source['key']]);
+                    }
+                }
+
+                $sources = ElementSources::filterExtraHeadings($sources);
+
+                // Did we miss any source keys? (This could happen if some are nested)
+                if (!empty($indexedSourceKeys)) {
+                    foreach (array_keys($indexedSourceKeys) as $key) {
+                        $source = ElementHelper::findSource($elementType, $key, $config['context']);
+                        if ($source !== null) {
+                            // If it was listed after another source key that made it in, insert it there
+                            $pos = array_search($key, $config['sources']);
+                            $inserted = false;
+                            if ($pos > 0) {
+                                $prevKey = $config['sources'][$pos - 1];
+                                foreach ($sources as $i => $otherSource) {
+                                    if (($otherSource['key'] ?? null) === $prevKey) {
+                                        array_splice($sources, $i + 1, 0, [$source]);
+                                        $inserted = true;
+                                        break;
+                                    }
+                                }
+                            }
+                            if (!$inserted) {
+                                $sources[] = $source;
+                            }
+                        }
+                    }
+                }
+            } else {
+                $sources = Craft::$app->getElementSources()->getSources($elementType, $config['context']);
+            }
+
+            // Show the sidebar if there are at least two (non-heading) sources
+            $showSidebar = (function() use ($sources): bool {
+                $foundSource = false;
+                foreach ($sources as $source) {
+                    if ($source['type'] !== ElementSources::TYPE_HEADING) {
+                        if ($foundSource || !empty($source['nested'])) {
+                            return true;
+                        }
+                        $foundSource = true;
+                    }
+                }
+                return false;
+            })();
+        } else {
+            $showSidebar = false;
+            $sources = [
+                [
+                    'type' => ElementSources::TYPE_NATIVE,
+                    'key' => '__IMP__',
+                    'label' => Craft::t('app', 'All elements'),
+                    'hasThumbs' => $elementType::hasThumbs(),
+                ],
+            ];
+        }
+
+        $view = Craft::$app->getView();
+
+        if ($config['registerJs']) {
+            $view->registerJsWithVars(fn($elementType, $id, $settings) => <<<JS
+Craft.createElementIndex($elementType, $('#' + $id), $settings);
+JS, [
+                $elementType,
+                $view->namespaceInputId($config['id']),
+                array_merge(
+                    [
+                        'context' => $config['context'],
+                        'namespace' => $view->getNamespace(),
+                    ],
+                    $config['jsSettings']
+                ),
+            ]);
+        }
+
+        $html = Html::beginTag('div', [
+                'id' => $config['id'],
+                'class' => array_merge(
+                    ['element-index'],
+                    ($showSidebar ? ['has-sidebar'] : []),
+                    ($config['context'] === 'embedded-index' ? ['pane', 'padding-s', 'hairline'] : []),
+                    Html::explodeClass($config['class']),
+                ),
+            ]) .
+            Html::beginTag('div', [
+                'class' => array_filter([
+                    'sidebar',
+                    (!$showSidebar ? 'hidden' : null),
+                ]),
+            ]) .
+            Html::tag('nav', $view->renderTemplate('_elements/sources', [
+                'elementType' => $elementType,
+                'sources' => $sources,
+            ], View::TEMPLATE_MODE_CP)) .
+            Html::endTag('div') .
+            Html::beginTag('div', ['class' => 'main']) .
+            Html::beginTag('div', ['class' => ['toolbar', 'flex']]) .
+            $view->renderTemplate('_elements/toolbar', [
+                'elementType' => $elementType,
+                'context' => $config['context'],
+                'showStatusMenu' => $config['showStatusMenu'],
+                'showSiteMenu' => $config['showSiteMenu'],
+                'canHaveDrafts' => $elementType::hasDrafts(),
+            ], View::TEMPLATE_MODE_CP) .
+            Html::endTag('div') . // .toolbar
+            Html::tag('div', options: ['class' => 'elements']) .
+            Html::endTag('div'); // .main
+
+        if (self::contextIsAdministrative($config['context'])) {
+            $html .= Html::beginTag('div', [
+                    'class' => ['footer', 'flex', 'flex-justify'],
+                ]) .
+                $view->renderTemplate('_elements/footer', templateMode: View::TEMPLATE_MODE_CP) .
+                Html::endTag('div'); // .footer
+        }
+
+        return $html .
+            Html::endTag('div'); // .element-index;
+    }
+
+    private static function contextIsAdministrative(string $context): bool
+    {
+        return in_array($context, ['index', 'embedded-index']);
+    }
+
+    /**
      * Renders a field’s HTML, for the given input HTML or a template.
      *
-     * @param string $input The input HTML or template path. If passing a template path, it must begin with `template:`.
+     * @param string|callable $input The input HTML or template path. If passing a template path, it must begin with `template:`.
      * @param array $config
      * @return string
      * @throws TemplateLoaderException if $input begins with `template:` and is followed by an invalid template path
      * @throws InvalidArgumentException if `$config['siteId']` is invalid
      * @since 3.5.8
      */
-    public static function fieldHtml(string $input, array $config = []): string
+    public static function fieldHtml(string|callable $input, array $config = []): string
     {
         $attribute = $config['attribute'] ?? $config['id'] ?? null;
         $id = $config['id'] = $config['id'] ?? 'field' . mt_rand();
@@ -841,7 +1027,7 @@ class Cp
 
         $siteId = Craft::$app->getIsMultiSite() && isset($config['siteId']) ? (int)$config['siteId'] : null;
 
-        if (str_starts_with($input, 'template:')) {
+        if (is_callable($input) || str_starts_with($input, 'template:')) {
             // Set labelledBy and describedBy values in case the input template supports it
             if (!isset($config['labelledBy']) && $label) {
                 $config['labelledBy'] = $labelId;
@@ -857,7 +1043,11 @@ class Cp
                 $config['describedBy'] = $descriptorIds ? implode(' ', $descriptorIds) : null;
             }
 
-            $input = static::renderTemplate(substr($input, 9), $config);
+            if (is_callable($input)) {
+                $input = $input($config);
+            } else {
+                $input = static::renderTemplate(substr($input, 9), $config);
+            }
         }
 
         if ($siteId) {
@@ -1409,151 +1599,6 @@ class Cp
         }
 
         return static::fieldHtml('template:_includes/forms/autosuggest.twig', $config);
-    }
-
-    /**
-     * Renders address cards.
-     *
-     * @param Address[] $addresses
-     * @param array $config
-     * @return string
-     * @since 4.0.0
-     */
-    public static function addressCardsHtml(array $addresses, array $config = []): string
-    {
-        $config += [
-            'id' => sprintf('addresses%s', mt_rand()),
-            'ownerId' => null,
-            'maxAddresses' => null,
-        ];
-
-        $view = Craft::$app->getView();
-
-        $view->registerJsWithVars(fn($selector, $settings) => <<<JS
-new Craft.AddressesInput($($selector), $settings);
-JS, [
-            sprintf('#%s', $view->namespaceInputId($config['id'])),
-            [
-                'ownerId' => $config['ownerId'],
-                'maxAddresses' => $config['maxAddresses'],
-            ],
-        ]);
-
-        return
-            Html::beginTag('ul', [
-                'id' => $config['id'],
-                'class' => 'address-cards',
-            ]) .
-            implode("\n", array_map(fn(Address $address) => static::addressCardHtml($address, $config), $addresses)) .
-            Html::beginTag('li') .
-            Html::beginTag('button', [
-                'type' => 'button',
-                'class' => ['btn', 'dashed', 'add', 'icon', 'address-cards__add-btn'],
-            ]) .
-            Html::tag('div', '', [
-                'class' => ['spinner', 'spinner-absolute'],
-            ]) .
-            Html::tag('div', Craft::t('app', 'Add an address'), [
-                'class' => 'label',
-            ]) .
-            Html::endTag('button') . // .add
-            Html::endTag('li') .
-            Html::endTag('ul'); // .address-cards
-    }
-
-    /**
-     * Renders an address card for an Addresses input.
-     *
-     * @param Address $address
-     * @param array $config
-     * @return string
-     * @since 4.0.0
-     */
-    public static function addressCardHtml(Address $address, array $config = []): string
-    {
-        $config += [
-            'name' => null,
-        ];
-
-        $canDelete = Craft::$app->getElements()->canDelete($address);
-        $actionMenuId = sprintf('address-card-action-menu-%s', mt_rand());
-
-        return
-            Html::beginTag('li', [
-                'class' => 'address-card',
-                'data' => [
-                    'id' => $address->id,
-                    'draftId' => $address->draftId,
-                ],
-            ]) .
-            ($config['name'] ? Html::hiddenInput("{$config['name']}[]", (string)$address->id) : '') .
-            Html::beginTag('div', ['class' => 'address-card-header']) .
-            Html::tag('h2', Html::encode($address->title), [
-                'class' => array_filter([
-                    'address-card-label',
-                    !$address->title ? 'hidden' : null,
-                ]),
-            ]) .
-            ($canDelete
-                ? Html::beginTag('div', [
-                    'class' => 'address-card-header-actions',
-                    'data' => [
-                        'wrapper' => true,
-                    ],
-                ]) .
-                Html::button('', [
-                    'class' => ['btn', 'menubtn'],
-                    'title' => Craft::t('app', 'Actions'),
-                    'aria' => [
-                        'controls' => $actionMenuId,
-                        'label' => sprintf('%s %s', $address->title ? Html::encode($address->title) : Craft::t('app', 'New Address'), Craft::t('app', 'Settings')),
-                    ],
-                    'data' => [
-                        'icon' => 'settings',
-                        'disclosure-trigger' => true,
-                    ],
-                ]) .
-                Html::beginTag('div', [
-                    'id' => $actionMenuId,
-                    'class' => ['menu', 'menu--disclosure'],
-                ]) .
-                Html::beginTag('ul', ['class' => 'padded']) .
-                Html::beginTag('li') .
-                Html::button(Craft::t('app', 'Edit'), [
-                    'class' => 'menu-option',
-                    'type' => 'button',
-                    'aria' => [
-                        'label' => Craft::t('app', 'Edit'),
-                    ],
-                    'data' => [
-                        'icon' => 'edit',
-                        'action' => 'edit',
-                    ],
-                ]) .
-                Html::endTag('li') .
-                Html::beginTag('li') .
-                Html::button(Craft::t('app', 'Delete'), [
-                    'class' => 'error menu-option',
-                    'type' => 'button',
-                    'aria' => [
-                        'label' => Craft::t('app', 'Delete'),
-                    ],
-                    'data' => [
-                        'icon' => 'remove',
-                        'action' => 'delete',
-                    ],
-                ]) .
-                Html::endTag('li') .
-                Html::endTag('ul') .
-                Html::endTag('div') . // .menu
-                Html::endTag('div') // .address-card-header-actions
-                : ''
-            ) .
-            Html::endTag('div') . // .address-card-header
-            Html::tag('div', Craft::$app->getAddresses()->formatAddress($address), [
-                'class' => 'address-card-body',
-            ]) .
-            Html::endTag('li'); // .address-card
     }
 
     /**

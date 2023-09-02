@@ -13,6 +13,7 @@ use craft\base\ElementActionInterface;
 use craft\base\ElementExporterInterface;
 use craft\base\ElementInterface;
 use craft\base\ExpirableElementInterface;
+use craft\base\NestedElementInterface;
 use craft\behaviors\DraftBehavior;
 use craft\behaviors\RevisionBehavior;
 use craft\db\Query;
@@ -758,25 +759,33 @@ class Elements extends Component
      */
     public function invalidateCachesForElement(ElementInterface $element): void
     {
-        $elementType = get_class($element);
         $tags = [
-            "element::$elementType::*",
-            "element::$elementType::$element->id",
+            sprintf('element::%s::*', $element::class),
+            sprintf('element::%s::%s', $element::class, $element->id),
         ];
 
-        try {
-            $rootElement = ElementHelper::rootElement($element);
-        } catch (Throwable) {
-            $rootElement = $element;
+        $rootElement = $element;
+
+        if ($element instanceof NestedElementInterface) {
+            $owner = $element->getOwner();
+            if ($owner) {
+                $tags[] = sprintf('element::%s::%s', $owner::class, $owner->id);
+
+                try {
+                    $rootElement = ElementHelper::rootElement($owner);
+                } catch (Throwable) {
+                    $rootElement = $owner;
+                }
+            }
         }
 
         if ($rootElement->getIsDraft()) {
-            $tags[] = "element::$elementType::drafts";
+            $tags[] = sprintf('element::%s::drafts', $element::class);
         } elseif ($rootElement->getIsRevision()) {
-            $tags[] = "element::$elementType::revisions";
+            $tags[] = sprintf('element::%s::revisions', $element::class);
         } else {
             foreach ($element->getCacheTags() as $tag) {
-                $tags[] = "element::$elementType::$tag";
+                $tags[] = sprintf('element::%s::%s', $element::class, $tag);
             }
         }
 

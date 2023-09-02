@@ -315,7 +315,7 @@ class AddressQuery extends ElementQuery
     protected function fieldLayouts(): array
     {
         return [
-            Craft::$app->getAddresses()->getLayout(),
+            Craft::$app->getAddresses()->getFieldLayout(),
         ];
     }
 }

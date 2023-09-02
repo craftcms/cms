@@ -90,6 +90,14 @@ interface ElementInterface extends ComponentInterface
     public static function hasTitles(): bool;
 
     /**
+     * Returns whether element indexes should include a thumbnail view by default.
+     *
+     * @return bool
+     * @since 5.0.0
+     */
+    public static function hasThumbs(): bool;
+
+    /**
      * Returns whether elements of this type can have their own slugs and URIs.
      *
      * Note that individual elements must also return a URI format from [[getUriFormat()]] if they are to actually get a URI.
@@ -417,10 +425,20 @@ interface ElementInterface extends ComponentInterface
      * @param string|null $sourceKey
      * @param string|null $context
      * @param bool $includeContainer
-     * @param bool $showCheckboxes
+     * @param bool $selectable
+     * @param bool $sortable
      * @return string The element index HTML
      */
-    public static function indexHtml(ElementQueryInterface $elementQuery, ?array $disabledElementIds, array $viewState, ?string $sourceKey, ?string $context, bool $includeContainer, bool $showCheckboxes): string;
+    public static function indexHtml(
+        ElementQueryInterface $elementQuery,
+        ?array $disabledElementIds,
+        array $viewState,
+        ?string $sourceKey,
+        ?string $context,
+        bool $includeContainer,
+        bool $selectable,
+        bool $sortable,
+    ): string;
 
     /**
      * Returns the total number of elements that will be shown on an element index, for the given element query.

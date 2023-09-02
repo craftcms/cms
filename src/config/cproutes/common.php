@@ -11,7 +11,7 @@ return [
     'categories/<groupHandle:{handle}>/new' => 'categories/create',
     'categories/<groupHandle:{handle}>/<elementId:\d+><slug:(?:-[^\/]*)?>' => 'elements/edit',
     'dashboard' => 'dashboard/index',
-    'edit/<elementId:\d+>' => 'elements/redirect',
+    'edit/<elementId:\d+><slug:(?:-[^\/]*)?>' => 'elements/redirect',
     'edit/<elementUid:' . StringHelper::UUID_PATTERN . '>' => 'elements/redirect',
     'entries/<sectionHandle:{handle}>' => ['template' => 'entries'],
     'entries/<section:{handle}>/new' => 'entries/create',

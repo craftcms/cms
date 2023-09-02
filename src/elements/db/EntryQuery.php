@@ -1564,6 +1564,16 @@ class EntryQuery extends ElementQuery
                 $tags[] = "section:$sectionId";
             }
         }
+        if ($this->primaryOwnerId) {
+            foreach ($this->primaryOwnerId as $ownerId) {
+                $tags[] = $ownerId;
+            }
+        }
+        if ($this->ownerId) {
+            foreach ($this->ownerId as $ownerId) {
+                $tags[] = $ownerId;
+            }
+        }
         return $tags;
     }
 

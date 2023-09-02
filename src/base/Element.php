@@ -805,6 +805,14 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
+    public static function hasThumbs(): bool
+    {
+        return false;
+    }
+
+    /**
+     * @inheritdoc
+     */
     public static function hasUris(): bool
     {
         return false;
@@ -1108,14 +1116,23 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
-    public static function indexHtml(ElementQueryInterface $elementQuery, ?array $disabledElementIds, array $viewState, ?string $sourceKey, ?string $context, bool $includeContainer, bool $showCheckboxes): string
-    {
+    public static function indexHtml(
+        ElementQueryInterface $elementQuery,
+        ?array $disabledElementIds,
+        array $viewState,
+        ?string $sourceKey,
+        ?string $context,
+        bool $includeContainer,
+        bool $selectable,
+        bool $sortable,
+    ): string {
         $variables = [
             'viewMode' => $viewState['mode'],
             'context' => $context,
             'disabledElementIds' => $disabledElementIds,
             'collapsedElementIds' => Craft::$app->getRequest()->getParam('collapsedElementIds'),
-            'showCheckboxes' => $showCheckboxes,
+            'selectable' => $selectable,
+            'sortable' => $sortable,
             'tableName' => static::pluralDisplayName(),
         ];
 
@@ -1131,7 +1148,7 @@ abstract class Element extends Component implements ElementInterface
                     $variables['structure'] = Craft::$app->getStructures()->getStructureById($source['structureId']);
 
                     // Are they allowed to make changes to this structure?
-                    if ($context === 'index' && $variables['structure'] && !empty($source['structureEditable'])) {
+                    if (in_array($context, ['index', 'embedded-index']) && $variables['structure'] && !empty($source['structureEditable'])) {
                         $variables['structureEditable'] = true;
 
                         // Let StructuresController know that this user can make changes to the structure
@@ -1183,8 +1200,18 @@ abstract class Element extends Component implements ElementInterface
             $elementQuery->cache();
         }
 
-        $variables['elements'] = static::indexElements($elementQuery, $sourceKey);
+        $elements = static::indexElements($elementQuery, $sourceKey);
 
+        if (empty($elements)) {
+            $message = Craft::t('app', 'No {type} yet.', [
+                'type' => static::pluralLowerDisplayName(),
+            ]);
+            return Html::tag('div', $message, [
+                'class' => ['zilch', 'small'],
+            ]);
+        }
+
+        $variables['elements'] = $elements;
         $template = '_elements/' . $viewState['mode'] . 'view/' . ($includeContainer ? 'container' : 'elements');
 
         return Craft::$app->getView()->renderTemplate($template, $variables);
@@ -3078,6 +3105,13 @@ abstract class Element extends Component implements ElementInterface
      */
     public function canView(User $user): bool
     {
+        if ($this instanceof NestedElementInterface) {
+            $authorized = $this->getField()?->canViewElement($this, $user);
+            if ($authorized !== null) {
+                return $authorized;
+            }
+        }
+
         if (!$this->hasEventHandlers(self::EVENT_AUTHORIZE_VIEW)) {
             return false;
         }
@@ -3092,6 +3126,13 @@ abstract class Element extends Component implements ElementInterface
      */
     public function canSave(User $user): bool
     {
+        if ($this instanceof NestedElementInterface) {
+            $authorized = $this->getField()?->canSaveElement($this, $user);
+            if ($authorized !== null) {
+                return $authorized;
+            }
+        }
+
         if (!$this->hasEventHandlers(self::EVENT_AUTHORIZE_SAVE)) {
             return false;
         }
@@ -3106,6 +3147,13 @@ abstract class Element extends Component implements ElementInterface
      */
     public function canDuplicate(User $user): bool
     {
+        if ($this instanceof NestedElementInterface) {
+            $authorized = $this->getField()?->canDuplicateElement($this, $user);
+            if ($authorized !== null) {
+                return $authorized;
+            }
+        }
+
         if (!$this->hasEventHandlers(self::EVENT_AUTHORIZE_DUPLICATE)) {
             return false;
         }
@@ -3120,6 +3168,13 @@ abstract class Element extends Component implements ElementInterface
      */
     public function canDelete(User $user): bool
     {
+        if ($this instanceof NestedElementInterface) {
+            $authorized = $this->getField()?->canDeleteElement($this, $user);
+            if ($authorized !== null) {
+                return $authorized;
+            }
+        }
+
         if (!$this->hasEventHandlers(self::EVENT_AUTHORIZE_DELETE)) {
             return false;
         }
@@ -3134,6 +3189,13 @@ abstract class Element extends Component implements ElementInterface
      */
     public function canDeleteForSite(User $user): bool
     {
+        if ($this instanceof NestedElementInterface) {
+            $authorized = $this->getField()?->canDeleteElementForSite($this, $user);
+            if ($authorized !== null) {
+                return $authorized;
+            }
+        }
+
         if (!$this->hasEventHandlers(self::EVENT_AUTHORIZE_DELETE_FOR_SITE)) {
             return false;
         }
@@ -3181,20 +3243,13 @@ abstract class Element extends Component implements ElementInterface
             return null;
         }
 
-        $cpEditUrl = $this->cpEditUrl() ?? sprintf('edit/%s', $this->getCanonicalId());
-        $params = [];
+        $url = $this->cpEditUrl();
 
-        if (Craft::$app->getIsMultiSite()) {
-            $params['site'] = $this->getSite()->handle;
+        if (!$url) {
+            return null;
         }
 
-        if ($this->getIsDraft() && !$this->isProvisionalDraft) {
-            $params['draftId'] = $this->draftId;
-        } elseif ($this->getIsRevision()) {
-            $params['revisionId'] = $this->revisionId;
-        }
-
-        return UrlHelper::cpUrl($cpEditUrl, $params);
+        return ElementHelper::addElementEditorUrlParams($url, $this);
     }
 
     /**

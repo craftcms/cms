@@ -25,6 +25,9 @@ use craft\elements\db\ElementQueryInterface;
 use craft\elements\db\EntryQuery;
 use craft\elements\ElementCollection;
 use craft\elements\Entry;
+use craft\elements\NestedElementManager;
+use craft\elements\User;
+use craft\enums\ElementIndexViewMode;
 use craft\enums\PropagationMethod;
 use craft\errors\InvalidFieldException;
 use craft\events\CancelableEvent;
@@ -38,6 +41,7 @@ use craft\helpers\ArrayHelper;
 use craft\helpers\Db;
 use craft\helpers\ElementHelper;
 use craft\helpers\Gql;
+use craft\helpers\Html;
 use craft\helpers\Json;
 use craft\helpers\Queue;
 use craft\helpers\StringHelper;
@@ -71,6 +75,11 @@ class Matrix extends Field implements
      * @since 5.0.0
      */
     public const EVENT_DEFINE_ENTRY_TYPES = 'defineEntryTypes';
+
+    /** @since 5.0.0 */
+    public const VIEW_MODE_BLOCKS = 'blocks';
+    /** @since 5.0.0 */
+    public const VIEW_MODE_INDEX = 'index';
 
     /**
      * @inheritdoc
@@ -152,64 +161,6 @@ class Matrix extends Field implements
     }
 
     /**
-     * Returns the site IDs that are supported by entries for the given propagation method and owner element.
-     *
-     * @param PropagationMethod $propagationMethod
-     * @param ElementInterface $owner
-     * @param string|null $propagationKeyFormat
-     * @return int[]
-     * @since 5.0.0
-     */
-    public static function supportedSiteIds(
-        PropagationMethod $propagationMethod,
-        ElementInterface $owner,
-        ?string $propagationKeyFormat = null,
-    ): array {
-        /** @var Site[] $allSites */
-        $allSites = ArrayHelper::index(Craft::$app->getSites()->getAllSites(), 'id');
-        $ownerSiteIds = ArrayHelper::getColumn(ElementHelper::supportedSitesForElement($owner), 'siteId');
-        $siteIds = [];
-
-        $view = Craft::$app->getView();
-        $elementsService = Craft::$app->getElements();
-
-        if ($propagationMethod === PropagationMethod::Custom && $propagationKeyFormat !== null) {
-            $propagationKey = $view->renderObjectTemplate($propagationKeyFormat, $owner);
-        }
-
-        foreach ($ownerSiteIds as $siteId) {
-            switch ($propagationMethod) {
-                case PropagationMethod::None:
-                    $include = $siteId == $owner->siteId;
-                    break;
-                case PropagationMethod::SiteGroup:
-                    $include = $allSites[$siteId]->groupId == $allSites[$owner->siteId]->groupId;
-                    break;
-                case PropagationMethod::Language:
-                    $include = $allSites[$siteId]->language == $allSites[$owner->siteId]->language;
-                    break;
-                case PropagationMethod::Custom:
-                    if (!isset($propagationKey)) {
-                        $include = true;
-                    } else {
-                        $siteOwner = $elementsService->getElementById($owner->id, get_class($owner), $siteId);
-                        $include = $siteOwner && $propagationKey === $view->renderObjectTemplate($propagationKeyFormat, $siteOwner);
-                    }
-                    break;
-                default:
-                    $include = true;
-                    break;
-            }
-
-            if ($include) {
-                $siteIds[] = $siteId;
-            }
-        }
-
-        return $siteIds;
-    }
-
-    /**
      * @var int|null Min entries
      */
     public ?int $minEntries = null;
@@ -226,12 +177,31 @@ class Matrix extends Field implements
     public ?string $entryUriFormat = null;
 
     /**
+     * @var string The view mode
+     * @phpstan-var self::VIEW_MODE_*
+     * @since 5.0.0
+     */
+    public string $viewMode = self::VIEW_MODE_BLOCKS;
+
+    /**
+     * @var bool Include table view in element indexes
+     * @since 5.0.0
+     */
+    public bool $includeTableView = false;
+
+    /**
+     * @var int|null The total entries to display per page within element indexes
+     * @since 5.0.0
+     */
+    public ?int $pageSize = null;
+
+    /**
      * @var PropagationMethod Propagation method
      *
      * This will be set to one of the following:
      *
      * - [[PropagationMethod::None]] – Only save entries in the site they were created in
-     * - [[PropagationMethod::SiteGroup]] – Save  entries to other sites in the same site group
+     * - [[PropagationMethod::SiteGroup]] – Save entries to other sites in the same site group
      * - [[PropagationMethod::Language]] – Save entries to other sites with the same language
      * - [[PropagationMethod::Custom]] – Save entries to other sites based on a custom [[$propagationKeyFormat|propagation key format]]
      * - [[PropagationMethod::All]] – Save entries to all sites supported by the owner element
@@ -252,6 +222,11 @@ class Matrix extends Field implements
      * @see setEntryTypes()
      */
     private array $_entryTypes = [];
+
+    /**
+     * @see entryManager()
+     */
+    private NestedElementManager $_entryManager;
 
     /**
      * @inheritdoc
@@ -283,6 +258,19 @@ class Matrix extends Field implements
     /**
      * @inheritdoc
      */
+    public function init(): void
+    {
+        parent::init();
+
+        if ($this->viewMode === self::VIEW_MODE_BLOCKS) {
+            $this->includeTableView = false;
+            $this->pageSize = null;
+        }
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function settingsAttributes(): array
     {
         return ArrayHelper::withoutValue(parent::settingsAttributes(), 'localizeEntries');
@@ -307,6 +295,21 @@ class Matrix extends Field implements
         $rules[] = [['entryTypes'], ArrayValidator::class, 'min' => 1, 'skipOnEmpty' => false];
         $rules[] = [['minEntries', 'maxEntries'], 'integer', 'min' => 0];
         return $rules;
+    }
+
+    private function entryManager(): NestedElementManager
+    {
+        if (!isset($this->_entryManager)) {
+            $this->_entryManager = new NestedElementManager(Entry::class, "field:$this->handle", [
+                'criteria' => [
+                    'fieldId' => $this->id,
+                ],
+                'propagationMethod' => $this->propagationMethod,
+                'propagationKeyFormat' => $this->propagationKeyFormat,
+            ]);
+        }
+
+        return $this->_entryManager;
     }
 
     /**
@@ -376,7 +379,108 @@ class Matrix extends Field implements
             return [Craft::$app->getSites()->getPrimarySite()->id];
         }
 
-        return self::supportedSiteIds($this->propagationMethod, $owner, $this->propagationKeyFormat);
+        return $this->entryManager()->getSupportedSiteIds($owner);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function canViewElement(NestedElementInterface $element, User $user): ?bool
+    {
+        return Craft::$app->getElements()->canView($element->getOwner(), $user);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function canSaveElement(NestedElementInterface $element, User $user): ?bool
+    {
+        if (!Craft::$app->getElements()->canSave($element->getOwner(), $user)) {
+            return false;
+        }
+
+        // If this is a new entry, make sure we aren't hitting the max Entries limit
+        if (!$element->id && $element->getIsCanonical() && $this->maxEntriesReached($element->getOwner())) {
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function canDuplicateElement(NestedElementInterface $element, User $user): ?bool
+    {
+        $owner = $element->getOwner();
+        if (!Craft::$app->getElements()->canSave($owner, $user)) {
+            return false;
+        }
+
+        // Make sure we aren't hitting the Max Entries limit
+        return !$this->maxEntriesReached($owner);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function canDeleteElement(NestedElementInterface $element, User $user): ?bool
+    {
+        $owner = $element->getOwner();
+        if (!Craft::$app->getElements()->canSave($element->getOwner(), $user)) {
+            return false;
+        }
+
+        // Make sure we aren't hitting the Min Entries limit
+        return !$this->minEntriesReached($owner);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function canDeleteElementForSite(NestedElementInterface $element, User $user): ?bool
+    {
+        $owner = $element->getOwner();
+        if (!Craft::$app->getElements()->canSave($owner, $user)) {
+            return false;
+        }
+
+        // Make sure we aren't hitting the Min Entries limit
+        return !$this->minEntriesReached($owner);
+    }
+
+    private function minEntriesReached(ElementInterface $owner): bool
+    {
+        return (
+            $this->minEntries &&
+            $this->minEntries >= $this->totalEntries($owner)
+        );
+    }
+
+    private function maxEntriesReached(ElementInterface $owner): bool
+    {
+        return (
+            $this->maxEntries &&
+            $this->maxEntries <= $this->totalEntries($owner)
+        );
+    }
+
+    private function totalEntries(ElementInterface $owner): int
+    {
+        /** @var EntryQuery|ElementCollection $value */
+        $value = $owner->getFieldValue($this->handle);
+
+        if ($value instanceof EntryQuery) {
+            return (clone $value)
+                ->drafts(null)
+                ->status(null)
+                ->site('*')
+                ->limit(null)
+                ->unique()
+                ->count();
+        }
+
+        return $value->count();
     }
 
     /**
@@ -522,14 +626,7 @@ class Matrix extends Field implements
      */
     public function getIsTranslatable(?ElementInterface $element = null): bool
     {
-        if ($this->propagationMethod === PropagationMethod::Custom) {
-            return (
-                $element === null ||
-                Craft::$app->getView()->renderObjectTemplate($this->propagationKeyFormat, $element) !== ''
-            );
-        }
-
-        return $this->propagationMethod !== PropagationMethod::All;
+        return $this->entryManager()->getIsTranslatable($element);
     }
 
     /**
@@ -537,28 +634,7 @@ class Matrix extends Field implements
      */
     public function getTranslationDescription(?ElementInterface $element = null): ?string
     {
-        if (!$element) {
-            return null;
-        }
-
-        switch ($this->propagationMethod) {
-            case PropagationMethod::None:
-                return Craft::t('app', 'Entries will only be saved in the {site} site.', [
-                    'site' => Craft::t('site', $element->getSite()->getName()),
-                ]);
-            case PropagationMethod::SiteGroup:
-                return Craft::t('app', 'Entries will be saved across all sites in the {group} site group.', [
-                    'group' => Craft::t('site', $element->getSite()->getGroup()->getName()),
-                ]);
-            case PropagationMethod::Language:
-                $language = Craft::$app->getI18n()->getLocaleById($element->getSite()->language)
-                    ->getDisplayName(Craft::$app->language);
-                return Craft::t('app', 'Entries will be saved across all {language}-language sites.', [
-                    'language' => $language,
-                ]);
-            default:
-                return null;
-        }
+        return $this->entryManager()->getTranslationDescription($element);
     }
 
     /**
@@ -566,6 +642,14 @@ class Matrix extends Field implements
      * @throws InvalidConfigException
      */
     protected function inputHtml(mixed $value, ?ElementInterface $element = null): string
+    {
+        return match ($this->viewMode) {
+            self::VIEW_MODE_BLOCKS => $this->blockInputHtml($value, $element),
+            self::VIEW_MODE_INDEX => $this->indexInputHtml($element),
+        };
+    }
+
+    private function blockInputHtml(EntryQuery|ElementCollection|null $value, ?ElementInterface $element): string
     {
         if ($element !== null && $element->hasEagerLoadedElements($this->handle)) {
             $value = $element->getEagerLoadedElements($this->handle)->all();
@@ -640,6 +724,7 @@ class Matrix extends Field implements
         return $view->renderTemplate('_components/fieldtypes/Matrix/input.twig',
             [
                 'id' => $id,
+                'field' => $this,
                 'name' => $this->handle,
                 'entryTypes' => $entryTypes,
                 'entries' => $value,
@@ -647,6 +732,35 @@ class Matrix extends Field implements
                 'staticEntries' => $staticEntries,
                 'labelId' => $this->getLabelId(),
             ]);
+    }
+
+    private function indexInputHtml(?ElementInterface $owner, bool $static = false): string
+    {
+        $config = [
+            'allowedViewModes' => array_filter([
+                ElementIndexViewMode::Cards,
+                $this->includeTableView ? ElementIndexViewMode::Table : null,
+            ]),
+            'pageSize' => $this->pageSize ?? 50,
+        ];
+
+        if (!$static) {
+            $config += [
+                'sortable' => true,
+                'canCreate' => true,
+                'createAttributes' => array_map(fn(EntryType $entryType) => [
+                    'label' => Craft::t('site', $entryType->name),
+                    'attributes' => [
+                        'fieldId' => $this->id,
+                        'typeId' => $entryType->id,
+                    ],
+                ], $this->getEntryTypes()),
+                'minElements' => $this->minEntries,
+                'maxElements' => $this->maxEntries,
+            ];
+        }
+
+        return $this->entryManager()->getIndexHtml($owner ?? new Entry(), $config);
     }
 
     /**
@@ -767,6 +881,10 @@ class Matrix extends Field implements
      */
     public function getStaticHtml(mixed $value, ElementInterface $element): string
     {
+        if ($this->viewMode === self::VIEW_MODE_INDEX) {
+            return $this->indexInputHtml($element, true);
+        }
+
         /** @var EntryQuery|ElementCollection $value */
         $entries = $value->all();
 
@@ -985,7 +1103,7 @@ class Matrix extends Field implements
                         $canonicalEntryId = $entry->getCanonicalId();
                         Craft::$app->getDrafts()->removeDraftData($entry);
                         Db::delete(Table::ELEMENTS_OWNERS, [
-                            'entryId' => $canonicalEntryId,
+                            'elementId' => $canonicalEntryId,
                             'ownerId' => $owner->id,
                         ]);
                     }
@@ -995,7 +1113,7 @@ class Matrix extends Field implements
                     Db::update(Table::ELEMENTS_OWNERS, [
                         'sortOrder' => $sortOrder,
                     ], [
-                        'entryId' => $entry->id,
+                        'elementId' => $entry->id,
                         'ownerId' => $owner->id,
                     ], [], false);
                 }
@@ -1018,7 +1136,7 @@ class Matrix extends Field implements
             ) {
                 // Find the owner's site IDs that *aren't* supported by this site's entries
                 $ownerSiteIds = ArrayHelper::getColumn(ElementHelper::supportedSitesForElement($owner), 'siteId');
-                $fieldSiteIds = self::supportedSiteIds($this->propagationMethod, $owner, $this->propagationKeyFormat);
+                $fieldSiteIds = $this->entryManager()->getSupportedSiteIds($owner);
                 $otherSiteIds = array_diff($ownerSiteIds, $fieldSiteIds);
 
                 // If propagateAll isn't set, only deal with sites that the element was just propagated to for the first time
@@ -1055,8 +1173,8 @@ class Matrix extends Field implements
                             continue;
                         }
 
-                        // Find all of the field’s supported sites shared with this target
-                        $sourceSupportedSiteIds = self::supportedSiteIds($this->propagationMethod, $localizedOwner, $this->propagationKeyFormat);
+                        // Find all the field’s supported sites shared with this target
+                        $sourceSupportedSiteIds = $this->entryManager()->getSupportedSiteIds($localizedOwner);
 
                         // Do entries in this target happen to share supported sites with a preexisting site?
                         if (
@@ -1140,7 +1258,7 @@ class Matrix extends Field implements
 
         if ($deleteOwnership) {
             Db::delete(Table::ELEMENTS_OWNERS, [
-                'entryId' => $deleteOwnership,
+                'elementId' => $deleteOwnership,
                 'ownerId' => $owner->id,
             ]);
         }
@@ -1204,7 +1322,7 @@ class Matrix extends Field implements
                     // Only the entry ownership was duplicated, so just update its sort order for the target element
                     // (use upsert in case the row doesn’t exist though)
                     Db::upsert(Table::ELEMENTS_OWNERS, [
-                        'entryId' => $entry->id,
+                        'elementId' => $entry->id,
                         'ownerId' => $target->id,
                         'sortOrder' => $entry->sortOrder,
                     ], [
@@ -1233,7 +1351,7 @@ class Matrix extends Field implements
         if ($checkOtherSites && $this->propagationMethod !== PropagationMethod::All) {
             // Find the target's site IDs that *aren't* supported by this site's entries
             $targetSiteIds = ArrayHelper::getColumn(ElementHelper::supportedSitesForElement($target), 'siteId');
-            $fieldSiteIds = self::supportedSiteIds($this->propagationMethod, $target, $this->propagationKeyFormat);
+            $fieldSiteIds = $this->entryManager()->getSupportedSiteIds($target);
             $otherSiteIds = array_diff($targetSiteIds, $fieldSiteIds);
 
             if (!empty($otherSiteIds)) {
@@ -1274,7 +1392,7 @@ class Matrix extends Field implements
                     $this->_duplicateEntries($otherSource, $otherTargets[$otherSource->siteId]);
 
                     // Make sure we don't duplicate entries for any of the sites that were just propagated to
-                    $sourceSupportedSiteIds = self::supportedSiteIds($this->propagationMethod, $otherSource, $this->propagationKeyFormat);
+                    $sourceSupportedSiteIds = $this->entryManager()->getSupportedSiteIds($otherSource);
                     $handledSiteIds = array_merge($handledSiteIds, $sourceSupportedSiteIds);
                 }
             }
@@ -1299,7 +1417,7 @@ class Matrix extends Field implements
 
         Craft::$app->getDb()->createCommand(sprintf(
             <<<SQL
-INSERT INTO %s ([[entryId]], [[ownerId]], [[sortOrder]]) 
+INSERT INTO %s ([[elementId]], [[ownerId]], [[sortOrder]]) 
 SELECT [[o.elementId]], :draftId, [[o.sortOrder]] 
 FROM %s AS [[o]]
 INNER JOIN %s AS [[b]] ON [[b.id]] = [[o.elementId]] AND [[b.primaryOwnerId]] = :canonicalId AND [[b.fieldId]] = :fieldId
@@ -1348,7 +1466,7 @@ SQL,
             $ownershipData[] = [$entryRevisionId, $revision->id, $entry->sortOrder];
         }
 
-        Db::batchInsert(Table::ELEMENTS_OWNERS, ['entryId', 'ownerId', 'sortOrder'], $ownershipData);
+        Db::batchInsert(Table::ELEMENTS_OWNERS, ['elementId', 'ownerId', 'sortOrder'], $ownershipData);
     }
 
     /**
@@ -1437,7 +1555,7 @@ SQL,
             }
 
             // Keep track of the sites we've already covered
-            $siteIds = self::supportedSiteIds($this->propagationMethod, $canonicalOwner, $this->propagationKeyFormat);
+            $siteIds = $this->entryManager()->getSupportedSiteIds($canonicalOwner);
             foreach ($siteIds as $siteId) {
                 $handledSiteIds[$siteId] = true;
             }

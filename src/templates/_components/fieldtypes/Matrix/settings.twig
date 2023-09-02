@@ -66,21 +66,73 @@
 {% endif %}
 
 {{ forms.textField({
-    label: 'Min Entries'|t('app'),
-    instructions: "The minimum number of entries the field is allowed to have."|t('app'),
+    label: 'Min {type}'|t('app', {
+        type: 'Entries'|t('app'),
+    }),
+    instructions: 'The minimum number of {type} the field is allowed to have.'|t('app', {
+        type: 'entries'|t('app'),
+    }),
     id: 'min-entries',
     name: 'minEntries',
     value: field.minEntries,
     size: 3,
-    errors: field.getErrors('minEntries')
+    errors: field.getErrors('minEntries'),
 }) }}
 
 {{ forms.textField({
-    label: 'Max Entries'|t('app'),
-    instructions: "The maximum number of entries the field is allowed to have."|t('app'),
+    label: 'Max {type}'|t('app', {
+        type: 'Entries'|t('app'),
+    }),
+    instructions: 'The maximum number of {type} the field is allowed to have.'|t('app', {
+        type: 'entries'|t('app'),
+    }),
     id: 'max-entries',
     name: 'maxEntries',
     value: field.maxEntries,
     size: 3,
     errors: field.getErrors('maxEntries')
 }) }}
+
+<hr>
+
+{{ forms.selectField({
+    label: 'View Mode'|t('app'),
+    instructions: 'Choose how nested entries should be presented to authors.'|t('app'),
+    id: 'view-mode',
+    name: 'viewMode',
+    options: [
+        {label: 'As inline blocks'|t('app'), value: constant('VIEW_MODE_BLOCKS', field)},
+        {label: 'As an element index'|t('app'), value: constant('VIEW_MODE_INDEX', field)},
+    ],
+    value: field.viewMode,
+    toggle: true,
+    targetPrefix: 'view-mode--',
+}) }}
+
+{% tag 'div' with {
+    id: "view-mode--#{constant('VIEW_MODE_INDEX', field)}",
+    class: field.viewMode != constant('VIEW_MODE_INDEX', field) ? 'hidden' : null,
+} %}
+    {{ forms.lightswitchField({
+        label: 'Include Table View'|t('app'),
+        instructions: 'Whether the element index should allow viewing nested {type} in a table.'|t('app', {
+            type: 'entries'|t('app'),
+        }),
+        id: 'include-table-view',
+        name: 'includeTableView',
+        on: field.includeTableView,
+    }) }}
+
+    {{ forms.selectField({
+        label: '{type} Per Page'|t('app', {
+            type: 'Entries'|t('app'),
+        }),
+        instructions: 'The total number of {type} to display per page within the element index.'|t('app', {
+            type: 'entries'|t('app'),
+        }),
+        id: 'page-size',
+        name: 'pageSize',
+        options: [10, 20, 50, 100]|map(num => {label: num, value: num}),
+        value: field.pageSize ?? 50,
+    }) }}
+{% endtag %}

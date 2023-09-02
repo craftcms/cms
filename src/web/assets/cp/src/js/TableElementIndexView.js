@@ -9,7 +9,7 @@ Craft.TableElementIndexView = Craft.BaseElementIndexView.extend({
   $selectedSortHeader: null,
   $statusMessage: null,
 
-  structureTableSort: null,
+  tableSort: null,
 
   _totalVisiblePostStructureTableDraggee: null,
   _morePendingPostStructureTableDraggee: false,
@@ -36,18 +36,24 @@ Craft.TableElementIndexView = Craft.BaseElementIndexView.extend({
       this._updateScreenReaderStatus();
     });
 
-    // Create the Structure Table Sorter
+    // Create the table sorter
     if (
-      this.elementIndex.settings.context === 'index' &&
-      this.elementIndex.viewMode === 'structure' &&
-      Garnish.hasAttr(this.$table, 'data-structure-id')
+      this.settings.sortable ||
+      (this.elementIndex.isAdministrative &&
+        this.elementIndex.viewMode === 'structure' &&
+        Garnish.hasAttr(this.$table, 'data-structure-id'))
     ) {
-      this.structureTableSort = new Craft.StructureTableSorter(
+      this.tableSort = new Craft.ElementTableSorter(
         this,
-        this.getAllElements()
+        this.getAllElements(),
+        {
+          structureId: this.$table.data('structure-id'),
+          maxLevels: this.$table.attr('data-max-levels'),
+          onSortChange: () => {
+            this.settings.onSortChange(this.tableSort.$draggee);
+          },
+        }
       );
-    } else {
-      this.structureTableSort = null;
     }
 
     // Handle expand/collapse toggles for Structures
@@ -109,6 +115,10 @@ Craft.TableElementIndexView = Craft.BaseElementIndexView.extend({
   },
 
   initTableHeaders: function () {
+    if (this.settings.sortable) {
+      return;
+    }
+
     let selectedSortAttr, selectedSortDir;
     if (this.elementIndex.viewMode === 'structure') {
       selectedSortAttr = 'structure';
@@ -216,8 +226,7 @@ Craft.TableElementIndexView = Craft.BaseElementIndexView.extend({
     // If we are dragging the last elements on the page,
     // tell the controller to only load elements positioned after the draggee.
     if (this._isStructureTableDraggingLastElements()) {
-      params.criteria.positionedAfter =
-        this.structureTableSort.$targetItem.data('id');
+      params.criteria.positionedAfter = this.tableSort.$targetItem.data('id');
     }
 
     return params;
@@ -226,8 +235,8 @@ Craft.TableElementIndexView = Craft.BaseElementIndexView.extend({
   appendElements: function ($newElements) {
     this.base($newElements);
 
-    if (this.structureTableSort) {
-      this.structureTableSort.addItems($newElements);
+    if (this.tableSort) {
+      this.tableSort.addItems($newElements);
     }
 
     Craft.cp.updateResponsiveTables();
@@ -257,8 +266,8 @@ Craft.TableElementIndexView = Craft.BaseElementIndexView.extend({
           this.elementSelect.removeItems($nextRow);
         }
 
-        if (this.structureTableSort) {
-          this.structureTableSort.removeItems($nextRow);
+        if (this.tableSort) {
+          this.tableSort.removeItems($nextRow);
         }
 
         this._totalVisible--;
@@ -340,8 +349,8 @@ Craft.TableElementIndexView = Craft.BaseElementIndexView.extend({
                 this.elementSelect.removeItems($nextRows);
               }
 
-              if (this.structureTableSort) {
-                this.structureTableSort.removeItems($nextRows);
+              if (this.tableSort) {
+                this.tableSort.removeItems($nextRows);
               }
 
               $nextRows.remove();
@@ -361,8 +370,8 @@ Craft.TableElementIndexView = Craft.BaseElementIndexView.extend({
               this.elementIndex.updateActionTriggers();
             }
 
-            if (this.structureTableSort) {
-              this.structureTableSort.addItems($newElements);
+            if (this.tableSort) {
+              this.tableSort.addItems($newElements);
             }
 
             Craft.appendHeadHtml(response.data.headHtml);
@@ -399,9 +408,9 @@ Craft.TableElementIndexView = Craft.BaseElementIndexView.extend({
 
   _isStructureTableDraggingLastElements: function () {
     return (
-      this.structureTableSort &&
-      this.structureTableSort.dragging &&
-      this.structureTableSort.draggingLastElements
+      this.tableSort &&
+      this.tableSort.dragging &&
+      this.tableSort.draggingLastElements
     );
   },
 
