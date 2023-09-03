@@ -49,8 +49,11 @@ use craft\i18n\Translation;
 use craft\models\EntryType;
 use craft\models\Site;
 use craft\queue\jobs\ApplyNewPropagationMethod;
+use craft\queue\jobs\ResaveElements;
 use craft\services\Elements;
 use craft\validators\ArrayValidator;
+use craft\validators\StringValidator;
+use craft\validators\UriFormatValidator;
 use craft\web\assets\matrix\MatrixAsset;
 use craft\web\View;
 use GraphQL\Type\Definition\Type;
@@ -171,12 +174,6 @@ class Matrix extends Field implements
     public ?int $maxEntries = null;
 
     /**
-     * @var string|null Entry URI format
-     * @since 5.0.0
-     */
-    public ?string $entryUriFormat = null;
-
-    /**
      * @var string The view mode
      * @phpstan-var self::VIEW_MODE_*
      * @since 5.0.0
@@ -215,6 +212,12 @@ class Matrix extends Field implements
      * @since 3.7.0
      */
     public ?string $propagationKeyFormat = null;
+
+    /**
+     * @var array{uriFormat:string|null,template?:string|null,errors?:array}[] Site settings
+     * @since 5.0.0
+     */
+    public array $siteSettings = [];
 
     /**
      * @var EntryType[] The field’s available entry types
@@ -293,8 +296,35 @@ class Matrix extends Field implements
     {
         $rules = parent::defineRules();
         $rules[] = [['entryTypes'], ArrayValidator::class, 'min' => 1, 'skipOnEmpty' => false];
+        $rules[] = [['siteSettings'], fn() => $this->validateSiteSettings()];
         $rules[] = [['minEntries', 'maxEntries'], 'integer', 'min' => 0];
         return $rules;
+    }
+
+    private function validateSiteSettings(): void
+    {
+        foreach ($this->siteSettings as $uid => &$siteSettings) {
+            unset($siteSettings['errors']);
+
+            if (isset($siteSettings['uriFormat'])) {
+                // Remove any leading or trailing slashes/spaces
+                $siteSettings['uriFormat'] = trim($siteSettings['uriFormat'], '/ ');
+
+                if (!(new UriFormatValidator())->validate($siteSettings['uriFormat'], $error)) {
+                    $error = str_replace(Craft::t('yii', 'the input value'), Craft::t('app', 'Entry URI Format'), $error);
+                    $siteSettings['errors']['uriFormat'][] = $error;
+                    $this->addError("siteSettings[$uid].uriFormat", $error);
+                }
+            }
+
+            if (isset($siteSettings['template'])) {
+                if (!(new StringValidator(['max' => 500]))->validate($siteSettings['template'], $error)) {
+                    $error = str_replace(Craft::t('yii', 'the input value'), Craft::t('app', 'Template'), $error);
+                    $siteSettings['errors']['template'][] = $error;
+                    $this->addError("siteSettings[$uid].template", $error);
+                }
+            }
+        }
     }
 
     private function entryManager(): NestedElementManager
@@ -361,7 +391,29 @@ class Matrix extends Field implements
      */
     public function getUriFormatForElement(NestedElementInterface $element): ?string
     {
-        return $this->entryUriFormat;
+        $site = $element->getSite();
+        return $this->siteSettings[$site->uid]['uriFormat'] ?? null;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getRouteForElement(NestedElementInterface $element): mixed
+    {
+        $site = $element->getSite();
+
+        if (!isset($this->siteSettings[$site->uid]['template'])) {
+            return null;
+        }
+
+        return [
+            'templates/render', [
+                'template' => $this->siteSettings[$site->uid]['template'],
+                'variables' => [
+                    'entry' => $element,
+                ],
+            ],
+        ];
     }
 
     /**
@@ -997,7 +1049,7 @@ class Matrix extends Field implements
      */
     public function afterSave(bool $isNew): void
     {
-        // If the propagation method just changed, resave all the entries
+        // If the propagation method or an entry URI format just changed, resave all the entries
         if (isset($this->oldSettings)) {
             $oldPropagationMethod = PropagationMethod::tryFrom($this->oldSettings['propagationMethod'] ?? '')
                 ?? PropagationMethod::All;
@@ -1012,6 +1064,34 @@ class Matrix extends Field implements
                         'fieldId' => $this->id,
                     ],
                 ]));
+            } else {
+                $resaveSiteIds = [];
+
+                foreach (Craft::$app->getSites()->getAllSites(true) as $site) {
+                    $oldUriFormat = $this->oldSettings['siteSettings'][$site->uid]['uriFormat'] ?? null;
+                    $newUriFormat = $this->siteSettings[$site->uid]['uriFormat'] ?? null;
+                    if ($oldUriFormat !== $newUriFormat) {
+                        $resaveSiteIds[] = $site->id;
+                    }
+                }
+                
+                if (!empty($resaveSiteIds)) {
+                    Queue::push(new ResaveElements([
+                        'description' => Translation::prep('app', 'Resaving {name} entries', [
+                            'name' => $this->name,
+                        ]),
+                        'elementType' => Entry::class,
+                        'criteria' => [
+                            'fieldId' => $this->id,
+                            'siteId' => $resaveSiteIds,
+                            'unique' => true,
+                            'status' => null,
+                            'drafts' => null,
+                            'provisionalDrafts' => null,
+                            'revisions' => null,
+                        ],
+                    ]));
+                }
             }
         }
 

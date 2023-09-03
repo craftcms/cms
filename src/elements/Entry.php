@@ -1102,16 +1102,14 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
      */
     protected function previewTargets(): array
     {
-        $section = $this->getSection();
-
-        if (!$section) {
-            return [];
+        if ($this->fieldId || Craft::$app->getEdition() === Craft::Pro) {
+            return parent::previewTargets();
         }
 
         return array_map(function($previewTarget) {
             $previewTarget['label'] = Craft::t('site', $previewTarget['label']);
             return $previewTarget;
-        }, $section->previewTargets);
+        }, $this->getSection()?->previewTargets ?? []);
     }
 
     /**

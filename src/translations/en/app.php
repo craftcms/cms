@@ -1193,7 +1193,7 @@ return [
     'Required' => 'Required',
     'Requirements' => 'Requirements',
     'Requires PHP {version}' => 'Requires PHP {version}',
-    'Resaving {section} entries' => 'Resaving {section} entries',
+    'Resaving {name} entries' => 'Resaving {name} entries',
     'Resaving {type} entries' => 'Resaving {type} entries',
     'Resaving {type}' => 'Resaving {type}',
     'Reserved' => 'Reserved',

@@ -2963,6 +2963,13 @@ abstract class Element extends Component implements ElementInterface
             }
         }
 
+        if ($this instanceof NestedElementInterface) {
+            $field = $this->getField();
+            if ($field) {
+                return $field->getRouteForElement($this);
+            }
+        }
+
         return $this->route();
     }
 
@@ -3319,8 +3326,9 @@ abstract class Element extends Component implements ElementInterface
      */
     public function getPreviewTargets(): array
     {
+        $previewTargets = $this->previewTargets();
+
         if (Craft::$app->getEdition() === Craft::Pro) {
-            $previewTargets = $this->previewTargets();
             // Give plugins a chance to modify them
             if ($this->hasEventHandlers(self::EVENT_REGISTER_PREVIEW_TARGETS)) {
                 $event = new RegisterPreviewTargetsEvent([
@@ -3329,17 +3337,6 @@ abstract class Element extends Component implements ElementInterface
                 $this->trigger(self::EVENT_REGISTER_PREVIEW_TARGETS, $event);
                 $previewTargets = $event->previewTargets;
             }
-        } elseif ($url = $this->getUrl()) {
-            $previewTargets = [
-                [
-                    'label' => Craft::t('app', 'Primary {type} page', [
-                        'type' => static::lowerDisplayName(),
-                    ]),
-                    'url' => $url,
-                ],
-            ];
-        } else {
-            return [];
         }
 
         // Normalize the targets
@@ -3379,7 +3376,19 @@ abstract class Element extends Component implements ElementInterface
      */
     protected function previewTargets(): array
     {
-        return [];
+        $previewTargets = [];
+
+        $url = $this->getUrl();
+        if ($url) {
+            $previewTargets[] = [
+                'label' => Craft::t('app', 'Primary {type} page', [
+                    'type' => static::lowerDisplayName(),
+                ]),
+                'url' => $url,
+            ];
+        }
+
+        return $previewTargets;
     }
 
     /**

@@ -39,6 +39,14 @@ interface ElementContainerFieldInterface extends FieldInterface
     public function getUriFormatForElement(NestedElementInterface $element): ?string;
 
     /**
+     * Returns the route that should be used when a nested element’s URI is requested.
+     *
+     * @param NestedElementInterface $element
+     * @return mixed The route that the request should use, or null if no special action should be taken
+     */
+    public function getRouteForElement(NestedElementInterface $element): mixed;
+
+    /**
      * Returns the sites a nested element is associated with.
      *
      * The function can either return an array of site IDs, or an array of sub-arrays,

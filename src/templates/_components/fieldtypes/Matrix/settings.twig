@@ -65,6 +65,65 @@
     {% endif %}
 {% endif %}
 
+{% set headlessMode = craft.app.config.general.headlessMode %}
+{% set siteRows = [] %}
+{% set siteErrors = [] %}
+
+{% for site in craft.app.sites.getAllSites() %}
+    {% set siteSettings = field.siteSettings[site.uid] ?? null %}
+    {% if siteSettings %}
+        {% for attribute, errors in siteSettings.errors ?? [] %}
+            {% set siteErrors = siteErrors|merge(errors) %}
+        {% endfor %}
+    {% endif %}
+    {% set siteRows = siteRows|merge({
+        (site.uid): {
+            heading: site.name|t('site')|e,
+            uriFormat: {
+                value: siteSettings ? siteSettings.uriFormat,
+                hasErrors: siteSettings.errors.uriFormat is defined,
+            },
+            template: not headlessMode ? {
+                value: siteSettings ? siteSettings.template,
+                hasErrors: siteSettings.errors.template is defined,
+            },
+        }|filter
+    }) %}
+{% endfor %}
+
+{{ forms.editableTableField({
+    label: 'Site Settings'|t('app'),
+    instructions: 'Choose the site-specific settings for nested entries.'|t('app'),
+    id: 'site-settings',
+    name: 'siteSettings',
+    cols: {
+        heading: {
+            type: 'heading',
+            heading: 'Site'|t('app'),
+            thin: true
+        },
+        uriFormat: {
+            type: 'singleline',
+            heading: 'Entry URI Format'|t('app'),
+            info: 'What entry URIs should look like for the site. Leave blank if entries don’t have URLs.'|t('app'),
+            placeholder: 'Leave blank if entries don’t have URLs'|t('app'),
+            code: true,
+        },
+        template: not headlessMode ? {
+            type: 'template',
+            heading: 'Template'|t('app'),
+            info: 'Which template should be loaded when an entry’s URL is requested.'|t('app'),
+            code: true
+        },
+    }|filter,
+    rows: siteRows,
+    fullWidth: true,
+    allowAdd: false,
+    allowDelete: false,
+    allowReorder: false,
+    errors: siteErrors|unique
+}) }}
+
 {{ forms.textField({
     label: 'Min {type}'|t('app', {
         type: 'Entries'|t('app'),
