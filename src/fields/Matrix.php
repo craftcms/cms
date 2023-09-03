@@ -812,7 +812,7 @@ class Matrix extends Field implements
             ];
         }
 
-        return $this->entryManager()->getIndexHtml($owner ?? new Entry(), $config);
+        return $this->entryManager()->getIndexHtml($owner, $config);
     }
 
     /**
@@ -822,7 +822,7 @@ class Matrix extends Field implements
     {
         return [
             [
-                'validateEntries',
+                fn(ElementInterface $element) => $this->validateEntries($element),
                 'on' => [Element::SCENARIO_ESSENTIALS, Element::SCENARIO_DEFAULT, Element::SCENARIO_LIVE],
                 'skipOnEmpty' => false,
             ],
@@ -838,12 +838,7 @@ class Matrix extends Field implements
         return $value->count() === 0;
     }
 
-    /**
-     * Validates an owner element’s nested entries.
-     *
-     * @param ElementInterface $element
-     */
-    public function validateEntries(ElementInterface $element): void
+    private function validateEntries(ElementInterface $element): void
     {
         /** @var EntryQuery|ElementCollection $value */
         $value = $element->getFieldValue($this->handle);
@@ -1021,7 +1016,6 @@ class Matrix extends Field implements
     {
         return MatrixInputType::getType($this);
     }
-
 
     /**
      * @inheritdoc

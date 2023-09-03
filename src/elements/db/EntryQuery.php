@@ -1161,7 +1161,7 @@ class EntryQuery extends ElementQuery
         try {
             $this->primaryOwnerId = $this->_normalizeOwnerId($this->primaryOwnerId);
         } catch (InvalidArgumentException) {
-            throw new InvalidConfigException('Invalid ownerId param value');
+            throw new InvalidConfigException('Invalid primaryOwnerId param value');
         }
 
         try {

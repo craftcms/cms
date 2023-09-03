@@ -65,11 +65,6 @@ class NestedElementManager extends BaseObject
     public array $criteria = [];
 
     /**
-     * @var string The “Create” button label
-     */
-    public string $createButtonLabel;
-
-    /**
      * @var PropagationMethod The propagation method that the nested elements should use.
      *
      *  This can be set to one of the following:
@@ -104,22 +99,6 @@ class NestedElementManager extends BaseObject
         }
 
         return $this->propagationMethod !== PropagationMethod::All;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function init()
-    {
-        parent::init();
-
-        if (!isset($this->createButtonLabel)) {
-            /** @var ElementInterface|string $elementType */
-            $elementType = $this->elementType;
-            $this->createButtonLabel = Craft::t('app', 'New {type}', [
-                'type' => $elementType::lowerDisplayName(),
-            ]);
-        }
     }
 
     /**
@@ -228,32 +207,35 @@ class NestedElementManager extends BaseObject
     /**
      * Returns element index HTML for administering the nested elements.
      *
-     * @param ElementInterface $owner
+     * @param ElementInterface|null $owner
      * @param array $config
      * @return string
      */
-    public function getIndexHtml(ElementInterface $owner, array $config = []): string
+    public function getIndexHtml(?ElementInterface $owner, array $config = []): string
     {
+        /** @var ElementInterface|string $elementType */
+        $elementType = $this->elementType;
+
+        if (!$owner?->id) {
+            $message = Craft::t('app', '{nestedType} can only be created after the {ownerType} has been saved.', [
+                'nestedType' => $elementType::pluralDisplayName(),
+                'ownerType' => $owner ? $owner::lowerDisplayName() : Craft::t('app', 'element'),
+            ]);
+            return Html::tag('div', $message, ['class' => 'pane hairline zilch small']);
+        }
+
         $config += [
             'allowedViewModes' => null,
             'pageSize' => 50,
             'sortable' => false,
             'canCreate' => false,
+            'createButtonLabel' => Craft::t('app', 'New {type}', [
+                'type' => $elementType::lowerDisplayName(),
+            ]),
             'createAttributes' => null,
             'minElements' => null,
             'maxElements' => null,
         ];
-
-        /** @var ElementInterface|string $elementType */
-        $elementType = $this->elementType;
-
-        if (!$owner->id) {
-            $message = Craft::t('app', '{nestedType} can only be created after the {ownerType} has been saved.', [
-                'nestedType' => $elementType::pluralDisplayName(),
-                'ownerType' => $owner::lowerDisplayName(),
-            ]);
-            return Html::tag('div', $message, ['class' => 'pane hairline zilch small']);
-        }
 
         Craft::$app->getSession()->authorize("editNestedElements::$owner->id::$this->attribute");
 
@@ -278,7 +260,7 @@ class NestedElementManager extends BaseObject
                 'canCreate' => $config['canCreate'],
                 'minElements' => $config['minElements'],
                 'maxElements' => $config['maxElements'],
-                'createButtonLabel' => $this->createButtonLabel,
+                'createButtonLabel' => $config['createButtonLabel'],
                 'baseCreateAttributes' => array_filter([
                     'elementType' => $elementType,
                     $this->ownerIdAttribute => $owner->id,
