@@ -1436,7 +1436,12 @@ class Users extends Component
 
         $projectConfig = Craft::$app->getProjectConfig();
         $fieldLayoutConfig = $layout->getConfig();
-        $uid = StringHelper::UUID();
+
+        if ($currentUserFieldLayout = $projectConfig->get(ProjectConfig::PATH_USER_FIELD_LAYOUTS)) {
+            $uid = array_key_first($currentUserFieldLayout);
+        } else {
+            $uid = StringHelper::UUID();
+        }
 
         $projectConfig->set(ProjectConfig::PATH_USER_FIELD_LAYOUTS, [$uid => $fieldLayoutConfig], "Save the user field layout");
         return true;

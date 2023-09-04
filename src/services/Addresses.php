@@ -369,7 +369,12 @@ class Addresses extends Component
 
         $projectConfig = Craft::$app->getProjectConfig();
         $fieldLayoutConfig = $layout->getConfig();
-        $uid = StringHelper::UUID();
+
+        if ($currentAddressFieldLayout = $projectConfig->get(ProjectConfig::PATH_ADDRESS_FIELD_LAYOUTS)) {
+            $uid = array_key_first($currentAddressFieldLayout);
+        } else {
+            $uid = StringHelper::UUID();
+        }
 
         $projectConfig->set(ProjectConfig::PATH_ADDRESS_FIELD_LAYOUTS, [$uid => $fieldLayoutConfig], 'Save the address field layout');
         return true;
