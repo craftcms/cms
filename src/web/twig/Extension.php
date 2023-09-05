@@ -492,10 +492,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
      */
     public function sortFilter(TwigEnvironment $env, $array, $arrow = null): array
     {
-        if (is_string($arrow) && strtolower($arrow) === 'system') {
-            throw new RuntimeError('The sort filter doesn\'t support sorting by system().');
-        }
-
+        $this->_checkFilterSupport($arrow);
         return twig_sort_filter($env, $array, $arrow);
     }
 
@@ -512,10 +509,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
      */
     public function reduceFilter(TwigEnvironment $env, $array, $arrow, $initial = null)
     {
-        if (is_string($arrow) && strtolower($arrow) === 'system') {
-            throw new RuntimeError('The reduce filter doesn\'t support reducing by system().');
-        }
-
+        $this->_checkFilterSupport($arrow);
         return twig_array_reduce($env, $array, $arrow, $initial);
     }
 
@@ -531,10 +525,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
      */
     public function mapFilter(TwigEnvironment $env, $array, $arrow = null): array
     {
-        if (is_string($arrow) && strtolower($arrow) === 'system') {
-            throw new RuntimeError('The map filter doesn\'t support mapping by system().');
-        }
-
+        $this->_checkFilterSupport($arrow);
         return twig_array_map($env, $array, $arrow);
     }
 
@@ -1086,9 +1077,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
      */
     public function filterFilter(TwigEnvironment $env, $arr, $arrow = null)
     {
-        if (is_string($arrow) && strtolower($arrow) === 'system') {
-            throw new RuntimeError('The filter filter doesn\'t support filtering by system().');
-        }
+        $this->_checkFilterSupport($arrow);
 
         if ($arrow === null) {
             return array_filter($arr);
@@ -1631,6 +1620,18 @@ class Extension extends AbstractExtension implements GlobalsInterface
             'setPasswordUrl' => $setPasswordRequestPath !== null ? UrlHelper::siteUrl($setPasswordRequestPath) : null,
             'now' => new DateTime('now', new \DateTimeZone(Craft::$app->getTimeZone())),
         ];
+    }
+
+    /**
+     * @param mixed $arrow
+     * @return void
+     * @throws RuntimeError
+     */
+    private function _checkFilterSupport(mixed $arrow): void
+    {
+        if (is_string($arrow) && (strtolower($arrow) === 'system' || strtolower($arrow) === 'passthru')) {
+            throw new RuntimeError('Not supported in this filter.');
+        }
     }
 
     // Deprecated Methods

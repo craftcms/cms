@@ -1,5 +1,9 @@
 # Release Notes for Craft CMS 3.x
 
+## Unreleased
+
+- Fixed an RCE vulnerability.
+
 ## 3.9.1 - 2023-08-23
 
 - Fixed an error that could occur when Craft was performing a Composer operation, if no `HOME` environment variable was set for PHP. ([#13590](https://github.com/craftcms/cms/issues/13590))
