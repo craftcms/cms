@@ -4,6 +4,7 @@
 
 - Fixed a bug where changed fields weren’t being tracked properly when applying a draft for a multi-site entry.
 - `craft\services\Elements::duplicateElement()` now supports passing a `siteAttributes` array to the `$attributes` argument, for setting site-specific attributes.
+- Fixed an error that could occur when executing a GraphQL query with fragments. ([#13622](https://github.com/craftcms/cms/issues/13622))
 
 ## 4.5.3 - 2023-08-29
 
@@ -245,7 +246,7 @@
 - Fixed a bug where date and time inputs weren’t always working properly on mobile. ([#13424](https://github.com/craftcms/cms/issues/13424))
 - Fixed an RCE vulnerability.
 
-## 4.4.15 - 2023-07-03
+## 4.4.15 - 2023-07-03 [CRITICAL]
 
 - The control panel footer now includes a message about active trials, with a link to purchase the licenses.
 - Tags fields now only show up to five suggestions. ([#13322](https://github.com/craftcms/cms/issues/13322))
