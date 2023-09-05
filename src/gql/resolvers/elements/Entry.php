@@ -31,6 +31,25 @@ class Entry extends ElementResolver
         // If this is the beginning of a resolver chain, start fresh
         if ($source === null) {
             $query = EntryElement::find();
+
+
+            $pairs = GqlHelper::extractAllowedEntitiesFromSchema('read');
+
+            if (!isset($pairs['sections'])) {
+                return ElementCollection::empty();
+            }
+
+            $sectionUids = array_flip($pairs['sections']);
+            $sectionIds = [];
+
+            foreach (Craft::$app->getEntries()->getAllSections() as $section) {
+                if (isset($sectionUids[$section->uid])) {
+                    $sectionIds[] = $section->id;
+                }
+            }
+
+            $query->andWhere(['in', 'entries.sectionId', $sectionIds]);
+
         // If not, get the prepared element query
         } else {
             $query = $source->$fieldName;
@@ -50,23 +69,6 @@ class Entry extends ElementResolver
                 }
             }
         }
-
-        $pairs = GqlHelper::extractAllowedEntitiesFromSchema('read');
-
-        if (!isset($pairs['sections'])) {
-            return ElementCollection::empty();
-        }
-
-        $sectionUids = array_flip($pairs['sections']);
-        $sectionIds = [];
-
-        foreach (Craft::$app->getEntries()->getAllSections() as $section) {
-            if (isset($sectionUids[$section->uid])) {
-                $sectionIds[] = $section->id;
-            }
-        }
-
-        $query->andWhere(['in', 'entries.sectionId', $sectionIds]);
 
         return $query;
     }
