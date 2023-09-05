@@ -762,7 +762,7 @@ class Matrix extends Component
                 // If propagateAll isn't set, only deal with sites that the element was just propagated to for the first time
                 if (!$owner->propagateAll) {
                     $preexistingOtherSiteIds = array_diff($otherSiteIds, $owner->newSiteIds);
-                    $otherSiteIds = array_intersect($otherSiteIds, $owner->newSiteIds);
+                    $otherSiteIds = array_intersect($otherSiteIds, $owner->newSiteIds, $fieldSiteIds);
                 } else {
                     $preexistingOtherSiteIds = [];
                 }
