@@ -1238,8 +1238,6 @@ class Elements extends Component
             'revisionId' => null,
             'isProvisionalDraft' => false,
             'updatingFromDerivative' => true,
-            'dirtyAttributes' => [],
-            'dirtyFields' => [],
         ];
 
         foreach ($changedAttributes as $attribute) {
