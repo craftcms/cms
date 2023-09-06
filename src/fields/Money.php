@@ -179,7 +179,7 @@ class Money extends Field implements PreviewableFieldInterface, SortableFieldInt
         if (is_array($value)) {
             // Was this submitted with a locale ID?
             $value['locale'] = $value['locale'] ?? Craft::$app->getFormattingLocale()->id;
-            $value['value'] = $value['value'] !== '' ? $value['value'] ?? null : null;
+            $value['value'] = isset($value['value']) && $value['value'] !== '' ? $value['value'] ?? null : null;
 
             if ($value['value'] === null) {
                 return null;
