@@ -2866,6 +2866,7 @@ table {
   background-color: var(--gray-050);
   cursor: default;
   user-select: none;
+  color: var(--medium-text-color);
 
   &:after {
     border-radius: var(--large-border-radius);
