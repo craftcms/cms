@@ -1917,10 +1917,23 @@ JS;
         $volume = $this->getVolume();
         $transform = $transform ?? $this->_transform;
 
-        if ($transform &&
-            !Image::canManipulateAsImage(pathinfo($this->getFilename(), PATHINFO_EXTENSION))
-        ) {
-            $transform = null;
+        if ($transform) {
+            // if it's a site request - check the mime type and general settings and decide whether to nullify the transform
+            // otherwise - we can proceed and rely on the FallbackTransformer (e.g. for thumbs in the CP)
+            // see https://github.com/craftcms/cms/issues/13306 and https://github.com/craftcms/cms/issues/13624 for more info
+            if (Craft::$app->getRequest()->isSiteRequest) {
+                $mimeType = $this->getMimeType();
+                $generalConfig = Craft::$app->getConfig()->getGeneral();
+                if (
+                    ($mimeType === 'image/gif' && !$generalConfig->transformGifs) ||
+                    ($mimeType === 'image/svg+xml' && !$generalConfig->transformSvgs)
+                ) {
+                    $transform = null;
+                }
+            }
+            if (!Image::canManipulateAsImage(pathinfo($this->getFilename(), PATHINFO_EXTENSION))) {
+                $transform = null;
+            }
         }
 
         if ($transform) {
