@@ -24,6 +24,7 @@ use craft\fieldlayoutelements\CustomField;
 use craft\models\FieldLayout;
 use craft\models\FieldLayoutTab;
 use craft\models\Site;
+use craft\services\Elements;
 use craft\services\ElementSources;
 use craft\web\twig\TemplateLoaderException;
 use craft\web\View;
@@ -479,7 +480,7 @@ class Cp
         }
 
         if ($config['showLabel']) {
-            $html .= self::elementLabelHtml($element, $config, $attributes);
+            $html .= self::elementLabelHtml($element, $config, $attributes, fn() => $element->getChipLabelHtml());
         }
 
         $html .= Html::beginTag('div', ['class' => 'chip-actions']) .
@@ -553,7 +554,7 @@ class Cp
             ],
         );
 
-        $headingContent = self::elementLabelHtml($element, $config, $attributes);
+        $headingContent = self::elementLabelHtml($element, $config, $attributes, fn() => Html::encode($element->getUiLabel()));
         $bodyContent = $element->getCardBodyHtml() ?? '';
 
         $html = Html::beginTag('div', $attributes) .
@@ -668,13 +669,13 @@ class Cp
         ]);
     }
 
-    private static function elementLabelHtml(ElementInterface $element, array $config, array $attributes): string
+    private static function elementLabelHtml(ElementInterface $element, array $config, array $attributes, callable $uiLabel): string
     {
         $content = implode('', array_map(
             fn(string $segment) => Html::tag('span', Html::encode($segment), ['class' => 'segment']),
             $element->getUiLabelPath()
         )) .
-            Html::encode($element->getUiLabel());
+            $uiLabel();
 
         // show the draft name?
         if (($config['showDraftName'] ?? true) && $element->getIsDraft() && !$element->getIsUnpublishedDraft()) {

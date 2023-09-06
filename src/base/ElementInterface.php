@@ -802,6 +802,14 @@ interface ElementInterface extends ComponentInterface
     public function setUiLabelPath(array $path): void;
 
     /**
+     * Returns the label HTML for element chips.
+     *
+     * @return string
+     * @since 5.0.0
+     */
+    public function getChipLabelHtml(): string;
+
+    /**
      * Returns the body HTML for element cards.
      *
      * @return string|null
