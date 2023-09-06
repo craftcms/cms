@@ -30,6 +30,7 @@ use craft\elements\User;
 use craft\enums\ElementIndexViewMode;
 use craft\enums\PropagationMethod;
 use craft\errors\InvalidFieldException;
+use craft\events\BulkElementsEvent;
 use craft\events\CancelableEvent;
 use craft\events\DefineEntryTypesForFieldEvent;
 use craft\fields\conditions\EmptyFieldConditionRule;
@@ -38,8 +39,6 @@ use craft\gql\resolvers\elements\Entry as EntryResolver;
 use craft\gql\types\generators\EntryType as EntryTypeGenerator;
 use craft\gql\types\input\Matrix as MatrixInputType;
 use craft\helpers\ArrayHelper;
-use craft\helpers\Db;
-use craft\helpers\ElementHelper;
 use craft\helpers\Gql;
 use craft\helpers\Html;
 use craft\helpers\Json;
@@ -57,7 +56,7 @@ use craft\validators\UriFormatValidator;
 use craft\web\assets\matrix\MatrixAsset;
 use craft\web\View;
 use GraphQL\Type\Definition\Type;
-use Throwable;
+use Illuminate\Support\Collection;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
 use yii\db\Expression;
@@ -269,6 +268,13 @@ class Matrix extends Field implements
             $this->includeTableView = false;
             $this->pageSize = null;
         }
+
+        if ($this->minEntries === 0) {
+            $this->minEntries = null;
+        }
+        if ($this->maxEntries === 0) {
+            $this->maxEntries = null;
+        }
     }
 
     /**
@@ -330,13 +336,20 @@ class Matrix extends Field implements
     private function entryManager(): NestedElementManager
     {
         if (!isset($this->_entryManager)) {
-            $this->_entryManager = new NestedElementManager(Entry::class, "field:$this->handle", [
-                'criteria' => [
-                    'fieldId' => $this->id,
+            $this->_entryManager = new NestedElementManager(
+                Entry::class,
+                fn(ElementInterface $owner) => $this->createEntryQuery($owner),
+                [
+                    'fieldHandle' => $this->handle,
+                    'criteria' => [
+                        'fieldId' => $this->id,
+                    ],
+                    'propagationMethod' => $this->propagationMethod,
+                    'propagationKeyFormat' => $this->propagationKeyFormat,
                 ],
-                'propagationMethod' => $this->propagationMethod,
-                'propagationKeyFormat' => $this->propagationKeyFormat,
-            ]);
+            );
+
+            $this->_entryManager->on(NestedElementManager::EVENT_AFTER_SAVE_ELEMENTS, [$this, 'afterSaveEntries']);
         }
 
         return $this->_entryManager;
@@ -451,7 +464,7 @@ class Matrix extends Field implements
             return false;
         }
 
-        // If this is a new entry, make sure we aren't hitting the max Entries limit
+        // If this is a new entry, make sure we aren't hitting the Max Entries limit
         if (!$element->id && $element->getIsCanonical() && $this->maxEntriesReached($element->getOwner())) {
             return false;
         }
@@ -577,8 +590,7 @@ class Matrix extends Field implements
             return $value;
         }
 
-        $query = Entry::find();
-        $this->_populateQuery($query, $element);
+        $query = $this->createEntryQuery($element);
 
         // Set the initially matched elements if $value is already set, which is the case if there was a validation
         // error or we're loading an entry revision.
@@ -591,22 +603,18 @@ class Matrix extends Field implements
         return $query;
     }
 
-    /**
-     * Populates the field’s [[EntryQuery]] value based on the owner element.
-     *
-     * @param EntryQuery $query
-     * @param ElementInterface|null $element
-     */
-    private function _populateQuery(EntryQuery $query, ?ElementInterface $element = null): void
+    private function createEntryQuery(?ElementInterface $owner): EntryQuery
     {
+        $query = Entry::find();
+
         // Existing element?
-        if ($element && $element->id) {
+        if ($owner && $owner->id) {
             $query->attachBehavior(self::class, new EventBehavior([
                 ElementQuery::EVENT_BEFORE_PREPARE => function(
                     CancelableEvent $event,
                     EntryQuery $query,
-                ) use ($element) {
-                    $query->ownerId = $element->id;
+                ) use ($owner) {
+                    $query->ownerId = $owner->id;
 
                     // Clear out id=false if this query was populated previously
                     if ($query->id === false) {
@@ -614,7 +622,7 @@ class Matrix extends Field implements
                     }
 
                     // If the owner is a revision, allow revision entries to be returned as well
-                    if ($element->getIsRevision()) {
+                    if ($owner->getIsRevision()) {
                         $query
                             ->revisions(null)
                             ->trashed(null);
@@ -623,8 +631,8 @@ class Matrix extends Field implements
             ], true));
 
             // Set the query up for lazy eager loading
-            $query->eagerLoadSourceElement = $element;
-            $providerHandle = $element->getFieldLayout()?->provider?->getHandle();
+            $query->eagerLoadSourceElement = $owner;
+            $providerHandle = $owner->getFieldLayout()?->provider?->getHandle();
             $query->eagerLoadHandle = $providerHandle ? "$providerHandle:$this->handle" : $this->handle;
         } else {
             $query->id = false;
@@ -632,7 +640,9 @@ class Matrix extends Field implements
 
         $query
             ->fieldId($this->id)
-            ->siteId($element->siteId ?? null);
+            ->siteId($owner->siteId ?? null);
+
+        return $query;
     }
 
     /**
@@ -908,19 +918,7 @@ class Matrix extends Field implements
      */
     protected function searchKeywords(mixed $value, ElementInterface $element): string
     {
-        /** @var EntryQuery|ElementCollection $value */
-        $keywords = [];
-
-        foreach ($value->all() as $entry) {
-            foreach ($entry->getFieldLayout()->getCustomFields() as $field) {
-                if ($field->searchable) {
-                    $fieldValue = $entry->getFieldValue($field->handle);
-                    $keywords[] = $field->getSearchKeywords($fieldValue, $element);
-                }
-            }
-        }
-
-        return parent::searchKeywords($keywords, $element);
+        return $this->entryManager()->getSearchKeywords($element);
     }
 
     /**
@@ -1068,7 +1066,7 @@ class Matrix extends Field implements
                         $resaveSiteIds[] = $site->id;
                     }
                 }
-                
+
                 if (!empty($resaveSiteIds)) {
                     Queue::push(new ResaveElements([
                         'description' => Translation::prep('app', 'Resaving {name} entries', [
@@ -1097,541 +1095,36 @@ class Matrix extends Field implements
      */
     public function afterElementPropagate(ElementInterface $element, bool $isNew): void
     {
-        $resetValue = false;
-
-        if ($element->duplicateOf !== null) {
-            // If this is a draft, just duplicate the relations
-            if ($element->getIsDraft()) {
-                $this->_duplicateOwnership($element->duplicateOf, $element);
-            } elseif ($element->getIsRevision()) {
-                $this->_createRevisionEntries($element->duplicateOf, $element);
-            } else {
-                $this->_duplicateEntries($element->duplicateOf, $element, true, !$isNew);
-            }
-            $resetValue = true;
-        } elseif ($element->isFieldDirty($this->handle) || !empty($element->newSiteIds)) {
-            $this->_saveEntries($element);
-        } elseif ($element->mergingCanonicalChanges) {
-            $this->_mergeCanonicalChanges($element);
-            $resetValue = true;
-        }
-
-        // Repopulate the entry query if this is a new element
-        if ($resetValue || $isNew) {
-            /** @var EntryQuery|ElementCollection $value */
-            $value = $element->getFieldValue($this->handle);
-            if ($value instanceof EntryQuery) {
-                $this->_populateQuery($value, $element);
-                $value->clearCachedResult();
-            }
-        }
-
+        $this->entryManager()->maintainNestedElements($element, $isNew);
         parent::afterElementPropagate($element, $isNew);
     }
 
     /**
-     * Saves the field’s entries.
+     * Handles nested entry saves.
      *
-     * @param ElementInterface $owner The element the field is associated with
-     * @throws Throwable if reasons
+     * @param BulkElementsEvent $event
+     * @since 5.0.0
      */
-    private function _saveEntries(ElementInterface $owner): void
+    public function afterSaveEntries(BulkElementsEvent $event): void
     {
-        $elementsService = Craft::$app->getElements();
-
-        /** @var EntryQuery|ElementCollection $value */
-        $value = $owner->getFieldValue($this->handle);
-        if ($value instanceof ElementCollection) {
-            $entries = $value->all();
-            $saveAll = true;
-        } else {
-            $entries = $value->getCachedResult();
-            if ($entries !== null) {
-                $saveAll = false;
-            } else {
-                $entries = (clone $value)->status(null)->all();
-                $saveAll = true;
-            }
-        }
-
-        $entryIds = [];
-        $collapsedEntryIds = [];
-        $sortOrder = 0;
-
-        $transaction = Craft::$app->getDb()->beginTransaction();
-        try {
-            /** @var Entry[] $entries */
-            foreach ($entries as $entry) {
-                $sortOrder++;
-                if ($saveAll || !$entry->id || $entry->dirty) {
-                    $entry->setOwner($owner);
-                    // If the entry already has an ID and primary owner ID, don't reassign it
-                    if (!$entry->id || !$entry->primaryOwnerId) {
-                        $entry->primaryOwnerId = $owner->id;
-                    }
-                    $entry->sortOrder = $sortOrder;
-                    $elementsService->saveElement($entry, false);
-
-                    // If this is a draft, we can shed the draft data now
-                    if ($entry->getIsDraft()) {
-                        $canonicalEntryId = $entry->getCanonicalId();
-                        Craft::$app->getDrafts()->removeDraftData($entry);
-                        Db::delete(Table::ELEMENTS_OWNERS, [
-                            'elementId' => $canonicalEntryId,
-                            'ownerId' => $owner->id,
-                        ]);
-                    }
-                } elseif ((int)$entry->sortOrder !== $sortOrder) {
-                    // Just update its sortOrder
-                    $entry->sortOrder = $sortOrder;
-                    Db::update(Table::ELEMENTS_OWNERS, [
-                        'sortOrder' => $sortOrder,
-                    ], [
-                        'elementId' => $entry->id,
-                        'ownerId' => $owner->id,
-                    ], [], false);
-                }
-
-                $entryIds[] = $entry->id;
-
-                // Tell the browser to collapse this entry?
-                if ($entry->collapsed) {
-                    $collapsedEntryIds[] = $entry->id;
-                }
-            }
-
-            // Delete any entries that shouldn't be there anymore
-            $this->_deleteOtherEntries($owner, $entryIds);
-
-            // Should we duplicate the entries to other sites?
-            if (
-                $this->propagationMethod !== PropagationMethod::All &&
-                ($owner->propagateAll || !empty($owner->newSiteIds))
-            ) {
-                // Find the owner's site IDs that *aren't* supported by this site's entries
-                $ownerSiteIds = ArrayHelper::getColumn(ElementHelper::supportedSitesForElement($owner), 'siteId');
-                $fieldSiteIds = $this->entryManager()->getSupportedSiteIds($owner);
-                $otherSiteIds = array_diff($ownerSiteIds, $fieldSiteIds);
-
-                // If propagateAll isn't set, only deal with sites that the element was just propagated to for the first time
-                if (!$owner->propagateAll) {
-                    $preexistingOtherSiteIds = array_diff($otherSiteIds, $owner->newSiteIds);
-                    $otherSiteIds = array_intersect($otherSiteIds, $owner->newSiteIds);
-                } else {
-                    $preexistingOtherSiteIds = [];
-                }
-
-                if (!empty($otherSiteIds)) {
-                    // Get the owner element across each of those sites
-                    $localizedOwners = $owner::find()
-                        ->drafts($owner->getIsDraft())
-                        ->provisionalDrafts($owner->isProvisionalDraft)
-                        ->revisions($owner->getIsRevision())
-                        ->id($owner->id)
-                        ->siteId($otherSiteIds)
-                        ->status(null)
-                        ->all();
-
-                    // Duplicate entries, ensuring we don't process the same entries more than once
-                    $handledSiteIds = [];
-
-                    if ($value instanceof EntryQuery) {
-                        $cachedQuery = (clone $value)->status(null);
-                        $cachedQuery->setCachedResult($entries);
-                        $owner->setFieldValue($this->handle, $cachedQuery);
-                    }
-
-                    foreach ($localizedOwners as $localizedOwner) {
-                        // Make sure we haven't already duplicated entries for this site, via propagation from another site
-                        if (isset($handledSiteIds[$localizedOwner->siteId])) {
-                            continue;
-                        }
-
-                        // Find all the field’s supported sites shared with this target
-                        $sourceSupportedSiteIds = $this->entryManager()->getSupportedSiteIds($localizedOwner);
-
-                        // Do entries in this target happen to share supported sites with a preexisting site?
-                        if (
-                            !empty($preexistingOtherSiteIds) &&
-                            !empty($sharedPreexistingOtherSiteIds = array_intersect($preexistingOtherSiteIds, $sourceSupportedSiteIds)) &&
-                            $preexistingLocalizedOwner = $owner::find()
-                                ->drafts($owner->getIsDraft())
-                                ->provisionalDrafts($owner->isProvisionalDraft)
-                                ->revisions($owner->getIsRevision())
-                                ->id($owner->id)
-                                ->siteId($sharedPreexistingOtherSiteIds)
-                                ->status(null)
-                                ->one()
-                        ) {
-                            // Just resave entries for that one site, and let them propagate over to the new site(s) from there
-                            $this->_saveEntries($preexistingLocalizedOwner);
-                        } else {
-                            // Duplicate the entries, but **don't track** the duplications, so the edit page doesn’t think
-                            // its entries have been replaced by the other sites’ entries
-                            $this->_duplicateEntries($owner, $localizedOwner, trackDuplications: false, force: true);
-                        }
-
-                        // Make sure we don't duplicate entries for any of the sites that were just propagated to
-                        $handledSiteIds = array_merge($handledSiteIds, array_flip($sourceSupportedSiteIds));
-                    }
-
-                    if ($value instanceof EntryQuery) {
-                        $owner->setFieldValue($this->handle, $value);
-                    }
-                }
-            }
-
-            $transaction->commit();
-        } catch (Throwable $e) {
-            $transaction->rollBack();
-            throw $e;
-        }
-
-        // Tell the browser to collapse any new entry IDs
         if (
             !Craft::$app->getRequest()->getIsConsoleRequest() &&
-            !Craft::$app->getResponse()->isSent &&
-            !empty($collapsedEntryIds)
+            !Craft::$app->getResponse()->isSent
         ) {
-            Craft::$app->getSession()->addAssetBundleFlash(MatrixAsset::class);
-
-            foreach ($collapsedEntryIds as $entryId) {
-                Craft::$app->getSession()->addJsFlash('Craft.MatrixInput.rememberCollapsedEntryId(' . $entryId . ');', View::POS_END);
-            }
-        }
-    }
-
-    /**
-     * Deletes enttries from an owner element
-     *
-     * @param ElementInterface $owner The owner element
-     * @param int[] $except Entry IDs that should be left alone
-     */
-    private function _deleteOtherEntries(ElementInterface $owner, array $except): void
-    {
-        /** @var Entry[] $entries */
-        $entries = Entry::find()
-            ->ownerId($owner->id)
-            ->fieldId($this->id)
-            ->status(null)
-            ->siteId($owner->siteId)
-            ->andWhere(['not', ['elements.id' => $except]])
-            ->all();
-
-        $elementsService = Craft::$app->getElements();
-        $deleteOwnership = [];
-
-        foreach ($entries as $entry) {
-            if ($entry->primaryOwnerId === $owner->id) {
-                $elementsService->deleteElement($entry);
-            } else {
-                // Just delete the ownership relation
-                $deleteOwnership[] = $entry->id;
-            }
-        }
-
-        if ($deleteOwnership) {
-            Db::delete(Table::ELEMENTS_OWNERS, [
-                'elementId' => $deleteOwnership,
-                'ownerId' => $owner->id,
-            ]);
-        }
-    }
-
-    /**
-     * Duplicates entries from one owner element to another.
-     *
-     * @param ElementInterface $source The source element that entries should be duplicated from
-     * @param ElementInterface $target The target element that entries should be duplicated to
-     * @param bool $checkOtherSites Whether to duplicate entries for the source element’s other supported sites
-     * @param bool $deleteOtherEntries Whether to delete any entries that belong to the element, which weren’t included in the duplication
-     * @param bool $trackDuplications whether to keep track of the duplications from [[\craft\services\Elements::$duplicatedElementIds]]
-     * and [[\craft\services\Elements::$duplicatedElementSourceIds]]
-     * @param bool $force Whether to force duplication, even if it looks like only the entry ownership was duplicated
-     * @throws Throwable if reasons
-     */
-    private function _duplicateEntries(
-        ElementInterface $source,
-        ElementInterface $target,
-        bool $checkOtherSites = false,
-        bool $deleteOtherEntries = true,
-        bool $trackDuplications = true,
-        bool $force = false,
-    ): void {
-        $elementsService = Craft::$app->getElements();
-        /** @var EntryQuery|ElementCollection $value */
-        $value = $source->getFieldValue($this->handle);
-        if ($value instanceof ElementCollection) {
-            $entries = $value->all();
-        } else {
-            $entries = $value->getCachedResult() ?? (clone $value)->status(null)->all();
-        }
-
-        $newEntryIds = [];
-
-        $transaction = Craft::$app->getDb()->beginTransaction();
-        try {
-            /** @var Entry[] $entries */
-            foreach ($entries as $entry) {
-                $newAttributes = [
-                    // Only set the canonicalId if the target owner element is a derivative
-                    'canonicalId' => $target->getIsDerivative() ? $entry->id : null,
-                    'primaryOwnerId' => $target->id,
-                    'owner' => $target,
-                    'siteId' => $target->siteId,
-                    'propagating' => false,
-                ];
-
-                if ($target->updatingFromDerivative && $entry->getIsDerivative()) {
-                    if (
-                        ElementHelper::isRevision($source) ||
-                        !empty($target->newSiteIds) ||
-                        (!$source::trackChanges() || $source->isFieldModified($this->handle, true))
-                    ) {
-                        $newEntryId = $elementsService->updateCanonicalElement($entry, $newAttributes)->id;
-                    } else {
-                        $newEntryId = $entry->getCanonicalId();
-                    }
-                } elseif (!$force && $entry->primaryOwnerId === $target->id) {
-                    // Only the entry ownership was duplicated, so just update its sort order for the target element
-                    // (use upsert in case the row doesn’t exist though)
-                    Db::upsert(Table::ELEMENTS_OWNERS, [
-                        'elementId' => $entry->id,
-                        'ownerId' => $target->id,
-                        'sortOrder' => $entry->sortOrder,
-                    ], [
-                        'sortOrder' => $entry->sortOrder,
-                    ], updateTimestamp: false);
-                    $newEntryId = $entry->id;
-                } else {
-                    $newEntryId = $elementsService->duplicateElement($entry, $newAttributes, trackDuplication: $trackDuplications)->id;
-                }
-
-                $newEntryIds[] = $newEntryId;
-            }
-
-            if ($deleteOtherEntries) {
-                // Delete any entries that shouldn't be there anymore
-                $this->_deleteOtherEntries($target, $newEntryIds);
-            }
-
-            $transaction->commit();
-        } catch (Throwable $e) {
-            $transaction->rollBack();
-            throw $e;
-        }
-
-        // Duplicate entries for other sites as well?
-        if ($checkOtherSites && $this->propagationMethod !== PropagationMethod::All) {
-            // Find the target's site IDs that *aren't* supported by this site's entries
-            $targetSiteIds = ArrayHelper::getColumn(ElementHelper::supportedSitesForElement($target), 'siteId');
-            $fieldSiteIds = $this->entryManager()->getSupportedSiteIds($target);
-            $otherSiteIds = array_diff($targetSiteIds, $fieldSiteIds);
-
-            if (!empty($otherSiteIds)) {
-                // Get the original element and duplicated element for each of those sites
-                $otherSources = $target::find()
-                    ->drafts($source->getIsDraft())
-                    ->provisionalDrafts($source->isProvisionalDraft)
-                    ->revisions($source->getIsRevision())
-                    ->id($source->id)
-                    ->siteId($otherSiteIds)
-                    ->status(null)
-                    ->all();
-                $otherTargets = $target::find()
-                    ->drafts($target->getIsDraft())
-                    ->provisionalDrafts($target->isProvisionalDraft)
-                    ->revisions($target->getIsRevision())
-                    ->id($target->id)
-                    ->siteId($otherSiteIds)
-                    ->status(null)
-                    ->indexBy('siteId')
-                    ->all();
-
-                // Duplicate entries, ensuring we don't process the same entries more than once
-                $handledSiteIds = [];
-
-                foreach ($otherSources as $otherSource) {
-                    // Make sure the target actually exists for this site
-                    if (!isset($otherTargets[$otherSource->siteId])) {
-                        continue;
-                    }
-
-                    // Make sure we haven't already duplicated entries for this site, via propagation from another site
-                    if (in_array($otherSource->siteId, $handledSiteIds, false)) {
-                        continue;
-                    }
-
-                    $otherTargets[$otherSource->siteId]->updatingFromDerivative = $target->updatingFromDerivative;
-                    $this->_duplicateEntries($otherSource, $otherTargets[$otherSource->siteId]);
-
-                    // Make sure we don't duplicate entries for any of the sites that were just propagated to
-                    $sourceSupportedSiteIds = $this->entryManager()->getSupportedSiteIds($otherSource);
-                    $handledSiteIds = array_merge($handledSiteIds, $sourceSupportedSiteIds);
-                }
-            }
-        }
-    }
-
-    /**
-     * Duplicates entry ownership relations for a new draft element.
-     *
-     * @param ElementInterface $canonical The canonical element
-     * @param ElementInterface $draft The draft element
-     */
-    private function _duplicateOwnership(ElementInterface $canonical, ElementInterface $draft): void
-    {
-        if (!$canonical->getIsCanonical()) {
-            throw new InvalidArgumentException('The source element must be canonical.');
-        }
-
-        if (!$draft->getIsDraft()) {
-            throw new InvalidArgumentException('The target element must be a draft.');
-        }
-
-        Craft::$app->getDb()->createCommand(sprintf(
-            <<<SQL
-INSERT INTO %s ([[elementId]], [[ownerId]], [[sortOrder]]) 
-SELECT [[o.elementId]], :draftId, [[o.sortOrder]] 
-FROM %s AS [[o]]
-INNER JOIN %s AS [[b]] ON [[b.id]] = [[o.elementId]] AND [[b.primaryOwnerId]] = :canonicalId AND [[b.fieldId]] = :fieldId
-WHERE [[o.ownerId]] = :canonicalId
-SQL,
-            Table::ELEMENTS_OWNERS,
-            Table::ELEMENTS_OWNERS,
-            Table::ENTRIES,
-        ), [
-            ':draftId' => $draft->id,
-            ':canonicalId' => $canonical->id,
-            ':fieldId' => $this->id,
-        ])->execute();
-    }
-
-    /**
-     * Creates revisions for all the entries that belong to the given canonical element, and assigns those
-     * revisions to the given owner revision.
-     *
-     * @param ElementInterface $canonical The canonical element
-     * @param ElementInterface $revision The revision element
-     */
-    private function _createRevisionEntries(ElementInterface $canonical, ElementInterface $revision): void
-    {
-        // Only fetch entries in the sites the owner element supports
-        $siteIds = ArrayHelper::getColumn(ElementHelper::supportedSitesForElement($canonical), 'siteId');
-
-        /** @var Entry[] $entries */
-        $entries = Entry::find()
-            ->ownerId($canonical->id)
-            ->fieldId($this->id)
-            ->siteId($siteIds)
-            ->preferSites([$canonical->siteId])
-            ->unique()
-            ->status(null)
-            ->all();
-
-        $revisionsService = Craft::$app->getRevisions();
-        $ownershipData = [];
-
-        foreach ($entries as $entry) {
-            $entryRevisionId = $revisionsService->createRevision($entry, null, null, [
-                'primaryOwnerId' => $revision->id,
-                'saveOwnership' => false,
-            ]);
-            $ownershipData[] = [$entryRevisionId, $revision->id, $entry->sortOrder];
-        }
-
-        Db::batchInsert(Table::ELEMENTS_OWNERS, ['elementId', 'ownerId', 'sortOrder'], $ownershipData);
-    }
-
-    /**
-     * Merges recent canonical entry changes into the field’s entries.
-     *
-     * @param ElementInterface $owner The element the field is associated with
-     */
-    private function _mergeCanonicalChanges(ElementInterface $owner): void
-    {
-        // Get the owner across all sites
-        $localizedOwners = $owner::find()
-            ->id($owner->id ?: false)
-            ->siteId(['not', $owner->siteId])
-            ->drafts($owner->getIsDraft())
-            ->provisionalDrafts($owner->isProvisionalDraft)
-            ->revisions($owner->getIsRevision())
-            ->status(null)
-            ->ignorePlaceholders()
-            ->indexBy('siteId')
-            ->all();
-        $localizedOwners[$owner->siteId] = $owner;
-
-        // Get the canonical owner across all sites
-        $canonicalOwners = $owner::find()
-            ->id($owner->getCanonicalId())
-            ->siteId(array_keys($localizedOwners))
-            ->status(null)
-            ->ignorePlaceholders()
-            ->all();
-
-        $elementsService = Craft::$app->getElements();
-        $handledSiteIds = [];
-
-        foreach ($canonicalOwners as $canonicalOwner) {
-            if (isset($handledSiteIds[$canonicalOwner->siteId])) {
-                continue;
-            }
-
-            // Get all the canonical owner’s entries, including soft-deleted ones
-            /** @var Entry[] $canonicalEntries */
-            $canonicalEntries = Entry::find()
-                ->fieldId($this->id)
-                ->primaryOwnerId($canonicalOwner->id)
-                ->siteId($canonicalOwner->siteId)
-                ->status(null)
-                ->trashed(null)
-                ->ignorePlaceholders()
+            // Tell the browser to collapse any new entry IDs
+            $collapsedIds = Collection::make($event->elements)
+                /** @phpstan-ignore-next-line */
+                ->filter(fn(Entry $entry) => $entry->collapsed)
+                /** @phpstan-ignore-next-line */
+                ->map(fn(Entry $entry) => $entry->id)
                 ->all();
 
-            // Get all the derivative owner’s entries, so we can compare
-            /** @var Entry[] $derivativeEntries */
-            $derivativeEntries = Entry::find()
-                ->fieldId($this->id)
-                ->primaryOwnerId($owner->id)
-                ->siteId($canonicalOwner->siteId)
-                ->status(null)
-                ->trashed(null)
-                ->ignorePlaceholders()
-                ->indexBy('canonicalId')
-                ->all();
+            if (!empty($collapsedIds)) {
+                Craft::$app->getSession()->addAssetBundleFlash(MatrixAsset::class);
 
-            foreach ($canonicalEntries as $canonicalEntry) {
-                if (isset($derivativeEntries[$canonicalEntry->id])) {
-                    $derivativeEntry = $derivativeEntries[$canonicalEntry->id];
-
-                    // Has it been soft-deleted?
-                    if ($canonicalEntry->trashed) {
-                        // Delete the derivative entry too, unless any changes were made to it
-                        if ($derivativeEntry->dateUpdated == $derivativeEntry->dateCreated) {
-                            $elementsService->deleteElement($derivativeEntry);
-                        }
-                    } elseif (!$derivativeEntry->trashed && ElementHelper::isOutdated($derivativeEntry)) {
-                        // Merge the upstream changes into the derivative entry
-                        $elementsService->mergeCanonicalChanges($derivativeEntry);
-                    }
-                } elseif (!$canonicalEntry->trashed && $canonicalEntry->dateCreated > $owner->dateCreated) {
-                    // This is a new entry, so duplicate it into the derivative owner
-                    $elementsService->duplicateElement($canonicalEntry, [
-                        'canonicalId' => $canonicalEntry->id,
-                        'primaryOwnerId' => $owner->id,
-                        'owner' => $localizedOwners[$canonicalEntry->siteId],
-                        'siteId' => $canonicalEntry->siteId,
-                        'propagating' => false,
-                    ]);
+                foreach ($collapsedIds as $id) {
+                    Craft::$app->getSession()->addJsFlash("Craft.MatrixInput.rememberCollapsedEntryId($id);", View::POS_END);
                 }
-            }
-
-            // Keep track of the sites we've already covered
-            $siteIds = $this->entryManager()->getSupportedSiteIds($canonicalOwner);
-            foreach ($siteIds as $siteId) {
-                $handledSiteIds[$siteId] = true;
             }
         }
     }
@@ -1646,20 +1139,7 @@ SQL,
         }
 
         // Delete any entries that primarily belong to this element
-        foreach (Craft::$app->getSites()->getAllSiteIds() as $siteId) {
-            $elementsService = Craft::$app->getElements();
-            /** @var Entry[] $entries */
-            $entries = Entry::find()
-                ->primaryOwnerId($element->id)
-                ->status(null)
-                ->siteId($siteId)
-                ->all();
-
-            foreach ($entries as $entry) {
-                $entry->deletedWithOwner = true;
-                $elementsService->deleteElement($entry, $element->hardDelete);
-            }
-        }
+        $this->entryManager()->deleteNestedElements($element, $element->hardDelete);
 
         return true;
     }
@@ -1670,21 +1150,7 @@ SQL,
     public function afterElementRestore(ElementInterface $element): void
     {
         // Also restore any entries for this element
-        $elementsService = Craft::$app->getElements();
-        foreach (ElementHelper::supportedSitesForElement($element) as $siteInfo) {
-            /** @var Entry[] $entries */
-            $entries = Entry::find()
-                ->primaryOwnerId($element->id)
-                ->status(null)
-                ->siteId($siteInfo['siteId'])
-                ->trashed()
-                ->andWhere(['entries.deletedWithOwner' => true])
-                ->all();
-
-            foreach ($entries as $entry) {
-                $elementsService->restoreElement($entry);
-            }
-        }
+        $this->entryManager()->restoreNestedElements($element);
 
         parent::afterElementRestore($element);
     }
@@ -1831,11 +1297,11 @@ SQL,
             if (isset($oldEntriesById[$entryId])) {
                 /** @var Entry $entry */
                 $entry = $oldEntriesById[$entryId];
-                $dirty = !empty($entryData);
+                $forceSave = !empty($entryData);
 
                 // Is this a derivative element, and does the entry primarily belong to the canonical?
-                if ($dirty && $element->getIsDerivative() && $entry->primaryOwnerId === $element->getCanonicalId()) {
-                    // Duplicate it as a draft. (We'll drop its draft status from _saveEntries().)
+                if ($forceSave && $element->getIsDerivative() && $entry->primaryOwnerId === $element->getCanonicalId()) {
+                    // Duplicate it as a draft. (We'll drop its draft status from NestedElementManager::saveNestedElements().)
                     $entry = Craft::$app->getDrafts()->createDraft($entry, Craft::$app->getUser()->getId(), null, null, [
                         'canonicalId' => $entry->id,
                         'primaryOwnerId' => $element->id,
@@ -1846,7 +1312,7 @@ SQL,
                     ]);
                 }
 
-                $entry->dirty = $dirty;
+                $entry->forceSave = $forceSave;
             } else {
                 // Make sure it's a valid entry type
                 if (!isset($entryData['type']) || !isset($entryTypes[$entryData['type']])) {

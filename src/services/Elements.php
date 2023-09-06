@@ -635,7 +635,7 @@ class Elements extends Component
         $this->collectCacheTags([
             'element',
             "element::$class",
-            "element::$class::$element->id",
+            "element::$element->id",
         ]);
 
         // If the element is expirable, register its expiry date
@@ -761,7 +761,7 @@ class Elements extends Component
     {
         $tags = [
             sprintf('element::%s::*', $element::class),
-            sprintf('element::%s::%s', $element::class, $element->id),
+            sprintf('element::%s', $element->id),
         ];
 
         $rootElement = $element;
@@ -769,7 +769,7 @@ class Elements extends Component
         if ($element instanceof NestedElementInterface) {
             $owner = $element->getOwner();
             if ($owner) {
-                $tags[] = sprintf('element::%s::%s', $owner::class, $owner->id);
+                $tags[] = sprintf('element::%s', $owner->id);
 
                 try {
                     $rootElement = ElementHelper::rootElement($owner);
@@ -785,7 +785,11 @@ class Elements extends Component
             $tags[] = sprintf('element::%s::revisions', $element::class);
         } else {
             foreach ($element->getCacheTags() as $tag) {
-                $tags[] = sprintf('element::%s::%s', $element::class, $tag);
+                // tags can be provided fully-formed, or relative to the element type
+                if (!str_starts_with($tag, 'element::')) {
+                    $tag = sprintf('element::%s::%s', $element::class, $tag);
+                }
+                $tags[] = $tag;
             }
         }
 
@@ -2092,9 +2096,10 @@ class Elements extends Component
                 ]);
             } else {
                 // Soft delete the elements table row
-                $db->createCommand()
-                    ->softDelete(Table::ELEMENTS, ['id' => $element->id])
-                    ->execute();
+                Db::update(Table::ELEMENTS, [
+                    'dateDeleted' => Db::prepareDateForDb(new DateTime()),
+                    'deletedWithOwner' => $element->deletedWithOwner,
+                ], ['id' => $element->id]);
 
                 // Also soft delete the element’s drafts & revisions
                 $this->_cascadeDeleteDraftsAndRevisions($element->id);
@@ -2309,9 +2314,10 @@ class Elements extends Component
                 }
 
                 // Restore it
-                $db->createCommand()
-                    ->restore(Table::ELEMENTS, ['id' => $element->id])
-                    ->execute();
+                Db::update(Table::ELEMENTS, [
+                    'dateDeleted' => null,
+                    'deletedWithOwner' => null,
+                ], ['id' => $element->id]);
 
                 // Also restore the element’s drafts & revisions
                 $this->_cascadeDeleteDraftsAndRevisions($element->id, false);
@@ -2332,6 +2338,7 @@ class Elements extends Component
                 $element->afterRestore();
                 $element->trashed = false;
                 $element->dateDeleted = null;
+                $element->deletedWithOwner = null;
 
                 // Fire an 'afterRestoreElement' event
                 if ($this->hasEventHandlers(self::EVENT_AFTER_RESTORE_ELEMENT)) {

@@ -94,7 +94,8 @@ class Install extends Migration
     {
         $this->createTable(Table::ADDRESSES, [
             'id' => $this->integer()->notNull(),
-            'ownerId' => $this->integer(),
+            'primaryOwnerId' => $this->integer(),
+            'fieldId' => $this->integer(),
             'countryCode' => $this->string()->notNull(),
             'administrativeArea' => $this->string(),
             'locality' => $this->string(),
@@ -312,6 +313,7 @@ class Install extends Migration
             'dateUpdated' => $this->dateTime()->notNull(),
             'dateLastMerged' => $this->dateTime()->null(),
             'dateDeleted' => $this->dateTime()->null(),
+            'deletedWithOwner' => $this->boolean()->null(),
             'uid' => $this->uid(),
         ]);
         $this->createTable(Table::ELEMENTS_OWNERS, [
@@ -371,7 +373,6 @@ class Install extends Migration
             'postDate' => $this->dateTime(),
             'expiryDate' => $this->dateTime(),
             'deletedWithEntryType' => $this->boolean()->null(),
-            'deletedWithOwner' => $this->boolean()->null(),
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
             'PRIMARY KEY([[id]])',
@@ -924,7 +925,7 @@ class Install extends Migration
     public function addForeignKeys(): void
     {
         $this->addForeignKey(null, Table::ADDRESSES, ['id'], Table::ELEMENTS, ['id'], 'CASCADE', null);
-        $this->addForeignKey(null, Table::ADDRESSES, ['ownerId'], Table::ELEMENTS, ['id'], 'CASCADE', null);
+        $this->addForeignKey(null, Table::ADDRESSES, ['primaryOwnerId'], Table::ELEMENTS, ['id'], 'CASCADE', null);
         $this->addForeignKey(null, Table::ANNOUNCEMENTS, ['userId'], Table::USERS, ['id'], 'CASCADE', null);
         $this->addForeignKey(null, Table::ANNOUNCEMENTS, ['pluginId'], Table::PLUGINS, ['id'], 'CASCADE', null);
         $this->addForeignKey(null, Table::ASSETINDEXDATA, ['volumeId'], Table::VOLUMES, ['id'], 'CASCADE', null);

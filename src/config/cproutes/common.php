@@ -24,6 +24,7 @@ return [
         'defaults' => ['userId' => 'current'],
     ],
     'update' => 'updater',
+    'settings/addresses' => ['template' => 'settings/addresses/_fields'],
     'settings/assets' => 'volumes/volume-index',
     'settings/assets/volumes/new' => 'volumes/edit-volume',
     'settings/assets/volumes/<volumeId:\d+>' => 'volumes/edit-volume',

@@ -413,6 +413,10 @@ class Cp extends Component
             'iconMask' => '@appicons/users.svg',
             'label' => Craft::t('app', 'Users'),
         ];
+        $settings[$label]['addresses'] = [
+            'iconMask' => '@appicons/location.svg',
+            'label' => Craft::t('app', 'Addresses'),
+        ];
         $settings[$label]['email'] = [
             'iconMask' => '@appicons/envelope.svg',
             'label' => Craft::t('app', 'Email'),

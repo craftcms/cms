@@ -36,7 +36,7 @@ class m230617_070415_entrify_matrix_blocks extends Migration
 
         $this->addColumn(Table::ENTRIES, 'primaryOwnerId', $this->integer()->after('parentId'));
         $this->addColumn(Table::ENTRIES, 'fieldId', $this->integer()->after('primaryOwnerId'));
-        $this->addColumn(Table::ENTRIES, 'deletedWithOwner', $this->boolean()->null()->after('deletedWithEntryType'));
+        $this->addColumn(Table::ELEMENTS, 'deletedWithOwner', $this->boolean()->null()->after('dateDeleted'));
 
         $this->createTable(Table::ELEMENTS_OWNERS, [
             'elementId' => $this->integer()->notNull(),
@@ -199,8 +199,8 @@ class m230617_070415_entrify_matrix_blocks extends Migration
             $typeIdSql .= " END";
             $this->execute(sprintf(
                 <<<SQL
-INSERT INTO %s ([[id]], [[primaryOwnerId]], [[fieldId]], [[typeId]], [[postDate]], [[deletedWithOwner]], [[dateCreated]], [[dateUpdated]])
-SELECT [[id]], [[primaryOwnerId]], [[fieldId]], %s, [[dateCreated]], [[deletedWithOwner]], [[dateCreated]], [[dateUpdated]]
+INSERT INTO %s ([[id]], [[primaryOwnerId]], [[fieldId]], [[typeId]], [[postDate]], [[dateCreated]], [[dateUpdated]])
+SELECT [[id]], [[primaryOwnerId]], [[fieldId]], %s, [[dateCreated]], [[dateCreated]], [[dateUpdated]]
 FROM %s matrixblocks
 WHERE [[matrixblocks.typeId]] IN (%s)
 SQL,
@@ -218,6 +218,19 @@ SQL,
                 Table::ELEMENTS_OWNERS,
                 '{{%matrixblocks_owners}}',
             ));
+
+            $this->update(
+                Table::ELEMENTS,
+                ['deletedWithOwner' => true],
+                ['id' => (new Query())
+                    ->select('id')
+                    ->from(['matrixblocks' => '{{%matrixblocks}}'])
+                    ->where([
+                        'matrixblocks.typeId' => array_keys($typeIdMap),
+                        'matrixblocks.deletedWithOwner' => true,
+                    ]),
+                ],
+            );
 
             $this->update(
                 Table::ELEMENTS,

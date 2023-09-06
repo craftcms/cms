@@ -724,13 +724,6 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
     public ?int $sortOrder = null;
 
     /**
-     * @var bool Whether the entry has changed.
-     * @internal
-     * @since 5.0.0
-     */
-    public bool $dirty = false;
-
-    /**
      * @var bool Collapsed
      * @since 5.0.0
      */
@@ -770,13 +763,6 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
      * @internal
      */
     public bool $deletedWithEntryType = false;
-
-    /**
-     * @var bool Whether the entry was deleted along with its owner
-     * @see beforeDelete()
-     * @since 5.0.0
-     */
-    public bool $deletedWithOwner = false;
 
     /**
      * @var bool Whether to save the entry’s row in the `elements_owners` table in [[afterSave()]].
@@ -832,6 +818,8 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
     public function attributes(): array
     {
         $names = parent::attributes();
+        ArrayHelper::removeValue($names, 'deletedWithEntryType');
+        ArrayHelper::removeValue($names, 'saveOwnership');
         $names[] = 'authorId';
         $names[] = 'typeId';
         return $names;
@@ -1006,12 +994,15 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
     {
         $tags = [
             sprintf('entryType:%s', $this->getTypeId()),
-            "section:$this->sectionId",
         ];
 
         // Did the entry type just change?
         if ($this->getTypeId() !== $this->_oldTypeId) {
             $tags[] = "entryType:$this->_oldTypeId";
+        }
+
+        if (isset($this->sectionId)) {
+            $tags[] = "section:$this->sectionId";
         }
 
         return $tags;
@@ -1361,10 +1352,7 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
     }
 
     /**
-     * Sets the owner element.
-     *
-     * @param ElementInterface|null $owner
-     * @since 5.0.0
+     * @inheritdoc
      */
     public function setOwner(?ElementInterface $owner = null): void
     {

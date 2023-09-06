@@ -975,10 +975,7 @@ class User extends Element implements IdentityInterface
             }
 
             /** @var Address[] $addresses */
-            $addresses = Address::find()
-                ->ownerId($this->id)
-                ->orderBy(['id' => SORT_ASC])
-                ->all();
+            $addresses = $this->createAddressQuery()->all();
             $this->_addresses = $addresses;
         }
 
@@ -994,12 +991,24 @@ class User extends Element implements IdentityInterface
     public function getAddressManager(): NestedElementManager
     {
         if (!isset($this->_addressManager)) {
-            $this->_addressManager = new NestedElementManager(Address::class, 'addresses', [
-                'propagationMethod' => PropagationMethod::None,
-            ]);
+            $this->_addressManager = new NestedElementManager(
+                Address::class,
+                fn() => $this->createAddressQuery(),
+                [
+                    'attribute' => 'addresses',
+                    'propagationMethod' => PropagationMethod::None,
+                ],
+            );
         }
 
         return $this->_addressManager;
+    }
+
+    private function createAddressQuery(): AddressQuery
+    {
+        return Address::find()
+            ->ownerId($this->id)
+            ->orderBy(['id' => SORT_ASC]);
     }
 
     /**

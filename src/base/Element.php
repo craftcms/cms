@@ -2301,6 +2301,7 @@ abstract class Element extends Component implements ElementInterface
 
         ArrayHelper::removeValue($names, 'elementQueryResult');
         ArrayHelper::removeValue($names, 'eagerLoadInfo');
+        ArrayHelper::removeValue($names, 'deletedWithOwner');
         ArrayHelper::removeValue($names, 'searchScore');
         ArrayHelper::removeValue($names, 'awaitingFieldValues');
         ArrayHelper::removeValue($names, 'firstSave');
@@ -2312,6 +2313,7 @@ abstract class Element extends Component implements ElementInterface
         ArrayHelper::removeValue($names, 'mergingCanonicalChanges');
         ArrayHelper::removeValue($names, 'updatingFromDerivative');
         ArrayHelper::removeValue($names, 'previewing');
+        ArrayHelper::removeValue($names, 'forceSave');
         ArrayHelper::removeValue($names, 'hardDelete');
 
         $names[] = 'canonicalId';

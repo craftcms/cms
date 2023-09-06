@@ -10,6 +10,8 @@ use craft\base\ElementContainerFieldInterface;
 use craft\base\ElementInterface;
 use craft\base\NameTrait;
 use craft\base\NestedElementInterface;
+use craft\db\Query;
+use craft\db\Table;
 use craft\elements\conditions\addresses\AddressCondition;
 use craft\elements\conditions\ElementConditionInterface;
 use craft\elements\db\AddressQuery;
@@ -18,6 +20,7 @@ use craft\fieldlayoutelements\addresses\OrganizationField;
 use craft\fieldlayoutelements\addresses\OrganizationTaxIdField;
 use craft\fieldlayoutelements\BaseNativeField;
 use craft\fieldlayoutelements\FullNameField;
+use craft\helpers\Db;
 use craft\helpers\Html;
 use craft\models\FieldLayout;
 use craft\records\Address as AddressRecord;
@@ -159,9 +162,27 @@ class Address extends Element implements AddressInterface, NestedElementInterfac
     }
 
     /**
+     * @var int|null Field ID
+     * @since 5.0.0
+     */
+    public ?int $fieldId = null;
+
+    /**
+     * @var int|null Primary owner ID
+     * @since 5.0.0
+     */
+    public ?int $primaryOwnerId = null;
+
+    /**
      * @var int|null Owner ID
      */
     public ?int $ownerId = null;
+
+    /**
+     * @var int|null Sort order
+     * @since 5.0.0
+     */
+    public ?int $sortOrder = null;
 
     /**
      * @var ElementInterface|null The owner element
@@ -231,6 +252,12 @@ class Address extends Element implements AddressInterface, NestedElementInterfac
     public ?string $longitude = null;
 
     /**
+     * @var bool Whether to save the address’s row in the `elements_owners` table in [[afterSave()]].
+     * @since 5.0.0
+     */
+    public bool $saveOwnership = true;
+
+    /**
      * @inheritdoc
      */
     public function init(): void
@@ -284,26 +311,23 @@ class Address extends Element implements AddressInterface, NestedElementInterfac
      */
     public function getOwner(): ?ElementInterface
     {
-        if (!isset($this->ownerId)) {
-            return null;
-        }
-
         if (!isset($this->_owner)) {
-            $owner = Craft::$app->getElements()->getElementById($this->ownerId);
-            if ($owner === null) {
-                throw new InvalidConfigException("Invalid owner ID: $this->ownerId");
+            $ownerId = $this->ownerId ?? $this->primaryOwnerId;
+            if (!$ownerId) {
+                throw new InvalidConfigException('Address is missing its owner ID');
             }
-            $this->_owner = $owner;
+
+            $this->_owner = Craft::$app->getElements()->getElementById($ownerId, null, $this->siteId);
+            if (!isset($this->_owner)) {
+                throw new InvalidConfigException("Invalid owner ID: $ownerId");
+            }
         }
 
         return $this->_owner;
     }
 
     /**
-     * Sets the owner element.
-     *
-     * @param ElementInterface|null $owner
-     * @since 4.4.16
+     * @inheritdoc
      */
     public function setOwner(?ElementInterface $owner): void
     {
@@ -316,7 +340,15 @@ class Address extends Element implements AddressInterface, NestedElementInterfac
      */
     public function getField(): ?ElementContainerFieldInterface
     {
-        return null;
+        if (!isset($this->fieldId)) {
+            return null;
+        }
+
+        $field = $this->getOwner()->getFieldLayout()->getFieldById($this->fieldId);
+        if (!$field instanceof ElementContainerFieldInterface) {
+            throw new InvalidConfigException("Invalid field ID: $this->fieldId");
+        }
+        return $field;
     }
 
     /**
@@ -324,7 +356,7 @@ class Address extends Element implements AddressInterface, NestedElementInterfac
      */
     public function getSortOrder(): ?int
     {
-        return null;
+        return $this->sortOrder;
     }
 
     /**
@@ -531,7 +563,7 @@ class Address extends Element implements AddressInterface, NestedElementInterfac
     {
         $rules = parent::defineRules();
 
-        $rules[] = [['ownerId'], 'number'];
+        $rules[] = [['fieldId', 'ownerId', 'primaryOwnerId'], 'number'];
         $rules[] = [['countryCode'], 'required'];
 
         $addressesService = Craft::$app->getAddresses();
@@ -584,20 +616,6 @@ class Address extends Element implements AddressInterface, NestedElementInterfac
     /**
      * @inheritdoc
      */
-    protected function cacheTags(): array
-    {
-        $tags = [];
-
-        if ($this->ownerId) {
-            $tags[] = "owner:$this->ownerId";
-        }
-
-        return $tags;
-    }
-
-    /**
-     * @inheritdoc
-     */
     public function getCardBodyHtml(): ?string
     {
         return Html::tag('div', Craft::$app->getAddresses()->formatAddress($this)) .
@@ -623,7 +641,8 @@ class Address extends Element implements AddressInterface, NestedElementInterfac
 
         $this->prepareNamesForSave();
 
-        $record->ownerId = $this->ownerId;
+        $record->fieldId = $this->fieldId;
+        $record->primaryOwnerId = $this->primaryOwnerId ?? $this->ownerId;
         $record->countryCode = $this->countryCode;
         $record->administrativeArea = $this->administrativeArea;
         $record->locality = $this->locality;
@@ -644,6 +663,35 @@ class Address extends Element implements AddressInterface, NestedElementInterfac
         $dirtyAttributes = array_keys($record->getDirtyAttributes());
 
         $record->save(false);
+
+        // ownerId will be null when creating a revision
+        if (isset($this->fieldId, $this->ownerId) && $this->saveOwnership) {
+            if (($isNew && $this->getIsCanonical()) || !isset($this->sortOrder)) {
+                $max = (new Query())
+                    ->from(['eo' => Table::ELEMENTS_OWNERS])
+                    ->innerJoin(['a' => Table::ADDRESSES], '[[a.id]] = [[eo.elementId]]')
+                    ->where([
+                        'eo.ownerId' => $this->ownerId,
+                        'a.fieldId' => $this->fieldId,
+                    ])
+                    ->max('sortOrder');
+                $this->sortOrder = $max ? $max + 1 : 1;
+            }
+            if ($isNew) {
+                Db::insert(Table::ELEMENTS_OWNERS, [
+                    'elementId' => $this->id,
+                    'ownerId' => $this->ownerId,
+                    'sortOrder' => $this->sortOrder,
+                ]);
+            } else {
+                Db::update(Table::ELEMENTS_OWNERS, [
+                    'sortOrder' => $this->sortOrder,
+                ], [
+                    'elementId' => $this->id,
+                    'ownerId' => $this->ownerId,
+                ]);
+            }
+        }
 
         $this->setDirtyAttributes($dirtyAttributes);
 

@@ -1566,12 +1566,12 @@ class EntryQuery extends ElementQuery
         }
         if ($this->primaryOwnerId) {
             foreach ($this->primaryOwnerId as $ownerId) {
-                $tags[] = $ownerId;
+                $tags[] = "element::$ownerId";
             }
         }
         if ($this->ownerId) {
             foreach ($this->ownerId as $ownerId) {
-                $tags[] = $ownerId;
+                $tags[] = "element::$ownerId";
             }
         }
         return $tags;
