@@ -24,7 +24,11 @@
 - Most custom fields can now be included multiple times within the same field layout. ([#8497](https://github.com/craftcms/cms/discussions/8497))
 - Entry types are now managed independently of sections.
 - Entry types are no longer required to have a Title Format, if the Title field isn’t shown.
+- Added the “Addresses” field type. ([#11438](https://github.com/craftcms/cms/discussions/11438))
 - Matrix fields now manage nested entries, rather than Matrix blocks. During the upgrade, existing Matrix block types will be converted to entry types; their nested fields will be made global; and Matrix blocks will be converted to entries.
+- Matrix fields now have “Entry URI Format” and “Template” settings for each site.
+- Matrix fields now have a “View Mode” setting, which can be used to have nested entries display within an element index, rather than as inline blocks.
+- The address field layout is now accessed via **Settings** → **Addresses**.
 - Added support for defining custom locale aliases, via a new `localeAliases` config setting. ([#12705](https://github.com/craftcms/cms/pull/12705))
 - Removed the concept of field groups.
 - `entrify/*` commands now ask if an entry type already exists for the section.
@@ -54,13 +58,18 @@
 - Added the `elementChip()` and `elementCard()` global functions for control panel templates.
 - The `assets/move-asset` and `assets/move-folder` actions no longer include `success` keys in responses. ([#12159](https://github.com/craftcms/cms/pull/12159))
 - The `assets/upload` controller action now includes `errors` object in failure responses. ([#12159](https://github.com/craftcms/cms/pull/12159))
+- Element action triggers’ `validateSelection()` and `activate()` methods are now passed an `elementIndex` argument, with a reference to the trigger’s corresponding element index.
 - Added `craft\base\Element::shouldValidateTitle()`.
 - Added `craft\base\ElementContainerFieldInterface`, which should be implemented by fields which contain nested elements, such as Matrix.
 - Added `craft\base\ElementInterface::getCardBodyHtml()`.
+- Added `craft\base\ElementInterface::getChipLabelHtml()`.
 - Added `craft\base\ElementInterface::hasDrafts()`.
+- Added `craft\base\ElementInterface::hasThumbs()`.
 - Added `craft\base\ElementInterface::setLazyEagerLoadedElements()`.
+- Added `craft\base\ElementTrait::$deletedWithOwner`.
 - Added `craft\base\ElementTrait::$eagerLoadInfo`.
 - Added `craft\base\ElementTrait::$elementQueryResult`.
+- Added `craft\base\ElementTrait::$forceSave`.
 - Added `craft\base\Field::valueSql()`.
 - Added `craft\base\FieldInterface::dbType()`, which defines the type(s) of values the field will store in the `elements_sites.content` column (if any).
 - Added `craft\base\FieldInterface::getValueSql()`.
@@ -76,6 +85,7 @@
 - Added `craft\controllers\EntryTypesController`.
 - Added `craft\db\Connection::getIsMaria()`.
 - Added `craft\db\QueryParam`.
+- Added `craft\db\Table::ELEMENTS_OWNERS`.
 - Added `craft\db\Table::SECTIONS_ENTRYTYPES`.
 - Added `craft\db\mysql\ColumnSchema::$collation`.
 - Added `craft\db\mysql\QueryBuilder::jsonContains()`.
@@ -88,7 +98,6 @@
 - Added `craft\elements\Asset::gqlTypeName()`.
 - Added `craft\elements\Category::gqlTypeName()`.
 - Added `craft\elements\Entry::$collapsed`.
-- Added `craft\elements\Entry::$deletedWithOwner`.
 - Added `craft\elements\Entry::$dirty`.
 - Added `craft\elements\Entry::$fieldId`.
 - Added `craft\elements\Entry::$ownerId`.
@@ -99,6 +108,7 @@
 - Added `craft\elements\Entry::getOwner()`.
 - Added `craft\elements\Entry::gqlTypeName()`.
 - Added `craft\elements\Entry::setOwner()`.
+- Added `craft\elements\NestedElementManager`.
 - Added `craft\elements\Tag::gqlTypeName()`.
 - Added `craft\elements\User::GQL_TYPE_NAME`.
 - Added `craft\elements\conditions\ElementConditionInterface::getFieldLayouts()`.
@@ -110,10 +120,13 @@
 - Added `craft\elements\db\ElementQuery::wasEagerLoaded()`.
 - Added `craft\elements\db\ElementQueryInterface::fieldLayouts()`
 - Added `craft\enums\AttributeStatus`.
+- Added `craft\enums\ElementIndexViewMode`.
 - Added `craft\enums\PropagationMethod`.
 - Added `craft\enums\TimePeriod`.
+- Added `craft\events\BulkElementsEvent`.
 - Added `craft\events\DefineEntryTypesForFieldEvent`.
 - Added `craft\fieldlayoutelements\CustomField::$handle`.
+- Added `craft\fields\Addresses`.
 - Added `craft\fields\Matrix::$entryUriFormat`.
 - Added `craft\fields\Matrix::EVENT_DEFINE_ENTRY_TYPES`.
 - Added `craft\fields\Matrix::getEntryTypes()`.
@@ -122,11 +135,17 @@
 - Added `craft\fields\Matrix::supportedSiteIds()`.
 - Added `craft\fields\conditions\FieldConditionRuleTrait::fieldInstances()`.
 - Added `craft\fields\conditions\FieldConditionRuleTrait::setLayoutElementUid()`.
+- Added `craft\helpers\App::isWindows()`.
+- Added `craft\helpers\App::silence()`.
 - Added `craft\helpers\ArrayHelper::lastValue()`.
 - Added `craft\helpers\Cp::elementCardHtml()`.
 - Added `craft\helpers\Cp::elementChipHtml()`.
+- Added `craft\helpers\Cp::elementIndexHtml()`.
 - Added `craft\helpers\Db::defaultCollation()`.
 - Added `craft\helpers\Db::prepareForJsonColumn()`.
+- Added `craft\helpers\ElementHelper::actionConfig()`.
+- Added `craft\helpers\ElementHelper::addElementEditorUrlParams()`.
+- Added `craft\helpers\ElementHelper::elementEditorUrl()`.
 - Added `craft\helpers\Gql::getSchemaContainedSections()`.
 - Added `craft\helpers\ProjectConfig::ensureAllEntryTypesProcessed()`.
 - Added `craft\i18n\Locale::$aliasOf`.
@@ -134,6 +153,7 @@
 - Added `craft\migrations\BaseContentRefactorMigration`.
 - Added `craft\models\FieldLayout::getCardBodyFields()`.
 - Added `craft\models\FieldLayout::getElementByUid()`.
+- Added `craft\models\FieldLayout::getFieldById()`.
 - Added `craft\models\FieldLayout::getThumbField()`.
 - Added `craft\models\Section::getCpEditUrl()`.
 - Added `craft\services\Entries::refreshEntryTypes()`.
@@ -146,8 +166,6 @@
 - Added `craft\services\ProjectConfig::flush()`.
 - Added `craft\services\ProjectConfig::writeYamlFiles()`.
 - Added `craft\web\twig\variables\Cp::getEntryTypeOptions()`.
-- Added `craft\helpers\App::isWindows()`.
-- Added `craft\helpers\App::silence()`.
 - All of the `craft\services\Sections` members have been moved into `craft\services\Entries`.
 - Renamed `craft\base\BlockElementInterface` to `NestedElementInterface`, and added a `getField()` method to it.
 - Renamed `craft\base\Element::EVENT_SET_TABLE_ATTRIBUTE_HTML` to `EVENT_DEFINE_ATTRIBUTE_HTML`.
@@ -174,6 +192,7 @@
 - `craft\base\ElementInterface::getAncestors()`, `getDescendants()`, `getChildren()`, and `getSiblings()` now have `ElementQueryInterface|ElementCollection` return types, rather than `ElementQueryInterface|Collection`.
 - `craft\base\ElementInterface::getEagerLoadedElementCount()` can now return `null` for counts that haven’t been eager-loaded yet.
 - `craft\base\ElementInterface::getEagerLoadedElements` now has an `ElementCollection|null` return type, rather than `Collection|null`.
+- `craft\base\ElementInterface::indexHtml()`’ `$showCheckboxes` argument is now `$selectable`, and it now has a `$sortable` argument.
 - `craft\db\Connection::getSupportsMb4()` is now dynamic for MySQL installs, based on whether the `elements_sites` table has an `mb4` charset.
 - `craft\elemens\db\ElementQueryInterface::collect()` now has an `ElementCollection` return type, rather than `Collection`.
 - `craft\elements\Entry::getSection()` can now return `null`, for nested entries.
