@@ -69,13 +69,14 @@
         {{ forms.lightswitchField({
             label: 'Files in this filesystem have public URLs'|t('app'),
             name: 'hasUrls',
+            id: 'has-urls',
             on:   filesystem.hasUrls,
-            toggle: filesystem.getShowUrlSetting() ? "url-field" : null
+            toggle: filesystem.getShowUrlSetting() ? "url-field-wrapper" : null
         }) }}
     {% endif %}
 
     {% if filesystem.getShowUrlSetting() %}
-        <div id="url-field" class="{% if not filesystem.hasUrls %}hidden{% endif %}">
+        <div id="url-field-wrapper" class="{% if not filesystem.hasUrls %}hidden{% endif %}">
             {{ forms.autosuggestField({
                 label: "Base URL"|t('app'),
                 instructions: "The base URL to the files in this filesystem."|t('app'),
