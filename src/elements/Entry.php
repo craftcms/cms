@@ -1655,8 +1655,14 @@ EOD;
                     'value' => $this->getTypeId(),
                     'options' => $entryTypeOptions,
                     'disabled' => $static,
-                    'attribute' => 'typeId',
                     'errors' => $this->getErrors('typeId'),
+                    // we can't simply use 'attribute' as that will make the field handle show
+                    // see https://github.com/craftcms/cms/issues/13627 for more detail
+                    'fieldAttributes' => [
+                        'data' => [
+                            'attribute' => 'typeId',
+                        ],
+                    ],
                 ]);
             })();
         }
