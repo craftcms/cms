@@ -181,7 +181,7 @@ export default Base.extend(
     },
 
     show: function () {
-      if (this.isExpanded()) {
+      if (this.isExpanded() || this.$trigger.hasClass('disabled')) {
         return;
       }
 

@@ -62,7 +62,7 @@ class UriFormatValidatorTest extends TestCase
     {
         return [
             [true, ''],
-            [true, '', true],
+            [false, '', true],
             [true, 'test', false],
             [true, 'slug', true],
             [false, 'entry/{test}/test', true],

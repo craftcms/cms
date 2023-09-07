@@ -9,6 +9,7 @@ namespace craft\helpers;
 
 use Craft;
 use craft\base\Element;
+use craft\base\ElementActionInterface;
 use craft\base\ElementInterface;
 use craft\base\Field;
 use craft\base\NestedElementInterface;
@@ -758,5 +759,73 @@ class ElementHelper
         }
 
         return Html::encode(StringHelper::stripHtml($value));
+    }
+
+    /**
+     * Returns a generic editor URL for the given element.
+     *
+     * @param ElementInterface $element
+     * @param bool $withParams Whether to include the necessary query string params
+     * @return string
+     * @since 5.0.0
+     */
+    public static function elementEditorUrl(ElementInterface $element, bool $withParams = true): string
+    {
+        $url = sprintf('edit/%s', $element->getCanonicalId());
+
+        if ($element->slug && !static::isTempSlug($element->slug)) {
+            $url .= "-$element->slug";
+        }
+
+        if ($withParams) {
+            return static::addElementEditorUrlParams($url, $element);
+        }
+
+        return UrlHelper::cpUrl($url);
+    }
+
+    /**
+     * Ensures the given element edit URL includes the necessary query string params.
+     *
+     * @param string $url
+     * @param ElementInterface $element
+     * @return string
+     * @since 5.0.0
+     */
+    public static function addElementEditorUrlParams(string $url, ElementInterface $element): string
+    {
+        $params = [];
+
+        if (Craft::$app->getIsMultiSite()) {
+            $params['site'] = $element->getSite()->handle;
+        }
+
+        if ($element->getIsDraft() && !$element->isProvisionalDraft) {
+            $params['draftId'] = $element->draftId;
+        } elseif ($element->getIsRevision()) {
+            $params['revisionId'] = $element->revisionId;
+        }
+
+        return UrlHelper::cpUrl($url, $params);
+    }
+
+    /**
+     * Returns an element action’s JavaScript configuration.
+     *
+     * @param ElementActionInterface $action
+     * @return array
+     * @since 5.0.0
+     */
+    public static function actionConfig(ElementActionInterface $action): array
+    {
+        return [
+            'type' => $action::class,
+            'destructive' => $action->isDestructive(),
+            'download' => $action->isDownload(),
+            'name' => $action->getTriggerLabel(),
+            'trigger' => $action->getTriggerHtml(),
+            'confirm' => $action->getConfirmationMessage(),
+            'settings' => $action->getSettings() ?: null,
+        ];
     }
 }

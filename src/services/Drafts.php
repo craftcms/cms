@@ -165,6 +165,21 @@ class Drafts extends Component
 
             $draft = Craft::$app->getElements()->duplicateElement($canonical, $newAttributes);
 
+            // Duplicate nested element ownership
+            Craft::$app->getDb()->createCommand(sprintf(
+                <<<SQL
+INSERT INTO %s ([[elementId]], [[ownerId]], [[sortOrder]]) 
+SELECT [[o.elementId]], :draftId, [[o.sortOrder]] 
+FROM %s AS [[o]]
+WHERE [[o.ownerId]] = :canonicalId
+SQL,
+                Table::ELEMENTS_OWNERS,
+                Table::ELEMENTS_OWNERS,
+            ), [
+                ':draftId' => $draft->id,
+                ':canonicalId' => $canonical->id,
+            ])->execute();
+
             $transaction->commit();
         } catch (Throwable $e) {
             $transaction->rollBack();

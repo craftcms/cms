@@ -793,8 +793,8 @@ class Entries extends Component
                     ]));
                 } elseif ($this->autoResaveEntries) {
                     Queue::push(new ResaveElements([
-                        'description' => Translation::prep('app', 'Resaving {section} entries', [
-                            'section' => $sectionRecord->name,
+                        'description' => Translation::prep('app', 'Resaving {name} entries', [
+                            'name' => $sectionRecord->name,
                         ]),
                         'elementType' => Entry::class,
                         'criteria' => [

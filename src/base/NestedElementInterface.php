@@ -29,10 +29,24 @@ interface NestedElementInterface extends ElementInterface
     public function getOwner(): ?ElementInterface;
 
     /**
+     * Sets the owner element, if the element has one.
+     *
+     * @param ElementInterface|null $owner
+     */
+    public function setOwner(?ElementInterface $owner): void;
+
+    /**
      * Returns the field that contains the element.
      *
      * @return ElementContainerFieldInterface|null
      * @throws InvalidConfigException if the element is misconfigured
      */
     public function getField(): ?ElementContainerFieldInterface;
+
+    /**
+     * Returns the element’s sort order, if it has one.
+     *
+     * @return int|null
+     */
+    public function getSortOrder(): ?int;
 }

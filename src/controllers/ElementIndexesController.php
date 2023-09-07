@@ -76,6 +76,12 @@ class ElementIndexesController extends BaseElementsController
     protected ?ElementQueryInterface $elementQuery = null;
 
     /**
+     * @var ElementQueryInterface|null
+     * @since 5.0.0
+     */
+    protected ?ElementQueryInterface $unfilteredElementQuery = null;
+
+    /**
      * @var ElementActionInterface[]|null
      */
     protected ?array $actions = null;
@@ -110,7 +116,7 @@ class ElementIndexesController extends BaseElementsController
 
             if (
                 in_array($action->id, ['get-elements', 'get-more-elements', 'perform-action', 'export']) &&
-                $this->includeActions() &&
+                $this->isAdministrative() &&
                 isset($this->sourceKey)
             ) {
                 $this->actions = $this->availableActions();
@@ -162,7 +168,7 @@ class ElementIndexesController extends BaseElementsController
      */
     public function actionGetElements(): Response
     {
-        $responseData = $this->elementResponseData(true, $this->includeActions());
+        $responseData = $this->elementResponseData(true, $this->isAdministrative());
         return $this->asJson($responseData);
     }
 
@@ -187,9 +193,18 @@ class ElementIndexesController extends BaseElementsController
     {
         /** @var string|ElementInterface $elementType */
         $elementType = $this->elementType;
+        $total = $elementType::indexElementCount($this->elementQuery, $this->sourceKey);
+
+        if (isset($this->unfilteredElementQuery)) {
+            $unfilteredTotal = $elementType::indexElementCount($this->unfilteredElementQuery, $this->sourceKey);
+        } else {
+            $unfilteredTotal = $total;
+        }
+
         return $this->asJson([
             'resultSet' => $this->request->getParam('resultSet'),
-            'count' => $elementType::indexElementCount($this->elementQuery, $this->sourceKey),
+            'total' => $total,
+            'unfilteredTotal' => $unfilteredTotal,
         ]);
     }
 
@@ -391,7 +406,7 @@ class ElementIndexesController extends BaseElementsController
             throw new BadRequestHttpException('Request missing required body param');
         }
 
-        if ($this->context !== 'index') {
+        if (!$this->isAdministrative()) {
             throw new BadRequestHttpException('Request missing index context');
         }
 
@@ -482,13 +497,14 @@ class ElementIndexesController extends BaseElementsController
     }
 
     /**
-     * Identify whether index actions should be included in the element index
+     * Returns whether the element index has an administrative context (`index` or `embedded-index`).
      *
      * @return bool
+     * @since 5.0.0
      */
-    protected function includeActions(): bool
+    protected function isAdministrative(): bool
     {
-        return $this->context === 'index';
+        return in_array($this->context, ['index', 'embedded-index']);
     }
 
     /**
@@ -501,6 +517,18 @@ class ElementIndexesController extends BaseElementsController
     {
         if (!isset($this->sourceKey)) {
             return null;
+        }
+
+        if ($this->sourceKey === '__IMP__') {
+            /** @var ElementInterface|string $elementType */
+            $elementType = $this->elementType;
+
+            return [
+                'type' => ElementSources::TYPE_NATIVE,
+                'key' => '__IMP__',
+                'label' => Craft::t('app', 'All elements'),
+                'hasThumbs' => $elementType::hasThumbs(),
+            ];
         }
 
         $source = ElementHelper::findSource($this->elementType, $this->sourceKey, $this->context);
@@ -576,6 +604,15 @@ class ElementIndexesController extends BaseElementsController
             return $query;
         }
 
+        // Are we possibly including drafts?
+        // (Get this in early, in case the source criteria has other ideas.)
+        if ($this->request->getBodyParam('canHaveDrafts')) {
+            $query
+                ->drafts(null)
+                ->savedDraftsOnly()
+                ->draftOf(null);
+        }
+
         // Does the source specify any criteria attributes?
         switch ($this->source['type']) {
             case ElementSources::TYPE_NATIVE:
@@ -589,18 +626,16 @@ class ElementIndexesController extends BaseElementsController
                 $sourceCondition->modifyQuery($query);
         }
 
-        // Was a condition provided?
-        if (isset($this->condition)) {
-            $this->condition->modifyQuery($query);
-        }
+        $applyCriteria = function(array $criteria) use ($query): bool {
+            if (!$criteria) {
+                return false;
+            }
 
-        // Override with the request's params
-        if ($criteria = $this->request->getBodyParam('criteria')) {
             if (isset($criteria['trashed'])) {
-                $criteria['trashed'] = filter_var($criteria['trashed'] ?? false, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE) ?? false;
+                $criteria['trashed'] = filter_var($criteria['trashed'], FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE) ?? false;
             }
             if (isset($criteria['drafts'])) {
-                $criteria['drafts'] = filter_var($criteria['drafts'] ?? false, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE) ?? false;
+                $criteria['drafts'] = filter_var($criteria['drafts'], FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE) ?? false;
             }
             if (isset($criteria['draftOf'])) {
                 if (is_numeric($criteria['draftOf']) && $criteria['draftOf'] != 0) {
@@ -609,7 +644,25 @@ class ElementIndexesController extends BaseElementsController
                     $criteria['draftOf'] = filter_var($criteria['draftOf'], FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE);
                 }
             }
+
             Craft::configure($query, $criteria);
+            return true;
+        };
+
+        $applyCriteria($this->request->getBodyParam('baseCriteria'));
+
+        // Now we move onto things the user could have modified...
+        $unfilteredQuery = (clone $query);
+        $hasFilters = false;
+
+        // Was a condition provided?
+        if (isset($this->condition)) {
+            $this->condition->modifyQuery($query);
+            $hasFilters = true;
+        }
+
+        if ($applyCriteria($this->request->getBodyParam('criteria'))) {
+            $hasFilters = true;
         }
 
         // Override with the custom filters
@@ -625,6 +678,7 @@ class ElementIndexesController extends BaseElementsController
             /** @var ElementConditionInterface $filterCondition */
             $filterCondition = $conditionsService->createCondition(Component::cleanseConfig($filterConditionConfig));
             $filterCondition->modifyQuery($query);
+            $hasFilters = true;
         }
 
         // Exclude descendants of the collapsed element IDs
@@ -663,8 +717,15 @@ class ElementIndexesController extends BaseElementsController
 
                 if (!empty($descendantIds)) {
                     $query->andWhere(['not', ['elements.id' => $descendantIds]]);
+                    $hasFilters = true;
                 }
             }
+        }
+
+        // Only set unfilteredElementQuery if there were any filters,
+        // so we know there weren't any filters in play if it's null
+        if ($hasFilters) {
+            $this->unfilteredElementQuery = $unfilteredQuery;
         }
 
         return $query;
@@ -694,7 +755,8 @@ class ElementIndexesController extends BaseElementsController
         }
 
         $disabledElementIds = $this->request->getParam('disabledElementIds', []);
-        $showCheckboxes = !empty($this->actions) || $this->request->getParam('showCheckboxes');
+        $selectable = !empty($this->actions) || $this->request->getParam('selectable');
+        $sortable = $this->isAdministrative() && $this->request->getParam('sortable');
 
         if ($this->sourceKey) {
             $responseData['html'] = $elementType::indexHtml(
@@ -704,7 +766,8 @@ class ElementIndexesController extends BaseElementsController
                 $this->sourceKey,
                 $this->context,
                 $includeContainer,
-                $showCheckboxes
+                $selectable,
+                $sortable,
             );
 
             $responseData['headHtml'] = $view->getHeadHtml();
@@ -821,15 +884,7 @@ class ElementIndexesController extends BaseElementsController
 
         /** @var ElementAction $action */
         foreach ($this->actions as $action) {
-            $actionData[] = [
-                'type' => get_class($action),
-                'destructive' => $action->isDestructive(),
-                'download' => $action->isDownload(),
-                'name' => $action->getTriggerLabel(),
-                'trigger' => $action->getTriggerHtml(),
-                'confirm' => $action->getConfirmationMessage(),
-                'settings' => $action->getSettings() ?: null,
-            ];
+            $actionData[] = ElementHelper::actionConfig($action);
         }
 
         return $actionData;

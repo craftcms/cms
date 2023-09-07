@@ -2128,7 +2128,7 @@ class ElementQuery extends Query implements ElementQueryInterface
 
             // If specific IDs were requested, then use those
             if (is_numeric($this->id) || (is_array($this->id) && ArrayHelper::isNumeric($this->id))) {
-                $queryTags = (array)$this->id;
+                array_push($this->_cacheTags, ...array_map(fn($id) => "element::$id", (array)$this->id));
             } else {
                 $queryTags = $this->cacheTags();
 
@@ -2150,10 +2150,14 @@ class ElementQuery extends Query implements ElementQueryInterface
                 } else {
                     $queryTags[] = '*';
                 }
-            }
 
-            foreach ($queryTags as $tag) {
-                $this->_cacheTags[] = "element::$this->elementType::$tag";
+                foreach ($queryTags as $tag) {
+                    // tags can be provided fully-formed, or relative to the element type
+                    if (!str_starts_with($tag, 'element::')) {
+                        $tag = sprintf('element::%s::%s', $this->elementType, $tag);
+                    }
+                    $this->_cacheTags[] = $tag;
+                }
             }
         }
 

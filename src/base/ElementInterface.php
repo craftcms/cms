@@ -64,6 +64,14 @@ interface ElementInterface extends ComponentInterface
     public static function refHandle(): ?string;
 
     /**
+     * Returns whether element indexes should show the “Drafts” status option.
+     *
+     * @return bool
+     * @since 5.0.0
+     */
+    public static function hasDrafts(): bool;
+
+    /**
      * Returns whether Craft should keep track of attribute and custom field changes made to this element type,
      * including when the last time they were changed, and who was logged-in at the time.
      *
@@ -80,6 +88,14 @@ interface ElementInterface extends ComponentInterface
      * @return bool Whether elements of this type have traditional titles.
      */
     public static function hasTitles(): bool;
+
+    /**
+     * Returns whether element indexes should include a thumbnail view by default.
+     *
+     * @return bool
+     * @since 5.0.0
+     */
+    public static function hasThumbs(): bool;
 
     /**
      * Returns whether elements of this type can have their own slugs and URIs.
@@ -409,10 +425,20 @@ interface ElementInterface extends ComponentInterface
      * @param string|null $sourceKey
      * @param string|null $context
      * @param bool $includeContainer
-     * @param bool $showCheckboxes
+     * @param bool $selectable
+     * @param bool $sortable
      * @return string The element index HTML
      */
-    public static function indexHtml(ElementQueryInterface $elementQuery, ?array $disabledElementIds, array $viewState, ?string $sourceKey, ?string $context, bool $includeContainer, bool $showCheckboxes): string;
+    public static function indexHtml(
+        ElementQueryInterface $elementQuery,
+        ?array $disabledElementIds,
+        array $viewState,
+        ?string $sourceKey,
+        ?string $context,
+        bool $includeContainer,
+        bool $selectable,
+        bool $sortable,
+    ): string;
 
     /**
      * Returns the total number of elements that will be shown on an element index, for the given element query.
@@ -774,6 +800,14 @@ interface ElementInterface extends ComponentInterface
      * @since 4.4.0
      */
     public function setUiLabelPath(array $path): void;
+
+    /**
+     * Returns the label HTML for element chips.
+     *
+     * @return string
+     * @since 5.0.0
+     */
+    public function getChipLabelHtml(): string;
 
     /**
      * Returns the body HTML for element cards.

@@ -261,6 +261,14 @@ class Asset extends Element
     /**
      * @inheritdoc
      */
+    public static function hasThumbs(): bool
+    {
+        return true;
+    }
+
+    /**
+     * @inheritdoc
+     */
     public static function isLocalized(): bool
     {
         return true;

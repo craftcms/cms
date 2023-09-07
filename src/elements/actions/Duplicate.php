@@ -52,13 +52,14 @@ class Duplicate extends ElementAction
 (() => {
     new Craft.ElementActionTrigger({
         type: $type,
-        validateSelection: \$selectedItems => {
-            for (let i = 0; i < \$selectedItems.length; i++) {
-                if (!Garnish.hasAttr(\$selectedItems.eq(i).find('.element'), 'data-duplicatable')) {
+        validateSelection: (selectedItems, elementIndex) => {
+            for (let i = 0; i < selectedItems.length; i++) {
+                if (!Garnish.hasAttr(selectedItems.eq(i).find('.element'), 'data-duplicatable')) {
                     return false;
                 }
             }
-            return true;
+
+            return elementIndex.settings.canDuplicateElements(selectedItems);
         },
     });
 })();

@@ -1,12 +1,9 @@
 /** global: Craft */
 /** global: Garnish */
-Craft.StructureTableSorter = Garnish.DragSort.extend(
+Craft.ElementTableSorter = Garnish.DragSort.extend(
   {
     tableView: null,
-    structureId: null,
-    maxLevels: null,
 
-    _basePadding: null,
     _helperMargin: null,
 
     _$firstRowCells: null,
@@ -32,13 +29,10 @@ Craft.StructureTableSorter = Garnish.DragSort.extend(
      */
     init: function (tableView, $elements, settings) {
       this.tableView = tableView;
-      this.structureId = this.tableView.$table.data('structure-id');
-      this.maxLevels = parseInt(this.tableView.$table.attr('data-max-levels'));
 
-      this._basePadding = 14 + (this.tableView.elementIndex.actions ? 34 : 24); // see _elements/tableview/elements.html
-      this._helperMargin = this.tableView.elementIndex.actions ? 54 : 0;
+      this._helperMargin = this.tableView.elementIndex.actions ? 52 : 0;
 
-      settings = $.extend({}, Craft.StructureTableSorter.defaults, settings, {
+      settings = $.extend({}, Craft.ElementTableSorter.defaults, settings, {
         handle: '.move',
         collapseDraggees: true,
         singleHelper: true,
@@ -56,7 +50,7 @@ Craft.StructureTableSorter = Garnish.DragSort.extend(
      * Returns the draggee rows (including any descendent rows).
      */
     findDraggee: function () {
-      this._draggeeLevel = this._targetLevel = this.$targetItem.data('level');
+      this._draggeeLevel = this._targetLevel = this._level(this.$targetItem);
       this._draggeeLevelDelta = 0;
 
       var $draggee = $(this.$targetItem),
@@ -64,7 +58,7 @@ Craft.StructureTableSorter = Garnish.DragSort.extend(
 
       while ($nextRow.length) {
         // See if this row is a descendant of the draggee
-        var nextRowLevel = $nextRow.data('level');
+        const nextRowLevel = this._level($nextRow);
 
         if (nextRowLevel <= this._draggeeLevel) {
           break;
@@ -88,7 +82,7 @@ Craft.StructureTableSorter = Garnish.DragSort.extend(
       // Do we have a maxLevels to enforce,
       // and does it look like this draggee has descendants we don't know about yet?
       if (
-        this.maxLevels &&
+        this.settings.maxLevels &&
         this.draggingLastElements &&
         this.tableView.getMorePending()
       ) {
@@ -152,10 +146,9 @@ Craft.StructureTableSorter = Garnish.DragSort.extend(
         // Is this the title cell?
         if (Garnish.hasAttr($firstRowCell, 'data-titlecell')) {
           this._$titleHelperCell = $helperCell;
-          var padding = parseInt($firstRowCell.css('padding-' + Craft.left));
           this._titleHelperCellOuterWidth = width;
 
-          $helperCell.css('padding-' + Craft.left, this._basePadding);
+          $helperCell.children('div').css(`padding-${Craft.left}`, '24px');
         }
       }
 
@@ -194,7 +187,7 @@ Craft.StructureTableSorter = Garnish.DragSort.extend(
       // Get the initial set of ancestors, before the item gets moved
       this._ancestors = this._getAncestors(
         this.$targetItem,
-        this.$targetItem.data('level')
+        this._level(this.$targetItem)
       );
 
       // Set the initial target level bounds
@@ -238,9 +231,9 @@ Craft.StructureTableSorter = Garnish.DragSort.extend(
 
         for (var i = 0; i < this.$draggee.length; i++) {
           var $draggee = $(this.$draggee[i]),
-            oldLevel = $draggee.data('level'),
+            oldLevel = this._level($draggee),
             newLevel = oldLevel + levelDiff,
-            padding = this._basePadding + this._getLevelIndent(newLevel);
+            padding = 24 + this._getLevelIndent(newLevel);
           const $structureTextAlternative = $draggee.find(
             '[data-text-alternative]'
           );
@@ -251,8 +244,8 @@ Craft.StructureTableSorter = Garnish.DragSort.extend(
           $draggee.data('level', newLevel);
           $draggee.find('.element').data('level', newLevel);
           $draggee
-            .children('[data-titlecell]:first')
-            .css('padding-' + Craft.left, padding);
+            .find('> [data-titlecell]:first > div')
+            .css(`padding-${Craft.left}`, padding);
 
           // Update text alternative
           $structureTextAlternative.text(altText);
@@ -263,70 +256,72 @@ Craft.StructureTableSorter = Garnish.DragSort.extend(
 
       // Keep in mind this could have also been set by onSortChange()
       if (this._positionChanged) {
-        // Tell the server about the new position
-        // -----------------------------------------------------------------
+        if (this.settings.structureId) {
+          // Tell the server about the new position
+          // -----------------------------------------------------------------
 
-        var data = this._getAjaxBaseData(this.$draggee);
+          const data = this._getAjaxBaseData(this.$draggee);
 
-        // Find the previous sibling/parent, if there is one
-        var $prevRow = this.$draggee.first().prev();
+          // Find the previous sibling/parent, if there is one
+          let $prevRow = this.$draggee.first().prev();
+          let $spinnerRow;
 
-        while ($prevRow.length) {
-          var prevRowLevel = $prevRow.data('level');
+          while ($prevRow.length) {
+            const prevRowLevel = this._level($prevRow);
 
-          if (prevRowLevel == this._targetLevel) {
-            data.prevId = $prevRow.data('id');
-            break;
-          }
+            if (prevRowLevel == this._targetLevel) {
+              data.prevId = $prevRow.data('id');
+              break;
+            }
 
-          if (prevRowLevel < this._targetLevel) {
-            data.parentId = $prevRow.data('id');
+            if (prevRowLevel < this._targetLevel) {
+              data.parentId = $prevRow.data('id');
 
-            // Is this row collapsed?
-            var $toggle = $prevRow.find('> th > .toggle');
+              // Is this row collapsed?
+              const $toggle = $prevRow.find('> th .toggle');
 
-            if (!$toggle.hasClass('expanded')) {
-              // Make it look expanded
-              $toggle.addClass('expanded');
+              if (!$toggle.hasClass('expanded')) {
+                // Make it look expanded
+                $toggle.addClass('expanded');
 
-              // Add a temporary row
-              var $spinnerRow = this.tableView._createSpinnerRowAfter($prevRow);
+                // Add a temporary row
+                $spinnerRow = this.tableView._createSpinnerRowAfter($prevRow);
 
-              // Remove the target item
-              if (this.tableView.elementSelect) {
-                this.tableView.elementSelect.removeItems(this.$targetItem);
+                // Remove the target item
+                if (this.tableView.elementSelect) {
+                  this.tableView.elementSelect.removeItems(this.$targetItem);
+                }
+
+                this.removeItems(this.$targetItem);
+                this.$targetItem.remove();
+                this.tableView._totalVisible--;
               }
 
-              this.removeItems(this.$targetItem);
-              this.$targetItem.remove();
-              this.tableView._totalVisible--;
+              break;
             }
 
-            break;
+            $prevRow = $prevRow.prev();
           }
 
-          $prevRow = $prevRow.prev();
+          Craft.sendActionRequest('POST', 'structures/move-element', {data})
+            .then((response) => {
+              Craft.cp.displaySuccess(Craft.t('app', 'New position saved.'));
+              this.onPositionChange();
+
+              // Were we waiting on this to complete so we can expand the new parent?
+              if ($spinnerRow && $spinnerRow.parent().length) {
+                $spinnerRow.remove();
+                this.tableView._expandElement($toggle, true);
+              }
+
+              // See if we should run any pending tasks
+              Craft.cp.runQueue();
+            })
+            .catch(({response}) => {
+              Craft.cp.displayError(Craft.t('app', 'A server error occurred.'));
+              this.tableView.elementIndex.updateElements();
+            });
         }
-
-        Craft.sendActionRequest('POST', 'structures/move-element', {data})
-          .then((response) => {
-            Craft.cp.displaySuccess(Craft.t('app', 'New position saved.'));
-            this.onPositionChange();
-
-            // Were we waiting on this to complete so we can expand the new parent?
-            if ($spinnerRow && $spinnerRow.parent().length) {
-              $spinnerRow.remove();
-              this.tableView._expandElement($toggle, true);
-            }
-
-            // See if we should run any pending tasks
-            Craft.cp.runQueue();
-          })
-          .catch(({response}) => {
-            Craft.cp.displayError(Craft.t('app', 'A server error occurred.'));
-            this.tableView.elementIndex.updateElements();
-            return;
-          });
       }
     },
 
@@ -376,25 +371,25 @@ Craft.StructureTableSorter = Garnish.DragSort.extend(
     _getLevelBounds: function ($prevRow, $nextRow) {
       // Can't go any lower than the next row, if there is one
       if ($nextRow && $nextRow.length) {
-        this._getLevelBounds._minLevel = $nextRow.data('level');
+        this._getLevelBounds._minLevel = this._level($nextRow);
       } else {
         this._getLevelBounds._minLevel = 1;
       }
 
       // Can't go any higher than the previous row + 1
       if ($prevRow && $prevRow.length) {
-        this._getLevelBounds._maxLevel = $prevRow.data('level') + 1;
+        this._getLevelBounds._maxLevel = this._level($prevRow) + 1;
       } else {
         this._getLevelBounds._maxLevel = 1;
       }
 
       // Does this structure have a max level?
-      if (this.maxLevels) {
+      if (this.settings.maxLevels) {
         // Make sure it's going to fit at all here
         if (
           this._getLevelBounds._minLevel != 1 &&
           this._getLevelBounds._minLevel + this._draggeeLevelDelta >
-            this.maxLevels
+            this.settings.maxLevels
         ) {
           return false;
         }
@@ -402,10 +397,10 @@ Craft.StructureTableSorter = Garnish.DragSort.extend(
         // Limit the max level if we have to
         if (
           this._getLevelBounds._maxLevel + this._draggeeLevelDelta >
-          this.maxLevels
+          this.settings.maxLevels
         ) {
           this._getLevelBounds._maxLevel =
-            this.maxLevels - this._draggeeLevelDelta;
+            this.settings.maxLevels - this._draggeeLevelDelta;
 
           if (this._getLevelBounds._maxLevel < this._getLevelBounds._minLevel) {
             this._getLevelBounds._maxLevel = this._getLevelBounds._minLevel;
@@ -446,7 +441,7 @@ Craft.StructureTableSorter = Garnish.DragSort.extend(
 
       // What is that in indentation levels?
       this._updateIndent._indentationDist = Math.round(
-        this._updateIndent._mouseDist / Craft.StructureTableSorter.LEVEL_INDENT
+        this._updateIndent._mouseDist / Craft.ElementTableSorter.LEVEL_INDENT
       );
 
       // Combine with the original level to get the new target level
@@ -482,7 +477,7 @@ Craft.StructureTableSorter = Garnish.DragSort.extend(
       this._updateIndent._targetLevelMouseDiff =
         this._updateIndent._mouseDist -
         this._updateIndent._indentationDist *
-          Craft.StructureTableSorter.LEVEL_INDENT;
+          Craft.ElementTableSorter.LEVEL_INDENT;
 
       // What's the magnet impact of that?
       this._updateIndent._magnetImpact = Math.round(
@@ -492,11 +487,11 @@ Craft.StructureTableSorter = Garnish.DragSort.extend(
       // Put it on a leash
       if (
         Math.abs(this._updateIndent._magnetImpact) >
-        Craft.StructureTableSorter.MAX_GIVE
+        Craft.ElementTableSorter.MAX_GIVE
       ) {
         this._updateIndent._magnetImpact =
           (this._updateIndent._magnetImpact > 0 ? 1 : -1) *
-          Craft.StructureTableSorter.MAX_GIVE;
+          Craft.ElementTableSorter.MAX_GIVE;
       }
 
       // Apply the new margin/width
@@ -504,7 +499,7 @@ Craft.StructureTableSorter = Garnish.DragSort.extend(
         this._getLevelIndent(this._targetLevel) +
         this._updateIndent._magnetImpact;
       this.helpers[0].css(
-        'margin-' + Craft.left,
+        `margin-${Craft.left}`,
         this._updateIndent._closestLevelMagnetIndent + this._helperMargin
       );
       this._$titleHelperCell.css(
@@ -518,7 +513,7 @@ Craft.StructureTableSorter = Garnish.DragSort.extend(
      * Returns the indent size for a given level
      */
     _getLevelIndent: function (level) {
-      return (level - 1) * Craft.StructureTableSorter.LEVEL_INDENT;
+      return (level - 1) * Craft.ElementTableSorter.LEVEL_INDENT;
     },
 
     /**
@@ -526,7 +521,7 @@ Craft.StructureTableSorter = Garnish.DragSort.extend(
      */
     _getAjaxBaseData: function ($row) {
       return {
-        structureId: this.structureId,
+        structureId: this.settings.structureId,
         elementId: $row.data('id'),
         siteId: $row.find('.element:first').data('site-id'),
       };
@@ -544,12 +539,13 @@ Craft.StructureTableSorter = Garnish.DragSort.extend(
 
         while (this._getAncestors._$prevRow.length) {
           if (
-            this._getAncestors._$prevRow.data('level') <
+            this._level(this._getAncestors._$prevRow) <
             this._getAncestors._level
           ) {
             this._getAncestors._ancestors.unshift(this._getAncestors._$prevRow);
-            this._getAncestors._level =
-              this._getAncestors._$prevRow.data('level');
+            this._getAncestors._level = this._level(
+              this._getAncestors._$prevRow
+            );
 
             // Did we just reach the top?
             if (this._getAncestors._level == 0) {
@@ -562,6 +558,10 @@ Craft.StructureTableSorter = Garnish.DragSort.extend(
       }
 
       return this._getAncestors._ancestors;
+    },
+
+    _level: function ($row) {
+      return $row.data('level') || 1;
     },
 
     /**
@@ -600,9 +600,7 @@ Craft.StructureTableSorter = Garnish.DragSort.extend(
         // Is it now childless?
         if (this._updateAncestors._$ancestor.data('descendants') == 0) {
           // Remove its toggle
-          this._updateAncestors._$ancestor
-            .find('> th > .toggle:first')
-            .remove();
+          this._updateAncestors._$ancestor.find('> th .toggle:first').remove();
         }
       }
 
@@ -657,6 +655,8 @@ Craft.StructureTableSorter = Garnish.DragSort.extend(
     MAX_GIVE: 22,
 
     defaults: {
+      structureId: null,
+      maxLevels: 1,
       onPositionChange: $.noop,
     },
   }

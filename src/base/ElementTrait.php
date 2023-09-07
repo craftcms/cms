@@ -132,6 +132,12 @@ trait ElementTrait
     public ?DateTime $dateDeleted = null;
 
     /**
+     * @var bool|null Whether the element was deleted along with its owner
+     * @since 5.0.0
+     */
+    public ?bool $deletedWithOwner = null;
+
+    /**
      * @var int|null The element’s structure’s root ID
      */
     public ?int $root = null;
@@ -227,6 +233,13 @@ trait ElementTrait
      * @since 3.2.0
      */
     public bool $previewing = false;
+
+    /**
+     * @var bool Whether the element should definitely be saved, if it’s a nested element being considered
+     * for saving by [[NestedElementManager]].
+     * @since 5.0.0
+     */
+    public bool $forceSave = false;
 
     /**
      * @var bool Whether the element is being hard-deleted.

@@ -79,7 +79,7 @@ Craft.BaseElementIndexView = Garnish.Base.extend(
       }
 
       // Enable inline element editing if this is an index page
-      if (this.settings.context === 'index') {
+      if (this.elementIndex.isAdministrative) {
         this._handleElementEditing = (ev) => {
           var $target = $(ev.target);
 
@@ -118,7 +118,7 @@ Craft.BaseElementIndexView = Garnish.Base.extend(
       this.afterInit();
 
       // Set up lazy-loading
-      if (this.settings.batchSize) {
+      if (!this.elementIndex.paginated && this.settings.batchSize) {
         if (this.settings.context === 'index') {
           this.$scroller = Garnish.$scrollContainer;
         } else {
@@ -307,6 +307,7 @@ Craft.BaseElementIndexView = Garnish.Base.extend(
      * Loads the next batch of elements.
      */
     loadMore: function () {
+      debugger;
       if (
         !this.getMorePending() ||
         this.loadingMore ||
@@ -325,6 +326,11 @@ Craft.BaseElementIndexView = Garnish.Base.extend(
         .then((response) => {
           this.loadingMore = false;
           this.$loadingMoreSpinner.addClass('hidden');
+
+          if (this.isAdministrative) {
+            // set Craft.currentElementIndex for actions
+            Craft.currentElementIndex = this;
+          }
 
           let $newElements = $(response.data.html);
 
@@ -425,9 +431,11 @@ Craft.BaseElementIndexView = Garnish.Base.extend(
       multiSelect: false,
       canSelectElement: null,
       checkboxMode: false,
+      sortable: false,
       loadMoreElementsAction: 'element-indexes/get-more-elements',
       onAppendElements: $.noop,
       onSelectionChange: $.noop,
+      onSortChange: $.noop,
     },
   }
 );

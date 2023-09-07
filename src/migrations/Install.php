@@ -94,7 +94,8 @@ class Install extends Migration
     {
         $this->createTable(Table::ADDRESSES, [
             'id' => $this->integer()->notNull(),
-            'ownerId' => $this->integer(),
+            'primaryOwnerId' => $this->integer(),
+            'fieldId' => $this->integer(),
             'countryCode' => $this->string()->notNull(),
             'administrativeArea' => $this->string(),
             'locality' => $this->string(),
@@ -312,7 +313,14 @@ class Install extends Migration
             'dateUpdated' => $this->dateTime()->notNull(),
             'dateLastMerged' => $this->dateTime()->null(),
             'dateDeleted' => $this->dateTime()->null(),
+            'deletedWithOwner' => $this->boolean()->null(),
             'uid' => $this->uid(),
+        ]);
+        $this->createTable(Table::ELEMENTS_OWNERS, [
+            'elementId' => $this->integer()->notNull(),
+            'ownerId' => $this->integer()->notNull(),
+            'sortOrder' => $this->smallInteger()->unsigned()->notNull(),
+            'PRIMARY KEY([[elementId]], [[ownerId]])',
         ]);
         $this->createTable(Table::ELEMENTS_SITES, [
             'id' => $this->primaryKey(),
@@ -365,16 +373,9 @@ class Install extends Migration
             'postDate' => $this->dateTime(),
             'expiryDate' => $this->dateTime(),
             'deletedWithEntryType' => $this->boolean()->null(),
-            'deletedWithOwner' => $this->boolean()->null(),
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
             'PRIMARY KEY([[id]])',
-        ]);
-        $this->createTable(Table::ENTRIES_OWNERS, [
-            'entryId' => $this->integer()->notNull(),
-            'ownerId' => $this->integer()->notNull(),
-            'sortOrder' => $this->smallInteger()->unsigned()->notNull(),
-            'PRIMARY KEY([[entryId]], [[ownerId]])',
         ]);
         $this->createTable(Table::ENTRYTYPES, [
             'id' => $this->primaryKey(),
@@ -924,7 +925,7 @@ class Install extends Migration
     public function addForeignKeys(): void
     {
         $this->addForeignKey(null, Table::ADDRESSES, ['id'], Table::ELEMENTS, ['id'], 'CASCADE', null);
-        $this->addForeignKey(null, Table::ADDRESSES, ['ownerId'], Table::ELEMENTS, ['id'], 'CASCADE', null);
+        $this->addForeignKey(null, Table::ADDRESSES, ['primaryOwnerId'], Table::ELEMENTS, ['id'], 'CASCADE', null);
         $this->addForeignKey(null, Table::ANNOUNCEMENTS, ['userId'], Table::USERS, ['id'], 'CASCADE', null);
         $this->addForeignKey(null, Table::ANNOUNCEMENTS, ['pluginId'], Table::PLUGINS, ['id'], 'CASCADE', null);
         $this->addForeignKey(null, Table::ASSETINDEXDATA, ['volumeId'], Table::VOLUMES, ['id'], 'CASCADE', null);
@@ -958,6 +959,8 @@ class Install extends Migration
         $this->addForeignKey(null, Table::ELEMENTS, ['draftId'], Table::DRAFTS, ['id'], 'CASCADE', null);
         $this->addForeignKey(null, Table::ELEMENTS, ['revisionId'], Table::REVISIONS, ['id'], 'CASCADE', null);
         $this->addForeignKey(null, Table::ELEMENTS, ['fieldLayoutId'], Table::FIELDLAYOUTS, ['id'], 'SET NULL', null);
+        $this->addForeignKey(null, Table::ELEMENTS_OWNERS, ['elementId'], Table::ELEMENTS, ['id'], 'CASCADE', null);
+        $this->addForeignKey(null, Table::ELEMENTS_OWNERS, ['ownerId'], Table::ELEMENTS, ['id'], 'CASCADE', null);
         $this->addForeignKey(null, Table::ELEMENTS_SITES, ['elementId'], Table::ELEMENTS, ['id'], 'CASCADE', null);
         $this->addForeignKey(null, Table::ELEMENTS_SITES, ['siteId'], Table::SITES, ['id'], 'CASCADE', 'CASCADE');
         $this->addForeignKey(null, Table::ENTRIES, ['authorId'], Table::USERS, ['id'], 'SET NULL', null);
@@ -967,8 +970,6 @@ class Install extends Migration
         $this->addForeignKey(null, Table::ENTRIES, ['typeId'], Table::ENTRYTYPES, ['id'], 'CASCADE', null);
         $this->addForeignKey(null, Table::ENTRIES, ['fieldId'], Table::FIELDS, ['id'], 'CASCADE', null);
         $this->addForeignKey(null, Table::ENTRIES, ['primaryOwnerId'], Table::ELEMENTS, ['id'], 'CASCADE', null);
-        $this->addForeignKey(null, Table::ENTRIES_OWNERS, ['entryId'], Table::ENTRIES, ['id'], 'CASCADE', null);
-        $this->addForeignKey(null, Table::ENTRIES_OWNERS, ['ownerId'], Table::ELEMENTS, ['id'], 'CASCADE', null);
         $this->addForeignKey(null, Table::ENTRYTYPES, ['fieldLayoutId'], Table::FIELDLAYOUTS, ['id'], 'SET NULL', null);
         $this->addForeignKey(null, Table::GLOBALSETS, ['fieldLayoutId'], Table::FIELDLAYOUTS, ['id'], 'SET NULL', null);
         $this->addForeignKey(null, Table::GLOBALSETS, ['id'], Table::ELEMENTS, ['id'], 'CASCADE', null);

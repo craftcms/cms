@@ -781,6 +781,14 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
+    public static function hasDrafts(): bool
+    {
+        return false;
+    }
+
+    /**
+     * @inheritdoc
+     */
     public static function trackChanges(): bool
     {
         return false;
@@ -790,6 +798,14 @@ abstract class Element extends Component implements ElementInterface
      * @inheritdoc
      */
     public static function hasTitles(): bool
+    {
+        return false;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function hasThumbs(): bool
     {
         return false;
     }
@@ -1100,14 +1116,23 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
-    public static function indexHtml(ElementQueryInterface $elementQuery, ?array $disabledElementIds, array $viewState, ?string $sourceKey, ?string $context, bool $includeContainer, bool $showCheckboxes): string
-    {
+    public static function indexHtml(
+        ElementQueryInterface $elementQuery,
+        ?array $disabledElementIds,
+        array $viewState,
+        ?string $sourceKey,
+        ?string $context,
+        bool $includeContainer,
+        bool $selectable,
+        bool $sortable,
+    ): string {
         $variables = [
             'viewMode' => $viewState['mode'],
             'context' => $context,
             'disabledElementIds' => $disabledElementIds,
             'collapsedElementIds' => Craft::$app->getRequest()->getParam('collapsedElementIds'),
-            'showCheckboxes' => $showCheckboxes,
+            'selectable' => $selectable,
+            'sortable' => $sortable,
             'tableName' => static::pluralDisplayName(),
         ];
 
@@ -1123,7 +1148,7 @@ abstract class Element extends Component implements ElementInterface
                     $variables['structure'] = Craft::$app->getStructures()->getStructureById($source['structureId']);
 
                     // Are they allowed to make changes to this structure?
-                    if ($context === 'index' && $variables['structure'] && !empty($source['structureEditable'])) {
+                    if (in_array($context, ['index', 'embedded-index']) && $variables['structure'] && !empty($source['structureEditable'])) {
                         $variables['structureEditable'] = true;
 
                         // Let StructuresController know that this user can make changes to the structure
@@ -1175,8 +1200,18 @@ abstract class Element extends Component implements ElementInterface
             $elementQuery->cache();
         }
 
-        $variables['elements'] = static::indexElements($elementQuery, $sourceKey);
+        $elements = static::indexElements($elementQuery, $sourceKey);
 
+        if (empty($elements)) {
+            $message = Craft::t('app', 'No {type} yet.', [
+                'type' => static::pluralLowerDisplayName(),
+            ]);
+            return Html::tag('div', $message, [
+                'class' => ['zilch', 'small'],
+            ]);
+        }
+
+        $variables['elements'] = $elements;
         $template = '_elements/' . $viewState['mode'] . 'view/' . ($includeContainer ? 'container' : 'elements');
 
         return Craft::$app->getView()->renderTemplate($template, $variables);
@@ -2120,12 +2155,14 @@ abstract class Element extends Component implements ElementInterface
             return (string)$this->title;
         }
 
-        if ($this->id) {
-            return (string)$this->id;
-        }
-
         try {
-            return static::displayName();
+            if ($this->id) {
+                return sprintf('%s %s', static::displayName(), $this->id);
+            }
+
+            return Craft::t('app', 'New {type}', [
+                'type' => static::displayName(),
+            ]);
         } catch (Throwable $e) {
             ErrorHandler::convertExceptionToError($e);
         }
@@ -2264,6 +2301,7 @@ abstract class Element extends Component implements ElementInterface
 
         ArrayHelper::removeValue($names, 'elementQueryResult');
         ArrayHelper::removeValue($names, 'eagerLoadInfo');
+        ArrayHelper::removeValue($names, 'deletedWithOwner');
         ArrayHelper::removeValue($names, 'searchScore');
         ArrayHelper::removeValue($names, 'awaitingFieldValues');
         ArrayHelper::removeValue($names, 'firstSave');
@@ -2275,6 +2313,7 @@ abstract class Element extends Component implements ElementInterface
         ArrayHelper::removeValue($names, 'mergingCanonicalChanges');
         ArrayHelper::removeValue($names, 'updatingFromDerivative');
         ArrayHelper::removeValue($names, 'previewing');
+        ArrayHelper::removeValue($names, 'forceSave');
         ArrayHelper::removeValue($names, 'hardDelete');
 
         $names[] = 'canonicalId';
@@ -2926,6 +2965,13 @@ abstract class Element extends Component implements ElementInterface
             }
         }
 
+        if ($this instanceof NestedElementInterface) {
+            $field = $this->getField();
+            if ($field) {
+                return $field->getRouteForElement($this);
+            }
+        }
+
         return $this->route();
     }
 
@@ -3038,13 +3084,22 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
+    public function getChipLabelHtml(): string
+    {
+        return $this->getUiLabel();
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function getCardBodyHtml(): ?string
     {
-        return implode("\n", array_map(
-            fn(PreviewableFieldInterface $field)
-                => Html::tag('div', $field->getPreviewHtml($this->getFieldValue($field->handle), $this)),
-            $this->getFieldLayout()?->getCardBodyFields($this),
+        $previews = array_filter(array_map(
+            fn(PreviewableFieldInterface $field) => $field->getPreviewHtml($this->getFieldValue($field->handle), $this),
+            $this->getFieldLayout()?->getCardBodyFields($this) ?? [],
         ));
+
+        return implode("\n", array_map(fn(string $preview) => Html::tag('div', $preview), $previews));
     }
 
     /**
@@ -3068,6 +3123,13 @@ abstract class Element extends Component implements ElementInterface
      */
     public function canView(User $user): bool
     {
+        if ($this instanceof NestedElementInterface) {
+            $authorized = $this->getField()?->canViewElement($this, $user);
+            if ($authorized !== null) {
+                return $authorized;
+            }
+        }
+
         if (!$this->hasEventHandlers(self::EVENT_AUTHORIZE_VIEW)) {
             return false;
         }
@@ -3082,6 +3144,13 @@ abstract class Element extends Component implements ElementInterface
      */
     public function canSave(User $user): bool
     {
+        if ($this instanceof NestedElementInterface) {
+            $authorized = $this->getField()?->canSaveElement($this, $user);
+            if ($authorized !== null) {
+                return $authorized;
+            }
+        }
+
         if (!$this->hasEventHandlers(self::EVENT_AUTHORIZE_SAVE)) {
             return false;
         }
@@ -3096,6 +3165,13 @@ abstract class Element extends Component implements ElementInterface
      */
     public function canDuplicate(User $user): bool
     {
+        if ($this instanceof NestedElementInterface) {
+            $authorized = $this->getField()?->canDuplicateElement($this, $user);
+            if ($authorized !== null) {
+                return $authorized;
+            }
+        }
+
         if (!$this->hasEventHandlers(self::EVENT_AUTHORIZE_DUPLICATE)) {
             return false;
         }
@@ -3110,6 +3186,13 @@ abstract class Element extends Component implements ElementInterface
      */
     public function canDelete(User $user): bool
     {
+        if ($this instanceof NestedElementInterface) {
+            $authorized = $this->getField()?->canDeleteElement($this, $user);
+            if ($authorized !== null) {
+                return $authorized;
+            }
+        }
+
         if (!$this->hasEventHandlers(self::EVENT_AUTHORIZE_DELETE)) {
             return false;
         }
@@ -3124,6 +3207,13 @@ abstract class Element extends Component implements ElementInterface
      */
     public function canDeleteForSite(User $user): bool
     {
+        if ($this instanceof NestedElementInterface) {
+            $authorized = $this->getField()?->canDeleteElementForSite($this, $user);
+            if ($authorized !== null) {
+                return $authorized;
+            }
+        }
+
         if (!$this->hasEventHandlers(self::EVENT_AUTHORIZE_DELETE_FOR_SITE)) {
             return false;
         }
@@ -3171,20 +3261,13 @@ abstract class Element extends Component implements ElementInterface
             return null;
         }
 
-        $cpEditUrl = $this->cpEditUrl() ?? sprintf('edit/%s', $this->getCanonicalId());
-        $params = [];
+        $url = $this->cpEditUrl();
 
-        if (Craft::$app->getIsMultiSite()) {
-            $params['site'] = $this->getSite()->handle;
+        if (!$url) {
+            return null;
         }
 
-        if ($this->getIsDraft() && !$this->isProvisionalDraft) {
-            $params['draftId'] = $this->draftId;
-        } elseif ($this->getIsRevision()) {
-            $params['revisionId'] = $this->revisionId;
-        }
-
-        return UrlHelper::cpUrl($cpEditUrl, $params);
+        return ElementHelper::addElementEditorUrlParams($url, $this);
     }
 
     /**
@@ -3253,8 +3336,9 @@ abstract class Element extends Component implements ElementInterface
      */
     public function getPreviewTargets(): array
     {
+        $previewTargets = $this->previewTargets();
+
         if (Craft::$app->getEdition() === Craft::Pro) {
-            $previewTargets = $this->previewTargets();
             // Give plugins a chance to modify them
             if ($this->hasEventHandlers(self::EVENT_REGISTER_PREVIEW_TARGETS)) {
                 $event = new RegisterPreviewTargetsEvent([
@@ -3263,17 +3347,6 @@ abstract class Element extends Component implements ElementInterface
                 $this->trigger(self::EVENT_REGISTER_PREVIEW_TARGETS, $event);
                 $previewTargets = $event->previewTargets;
             }
-        } elseif ($url = $this->getUrl()) {
-            $previewTargets = [
-                [
-                    'label' => Craft::t('app', 'Primary {type} page', [
-                        'type' => static::lowerDisplayName(),
-                    ]),
-                    'url' => $url,
-                ],
-            ];
-        } else {
-            return [];
         }
 
         // Normalize the targets
@@ -3313,7 +3386,19 @@ abstract class Element extends Component implements ElementInterface
      */
     protected function previewTargets(): array
     {
-        return [];
+        $previewTargets = [];
+
+        $url = $this->getUrl();
+        if ($url) {
+            $previewTargets[] = [
+                'label' => Craft::t('app', 'Primary {type} page', [
+                    'type' => static::lowerDisplayName(),
+                ]),
+                'url' => $url,
+            ];
+        }
+
+        return $previewTargets;
     }
 
     /**

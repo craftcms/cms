@@ -37,31 +37,38 @@ class UriFormatValidator extends Validator
     {
         $uriFormat = $model->$attribute;
 
-        if ($uriFormat) {
+        if (is_string($uriFormat)) {
             // Remove any leading or trailing slashes/spaces
-            $uriFormat = trim($uriFormat, '/ ');
-            $model->$attribute = $uriFormat;
+            $model->$attribute = trim($uriFormat, '/ ');
+        }
 
-            if ($this->requireSlug && !ElementHelper::doesUriFormatHaveSlugTag($uriFormat)) {
-                $this->addError($model, $attribute, Craft::t('app', '{attribute} must contain “{slug}”', [
-                    'attribute' => $model->$attribute,
-                ]));
-            }
+        parent::validateAttribute($model, $attribute);
+    }
 
-            if ($this->disallowTriggers) {
-                $generalConfig = Craft::$app->getConfig()->getGeneral();
-                $firstSeg = explode('/', $uriFormat, 2)[0];
+    /**
+     * @inheritdoc
+     */
+    protected function validateValue($value)
+    {
+        if ($this->requireSlug && !ElementHelper::doesUriFormatHaveSlugTag($value)) {
+            return [Craft::t('app', '{attribute} must contain “{slug}”'), []];
+        }
 
-                if ($firstSeg === $generalConfig->actionTrigger) {
-                    $this->addError($model, $attribute, Craft::t('app', '{attribute} cannot start with the {setting} config setting.', [
-                        'setting' => 'actionTrigger',
-                    ]));
-                } elseif ($generalConfig->cpTrigger && $firstSeg === $generalConfig->cpTrigger) {
-                    $this->addError($model, $attribute, Craft::t('app', '{attribute} cannot start with the {setting} config setting.', [
-                        'setting' => 'cpTrigger',
-                    ]));
-                }
+        if ($this->disallowTriggers) {
+            $generalConfig = Craft::$app->getConfig()->getGeneral();
+            $firstSeg = explode('/', $value, 2)[0];
+
+            if ($firstSeg === $generalConfig->actionTrigger) {
+                return [Craft::t('app', '{attribute} cannot start with the {setting} config setting.'), [
+                    'setting' => 'actionTrigger',
+                ]];
+            } elseif ($generalConfig->cpTrigger && $firstSeg === $generalConfig->cpTrigger) {
+                return [Craft::t('app', '{attribute} cannot start with the {setting} config setting.'), [
+                    'setting' => 'cpTrigger',
+                ]];
             }
         }
+
+        return null;
     }
 }

@@ -21,6 +21,7 @@ use craft\elements\conditions\users\UserCondition;
 use craft\elements\db\AddressQuery;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\db\UserQuery;
+use craft\enums\PropagationMethod;
 use craft\events\AuthenticateUserEvent;
 use craft\events\DefineValueEvent;
 use craft\helpers\App;
@@ -203,6 +204,14 @@ class User extends Element implements IdentityInterface
      * @inheritdoc
      */
     public static function trackChanges(): bool
+    {
+        return true;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function hasThumbs(): bool
     {
         return true;
     }
@@ -694,6 +703,11 @@ class User extends Element implements IdentityInterface
     private array $_addresses;
 
     /**
+     * @see getAddressManager()
+     */
+    private NestedElementManager $_addressManager;
+
+    /**
      * @var string|null
      * @see getName()
      * @see setName()
@@ -961,14 +975,40 @@ class User extends Element implements IdentityInterface
             }
 
             /** @var Address[] $addresses */
-            $addresses = Address::find()
-                ->ownerId($this->id)
-                ->orderBy(['id' => SORT_ASC])
-                ->all();
+            $addresses = $this->createAddressQuery()->all();
             $this->_addresses = $addresses;
         }
 
         return $this->_addresses;
+    }
+
+    /**
+     * Returns a nested element manager for the user’s addresses.
+     *
+     * @return NestedElementManager
+     * @since 5.0.0
+     */
+    public function getAddressManager(): NestedElementManager
+    {
+        if (!isset($this->_addressManager)) {
+            $this->_addressManager = new NestedElementManager(
+                Address::class,
+                fn() => $this->createAddressQuery(),
+                [
+                    'attribute' => 'addresses',
+                    'propagationMethod' => PropagationMethod::None,
+                ],
+            );
+        }
+
+        return $this->_addressManager;
+    }
+
+    private function createAddressQuery(): AddressQuery
+    {
+        return Address::find()
+            ->ownerId($this->id)
+            ->orderBy(['id' => SORT_ASC]);
     }
 
     /**
