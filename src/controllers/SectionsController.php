@@ -174,6 +174,8 @@ class SectionsController extends Controller
                 throw new BadRequestHttpException("Invalid entry type: $section->type");
         }
 
+        $entryTypeIds = array_map('intval', $entryTypeIds);
+
         $section->setEntryTypes(array_map(fn(int $id) => $sectionsService->getEntryTypeById($id), array_filter($entryTypeIds)));
 
         // Site-specific settings
