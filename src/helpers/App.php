@@ -150,7 +150,7 @@ class App
 
         /** @var ?Model $model */
         $model = $isModel
-            ? ($class instanceof Model ? $class : new $class())
+            ? ($class instanceof Model ? $class : Craft::createObject($class))
             : null;
 
         $properties = $model
