@@ -9,7 +9,6 @@ namespace craft\gql\types\input;
 
 use Craft;
 use craft\base\Field;
-use craft\fields\Addresses as AddressesField;
 use craft\gql\GqlEntityRegistry;
 use craft\helpers\ArrayHelper;
 use GraphQL\Type\Definition\InputObjectType;
