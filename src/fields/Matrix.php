@@ -264,6 +264,15 @@ class Matrix extends Field implements
     {
         parent::init();
 
+        foreach ($this->siteSettings as &$siteSettings) {
+            if (($siteSettings['uriFormat'] ?? null) === '') {
+                unset($siteSettings['uriFormat']);
+            }
+            if (($siteSettings['template'] ?? null) === '') {
+                unset($siteSettings['template']);
+            }
+        }
+
         if ($this->viewMode === self::VIEW_MODE_BLOCKS) {
             $this->includeTableView = false;
             $this->pageSize = null;
