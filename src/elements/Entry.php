@@ -2254,7 +2254,7 @@ EOD;
                             'eo.ownerId' => $this->ownerId,
                             'e.fieldId' => $this->fieldId,
                         ])
-                        ->max('sortOrder');
+                        ->max('[[eo.sortOrder]]');
                     $this->sortOrder = $max ? $max + 1 : 1;
                 }
                 if ($isNew) {
