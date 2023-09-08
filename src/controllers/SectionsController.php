@@ -168,7 +168,7 @@ class SectionsController extends Controller
                 $section->defaultPlacement = $this->request->getBodyParam('defaultPlacement') ?? $section->defaultPlacement;
                 // no break
             case Section::TYPE_CHANNEL:
-                $entryTypeIds = $this->request->getBodyParam('entryTypes') ?? [];
+                $entryTypeIds = $this->request->getBodyParam('entryTypes') ?: [];
                 break;
             default:
                 throw new BadRequestHttpException("Invalid entry type: $section->type");
