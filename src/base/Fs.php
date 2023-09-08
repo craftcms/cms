@@ -84,7 +84,7 @@ abstract class Fs extends SavableComponent implements FsInterface
         $rules[] = [
             'url',
             'required',
-            'when' => fn(self $fs) => $fs->hasUrls,
+            'when' => fn(self $fs) => $fs->hasUrls && $this->getShowUrlSetting(),
         ];
 
         $rules[] = [
