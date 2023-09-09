@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Added `SK` to the list of keywords that Craft will look for when determining whether a value is sensitive and should be redacted from logs, etc. ([#3619](https://github.com/craftcms/cms/issues/3619))
 - Fixed a bug where changed fields weren’t being tracked properly when applying a draft for a multi-site entry.
 - `craft\services\Elements::duplicateElement()` now supports passing a `siteAttributes` array to the `$attributes` argument, for setting site-specific attributes.
 - Fixed an error that could occur when executing a GraphQL query with fragments. ([#13622](https://github.com/craftcms/cms/issues/13622))
