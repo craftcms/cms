@@ -8,6 +8,7 @@
 - `craft\services\Elements::duplicateElement()` now supports passing a `siteAttributes` array to the `$attributes` argument, for setting site-specific attributes.
 - Fixed an error that could occur when executing a GraphQL query with fragments. ([#13622](https://github.com/craftcms/cms/issues/13622))
 - Fixed a bug where addresses queried via GraphQL had a `photo` field.
+- Fixed a bug where boolean environment variables weren’t always getting the correct value indicators within Selectize fields. ([#13613](https://github.com/craftcms/cms/issues/13613))
 
 ## 4.5.3 - 2023-08-29
 
