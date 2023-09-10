@@ -118,6 +118,7 @@ return [
                 'password',
                 'pw',
                 'secret',
+                'sk',
                 'tok',
                 'token',
             ],
