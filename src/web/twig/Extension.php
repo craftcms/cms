@@ -895,31 +895,25 @@ class Extension extends AbstractExtension implements GlobalsInterface
      * @param mixed $str
      * @param mixed $search
      * @param mixed $replace
+     * @param bool|null $regex
      * @return mixed
      */
-    public function replaceFilter(mixed $str, mixed $search, mixed $replace = null): mixed
+    public function replaceFilter(mixed $str, mixed $search, mixed $replace = null, ?bool $regex = null): mixed
     {
         if ($search instanceof Traversable) {
             $search = iterator_to_array($search);
         }
 
-        $isRegex = function(string $str): bool {
-            if (!preg_match('/^\/([^\r\n]+)\/([imsxADSUXJun]*)$/', $str, $match)) {
-                return false;
-            }
-
-            // make sure there's no unescaped slashes within it
-            if (preg_match('/(?<!\\\)\//', $match[1])) {
-                return false;
-            }
-
-            return true;
-        };
-
         // Are they using the standard Twig syntax?
         if (is_array($search) && $replace === null) {
             // If there aren’t any regex patterns, we can safely use strtr()
-            if (!ArrayHelper::contains(array_keys($search), $isRegex)) {
+            if (
+                $regex === false ||
+                (
+                    $regex === null &&
+                    !ArrayHelper::contains(array_keys($search), fn(string $str) => $this->isRegex($str))
+                )
+            ) {
                 return strtr($str, $search);
             }
         } else {
@@ -928,7 +922,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
 
         foreach ($search as $s => $r) {
             // Is this a regular expression?
-            if ($isRegex($s)) {
+            if ($regex ?? $this->isRegex($s)) {
                 $str = preg_replace($s, $r, $str);
             } else {
                 // Otherwise use str_replace
@@ -937,6 +931,20 @@ class Extension extends AbstractExtension implements GlobalsInterface
         }
 
         return $str;
+    }
+
+    private function isRegex(string $str): bool
+    {
+        if (!preg_match('/^\/([^\r\n]+)\/([imsxADSUXJun]*)$/', $str, $match)) {
+            return false;
+        }
+
+        // make sure there's no unescaped slashes within it
+        if (preg_match('/(?<!\\\)\//', $match[1])) {
+            return false;
+        }
+
+        return true;
     }
 
     /**
