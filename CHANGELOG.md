@@ -4,6 +4,11 @@
 
 - Added the `@stripTags` and `@trim` GraphQL directives. ([#9971](https://github.com/craftcms/cms/discussions/9971))
 - Added `SK` to the list of keywords that Craft will look for when determining whether a value is sensitive and should be redacted from logs, etc. ([#3619](https://github.com/craftcms/cms/issues/3619))
+- Added `craft\events\DefineUserGroupsEvent`.
+- Added `craft\services\Users::EVENT_DEFINE_DEFAULT_USER_GROUPS`. ([#12283](https://github.com/craftcms/cms/issues/12283))
+- Added `craft\services\Users::getDefaultUserGroups()`.
+- `craft\events\UserAssignGroupEvent` now extends `DefineUserGroupsEvent`, giving it a new `$userGroups` property.
+- Deprecated `craft\events\UserAssignGroupEvent`. `DefineUserGroupsEvent` should be used instead.
 - Fixed a bug where changed fields weren’t being tracked properly when applying a draft for a multi-site entry.
 - `craft\services\Elements::duplicateElement()` now supports passing a `siteAttributes` array to the `$attributes` argument, for setting site-specific attributes.
 - Fixed an error that could occur when executing a GraphQL query with fragments. ([#13622](https://github.com/craftcms/cms/issues/13622))
