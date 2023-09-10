@@ -1666,7 +1666,6 @@ class Extension extends AbstractExtension implements GlobalsInterface
 
     /**
      * @param mixed $arrow
-     * @return void
      * @throws RuntimeError
      */
     private function _checkFilterSupport(mixed $arrow): void
