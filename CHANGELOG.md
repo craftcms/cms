@@ -16,6 +16,7 @@
 - Fixed a bug where addresses queried via GraphQL had a `photo` field.
 - Fixed a bug where boolean environment variables weren’t always getting the correct value indicators within Selectize fields. ([#13613](https://github.com/craftcms/cms/issues/13613))
 - Fixed a bug where some system icons were getting black backgrounds when displayed within Vue apps. ([#13632](https://github.com/craftcms/cms/issues/13632))
+- Fixed a bug where the user and address field layouts were getting new UUIDs each time they were saved. ([#13588](https://github.com/craftcms/cms/issues/13588))
 
 ## 4.5.3 - 2023-08-29
 
