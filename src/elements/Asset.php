@@ -1502,11 +1502,14 @@ class Asset extends Element
 
         if ($volume instanceof Temp) {
             // See if a default field layout ID was posted
-            $fieldLayoutId = Craft::$app->getRequest()->getBodyParam('defaultFieldLayoutId');
-            if ($fieldLayoutId) {
-                $fieldLayout = Craft::$app->getFields()->getLayoutById($fieldLayoutId);
-                if ($fieldLayout) {
-                    return $fieldLayout;
+            $request = Craft::$app->getRequest();
+            if (!$request->isConsoleRequest) {
+                $fieldLayoutId = $request->getBodyParam('defaultFieldLayoutId');
+                if ($fieldLayoutId) {
+                    $fieldLayout = Craft::$app->getFields()->getLayoutById($fieldLayoutId);
+                    if ($fieldLayout) {
+                        return $fieldLayout;
+                    }
                 }
             }
         }
