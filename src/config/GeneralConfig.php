@@ -392,9 +392,6 @@ class GeneralConfig extends BaseConfig
      * :::
      *
      * ::: code
-     * ```php Static Config
-     * ->autosaveDrafts(false)
-     * ```
      * ```shell Environment Override
      * CRAFT_AUTOSAVE_DRAFTS=false
      * ```
