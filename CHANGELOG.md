@@ -19,6 +19,7 @@
 - Fixed a bug where some system icons were getting black backgrounds when displayed within Vue apps. ([#13632](https://github.com/craftcms/cms/issues/13632))
 - Fixed a bug where the user and address field layouts were getting new UUIDs each time they were saved. ([#13588](https://github.com/craftcms/cms/issues/13588))
 - Fixed an error that could occur if a Money field was set to an array without a `value` key. ([#13648](https://github.com/craftcms/cms/pull/13648))
+- Fixed a bug where relations weren’t getting restored when restoring a revision’s content. ([#13626](https://github.com/craftcms/cms/issues/13626))
 - Fixed an RCE vulnerability.
 
 ## 4.5.3 - 2023-08-29
