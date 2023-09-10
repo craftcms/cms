@@ -30,7 +30,9 @@ use craft\gql\directives\FormatDateTime;
 use craft\gql\directives\Markdown;
 use craft\gql\directives\Money;
 use craft\gql\directives\ParseRefs;
+use craft\gql\directives\StripTags;
 use craft\gql\directives\Transform;
+use craft\gql\directives\Trim;
 use craft\gql\ElementQueryConditionBuilder;
 use craft\gql\GqlEntityRegistry;
 use craft\gql\interfaces\Element as ElementInterface;
@@ -395,7 +397,7 @@ class Gql extends Component
                 $this->_schemaDef = new Schema($schemaConfig);
                 $this->_schemaDef->getTypeMap();
             } catch (Throwable $exception) {
-                throw new GqlException('Failed to validate the GQL Schema - ' . $exception->getMessage());
+                throw new GqlException('Failed to validate the GQL Schema - ' . $exception->getMessage(), previous: $exception);
             }
         }
 
@@ -497,7 +499,7 @@ class Gql extends Component
                 $event->result = $cachedResult;
             } else {
                 $isIntrospectionQuery = StringHelper::containsAny($event->query, ['__schema', '__type']);
-                $schemaDef = $this->getSchemaDef($schema, $debugMode || $isIntrospectionQuery);
+                $schemaDef = $this->getSchemaDef($schema, true);
                 $elementsService = Craft::$app->getElements();
                 $elementsService->startCollectingCacheInfo();
 
@@ -1387,6 +1389,8 @@ class Gql extends Component
             Markdown::class,
             Money::class,
             ParseRefs::class,
+            StripTags::class,
+            Trim::class,
         ];
 
         if (!Craft::$app->getConfig()->getGeneral()->disableGraphqlTransformDirective) {

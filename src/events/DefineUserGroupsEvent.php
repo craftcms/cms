@@ -7,15 +7,18 @@
 
 namespace craft\events;
 
-use craft\elements\User;
+use craft\models\UserGroup;
 
 /**
- * User assign group event class.
+ * Define user groups event class.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0.0
- * @deprecated in 4.5.4. [[DefineUserGroupsEvent]] should be used instead.
+ * @since 4.5.4
  */
-class UserAssignGroupEvent extends DefineUserGroupsEvent
+class DefineUserGroupsEvent extends UserEvent
 {
+    /**
+     * @var UserGroup[] The user groups to assign to the user
+     */
+    public array $userGroups;
 }
