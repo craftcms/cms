@@ -13,6 +13,7 @@ use craft\helpers\DateTimeHelper;
 use craft\test\TestCase;
 use DateInterval;
 use DateTime;
+use DateTimeImmutable;
 use DateTimeZone;
 use Exception;
 use UnitTester;
@@ -136,6 +137,10 @@ class DateTimeHelperTest extends TestCase
     {
         if (is_callable($expected)) {
             $expected = $expected();
+        }
+
+        if (is_callable($value)) {
+            $value = $value();
         }
 
         if ($expected === false) {
@@ -456,6 +461,10 @@ class DateTimeHelperTest extends TestCase
             'datetime-with-timezone' => [
                 fn() => new DateTime('2021-09-01T12:00', new DateTimeZone('Europe/Berlin')),
                 ['datetime' => '2021-09-01T12:00', 'timezone' => 'Europe/Berlin'],
+            ],
+            'datetime-immutable' => [
+                fn() => new DateTime('@1625575906'),
+                fn() => new DateTimeImmutable('@1625575906'),
             ],
         ];
     }

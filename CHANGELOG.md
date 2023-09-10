@@ -10,6 +10,7 @@
 - Added `craft\services\Users::EVENT_DEFINE_DEFAULT_USER_GROUPS`. ([#12283](https://github.com/craftcms/cms/issues/12283))
 - Added `craft\services\Users::getDefaultUserGroups()`.
 - `craft\events\UserAssignGroupEvent` now extends `DefineUserGroupsEvent`, giving it a new `$userGroups` property.
+- `craft\helpers\DateTimeHelper::toDateTime()` now supports `DateTimeImmutable` values. ([#13656](https://github.com/craftcms/cms/issues/13656))
 - Deprecated `craft\events\UserAssignGroupEvent`. `DefineUserGroupsEvent` should be used instead.
 - Fixed a bug where changed fields weren’t being tracked properly when applying a draft for a multi-site entry.
 - `craft\services\Elements::duplicateElement()` now supports passing a `siteAttributes` array to the `$attributes` argument, for setting site-specific attributes.
