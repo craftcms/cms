@@ -97,7 +97,6 @@ class Local extends FlysystemVolume implements LocalVolumeInterface
         foreach ($systemDirs as $dir) {
             $dir = realpath($dir);
             if ($dir !== false) {
-
                 if (strpos($path . DIRECTORY_SEPARATOR, $dir . DIRECTORY_SEPARATOR) === 0) {
                     $validator->addError($this, $attribute, Craft::t('app', 'Local volumes cannot be located within system directories.'));
                     if ($created) {
