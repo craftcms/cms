@@ -18,6 +18,7 @@ use craft\errors\InvalidSubpathException;
 use craft\errors\UserNotFoundException;
 use craft\errors\VolumeException;
 use craft\events\ConfigEvent;
+use craft\events\DefineUserGroupsEvent;
 use craft\events\UserAssignGroupEvent;
 use craft\events\UserEvent;
 use craft\events\UserGroupsAssignEvent;
@@ -32,6 +33,7 @@ use craft\helpers\StringHelper;
 use craft\helpers\Template;
 use craft\helpers\UrlHelper;
 use craft\models\FieldLayout;
+use craft\models\UserGroup;
 use craft\models\Volume;
 use craft\records\User as UserRecord;
 use craft\web\Request;
@@ -142,6 +144,13 @@ class Users extends Component
      * @event UserGroupsAssignEvent The event that is triggered after a user is assigned to some user groups.
      */
     public const EVENT_AFTER_ASSIGN_USER_TO_GROUPS = 'afterAssignUserToGroups';
+
+    /**
+     * @event DefineUserGroupsEvent The event that is triggered when defining the default user groups to assign to a publicly-registered user.
+     * @see getDefaultUserGroups()
+     * @since 4.5.4
+     */
+    public const EVENT_DEFINE_DEFAULT_USER_GROUPS = 'defineDefaultUserGroups';
 
     /**
      * @event UserAssignGroupEvent The event that is triggered before a user is assigned to the default user group.
@@ -1344,7 +1353,37 @@ class Users extends Component
     }
 
     /**
-     * Assigns a user to the default user group.
+     * Returns the default user groups that the given user should belong to.
+     *
+     * @param User $user
+     * @return UserGroup[]
+     * @since 4.5.4
+     */
+    public function getDefaultUserGroups(User $user): array
+    {
+        $groups = [];
+        $uid = Craft::$app->getProjectConfig()->get('users.defaultGroup');
+        if ($uid) {
+            $group = Craft::$app->getUserGroups()->getGroupByUid($uid);
+            if ($group) {
+                $groups[] = $group;
+            }
+        }
+
+        if ($this->hasEventHandlers(self::EVENT_DEFINE_DEFAULT_USER_GROUPS)) {
+            $event = new DefineUserGroupsEvent([
+                'user' => $user,
+                'userGroups' => $groups,
+            ]);
+            $this->trigger(self::EVENT_DEFINE_DEFAULT_USER_GROUPS, $event);
+            return $event->userGroups;
+        }
+
+        return $groups;
+    }
+
+    /**
+     * Assigns a user to the default user group(s).
      *
      * This method is called toward the end of a public registration request.
      *
@@ -1353,22 +1392,16 @@ class Users extends Component
      */
     public function assignUserToDefaultGroup(User $user): bool
     {
-        // Make sure there's a default group
-        $uid = Craft::$app->getProjectConfig()->get('users.defaultGroup');
+        $groups = $this->getDefaultUserGroups($user);
 
-        if (!$uid) {
-            return false;
-        }
-
-        $group = Craft::$app->getUserGroups()->getGroupByUid($uid);
-
-        if (!$group) {
+        if (empty($groups)) {
             return false;
         }
 
         // Fire a 'beforeAssignUserToDefaultGroup' event
         $event = new UserAssignGroupEvent([
             'user' => $user,
+            'userGroups' => $groups,
         ]);
         $this->trigger(self::EVENT_BEFORE_ASSIGN_USER_TO_DEFAULT_GROUP, $event);
 
@@ -1376,7 +1409,8 @@ class Users extends Component
             return false;
         }
 
-        if (!$this->assignUserToGroups($user->id, [$group->id])) {
+        $groupIds = array_map(fn(UserGroup $group) => $group->id, $groups);
+        if (!$this->assignUserToGroups($user->id, $groupIds)) {
             return false;
         }
 
@@ -1384,6 +1418,7 @@ class Users extends Component
         if ($this->hasEventHandlers(self::EVENT_AFTER_ASSIGN_USER_TO_DEFAULT_GROUP)) {
             $this->trigger(self::EVENT_AFTER_ASSIGN_USER_TO_DEFAULT_GROUP, new UserAssignGroupEvent([
                 'user' => $user,
+                'userGroups' => $groups,
             ]));
         }
 
@@ -1434,11 +1469,10 @@ class Users extends Component
             return false;
         }
 
-        $projectConfig = Craft::$app->getProjectConfig();
-        $fieldLayoutConfig = $layout->getConfig();
-        $uid = StringHelper::UUID();
+        Craft::$app->getProjectConfig()->set(ProjectConfig::PATH_USER_FIELD_LAYOUTS, [
+            $layout->uid => $layout->getConfig(),
+        ], 'Save the user field layout');
 
-        $projectConfig->set(ProjectConfig::PATH_USER_FIELD_LAYOUTS, [$uid => $fieldLayoutConfig], "Save the user field layout");
         return true;
     }
 
