@@ -674,7 +674,7 @@ class Address extends Element implements AddressInterface, NestedElementInterfac
                         'eo.ownerId' => $this->ownerId,
                         'a.fieldId' => $this->fieldId,
                     ])
-                    ->max('sortOrder');
+                    ->max('[[eo.sortOrder]]');
                 $this->sortOrder = $max ? $max + 1 : 1;
             }
             if ($isNew) {
