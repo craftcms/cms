@@ -116,6 +116,11 @@ class FsController extends Controller
             ->addCrumb(Craft::t('app', 'Filesystems'), 'settings/filesystems')
             ->action('fs/save')
             ->redirectUrl('settings/filesystems')
+            ->addAltAction(Craft::t('app', 'Save and continue editing'), [
+                'redirect' => 'settings/filesystems/{handle}',
+                'shortcut' => true,
+                'retainScroll' => true,
+            ])
             ->contentTemplate('settings/filesystems/_edit.twig', [
                 'oldHandle' => $handle,
                 'filesystem' => $filesystem,

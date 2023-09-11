@@ -542,6 +542,16 @@ class ExtensionTest extends TestCase
             'qux',
             '{{ "https://foo.com/bar/baz/"|replace("/(http(s?):)?\\\/\\\/foo\\\.com\\\/bar\\\/baz\\\//", "qux") }}',
         );
+
+        $this->testRenderResult(
+            '/baz/bar/',
+            '{{ "/foo/bar/"|replace({"/foo/": "baz"}, regex=true) }}',
+        );
+
+        $this->testRenderResult(
+            'bazbar/',
+            '{{ "/foo/bar/"|replace({"/foo/": "baz"}, regex=false) }}',
+        );
     }
 
     /**
