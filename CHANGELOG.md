@@ -6,6 +6,7 @@
 - Added `SK` to the list of keywords that Craft will look for when determining whether a value is sensitive and should be redacted from logs, etc. ([#3619](https://github.com/craftcms/cms/issues/3619))
 - Improved the scrolling behavior for page sidebars and detail panes. ([#13637](https://github.com/craftcms/cms/issues/13637))
 - Filesystem edit pages now have a “Save and continue editing” alternative submit action, and the <kbd>Command</kbd>/<kbd>Ctrl</kbd> + <kbd>S</kbd> keyboard shortcut now redirects back to the edit page. ([#13658](https://github.com/craftcms/cms/pull/13658)) 
+- Attribute labels are no longer surrounded by asterisks for front-end validation messages. ([#13640](https://github.com/craftcms/cms/issues/13640))
 - The `|replace` Twig filter now has a `regex` argument, which can be set to `false` to disable regular expression parsing. ([#13642](https://github.com/craftcms/cms/discussions/13642))
 - Added `craft\events\DefineUserGroupsEvent`.
 - Added `craft\services\Users::EVENT_DEFINE_DEFAULT_USER_GROUPS`. ([#12283](https://github.com/craftcms/cms/issues/12283))
