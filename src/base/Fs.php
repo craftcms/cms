@@ -54,7 +54,7 @@ abstract class Fs extends SavableComponent implements FsInterface
         return [
             'handle' => Craft::t('app', 'Handle'),
             'name' => Craft::t('app', 'Name'),
-            'url' => Craft::t('app', 'URL'),
+            'url' => Craft::t('app', 'Base URL'),
         ];
     }
 
