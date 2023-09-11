@@ -968,8 +968,6 @@ li.breadcrumb-toggle-wrapper {
 
   &.fixed {
     position: fixed;
-    overflow-y: auto;
-    padding-top: var(--m);
     padding-bottom: var(--m);
   }
 
@@ -1097,8 +1095,6 @@ li.breadcrumb-toggle-wrapper {
 
   &.fixed {
     position: fixed;
-    overflow-y: auto;
-    padding-top: var(--m);
   }
 
   .details {
