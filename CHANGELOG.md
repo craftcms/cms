@@ -29,6 +29,7 @@
 - Fixed a bug where filesystems weren’t requiring the “Base URL” setting to be set. ([#13657](https://github.com/craftcms/cms/pull/13657))
 - Fixed a bug where applying a draft could redirect to the “Current” revision on a different site, if a new site had been added on the draft. ([#13668](https://github.com/craftcms/cms/pull/13668))
 - Fixed an error that could occur when changing a field’s type, if a backup table needed to be created to store the old field values. ([#13669](https://github.com/craftcms/cms/issues/13669))
+- Fixed a bug where Matrix blocks that were initially created for a newly-added site within a draft could be lost when applying the draft. ([#13670](https://github.com/craftcms/cms/pull/13670))
 - Fixed an RCE vulnerability.
 
 ## 4.5.3 - 2023-08-29
