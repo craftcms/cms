@@ -96,12 +96,23 @@ class Local extends FlysystemVolume implements LocalVolumeInterface
 
         foreach ($systemDirs as $dir) {
             $dir = realpath($dir);
-            if ($dir !== false && strpos($path . DIRECTORY_SEPARATOR, $dir . DIRECTORY_SEPARATOR) === 0) {
-                $validator->addError($this, $attribute, Craft::t('app', 'Local volumes cannot be located within system directories.'));
-                if ($created) {
-                    FileHelper::removeDirectory($path);
+            if ($dir !== false) {
+
+                if (strpos($path . DIRECTORY_SEPARATOR, $dir . DIRECTORY_SEPARATOR) === 0) {
+                    $validator->addError($this, $attribute, Craft::t('app', 'Local volumes cannot be located within system directories.'));
+                    if ($created) {
+                        FileHelper::removeDirectory($path);
+                    }
+                    break;
                 }
-                break;
+
+                if (strpos($dir . DIRECTORY_SEPARATOR, $path . DIRECTORY_SEPARATOR) === 0) {
+                    $validator->addError($this, $attribute, Craft::t('app', 'Local volumes cannot be located above system directories.'));
+                    if ($created) {
+                        FileHelper::removeDirectory($path);
+                    }
+                    break;
+                }
             }
         }
     }
