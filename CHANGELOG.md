@@ -27,6 +27,7 @@
 - Fixed a bug where Lightswitch fields with only one label weren’t getting the correct padding on the unlabelled side of the container. ([#13629](https://github.com/craftcms/cms/issues/13629))
 - Fixed a bug where the `transformGifs` and `transformSvgs` config settings weren’t always being respected. ([#13624](https://github.com/craftcms/cms/issues/13624), [#13635](https://github.com/craftcms/cms/issues/13635))
 - Fixed a bug where filesystems weren’t requiring the “Base URL” setting to be set. ([#13657](https://github.com/craftcms/cms/pull/13657))
+- Fixed a bug where applying a draft could redirect to the “Current” revision on a different site, if a new site had been added on the draft. ([#13668](https://github.com/craftcms/cms/pull/13668))
 - Fixed an RCE vulnerability.
 
 ## 4.5.3 - 2023-08-29
