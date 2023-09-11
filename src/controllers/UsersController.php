@@ -1423,12 +1423,9 @@ JS,
         // set the default group on the user, so that any content
         // based on user group condition can be validated and saved against them
         if ($isPublicRegistration) {
-            $defaultGroupUid = Craft::$app->getProjectConfig()->get('users.defaultGroup');
-            if ($defaultGroupUid) {
-                $group = Craft::$app->userGroups->getGroupByUid($defaultGroupUid);
-                if ($group) {
-                    $user->setGroups([$group]);
-                }
+            $groups = Craft::$app->getUsers()->getDefaultUserGroups($user);
+            if (!empty($groups)) {
+                $user->setGroups($groups);
             }
         }
 
