@@ -1675,7 +1675,7 @@ JS;
             return [];
         }
 
-        if (!$this->_isTransformingAllowed()) {
+        if (!$this->allowTransforms()) {
             return [];
         }
 
@@ -1861,7 +1861,7 @@ JS;
      */
     public function setTransform(mixed $transform): Asset
     {
-        if ($this->_isTransformingAllowed()) {
+        if ($this->allowTransforms()) {
             $this->_transform = ImageTransforms::normalizeTransform($transform);
         }
 
@@ -1923,16 +1923,16 @@ JS;
         $volume = $this->getVolume();
         $transform = $transform ?? $this->_transform;
 
-        if ($transform) {
-            // if it's a site request - check the mime type and general settings and decide whether to nullify the transform
-            // otherwise - we can proceed and rely on the FallbackTransformer (e.g. for thumbs in the CP)
-            // see https://github.com/craftcms/cms/issues/13306 and https://github.com/craftcms/cms/issues/13624 for more info
-            if (Craft::$app->getRequest()->isSiteRequest && !$this->_isTransformingAllowed()) {
-                $transform = null;
-            }
-            if (!Image::canManipulateAsImage(pathinfo($this->getFilename(), PATHINFO_EXTENSION))) {
-                $transform = null;
-            }
+        if (
+            $transform && (
+                // if it's a site request - check the mime type and general settings and decide whether to nullify the transform
+                // otherwise - we can proceed and rely on the FallbackTransformer (e.g. for thumbs in the CP)
+                // see https://github.com/craftcms/cms/issues/13306 and https://github.com/craftcms/cms/issues/13624 for more info
+                (Craft::$app->getRequest()->getIsSiteRequest() && !$this->allowTransforms()) ||
+                !Image::canManipulateAsImage(pathinfo($this->getFilename(), PATHINFO_EXTENSION))
+            )
+        ) {
+            $transform = null;
         }
 
         if ($transform) {
@@ -3294,18 +3294,12 @@ JS;
      * @return bool
      * @throws ImageTransformException
      */
-    private function _isTransformingAllowed(): bool
+    private function allowTransforms(): bool
     {
-        $mimeType = $this->getMimeType();
-        $generalConfig = Craft::$app->getConfig()->getGeneral();
-
-        if (
-            ($mimeType === 'image/gif' && !$generalConfig->transformGifs) ||
-            ($mimeType === 'image/svg+xml' && !$generalConfig->transformSvgs)
-        ) {
-            return false;
-        }
-
-        return true;
+        return match ($this->getMimeType()) {
+            'image/gif' => Craft::$app->getConfig()->getGeneral()->transformGifs,
+            'image/svg+xml' => Craft::$app->getConfig()->getGeneral()->transformSvgs,
+            default => true,
+        };
     }
 }
