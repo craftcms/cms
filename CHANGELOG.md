@@ -13,6 +13,7 @@
 - `craft\events\UserAssignGroupEvent` now extends `DefineUserGroupsEvent`, giving it a new `$userGroups` property.
 - `craft\helpers\DateTimeHelper::toDateTime()` now supports `DateTimeImmutable` values. ([#13656](https://github.com/craftcms/cms/issues/13656))
 - Deprecated `craft\events\UserAssignGroupEvent`. `DefineUserGroupsEvent` should be used instead.
+- Fixed a bug where the “Active Trials” section in the Plugin Store cart modal wasn’t listing plugins in trial. ([#13661](https://github.com/craftcms/cms/issues/13661))
 - Fixed a bug where changed fields weren’t being tracked properly when applying a draft for a multi-site entry.
 - `craft\services\Elements::duplicateElement()` now supports passing a `siteAttributes` array to the `$attributes` argument, for setting site-specific attributes.
 - Fixed an error that could occur when executing a GraphQL query with fragments. ([#13622](https://github.com/craftcms/cms/issues/13622))
