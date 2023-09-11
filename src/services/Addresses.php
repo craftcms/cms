@@ -24,7 +24,6 @@ use craft\events\DefineAddressFieldLabelEvent;
 use craft\events\DefineAddressFieldsEvent;
 use craft\events\DefineAddressSubdivisionsEvent;
 use craft\helpers\ProjectConfig as ProjectConfigHelper;
-use craft\helpers\StringHelper;
 use craft\models\FieldLayout;
 use craft\models\FieldLayoutTab;
 use yii\base\Component;
@@ -367,11 +366,10 @@ class Addresses extends Component
             return false;
         }
 
-        $projectConfig = Craft::$app->getProjectConfig();
-        $fieldLayoutConfig = $layout->getConfig();
-        $uid = StringHelper::UUID();
+        Craft::$app->getProjectConfig()->set(ProjectConfig::PATH_ADDRESS_FIELD_LAYOUTS, [
+            $layout->uid => $layout->getConfig(),
+        ], 'Save the address field layout');
 
-        $projectConfig->set(ProjectConfig::PATH_ADDRESS_FIELD_LAYOUTS, [$uid => $fieldLayoutConfig], 'Save the address field layout');
         return true;
     }
 
