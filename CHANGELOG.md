@@ -24,6 +24,7 @@
 - Fixed an error that could occur if a Money field was set to an array without a `value` key. ([#13648](https://github.com/craftcms/cms/pull/13648))
 - Fixed a bug where relations weren’t getting restored when restoring a revision’s content. ([#13626](https://github.com/craftcms/cms/issues/13626))
 - Fixed a bug where “Entry Type” fields were showing `typeId` labels for admin users with “Show field handles in edit forms” enabled. ([#13627](https://github.com/craftcms/cms/issues/13627))
+- Fixed a bug where Lightswitch fields with only one label weren’t getting the correct padding on the unlabelled side of the container. ([#13629](https://github.com/craftcms/cms/issues/13629))
 - Fixed an RCE vulnerability.
 
 ## 4.5.3 - 2023-08-29
