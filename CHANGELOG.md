@@ -2,10 +2,35 @@
 
 ## Unreleased
 
+- Added the `@stripTags` and `@trim` GraphQL directives. ([#9971](https://github.com/craftcms/cms/discussions/9971))
+- Added `SK` to the list of keywords that Craft will look for when determining whether a value is sensitive and should be redacted from logs, etc. ([#3619](https://github.com/craftcms/cms/issues/3619))
+- Improved the scrolling behavior for page sidebars and detail panes. ([#13637](https://github.com/craftcms/cms/issues/13637))
+- Filesystem edit pages now have a “Save and continue editing” alternative submit action, and the <kbd>Command</kbd>/<kbd>Ctrl</kbd> + <kbd>S</kbd> keyboard shortcut now redirects back to the edit page. ([#13658](https://github.com/craftcms/cms/pull/13658)) 
+- The `|replace` Twig filter now has a `regex` argument, which can be set to `false` to disable regular expression parsing. ([#13642](https://github.com/craftcms/cms/discussions/13642))
+- Added `craft\events\DefineUserGroupsEvent`.
+- Added `craft\services\Users::EVENT_DEFINE_DEFAULT_USER_GROUPS`. ([#12283](https://github.com/craftcms/cms/issues/12283))
+- Added `craft\services\Users::getDefaultUserGroups()`.
+- `craft\events\UserAssignGroupEvent` now extends `DefineUserGroupsEvent`, giving it a new `$userGroups` property.
+- `craft\helpers\DateTimeHelper::toDateTime()` now supports `DateTimeImmutable` values. ([#13656](https://github.com/craftcms/cms/issues/13656))
+- Deprecated `craft\events\UserAssignGroupEvent`. `DefineUserGroupsEvent` should be used instead.
+- Fixed a bug where the “Active Trials” section in the Plugin Store cart modal wasn’t listing plugins in trial. ([#13661](https://github.com/craftcms/cms/issues/13661))
 - Fixed a bug where changed fields weren’t being tracked properly when applying a draft for a multi-site entry.
 - `craft\services\Elements::duplicateElement()` now supports passing a `siteAttributes` array to the `$attributes` argument, for setting site-specific attributes.
 - Fixed an error that could occur when executing a GraphQL query with fragments. ([#13622](https://github.com/craftcms/cms/issues/13622))
 - Fixed a bug where addresses queried via GraphQL had a `photo` field.
+- Fixed a bug where boolean environment variables weren’t always getting the correct value indicators within Selectize fields. ([#13613](https://github.com/craftcms/cms/issues/13613))
+- Fixed a bug where some system icons were getting black backgrounds when displayed within Vue apps. ([#13632](https://github.com/craftcms/cms/issues/13632))
+- Fixed a bug where the user and address field layouts were getting new UUIDs each time they were saved. ([#13588](https://github.com/craftcms/cms/issues/13588))
+- Fixed an error that could occur if a Money field was set to an array without a `value` key. ([#13648](https://github.com/craftcms/cms/pull/13648))
+- Fixed a bug where relations weren’t getting restored when restoring a revision’s content. ([#13626](https://github.com/craftcms/cms/issues/13626))
+- Fixed a bug where “Entry Type” fields were showing `typeId` labels for admin users with “Show field handles in edit forms” enabled. ([#13627](https://github.com/craftcms/cms/issues/13627))
+- Fixed a bug where Lightswitch fields with only one label weren’t getting the correct padding on the unlabelled side of the container. ([#13629](https://github.com/craftcms/cms/issues/13629))
+- Fixed a bug where the `transformGifs` and `transformSvgs` config settings weren’t always being respected. ([#13624](https://github.com/craftcms/cms/issues/13624), [#13635](https://github.com/craftcms/cms/issues/13635))
+- Fixed a bug where filesystems weren’t requiring the “Base URL” setting to be set. ([#13657](https://github.com/craftcms/cms/pull/13657))
+- Fixed a bug where applying a draft could redirect to the “Current” revision on a different site, if a new site had been added on the draft. ([#13668](https://github.com/craftcms/cms/pull/13668))
+- Fixed an error that could occur when changing a field’s type, if a backup table needed to be created to store the old field values. ([#13669](https://github.com/craftcms/cms/issues/13669))
+- Fixed a bug where Matrix blocks that were initially created for a newly-added site within a draft could be lost when applying the draft. ([#13670](https://github.com/craftcms/cms/pull/13670))
+- Fixed an RCE vulnerability.
 
 ## 4.5.3 - 2023-08-29
 

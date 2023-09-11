@@ -13,6 +13,7 @@ use craft\helpers\DateTimeHelper;
 use craft\test\TestCase;
 use DateInterval;
 use DateTime;
+use DateTimeImmutable;
 use DateTimeZone;
 use Exception;
 use UnitTester;
@@ -136,6 +137,10 @@ class DateTimeHelperTest extends TestCase
     {
         if (is_callable($expected)) {
             $expected = $expected();
+        }
+
+        if (is_callable($value)) {
+            $value = $value();
         }
 
         if ($expected === false) {
@@ -440,9 +445,7 @@ class DateTimeHelperTest extends TestCase
         return [
             'timestamp' => [new DateTime('@1625575906'), 1625575906],
             'now' => [
-                function() {
-                    return new DateTime();
-                },
+                fn() => new DateTime(),
                 'now',
             ],
             'no-params' => [false, ['date' => '', 'time' => '']],
@@ -452,16 +455,16 @@ class DateTimeHelperTest extends TestCase
             'empty-string' => [false, ''],
             'empty-array' => [false, []],
             'year' => [
-                function() {
-                    return new DateTime('2021-01-01 00:00:00', new DateTimeZone('UTC'));
-                },
+                fn() => new DateTime('2021-01-01 00:00:00', new DateTimeZone('UTC')),
                 '2021',
             ],
             'datetime-with-timezone' => [
-                function() {
-                    return new DateTime('2021-09-01T12:00', new DateTimeZone('Europe/Berlin'));
-                },
+                fn() => new DateTime('2021-09-01T12:00', new DateTimeZone('Europe/Berlin')),
                 ['datetime' => '2021-09-01T12:00', 'timezone' => 'Europe/Berlin'],
+            ],
+            'datetime-immutable' => [
+                fn() => new DateTime('@1625575906'),
+                fn() => new DateTimeImmutable('@1625575906'),
             ],
         ];
     }
