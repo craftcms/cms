@@ -45,13 +45,13 @@ class TableRowType implements GeneratorInterface, SingleGeneratorInterface
      */
     public static function generateType(mixed $context): ObjectType
     {
-        /** @var TableField $context */
         $typeName = self::getName($context);
-        $contentFields = TableRow::prepareRowFieldDefinition($context->columns);
 
-        return GqlEntityRegistry::getEntity($typeName) ?: GqlEntityRegistry::createEntity($typeName, new TableRow([
+        return GqlEntityRegistry::getOrCreate($typeName, fn() => new TableRow([
             'name' => $typeName,
-            'fields' => function() use ($contentFields, $typeName) {
+            'fields' => function() use ($context, $typeName) {
+                /** @var TableField $context */
+                $contentFields = TableRow::prepareRowFieldDefinition($context->columns);
                 return Craft::$app->getGql()->prepareFieldDefinitions($contentFields, $typeName);
             },
         ]));

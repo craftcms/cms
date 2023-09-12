@@ -163,14 +163,17 @@ Craft.ui = {
     let id = config.id || 'copytext' + Math.floor(Math.random() * 1000000000);
     let value = config.value;
 
+    const $wrapper = $('<div/>', {
+      class: 'copytextbtn-wrapper',
+    });
+
     let $btn = $('<div/>', {
       id,
       class: 'copytextbtn',
       role: 'button',
       title: Craft.t('app', 'Copy to clipboard'),
-      'aria-label': Craft.t('app', 'Copy to clipboard'),
       tabindex: '0',
-    });
+    }).appendTo($wrapper);
 
     if (config.class) {
       $btn.addClass(config.class);
@@ -181,9 +184,22 @@ Craft.ui = {
       readonly: true,
       size: value.length,
       tabindex: '-1',
+      'aria-hidden': 'true',
+      class: 'visually-hidden',
+    }).insertBefore($btn);
+
+    const $value = $('<span/>', {
+      text: value,
+      class: 'copytextbtn__value',
+    }).appendTo($btn);
+
+    $('<span/>', {
+      class: 'visually-hidden',
+      text: Craft.t('app', 'Copy to clipboard'),
     }).appendTo($btn);
 
     let $icon = $('<span/>', {
+      class: 'copytextbtn__icon',
       'data-icon': 'clipboard',
       'aria-hidden': 'true',
     }).appendTo($btn);
@@ -197,7 +213,7 @@ Craft.ui = {
       $btn.focus();
     };
 
-    $btn.on('click', () => {
+    $btn.on('activate', () => {
       copyValue();
     });
 
@@ -208,7 +224,7 @@ Craft.ui = {
       }
     });
 
-    return $btn;
+    return $wrapper;
   },
 
   createCopyTextField: function (config) {
@@ -1168,8 +1184,11 @@ Craft.ui = {
     return $field;
   },
 
-  createErrorList: function (errors) {
-    var $list = $('<ul class="errors"/>');
+  createErrorList: function (errors, fieldErrorsId) {
+    const $list = $('<ul class="errors" tabindex="-1"/>');
+    if (fieldErrorsId) {
+      $list.attr('id', fieldErrorsId);
+    }
 
     if (errors) {
       this.addErrorsToList($list, errors);
@@ -1180,7 +1199,7 @@ Craft.ui = {
 
   addErrorsToList: function ($list, errors) {
     for (var i = 0; i < errors.length; i++) {
-      $('<li/>').text(errors[i]).appendTo($list);
+      $('<li/>').text(errors[i].replaceAll('*', '')).appendTo($list);
     }
   },
 
@@ -1192,10 +1211,16 @@ Craft.ui = {
     $field.addClass('has-errors');
     $field.children('.input').addClass('errors');
 
-    var $errors = $field.children('ul.errors');
+    const fieldId = $field.attr('id');
+    let fieldErrorsId = '';
+    if (fieldId) {
+      fieldErrorsId = fieldId.replace(new RegExp(`(-field)$`), '-errors');
+    }
+
+    let $errors = $field.children('ul.errors');
 
     if (!$errors.length) {
-      $errors = this.createErrorList().appendTo($field);
+      $errors = this.createErrorList(null, fieldErrorsId).appendTo($field);
     }
 
     this.addErrorsToList($errors, errors);
@@ -1207,11 +1232,112 @@ Craft.ui = {
     $field.children('ul.errors').remove();
   },
 
+  clearErrorSummary: function ($body) {
+    $body.prev('.error-summary').remove();
+  },
+
+  setFocusOnErrorSummary: function ($body, namespace = '') {
+    const errorSummaryContainer = $body.find('.error-summary');
+    if (errorSummaryContainer.length > 0) {
+      errorSummaryContainer.focus();
+
+      // start listening for clicks on summary errors
+      errorSummaryContainer.find('a').on('click', (ev) => {
+        if ($(ev.currentTarget).hasClass('cross-site-validate') == false) {
+          ev.preventDefault();
+          this.anchorSummaryErrorToField(ev.currentTarget, $body, namespace);
+        }
+      });
+    }
+  },
+
+  findErrorsContainerByErrorKey: function ($body, fieldErrorKey, namespace) {
+    namespace = this._getPreppedNamespace(namespace);
+
+    // get the field handle from error key
+    const errorKeyParts = fieldErrorKey.split(/[\[\]\.]/).filter((n) => n);
+
+    // define regex for searching for errors list for given field
+    let regex;
+
+    if (typeof errorKeyParts[0] !== 'undefined') {
+      regex =
+        typeof errorKeyParts[2] === 'undefined'
+          ? new RegExp(`^${namespace}(fields-)?${errorKeyParts[0]}.*-errors`)
+          : (regex = new RegExp(
+              `^${namespace}(fields-)?${errorKeyParts[0]}.*-${errorKeyParts[2]}-errors`
+            ));
+    }
+
+    // find errors list for given error from summary
+    let errorsElement;
+    if (regex) {
+      errorsElement = $body.find('ul.errors').filter(function () {
+        return this.id.match(regex);
+      });
+
+      if (errorsElement.length > 1 && typeof errorKeyParts[1] !== 'undefined') {
+        errorsElement = errorsElement[errorKeyParts[1]];
+      } else {
+        errorsElement = errorsElement[0];
+      }
+    }
+
+    return $(errorsElement);
+  },
+
+  anchorSummaryErrorToField: function (error, $body, namespace) {
+    const fieldErrorKey = $(error).attr('data-field-error-key');
+
+    if (!fieldErrorKey) {
+      return;
+    }
+
+    const $fieldErrorsContainer = this.findErrorsContainerByErrorKey(
+      $body,
+      fieldErrorKey,
+      namespace
+    );
+
+    if ($fieldErrorsContainer) {
+      // check if we need to switch tabs first
+      const $fieldTabAnchor = this.findTabAnchorForField(
+        $fieldErrorsContainer,
+        $body,
+        namespace
+      );
+
+      if ($fieldTabAnchor && $fieldTabAnchor.attr('aria-selected') == 'false') {
+        $fieldTabAnchor.click();
+      }
+
+      // focus on the field container that contains the error
+      $fieldErrorsContainer.parents('.field:first').focus();
+    }
+  },
+
+  findTabAnchorForField: function ($container, $body, namespace) {
+    namespace = this._getPreppedNamespace(namespace);
+
+    const fieldTabDiv = $container.parents(
+      `div[id^=${namespace}tab][role="tabpanel"]`
+    );
+    const fieldTabAnchor = $body
+      .find('[role="tablist"]')
+      .find('a[href="#' + fieldTabDiv.attr('id') + '"]');
+
+    return $(fieldTabAnchor);
+  },
+
   getAutofocusValue: function (autofocus) {
     return autofocus && !Garnish.isMobileBrowser(true) ? 'autofocus' : null;
   },
 
   getDisabledValue: function (disabled) {
     return disabled ? 'disabled' : null;
+  },
+
+  _getPreppedNamespace: function (namespace) {
+    return namespace !== '' ? (namespace += '-') : namespace;
   },
 };

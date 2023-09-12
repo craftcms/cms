@@ -120,11 +120,13 @@ class m220123_213619_update_permissions extends Migration
         if (version_compare($schemaVersion, '4.0.0', '<')) {
             foreach ($projectConfig->get('users.groups') ?? [] as $uid => $group) {
                 $groupPermissions = array_flip($group['permissions'] ?? []);
+                $save = false;
 
                 foreach ($map as $oldPermission => $newPermissions) {
                     if (isset($groupPermissions[$oldPermission])) {
                         foreach ($newPermissions as $newPermission) {
                             $groupPermissions[$newPermission] = true;
+                            $save = true;
                         }
                     }
                 }
@@ -132,13 +134,19 @@ class m220123_213619_update_permissions extends Migration
                 foreach ($delete as $permission) {
                     if (isset($groupPermissions[$permission])) {
                         unset($groupPermissions[$permission]);
+                        $save = true;
                     }
                 }
 
-                // assignUserGroup:<uid> permissions are explicitly required going forward
-                $groupPermissions[strtolower("assignUserGroup:$uid")] = true;
+                if (isset($groupPermissions[strtolower('editUsers')])) {
+                    // assignUserGroup:<uid> permissions are explicitly required going forward
+                    $groupPermissions[strtolower("assignUserGroup:$uid")] = true;
+                    $save = true;
+                }
 
-                $projectConfig->set("users.groups.$uid.permissions", array_keys($groupPermissions));
+                if ($save) {
+                    $projectConfig->set("users.groups.$uid.permissions", array_keys($groupPermissions));
+                }
             }
         }
 
