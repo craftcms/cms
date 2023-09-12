@@ -2507,6 +2507,18 @@ abstract class Element extends Component implements ElementInterface
             }
         }
 
+        if (Craft::$app->getRequest()->getIsCpRequest()) {
+            $allErrors = $this->getErrors();
+            $this->clearErrors();
+            foreach ($allErrors as $attribute => &$errors) {
+                $label = $this->getAttributeLabel($attribute);
+                foreach ($errors as &$error) {
+                    $error = str_replace($label, "*$label*", $error);
+                }
+            }
+            $this->addErrors($allErrors);
+        }
+
         parent::afterValidate();
     }
 
