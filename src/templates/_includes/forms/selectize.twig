@@ -60,7 +60,7 @@
     class: (class ?? [])|explodeClass|push('selectize')|unique,
     inputAttributes: {
         style: {display: 'none'},
-    },
+    }|merge(inputAttributes ?? [], recursive=true),
 } %}
 
 {% js %}
