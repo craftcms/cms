@@ -1712,6 +1712,7 @@ JS;
                 'position',
                 'quality',
                 'width',
+                'fill',
             ]) : [];
 
             if ($unit === 'w') {
