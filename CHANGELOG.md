@@ -6,7 +6,7 @@
 - Improved the scrolling behavior for page sidebars and detail panes. ([#13637](https://github.com/craftcms/cms/issues/13637))
 - Fixed an error that could occur when saving an element with an Assets field from a console command. ([#13623](https://github.com/craftcms/cms/issues/13623))
 - Fixed a bug where the “Active Trials” section in the Plugin Store cart modal wasn’t listing plugins in trial. ([#13661](https://github.com/craftcms/cms/issues/13661))
-- Fixed an RCE vulnerability.
+- Fixed two RCE vulnerabilities.
 
 ## 3.9.1 - 2023-08-23
 
