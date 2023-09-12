@@ -879,11 +879,15 @@ class Matrix extends Component
 
         $transaction = Craft::$app->getDb()->beginTransaction();
         try {
+            $setCanonicalId = $target->getIsDerivative() && $target->getCanonical()->id !== $target->id;
+
             /** @var MatrixBlock[] $blocks */
             foreach ($blocks as $block) {
                 $newAttributes = [
                     // Only set the canonicalId if the target owner element is a derivative
-                    'canonicalId' => $target->getIsDerivative() ? $block->id : null,
+                    // and if the target's canonical element is not the same as target element, see
+                    // https://app.frontapp.com/open/msg_ukaoki1?key=U6zkE_S6_ApMXn3ntPMwUxSLe0sUPsmY for more info
+                    'canonicalId' => $setCanonicalId ? $block->id : null,
                     'primaryOwnerId' => $target->id,
                     'owner' => $target,
                     'siteId' => $target->siteId,
