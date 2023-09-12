@@ -749,6 +749,7 @@ return [
     'Loading' => 'Laster',
     'Local Folder' => 'Lokal mappe',
     'Local copies of remote images, generated thumbnails' => 'Lokale kopier av eksterne bilder, genererte miniatyrbilder',
+    'Local volumes cannot be located above system directories.' => 'Local volumes cannot be located above system directories.',
     'Local volumes cannot be located within system directories.' => 'Local volumes cannot be located within system directories.',
     'Localizing relations' => 'Relasjoner mellom oversettelser',
     'Location' => 'Plassering',
