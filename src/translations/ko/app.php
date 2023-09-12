@@ -749,6 +749,7 @@ return [
     'Loading' => '로드 중',
     'Local Folder' => '로컬 폴더',
     'Local copies of remote images, generated thumbnails' => '원격 이미지, 생성된 썸네일의 로컬 복사본',
+    'Local volumes cannot be located above system directories.' => 'Local volumes cannot be located above system directories.',
     'Local volumes cannot be located within system directories.' => '로컬 볼륨을 시스템 디렉터리에서 찾을 수 없습니다.',
     'Localizing relations' => '관계 로컬라이징',
     'Location' => '위치',
