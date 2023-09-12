@@ -105,9 +105,9 @@ class Local extends Fs implements LocalFsInterface
      */
     public function attributeLabels(): array
     {
-        return parent::attributeLabels() + [
+        return array_merge(parent::attributeLabels(), [
             'path' => Craft::t('app', 'Base Path'),
-        ];
+        ]);
     }
 
     /**
