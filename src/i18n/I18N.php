@@ -321,19 +321,6 @@ class I18N extends \yii\i18n\I18N
     }
 
     /**
-     * @inheritdoc
-     */
-    public function format($message, $params, $language)
-    {
-        if (!empty($params) && Craft::$app->getRequest()->getIsCpRequest()) {
-            // wrap attribute value in an <em> tag but only for CP requests
-            array_walk($params, fn(&$val, $key) => ($key == 'attribute') ? $val = "*$val*" : $val);
-        }
-
-        return parent::format($message, $params, $language);
-    }
-
-    /**
      * Returns whether [[translate()]] should wrap translations with `@` characters,
      * per the `translationDebugOutput` config setting.
      *
