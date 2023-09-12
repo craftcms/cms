@@ -1675,6 +1675,10 @@ JS;
             return [];
         }
 
+        if (!$this->allowTransforms()) {
+            return [];
+        }
+
         $urls = [];
 
         if (
@@ -1858,7 +1862,9 @@ JS;
      */
     public function setTransform(mixed $transform): Asset
     {
-        $this->_transform = ImageTransforms::normalizeTransform($transform);
+        if ($this->allowTransforms()) {
+            $this->_transform = ImageTransforms::normalizeTransform($transform);
+        }
 
         return $this;
     }
@@ -1918,8 +1924,14 @@ JS;
         $volume = $this->getVolume();
         $transform = $transform ?? $this->_transform;
 
-        if ($transform &&
-            !Image::canManipulateAsImage(pathinfo($this->getFilename(), PATHINFO_EXTENSION))
+        if (
+            $transform && (
+                // if it's a site request - check the mime type and general settings and decide whether to nullify the transform
+                // otherwise - we can proceed and rely on the FallbackTransformer (e.g. for thumbs in the CP)
+                // see https://github.com/craftcms/cms/issues/13306 and https://github.com/craftcms/cms/issues/13624 for more info
+                (Craft::$app->getRequest()->getIsSiteRequest() && !$this->allowTransforms()) ||
+                !Image::canManipulateAsImage(pathinfo($this->getFilename(), PATHINFO_EXTENSION))
+            )
         ) {
             $transform = null;
         }
@@ -3274,5 +3286,21 @@ JS;
         }
 
         return FileHelper::normalizePath($path) . DIRECTORY_SEPARATOR;
+    }
+
+    /**
+     * Returns whether transforming given asset is allowed
+     * based on its mime type and general settings.
+     *
+     * @return bool
+     * @throws ImageTransformException
+     */
+    private function allowTransforms(): bool
+    {
+        return match ($this->getMimeType()) {
+            'image/gif' => Craft::$app->getConfig()->getGeneral()->transformGifs,
+            'image/svg+xml' => Craft::$app->getConfig()->getGeneral()->transformSvgs,
+            default => true,
+        };
     }
 }

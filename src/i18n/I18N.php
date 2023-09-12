@@ -325,8 +325,10 @@ class I18N extends \yii\i18n\I18N
      */
     public function format($message, $params, $language)
     {
-        // wrap attribute value in an <em> tag
-        array_walk($params, fn(&$val, $key) => ($key == 'attribute') ? $val = "*$val*" : $val);
+        if (!empty($params) && Craft::$app->getRequest()->getIsCpRequest()) {
+            // wrap attribute value in an <em> tag but only for CP requests
+            array_walk($params, fn(&$val, $key) => ($key == 'attribute') ? $val = "*$val*" : $val);
+        }
 
         return parent::format($message, $params, $language);
     }
