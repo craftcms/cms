@@ -13,6 +13,7 @@
 - Added `craft\services\Users::getDefaultUserGroups()`.
 - `craft\events\UserAssignGroupEvent` now extends `DefineUserGroupsEvent`, giving it a new `$userGroups` property.
 - `craft\helpers\DateTimeHelper::toDateTime()` now supports `DateTimeImmutable` values. ([#13656](https://github.com/craftcms/cms/issues/13656))
+- `craft\web\Response::setCacheHeaders()` no longer includes `public` in the `Cache-Control` header when `$overwrite` is `false`. ([#13676](https://github.com/craftcms/cms/issues/13676))
 - Deprecated `craft\events\UserAssignGroupEvent`. `DefineUserGroupsEvent` should be used instead.
 - Fixed a bug where the “Active Trials” section in the Plugin Store cart modal wasn’t listing plugins in trial. ([#13661](https://github.com/craftcms/cms/issues/13661))
 - Fixed a bug where changed fields weren’t being tracked properly when applying a draft for a multi-site entry.
@@ -32,7 +33,6 @@
 - Fixed an error that could occur when changing a field’s type, if a backup table needed to be created to store the old field values. ([#13669](https://github.com/craftcms/cms/issues/13669))
 - Fixed a bug where Matrix blocks that were initially created for a newly-added site within a draft could be lost when applying the draft. ([#13670](https://github.com/craftcms/cms/pull/13670))
 - Fixed a bug where `fill` transform properties weren’t being passed along by `craft\elements\Asset::getUrlsBySize()` and `getSrcset()`. ([#13650](https://github.com/craftcms/cms/issues/13650))
-- Fixed a bug where `craft\web\Response::setCacheHeaders()` wasn’t including `public` in the `Cache-Control` header when `$overwrite` was `true`. ([#13676](https://github.com/craftcms/cms/issues/13676))
 - Fixed a bug where SVG asset icons weren’t visible in Safari. ([#13685](https://github.com/craftcms/cms/issues/13685))
 - Fixed two RCE vulnerabilities.
 
