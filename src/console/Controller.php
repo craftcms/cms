@@ -453,7 +453,6 @@ class Controller extends YiiController
         } catch (Throwable $e) {
             $this->stdout('✕' . PHP_EOL, Console::FG_RED, Console::BOLD);
             $this->stdout("   Error: {$e->getMessage()}" . PHP_EOL, Console::FG_RED);
-
             throw $e;
         }
 
