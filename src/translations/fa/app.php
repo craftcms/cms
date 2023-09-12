@@ -749,6 +749,7 @@ return [
     'Loading' => 'بارگیری',
     'Local Folder' => 'پوشه محلی',
     'Local copies of remote images, generated thumbnails' => 'نسخه‌های محلی تصاویر راه دور، تصاویر کوچک تولید‌شده',
+    'Local volumes cannot be located above system directories.' => 'Local volumes cannot be located above system directories.',
     'Local volumes cannot be located within system directories.' => 'مخزن‌های محلی نمی‌توانند در شاخه‌های سیستمی قرار بگیرند.',
     'Localizing relations' => 'محلی سازی رابطه ها',
     'Location' => 'محل',

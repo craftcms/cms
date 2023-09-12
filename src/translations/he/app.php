@@ -749,6 +749,7 @@ return [
     'Loading' => 'בטעינה',
     'Local Folder' => 'תיקייה מקומית',
     'Local copies of remote images, generated thumbnails' => 'עותקים מקומיים של תמונות מרוחקות, תמונות ממוזערות שנוצרו',
+    'Local volumes cannot be located above system directories.' => 'Local volumes cannot be located above system directories.',
     'Local volumes cannot be located within system directories.' => 'אמצעי אחסון מקומיים לא יכולים להימצא בתוך ספריות המערכת.',
     'Localizing relations' => 'לוקליזציה של קשרים',
     'Location' => 'מיקום',

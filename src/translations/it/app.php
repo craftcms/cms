@@ -749,6 +749,7 @@ return [
     'Loading' => 'Caricamento',
     'Local Folder' => 'Cartella locale',
     'Local copies of remote images, generated thumbnails' => 'Copie locali di immagini remote, anteprime generate',
+    'Local volumes cannot be located above system directories.' => 'Local volumes cannot be located above system directories.',
     'Local volumes cannot be located within system directories.' => 'I volumi locali non possono trovarsi nelle directory di sistema.',
     'Localizing relations' => 'Localizzazione delle relazioni',
     'Location' => 'Directory',

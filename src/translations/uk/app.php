@@ -749,6 +749,7 @@ return [
     'Loading' => 'Завантаження',
     'Local Folder' => 'Локальна папка',
     'Local copies of remote images, generated thumbnails' => 'Локальні копії віддалених зображень, створені ескізи',
+    'Local volumes cannot be located above system directories.' => 'Local volumes cannot be located above system directories.',
     'Local volumes cannot be located within system directories.' => 'Не вдалося знайти локальні томи в системних каталогах.',
     'Localizing relations' => 'Локалізація взаємозв\'язків',
     'Location' => 'Розташування',

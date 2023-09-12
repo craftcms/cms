@@ -749,6 +749,7 @@ return [
     'Loading' => 'ロードしています',
     'Local Folder' => 'ローカルのフォルダ',
     'Local copies of remote images, generated thumbnails' => 'リモート画像のローカルコピー、生成されたサムネイル',
+    'Local volumes cannot be located above system directories.' => 'Local volumes cannot be located above system directories.',
     'Local volumes cannot be located within system directories.' => 'ローカルボリュームがシステムディレクトリ内に見つかりません。',
     'Localizing relations' => '関連をローカライズ',
     'Location' => '場所',

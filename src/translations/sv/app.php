@@ -749,6 +749,7 @@ return [
     'Loading' => 'Läser in',
     'Local Folder' => 'Lokal mapp',
     'Local copies of remote images, generated thumbnails' => 'Lokala kopior av fjärrbilder, genererade miniatyrer',
+    'Local volumes cannot be located above system directories.' => 'Local volumes cannot be located above system directories.',
     'Local volumes cannot be located within system directories.' => 'Lokala volymer kan inte placeras inne i systemmappar.',
     'Localizing relations' => 'Lokaliserar förbindelser',
     'Location' => 'Plats',

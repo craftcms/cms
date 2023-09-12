@@ -749,6 +749,7 @@ return [
     'Loading' => 'Yükleniyor',
     'Local Folder' => 'Yerel Klasör',
     'Local copies of remote images, generated thumbnails' => 'Uzak görüntülerin yerel kopyaları, oluşturulan küçük resimler',
+    'Local volumes cannot be located above system directories.' => 'Local volumes cannot be located above system directories.',
     'Local volumes cannot be located within system directories.' => 'Yerel birimler sistem dizinleri içinde bulunamaz.',
     'Localizing relations' => 'İlişkilerin lokallenmesi',
     'Location' => 'Konum',

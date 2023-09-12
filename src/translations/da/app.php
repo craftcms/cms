@@ -750,6 +750,7 @@ return [
     'Loading' => 'Indlæser',
     'Local Folder' => 'Lokal mappe',
     'Local copies of remote images, generated thumbnails' => 'Lokale kopier af fjernbilleder, genererede miniaturer',
+    'Local volumes cannot be located above system directories.' => 'Local volumes cannot be located above system directories.',
     'Local volumes cannot be located within system directories.' => 'Lokale diskenheder kan ikke befinde sig indeni systemmapper.',
     'Localizing relations' => 'Oversættelses relationer',
     'Location' => 'Placering',

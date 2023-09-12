@@ -749,6 +749,7 @@ return [
     'Loading' => 'Loading',
     'Local Folder' => 'Local Folder',
     'Local copies of remote images, generated thumbnails' => 'Local copies of remote images, generated thumbnails',
+    'Local volumes cannot be located above system directories.' => 'Local volumes cannot be located above system directories.',
     'Local volumes cannot be located within system directories.' => 'Local volumes cannot be located within system directories.',
     'Localizing relations' => 'Localising relations',
     'Location' => 'Location',
