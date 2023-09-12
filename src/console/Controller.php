@@ -436,10 +436,9 @@ class Controller extends YiiController
      * @param string $description The action description. Supports Markdown formatting.
      * @param callable $action The action callable
      * @param bool $withDuration Whether to output the action duration upon completion
-     * @param bool $throwOnError Whether to throw an exception on error, or just print the error message
      * @since 4.3.5
      */
-    public function do(string $description, callable $action, bool $withDuration = false, bool $throwOnError = true): void
+    public function do(string $description, callable $action, bool $withDuration = false): void
     {
         $this->stdout(' → ', Console::FG_GREY);
         $this->stdout($this->markdownToAnsi($description));
@@ -451,14 +450,11 @@ class Controller extends YiiController
 
         try {
             $action();
-            $this->stdout('✓', Console::FG_GREEN, Console::BOLD);
         } catch (Throwable $e) {
             $this->stdout('✕' . PHP_EOL, Console::FG_RED, Console::BOLD);
             $this->stdout("   Error: {$e->getMessage()}" . PHP_EOL, Console::FG_RED);
 
-            if ($throwOnError) {
-                throw $e;
-            }
+            throw $e;
         }
 
         if ($withDuration) {
