@@ -33,7 +33,7 @@
 - Fixed a bug where Matrix blocks that were initially created for a newly-added site within a draft could be lost when applying the draft. ([#13670](https://github.com/craftcms/cms/pull/13670))
 - Fixed a bug where `fill` transform properties weren’t being passed along by `craft\elements\Asset::getUrlsBySize()` and `getSrcset()`. ([#13650](https://github.com/craftcms/cms/issues/13650))
 - Fixed a bug where `craft\web\Response::setCacheHeaders()` wasn’t including `public` in the `Cache-Control` header when `$overwrite` was `true`. ([#13676](https://github.com/craftcms/cms/issues/13676))
-- Fixed an RCE vulnerability.
+- Fixed two RCE vulnerabilities.
 
 ## 4.5.3 - 2023-08-29
 
