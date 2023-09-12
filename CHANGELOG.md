@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 3.x
 
-## Unreleased
+## 3.9.2 - 2023-09-12
 
 - Added `SK` to the list of keywords that Craft will look for when determining whether a value is sensitive and should be redacted from logs, etc. ([#3619](https://github.com/craftcms/cms/issues/3619))
 - Improved the scrolling behavior for page sidebars and detail panes. ([#13637](https://github.com/craftcms/cms/issues/13637))
