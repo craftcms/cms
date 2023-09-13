@@ -274,14 +274,19 @@ c-2-26.8-24.8-53.5-42-72.5S0,169.8,0,144C0,76,64.8,32,128,32S256,76,256,144z"
 
       licenseLabel() {
         switch (this.plugin.license) {
+          case 'apache-2.0':
+            return 'Apache-2.0';
           case 'craft':
             return 'Craft';
-
+          case 'gpl-2.0':
+            return 'GPL-2.0';
+          case 'gpl-3.0':
+            return 'GPL-3.0';
           case 'mit':
             return 'MIT';
         }
 
-        return null;
+        return this.plugin.license;
       },
 
       lastUpdate() {
