@@ -1,0 +1,40 @@
+name: Update branches
+
+on:
+  push:
+    branches: develop
+
+permissions:
+  contents: write
+
+env:
+  base_ref: develop
+
+jobs:
+  update-branches:
+    strategy:
+      matrix:
+        ref:
+          - '4.5'
+          - '5.0'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+          ref: ${{ matrix.ref }}
+
+      - name: Setup Git User
+        run: |
+          git config user.name "shinybrad"
+          git config user.email "shinybrad@users.noreply.github.com"
+
+      - name: Update ${{ matrix.ref }}
+        run: |
+          git checkout ${{ env.base_ref }}
+          git fetch origin
+          git checkout ${{ matrix.ref }}
+          git pull
+          git merge origin/${{ env.base_ref }}
+          git push origin ${{ matrix.ref }}
