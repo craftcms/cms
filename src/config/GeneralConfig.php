@@ -392,9 +392,6 @@ class GeneralConfig extends BaseConfig
      * :::
      *
      * ::: code
-     * ```php Static Config
-     * ->autosaveDrafts(false)
-     * ```
      * ```shell Environment Override
      * CRAFT_AUTOSAVE_DRAFTS=false
      * ```
@@ -692,6 +689,25 @@ class GeneralConfig extends BaseConfig
      * @group Environment
      */
     public string $defaultCookieDomain = '';
+
+    /**
+     * @var string The two-letter country code that addresses will be set to by default.
+     *
+     * See <https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2> for a list of acceptable country codes.
+     *
+     * ::: code
+     * ```php Static Config
+     * ->defaultCountryCode('GB')
+     * ```
+     * ```shell Environment Override
+     * CRAFT_DEFAULT_COUNTRY_CODE=GB
+     * ```
+     * :::
+     *
+     * @group System
+     * @since 4.5.0
+     */
+    public string $defaultCountryCode = 'US';
 
     /**
      * @var string|null The default language the control panel should use for users who haven’t set a preferred language yet.
@@ -3745,6 +3761,27 @@ class GeneralConfig extends BaseConfig
     public function defaultCookieDomain(string $value): self
     {
         $this->defaultCookieDomain = $value;
+        return $this;
+    }
+
+    /**
+     * The two-letter country code that addresses will be set to by default.
+     *
+     * See <https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2> for a list of acceptable country codes.
+     *
+     * ```php
+     * ->defaultCountryCode('GB')
+     * ```
+     *
+     * @group System
+     * @param string $value
+     * @return self
+     * @see $defaultCountryCode
+     * @since 4.5.0
+     */
+    public function defaultCountryCode(string $value): self
+    {
+        $this->defaultCountryCode = $value;
         return $this;
     }
 

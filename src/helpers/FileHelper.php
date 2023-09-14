@@ -264,7 +264,7 @@ class FileHelper extends \yii\helpers\FileHelper
         // Strip any characters not allowed.
         $filename = str_replace($disallowedChars, '', strip_tags($filename));
 
-        if (Craft::$app->getDb()->getIsMysql()) {
+        if (!Craft::$app->getDb()->getSupportsMb4()) {
             // Strip emojis
             $filename = StringHelper::replaceMb4($filename, '');
         }
@@ -854,11 +854,13 @@ class FileHelper extends \yii\helpers\FileHelper
      * Return a file extension for the given MIME type.
      *
      * @param string $mimeType
+     * @param bool $preferShort
+     * @param string|null $magicFile
      * @return string
      * @throws InvalidArgumentException if no known extensions exist for the given MIME type.
      * @since 3.5.15
      */
-    public static function getExtensionByMimeType(string $mimeType): string
+    public static function getExtensionByMimeType($mimeType, $preferShort = false, $magicFile = null): string
     {
         // cover the ambiguous, web-friendly MIME types up front
         switch (strtolower($mimeType)) {
@@ -881,7 +883,7 @@ class FileHelper extends \yii\helpers\FileHelper
             case 'video/quicktime': return 'mov';
         }
 
-        $extensions = FileHelper::getExtensionsByMimeType($mimeType);
+        $extensions = self::getExtensionsByMimeType($mimeType);
 
         if (empty($extensions)) {
             throw new InvalidArgumentException("No file extensions are known for the MIME Type $mimeType.");

@@ -103,6 +103,16 @@ class Local extends Fs implements LocalFsInterface
     /**
      * @inheritdoc
      */
+    public function attributeLabels(): array
+    {
+        return array_merge(parent::attributeLabels(), [
+            'path' => Craft::t('app', 'Base Path'),
+        ]);
+    }
+
+    /**
+     * @inheritdoc
+     */
     protected function defineRules(): array
     {
         $rules = parent::defineRules();
@@ -128,7 +138,11 @@ class Local extends Fs implements LocalFsInterface
         foreach ($systemDirs as $dir) {
             $dir = FileHelper::absolutePath($dir, '/');
             if (str_starts_with("$path/", "$dir/")) {
-                $validator->addError($this, $attribute, Craft::t('app', 'Local volumes cannot be located within system directories.'));
+                $validator->addError($this, $attribute, Craft::t('app', 'Local filesystems cannot be located within system directories.'));
+                break;
+            }
+            if (str_starts_with("$dir/", "$path/")) {
+                $validator->addError($this, $attribute, Craft::t('app', 'Local filesystems cannot be located above system directories.'));
                 break;
             }
         }
