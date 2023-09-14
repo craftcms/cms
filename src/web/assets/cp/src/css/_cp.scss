@@ -912,13 +912,12 @@ li.breadcrumb-toggle-wrapper {
 
 #sidebar {
   box-sizing: border-box;
-  padding: 0 31px;
+  padding: 0 31px 14px;
   width: $sidebarWidth;
   background-color: transparent;
 
   &.fixed {
     position: fixed;
-    padding-bottom: 14px;
   }
 
   nav {

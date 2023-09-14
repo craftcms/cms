@@ -782,8 +782,6 @@ Craft.CP = Garnish.Base.extend(
           this.$headerContainer.height(headerHeight);
           Garnish.$bod.addClass('fixed-header');
 
-          this.$sidebar.addClass('fixed');
-          this.$details.addClass('fixed');
           this.fixedHeader = true;
         }
 
@@ -800,16 +798,27 @@ Craft.CP = Garnish.Base.extend(
     },
 
     _setFixedTopPos: function ($element, headerHeight) {
-      $element.css(
-        'top',
-        Math.min(
-          headerHeight + 14,
-          Math.max(
-            this.$mainContent[0].getBoundingClientRect().top,
-            document.documentElement.clientHeight - $element.outerHeight()
-          )
-        ) + 'px'
-      );
+      if (!$element.length || !this.$contentContainer.length) {
+        return;
+      }
+
+      if ($element.outerHeight() >= this.$contentContainer.outerHeight()) {
+        $element.removeClass('fixed').css('top', '');
+        return;
+      }
+
+      $element
+        .addClass('fixed')
+        .css(
+          'top',
+          Math.min(
+            headerHeight + 14,
+            Math.max(
+              this.$mainContent[0].getBoundingClientRect().top,
+              document.documentElement.clientHeight - $element.outerHeight()
+            )
+          ) + 'px'
+        );
     },
 
     /**
