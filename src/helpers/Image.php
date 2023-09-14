@@ -273,7 +273,8 @@ class Image
 
             $image = Craft::$app->getImages()->loadImage($filePath);
             return [$image->getWidth(), $image->getHeight()];
-        } catch (Throwable) {
+        } catch (Throwable $e) {
+            Craft::warning($e->getMessage(), __METHOD__);
             return [0, 0];
         }
     }
