@@ -5,6 +5,7 @@
 - Added the `maxGraphqlBatchSize` config setting. ([#13693](https://github.com/craftcms/cms/issues/13693))
 - Fixed a bug where page sidebars and detail panes weren’t scrolling properly if their height was greater than the main content pane height. ([#13637](https://github.com/craftcms/cms/issues/13637))
 - Fixed an error that could occur when changing a field’s type, if a backup table needed to be created to store the old field values. ([#13669](https://github.com/craftcms/cms/issues/13669))
+- Fixed a bug where it wasn’t possible to save blank Dropdown values. ([#13695](https://github.com/craftcms/cms/issues/13695))
 
 ## 4.5.4 - 2023-09-12
 
