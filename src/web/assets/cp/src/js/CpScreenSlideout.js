@@ -276,6 +276,11 @@ Craft.CpScreenSlideout = Craft.Slideout.extend(
     update: function (data) {
       return new Promise((resolve) => {
         this.namespace = data.namespace;
+
+        if (data.bodyClass) {
+          this.$body.addClass(data.bodyClass);
+        }
+
         this.$content.html(data.content);
 
         if (data.submitButtonLabel) {
@@ -546,11 +551,14 @@ Craft.CpScreenSlideout = Craft.Slideout.extend(
     },
 
     isDirty: function () {
-      return (
-        typeof this.$container.data('initialSerializedValue') !== 'undefined' &&
-        this.$container.serialize() !==
-          this.$container.data('initialSerializedValue')
-      );
+      const initialValue = this.$container.data('initialSerializedValue');
+      if (typeof initialValue === 'undefined') {
+        return false;
+      }
+
+      const serializer =
+        this.$container.data('serializer') || (() => this.$content.serialize());
+      return initialValue !== serializer();
     },
 
     closeMeMaybe: function () {

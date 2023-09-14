@@ -66,11 +66,12 @@ class Dispatcher extends \yii\log\Dispatcher
             static::TARGET_CONSOLE,
             static::TARGET_QUEUE,
         ])->mapWithKeys(function($name) {
+            $allowLineBreaks = (bool) (App::env('CRAFT_LOG_ALLOW_LINE_BREAKS') ?? App::devMode());
             $config = $this->monologTargetConfig + [
                 'name' => $name,
                 'enabled' => false,
                 'extractExceptionTrace' => !App::devMode(),
-                'allowLineBreaks' => App::devMode(),
+                'allowLineBreaks' => $allowLineBreaks,
                 'level' => App::devMode() ? LogLevel::INFO : LogLevel::WARNING,
             ];
 

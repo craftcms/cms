@@ -36,16 +36,12 @@ class LivePreviewController extends Controller
      */
     public function beforeAction($action): bool
     {
-        if (!parent::beforeAction($action)) {
-            return false;
-        }
-
         // Mark this as a Live Preview request
         if ($action->id === 'preview') {
             $this->request->setIsLivePreview(true);
         }
 
-        return true;
+        return parent::beforeAction($action);
     }
 
     /**

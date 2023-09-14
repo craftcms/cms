@@ -57,30 +57,14 @@ class MultiSelect extends BaseOptionsField
             Craft::$app->getView()->setInitialDeltaValue($this->handle, null);
         }
 
-        $id = $this->getInputId();
-
-        $view = Craft::$app->getView();
-        $view->registerJsWithVars(fn($id) => <<<JS
-$('#' + $id).selectize({
-  plugins: ['remove_button'],
-  dropdownParent: 'body',
-});
-JS, [
-            $view->namespaceInputId($id),
-        ]);
-
-        return Cp::multiSelectHtml([
-            'id' => $id,
+        return Cp::selectizeHtml([
+            'id' => $this->getInputId(),
             'describedBy' => $this->describedBy,
             'class' => 'selectize',
             'name' => $this->handle,
             'values' => $this->encodeValue($value),
             'options' => $this->translatedOptions(true, $value, $element),
-            'inputAttributes' => [
-                'style' => [
-                    'display' => 'none', // Hide it before selectize does its thing
-                ],
-            ],
+            'multi' => true,
         ]);
     }
 

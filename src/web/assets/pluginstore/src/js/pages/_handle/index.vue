@@ -156,14 +156,19 @@
 
       licenseLabel() {
         switch (this.plugin.license) {
+          case 'apache-2.0':
+            return 'Apache-2.0';
           case 'craft':
             return 'Craft';
-
+          case 'gpl-2.0':
+            return 'GPL-2.0';
+          case 'gpl-3.0':
+            return 'GPL-3.0';
           case 'mit':
             return 'MIT';
         }
 
-        return null;
+        return this.plugin.license;
       },
 
       lastUpdate() {

@@ -9,6 +9,7 @@ namespace craft\models;
 
 use Craft;
 use craft\base\Field;
+use craft\base\FieldLayoutProviderInterface;
 use craft\base\Model;
 use craft\behaviors\FieldLayoutBehavior;
 use craft\elements\Entry;
@@ -25,7 +26,7 @@ use yii\base\InvalidConfigException;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
-class EntryType extends Model
+class EntryType extends Model implements FieldLayoutProviderInterface
 {
     /**
      * @var int|null ID
@@ -82,6 +83,25 @@ class EntryType extends Model
     public ?string $titleFormat = null;
 
     /**
+     * @var string Slug translation method
+     * @phpstan-var Field::TRANSLATION_METHOD_NONE|Field::TRANSLATION_METHOD_SITE|Field::TRANSLATION_METHOD_SITE_GROUP|Field::TRANSLATION_METHOD_LANGUAGE|Field::TRANSLATION_METHOD_CUSTOM
+     * @since 4.5.0
+     */
+    public string $slugTranslationMethod = Field::TRANSLATION_METHOD_SITE;
+
+    /**
+     * @var string|null Slug translation key format
+     * @since 4.5.0
+     */
+    public ?string $slugTranslationKeyFormat = null;
+
+    /**
+     * @var bool Whether to show the Status field
+     * @since 4.5.0
+     */
+    public bool $showStatusField = true;
+
+    /**
      * @var string|null UID
      */
     public ?string $uid = null;
@@ -108,6 +128,7 @@ class EntryType extends Model
             'handle' => Craft::t('app', 'Handle'),
             'name' => Craft::t('app', 'Name'),
             'titleFormat' => Craft::t('app', 'Title Format'),
+            'showStatusField' => Craft::t('app', 'Show the Status field'),
         ];
     }
 
@@ -178,6 +199,16 @@ class EntryType extends Model
     }
 
     /**
+     * @inheritdoc
+     */
+    public function getFieldLayout(): FieldLayout
+    {
+        /** @var FieldLayoutBehavior $behavior */
+        $behavior = $this->getBehavior('fieldLayout');
+        return $behavior->getFieldLayout();
+    }
+
+    /**
      * Returns the entry’s edit URL in the control panel.
      *
      * @return string
@@ -221,6 +252,9 @@ class EntryType extends Model
             'titleTranslationMethod' => $this->titleTranslationMethod,
             'titleTranslationKeyFormat' => $this->titleTranslationKeyFormat ?: null,
             'titleFormat' => $this->titleFormat ?: null,
+            'slugTranslationMethod' => $this->slugTranslationMethod,
+            'slugTranslationKeyFormat' => $this->slugTranslationKeyFormat ?: null,
+            'showStatusField' => $this->showStatusField,
             'sortOrder' => (int)$this->sortOrder,
             'section' => $this->getSection()->uid,
         ];

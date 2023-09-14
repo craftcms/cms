@@ -261,6 +261,7 @@ class Drafts extends Component
         /** @var DraftBehavior $behavior */
         $behavior = $draft->getBehavior('draft');
         $canonical = $draft->getCanonical(true);
+        $originalDraft = $draft;
 
         // If the canonical element ended up being from a different site than the draft, get the draft in that site
         if ($canonical->siteId != $draft->siteId) {
@@ -339,6 +340,12 @@ class Drafts extends Component
                 'draftNotes' => $behavior->draftNotes,
                 'draft' => $draft,
             ]));
+        }
+
+        // if we were on another site when the applyDraft was triggered,
+        // ensure we return the canonical element for the site we were on
+        if ($newCanonical->siteId !== $originalDraft->siteId) {
+            $newCanonical = $originalDraft->getCanonical();
         }
 
         return $newCanonical;
