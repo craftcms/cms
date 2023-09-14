@@ -248,6 +248,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
             new TwigFilter('kebab', [$this, 'kebabFilter']),
             new TwigFilter('lcfirst', [$this, 'lcfirstFilter']),
             new TwigFilter('literal', [$this, 'literalFilter']),
+            new TwigFilter('map', [$this, 'mapFilter'], ['needs_environment' => true]),
             new TwigFilter('markdown', [$this, 'markdownFilter'], ['is_safe' => ['html']]),
             new TwigFilter('md', [$this, 'markdownFilter'], ['is_safe' => ['html']]),
             new TwigFilter('merge', [$this, 'mergeFilter']),
@@ -265,6 +266,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
             new TwigFilter('prepend', [$this, 'prependFilter'], ['is_safe' => ['html']]),
             new TwigFilter('purify', [$this, 'purifyFilter'], ['is_safe' => ['html']]),
             new TwigFilter('push', [$this, 'pushFilter']),
+            new TwigFilter('reduce', [$this, 'reduceFilter'], ['needs_environment' => true]),
             new TwigFilter('removeClass', [$this, 'removeClassFilter'], ['is_safe' => ['html']]),
             new TwigFilter('replace', [$this, 'replaceFilter']),
             new TwigFilter('rss', [$this, 'rssFilter'], ['needs_environment' => true]),
@@ -490,11 +492,41 @@ class Extension extends AbstractExtension implements GlobalsInterface
      */
     public function sortFilter(TwigEnvironment $env, $array, $arrow = null): array
     {
-        if (is_string($arrow) && strtolower($arrow) === 'system') {
-            throw new RuntimeError('The sort filter doesn\'t support sorting by system().');
-        }
-
+        $this->_checkFilterSupport($arrow);
         return twig_sort_filter($env, $array, $arrow);
+    }
+
+    /**
+     * Reduces an array.
+     *
+     * @param TwigEnvironment $env
+     * @param $array
+     * @param $arrow
+     * @param $initial
+     * @return mixed
+     * @throws RuntimeError
+     * @since 3.8.16
+     */
+    public function reduceFilter(TwigEnvironment $env, $array, $arrow, $initial = null)
+    {
+        $this->_checkFilterSupport($arrow);
+        return twig_array_reduce($env, $array, $arrow, $initial);
+    }
+
+    /**
+     * Maps an array.
+     *
+     * @param TwigEnvironment $env
+     * @param $array
+     * @param $arrow
+     * @return array
+     * @throws RuntimeError
+     * @since 3.8.16
+     */
+    public function mapFilter(TwigEnvironment $env, $array, $arrow = null): array
+    {
+        $this->_checkFilterSupport($arrow);
+        return twig_array_map($env, $array, $arrow);
     }
 
 
@@ -1041,9 +1073,12 @@ class Extension extends AbstractExtension implements GlobalsInterface
      * @param array|\Traversable $arr
      * @param callable|null $arrow
      * @return array
+     * @throws RuntimeError
      */
     public function filterFilter(TwigEnvironment $env, $arr, $arrow = null)
     {
+        $this->_checkFilterSupport($arrow);
+
         if ($arrow === null) {
             return array_filter($arr);
         }
@@ -1585,6 +1620,17 @@ class Extension extends AbstractExtension implements GlobalsInterface
             'setPasswordUrl' => $setPasswordRequestPath !== null ? UrlHelper::siteUrl($setPasswordRequestPath) : null,
             'now' => new DateTime('now', new \DateTimeZone(Craft::$app->getTimeZone())),
         ];
+    }
+
+    /**
+     * @param mixed $arrow
+     * @throws RuntimeError
+     */
+    private function _checkFilterSupport($arrow): void
+    {
+        if (is_string($arrow) && (strtolower($arrow) === 'system' || strtolower($arrow) === 'passthru')) {
+            throw new RuntimeError('Not supported in this filter.');
+        }
     }
 
     // Deprecated Methods

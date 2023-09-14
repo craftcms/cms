@@ -430,7 +430,11 @@ const actions = {
               continue;
             }
 
-            if (info.licenseKey && info.edition === info.licensedEdition) {
+            if (
+              !info.isTrial &&
+              info.licenseKey &&
+              info.edition === info.licensedEdition
+            ) {
               continue;
             }
 

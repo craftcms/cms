@@ -335,6 +335,28 @@ class Asset extends Element
         return null;
     }
 
+    public static function sourcePath(string $sourceKey, string $stepKey, ?string $context): ?array
+    {
+        if (!preg_match('/^folder:([\w\-]+)$/', $stepKey, $match)) {
+            return null;
+        }
+
+        $folder = Craft::$app->getAssets()->getFolderByUid($match[1]);
+
+        if (!$folder) {
+            return null;
+        }
+
+        $path = [$folder->getSourcePathInfo()];
+
+        while ($parent = $folder->getParent()) {
+            array_unshift($path, $parent->getSourcePathInfo());
+            $folder = $parent;
+        }
+
+        return $path;
+    }
+
     /**
      * @inheritdoc
      * @since 3.5.0
@@ -378,7 +400,9 @@ class Asset extends Element
             // Edit
             $actions[] = [
                 'type' => Edit::class,
-                'label' => Craft::t('app', 'Edit asset'),
+                'label' => Craft::t('app', 'Edit {type}', [
+                    'type' => static::lowerDisplayName(),
+                ]),
             ];
 
             $userSession = Craft::$app->getUser();
@@ -1475,6 +1499,21 @@ class Asset extends Element
         }
 
         $volume = $this->getVolume();
+
+        if ($volume instanceof Temp) {
+            // See if a default field layout ID was posted
+            $request = Craft::$app->getRequest();
+            if (!$request->isConsoleRequest) {
+                $fieldLayoutId = $request->getBodyParam('defaultFieldLayoutId');
+                if ($fieldLayoutId) {
+                    $fieldLayout = Craft::$app->getFields()->getLayoutById($fieldLayoutId);
+                    if ($fieldLayout) {
+                        return $fieldLayout;
+                    }
+                }
+            }
+        }
+
         return $volume->getFieldLayout();
     }
 
@@ -2182,18 +2221,6 @@ class Asset extends Element
         ];
 
         return implode("\n", $components);
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getEditorHtml(): string
-    {
-        if (!$this->fieldLayoutId) {
-            $this->fieldLayoutId = Craft::$app->getRequest()->getBodyParam('defaultFieldLayoutId');
-        }
-
-        return parent::getEditorHtml();
     }
 
     /**

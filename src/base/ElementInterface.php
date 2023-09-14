@@ -15,7 +15,7 @@ use Twig\Markup;
 
 /**
  * ElementInterface defines the common interface to be implemented by element classes.
- * A class implementing this interface should also use [[ElementTrait]] and [[ContentTrait]].
+ * A class implementing this interface should also use [[ElementTrait]].
  *
  * @mixin ElementTrait
  * @mixin \craft\behaviors\CustomFieldBehavior
@@ -292,6 +292,17 @@ interface ElementInterface extends ComponentInterface
      * @since 3.8.0
      */
     public static function findSource(string $sourceKey, ?string $context = null): ?array;
+
+    /**
+     * Returns the source path for a given source key, step key, and context.
+     *
+     * @param string $sourceKey
+     * @param string $stepKey
+     * @param string|null $context
+     * @return array[]|null
+     * @since 3.8.12
+     */
+    public static function sourcePath(string $sourceKey, string $stepKey, ?string $context): ?array;
 
     /**
      * Returns all of the field layouts associated with elements from the given source.
@@ -1133,6 +1144,7 @@ interface ElementInterface extends ComponentInterface
      * to the target site.
      *
      * @return string The translation key
+     * @since 3.5.0
      */
     public function getTitleTranslationKey(): string;
 

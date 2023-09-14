@@ -348,7 +348,11 @@ export default Base.extend(
 
         if (typeof this.settings.handle === 'string') {
           // https://github.com/craftcms/cms/issues/12896
-          return $(this.settings.handle, item).first();
+          const selector = this.settings.handle
+            .split(',')
+            .map((s) => Craft.ensureEndsWith(Craft.trim(s), ':first'))
+            .join(',');
+          return $(selector, item);
         }
 
         if (typeof this.settings.handle === 'function') {

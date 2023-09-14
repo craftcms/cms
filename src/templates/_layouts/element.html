@@ -178,8 +178,8 @@
     {% if canDeleteForSite %}
         {% set formActions = formActions|push({
             destructive: true,
-            label: isUnpublishedDraft ? 'Delete draft for this site'|t('app') : 'Delete {type} for this site'|t('app', {
-                type: element.lowerDisplayName()
+            label: 'Delete {type} for this site'|t('app', {
+                type: isUnpublishedDraft ? 'draft'|t('app') : element.lowerDisplayName(),
             }),
             action: deleteForSiteAction,
             redirect: (redirectUrl ~ '#')|hash,
@@ -194,13 +194,13 @@
     ) %}
         {% set formActions = formActions|push({
             destructive: true,
-            label: isUnpublishedDraft ? 'Delete draft'|t('app') : 'Delete {type}'|t('app', {
-                type: element.lowerDisplayName()
+            label: 'Delete {type}'|t('app', {
+                type: isUnpublishedDraft ? 'draft'|t('app') : element.lowerDisplayName(),
             }),
             action: isUnpublishedDraft ? deleteDraftAction : deleteSourceAction,
             redirect: (redirectUrl ~ '#')|hash,
-            confirm: isUnpublishedDraft ? 'Are you sure you want to delete this draft?'|t('app') : 'Are you sure you want to delete this {type}?'|t('app', {
-                type: element.lowerDisplayName(),
+            confirm: 'Are you sure you want to delete this {type}?'|t('app', {
+                type: isUnpublishedDraft ? 'draft'|t('app') : element.lowerDisplayName(),
             }),
         }) %}
     {% endif %}
@@ -218,7 +218,9 @@
         {% if canDeleteForSite %}
             {% set formActions = formActions|push({
                 destructive: true,
-                label: 'Delete draft for this site'|t('app'),
+                label: 'Delete {type} for this site'|t('app', {
+                    type: 'draft'|t('app'),
+                }),
                 action: deleteForSiteAction,
                 redirect: (redirectUrl ~ '#')|hash,
                 confirm: 'Are you sure you want to delete the draft for this site?'|t('app'),
@@ -226,10 +228,14 @@
         {% endif %}
         {% set formActions = formActions|push({
             destructive: true,
-            label: 'Delete draft'|t('app'),
+            label: 'Delete {type}'|t('app', {
+                type: 'draft'|t('app'),
+            }),
             action: deleteDraftAction,
             redirect: hashedCpEditUrl,
-            confirm: 'Are you sure you want to delete this draft?'|t('app'),
+            confirm: 'Are you sure you want to delete this {type}?'|t('app', {
+                type: 'draft'|t('app'),
+            }),
         }) %}
     {% endif %}
 {% endif %}

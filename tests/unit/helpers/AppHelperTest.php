@@ -377,7 +377,7 @@ class AppHelperTest extends TestCase
             ['entries', Entries::class],
             ['app helper test', self::class],
             ['std class', stdClass::class],
-            ['iam not a class!@#$%^&*() 1234567890', 'iam not a CLASS!@#$%^&*()1234567890'],
+            ['iam not a class!@#$%^&*()1234567890', 'iam not a CLASS!@#$%^&*()1234567890'],
         ];
     }
 

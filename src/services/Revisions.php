@@ -33,22 +33,22 @@ use yii\base\InvalidArgumentException;
 class Revisions extends Component
 {
     /**
-     * @event DraftEvent The event that is triggered before a revision is created.
+     * @event RevisionEvent The event that is triggered before a revision is created.
      */
     const EVENT_BEFORE_CREATE_REVISION = 'beforeCreateRevision';
 
     /**
-     * @event DraftEvent The event that is triggered after a revision is created.
+     * @event RevisionEvent The event that is triggered after a revision is created.
      */
     const EVENT_AFTER_CREATE_REVISION = 'afterCreateRevision';
 
     /**
-     * @event DraftEvent The event that is triggered before an element is reverted to a revision.
+     * @event RevisionEvent The event that is triggered before an element is reverted to a revision.
      */
     const EVENT_BEFORE_REVERT_TO_REVISION = 'beforeRevertToRevision';
 
     /**
-     * @event DraftEvent The event that is triggered after an element is reverted to a revision.
+     * @event RevisionEvent The event that is triggered after an element is reverted to a revision.
      */
     const EVENT_AFTER_REVERT_TO_REVISION = 'afterRevertToRevision';
 

@@ -162,8 +162,8 @@ class UsersController extends Controller
         $user = Craft::$app->getUsers()->getUserByUsernameOrEmail($loginName);
 
         if (!$user || $user->password === null) {
-            // Delay again to match $user->authenticate()'s delay
-            Craft::$app->getSecurity()->validatePassword('p@ss1w0rd', '$2y$13$nj9aiBeb7RfEfYP3Cum6Revyu14QelGGxwcnFUKXIrQUitSodEPRi');
+            // Match $user->authenticate()'s delay
+            $this->_hashCheck();
             return $this->_handleLoginFailure(User::AUTH_INVALID_CREDENTIALS);
         }
 
@@ -468,16 +468,24 @@ class UsersController extends Controller
             }
         }
 
+        // keep track of how long email sending takes
+        $time = microtime(true);
+
         if (!empty($user) && !Craft::$app->getUsers()->sendPasswordResetEmail($user)) {
             $errors[] = Craft::t('app', 'There was a problem sending the password reset email.');
         }
 
-        if (!empty($errors) && Craft::$app->getConfig()->getGeneral()->preventUserEnumeration) {
-            $list = implode("\n", array_map(function(string $error) {
-                return sprintf('- %s', $error);
-            }, $errors));
-            Craft::warning(sprintf("Password reset email not sent:\n%s", $list), __METHOD__);
-            $errors = [];
+        if (Craft::$app->getConfig()->getGeneral()->preventUserEnumeration) {
+            // Randomly delay the response
+            $this->_randomlyDelayResponse(microtime(true) - $time);
+
+            if (!empty($errors)) {
+                $list = implode("\n", array_map(function(string $error) {
+                    return sprintf('- %s', $error);
+                }, $errors));
+                Craft::warning(sprintf("Password reset email not sent:\n%s", $list), __METHOD__);
+                $errors = [];
+            }
         }
 
         if (empty($errors)) {
@@ -875,7 +883,9 @@ class UsersController extends Controller
             } elseif ($name = trim($user->getName())) {
                 $title = Craft::t('app', '{user}’s Account', ['user' => $name]);
             } else {
-                $title = Craft::t('app', 'Edit User');
+                $title = Craft::t('app', 'Edit {type}', [
+                    'type' => User::displayName(),
+                ]);
             }
         } else {
             $title = Craft::t('app', 'Register a new user');
@@ -1269,7 +1279,9 @@ JS;
                 ]);
             }
 
-            $this->setFailFlash(Craft::t('app', 'Couldn’t save user.'));
+            $this->setFailFlash(Craft::t('app', 'Couldn’t save {type}.', [
+                'type' => User::lowerDisplayName(),
+            ]));
 
             // Send the account back to the template
             Craft::$app->getUrlManager()->setRouteParams([
@@ -1336,8 +1348,8 @@ JS;
                 }
 
                 // Assign user groups and permissions if the current user is allowed to do that
-                $this->_saveUserPermissions($user, $currentUser);
                 $this->_saveUserGroups($user, $currentUser);
+                $this->_saveUserPermissions($user, $currentUser);
 
                 // Fire an 'afterAssignGroupsAndPermissions' event
                 if ($this->hasEventHandlers(self::EVENT_AFTER_ASSIGN_GROUPS_AND_PERMISSIONS)) {
@@ -1392,7 +1404,9 @@ JS;
             }
             $this->setSuccessFlash($default);
         } else {
-            $this->setSuccessFlash(Craft::t('app', 'User saved.'));
+            $this->setSuccessFlash(Craft::t('app', '{type} saved.', [
+                'type' => User::displayName(),
+            ]));
         }
 
         // Is this public registration, and is the user going to be activated automatically?
@@ -1692,11 +1706,15 @@ JS;
         $user->inheritorOnDelete = $transferContentTo;
 
         if (!Craft::$app->getElements()->deleteElement($user)) {
-            $this->setFailFlash(Craft::t('app', 'Couldn’t delete the user.'));
+            $this->setFailFlash(Craft::t('app', 'Couldn’t delete {type}.', [
+                'type' => User::lowerDisplayName(),
+            ]));
             return null;
         }
 
-        $this->setSuccessFlash(Craft::t('app', 'User deleted.'));
+        $this->setSuccessFlash(Craft::t('app', '{type} deleted.', [
+            'type' => User::displayName(),
+        ]));
         return $this->redirectToPostedUrl();
     }
 
@@ -1789,9 +1807,6 @@ JS;
      */
     private function _handleLoginFailure(string $authError = null, User $user = null)
     {
-        // Delay randomly between 0 and 1.5 seconds.
-        usleep(random_int(0, 1500000));
-
         $message = UserHelper::getLoginFailureMessage($authError, $user);
 
         // Fire a 'loginFailure' event
@@ -2264,6 +2279,7 @@ JS;
      * @param string[] $errors
      * @param string|null $loginName
      * @return Response|null
+     * @throws \Exception
      */
     private function _handleSendPasswordResetError(array $errors, string $loginName = null)
     {
@@ -2300,6 +2316,20 @@ JS;
         return $view->renderTemplate('users/_photo', [
             'user' => $user,
         ], $templateMode);
+    }
+
+    private function _hashCheck()
+    {
+        Craft::$app->getSecurity()->validatePassword('p@ss1w0rd', '$2y$13$nj9aiBeb7RfEfYP3Cum6Revyu14QelGGxwcnFUKXIrQUitSodEPRi');
+    }
+
+    private function _randomlyDelayResponse(float $maxOffset = 0)
+    {
+        // Delay randomly between 0.5 and 1.5 seconds.
+        $max = 1500000 - (int)($maxOffset * 1000000);
+        if ($max > 500000) {
+            usleep(random_int(500000, $max));
+        }
     }
 
     /**

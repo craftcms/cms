@@ -47,7 +47,6 @@ modules:
 groups:
   base: [tests/unit/base]
   behaviors: [tests/unit/behaviors]
-  composer: [tests/unit/composer]
   console: [tests/unit/console]
   db: [tests/unit/db]
   elements: [tests/unit/elements]

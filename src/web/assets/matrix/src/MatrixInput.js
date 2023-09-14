@@ -118,11 +118,12 @@
           this.addBlock(type);
         });
 
-        new Garnish.MenuBtn(this.$addBlockMenuBtn, {
-          onOptionSelect: (option) => {
-            this.addBlock($(option).data('type'));
-          },
-        });
+        if (this.$addBlockMenuBtn.length) {
+          this.$addBlockMenuBtn.menubtn();
+          this.$addBlockMenuBtn.data('menubtn').on('optionSelect', (ev) => {
+            this.addBlock($(ev.option).data('type'));
+          });
+        }
 
         this.updateAddBlockBtn();
 

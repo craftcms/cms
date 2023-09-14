@@ -456,7 +456,9 @@ class CategoriesController extends Controller
                     ]);
                 }
 
-                $this->setFailFlash(Craft::t('app', 'Couldn’t duplicate category.'));
+                $this->setFailFlash(Craft::t('app', 'Couldn’t duplicate {type}.', [
+                    'type' => Category::lowerDisplayName(),
+                ]));
 
                 // Send the original category back to the template, with any validation errors on the clone
                 $category->addErrors($clone->getErrors());
@@ -486,7 +488,9 @@ class CategoriesController extends Controller
                 ]);
             }
 
-            $this->setFailFlash(Craft::t('app', 'Couldn’t save category.'));
+            $this->setFailFlash(Craft::t('app', 'Couldn’t save {type}.', [
+                'type' => Category::lowerDisplayName(),
+            ]));
 
             // Send the category back to the template
             Craft::$app->getUrlManager()->setRouteParams([
@@ -508,7 +512,9 @@ class CategoriesController extends Controller
             ]);
         }
 
-        $this->setSuccessFlash(Craft::t('app', 'Category saved.'));
+        $this->setSuccessFlash(Craft::t('app', '{type} saved.', [
+            'type' => Category::displayName(),
+        ]));
         return $this->redirectToPostedUrl($category);
     }
 
@@ -538,7 +544,9 @@ class CategoriesController extends Controller
                 return $this->asJson(['success' => false]);
             }
 
-            $this->setFailFlash(Craft::t('app', 'Couldn’t delete category.'));
+            $this->setFailFlash(Craft::t('app', 'Couldn’t delete {type}.', [
+                'type' => Category::lowerDisplayName(),
+            ]));
 
             // Send the category back to the template
             Craft::$app->getUrlManager()->setRouteParams([
@@ -552,7 +560,9 @@ class CategoriesController extends Controller
             return $this->asJson(['success' => true]);
         }
 
-        $this->setSuccessFlash(Craft::t('app', 'Category deleted.'));
+        $this->setSuccessFlash(Craft::t('app', '{type} deleted.', [
+            'type' => Category::displayName(),
+        ]));
         return $this->redirectToPostedUrl($category);
     }
 

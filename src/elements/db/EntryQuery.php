@@ -908,21 +908,45 @@ class EntryQuery extends ElementQuery
             throw new QueryAbortedException();
         }
 
-        // Limit the query to only the sections the user has permission to edit
-        $this->subQuery->andWhere([
-            'entries.sectionId' => Craft::$app->getSections()->getEditableSectionIds(),
-        ]);
+        $editableSections = Craft::$app->getSections()->getEditableSections();
 
-        // Enforce the editPeerEntries permissions for non-Single sections
-        foreach (Craft::$app->getSections()->getEditableSections() as $section) {
-            if ($section->type != Section::TYPE_SINGLE && !$user->can('editPeerEntries:' . $section->uid)) {
-                $this->subQuery->andWhere([
-                    'or',
-                    ['not', ['entries.sectionId' => $section->id]],
-                    ['entries.authorId' => $user->id],
-                ]);
+        if (empty($editableSections)) {
+            throw new QueryAbortedException();
+        }
+
+        $condition = ['or'];
+        $fullyAuthorizedSectionIds = [];
+
+        foreach ($editableSections as $section) {
+            $excludePeerEntries = $section->type !== Section::TYPE_SINGLE && !$user->can("editPeerEntries:$section->uid");
+            $excludePeerDrafts = $this->drafts !== false && !$user->can("editPeerEntryDrafts:$section->uid");
+
+            if ($excludePeerEntries || $excludePeerDrafts) {
+                $sectionCondition = [
+                    'and',
+                    ['entries.sectionId' => $section->id],
+                ];
+                if ($excludePeerEntries) {
+                    $sectionCondition[] = ['entries.authorId' => $user->id];
+                }
+                if ($excludePeerDrafts) {
+                    $sectionCondition[] = [
+                        'or',
+                        ['elements.draftId' => null],
+                        ['drafts.creatorId' => $user->id],
+                    ];
+                }
+                $condition[] = $sectionCondition;
+            } else {
+                $fullyAuthorizedSectionIds[] = $section->id;
             }
         }
+
+        if (!empty($fullyAuthorizedSectionIds)) {
+            $condition[] = ['entries.sectionId' => $fullyAuthorizedSectionIds];
+        }
+
+        $this->subQuery->andWhere($condition);
     }
 
     /**

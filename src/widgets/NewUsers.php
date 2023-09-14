@@ -9,6 +9,7 @@ namespace craft\widgets;
 
 use Craft;
 use craft\base\Widget;
+use craft\elements\User;
 use craft\helpers\Json;
 use craft\web\assets\newusers\NewUsersAsset;
 
@@ -25,7 +26,9 @@ class NewUsers extends Widget
      */
     public static function displayName(): string
     {
-        return Craft::t('app', 'New Users');
+        return Craft::t('app', 'New {type}', [
+            'type' => User::pluralDisplayName(),
+        ]);
     }
 
     /**
@@ -65,7 +68,11 @@ class NewUsers extends Widget
             $userGroup = Craft::$app->getUserGroups()->getGroupById($groupId);
 
             if ($userGroup) {
-                return Craft::t('app', 'New Users') . ' – ' . Craft::t('app', $userGroup->name);
+                return sprintf(
+                    '%s – %s',
+                    parent::getTitle(),
+                    Craft::t('site', $userGroup->name)
+                );
             }
         }
 

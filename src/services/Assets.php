@@ -517,10 +517,15 @@ class Assets extends Component
      * @param VolumeFolder $parentFolder
      * @param string $orderBy
      * @param bool $withParent Whether the parent folder should be included in the results
-     * @return array
+     * @param bool $asTree Whether the folders should be returned hierarchically
+     * @return VolumeFolder[]
      */
-    public function getAllDescendantFolders(VolumeFolder $parentFolder, string $orderBy = 'path', bool $withParent = true): array
-    {
+    public function getAllDescendantFolders(
+        VolumeFolder $parentFolder,
+        string $orderBy = 'path',
+        bool $withParent = true,
+        bool $asTree = false
+    ): array {
         $query = $this->createFolderQuery()
             ->where([
                 'and',
@@ -547,6 +552,10 @@ class Assets extends Component
             $folder = new VolumeFolder($result);
             $this->_foldersById[$folder->id] = $folder;
             $descendantFolders[$folder->id] = $folder;
+        }
+
+        if ($asTree) {
+            return $this->_getFolderTreeByFolders($descendantFolders);
         }
 
         return $descendantFolders;
@@ -1238,11 +1247,12 @@ class Assets extends Component
      * Return the folder tree form a list of folders.
      *
      * @param VolumeFolder[] $folders
-     * @return array
+     * @return VolumeFolder[]
      */
     private function _getFolderTreeByFolders(array $folders): array
     {
         $tree = [];
+        /** @var VolumeFolder[] $referenceStore */
         $referenceStore = [];
 
         foreach ($folders as $folder) {

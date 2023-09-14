@@ -2553,6 +2553,7 @@ $elementInnerSpacing: 5px;
   user-select: none;
   font-weight: normal;
   border-radius: $smallBorderRadius;
+  max-width: 100%;
 
   &:focus,
   li:focus & {
@@ -2613,6 +2614,10 @@ $elementInnerSpacing: 5px;
 
   .label {
     display: inline-block;
+    overflow: hidden;
+    vertical-align: bottom; // https://stackoverflow.com/a/37427386/1688568
+    text-overflow: ellipsis;
+    max-width: 100%;
 
     .draft-label {
       display: inline-block;
@@ -2864,11 +2869,10 @@ $checkboxPadding: $checkboxSize + 4;
     }
 
     .selectallcontainer {
+      display: flex;
+      align-items: center;
+      gap: $elementInnerSpacing;
       cursor: default;
-
-      .checkbox {
-        @include margin-right($elementInnerSpacing);
-      }
     }
   }
 
@@ -4564,6 +4568,10 @@ ul.tree,
     padding-top: 14px;
     padding-bottom: 14px;
     text-align: center;
+
+    & + .body {
+      height: calc(100% - 48px) !important;
+    }
   }
 
   .body {

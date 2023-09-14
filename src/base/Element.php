@@ -686,6 +686,14 @@ abstract class Element extends Component implements ElementInterface
 
     /**
      * @inheritdoc
+     */
+    public static function sourcePath(string $sourceKey, string $stepKey, ?string $context): ?array
+    {
+        return null;
+    }
+
+    /**
+     * @inheritdoc
      * @since 3.5.0
      */
     public static function fieldLayouts(string $source): array
@@ -3858,7 +3866,7 @@ abstract class Element extends Component implements ElementInterface
      * attribute, rather than simply showing the attribute’s raw value.
      *
      * For example, if your elements have an `email` attribute that you want to wrap in a `mailto:` link, your
-     * getTableAttributesHtml() method could do this:
+     * `tableAttributeHtml()` method could do this:
      *
      * ```php
      * switch ($attribute) {

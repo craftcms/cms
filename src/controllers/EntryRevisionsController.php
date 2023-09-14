@@ -228,7 +228,9 @@ class EntryRevisionsController extends BaseEntriesController
 
             // Manually validate 'title' since the Elements service will just give it a title automatically.
             if (!$entry->validate(['title']) || !$elementsService->saveElement($entry, false)) {
-                $this->setFailFlash(Craft::t('app', 'Couldn’t save draft.'));
+                $this->setFailFlash(Craft::t('app', 'Couldn’t save {type}.', [
+                    'type' => Craft::t('app', 'draft'),
+                ]));
                 Craft::$app->getUrlManager()->setRouteParams([
                     'entry' => $entry,
                 ]);
@@ -321,7 +323,9 @@ class EntryRevisionsController extends BaseEntriesController
                     ]);
                 }
 
-                $this->setFailFlash(Craft::t('app', 'Couldn’t save draft.'));
+                $this->setFailFlash(Craft::t('app', 'Couldn’t save {type}.', [
+                    'type' => Craft::t('app', 'draft'),
+                ]));
                 Craft::$app->getUrlManager()->setRouteParams([
                     'entry' => $draft,
                 ]);
@@ -355,7 +359,9 @@ class EntryRevisionsController extends BaseEntriesController
             ]);
         }
 
-        $this->setSuccessFlash(Craft::t('app', 'Draft saved.'));
+        $this->setSuccessFlash(Craft::t('app', '{type} saved.', [
+            'type' => Craft::t('app', 'Draft'),
+        ]));
         return $this->redirectToPostedUrl($draft);
     }
 
@@ -394,7 +400,9 @@ class EntryRevisionsController extends BaseEntriesController
         if ($provisional) {
             $this->setSuccessFlash(Craft::t('app', 'Changes discarded'));
         } else {
-            $this->setSuccessFlash(Craft::t('app', 'Draft deleted'));
+            $this->setSuccessFlash(Craft::t('app', '{type} deleted.', [
+                'type' => Craft::t('app', 'Draft'),
+            ]));
         }
 
         if ($this->request->getAcceptsJson()) {
@@ -526,9 +534,13 @@ class EntryRevisionsController extends BaseEntriesController
             }
         } catch (InvalidElementException $e) {
             if ($draft->getIsUnpublishedDraft()) {
-                $this->setFailFlash(Craft::t('app', 'Couldn’t create entry.'));
+                $this->setFailFlash(Craft::t('app', 'Couldn’t create {type}.', [
+                    'type' => Entry::lowerDisplayName(),
+                ]));
             } elseif ($draft->isProvisionalDraft) {
-                $this->setFailFlash(Craft::t('app', 'Couldn’t save entry.'));
+                $this->setFailFlash(Craft::t('app', 'Couldn’t save {type}.', [
+                    'type' => Entry::lowerDisplayName(),
+                ]));
             } else {
                 $this->setFailFlash(Craft::t('app', 'Couldn’t apply draft.'));
             }
@@ -547,9 +559,13 @@ class EntryRevisionsController extends BaseEntriesController
         }
 
         if ($draft->getIsUnpublishedDraft()) {
-            $this->setSuccessFlash(Craft::t('app', 'Entry created.'));
+            $this->setSuccessFlash(Craft::t('app', '{type} created.', [
+                'type' => Entry::displayName(),
+            ]));
         } elseif ($draft->isProvisionalDraft) {
-            $this->setSuccessFlash(Craft::t('app', 'Entry saved.'));
+            $this->setSuccessFlash(Craft::t('app', '{type} saved.', [
+                'type' => Entry::displayName(),
+            ]));
         } else {
             $this->setSuccessFlash(Craft::t('app', 'Draft applied.'));
         }

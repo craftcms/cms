@@ -1,5 +1,108 @@
 # Release Notes for Craft CMS 3.x
 
+## 3.9.2 - 2023-09-12
+
+- Added `SK` to the list of keywords that Craft will look for when determining whether a value is sensitive and should be redacted from logs, etc. ([#3619](https://github.com/craftcms/cms/issues/3619))
+- Improved the scrolling behavior for page sidebars and detail panes. ([#13637](https://github.com/craftcms/cms/issues/13637))
+- Fixed an error that could occur when saving an element with an Assets field from a console command. ([#13623](https://github.com/craftcms/cms/issues/13623))
+- Fixed a bug where the “Active Trials” section in the Plugin Store cart modal wasn’t listing plugins in trial. ([#13661](https://github.com/craftcms/cms/issues/13661))
+- Fixed two RCE vulnerabilities.
+
+## 3.9.1 - 2023-08-23
+
+- Fixed an error that could occur when Craft was performing a Composer operation, if no `HOME` environment variable was set for PHP. ([#13590](https://github.com/craftcms/cms/issues/13590))
+
+## 3.9.0 - 2023-08-22
+
+- Updated Yii to 2.0.48.1. ([#13444](https://github.com/craftcms/cms/pull/13444))
+- Loosened the Composer constraint to `^2.2.19`. ([#13396](https://github.com/craftcms/cms/discussions/13396))
+- Internal Composer operations now use a bundled `composer.phar` file, rather than Composer’s PHP API. ([#13519](https://github.com/craftcms/cms/pull/13519))
+- `craft\services\Assets::getAllDescendantFolders()` now has an `$asTree` argument. ([#13535](https://github.com/craftcms/cms/discussions/13535))
+- Fixed a bug where asset exports could be blank if only subfolders were selected.
+
+## 3.8.17 - 2023-08-08
+
+- Fixed a bug where `Craft.BaseElementIndexView::this.canSelectElement()` wasn’t getting applied for lazy-loaded elements.
+- Fixed a bug where setting an element query’s `status` param to `archived` would always yield zero results. ([#13465](https://github.com/craftcms/cms/issues/13465))
+- Fixed a bug where `update` commands could fail on some environments.
+- Fixed an information disclosure vulnerability.
+
+## 3.8.16 - 2023-07-18
+
+- The “Access the control panel” user permission now includes a warning that the permission grants view-only access to user data and most content.
+- Fixed an RCE vulnerability.
+
+## 3.8.15 - 2023-07-03
+
+- The control panel footer now includes a message about active trials, with a link to purchase the licenses.
+- Fixed an error that occurred when passing arguments to an element’s `prev` and `next` fields via GraphQL. ([#13334](https://github.com/craftcms/cms/issues/13334))
+- Fixed an RCE vulnerability.
+
+## 3.8.14 - 2023-06-13
+
+- The `_includes/forms/date` and `_includes/forms/time` templates now accept a `timeZone` variable.
+- Fixed an error that could occur when updating a plugin with the `craft update` command, if it provided a new migration but still had the same schema version.
+- Fixed an error that occurred when rendering editable tables with Date or Time columns. ([#13270](https://github.com/craftcms/cms/issues/13270))
+
+## 3.8.13 - 2023-05-24
+
+- Fixed a bug where asset sources weren‘t immediately showing a source path on a clear `localStorage` cache.
+- Fixed a JavaScript error that could occur when searching within an asset index, when there was no source path. ([#13241](https://github.com/craftcms/cms/issues/13241))
+- Fixed a bug where Date fields with “Show Time Zone” enabled were displaying their values in the system’s time zone within element indexes. ([#13233](https://github.com/craftcms/cms/issues/13233))
+
+## 3.8.12 - 2023-05-23
+
+- Asset indexes now remember their previously-selected source path. ([#13147](https://github.com/craftcms/cms/issues/13147))
+- Added `craft\base\ElementInterface::sourcePath()`.
+- Improved `craft\helpers\FileHelper::getExtensionByMimeType()` for some ambiguous, web-friendly MIME types.
+- Removed the OAuth 2.0 Client library, as it’s no longer used in core.
+- Fixed a bug where activation emails sent to newly-created users could link to the front-end site, if they were granted control panel access via a user group. ([#13204](https://github.com/craftcms/cms/issues/13204))
+- Fixed a bug where it wasn’t possible to drag Verbb Navigation nodes via their drag handles. ([#12896](https://github.com/craftcms/cms/issues/12896))
+- Fixed a bug where Date fields could display the wrong date. ([#13233](https://github.com/craftcms/cms/issues/13233))
+- Deprecated the `Craft.startsWith()` JavaScript method. `String.prototype.startsWith()` should be used instead.
+
+## 3.8.11 - 2023-05-15
+
+- Fixed a SQL error that could occur when updating to Craft 3.8 on PostgreSQL. ([#13186](https://github.com/craftcms/cms/issues/13186))
+- Fixed a JavaScript error that occurred for Matrix inputs with static blocks. ([#13194](https://github.com/craftcms/cms/issues/13194))
+- Fixed the vertical alignment of element labels. ([#13168](https://github.com/craftcms/cms/issues/13168))
+
+## 3.8.10.2 - 2023-05-10
+
+- Fixed a bug where it wasn’t possible to add new Matrix blocks via the “Add a block” menu. ([#13177](https://github.com/craftcms/cms/issues/13177))
+
+## 3.8.10 - 2023-05-09
+
+- Fixed a “Double-instantiating a menu button on an element” console warning that occurred on pages with Matrix fields. ([#6338](https://github.com/craftcms/cms/issues/6338))
+- Fixed an error that could occur when running tests. ([#13076](https://github.com/craftcms/cms/issues/13076))
+
+## 3.8.9 - 2023-05-02
+
+- Volumes no longer validate if their field layout contains a field called `extension`, `filename`, `height`, `kind`, `size`, or `width`.
+- Fixed a bug where queue-runner Ajax requests triggered on the front end weren’t getting closed before running the queue, potentially causing long front-end load delays.
+- Fixed a bug where long element titles weren’t wrapping. ([#13143](https://github.com/craftcms/cms/issues/13143))
+- Fixed a user enumeration timing attack vulnerability.
+
+## 3.8.8 - 2023-04-25
+
+- Fixed a bug where it was possible to select a disallowed volume as the Default Asset Location in Assets field settings. ([#13072](https://github.com/craftcms/cms/issues/13072))
+- Fixed a bug where it was possible to upload files to Assets fields outside of the allowed volumes, if the Default Asset Location was set to a disallowed volume. ([#13072](https://github.com/craftcms/cms/issues/13072))
+- Fixed an error that could occur if a Plain Text field had over 1,000,000 bytes. ([#13083](https://github.com/craftcms/cms/issues/13083))
+- Fixed a bug where relational field values weren’t yielding any results for event handlers immediately after a draft had been merged. ([#13087](https://github.com/craftcms/cms/issues/13087))
+- Fixed a bug where element labels could bleed out of their container. ([#13099](https://github.com/craftcms/cms/issues/13099))
+- Fixed an error that occurred if `yii\web\UrlManager::addRules()` was called on a console request. ([#13109](https://github.com/craftcms/cms/issues/13109))
+- Fixed a bug where it was possible to select the current folder as the target when moving a volume folder, resulting in the folder and its contents being lost. ([#13118](https://github.com/craftcms/cms/issues/13118))
+- Fixed a bug where custom field values weren’t getting saved for assets in the local temp upload location. ([#12695](https://github.com/craftcms/cms/issues/12695))
+
+## 3.8.7 - 2023-04-11
+
+- Improved the control panel styling when the Debug Toolbar is enabled.
+- Boolean config settings that are set to the strings `'true'`, `'false'`, or `'null'` are now converted to `true`, `false`, and `null`. ([#13063](https://github.com/craftcms/cms/issues/13063))
+- `craft\web\View::renderObjectTemplate()` now trims the returned template output.
+- Fixed a bug where the Entries index page was listing unpublished drafts created by other users, even if the current user didn’t have permission to edit them.
+- Fixed a bug where Matrix fields weren’t counting disabled blocks when enforcing their Min Blocks settings. ([#13059](https://github.com/craftcms/cms/issues/13059))
+- Fixed a bug where volume folder modals’ sidebars and content were being cut off. ([#13074](https://github.com/craftcms/cms/issues/13074))
+
 ## 3.8.6 - 2023-04-04
 
 - Content tab menus now reveal when a tab contains validation errors, and invalid tabs’ menu options get the same warning icon treatment as inline tabs do. ([#12971](https://github.com/craftcms/cms/issues/12971))
@@ -71,7 +174,7 @@
 - It’s now possible to sort asset indexes by image width and height. ([#12653](https://github.com/craftcms/cms/pull/12653))
 
 ### Administration
-- Most licensing isuses are now consolidated into a single control panel alert, with a button to resolve them all with a single purchase on Craft Console. ([#12768](https://github.com/craftcms/cms/pull/12768))
+- Most licensing issues are now consolidated into a single control panel alert, with a button to resolve them all with a single purchase on Craft Console. ([#12768](https://github.com/craftcms/cms/pull/12768))
 - Added the `users/unlock` console command. ([#12345](https://github.com/craftcms/cms/discussions/12345))
 - The `utils/prune-revisions` console command now has a `--section` option. ([#8783](https://github.com/craftcms/cms/discussions/8783))
 

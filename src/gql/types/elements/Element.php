@@ -7,8 +7,10 @@
 
 namespace craft\gql\types\elements;
 
+use Craft;
 use craft\base\ElementInterface as BaseElementInterface;
 use craft\behaviors\RevisionBehavior;
+use craft\gql\ArgumentManager;
 use craft\gql\base\ObjectType;
 use craft\gql\interfaces\Element as ElementInterface;
 use craft\services\Gql;
@@ -49,6 +51,10 @@ class Element extends ObjectType
         }
 
         if (in_array($fieldName, ['prev', 'next'])) {
+            // we need to prepare arguments for prev/next - otherwise registered argument handlers won't kick in for them
+            /** @var ArgumentManager $argumentManager */
+            $argumentManager = $context['argumentManager'] ?? Craft::createObject(['class' => ArgumentManager::class]);
+            $arguments = $argumentManager->prepareArguments($arguments);
             return $source->{'get' . ucfirst($fieldName)}(empty($arguments) ? false : $arguments);
         }
 
