@@ -929,6 +929,13 @@ class GeneralConfig extends BaseObject
     public $maxCachedCloudImageSize = 2000;
 
     /**
+     * @var int The maximum allowed GraphQL queries that can be executed in a single batched request. Set to `0` to allew any number of queries.
+     * @since 3.9.3
+     * @group GraphQL
+     */
+    public $maxGraphqlBatchSize = 0;
+
+    /**
      * @var int The maximum allowed complexity a GraphQL query is allowed to have. Set to `0` to allow any complexity.
      * @since 3.6.0
      * @group GraphQL

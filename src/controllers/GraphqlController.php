@@ -153,6 +153,15 @@ class GraphqlController extends Controller
             }
         }
 
+        if ($generalConfig->maxGraphqlBatchSize && count($queries) > $generalConfig->maxGraphqlBatchSize) {
+            throw new BadRequestHttpException(sprintf(
+                'No more than %s GraphQL %s can be executed in a single batch.',
+                $generalConfig->maxGraphqlBatchSize,
+                $generalConfig->maxGraphqlBatchSize == 1 ? 'query' : 'queries'
+            ));
+        }
+
+
         // Generate all transforms immediately
         $generalConfig->generateTransformsBeforePageLoad = true;
 
@@ -164,6 +173,7 @@ class GraphqlController extends Controller
         }
 
         $result = [];
+
         foreach ($queries as $key => [$query, $variables, $operationName]) {
             try {
                 if (empty($query)) {

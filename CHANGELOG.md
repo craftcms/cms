@@ -1,5 +1,10 @@
 # Release Notes for Craft CMS 3.x
 
+## Unreleased
+
+- Added the `maxGraphqlBatchSize` config setting. ([#13693](https://github.com/craftcms/cms/issues/13693))
+- Fixed a bug where page sidebars and detail panes weren’t scrolling properly if their height was greater than the main content pane height. ([#13637](https://github.com/craftcms/cms/issues/13637))
+
 ## 3.9.2 - 2023-09-12
 
 - Added `SK` to the list of keywords that Craft will look for when determining whether a value is sensitive and should be redacted from logs, etc. ([#3619](https://github.com/craftcms/cms/issues/3619))
