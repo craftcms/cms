@@ -1883,9 +1883,16 @@ class Fields extends Component
             if ($length > $schema->maxObjectNameLength) {
                 $overage = $length - $schema->maxObjectNameLength;
                 $prefixParts = explode('_', $prefix);
-                for ($i = 0; $i < $overage; $i++) {
+                $removed = 0;
+                for ($i = 0; true; $i++) {
                     $partIndex = $i % count($prefixParts);
-                    $prefixParts[$partIndex] = substr($prefixParts[$partIndex], 0, -1);
+                    if (strlen($prefixParts[$partIndex]) > 1) {
+                        $prefixParts[$partIndex] = substr($prefixParts[$partIndex], 0, -1);
+                        $removed++;
+                        if ($removed === $overage) {
+                            break;
+                        }
+                    }
                 }
                 $shortenedPrefix = implode('_', $prefixParts);
                 $bakTable = "{{%{$shortenedPrefix}_bak_$timestamp$suffix}}";
