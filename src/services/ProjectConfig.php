@@ -96,9 +96,9 @@ class ProjectConfig extends Component
     public const ASSOC_KEY = '__assoc__';
 
     /**
-     * @since 3.7.35
      * @see _acquireLock()
      * @see _releaseLock()
+     * @since 3.7.35
      */
     public const MUTEX_NAME = 'project-config';
 

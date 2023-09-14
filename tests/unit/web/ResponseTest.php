@@ -54,7 +54,7 @@ class ResponseTest extends TestCase
 
         self::assertSame('cache', $headers->get('Pragma'));
         self::assertSame('cache', $headers->get('Pragma'));
-        self::assertSame('public, max-age=31536000', $headers->get('Cache-Control'));
+        self::assertSame('max-age=31536000', $headers->get('Cache-Control'));
         self::assertSame(gmdate('D, d M Y H:i:s', time() + $cacheTime) . ' GMT', $headers->get('Expires'));
     }
 
