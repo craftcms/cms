@@ -1642,6 +1642,23 @@ class GeneralConfig extends BaseConfig
     public int $maxCachedCloudImageSize = 2000;
 
     /**
+     * @var int The maximum allowed GraphQL queries that can be executed in a single batched request. Set to `0` to allew any number of queries.
+     *
+     *  ::: code
+     *  ```php Static Config
+     *  ->maxGraphqlBatchSize(5)
+     *  ```
+     *  ```shell Environment Override
+     *  CRAFT_MAX_GRAPHQL_BATCH_SIZE=5
+     *  ```
+     *  :::
+     *
+     * @group GraphQL
+     * @since 4.5.5
+     */
+    public int $maxGraphqlBatchSize = 0;
+
+    /**
      * @var int The maximum allowed complexity a GraphQL query is allowed to have. Set to `0` to allow any complexity.
      * @since 3.6.0
      *
@@ -4860,6 +4877,25 @@ class GeneralConfig extends BaseConfig
     public function maxCachedCloudImageSize(int $value): self
     {
         $this->maxCachedCloudImageSize = $value;
+        return $this;
+    }
+
+    /**
+     * The maximum allowed complexity a GraphQL query is allowed to have. Set to `0` to allow any complexity.
+     *
+     * ```php
+     * ->maxGraphqlBatchSize(500)
+     * ```
+     *
+     * @group GraphQL
+     * @param int $value
+     * @return self
+     * @see $maxGraphqlBatchSize
+     * @since 4.5.5
+     */
+    public function maxGraphqlBatchSize(int $value): self
+    {
+        $this->maxGraphqlBatchSize = $value;
         return $this;
     }
 

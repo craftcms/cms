@@ -1,5 +1,10 @@
 # Release Notes for Craft CMS 4
 
+## Unreleased
+
+- Added the `maxGraphqlBatchSize` config setting. ([#13693](https://github.com/craftcms/cms/issues/13693))
+- Fixed a bug where page sidebars and detail panes weren’t scrolling properly if their height was greater than the main content pane height. ([#13637](https://github.com/craftcms/cms/issues/13637))
+
 ## 4.5.4 - 2023-09-12
 
 - Added the `@stripTags` and `@trim` GraphQL directives. ([#9971](https://github.com/craftcms/cms/discussions/9971))
