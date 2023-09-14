@@ -12,6 +12,7 @@ use craft\web\twig\nodes\PreloadSinglesNode;
 use Twig\Environment;
 use Twig\Node\BodyNode;
 use Twig\Node\Expression\NameExpression;
+use Twig\Node\MacroNode;
 use Twig\Node\ModuleNode;
 use Twig\Node\Node;
 use Twig\NodeVisitor\NodeVisitorInterface;
@@ -25,25 +26,26 @@ use Twig\NodeVisitor\NodeVisitorInterface;
 class SinglePreloader implements NodeVisitorInterface
 {
     /**
-     * @var array<string,bool>
+     * @var array<string,bool>[]
      */
-    private array $_foundVariables;
+    private array $_foundVariables = [];
 
     /**
      * @inheritdoc
      */
     public function enterNode(Node $node, Environment $env): Node
     {
-        if ($node instanceof ModuleNode) {
-            $this->_foundVariables = [];
+        if ($this->isRelevant($node)) {
+            array_unshift($this->_foundVariables, []);
         } elseif (
+            !empty($this->_foundVariables) &&
             get_class($node) === NameExpression::class &&
             $node->hasAttribute('name') &&
-            /** @phpstan-ignore-next-line */
             !$node->isSpecial() &&
             !$node->getAttribute('always_defined')
         ) {
-            $this->_foundVariables[$node->getAttribute('name')] = true;
+            $variables = &$this->_foundVariables[0];
+            $variables[$node->getAttribute('name')] = true;
 
             // swap the node with a FallbackNameExpression
             $node = new FallbackNameExpression($node->getAttribute('name'), [
@@ -60,27 +62,38 @@ class SinglePreloader implements NodeVisitorInterface
      */
     public function leaveNode(Node $node, Environment $env): ?Node
     {
-        if (
-            $node instanceof ModuleNode &&
-            !empty($this->_foundVariables) &&
-            $node->hasNode('body')
-        ) {
-            $body = $node->getNode('body');
-            if ($body instanceof BodyNode) {
-                /** @var Node[] $subNodes */
-                $subNodes = iterator_to_array($body);
-                foreach (array_keys($subNodes) as $key) {
-                    $body->removeNode((string)$key);
-                }
-                array_unshift($subNodes, new PreloadSinglesNode(attributes: [
-                    'handles' => array_keys($this->_foundVariables),
-                ]));
-                foreach ($subNodes as $key => $subNode) {
-                    $body->setNode($key, $subNode);
+        if ($this->isRelevant($node)) {
+            $variables = array_shift($this->_foundVariables);
+            if (
+                !empty($variables) &&
+                $node->hasNode('body')
+            ) {
+                $body = $node->getNode('body');
+                if ($body instanceof BodyNode) {
+                    /** @var Node[] $subNodes */
+                    $subNodes = iterator_to_array($body);
+                    foreach (array_keys($subNodes) as $key) {
+                        $body->removeNode((string)$key);
+                    }
+                    array_unshift($subNodes, new PreloadSinglesNode(attributes: [
+                        'handles' => array_keys($variables),
+                    ]));
+                    foreach ($subNodes as $key => $subNode) {
+                        $body->setNode($key, $subNode);
+                    }
                 }
             }
         }
+
         return $node;
+    }
+
+    private function isRelevant(Node $node): bool
+    {
+        return (
+            $node instanceof ModuleNode ||
+            $node instanceof MacroNode
+        );
     }
 
     /**

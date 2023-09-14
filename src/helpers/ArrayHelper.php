@@ -347,15 +347,11 @@ class ArrayHelper extends \yii\helpers\ArrayHelper
      *
      * @param array $array
      * @return string|int|null The first key, whether that is a number (if the array is numerically indexed) or a string, or null if $array isn’t an array, or is empty.
+     * @deprecated in 4.5.0. `array_key_first()` should be used instead.
      */
     public static function firstKey(array $array): int|string|null
     {
-        /** @noinspection LoopWhichDoesNotLoopInspection */
-        foreach ($array as $key => $value) {
-            return $key;
-        }
-
-        return null;
+        return array_key_first($array);
     }
 
     /**

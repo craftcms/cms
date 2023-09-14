@@ -23,7 +23,7 @@ Craft.DeleteUserModal = Garnish.Modal.extend(
         '<form class="modal fitted deleteusermodal" method="post" accept-charset="UTF-8">' +
           Craft.getCsrfInput() +
           '<input type="hidden" name="action" value="users/delete-user"/>' +
-          (!Garnish.isArray(this.userId)
+          (!Array.isArray(this.userId)
             ? '<input type="hidden" name="userId" value="' + this.userId + '"/>'
             : '') +
           (settings.redirect
@@ -89,7 +89,7 @@ Craft.DeleteUserModal = Garnish.Modal.extend(
 
       var idParam;
 
-      if (Garnish.isArray(this.userId)) {
+      if (Array.isArray(this.userId)) {
         idParam = ['and'];
 
         for (let i = 0; i < this.userId.length; i++) {
@@ -142,7 +142,7 @@ Craft.DeleteUserModal = Garnish.Modal.extend(
         : 'Delete {num, plural, =1{user} other{users}}';
 
       return Craft.t('app', message, {
-        num: Garnish.isArray(this.userId) ? this.userId.length : 1,
+        num: Array.isArray(this.userId) ? this.userId.length : 1,
       });
     },
 
