@@ -1879,7 +1879,7 @@ class Fields extends Component
             $bakTable = "{{%{$prefix}_bak_$timestamp$suffix}}";
 
             // make sure it's not too long
-            $length = strlen($bakTable);
+            $length = strlen($schema->getRawTableName($bakTable));
             if ($length > $schema->maxObjectNameLength) {
                 $overage = $length - $schema->maxObjectNameLength;
                 $prefixParts = explode('_', $prefix);
