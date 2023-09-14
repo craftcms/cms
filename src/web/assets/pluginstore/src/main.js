@@ -19,6 +19,7 @@ import CDropdown from './js/components/ui/CDropdown';
 import CIcon from './js/components/ui/CIcon';
 import CSpinner from './js/components/ui/CSpinner';
 import CTextbox from './js/components/ui/CTextbox';
+import CLightswitch from './js/components/ui/CLightswitch';
 
 Vue.filter('currency', currency);
 Vue.filter('escapeHtml', escapeHtml);
@@ -31,6 +32,7 @@ Vue.component('c-dropdown', CDropdown);
 Vue.component('c-icon', CIcon);
 Vue.component('c-spinner', CSpinner);
 Vue.component('c-textbox', CTextbox);
+Vue.component('c-lightswitch', CLightswitch);
 
 Garnish.$doc.ready(function () {
   Craft.initUiElements();

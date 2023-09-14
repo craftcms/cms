@@ -163,11 +163,16 @@ Craft.AssetSelectInput = Craft.BaseElementSelectInput.extend({
       options
     );
 
-    this.uploader.setParams({
-      elementId: this.settings.sourceElementId,
-      siteId: this.settings.criteria.siteId,
+    const params = {
       fieldId: this.settings.fieldId,
-    });
+    };
+    if (this.settings.sourceElementId) {
+      params.elementId = this.settings.sourceElementId;
+    }
+    if (this.settings.criteria.siteId) {
+      params.siteId = this.settings.criteria.siteId;
+    }
+    this.uploader.setParams(params);
 
     if (this.$uploadBtn) {
       this.$uploadBtn.on('click', (ev) => {

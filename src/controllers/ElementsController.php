@@ -26,12 +26,14 @@ use craft\helpers\Db;
 use craft\helpers\ElementHelper;
 use craft\helpers\Html;
 use craft\helpers\UrlHelper;
+use craft\models\ElementActivity;
 use craft\models\FieldLayoutForm;
 use craft\services\Elements;
 use craft\web\Controller;
 use craft\web\CpScreenResponseBehavior;
 use craft\web\View;
 use Throwable;
+use yii\helpers\Markdown;
 use yii\web\BadRequestHttpException;
 use yii\web\ForbiddenHttpException;
 use yii\web\Response;
@@ -107,7 +109,7 @@ class ElementsController extends Controller
         $this->_draftId = $this->_param('draftId');
         $this->_revisionId = $this->_param('revisionId');
         $this->_siteId = $this->_param('siteId');
-        $this->_enabled = $this->_param('enabled');
+        $this->_enabled = $this->_param('enabled', true);
         $this->_enabledForSite = $this->_param('enabledForSite');
         $this->_slug = $this->_param('slug');
         $this->_fresh = (bool)$this->_param('fresh');
@@ -134,11 +136,16 @@ class ElementsController extends Controller
 
     /**
      * @param string $name
+     * @param mixed $default
      * @return mixed
      */
-    private function _param(string $name): mixed
+    private function _param(string $name, mixed $default = null): mixed
     {
-        return ArrayHelper::remove($this->_attributes, $name) ?? $this->request->getQueryParam($name);
+        $value = ArrayHelper::remove($this->_attributes, $name) ?? $this->request->getQueryParam($name);
+        if ($value === null && $default !== null && $this->request->getIsPost()) {
+            return $default;
+        }
+        return $value;
     }
 
     /**
@@ -395,6 +402,7 @@ class ElementsController extends Controller
                 $isDraft
             ))
             ->notice($element->isProvisionalDraft ? fn() => $this->_draftNotice() : null)
+            ->errorSummary(fn() => $this->_errorSummary($element))
             ->prepareScreen(
                 fn(Response $response, string $containerId) => $this->_prepareEditor(
                     $element,
@@ -426,6 +434,8 @@ class ElementsController extends Controller
                         'siteStatuses' => $siteStatuses,
                         'siteToken' => (!Craft::$app->getIsLive() || !$element->getSite()->enabled) ? $security->hashData((string)$element->siteId) : null,
                         'visibleLayoutElements' => $form ? $form->getVisibleElements() : [],
+                        'updatedTimestamp' => $element->dateUpdated->getTimestamp(),
+                        'canonicalUpdatedTimestamp' => $canonical->dateUpdated->getTimestamp(),
                     ]
                 )
             );
@@ -696,7 +706,11 @@ class ElementsController extends Controller
         bool $isUnpublishedDraft,
         bool $isDraft,
     ): string {
-        $components = [];
+        $components = [
+            Html::tag('div', options: [
+                'class' => ['activity-container'],
+            ]),
+        ];
 
         // Preview (View will be added later by JS)
         if ($canSave && $previewTargets) {
@@ -792,7 +806,7 @@ class ElementsController extends Controller
         $contentHtml = $contentFn($form);
         $sidebarHtml = $sidebarFn($form);
 
-        if ($contentHtml === '' && $sidebarHtml !== '') {
+        if ($contentHtml === '' && $sidebarHtml !== '' && $this->request->getAcceptsJson()) {
             $contentHtml = Html::tag('div', $sidebarHtml, [
                 'class' => 'details',
             ]);
@@ -861,6 +875,86 @@ JS, [
         }
 
         return trim($html);
+    }
+
+    /**
+     * Return html for errors summary box
+     *
+     * @param ElementInterface $element
+     * @return string
+     */
+    private function _errorSummary(ElementInterface $element): string
+    {
+        $html = '';
+
+        if ($element->hasErrors()) {
+            $allErrors = $element->getErrors();
+            $allKeys = array_keys($allErrors);
+
+            // only show "top-level" errors
+            // if you e.g. have an assets field which is set to validate related assets,
+            // you should only see the top-level "Fix validation errors on the related asset" error
+            // and not the details of what's wrong with the selected asset;
+            foreach ($allKeys as $key) {
+                $lastNestedKey = substr_replace($key, '', strrpos($key, '.'));
+                $lastNestedKey = substr_replace($lastNestedKey, '', strrpos($lastNestedKey, '['));
+                if (!empty($lastNestedKey)) {
+                    if (in_array($lastNestedKey, $allKeys)) {
+                        unset($allErrors[$key]);
+                    }
+                }
+            }
+            $errorsList = [];
+            foreach ($allErrors as $key => $errors) {
+                foreach ($errors as $error) {
+                    $errorItem = Html::beginTag('li');
+
+                    // this is true in case of e.g. cross site validation error
+                    if (preg_match('/^\s?\<a /', $error)) {
+                        $errorItem .= $error;
+                    } else {
+                        $error = Markdown::processParagraph(htmlspecialchars($error));
+                        $errorItem .= Html::a(Craft::t('app', $error), '#', [
+                            'data' => [
+                                'field-error-key' => $key,
+                            ],
+                        ]);
+                    }
+
+                    $errorItem .= Html::endTag('li');
+
+                    $errorsList[] = $errorItem;
+                }
+            }
+
+            if (!empty($errorsList)) {
+                $heading = Craft::t('app', 'Found {num, number} {num, plural, =1{error} other{errors}}', [
+                    'num' => count($errorsList),
+                ]);
+
+                $html = Html::beginTag('div', [
+                        'class' => ['error-summary'],
+                        'tabindex' => '-1',
+                    ]) .
+                    Html::beginTag('div') .
+                    Html::tag('span', '', [
+                        'class' => 'notification-icon',
+                        'data-icon' => 'alert',
+                        'aria-label' => 'error',
+                        'role' => 'img',
+                    ]) .
+                    Html::tag('h2', $heading) .
+                    Html::endTag('div') .
+                    Html::beginTag('ul', [
+                        'class' => ['errors'],
+                    ]) .
+                    implode('', $errorsList) .
+                    Html::endTag('ul') .
+                    Html::endTag('div');
+            }
+        }
+
+        return $html;
     }
 
     private function _editorSidebar(
@@ -956,7 +1050,12 @@ JS, [
         }
 
         try {
-            $success = $elementsService->saveElement($element);
+            $namespace = $this->request->getHeaders()->get('X-Craft-Namespace');
+            // crossSiteValidate only if it's multisite, element supports drafts and we're not in a slideout
+            $success = $elementsService->saveElement(
+                $element,
+                crossSiteValidate: ($namespace === null && Craft::$app->getIsMultiSite() && $elementsService->canCreateDrafts($element, $user)),
+            );
         } catch (UnsupportedSiteException $e) {
             $element->addError('siteId', $e->getMessage());
             $success = false;
@@ -971,6 +1070,8 @@ JS, [
                 'type' => $element::lowerDisplayName(),
             ]));
         }
+
+        $elementsService->trackActivity($element, ElementActivity::TYPE_SAVE);
 
         // See if the user happens to have a provisional element. If so delete it.
         $provisional = $element::find()
@@ -1030,12 +1131,10 @@ JS, [
             throw new ForbiddenHttpException('User not authorized to duplicate this element.');
         }
 
-        $clonedElement = clone $element;
-        $clonedElement->draftId = null;
-        $clonedElement->isProvisionalDraft = false;
-
         try {
-            $newElement = $elementsService->duplicateElement($clonedElement);
+            $newElement = $elementsService->duplicateElement($element, [
+                'isProvisionalDraft' => false,
+            ]);
         } catch (InvalidElementException $e) {
             return $this->_asFailure($e->element, Craft::t('app', 'Couldn’t duplicate {type}.', [
                 'type' => $element::lowerDisplayName(),
@@ -1209,6 +1308,8 @@ JS, [
                 ]));
             }
 
+            $elementsService->trackActivity($element, ElementActivity::TYPE_SAVE);
+
             $creator = $element->getCreator();
 
             $data = [
@@ -1281,6 +1382,8 @@ JS, [
                     'initialDeltaValues' => $view->getInitialDeltaValues(),
                     'headHtml' => $view->getHeadHtml(),
                     'bodyHtml' => $view->getBodyHtml(),
+                    'updatedTimestamp' => $element->dateUpdated->getTimestamp(),
+                    'canonicalUpdatedTimestamp' => $element->getCanonical()->dateUpdated->getTimestamp(),
                 ];
             }
 
@@ -1338,7 +1441,8 @@ JS, [
             $element->setScenario(Element::SCENARIO_LIVE);
         }
 
-        if (!$elementsService->saveElement($element)) {
+        $namespace = $this->request->getHeaders()->get('X-Craft-Namespace');
+        if (!$elementsService->saveElement($element, crossSiteValidate: ($namespace === null && Craft::$app->getIsMultiSite()))) {
             return $this->_asAppyDraftFailure($element);
         }
 
@@ -1359,6 +1463,8 @@ JS, [
                 $mutex->release($lockKey);
             }
         }
+
+        $elementsService->trackActivity($canonical, ElementActivity::TYPE_SAVE);
 
         if (!$this->request->getAcceptsJson()) {
             // Tell all browser windows about the element save
@@ -1490,6 +1596,7 @@ JS, [
         }
 
         $canonical = Craft::$app->getRevisions()->revertToRevision($element, $user->id);
+        Craft::$app->getElements()->trackActivity($canonical, ElementActivity::TYPE_SAVE);
 
         return $this->_asSuccess(Craft::t('app', '{type} reverted to past revision.', [
             'type' => $element::displayName(),
@@ -1526,6 +1633,63 @@ JS, [
         $headHtml = $this->getView()->getHeadHtml();
 
         return $this->asJson(compact('html', 'headHtml'));
+    }
+
+    /**
+     * Returns any recent activity for an element, and records that the user is viewing the element.
+     *
+     * @return Response
+     * @since 4.5.0
+     */
+    public function actionRecentActivity(): Response
+    {
+        $element = $this->_element();
+
+        if (!$element || $element->getIsRevision()) {
+            throw new BadRequestHttpException('No element was identified by the request.');
+        }
+
+        $elementsService = Craft::$app->getElements();
+        $currentUser = Craft::$app->getUser()->getIdentity();
+        $activity = $elementsService->getRecentActivity($element, $currentUser->id);
+        $elementsService->trackActivity($element, ElementActivity::TYPE_VIEW, $currentUser);
+
+        return $this->asJson([
+            'activity' => array_map(function(ElementActivity $record) use ($element) {
+                $recordIsCanonical = $record->element->getIsCanonical() || $record->element->isProvisionalDraft;
+                $recordIsCanonicalAndPublished = $recordIsCanonical && !$record->element->getIsUnpublishedDraft();
+                $isSameOrUpstream = $element->id === $record->element->id || $recordIsCanonical;
+
+                if ($isSameOrUpstream) {
+                    $messageParams = [
+                        'user' => $record->user->getName(),
+                        'type' => $recordIsCanonicalAndPublished ? $element::lowerDisplayName() : Craft::t('app', 'draft'),
+                    ];
+                    $message = match ($record->type) {
+                        ElementActivity::TYPE_VIEW => Craft::t('app', '{user} is viewing this {type}.', $messageParams),
+                        ElementActivity::TYPE_EDIT, ElementActivity::TYPE_SAVE => Craft::t('app', '{user} is editing this {type}.', $messageParams),
+                    };
+                } else {
+                    $messageParams = [
+                        'user' => $record->user->getName(),
+                        'type' => $element::lowerDisplayName(),
+                    ];
+                    $message = match ($record->type) {
+                        ElementActivity::TYPE_VIEW => Craft::t('app', '{user} is viewing a draft of this {type}.', $messageParams),
+                        ElementActivity::TYPE_EDIT, ElementActivity::TYPE_SAVE => Craft::t('app', '{user} is editing a draft of this {type}.', $messageParams),
+                    };
+                }
+
+                return [
+                    'userId' => $record->user->id,
+                    'userName' => $record->user->getName(),
+                    'userThumb' => $record->user->getThumbHtml(26),
+                    'message' => $message,
+                ];
+            }, $activity),
+            'updatedTimestamp' => $element->dateUpdated->getTimestamp(),
+            'canonicalUpdatedTimestamp' => $element->getCanonical()->dateUpdated->getTimestamp(),
+        ]);
     }
 
     /**
@@ -1830,6 +1994,7 @@ JS, [
             'modelName' => 'element',
             'element' => $element->toArray($element->attributes()),
             'errors' => $element->getErrors(),
+            'errorSummary' => $this->_errorSummary($element),
         ];
 
         return $this->asFailure($message, $data, ['element' => $element]);

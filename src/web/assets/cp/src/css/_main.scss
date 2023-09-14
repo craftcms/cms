@@ -1,33 +1,6 @@
 @charset "UTF-8";
 @import '@craftcms/sass/mixins';
 
-@mixin checkered-bg($size) {
-  // h/t https://gist.github.com/dfrankland/f6fed3e3ccc42e3de482b324126f9542
-  $halfSize: $size * 0.5;
-  background-image: linear-gradient(
-      45deg,
-      #{transparentize($grey300, 0.75)} 25%,
-      transparent 25%
-    ),
-    linear-gradient(
-      135deg,
-      #{transparentize($grey300, 0.75)} 25%,
-      transparent 25%
-    ),
-    linear-gradient(
-      45deg,
-      transparent 75%,
-      #{transparentize($grey300, 0.75)} 75%
-    ),
-    linear-gradient(
-      135deg,
-      transparent 75%,
-      #{transparentize($grey300, 0.75)} 75%
-    );
-  background-size: $size $size;
-  background-position: 0 0, $halfSize 0, $halfSize -#{$halfSize}, 0 $halfSize;
-}
-
 @mixin striped-bg($size, $color: $grey100) {
   // h/t https://css-tricks.com/stripes-css/
   $halfSize: $size * 0.5;
@@ -466,6 +439,10 @@ li.sel a {
   }
 }
 
+a [data-icon='external'] {
+  @include margin-left(var(--xs));
+}
+
 button {
   cursor: pointer;
 }
@@ -707,6 +684,9 @@ a.fieldtoggle:before {
 em,
 i {
   font-style: italic;
+}
+ul.errors em {
+  font-style: normal;
 }
 
 strong,
@@ -1310,7 +1290,6 @@ ul.icons {
 
   .text {
     border-radius: var(--large-border-radius) !important;
-    box-shadow: none !important;
   }
 }
 
@@ -1854,6 +1833,7 @@ ul.icons {
   &.submit,
   &.secondary {
     color: var(--white) !important;
+    --ui-control-active-color: var(--white);
     @include light-on-dark-text;
   }
 
@@ -2207,20 +2187,30 @@ div.btn.submit input {
     border-radius: var(--small-border-radius);
     display: flex;
     align-items: center;
+    max-width: 100%;
+    padding-left: 7px;
+    padding-right: 7px;
 
     span {
+      flex-grow: 1;
       padding: 7px 0;
       color: var(--medium-text-color);
       cursor: default;
+      overflow: auto;
+      overflow-wrap: break-word;
+      hyphens: auto;
 
       &[data-toggle='on'] {
-        @include padding-right(10px);
         @include margin-left(7px);
       }
 
       &[data-toggle='off'] {
-        @include padding-left(10px);
         @include margin-right(7px);
+        text-align: right;
+
+        body.rtl & {
+          text-align: left;
+        }
       }
     }
   }
@@ -2265,6 +2255,7 @@ div.btn.submit input {
 
   &:not(.small) {
     border-radius: 11px;
+    min-width: 34px;
     width: 34px;
     height: 22px;
 
@@ -2599,6 +2590,10 @@ table {
 
           &.sel,
           &.active-drop-target {
+            --text-color: var(--white);
+            --medium-dark-text-color: var(--white);
+            --medium-text-color: var(--white);
+            --light-text-color: var(--white);
             --link-color: var(--white);
             --ui-control-color: var(--white);
             @include custom-color-focus-ring(hsl(var(--light-focus-hsl)));
@@ -2764,6 +2759,10 @@ $elementInnerSpacing: 5px;
   &.sel,
   li.sel &,
   li.active-drop-target & {
+    --text-color: var(--white);
+    --medium-dark-text-color: var(--white);
+    --medium-text-color: var(--white);
+    --light-text-color: var(--white);
     --link-color: var(--white);
     --ui-control-color: var(--white);
     @include custom-color-focus-ring(hsl(var(--light-focus-hsl)));
@@ -2805,8 +2804,16 @@ $elementInnerSpacing: 5px;
         flex-shrink: 0;
         pointer-events: none;
         border-radius: var(--small-border-radius);
+      }
+
+      img {
         max-width: 100%;
         max-height: 100%;
+      }
+
+      svg {
+        width: 100%;
+        height: 100%;
       }
 
       &.rounded {
@@ -3078,11 +3085,10 @@ $checkboxPadding: $checkboxSize + 4;
     }
 
     .selectallcontainer {
+      display: flex;
+      align-items: center;
+      gap: $elementInnerSpacing;
       cursor: default;
-
-      .checkbox {
-        @include margin-right($elementInnerSpacing);
-      }
     }
   }
 
@@ -3348,6 +3354,10 @@ $checkboxPadding: $checkboxSize + 4;
 
     &.flex-wrap {
       flex-wrap: wrap;
+    }
+
+    li {
+      max-width: 100%;
     }
   }
 
@@ -4954,6 +4964,10 @@ $min2ColWidth: 400px;
   display: none;
   top: 0;
 
+  &.tooltip-hud {
+    display: block;
+  }
+
   &.has-footer .tip-bottom {
     background-image: url(../images/hudtip_bottom_gray.png);
   }
@@ -5277,6 +5291,51 @@ $min2ColWidth: 400px;
       position: absolute;
       top: 0;
       @include right(-24px);
+    }
+  }
+}
+
+/* recent activity container */
+.activity-container {
+  &:not(:last-child) {
+    @include margin-right(var(--s));
+  }
+
+  ul {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: var(--xs);
+
+    li {
+      .activity-btn {
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        display: block;
+
+        .elementthumb {
+          position: relative;
+          width: 100%;
+          height: 100%;
+          border-radius: 50px;
+          background: var(--gray-050);
+          overflow: hidden;
+          border: 2px solid var(--white);
+          box-shadow: 0 1px 2px 1px transparentize($grey900, 0.9);
+
+          img,
+          svg {
+            display: block;
+            width: 100%;
+            height: 100%;
+          }
+        }
+      }
+
+      &:not(:last-child) {
+        @include margin-right(-10px);
+      }
     }
   }
 }
@@ -5782,6 +5841,9 @@ $min2ColWidth: 400px;
 }
 
 /* selectize */
+.selectize-control.single .selectize-input:not(.no-arrow)::after {
+  display: none;
+}
 
 /* ----------------------------------------
 /*  Fields
@@ -6135,6 +6197,36 @@ div.checkbox {
   min-height: 16px;
   cursor: pointer;
 
+  &,
+  &:before {
+    // set the border radius on the container too, for (some) focus rings
+    border-radius: var(--small-border-radius);
+  }
+
+  &:before {
+    display: block;
+    position: absolute;
+    @include left(0);
+    top: 0;
+    width: var(--checkbox-size) !important;
+    height: var(--checkbox-size);
+    box-sizing: border-box;
+    content: '';
+    font-size: 0;
+    background-color: hsl(212, 50%, 99%);
+    border: 1px solid transparentize($inputColor, 0.6);
+    background-clip: padding-box;
+  }
+
+  &:empty {
+    @include padding-left(var(--checkbox-size));
+
+    &:after {
+      content: '';
+      font-size: 0;
+    }
+  }
+
   .info {
     height: 16px;
   }
@@ -6143,35 +6235,6 @@ div.checkbox {
 input.checkbox:disabled + label,
 .disabled div.checkbox {
   cursor: default;
-}
-
-input.checkbox + label:empty,
-div.checkbox:empty {
-  @include padding-left(var(--checkbox-size));
-}
-
-input.checkbox + label:empty:after,
-div.checkbox:empty:after {
-  content: '';
-  font-size: 0;
-}
-
-/* fixes a RTL bug */
-input.checkbox + label:before,
-div.checkbox:before {
-  display: block;
-  position: absolute;
-  @include left(0);
-  top: 0;
-  width: var(--checkbox-size) !important;
-  height: var(--checkbox-size);
-  box-sizing: border-box;
-  content: '';
-  font-size: 0;
-  background-color: hsl(212, 50%, 99%);
-  border: 1px solid transparentize($inputColor, 0.6);
-  background-clip: padding-box;
-  border-radius: var(--small-border-radius);
 }
 
 input.checkbox:disabled + label,

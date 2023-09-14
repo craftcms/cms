@@ -443,10 +443,9 @@ class Asset extends Element
         $fieldLayouts = [];
         if (
             preg_match('/^volume:(.+)$/', $source, $matches) &&
-            ($volume = Craft::$app->getVolumes()->getVolumeByUid($matches[1])) &&
-            $fieldLayout = $volume->getFieldLayout()
+            ($volume = Craft::$app->getVolumes()->getVolumeByUid($matches[1]))
         ) {
-            $fieldLayouts[] = $fieldLayout;
+            $fieldLayouts[] = $volume->getFieldLayout();
         }
         return $fieldLayouts;
     }
@@ -808,7 +807,7 @@ class Asset extends Element
     {
         if (
             is_array($assetQuery->orderBy) &&
-            is_string($firstOrderByCol = ArrayHelper::firstKey($assetQuery->orderBy)) &&
+            is_string($firstOrderByCol = array_key_first($assetQuery->orderBy)) &&
             in_array($firstOrderByCol, ['title', 'filename'])
         ) {
             $sortDir = $assetQuery->orderBy[$firstOrderByCol];
@@ -1676,6 +1675,10 @@ JS;
             return [];
         }
 
+        if (!$this->allowTransforms()) {
+            return [];
+        }
+
         $urls = [];
 
         if (
@@ -1709,6 +1712,7 @@ JS;
                 'position',
                 'quality',
                 'width',
+                'fill',
             ]) : [];
 
             if ($unit === 'w') {
@@ -1858,7 +1862,9 @@ JS;
      */
     public function setTransform(mixed $transform): Asset
     {
-        $this->_transform = ImageTransforms::normalizeTransform($transform);
+        if ($this->allowTransforms()) {
+            $this->_transform = ImageTransforms::normalizeTransform($transform);
+        }
 
         return $this;
     }
@@ -1918,8 +1924,14 @@ JS;
         $volume = $this->getVolume();
         $transform = $transform ?? $this->_transform;
 
-        if ($transform &&
-            !Image::canManipulateAsImage(pathinfo($this->getFilename(), PATHINFO_EXTENSION))
+        if (
+            $transform && (
+                // if it's a site request - check the mime type and general settings and decide whether to nullify the transform
+                // otherwise - we can proceed and rely on the FallbackTransformer (e.g. for thumbs in the CP)
+                // see https://github.com/craftcms/cms/issues/13306 and https://github.com/craftcms/cms/issues/13624 for more info
+                (Craft::$app->getRequest()->getIsSiteRequest() && !$this->allowTransforms()) ||
+                !Image::canManipulateAsImage(pathinfo($this->getFilename(), PATHINFO_EXTENSION))
+            )
         ) {
             $transform = null;
         }
@@ -2008,7 +2020,7 @@ JS;
     /**
      * @inheritdoc
      */
-    public function getThumbSvg(): ?string
+    protected function thumbSvg(): ?string
     {
         if ($this->isFolder) {
             return file_get_contents(Craft::getAlias('@appicons/folder.svg'));
@@ -2927,7 +2939,11 @@ JS;
     public function afterDelete(): void
     {
         if (!$this->keepFileOnDelete) {
-            $this->getVolume()->deleteFile($this->getPath());
+            try {
+                $this->getVolume()->deleteFile($this->getPath());
+            } catch (InvalidConfigException|NotSupportedException) {
+                // NBD
+            }
         }
 
         Craft::$app->getImageTransforms()->deleteAllTransformData($this);
@@ -3270,5 +3286,21 @@ JS;
         }
 
         return FileHelper::normalizePath($path) . DIRECTORY_SEPARATOR;
+    }
+
+    /**
+     * Returns whether transforming given asset is allowed
+     * based on its mime type and general settings.
+     *
+     * @return bool
+     * @throws ImageTransformException
+     */
+    private function allowTransforms(): bool
+    {
+        return match ($this->getMimeType()) {
+            'image/gif' => Craft::$app->getConfig()->getGeneral()->transformGifs,
+            'image/svg+xml' => Craft::$app->getConfig()->getGeneral()->transformSvgs,
+            default => true,
+        };
     }
 }

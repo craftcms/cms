@@ -9,6 +9,7 @@ namespace craft\controllers;
 
 use Craft;
 use craft\base\Element;
+use craft\base\ModelInterface;
 use craft\elements\Address;
 use craft\elements\Asset;
 use craft\elements\Entry;
@@ -45,6 +46,7 @@ use DateTime;
 use Throwable;
 use yii\base\Exception;
 use yii\base\InvalidArgumentException;
+use yii\base\Model;
 use yii\web\BadRequestHttpException;
 use yii\web\ForbiddenHttpException;
 use yii\web\HttpException;
@@ -186,7 +188,7 @@ class UsersController extends Controller
         $userSession = Craft::$app->getUser();
         if (!$userSession->getIsGuest()) {
             // Too easy.
-            return $this->_handleSuccessfulLogin();
+            return $this->_handleSuccessfulLogin($userSession->getIdentity());
         }
 
         if (!$this->request->getIsPost()) {
@@ -224,7 +226,7 @@ class UsersController extends Controller
             return $this->_handleLoginFailure(null, $user);
         }
 
-        return $this->_handleSuccessfulLogin();
+        return $this->_handleSuccessfulLogin($user);
     }
 
     private function _findLoginUser(string $loginName): ?User
@@ -277,7 +279,7 @@ class UsersController extends Controller
             return null;
         }
 
-        return $this->_handleSuccessfulLogin();
+        return $this->_handleSuccessfulLogin($user);
     }
 
     /**
@@ -336,19 +338,27 @@ class UsersController extends Controller
         $this->requireToken();
 
         $userSession = Craft::$app->getUser();
+        $user = Craft::$app->getUsers()->getUserById($userId);
+        $success = false;
 
-        // Save the original user ID to the session now so User::findIdentity()
-        // knows not to worry if the user isn't active yet
-        Session::set(User::IMPERSONATE_KEY, $prevUserId);
+        if ($user) {
+            // Save the original user ID to the session now so User::findIdentity()
+            // knows not to worry if the user isn't active yet
+            Session::set(User::IMPERSONATE_KEY, $prevUserId);
+            $success = $userSession->login($user);
+            if (!$success) {
+                Session::remove(User::IMPERSONATE_KEY);
+            }
+        }
 
-        if (!$userSession->loginByUserId($userId)) {
-            Session::remove(User::IMPERSONATE_KEY);
+        if (!$success) {
             $this->setFailFlash(Craft::t('app', 'There was a problem impersonating this user.'));
-            Craft::error($userSession->getIdentity()->username . ' tried to impersonate userId: ' . $userId . ' but something went wrong.', __METHOD__);
+            Craft::error(sprintf('%s tried to impersonate userId: %s but something went wrong.',
+                $userSession->getIdentity()->username, $userId), __METHOD__);
             return null;
         }
 
-        return $this->_handleSuccessfulLogin();
+        return $this->_handleSuccessfulLogin($user);
     }
 
     /**
@@ -1414,12 +1424,9 @@ JS,
         // set the default group on the user, so that any content
         // based on user group condition can be validated and saved against them
         if ($isPublicRegistration) {
-            $defaultGroupUid = Craft::$app->getProjectConfig()->get('users.defaultGroup');
-            if ($defaultGroupUid) {
-                $group = Craft::$app->userGroups->getGroupByUid($defaultGroupUid);
-                if ($group) {
-                    $user->setGroups([$group]);
-                }
+            $groups = Craft::$app->getUsers()->getDefaultUserGroups($user);
+            if (!empty($groups)) {
+                $user->setGroups($groups);
             }
         }
 
@@ -1439,6 +1446,8 @@ JS,
         // Don't validate required custom fields if it's public registration
         if (!$isPublicRegistration || ($userSettings['validateOnPublicRegistration'] ?? false)) {
             $user->setScenario(Element::SCENARIO_LIVE);
+        } elseif ($isPublicRegistration) {
+            $user->setScenario(User::SCENARIO_REGISTRATION);
         }
 
         // Manually validate the user so we can pass $clearErrors=false
@@ -2096,10 +2105,21 @@ JS,
         $fieldLayout = Craft::$app->getFields()->assembleLayoutFromPost();
         $fieldLayout->type = User::class;
         $fieldLayout->reservedFieldHandles = [
-            'groups',
-            'photo',
+            'active',
+            'addresses',
+            'admin',
+            'email',
             'firstName',
+            'friendlyName',
+            'groups',
             'lastName',
+            'locked',
+            'name',
+            'password',
+            'pending',
+            'photo',
+            'suspended',
+            'username',
         ];
 
         if (!Craft::$app->getUsers()->saveLayout($fieldLayout)) {
@@ -2170,9 +2190,10 @@ JS,
      * Redirects the user after a successful login attempt, or if they visited the Login page while they were already
      * logged in.
      *
+     * @param User $user
      * @return Response
      */
-    private function _handleSuccessfulLogin(): Response
+    private function _handleSuccessfulLogin(User $user): Response
     {
         // Get the return URL
         $userSession = Craft::$app->getUser();
@@ -2191,7 +2212,7 @@ JS,
                 $return['csrfTokenValue'] = $this->request->getCsrfToken();
             }
 
-            return $this->asSuccess(data: $return);
+            return $this->asModelSuccess($user, modelName: 'user', data: $return);
         }
 
         return $this->redirectToPostedUrl($userSession->getIdentity(), $returnUrl);
@@ -2663,5 +2684,46 @@ JS,
         $ids = $this->request->getRequiredBodyParam('ids');
         Craft::$app->getAnnouncements()->markAsRead($ids);
         return $this->asSuccess();
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function asModelSuccess(
+        ModelInterface|Model $model,
+        ?string $message = null,
+        ?string $modelName = null,
+        array $data = [],
+        ?string $redirect = null,
+    ): Response {
+        $this->clearPassword($model);
+        return parent::asModelSuccess($model, $message, $modelName, $data, $redirect);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function asModelFailure(
+        ModelInterface|Model $model,
+        ?string $message = null,
+        ?string $modelName = null,
+        array $data = [],
+        array $routeParams = [],
+    ): ?Response {
+        $this->clearPassword($model);
+        return parent::asModelFailure($model, $message, $modelName, $data, $routeParams);
+    }
+
+    /**
+     * @param ModelInterface|Model $model
+     * @return void
+     */
+    private function clearPassword(ModelInterface|Model $model): void
+    {
+        if ($model instanceof User) {
+            $model->password = null;
+            $model->newPassword = null;
+            $model->currentPassword = null;
+        }
     }
 }

@@ -10,6 +10,7 @@ namespace craft\behaviors;
 use Craft;
 use craft\base\ElementInterface;
 use craft\base\FieldInterface;
+use craft\base\FieldLayoutProviderInterface;
 use craft\models\FieldLayout;
 use yii\base\Behavior;
 use yii\base\InvalidConfigException;
@@ -129,7 +130,9 @@ class FieldLayoutBehavior extends Behavior
             ]);
         }
 
-        $fieldLayout->owner = $this->owner;
+        if ($this->owner instanceof FieldLayoutProviderInterface) {
+            $fieldLayout->provider = $this->owner;
+        }
 
         return $this->_fieldLayout = $fieldLayout;
     }

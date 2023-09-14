@@ -33,10 +33,14 @@ class FsController extends Controller
      */
     public function beforeAction($action): bool
     {
+        if (!parent::beforeAction($action)) {
+            return false;
+        }
+
         // All asset volume actions require an admin
         $this->requireAdmin();
 
-        return parent::beforeAction($action);
+        return true;
     }
 
     /**
@@ -112,6 +116,11 @@ class FsController extends Controller
             ->addCrumb(Craft::t('app', 'Filesystems'), 'settings/filesystems')
             ->action('fs/save')
             ->redirectUrl('settings/filesystems')
+            ->addAltAction(Craft::t('app', 'Save and continue editing'), [
+                'redirect' => 'settings/filesystems/{handle}',
+                'shortcut' => true,
+                'retainScroll' => true,
+            ])
             ->contentTemplate('settings/filesystems/_edit.twig', [
                 'oldHandle' => $handle,
                 'filesystem' => $filesystem,

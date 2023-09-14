@@ -11,6 +11,7 @@ use Craft;
 use craft\base\ElementInterface;
 use craft\base\FieldInterface;
 use craft\base\FieldLayoutElement;
+use craft\base\FieldLayoutProviderInterface;
 use craft\base\Model;
 use craft\events\CreateFieldLayoutFormEvent;
 use craft\events\DefineFieldLayoutCustomFieldsEvent;
@@ -27,7 +28,6 @@ use craft\helpers\ArrayHelper;
 use craft\helpers\Html;
 use craft\helpers\StringHelper;
 use Generator;
-use yii\base\Component;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
 
@@ -173,20 +173,16 @@ class FieldLayout extends Model
     {
         $tabConfigs = ArrayHelper::remove($config, 'tabs');
         $layout = new self($config);
-        $tabs = [];
 
         if (is_array($tabConfigs)) {
-            foreach ($tabConfigs as $tabConfig) {
-                $tab = FieldLayoutTab::createFromConfig(['layout' => $layout] + $tabConfig);
-
-                // Ignore empty tabs
-                if (!empty($tab->getElements())) {
-                    $tabs[] = $tab;
-                }
-            }
+            $layout->setTabs(array_values(array_map(
+                fn(array $tabConfig) => FieldLayoutTab::createFromConfig(['layout' => $layout] + $tabConfig),
+                $tabConfigs,
+            )));
+        } else {
+            $layout->setTabs([]);
         }
 
-        $layout->setTabs($tabs);
         return $layout;
     }
 
@@ -207,10 +203,10 @@ class FieldLayout extends Model
     public string $uid;
 
     /**
-     * @var Component|null The field layout’s owner.
+     * @var FieldLayoutProviderInterface|null The field layout’s provider.
      * @since 4.5.0
      */
-    public ?Component $owner = null;
+    public ?FieldLayoutProviderInterface $provider = null;
 
     /**
      * @var string[]|null Reserved custom field handles
@@ -512,14 +508,10 @@ class FieldLayout extends Model
      */
     public function getConfig(): ?array
     {
-        $tabConfigs = [];
-
-        foreach ($this->getTabs() as $tab) {
-            $tabConfig = $tab->getConfig();
-            if (!empty($tabConfig['elements'])) {
-                $tabConfigs[] = $tabConfig;
-            }
-        }
+        $tabConfigs = array_values(array_map(
+            fn(FieldLayoutTab $tab) => $tab->getConfig(),
+            $this->getTabs(),
+        ));
 
         if (empty($tabConfigs)) {
             return null;

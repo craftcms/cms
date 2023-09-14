@@ -26,7 +26,7 @@ $.extend(Craft, {
    * @param {(string|indexKeyCallback)} key
    */
   index: function (arr, key) {
-    if (!$.isArray(arr)) {
+    if (!Array.isArray(arr)) {
       throw 'The first argument passed to Craft.index() must be an array.';
     }
 
@@ -43,7 +43,7 @@ $.extend(Craft, {
    * @param {(string|indexKeyCallback)} key
    */
   group: function (arr, key) {
-    if (!$.isArray(arr)) {
+    if (!Array.isArray(arr)) {
       throw 'The first argument passed to Craft.group() must be an array.';
     }
 
@@ -193,7 +193,7 @@ $.extend(Craft, {
           let c = select.length;
           let message = false;
           for (let i = 0; i + 1 < c; i++) {
-            if (Garnish.isArray(select[i]) || !Garnish.isArray(select[i + 1])) {
+            if (Array.isArray(select[i]) || !Array.isArray(select[i + 1])) {
               return false;
             }
             let selector = Craft.trim(select[i++]);
@@ -759,10 +759,10 @@ $.extend(Craft, {
 
   _actionHeaders: function () {
     let headers = {
-      'X-Registered-Asset-Bundles': Object.keys(
-        Craft.registeredAssetBundles
-      ).join(','),
-      'X-Registered-Js-Files': Object.keys(Craft.registeredJsFiles).join(','),
+      'X-Registered-Asset-Bundles': [
+        ...new Set(Craft.registeredAssetBundles),
+      ].join(','),
+      'X-Registered-Js-Files': [...new Set(Craft.registeredJsFiles)].join(','),
     };
 
     if (Craft.csrfTokenValue) {
@@ -1076,11 +1076,11 @@ $.extend(Craft, {
     // Make sure oldData and newData are always strings. This is important because further below String.split is called.
     oldData = typeof oldData === 'string' ? oldData : '';
     newData = typeof newData === 'string' ? newData : '';
-    deltaNames = $.isArray(deltaNames) ? deltaNames : [];
+    deltaNames = Array.isArray(deltaNames) ? deltaNames : [];
     initialDeltaValues = $.isPlainObject(initialDeltaValues)
       ? initialDeltaValues
       : {};
-    modifiedDeltaNames = $.isArray(modifiedDeltaNames)
+    modifiedDeltaNames = Array.isArray(modifiedDeltaNames)
       ? modifiedDeltaNames
       : [];
 
@@ -1177,7 +1177,7 @@ $.extend(Craft, {
 
     if (initialValues) {
       const serializeParam = (name, value) => {
-        if ($.isArray(value) || $.isPlainObject(value)) {
+        if (Array.isArray(value) || $.isPlainObject(value)) {
           value = $.param(value);
         } else if (typeof value === 'string') {
           value = encodeURIComponent(value);
@@ -1325,12 +1325,12 @@ $.extend(Craft, {
       }
 
       // Is one of them an array but the other is not?
-      if (obj1 instanceof Array !== obj2 instanceof Array) {
+      if (Array.isArray(obj1) !== Array.isArray(obj2)) {
         return false;
       }
 
       // If they're actual objects (not arrays), compare the keys
-      if (!(obj1 instanceof Array)) {
+      if (!Array.isArray(obj1)) {
         if (typeof sortObjectKeys === 'undefined' || sortObjectKeys === true) {
           if (
             !Craft.compare(
@@ -1396,7 +1396,7 @@ $.extend(Craft, {
    * @returns {string}
    */
   escapeChars: function (chars) {
-    if (!Garnish.isArray(chars)) {
+    if (!Array.isArray(chars)) {
       chars = chars.split();
     }
 
@@ -1775,7 +1775,10 @@ $.extend(Craft, {
    * @returns {string}
    */
   namespaceId: function (id, namespace) {
-    return Craft.formatInputId(namespace ? `${namespace}-${id}` : id);
+    return (
+      (namespace ? `${Craft.formatInputId(namespace)}-` : '') +
+      Craft.formatInputId(id)
+    );
   },
 
   randomString: function (length) {
@@ -2369,7 +2372,7 @@ $.extend(Craft, {
         $element.removeAttr(name);
       } else if (value === true) {
         $element.attr(name, '');
-      } else if ($.isArray(value) || $.isPlainObject(value)) {
+      } else if (Array.isArray(value) || $.isPlainObject(value)) {
         if (Craft.dataAttributes.includes(name)) {
           // Make sure it's an object
           value = Object.assign({}, value);
@@ -2381,7 +2384,7 @@ $.extend(Craft, {
             if (subValue === null || subValue === false) {
               continue;
             }
-            if ($.isPlainObject(subValue) || $.isArray(subValue)) {
+            if ($.isPlainObject(subValue) || Array.isArray(subValue)) {
               subValue = JSON.stringify(subValue);
             } else if (subValue === true) {
               subValue = '';

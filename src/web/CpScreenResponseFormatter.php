@@ -88,6 +88,8 @@ class CpScreenResponseFormatter extends Component implements ResponseFormatterIn
 
         $sidebar = $behavior->sidebar ? $view->namespaceInputs($behavior->sidebar, $namespace) : null;
 
+        $errorSummary = $behavior->errorSummary ? $view->namespaceInputs($behavior->errorSummary, $namespace) : null;
+
         $response->data = [
             'editUrl' => $behavior->editUrl,
             'namespace' => $namespace,
@@ -100,6 +102,7 @@ class CpScreenResponseFormatter extends Component implements ResponseFormatterIn
             'submitButtonLabel' => $behavior->submitButtonLabel,
             'content' => $content,
             'sidebar' => $sidebar,
+            'errorSummary' => $errorSummary,
             'headHtml' => $view->getHeadHtml(),
             'bodyHtml' => $view->getBodyHtml(),
             'deltaNames' => $view->getDeltaNames(),
@@ -126,6 +129,7 @@ class CpScreenResponseFormatter extends Component implements ResponseFormatterIn
         $content = is_callable($behavior->content) ? call_user_func($behavior->content) : ($behavior->content ?? '');
         $sidebar = is_callable($behavior->sidebar) ? call_user_func($behavior->sidebar) : $behavior->sidebar;
         $pageSidebar = is_callable($behavior->pageSidebar) ? call_user_func($behavior->pageSidebar) : $behavior->pageSidebar;
+        $errorSummary = is_callable($behavior->errorSummary) ? call_user_func($behavior->errorSummary) : $behavior->errorSummary;
 
         if ($behavior->action) {
             $content .= Html::actionInput($behavior->action, [
@@ -166,6 +170,7 @@ class CpScreenResponseFormatter extends Component implements ResponseFormatterIn
                 'content' => $content,
                 'details' => $sidebar,
                 'sidebar' => $pageSidebar,
+                'errorSummary' => $errorSummary,
             ],
             'templateMode' => View::TEMPLATE_MODE_CP,
         ]);
