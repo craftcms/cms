@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 3.x
 
-## Unreleased
+## 3.9.3 - 2023-09-14
 
 - Added the `maxGraphqlBatchSize` config setting. ([#13693](https://github.com/craftcms/cms/issues/13693))
 - Fixed a bug where page sidebars and detail panes weren’t scrolling properly if their height was greater than the main content pane height. ([#13637](https://github.com/craftcms/cms/issues/13637))
