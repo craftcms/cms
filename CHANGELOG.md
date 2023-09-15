@@ -1,5 +1,9 @@
 # Release Notes for Craft CMS 4
 
+## Unreleased
+
+- Fixed a bug where pagination wasn’t working on admin tables. ([#13677](https://github.com/craftcms/cms/issues/13677))
+
 ## 4.5.5 - 2023-09-14
 
 - Added the `maxGraphqlBatchSize` config setting. ([#13693](https://github.com/craftcms/cms/issues/13693))
