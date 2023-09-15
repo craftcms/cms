@@ -1,5 +1,9 @@
 # Release Notes for Craft CMS 4
 
+## Unreleased
+
+- Fixed a bug where it wasn’t always possible to create new entries from custom sources which were limited to one section.
+
 ## 4.5.5 - 2023-09-14
 
 - Added the `maxGraphqlBatchSize` config setting. ([#13693](https://github.com/craftcms/cms/issues/13693))
