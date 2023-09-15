@@ -439,6 +439,10 @@ JS, [
             /** @var ElementQueryInterface|Collection $value */
             $value = $element->getFieldValue($this->handle);
 
+            if ($value instanceof ElementQueryInterface) {
+                $value = $this->_all($value);
+            }
+
             $arrayValidator = new NumberValidator([
                 'min' => $this->minRelations,
                 'max' => $this->maxRelations,
@@ -473,6 +477,11 @@ JS, [
 
         /** @var ElementQueryInterface|Collection $value */
         $value = $element->getFieldValue($this->handle);
+
+        if ($value instanceof ElementQueryInterface) {
+            $value = $this->_all($value);
+        }
+
         $errorCount = 0;
 
         foreach ($value->all() as $i => $related) {

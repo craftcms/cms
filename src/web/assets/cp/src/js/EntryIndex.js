@@ -17,8 +17,12 @@ Craft.EntryIndex = Craft.BaseElementIndex.extend({
 
   afterInit: function () {
     // Find which of the visible sections the user has permission to create new entries in
-    this.publishableSections = Craft.publishableSections.filter(
-      (s) => !!this.getSourceByKey(`section:${s.uid}`)
+    const includedSections = this.$sources
+      .toArray()
+      .map((source) => $(source).data('handle'))
+      .filter((handle) => !!handle);
+    this.publishableSections = Craft.publishableSections.filter((section) =>
+      includedSections.includes(section.handle)
     );
 
     this.base();

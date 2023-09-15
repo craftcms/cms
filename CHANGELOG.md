@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Fixed a bug where it wasn’t always possible to create new entries from custom sources which were limited to one section.
+- Fixed a bug where relational fields weren’t factoring in cross-site elements when enforcing their “Min Relations”, “Max Relations”, and “Validate related entries” settings. ([#13699](https://github.com/craftcms/cms/issues/13699))
 - Fixed a bug where pagination wasn’t working on admin tables. ([#13677](https://github.com/craftcms/cms/issues/13677))
 
 ## 4.5.5 - 2023-09-14
