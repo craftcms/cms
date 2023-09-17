@@ -2189,6 +2189,8 @@ div.btn.submit input {
     display: flex;
     align-items: center;
     max-width: 100%;
+    padding-left: 7px;
+    padding-right: 7px;
 
     span {
       flex-grow: 1;
@@ -2200,12 +2202,10 @@ div.btn.submit input {
       hyphens: auto;
 
       &[data-toggle='on'] {
-        @include padding-right(10px);
         @include margin-left(7px);
       }
 
       &[data-toggle='off'] {
-        @include padding-left(10px);
         @include margin-right(7px);
         text-align: right;
 

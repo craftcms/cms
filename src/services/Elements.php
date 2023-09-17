@@ -529,9 +529,9 @@ class Elements extends Component
      * Returns whether we are currently collecting element cache invalidation info.
      *
      * @return bool
-     * @since 4.3.0
      * @see startCollectingCacheInfo()
      * @see stopCollectingCacheInfo()
+     * @since 4.3.0
      */
     public function getIsCollectingCacheInfo(): bool
     {

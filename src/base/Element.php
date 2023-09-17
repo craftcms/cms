@@ -568,8 +568,8 @@ abstract class Element extends Component implements ElementInterface
      *
      * Note that [[EVENT_DEFINE_URL]] will still be called regardless of what happens with this event.
      *
-     * @since 4.4.6
      * @see getUrl()
+     * @since 4.4.6
      */
     public const EVENT_BEFORE_DEFINE_URL = 'beforeDefineUrl';
 
@@ -603,8 +603,8 @@ abstract class Element extends Component implements ElementInterface
      * To prevent the element from getting a URL, ensure `$event->url` is set to `null`,
      * and set `$event->handled` to `true`.
      *
-     * @since 4.3.0
      * @see getUrl()
+     * @since 4.3.0
      */
     public const EVENT_DEFINE_URL = 'defineUrl';
 
@@ -2556,6 +2556,18 @@ abstract class Element extends Component implements ElementInterface
                     }
                 }
             }
+        }
+
+        if (Craft::$app->getRequest()->getIsCpRequest()) {
+            $allErrors = $this->getErrors();
+            $this->clearErrors();
+            foreach ($allErrors as $attribute => &$errors) {
+                $label = $this->getAttributeLabel($attribute);
+                foreach ($errors as &$error) {
+                    $error = str_replace($label, "*$label*", $error);
+                }
+            }
+            $this->addErrors($allErrors);
         }
 
         parent::afterValidate();

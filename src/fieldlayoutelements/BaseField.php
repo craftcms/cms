@@ -68,6 +68,17 @@ abstract class BaseField extends FieldLayoutElement
     abstract public function attribute(): string;
 
     /**
+     * Returns whether the attribute should be shown for admin users with “Show field handles in edit forms” enabled.
+     *
+     * @return bool
+     * @since 4.5.4
+     */
+    public function showAttribute(): bool
+    {
+        return false;
+    }
+
+    /**
      * Returns the field’s value.
      *
      * @param ElementInterface|null $element
@@ -270,6 +281,7 @@ abstract class BaseField extends FieldLayoutElement
             'status' => $statusClass ? [$statusClass, $this->statusLabel($element, $static) ?? ucfirst($statusClass)] : null,
             'label' => $label !== null ? Html::encode($label) : null,
             'attribute' => $this->attribute(),
+            'showAttribute' => $this->showAttribute(),
             'required' => !$static && $this->required,
             'instructions' => $instructions !== null ? Html::encode($instructions) : null,
             'tip' => $tip !== null ? Html::encode($tip) : null,

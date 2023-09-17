@@ -9,6 +9,7 @@ namespace craft\services;
 
 use Craft;
 use craft\base\ElementInterface;
+use craft\base\FieldInterface;
 use craft\behaviors\RevisionBehavior;
 use craft\db\Query;
 use craft\db\Table;
@@ -222,6 +223,10 @@ class Revisions extends Component
         $newSource = Craft::$app->getElements()->updateCanonicalElement($revision, [
             'revisionCreatorId' => $creatorId,
             'revisionNotes' => Craft::t('app', 'Reverted content from revision {num}.', ['num' => $revision->revisionNum]),
+            'dirtyFields' => array_map(
+                fn(FieldInterface $field) => $field->handle,
+                $revision->getFieldLayout()?->getCustomFields() ?? [],
+            ),
         ]);
 
         // Fire an 'afterRevertToRevision' event

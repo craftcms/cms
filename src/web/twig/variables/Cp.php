@@ -742,7 +742,7 @@ class Cp extends Component
                     'label' => "$$var",
                     'value' => "$$var",
                     'data' => [
-                        'boolean' => $booleanValue,
+                        'boolean' => $booleanValue ? '1' : '0',
                     ],
                 ];
             }

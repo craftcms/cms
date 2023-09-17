@@ -14,7 +14,7 @@ use craft\db\mysql\Schema as MysqlSchema;
 use craft\db\pgsql\Schema as PgsqlSchema;
 use craft\db\Query;
 use craft\db\QueryParam;
-use DateTime;
+use DateTimeInterface;
 use DateTimeZone;
 use Money\Money;
 use PDO;
@@ -131,7 +131,7 @@ class Db
         }
 
         // Only DateTime objects and ISO-8601 strings should automatically be detected as dates
-        if ($value instanceof DateTime || DateTimeHelper::isIso8601($value)) {
+        if ($value instanceof DateTimeInterface || DateTimeHelper::isIso8601($value)) {
             return static::prepareDateForDb($value);
         }
 
@@ -706,7 +706,7 @@ class Db
      * [[\yii\db\QueryInterface::where()]]-compatible condition.
      *
      * @param string $column The database column that the param is targeting.
-     * @param string|array|DateTime $value The param value
+     * @param string|array|DateTimeInterface $value The param value
      * @param string $defaultOperator The default operator to apply to the values
      * (can be `not`, `!=`, `<=`, `>=`, `<`, `>`, or `=`)
      * @return array|null

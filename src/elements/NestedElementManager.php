@@ -710,11 +710,15 @@ JS, [
 
         $transaction = Craft::$app->getDb()->beginTransaction();
         try {
+            $setCanonicalId = $target->getIsDerivative() && $target->getCanonical()->id !== $target->id;
+
             /** @var NestedElementInterface[] $elements */
             foreach ($elements as $element) {
                 $newAttributes = [
                     // Only set the canonicalId if the target owner element is a derivative
-                    'canonicalId' => $target->getIsDerivative() ? $element->id : null,
+                    // and if the target's canonical element is not the same as target element, see
+                    // https://app.frontapp.com/open/msg_ukaoki1?key=U6zkE_S6_ApMXn3ntPMwUxSLe0sUPsmY for more info
+                    'canonicalId' => $setCanonicalId ? $element->id : null,
                     $this->primaryOwnerIdAttribute => $target->id,
                     'owner' => $target,
                     'siteId' => $target->siteId,

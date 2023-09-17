@@ -31,7 +31,9 @@ use craft\gql\directives\FormatDateTime;
 use craft\gql\directives\Markdown;
 use craft\gql\directives\Money;
 use craft\gql\directives\ParseRefs;
+use craft\gql\directives\StripTags;
 use craft\gql\directives\Transform;
+use craft\gql\directives\Trim;
 use craft\gql\ElementQueryConditionBuilder;
 use craft\gql\GqlEntityRegistry;
 use craft\gql\interfaces\Element as ElementInterface;
@@ -1453,6 +1455,8 @@ class Gql extends Component
             Markdown::class,
             Money::class,
             ParseRefs::class,
+            StripTags::class,
+            Trim::class,
         ];
 
         if (!Craft::$app->getConfig()->getGeneral()->disableGraphqlTransformDirective) {

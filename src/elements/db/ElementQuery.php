@@ -975,6 +975,7 @@ class ElementQuery extends Query implements ElementQueryInterface
 
     /**
      * @inheritdoc
+     * @return static
      * @uses $unique
      * @since 3.2.0
      */
