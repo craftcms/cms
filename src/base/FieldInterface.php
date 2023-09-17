@@ -73,7 +73,7 @@ interface FieldInterface extends SavableComponentInterface
      * ```
      *
      * @return string
-     * @since 3.2.0
+     * @since 5.0.0
      */
     public static function phpType(): string;
 

@@ -164,11 +164,13 @@ class Matrix extends Field implements
 
     /**
      * @var int|null Min entries
+     * @since 5.0.0
      */
     public ?int $minEntries = null;
 
     /**
      * @var int|null Max entries
+     * @since 5.0.0
      */
     public ?int $maxEntries = null;
 
