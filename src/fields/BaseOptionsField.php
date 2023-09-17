@@ -323,6 +323,8 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
             $value = Json::decodeIfJson($value);
         } elseif ($value === '' && $this->multi) {
             $value = [];
+        } elseif ($value === '__BLANK__') {
+            $value = '';
         } elseif ($value === null && $this->isFresh($element)) {
             $value = $this->defaultValue();
         }

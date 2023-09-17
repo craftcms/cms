@@ -178,8 +178,8 @@ EOD;
     /**
      * Generates an application ID and security key (if they don’t exist), and saves them in the `.env` file.
      *
-     * @since 4.2.7
      * @return int
+     * @since 4.2.7
      */
     public function actionKeys(): int
     {

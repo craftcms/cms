@@ -121,18 +121,9 @@ class Response extends \yii\web\Response
             return $this;
         }
 
-        if ($overwrite) {
-            $this->getHeaders()
-                ->set('Expires', sprintf('%s GMT', gmdate('D, d M Y H:i:s', time() + $duration)))
-                ->set('Pragma', 'cache')
-                ->set('Cache-Control', "max-age=$duration");
-        } else {
-            $this->getHeaders()
-                ->setDefault('Expires', sprintf('%s GMT', gmdate('D, d M Y H:i:s', time() + $duration)))
-                ->setDefault('Pragma', 'cache')
-                ->setDefault('Cache-Control', "public, max-age=$duration");
-        }
-
+        $this->setHeader('Expires', sprintf('%s GMT', gmdate('D, d M Y H:i:s', time() + $duration)), $overwrite);
+        $this->setHeader('Pragma', 'cache', $overwrite);
+        $this->setHeader('Cache-Control', "max-age=$duration", $overwrite);
         return $this;
     }
 
@@ -145,19 +136,19 @@ class Response extends \yii\web\Response
      */
     public function setNoCacheHeaders(bool $overwrite = true): self
     {
-        if ($overwrite) {
-            $this->getHeaders()
-                ->set('Expires', '0')
-                ->set('Pragma', 'no-cache')
-                ->set('Cache-Control', 'no-cache, no-store, must-revalidate');
-        } else {
-            $this->getHeaders()
-                ->setDefault('Expires', '0')
-                ->setDefault('Pragma', 'no-cache')
-                ->setDefault('Cache-Control', 'no-cache, no-store, must-revalidate');
-        }
-
+        $this->setHeader('Expires', '0', $overwrite);
+        $this->setHeader('Pragma', 'no-cache', $overwrite);
+        $this->setHeader('Cache-Control', 'no-cache, no-store, must-revalidate', $overwrite);
         return $this;
+    }
+
+    private function setHeader(string $name, string $value, bool $overwrite): void
+    {
+        if ($overwrite) {
+            $this->getHeaders()->set($name, $value);
+        } else {
+            $this->getHeaders()->setDefault($name, $value);
+        }
     }
 
     /**
