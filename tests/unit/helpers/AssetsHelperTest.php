@@ -190,7 +190,7 @@ class AssetsHelperTest extends TestCase
     /**
      * @return array
      */
-    public function generateUrlDataProvider(): array
+    public static function generateUrlDataProvider(): array
     {
         return [
             ['https://cdn.test.craftcms.test/test%20volume%201/product.jpg', ['volumeId' => '1000', 'filename' => 'product.jpg']],
@@ -200,7 +200,7 @@ class AssetsHelperTest extends TestCase
     /**
      * @return array
      */
-    public function prepareAssetNameDataProvider(): array
+    public static function prepareAssetNameDataProvider(): array
     {
         return [
             ['name', 'name', true, false],
@@ -220,7 +220,7 @@ class AssetsHelperTest extends TestCase
     /**
      * @return array
      */
-    public function filename2TitleDataProvider(): array
+    public static function filename2TitleDataProvider(): array
     {
         return [
             ['Filename', 'filename'],
@@ -232,7 +232,7 @@ class AssetsHelperTest extends TestCase
     /**
      * @return array
      */
-    public function getFileKindLabelDataProvider(): array
+    public static function getFileKindLabelDataProvider(): array
     {
         return [
             ['Access', 'access'],
@@ -246,7 +246,7 @@ class AssetsHelperTest extends TestCase
     /**
      * @return array
      */
-    public function parseFileLocationDataProvider(): array
+    public static function parseFileLocationDataProvider(): array
     {
         return [
             [[2, '.'], '{folder:2}.'],
@@ -257,7 +257,7 @@ class AssetsHelperTest extends TestCase
     /**
      * @return array
      */
-    public function parseSrcsetSizeDataProvider(): array
+    public static function parseSrcsetSizeDataProvider(): array
     {
         return [
             [[100.0, 'w'], 100],
@@ -272,7 +272,7 @@ class AssetsHelperTest extends TestCase
     /**
      * @return array
      */
-    public function getFileKindByExtensionDataProvider(): array
+    public static function getFileKindByExtensionDataProvider(): array
     {
         return [
             ['unknown', 'html'],

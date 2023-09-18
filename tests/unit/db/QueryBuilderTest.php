@@ -38,16 +38,16 @@ class QueryBuilderTest extends TestCase
         $sql = $db->getQueryBuilder()->createTable('foo', ['id' => Schema::TYPE_PK], $options);
 
         if ($contains) {
-            $this->assertStringContainsString($needle, $sql);
+            self::assertStringContainsString($needle, $sql);
         } else {
-            $this->assertStringNotContainsString($needle, $sql);
+            self::assertStringNotContainsString($needle, $sql);
         }
     }
 
     /**
      * @return array
      */
-    public function createTableOptionsDataProvider(): array
+    public static function createTableOptionsDataProvider(): array
     {
         return [
             [true, 'ENGINE = InnoDb'],

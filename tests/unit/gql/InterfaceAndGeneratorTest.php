@@ -7,6 +7,7 @@
 
 namespace crafttests\unit\gql;
 
+use Codeception\Stub;
 use Craft;
 use craft\elements\Asset as AssetElement;
 use craft\elements\Category as CategoryElement;
@@ -72,13 +73,11 @@ class InterfaceAndGeneratorTest extends TestCase
             Craft::$app,
             'volumes',
             [
-                'getAllVolumes' => function() {
-                    return $this->mockVolumes();
-                },
+                'getAllVolumes' => fn() => static::mockVolumes(),
             ]
         );
 
-        $contexts = $this->mockEntryContexts();
+        $contexts = static::mockEntryContexts();
 
         $this->tester->mockMethods(
             Craft::$app,
@@ -94,7 +93,7 @@ class InterfaceAndGeneratorTest extends TestCase
             'globals',
             [
                 'getAllSets' => function() {
-                    return $this->mockGlobalSets();
+                    return static::mockGlobalSets();
                 },
             ]
         );
@@ -104,7 +103,7 @@ class InterfaceAndGeneratorTest extends TestCase
             'categories',
             [
                 'getAllGroups' => function() {
-                    return $this->mockCategoryGroups();
+                    return static::mockCategoryGroups();
                 },
             ]
         );
@@ -114,7 +113,7 @@ class InterfaceAndGeneratorTest extends TestCase
             'tags',
             [
                 'getAllTagGroups' => function() {
-                    return $this->mockTagGroups();
+                    return static::mockTagGroups();
                 },
             ]
         );
@@ -201,19 +200,19 @@ class InterfaceAndGeneratorTest extends TestCase
     }
 
 
-    public function interfaceDataProvider(): array
+    public static function interfaceDataProvider(): array
     {
         return [
-            [AssetInterface::class, [$this, 'mockVolumes'], [AssetElement::class, 'gqlTypeName']],
+            [AssetInterface::class, fn() => static::mockVolumes(), [AssetElement::class, 'gqlTypeName']],
             [
                 EntryInterface::class,
-                fn() => array_filter(array_map(fn(array $context) => $context['entryType'], $this->mockEntryContexts())),
+                fn() => array_filter(array_map(fn(array $context) => $context['entryType'], static::mockEntryContexts())),
                 [EntryElement::class, 'gqlTypeName'],
                 [EntryTypeGenerator::class, 'generateType'],
                 false,
             ],
-            [CategoryInterface::class, [$this, 'mockCategoryGroups'], [CategoryElement::class, 'gqlTypeName']],
-            [TagInterface::class, [$this, 'mockTagGroups'], [TagElement::class, 'gqlTypeName']],
+            [CategoryInterface::class, fn() => static::mockCategoryGroups(), [CategoryElement::class, 'gqlTypeName']],
+            [TagInterface::class, fn() => static::mockTagGroups(), [TagElement::class, 'gqlTypeName']],
         ];
     }
 
@@ -223,10 +222,10 @@ class InterfaceAndGeneratorTest extends TestCase
      * @return array
      * @throws Exception
      */
-    public function mockVolumes(): array
+    public static function mockVolumes(): array
     {
         return [
-            $this->make(Volume::class, [
+            Stub::make(Volume::class, [
                 'uid' => 'volume-uid-1',
                 'handle' => 'mockVolume1',
                 '__call' => fn($name) => match ($name) {
@@ -234,12 +233,12 @@ class InterfaceAndGeneratorTest extends TestCase
                     default => throw new UnknownMethodException("Calling unknown method: $name()"),
                 },
             ]),
-            $this->make(Volume::class, [
+            Stub::make(Volume::class, [
                 'uid' => 'volume-uid-2',
                 'handle' => 'mockVolume2',
                 '__call' => fn($name) => match ($name) {
                     'getCustomFields' => [
-                        $this->make(PlainText::class, ['name' => 'Mock Field', 'handle' => 'mockField']),
+                        Stub::make(PlainText::class, ['name' => 'Mock Field', 'handle' => 'mockField']),
                     ],
                     default => throw new UnknownMethodException("Calling unknown method: $name()"),
                 },
@@ -253,14 +252,14 @@ class InterfaceAndGeneratorTest extends TestCase
      * @return array
      * @throws Exception
      */
-    public function mockEntryContexts(): array
+    public static function mockEntryContexts(): array
     {
-        $typeA = $this->make(EntryType::class, [
+        $typeA = Stub::make(EntryType::class, [
             'uid' => 'entrytype-uid-1',
             'handle' => 'mockType1',
             '__call' => fn($name) => match ($name) {
                 'getCustomFields' => [],
-                'getFieldLayout' => $this->make(FieldLayout::class, [
+                'getFieldLayout' => Stub::make(FieldLayout::class, [
                     'uid' => 'entrytype-fieldlayout-uid-1',
                     'getCustomFields' => [],
                 ]),
@@ -269,14 +268,14 @@ class InterfaceAndGeneratorTest extends TestCase
         ]);
 
         $typeBCustomFields = [
-            $this->make(PlainText::class, ['name' => 'Mock field', 'handle' => 'mockField']),
+            Stub::make(PlainText::class, ['name' => 'Mock field', 'handle' => 'mockField']),
         ];
-        $typeB = $this->make(EntryType::class, [
+        $typeB = Stub::make(EntryType::class, [
             'uid' => 'entrytype-uid-2',
             'handle' => 'mockType2',
             '__call' => fn($name) => match ($name) {
                 'getCustomFields' => $typeBCustomFields,
-                'getFieldLayout' => $this->make(FieldLayout::class, [
+                'getFieldLayout' => Stub::make(FieldLayout::class, [
                     'uid' => 'entrytype-fieldlayout-uid-2',
                     'getCustomFields' => $typeBCustomFields,
                 ]),
@@ -285,14 +284,14 @@ class InterfaceAndGeneratorTest extends TestCase
         ]);
 
         $typeCCustomFields = [
-            $this->make(PlainText::class, ['name' => 'Mock Field', 'handle' => 'mockField']),
+            Stub::make(PlainText::class, ['name' => 'Mock Field', 'handle' => 'mockField']),
         ];
-        $typeC = $this->make(EntryType::class, [
+        $typeC = Stub::make(EntryType::class, [
             'uid' => 'matrixEntry-uid-1',
             'handle' => 'mockMatrixEntry',
             '__call' => fn($name) => match ($name) {
                 'getCustomFields' => $typeCCustomFields,
-                'getFieldLayout' => $this->make(FieldLayout::class, [
+                'getFieldLayout' => Stub::make(FieldLayout::class, [
                     'uid' => 'entrytype-fieldlayout-uid-3',
                     'getCustomFields' => $typeCCustomFields,
                 ]),
@@ -300,7 +299,7 @@ class InterfaceAndGeneratorTest extends TestCase
             },
         ]);
 
-        $sectionA = $this->make(Section::class, [
+        $sectionA = Stub::make(Section::class, [
             'uid' => 'section-uid-1',
             'handle' => 'mockSection1',
             'getEntryTypes' => [
@@ -308,7 +307,7 @@ class InterfaceAndGeneratorTest extends TestCase
             ],
         ]);
 
-        $sectionB = $this->make(Section::class, [
+        $sectionB = Stub::make(Section::class, [
             'uid' => 'section-uid-2',
             'handle' => 'mockSection2',
             'getEntryTypes' => [
@@ -338,15 +337,15 @@ class InterfaceAndGeneratorTest extends TestCase
      * @return array
      * @throws Exception
      */
-    public function mockGlobalSets(): array
+    public static function mockGlobalSets(): array
     {
         return [
-            $this->make(GlobalSetElement::class, [
+            Stub::make(GlobalSetElement::class, [
                 'uid' => 'globalset-uid-1',
                 'handle' => 'mockGlobal',
                 '__call' => fn($name) => match ($name) {
                     'getCustomFields' => [
-                        $this->make(PlainText::class, ['name' => 'Mock Field', 'handle' => 'mockField']),
+                        Stub::make(PlainText::class, ['name' => 'Mock Field', 'handle' => 'mockField']),
                     ],
                     default => throw new UnknownMethodException("Calling unknown method: $name()"),
                 },
@@ -360,15 +359,15 @@ class InterfaceAndGeneratorTest extends TestCase
      * @return array
      * @throws Exception
      */
-    public function mockCategoryGroups(): array
+    public static function mockCategoryGroups(): array
     {
         return [
-            $this->make(CategoryGroup::class, [
+            Stub::make(CategoryGroup::class, [
                 'uid' => 'categoyGroup-uid-1',
                 'handle' => 'mockCategoryGroup',
                 '__call' => fn($name) => match ($name) {
                     'getCustomFields' => [
-                        $this->make(PlainText::class, ['name' => 'Mock Field', 'handle' => 'mockField']),
+                        Stub::make(PlainText::class, ['name' => 'Mock Field', 'handle' => 'mockField']),
                     ],
                     default => throw new UnknownMethodException("Calling unknown method: $name()"),
                 },
@@ -382,15 +381,15 @@ class InterfaceAndGeneratorTest extends TestCase
      * @return array
      * @throws Exception
      */
-    public function mockTagGroups(): array
+    public static function mockTagGroups(): array
     {
         return [
-            $this->make(TagGroup::class, [
+            Stub::make(TagGroup::class, [
                 'uid' => 'tagGroup-uid-1',
                 'handle' => 'mockTagGroup',
                 '__call' => fn($name) => match ($name) {
                     'getCustomFields' => [
-                        $this->make(PlainText::class, ['name' => 'Mock Field', 'handle' => 'mockField']),
+                        Stub::make(PlainText::class, ['name' => 'Mock Field', 'handle' => 'mockField']),
                     ],
                     default => throw new UnknownMethodException("Calling unknown method: $name()"),
                 },

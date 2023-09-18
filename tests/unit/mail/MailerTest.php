@@ -180,7 +180,7 @@ class MailerTest extends TestCase
     /**
      * @return array
      */
-    public function fromKeyCompositionDataProvider(): array
+    public static function fromKeyCompositionDataProvider(): array
     {
         return [
             ['account_activation', []],

@@ -48,9 +48,9 @@ class InputTypeTest extends TestCase
         }
 
         if ($isMulti) {
-            $this->assertInstanceOf(ListOfType::class, $type);
+            self::assertInstanceOf(ListOfType::class, $type);
         } else {
-            $this->assertNotInstanceOf(ListOfType::class, $type);
+            self::assertNotInstanceOf(ListOfType::class, $type);
         }
     }
 
@@ -83,7 +83,7 @@ class InputTypeTest extends TestCase
         self::assertEquals($normalized, Matrix::normalizeValue($input));
     }
 
-    public function matrixInputValueNormalizerDataProvider(): array
+    public static function matrixInputValueNormalizerDataProvider(): array
     {
         return [
             [
@@ -177,7 +177,7 @@ class InputTypeTest extends TestCase
         ];
     }
 
-    public function multipleOptionsDataProvider(): array
+    public static function multipleOptionsDataProvider(): array
     {
         return [
             [new RadioButtons(['handle' => 'someField']), false],

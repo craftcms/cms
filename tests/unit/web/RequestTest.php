@@ -391,7 +391,7 @@ class RequestTest extends TestCase
      *
      * @return array
      */
-    public function isMobileBrowserDataProvider(): array
+    public static function isMobileBrowserDataProvider(): array
     {
         return [
             [true, 'Mozilla/5.0 (Linux; Android 7.0; SM-G892A Build/NRD90M; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/60.0.3112.107 Mobile Safari/537.36'],
@@ -433,7 +433,7 @@ class RequestTest extends TestCase
     /**
      * @return array
      */
-    public function getUserIpDataProvider(): array
+    public static function getUserIpDataProvider(): array
     {
         return [
             ['123.123.123.123', 'Client-IP', '123.123.123.123'],
@@ -453,7 +453,7 @@ class RequestTest extends TestCase
     /**
      * @return array
      */
-    public function getClientOsDataProvider(): array
+    public static function getClientOsDataProvider(): array
     {
         return [
             ['Linux', 'Mozilla/5.0 (Linux; Android 6.0; HTC One X10 Build/MRA58K; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/61.0.3163.98 Mobile Safari/537.36'],
@@ -466,7 +466,7 @@ class RequestTest extends TestCase
     /**
      * @return array
      */
-    public function getParamDataProvider(): array
+    public static function getParamDataProvider(): array
     {
         return [
             [['param1', 'param2', 'param3'], null, ['param1', 'param2', 'param3'], null],
@@ -480,7 +480,7 @@ class RequestTest extends TestCase
     /**
      * @return array
      */
-    public function checkRequestSpecialPathDataProvider(): array
+    public static function checkRequestSpecialPathDataProvider(): array
     {
         return [
             ['login'],

@@ -458,7 +458,7 @@ class ArrayHelperTest extends TestCase
      */
     public function testGetValue(string $expected, array $array, string $key): void
     {
-        $this->assertSame($expected, ArrayHelper::getValue($array, $key));
+        self::assertSame($expected, ArrayHelper::getValue($array, $key));
     }
 
     /**
@@ -471,13 +471,13 @@ class ArrayHelperTest extends TestCase
     public function testRemoveValue(array $expected, array $array, mixed $value, bool $strict = false)
     {
         ArrayHelper::removeValue($array, $value, $strict);
-        $this->assertSame($expected, $array);
+        self::assertSame($expected, $array);
     }
 
     /**
      * @return array
      */
-    public function toArrayDataProvider(): array
+    public static function toArrayDataProvider(): array
     {
         $stdClass2 = new stdClass();
         $stdClass2->subProp = 'value';
@@ -498,7 +498,7 @@ class ArrayHelperTest extends TestCase
     /**
      * @return array
      */
-    public function prependDataProvider(): array
+    public static function prependDataProvider(): array
     {
         return [
             [[1, 2, 3, 4], [3, 4], [1, 2]],
@@ -509,7 +509,7 @@ class ArrayHelperTest extends TestCase
     /**
      * @return array
      */
-    public function appendDataProvider(): array
+    public static function appendDataProvider(): array
     {
         return [
             [[1, 2, 3, 4], [1, 2], [3, 4]],
@@ -520,7 +520,7 @@ class ArrayHelperTest extends TestCase
     /**
      * @return array
      */
-    public function prependOrAppendDataProvider(): array
+    public static function prependOrAppendDataProvider(): array
     {
         return [
             [[1, 2, 3, 4], [1, 2, 3], 4, false],
@@ -533,7 +533,7 @@ class ArrayHelperTest extends TestCase
     /**
      * @return array
      */
-    public function containsDataProvider(): array
+    public static function containsDataProvider(): array
     {
         return [
             [true, [['foo' => 1, 'bar' => 2]], 'foo'],
@@ -544,7 +544,7 @@ class ArrayHelperTest extends TestCase
     /**
      * @return array
      */
-    public function onlyContainsDataProvider(): array
+    public static function onlyContainsDataProvider(): array
     {
         return [
             [true, [['foo' => 1], ['foo' => 2]], 'foo'],
@@ -556,7 +556,7 @@ class ArrayHelperTest extends TestCase
     /**
      * @return array
      */
-    public function firstValueDataProvider(): array
+    public static function firstValueDataProvider(): array
     {
         $std = new stdClass();
         $std->a = '22';
@@ -570,7 +570,7 @@ class ArrayHelperTest extends TestCase
     /**
      * @return array
      */
-    public function renameDataProvider(): array
+    public static function renameDataProvider(): array
     {
         return [
             [['fizz' => 'plop', 'foo2' => 'bar'], ['foo' => 'bar', 'fizz' => 'plop'], 'foo', 'foo2'],
@@ -583,7 +583,7 @@ class ArrayHelperTest extends TestCase
     /**
      * @return array
      */
-    public function withoutDataProvider(): array
+    public static function withoutDataProvider(): array
     {
         return [
             [[], ['key' => 'value'], 'key'],
@@ -595,7 +595,7 @@ class ArrayHelperTest extends TestCase
     /**
      * @return array
      */
-    public function withoutValueDataProvider(): array
+    public static function withoutValueDataProvider(): array
     {
         return [
             [[], ['key' => 'value'], 'value'],
@@ -608,7 +608,7 @@ class ArrayHelperTest extends TestCase
     /**
      * @return array
      */
-    public function ensureNonAssociativeDataProvider(): array
+    public static function ensureNonAssociativeDataProvider(): array
     {
         return [
             [[1, 2, 3], ['a' => 1, 'b' => 2, 'c' => 3]],
@@ -618,7 +618,7 @@ class ArrayHelperTest extends TestCase
     /**
      * @return array
      */
-    public function isOrderedDataProvider(): array
+    public static function isOrderedDataProvider(): array
     {
         return [
             [true, ['a', 'b', 'c']],
@@ -632,7 +632,7 @@ class ArrayHelperTest extends TestCase
     /**
      * @return array
      */
-    public function isNumericDataProvider(): array
+    public static function isNumericDataProvider(): array
     {
         return [
             [true, [0, 1, 2, '3']],
@@ -640,7 +640,7 @@ class ArrayHelperTest extends TestCase
         ];
     }
 
-    public function getValueDataProvider(): array
+    public static function getValueDataProvider(): array
     {
         return [
             ['foo', ['foo' => 'foo'], 'foo'],
@@ -653,7 +653,7 @@ class ArrayHelperTest extends TestCase
         ];
     }
 
-    public function removeValueDataProvider(): array
+    public static function removeValueDataProvider(): array
     {
         $obj1 = (object)['foo' => true];
         $obj2 = (object)['bar' => true];
