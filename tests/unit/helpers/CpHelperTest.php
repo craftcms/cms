@@ -181,7 +181,7 @@ class CpHelperTest extends TestCase
     /**
      * @return array
      */
-    public function fieldMethodsDataProvider(): array
+    public static function fieldMethodsDataProvider(): array
     {
         return [
             ['type="checkbox"', 'checkboxFieldHtml'],

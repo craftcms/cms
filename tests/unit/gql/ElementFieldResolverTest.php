@@ -346,7 +346,7 @@ class ElementFieldResolverTest extends TestCase
         }
     }
 
-    public function entryFieldTestDataProvider(): array
+    public static function entryFieldTestDataProvider(): array
     {
         return [
             // Entries
@@ -368,7 +368,7 @@ class ElementFieldResolverTest extends TestCase
         ];
     }
 
-    public function assetFieldTestDataProvider(): array
+    public static function assetFieldTestDataProvider(): array
     {
         return [
             [AssetGqlType::class, 'missingProperty', false],
@@ -377,7 +377,7 @@ class ElementFieldResolverTest extends TestCase
         ];
     }
 
-    public function globalSetFieldTestDataProvider(): array
+    public static function globalSetFieldTestDataProvider(): array
     {
         return [
             [GlobalSetGqlType::class, 'missingProperty', false],
@@ -386,7 +386,7 @@ class ElementFieldResolverTest extends TestCase
         ];
     }
 
-    public function categoryFieldTestDataProvider(): array
+    public static function categoryFieldTestDataProvider(): array
     {
         return [
             [CategoryGqlType::class, 'missingProperty', false],
@@ -399,7 +399,7 @@ class ElementFieldResolverTest extends TestCase
         ];
     }
 
-    public function tagFieldTestDataProvider(): array
+    public static function tagFieldTestDataProvider(): array
     {
         return [
             [TagGqlType::class, 'missingProperty', false],
@@ -412,7 +412,7 @@ class ElementFieldResolverTest extends TestCase
         ];
     }
 
-    public function matrixEntryFieldTestDataProvider(): array
+    public static function matrixEntryFieldTestDataProvider(): array
     {
         return [
             [EntryGqlType::class, 'missingProperty', false],
@@ -429,7 +429,7 @@ class ElementFieldResolverTest extends TestCase
         ];
     }
 
-    public function userFieldTestDataProvider(): array
+    public static function userFieldTestDataProvider(): array
     {
         return [
             [UserGqlType::class, 'missingProperty', false],
@@ -443,7 +443,7 @@ class ElementFieldResolverTest extends TestCase
         ];
     }
 
-    public function assetTransformDataProvider(): array
+    public static function assetTransformDataProvider(): array
     {
         return [
             [['width' => 200, 'height' => 200], ['width' => 200, 'height' => 200]],

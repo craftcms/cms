@@ -46,7 +46,7 @@ class DateCreatedConditionRuleTest extends TestCase
         }
     }
 
-    public function setAttributesDataProvider(): array
+    public static function setAttributesDataProvider(): array
     {
         return [
             [
@@ -96,7 +96,7 @@ class DateCreatedConditionRuleTest extends TestCase
     /**
      * @return array
      */
-    public function queryParamValueDataProvider(): array
+    public static function queryParamValueDataProvider(): array
     {
         $startDate = DateTimeHelper::now()->sub(new DateInterval('P1D'));
         $endDate = DateTimeHelper::now()->add(new DateInterval('P1D'));

@@ -30,7 +30,7 @@ class JsonHelperTest extends TestCase
         self::assertSame($expected, Json::decodeIfJson($str));
     }
 
-    public function decodeIfJsonDataProvider(): array
+    public static function decodeIfJsonDataProvider(): array
     {
         $basicArray = [
             'WHAT DO WE WANT' => 'JSON',
@@ -53,7 +53,7 @@ class JsonHelperTest extends TestCase
         self::assertSame($expected, Json::isJsonObject($str));
     }
 
-    public function isJsonObjectDataProvider(): array
+    public static function isJsonObjectDataProvider(): array
     {
         return [
             [true, '{"foo":true}'],

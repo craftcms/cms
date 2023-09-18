@@ -46,7 +46,7 @@ class HtmlPurifierTest extends TestCase
     /**
      * @return array
      */
-    public function cleanUtf8DataProvider(): array
+    public static function cleanUtf8DataProvider(): array
     {
         // https://github.com/ezyang/htmlpurifier/blob/master/tests/HTMLPurifier/EncoderTest.php#L21
         return [

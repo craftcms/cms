@@ -545,7 +545,7 @@ class StringHelperTest extends TestCase
     }
 
     /**
-     * @dataProvider insertDataProvider()
+     * @dataProvider insertDataProvider
      * @param string $expected
      * @param string $string
      * @param string $substring
@@ -558,7 +558,7 @@ class StringHelperTest extends TestCase
     }
 
     /**
-     * @dataProvider isDataProvider()
+     * @dataProvider isDataProvider
      * @param bool $expected
      * @param string $string
      * @param string $pattern
@@ -570,7 +570,7 @@ class StringHelperTest extends TestCase
     }
 
     /**
-     * @dataProvider isAlphaDataProvider()
+     * @dataProvider isAlphaDataProvider
      * @param bool $expected
      * @param string $string
      */
@@ -581,7 +581,7 @@ class StringHelperTest extends TestCase
     }
 
     /**
-     * @dataProvider isAlphanumericDataProvider()
+     * @dataProvider isAlphanumericDataProvider
      * @param bool $expected
      * @param string $string
      */
@@ -592,7 +592,7 @@ class StringHelperTest extends TestCase
     }
 
     /**
-     * @dataProvider isBase64DataProvider()
+     * @dataProvider isBase64DataProvider
      * @param bool $expected
      * @param string $string
      */
@@ -603,7 +603,7 @@ class StringHelperTest extends TestCase
     }
 
     /**
-     * @dataProvider isBlankDataProvider()
+     * @dataProvider isBlankDataProvider
      * @param bool $expected
      * @param string $string
      */
@@ -1287,7 +1287,7 @@ class StringHelperTest extends TestCase
     }
 
     /**
-     * @dataProvider titleizeForHumansDataProvider()
+     * @dataProvider titleizeForHumansDataProvider
      * @param string $expected
      * @param string $string
      * @param string[] $ignore
@@ -1599,7 +1599,7 @@ class StringHelperTest extends TestCase
     /**
      * @return array
      */
-    public function substrDataDataProvider(): array
+    public static function substrDataDataProvider(): array
     {
         return [
             ['st s', 'test s 2 s zw 2', 2, 4],
@@ -1618,7 +1618,7 @@ class StringHelperTest extends TestCase
     /**
      * @return array
      */
-    public function swapCaseDataDataProvider(): array
+    public static function swapCaseDataDataProvider(): array
     {
         return [
             ['TEST S 2 S ZW 2', 'test s 2 s zw 2'],
@@ -1637,7 +1637,7 @@ class StringHelperTest extends TestCase
     /**
      * @return array
      */
-    public function toTitleCaseDataProvider(): array
+    public static function toTitleCaseDataProvider(): array
     {
         return [
             ['Test S 2 S Zw 2', 'test s 2 s zw 2'],
@@ -1656,7 +1656,7 @@ class StringHelperTest extends TestCase
     /**
      * @return array
      */
-    public function toLowerCaseDataProvider(): array
+    public static function toLowerCaseDataProvider(): array
     {
         return [
             ['test s 2 s zw 2', 'test s 2 s zw 2'],
@@ -1675,7 +1675,7 @@ class StringHelperTest extends TestCase
     /**
      * @return array
      */
-    public function indexOfDataProvider(): array
+    public static function indexOfDataProvider(): array
     {
         return [
             [6, 'foo & bar', 'Bar', 0, false],
@@ -1704,7 +1704,7 @@ class StringHelperTest extends TestCase
     /**
      * @return array
      */
-    public function camelCaseDataProvider(): array
+    public static function camelCaseDataProvider(): array
     {
         return [
             ['craftCms', 'Craft Cms'],
@@ -1720,7 +1720,7 @@ class StringHelperTest extends TestCase
     /**
      * @return array
      */
-    public function endsWithDataProvider(): array
+    public static function endsWithDataProvider(): array
     {
         return [
             [true, 'thisisastring a', 'a'],
@@ -1739,7 +1739,7 @@ class StringHelperTest extends TestCase
     /**
      * @return array
      */
-    public function uppercaseFirstDataProvider(): array
+    public static function uppercaseFirstDataProvider(): array
     {
         return [
             ['Craftcms', 'craftcms'],
@@ -1753,7 +1753,7 @@ class StringHelperTest extends TestCase
      * @return array
      * @throws \Exception
      */
-    public function uuidDataProvider(): array
+    public static function uuidDataProvider(): array
     {
         return [
             [true, StringHelper::UUID()],
@@ -1775,7 +1775,7 @@ class StringHelperTest extends TestCase
     /**
      * @return array
      */
-    public function stripHtmlDataProvider(): array
+    public static function stripHtmlDataProvider(): array
     {
         return [
             ['hello', '<p>hello</p>'],
@@ -1790,7 +1790,7 @@ class StringHelperTest extends TestCase
     /**
      * @return array
      */
-    public function firstDataProvider(): array
+    public static function firstDataProvider(): array
     {
         return [
             ['', '', 1],
@@ -1805,7 +1805,7 @@ class StringHelperTest extends TestCase
     /**
      * @return array
      */
-    public function toAsciiDataProvider(): array
+    public static function toAsciiDataProvider(): array
     {
         return [
             ['', ''],
@@ -1821,7 +1821,7 @@ class StringHelperTest extends TestCase
     /**
      * @return array
      */
-    public function charsAsArrayDataProvider(): array
+    public static function charsAsArrayDataProvider(): array
     {
         return [
             [[], ''],
@@ -1835,7 +1835,7 @@ class StringHelperTest extends TestCase
     /**
      * @return array
      */
-    public function mb4DataProvider(): array
+    public static function mb4DataProvider(): array
     {
         return [
             [true, '😀😘'],
@@ -1853,7 +1853,7 @@ class StringHelperTest extends TestCase
     /**
      * @return array
      */
-    public function snakeCaseDataProvider(): array
+    public static function snakeCaseDataProvider(): array
     {
         return [
             ['c_r_a_f_t_c_m_s', 'CRAFT CMS'],
@@ -1867,7 +1867,7 @@ class StringHelperTest extends TestCase
     /**
      * @return array
      */
-    public function delimitDataProvider(): array
+    public static function delimitDataProvider(): array
     {
         return [
             ['', '    ', '|'],
@@ -1884,7 +1884,7 @@ class StringHelperTest extends TestCase
     /**
      * @return array
      */
-    public function splitDataProvider(): array
+    public static function splitDataProvider(): array
     {
         return [
             [['22', '23'], '22, 23'],
@@ -1900,7 +1900,7 @@ class StringHelperTest extends TestCase
     /**
      * @return array
      */
-    public function whitespaceDataProvider(): array
+    public static function whitespaceDataProvider(): array
     {
         return [
             [true, ''],
@@ -1920,7 +1920,7 @@ class StringHelperTest extends TestCase
     /**
      * @return array
      */
-    public function collapseWhitespaceDataProvider(): array
+    public static function collapseWhitespaceDataProvider(): array
     {
         return [
             ['', '  '],
@@ -1936,7 +1936,7 @@ class StringHelperTest extends TestCase
     /**
      * @return array
      */
-    public function randomStringWithCharsDataProvider(): array
+    public static function randomStringWithCharsDataProvider(): array
     {
         return [
             ['asdfghjklxcvbnmqwertyuiop', 10],
@@ -1952,7 +1952,7 @@ class StringHelperTest extends TestCase
     /**
      * @return array
      */
-    public function mb4EncodingDataProvider(): array
+    public static function mb4EncodingDataProvider(): array
     {
         return [
             ['&#x1f525;', '🔥'],
@@ -1968,7 +1968,7 @@ class StringHelperTest extends TestCase
     /**
      * @return array
      */
-    public function convertToUtf8DataProvider(): array
+    public static function convertToUtf8DataProvider(): array
     {
         return [
             ['κόσμε', 'κόσμε'],
@@ -1983,7 +1983,7 @@ class StringHelperTest extends TestCase
     /**
      * @return array
      */
-    public function encDecDataProvider(): array
+    public static function encDecDataProvider(): array
     {
         return [
             ['1234567890asdfghjkl'],
@@ -1995,7 +1995,7 @@ class StringHelperTest extends TestCase
     /**
      * @return array
      */
-    public function afterFirstDataProvider(): array
+    public static function afterFirstDataProvider(): array
     {
         return [
             ['', '', 'b', true],
@@ -2030,7 +2030,7 @@ class StringHelperTest extends TestCase
     /**
      * @return array
      */
-    public function afterLastDataProvider(): array
+    public static function afterLastDataProvider(): array
     {
         return [
             ['', '', 'b', true],
@@ -2062,7 +2062,7 @@ class StringHelperTest extends TestCase
     /**
      * @return array
      */
-    public function toStringDataProvider(): array
+    public static function toStringDataProvider(): array
     {
         return [
             ['test', 'test'],
@@ -2077,7 +2077,7 @@ class StringHelperTest extends TestCase
     /**
      * @return array
      */
-    public function randomStringDataProvider(): array
+    public static function randomStringDataProvider(): array
     {
         return [
             [],
@@ -2089,7 +2089,7 @@ class StringHelperTest extends TestCase
     /**
      * @return array
      */
-    public function toPascalCaseDataProvider(): array
+    public static function toPascalCaseDataProvider(): array
     {
         return [
             ['TestS2SZw2', 'test s 2 s zw 2'],
@@ -2108,7 +2108,7 @@ class StringHelperTest extends TestCase
     /**
      * @return array
      */
-    public function toCamelCaseDataProvider(): array
+    public static function toCamelCaseDataProvider(): array
     {
         return [
             ['testS2SZw2', 'test s 2 s zw 2'],
@@ -2127,7 +2127,7 @@ class StringHelperTest extends TestCase
     /**
      * @return array
      */
-    public function toKebabCaseDataProvider(): array
+    public static function toKebabCaseDataProvider(): array
     {
         return [
             ['test-s-2-s-zw-2', 'test s 2 s zw 2'],
@@ -2147,7 +2147,7 @@ class StringHelperTest extends TestCase
     /**
      * @return array
      */
-    public function linesDataProvider(): array
+    public static function linesDataProvider(): array
     {
         return [
             [
@@ -2181,7 +2181,7 @@ class StringHelperTest extends TestCase
     /**
      * @return array
      */
-    public function toUppercaseDataProvider(): array
+    public static function toUppercaseDataProvider(): array
     {
         return [
             ['TEST S 2 S ZW 2', 'test s 2 s zw 2'],
@@ -2200,7 +2200,7 @@ class StringHelperTest extends TestCase
     /**
      * @return array
      */
-    public function toHandleDataProvider(): array
+    public static function toHandleDataProvider(): array
     {
         return [
             ['foo', 'FOO'],
@@ -2214,7 +2214,7 @@ class StringHelperTest extends TestCase
     /**
      * @return array
      */
-    public function trimDataProvider(): array
+    public static function trimDataProvider(): array
     {
         return [
             ['😂 😁', '😂 😁 '],
@@ -2229,7 +2229,7 @@ class StringHelperTest extends TestCase
     /**
      * @return array
      */
-    public function appendDataProvider(): array
+    public static function appendDataProvider(): array
     {
         return [
             ['foobar', 'foo', 'bar'],
@@ -2240,7 +2240,7 @@ class StringHelperTest extends TestCase
     /**
      * @return array
      */
-    public function atDataProvider(): array
+    public static function atDataProvider(): array
     {
         return [
             ['f', 'foo bar', 0],
@@ -2257,7 +2257,7 @@ class StringHelperTest extends TestCase
     /**
      * @return array
      */
-    public function betweenDataProvider(): array
+    public static function betweenDataProvider(): array
     {
         return [
             ['', 'foo', '{', '}'],
@@ -2282,7 +2282,7 @@ class StringHelperTest extends TestCase
     /**
      * @return array
      */
-    public function camelizeDataProvider(): array
+    public static function camelizeDataProvider(): array
     {
         return [
             ['camelCase', 'CamelCase'],
@@ -2310,7 +2310,7 @@ class StringHelperTest extends TestCase
     /**
      * @return array
      */
-    public function capitalizePersonalNameDataProvider(): array
+    public static function capitalizePersonalNameDataProvider(): array
     {
         return [
             ['Marcus Aurelius', 'marcus aurelius'],
@@ -2362,7 +2362,7 @@ class StringHelperTest extends TestCase
     /**
      * @return array
      */
-    public function charsDataProvider(): array
+    public static function charsDataProvider(): array
     {
         return [
             [[], ''],
@@ -2374,7 +2374,7 @@ class StringHelperTest extends TestCase
     /**
      * @return array
      */
-    public function containsAllDataProvider(): array
+    public static function containsAllDataProvider(): array
     {
         // One needle
         $singleNeedle = array_map(
@@ -2382,7 +2382,7 @@ class StringHelperTest extends TestCase
                 $array[2] = [$array[2]];
                 return $array;
             },
-            $this->containsDataProvider()
+            static::containsDataProvider()
         );
         $provider = [
             // One needle
@@ -2417,7 +2417,7 @@ class StringHelperTest extends TestCase
     /**
      * @return array
      */
-    public function containsAnyDataProvider(): array
+    public static function containsAnyDataProvider(): array
     {
         // One needle
         $singleNeedle = array_map(
@@ -2427,7 +2427,7 @@ class StringHelperTest extends TestCase
                 return $array;
             },
 
-            $this->containsDataProvider()
+            static::containsDataProvider()
         );
 
         $provider = [
@@ -2463,7 +2463,7 @@ class StringHelperTest extends TestCase
     /**
      * @return array
      */
-    public function containsDataProvider(): array
+    public static function containsDataProvider(): array
     {
         return [
             [true, 'Str contains foo bar', 'foo bar'],
@@ -2493,7 +2493,7 @@ class StringHelperTest extends TestCase
     /**
      * @return array
      */
-    public function countSubstrDataProvider(): array
+    public static function countSubstrDataProvider(): array
     {
         return [
             [0, '', 'foo'],
@@ -2517,7 +2517,7 @@ class StringHelperTest extends TestCase
     /**
      * @return array
      */
-    public function dasherizeDataProvider(): array
+    public static function dasherizeDataProvider(): array
     {
         return [
             ['test-case', 'testCase'],
@@ -2545,7 +2545,7 @@ class StringHelperTest extends TestCase
     /**
      * @return array
      */
-    public function endsWithAnyDataProvider(): array
+    public static function endsWithAnyDataProvider(): array
     {
         return [
             [true, 'foo bars', ['foo', 'o bars']],
@@ -2565,7 +2565,7 @@ class StringHelperTest extends TestCase
     /**
      * @return array
      */
-    public function ensureLeftDataProvider(): array
+    public static function ensureLeftDataProvider(): array
     {
         return [
             ['foobar', 'foobar', 'f'],
@@ -2584,7 +2584,7 @@ class StringHelperTest extends TestCase
     /**
      * @return array
      */
-    public function ensureRightDataProvider(): array
+    public static function ensureRightDataProvider(): array
     {
         return [
             ['foobar', 'foobar', 'r'],
@@ -2603,7 +2603,7 @@ class StringHelperTest extends TestCase
     /**
      * @return array
      */
-    public function escapeDataProvider(): array
+    public static function escapeDataProvider(): array
     {
         return [
             ['', ''],
@@ -2618,7 +2618,7 @@ class StringHelperTest extends TestCase
     /**
      * @return array
      */
-    public function hasLowerCaseDataProvider(): array
+    public static function hasLowerCaseDataProvider(): array
     {
         return [
             [false, ''],
@@ -2639,7 +2639,7 @@ class StringHelperTest extends TestCase
     /**
      * @return array
      */
-    public function hasUpperCaseDataProvider(): array
+    public static function hasUpperCaseDataProvider(): array
     {
         return [
             [false, ''],
@@ -2660,7 +2660,7 @@ class StringHelperTest extends TestCase
     /**
      * @return array
      */
-    public function htmlDecodeDataProvider(): array
+    public static function htmlDecodeDataProvider(): array
     {
         return [
             ['&', '&amp;'],
@@ -2674,7 +2674,7 @@ class StringHelperTest extends TestCase
     /**
      * @return array
      */
-    public function htmlEncodeDataProvider(): array
+    public static function htmlEncodeDataProvider(): array
     {
         return [
             ['&amp;', '&'],
@@ -2688,7 +2688,7 @@ class StringHelperTest extends TestCase
     /**
      * @return array
      */
-    public function humanizeDataProvider(): array
+    public static function humanizeDataProvider(): array
     {
         return [
             ['Author', 'author_id'],
@@ -2700,7 +2700,7 @@ class StringHelperTest extends TestCase
     /**
      * @return array
      */
-    public function indexOfLastDataProvider(): array
+    public static function indexOfLastDataProvider(): array
     {
         return [
             [6, 'foo & bar', 'bar', 0, true],
@@ -2729,7 +2729,7 @@ class StringHelperTest extends TestCase
     /**
      * @return array
      */
-    public function insertDataProvider(): array
+    public static function insertDataProvider(): array
     {
         return [
             ['foo bar', 'oo bar', 'f', 0],
@@ -2746,7 +2746,7 @@ class StringHelperTest extends TestCase
     /**
      * @return array
      */
-    public function isAlphaDataProvider(): array
+    public static function isAlphaDataProvider(): array
     {
         return [
             [true, ''],
@@ -2765,7 +2765,7 @@ class StringHelperTest extends TestCase
     /**
      * @return array
      */
-    public function isAlphanumericDataProvider(): array
+    public static function isAlphanumericDataProvider(): array
     {
         return [
             [true, ''],
@@ -2787,7 +2787,7 @@ class StringHelperTest extends TestCase
     /**
      * @return array
      */
-    public function isBase64DataProvider(): array
+    public static function isBase64DataProvider(): array
     {
         return [
             [false, ' '],
@@ -2802,7 +2802,7 @@ class StringHelperTest extends TestCase
     /**
      * @return array
      */
-    public function isBlankDataProvider(): array
+    public static function isBlankDataProvider(): array
     {
         return [
             [true, ''],
@@ -2826,7 +2826,7 @@ class StringHelperTest extends TestCase
     /**
      * @return array
      */
-    public function isHexadecimalDataProvider(): array
+    public static function isHexadecimalDataProvider(): array
     {
         return [
             [true, ''],
@@ -2848,7 +2848,7 @@ class StringHelperTest extends TestCase
     /**
      * @return array
      */
-    public function isJsonDataProvider(): array
+    public static function isJsonDataProvider(): array
     {
         return [
             [false, '', true],
@@ -2877,7 +2877,7 @@ class StringHelperTest extends TestCase
     /**
      * @return array
      */
-    public function isLowerCaseDataProvider(): array
+    public static function isLowerCaseDataProvider(): array
     {
         return [
             [true, ''],
@@ -2894,7 +2894,7 @@ class StringHelperTest extends TestCase
     /**
      * @return array
      */
-    public function isDataProvider(): array
+    public static function isDataProvider(): array
     {
         return [
             [true, 'Gears\\String\\Str', 'Gears\\String\\Str'],
@@ -2916,7 +2916,7 @@ class StringHelperTest extends TestCase
     /**
      * @return array
      */
-    public function isSerializedDataProvider(): array
+    public static function isSerializedDataProvider(): array
     {
         return [
             [false, ''],
@@ -2932,7 +2932,7 @@ class StringHelperTest extends TestCase
     /**
      * @return array
      */
-    public function isUpperCaseDataProvider(): array
+    public static function isUpperCaseDataProvider(): array
     {
         return [
             [true, ''],
@@ -2949,7 +2949,7 @@ class StringHelperTest extends TestCase
     /**
      * @return array
      */
-    public function lastDataProvider(): array
+    public static function lastDataProvider(): array
     {
         return [
             ['', 'foo bar', -5],
@@ -2970,7 +2970,7 @@ class StringHelperTest extends TestCase
     /**
      * @return array
      */
-    public function lengthDataProvider(): array
+    public static function lengthDataProvider(): array
     {
         return [
             [11, '  foo bar  '],
@@ -2983,7 +2983,7 @@ class StringHelperTest extends TestCase
     /**
      * @return array
      */
-    public function longestCommonPrefixDataProvider(): array
+    public static function longestCommonPrefixDataProvider(): array
     {
         return [
             ['foo', 'foobar', 'foo bar'],
@@ -3002,7 +3002,7 @@ class StringHelperTest extends TestCase
     /**
      * @return array
      */
-    public function longestCommonSubstringDataProvider(): array
+    public static function longestCommonSubstringDataProvider(): array
     {
         return [
             ['foo', 'foobar', 'foo bar'],
@@ -3021,7 +3021,7 @@ class StringHelperTest extends TestCase
     /**
      * @return array
      */
-    public function longestCommonSuffixDataProvider(): array
+    public static function longestCommonSuffixDataProvider(): array
     {
         return [
             ['bar', 'foobar', 'foo bar'],
@@ -3040,7 +3040,7 @@ class StringHelperTest extends TestCase
     /**
      * @return array
      */
-    public function lowerCaseFirstDataProvider(): array
+    public static function lowerCaseFirstDataProvider(): array
     {
         return [
             ['test', 'Test'],
@@ -3054,7 +3054,7 @@ class StringHelperTest extends TestCase
     /**
      * @return array
      */
-    public function offsetExistsDataProvider(): array
+    public static function offsetExistsDataProvider(): array
     {
         return [
             [true, 0],
@@ -3069,7 +3069,7 @@ class StringHelperTest extends TestCase
     /**
      * @return array
      */
-    public function padBothDataProvider(): array
+    public static function padBothDataProvider(): array
     {
         return [
             ['foo bar ', 'foo bar', 8],
@@ -3089,7 +3089,7 @@ class StringHelperTest extends TestCase
     /**
      * @return array
      */
-    public function padLeftDataProvider(): array
+    public static function padLeftDataProvider(): array
     {
         return [
             ['  foo bar', 'foo bar', 9],
@@ -3105,7 +3105,7 @@ class StringHelperTest extends TestCase
     /**
      * @return array
      */
-    public function padDataProvider(): array
+    public static function padDataProvider(): array
     {
         return [
             // length <= str
@@ -3133,7 +3133,7 @@ class StringHelperTest extends TestCase
     /**
      * @return array
      */
-    public function padRightDataProvider(): array
+    public static function padRightDataProvider(): array
     {
         return [
             ['foo bar  ', 'foo bar', 9],
@@ -3149,7 +3149,7 @@ class StringHelperTest extends TestCase
     /**
      * @return array
      */
-    public function prependDataProvider(): array
+    public static function prependDataProvider(): array
     {
         return [
             ['foobar', 'bar', 'foo'],
@@ -3160,7 +3160,7 @@ class StringHelperTest extends TestCase
     /**
      * @return array
      */
-    public function regexReplaceDataProvider(): array
+    public static function regexReplaceDataProvider(): array
     {
         return [
             ['', '', '', ''],
@@ -3178,7 +3178,7 @@ class StringHelperTest extends TestCase
     /**
      * @return array
      */
-    public function removeHtmlBreakDataProvider(): array
+    public static function removeHtmlBreakDataProvider(): array
     {
         return [
             ['', ''],
@@ -3197,7 +3197,7 @@ class StringHelperTest extends TestCase
     /**
      * @return array
      */
-    public function removeHtmlDataProvider(): array
+    public static function removeHtmlDataProvider(): array
     {
         return [
             ['', ''],
@@ -3212,7 +3212,7 @@ class StringHelperTest extends TestCase
     /**
      * @return array
      */
-    public function removeLeftDataProvider(): array
+    public static function removeLeftDataProvider(): array
     {
         return [
             ['foo bar', 'foo bar', ''],
@@ -3233,7 +3233,7 @@ class StringHelperTest extends TestCase
     /**
      * @return array
      */
-    public function removeRightDataProvider(): array
+    public static function removeRightDataProvider(): array
     {
         return [
             ['foo bar', 'foo bar', ''],
@@ -3254,7 +3254,7 @@ class StringHelperTest extends TestCase
     /**
      * @return array
      */
-    public function removeXssDataProvider(): array
+    public static function removeXssDataProvider(): array
     {
         return [
             ['', ''],
@@ -3275,7 +3275,7 @@ class StringHelperTest extends TestCase
     /**
      * @return array
      */
-    public function emptyDataProvider(): array
+    public static function emptyDataProvider(): array
     {
         return [
             [true, ''],
@@ -3301,7 +3301,7 @@ class StringHelperTest extends TestCase
     /**
      * @return array
      */
-    public function repeatDataProvider(): array
+    public static function repeatDataProvider(): array
     {
         return [
             ['', 'foo', 0],
@@ -3317,7 +3317,7 @@ class StringHelperTest extends TestCase
     /**
      * @return array
      */
-    public function replaceAllDataProvider(): array
+    public static function replaceAllDataProvider(): array
     {
         return [
             ['', '', [], '', true],
@@ -3351,7 +3351,7 @@ class StringHelperTest extends TestCase
     /**
      * @return array
      */
-    public function replaceBeginningDataProvider(): array
+    public static function replaceBeginningDataProvider(): array
     {
         return [
             ['', '', '', ''],
@@ -3376,7 +3376,7 @@ class StringHelperTest extends TestCase
     /**
      * @return array
      */
-    public function replaceFirstDataProvider(): array
+    public static function replaceFirstDataProvider(): array
     {
         return [
             ['', '', '', ''],
@@ -3401,7 +3401,7 @@ class StringHelperTest extends TestCase
     /**
      * @return array
      */
-    public function replaceLastDataProvider(): array
+    public static function replaceLastDataProvider(): array
     {
         return [
             ['', '', '', ''],
@@ -3425,7 +3425,7 @@ class StringHelperTest extends TestCase
     /**
      * @return array
      */
-    public function replaceEndingDataProvider(): array
+    public static function replaceEndingDataProvider(): array
     {
         return [
             ['', '', '', ''],
@@ -3450,7 +3450,7 @@ class StringHelperTest extends TestCase
     /**
      * @return array
      */
-    public function replaceDataProvider(): array
+    public static function replaceDataProvider(): array
     {
         return [
             ['', '', '', ''],
@@ -3487,7 +3487,7 @@ class StringHelperTest extends TestCase
     /**
      * @return array
      */
-    public function reverseDataProvider(): array
+    public static function reverseDataProvider(): array
     {
         return [
             ['', ''],
@@ -3501,7 +3501,7 @@ class StringHelperTest extends TestCase
     /**
      * @return array
      */
-    public function safeTruncateDataProvider(): array
+    public static function safeTruncateDataProvider(): array
     {
         return [
             ['Test foo bar', 'Test foo bar', 12],
@@ -3531,7 +3531,7 @@ class StringHelperTest extends TestCase
     /**
      * @return array
      */
-    public function shortenAfterWordDataProvider(): array
+    public static function shortenAfterWordDataProvider(): array
     {
         return [
             ['this...', 'this is a test', 5, '...'],
@@ -3544,7 +3544,7 @@ class StringHelperTest extends TestCase
     /**
      * @return array
      */
-    public function shuffleDataProvider(): array
+    public static function shuffleDataProvider(): array
     {
         return [
             ['foo bar'],
@@ -3556,7 +3556,7 @@ class StringHelperTest extends TestCase
     /**
      * @return array
      */
-    public function sliceDataProvider(): array
+    public static function sliceDataProvider(): array
     {
         return [
             ['foobar', 'foobar', 0],
@@ -3581,7 +3581,7 @@ class StringHelperTest extends TestCase
     /**
      * @return array
      */
-    public function slugifyDataProvider(): array
+    public static function slugifyDataProvider(): array
     {
         return [
             ['foo-bar', 'foo bar'],
@@ -3591,7 +3591,7 @@ class StringHelperTest extends TestCase
     /**
      * @return array
      */
-    public function snakeizeDataProvider(): array
+    public static function snakeizeDataProvider(): array
     {
         return [
             ['snake_case', 'SnakeCase'],
@@ -3620,7 +3620,7 @@ class StringHelperTest extends TestCase
     /**
      * @return array
      */
-    public function startsWithDataProvider(): array
+    public static function startsWithDataProvider(): array
     {
         return [
             [true, 'foo bars', 'foo bar'],
@@ -3640,7 +3640,7 @@ class StringHelperTest extends TestCase
     /**
      * @return array
      */
-    public function startsWithAnyDataProvider(): array
+    public static function startsWithAnyDataProvider(): array
     {
         return [
             [true, 'foo bars', ['foo bar']],
@@ -3661,7 +3661,7 @@ class StringHelperTest extends TestCase
     /**
      * @return array
      */
-    public function stripWhitespaceDataProvider(): array
+    public static function stripWhitespaceDataProvider(): array
     {
         return [
             ['foobar', '  foo   bar  '],
@@ -3682,7 +3682,7 @@ class StringHelperTest extends TestCase
     /**
      * @return array
      */
-    public function substrDataProvider(): array
+    public static function substrDataProvider(): array
     {
         return [
             ['foo bar', 'foo bar', 0],
@@ -3700,7 +3700,7 @@ class StringHelperTest extends TestCase
     /**
      * @return array
      */
-    public function surroundDataProvider(): array
+    public static function surroundDataProvider(): array
     {
         return [
             ['__foobar__', 'foobar', '__'],
@@ -3714,7 +3714,7 @@ class StringHelperTest extends TestCase
     /**
      * @return array
      */
-    public function swapCaseDataProvider(): array
+    public static function swapCaseDataProvider(): array
     {
         return [
             ['TESTcASE', 'testCase'],
@@ -3727,7 +3727,7 @@ class StringHelperTest extends TestCase
     /**
      * @return array
      */
-    public function tidyDataProvider(): array
+    public static function tidyDataProvider(): array
     {
         return [
             ['"I see..."', '“I see…”'],
@@ -3740,7 +3740,7 @@ class StringHelperTest extends TestCase
     /**
      * @return array
      */
-    public function titleizeDataProvider(): array
+    public static function titleizeDataProvider(): array
     {
         $ignore = ['at', 'by', 'for', 'in', 'of', 'on', 'out', 'to', 'the'];
 
@@ -3756,7 +3756,7 @@ class StringHelperTest extends TestCase
     /**
      * @return array
      */
-    public function toTransliterateDataProvider(): array
+    public static function toTransliterateDataProvider(): array
     {
         return [
             ['foo bar', 'fòô bàř'],
@@ -3781,7 +3781,7 @@ class StringHelperTest extends TestCase
     /**
      * @return array
      */
-    public function toBooleanDataProvider(): array
+    public static function toBooleanDataProvider(): array
     {
         return [
             [true, 'true'],
@@ -3805,7 +3805,7 @@ class StringHelperTest extends TestCase
     /**
      * @return array
      */
-    public function toSpacesDataProvider(): array
+    public static function toSpacesDataProvider(): array
     {
         return [
             ['    foo    bar    ', '	foo	bar	'],
@@ -3820,7 +3820,7 @@ class StringHelperTest extends TestCase
     /**
      * @return array
      */
-    public function toTabsDataProvider(): array
+    public static function toTabsDataProvider(): array
     {
         return [
             ['	foo	bar	', '    foo    bar    '],
@@ -3834,7 +3834,7 @@ class StringHelperTest extends TestCase
     /**
      * @return array
      */
-    public function trimLeftDataProvider(): array
+    public static function trimLeftDataProvider(): array
     {
         return [
             ['foo   bar  ', '  foo   bar  '],
@@ -3856,7 +3856,7 @@ class StringHelperTest extends TestCase
     /**
      * @return array
      */
-    public function trimRightDataProvider(): array
+    public static function trimRightDataProvider(): array
     {
         return [
             ['  foo   bar', '  foo   bar  '],
@@ -3878,7 +3878,7 @@ class StringHelperTest extends TestCase
     /**
      * @return array
      */
-    public function truncateDataProvider(): array
+    public static function truncateDataProvider(): array
     {
         return [
             ['Test foo bar', 'Test foo bar', 12],
@@ -3909,7 +3909,7 @@ class StringHelperTest extends TestCase
     /**
      * @return array
      */
-    public function underscoredDataProvider(): array
+    public static function underscoredDataProvider(): array
     {
         return [
             ['test_case', 'testCase'],
@@ -3934,7 +3934,7 @@ class StringHelperTest extends TestCase
     /**
      * @return array
      */
-    public function upperCamelizeDataProvider(): array
+    public static function upperCamelizeDataProvider(): array
     {
         return [
             ['CamelCase', 'camelCase'],
@@ -3956,7 +3956,7 @@ class StringHelperTest extends TestCase
     /**
      * @return array
      */
-    public function strBeginsDataProvider(): array
+    public static function strBeginsDataProvider(): array
     {
         $euc_jp = '0123この文字列は日本語です。EUC-JPを使っています。0123日本語は面倒臭い。';
         $string_ascii = 'abc def';
@@ -3985,7 +3985,7 @@ class StringHelperTest extends TestCase
     /**
      * @return array
      */
-    public function strEndsDataProvider(): array
+    public static function strEndsDataProvider(): array
     {
         $euc_jp = '0123この文字列は日本語です。EUC-JPを使っています。0123日本語は面倒臭い。';
         $string_ascii = 'abc def';
@@ -4014,7 +4014,7 @@ class StringHelperTest extends TestCase
     /**
      * @return array
      */
-    public function strIbeginsDataProvider(): array
+    public static function strIbeginsDataProvider(): array
     {
         $euc_jp = '0123この文字列は日本語です。EUC-JPを使っています。0123日本語は面倒臭い。';
         $string_ascii = 'abc def';
@@ -4044,7 +4044,7 @@ class StringHelperTest extends TestCase
     /**
      * @return array
      */
-    public function strIendsDataProvider(): array
+    public static function strIendsDataProvider(): array
     {
         $euc_jp = '0123この文字列は日本語です。EUC-JPを使っています。0123日本語は面倒臭い。';
         $string_ascii = 'abc def';
@@ -4074,7 +4074,7 @@ class StringHelperTest extends TestCase
     /**
      * @return array
      */
-    public function titleizeForHumansDataProvider(): array
+    public static function titleizeForHumansDataProvider(): array
     {
         return [
             ['Title Case', 'TITLE CASE'],
@@ -4157,7 +4157,7 @@ class StringHelperTest extends TestCase
     /**
      *
      */
-    public function beforeFirstDataProvider(): array
+    public static function beforeFirstDataProvider(): array
     {
         return [
             ['', '', 'b', true],
@@ -4191,7 +4191,7 @@ class StringHelperTest extends TestCase
     /**
      * @return array
      */
-    public function beforeLastDataProvider(): array
+    public static function beforeLastDataProvider(): array
     {
         return [
             ['', '', 'b', true],
@@ -4225,7 +4225,7 @@ class StringHelperTest extends TestCase
     /**
      * @return array
      */
-    public function idnToUtf8EmailDataProvider(): array
+    public static function idnToUtf8EmailDataProvider(): array
     {
         return [
             ['userName', 'userName'],
@@ -4236,7 +4236,7 @@ class StringHelperTest extends TestCase
     /**
      * @return array
      */
-    public function emojiToShortcodesDataProvider(): array
+    public static function emojiToShortcodesDataProvider(): array
     {
         return [
             ['Baby you light my :fire:! :smiley:', 'Baby you light my 🔥! 😃'],
@@ -4247,7 +4247,7 @@ class StringHelperTest extends TestCase
     /**
      * @return array
      */
-    public function shortcodesToEmojiDataProvider(): array
+    public static function shortcodesToEmojiDataProvider(): array
     {
         return [
             ['Baby you light my 🔥! 😃', 'Baby you light my :fire:! :smiley:'],
@@ -4258,7 +4258,7 @@ class StringHelperTest extends TestCase
     /**
      * @return array
      */
-    public function escapeShortcodesDataProvider(): array
+    public static function escapeShortcodesDataProvider(): array
     {
         return [
             ['\\:100\\: \\:1234\\: 🔥', ':100: :1234: 🔥'],
@@ -4268,7 +4268,7 @@ class StringHelperTest extends TestCase
     /**
      * @return array
      */
-    public function unescapeShortcodesDataProvider(): array
+    public static function unescapeShortcodesDataProvider(): array
     {
         return [
             [':100: :1234: 🔥', '\\:100\\: \\:1234\\: 🔥'],

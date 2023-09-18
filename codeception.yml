@@ -4,6 +4,7 @@ paths:
   log: tests/_output
   data: tests/_data
   support: tests/_support
+  output: tests/_output
   envs: tests/_envs
 bootstrap: _bootstrap.php
 settings:

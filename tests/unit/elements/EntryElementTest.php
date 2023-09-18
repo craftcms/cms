@@ -55,7 +55,7 @@ class EntryElementTest extends TestCase
         self::assertSame($expected, $entry->getUrl());
     }
 
-    public function getUrlDataProvider(): array
+    public static function getUrlDataProvider(): array
     {
         return [
             [
