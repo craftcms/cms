@@ -314,7 +314,7 @@
 - Added `Craft.BaseElementSelectInput::defineElementActions()`.
 
 ### System
-- Craft now requires PHP 8.1 or later.
+- Craft now requires PHP 8.2 or later.
 - Craft now requires the Symfony Filesystem component directly.
 - Craft now requires `composer/semver` directly.
 - Craft no longer requires `composer/composer`.
