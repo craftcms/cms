@@ -427,6 +427,13 @@ a:not([href]) {
   }
 }
 
+a.iconlink {
+  &:before {
+    width: 16px;
+    @include margin-right(var(--xs));
+  }
+}
+
 a.sel,
 li.sel a {
   cursor: default !important;
