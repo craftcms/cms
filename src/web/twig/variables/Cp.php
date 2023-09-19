@@ -833,8 +833,8 @@ class Cp extends Component
     public function getEntryTypeOptions(): array
     {
         $options = array_map(fn(EntryType $entryType) => [
-            'label' => $entryType->name,
-            'value' => $entryType->handle,
+            'label' => Craft::t('site', $entryType->name),
+            'value' => $entryType->id,
         ], Craft::$app->getEntries()->getAllEntryTypes());
 
         ArrayHelper::multisort($options, 'label');

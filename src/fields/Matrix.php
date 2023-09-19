@@ -564,18 +564,8 @@ class Matrix extends Field implements
      */
     public function getSettingsHtml(): ?string
     {
-        $entryTypeOptions = array_map(
-            fn(EntryType $entryType) => [
-                'label' => Craft::t('site', $entryType->name),
-                'value' => $entryType->id,
-            ],
-            $this->getEntryTypes(),
-        );
-        usort($entryTypeOptions, fn(array $a, array $b) => $a['label'] <=> $b['label']);
-
         return Craft::$app->getView()->renderTemplate('_components/fieldtypes/Matrix/settings.twig', [
             'field' => $this,
-            'entryTypeOptions' => $entryTypeOptions,
         ]);
     }
 

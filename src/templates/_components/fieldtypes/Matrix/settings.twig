@@ -5,7 +5,6 @@
     instructions: 'Choose the types of entries that can be created in this field.'|t('app'),
     id: 'entry-types',
     name: 'entryTypes',
-    options: entryTypeOptions,
     values: field.getEntryTypes()|map(entryType => entryType.id),
     multi: true,
     errors: field.getErrors('entryTypes'),
