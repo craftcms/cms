@@ -1,123 +1,44 @@
+{% import '_includes/forms.twig' as forms %}
+
 {{ hiddenInput(name, '') }}
 
 <div class="matrix matrix-field" id="{{ id }}">
     <span aria-live="assertive" class="visually-hidden" data-status-message></span>
     <div class="blocks" role="list">
-        {% set totalNewEntries = 0 %}
         {% for entry in entries %}
-            {% set entryType = entry.getType() %}
-            {% set entryTypeName = entryType.name|t('site') %}
-            {% set entryId = entry.id %}
-            {% set entryIsNew = entryId is empty %}
-            {% if entryIsNew %}
-                {% set totalNewEntries = totalNewEntries + 1 %}
-                {% set entryId = 'new'~totalNewEntries %}
-            {% endif %}
-            {% set baseInputName = "#{name}[entries][#{entryId}]" %}
-            {% set entryAttributes = {
-                class: [
-                    'matrixblock',
-                    not entry.enabled ? 'disabled',
-                    static ? 'static',
-                ]|filter,
-                data: {
-                    id: entryId,
-                    type: entryType.handle,
-                    'type-name': entryTypeName,
-                    collapsed: entry.collapsed,
-                    'type-id': entry.typeId,
-                    'field-layout-id': entry.getFieldLayout().id
-                },
-                role: 'listitem',
-            } %}
-
-            {% set actionBtnLabel = "#{entryTypeName} #{'Actions'|t('app')}" %}
-            {% set actionMenuId = "matrixblock-action-menu-#{entryId}" %}
-
-            {% set actionBtnAttributes = {
-                class: ['btn', 'settings', 'icon', 'menubtn'],
-                type: 'button',
-                role: 'button',
-                title: 'Actions'|t('app'),
-                aria: {
-                    controls: actionMenuId,
-                    label: actionBtnLabel,
-                },
-                data: {
-                    'disclosure-trigger': true,
-                }
-            } %}
-
-            <div {{ attr(entryAttributes) }}>
-                {% if not static %}
-                    {{ hiddenInput("#{name}[sortOrder][]", entryId) }}
-                    {# only register a delta name for this entry if it’s not new #}
-                    {% if not entryIsNew %}
-                        {% do view.registerDeltaName(baseInputName) %}
-                    {% endif %}
-                    {{ hiddenInput("#{baseInputName}[type]", entryType.handle) }}
-                    {{ hiddenInput("#{baseInputName}[enabled]", entry.enabled ? '1' : '') }}
-                    <div class="titlebar">
-                        <div class="blocktype{% if entry.hasErrors() %} error{% endif %}">
-                            {{ entryTypeName }}
-                            {% if entry.hasErrors() %}<span data-icon="alert" aria-label="{{ 'Error'|t('app') }}"></span>{% endif %}
-                        </div>
-                        <div class="preview"></div>
-                    </div>
-                    <div class="checkbox" title="{{ 'Select'|t('app') }}" aria-label="{{ 'Select'|t('app') }}"></div>
-                    <div class="actions">
-                        <div class="status off" title="{{ 'Disabled'|t('app') }}">
-                            {{ tag('span', {
-                                class: 'visually-hidden',
-                                html: 'Disabled'|t('app'),
-                            }) }}
-                        </div>
-                      
-                        <div>
-                            <button {{ attr(actionBtnAttributes) }}></button>
-                            <div id="{{ actionMenuId }}" class="menu menu--disclosure">
-                                <ul class="padded">
-                                  <li><a data-icon="collapse" data-action="collapse" href="#" type="button" role="button" aria-label="{{ 'Collapse'|t('app') }}">{{ "Collapse"|t('app') }}</a></li>
-                                  <li class="hidden"><a data-icon="expand" data-action="expand" href="#" type="button" role="button" aria-label="{{ 'Expand'|t('app') }}">{{ "Expand"|t('app') }}</a></li>
-                                  <li{% if not entry.enabled %} class="hidden"{% endif %}><a data-icon="disabled" data-action="disable" href="#" type="button" role="button" aria-label="{{ 'Disable'|t('app') }}">{{ "Disable"|t('app') }}</a></li>
-                                  <li{% if entry.enabled %} class="hidden"{% endif %}><a data-icon="enabled" data-action="enable" href="#" type="button" role="button" aria-label="{{ 'Enable'|t('app') }}">{{ "Enable"|t('app') }}</a></li>
-                                  <li><a data-icon="uarr" data-action="moveUp" href="#" type="button" role="button" aria-label="{{ 'Move up'|t('app') }}">{{ 'Move up'|t('app') }}</a></li>
-                                  <li><a data-icon="darr" data-action="moveDown" href="#" type="button" role="button" aria-label="{{ 'Move down'|t('app') }}">{{ 'Move down'|t('app') }}</a></li>
-                                </ul>
-                                {% if not staticEntries %}
-                                <hr class="padded">
-                                <ul class="padded">
-                                  <li><a class="error" data-icon="remove" data-action="delete" href="#" type="button" role="button" aria-label="{{ 'Delete'|t('app') }}">{{ "Delete"|t('app') }}</a></li>
-                                </ul>
-                                <hr class="padded">
-                                <ul class="padded">
-                                    {% for entryType in entryTypes %}
-                                      <li><a data-icon="plus" data-action="add" data-type="{{ entryType.handle }}" href="#" type="button" role="button" aria-label="{{ 'Add {type} above'|t('app', { type: entryType.name|t('site') }) }}">{{ "Add {type} above"|t('app', { type: entryType.name|t('site') }) }}</a></li>
-                                    {% endfor %}
-                                </ul>
-                                {% endif %}
-                            </div>
-                        </div>
-                        <a class="move icon" title="{{ 'Reorder'|t('app') }}" aria-label="{{ 'Reorder'|t('app') }}" role="button"></a>
-                    </div>
-                {% endif %}
-                <div class="fields">
-                    {% namespace baseInputName %}
-                        {{ entry.getFieldLayout().createForm(entry, static).render()|raw }}
-                    {% endnamespace %}
-                </div>
-            </div>
+            {% include '_components/fieldtypes/Matrix/block.twig' %}
         {% endfor %}
     </div>
     {% if not static and not staticEntries %}
         <div class="buttons">
             <div class="btngroup">
                 {% for entryType in entryTypes %}
-                    <button type="button" class="btn dashed{% if loop.first %} add icon{% endif %}" data-type="{{ entryType.handle }}" aria-label="{{ entryType.name|t('site') }}" aria-describedby="{{ labelId }}">{{ entryType.name|t('site') }}</button>
+                    {{ forms.button({
+                        label: entryType.name|t('site'),
+                        class: [
+                            'dashed',
+                            loop.first ? 'add' : null,
+                            loop.first ? 'icon' : null,
+                        ]|filter,
+                        spinner: true,
+                        attributes: {
+                            data: {
+                                type: entryType.handle,
+                            },
+                            aria: {
+                                label: entryType.name|t('site'),
+                                describedby: labelId,
+                            },
+                        },
+                    }) }}
                 {% endfor %}
             </div>
 
-            <button type="button" class="btn dashed add icon menubtn hidden">{{ "Add an entry"|t('app') }}</button>
+            {{ forms.button({
+                label: 'Add an entry'|t('app'),
+                class: ['dashed', 'add', 'icon', 'menubtn', 'hidden'],
+                spinner: true,
+            }) }}
             <div class="menu">
                 <ul>
                     {% for entryType in entryTypes %}

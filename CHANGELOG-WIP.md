@@ -131,6 +131,7 @@
 - Added `craft\fields\Matrix::$entryUriFormat`.
 - Added `craft\fields\Matrix::EVENT_DEFINE_ENTRY_TYPES`.
 - Added `craft\fields\Matrix::getEntryTypes()`.
+- Added `craft\fields\Matrix::getEntryTypesForField()`.
 - Added `craft\fields\Matrix::getSupportedSitesForElement()`.
 - Added `craft\fields\Matrix::setEntryTypes()`.
 - Added `craft\fields\Matrix::supportedSiteIds()`.
@@ -157,6 +158,8 @@
 - Added `craft\models\FieldLayout::getFieldById()`.
 - Added `craft\models\FieldLayout::getThumbField()`.
 - Added `craft\models\Section::getCpEditUrl()`.
+- Added `craft\services\Elements::$duplicatedElementSourceUids`.
+- Added `craft\services\Elements::$duplicatedElementUids`.
 - Added `craft\services\Entries::refreshEntryTypes()`.
 - Added `craft\services\Fields::$fieldContext`, which replaces `craft\services\Content::$fieldContext`.
 - Added `craft\services\Fields::getAllLayouts()`.
@@ -320,3 +323,5 @@
 - Craft no longer requires `composer/composer`.
 - New database tables now default to the `utf8mb4` charset, and the `utf8mb4_0900_ai_ci` or `utf8mb4_unicode_ci` collation, on MySQL. Existing installs should run `db/convert-charset` after upgrading, to ensure all tables have consistent charsets and collations. ([#11823](https://github.com/craftcms/cms/discussions/11823))
 - The `defaultTemplateExtensions` config setting now lists `twig` before `html` by default. ([#11809](https://github.com/craftcms/cms/discussions/11809))
+- Improved the initial page load performance for element edit pages that contain Matrix fields.
+- Improved the performance of autosaves for elements with newly-created Matrix entries.
