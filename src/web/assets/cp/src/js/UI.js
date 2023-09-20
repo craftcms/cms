@@ -1277,7 +1277,7 @@ Craft.ui = {
       });
 
       if (errorsElement.length > 1 && typeof errorKeyParts[1] !== 'undefined') {
-        errorsElement = errorsElement[errorKeyParts[1]];
+        errorsElement = errorsElement[errorKeyParts[1]]; // TODO: improve this
       } else {
         errorsElement = errorsElement[0];
       }
@@ -1309,6 +1309,23 @@ Craft.ui = {
 
       if ($fieldTabAnchor && $fieldTabAnchor.attr('aria-selected') == 'false') {
         $fieldTabAnchor.click();
+      }
+
+      // check if the parent is collapsed - if yes, expand it
+      // this gets parent block for matrix and super table
+      let $collapsedParent = $fieldErrorsContainer.parents('.collapsed');
+      if ($collapsedParent.length > 0) {
+        if ($collapsedParent.data('block') != undefined) {
+          $collapsedParent.data('block').expand(); // this handles matrix
+        } else {
+          $collapsedParent.find('.titlebar').trigger('doubletap'); // this handles super table (though would work on matrix too)
+        }
+      } else {
+        // this gets parent block for neo
+        $collapsedParent = $fieldErrorsContainer.parents('.is-collapsed');
+        if ($collapsedParent.length > 0) {
+          $collapsedParent.data('block').expand();
+        }
       }
 
       // focus on the field container that contains the error
