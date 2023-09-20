@@ -161,7 +161,8 @@ class ElementsController extends Controller
             throw new ServerErrorHttpException('The element doesn’t have an edit page.');
         }
 
-        if (str_starts_with($url, UrlHelper::cpUrl('edit'))) {
+        $editUrl = UrlHelper::removeParam(UrlHelper::cpUrl('edit'), 'site');
+        if (str_starts_with($url, $editUrl)) {
             return $this->runAction('edit', [
                 'elementId' => $element->id,
             ]);
