@@ -27,7 +27,8 @@
 
       entrySort: null,
       entrySelect: null,
-      totalNewEntries: 0,
+
+      addingEntry: false,
 
       init: function (id, entryTypes, inputNamePrefix, settings) {
         this.id = id;
@@ -101,16 +102,6 @@
 
         for (let i = 0; i < $entries.length; i++) {
           const $entry = $($entries[i]);
-          const entryId = $entry.data('id');
-
-          // Is this a new entry?
-          const newMatch =
-            typeof entryId === 'string' && entryId.match(/new(\d+)/);
-
-          if (newMatch && newMatch[1] > this.totalNewEntries) {
-            this.totalNewEntries = parseInt(newMatch[1]);
-          }
-
           const entry = new Entry(this, $entry);
 
           if (entry.id && $.inArray('' + entry.id, collapsedEntries) !== -1) {
@@ -119,14 +110,19 @@
         }
 
         this.addListener(this.$addEntryBtnGroupBtns, 'click', function (ev) {
-          const type = $(ev.target).data('type');
-          this.addEntry(type);
+          const $button = $(ev.currentTarget).addClass('loading');
+          this.addEntry($button.data('type')).then(() => {
+            $button.removeClass('loading');
+          });
         });
 
         if (this.$addEntryMenuBtn.length) {
           this.$addEntryMenuBtn.menubtn();
           this.$addEntryMenuBtn.data('menubtn').on('optionSelect', (ev) => {
-            this.addEntry($(ev.option).data('type'));
+            this.$addEntryMenuBtn.addClass('loading');
+            this.addEntry($(ev.option).data('type')).then(() => {
+              this.$addEntryMenuBtn.removeClass('loading');
+            });
           });
         }
 
@@ -249,141 +245,35 @@
         }, 250);
       },
 
-      addEntry: function (type, $insertBefore, autofocus) {
+      addEntry: async function (type, $insertBefore, autofocus) {
+        if (this.addingEntry) {
+          // only one new entry at a time
+          return;
+        }
+
         if (!this.canAddMoreEntries()) {
           this.updateStatusMessage();
           return;
         }
 
-        this.totalNewEntries++;
+        this.addingEntry = true;
 
-        const id = `new${this.totalNewEntries}`;
-        const typeName = this.entryTypesByHandle[type].name;
-        const actionMenuId = `matrixblock-action-menu-${id}`;
-
-        let html = `
-                <div class="matrixblock" data-id="${id}" data-type="${type}" data-type-name="${typeName}" role="listitem">
-                  <input type="hidden" name="${
-                    this.inputNamePrefix
-                  }[sortOrder][]" value="${id}"/>
-                  <input type="hidden" name="${
-                    this.inputNamePrefix
-                  }[entries][${id}][type]" value="${type}"/>
-                  <input type="hidden" name="${
-                    this.inputNamePrefix
-                  }[entries][${id}][enabled]" value="1"/>
-                  <div class="titlebar">
-                    <div class="entrytype">${
-                      this.getEntryTypeByHandle(type).name
-                    }</div>
-                    <div class="preview"></div>
-                  </div>
-                  <div class="checkbox" title="${Craft.t(
-                    'app',
-                    'Select'
-                  )}"></div>
-                  <div class="actions">
-                    <div class="status off" title="${Craft.t(
-                      'app',
-                      'Disabled'
-                    )}"></div>
-                    <div>
-                      <button type="button" class="btn settings icon menubtn" title="${Craft.t(
-                        'app',
-                        'Actions'
-                      )}" aria-controls="${actionMenuId}" data-disclosure-trigger></button>
-                        <div id="${actionMenuId}" class="menu menu--disclosure">
-                         <ul class="padded">
-                            <li><a data-icon="collapse" data-action="collapse" href="#" aria-label="${Craft.t(
-                              'app',
-                              'Collapse'
-                            )}" type="button" role="button">${Craft.t(
-          'app',
-          'Collapse'
-        )}</a></li>
-                            <li class="hidden"><a data-icon="expand" data-action="expand" href="#" aria-label="${Craft.t(
-                              'app',
-                              'Expand'
-                            )}" type="button" role="button">${Craft.t(
-          'app',
-          'Expand'
-        )}</a></li>
-                            <li><a data-icon="disabled" data-action="disable" href="#" aria-label="${Craft.t(
-                              'app',
-                              'Disable'
-                            )}" type="button" role="button">${Craft.t(
-          'app',
-          'Disable'
-        )}</a></li>
-                            <li class="hidden"><a data-icon="enabled" data-action="enable" href="#" aria-label="${Craft.t(
-                              'app',
-                              'Enable'
-                            )}" type="button" role="button">${Craft.t(
-          'app',
-          'Enable'
-        )}</a></li>
-                            <li><a data-icon="uarr" data-action="moveUp" href="#" aria-label="${Craft.t(
-                              'app',
-                              'Move up'
-                            )}" type="button" role="button">${Craft.t(
-          'app',
-          'Move up'
-        )}</a></li>
-                            <li><a data-icon="darr" data-action="moveDown" href="#" aria-label="${Craft.t(
-                              'app',
-                              'Move down'
-                            )}" type="button" role="button">${Craft.t(
-          'app',
-          'Move down'
-        )}</a></li>
-                          </ul>`;
-
-        if (!this.settings.staticEntries) {
-          html += `
-                          <hr class="padded"/>
-                          <ul class="padded">
-                            <li><a class="error" data-icon="remove" data-action="delete" href="#" aria-label="${Craft.t(
-                              'app',
-                              'Delete'
-                            )}" type="button" role="button">${Craft.t(
-            'app',
-            'Delete'
-          )}</a></li>
-                          </ul>
-                          <hr class="padded"/>
-                          <ul class="padded">`;
-
-          for (let i = 0; i < this.entryTypes.length; i++) {
-            const entryType = this.entryTypes[i];
-            html += `
-                            <li><a data-icon="plus" data-action="add" data-type="${
-                              entryType.handle
-                            }" href="#" aria-label="${Craft.t(
-              'app',
-              'Add {type} above',
-              {type: entryType.name}
-            )}" type="button" role="button">${Craft.t(
-              'app',
-              'Add {type} above',
-              {type: entryType.name}
-            )}</a></li>`;
+        const {data} = await Craft.sendActionRequest(
+          'POST',
+          'matrix/render-block',
+          {
+            data: {
+              fieldId: this.settings.fieldId,
+              entryTypeId: this.entryTypesByHandle[type].id,
+              ownerId: this.settings.ownerId,
+              ownerElementType: this.settings.ownerElementType,
+              siteId: this.settings.siteId,
+              namespace: this.settings.namespace,
+            },
           }
+        );
 
-          html += `
-                          </ul>`;
-        }
-
-        html += `
-                        </div>
-                      </div>
-                    <a class="move icon" title="${Craft.t(
-                      'app',
-                      'Reorder'
-                    )}" role="button"></a>
-                  </div>
-                </div>`;
-
-        const $entry = $(html);
+        const $entry = $(data.blockHtml);
 
         // Pause the draft editor
         const elementEditor = this.$form.data('elementEditor');
@@ -396,15 +286,6 @@
         } else {
           $entry.appendTo(this.$entriesContainer);
         }
-
-        const $fieldsContainer = $('<div class="fields"/>').appendTo($entry);
-        const bodyHtml = this.getParsedEntryHtml(
-            this.entryTypesByHandle[type].bodyHtml,
-            id
-          ),
-          js = this.getParsedEntryHtml(this.entryTypesByHandle[type].js, id);
-
-        $(bodyHtml).appendTo($fieldsContainer);
 
         this.trigger('entryAdded', {
           $entry: $entry,
@@ -419,8 +300,9 @@
           'fast',
           () => {
             $entry.css('margin-bottom', '');
-            Garnish.$bod.append(js);
-            Craft.initUiElements($fieldsContainer);
+            Craft.initUiElements($entry.children('.fields'));
+            Craft.appendHeadHtml(data.headHtml);
+            Craft.appendBodyHtml(data.bodyHtml);
             new Entry(this, $entry);
             this.entrySort.addItems($entry);
             this.entrySelect.addItems($entry);
@@ -441,6 +323,8 @@
             });
           }
         );
+
+        this.addingEntry = false;
       },
 
       getEntryTypeByHandle: function (handle) {
@@ -484,25 +368,18 @@
         };
       },
 
-      getParsedEntryHtml: function (html, id) {
-        if (typeof html === 'string') {
-          return html.replace(
-            new RegExp(`__ENTRY_${this.settings.placeholderKey}__`, 'g'),
-            id
-          );
-        } else {
-          return '';
-        }
-      },
-
       get maxEntries() {
         return this.settings.maxEntries;
       },
     },
     {
       defaults: {
-        placeholderKey: null,
+        fieldId: null,
         maxEntries: null,
+        namespace: null,
+        ownerElementType: null,
+        ownerId: null,
+        siteId: null,
         staticEntries: false,
       },
 

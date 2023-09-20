@@ -40,7 +40,6 @@ use craft\gql\types\generators\EntryType as EntryTypeGenerator;
 use craft\gql\types\input\Matrix as MatrixInputType;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Gql;
-use craft\helpers\Html;
 use craft\helpers\Json;
 use craft\helpers\Queue;
 use craft\helpers\StringHelper;
@@ -368,10 +367,38 @@ class Matrix extends Field implements
 
     /**
      * Returns the available entry types.
+     *
+     * @return EntryType[]
      */
     public function getEntryTypes(): array
     {
         return $this->_entryTypes;
+    }
+
+    /**
+     * Returns the available entry types for the given owner element.
+     *
+     * @param Entry[] $value
+     * @param ElementInterface|null $element
+     * @return EntryType[]
+     * @since 5.0.0
+     */
+    public function getEntryTypesForField(array $value, ?ElementInterface $element): array
+    {
+        // Let plugins/modules override which entry types should be available for this field
+        $event = new DefineEntryTypesForFieldEvent([
+            'entryTypes' => $this->getEntryTypes(),
+            'element' => $element,
+            'value' => $value,
+        ]);
+        $this->trigger(self::EVENT_DEFINE_ENTRY_TYPES, $event);
+        $entryTypes = array_values($event->entryTypes);
+
+        if (empty($entryTypes)) {
+            throw new InvalidConfigException('At least one entry type is required.');
+        }
+
+        return $entryTypes;
     }
 
     /**
@@ -724,23 +751,14 @@ class Matrix extends Field implements
 
         $view = Craft::$app->getView();
         $id = $this->getInputId();
-
-        // Let plugins/modules override which entry types should be available for this field
-        $event = new DefineEntryTypesForFieldEvent([
-            'entryTypes' => $this->getEntryTypes(),
-            'element' => $element,
-            'value' => $value,
-        ]);
-        $this->trigger(self::EVENT_DEFINE_ENTRY_TYPES, $event);
-        $entryTypes = array_values($event->entryTypes);
-
-        if (empty($entryTypes)) {
-            throw new InvalidConfigException('At least one entry type is required.');
-        }
+        $entryTypes = $this->getEntryTypesForField($value, $element);
 
         // Get the entry types data
-        $placeholderKey = StringHelper::randomString(10);
-        $entryTypeInfo = $this->_getEntryTypeInfoForInput($element, $entryTypes, $placeholderKey);
+        $entryTypeInfo = array_map(fn(EntryType $entryType) => [
+            'id' => $entryType->id,
+            'handle' => $entryType->handle,
+            'name' => Craft::t('site', $entryType->name),
+        ], $entryTypes);
         $createDefaultEntries = (
             $this->minEntries != 0 &&
             count($entryTypeInfo) === 1 &&
@@ -755,8 +773,12 @@ class Matrix extends Field implements
         $view->registerAssetBundle(MatrixAsset::class);
 
         $settings = [
-            'placeholderKey' => $placeholderKey,
+            'fieldId' => $this->id,
             'maxEntries' => $this->maxEntries,
+            'namespace' => $view->getNamespace(),
+            'ownerElementType' => $element ? $element::class : null,
+            'ownerId' => $element?->id,
+            'siteId' => $element?->siteId,
             'staticEntries' => $staticEntries,
         ];
 
@@ -1157,65 +1179,6 @@ class Matrix extends Field implements
     }
 
     /**
-     * Returns info about each entry type and their field types for the field input.
-     *
-     * @param ElementInterface|null $element
-     * @param EntryType[] $entryTypes
-     * @param string $placeholderKey
-     * @return array
-     */
-    private function _getEntryTypeInfoForInput(?ElementInterface $element, array $entryTypes, string $placeholderKey): array
-    {
-        $entryTypeInfo = [];
-
-        // Set a temporary namespace for these
-        // Note: we can't just wrap FieldLayoutForm::render() in a callable passed to namespaceInputs() here,
-        // because the form HTML is for JavaScript; not returned by inputHtml().
-        $view = Craft::$app->getView();
-        $oldNamespace = $view->getNamespace();
-        $view->setNamespace($view->namespaceInputName("$this->handle[entries][__ENTRY_{$placeholderKey}__]"));
-
-        foreach ($entryTypes as $entryType) {
-            // Create a fake entry so the field types have a way to get at the owner element, if there is one
-            $entry = new Entry([
-                'fieldId' => $this->id,
-                'typeId' => $entryType->id,
-            ]);
-
-            if ($element) {
-                $entry->setOwner($element);
-                $entry->siteId = $element->siteId;
-            }
-
-            $fieldLayout = $entryType->getFieldLayout();
-            $fields = $fieldLayout->getCustomFields();
-
-            foreach ($fields as $field) {
-                $field->setIsFresh(true);
-            }
-
-            $view->startJsBuffer();
-            $bodyHtml = $view->namespaceInputs($fieldLayout->createForm($entry)->render());
-            $js = $view->clearJsBuffer();
-
-            // Reset $_isFresh's
-            foreach ($fields as $field) {
-                $field->setIsFresh(null);
-            }
-
-            $entryTypeInfo[] = [
-                'handle' => $entryType->handle,
-                'name' => Craft::t('site', $entryType->name),
-                'bodyHtml' => $bodyHtml,
-                'js' => $js,
-            ];
-        }
-
-        $view->setNamespace($oldNamespace);
-        return $entryTypeInfo;
-    }
-
-    /**
      * Creates an array of entries based on the given serialized data.
      *
      * @param array $value The raw field value
@@ -1229,6 +1192,9 @@ class Matrix extends Field implements
         /** @var EntryType[] $entryTypes */
         $entryTypes = ArrayHelper::index($this->getEntryTypes(), 'handle');
 
+        // Were the entries posted by UUID or ID?
+        $uids = isset($value['entries']) && StringHelper::isUUID(array_key_first($value['entries']));
+
         // Get the old entries
         if ($element->id) {
             /** @var Entry[] $oldEntriesById */
@@ -1239,7 +1205,7 @@ class Matrix extends Field implements
                 ->drafts(null)
                 ->revisions(null)
                 ->status(null)
-                ->indexBy('id')
+                ->indexBy($uids ? 'uid' : 'id')
                 ->all();
         } else {
             $oldEntriesById = [];
@@ -1274,6 +1240,14 @@ class Matrix extends Field implements
             if (isset($newEntryData[$entryId])) {
                 $entryData = $newEntryData[$entryId];
             } elseif (
+                $uids &&
+                isset(Elements::$duplicatedElementSourceUids[$entryId]) &&
+                isset($newEntryData[Elements::$duplicatedElementSourceUids[$entryId]])
+            ) {
+                // $entryId is a duplicated entry's UUID, but the data was sent with the original entry UUID
+                $entryData = $newEntryData[Elements::$duplicatedElementSourceIds[$entryId]];
+            } elseif (
+                !$uids &&
                 isset(Elements::$duplicatedElementSourceIds[$entryId]) &&
                 isset($newEntryData[Elements::$duplicatedElementSourceIds[$entryId]])
             ) {
@@ -1285,19 +1259,33 @@ class Matrix extends Field implements
 
             // If this is a preexisting entry but we don't have a record of it,
             // check to see if it was recently duplicated.
-            if (
-                !str_starts_with($entryId, 'new') &&
-                !isset($oldEntriesById[$entryId]) &&
-                isset(Elements::$duplicatedElementIds[$entryId]) &&
-                isset($oldEntriesById[Elements::$duplicatedElementIds[$entryId]])
-            ) {
-                $entryId = Elements::$duplicatedElementIds[$entryId];
+            if ($uids) {
+                if (
+                    !isset($oldEntriesById[$entryId]) &&
+                    isset(Elements::$duplicatedElementUids[$entryId]) &&
+                    isset($oldEntriesById[Elements::$duplicatedElementUids[$entryId]])
+                ) {
+                    $entryId = Elements::$duplicatedElementUids[$entryId];
+                }
+
+                /** @var Entry|null $entry */
+                $entry = $oldEntriesById[$entryId] ?? null;
+            } else {
+                if (
+                    !str_starts_with($entryId, 'new') &&
+                    !isset($oldEntriesById[$entryId]) &&
+                    isset(Elements::$duplicatedElementIds[$entryId]) &&
+                    isset($oldEntriesById[Elements::$duplicatedElementIds[$entryId]])
+                ) {
+                    $entryId = Elements::$duplicatedElementIds[$entryId];
+                }
+
+                /** @var Entry|null $entry */
+                $entry = $oldEntriesById[$entryId] ?? null;
             }
 
             // Existing entry?
-            if (isset($oldEntriesById[$entryId])) {
-                /** @var Entry $entry */
-                $entry = $oldEntriesById[$entryId];
+            if ($entry !== null) {
                 $forceSave = !empty($entryData);
 
                 // Is this a derivative element, and does the entry primarily belong to the canonical?
@@ -1324,6 +1312,11 @@ class Matrix extends Field implements
                 $entry->typeId = $entryTypes[$entryData['type']]->id;
                 $entry->primaryOwnerId = $entry->ownerId = $element->id;
                 $entry->siteId = $element->siteId;
+
+                // Use the provided UUID, so the block can persist across future autosaves
+                if ($uids) {
+                    $entry->uid = $entryId;
+                }
 
                 // Preserve the collapsed state, which the browser can't remember on its own for new entries
                 $entry->collapsed = !empty($entryData['collapsed']);

@@ -441,10 +441,22 @@ class Elements extends Component
     public static array $duplicatedElementIds = [];
 
     /**
+     * @var int[] Stores a mapping of source element UUIDs to their duplicated element UUIDs.
+     * @since 5.0.0
+     */
+    public static array $duplicatedElementUids = [];
+
+    /**
      * @var int[] Stores a mapping of duplicated element IDs to their source element IDs.
      * @since 3.4.0
      */
     public static array $duplicatedElementSourceIds = [];
+
+    /**
+     * @var int[] Stores a mapping of duplicated element UUIDs to their source element UUIDs.
+     * @since 5.0.0
+     */
+    public static array $duplicatedElementSourceUids = [];
 
     /**
      * @var array|null
@@ -1637,7 +1649,9 @@ class Elements extends Component
             // Map it
             if ($trackDuplication) {
                 static::$duplicatedElementIds[$element->id] = $mainClone->id;
+                static::$duplicatedElementUids[$element->uid] = $mainClone->uid;
                 static::$duplicatedElementSourceIds[$mainClone->id] = $element->id;
+                static::$duplicatedElementSourceUids[$mainClone->uid] = $element->uid;
             }
 
             $mainClone->newSiteIds = [];
