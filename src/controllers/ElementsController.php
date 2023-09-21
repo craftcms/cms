@@ -1314,7 +1314,6 @@ JS, [
                 'creator' => $creator?->getName(),
                 'draftName' => $element->draftName,
                 'draftNotes' => $element->draftNotes,
-                'duplicatedElements' => Elements::$duplicatedElementIds,
                 'modifiedAttributes' => $element->getModifiedAttributes(),
             ];
 

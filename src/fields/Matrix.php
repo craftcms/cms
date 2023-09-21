@@ -1193,7 +1193,10 @@ class Matrix extends Field implements
         $entryTypes = ArrayHelper::index($this->getEntryTypes(), 'handle');
 
         // Were the entries posted by UUID or ID?
-        $uids = isset($value['entries']) && StringHelper::isUUID(array_key_first($value['entries']));
+        $uids = (
+            (isset($value['entries']) && StringHelper::isUUID(array_key_first($value['entries']))) ||
+            (isset($value['sortOrder']) && StringHelper::isUUID(reset($value['sortOrder'])))
+        );
 
         // Get the old entries
         if ($element->id) {
@@ -1209,6 +1212,27 @@ class Matrix extends Field implements
                 ->all();
         } else {
             $oldEntriesById = [];
+        }
+
+        // If we're saving a draft, get the canonical entry UUIDs in case the data was posted with them
+        if ($uids && $element->getIsDraft() && !$element->getIsUnpublishedDraft()) {
+            $derivatives = Collection::make($oldEntriesById)
+                ->filter(fn(Entry $entry) => $entry->getIsDerivative())
+                ->keyBy(fn(Entry $entry) => $entry->getCanonicalId());
+
+            if ($derivatives->isNotEmpty()) {
+                $canonicalUids = Entry::find()
+                    ->select(['id', 'uid'])
+                    ->id($derivatives->keys()->all())
+                    ->pairs();
+                $derivativeUidMap = [];
+                $canonicalUidMap = [];
+                foreach ($canonicalUids as $canonicalId => $canonicalUid) {
+                    $derivativeUid = $derivatives->get($canonicalId)->uid;
+                    $derivativeUidMap[$canonicalUid] = $derivativeUid;
+                    $canonicalUidMap[$derivativeUid] = $canonicalUid;
+                }
+            }
         }
 
         // Should we ignore disabled entries?
@@ -1241,51 +1265,29 @@ class Matrix extends Field implements
                 $entryData = $newEntryData[$entryId];
             } elseif (
                 $uids &&
-                isset(Elements::$duplicatedElementSourceUids[$entryId]) &&
-                isset($newEntryData[Elements::$duplicatedElementSourceUids[$entryId]])
+                isset($canonicalUidMap[$entryId]) &&
+                isset($newEntryData[$canonicalUidMap[$entryId]])
             ) {
-                // $entryId is a duplicated entry's UUID, but the data was sent with the original entry UUID
-                $entryData = $newEntryData[Elements::$duplicatedElementSourceIds[$entryId]];
-            } elseif (
-                !$uids &&
-                isset(Elements::$duplicatedElementSourceIds[$entryId]) &&
-                isset($newEntryData[Elements::$duplicatedElementSourceIds[$entryId]])
-            ) {
-                // $entryId is a duplicated entry's ID, but the data was sent with the original entry ID
-                $entryData = $newEntryData[Elements::$duplicatedElementSourceIds[$entryId]];
+                // $entryId is a draft entry's UUID, but the data was sent with the canonical entry UUID
+                $entryData = $newEntryData[$canonicalUidMap[$entryId]];
             } else {
                 $entryData = [];
             }
 
             // If this is a preexisting entry but we don't have a record of it,
             // check to see if it was recently duplicated.
-            if ($uids) {
-                if (
-                    !isset($oldEntriesById[$entryId]) &&
-                    isset(Elements::$duplicatedElementUids[$entryId]) &&
-                    isset($oldEntriesById[Elements::$duplicatedElementUids[$entryId]])
-                ) {
-                    $entryId = Elements::$duplicatedElementUids[$entryId];
-                }
-
-                /** @var Entry|null $entry */
-                $entry = $oldEntriesById[$entryId] ?? null;
-            } else {
-                if (
-                    !str_starts_with($entryId, 'new') &&
-                    !isset($oldEntriesById[$entryId]) &&
-                    isset(Elements::$duplicatedElementIds[$entryId]) &&
-                    isset($oldEntriesById[Elements::$duplicatedElementIds[$entryId]])
-                ) {
-                    $entryId = Elements::$duplicatedElementIds[$entryId];
-                }
-
-                /** @var Entry|null $entry */
-                $entry = $oldEntriesById[$entryId] ?? null;
+            if (
+                $uids &&
+                !isset($oldEntriesById[$entryId]) &&
+                isset($derivativeUidMap[$entryId]) &&
+                isset($oldEntriesById[$derivativeUidMap[$entryId]])
+            ) {
+                $entryId = $derivativeUidMap[$entryId];
             }
 
             // Existing entry?
-            if ($entry !== null) {
+            if (isset($oldEntriesById[$entryId])) {
+                $entry = $oldEntriesById[$entryId];
                 $forceSave = !empty($entryData);
 
                 // Is this a derivative element, and does the entry primarily belong to the canonical?

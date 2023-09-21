@@ -446,17 +446,6 @@ class Addresses extends Field implements
         ];
 
         foreach ($value as $addressId => $addressData) {
-            // If this is a preexisting address but we don't have a record of it,
-            // check to see if it was recently duplicated.
-            if (
-                is_numeric($addressId) &&
-                !isset($oldAddressesById[$addressId]) &&
-                isset(Elements::$duplicatedElementIds[$addressId]) &&
-                isset($oldAddressesById[Elements::$duplicatedElementIds[$addressId]])
-            ) {
-                $addressId = Elements::$duplicatedElementIds[$addressId];
-            }
-
             // Existing address?
             if (isset($oldAddressesById[$addressId])) {
                 /** @var Address $address */

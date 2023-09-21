@@ -436,29 +436,6 @@ class Elements extends Component
     public const EVENT_AFTER_DELETE_FOR_SITE = 'afterDeleteForSite';
 
     /**
-     * @var int[] Stores a mapping of source element IDs to their duplicated element IDs.
-     */
-    public static array $duplicatedElementIds = [];
-
-    /**
-     * @var int[] Stores a mapping of source element UUIDs to their duplicated element UUIDs.
-     * @since 5.0.0
-     */
-    public static array $duplicatedElementUids = [];
-
-    /**
-     * @var int[] Stores a mapping of duplicated element IDs to their source element IDs.
-     * @since 3.4.0
-     */
-    public static array $duplicatedElementSourceIds = [];
-
-    /**
-     * @var int[] Stores a mapping of duplicated element UUIDs to their source element UUIDs.
-     * @since 5.0.0
-     */
-    public static array $duplicatedElementSourceUids = [];
-
-    /**
      * @var array|null
      */
     private ?array $_placeholderElements = null;
@@ -1515,8 +1492,6 @@ class Elements extends Component
      * set to an array of site-specific attribute array, indexed by site IDs.
      * @param bool $placeInStructure whether to position the cloned element after the original one in its structure.
      * (This will only happen if the duplicated element is canonical.)
-     * @param bool $trackDuplication whether to keep track of the duplication from [[Elements::$duplicatedElementIds]]
-     * and [[Elements::$duplicatedElementSourceIds]]
      * @return T the duplicated element
      * @throws UnsupportedSiteException if the element is being duplicated into a site it doesn’t support
      * @throws InvalidElementException if saveElement() returns false for any of the sites
@@ -1526,7 +1501,6 @@ class Elements extends Component
         ElementInterface $element,
         array $newAttributes = [],
         bool $placeInStructure = true,
-        bool $trackDuplication = true,
     ): ElementInterface {
         // Make sure the element exists
         if (!$element->id) {
@@ -1644,14 +1618,6 @@ class Elements extends Component
                     $mode = isset($newAttributes['id']) ? Structures::MODE_AUTO : Structures::MODE_INSERT;
                     Craft::$app->getStructures()->moveAfter($canonical->structureId, $mainClone, $canonical, $mode);
                 }
-            }
-
-            // Map it
-            if ($trackDuplication) {
-                static::$duplicatedElementIds[$element->id] = $mainClone->id;
-                static::$duplicatedElementUids[$element->uid] = $mainClone->uid;
-                static::$duplicatedElementSourceIds[$mainClone->id] = $element->id;
-                static::$duplicatedElementSourceUids[$mainClone->uid] = $element->uid;
             }
 
             $mainClone->newSiteIds = [];

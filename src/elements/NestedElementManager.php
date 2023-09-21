@@ -616,7 +616,7 @@ JS, [
                         } else {
                             // Duplicate the elements, but **don't track** the duplications, so the edit page doesn’t think
                             // its elements have been replaced by the other sites’ nested elements
-                            $this->duplicateNestedElements($owner, $localizedOwner, trackDuplications: false, force: true);
+                            $this->duplicateNestedElements($owner, $localizedOwner, force: true);
                         }
 
                         // Make sure we don't duplicate elements for any of the sites that were just propagated to
@@ -686,8 +686,6 @@ JS, [
      * @param bool $checkOtherSites Whether to duplicate nested elements for the source element’s other supported sites
      * @param bool $deleteOtherNestedElements Whether to delete any nested elements that belong to the element,
      * which weren’t included in the duplication
-     * @param bool $trackDuplications whether to keep track of the duplications from [[\craft\services\Elements::$duplicatedElementIds]]
-     * and [[\craft\services\Elements::$duplicatedElementSourceIds]]
      * @param bool $force Whether to force duplication, even if it looks like only the nested element ownership was duplicated
      */
     private function duplicateNestedElements(
@@ -695,7 +693,6 @@ JS, [
         ElementInterface $target,
         bool $checkOtherSites = false,
         bool $deleteOtherNestedElements = true,
-        bool $trackDuplications = true,
         bool $force = false,
     ): void {
         $elementsService = Craft::$app->getElements();
@@ -747,7 +744,7 @@ JS, [
                     ], updateTimestamp: false);
                     $newElementId = $element->id;
                 } else {
-                    $newElementId = $elementsService->duplicateElement($element, $newAttributes, trackDuplication: $trackDuplications)->id;
+                    $newElementId = $elementsService->duplicateElement($element, $newAttributes)->id;
                 }
 
                 $newElementIds[] = $newElementId;

@@ -158,8 +158,6 @@
 - Added `craft\models\FieldLayout::getFieldById()`.
 - Added `craft\models\FieldLayout::getThumbField()`.
 - Added `craft\models\Section::getCpEditUrl()`.
-- Added `craft\services\Elements::$duplicatedElementSourceUids`.
-- Added `craft\services\Elements::$duplicatedElementUids`.
 - Added `craft\services\Entries::refreshEntryTypes()`.
 - Added `craft\services\Fields::$fieldContext`, which replaces `craft\services\Content::$fieldContext`.
 - Added `craft\services\Fields::getAllLayouts()`.
@@ -209,6 +207,7 @@
 - `craft\i18n\I18N::getPrimarySiteLocale()` is now deprecated. `craft\models\Site::getLocale()` should be used instead.
 - `craft\i18n\I18N::getPrimarySiteLocaleId()` is now deprecated. `craft\models\Site::$language` should be used instead.
 - `craft\models\Section::$propagationMethod` now has a type of `craft\enums\PropagationMethod`.
+- `craft\services\Elements::duplicateElement()` no longer has a `$trackDuplication` argument.
 - `craft\services\Plugins::getPluginLicenseKeyStatus()` now returns a `craft\enums\LicenseKeyStatus` case.
 - `craft\services\ProjectConfig::saveModifiedConfigData()` no longer has a `$writeExternalConfig` argument, and no longer writes out updated project config YAML files.
 - Deprecated the `_elements/element.twig` control panel template. `elementChip()` or `elementCard()` should be used instead.
@@ -290,6 +289,8 @@
 - Removed `craft\records\MatrixBlockType`.
 - Removed `craft\records\MatrixBlock`.
 - Removed `craft\services\Content`.
+- Removed `craft\services\Elements::$duplicatedElementIds`.
+- Removed `craft\services\Elements::$duplicatedElementSourceIds`.
 - Removed `craft\services\Fields::EVENT_AFTER_DELETE_FIELD_GROUP`.
 - Removed `craft\services\Fields::EVENT_AFTER_SAVE_FIELD_GROUP`.
 - Removed `craft\services\Fields::EVENT_BEFORE_APPLY_GROUP_DELETE`.
