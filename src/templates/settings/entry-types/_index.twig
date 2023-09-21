@@ -34,14 +34,18 @@
     url: entryType.getCpEditUrl(),
     name: entryType.name|t('site')|e,
     handle: entryType.handle,
-    usages: (entryTypeUsages[entryType.id] ?? [])|map(usage => tag('a', {
-        text: usage[1],
-        href: usage[2],
-        class: 'iconlink',
-        data: {
-            icon: usage[0],
-        }
-    }))|join(', '),
+    usages: tag('ul', {
+        html: (entryTypeUsages[entryType.id] ?? [])|map(usage => tag('li', {
+            html: tag('a', {
+                text: usage[1],
+                href: usage[2],
+                class: 'iconlink',
+                data: {
+                    icon: usage[0],
+                }
+            }),
+        }))|join(''),
+    }),
 }) %}
 
 {% js %}
