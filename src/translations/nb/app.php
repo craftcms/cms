@@ -514,7 +514,7 @@ return [
     'Development' => 'Utvikling',
     'Device type' => 'Enhetstype',
     'Dimensions' => 'Dimensjoner',
-    'Directories cannot be deleted while moving assets.' => 'Kataloger kan ikke slettes mens du flytter filer.',
+    'Directories cannot be deleted while moving assets.' => 'Mapper kan ikke slettes mens du flytter filer.',
     'Disable focal point' => 'Deaktiver fokuspunkt',
     'Disable' => 'Deaktiver',
     'Disabled' => 'Deaktivert',
