@@ -375,7 +375,7 @@ class NestedElementManager extends Component
             if (!empty($config['createAttributes'])) {
                 $settings['createAttributes'] = $config['createAttributes'];
                 if (count($settings['createAttributes']) === 1 && ArrayHelper::isIndexed($settings['createAttributes'])) {
-                    $settings['createAttributes'] = ArrayHelper::firstValue($settings['createAttributes'])['params'];
+                    $settings['createAttributes'] = ArrayHelper::firstValue($settings['createAttributes'])['attributes'];
                 }
             }
 
