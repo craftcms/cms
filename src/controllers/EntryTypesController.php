@@ -70,7 +70,7 @@ class EntryTypesController extends Controller
                     if ($provider instanceof EntryType) {
                         $entryTypeUsages[$provider->id][] = [
                             'field',
-                            Craft::t('site', $provider->name),
+                            Craft::t('site', $field->name),
                             UrlHelper::cpUrl("settings/fields/edit/$field->id"),
                         ];
                     }
