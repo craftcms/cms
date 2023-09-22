@@ -307,7 +307,6 @@ Craft.BaseElementIndexView = Garnish.Base.extend(
      * Loads the next batch of elements.
      */
     loadMore: function () {
-      debugger;
       if (
         !this.getMorePending() ||
         this.loadingMore ||
