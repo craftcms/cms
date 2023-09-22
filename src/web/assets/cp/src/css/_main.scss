@@ -6593,6 +6593,7 @@ body.reduce-focus-visibility {
   }
 }
 
+td.errors .text,
 .input.errors > .text,
 .input.errors > .border-box,
 .input.errors > .passwordwrapper,
@@ -6728,7 +6729,7 @@ body.reduce-focus-visibility {
 
 .datetimewrapper {
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   flex-direction: row;
   align-items: center;
   gap: 5px;

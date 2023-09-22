@@ -322,6 +322,13 @@ abstract class Element extends Component implements ElementInterface
     public const EVENT_DEFINE_ATTRIBUTE_HTML = 'defineAttributeHtml';
 
     /**
+     * @event DefineAttributeHtmlEvent The event that is triggered when defining an attribute’s inline input HTML.
+     * @see getInlineAttributeInputHtml()
+     * @since 5.0.0
+     */
+    public const EVENT_DEFINE_INLINE_ATTRIBUTE_INPUT_HTML = 'defineInlineAttributeInputHtml';
+
+    /**
      * @event RegisterElementHtmlAttributesEvent The event that is triggered when registering the HTML attributes that should be included in the element’s DOM representation in the control panel.
      */
     public const EVENT_REGISTER_HTML_ATTRIBUTES = 'registerHtmlAttributes';
@@ -1133,6 +1140,8 @@ abstract class Element extends Component implements ElementInterface
             'collapsedElementIds' => Craft::$app->getRequest()->getParam('collapsedElementIds'),
             'selectable' => $selectable,
             'sortable' => $sortable,
+            'inlineEditing' => $viewState['inlineEditing'] ?? false,
+            'nestedInputNamespace' => $viewState['nestedInputNamespace'] ?? null,
             'tableName' => static::pluralDisplayName(),
         ];
 
@@ -4764,6 +4773,24 @@ abstract class Element extends Component implements ElementInterface
     }
 
     /**
+     * @inheritdoc
+     */
+    public function getInlineAttributeInputHtml(string $attribute): string
+    {
+        // Give plugins a chance to set this
+        $event = new DefineAttributeHtmlEvent([
+            'attribute' => $attribute,
+        ]);
+        $this->trigger(self::EVENT_DEFINE_INLINE_ATTRIBUTE_INPUT_HTML, $event);
+
+        if ($event->html !== null) {
+            return $event->html;
+        }
+
+        return $this->inlineAttributeInputHtml($attribute);
+    }
+
+    /**
      * Returns the HTML that should be shown for a given attribute in table and card views.
      *
      * For example, if your elements have an `email` attribute that you want to wrap in a `mailto:` link, your
@@ -4948,6 +4975,44 @@ abstract class Element extends Component implements ElementInterface
 
                 return ElementHelper::attributeHtml($this->$attribute);
         }
+    }
+
+    /**
+     * Returns the HTML that should be shown for a given attribute’s inline input.
+     *
+     * @param string $attribute The attribute name.
+     * @return string The HTML that should be shown for a given attribute’s inline input.
+     * @see getInlineAttributeInputHtml()
+     * @since 5.0.0
+     */
+    protected function inlineAttributeInputHtml(string $attribute): string
+    {
+        // Is this a custom field?
+        if (preg_match('/^field:(.+)/', $attribute, $matches)) {
+            $fieldUid = $matches[1];
+            $field = Craft::$app->getFields()->getFieldByUid($fieldUid);
+
+            if ($field instanceof InlineEditableFieldInterface) {
+                // Was this field value eager-loaded?
+                if ($field instanceof EagerLoadingFieldInterface && $this->hasEagerLoadedElements($field->handle)) {
+                    $value = $this->getEagerLoadedElements($field->handle);
+                } else {
+                    // The field might not actually belong to this element
+                    try {
+                        $value = $this->getFieldValue($field->handle);
+                    } catch (InvalidFieldException) {
+                        return '';
+                    }
+                }
+
+                return $field->getInlineInputHtml($value, $this);
+            }
+
+            return $this->getAttributeHtml($attribute);
+        }
+
+        // just go with the static output by default
+        return $this->attributeHtml($attribute);
     }
 
     /**

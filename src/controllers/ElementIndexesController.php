@@ -8,6 +8,7 @@
 namespace craft\controllers;
 
 use Craft;
+use craft\base\Element;
 use craft\base\ElementAction;
 use craft\base\ElementActionInterface;
 use craft\base\ElementExporterInterface;
@@ -20,14 +21,17 @@ use craft\elements\conditions\ElementConditionRuleInterface;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\exporters\Raw;
 use craft\events\ElementActionEvent;
+use craft\helpers\ArrayHelper;
 use craft\helpers\Component;
 use craft\helpers\Cp;
 use craft\helpers\ElementHelper;
 use craft\services\ElementSources;
+use Throwable;
 use yii\base\InvalidValueException;
 use yii\web\BadRequestHttpException;
 use yii\web\ForbiddenHttpException;
 use yii\web\Response;
+use yii\web\ServerErrorHttpException;
 
 /**
  * The ElementIndexesController class is a controller that handles various element index related actions.
@@ -110,7 +114,7 @@ class ElementIndexesController extends BaseElementsController
         $this->source = $this->source();
         $this->condition = $this->condition();
 
-        if ($action->id !== 'filter-hud') {
+        if (!in_array($action->id, ['filter-hud', 'save-elements'])) {
             $this->viewState = $this->viewState();
             $this->elementQuery = $this->elementQuery();
 
@@ -497,6 +501,101 @@ class ElementIndexesController extends BaseElementsController
     }
 
     /**
+     * Saves inline-edited elements.
+     *
+     * @return Response
+     * @since 5.0.0
+     */
+    public function actionSaveElements(): Response
+    {
+        $siteId = $this->request->getRequiredBodyParam('siteId');
+        $namespace = $this->request->getRequiredBodyParam('namespace');
+        $data = $this->request->getRequiredBodyParam($namespace);
+
+        if (empty($data)) {
+            throw new BadRequestHttpException('No element data provided.');
+        }
+
+        $elementsService = Craft::$app->getElements();
+        $user = static::currentUser();
+        $elements = [];
+
+        // get all the elements
+        /** @var string|ElementInterface $elementType */
+        $elementType = $this->elementType();
+        $elements = $elementType::find()
+            ->id(array_keys($data))
+            ->status(null)
+            ->drafts(null)
+            ->siteId($siteId)
+            ->all();
+
+        if (empty($elements)) {
+            throw new BadRequestHttpException('No valid element IDs provided.');
+        }
+
+        // make sure they're editable
+        foreach ($elements as $element) {
+            if (!$elementsService->canSave($element, $user)) {
+                throw new ForbiddenHttpException('User not authorized to save this element.');
+            }
+        }
+
+        // set attributes and validate everything
+        $errors = [];
+        foreach ($elements as $element) {
+            $attributes = ArrayHelper::without($data[$element->id], 'fields');
+            if (!empty($attributes)) {
+                $scenario = $element->getScenario();
+                $element->setScenario(Element::SCENARIO_LIVE);
+                $element->setAttributes($attributes);
+                $element->setScenario($scenario);
+            }
+
+            $element->setFieldValuesFromRequest("$namespace.$element->id.fields");
+
+            if ($element->enabled && $element->getEnabledForSite()) {
+                $element->setScenario(Element::SCENARIO_LIVE);
+            }
+
+            $names = array_merge(
+                array_keys($attributes),
+                array_map(fn(string $handle) => "field:$handle", array_keys($data[$element->id]['fields'] ?? [])),
+            );
+
+            if (!$element->validate($names)) {
+                $errors[$element->id] = $element->getErrors();
+            }
+        }
+
+        if (!empty($errors)) {
+            return $this->asJson([
+                'errors' => $errors,
+            ]);
+        }
+
+        // now save everything
+        $db = Craft::$app->getDb();
+        $transaction = $db->beginTransaction();
+
+        try {
+            foreach ($elements as $element) {
+                if (!$elementsService->saveElement($element)) {
+                    Craft::error("Couldn’t save element $element->id: " . implode(', ', $element->getFirstErrors()));
+                    throw new ServerErrorHttpException("Couldn’t save element $element->id");
+                }
+            }
+
+            $transaction->commit();
+        } catch (Throwable $e) {
+            $transaction->rollBack();
+            throw $e;
+        }
+
+        return $this->asSuccess();
+    }
+
+    /**
      * Returns whether the element index has an administrative context (`index` or `embedded-index`).
      *
      * @return bool
@@ -755,7 +854,10 @@ class ElementIndexesController extends BaseElementsController
         }
 
         $disabledElementIds = $this->request->getParam('disabledElementIds', []);
-        $selectable = !empty($this->actions) || $this->request->getParam('selectable');
+        $selectable = (
+            (!empty($this->actions) || $this->request->getParam('selectable')) &&
+            empty($this->viewState['inlineEditing'])
+        );
         $sortable = $this->isAdministrative() && $this->request->getParam('sortable');
 
         if ($this->sourceKey) {

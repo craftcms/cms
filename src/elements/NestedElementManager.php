@@ -332,6 +332,7 @@ class NestedElementManager extends Component
             'fieldLayouts' => [],
             'defaultTableColumns' => null,
             'pageSize' => 50,
+            'inlineEditable' => false,
             'sortable' => false,
             'canCreate' => false,
             'createButtonLabel' => Craft::t('app', 'New {type}', [

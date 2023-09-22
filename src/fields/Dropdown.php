@@ -9,6 +9,7 @@ namespace craft\fields;
 
 use Craft;
 use craft\base\ElementInterface;
+use craft\base\InlineEditableFieldInterface;
 use craft\base\SortableFieldInterface;
 use craft\enums\AttributeStatus;
 use craft\fields\data\SingleOptionFieldData;
@@ -20,7 +21,7 @@ use craft\helpers\Cp;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
-class Dropdown extends BaseOptionsField implements SortableFieldInterface
+class Dropdown extends BaseOptionsField implements SortableFieldInterface, InlineEditableFieldInterface
 {
     /**
      * @inheritdoc
