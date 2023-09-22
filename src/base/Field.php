@@ -568,6 +568,19 @@ abstract class Field extends SavableComponent implements FieldInterface
     }
 
     /**
+     * Returns the HTML that should be shown for this field’s inline inputs.
+     *
+     * @param mixed $value The field’s value
+     * @param ElementInterface|null $element The element the field is associated with
+     * @return string The HTML that should be shown for this field’s inline input
+     * @since 5.0.0
+     */
+    public function getInlineInputHtml(mixed $value, ?ElementInterface $element): string
+    {
+        return $this->getInputHtml($value, $element);
+    }
+
+    /**
      * @inheritdoc
      */
     public function getStaticHtml(mixed $value, ElementInterface $element): string

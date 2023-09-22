@@ -10,7 +10,7 @@ namespace craft\fields;
 use Craft;
 use craft\base\ElementInterface;
 use craft\base\Field;
-use craft\base\PreviewableFieldInterface;
+use craft\base\InlineEditableFieldInterface;
 use craft\fields\conditions\TextFieldConditionRule;
 use craft\helpers\Cp;
 use craft\helpers\Html;
@@ -29,7 +29,7 @@ use yii\validators\EmailValidator;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
-class Url extends Field implements PreviewableFieldInterface
+class Url extends Field implements InlineEditableFieldInterface
 {
     /**
      * @since 3.6.0

@@ -2417,9 +2417,6 @@ h2 + .actions {
       &:first-child {
         @include padding-left(24px);
       }
-      &:last-child {
-        @include padding-right(24px);
-      }
     }
   }
 }
@@ -6593,6 +6590,7 @@ body.reduce-focus-visibility {
   }
 }
 
+td.errors .text,
 .input.errors > .text,
 .input.errors > .border-box,
 .input.errors > .passwordwrapper,
@@ -6728,7 +6726,7 @@ body.reduce-focus-visibility {
 
 .datetimewrapper {
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   flex-direction: row;
   align-items: center;
   gap: 5px;

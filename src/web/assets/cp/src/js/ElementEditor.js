@@ -1125,6 +1125,9 @@ Craft.ElementEditor = Garnish.Base.extend(
         );
       }
 
+      // remove embedded element index names
+      data = data.replace(/&elementindex-[^&]*/g, '');
+
       return data;
     },
 

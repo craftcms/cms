@@ -18,6 +18,7 @@
                     data: {
                         attribute: attribute[0],
                     },
+                    class: loop.first and not (showHeaderColumn ?? true) ? 'hidden' : null,
                 } %}
                     {% if icon %}
                         <span data-icon="{{ icon }}" aria-hidden="true"></span>

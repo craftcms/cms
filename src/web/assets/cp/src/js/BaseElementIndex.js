@@ -101,6 +101,9 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
     _activeElement: null,
 
+    inlineEditing: false,
+    nestedInputNamespace: null,
+
     get viewMode() {
       if (this._viewMode === 'structure' && !this.canSort) {
         // return the default
@@ -119,7 +122,9 @@ Craft.BaseElementIndex = Garnish.Base.extend(
     },
 
     get selectable() {
-      return !!(this.actions || this.settings.selectable);
+      return (
+        !!(this.actions || this.settings.selectable) && !this.inlineEditing
+      );
     },
 
     get multiSelect() {
@@ -130,7 +135,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
     },
 
     get sortable() {
-      return this.settings.sortable && this.canSort;
+      return this.settings.sortable && this.canSort && !this.inlineEditing;
     },
 
     get canSort() {
@@ -164,6 +169,9 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       this.$container = $container;
       this.setSettings(settings, Craft.BaseElementIndex.defaults);
 
+      this.nestedInputNamespace = `elementindex-${Math.floor(
+        Math.random() * 100000
+      )}`;
       this.sourcePaths = {};
 
       // Define an ID prefix that can be used for dynamically created elements
@@ -1440,6 +1448,10 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         sortable: this.sortable,
       };
 
+      params.viewState.showHeaderColumn = this.settings.showHeaderColumn;
+      params.viewState.inlineEditing = this.inlineEditing;
+      params.viewState.nestedInputNamespace = this.nestedInputNamespace;
+
       // override viewState.mode in case it's different from what's stored
       params.viewState.mode = this.viewMode;
 
@@ -1504,8 +1516,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
         // Kill the old view class
         if (this.view) {
-          this.view.destroy();
-          delete this.view;
+          this.view.disable();
         }
 
         if (preservePagination !== true) {
@@ -3105,6 +3116,12 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         this.getViewSettings()
       );
 
+      // Kill the old view class
+      if (this.view) {
+        this.view.destroy();
+        delete this.view;
+      }
+
       this.view = this.createView(this.getSelectedViewMode(), settings);
 
       // Auto-select elements
@@ -3503,6 +3520,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       referenceElementId: null,
       referenceElementSiteId: null,
       allowedViewModes: null,
+      showHeaderColumn: true,
       criteria: null,
       batchSize: 100,
       disabledElementIds: [],
@@ -3512,6 +3530,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       canDuplicateElements: () => true,
       canDeleteElements: () => true,
       sortable: false,
+      inlineEditable: null,
       actions: null,
       buttonContainer: null,
       hideSidebar: false,

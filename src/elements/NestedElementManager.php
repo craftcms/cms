@@ -329,9 +329,11 @@ class NestedElementManager extends Component
 
         $config += [
             'allowedViewModes' => null,
+            'showHeaderColumn' => true,
             'fieldLayouts' => [],
             'defaultTableColumns' => null,
             'pageSize' => 50,
+            'inlineEditable' => false,
             'sortable' => false,
             'canCreate' => false,
             'createButtonLabel' => Craft::t('app', 'New {type}', [
@@ -355,6 +357,7 @@ class NestedElementManager extends Component
                     'allowedViewModes' => $config['allowedViewModes']
                         ? array_map(fn($mode) => StringHelper::toString($mode), $config['allowedViewModes'])
                         : null,
+                    'showHeaderColumn' => $config['showHeaderColumn'],
                     'criteria' => array_merge([
                         $this->ownerIdParam => $owner->id,
                     ], $this->criteria),

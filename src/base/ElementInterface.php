@@ -1628,6 +1628,15 @@ interface ElementInterface extends ComponentInterface
     public function getAttributeHtml(string $attribute): string;
 
     /**
+     * Returns the HTML that should be shown for a given attribute's inline editing input.
+     *
+     * @param string $attribute The attribute name.
+     * @return string The HTML that should be shown for the element input.
+     * @since 5.0.0
+     */
+    public function getInlineAttributeInputHtml(string $attribute): string;
+
+    /**
      * Returns the HTML for any fields/info that should be shown within the editor sidebar.
      *
      * @param bool $static Whether any fields within the sidebar should be static (non-interactive)
