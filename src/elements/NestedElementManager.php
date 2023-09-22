@@ -381,9 +381,9 @@ class NestedElementManager extends Component
 
             if ($config['sortable']) {
                 $view->startJsBuffer();
-                $config = ElementHelper::actionConfig(new ChangeSortOrder($owner, $attribute));
-                $config['bodyHtml'] = $view->clearJsBuffer();
-                $settings['indexSettings']['actions'][] = $config;
+                $actionConfig = ElementHelper::actionConfig(new ChangeSortOrder($owner, $attribute));
+                $actionConfig['bodyHtml'] = $view->clearJsBuffer();
+                $settings['indexSettings']['actions'][] = $actionConfig;
             }
 
             $view->registerJsWithVars(fn($id, $elementType, $settings, $reorderParams) => <<<JS
