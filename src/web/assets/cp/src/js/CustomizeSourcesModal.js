@@ -732,44 +732,28 @@ Craft.CustomizeSourcesModal.Source =
         return;
       }
 
-      const $columnCheckboxes = $('<div/>');
-      const selectedAttributes = [];
+      const name = `sources[${this.sourceData.key}][tableAttributes][]`;
 
-      $(
-        `<input type="hidden" name="sources[${this.sourceData.key}][tableAttributes][]" value=""/>`
-      ).appendTo($columnCheckboxes);
-
-      // Add the selected columns, in the selected order
-      for (let i = 0; i < this.sourceData.tableAttributes.length; i++) {
-        let [key, label] = this.sourceData.tableAttributes[i];
-        $columnCheckboxes.append(
-          this.createTableColumnOption(key, label, true)
-        );
-        selectedAttributes.push(key);
-      }
-
-      // Add the rest
-      for (let i = 0; i < availableTableAttributes.length; i++) {
-        const [key, label] = availableTableAttributes[i];
-        if (!Craft.inArray(key, selectedAttributes)) {
-          $columnCheckboxes.append(
-            this.createTableColumnOption(key, label, false)
-          );
-        }
-      }
-
-      new Garnish.DragSort($columnCheckboxes.children(), {
-        handle: '.move',
-        axis: 'y',
-      });
+      $('<input/>', {
+        type: 'hidden',
+        name,
+        value: '',
+      }).appendTo($container);
 
       Craft.ui
-        .createField($columnCheckboxes, {
+        .createCheckboxSelectField({
           label: Craft.t('app', 'Default Table Columns'),
           instructions: Craft.t(
             'app',
             'Choose which table columns should be visible for this source by default.'
           ),
+          name,
+          options: availableTableAttributes.map(([key, label]) => ({
+            label,
+            value: key,
+          })),
+          values: this.sourceData.tableAttributes.map(([key]) => key),
+          sortable: true,
         })
         .appendTo($container);
     },
@@ -778,19 +762,6 @@ Craft.CustomizeSourcesModal.Source =
       const attributes = this.modal.availableTableAttributes.slice(0);
       attributes.push(...this.sourceData.availableTableAttributes);
       return attributes;
-    },
-
-    createTableColumnOption: function (key, label, checked) {
-      return $('<div class="customize-sources-table-column"/>')
-        .append('<div class="icon move"/>')
-        .append(
-          Craft.ui.createCheckbox({
-            label: Craft.escapeHtml(label),
-            name: `sources[${this.sourceData.key}][tableAttributes][]`,
-            value: key,
-            checked: checked,
-          })
-        );
     },
 
     getIndexSourceItem: function () {

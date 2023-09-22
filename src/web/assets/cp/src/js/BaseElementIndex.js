@@ -4051,29 +4051,19 @@ const ViewMenu = Garnish.Base.extend({
       return $();
     }
 
-    this.$tableColumnsContainer = $('<div/>');
-
-    columns.forEach((column) => {
-      $('<div class="element-index-view-menu-table-column"/>')
-        .append('<div class="icon move"/>')
-        .append(
-          Craft.ui.createCheckbox({
-            label: Craft.escapeHtml(column.label),
-            value: column.attr,
-          })
-        )
-        .appendTo(this.$tableColumnsContainer);
+    this.$tableColumnsContainer = Craft.ui.createCheckboxSelect({
+      options: columns.map((c) => ({
+        label: c.label,
+        value: c.attr,
+      })),
+      sortable: true,
     });
 
     this.updateTableColumnField();
     this.tidyTableColumnField();
 
-    new Garnish.DragSort(this.$tableColumnsContainer.children(), {
-      handle: '.move',
-      axis: 'y',
-      onSortChange: () => {
-        this._onTableColumnChange();
-      },
+    this.$tableColumnsContainer.data('dragSort').on('sortChange', () => {
+      this._onTableColumnChange();
     });
 
     this._getTableColumnCheckboxes().on('change', (ev) => {

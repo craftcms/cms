@@ -192,7 +192,7 @@
             id: 'default-table-columns',
         } %}
             {% block input %}
-                {{ defaultTableOptionsInput|raw }}
+                <div id="default-table-columns-input"></div>
             {% endblock %}
         {% endembed %}
     {% endtag %}
@@ -212,19 +212,33 @@
 {% endtag %}
 
 {% js %}
+  const $defaultColumnsContainer = $('#{{ 'default-table-columns-input'|namespaceInputId }}');
+
+  Craft.ui.createCheckboxSelect({
+    name: {{ 'defaultTableColumns'|namespaceInputName|json_encode|raw }},
+    options: {{ defaultTableColumnOptions|json_encode|raw }},
+    values: {{ field.defaultTableColumns|json_encode|raw }},
+    sortable: true,
+  }).appendTo($defaultColumnsContainer);
+
   const selectize = $('#{{ 'entry-types'|namespaceInputId }}').data('selectize');
-  const $defaultColumnsInput = $('#{{ 'default-table-columns-field'|namespaceInputId }} .input');
 
   selectize.on('change', () => {
-    const values = $defaultColumnsInput.find('input:checked').toArray().map(input => input.value);
-    Craft.sendActionRequest('POST', 'matrix/render-default-table-columns-input', {
+    const values = $defaultColumnsContainer.find('input:checked').toArray().map(input => input.value);
+    Craft.sendActionRequest('POST', 'matrix/default-table-column-options', {
       data: {
         entryTypeIds: selectize.getValue(),
-        values,
-        namespace: {{ view.namespace|json_encode|raw }},
       },
     }).then(({data}) => {
-      $defaultColumnsInput.html(data.html);
+      $defaultColumnsContainer.empty().append(
+        Craft.ui.createCheckboxSelect({
+          name: {{ 'defaultTableColumns'|namespaceInputName|json_encode|raw }},
+          options: data.options,
+          values: values,
+          sortable: true,
+        })
+      );
+
     });
   });
 {% endjs %}

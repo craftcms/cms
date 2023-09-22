@@ -43,11 +43,9 @@ class MatrixController extends Controller
      *
      * @return Response
      */
-    public function actionRenderDefaultTableColumnsInput(): Response
+    public function actionDefaultTableColumnOptions(): Response
     {
         $entryTypeIds = $this->request->getRequiredBodyParam('entryTypeIds');
-        $values = $this->request->getRequiredBodyParam('values');
-        $namespace = $this->request->getRequiredBodyParam('namespace');
         $entryTypes = [];
         $entriesService = Craft::$app->getEntries();
 
@@ -60,10 +58,7 @@ class MatrixController extends Controller
         }
 
         return $this->asJson([
-            'html' => $this->getView()->namespaceInputs(
-                fn() => Matrix::defaultTableColumnsHtml($entryTypes, $values),
-                $namespace,
-            ),
+            'options' => Matrix::defaultTableColumnOptions($entryTypes),
         ]);
     }
 

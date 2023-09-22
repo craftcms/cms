@@ -39,7 +39,6 @@ use craft\gql\resolvers\elements\Entry as EntryResolver;
 use craft\gql\types\generators\EntryType as EntryTypeGenerator;
 use craft\gql\types\input\Matrix as MatrixInputType;
 use craft\helpers\ArrayHelper;
-use craft\helpers\Cp;
 use craft\helpers\Gql;
 use craft\helpers\Json;
 use craft\helpers\Queue;
@@ -163,14 +162,13 @@ class Matrix extends Field implements
     }
 
     /**
-     * Returns a “Default Table Columns” input for the given entry types.
+     * Returns the “Default Table Columns” options for the given entry types.
      *
      * @param EntryType[] $entryTypes
-     * @param string[] $values
-     * @return string
+     * @return array
      * @since 5.0.0
      */
-    public static function defaultTableColumnsHtml(array $entryTypes, array $values): string
+    public static function defaultTableColumnOptions(array $entryTypes): array
     {
         $fieldLayouts = array_map(fn(EntryType $entryType) => $entryType->getFieldLayout(), $entryTypes);
         $elementSources = Craft::$app->getElementSources();
@@ -183,13 +181,7 @@ class Matrix extends Field implements
         foreach ($tableColumns as $attribute => $column) {
             $options[] = ['label' => $column['label'], 'value' => $attribute];
         }
-
-        return Cp::checkboxGroupHtml([
-            'id' => 'default-table-columns',
-            'name' => 'defaultTableColumns',
-            'options' => $options,
-            'values' => $values,
-        ]);
+        return $options;
     }
 
     /**
@@ -634,7 +626,7 @@ class Matrix extends Field implements
     {
         return Craft::$app->getView()->renderTemplate('_components/fieldtypes/Matrix/settings.twig', [
             'field' => $this,
-            'defaultTableOptionsInput' => static::defaultTableColumnsHtml($this->getEntryTypes(), $this->defaultTableColumns),
+            'defaultTableColumnOptions' => static::defaultTableColumnOptions($this->getEntryTypes()),
         ]);
     }
 
