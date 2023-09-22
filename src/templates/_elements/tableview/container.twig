@@ -18,12 +18,12 @@
                     data: {
                         attribute: attribute[0],
                     },
-                    class: loop.first and not (showHeaderColumn ?? true) ? 'hidden' : null,
+                    class: loop.first and not (showHeaderColumn ?? true) ? 'thin' : null,
                 } %}
                     {% if icon %}
                         <span data-icon="{{ icon }}" aria-hidden="true"></span>
                         <span class="visually-hidden">{{ attribute[1].label }}</span>
-                    {% else %}
+                    {% elseif not loop.first or showHeaderColumn ?? true %}
                         {{ attribute[1].label|t('site') }}
                     {% endif %}
                     <div class="spinner"></div>
