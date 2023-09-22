@@ -128,7 +128,6 @@
 - Added `craft\events\DefineEntryTypesForFieldEvent`.
 - Added `craft\fieldlayoutelements\CustomField::$handle`.
 - Added `craft\fields\Addresses`.
-- Added `craft\fields\Matrix::$entryUriFormat`.
 - Added `craft\fields\Matrix::EVENT_DEFINE_ENTRY_TYPES`.
 - Added `craft\fields\Matrix::getEntryTypes()`.
 - Added `craft\fields\Matrix::getEntryTypesForField()`.
