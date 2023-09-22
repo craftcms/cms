@@ -855,16 +855,21 @@ class Matrix extends Field implements
 
     private function indexInputHtml(?ElementInterface $owner, bool $static = false): string
     {
+        $entryTypes = $this->getEntryTypes();
+
         $config = [
             'allowedViewModes' => array_filter([
                 ElementIndexViewMode::Cards,
                 $this->includeTableView ? ElementIndexViewMode::Table : null,
             ]),
+            'showHeaderColumn' => ArrayHelper::contains($entryTypes, fn(EntryType $entryType) => (
+                $entryType->hasTitleField ||
+                $entryType->titleFormat
+            )),
             'pageSize' => $this->pageSize ?? 50,
         ];
 
         if (!$static) {
-            $entryTypes = $this->getEntryTypes();
             $config += [
                 'fieldLayouts' => array_map(fn(EntryType $entryType) => $entryType->getFieldLayout(), $entryTypes),
                 'defaultTableColumns' => array_map(fn(string $attribute) => [$attribute], $this->defaultTableColumns),

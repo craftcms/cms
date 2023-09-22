@@ -32,7 +32,14 @@
         {% endif %}
         {% for attribute in attributes %}
             {% if loop.first %}
-                <th data-title="{{ attribute[1].label }}" data-titlecell="" scope="row">
+                {% tag 'th' with {
+                    class: not (showHeaderColumn ?? true) ? 'hidden' : null,
+                    data: {
+                        title: attribute[1].label,
+                        titlecell: '',
+                    },
+                    scope: 'row',
+                } %}
                     {% tag 'div' with {
                         style: {
                             ("padding-#{padding}"): structure or sortable ? "#{(inlineEditing ? 0 : 24) + 44 * ((element.level ?: 1) - 1)}px" : null,
@@ -65,7 +72,7 @@
                             }) }}
                         {% endif  %}
                     {% endtag %}
-                </th>
+                {% endtag %}
             {% else %}
                 <td data-title="{{ attribute[1].label }}" data-attr="{{ attribute[0] }}">
                     {% if showInputs %}

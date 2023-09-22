@@ -1140,6 +1140,7 @@ abstract class Element extends Component implements ElementInterface
             'collapsedElementIds' => Craft::$app->getRequest()->getParam('collapsedElementIds'),
             'selectable' => $selectable,
             'sortable' => $sortable,
+            'showHeaderColumn' => $viewState['showHeaderColumn'] ?? false,
             'inlineEditing' => $viewState['inlineEditing'] ?? false,
             'nestedInputNamespace' => $viewState['nestedInputNamespace'] ?? null,
             'tableName' => static::pluralDisplayName(),

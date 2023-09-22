@@ -1448,6 +1448,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         sortable: this.sortable,
       };
 
+      params.viewState.showHeaderColumn = this.settings.showHeaderColumn;
       params.viewState.inlineEditing = this.inlineEditing;
       params.viewState.nestedInputNamespace = this.nestedInputNamespace;
 
@@ -3519,6 +3520,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       referenceElementId: null,
       referenceElementSiteId: null,
       allowedViewModes: null,
+      showHeaderColumn: true,
       criteria: null,
       batchSize: 100,
       disabledElementIds: [],
