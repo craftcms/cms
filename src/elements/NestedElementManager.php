@@ -329,6 +329,8 @@ class NestedElementManager extends Component
 
         $config += [
             'allowedViewModes' => null,
+            'fieldLayouts' => [],
+            'defaultTableColumns' => null,
             'pageSize' => 50,
             'sortable' => false,
             'canCreate' => false,
@@ -431,6 +433,8 @@ JS, [
                 'context' => 'embedded-index',
                 'id' => $id,
                 'sources' => false,
+                'fieldLayouts' => $config['fieldLayouts'],
+                'defaultTableColumns' => $config['defaultTableColumns'],
                 'registerJs' => false,
             ]);
         }, Html::id($attribute));

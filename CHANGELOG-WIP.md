@@ -139,6 +139,8 @@
 - Added `craft\helpers\App::isWindows()`.
 - Added `craft\helpers\App::silence()`.
 - Added `craft\helpers\ArrayHelper::lastValue()`.
+- Added `craft\helpers\Cp::checkboxGroupFieldHtml()`.
+- Added `craft\helpers\Cp::checkboxGroupHtml()`.
 - Added `craft\helpers\Cp::elementCardHtml()`.
 - Added `craft\helpers\Cp::elementChipHtml()`.
 - Added `craft\helpers\Cp::elementIndexHtml()`.

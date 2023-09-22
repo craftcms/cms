@@ -179,7 +179,23 @@
         id: 'include-table-view',
         name: 'includeTableView',
         on: field.includeTableView,
+        toggle: '#default-table-columns-container',
     }) }}
+
+    {% tag 'div' with {
+        id: 'default-table-columns-container',
+        class: not field.includeTableView ? 'hidden' : null,
+    } %}
+        {% embed '_includes/forms/field.twig' with {
+            label: 'Default Table Columns'|t('app'),
+            instructions: 'Choose which table columns should be visible by default.'|t('app'),
+            id: 'default-table-columns',
+        } %}
+            {% block input %}
+                {{ defaultTableOptionsInput|raw }}
+            {% endblock %}
+        {% endembed %}
+    {% endtag %}
 
     {{ forms.selectField({
         label: '{type} Per Page'|t('app', {
@@ -194,3 +210,21 @@
         value: field.pageSize ?? 50,
     }) }}
 {% endtag %}
+
+{% js %}
+  const selectize = $('#{{ 'entry-types'|namespaceInputId }}').data('selectize');
+  const $defaultColumnsInput = $('#{{ 'default-table-columns-field'|namespaceInputId }} .input');
+
+  selectize.on('change', () => {
+    const values = $defaultColumnsInput.find('input:checked').toArray().map(input => input.value);
+    Craft.sendActionRequest('POST', 'matrix/render-default-table-columns-input', {
+      data: {
+        entryTypeIds: selectize.getValue(),
+        values,
+        namespace: {{ view.namespace|json_encode|raw }},
+      },
+    }).then(({data}) => {
+      $defaultColumnsInput.html(data.html);
+    });
+  });
+{% endjs %}

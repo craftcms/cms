@@ -1472,6 +1472,13 @@ Craft.BaseElementIndex = Garnish.Base.extend(
           this.filterHuds[this.siteId][this.sourceKey].serialized;
       }
 
+      if (
+        this.sourceKey === '__IMP__' &&
+        typeof params.viewState.tableColumns === 'undefined'
+      ) {
+        params.viewState.tableColumns = this.getDefaultTableColumns();
+      }
+
       // Give plugins a chance to hook in here
       this.trigger('registerViewParams', {
         params: params,

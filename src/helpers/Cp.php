@@ -28,6 +28,7 @@ use craft\services\Elements;
 use craft\services\ElementSources;
 use craft\web\twig\TemplateLoaderException;
 use craft\web\View;
+use Illuminate\Support\Collection;
 use yii\base\Event;
 use yii\base\InvalidArgumentException;
 use yii\helpers\Markdown;
@@ -846,6 +847,8 @@ class Cp
             'sources' => null,
             'showStatusMenu' => 'auto',
             'showSiteMenu' => 'auto',
+            'fieldLayouts' => [],
+            'defaultTableColumns' => null,
             'registerJs' => true,
             'jsSettings' => [],
         ];
@@ -856,6 +859,17 @@ class Cp
         if ($config['showSiteMenu'] !== 'auto') {
             $config['showSiteMenu'] = (bool)$config['showSiteMenu'];
         }
+
+        $sortOptions = Collection::make($elementType::sortOptions())
+            ->map(fn($option, $key) => [
+                'label' => $option['label'] ?? $option,
+                'attr' => $option['attribute'] ?? $option['orderBy'] ?? $key,
+                'defaultDir' => $option['defaultDir'] ?? 'asc',
+            ])
+            ->values()
+            ->all();
+
+        $tableColumns = Craft::$app->getElementSources()->getAvailableTableAttributes($elementType);
 
         if ($config['sources'] !== false) {
             if (is_array($config['sources'])) {
@@ -926,6 +940,23 @@ class Cp
                     'hasThumbs' => $elementType::hasThumbs(),
                 ],
             ];
+
+            // if field layouts were supplied, merge in additional table columns and sort columns
+            if (!empty($config['fieldLayouts'])) {
+                $elementSourcesService = Craft::$app->getElementSources();
+                $sortOptions = array_merge(
+                    $sortOptions,
+                    array_map(fn(array $option) => [
+                        'label' => $option['label'],
+                        'attr' => $option['attribute'],
+                        'defaultDir' => $option['defaultDir'],
+                    ], $elementSourcesService->getSortOptionsForFieldLayouts($config['fieldLayouts'])),
+                );
+                $tableColumns = array_merge(
+                    $tableColumns,
+                    $elementSourcesService->getTableAttributesForFieldLayouts($config['fieldLayouts']),
+                );
+            }
         }
 
         $view = Craft::$app->getView();
@@ -964,6 +995,9 @@ JS, [
             Html::tag('nav', $view->renderTemplate('_elements/sources', [
                 'elementType' => $elementType,
                 'sources' => $sources,
+                'baseSortOptions' => $sortOptions,
+                'tableColumns' => $tableColumns,
+                'defaultTableColumns' => $config['defaultTableColumns'],
             ], View::TEMPLATE_MODE_CP)) .
             Html::endTag('div') .
             Html::beginTag('div', ['class' => 'main']) .
@@ -1274,6 +1308,31 @@ JS, [
         $config['id'] = $config['id'] ?? 'checkboxselect' . mt_rand();
         $config['fieldset'] = true;
         return static::fieldHtml('template:_includes/forms/checkboxSelect.twig', $config);
+    }
+
+    /**
+     * Renders a checkbox group input.
+     *
+     * @param array $config
+     * @return string
+     * @since 5.0.0
+     */
+    public static function checkboxGroupHtml(array $config): string
+    {
+        return static::renderTemplate('_includes/forms/checkboxGroup.twig', $config);
+    }
+
+    /**
+     * Renders a checkbox group field’s HTML.
+     *
+     * @param array $config
+     * @return string
+     * @since 5.0.0
+     */
+    public static function checkboxGroupFieldHtml(array $config): string
+    {
+        $config['id'] = $config['id'] ?? 'checkboxgroup' . mt_rand();
+        return static::fieldHtml('template:_includes/forms/checkboxGroup.twig', $config);
     }
 
     /**

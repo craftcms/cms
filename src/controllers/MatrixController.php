@@ -39,6 +39,35 @@ class MatrixController extends Controller
     }
 
     /**
+     * Renders an updated “Default Table Columns” input for the selected entry types.
+     *
+     * @return Response
+     */
+    public function actionRenderDefaultTableColumnsInput(): Response
+    {
+        $entryTypeIds = $this->request->getRequiredBodyParam('entryTypeIds');
+        $values = $this->request->getRequiredBodyParam('values');
+        $namespace = $this->request->getRequiredBodyParam('namespace');
+        $entryTypes = [];
+        $entriesService = Craft::$app->getEntries();
+
+        foreach ($entryTypeIds as $entryTypeId) {
+            $entryType = $entriesService->getEntryTypeById($entryTypeId);
+            if (!$entryType) {
+                throw new BadRequestHttpException("Invalid entry type ID: $entryTypeId");
+            }
+            $entryTypes[] = $entryType;
+        }
+
+        return $this->asJson([
+            'html' => $this->getView()->namespaceInputs(
+                fn() => Matrix::defaultTableColumnsHtml($entryTypes, $values),
+                $namespace,
+            ),
+        ]);
+    }
+
+    /**
      * Renders a new entry block.
      *
      * @return Response
