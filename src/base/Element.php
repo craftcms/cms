@@ -1203,6 +1203,10 @@ abstract class Element extends Component implements ElementInterface
                     static::prepElementQueryForTableAttribute($elementQuery, $attribute[0]);
                 }
             }
+
+            if (!$variables['showHeaderColumn'] && count($variables['attributes']) <= 1) {
+                $variables['showHeaderColumn'] = true;
+            }
         }
 
         // Only cache if there's no search term
