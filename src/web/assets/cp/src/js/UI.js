@@ -1261,12 +1261,24 @@ Craft.ui = {
     let regex;
 
     if (typeof errorKeyParts[0] !== 'undefined') {
-      regex =
-        typeof errorKeyParts[2] === 'undefined'
-          ? new RegExp(`^${namespace}(fields-)?${errorKeyParts[0]}.*-errors`)
-          : (regex = new RegExp(
-              `^${namespace}(fields-)?${errorKeyParts[0]}.*-${errorKeyParts[2]}-errors`
-            ));
+      if (typeof errorKeyParts[2] === 'undefined') {
+        regex = new RegExp(`^${namespace}fields-${errorKeyParts[0]}.*-errors`);
+      } else {
+        regex = new RegExp(`^${namespace}fields-${errorKeyParts[0]}.*-`);
+
+        let subpartsCount = Math.ceil(errorKeyParts.length / 2) - 1;
+        let j = 0;
+        for (let i = 0; i < subpartsCount; i++) {
+          j = j + 2;
+          let regexPart;
+          if (i == subpartsCount - 1) {
+            regexPart = new RegExp(`fields-${errorKeyParts[j]}-errors`);
+          } else {
+            regexPart = new RegExp(`fields-${errorKeyParts[j]}.*-`);
+          }
+          regex = new RegExp(regex.source + regexPart.source);
+        }
+      }
     }
 
     // find errors list for given error from summary
@@ -1276,8 +1288,11 @@ Craft.ui = {
         return this.id.match(regex);
       });
 
-      if (errorsElement.length > 1 && typeof errorKeyParts[1] !== 'undefined') {
-        errorsElement = errorsElement[errorKeyParts[1]]; // TODO: improve this
+      if (
+        errorsElement.length > 1 &&
+        typeof errorKeyParts[errorKeyParts.length - 2] !== 'undefined'
+      ) {
+        errorsElement = errorsElement[errorKeyParts[errorKeyParts.length - 2]];
       } else {
         errorsElement = errorsElement[0];
       }
@@ -1311,20 +1326,15 @@ Craft.ui = {
         $fieldTabAnchor.click();
       }
 
-      // check if the parent is collapsed - if yes, expand it
-      // this gets parent block for matrix and super table
-      let $collapsedParent = $fieldErrorsContainer.parents('.collapsed');
+      // check if the parents are collapsed - if yes, expand
+      let $collapsedParent = $fieldErrorsContainer.parents(
+        '.collapsed, .is-collapsed'
+      );
       if ($collapsedParent.length > 0) {
         if ($collapsedParent.data('block') != undefined) {
-          $collapsedParent.data('block').expand(); // this handles matrix
-        } else {
-          $collapsedParent.find('.titlebar').trigger('doubletap'); // this handles super table (though would work on matrix too)
-        }
-      } else {
-        // this gets parent block for neo
-        $collapsedParent = $fieldErrorsContainer.parents('.is-collapsed');
-        if ($collapsedParent.length > 0) {
           $collapsedParent.data('block').expand();
+        } else {
+          $collapsedParent.find('.titlebar').trigger('doubletap');
         }
       }
 
