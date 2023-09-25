@@ -444,7 +444,7 @@ abstract class Field extends SavableComponent implements FieldInterface
     /**
      * @inheritdoc
      */
-    public function getIsTranslatable(?ElementInterface $element = null): bool
+    public function getIsTranslatable(?ElementInterface $element): bool
     {
         if ($this->translationMethod === self::TRANSLATION_METHOD_CUSTOM) {
             return $element === null || $this->getTranslationKey($element) !== '';
@@ -455,7 +455,7 @@ abstract class Field extends SavableComponent implements FieldInterface
     /**
      * @inheritdoc
      */
-    public function getTranslationDescription(?ElementInterface $element = null): ?string
+    public function getTranslationDescription(?ElementInterface $element): ?string
     {
         if (!$this->getIsTranslatable($element)) {
             return null;
@@ -521,7 +521,7 @@ abstract class Field extends SavableComponent implements FieldInterface
     /**
      * @inheritdoc
      */
-    public function normalizeValue(mixed $value, ?ElementInterface $element = null): mixed
+    public function normalizeValue(mixed $value, ?ElementInterface $element): mixed
     {
         return $value;
     }
@@ -529,7 +529,7 @@ abstract class Field extends SavableComponent implements FieldInterface
     /**
      * @inheritdoc
      */
-    public function normalizeValueFromRequest(mixed $value, ?ElementInterface $element = null): mixed
+    public function normalizeValueFromRequest(mixed $value, ?ElementInterface $element): mixed
     {
         return $this->normalizeValue($value, $element);
     }
@@ -537,14 +537,39 @@ abstract class Field extends SavableComponent implements FieldInterface
     /**
      * @inheritdoc
      */
-    public function getInputHtml(mixed $value, ?ElementInterface $element = null): string
+    public function getInputHtml(mixed $value, ?ElementInterface $element): string
     {
-        $html = $this->inputHtml($value, $element);
+        $html = $this->inputHtml($value, $element, false);
 
         // Give plugins a chance to modify it
         $event = new DefineFieldHtmlEvent([
             'value' => $value,
             'element' => $element,
+            'inline' => false,
+            'html' => $html,
+        ]);
+
+        $this->trigger(self::EVENT_DEFINE_INPUT_HTML, $event);
+        return $event->html;
+    }
+
+    /**
+     * Returns the HTML that should be shown for this field’s inline inputs.
+     *
+     * @param mixed $value The field’s value
+     * @param ElementInterface|null $element The element the field is associated with
+     * @return string The HTML that should be shown for this field’s inline input
+     * @since 5.0.0
+     */
+    public function getInlineInputHtml(mixed $value, ?ElementInterface $element): string
+    {
+        $html = $this->inputHtml($value, $element, true);
+
+        // Give plugins a chance to modify it
+        $event = new DefineFieldHtmlEvent([
+            'value' => $value,
+            'element' => $element,
+            'inline' => true,
             'html' => $html,
         ]);
 
@@ -558,26 +583,14 @@ abstract class Field extends SavableComponent implements FieldInterface
      * @param mixed $value The field’s value. This will either be the [[normalizeValue()|normalized value]],
      * raw POST data (i.e. if there was a validation error), or null
      * @param ElementInterface|null $element The element the field is associated with, if there is one
+     * @param bool $inline Whether this is for an inline edit form.
      * @return string The input HTML.
      * @see getInputHtml()
      * @since 3.5.0
      */
-    protected function inputHtml(mixed $value, ?ElementInterface $element = null): string
+    protected function inputHtml(mixed $value, ?ElementInterface $element, bool $inline): string
     {
         return Html::textarea($this->handle, $value);
-    }
-
-    /**
-     * Returns the HTML that should be shown for this field’s inline inputs.
-     *
-     * @param mixed $value The field’s value
-     * @param ElementInterface|null $element The element the field is associated with
-     * @return string The HTML that should be shown for this field’s inline input
-     * @since 5.0.0
-     */
-    public function getInlineInputHtml(mixed $value, ?ElementInterface $element): string
-    {
-        return $this->getInputHtml($value, $element);
     }
 
     /**
@@ -683,7 +696,7 @@ abstract class Field extends SavableComponent implements FieldInterface
     /**
      * @inheritdoc
      */
-    public function serializeValue(mixed $value, ?ElementInterface $element = null): mixed
+    public function serializeValue(mixed $value, ?ElementInterface $element): mixed
     {
         // If the object explicitly defines its savable value, use that
         if ($value instanceof Serializable) {

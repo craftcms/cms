@@ -131,6 +131,7 @@
 - Added `craft\enums\TimePeriod`.
 - Added `craft\events\BulkElementsEvent`.
 - Added `craft\events\DefineEntryTypesForFieldEvent`.
+- Added `craft\events\DefineFieldHtmlEvent::$inline`.
 - Added `craft\fieldlayoutelements\CustomField::$handle`.
 - Added `craft\fields\Addresses`.
 - Added `craft\fields\Matrix::EVENT_DEFINE_ENTRY_TYPES`.
@@ -201,6 +202,8 @@
 - `craft\base\ElementInterface::getEagerLoadedElementCount()` can now return `null` for counts that haven’t been eager-loaded yet.
 - `craft\base\ElementInterface::getEagerLoadedElements` now has an `ElementCollection|null` return type, rather than `Collection|null`.
 - `craft\base\ElementInterface::indexHtml()`’ `$showCheckboxes` argument is now `$selectable`, and it now has a `$sortable` argument.
+- `craft\base\Field::inputHtml()` now has a `$default` argument.
+- `craft\base\FieldInterface::getIsTranslatable()`, `getTranslationDescription()`, `getInputHtml()`, `normalizeValue()`, `normalizeValueFromRequest()`, and `serializeValue()` no longer need to specify a default value for the `$element` argument.
 - `craft\db\Connection::getSupportsMb4()` is now dynamic for MySQL installs, based on whether the `elements_sites` table has an `mb4` charset.
 - `craft\elemens\db\ElementQueryInterface::collect()` now has an `ElementCollection` return type, rather than `Collection`.
 - `craft\elements\Entry::getSection()` can now return `null`, for nested entries.

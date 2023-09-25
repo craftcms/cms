@@ -370,7 +370,7 @@ class Addresses extends Field implements
     /**
      * @inheritdoc
      */
-    public function normalizeValue(mixed $value, ?ElementInterface $element = null): mixed
+    public function normalizeValue(mixed $value, ?ElementInterface $element): mixed
     {
         return $this->normalizeValueInternal($value, $element, false);
     }
@@ -378,7 +378,7 @@ class Addresses extends Field implements
     /**
      * @inheritdoc
      */
-    public function normalizeValueFromRequest(mixed $value, ?ElementInterface $element = null): mixed
+    public function normalizeValueFromRequest(mixed $value, ?ElementInterface $element): mixed
     {
         return $this->normalizeValueInternal($value, $element, true);
     }
@@ -563,7 +563,7 @@ class Addresses extends Field implements
     /**
      * @inheritdoc
      */
-    public function serializeValue(mixed $value, ?ElementInterface $element = null): mixed
+    public function serializeValue(mixed $value, ?ElementInterface $element): mixed
     {
         /** @var AddressQuery|ElementCollection $value */
         $serialized = [];
@@ -601,7 +601,7 @@ class Addresses extends Field implements
     /**
      * @inheritdoc
      */
-    public function getIsTranslatable(?ElementInterface $element = null): bool
+    public function getIsTranslatable(?ElementInterface $element): bool
     {
         return $this->addressManager()->getIsTranslatable($element);
     }
@@ -609,7 +609,7 @@ class Addresses extends Field implements
     /**
      * @inheritdoc
      */
-    public function getTranslationDescription(?ElementInterface $element = null): ?string
+    public function getTranslationDescription(?ElementInterface $element): ?string
     {
         return $this->addressManager()->getTranslationDescription($element);
     }
@@ -618,7 +618,7 @@ class Addresses extends Field implements
      * @inheritdoc
      * @throws InvalidConfigException
      */
-    protected function inputHtml(mixed $value, ?ElementInterface $element = null): string
+    protected function inputHtml(mixed $value, ?ElementInterface $element, bool $inline): string
     {
         return $this->indexInputHtml($element);
     }

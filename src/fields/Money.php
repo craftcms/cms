@@ -167,7 +167,7 @@ class Money extends Field implements InlineEditableFieldInterface, SortableField
     /**
      * @inheritdoc
      */
-    public function normalizeValue(mixed $value, ?ElementInterface $element = null): mixed
+    public function normalizeValue(mixed $value, ?ElementInterface $element): mixed
     {
         if ($value instanceof MoneyLibrary) {
             return $value;
@@ -241,7 +241,7 @@ class Money extends Field implements InlineEditableFieldInterface, SortableField
     /**
      * @inheritdoc
      */
-    protected function inputHtml(mixed $value, ?ElementInterface $element = null): string
+    protected function inputHtml(mixed $value, ?ElementInterface $element, bool $inline): string
     {
         $view = Craft::$app->getView();
 

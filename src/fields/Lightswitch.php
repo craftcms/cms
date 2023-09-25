@@ -130,7 +130,7 @@ class Lightswitch extends Field implements InlineEditableFieldInterface, Sortabl
     /**
      * @inheritdoc
      */
-    protected function inputHtml(mixed $value, ?ElementInterface $element = null): string
+    protected function inputHtml(mixed $value, ?ElementInterface $element, bool $inline): string
     {
         $id = $this->getInputId();
         return Craft::$app->getView()->renderTemplate('_includes/forms/lightswitch.twig', [
@@ -147,7 +147,7 @@ class Lightswitch extends Field implements InlineEditableFieldInterface, Sortabl
     /**
      * @inheritdoc
      */
-    public function normalizeValue(mixed $value, ?ElementInterface $element = null): mixed
+    public function normalizeValue(mixed $value, ?ElementInterface $element): mixed
     {
         // If this is a new entry, look for a default option
         if ($value === null) {

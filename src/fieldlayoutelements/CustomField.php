@@ -334,7 +334,7 @@ class CustomField extends BaseField
      */
     protected function inputHtml(?ElementInterface $element = null, bool $static = false): ?string
     {
-        $value = $element ? $element->getFieldValue($this->_field->handle) : $this->_field->normalizeValue(null);
+        $value = $element ? $element->getFieldValue($this->_field->handle) : $this->_field->normalizeValue(null, null);
 
         if ($static) {
             return $this->_field->getStaticHtml($value, $element);

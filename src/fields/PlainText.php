@@ -146,7 +146,7 @@ class PlainText extends Field implements InlineEditableFieldInterface, SortableF
     /**
      * @inheritdoc
      */
-    public function normalizeValue(mixed $value, ?ElementInterface $element = null): mixed
+    public function normalizeValue(mixed $value, ?ElementInterface $element): mixed
     {
         return $this->_normalizeValueInternal($value, $element, false);
     }
@@ -154,7 +154,7 @@ class PlainText extends Field implements InlineEditableFieldInterface, SortableF
     /**
      * @inheritdoc
      */
-    public function normalizeValueFromRequest(mixed $value, ?ElementInterface $element = null): mixed
+    public function normalizeValueFromRequest(mixed $value, ?ElementInterface $element): mixed
     {
         return $this->_normalizeValueInternal($value, $element, true);
     }
@@ -175,7 +175,7 @@ class PlainText extends Field implements InlineEditableFieldInterface, SortableF
     /**
      * @inheritdoc
      */
-    protected function inputHtml(mixed $value, ?ElementInterface $element = null): string
+    protected function inputHtml(mixed $value, ?ElementInterface $element, bool $inline): string
     {
         return Craft::$app->getView()->renderTemplate('_components/fieldtypes/PlainText/input.twig', [
             'name' => $this->handle,
@@ -203,7 +203,7 @@ class PlainText extends Field implements InlineEditableFieldInterface, SortableF
     /**
      * @inheritdoc
      */
-    public function serializeValue(mixed $value, ?ElementInterface $element = null): mixed
+    public function serializeValue(mixed $value, ?ElementInterface $element): mixed
     {
         if ($value !== null && !Craft::$app->getDb()->getSupportsMb4()) {
             $value = StringHelper::emojiToShortcodes(StringHelper::escapeShortcodes($value));

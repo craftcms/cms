@@ -135,7 +135,7 @@ class Time extends Field implements InlineEditableFieldInterface, SortableFieldI
     /**
      * @inheritdoc
      */
-    protected function inputHtml(mixed $value, ?ElementInterface $element = null): string
+    protected function inputHtml(mixed $value, ?ElementInterface $element, bool $inline): string
     {
         return Craft::$app->getView()->renderTemplate('_includes/forms/time.twig', [
             'id' => parent::getInputId(), // can't use $this->getInputId() here because the template adds the "-time"
@@ -181,7 +181,7 @@ class Time extends Field implements InlineEditableFieldInterface, SortableFieldI
     /**
      * @inheritdoc
      */
-    public function normalizeValue(mixed $value, ?ElementInterface $element = null): mixed
+    public function normalizeValue(mixed $value, ?ElementInterface $element): mixed
     {
         if (!$value) {
             return null;
@@ -205,7 +205,7 @@ class Time extends Field implements InlineEditableFieldInterface, SortableFieldI
     /**
      * @inheritdoc
      */
-    public function serializeValue(mixed $value, ?ElementInterface $element = null): mixed
+    public function serializeValue(mixed $value, ?ElementInterface $element): mixed
     {
         /** @var DateTime|null $value */
         return $value?->format('H:i:s');

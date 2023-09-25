@@ -237,7 +237,7 @@ class Date extends Field implements InlineEditableFieldInterface, SortableFieldI
     /**
      * @inheritdoc
      */
-    protected function inputHtml(mixed $value, ?ElementInterface $element = null): string
+    protected function inputHtml(mixed $value, ?ElementInterface $element, bool $inline): string
     {
         /** @var DateTime|null $value */
         $view = Craft::$app->getView();
@@ -361,7 +361,7 @@ class Date extends Field implements InlineEditableFieldInterface, SortableFieldI
     /**
      * @inheritdoc
      */
-    public function normalizeValue(mixed $value, ?ElementInterface $element = null): mixed
+    public function normalizeValue(mixed $value, ?ElementInterface $element): mixed
     {
         if ($value instanceof DateTime) {
             return $value;
@@ -395,7 +395,7 @@ class Date extends Field implements InlineEditableFieldInterface, SortableFieldI
     /**
      * @inheritdoc
      */
-    public function serializeValue(mixed $value, ?ElementInterface $element = null): mixed
+    public function serializeValue(mixed $value, ?ElementInterface $element): mixed
     {
         if (!$value) {
             return null;

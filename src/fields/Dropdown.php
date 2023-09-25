@@ -67,7 +67,7 @@ class Dropdown extends BaseOptionsField implements SortableFieldInterface, Inlin
     /**
      * @inheritdoc
      */
-    protected function inputHtml(mixed $value, ?ElementInterface $element = null): string
+    protected function inputHtml(mixed $value, ?ElementInterface $element, bool $inline): string
     {
         /** @var SingleOptionFieldData $value */
         $options = $this->translatedOptions(true, $value, $element);
@@ -85,7 +85,7 @@ class Dropdown extends BaseOptionsField implements SortableFieldInterface, Inlin
             $default = $this->defaultValue();
 
             if ($default !== null) {
-                $value = $this->normalizeValue($this->defaultValue());
+                $value = $this->normalizeValue($this->defaultValue(), null);
             } else {
                 $value = null;
 
