@@ -169,8 +169,7 @@ class NestedElementManager extends Component
             return $owner->{$this->attribute};
         }
 
-        /** @var ElementQueryInterface $query */
-        $query = $owner->getFieldValue($this->fieldHandle);
+        $query = $this->nestedElementQuery($owner);
 
         if ($fetchAll && !$query->getCachedResult()) {
             $query
