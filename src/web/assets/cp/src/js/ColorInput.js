@@ -60,7 +60,7 @@ Craft.ColorInput = Garnish.Base.extend(
     handleTextChange: function () {
       let val = this.$input.val();
 
-      if (val !== (val = Craft.trim(val))) {
+      if (val !== (val = val.trim())) {
         this.$input.val(val);
       }
 

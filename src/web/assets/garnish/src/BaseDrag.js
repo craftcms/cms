@@ -350,7 +350,7 @@ export default Base.extend(
           // https://github.com/craftcms/cms/issues/12896
           const selector = this.settings.handle
             .split(',')
-            .map((s) => Craft.ensureEndsWith(Craft.trim(s), ':first'))
+            .map((s) => Craft.ensureEndsWith(s.trim(), ':first'))
             .join(',');
           return $(selector, item);
         }
