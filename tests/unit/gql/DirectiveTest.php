@@ -14,7 +14,9 @@ use craft\gql\base\Directive;
 use craft\gql\directives\FormatDateTime;
 use craft\gql\directives\Markdown;
 use craft\gql\directives\Money;
+use craft\gql\directives\StripTags;
 use craft\gql\directives\Transform;
+use craft\gql\directives\Trim;
 use craft\gql\GqlEntityRegistry;
 use craft\gql\types\elements\Asset as GqlAssetType;
 use craft\gql\types\elements\Entry as GqlEntryType;
@@ -93,6 +95,8 @@ class DirectiveTest extends TestCase
         $formatDateTime = FormatDateTime::class;
         $markDownDirective = Markdown::class;
         $moneyDirective = Money::class;
+        $stripTagsDirective = StripTags::class;
+        $trimDirective = Trim::class;
 
         $dateTime = new DateTime('now');
 
@@ -134,6 +138,13 @@ class DirectiveTest extends TestCase
             'money-decimal' => [$money, $moneyDirective, [$this->_buildDirective($moneyDirective, $moneyParameters[2])], '1234.56'],
             'money-string' => [$money, $moneyDirective, [$this->_buildDirective($moneyDirective, $moneyParameters[3])], '$1,234.56'],
             'money-amount' => [$money, $moneyDirective, [$this->_buildDirective($moneyDirective, $moneyParameters[4])], '123456'],
+
+            // Strip tags
+            'strip-tags' => ['<p>foo<br>bar</p>', $stripTagsDirective, [$this->_buildDirective($stripTagsDirective)], 'foobar'],
+            'strip-tags-with-allowed' => ['<p>foo<br>bar</p>', $stripTagsDirective, [$this->_buildDirective($stripTagsDirective, ['allowed' => ['br']])], 'foo<br>bar'],
+
+            // Trim
+            'trim' => [" \tfoo bar\r\n", $trimDirective, [$this->_buildDirective($trimDirective)], 'foo bar'],
         ];
     }
 
@@ -168,11 +179,11 @@ class DirectiveTest extends TestCase
     private function _buildDirective(string $className, array $arguments = []): string
     {
         $directiveTemplate = '{"name": {"value": "%s"}, "arguments": [%s]}';
-        $argumentTemplate = '{"name": {"value":"%s"}, "value": {"value": "%s"}}';
+        $argumentTemplate = '{"name": {"value":"%s"}, "value": {"value": %s}}';
 
         $argumentList = [];
         foreach ($arguments as $key => $value) {
-            $argumentList[] = sprintf($argumentTemplate, $key, addslashes($value));
+            $argumentList[] = sprintf($argumentTemplate, $key, Json::encode($value));
         }
 
         /** @var string|Directive $className */
@@ -197,8 +208,7 @@ class DirectiveTest extends TestCase
             ]),
         ]));
 
-        if (!GqlEntityRegistry::getEntity($directiveName)) {
-            GqlEntityRegistry::createEntity($directiveName, $className::create());
-        }
+        /** @var string|Directive $className */
+        GqlEntityRegistry::getOrCreate($directiveName, fn() => $className::create());
     }
 }

@@ -18,7 +18,7 @@ Craft.ElementThumbLoader = Garnish.Base.extend(
 
     load: function ($elements) {
       // Only immediately load the visible images
-      let $thumbs = $elements.find('.elementthumb');
+      let $thumbs = $elements.find('.elementthumb[data-sizes]');
       for (let i = 0; i < $thumbs.length; i++) {
         let $thumb = $thumbs.eq(i);
         let $scrollParent = $thumb.scrollParent();

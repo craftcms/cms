@@ -137,6 +137,7 @@ JS;
             'Buy {name}',
             'Cancel',
             'Choose a user',
+            'Choose which sites this source should be visible for.',
             'Choose which table columns should be visible for this source by default.',
             'Choose which user groups should have access to this source.',
             'Clear',
@@ -196,6 +197,7 @@ JS;
             'Folder renamed.',
             'Folder renamed.',
             'Format',
+            'Found {num, number} {num, plural, =1{error} other{errors}}',
             'From {date}',
             'From',
             'Give your tab a name.',
@@ -214,6 +216,7 @@ JS;
             'Keep them',
             'Label',
             'Landscape',
+            'Level {num}',
             'License transferred.',
             'Limit',
             'Loading',
@@ -270,7 +273,9 @@ JS;
             'Previewing {type} device',
             'Previous Page',
             'Really delete folder “{folder}”?',
+            'Recent Activity',
             'Refresh',
+            'Reload',
             'Remove {label}',
             'Remove',
             'Rename folder',
@@ -304,6 +309,7 @@ JS;
             'Showing your unsaved changes.',
             'Sign in',
             'Sign out now',
+            'Sites',
             'Skip to {title}',
             'Sort ascending',
             'Sort attribute',
@@ -329,6 +335,7 @@ JS;
             'This tab is conditional',
             'This week',
             'This year',
+            'This {type} has been updated.',
             'Tip',
             'Title',
             'To {date}',
@@ -361,6 +368,8 @@ JS;
             'by {creator}',
             'day',
             'days',
+            'draft',
+            'element',
             'files',
             'folders',
             'hour',
@@ -375,6 +384,7 @@ JS;
             '{element} pagination',
             '{first, number}-{last, number} of {total, number} {total, plural, =1{{item}} other{{items}}}',
             '{first}-{last} of {total}',
+            '{name} active, more info',
             '{name} folder',
             '{num, number} {num, plural, =1{Available Update} other{Available Updates}}',
             '{num, number} {num, plural, =1{degree} other{degrees}}',
@@ -424,8 +434,8 @@ JS;
             'path' => $request->getPathInfo(),
             'pathParam' => $generalConfig->pathParam,
             'Pro' => Craft::Pro,
-            'registeredAssetBundles' => ['' => ''], // force encode as JS object
-            'registeredJsFiles' => ['' => ''], // force encode as JS object
+            'registeredAssetBundles' => [], // force encode as JS object
+            'registeredJsFiles' => [], // force encode as JS object
             'right' => $orientation === 'ltr' ? 'right' : 'left',
             'scriptName' => basename($request->getScriptFile()),
             'Solo' => Craft::Solo,
@@ -636,13 +646,17 @@ JS;
 
     private function _timepickerOptions(Locale $formattingLocale, string $orientation): array
     {
+        // normalize the AM/PM names consistently with time2int() in jQuery Timepicker
+        $am = preg_replace('/[\s.]/', '', $formattingLocale->getAMName());
+        $pm = preg_replace('/[\s.]/', '', $formattingLocale->getPMName());
+
         return [
             'closeOnWindowScroll' => false,
             'lang' => [
-                'AM' => $formattingLocale->getAMName(),
-                'am' => mb_strtolower($formattingLocale->getAMName()),
-                'PM' => $formattingLocale->getPMName(),
-                'pm' => mb_strtolower($formattingLocale->getPMName()),
+                'AM' => $am,
+                'am' => mb_strtolower($am),
+                'PM' => $pm,
+                'pm' => mb_strtolower($pm),
             ],
             'orientation' => $orientation[0],
             'timeFormat' => $formattingLocale->getTimeFormat(Locale::LENGTH_SHORT, Locale::FORMAT_PHP),

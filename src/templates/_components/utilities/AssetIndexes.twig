@@ -23,13 +23,15 @@
 
     <h2>{{ 'Options'|t('app') }} </h2>
 
-    {{ forms.lightswitchField({
-        name: 'cacheImages',
-        label: 'Cache remote images'|t('app'),
-        class: 'volume-selector',
-        instructions: 'Whether remotely-stored images should be downloaded and stored locally, to speed up transform generation.'|t('app'),
-        on: true,
-    }) }}
+    {% if not isEphemeral %}
+        {{ forms.lightswitchField({
+            name: 'cacheImages',
+            label: 'Cache remote images'|t('app'),
+            class: 'volume-selector',
+            instructions: 'Whether remotely-stored images should be downloaded and stored locally, to speed up transform generation.'|t('app'),
+            on: true,
+        }) }}
+    {% endif %}
 
     {{ forms.lightswitchField({
         name: 'listEmptyFolders',

@@ -59,7 +59,7 @@
         'accept-charset': 'UTF-8',
         data: {
             saveshortcut: true,
-            'saveshortcut-redirect':  (user.getIsCurrent() ? 'myaccount' : (CraftEdition == CraftPro and currentUser.can('editUsers') ? 'users/{id}' : 'dashboard'))|hash,
+            'saveshortcut-redirect':  (isCurrentUser ? 'myaccount' : (CraftEdition == CraftPro and currentUser.can('editUsers') ? 'users/{id}' : 'dashboard'))|hash,
             'saveshortcut-scroll': true,
             'confirm-unload': true,
             delta: true,
@@ -101,7 +101,7 @@
                     checked: (user.hasErrors() and craft.app.request.getBodyParam('sendActivationEmail')),
                 }) }}
 
-            {% elseif user.getIsCurrent() or canAdministrateUsers %}
+            {% elseif isCurrentUser or canAdministrateUsers %}
                 <hr>
 
                 {{ forms.textField({
@@ -118,7 +118,7 @@
                     },
                 }) }}
 
-                {% if user.getIsCurrent() %}
+                {% if isCurrentUser %}
                     {{ forms.passwordField({
                         label: "New Password"|t('app'),
                         id: 'newPassword',
@@ -127,7 +127,7 @@
                         errors: user.getErrors('newPassword'),
                         inputAttributes: {
                             data: {
-                                lpignore: user.getIsCurrent() ? false : 'true',
+                                lpignore: isCurrentUser ? false : 'true',
                             }|filter,
                         },
                     }) }}
@@ -137,7 +137,7 @@
                     {% endjs %}
                 {% endif %}
 
-                {% if canAdministrateUsers and (user.pending or user.active) %}
+                {% if canAdministrateUsers and (user.pending or user.active) and not isCurrentUser %}
                     {{ forms.checkboxField({
                         label: "Require a password reset on next login"|t('app'),
                         name: 'passwordResetRequired',
@@ -212,7 +212,7 @@
             </div>
         {% endif %}
 
-        {% if user.getIsCurrent() %}
+        {% if isCurrentUser %}
             <div id="prefs" class="flex-fields hidden">
                 <h2>{{ 'General'|t('app') }}</h2>
 
@@ -432,7 +432,7 @@
 {% endblock %}
 
 {% js %}
-    {% if user.getIsCurrent() %}
+    {% if isCurrentUser %}
         var changeSidebarPicture = true;
     {% else %}
         var changeSidebarPicture = false;

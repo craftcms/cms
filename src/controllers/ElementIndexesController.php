@@ -20,6 +20,7 @@ use craft\elements\conditions\ElementConditionRuleInterface;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\exporters\Raw;
 use craft\events\ElementActionEvent;
+use craft\helpers\Component;
 use craft\helpers\Cp;
 use craft\helpers\ElementHelper;
 use craft\services\ElementSources;
@@ -424,7 +425,24 @@ class ElementIndexesController extends BaseElementsController
         /** @phpstan-var class-string<ElementInterface>|ElementInterface $elementType */
         $elementType = $this->elementType();
         $id = $this->request->getRequiredBodyParam('id');
-        $condition = $elementType::createCondition();
+        $conditionConfig = $this->request->getBodyParam('conditionConfig');
+        $serialized = $this->request->getBodyParam('serialized');
+
+        $conditionsService = Craft::$app->getConditions();
+
+        if ($conditionConfig) {
+            $conditionConfig = Component::cleanseConfig($conditionConfig);
+            /** @var ElementConditionInterface $condition */
+            $condition = $conditionsService->createCondition($conditionConfig);
+        } elseif ($serialized) {
+            parse_str($serialized, $conditionConfig);
+            /** @var ElementConditionInterface $condition */
+            $condition = $conditionsService->createCondition($conditionConfig['condition']);
+        } else {
+            /** @var ElementConditionInterface $condition */
+            $condition = $elementType::createCondition();
+        }
+
         $condition->mainTag = 'div';
         $condition->id = $id;
         $condition->addRuleLabel = Craft::t('app', 'Add a filter');
@@ -435,7 +453,7 @@ class ElementIndexesController extends BaseElementsController
             $condition->sourceKey = $this->sourceKey;
         } else {
             /** @var ElementConditionInterface $sourceCondition */
-            $sourceCondition = Craft::$app->getConditions()->createCondition($this->source['condition']);
+            $sourceCondition = $conditionsService->createCondition($this->source['condition']);
             $condition->queryParams = [];
             foreach ($sourceCondition->getConditionRules() as $rule) {
                 /** @var ElementConditionRuleInterface $rule */
@@ -601,11 +619,17 @@ class ElementIndexesController extends BaseElementsController
         }
 
         // Override with the custom filters
-        $filterConditionStr = $this->request->getBodyParam('filters');
-        if ($filterConditionStr) {
-            parse_str($filterConditionStr, $filterConditionConfig);
+        $filterConditionConfig = $this->request->getBodyParam('filterConfig');
+        if (!$filterConditionConfig) {
+            $filterConditionStr = $this->request->getBodyParam('filters');
+            if ($filterConditionStr) {
+                parse_str($filterConditionStr, $filterConditionConfig);
+                $filterConditionConfig = $filterConditionConfig['condition'];
+            }
+        }
+        if ($filterConditionConfig) {
             /** @var ElementConditionInterface $filterCondition */
-            $filterCondition = $conditionsService->createCondition($filterConditionConfig['condition']);
+            $filterCondition = $conditionsService->createCondition(Component::cleanseConfig($filterConditionConfig));
             $filterCondition->modifyQuery($query);
         }
 

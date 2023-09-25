@@ -8,24 +8,38 @@ import AdminTable from '@craftcms/vue/admintable/App';
 
 Craft.VueAdminTable = Garnish.Base.extend(
   {
+    instance: null,
+    $table: null,
+
     init: function (settings) {
       this.setSettings(settings, Craft.VueAdminTable.defaults);
 
-      const props = this.settings;
+      const _this = this;
 
-      return new Vue({
+      this.instance = new Vue({
         components: {
           AdminTable,
         },
         data() {
-          return {};
+          return {
+            props: _this.settings,
+          };
         },
-        render: (h) => {
+        render(h) {
           return h(AdminTable, {
-            props: props,
+            ref: 'admin-table',
+            props: this.props,
           });
         },
-      }).$mount(this.settings.container);
+      });
+
+      this.instance.$mount(this.settings.container);
+      this.$table = this.instance.$refs['admin-table'];
+
+      return this.instance;
+    },
+    reload() {
+      this.$table.reload();
     },
   },
   {
@@ -51,6 +65,7 @@ Craft.VueAdminTable = Garnish.Base.extend(
       onData: $.noop,
       onPagination: $.noop,
       onSelect: $.noop,
+      onQueryParams: $.noop,
     },
   }
 );

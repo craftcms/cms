@@ -698,13 +698,11 @@ class Cp extends Component
                     $data['hint'] = $security->redactIfSensitive($var, Craft::getAlias($value, false));
                 }
 
-                $options[] = [
+                $options[] = array_filter([
                     'label' => "$$var",
                     'value' => "$$var",
-                    'data' => [
-                        'data' => !empty($data) ? $data : false,
-                    ],
-                ];
+                    'data' => !empty($data) ? $data : null,
+                ]);
             }
         }
 
@@ -735,9 +733,7 @@ class Cp extends Component
                     'label' => "$$var",
                     'value' => "$$var",
                     'data' => [
-                        'data' => [
-                            'boolean' => $booleanValue,
-                        ],
+                        'boolean' => $booleanValue ? '1' : '0',
                     ],
                 ];
             }
@@ -807,13 +803,11 @@ class Cp extends Component
 
             $offsets[] = $offset;
             $timezoneIds[] = $timezoneId;
-            $options[] = [
+            $options[] = array_filter([
                 'value' => $timezoneId,
                 'label' => $label,
-                'data' => [
-                    'data' => !empty($data) ? $data : false,
-                ],
-            ];
+                'data' => !empty($data) ? $data : null,
+            ]);
         }
 
         array_multisort($offsets, SORT_ASC, SORT_NUMERIC, $timezoneIds, $options);

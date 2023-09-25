@@ -531,6 +531,27 @@ class ExtensionTest extends TestCase
             'foo qux baz',
             '{{ "foo bar baz"|replace("bar", "qux") }}'
         );
+
+        $this->testRenderResult(
+            'foo zar zazzy',
+            '{{ "foo bar baz"|replace({"/b(\\\w+)/": "z$1", zaz: "zazzy"}) }}',
+        );
+
+        // https://github.com/craftcms/cms/issues/13618
+        $this->testRenderResult(
+            'qux',
+            '{{ "https://foo.com/bar/baz/"|replace("/(http(s?):)?\\\/\\\/foo\\\.com\\\/bar\\\/baz\\\//", "qux") }}',
+        );
+
+        $this->testRenderResult(
+            '/baz/bar/',
+            '{{ "/foo/bar/"|replace({"/foo/": "baz"}, regex=true) }}',
+        );
+
+        $this->testRenderResult(
+            'bazbar/',
+            '{{ "/foo/bar/"|replace({"/foo/": "baz"}, regex=false) }}',
+        );
     }
 
     /**

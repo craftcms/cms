@@ -458,7 +458,7 @@ class Controller extends YiiController
 
         $this->stdout('✓', Console::FG_GREEN, Console::BOLD);
         if ($withDuration) {
-            $this->stdout(sprintf(' (time: %.3fs', microtime(true) - $time), Console::FG_GREY);
+            $this->stdout(sprintf(' (time: %.3fs)', microtime(true) - $time), Console::FG_GREY);
         }
         $this->stdout(PHP_EOL);
     }

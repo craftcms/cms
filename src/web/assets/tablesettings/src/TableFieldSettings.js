@@ -128,14 +128,20 @@
 
       // Add in the dropdown options
       for (let colId in this.columnsData) {
-        if (
-          this.columnsData.hasOwnProperty(colId) &&
-          this.columnsData[colId].type === 'select'
-        ) {
-          const rowObj = this.columnsTable.$tbody
-            .find('tr[data-id="' + colId + '"]')
-            .data('editable-table-row');
-          this.columnsData[colId].options = rowObj.options || [];
+        if (this.columnsData.hasOwnProperty(colId)) {
+          switch (this.columnsData[colId].type) {
+            case 'select':
+              const rowObj = this.columnsTable.$tbody
+                .find('tr[data-id="' + colId + '"]')
+                .data('editable-table-row');
+              this.columnsData[colId].options = rowObj.options || [];
+              break;
+            case 'heading':
+              // Replace with singleline
+              this.columnsData[colId].type = 'singleline';
+              this.columnsData[colId].class = 'heading';
+              break;
+          }
         }
       }
 
@@ -150,27 +156,32 @@
         }
       }
 
-      let theadHtml = '<thead>' + '<tr>';
-
-      for (let colId in this.columnsData) {
-        if (!this.columnsData.hasOwnProperty(colId)) {
-          continue;
-        }
-
-        theadHtml +=
-          '<th scope="col">' +
-          (this.columnsData[colId].heading
-            ? this.columnsData[colId].heading
-            : '&nbsp;') +
-          '</th>';
-      }
-
-      theadHtml += '<th colspan="2"></th>' + '</tr>' + '</thead>';
-
       const $table = $('<table/>', {
         id: this.defaultsTableId,
         class: 'editable fullwidth',
-      }).append(theadHtml);
+      });
+
+      if (Object.values(this.columnsData).some((c) => c.heading !== '')) {
+        let theadHtml = '';
+
+        for (let colId in this.columnsData) {
+          if (!this.columnsData.hasOwnProperty(colId)) {
+            continue;
+          }
+
+          theadHtml +=
+            '<th scope="col">' +
+            (this.columnsData[colId].heading
+              ? this.columnsData[colId].heading
+              : '&nbsp;') +
+            '</th>';
+        }
+
+        if (theadHtml !== '') {
+          theadHtml += '<th colspan="2"></th>';
+          $table.append(`<thead><tr>${theadHtml}</tr></thead>`);
+        }
+      }
 
       const $tbody = $('<tbody/>').appendTo($table);
 
