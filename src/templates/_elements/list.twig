@@ -2,7 +2,12 @@
 {% set disabled = disabled ?? null %}
 {% set viewMode = viewMode ?? null %}
 
-<ul class="elements">
+{% tag 'ul' with {
+  class: [
+    'elements',
+    (inline ?? false) ? 'inline-chips' : null,
+  ]|filter,
+} %}
   {% for element in elements %}
     <li>
       {% set element = elementChip(element, {
@@ -17,4 +22,4 @@
       {{ element|raw }}
     </li>
   {% endfor %}
-</ul>
+{% endtag %}

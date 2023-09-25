@@ -13,8 +13,8 @@ use craft\base\EagerLoadingFieldInterface;
 use craft\base\Element;
 use craft\base\ElementInterface;
 use craft\base\Field;
+use craft\base\InlineEditableFieldInterface;
 use craft\base\NestedElementInterface;
-use craft\base\PreviewableFieldInterface;
 use craft\behaviors\EventBehavior;
 use craft\db\Query;
 use craft\db\Table as DbTable;
@@ -51,7 +51,7 @@ use yii\validators\NumberValidator;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
-abstract class BaseRelationField extends Field implements PreviewableFieldInterface, EagerLoadingFieldInterface
+abstract class BaseRelationField extends Field implements InlineEditableFieldInterface, EagerLoadingFieldInterface
 {
     /**
      * @event ElementCriteriaEvent The event that is triggered when defining the selection criteria for this field.
@@ -784,6 +784,11 @@ JS, [
 
         /** @var ElementQuery|array $value */
         $variables = $this->inputTemplateVariables($value, $element);
+        $variables['inline'] = $inline;
+
+        if ($inline) {
+            $variables['viewMode'] = 'list';
+        }
 
         return Craft::$app->getView()->renderTemplate($this->inputTemplate, $variables);
     }

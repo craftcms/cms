@@ -11,7 +11,7 @@
 {% set disabled = (disabled ?? false) ? true : false %}
 
 <div id="{{ id }}" class="elementselect">
-    <ul class="elements {% if viewMode == 'large' %}inline-chips{% endif %}">
+    <ul class="elements {% if viewMode == 'large' or inline %}inline-chips{% endif %}">
         {% for element in elements %}
             <li>
                 {{ elementChip(element, {

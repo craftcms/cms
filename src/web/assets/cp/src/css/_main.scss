@@ -3266,36 +3266,38 @@ $checkboxPadding: $checkboxSize + 4;
 
   // table views
   .tableview {
-    .move,
-    .toggle {
-      display: flex;
-      position: absolute;
-      justify-content: center;
-      align-items: center;
-      top: 50%;
-      transform: translateY(-50%);
-      @include margin-left(calc(var(--touch-target-size) * -1));
-      width: var(--touch-target-size);
-      height: var(--touch-target-size);
-    }
+    th {
+      .move,
+      .toggle {
+        display: flex;
+        position: absolute;
+        justify-content: center;
+        align-items: center;
+        top: 50%;
+        transform: translateY(-50%);
+        @include margin-left(calc(var(--touch-target-size) * -1));
+        width: var(--touch-target-size);
+        height: var(--touch-target-size);
+      }
 
-    .move {
-      font-size: 11px;
-      text-decoration: none;
-    }
+      .move {
+        font-size: 11px;
+        text-decoration: none;
+      }
 
-    .toggle {
-      text-align: center;
-      padding: 4px;
-      border-radius: 50%;
-    }
+      .toggle {
+        text-align: center;
+        padding: 4px;
+        border-radius: 50%;
+      }
 
-    .move + .toggle {
-      @include margin-left(calc(var(--touch-target-size) * -2));
-    }
+      .move + .toggle {
+        @include margin-left(calc(var(--touch-target-size) * -2));
+      }
 
-    .enabled-label {
-      margin-left: var(--xs);
+      .enabled-label {
+        margin-left: var(--xs);
+      }
     }
 
     .chip {
