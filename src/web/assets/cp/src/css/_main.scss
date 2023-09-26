@@ -3227,6 +3227,7 @@ $checkboxPadding: $checkboxSize + 4;
       content: '';
       font-size: 0;
       position: absolute;
+      z-index: 100;
       top: 0;
       left: calc(var(--pane-padding, 24px) * -1);
       width: calc(100% + var(--pane-padding, 24px) + var(--pane-padding, 24px));
@@ -3236,7 +3237,7 @@ $checkboxPadding: $checkboxSize + 4;
     }
 
     .update-spinner {
-      z-index: 1;
+      z-index: 101;
     }
   }
 
