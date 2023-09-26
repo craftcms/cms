@@ -917,7 +917,7 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
-    public static function findSource(string $sourceKey, ?string $context = null): ?array
+    public static function findSource(string $sourceKey, ?string $context): ?array
     {
         return null;
     }
@@ -941,7 +941,7 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
-    public static function fieldLayouts(?string $source = null): array
+    public static function fieldLayouts(?string $source): array
     {
         $fieldLayouts = static::defineFieldLayouts($source);
 
@@ -1421,7 +1421,7 @@ abstract class Element extends Component implements ElementInterface
         }
 
         $field = null;
-        foreach (static::fieldLayouts() as $fieldLayout) {
+        foreach (static::fieldLayouts(null) as $fieldLayout) {
             if ($providerHandle === null || $fieldLayout->provider?->getHandle() === $providerHandle) {
                 $layoutField = $fieldLayout->getFieldByHandle($fieldHandle);
                 if ($layoutField) {
@@ -3728,7 +3728,7 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
-    public function setParent(?ElementInterface $parent = null): void
+    public function setParent(?ElementInterface $parent): void
     {
         $this->_parent = $parent;
 
@@ -4688,7 +4688,7 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
-    public function setRevisionCreatorId(?int $creatorId = null): void
+    public function setRevisionCreatorId(?int $creatorId): void
     {
         $this->revisionCreatorId = $creatorId;
     }
@@ -4696,7 +4696,7 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
-    public function setRevisionNotes(?string $notes = null): void
+    public function setRevisionNotes(?string $notes): void
     {
         $this->revisionNotes = $notes;
     }

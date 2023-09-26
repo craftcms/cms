@@ -318,7 +318,7 @@ interface ElementInterface extends ComponentInterface
      * @return array|null
      * @since 4.4.0
      */
-    public static function findSource(string $sourceKey, ?string $context = null): ?array;
+    public static function findSource(string $sourceKey, ?string $context): ?array;
 
     /**
      * Returns the source path for a given source key, step key, and context.
@@ -341,7 +341,7 @@ interface ElementInterface extends ComponentInterface
      * @return FieldLayout[]
      * @since 3.5.0
      */
-    public static function fieldLayouts(?string $source = null): array;
+    public static function fieldLayouts(?string $source): array;
 
     /**
      * Modifies a custom source’s config, before it’s returned by [[craft\services\ElementSources::getSources()]]
@@ -1070,7 +1070,7 @@ interface ElementInterface extends ComponentInterface
      *
      * @param self|null $parent
      */
-    public function setParent(?self $parent = null): void;
+    public function setParent(?self $parent): void;
 
     /**
      * Returns the element’s ancestors.
@@ -1577,7 +1577,7 @@ interface ElementInterface extends ComponentInterface
      * @param int|null $creatorId
      * @since 3.2.0
      */
-    public function setRevisionCreatorId(?int $creatorId = null): void;
+    public function setRevisionCreatorId(?int $creatorId): void;
 
     /**
      * Sets the revision notes to be saved.
@@ -1585,7 +1585,7 @@ interface ElementInterface extends ComponentInterface
      * @param string|null $notes
      * @since 3.2.0
      */
-    public function setRevisionNotes(?string $notes = null): void;
+    public function setRevisionNotes(?string $notes): void;
 
     /**
      * Returns the element’s current revision, if one exists.

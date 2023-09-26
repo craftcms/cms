@@ -389,7 +389,7 @@ class Asset extends Element
     /**
      * @inheritdoc
      */
-    public static function findSource(string $sourceKey, ?string $context = null): ?array
+    public static function findSource(string $sourceKey, ?string $context): ?array
     {
         if (preg_match('/^volume:[\w\-]+(?:\/.+)?\/folder:([\w\-]+)$/', $sourceKey, $match)) {
             $folder = Craft::$app->getAssets()->getFolderByUid($match[1]);

@@ -198,10 +198,14 @@
 - Renamed `craft\web\CpScreenResponseBehavior::$sidebar()` and `sidebar()` to `$metaSidebarHtml` and `metaSidebarHtml()`. ([#13037](https://github.com/craftcms/cms/pull/13037))
 - `craft\base\ConfigurableComponent::getSettings()` now converts backed enum cases to their values.
 - `craft\base\Element::getCpEditUrl()` now returns a URL to `edit/<ID>` if `cpEditUrl()` returns `null`.
+- `craft\base\ElementInterface::findSource()` no longer need to specify a default value for the `context` argument.
 - `craft\base\ElementInterface::getAncestors()`, `getDescendants()`, `getChildren()`, and `getSiblings()` now have `ElementQueryInterface|ElementCollection` return types, rather than `ElementQueryInterface|Collection`.
 - `craft\base\ElementInterface::getEagerLoadedElementCount()` can now return `null` for counts that haven’t been eager-loaded yet.
 - `craft\base\ElementInterface::getEagerLoadedElements` now has an `ElementCollection|null` return type, rather than `Collection|null`.
 - `craft\base\ElementInterface::indexHtml()`’ `$showCheckboxes` argument is now `$selectable`, and it now has a `$sortable` argument.
+- `craft\base\ElementInterface::setParent()` no longer need to specify a default value for the `parent` argument.
+- `craft\base\ElementInterface::setRevisionCreatorId()` no longer need to specify a default value for the `creatorId` argument.
+- `craft\base\ElementInterface::setRevisionNotes()` no longer need to specify a default value for the `notes` argument.
 - `craft\base\Field::inputHtml()` now has a `$default` argument.
 - `craft\base\FieldInterface::getIsTranslatable()`, `getTranslationDescription()`, `getInputHtml()`, `normalizeValue()`, `normalizeValueFromRequest()`, and `serializeValue()` no longer need to specify a default value for the `$element` argument.
 - `craft\db\Connection::getSupportsMb4()` is now dynamic for MySQL installs, based on whether the `elements_sites` table has an `mb4` charset.
