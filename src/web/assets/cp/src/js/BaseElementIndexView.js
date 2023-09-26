@@ -100,7 +100,10 @@ Craft.BaseElementIndexView = Garnish.Base.extend(
             }
           }
 
-          if (Garnish.hasAttr($element, 'data-editable')) {
+          if (
+            Garnish.hasAttr($element, 'data-editable') &&
+            !$element.closest('.elementselect').length
+          ) {
             Craft.createElementEditor($element.data('type'), $element);
           }
         };

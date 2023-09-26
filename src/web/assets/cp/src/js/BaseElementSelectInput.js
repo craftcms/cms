@@ -183,7 +183,13 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
     },
 
     getElementSortAxis: function () {
-      return ['list'].includes(this.settings.viewMode) ? 'y' : null;
+      if (
+        ['list'].includes(this.settings.viewMode) &&
+        !this.getElementsContainer().hasClass('inline-chips')
+      ) {
+        return 'y';
+      }
+      return null;
     },
 
     canAddMoreElements: function () {
