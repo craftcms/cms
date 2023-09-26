@@ -3212,11 +3212,23 @@ class Elements extends Component
         }
 
         // Validate
-        if ($runValidation && !$element->validate()) {
-            Craft::info('Element not saved due to validation error: ' . print_r($element->errors, true), __METHOD__);
-            $element->firstSave = $originalFirstSave;
-            $element->propagateAll = $originalPropagateAll;
-            return false;
+        if ($runValidation) {
+            // If we're propagating, only validate changed custom fields
+            if ($element->propagating) {
+                $names = array_map(
+                    fn(string $handle) => "field:$handle",
+                    array_unique(array_merge($element->getDirtyFields(), $element->getModifiedFields()))
+                );
+            } else {
+                $names = null;
+            }
+
+            if (($names === null || !empty($names)) && !$element->validate($names)) {
+                Craft::info('Element not saved due to validation error: ' . print_r($element->errors, true), __METHOD__);
+                $element->firstSave = $originalFirstSave;
+                $element->propagateAll = $originalPropagateAll;
+                return false;
+            }
         }
 
         // Figure out whether we will be updating the search index (and memoize that for nested element saves)
@@ -3389,7 +3401,13 @@ class Elements extends Component
                         // Skip the initial site
                         if ($siteId != $element->siteId) {
                             $siteElement = $siteElements[$siteId] ?? false;
-                            if (!$this->_propagateElement($element, $supportedSites, $siteId, $siteElement, crossSiteValidate: $crossSiteValidate)) {
+                            if (!$this->_propagateElement(
+                                $element,
+                                $supportedSites,
+                                $siteId,
+                                $siteElement,
+                                crossSiteValidate: $runValidation && $crossSiteValidate,
+                            )) {
                                 throw new InvalidConfigException();
                             }
                         }
