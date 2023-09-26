@@ -21,6 +21,7 @@
 - Fixed a bug where long element titles weren’t always getting truncated in the control panel. ([#13718](https://github.com/craftcms/cms/issues/13718))
 - Fixed a bug where checkboxes could be preselected if they had an empty value. ([#13710](https://github.com/craftcms/cms/issues/13710))
 - Fixed a bug where links in validation summaries weren’t working if the offending field was in a collapsed Matrix block. ([#13708](https://github.com/craftcms/cms/issues/13708))
+- Fixed a bug where cross-site validation could apply even if `craft\services\Elements::saveElement()` was called with `$runValidation` set to `false`.
 
 ## 4.5.5 - 2023-09-14
 
