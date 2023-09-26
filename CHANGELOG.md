@@ -9,6 +9,8 @@
 - Added the `resave/addresses` command. ([#13720](https://github.com/craftcms/cms/discussions/13720))
 - The `resave/matrix-blocks` command now supports an `--owner-id` option.
 - Added `craft\helpers\App::phpExecutable()`.
+- Added `craft\helpers\Component::cleanseConfig()`.
+- `craft\helpers\Component::createComponent()` now filters out `as X` and `on X` keys from the component config.
 - `craft\services\Announcements::push()` now has an `$adminsOnly` argument. ([#13728](https://github.com/craftcms/cms/discussions/13728))
 - `Craft.appendHeadHtml()` and `appendBodyHtml()` now load external scripts asynchronously, and return promises.
 - Improved the reliability of Composer operations when PHP is running via FastCGI. ([#13681](https://github.com/craftcms/cms/issues/13681))
@@ -27,6 +29,7 @@
 - Fixed a bug where cross-site validation could apply even if `craft\services\Elements::saveElement()` was called with `$runValidation` set to `false`.
 - Fixed some wonky scrolling behavior on pages where the details pane was shorter than the content pane. ([#13637](https://github.com/craftcms/cms/issues/13637))
 - Fixed a division by zero error. ([#13712](https://github.com/craftcms/cms/issues/13712))
+- Fixed an RCE vulnerability.
 
 ## 4.5.5 - 2023-09-14
 
