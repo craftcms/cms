@@ -113,4 +113,23 @@ class Dropdown extends BaseOptionsField implements SortableFieldInterface
     {
         return Craft::t('app', 'Dropdown Options');
     }
+
+    /**
+     * @inheritdoc
+     */
+    protected function isOptionSelected(array $option, mixed $value, array &$selectedValues, bool &$selectedBlankOption): bool
+    {
+        // special case for blank options, when $value is null
+        if ($value === null && $option['value'] === '') {
+            if (!$selectedBlankOption) {
+                $selectedValues[] = '';
+                $selectedBlankOption = true;
+                return true;
+            }
+
+            return false;
+        }
+
+        return in_array($option['value'], $selectedValues, true);
+    }
 }

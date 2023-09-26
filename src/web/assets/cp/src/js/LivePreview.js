@@ -504,6 +504,14 @@ Craft.LivePreview = Garnish.Base.extend(
       previewAction: null,
       previewParams: {},
     },
+
+    getActive: function () {
+      for (let preview of Craft.LivePreview.instances) {
+        if (preview.inPreviewMode) {
+          return preview;
+        }
+      }
+    },
   }
 );
 
