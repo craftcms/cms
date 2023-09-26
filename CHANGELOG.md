@@ -24,6 +24,7 @@
 - Fixed a bug where links in validation summaries weren’t working if the offending field was in a collapsed Matrix block. ([#13708](https://github.com/craftcms/cms/issues/13708))
 - Fixed a bug where cross-site validation could apply even if `craft\services\Elements::saveElement()` was called with `$runValidation` set to `false`.
 - Fixed some wonky scrolling behavior on pages where the details pane was shorter than the content pane. ([#13637](https://github.com/craftcms/cms/issues/13637))
+- Fixed a division by zero error. ([#13712](https://github.com/craftcms/cms/issues/13712))
 
 ## 4.5.5 - 2023-09-14
 

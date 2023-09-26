@@ -54,10 +54,11 @@ class Image
             return [(int)$sourceWidth, (int)$sourceHeight];
         }
 
-        // Fill in the blank
+        // Fill in the blank,
+        // ensure that the target width/height is at least 1
         return [
-            (int)($targetWidth ?: round($targetHeight * ($sourceWidth / $sourceHeight))),
-            (int)($targetHeight ?: round($targetWidth * ($sourceHeight / $sourceWidth))),
+            (int)($targetWidth ?: max(round($targetHeight * ($sourceWidth / $sourceHeight)), 1)),
+            (int)($targetHeight ?: max(round($targetWidth * ($sourceHeight / $sourceWidth)), 1)),
         ];
     }
 
