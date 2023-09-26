@@ -961,11 +961,19 @@ Craft.Preview = Garnish.Base.extend(
     instances: [],
 
     refresh: function () {
-      for (preview of Craft.Preview.instances) {
+      for (let preview of Craft.Preview.instances) {
         preview.updateIframe();
       }
-      for (preview of Craft.LivePreview.instances) {
+      for (let preview of Craft.LivePreview.instances) {
         preview.forceUpdateIframe();
+      }
+    },
+
+    getActive: function () {
+      for (let preview of Craft.Preview.instances) {
+        if (preview.isActive) {
+          return preview;
+        }
       }
     },
   }

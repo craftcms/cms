@@ -699,7 +699,7 @@
           }
 
           if (value) {
-            value = Craft.trim(Craft.escapeHtml(value));
+            value = Craft.escapeHtml(value).trim();
 
             if (value) {
               if (inputPreviewText) {

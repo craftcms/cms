@@ -157,18 +157,16 @@ $.extend(Craft, {
   _parseToken: function (token, args) {
     // parsing pattern based on ICU grammar:
     // http://icu-project.org/apiref/icu4c/classMessageFormat.html#details
-    const param = Craft.trim(token[0]);
+    const param = token[0].trim();
     if (typeof args[param] === 'undefined') {
       return `{${token.join(',')}}`;
     }
     const arg = args[param];
-    const type =
-      typeof token[1] !== 'undefined' ? Craft.trim(token[1]) : 'none';
+    const type = typeof token[1] !== 'undefined' ? token[1].trim() : 'none';
     switch (type) {
       case 'number':
         return (() => {
-          let format =
-            typeof token[2] !== 'undefined' ? Craft.trim(token[2]) : null;
+          let format = typeof token[2] !== 'undefined' ? token[2].trim() : null;
           if (format !== null && format !== 'integer') {
             throw `Message format 'number' is only supported for integer values.`;
           }
@@ -196,7 +194,7 @@ $.extend(Craft, {
             if (Array.isArray(select[i]) || !Array.isArray(select[i + 1])) {
               return false;
             }
-            let selector = Craft.trim(select[i++]);
+            let selector = select[i++].trim();
             if (
               (message === false && selector === 'other') ||
               selector == arg
@@ -233,7 +231,7 @@ $.extend(Craft, {
             ) {
               return false;
             }
-            let selector = Craft.trim(plural[i++]);
+            let selector = plural[i++].trim();
             let selectorChars = [...selector];
 
             if (i === 1 && selector.substring(0, 7) === 'offset:') {
@@ -241,14 +239,11 @@ $.extend(Craft, {
               if (pos === -1) {
                 throw 'Message pattern is invalid.';
               }
-              offset = parseInt(
-                Craft.trim(selectorChars.slice(7, pos).join(''))
-              );
-              selector = Craft.trim(
-                selectorChars
-                  .slice(pos + 1, pos + 1 + selectorChars.length)
-                  .join('')
-              );
+              offset = parseInt(selectorChars.slice(7, pos).join('').trim());
+              selector = selectorChars
+                .slice(pos + 1, pos + 1 + selectorChars.length)
+                .join('')
+                .trim();
             }
             if (
               (message === false && selector === 'other') ||
@@ -509,7 +504,7 @@ $.extend(Craft, {
 
         // Is the path param already set?
         if (typeof params[Craft.pathParam] !== 'undefined') {
-          let basePath = Craft.rtrim(params[Craft.pathParam]);
+          let basePath = params[Craft.pathParam].trimEnd();
           path = basePath + (path ? '/' + path : '');
         }
 
@@ -1421,9 +1416,9 @@ $.extend(Craft, {
       return str;
     }
     if (typeof chars === 'undefined') {
-      chars = ' \t\n\r\0\x0B';
+      return str.trimStart();
     }
-    var re = new RegExp('^[' + Craft.escapeChars(chars) + ']+');
+    const re = new RegExp('^[' + Craft.escapeChars(chars) + ']+');
     return str.replace(re, '');
   },
 
@@ -1439,9 +1434,9 @@ $.extend(Craft, {
       return str;
     }
     if (typeof chars === 'undefined') {
-      chars = ' \t\n\r\0\x0B';
+      return str.trimEnd();
     }
-    var re = new RegExp('[' + Craft.escapeChars(chars) + ']+$');
+    const re = new RegExp('[' + Craft.escapeChars(chars) + ']+$');
     return str.replace(re, '');
   },
 
@@ -1453,6 +1448,12 @@ $.extend(Craft, {
    * @returns {string}
    */
   trim: function (str, chars) {
+    if (!str) {
+      return str;
+    }
+    if (typeof chars === 'undefined') {
+      return str.trim();
+    }
     str = Craft.ltrim(str, chars);
     str = Craft.rtrim(str, chars);
     return str;
