@@ -117,6 +117,16 @@ class ComponentHelperTest extends Unit
     }
 
     /**
+     * @dataProvider cleanseConfigDataProvider
+     * @param array $expected
+     * @param array $config
+     */
+    public function testCleanseConfig(array $expected, array $config)
+    {
+        self::assertSame($expected, Component::cleanseConfig($config));
+    }
+
+    /**
      * @return array
      */
     public function validateComponentClassDataProvider(): array
@@ -302,6 +312,23 @@ class ComponentHelperTest extends Unit
             'svg-file' => ['<svg ', dirname(__DIR__, 2) . '/_data/assets/files/craft-logo.svg', 'Default'],
             'file-does-not-exist' => ['<title>Default</title>', '/file/does/not/exist.svg', 'Default'],
             'not-an-svg' => ['<title>Default</title>', dirname(__DIR__, 2) . '/_data/assets/files/background.jpeg', 'Default'],
+        ];
+    }
+
+    /**
+     * @return array
+     */
+    public function cleanseConfigDataProvider(): array
+    {
+        return [
+            [
+                ['f' => 'foo', 'b' => 'bar'],
+                ['f' => 'foo', 'b' => 'bar', 'as f' => 'f', 'on b' => 'b'],
+            ],
+            [
+                ['nested' => ['f' => 'foo', 'b' => 'bar']],
+                ['nested' => ['f' => 'foo', 'b' => 'bar', 'as f' => 'f', 'on b' => 'b']],
+            ],
         ];
     }
 }

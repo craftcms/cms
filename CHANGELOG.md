@@ -3,7 +3,10 @@
 ## Unreleased
 
 - Added `craft\helpers\App::phpExecutable()`.
+- Added `craft\helpers\Component::cleanseConfig()`.
+- `craft\helpers\Component::createComponent()` now filters out `as X` and `on X` keys from the component config.
 - Improved the reliability of Composer operations when PHP is running via FastCGI. ([#13681](https://github.com/craftcms/cms/issues/13681))
+- Fixed an RCE vulnerability.
 
 ## 3.9.3 - 2023-09-14
 
