@@ -1957,7 +1957,7 @@ return [
     '{filename} isn’t selectable for this field.' => '{filename}은(는) 이 필드에서 선택할 수 없습니다.',
     '{first, number}-{last, number} of {total, number} {total, plural, =1{{item}} other{{items}}}' => '{first, number}–{last, number} / {total, number} {total, plural, =1{{item}} other{{items}}}',
     '{first}-{last} of {total}' => '{first}–{last} / {total}',
-    '{name} active, more info' => '{name}이(가) 활성 상태입니다. 추가 정보',
+    '{name} active, more info' => '{name} 님이 활성 상태입니다. 추가 정보',
     '{name} folder' => '{name} 폴더',
     '{name} has been added, but an error occurred when installing it.' => '{name}이(가) 추가되었으나 설치 시 오류가 발생했습니다.',
     '{name} is licensed for the {licenseEdition} edition, but the {currentEdition} edition is installed.' => '{name} is licensed for the {licenseEdition} edition, but the {currentEdition} edition is installed.',
