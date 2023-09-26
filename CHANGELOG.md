@@ -12,6 +12,7 @@
 - Fixed a bug where relations within Matrix blocks weren’t getting restored when restoring a revision’s content. ([#13626](https://github.com/craftcms/cms/issues/13626))
 - Fixed a bug where the filesystem and volume-creation slideouts could keep reappearing if canceled. ([#13707](https://github.com/craftcms/cms/issues/13707))
 - Fixed an error that could occur when reattempting to update to Craft 4.5. ([#13714](https://github.com/craftcms/cms/issues/13714))
+- Fixed a bug where date and time inputs could be parsed incorrectly, if the user’s formatting locale wasn’t explicitly set, or it changed between page load and form submit. ([#13731](https://github.com/craftcms/cms/issues/13731))
 
 ## 4.5.5 - 2023-09-14
 
