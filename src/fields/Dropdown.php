@@ -124,14 +124,12 @@ class Dropdown extends BaseOptionsField implements SortableFieldInterface
             if (!$selectedBlankOption) {
                 $selectedValues[] = '';
                 $selectedBlankOption = true;
-                $selected = true;
-            } else {
-                $selected = false;
+                return true;
             }
-        } else {
-            $selected = in_array($option['value'], $selectedValues, true);
+
+            return false;
         }
 
-        return $selected;
+        return in_array($option['value'], $selectedValues, true);
     }
 }
