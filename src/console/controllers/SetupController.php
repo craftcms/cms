@@ -29,7 +29,6 @@ use Symfony\Component\Console\Helper\HelperSet;
 use Symfony\Component\Console\Helper\QuestionHelper;
 use Symfony\Component\Console\Input\StringInput;
 use Symfony\Component\Console\Output\StreamOutput;
-use Symfony\Component\Process\PhpExecutableFinder;
 use Symfony\Component\Process\Process;
 use Throwable;
 use yii\base\InvalidConfigException;
@@ -627,7 +626,7 @@ EOD;
         }
 
         $process = new Process([
-            (new PhpExecutableFinder())->find() ?: 'php',
+            App::phpExecutable() ?? 'php',
             $script,
             'cloud/setup',
         ]);

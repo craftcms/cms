@@ -10,22 +10,10 @@
       $container: null,
       $shade: null,
       isOpen: false,
+      useMobileStyles: null,
 
       init: function (contents, settings) {
         this.setSettings(settings, Craft.Slideout.defaults);
-
-        if (!Craft.useMobileStyles()) {
-          this.$shade = $('<div class="slideout-shade"/>').appendTo(
-            Garnish.$bod
-          );
-
-          if (this.settings.closeOnShadeClick) {
-            this.addListener(this.$shade, 'click', (ev) => {
-              ev.stopPropagation();
-              this.close();
-            });
-          }
-        }
 
         this.$outerContainer = $('<div/>', {
           class: 'slideout-container hidden',
@@ -41,10 +29,6 @@
           .appendTo(this.$outerContainer);
 
         Garnish.addModalAttributes(this.$outerContainer);
-
-        if (Craft.useMobileStyles()) {
-          this.$container.addClass('so-mobile');
-        }
 
         Craft.trapFocusWithin(this.$container);
 
@@ -62,17 +46,58 @@
 
         this._cancelTransitionListeners();
 
-        // Move the shade + container to the end of <body> so they get the highest sub-z-indexes
-        if (this.$shade) {
-          this.$shade.appendTo(Garnish.$bod).show();
+        const activePreview =
+          Craft.Preview.getActive() || Craft.LivePreview.getActive();
+        this.useMobileStyles = activePreview || Craft.useMobileStyles();
+
+        this.$outerContainer.removeClass('so-mobile so-lp');
+        this.$container.removeClass('so-mobile so-lp');
+
+        if (activePreview) {
+          this.$outerContainer.addClass('so-lp');
+          this.$container.addClass('so-lp');
+        } else if (this.useMobileStyles) {
+          this.$container.addClass('so-mobile');
         }
 
-        this.$outerContainer.appendTo(Garnish.$bod).removeClass('hidden');
+        if (activePreview || !this.useMobileStyles) {
+          if (!this.$shade) {
+            this.$shade = $('<div class="slideout-shade"/>');
 
-        if (Craft.useMobileStyles()) {
-          this.$container.css('top', '100vh');
+            if (this.settings.closeOnShadeClick) {
+              this.addListener(this.$shade, 'click', (ev) => {
+                ev.stopPropagation();
+                this.close();
+              });
+            }
+          }
+
+          // Keep the shade + container to the end of <body> so they get the highest sub-z-indexes
+          if (activePreview) {
+            this.$shade.appendTo(activePreview.$editorContainer);
+          } else {
+            this.$shade.appendTo(Garnish.$bod);
+          }
+
+          this.$shade.show();
+        }
+
+        if (activePreview) {
+          this.$outerContainer.appendTo(activePreview.$editorContainer);
         } else {
-          this.$container.css(Garnish.ltr ? 'left' : 'right', '100vw');
+          this.$outerContainer.appendTo(Garnish.$bod);
+        }
+
+        this.$outerContainer.removeClass('hidden');
+
+        if (this.useMobileStyles) {
+          this.$container
+            .css('top', '100vh')
+            .css(Garnish.ltr ? 'left' : 'right', '');
+        } else {
+          this.$container
+            .css('top', '')
+            .css(Garnish.ltr ? 'left' : 'right', '100vw');
         }
 
         this.$container.one('transitionend.slideout', () => {
@@ -173,7 +198,7 @@
       openPanels: [],
       addPanel: function (panel) {
         Craft.Slideout.openPanels.unshift(panel);
-        if (Craft.useMobileStyles()) {
+        if (panel.useMobileStyles) {
           panel.$container.css('top', 0);
         } else {
           Craft.Slideout.updateStyles();
@@ -183,7 +208,7 @@
         Craft.Slideout.openPanels = Craft.Slideout.openPanels.filter(
           (m) => m !== panel
         );
-        if (Craft.useMobileStyles()) {
+        if (panel.useMobileStyles) {
           panel.$container.css('top', '100vh');
         } else {
           panel.$container.css(Garnish.ltr ? 'left' : 'right', '100vw');
