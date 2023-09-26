@@ -5,6 +5,7 @@
 - When slideouts are opened within Live Preview, they now slide up over the editor pane, rather than covering the preview pane. ([#13739](https://github.com/craftcms/cms/pull/13739))
 - Cross-site validation now only involves fields which were actually modified in the element save. ([#13675](https://github.com/craftcms/cms/discussions/13675))
 - Row headings within Table fields now get statically translated. ([#13703](https://github.com/craftcms/cms/discussions/13703))
+- Element condition settings within field layout components now display a warning if the `autosaveDrafts` config setting is disabled. ([#12348](https://github.com/craftcms/cms/issues/12348))
 - Added the `resave/addresses` command. ([#13720](https://github.com/craftcms/cms/discussions/13720))
 - The `resave/matrix-blocks` command now supports an `--owner-id` option.
 - Added `craft\helpers\App::phpExecutable()`.
