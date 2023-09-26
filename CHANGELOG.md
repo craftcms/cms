@@ -11,6 +11,7 @@
 - Fixed a bug where pagination wasn’t working for admin tables, if the `onQueryParams` callback method wasn’t set. ([#13677](https://github.com/craftcms/cms/issues/13677))
 - Fixed a bug where relations within Matrix blocks weren’t getting restored when restoring a revision’s content. ([#13626](https://github.com/craftcms/cms/issues/13626))
 - Fixed a bug where the filesystem and volume-creation slideouts could keep reappearing if canceled. ([#13707](https://github.com/craftcms/cms/issues/13707))
+- Fixed an error that could occur when reattempting to update to Craft 4.5. ([#13714](https://github.com/craftcms/cms/issues/13714))
 
 ## 4.5.5 - 2023-09-14
 
