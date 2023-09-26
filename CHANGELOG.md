@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 3.x
 
-## Unreleased
+## 3.9.4 - 2023-09-26
 
 - Added `craft\helpers\App::phpExecutable()`.
 - Added `craft\helpers\Component::cleanseConfig()`.
