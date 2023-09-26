@@ -13,6 +13,7 @@ use craft\base\ElementActionInterface;
 use craft\base\ElementExporterInterface;
 use craft\base\ElementInterface;
 use craft\base\ExpirableElementInterface;
+use craft\base\FieldInterface;
 use craft\behaviors\DraftBehavior;
 use craft\behaviors\RevisionBehavior;
 use craft\db\Query;
@@ -1248,6 +1249,14 @@ class Elements extends Component
 
         foreach ($changedFields as $field) {
             $newAttributes['siteAttributes'][$field['siteId']]['dirtyFields'][] = $fieldsService->getFieldById($field['fieldId'])?->handle;
+        }
+
+        // if we're working with a revision, ensure we mark element's custom fields as dirty;
+        if ($element->getIsRevision()) {
+            $newAttributes['dirtyFields'] = array_map(
+                fn(FieldInterface $field) => $field->handle,
+                $element->getFieldLayout()?->getCustomFields() ?? [],
+            );
         }
 
         $updatedCanonical = $this->duplicateElement($element, $newAttributes);

@@ -8,6 +8,7 @@
 - Fixed a bug where it wasn’t always possible to create new entries from custom sources which were limited to one section.
 - Fixed a bug where relational fields weren’t factoring in cross-site elements when enforcing their “Min Relations”, “Max Relations”, and “Validate related entries” settings. ([#13699](https://github.com/craftcms/cms/issues/13699))
 - Fixed a bug where pagination wasn’t working for admin tables, if the `onQueryParams` callback method wasn’t set. ([#13677](https://github.com/craftcms/cms/issues/13677))
+- Fixed a bug where relations within Matrix blocks weren’t getting restored when restoring a revision’s content. ([#13626](https://github.com/craftcms/cms/issues/13626))
 
 ## 4.5.5 - 2023-09-14
 
