@@ -11,10 +11,10 @@ use Composer\IO\IOInterface;
 use Composer\IO\NullIO;
 use Composer\Json\JsonFile;
 use Craft;
+use craft\helpers\App;
 use craft\helpers\FileHelper;
 use craft\helpers\Json;
 use Symfony\Component\Process\Exception\ProcessFailedException;
-use Symfony\Component\Process\PhpExecutableFinder;
 use Symfony\Component\Process\Process;
 use Throwable;
 use yii\base\Component;
@@ -187,7 +187,7 @@ class Composer extends Component
         copy(Craft::getAlias('@lib/composer.phar'), $pharPath);
 
         $command = array_merge([
-            (new PhpExecutableFinder())->find() ?: 'php',
+            App::phpExecutable() ?? 'php',
             $pharPath,
         ], $command, [
             '--working-dir',
