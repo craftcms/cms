@@ -43,6 +43,8 @@ use craft\validators\DateTimeValidator;
 use craft\validators\UniqueValidator;
 use craft\validators\UsernameValidator;
 use craft\validators\UserPasswordValidator;
+use craft\web\assets\edituser\EditUserAsset;
+use craft\web\View;
 use DateInterval;
 use DateTime;
 use DateTimeZone;
@@ -1521,8 +1523,6 @@ XML;
      */
     public function getAdditionalMenuComponents(): array
     {
-        $components = [];
-
         $edition = Craft::$app->getEdition();
         $currentUser = Craft::$app->getUser()->getIdentity();
 
@@ -1538,6 +1538,23 @@ XML;
         $miscActions = [];
 
         if ($edition === Craft::Pro && !$isNewUser) {
+            // for slideout requests, we need to load the asset bundle and init account settings form
+            if (Craft::$app->request->getAcceptsJson()) {
+                $view = Craft::$app->getView();
+                $namespace = $view->namespace;
+
+                $view->registerAssetBundle(EditUserAsset::class);
+                $view->registerJsWithVars(
+                    fn($userId, $isCurrent, $namespace) => <<<JS
+    new Craft.AccountSettingsForm($userId, $isCurrent, {
+      namespace: $namespace,
+    })
+    JS,
+                    [$this->id, $isCurrentUser, $namespace],
+                    View::POS_END
+                );
+            }
+
             switch ($this->getStatus()) {
                 case Element::STATUS_ARCHIVED:
                 case Element::STATUS_DISABLED:

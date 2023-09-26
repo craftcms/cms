@@ -65,7 +65,10 @@ export default Base.extend(
       }
 
       this.$container.appendTo(Garnish.$bod);
-      Craft.initUiElements(this.$container);
+      // if trigger is in a slideout, we need to initialise UI elements
+      if (this.$trigger.parents('.slideout').length > 0) {
+        Craft.initUiElements(this.$container);
+      }
       this.addDisclosureMenuEventListeners();
     },
 

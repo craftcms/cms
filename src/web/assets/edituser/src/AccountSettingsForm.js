@@ -21,10 +21,18 @@ import './account.scss';
 
         this.setSettings(settings, Craft.AccountSettingsForm.defaults);
 
-        this.$copyPasswordResetUrlBtn = $('#copy-passwordreset-url');
-        this.$copyImpersonationUrlBtn = $('#copy-impersonation-url');
-        this.$actionBtn = $('#action-menubtn');
-        this.$deleteBtn = $('#delete-btn');
+        this.$copyPasswordResetUrlBtn = $(
+          '#' + Craft.namespaceId('copy-passwordreset-url', settings.namespace)
+        );
+        this.$copyImpersonationUrlBtn = $(
+          '#' + Craft.namespaceId('copy-impersonation-url', settings.namespace)
+        );
+        this.$actionBtn = $(
+          '#' + Craft.namespaceId('action-menubtn', settings.namespace)
+        );
+        this.$deleteBtn = $(
+          '#' + Craft.namespaceId('delete-btn', settings.namespace)
+        );
 
         this.addListener(
           this.$copyPasswordResetUrlBtn,
@@ -116,6 +124,7 @@ import './account.scss';
     {
       defaults: {
         deleteModalRedirect: null,
+        namespace: null,
       },
     }
   );
