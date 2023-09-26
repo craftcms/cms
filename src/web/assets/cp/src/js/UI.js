@@ -1327,19 +1327,31 @@ Craft.ui = {
       }
 
       // check if the parents are collapsed - if yes, expand
-      let $collapsedParent = $fieldErrorsContainer.parents(
+      let $collapsedParents = $fieldErrorsContainer.parents(
         '.collapsed, .is-collapsed'
       );
-      if ($collapsedParent.length > 0) {
-        if ($collapsedParent.data('block') != undefined) {
-          $collapsedParent.data('block').expand();
-        } else {
-          $collapsedParent.find('.titlebar').trigger('doubletap');
+      if ($collapsedParents.length > 0) {
+        // expand in the reverse order - from outside in!
+        for (let i = $collapsedParents.length; i > 0; i--) {
+          let $item = $($collapsedParents[i - 1]);
+          if ($item.data('block') != undefined) {
+            $item.data('block').expand();
+          } else {
+            $item.find('.titlebar').trigger('doubletap');
+          }
         }
       }
 
       // focus on the field container that contains the error
-      $fieldErrorsContainer.parents('.field:first').focus();
+      let $field = $fieldErrorsContainer.parents('.field:first');
+      if ($field.is(':visible')) {
+        $field.trigger('focus');
+      } else {
+        // wait in case the field isn't yet visible; (MatrixInput.expand() has a timeout of 200)
+        setTimeout(() => {
+          $field.trigger('focus');
+        }, 201);
+      }
     }
   },
 
