@@ -10,6 +10,7 @@ namespace craft\console\controllers;
 use Craft;
 use craft\base\ElementInterface;
 use craft\console\Controller;
+use craft\elements\Address;
 use craft\elements\Asset;
 use craft\elements\Category;
 use craft\elements\db\ElementQuery;
@@ -191,6 +192,12 @@ class ResaveController extends Controller
     public string|array|null $ownerId = null;
 
     /**
+     * @var string|null Comma-separated list of country codes.
+     * @since 4.5.6
+     */
+    public ?string $countryCode = null;
+
+    /**
      * @var string|null An attribute name that should be set for each of the elements. The value will be determined by --to.
      * @since 3.7.29
      */
@@ -239,6 +246,10 @@ class ResaveController extends Controller
         $options[] = 'touch';
 
         switch ($actionID) {
+            case 'addresses':
+                $options[] = 'ownerId';
+                $options[] = 'countryCode';
+                break;
             case 'assets':
                 $options[] = 'volume';
                 break;
@@ -304,6 +315,24 @@ class ResaveController extends Controller
         }
 
         return true;
+    }
+
+    /**
+     * Re-saves user addresses.
+     *
+     * @return int
+     * @since 4.5.6
+     */
+    public function actionAddresses(): int
+    {
+        $criteria = [];
+        if (isset($this->ownerId)) {
+            $criteria['ownerId'] = array_map(fn(string $id) => (int)$id, explode(',', (string)$this->ownerId));
+        }
+        if (isset($this->countryCode)) {
+            $criteria['countryCode'] = explode(',', (string)$this->countryCode);
+        }
+        return $this->resaveElements(Address::class, $criteria);
     }
 
     /**
