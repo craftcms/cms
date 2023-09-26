@@ -185,6 +185,12 @@ class ResaveController extends Controller
     public ?string $field = null;
 
     /**
+     * @var string|int[]|null Comma-separated list of owner element IDs.
+     * @since 4.5.6
+     */
+    public string|array|null $ownerId = null;
+
+    /**
      * @var string|null An attribute name that should be set for each of the elements. The value will be determined by --to.
      * @since 3.7.29
      */
@@ -252,6 +258,7 @@ class ResaveController extends Controller
                 break;
             case 'matrix-blocks':
                 $options[] = 'field';
+                $options[] = 'ownerId';
                 $options[] = 'type';
                 break;
         }
@@ -357,6 +364,9 @@ class ResaveController extends Controller
         $criteria = [];
         if (isset($this->field)) {
             $criteria['field'] = explode(',', $this->field);
+        }
+        if (isset($this->ownerId)) {
+            $criteria['ownerId'] = array_map(fn(string $id) => (int)$id, explode(',', (string)$this->ownerId));
         }
         if (isset($this->type)) {
             $criteria['type'] = explode(',', $this->type);
