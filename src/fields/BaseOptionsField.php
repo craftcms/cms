@@ -345,7 +345,7 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
         $optionLabels = [];
         foreach ($this->options() as $option) {
             if (!isset($option['optgroup'])) {
-                [$selected, $selectedValues, $selectedBlankOption] = $this->isOptionSelected($option, $value, $selectedValues, $selectedBlankOption);
+                $selected = $this->isOptionSelected($option, $value, $selectedValues, $selectedBlankOption);
                 $options[] = new OptionData($option['label'], $option['value'], $selected, true);
                 $optionValues[] = (string)$option['value'];
                 $optionLabels[] = (string)$option['label'];
@@ -385,11 +385,11 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
      * @param mixed $value
      * @param array $selectedValues
      * @param bool $selectedBlankOption
-     * @return array
+     * @return bool
      */
-    protected function isOptionSelected(array $option, mixed $value, array $selectedValues, bool $selectedBlankOption): array
+    protected function isOptionSelected(array $option, mixed $value, array &$selectedValues, bool &$selectedBlankOption): bool
     {
-        return [in_array($option['value'], $selectedValues, true), $selectedValues, $selectedBlankOption];
+        return in_array($option['value'], $selectedValues, true);
     }
 
     /**

@@ -117,7 +117,7 @@ class Dropdown extends BaseOptionsField implements SortableFieldInterface
     /**
      * @inheritdoc
      */
-    protected function isOptionSelected(array $option, mixed $value, array $selectedValues, bool $selectedBlankOption): array
+    protected function isOptionSelected(array $option, mixed $value, array &$selectedValues, bool &$selectedBlankOption): bool
     {
         // special case for blank options, when $value is null
         if ($value === null && $option['value'] === '') {
@@ -132,6 +132,6 @@ class Dropdown extends BaseOptionsField implements SortableFieldInterface
             $selected = in_array($option['value'], $selectedValues, true);
         }
 
-        return [$selected, $selectedValues, $selectedBlankOption];
+        return $selected;
     }
 }
