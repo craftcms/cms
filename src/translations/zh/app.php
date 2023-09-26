@@ -1710,7 +1710,7 @@ return [
     'Validate custom fields on public registration' => '在公开注册期间验证自定义字段',
     'Validate related {type}' => '验证相关{type}',
     'Validation errors for site: “{siteName}“' => '站点验证错误：“{siteName}”',
-    'Validation errors found in {attribute} {type}; please fix them.' => '在 {attribute} {type}中发现验证错误；请修正。',
+    'Validation errors found in {attribute} {type}; please fix them.' => '在{attribute}{type}中发现验证错误；请修正。',
     'Value prefixed by “{prefix}”.' => '值以“{prefix}”为前缀。',
     'Value suffixed by “{suffix}”.' => '值以“{suffix}”为后缀。',
     'Value' => '值',
