@@ -17,8 +17,12 @@ Craft.EntryIndex = Craft.BaseElementIndex.extend({
 
   afterInit: function () {
     // Find which of the visible sections the user has permission to create new entries in
-    this.publishableSections = Craft.publishableSections.filter(
-      (s) => !!this.getSourceByKey(`section:${s.uid}`)
+    const includedSections = this.$sources
+      .toArray()
+      .map((source) => $(source).data('handle'))
+      .filter((handle) => !!handle);
+    this.publishableSections = Craft.publishableSections.filter((section) =>
+      includedSections.includes(section.handle)
     );
 
     this.base();
@@ -170,13 +174,13 @@ Craft.EntryIndex = Craft.BaseElementIndex.extend({
             const $li = $('<li/>').appendTo($ul);
             const $a = $('<a/>', {
               role: anchorRole === 'button' ? 'button' : null,
-              href: '#', // Allows for click listener and tab order
+              href: Craft.getUrl(`entries/${section.handle}/new`),
               type: anchorRole === 'button' ? 'button' : null,
               text: Craft.t('app', 'New {section} entry', {
                 section: section.name,
               }),
             }).appendTo($li);
-            this.addListener($a, 'click', () => {
+            this.addListener($a, 'activate', () => {
               $menuBtn.data('trigger').hide();
               this._createEntry(section.id);
             });

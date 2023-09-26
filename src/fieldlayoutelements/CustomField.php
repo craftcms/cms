@@ -49,6 +49,14 @@ class CustomField extends BaseField
 
     /**
      * @inheritdoc
+     */
+    public function showAttribute(): bool
+    {
+        return true;
+    }
+
+    /**
+     * @inheritdoc
      * @since 3.5.2
      */
     protected function value(?ElementInterface $element = null): mixed

@@ -197,6 +197,7 @@ JS;
             'Folder renamed.',
             'Folder renamed.',
             'Format',
+            'Found {num, number} {num, plural, =1{error} other{errors}}',
             'From {date}',
             'From',
             'Give your tab a name.',
@@ -430,8 +431,8 @@ JS;
             'path' => $request->getPathInfo(),
             'pathParam' => $generalConfig->pathParam,
             'Pro' => Craft::Pro,
-            'registeredAssetBundles' => ['' => ''], // force encode as JS object
-            'registeredJsFiles' => ['' => ''], // force encode as JS object
+            'registeredAssetBundles' => [], // force encode as JS object
+            'registeredJsFiles' => [], // force encode as JS object
             'right' => $orientation === 'ltr' ? 'right' : 'left',
             'scriptName' => basename($request->getScriptFile()),
             'Solo' => Craft::Solo,
@@ -642,13 +643,17 @@ JS;
 
     private function _timepickerOptions(Locale $formattingLocale, string $orientation): array
     {
+        // normalize the AM/PM names consistently with time2int() in jQuery Timepicker
+        $am = preg_replace('/[\s.]/', '', $formattingLocale->getAMName());
+        $pm = preg_replace('/[\s.]/', '', $formattingLocale->getPMName());
+
         return [
             'closeOnWindowScroll' => false,
             'lang' => [
-                'AM' => $formattingLocale->getAMName(),
-                'am' => mb_strtolower($formattingLocale->getAMName()),
-                'PM' => $formattingLocale->getPMName(),
-                'pm' => mb_strtolower($formattingLocale->getPMName()),
+                'AM' => $am,
+                'am' => mb_strtolower($am),
+                'PM' => $pm,
+                'pm' => mb_strtolower($pm),
             ],
             'orientation' => $orientation[0],
             'timeFormat' => $formattingLocale->getTimeFormat(Locale::LENGTH_SHORT, Locale::FORMAT_PHP),

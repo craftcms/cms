@@ -7,13 +7,12 @@
 
 namespace craft\console;
 
-use Composer\Util\Platform;
-use Composer\Util\Silencer;
 use Craft;
 use craft\base\Model;
 use craft\helpers\App;
 use craft\helpers\Console;
 use craft\mutex\Mutex as CraftMutex;
+use Symfony\Component\Process\Process;
 use yii\base\Action;
 use yii\base\InvalidRouteException;
 use yii\console\Exception;
@@ -172,7 +171,7 @@ MD
     protected function checkTty(): void
     {
         // Don't treat this as interactive if it doesn't appear to be a TTY shell
-        if ($this->interactive && !Platform::isTty()) {
+        if ($this->interactive && !Process::isTtySupported()) {
             $this->interactive = false;
         }
     }
@@ -186,7 +185,7 @@ MD
      */
     protected function checkRootUser(): bool
     {
-        if (Platform::isWindows() || !function_exists('exec') || App::env('CRAFT_ALLOW_SUPERUSER')) {
+        if (App::isWindows() || !function_exists('exec') || App::env('CRAFT_ALLOW_SUPERUSER')) {
             return true;
         }
 
@@ -203,14 +202,16 @@ MD
             if ($uid = (int)getenv('SUDO_UID')) {
                 // Silently clobber any sudo credentials on the invoking user to avoid privilege escalations later on
                 // ref. https://github.com/composer/composer/issues/5119
-                /** @noinspection CommandExecutionAsSuperUserInspection */
-                Silencer::call('exec', "sudo -u \\#$uid sudo -K > /dev/null 2>&1");
+                App::silence(function() use ($uid): void {
+                    exec("sudo -u \\#$uid sudo -K > /dev/null 2>&1");
+                });
             }
         }
 
         // Silently clobber any remaining sudo leases on the current user as well to avoid privilege escalations
-        /** @noinspection CommandExecutionAsSuperUserInspection */
-        Silencer::call('exec', 'sudo -K > /dev/null 2>&1');
+        App::silence(function(): void {
+            exec('sudo -K > /dev/null 2>&1');
+        });
 
         return true;
     }

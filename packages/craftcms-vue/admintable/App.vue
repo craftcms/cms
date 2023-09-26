@@ -545,6 +545,7 @@
 
         this.isLoading = true;
         this.deselectAll();
+        this.$refs.vuetable.normalizeFields();
         this.$refs.vuetable.reload();
       },
 
@@ -609,7 +610,9 @@
         };
 
         if (this.onQueryParams instanceof Function) {
-          params = this.onQueryParams(params);
+          let callbackParams = this.onQueryParams(params);
+          // if `callbackParams` is not undefined, use them instead of `params`
+          params = callbackParams || params;
         }
 
         return params;

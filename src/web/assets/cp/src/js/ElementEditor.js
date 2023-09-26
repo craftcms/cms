@@ -173,6 +173,14 @@ Craft.ElementEditor = Garnish.Base.extend(
       this.$container.data('serializer', () => this.serializeForm(true));
       this.$container.data('initialSerializedValue', this.serializeForm(true));
 
+      // Re-record the initial values once the fields have had a chance to initialize
+      Garnish.requestAnimationFrame(() => {
+        this.$container.data(
+          'initialSerializedValue',
+          this.serializeForm(true)
+        );
+      });
+
       if (this.isFullPage) {
         this.addListener(this.$container, 'submit', 'handleSubmit');
       }
@@ -233,6 +241,10 @@ Craft.ElementEditor = Garnish.Base.extend(
       }
 
       this.activityTooltips = {};
+
+      if (this.isFullPage) {
+        Craft.ui.setFocusOnErrorSummary(this.$container);
+      }
     },
 
     _createQueue: function () {
@@ -1106,8 +1118,12 @@ Craft.ElementEditor = Garnish.Base.extend(
 
       if (removeActionParams && !this.settings.isUnpublishedDraft) {
         // Remove action and redirect params
-        const actionName = this.namespaceInputName('action');
-        const redirectName = this.namespaceInputName('redirect');
+        const actionName = encodeURIComponent(
+          this.namespaceInputName('action')
+        );
+        const redirectName = encodeURIComponent(
+          this.namespaceInputName('redirect')
+        );
         data = data.replace(
           new RegExp(`&${Craft.escapeRegex(actionName)}=[^&]*`),
           ''
