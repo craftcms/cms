@@ -23,7 +23,6 @@ use craft\migrations\CreatePhpSessionTable;
 use m150207_210500_i18n_init;
 use PDOException;
 use Seld\CliPrompt\CliPrompt;
-use Symfony\Component\Process\PhpExecutableFinder;
 use Symfony\Component\Process\Process;
 use Throwable;
 use yii\base\InvalidConfigException;
@@ -622,7 +621,7 @@ EOD;
         }
 
         $process = new Process([
-            (new PhpExecutableFinder())->find() ?: 'php',
+            App::phpExecutable() ?? 'php',
             $script,
             'cloud/setup',
         ]);
