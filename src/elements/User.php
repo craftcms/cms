@@ -10,7 +10,6 @@ namespace craft\elements;
 use Craft;
 use craft\base\Element;
 use craft\base\NameTrait;
-use craft\controllers\UsersController;
 use craft\db\Query;
 use craft\db\Table;
 use craft\elements\actions\DeleteUsers;
@@ -102,6 +101,11 @@ class User extends Element implements IdentityInterface
     public const EVENT_DEFINE_FRIENDLY_NAME = 'defineFriendlyName';
 
     public const IMPERSONATE_KEY = 'Craft.UserSessionService.prevImpersonateUserId';
+
+    /**
+     * @event RegisterUserActionsEvent The event that is triggered when a user’s available actions are being registered
+     */
+    public const EVENT_REGISTER_USER_ACTIONS = 'registerUserActions';
 
     private static array $photoColors = [
         'red-100',
@@ -1532,6 +1536,8 @@ XML;
         $isNewUser = !$this->id;
         $isCurrentUser = $this->getIsCurrent();
 
+        $redirectUrl = Craft::$app->getSecurity()->hashData($this->cpEditUrl());
+
         $statusActions = [];
         $sessionActions = [];
         $destructiveActions = [];
@@ -1562,6 +1568,7 @@ XML;
                         $statusActions[] = [
                             'data' => [
                                 'action' => 'users/enable-user',
+                                'redirect' => $redirectUrl,
                                 'form' => 'userform',
                                 'params' => ['userId' => $this->id],
                             ],
@@ -1577,6 +1584,7 @@ XML;
                             $statusActions[] = [
                                 'data' => [
                                     'action' => 'users/send-activation-email',
+                                    'redirect' => $redirectUrl,
                                     'form' => 'userform',
                                     'params' => ['userId' => $this->id],
                                 ],
@@ -1596,6 +1604,7 @@ XML;
                             $statusActions[] = [
                                 'data' => [
                                     'action' => 'users/activate-user',
+                                    'redirect' => $redirectUrl,
                                     'form' => 'userform',
                                     'params' => ['userId' => $this->id],
                                 ],
@@ -1609,6 +1618,7 @@ XML;
                         $statusActions[] = [
                             'data' => [
                                 'action' => 'users/unsuspend-user',
+                                'redirect' => $redirectUrl,
                                 'form' => 'userform',
                                 'params' => ['userId' => $this->id],
                             ],
@@ -1630,6 +1640,7 @@ XML;
                             $statusActions[] = [
                                 'data' => [
                                     'action' => 'users/unlock-user',
+                                    'redirect' => $redirectUrl,
                                     'form' => 'userform',
                                     'params' => ['userId' => $this->id],
                                 ],
@@ -1642,6 +1653,7 @@ XML;
                         $statusActions[] = [
                             'data' => [
                                 'action' => 'users/send-password-reset-email',
+                                'redirect' => $redirectUrl,
                                 'form' => 'userform',
                                 'params' => ['userId' => $this->id],
                             ],
@@ -1684,6 +1696,7 @@ XML;
                     $destructiveActions[] = [
                         'data' => [
                             'action' => 'users/suspend-user',
+                            'redirect' => $redirectUrl,
                             'form' => 'userform',
                             'params' => ['userId' => $this->id],
                         ],
@@ -1698,6 +1711,7 @@ XML;
                     $destructiveActions[] = [
                         'data' => [
                             'action' => 'users/deactivate-user',
+                            'redirect' => $redirectUrl,
                             'form' => 'userform',
                             'params' => ['userId' => $this->id],
                             'confirm' => Craft::t('app', 'Deactivating a user revokes their ability to sign in. Are you sure you want to continue?'),
@@ -1725,7 +1739,7 @@ XML;
             'destructiveActions' => $destructiveActions,
             'miscActions' => $miscActions,
         ]);
-        $this->trigger(UsersController::EVENT_REGISTER_USER_ACTIONS, $event);
+        $this->trigger(self::EVENT_REGISTER_USER_ACTIONS, $event);
 
         return array_filter(array_merge(
             $event->statusActions,

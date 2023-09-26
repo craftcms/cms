@@ -22,7 +22,6 @@ use craft\events\DefineUserContentSummaryEvent;
 use craft\events\FindLoginUserEvent;
 use craft\events\InvalidUserTokenEvent;
 use craft\events\LoginFailureEvent;
-use craft\events\RegisterUserActionsEvent;
 use craft\events\UserEvent;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Assets;
@@ -106,11 +105,6 @@ class UsersController extends Controller
      * @event LoginFailureEvent The event that is triggered when a failed login attempt was made
      */
     public const EVENT_LOGIN_FAILURE = 'loginFailure';
-
-    /**
-     * @event RegisterUserActionsEvent The event that is triggered when a user’s available actions are being registered
-     */
-    public const EVENT_REGISTER_USER_ACTIONS = 'registerUserActions';
 
     /**
      * @event UserEvent The event that is triggered BEFORE user groups and permissions ARE assigned to the user getting saved
