@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 4
 
-## Unreleased
+## 4.5.6 - 2023-09-26
 
 - When slideouts are opened within Live Preview, they now slide up over the editor pane, rather than covering the preview pane. ([#13739](https://github.com/craftcms/cms/pull/13739))
 - Cross-site validation now only involves fields which were actually modified in the element save. ([#13675](https://github.com/craftcms/cms/discussions/13675))
