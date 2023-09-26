@@ -9,7 +9,6 @@
 - Added the `resave/addresses` command. ([#13720](https://github.com/craftcms/cms/discussions/13720))
 - The `resave/matrix-blocks` command now supports an `--owner-id` option.
 - Added `craft\helpers\App::phpExecutable()`.
-- Added `craft\helpers\Component::cleanseConfig()`.
 - `craft\helpers\Component::createComponent()` now filters out `as X` and `on X` keys from the component config.
 - `craft\services\Announcements::push()` now has an `$adminsOnly` argument. ([#13728](https://github.com/craftcms/cms/discussions/13728))
 - `Craft.appendHeadHtml()` and `appendBodyHtml()` now load external scripts asynchronously, and return promises.
