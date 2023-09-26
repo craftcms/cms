@@ -3,6 +3,8 @@
 ## Unreleased
 
 - When slideouts are opened within Live Preview, they now slide up over the editor pane, rather than covering the preview pane. ([#13739](https://github.com/craftcms/cms/pull/13739))
+- Added the `resave/addresses` command. ([#13720](https://github.com/craftcms/cms/discussions/13720))
+- The `resave/matrix-blocks` command now supports an `--owner-id` option.
 - Added `craft\helpers\App::phpExecutable()`.
 - `craft\services\Announcements::push()` now has an `$adminsOnly` argument. ([#13728](https://github.com/craftcms/cms/discussions/13728))
 - `Craft.appendHeadHtml()` and `appendBodyHtml()` now load external scripts asynchronously, and return promises.
