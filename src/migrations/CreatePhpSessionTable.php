@@ -24,7 +24,7 @@ class CreatePhpSessionTable extends Migration
     public function safeUp(): bool
     {
         $this->createTable(Table::PHPSESSIONS, [
-            'id' => $this->char(255)->notNull(),
+            'id' => $this->string()->notNull(),
             'expire' => $this->integer(),
             'data' => $this->binary(),
             'dateCreated' => $this->dateTime()->notNull(),

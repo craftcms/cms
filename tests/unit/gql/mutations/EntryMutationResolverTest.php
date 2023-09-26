@@ -13,6 +13,7 @@ use craft\base\Element;
 use craft\elements\db\EntryQuery;
 use craft\elements\Entry;
 use craft\gql\resolvers\mutations\Entry as EntryMutationResolver;
+use craft\models\EntryType;
 use craft\services\Elements;
 use craft\test\TestCase;
 use GraphQL\Type\Definition\ResolveInfo;
@@ -30,7 +31,9 @@ class EntryMutationResolverTest extends TestCase
      */
     public function testSavingDraftOrEntrySetsRelevantScenario(array $arguments, string $scenario): void
     {
-        $entry = new Entry();
+        $entry = $this->make(Entry::class, [
+            'getType' => new EntryType(),
+        ]);
 
         $resolver = $this->make(EntryMutationResolver::class, [
             'getEntryElement' => $entry,
@@ -58,7 +61,10 @@ class EntryMutationResolverTest extends TestCase
      */
     public function testSavingNewEntryDoesNotSearchForIt(array $arguments, bool $identifyCalled): void
     {
-        $entry = new Entry();
+        $entry = $this->make(Entry::class, [
+            'getType' => new EntryType(),
+        ]);
+
         $query = $this->make(EntryQuery::class, [
             'one' => $entry,
         ]);

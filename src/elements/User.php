@@ -1291,12 +1291,12 @@ class User extends Element implements IdentityInterface
 
         // Choose a color based on the UUID
         $uid = strtolower($this->uid ?? '00ff');
-        $color1Index = (int)base_convert(substr($uid, 0, 2), 16, 10);
-        $color2Index = (int)base_convert(substr($uid, 2, 2), 16, 10);
-        if ($color2Index >= $color1Index - 1 && $color2Index <= $color1Index + 1) {
-            $color2Index = $color1Index + 2;
-        }
         $totalColors = count(self::$photoColors);
+        $color1Index = base_convert(substr($uid, 0, 2), 16, 10) % $totalColors;
+        $color2Index = base_convert(substr($uid, 2, 2), 16, 10) % $totalColors;
+        if ($color2Index === $color1Index) {
+            $color2Index = ($color1Index + 1) % $totalColors;
+        }
         $color1 = self::$photoColors[$color1Index % $totalColors];
         $color2 = self::$photoColors[$color2Index % $totalColors];
 
@@ -1306,16 +1306,9 @@ class User extends Element implements IdentityInterface
 <svg version="1.1" baseProfile="full" width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
     <defs>
       <linearGradient id="$gradientId" x1="0" y1="1" x2="1"  y2="0">
-        <stop class="stop1" offset="0%" />
-        <stop class="stop2" offset="100%" />
+        <stop offset="0%" style="stop-color:var(--$color1)" />
+        <stop offset="100%" style="stop-color:var(--$color2)" />
       </linearGradient>
-    </defs>
-    <style>
-      <![CDATA[
-        .stop1 { stop-color: var(--$color1); }
-        .stop2 { stop-color: var(--$color2); }
-      ]]>
-    </style>
     </defs>
     <circle cx="50" cy="50" r="50" fill="url(#$gradientId)"/>
     <text x="50" y="69" font-size="46" font-family="sans-serif" text-anchor="middle" fill="var(--white)" fill-opacity="0.4">$initials</text>

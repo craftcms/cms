@@ -314,7 +314,9 @@
 
 
 {% macro autosuggestField(config) %}
-    {% set config = config|merge({id: config.id ?? "autosuggest#{random()}"}) %}
+    {% set config = config|merge({
+        id: config.id ?? "autosuggest#{random()}",
+    }) %}
 
     {# Suggest an environment variable / alias? #}
     {% if (config.suggestEnvVars ?? false) %}

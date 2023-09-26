@@ -12,6 +12,7 @@ use craft\i18n\Locale;
 use DateInterval;
 use DateTime;
 use DateTimeImmutable;
+use DateTimeInterface;
 use DateTimeZone;
 use Exception;
 use Throwable;
@@ -79,7 +80,7 @@ class DateTimeHelper
      *      - `timezone` – A [valid PHP timezone](https://php.net/manual/en/timezones.php). If set, this will override
      *        the assumed timezone per `$assumeSystemTimeZone`.
      *
-     * @param string|int|array|DateTime|null $value The value that should be converted to a DateTime object.
+     * @param string|int|array|DateTimeInterface|null $value The value that should be converted to a DateTime object.
      * @param bool $assumeSystemTimeZone Whether it should be assumed that the value was set in the system timezone if
      * the timezone was not specified. If this is `false`, UTC will be assumed.
      * @param bool $setToSystemTimeZone Whether to set the resulting DateTime object to the system timezone.
@@ -90,6 +91,10 @@ class DateTimeHelper
     {
         if ($value instanceof DateTime) {
             return $value;
+        }
+
+        if ($value instanceof DateTimeImmutable) {
+            return DateTime::createFromImmutable($value);
         }
 
         if (!$value) {
@@ -865,11 +870,25 @@ class DateTimeHelper
         // Replace the localized "AM" and "PM"
         $am = $formattingLocale->getAMName();
         $pm = $formattingLocale->getPMName();
+        $m = [$am, $pm];
 
-        if (preg_match('/(.*)(' . preg_quote($am, '/') . '|' . preg_quote($pm, '/') . ')(.*)/iu', $value, $matches)) {
+        // account for AM/PM names that might be normalized for jQuery Timepicker
+        $amAlt = preg_replace('/[\s.]/', '', $am);
+        $pmAlt = preg_replace('/[\s.]/', '', $pm);
+
+        if ($amAlt !== $am) {
+            $m[] = $amAlt;
+        }
+        if ($pmAlt !== $pm) {
+            $m[] = $pmAlt;
+        }
+
+        $quoted = implode('|', array_map(fn($v) => preg_quote($v, '/'), $m));
+
+        if (preg_match("/(.*)($quoted)(.*)/iu", $value, $matches)) {
             $value = $matches[1] . $matches[3];
 
-            if (mb_strtolower($matches[2]) === mb_strtolower($am)) {
+            if (in_array(mb_strtolower($matches[2]), [mb_strtolower($am), mb_strtolower($amAlt)])) {
                 $value .= 'AM';
             } else {
                 $value .= 'PM';
