@@ -11,6 +11,7 @@ use craft\helpers\Json;
 use craft\helpers\UrlHelper;
 use craft\web\assets\conditionbuilder\ConditionBuilderAsset;
 use Illuminate\Support\Collection;
+use Throwable;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
 
@@ -482,7 +483,11 @@ JS,
         }
 
         foreach ($selectableRules as $value => $selectableRule) {
-            $label = $selectableRule->getLabel();
+            try {
+                $label = $selectableRule->getLabel();
+            } catch (Throwable) {
+                continue;
+            }
             $groupLabel = $selectableRule->getGroupLabel() ?? '__UNGROUPED__';
             if (!isset($labelsByGroup[$groupLabel][$label])) {
                 $groupedRuleTypeOptions[$groupLabel][] = compact('value', 'label');
