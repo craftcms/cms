@@ -1099,7 +1099,7 @@ li.breadcrumb-toggle-wrapper {
   }
 
   .details {
-    margin-bottom: 11.5em;
+    padding-bottom: calc(var(--xl) + 11.5em);
 
     .meta {
       border-radius: var(--large-border-radius);

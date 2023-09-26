@@ -896,7 +896,7 @@ Craft.CustomizeSourcesModal.CustomSource =
       }
 
       if (this.$labelInput) {
-        let label = Craft.trim(this.$labelInput.val());
+        let label = this.$labelInput.val().trim();
         if (label === '') {
           label = Craft.t('app', '(blank)');
         }

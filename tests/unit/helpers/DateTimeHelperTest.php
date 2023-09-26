@@ -466,6 +466,10 @@ class DateTimeHelperTest extends TestCase
                 fn() => new DateTime('@1625575906'),
                 fn() => new DateTimeImmutable('@1625575906'),
             ],
+            'other-locale' => [
+                new DateTime('2023-09-26 00:00:00', new DateTimeZone('UTC')),
+                ['date' => '26/9/2023', 'locale' => 'en-GB'],
+            ],
         ];
     }
 

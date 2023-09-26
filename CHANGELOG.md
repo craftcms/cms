@@ -1,10 +1,35 @@
 # Release Notes for Craft CMS 4
 
-## Unreleased
+## 4.5.6 - 2023-09-26
 
+- When slideouts are opened within Live Preview, they now slide up over the editor pane, rather than covering the preview pane. ([#13739](https://github.com/craftcms/cms/pull/13739))
+- Cross-site validation now only involves fields which were actually modified in the element save. ([#13675](https://github.com/craftcms/cms/discussions/13675))
+- Row headings within Table fields now get statically translated. ([#13703](https://github.com/craftcms/cms/discussions/13703))
+- Element condition settings within field layout components now display a warning if the `autosaveDrafts` config setting is disabled. ([#12348](https://github.com/craftcms/cms/issues/12348))
+- Added the `resave/addresses` command. ([#13720](https://github.com/craftcms/cms/discussions/13720))
+- The `resave/matrix-blocks` command now supports an `--owner-id` option.
+- Added `craft\helpers\App::phpExecutable()`.
+- Added `craft\helpers\Component::cleanseConfig()`.
+- `craft\helpers\Component::createComponent()` now filters out `as X` and `on X` keys from the component config.
+- `craft\services\Announcements::push()` now has an `$adminsOnly` argument. ([#13728](https://github.com/craftcms/cms/discussions/13728))
+- `Craft.appendHeadHtml()` and `appendBodyHtml()` now load external scripts asynchronously, and return promises.
+- Improved the reliability of Composer operations when PHP is running via FastCGI. ([#13681](https://github.com/craftcms/cms/issues/13681))
 - Fixed a bug where it wasn’t always possible to create new entries from custom sources which were limited to one section.
 - Fixed a bug where relational fields weren’t factoring in cross-site elements when enforcing their “Min Relations”, “Max Relations”, and “Validate related entries” settings. ([#13699](https://github.com/craftcms/cms/issues/13699))
 - Fixed a bug where pagination wasn’t working for admin tables, if the `onQueryParams` callback method wasn’t set. ([#13677](https://github.com/craftcms/cms/issues/13677))
+- Fixed a bug where relations within Matrix blocks weren’t getting restored when restoring a revision’s content. ([#13626](https://github.com/craftcms/cms/issues/13626))
+- Fixed a bug where the filesystem and volume-creation slideouts could keep reappearing if canceled. ([#13707](https://github.com/craftcms/cms/issues/13707))
+- Fixed an error that could occur when reattempting to update to Craft 4.5. ([#13714](https://github.com/craftcms/cms/issues/13714))
+- Fixed a bug where date and time inputs could be parsed incorrectly, if the user’s formatting locale wasn’t explicitly set, or it changed between page load and form submit. ([#13731](https://github.com/craftcms/cms/issues/13731))
+- Fixed JavaScript errors that could occur when control panel resources were being loaded from a different domain. ([#13715](https://github.com/craftcms/cms/issues/13715))
+- Fixed a PHP error that occurred if the `CRAFT_DOTENV_PATH` environment variable was set, or a console command was executed with the `--dotenvPath` option. ([#13725](https://github.com/craftcms/cms/issues/13725))
+- Fixed a bug where long element titles weren’t always getting truncated in the control panel. ([#13718](https://github.com/craftcms/cms/issues/13718))
+- Fixed a bug where checkboxes could be preselected if they had an empty value. ([#13710](https://github.com/craftcms/cms/issues/13710))
+- Fixed a bug where links in validation summaries weren’t working if the offending field was in a collapsed Matrix block. ([#13708](https://github.com/craftcms/cms/issues/13708))
+- Fixed a bug where cross-site validation could apply even if `craft\services\Elements::saveElement()` was called with `$runValidation` set to `false`.
+- Fixed some wonky scrolling behavior on pages where the details pane was shorter than the content pane. ([#13637](https://github.com/craftcms/cms/issues/13637))
+- Fixed a division by zero error. ([#13712](https://github.com/craftcms/cms/issues/13712))
+- Fixed an RCE vulnerability.
 
 ## 4.5.5 - 2023-09-14
 

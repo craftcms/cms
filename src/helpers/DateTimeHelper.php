@@ -74,9 +74,10 @@ class DateTimeHelper
      *  - Unix timestamps
      * - `now`/`today`/`tomorrow`/`yesterday` (midnight of the specified relative date)
      *  - An array with at least one of these keys defined: `datetime`, `date`, or `time`. Supported keys include:
-     *      - `date` – a date string in `YYYY-MM-DD` or `YYYY-MM-DD HH:MM:SS.MU` formats or the current locale’s short date format
-     *      - `time` – a time string in `HH:MM` or `HH:MM:SS` (24-hour) format or the current locale’s short time format
+     *      - `date` – A date string in `YYYY-MM-DD` or `YYYY-MM-DD HH:MM:SS.MU` formats or the current locale’s short date format.
+     *      - `time` – A time string in `HH:MM` or `HH:MM:SS` (24-hour) format or the current locale’s short time format.
      *      - `datetime` – A timestamp in any of the non-array formats supported by this method
+     *      - `locale` – The locale ID that the date and time were formatted in. Defaults to the app’s current formatting locale.
      *      - `timezone` – A [valid PHP timezone](https://php.net/manual/en/timezones.php). If set, this will override
      *        the assumed timezone per `$assumeSystemTimeZone`.
      *
@@ -108,6 +109,12 @@ class DateTimeHelper
                 return false;
             }
 
+            // Did they specify a locale?
+            $locale = Craft::$app->getFormattingLocale();
+            if (!empty($value['locale']) && $value['locale'] !== $locale->id) {
+                $locale = Craft::$app->getI18n()->getLocaleById($value['locale']);
+            }
+
             // Did they specify a timezone?
             if (!empty($value['timezone']) && ($normalizedTimeZone = static::normalizeTimeZone($value['timezone'])) !== false) {
                 $timeZone = $normalizedTimeZone;
@@ -124,7 +131,7 @@ class DateTimeHelper
             } else {
                 // Did they specify a date?
                 if (!empty($value['date'])) {
-                    [$date, $format] = self::_parseDate($value['date']);
+                    [$date, $format] = self::_parseDate($value['date'], $locale);
                 } else {
                     // Default to the current date
                     $format = 'Y-m-d';
@@ -133,7 +140,7 @@ class DateTimeHelper
 
                 // Did they specify a time?
                 if (!empty($value['time'])) {
-                    [$time, $timeFormat] = self::_parseTime($value['time']);
+                    [$time, $timeFormat] = self::_parseTime($value['time'], $locale);
                     $format .= ' ' . $timeFormat;
                     $date .= ' ' . $time;
                 }
@@ -806,9 +813,10 @@ class DateTimeHelper
      * Normalizes and returns a date string along with the format it was set in.
      *
      * @param string $value
+     * @param Locale $locale
      * @return array
      */
-    private static function _parseDate(string $value): array
+    private static function _parseDate(string $value, Locale $locale): array
     {
         $value = trim($value);
 
@@ -825,7 +833,7 @@ class DateTimeHelper
         }
 
         // Get the locale's short date format
-        $format = Craft::$app->getFormattingLocale()->getDateFormat(Locale::LENGTH_SHORT, Locale::FORMAT_PHP);
+        $format = $locale->getDateFormat(Locale::LENGTH_SHORT, Locale::FORMAT_PHP);
 
         // Make sure it's a 4-digit year
         $format = StringHelper::replace($format, 'y', 'Y');
@@ -855,9 +863,10 @@ class DateTimeHelper
      * Normalizes and returns a time string along with the format it was set in
      *
      * @param string $value
+     * @param Locale $locale
      * @return array
      */
-    private static function _parseTime(string $value): array
+    private static function _parseTime(string $value, Locale $locale): array
     {
         $value = trim($value);
 
@@ -867,12 +876,11 @@ class DateTimeHelper
         }
 
         // Get the formatting locale's short time format
-        $formattingLocale = Craft::$app->getFormattingLocale();
-        $format = $formattingLocale->getTimeFormat(Locale::LENGTH_SHORT, Locale::FORMAT_PHP);
+        $format = $locale->getTimeFormat(Locale::LENGTH_SHORT, Locale::FORMAT_PHP);
 
         // Replace the localized "AM" and "PM"
-        $am = $formattingLocale->getAMName();
-        $pm = $formattingLocale->getPMName();
+        $am = $locale->getAMName();
+        $pm = $locale->getPMName();
         $m = [$am, $pm];
 
         // account for AM/PM names that might be normalized for jQuery Timepicker

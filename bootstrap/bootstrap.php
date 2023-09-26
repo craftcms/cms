@@ -41,12 +41,14 @@ $createFolder = function($path) {
     }
 };
 
-$findConfigPath = function($cliName, $envName) use ($createFolder) {
+$findConfigPath = function(string $cliName, string $envName, bool $isFile = false) use ($createFolder) {
     $path = App::cliOption($cliName, true) ?? App::env($envName);
     if (!$path) {
         return null;
     }
-    $createFolder($path);
+    if (!$isFile) {
+        $createFolder($path);
+    }
     return realpath($path);
 };
 
@@ -76,8 +78,8 @@ $vendorPath = $findConfigPath('--vendorPath', 'CRAFT_VENDOR_PATH') ?? dirname(__
 // Set the "project root" path that contains config/, storage/, etc. By default assume that it's up a level from vendor/.
 $rootPath = $findConfigPath('--basePath', 'CRAFT_BASE_PATH') ?? dirname($vendorPath);
 
-// By default the remaining directories will be in the base directory
-$dotenvPath = $findConfigPath('--dotenvPath', 'CRAFT_DOTENV_PATH') ?? "$rootPath/.env";
+// By default the remaining files/directories will be in the base directory
+$dotenvPath = $findConfigPath('--dotenvPath', 'CRAFT_DOTENV_PATH', true) ?? "$rootPath/.env";
 $configPath = $findConfigPath('--configPath', 'CRAFT_CONFIG_PATH') ?? "$rootPath/config";
 $contentMigrationsPath = $findConfigPath('--contentMigrationsPath', 'CRAFT_CONTENT_MIGRATIONS_PATH') ?? "$rootPath/migrations";
 $storagePath = $findConfigPath('--storagePath', 'CRAFT_STORAGE_PATH') ?? "$rootPath/storage";

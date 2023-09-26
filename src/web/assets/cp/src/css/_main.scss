@@ -1354,6 +1354,7 @@ ul.icons {
 
 .flex-grow {
   flex: 1;
+  max-width: 100%;
 }
 
 .flex-justify {
@@ -4152,7 +4153,7 @@ ul.tree,
   display: flex;
   flex-direction: row;
   align-items: center;
-  margin: calc(var(--s) * -1) calc(var(--xl) * -1);
+  margin: calc(var(--s) * -1) calc(var(--padding) * -1);
 
   &:first-child {
     border-radius: var(--large-border-radius) var(--large-border-radius) 0 0;
@@ -4205,7 +4206,7 @@ ul.tree,
         flex-direction: row;
         align-items: center;
         position: relative;
-        padding: 0 24px;
+        padding: 0 var(--padding);
         white-space: nowrap;
         color: var(--tab-label-color);
         height: 50px;
@@ -4710,6 +4711,14 @@ $min2ColWidth: 400px;
   height: -webkit-fill-available; // h/t https://twitter.com/AllThingsSmitty/status/1254151507412496384
   pointer-events: none;
 
+  &.so-lp {
+    position: absolute;
+    top: var(--m);
+    left: var(--m);
+    width: calc(100% - var(--m) * 2);
+    height: calc(100vh - var(--m) * 2);
+  }
+
   body.has-debug-toolbar & {
     height: calc(100vh - 42px);
   }
@@ -4725,22 +4734,30 @@ $min2ColWidth: 400px;
   overflow: hidden;
   padding: 24px var(--padding);
   pointer-events: all;
+  container-type: inline-size;
 
-  &.so-mobile {
-    --padding: 14px;
-    --neg-padding: -14px;
-    width: 100%;
-    height: 100%;
+  &.so-mobile,
+  &.so-lp {
+    width: 100% !important;
+    height: 100% !important;
     left: 0;
     transition: top linear 250ms;
     will-change: top;
   }
 
+  &.so-mobile {
+    --padding: 14px;
+    --neg-padding: -14px;
+  }
+
   &:not(.so-mobile) {
+    border-radius: var(--large-border-radius);
+  }
+
+  &:not(.so-mobile):not(.so-lp) {
     top: 8px;
     width: calc(50% - 8px);
     height: calc(100% - 16px);
-    border-radius: var(--large-border-radius);
 
     @media screen and (prefers-reduced-motion: no-preference) {
       body.ltr & {
@@ -4756,6 +4773,8 @@ $min2ColWidth: 400px;
   }
 
   & > .pane-header {
+    padding-left: var(--padding);
+    padding-right: var(--padding);
     z-index: 2;
 
     & > .so-toolbar {
@@ -4771,11 +4790,6 @@ $min2ColWidth: 400px;
         @include margin-right(0);
       }
     }
-  }
-
-  &.so-mobile > .pane-header {
-    padding-left: 10px;
-    padding-right: 10px;
   }
 
   & > .so-body {
@@ -4875,7 +4889,7 @@ $min2ColWidth: 400px;
   }
 }
 
-@media (min-width: 1536px) {
+@container (width > 700px) {
   .slideout {
     &.has-sidebar {
       .pane-header:not(.so-visible) {

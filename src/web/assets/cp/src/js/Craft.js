@@ -157,18 +157,16 @@ $.extend(Craft, {
   _parseToken: function (token, args) {
     // parsing pattern based on ICU grammar:
     // http://icu-project.org/apiref/icu4c/classMessageFormat.html#details
-    const param = Craft.trim(token[0]);
+    const param = token[0].trim();
     if (typeof args[param] === 'undefined') {
       return `{${token.join(',')}}`;
     }
     const arg = args[param];
-    const type =
-      typeof token[1] !== 'undefined' ? Craft.trim(token[1]) : 'none';
+    const type = typeof token[1] !== 'undefined' ? token[1].trim() : 'none';
     switch (type) {
       case 'number':
         return (() => {
-          let format =
-            typeof token[2] !== 'undefined' ? Craft.trim(token[2]) : null;
+          let format = typeof token[2] !== 'undefined' ? token[2].trim() : null;
           if (format !== null && format !== 'integer') {
             throw `Message format 'number' is only supported for integer values.`;
           }
@@ -196,7 +194,7 @@ $.extend(Craft, {
             if (Array.isArray(select[i]) || !Array.isArray(select[i + 1])) {
               return false;
             }
-            let selector = Craft.trim(select[i++]);
+            let selector = select[i++].trim();
             if (
               (message === false && selector === 'other') ||
               selector == arg
@@ -233,7 +231,7 @@ $.extend(Craft, {
             ) {
               return false;
             }
-            let selector = Craft.trim(plural[i++]);
+            let selector = plural[i++].trim();
             let selectorChars = [...selector];
 
             if (i === 1 && selector.substring(0, 7) === 'offset:') {
@@ -241,14 +239,11 @@ $.extend(Craft, {
               if (pos === -1) {
                 throw 'Message pattern is invalid.';
               }
-              offset = parseInt(
-                Craft.trim(selectorChars.slice(7, pos).join(''))
-              );
-              selector = Craft.trim(
-                selectorChars
-                  .slice(pos + 1, pos + 1 + selectorChars.length)
-                  .join('')
-              );
+              offset = parseInt(selectorChars.slice(7, pos).join('').trim());
+              selector = selectorChars
+                .slice(pos + 1, pos + 1 + selectorChars.length)
+                .join('')
+                .trim();
             }
             if (
               (message === false && selector === 'other') ||
@@ -509,7 +504,7 @@ $.extend(Craft, {
 
         // Is the path param already set?
         if (typeof params[Craft.pathParam] !== 'undefined') {
-          let basePath = Craft.rtrim(params[Craft.pathParam]);
+          let basePath = params[Craft.pathParam].trimEnd();
           path = basePath + (path ? '/' + path : '');
         }
 
@@ -1421,9 +1416,9 @@ $.extend(Craft, {
       return str;
     }
     if (typeof chars === 'undefined') {
-      chars = ' \t\n\r\0\x0B';
+      return str.trimStart();
     }
-    var re = new RegExp('^[' + Craft.escapeChars(chars) + ']+');
+    const re = new RegExp('^[' + Craft.escapeChars(chars) + ']+');
     return str.replace(re, '');
   },
 
@@ -1439,9 +1434,9 @@ $.extend(Craft, {
       return str;
     }
     if (typeof chars === 'undefined') {
-      chars = ' \t\n\r\0\x0B';
+      return str.trimEnd();
     }
-    var re = new RegExp('[' + Craft.escapeChars(chars) + ']+$');
+    const re = new RegExp('[' + Craft.escapeChars(chars) + ']+$');
     return str.replace(re, '');
   },
 
@@ -1453,6 +1448,12 @@ $.extend(Craft, {
    * @returns {string}
    */
   trim: function (str, chars) {
+    if (!str) {
+      return str;
+    }
+    if (typeof chars === 'undefined') {
+      return str.trim();
+    }
     str = Craft.ltrim(str, chars);
     str = Craft.rtrim(str, chars);
     return str;
@@ -1810,70 +1811,96 @@ $.extend(Craft, {
     return $ul;
   },
 
-  /**
-   * Appends HTML to the page `<head>`.
-   *
-   * @param {string} html
-   */
-  appendHeadHtml: function (html) {
+  _existingCss: null,
+  _existingJs: null,
+
+  _appendHtml: async function (html, $parent) {
     if (!html) {
       return;
     }
 
-    // Prune out any link tags that are already included
-    var $existingCss = $('link[href]');
+    const scriptUrls = [];
 
-    if ($existingCss.length) {
-      var existingCss = [];
-      var href;
+    const nodes = $.parseHTML(html.trim(), true).filter((node) => {
+      if (node.nodeName === 'LINK' && node.href) {
+        if (!this._existingCss) {
+          this._existingCss = $('link[href]')
+            .toArray()
+            .map((n) => n.href.replace(/&/g, '&amp;'));
+        }
 
-      for (var i = 0; i < $existingCss.length; i++) {
-        href = $existingCss.eq(i).attr('href').replace(/&/g, '&amp;');
-        existingCss.push(Craft.escapeRegex(href));
+        if (this._existingCss.includes(node.href)) {
+          return false;
+        }
+
+        this._existingCss.push(node.href);
+        return true;
       }
 
-      const regexp = new RegExp(
-        '<link\\s[^>]*href="(?:' + existingCss.join('|') + ')".*?></link>',
-        'g'
-      );
+      if (node.nodeName === 'SCRIPT' && node.src) {
+        if (!this._existingJs) {
+          this._existingJs = $('script[src]')
+            .toArray()
+            .map((n) => n.src.replace(/&/g, '&amp;'));
+        }
 
-      html = html.replace(regexp, '');
-    }
+        if (!this._existingJs.includes(node.src)) {
+          scriptUrls.push(node.src);
+          this._existingJs.push(node.src);
+        }
 
-    $('head').append(html);
+        // return false either way since we are going to load it ourselves
+        return false;
+      }
+
+      return true;
+    });
+
+    await this._loadScripts(scriptUrls);
+    $parent.append(nodes);
+  },
+
+  _loadScripts: function (urls) {
+    return new Promise((resolve) => {
+      if (!urls.length) {
+        resolve();
+        return;
+      }
+
+      const url = urls.shift();
+      $.ajaxSetup({cache: true});
+
+      $.getScript(url)
+        .done(() => {
+          $.ajaxSetup({cache: false});
+          this._loadScripts(urls).then(resolve);
+        })
+        .fail(() => {
+          console.error(`Failed to load ${url}:`);
+          $.ajaxSetup({cache: false});
+          this._loadScripts(urls).then(resolve);
+        });
+    });
+  },
+
+  /**
+   * Appends HTML to the page `<head>`.
+   *
+   * @param {string} html
+   * @returns {Promise}
+   */
+  appendHeadHtml: async function (html) {
+    this._appendHtml(html, $('head'));
   },
 
   /**
    * Appends HTML to the page `<body>`.
    *
    * @param {string} html
+   * @returns {Promise}
    */
-  appendBodyHtml: function (html) {
-    if (!html) {
-      return;
-    }
-
-    // Prune out any script tags that are already included
-    var $existingJs = $('script[src]');
-
-    if ($existingJs.length) {
-      var existingJs = [];
-      var src;
-
-      for (var i = 0; i < $existingJs.length; i++) {
-        src = $existingJs.eq(i).attr('src').replace(/&/g, '&amp;');
-        existingJs.push(Craft.escapeRegex(src));
-      }
-
-      var regexp = new RegExp(
-        '<script\\s[^>]*src="(?:' + existingJs.join('|') + ')".*?></script>',
-        'g'
-      );
-
-      html = html.replace(regexp, '');
-    }
-
-    Garnish.$bod.append(html);
+  appendBodyHtml: async function (html) {
+    this._appendHtml(html, Garnish.$bod);
   },
 
   /**
