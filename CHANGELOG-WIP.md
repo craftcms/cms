@@ -329,6 +329,7 @@
 - Removed `craft\services\ProjectConfig::updateStoredConfigAfterRequest()`.
 - Removed `craft\services\Sections::reorderEntryTypes()`.
 - Added `Craft.BaseElementSelectInput::defineElementActions()`.
+- `Craft.appendBodyHtml()` and `appendHeadHtml()` are now promise-based, and load JavaScript resources over Ajax.
 
 ### System
 - Craft now requires PHP 8.2 or later.
