@@ -1,5 +1,9 @@
 # Release Notes for Craft CMS 4
 
+## Unreleased
+
+- Fixed a bug where relational fields’ element selector modals weren’t always getting set to the correct site per the field’s “Relate entries from a specific site?” setting. ([#13750](https://github.com/craftcms/cms/issues/13750))
+
 ## 4.5.6.1 - 2023-09-27
 
 - Crossdomain JavaScript resources are now loaded via a proxy action.
