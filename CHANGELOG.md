@@ -1,5 +1,10 @@
 # Release Notes for Craft CMS 4
 
+## Unreleased
+
+- Crossdomain JavaScript resources are now loaded via a proxy action.
+- Fixed JavaScript errors that could occur after loading new UI components over Ajax. ([#13751](https://github.com/craftcms/cms/issues/13751), [#13752](https://github.com/craftcms/cms/issues/13752))
+
 ## 4.5.6 - 2023-09-26
 
 - When slideouts are opened within Live Preview, they now slide up over the editor pane, rather than covering the preview pane. ([#13739](https://github.com/craftcms/cms/pull/13739))
