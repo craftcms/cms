@@ -1890,7 +1890,7 @@ $.extend(Craft, {
    * @returns {Promise}
    */
   appendHeadHtml: async function (html) {
-    this._appendHtml(html, $('head'));
+    await this._appendHtml(html, $('head'));
   },
 
   /**
@@ -1900,7 +1900,7 @@ $.extend(Craft, {
    * @returns {Promise}
    */
   appendBodyHtml: async function (html) {
-    this._appendHtml(html, Garnish.$bod);
+    await this._appendHtml(html, Garnish.$bod);
   },
 
   /**
