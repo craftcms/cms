@@ -561,7 +561,8 @@ Craft.CpScreenSlideout = Craft.Slideout.extend(
       }
 
       const serializer =
-        this.$container.data('serializer') || (() => this.$content.serialize());
+        this.$container.data('serializer') ||
+        (() => this.$container.serialize());
       return initialValue !== serializer();
     },
 
