@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 4
 
-## Unreleased
+## 4.5.6.1 - 2023-09-27
 
 - Crossdomain JavaScript resources are now loaded via a proxy action.
 - Fixed JavaScript errors that could occur after loading new UI components over Ajax. ([#13751](https://github.com/craftcms/cms/issues/13751))
