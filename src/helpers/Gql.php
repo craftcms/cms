@@ -48,14 +48,16 @@ class Gql
             return false;
         }
 
-        if (!is_array($components)) {
-            $components = [$components];
-        }
-
-        $scope = (array)$schema->scope;
-
-        foreach ($components as $component) {
-            if (empty(preg_grep('/^' . preg_quote($component, '/') . '\:/i', $scope))) {
+        foreach ((array)$components as $component) {
+            $component = strtolower($component);
+            $found = false;
+            foreach ($schema->scope as $scopeComponent) {
+                if (str_starts_with(strtolower($scopeComponent), $component)) {
+                    $found = true;
+                    break;
+                }
+            }
+            if (!$found) {
                 return false;
             }
         }
@@ -98,7 +100,13 @@ class Gql
             return false;
         }
 
-        return !empty(preg_grep('/^' . preg_quote($component, '/') . '\:' . preg_quote($action, '/') . '$/i', (array)$schema->scope));
+        $search = strtolower("$component:$action");
+        foreach ($schema->scope as $scopeComponent) {
+            if (strtolower($scopeComponent) === $search) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
@@ -116,12 +124,15 @@ class Gql
             return [];
         }
 
-        $scope = (array)$schema->scope;
         $actions = [];
+        $search = sprintf('%s:', strtolower($entity));
+        $searchLen = strlen($search);
 
-        foreach (preg_grep('/^' . preg_quote($entity, '/') . '\:.*$/i', $scope) as $component) {
-            $parts = explode(':', $component);
-            $actions[end($parts)] = true;
+        foreach ($schema->scope as $scopeComponent) {
+            if (str_starts_with(strtolower($scopeComponent), $search)) {
+                $action = substr($scopeComponent, $searchLen);
+                $actions[$action] = true;
+            }
         }
 
         return array_keys($actions);
@@ -281,13 +292,9 @@ class Gql
      */
     public static function getUnionType(string $typeName, array $includedTypes, ?callable $resolveFunction = null): mixed
     {
-        if (!$resolveFunction) {
-            $resolveFunction = function(ElementInterface $value) {
-                return $value->getGqlTypeName();
-            };
-        }
+        $resolveFunction ??= fn(ElementInterface $value) => $value->getGqlTypeName();
 
-        return GqlEntityRegistry::getEntity($typeName) ?: GqlEntityRegistry::createEntity($typeName, new UnionType([
+        return GqlEntityRegistry::getOrCreate($typeName, fn() => new UnionType([
             'name' => $typeName,
             'types' => $includedTypes,
             'resolveType' => $resolveFunction,

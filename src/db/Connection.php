@@ -7,7 +7,6 @@
 
 namespace craft\db;
 
-use Composer\Util\Platform;
 use Craft;
 use craft\db\mysql\QueryBuilder as MysqlQueryBuilder;
 use craft\db\mysql\Schema as MysqlSchema;
@@ -17,6 +16,7 @@ use craft\errors\DbConnectException;
 use craft\errors\ShellCommandException;
 use craft\events\BackupEvent;
 use craft\events\RestoreEvent;
+use craft\helpers\App;
 use craft\helpers\Db;
 use craft\helpers\FileHelper;
 use craft\helpers\StringHelper;
@@ -499,7 +499,7 @@ class Connection extends \yii\db\Connection
 
         // PostgreSQL specific cleanup.
         if ($this->getIsPgsql()) {
-            if (Platform::isWindows()) {
+            if (App::isWindows()) {
                 $envCommand = 'set PGPASSWORD=';
             } else {
                 $envCommand = 'unset PGPASSWORD';

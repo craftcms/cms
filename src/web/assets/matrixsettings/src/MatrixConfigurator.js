@@ -298,8 +298,8 @@
       }
 
       // Basic validation
-      var name = Craft.trim(this.$nameInput.val()),
-        handle = Craft.trim(this.$handleInput.val());
+      const name = this.$nameInput.val().trim();
+      const handle = this.$handleInput.val().trim();
 
       if (!name || !handle) {
         Garnish.shake(this.$form);

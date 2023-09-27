@@ -1870,15 +1870,36 @@ class Fields extends Component
 
         // Find a unique backup table name
         $shortTableName = Db::rawTableShortName($table);
+        $schema = $db->getSchema();
+        $prefix = "{$shortTableName}_$column";
         $timestamp = time();
         $n = 1;
         do {
             $suffix = $n === 1 ? '' : "_$n";
-            $bakTable = "{{%{$shortTableName}_{$column}_bak_$timestamp$suffix}}";
+            $bakTable = "{{%{$prefix}_bak_$timestamp$suffix}}";
+
+            // make sure it's not too long
+            $length = strlen($schema->getRawTableName($bakTable));
+            if ($length > $schema->maxObjectNameLength) {
+                $overage = $length - $schema->maxObjectNameLength;
+                $prefixParts = explode('_', $prefix);
+                $removed = 0;
+                for ($i = 0; true; $i++) {
+                    $partIndex = $i % count($prefixParts);
+                    if (strlen($prefixParts[$partIndex]) > 1) {
+                        $prefixParts[$partIndex] = substr($prefixParts[$partIndex], 0, -1);
+                        $removed++;
+                        if ($removed === $overage) {
+                            break;
+                        }
+                    }
+                }
+                $shortenedPrefix = implode('_', $prefixParts);
+                $bakTable = "{{%{$shortenedPrefix}_bak_$timestamp$suffix}}";
+            }
             $n++;
         } while ($db->tableExists($bakTable));
 
-        $schema = $db->getSchema();
         $columnSchema = $schema->getTableSchema($table)->getColumn($column);
 
         $db->createCommand()

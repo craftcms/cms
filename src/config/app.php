@@ -3,9 +3,9 @@
 return [
     'id' => 'CraftCMS',
     'name' => 'Craft CMS',
-    'version' => '4.5.0',
-    'schemaVersion' => '4.5.0.0',
-    'minVersionRequired' => '3.7.11',
+    'version' => '4.5.6',
+    'schemaVersion' => '4.5.3.0',
+    'minVersionRequired' => '4.4.0',
     'basePath' => dirname(__DIR__), // Defines the @app alias
     'runtimePath' => '@storage/runtime', // Defines the @runtime alias
     'controllerNamespace' => 'craft\controllers',
@@ -124,6 +124,7 @@ return [
                 'password',
                 'pw',
                 'secret',
+                'sk',
                 'tok',
                 'token',
             ],

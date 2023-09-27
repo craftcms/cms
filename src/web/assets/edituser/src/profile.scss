@@ -26,11 +26,14 @@ div.user-photo #current-photo:after {
   box-shadow: inset 0 0 0 1px var(--hairline-color);
 }
 
-div.user-photo #current-photo img {
-  max-width: 100px;
-  max-height: 100px;
-  display: block;
-  border-radius: var(--large-border-radius);
+div.user-photo #current-photo {
+  img,
+  svg {
+    max-width: 100px;
+    max-height: 100px;
+    display: block;
+    border-radius: var(--large-border-radius);
+  }
 }
 
 div.user-photo div.user-photo-controls {

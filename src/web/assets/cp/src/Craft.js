@@ -16,6 +16,7 @@ import './js/BaseElementIndexView.js';
 import './js/BaseElementSelectInput.js';
 import './js/BaseElementSelectorModal.js';
 import './js/BaseInputGenerator.js';
+import './js/BaseUploader.js';
 
 // Slideouts
 import './js/Slideout.js';
@@ -79,6 +80,7 @@ import './js/StructureTableSorter.js';
 import './js/TableElementIndexView.js';
 import './js/TagSelectInput.js';
 import './js/ThumbsElementIndexView.js';
+import './js/Tooltip.js';
 import './js/UI.js';
 import './js/Uploader.js';
 import './js/UriFormatGenerator.js';

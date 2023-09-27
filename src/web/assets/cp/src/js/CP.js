@@ -335,6 +335,7 @@ Craft.CP = Garnish.Base.extend(
       }
 
       // Load any element thumbs
+      this.elementThumbLoader.load($('#user-info'));
       this.elementThumbLoader.load(this.$mainContent);
     },
 
@@ -372,14 +373,10 @@ Craft.CP = Garnish.Base.extend(
 
       for (let i = 0; i < $forms.length; i++) {
         const $form = $forms.eq(i);
-        let serialized;
         if (!$form.data('initialSerializedValue')) {
-          if (typeof $form.data('serializer') === 'function') {
-            serialized = $form.data('serializer')();
-          } else {
-            serialized = $form.serialize();
-          }
-          $form.data('initialSerializedValue', serialized);
+          const serializer =
+            $form.data('serializer') || (() => $form.serialize());
+          $form.data('initialSerializedValue', serializer());
         }
         this.addListener($form, 'submit', function (ev) {
           if (Garnish.hasAttr($form, 'data-confirm-unload')) {
@@ -387,15 +384,11 @@ Craft.CP = Garnish.Base.extend(
           }
           if (Garnish.hasAttr($form, 'data-delta')) {
             ev.preventDefault();
-            let serialized;
-            if (typeof $form.data('serializer') === 'function') {
-              serialized = $form.data('serializer')();
-            } else {
-              serialized = $form.serialize();
-            }
+            const serializer =
+              $form.data('serializer') || (() => $form.serialize());
             const data = Craft.findDeltaData(
               $form.data('initialSerializedValue'),
-              serialized,
+              serializer(),
               $form.data('delta-names'),
               null,
               $form.data('initial-delta-values'),
@@ -845,9 +838,8 @@ Craft.CP = Garnish.Base.extend(
         this.$main.length &&
         this.$headerContainer[0].getBoundingClientRect().top < 0
       ) {
+        const headerHeight = this.$headerContainer.height();
         if (!this.fixedHeader) {
-          var headerHeight = this.$headerContainer.height();
-
           // Hard-set the minimum content container height
           this.$contentContainer.css(
             'min-height',
@@ -858,31 +850,43 @@ Craft.CP = Garnish.Base.extend(
           this.$headerContainer.height(headerHeight);
           Garnish.$bod.addClass('fixed-header');
 
-          // Fix the sidebar and details pane positions if they are taller than #content-container
-          var contentHeight = this.$contentContainer.outerHeight();
-          var $detailsHeight = this.$details.outerHeight();
-          var css = {
-            top: headerHeight + 'px',
-            'max-height': 'calc(100vh - ' + headerHeight + 'px)',
-          };
-          this.$sidebar.addClass('fixed').css(css);
-          this.$details.addClass('fixed').css(css);
           this.fixedHeader = true;
         }
+
+        this._setFixedTopPos(this.$sidebar, headerHeight);
+        this._setFixedTopPos(this.$details, headerHeight);
       } else if (this.fixedHeader) {
         this.$headerContainer.height('auto');
         Garnish.$bod.removeClass('fixed-header');
         this.$contentContainer.css('min-height', '');
-        this.$sidebar.removeClass('fixed').css({
-          top: '',
-          'max-height': '',
-        });
-        this.$details.removeClass('fixed').css({
-          top: '',
-          'max-height': '',
-        });
+        this.$sidebar.removeClass('fixed').css('top', '');
+        this.$details.removeClass('fixed').css('top', '');
         this.fixedHeader = false;
       }
+    },
+
+    _setFixedTopPos: function ($element, headerHeight) {
+      if (!$element.length || !this.$contentContainer.length) {
+        return;
+      }
+
+      if ($element.outerHeight() >= this.$contentContainer.outerHeight()) {
+        $element.removeClass('fixed').css('top', '');
+        return;
+      }
+
+      $element
+        .addClass('fixed')
+        .css(
+          'top',
+          Math.min(
+            headerHeight + 14,
+            Math.max(
+              this.$mainContent[0].getBoundingClientRect().top,
+              document.documentElement.clientHeight - $element.outerHeight()
+            )
+          ) + 'px'
+        );
     },
 
     /**
@@ -1004,7 +1008,7 @@ Craft.CP = Garnish.Base.extend(
     displayAlerts: function (alerts) {
       this.$alerts.remove();
 
-      if (Garnish.isArray(alerts) && alerts.length) {
+      if (Array.isArray(alerts) && alerts.length) {
         this.$alerts = $('<ul id="alerts"/>').prependTo($('#page-container'));
 
         for (let alert of alerts) {
@@ -1085,7 +1089,7 @@ Craft.CP = Garnish.Base.extend(
 
       // Callback function?
       if (typeof callback === 'function') {
-        if (!Garnish.isArray(this.checkForUpdatesCallbacks)) {
+        if (!Array.isArray(this.checkForUpdatesCallbacks)) {
           this.checkForUpdatesCallbacks = [];
         }
 
@@ -1101,7 +1105,7 @@ Craft.CP = Garnish.Base.extend(
           this.updateUtilitiesBadge();
           this.checkingForUpdates = false;
 
-          if (Garnish.isArray(this.checkForUpdatesCallbacks)) {
+          if (Array.isArray(this.checkForUpdatesCallbacks)) {
             var callbacks = this.checkForUpdatesCallbacks;
             this.checkForUpdatesCallbacks = null;
 
@@ -1483,6 +1487,7 @@ Craft.CP.Notification = Garnish.Base.extend({
   $container: null,
   $closeBtn: null,
   originalActiveElement: null,
+  _hasUiElements: false,
 
   init: function (type, message, settings) {
     this.type = type;
@@ -1533,19 +1538,19 @@ Craft.CP.Notification = Garnish.Base.extend({
         .append(this.settings.details)
         .appendTo($main);
 
-      const $focusableElement = $detailsContainer.find('button,input');
-      if ($focusableElement.length) {
-        Garnish.uiLayerManager.addLayer(this.$container);
-        Garnish.uiLayerManager.registerShortcut(Garnish.ESC_KEY, () => {
-          this.close();
-        });
+      this._hasUiElements = !!$detailsContainer.find('button,input');
+      if (this._hasUiElements) {
         this.originalActiveElement = document.activeElement;
         this.$container.attr('tabindex', '-1').focus();
-        this.$container.on('keydown', (ev) => {
-          if (ev.keyCode === Garnish.ESC_KEY) {
-            ev.stopPropagation();
+
+        // Delay adding the layer in case a slideout needs to unregister its own layer
+        Garnish.requestAnimationFrame(() => {
+          Garnish.uiLayerManager.addLayer(this.$container, {
+            bubble: true,
+          });
+          Garnish.uiLayerManager.registerShortcut(Garnish.ESC_KEY, () => {
             this.close();
-          }
+          });
         });
       }
     }
@@ -1581,11 +1586,11 @@ Craft.CP.Notification = Garnish.Base.extend({
     this.delayedClose();
 
     this.$container.on(
-      'keypress keyup change focus blur click mousedown mouseup',
+      'keypress keyup change focus click mousedown mouseup',
       (ev) => {
         if (ev.target != this.$closeBtn[0]) {
           this.$container.off(
-            'keypress keyup change focus blur click mousedown mouseup'
+            'keypress keyup change focus click mousedown mouseup'
           );
           this.preventDelayedClose();
         }
@@ -1608,6 +1613,10 @@ Craft.CP.Notification = Garnish.Base.extend({
     }
 
     this.closing = true;
+
+    if (this._hasUiElements) {
+      Garnish.uiLayerManager.removeLayer(this.$container);
+    }
 
     if (
       this.originalActiveElement &&

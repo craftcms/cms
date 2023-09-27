@@ -117,6 +117,7 @@ Craft.CustomizeSourcesModal = Garnish.Modal.extend({
     this.elementTypeName = response.elementTypeName;
     this.conditionBuilderHtml = response.conditionBuilderHtml;
     this.conditionBuilderJs = response.conditionBuilderJs;
+    this.sites = response.sites;
     this.userGroups = response.userGroups;
 
     if (response.headHtml) {
@@ -847,6 +848,25 @@ Craft.CustomizeSourcesModal.CustomSource =
       this.createSortField($container);
       this.createTableAttributesField($container);
 
+      if (Craft.sites.length > 1) {
+        Craft.ui
+          .createCheckboxSelectField({
+            label: Craft.t('app', 'Sites'),
+            instructions: Craft.t(
+              'app',
+              'Choose which sites this source should be visible for.'
+            ),
+            name: `sources[${this.sourceData.key}][sites]`,
+            options: Craft.sites.map((site) => ({
+              label: site.name,
+              value: site.uid,
+            })),
+            values: this.sourceData.sites || '*',
+            showAllOption: true,
+          })
+          .appendTo($container);
+      }
+
       if (this.modal.userGroups.length) {
         Craft.ui
           .createCheckboxSelectField({
@@ -905,7 +925,7 @@ Craft.CustomizeSourcesModal.CustomSource =
       }
 
       if (this.$labelInput) {
-        let label = Craft.trim(this.$labelInput.val());
+        let label = this.$labelInput.val().trim();
         if (label === '') {
           label = Craft.t('app', '(blank)');
         }

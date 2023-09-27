@@ -440,6 +440,15 @@ class Table extends Field
 
         $defaults = $this->defaults ?? [];
 
+        // Apply static translations
+        foreach ($defaults as &$row) {
+            foreach ($this->columns as $colId => $col) {
+                if ($col['type'] === 'heading' && isset($row[$colId])) {
+                    $row[$colId] = Craft::t('site', $row[$colId]);
+                }
+            }
+        }
+
         if (is_string($value) && !empty($value)) {
             $value = Json::decodeIfJson($value);
         } elseif ($value === null && $this->isFresh($element)) {
@@ -571,20 +580,10 @@ class Table extends Field
     {
         $typeName = $this->handle . '_TableRowInput';
 
-        if ($argumentType = GqlEntityRegistry::getEntity($typeName)) {
-            return Type::listOf($argumentType);
-        }
-
-        $contentFields = TableRow::prepareRowFieldDefinition($this->columns, false);
-
-        $argumentType = GqlEntityRegistry::createEntity($typeName, new InputObjectType([
+        return Type::listOf(GqlEntityRegistry::getOrCreate($typeName, fn() => new InputObjectType([
             'name' => $typeName,
-            'fields' => function() use ($contentFields) {
-                return $contentFields;
-            },
-        ]));
-
-        return Type::listOf($argumentType);
+            'fields' => fn() => TableRow::prepareRowFieldDefinition($this->columns, false),
+        ])));
     }
 
     /**

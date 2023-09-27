@@ -26,7 +26,7 @@ $.extend(Craft, {
    * @param {(string|indexKeyCallback)} key
    */
   index: function (arr, key) {
-    if (!$.isArray(arr)) {
+    if (!Array.isArray(arr)) {
       throw 'The first argument passed to Craft.index() must be an array.';
     }
 
@@ -43,7 +43,7 @@ $.extend(Craft, {
    * @param {(string|indexKeyCallback)} key
    */
   group: function (arr, key) {
-    if (!$.isArray(arr)) {
+    if (!Array.isArray(arr)) {
       throw 'The first argument passed to Craft.group() must be an array.';
     }
 
@@ -157,18 +157,16 @@ $.extend(Craft, {
   _parseToken: function (token, args) {
     // parsing pattern based on ICU grammar:
     // http://icu-project.org/apiref/icu4c/classMessageFormat.html#details
-    const param = Craft.trim(token[0]);
+    const param = token[0].trim();
     if (typeof args[param] === 'undefined') {
       return `{${token.join(',')}}`;
     }
     const arg = args[param];
-    const type =
-      typeof token[1] !== 'undefined' ? Craft.trim(token[1]) : 'none';
+    const type = typeof token[1] !== 'undefined' ? token[1].trim() : 'none';
     switch (type) {
       case 'number':
         return (() => {
-          let format =
-            typeof token[2] !== 'undefined' ? Craft.trim(token[2]) : null;
+          let format = typeof token[2] !== 'undefined' ? token[2].trim() : null;
           if (format !== null && format !== 'integer') {
             throw `Message format 'number' is only supported for integer values.`;
           }
@@ -193,10 +191,10 @@ $.extend(Craft, {
           let c = select.length;
           let message = false;
           for (let i = 0; i + 1 < c; i++) {
-            if (Garnish.isArray(select[i]) || !Garnish.isArray(select[i + 1])) {
+            if (Array.isArray(select[i]) || !Array.isArray(select[i + 1])) {
               return false;
             }
-            let selector = Craft.trim(select[i++]);
+            let selector = select[i++].trim();
             if (
               (message === false && selector === 'other') ||
               selector == arg
@@ -233,7 +231,7 @@ $.extend(Craft, {
             ) {
               return false;
             }
-            let selector = Craft.trim(plural[i++]);
+            let selector = plural[i++].trim();
             let selectorChars = [...selector];
 
             if (i === 1 && selector.substring(0, 7) === 'offset:') {
@@ -241,14 +239,11 @@ $.extend(Craft, {
               if (pos === -1) {
                 throw 'Message pattern is invalid.';
               }
-              offset = parseInt(
-                Craft.trim(selectorChars.slice(7, pos).join(''))
-              );
-              selector = Craft.trim(
-                selectorChars
-                  .slice(pos + 1, pos + 1 + selectorChars.length)
-                  .join('')
-              );
+              offset = parseInt(selectorChars.slice(7, pos).join('').trim());
+              selector = selectorChars
+                .slice(pos + 1, pos + 1 + selectorChars.length)
+                .join('')
+                .trim();
             }
             if (
               (message === false && selector === 'other') ||
@@ -509,7 +504,7 @@ $.extend(Craft, {
 
         // Is the path param already set?
         if (typeof params[Craft.pathParam] !== 'undefined') {
-          let basePath = Craft.rtrim(params[Craft.pathParam]);
+          let basePath = params[Craft.pathParam].trimEnd();
           path = basePath + (path ? '/' + path : '');
         }
 
@@ -759,10 +754,10 @@ $.extend(Craft, {
 
   _actionHeaders: function () {
     let headers = {
-      'X-Registered-Asset-Bundles': Object.keys(
-        Craft.registeredAssetBundles
-      ).join(','),
-      'X-Registered-Js-Files': Object.keys(Craft.registeredJsFiles).join(','),
+      'X-Registered-Asset-Bundles': [
+        ...new Set(Craft.registeredAssetBundles),
+      ].join(','),
+      'X-Registered-Js-Files': [...new Set(Craft.registeredJsFiles)].join(','),
     };
 
     if (Craft.csrfTokenValue) {
@@ -1076,11 +1071,11 @@ $.extend(Craft, {
     // Make sure oldData and newData are always strings. This is important because further below String.split is called.
     oldData = typeof oldData === 'string' ? oldData : '';
     newData = typeof newData === 'string' ? newData : '';
-    deltaNames = $.isArray(deltaNames) ? deltaNames : [];
+    deltaNames = Array.isArray(deltaNames) ? deltaNames : [];
     initialDeltaValues = $.isPlainObject(initialDeltaValues)
       ? initialDeltaValues
       : {};
-    modifiedDeltaNames = $.isArray(modifiedDeltaNames)
+    modifiedDeltaNames = Array.isArray(modifiedDeltaNames)
       ? modifiedDeltaNames
       : [];
 
@@ -1177,7 +1172,7 @@ $.extend(Craft, {
 
     if (initialValues) {
       const serializeParam = (name, value) => {
-        if ($.isArray(value) || $.isPlainObject(value)) {
+        if (Array.isArray(value) || $.isPlainObject(value)) {
           value = $.param(value);
         } else if (typeof value === 'string') {
           value = encodeURIComponent(value);
@@ -1325,12 +1320,12 @@ $.extend(Craft, {
       }
 
       // Is one of them an array but the other is not?
-      if (obj1 instanceof Array !== obj2 instanceof Array) {
+      if (Array.isArray(obj1) !== Array.isArray(obj2)) {
         return false;
       }
 
       // If they're actual objects (not arrays), compare the keys
-      if (!(obj1 instanceof Array)) {
+      if (!Array.isArray(obj1)) {
         if (typeof sortObjectKeys === 'undefined' || sortObjectKeys === true) {
           if (
             !Craft.compare(
@@ -1396,7 +1391,7 @@ $.extend(Craft, {
    * @returns {string}
    */
   escapeChars: function (chars) {
-    if (!Garnish.isArray(chars)) {
+    if (!Array.isArray(chars)) {
       chars = chars.split();
     }
 
@@ -1421,9 +1416,9 @@ $.extend(Craft, {
       return str;
     }
     if (typeof chars === 'undefined') {
-      chars = ' \t\n\r\0\x0B';
+      return str.trimStart();
     }
-    var re = new RegExp('^[' + Craft.escapeChars(chars) + ']+');
+    const re = new RegExp('^[' + Craft.escapeChars(chars) + ']+');
     return str.replace(re, '');
   },
 
@@ -1439,9 +1434,9 @@ $.extend(Craft, {
       return str;
     }
     if (typeof chars === 'undefined') {
-      chars = ' \t\n\r\0\x0B';
+      return str.trimEnd();
     }
-    var re = new RegExp('[' + Craft.escapeChars(chars) + ']+$');
+    const re = new RegExp('[' + Craft.escapeChars(chars) + ']+$');
     return str.replace(re, '');
   },
 
@@ -1453,6 +1448,12 @@ $.extend(Craft, {
    * @returns {string}
    */
   trim: function (str, chars) {
+    if (!str) {
+      return str;
+    }
+    if (typeof chars === 'undefined') {
+      return str.trim();
+    }
     str = Craft.ltrim(str, chars);
     str = Craft.rtrim(str, chars);
     return str;
@@ -1775,7 +1776,10 @@ $.extend(Craft, {
    * @returns {string}
    */
   namespaceId: function (id, namespace) {
-    return Craft.formatInputId(namespace ? `${namespace}-${id}` : id);
+    return (
+      (namespace ? `${Craft.formatInputId(namespace)}-` : '') +
+      Craft.formatInputId(id)
+    );
   },
 
   randomString: function (length) {
@@ -1807,70 +1811,96 @@ $.extend(Craft, {
     return $ul;
   },
 
-  /**
-   * Appends HTML to the page `<head>`.
-   *
-   * @param {string} html
-   */
-  appendHeadHtml: function (html) {
+  _existingCss: null,
+  _existingJs: null,
+
+  _appendHtml: async function (html, $parent) {
     if (!html) {
       return;
     }
 
-    // Prune out any link tags that are already included
-    var $existingCss = $('link[href]');
+    const scriptUrls = [];
 
-    if ($existingCss.length) {
-      var existingCss = [];
-      var href;
+    const nodes = $.parseHTML(html.trim(), true).filter((node) => {
+      if (node.nodeName === 'LINK' && node.href) {
+        if (!this._existingCss) {
+          this._existingCss = $('link[href]')
+            .toArray()
+            .map((n) => n.href.replace(/&/g, '&amp;'));
+        }
 
-      for (var i = 0; i < $existingCss.length; i++) {
-        href = $existingCss.eq(i).attr('href').replace(/&/g, '&amp;');
-        existingCss.push(Craft.escapeRegex(href));
+        if (this._existingCss.includes(node.href)) {
+          return false;
+        }
+
+        this._existingCss.push(node.href);
+        return true;
       }
 
-      const regexp = new RegExp(
-        '<link\\s[^>]*href="(?:' + existingCss.join('|') + ')".*?></link>',
-        'g'
-      );
+      if (node.nodeName === 'SCRIPT' && node.src) {
+        if (!this._existingJs) {
+          this._existingJs = $('script[src]')
+            .toArray()
+            .map((n) => n.src.replace(/&/g, '&amp;'));
+        }
 
-      html = html.replace(regexp, '');
-    }
+        if (!this._existingJs.includes(node.src)) {
+          scriptUrls.push(node.src);
+          this._existingJs.push(node.src);
+        }
 
-    $('head').append(html);
+        // return false either way since we are going to load it ourselves
+        return false;
+      }
+
+      return true;
+    });
+
+    await this._loadScripts(scriptUrls);
+    $parent.append(nodes);
+  },
+
+  _loadScripts: function (urls) {
+    return new Promise((resolve) => {
+      if (!urls.length) {
+        resolve();
+        return;
+      }
+
+      const url = urls.shift();
+      $.ajaxSetup({cache: true});
+
+      $.getScript(url)
+        .done(() => {
+          $.ajaxSetup({cache: false});
+          this._loadScripts(urls).then(resolve);
+        })
+        .fail(() => {
+          console.error(`Failed to load ${url}:`);
+          $.ajaxSetup({cache: false});
+          this._loadScripts(urls).then(resolve);
+        });
+    });
+  },
+
+  /**
+   * Appends HTML to the page `<head>`.
+   *
+   * @param {string} html
+   * @returns {Promise}
+   */
+  appendHeadHtml: async function (html) {
+    this._appendHtml(html, $('head'));
   },
 
   /**
    * Appends HTML to the page `<body>`.
    *
    * @param {string} html
+   * @returns {Promise}
    */
-  appendBodyHtml: function (html) {
-    if (!html) {
-      return;
-    }
-
-    // Prune out any script tags that are already included
-    var $existingJs = $('script[src]');
-
-    if ($existingJs.length) {
-      var existingJs = [];
-      var src;
-
-      for (var i = 0; i < $existingJs.length; i++) {
-        src = $existingJs.eq(i).attr('src').replace(/&/g, '&amp;');
-        existingJs.push(Craft.escapeRegex(src));
-      }
-
-      var regexp = new RegExp(
-        '<script\\s[^>]*src="(?:' + existingJs.join('|') + ')".*?></script>',
-        'g'
-      );
-
-      html = html.replace(regexp, '');
-    }
-
-    Garnish.$bod.append(html);
+  appendBodyHtml: async function (html) {
+    this._appendHtml(html, Garnish.$bod);
   },
 
   /**
@@ -1922,6 +1952,7 @@ $.extend(Craft, {
   _elementIndexClasses: {},
   _elementSelectorModalClasses: {},
   _elementEditorClasses: {},
+  _uploaderClasses: {},
 
   /**
    * Registers an element index class for a given element type.
@@ -1939,6 +1970,24 @@ $.extend(Craft, {
     }
 
     this._elementIndexClasses[elementType] = func;
+  },
+
+  /**
+   * Registers a file uploader class for a given filesystem type.
+   *
+   * @param {string} fsType
+   * @param {function} func
+   */
+  registerUploaderClass: function (fsType, func) {
+    if (typeof this._uploaderClasses[fsType] !== 'undefined') {
+      throw (
+        'An asset uploader class has already been registered for the filesystem type “' +
+        fsType +
+        '”.'
+      );
+    }
+
+    this._uploaderClasses[fsType] = func;
   },
 
   /**
@@ -1995,6 +2044,26 @@ $.extend(Craft, {
     }
 
     return new func(elementType, $container, settings);
+  },
+
+  /**
+   * Creates a file uploader for a given filesystem type.
+   *
+   * @param {string} fsType
+   * @param {jQuery} $container
+   * @param {Object} settings
+   * @returns {Uploader}
+   */
+  createUploader: function (fsType, $container, settings) {
+    const func =
+      typeof this._uploaderClasses[fsType] !== 'undefined'
+        ? this._uploaderClasses[fsType]
+        : Craft.Uploader;
+
+    const uploader = new func($container, settings);
+    uploader.fsType = fsType;
+
+    return uploader;
   },
 
   /**
@@ -2330,7 +2399,7 @@ $.extend(Craft, {
         $element.removeAttr(name);
       } else if (value === true) {
         $element.attr(name, '');
-      } else if ($.isArray(value) || $.isPlainObject(value)) {
+      } else if (Array.isArray(value) || $.isPlainObject(value)) {
         if (Craft.dataAttributes.includes(name)) {
           // Make sure it's an object
           value = Object.assign({}, value);
@@ -2342,7 +2411,7 @@ $.extend(Craft, {
             if (subValue === null || subValue === false) {
               continue;
             }
-            if ($.isPlainObject(subValue) || $.isArray(subValue)) {
+            if ($.isPlainObject(subValue) || Array.isArray(subValue)) {
               subValue = JSON.stringify(subValue);
             } else if (subValue === true) {
               subValue = '';

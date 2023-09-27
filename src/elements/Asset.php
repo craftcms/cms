@@ -443,10 +443,9 @@ class Asset extends Element
         $fieldLayouts = [];
         if (
             preg_match('/^volume:(.+)$/', $source, $matches) &&
-            ($volume = Craft::$app->getVolumes()->getVolumeByUid($matches[1])) &&
-            $fieldLayout = $volume->getFieldLayout()
+            ($volume = Craft::$app->getVolumes()->getVolumeByUid($matches[1]))
         ) {
-            $fieldLayouts[] = $fieldLayout;
+            $fieldLayouts[] = $volume->getFieldLayout();
         }
         return $fieldLayouts;
     }
@@ -808,7 +807,7 @@ class Asset extends Element
     {
         if (
             is_array($assetQuery->orderBy) &&
-            is_string($firstOrderByCol = ArrayHelper::firstKey($assetQuery->orderBy)) &&
+            is_string($firstOrderByCol = array_key_first($assetQuery->orderBy)) &&
             in_array($firstOrderByCol, ['title', 'filename'])
         ) {
             $sortDir = $assetQuery->orderBy[$firstOrderByCol];
@@ -886,8 +885,8 @@ class Asset extends Element
     private static function _assembleSourceInfoForFolder(VolumeFolder $folder, ?User $user = null): array
     {
         $volume = $folder->getVolume();
-
-        if ($volume->getFs() instanceof Temp) {
+        $fs = $volume->getFs();
+        if ($fs instanceof Temp) {
             $volumeHandle = 'temp';
         } elseif (!$folder->parentId) {
             $volumeHandle = $volume->handle ?? false;
@@ -919,6 +918,7 @@ class Asset extends Element
                 'can-upload' => $folder->volumeId === null || $canUpload,
                 'can-move-to' => $canMoveTo,
                 'can-move-peer-files-to' => $canMovePeerFilesTo,
+                'fs-type' => $fs::class,
             ],
         ];
 
@@ -1480,46 +1480,68 @@ JS;
 
             $dimensionsLabel = Html::encode(Craft::t('app', 'Dimensions'));
             $updatePreviewThumbJs = $this->_updatePreviewThumbJs();
+            $fsClass = addslashes($this->fs::class);
             $js = <<<JS
 $('#replace-btn').on('click', () => {
     const \$fileInput = $('<input/>', {type: 'file', name: 'replaceFile', class: 'replaceFile hidden'}).appendTo(Garnish.\$bod);
-    const uploader = new Craft.Uploader(\$fileInput, {
-        url: Craft.getActionUrl('assets/replace-file'),
+    const uploader = Craft.createUploader('{$fsClass}', \$fileInput, {
         dropZone: null,
         fileInput: \$fileInput,
         paramName: 'replaceFile',
+        replace: true,
         events: {
             fileuploadstart: () => {
                 $('#thumb-container').addClass('loading');
             },
             fileuploaddone: (event, data) => {
-                if (data.result.error) {
-                    $('#thumb-container').removeClass('loading');
-                    alert(data.result.error);
-                } else {
-                    $('#new-filename').val(data.result.filename);
-                    $('#file-size-value')
-                        .text(data.result.formattedSize)
-                        .attr('title', data.result.formattedSizeInBytes);
-                    let \$dimensionsVal = $('#dimensions-value');
-                    if (data.result.dimensions) {
-                        if (!\$dimensionsVal.length) {
-                            $(
-                                '<div class="data">' +
-                                '<dt class="heading">$dimensionsLabel</div>' +
-                                '<dd id="dimensions-value" class="value"></div>' +
-                                '</div>'
-                            ).appendTo($('#details > .meta.read-only'));
-                            \$dimensionsVal = $('#dimensions-value');
-                        }
-                        \$dimensionsVal.text(data.result.dimensions);
-                    } else if (\$dimensionsVal.length) {
-                        \$dimensionsVal.parent().remove();
+                const result = event instanceof CustomEvent ? event.detail : data.result;
+                
+                $('#new-filename').val(result.filename);
+                $('#file-size-value')
+                    .text(result.formattedSize)
+                    .attr('title', result.formattedSizeInBytes);
+                let \$dimensionsVal = $('#dimensions-value');
+                if (result.dimensions) {
+                    if (!\$dimensionsVal.length) {
+                        $(
+                            '<div class="data">' +
+                            '<dt class="heading">$dimensionsLabel</div>' +
+                            '<dd id="dimensions-value" class="value"></div>' +
+                            '</div>'
+                        ).appendTo($('#details > .meta.read-only'));
+                        \$dimensionsVal = $('#dimensions-value');
                     }
-                    $updatePreviewThumbJs
-                    Craft.cp.runQueue();
+                    \$dimensionsVal.text(result.dimensions);
+                } else if (\$dimensionsVal.length) {
+                    \$dimensionsVal.parent().remove();
                 }
-            }
+                $updatePreviewThumbJs
+                Craft.cp.runQueue();
+                if (result.error) {
+                    $('#thumb-container').removeClass('loading');
+                    alert(result.error);
+                } else {
+
+                }
+            },
+            fileuploadfail: (event, data) => {
+                const response = event instanceof Event
+                    ? event.detail
+                    : data?.jqXHR?.responseJSON;
+                
+                let {message, filename} = response || {};
+                
+                if (!message) {
+                    message = filename
+                        ? Craft.t('app', 'Replace file failed for “{filename}”.', {filename})
+                        : Craft.t('app', 'Replace file failed.');
+                }
+                
+              Craft.cp.displayError(message);
+            },
+            fileuploadalways: (event, data) => {
+                $('#thumb-container').removeClass('loading');
+            },
         }
     });
     uploader.setParams({
@@ -1562,7 +1584,7 @@ JS;
                 'width' => $this->getWidth(),
                 'height' => $this->getHeight(),
                 'srcset' => $sizes ? $this->getSrcset($sizes) : false,
-                'alt' => $this->getThumbAlt(),
+                'alt' => $this->thumbAlt(),
             ]);
         } else {
             $img = null;
@@ -1653,6 +1675,10 @@ JS;
             return [];
         }
 
+        if (!$this->allowTransforms()) {
+            return [];
+        }
+
         $urls = [];
 
         if (
@@ -1686,6 +1712,7 @@ JS;
                 'position',
                 'quality',
                 'width',
+                'fill',
             ]) : [];
 
             if ($unit === 'w') {
@@ -1835,7 +1862,9 @@ JS;
      */
     public function setTransform(mixed $transform): Asset
     {
-        $this->_transform = ImageTransforms::normalizeTransform($transform);
+        if ($this->allowTransforms()) {
+            $this->_transform = ImageTransforms::normalizeTransform($transform);
+        }
 
         return $this;
     }
@@ -1895,16 +1924,16 @@ JS;
         $volume = $this->getVolume();
         $transform = $transform ?? $this->_transform;
 
-        if ($transform) {
-            $mimeType = $this->getMimeType();
-            $generalConfig = Craft::$app->getConfig()->getGeneral();
-            if (
-                ($mimeType === 'image/gif' && !$generalConfig->transformGifs) ||
-                ($mimeType === 'image/svg+xml' && !$generalConfig->transformSvgs) ||
+        if (
+            $transform && (
+                // if it's a site request - check the mime type and general settings and decide whether to nullify the transform
+                // otherwise - we can proceed and rely on the FallbackTransformer (e.g. for thumbs in the CP)
+                // see https://github.com/craftcms/cms/issues/13306 and https://github.com/craftcms/cms/issues/13624 for more info
+                (Craft::$app->getRequest()->getIsSiteRequest() && !$this->allowTransforms()) ||
                 !Image::canManipulateAsImage(pathinfo($this->getFilename(), PATHINFO_EXTENSION))
-            ) {
-                $transform = null;
-            }
+            )
+        ) {
+            $transform = null;
         }
 
         if ($transform) {
@@ -1973,10 +2002,10 @@ JS;
     /**
      * @inheritdoc
      */
-    public function getThumbUrl(int $size): ?string
+    protected function thumbUrl(int $size): ?string
     {
         if ($this->isFolder) {
-            return Craft::$app->getAssetManager()->getPublishedUrl('@app/web/assets/cp/dist', true, 'images/folder.svg');
+            return null;
         }
 
         if ($this->getWidth() && $this->getHeight()) {
@@ -1985,13 +2014,25 @@ JS;
             $width = $height = $size;
         }
 
-        return Craft::$app->getAssets()->getThumbUrl($this, $width, $height);
+        return Craft::$app->getAssets()->getThumbUrl($this, $width, $height, false);
     }
 
     /**
      * @inheritdoc
      */
-    public function getThumbAlt(): ?string
+    protected function thumbSvg(): ?string
+    {
+        if ($this->isFolder) {
+            return file_get_contents(Craft::getAlias('@appicons/folder.svg'));
+        }
+
+        return Assets::iconSvg($this->getExtension());
+    }
+
+    /**
+     * @inheritdoc
+     */
+    protected function thumbAlt(): ?string
     {
         if ($this->isFolder) {
             return null;
@@ -2008,7 +2049,7 @@ JS;
     /**
      * @inheritdoc
      */
-    public function getHasCheckeredThumb(): bool
+    protected function hasCheckeredThumb(): bool
     {
         if ($this->isFolder) {
             return false;
@@ -2043,7 +2084,7 @@ JS;
         return Html::tag('img', '', [
             'sizes' => "{$thumbSizes[0][0]}px",
             'srcset' => implode(', ', $srcsets),
-            'alt' => $this->getThumbAlt(),
+            'alt' => $this->thumbAlt(),
         ]);
     }
 
@@ -2484,7 +2525,7 @@ JS;
                     'class' => array_filter([
                         'preview-thumb-container',
                         'button-fade',
-                        $this->getHasCheckeredThumb() ? 'checkered' : null,
+                        $this->hasCheckeredThumb() ? 'checkered' : null,
                     ]),
                 ]) .
                 Html::tag('div', $this->getPreviewThumbImg(350, 190), [
@@ -2898,7 +2939,11 @@ JS;
     public function afterDelete(): void
     {
         if (!$this->keepFileOnDelete) {
-            $this->getVolume()->deleteFile($this->getPath());
+            try {
+                $this->getVolume()->deleteFile($this->getPath());
+            } catch (InvalidConfigException|NotSupportedException) {
+                // NBD
+            }
         }
 
         Craft::$app->getImageTransforms()->deleteAllTransformData($this);
@@ -2955,6 +3000,7 @@ JS;
             'data' => [
                 'kind' => $this->kind,
                 'alt' => $this->alt,
+                'filename' => $this->filename,
             ],
         ];
 
@@ -3100,7 +3146,7 @@ JS;
 
                 $tempPath = $this->tempFilePath;
             } else {
-                $tempFilename = uniqid(pathinfo($filename, PATHINFO_FILENAME), true) . '.' . pathinfo($filename, PATHINFO_EXTENSION);
+                $tempFilename = FileHelper::uniqueName($filename);
                 $tempPath = Craft::$app->getPath()->getTempPath() . DIRECTORY_SEPARATOR . $tempFilename;
                 Assets::downloadFile($oldVolume, $oldPath, $tempPath);
             }
@@ -3240,5 +3286,21 @@ JS;
         }
 
         return FileHelper::normalizePath($path) . DIRECTORY_SEPARATOR;
+    }
+
+    /**
+     * Returns whether transforming given asset is allowed
+     * based on its mime type and general settings.
+     *
+     * @return bool
+     * @throws ImageTransformException
+     */
+    private function allowTransforms(): bool
+    {
+        return match ($this->getMimeType()) {
+            'image/gif' => Craft::$app->getConfig()->getGeneral()->transformGifs,
+            'image/svg+xml' => Craft::$app->getConfig()->getGeneral()->transformSvgs,
+            default => true,
+        };
     }
 }

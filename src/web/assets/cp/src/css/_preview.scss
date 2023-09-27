@@ -9,7 +9,7 @@
   background-color: var(--white);
   z-index: 100;
 
-  header {
+  & > header {
     padding: 8px 24px;
     background-color: var(--gray-100);
     box-shadow: 0 1px 0 transparentize($grey700, 0.8);
@@ -68,7 +68,7 @@
 
   .lp-draghandle {
     position: absolute;
-    z-index: 6;
+    z-index: 101;
     top: 0;
     @include right(-2px);
     width: 4px;

@@ -216,7 +216,7 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
             return $this->columnType;
         }
 
-        $maxLength = max([1, ...array_map(fn(array $option) => strlen($option['value']), $this->options())]);
+        $maxLength = max([1, ...array_map(fn(array $option) => isset($option['value']) ? strlen($option['value']) : 0, $this->options())]);
         return $maxLength === 1 ? Schema::TYPE_CHAR : sprintf('%s(%s)', Schema::TYPE_STRING, $maxLength);
     }
 
@@ -323,6 +323,8 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
             $value = Json::decodeIfJson($value);
         } elseif ($value === '' && $this->multi) {
             $value = [];
+        } elseif ($value === '__BLANK__') {
+            $value = '';
         } elseif ($value === null && $this->isFresh($element)) {
             $value = $this->defaultValue();
         }
@@ -337,12 +339,13 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
             $selectedValues[] = $val;
         }
 
+        $selectedBlankOption = false;
         $options = [];
         $optionValues = [];
         $optionLabels = [];
         foreach ($this->options() as $option) {
             if (!isset($option['optgroup'])) {
-                $selected = in_array($option['value'], $selectedValues, true);
+                $selected = $this->isOptionSelected($option, $value, $selectedValues, $selectedBlankOption);
                 $options[] = new OptionData($option['label'], $option['value'], $selected, true);
                 $optionValues[] = (string)$option['value'];
                 $optionLabels[] = (string)$option['label'];
@@ -373,6 +376,20 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
         $value->setOptions($options);
 
         return $value;
+    }
+
+    /**
+     * Check if given option should be marked as selected.
+     *
+     * @param array $option
+     * @param mixed $value
+     * @param array $selectedValues
+     * @param bool $selectedBlankOption
+     * @return bool
+     */
+    protected function isOptionSelected(array $option, mixed $value, array &$selectedValues, bool &$selectedBlankOption): bool
+    {
+        return in_array($option['value'], $selectedValues, true);
     }
 
     /**

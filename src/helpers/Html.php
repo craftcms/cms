@@ -589,8 +589,8 @@ class Html extends \yii\helpers\Html
      * @param string $content
      * @return array[] An array containing the HTML content, and the condition (if there is one).
      * @phpstan-return array{string,string|null}
-     * @since 4.0.0
      * @see wrapIntoCondition()
+     * @since 4.0.0
      */
     public static function unwrapCondition(string $content): array
     {
@@ -712,9 +712,9 @@ class Html extends \yii\helpers\Html
      * @param string $html The HTML code
      * @param string $namespace The namespace
      * @return string The HTML with namespaced input names
-     * @since 3.5.0
      * @see namespaceHtml()
      * @see namespaceAttributes()
+     * @since 3.5.0
      */
     public static function namespaceInputs(string $html, string $namespace): string
     {
@@ -756,9 +756,9 @@ class Html extends \yii\helpers\Html
      * @param string $namespace The namespace
      * @param bool $withClasses Whether class names should be namespaced as well (affects both `class` attributes and class name CSS selectors)
      * @return string The HTML with namespaced attributes
-     * @since 3.5.0
      * @see namespaceHtml()
      * @see namespaceInputs()
+     * @since 3.5.0
      */
     public static function namespaceAttributes(string $html, string $namespace, bool $withClasses = false): string
     {
@@ -836,7 +836,7 @@ class Html extends \yii\helpers\Html
                         return $match[0];
                     }, $match[2]);
                 if ($withClasses) {
-                    $html = preg_replace("/(?<![\\w'\"])\\.([\\w\\-]+)(?=[,\\s\\{])/", ".$namespace-$1", $match[2]);
+                    $html = preg_replace("/(?<![\\w'\"])\\.([\\w\\-]+)(?=[,:\\s{])/", ".$namespace-$1", $match[2]);
                 }
                 return $match[1] . $html . $match[3];
             }, $html);

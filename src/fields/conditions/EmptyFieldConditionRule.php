@@ -25,14 +25,6 @@ class EmptyFieldConditionRule extends BaseConditionRule implements FieldConditio
     /**
      * @inheritdoc
      */
-    public static function supportsProjectConfig(): bool
-    {
-        return true;
-    }
-
-    /**
-     * @inheritdoc
-     */
     protected function operators(): array
     {
         return [

@@ -439,6 +439,10 @@ JS, [
             /** @var ElementQueryInterface|Collection $value */
             $value = $element->getFieldValue($this->handle);
 
+            if ($value instanceof ElementQueryInterface) {
+                $value = $this->_all($value);
+            }
+
             $arrayValidator = new NumberValidator([
                 'min' => $this->minRelations,
                 'max' => $this->maxRelations,
@@ -473,6 +477,11 @@ JS, [
 
         /** @var ElementQueryInterface|Collection $value */
         $value = $element->getFieldValue($this->handle);
+
+        if ($value instanceof ElementQueryInterface) {
+            $value = $this->_all($value);
+        }
+
         $errorCount = 0;
 
         foreach ($value->all() as $i => $related) {
@@ -495,8 +504,9 @@ JS, [
         if ($errorCount) {
             /** @var ElementInterface|string $elementType */
             $elementType = static::elementType();
-            $element->addError($this->handle, Craft::t('app', 'Fix validation errors on the related {type}.', [
+            $element->addError($this->handle, Craft::t('app', 'Validation errors found in {attribute} {type}; please fix them.', [
                 'type' => $errorCount === 1 ? $elementType::lowerDisplayName() : $elementType::pluralLowerDisplayName(),
+                'attribute' => $this->getAttributeLabel($this->handle),
             ]));
         }
     }

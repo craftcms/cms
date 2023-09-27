@@ -307,7 +307,7 @@ $radioSize: 16px;
 @mixin modal {
   border-radius: $largeBorderRadius;
   background-color: $white;
-  box-shadow: 0 25px 100px transparentize($grey900, 0.5);
+  box-shadow: 0 25px 100px transparentize($grey900, 0.5) !important;
 }
 
 @mixin light-on-dark-text() {
@@ -888,4 +888,35 @@ $radioSize: 16px;
       }
     }
   }
+
+  .go:after {
+    font-size: 14px;
+  }
+}
+
+@mixin checkered-bg($size) {
+  // h/t https://gist.github.com/dfrankland/f6fed3e3ccc42e3de482b324126f9542
+  $halfSize: $size * 0.5;
+  background-image: linear-gradient(
+      45deg,
+      #{transparentize($grey300, 0.75)} 25%,
+      transparent 25%
+    ),
+    linear-gradient(
+      135deg,
+      #{transparentize($grey300, 0.75)} 25%,
+      transparent 25%
+    ),
+    linear-gradient(
+      45deg,
+      transparent 75%,
+      #{transparentize($grey300, 0.75)} 75%
+    ),
+    linear-gradient(
+      135deg,
+      transparent 75%,
+      #{transparentize($grey300, 0.75)} 75%
+    );
+  background-size: $size $size;
+  background-position: 0 0, $halfSize 0, $halfSize -#{$halfSize}, 0 $halfSize;
 }
