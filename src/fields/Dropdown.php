@@ -61,9 +61,14 @@ class Dropdown extends BaseOptionsField implements SortableFieldInterface
     }
 
     /**
-     * @inheritdoc
+     * Prepare config for Cp::selectizeHtml()
+     *
+     * @param mixed $value
+     * @param ElementInterface|null $element
+     * @param bool $static
+     * @return array
      */
-    protected function inputHtml(mixed $value, ?ElementInterface $element = null): string
+    private function _getInputConfig(mixed $value, ?ElementInterface $element = null, bool $static = false): array
     {
         /** @var SingleOptionFieldData $value */
         $options = $this->translatedOptions(true, $value, $element);
@@ -77,7 +82,9 @@ class Dropdown extends BaseOptionsField implements SortableFieldInterface
         }
 
         if (!$value->valid) {
-            Craft::$app->getView()->setInitialDeltaValue($this->handle, $this->encodeValue($value->value));
+            if (!$static) {
+                Craft::$app->getView()->setInitialDeltaValue($this->handle, $this->encodeValue($value->value));
+            }
             $default = $this->defaultValue();
 
             if ($default !== null) {
@@ -97,12 +104,39 @@ class Dropdown extends BaseOptionsField implements SortableFieldInterface
             $encValue = '__BLANK__';
         }
 
+        return [$encValue, $options];
+    }
+
+    /**
+     * @inheritdoc
+     */
+    protected function inputHtml(mixed $value, ?ElementInterface $element = null): string
+    {
+        [$encValue, $options] = $this->_getInputConfig($value, $element);
+
         return Cp::selectizeHtml([
             'id' => $this->getInputId(),
             'describedBy' => $this->describedBy,
             'name' => $this->handle,
             'value' => $encValue,
             'options' => $options,
+        ]);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getStaticHtml(mixed $value, ?ElementInterface $element = null): string
+    {
+        [$encValue, $options] = $this->_getInputConfig($value, $element, true);
+
+        return Cp::selectizeHtml([
+            'id' => $this->getInputId(),
+            'describedBy' => $this->describedBy,
+            'name' => $this->handle,
+            'value' => $encValue,
+            'options' => $options,
+            'disabled' => true,
         ]);
     }
 
