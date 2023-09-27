@@ -1814,12 +1814,10 @@ $.extend(Craft, {
   _existingCss: null,
   _existingJs: null,
 
-  _appendHtml: async function (html, $parent) {
+  _appendHtml: function (html, $parent) {
     if (!html) {
       return;
     }
-
-    const scriptUrls = [];
 
     const nodes = $.parseHTML(html.trim(), true).filter((node) => {
       if (node.nodeName === 'LINK' && node.href) {
@@ -1844,43 +1842,27 @@ $.extend(Craft, {
             .map((n) => n.src.replace(/&/g, '&amp;'));
         }
 
-        if (!this._existingJs.includes(node.src)) {
-          scriptUrls.push(node.src);
-          this._existingJs.push(node.src);
+        if (this._existingJs.includes(node.src)) {
+          return false;
         }
 
-        // return false either way since we are going to load it ourselves
-        return false;
+        // if this is a cross-domain JS resource, use our app/resource-js proxy to load it
+        if (
+          node.src.startsWith(this.resourceBaseUrl) &&
+          !this.isSameHost(node.src)
+        ) {
+          node.src = this.getActionUrl('app/resource-js', {
+            url: node.src,
+          });
+        }
+
+        this._existingJs.push(node.src);
       }
 
       return true;
     });
 
-    await this._loadScripts(scriptUrls);
     $parent.append(nodes);
-  },
-
-  _loadScripts: function (urls) {
-    return new Promise((resolve) => {
-      if (!urls.length) {
-        resolve();
-        return;
-      }
-
-      const url = urls.shift();
-      $.ajaxSetup({cache: true});
-
-      $.getScript(url)
-        .done(() => {
-          $.ajaxSetup({cache: false});
-          this._loadScripts(urls).then(resolve);
-        })
-        .fail(() => {
-          console.error(`Failed to load ${url}:`);
-          $.ajaxSetup({cache: false});
-          this._loadScripts(urls).then(resolve);
-        });
-    });
   },
 
   /**
