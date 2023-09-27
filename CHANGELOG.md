@@ -3,7 +3,7 @@
 ## Unreleased
 
 - Crossdomain JavaScript resources are now loaded via a proxy action.
-- Fixed JavaScript errors that could occur after loading new UI components over Ajax. ([#13751](https://github.com/craftcms/cms/issues/13751), [#13752](https://github.com/craftcms/cms/issues/13752))
+- Fixed JavaScript errors that could occur after loading new UI components over Ajax. ([#13751](https://github.com/craftcms/cms/issues/13751))
 
 ## 4.5.6 - 2023-09-26
 
