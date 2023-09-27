@@ -1842,10 +1842,6 @@ $.extend(Craft, {
             .map((n) => n.src.replace(/&/g, '&amp;'));
         }
 
-        if (this._existingJs.includes(node.src)) {
-          return false;
-        }
-
         // if this is a cross-domain JS resource, use our app/resource-js proxy to load it
         if (
           node.src.startsWith(this.resourceBaseUrl) &&
@@ -1854,6 +1850,10 @@ $.extend(Craft, {
           node.src = this.getActionUrl('app/resource-js', {
             url: node.src,
           });
+        }
+
+        if (this._existingJs.includes(node.src)) {
+          return false;
         }
 
         this._existingJs.push(node.src);
