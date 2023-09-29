@@ -2349,15 +2349,10 @@ abstract class Element extends Component implements ElementInterface
     {
         $fields = parent::fields();
 
-        // Include custom fields
-        $fieldLayout = $this->getFieldLayout();
-
-        if ($fieldLayout !== null) {
-            foreach ($fieldLayout->getCustomFieldElements() as $layoutElement) {
-                $field = $layoutElement->getField();
-                if (!isset($fields[$field->handle])) {
-                    $fields[$field->handle] = fn() => $this->clonedFieldValue($field->handle);
-                }
+        foreach ($this->fieldLayoutFields() as $field) {
+            $value = $this->getFieldValue($field->handle);
+            if (!isset($fields[$field->handle])) {
+                $fields[$field->handle] = fn() => $field->serializeValue($value, $this);
             }
         }
 
