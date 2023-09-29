@@ -71,6 +71,23 @@ class MultiSelect extends BaseOptionsField
     /**
      * @inheritdoc
      */
+    public function getStaticHtml(mixed $value, ?ElementInterface $element = null): string
+    {
+        return Cp::selectizeHtml([
+            'id' => $this->getInputId(),
+            'describedBy' => $this->describedBy,
+            'class' => 'selectize',
+            'name' => $this->handle,
+            'values' => $this->encodeValue($value),
+            'options' => $this->translatedOptions(true, $value, $element),
+            'multi' => true,
+            'disabled' => true,
+        ]);
+    }
+
+    /**
+     * @inheritdoc
+     */
     protected function optionsSettingLabel(): string
     {
         return Craft::t('app', 'Multi-select Options');
