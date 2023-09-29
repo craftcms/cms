@@ -428,7 +428,7 @@ class Volume extends Model implements BaseFsInterface, FieldLayoutProviderInterf
     {
         $rootUrl = $this->getFs()->getRootUrl();
         $fsSubpath = $this->getFsSubpath();
-        return ($rootUrl !== '' ? StringHelper::ensureRight($rootUrl, '/') : '') .
+        return ((!empty($rootUrl) && is_string($rootUrl)) ? StringHelper::ensureRight($rootUrl, '/') : '') .
             ($fsSubpath !== '' ? StringHelper::ensureRight($fsSubpath, '/') : '');
     }
 
