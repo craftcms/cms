@@ -61,14 +61,22 @@ class Dropdown extends BaseOptionsField implements SortableFieldInterface
     }
 
     /**
-     * Prepare config for Cp::selectizeHtml()
-     *
-     * @param mixed $value
-     * @param ElementInterface|null $element
-     * @param bool $static
-     * @return array
+     * @inheritdoc
      */
-    private function _getInputConfig(mixed $value, ?ElementInterface $element = null, bool $static = false): array
+    protected function inputHtml(mixed $value, ?ElementInterface $element = null): string
+    {
+        return $this->inputHtmlInternal($value, $element, false);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getStaticHtml(mixed $value, ?ElementInterface $element = null): string
+    {
+        return $this->inputHtmlInternal($value, $element, true);
+    }
+
+    private function inputHtmlInternal(mixed $value, ?ElementInterface $element, bool $static): string
     {
         /** @var SingleOptionFieldData $value */
         $options = $this->translatedOptions(true, $value, $element);
@@ -104,39 +112,13 @@ class Dropdown extends BaseOptionsField implements SortableFieldInterface
             $encValue = '__BLANK__';
         }
 
-        return [$encValue, $options];
-    }
-
-    /**
-     * @inheritdoc
-     */
-    protected function inputHtml(mixed $value, ?ElementInterface $element = null): string
-    {
-        [$encValue, $options] = $this->_getInputConfig($value, $element);
-
         return Cp::selectizeHtml([
             'id' => $this->getInputId(),
             'describedBy' => $this->describedBy,
             'name' => $this->handle,
             'value' => $encValue,
             'options' => $options,
-        ]);
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getStaticHtml(mixed $value, ?ElementInterface $element = null): string
-    {
-        [$encValue, $options] = $this->_getInputConfig($value, $element, true);
-
-        return Cp::selectizeHtml([
-            'id' => $this->getInputId(),
-            'describedBy' => $this->describedBy,
-            'name' => $this->handle,
-            'value' => $encValue,
-            'options' => $options,
-            'disabled' => true,
+            'disabled' => $static,
         ]);
     }
 
