@@ -46,24 +46,19 @@ $findConfig = function($constName, $argName) {
     return null;
 };
 
-$findConfigPath = function($constName, $argName) use ($findConfig) {
-    $path = $findConfig($constName, $argName);
-    return $path ? realpath($path) : null;
-};
-
 // Set the vendor path. By default assume that it's 4 levels up from here
-$vendorPath = $findConfigPath('CRAFT_VENDOR_PATH', 'vendorPath') ?: dirname(__DIR__, 3);
+$vendorPath = FileHelper::normalizePath($findConfig('CRAFT_VENDOR_PATH', 'vendorPath') ?: dirname(__DIR__, 3));
 
 // Set the "project root" path that contains config/, storage/, etc. By default assume that it's up a level from vendor/.
-$rootPath = $findConfigPath('CRAFT_BASE_PATH', 'basePath') ?: dirname($vendorPath);
+$rootPath = FileHelper::normalizePath($findConfig('CRAFT_BASE_PATH', 'basePath') ?: dirname($vendorPath));
 
 // By default the remaining directories will be in the base directory
-$configPath = $findConfigPath('CRAFT_CONFIG_PATH', 'configPath') ?: $rootPath . DIRECTORY_SEPARATOR . 'config';
-$contentMigrationsPath = $findConfigPath('CRAFT_CONTENT_MIGRATIONS_PATH', 'contentMigrationsPath') ?: $rootPath . DIRECTORY_SEPARATOR . 'migrations';
-$storagePath = $findConfigPath('CRAFT_STORAGE_PATH', 'storagePath') ?: $rootPath . DIRECTORY_SEPARATOR . 'storage';
-$templatesPath = $findConfigPath('CRAFT_TEMPLATES_PATH', 'templatesPath') ?: $rootPath . DIRECTORY_SEPARATOR . 'templates';
-$translationsPath = $findConfigPath('CRAFT_TRANSLATIONS_PATH', 'translationsPath') ?: $rootPath . DIRECTORY_SEPARATOR . 'translations';
-$testsPath = $findConfigPath('CRAFT_TESTS_PATH', 'testsPath') ?: $rootPath . DIRECTORY_SEPARATOR . 'tests';
+$configPath = FileHelper::normalizePath($findConfig('CRAFT_CONFIG_PATH', 'configPath') ?: $rootPath . DIRECTORY_SEPARATOR . 'config');
+$contentMigrationsPath = FileHelper::normalizePath($findConfig('CRAFT_CONTENT_MIGRATIONS_PATH', 'contentMigrationsPath') ?: $rootPath . DIRECTORY_SEPARATOR . 'migrations');
+$storagePath = FileHelper::normalizePath($findConfig('CRAFT_STORAGE_PATH', 'storagePath') ?: $rootPath . DIRECTORY_SEPARATOR . 'storage');
+$templatesPath = FileHelper::normalizePath($findConfig('CRAFT_TEMPLATES_PATH', 'templatesPath') ?: $rootPath . DIRECTORY_SEPARATOR . 'templates');
+$translationsPath = FileHelper::normalizePath($findConfig('CRAFT_TRANSLATIONS_PATH', 'translationsPath') ?: $rootPath . DIRECTORY_SEPARATOR . 'translations');
+$testsPath = FileHelper::normalizePath($findConfig('CRAFT_TESTS_PATH', 'testsPath') ?: $rootPath . DIRECTORY_SEPARATOR . 'tests');
 
 // Set the environment
 // -----------------------------------------------------------------------------
@@ -104,6 +99,9 @@ $ensureFolderIsReadable = function($path, $writableToo = false) {
         exit($realPath . ' isn\'t writable by PHP. Please fix that.' . PHP_EOL);
     }
 };
+
+// Validate the paths
+// -----------------------------------------------------------------------------
 
 if (!defined('CRAFT_LICENSE_KEY') && !App::isEphemeral()) {
     // Validate permissions on the license key file path (default config/) and storage/
