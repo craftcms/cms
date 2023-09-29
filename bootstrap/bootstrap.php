@@ -7,7 +7,6 @@
  * @license https://craftcms.github.io/license/
  */
 
-use craft\config\GeneralConfig;
 use craft\helpers\App;
 use craft\helpers\ArrayHelper;
 use craft\helpers\FileHelper;
