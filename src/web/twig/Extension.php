@@ -1628,11 +1628,11 @@ class Extension extends AbstractExtension implements GlobalsInterface
      */
     private function _checkFilterSupport($arrow): void
     {
-        if (is_string($arrow) && (
-                strtolower($arrow) === 'system' ||
-                strtolower($arrow) === 'passthru' ||
-                strtolower($arrow) === 'exec'
-            )) {
+        if (is_string($arrow) && in_array(strtolower($arrow), [
+            'system',
+            'passthru',
+            'exec',
+        ])) {
             throw new RuntimeError('Not supported in this filter.');
         }
     }
