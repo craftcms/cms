@@ -107,6 +107,11 @@ class NestedElementManager extends Component
     public array $criteria = [];
 
     /**
+     * @var Closure|null|false Closure that will update the value.
+     */
+    public Closure|null|false $valueSetter = null;
+
+    /**
      * @var PropagationMethod The propagation method that the nested elements should use.
      *
      *  This can be set to one of the following:
@@ -190,7 +195,13 @@ class NestedElementManager extends Component
 
     private function setValue(ElementInterface $owner, ElementQueryInterface|ElementCollection $value): void
     {
-        if (isset($this->attribute)) {
+        if ($this->valueSetter === false) {
+            return;
+        }
+
+        if (isset($this->valueSetter)) {
+            call_user_func($this->valueSetter, $value);
+        } elseif (isset($this->attribute)) {
             $owner->{$this->attribute} = $value;
         } else {
             $owner->setFieldValue($this->fieldHandle, $value);
