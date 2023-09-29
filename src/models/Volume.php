@@ -18,6 +18,8 @@ use craft\elements\Asset;
 use craft\fs\MissingFs;
 use craft\helpers\App;
 use craft\helpers\ArrayHelper;
+use craft\helpers\FileHelper;
+use craft\helpers\StringHelper;
 use craft\records\Volume as VolumeRecord;
 use craft\validators\HandleValidator;
 use craft\validators\UniqueValidator;
@@ -80,6 +82,12 @@ class Volume extends Model implements BaseFsInterface, FieldLayoutProviderInterf
      * @var string The subpath to use in the transform filesystem
      */
     public string $transformSubpath = '';
+
+    /**
+     * @var string The subpath to use in the filesystem for uploading files to this volume
+     * @since 5.0.0
+     */
+    public string $fsSubpath = '';
 
     /**
      * @var FsInterface|null
@@ -175,8 +183,47 @@ class Volume extends Model implements BaseFsInterface, FieldLayoutProviderInterf
             ],
         ];
         $rules[] = [['fieldLayout'], 'validateFieldLayout'];
+        $rules[] = [['fsSubpath'], 'validateUniqueFsSubpath', 'skipOnEmpty' => false];
 
         return $rules;
+    }
+
+    /**
+     * Validate unique fsSubpath - not just the entire fsSubpath, but even just the first subfolder
+     *
+     * e.g. if Volume A uses $MY_FS and its fsSubpath is set to foo/bar,
+     * and Volume B wishes to also use $MY_FS
+     * and its fsSubpath is either empty, or set to foo, foo/bar, or foo/bar/baz,
+     * it should result in a validation error due to the conflict with Volume A
+     *
+     * @param string $attribute
+     * @return void
+     */
+    public function validateUniqueFsSubpath(string $attribute): void
+    {
+        // get all volumes that use the same FS, excluding current volume
+        $query = VolumeRecord::find()
+            ->andWhere(['fs' => $this->_fsHandle])
+            ->asArray();
+
+        if ($this->id !== null) {
+            $query->andWhere('id != ' . $this->id);
+        }
+
+        $records = $query->all();
+
+        // if there are other volumes using the same FS
+        // and this volume wants to have an empty fsSubpath - add error
+        if (!empty($records) && empty($this->$attribute)) {
+            $this->addError($attribute, Craft::t('app', 'A subpath is required for this filesystem.'));
+        }
+
+        // make sure subpath starts with a unique dir across all volumes that use this FS
+        foreach ($records as $record) {
+            if (strcmp(explode('/', $record[$attribute])[0], explode('/', $this->$attribute)[0]) === 0) {
+                $this->addError($attribute, Craft::t('app', 'The subpath cannot overlap with any other volumes sharing the same filesystem.'));
+            }
+        }
     }
 
     /**
@@ -355,6 +402,7 @@ class Volume extends Model implements BaseFsInterface, FieldLayoutProviderInterf
             'name' => $this->name,
             'handle' => $this->handle,
             'fs' => $this->_fsHandle,
+            'fsSubpath' => $this->fsSubpath,
             'transformFs' => $this->_transformFsHandle,
             'transformSubpath' => $this->transformSubpath,
             'titleTranslationMethod' => $this->titleTranslationMethod,
@@ -378,7 +426,22 @@ class Volume extends Model implements BaseFsInterface, FieldLayoutProviderInterf
      */
     public function getRootUrl(): ?string
     {
-        return $this->getFs()->getRootUrl();
+        $rootUrl = $this->getFs()->getRootUrl();
+        $fsSubpath = $this->getFsSubpath();
+        return ($rootUrl !== '' ? StringHelper::ensureRight($rootUrl, '/') : '') .
+            ($fsSubpath !== '' ? StringHelper::ensureRight($fsSubpath, '/') : '');
+    }
+
+    /**
+     * Get volume base path.
+     * If volume has fsSubpath set, then the base path starts with it.
+     * This is then used in VolumeFolder->getPath()|VolumeFolder->$path
+     * to get the actual path to the folder.
+     */
+    public function getFsSubpath(): string
+    {
+        $path = FileHelper::normalizePath(App::parseEnv($this->fsSubpath));
+        return $path ? $path . DIRECTORY_SEPARATOR : $path;
     }
 
     /**
@@ -386,7 +449,7 @@ class Volume extends Model implements BaseFsInterface, FieldLayoutProviderInterf
      */
     public function getFileList(string $directory = '', bool $recursive = true): Generator
     {
-        return $this->getFs()->getFileList($directory, $recursive);
+        return $this->getFs()->getFileList($this->getFsSubpath() . $directory, $recursive);
     }
 
     /**
@@ -394,7 +457,7 @@ class Volume extends Model implements BaseFsInterface, FieldLayoutProviderInterf
      */
     public function getFileSize(string $uri): int
     {
-        return $this->getFs()->getFileSize($uri);
+        return $this->getFs()->getFileSize($this->getFsSubpath() . $uri);
     }
 
     /**
@@ -402,7 +465,7 @@ class Volume extends Model implements BaseFsInterface, FieldLayoutProviderInterf
      */
     public function getDateModified(string $uri): int
     {
-        return $this->getFs()->getDateModified($uri);
+        return $this->getFs()->getDateModified($this->getFsSubpath() . $uri);
     }
 
 
@@ -411,7 +474,7 @@ class Volume extends Model implements BaseFsInterface, FieldLayoutProviderInterf
      */
     public function write(string $path, string $contents, array $config = []): void
     {
-        $this->getFs()->write($path, $contents, $config);
+        $this->getFs()->write($this->getFsSubpath() . $path, $contents, $config);
     }
 
     /**
@@ -419,7 +482,7 @@ class Volume extends Model implements BaseFsInterface, FieldLayoutProviderInterf
      */
     public function read(string $path): string
     {
-        return $this->getFs()->read($path);
+        return $this->getFs()->read($this->getFsSubpath() . $path);
     }
 
     /**
@@ -427,7 +490,7 @@ class Volume extends Model implements BaseFsInterface, FieldLayoutProviderInterf
      */
     public function writeFileFromStream(string $path, $stream, array $config = []): void
     {
-        $this->getFs()->writeFileFromStream($path, $stream, $config);
+        $this->getFs()->writeFileFromStream($this->getFsSubpath() . $path, $stream, $config);
     }
 
     /**
@@ -435,7 +498,7 @@ class Volume extends Model implements BaseFsInterface, FieldLayoutProviderInterf
      */
     public function fileExists(string $path): bool
     {
-        return $this->getFs()->fileExists($path);
+        return $this->getFs()->fileExists($this->getFsSubpath() . $path);
     }
 
     /**
@@ -443,7 +506,7 @@ class Volume extends Model implements BaseFsInterface, FieldLayoutProviderInterf
      */
     public function deleteFile(string $path): void
     {
-        $this->getFs()->deleteFile($path);
+        $this->getFs()->deleteFile($this->getFsSubpath() . $path);
     }
 
     /**
@@ -451,7 +514,8 @@ class Volume extends Model implements BaseFsInterface, FieldLayoutProviderInterf
      */
     public function renameFile(string $path, string $newPath): void
     {
-        $this->getFs()->renameFile($path, $newPath);
+        $fsSubpath = $this->getFsSubpath();
+        $this->getFs()->renameFile($fsSubpath . $path, $fsSubpath . $newPath);
     }
 
     /**
@@ -459,7 +523,8 @@ class Volume extends Model implements BaseFsInterface, FieldLayoutProviderInterf
      */
     public function copyFile(string $path, string $newPath): void
     {
-        $this->getFs()->copyFile($path, $newPath);
+        $fsSubpath = $this->getFsSubpath();
+        $this->getFs()->copyFile($fsSubpath . $path, $fsSubpath . $newPath);
     }
 
     /**
@@ -467,7 +532,7 @@ class Volume extends Model implements BaseFsInterface, FieldLayoutProviderInterf
      */
     public function getFileStream(string $uriPath)
     {
-        return $this->getFs()->getFileStream($uriPath);
+        return $this->getFs()->getFileStream($this->getFsSubpath() . $uriPath);
     }
 
     /**
@@ -475,7 +540,7 @@ class Volume extends Model implements BaseFsInterface, FieldLayoutProviderInterf
      */
     public function directoryExists(string $path): bool
     {
-        return $this->getFs()->directoryExists($path);
+        return $this->getFs()->directoryExists($this->getFsSubpath() . $path);
     }
 
     /**
@@ -483,7 +548,7 @@ class Volume extends Model implements BaseFsInterface, FieldLayoutProviderInterf
      */
     public function createDirectory(string $path, array $config = []): void
     {
-        $this->getFs()->createDirectory($path, $config);
+        $this->getFs()->createDirectory($this->getFsSubpath() . $path, $config);
     }
 
     /**
@@ -491,7 +556,7 @@ class Volume extends Model implements BaseFsInterface, FieldLayoutProviderInterf
      */
     public function deleteDirectory(string $path): void
     {
-        $this->getFs()->deleteDirectory($path);
+        $this->getFs()->deleteDirectory($this->getFsSubpath() . $path);
     }
 
     /**
@@ -499,6 +564,6 @@ class Volume extends Model implements BaseFsInterface, FieldLayoutProviderInterf
      */
     public function renameDirectory(string $path, string $newName): void
     {
-        $this->getFs()->renameDirectory($path, $newName);
+        $this->getFs()->renameDirectory($this->getFsSubpath() . $path, $newName);
     }
 }
