@@ -7,8 +7,10 @@
  * @license https://craftcms.github.io/license/
  */
 
+use craft\config\GeneralConfig;
 use craft\helpers\App;
 use craft\helpers\ArrayHelper;
+use craft\helpers\FileHelper;
 use craft\services\Config;
 use yii\base\ErrorException;
 
@@ -16,13 +18,15 @@ use yii\base\ErrorException;
 // see https://stackoverflow.com/a/21601349/1688568
 $lastError = error_get_last();
 
-// Setup
+// Validate the app type
 // -----------------------------------------------------------------------------
 
-// Validate the app type
 if (!isset($appType) || ($appType !== 'web' && $appType !== 'console')) {
     throw new Exception('$appType must be set to "web" or "console".');
 }
+
+// Determine the paths
+// -----------------------------------------------------------------------------
 
 $findConfig = function($constName, $argName) {
     if (defined($constName)) {
@@ -48,20 +52,40 @@ $findConfigPath = function($constName, $argName) use ($findConfig) {
     return $path ? realpath($path) : null;
 };
 
-$createFolder = function($path) {
-    // Code borrowed from Io...
+// Set the vendor path. By default assume that it's 4 levels up from here
+$vendorPath = $findConfigPath('CRAFT_VENDOR_PATH', 'vendorPath') ?: dirname(__DIR__, 3);
+
+// Set the "project root" path that contains config/, storage/, etc. By default assume that it's up a level from vendor/.
+$rootPath = $findConfigPath('CRAFT_BASE_PATH', 'basePath') ?: dirname($vendorPath);
+
+// By default the remaining directories will be in the base directory
+$configPath = $findConfigPath('CRAFT_CONFIG_PATH', 'configPath') ?: $rootPath . DIRECTORY_SEPARATOR . 'config';
+$contentMigrationsPath = $findConfigPath('CRAFT_CONTENT_MIGRATIONS_PATH', 'contentMigrationsPath') ?: $rootPath . DIRECTORY_SEPARATOR . 'migrations';
+$storagePath = $findConfigPath('CRAFT_STORAGE_PATH', 'storagePath') ?: $rootPath . DIRECTORY_SEPARATOR . 'storage';
+$templatesPath = $findConfigPath('CRAFT_TEMPLATES_PATH', 'templatesPath') ?: $rootPath . DIRECTORY_SEPARATOR . 'templates';
+$translationsPath = $findConfigPath('CRAFT_TRANSLATIONS_PATH', 'translationsPath') ?: $rootPath . DIRECTORY_SEPARATOR . 'translations';
+$testsPath = $findConfigPath('CRAFT_TESTS_PATH', 'testsPath') ?: $rootPath . DIRECTORY_SEPARATOR . 'tests';
+
+// Set the environment
+// -----------------------------------------------------------------------------
+
+$environment = $findConfig('CRAFT_ENVIRONMENT', 'env') ?: ($_SERVER['SERVER_NAME'] ?? null);
+
+// Load the general config
+// -----------------------------------------------------------------------------
+
+$configService = new Config();
+$configService->env = $environment;
+$configService->configDir = $configPath;
+$configService->appDefaultsDir = dirname(__DIR__) . DIRECTORY_SEPARATOR . 'src' . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . 'defaults';
+$generalConfig = $configService->getConfigFromFile('general');
+
+// Validation
+// -----------------------------------------------------------------------------
+
+$createFolder = function($path) use ($generalConfig) {
     if (!is_dir($path)) {
-        $oldumask = umask(0);
-
-        if (!mkdir($path, 0755, true)) {
-            // Set a 503 response header so things like Varnish won't cache a bad page.
-            http_response_code(503);
-            exit('Tried to create a folder at ' . $path . ', but could not.' . PHP_EOL);
-        }
-
-        // Because setting permission with mkdir is a crapshoot.
-        chmod($path, 0755);
-        umask($oldumask);
+        FileHelper::createDirectory($path, $generalConfig['defaultDirMode'] ?? 0775);
     }
 };
 
@@ -81,29 +105,6 @@ $ensureFolderIsReadable = function($path, $writableToo = false) {
         exit($realPath . ' isn\'t writable by PHP. Please fix that.' . PHP_EOL);
     }
 };
-
-// Determine the paths
-// -----------------------------------------------------------------------------
-
-// Set the vendor path. By default assume that it's 4 levels up from here
-$vendorPath = $findConfigPath('CRAFT_VENDOR_PATH', 'vendorPath') ?: dirname(__DIR__, 3);
-
-// Set the "project root" path that contains config/, storage/, etc. By default assume that it's up a level from vendor/.
-$rootPath = $findConfigPath('CRAFT_BASE_PATH', 'basePath') ?: dirname($vendorPath);
-
-// By default the remaining directories will be in the base directory
-$configPath = $findConfigPath('CRAFT_CONFIG_PATH', 'configPath') ?: $rootPath . DIRECTORY_SEPARATOR . 'config';
-$contentMigrationsPath = $findConfigPath('CRAFT_CONTENT_MIGRATIONS_PATH', 'contentMigrationsPath') ?: $rootPath . DIRECTORY_SEPARATOR . 'migrations';
-$storagePath = $findConfigPath('CRAFT_STORAGE_PATH', 'storagePath') ?: $rootPath . DIRECTORY_SEPARATOR . 'storage';
-$templatesPath = $findConfigPath('CRAFT_TEMPLATES_PATH', 'templatesPath') ?: $rootPath . DIRECTORY_SEPARATOR . 'templates';
-$translationsPath = $findConfigPath('CRAFT_TRANSLATIONS_PATH', 'translationsPath') ?: $rootPath . DIRECTORY_SEPARATOR . 'translations';
-$testsPath = $findConfigPath('CRAFT_TESTS_PATH', 'testsPath') ?: $rootPath . DIRECTORY_SEPARATOR . 'tests';
-
-// Set the environment
-$environment = $findConfig('CRAFT_ENVIRONMENT', 'env') ?: ($_SERVER['SERVER_NAME'] ?? null);
-
-// Validate the paths
-// -----------------------------------------------------------------------------
 
 if (!defined('CRAFT_LICENSE_KEY') && !App::isEphemeral()) {
     // Validate permissions on the license key file path (default config/) and storage/
@@ -164,19 +165,10 @@ if (!defined('CRAFT_LOG_PHP_ERRORS') || CRAFT_LOG_PHP_ERRORS) {
 
 error_reporting(E_ALL & ~E_DEPRECATED & ~E_USER_DEPRECATED);
 
-// Load the general config
-// -----------------------------------------------------------------------------
-
-$configService = new Config();
-$configService->env = $environment;
-$configService->configDir = $configPath;
-$configService->appDefaultsDir = dirname(__DIR__) . DIRECTORY_SEPARATOR . 'src' . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . 'defaults';
-$generalConfig = $configService->getConfigFromFile('general');
-
 // Determine if Craft is running in Dev Mode
 // -----------------------------------------------------------------------------
 
-$devMode = ArrayHelper::getValue($generalConfig, 'devMode', false);
+$devMode = $generalConfig['devMode'] ?? false;
 
 if ($devMode) {
     ini_set('display_errors', 1);

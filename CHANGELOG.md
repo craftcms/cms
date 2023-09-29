@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Fixed a bug where the `defaultDirMode` config setting wasn’t being respected when the `storage/runtime/` and `storage/logs/` folders were created. ([#13756](https://github.com/craftcms/cms/issues/13756))
 - Fixed an RCE vulnerability.
 
 ## 3.9.4 - 2023-09-26
