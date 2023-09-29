@@ -623,7 +623,12 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
     _onUpdateElements: function (append, $newElements) {
       this.removeListener(this.$elements, 'keydown');
       this.addListener(this.$elements, 'keydown', this._onKeyDown.bind(this));
-      this.view.elementSelect.on('focusItem', this._onElementFocus.bind(this));
+      if (this.view.elementSelect) {
+        this.view.elementSelect.on(
+          'focusItem',
+          this._onElementFocus.bind(this)
+        );
+      }
 
       this.$listedFolders = $newElements.find(
         '.element[data-is-folder][data-folder-name]'
@@ -688,7 +693,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
       if (ev.keyCode === Garnish.SPACE_KEY && ev.shiftKey) {
         if (Craft.PreviewFileModal.openInstance) {
           Craft.PreviewFileModal.openInstance.selfDestruct();
-        } else {
+        } else if (this.view.elementSelect) {
           var $element = this.view.elementSelect.$focusedItem.find('.element');
 
           if ($element.length) {
