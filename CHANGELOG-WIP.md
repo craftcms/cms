@@ -53,7 +53,6 @@
 - Slugs are no longer required on elements that don’t have a URI format.
 - Element types’ `fieldLayouts()` and `defineFieldLayouts()` methods’ `$source` arguments must now accept `null` values.
 - All element types can now support eager-loading paths prefixed with a field layout provider’s handle (e.g. `myEntryType:myField`), by implementing `craft\base\FieldLayoutProviderInterface` on the field layout provider class, and ensuring that `defineFieldLayouts()` is returning field layouts via their providers.
-- The control panel now defines new CSS variables for orange, green, and violet colors. Existing color palette CSS variables have been updated to match the Tailwind 3 color palette.
 - All core element query param methods now return `static` instead of `self`. ([#11868](https://github.com/craftcms/cms/pull/11868))
 - Migrations that modify the project config no longer need to worry about whether the same changes were already applied to the incoming project config YAML files.
 - Selectize menus no longer apply special styling to options with the value `new`. The `_includes/forms/selectize.twig` control panel template should be used instead (or `craft\helpers\Cp::selectizeHtml()`/`selectizeFieldHtml()`), which will append an styled “Add” option when `addOptionFn` and `addOptionLabel` settings are passed. ([#11946](https://github.com/craftcms/cms/issues/11946))
@@ -176,7 +175,7 @@
 - Added `craft\services\ProjectConfig::writeYamlFiles()`.
 - Added `craft\web\twig\variables\Cp::getEntryTypeOptions()`.
 - All of the `craft\services\Sections` members have been moved into `craft\services\Entries`.
-- Renamed `craft\base\BlockElementInterface` to `NestedElementInterface`, and added a `getField()` method to it.
+- Renamed `craft\base\BlockElementInterface` to `NestedElementInterface`, and added the `getField()`, `getSortOrder()`, and `setOwner()` methods to it. 
 - Renamed `craft\base\Element::EVENT_SET_TABLE_ATTRIBUTE_HTML` to `EVENT_DEFINE_ATTRIBUTE_HTML`.
 - Renamed `craft\base\Element::getHasCheckeredThumb()` to `hasCheckeredThumb()` and made it protected.
 - Renamed `craft\base\Element::getHasRoundedThumb()` to `hasRoundedThumb()` and made it protected.
@@ -198,14 +197,14 @@
 - Renamed `craft\web\CpScreenResponseBehavior::$sidebar()` and `sidebar()` to `$metaSidebarHtml` and `metaSidebarHtml()`. ([#13037](https://github.com/craftcms/cms/pull/13037))
 - `craft\base\ConfigurableComponent::getSettings()` now converts backed enum cases to their values.
 - `craft\base\Element::getCpEditUrl()` now returns a URL to `edit/<ID>` if `cpEditUrl()` returns `null`.
-- `craft\base\ElementInterface::findSource()` no longer need to specify a default value for the `context` argument.
+- `craft\base\ElementInterface::findSource()` no longer needs to specify a default value for the `context` argument.
 - `craft\base\ElementInterface::getAncestors()`, `getDescendants()`, `getChildren()`, and `getSiblings()` now have `ElementQueryInterface|ElementCollection` return types, rather than `ElementQueryInterface|Collection`.
 - `craft\base\ElementInterface::getEagerLoadedElementCount()` can now return `null` for counts that haven’t been eager-loaded yet.
 - `craft\base\ElementInterface::getEagerLoadedElements` now has an `ElementCollection|null` return type, rather than `Collection|null`.
 - `craft\base\ElementInterface::indexHtml()`’ `$showCheckboxes` argument is now `$selectable`, and it now has a `$sortable` argument.
-- `craft\base\ElementInterface::setParent()` no longer need to specify a default value for the `parent` argument.
-- `craft\base\ElementInterface::setRevisionCreatorId()` no longer need to specify a default value for the `creatorId` argument.
-- `craft\base\ElementInterface::setRevisionNotes()` no longer need to specify a default value for the `notes` argument.
+- `craft\base\ElementInterface::setParent()` no longer needs to specify a default value for the `parent` argument.
+- `craft\base\ElementInterface::setRevisionCreatorId()` no longer needs to specify a default value for the `creatorId` argument.
+- `craft\base\ElementInterface::setRevisionNotes()` no longer needs to specify a default value for the `notes` argument.
 - `craft\base\Field::inputHtml()` now has a `$default` argument.
 - `craft\base\FieldInterface::getIsTranslatable()`, `getTranslationDescription()`, `getInputHtml()`, `normalizeValue()`, `normalizeValueFromRequest()`, and `serializeValue()` no longer need to specify a default value for the `$element` argument.
 - `craft\db\Connection::getSupportsMb4()` is now dynamic for MySQL installs, based on whether the `elements_sites` table has an `mb4` charset.
