@@ -31,6 +31,7 @@
 - Matrix fields now have “Entry URI Format” and “Template” settings for each site.
 - Matrix fields now have a “View Mode” setting, which can be used to have nested entries display within an element index, rather than as inline blocks.
 - The address field layout is now accessed via **Settings** → **Addresses**.
+- Volumes now have a “Subpath” setting, and can reuse filesystems so long as the subpaths don’t overlap. ([#11044](https://github.com/craftcms/cms/discussions/11044))
 - Added support for defining custom locale aliases, via a new `localeAliases` config setting. ([#12705](https://github.com/craftcms/cms/pull/12705))
 - Removed the concept of field groups.
 - `entrify/*` commands now ask if an entry type already exists for the section.
@@ -74,7 +75,6 @@
 - Added `craft\base\ElementTrait::$eagerLoadInfo`.
 - Added `craft\base\ElementTrait::$elementQueryResult`.
 - Added `craft\base\ElementTrait::$forceSave`.
-- Added `craft\base\InlineEditableFieldInterface`.
 - Added `craft\base\Field::valueSql()`.
 - Added `craft\base\FieldInterface::dbType()`, which defines the type(s) of values the field will store in the `elements_sites.content` column (if any).
 - Added `craft\base\FieldInterface::getValueSql()`.
@@ -83,6 +83,7 @@
 - Added `craft\base\FieldLayoutElement::isMultiInstance()`.
 - Added `craft\base\FieldLayoutProviderInterface::getHandle()`.
 - Added `craft\base\FieldTrait::$layoutElement`.
+- Added `craft\base\InlineEditableFieldInterface`.
 - Added `craft\base\NestedElementInterface`, which should be implemented by element types which could be nested by other elements.
 - Added `craft\base\ThumbableFieldInterface`.
 - Added `craft\base\conditions\ConditionInterface::createConditionRule()`.
@@ -163,7 +164,10 @@
 - Added `craft\models\FieldLayout::getElementByUid()`.
 - Added `craft\models\FieldLayout::getFieldById()`.
 - Added `craft\models\FieldLayout::getThumbField()`.
+- Added `craft\models\FsListing::getAdjustedUri()`.
 - Added `craft\models\Section::getCpEditUrl()`.
+- Added `craft\models\Volume::getSubpath()`.
+- Added `craft\models\Volume::setSubpath()`.
 - Added `craft\services\Entries::refreshEntryTypes()`.
 - Added `craft\services\Fields::$fieldContext`, which replaces `craft\services\Content::$fieldContext`.
 - Added `craft\services\Fields::getAllLayouts()`.
@@ -219,6 +223,9 @@
 - `craft\i18n\I18N::getPrimarySiteLocale()` is now deprecated. `craft\models\Site::getLocale()` should be used instead.
 - `craft\i18n\I18N::getPrimarySiteLocaleId()` is now deprecated. `craft\models\Site::$language` should be used instead.
 - `craft\models\Section::$propagationMethod` now has a type of `craft\enums\PropagationMethod`.
+- `craft\services\AssetIndexer::indexFileByListing()` now has a `$volume` argument in place of `$volumeId`.
+- `craft\services\AssetIndexer::indexFolderByListing()` now has a `$volume` argument in place of `$volumeId`.
+- `craft\services\AssetIndexer::storeIndexList()` now has a `$volume` argument in place of `$volumeId`.
 - `craft\services\Elements::duplicateElement()` no longer has a `$trackDuplication` argument.
 - `craft\services\Plugins::getPluginLicenseKeyStatus()` now returns a `craft\enums\LicenseKeyStatus` case.
 - `craft\services\ProjectConfig::saveModifiedConfigData()` no longer has a `$writeExternalConfig` argument, and no longer writes out updated project config YAML files.
