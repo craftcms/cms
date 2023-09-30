@@ -43,7 +43,7 @@
     instructions: 'Where assets should be stored on the filesystem.'|t('app'),
     id: 'subpath',
     name: 'subpath',
-    value: volume.subpath,
+    value: volume.getSubpath(false),
     errors: volume.getErrors('subpath'),
 }) }}
 

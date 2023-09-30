@@ -18,7 +18,6 @@ use craft\elements\Asset;
 use craft\fs\MissingFs;
 use craft\helpers\App;
 use craft\helpers\ArrayHelper;
-use craft\helpers\FileHelper;
 use craft\helpers\StringHelper;
 use craft\records\Volume as VolumeRecord;
 use craft\validators\HandleValidator;
@@ -85,9 +84,11 @@ class Volume extends Model implements BaseFsInterface, FieldLayoutProviderInterf
 
     /**
      * @var string The subpath to use in the filesystem for uploading files to this volume
+     * @see getSubpath()
+     * @see setSubpath()
      * @since 5.0.0
      */
-    public string $subpath = '';
+    private string $_subpath = '';
 
     /**
      * @var FsInterface|null
@@ -399,7 +400,7 @@ class Volume extends Model implements BaseFsInterface, FieldLayoutProviderInterf
             'name' => $this->name,
             'handle' => $this->handle,
             'fs' => $this->_fsHandle,
-            'subpath' => $this->subpath,
+            'subpath' => $this->_subpath,
             'transformFs' => $this->_transformFsHandle,
             'transformSubpath' => $this->transformSubpath,
             'titleTranslationMethod' => $this->titleTranslationMethod,
@@ -424,24 +425,34 @@ class Volume extends Model implements BaseFsInterface, FieldLayoutProviderInterf
     public function getRootUrl(): ?string
     {
         $rootUrl = $this->getFs()->getRootUrl() ?? '';
-        $subpath = $this->getSubpath();
-        return ($rootUrl !== '' ? StringHelper::ensureRight($rootUrl, '/') : '') .
-            ($subpath !== '' ? StringHelper::ensureRight($subpath, '/') : '');
+        return ($rootUrl !== '' ? StringHelper::ensureRight($rootUrl, '/') : '') . $this->getSubpath();
     }
 
     /**
-     * Returns the volume’s subpath, including a trailing slash.
+     * Returns the volume’s subpath.
      *
-     * If volume has a subpath set, then the base path starts with it.
-     * This is then used in [[\craft\models\VolumeFolder::getPath()]]
-     * to get the actual path to the folder.
-     *
+     * @param bool $ensureTrailing Whether to include a trailing slash
+     * @return string
      * @since 5.0.0
      */
-    public function getSubpath(): string
+    public function getSubpath(bool $ensureTrailing = true): string
     {
-        $path = FileHelper::normalizePath(App::parseEnv($this->subpath));
-        return $path ? $path . DIRECTORY_SEPARATOR : $path;
+        if ($ensureTrailing) {
+            return ($this->_subpath !== '' ? StringHelper::ensureRight($this->_subpath, '/') : '');
+        }
+
+        return $this->_subpath;
+    }
+
+    /**
+     * Sets the volume’s subpath, ensuring it's a string.
+     *
+     * @param string|null $subpath
+     * @return void
+     */
+    public function setSubpath(?string $subpath): void
+    {
+        $this->_subpath = $subpath ?? '';
     }
 
     /**
