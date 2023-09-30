@@ -2291,10 +2291,11 @@ JS;
      */
     public function getImageTransformSourcePath(): string
     {
-        $fs = $this->getVolume()->getFs();
+        $volume = $this->getVolume();
+        $fs = $volume->getFs();
 
         if ($fs instanceof LocalFsInterface) {
-            return FileHelper::normalizePath($fs->getRootPath() . DIRECTORY_SEPARATOR . $this->getPath());
+            return FileHelper::normalizePath($fs->getRootPath() . DIRECTORY_SEPARATOR . $volume->getSubpath() . $this->getPath());
         }
 
         return Craft::$app->getPath()->getAssetSourcesPath() . DIRECTORY_SEPARATOR . $this->id . '.' . $this->getExtension();
