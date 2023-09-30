@@ -389,6 +389,8 @@ class NestedElementManager extends Component
                     $this->ownerIdAttribute => $owner->id,
                     'siteId' => $elementType::isLocalized() ? $owner->siteId : null,
                 ]),
+                'ownerIdParam' => $this->ownerIdParam,
+                'ownerIdAttribute' => $this->ownerIdAttribute,
             ];
 
             if (!empty($config['createAttributes'])) {
