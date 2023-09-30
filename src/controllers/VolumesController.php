@@ -98,7 +98,7 @@ class VolumesController extends Controller
         $allVolumes = $volumesServices->getAllVolumes();
         /** @var Collection<string> $takenFsHandles */
         $takenFsHandles = Collection::make($allVolumes)
-            ->filter(fn(Volume $volume) => !$volume->subpath)
+            ->filter(fn(Volume $volume) => !$volume->getSubpath())
             ->map(fn(Volume $volume) => $volume->getFsHandle());
         $fsOptions = Collection::make(Craft::$app->getFs()->getAllFilesystems())
             ->filter(fn(FsInterface $fs) => $fs->handle === $fsHandle || !$takenFsHandles->contains($fs->handle))
