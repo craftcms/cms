@@ -86,7 +86,6 @@ class Volume extends Model implements BaseFsInterface, FieldLayoutProviderInterf
      * @var string The subpath to use in the filesystem for uploading files to this volume
      * @see getSubpath()
      * @see setSubpath()
-     * @since 5.0.0
      */
     private string $_subpath = '';
 
