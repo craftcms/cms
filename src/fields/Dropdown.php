@@ -69,6 +69,19 @@ class Dropdown extends BaseOptionsField implements SortableFieldInterface, Inlin
      */
     protected function inputHtml(mixed $value, ?ElementInterface $element, bool $inline): string
     {
+        return $this->inputHtmlInternal($value, $element, false);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getStaticHtml(mixed $value, ?ElementInterface $element = null): string
+    {
+        return $this->inputHtmlInternal($value, $element, true);
+    }
+
+    private function inputHtmlInternal(mixed $value, ?ElementInterface $element, bool $static): string
+    {
         /** @var SingleOptionFieldData $value */
         $options = $this->translatedOptions(true, $value, $element);
 
@@ -81,7 +94,9 @@ class Dropdown extends BaseOptionsField implements SortableFieldInterface, Inlin
         }
 
         if (!$value->valid) {
-            Craft::$app->getView()->setInitialDeltaValue($this->handle, $this->encodeValue($value->value));
+            if (!$static) {
+                Craft::$app->getView()->setInitialDeltaValue($this->handle, $this->encodeValue($value->value));
+            }
             $default = $this->defaultValue();
 
             if ($default !== null) {
@@ -107,6 +122,7 @@ class Dropdown extends BaseOptionsField implements SortableFieldInterface, Inlin
             'name' => $this->handle,
             'value' => $encValue,
             'options' => $options,
+            'disabled' => $static,
         ]);
     }
 

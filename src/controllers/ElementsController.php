@@ -417,6 +417,7 @@ class ElementsController extends Controller
                         'canCreateDrafts' => $canCreateDrafts,
                         'canEditMultipleSites' => $canEditMultipleSites,
                         'canSaveCanonical' => $canSaveCanonical,
+                        'elementId' => $element->id,
                         'canonicalId' => $canonical->id,
                         'draftId' => $element->draftId,
                         'draftName' => $isDraft ? $element->draftName : null,
@@ -1309,6 +1310,7 @@ JS, [
 
             $data = [
                 'canonicalId' => $element->getCanonicalId(),
+                'elementId' => $element->id,
                 'draftId' => $element->draftId,
                 'timestamp' => Craft::$app->getFormatter()->asTimestamp($element->dateUpdated, 'short', true),
                 'creator' => $creator?->getName(),

@@ -87,6 +87,28 @@ Craft.EmbeddedElementIndex = Garnish.Base.extend(
           });
         }
       }
+
+      setTimeout(() => {
+        this.elementEditor = this.$container
+          .closest('form')
+          .data('elementEditor');
+        if (this.elementEditor) {
+          this.elementEditor.on('createProvisionalDraft', () => {
+            this.elementIndex.settings.criteria[this.settings.ownerIdParam] =
+              this.elementEditor.settings.elementId;
+            this.elementIndex.updateElements();
+
+            if (
+              this.settings.baseCreateAttributes &&
+              this.settings.baseCreateAttributes[this.settings.ownerIdAttribute]
+            ) {
+              this.settings.baseCreateAttributes[
+                this.settings.ownerIdAttribute
+              ] = this.elementEditor.settings.elementId;
+            }
+          });
+        }
+      }, 100);
     },
 
     onBeforeUpdateElements: function () {
@@ -128,14 +150,26 @@ Craft.EmbeddedElementIndex = Garnish.Base.extend(
     createElement: function (attributes) {
       this.$createBtn.addClass('loading');
 
+      attributes = Object.assign(
+        {
+          elementType: this.elementType,
+        },
+        this.settings.baseCreateAttributes,
+        attributes
+      );
+
+      // if (
+      //   this.settings.ownerIdAttribute &&
+      //   attributes[this.settings.ownerIdAttribute] &&
+      //   this.elementEditor &&
+      //   this.elementEditor.settings.canonicalId == attributes[this.settings.ownerIdAttribute] &&
+      //   this.elementEditor.settings.elementId != attributes[this.settings.ownerIdAttribute]
+      // ) {
+      //   attributes[this.settings.ownerIdAttribute] = elementEditor.settings.elementId;
+      // }
+
       Craft.sendActionRequest('POST', 'elements/create', {
-        data: Object.assign(
-          {
-            elementType: this.elementType,
-          },
-          this.settings.baseCreateAttributes,
-          attributes
-        ),
+        data: attributes,
       })
         .then(({data}) => {
           const slideout = Craft.createElementEditor(this.elementType, {
@@ -173,6 +207,8 @@ Craft.EmbeddedElementIndex = Garnish.Base.extend(
       maxElements: null,
       createButtonLabel: Craft.t('app', 'Create'),
       baseCreateAttributes: null,
+      ownerIdParam: null,
+      ownerIdAttribute: null,
       createAttributes: null,
     },
   }
