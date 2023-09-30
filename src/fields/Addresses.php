@@ -572,9 +572,18 @@ class Addresses extends Field implements
         foreach ($value->all() as $address) {
             $addressId = $address->id ?? 'new' . ++$new;
             $serialized[$addressId] = [
-                'type' => $address->getType()->handle,
+                'countryCode' => $address->countryCode,
+                'administrativeArea' => $address->administrativeArea,
+                'locality' => $address->locality,
+                'dependentLocality' => $address->dependentLocality,
+                'postalCode' => $address->postalCode,
+                'sortingCode' => $address->sortingCode,
+                'addressLine1' => $address->addressLine1,
+                'addressLine2' => $address->addressLine2,
+                'organization' => $address->organization,
+                'organizationTaxId' => $address->organizationTaxId,
+                'fullName' => $address->fullName,
                 'enabled' => $address->enabled,
-                'collapsed' => $address->collapsed,
                 'fields' => $address->getSerializedFieldValues(),
             ];
         }
