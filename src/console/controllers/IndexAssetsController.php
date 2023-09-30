@@ -152,7 +152,7 @@ class IndexAssetsController extends Controller
             $this->stdout($volume->name, Console::FG_CYAN);
             $this->stdout(' ...' . PHP_EOL, Console::FG_YELLOW);
             $fileList = $assetIndexer->getIndexListOnVolume($volume, $path);
-            $fsSubpath = $volume->getFsSubpath();
+            $fsSubpath = $volume->getSubpath();
 
             $index = 0;
             /** @var MissingAssetException[] $missingRecords */

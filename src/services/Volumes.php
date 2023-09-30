@@ -335,7 +335,7 @@ class Volumes extends Component
             $volumeRecord->name = $data['name'];
             $volumeRecord->handle = $data['handle'];
             $volumeRecord->fs = $data['fs'] ?? null;
-            $volumeRecord->fsSubpath = $data['fsSubpath'] ?? null;
+            $volumeRecord->subpath = $data['subpath'] ?? null;
             $volumeRecord->transformFs = $data['transformFs'] ?? null;
             $volumeRecord->transformSubpath = $data['transformSubpath'] ?? null;
             $volumeRecord->sortOrder = $data['sortOrder'];
@@ -598,7 +598,7 @@ class Volumes extends Component
         if ($db->columnExists(Table::VOLUMES, 'fs')) {
             $query->addSelect([
                 'fs',
-                'fsSubpath',
+                'subpath',
                 'transformFs',
                 'transformSubpath',
             ]);

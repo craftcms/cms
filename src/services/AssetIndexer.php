@@ -68,7 +68,7 @@ class AssetIndexer extends Component
             return;
         }
 
-        $fsSubpath = $volume->getFsSubpath();
+        $fsSubpath = $volume->getSubpath();
         foreach ($fileList as $listing) {
             $path = $listing->getAdjustedUri($fsSubpath);
             $segments = preg_split('/\\\\|\//', $path);
@@ -268,7 +268,7 @@ class AssetIndexer extends Component
     {
         $attributes = ['volumeId', 'sessionId', 'uri', 'size', 'timestamp', 'isDir', 'inProgress', 'completed'];
         $values = [];
-        $fsSubpath = $volume->getFsSubpath();
+        $fsSubpath = $volume->getSubpath();
 
         /** @var FsListing $volumeListing */
         foreach ($indexList as $volumeListing) {
@@ -571,7 +571,7 @@ class AssetIndexer extends Component
         $indexEntry = new AssetIndexData([
             'volumeId' => $volume->id,
             'sessionId' => $sessionId,
-            'uri' => $listing->getAdjustedUri($volume->getFsSubpath()),
+            'uri' => $listing->getAdjustedUri($volume->getSubpath()),
             'size' => $listing->getFileSize(),
             'timestamp' => $listing->getDateModified(),
             'isDir' => $listing->getIsDir(),
@@ -599,7 +599,7 @@ class AssetIndexer extends Component
         $indexEntry = new AssetIndexData([
             'volumeId' => $volume->id,
             'sessionId' => $sessionId,
-            'uri' => $listing->getAdjustedUri($volume->getFsSubpath()),
+            'uri' => $listing->getAdjustedUri($volume->getSubpath()),
             'size' => $listing->getFileSize(),
             'timestamp' => $listing->getDateModified(),
             'isDir' => $listing->getIsDir(),

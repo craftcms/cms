@@ -120,6 +120,7 @@ class FsListing extends Model
      * @param string $string
      * @param string $type Either 'sub' or 'add'
      * @return string
+     * @since 5.0.0
      */
     public function getAdjustedUri(string $string = '', string $type = 'sub'): string
     {

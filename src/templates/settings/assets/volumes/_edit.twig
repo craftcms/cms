@@ -39,12 +39,12 @@
 }) }}
 
 {{ forms.textField({
-    label: 'Filesystem Subpath'|t('app'),
+    label: 'Subpath'|t('app'),
     instructions: 'Where assets should be stored on the filesystem.'|t('app'),
-    id: 'fsSubpath',
-    name: 'fsSubpath',
-    value: volume.fsSubpath,
-    errors: volume.getErrors('fsSubpath'),
+    id: 'subpath',
+    name: 'subpath',
+    value: volume.subpath,
+    errors: volume.getErrors('subpath'),
 }) }}
 
 {{ forms.fsField({
