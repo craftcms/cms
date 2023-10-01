@@ -3206,7 +3206,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
         if (action.trigger) {
           const $trigger = $('<div/>', {
-            id: `${Craft.formatInputId(action.type)}-actiontrigger`,
+            id: `${this.namespaceId(action.type)}-actiontrigger`,
           }).append(action.trigger);
           $trigger.find('.btn').addClass('secondary');
 
@@ -3429,7 +3429,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
           $('<li/>')
             .append(
               $('<a/>', {
-                id: `${Craft.formatInputId(action.type)}-actiontrigger`,
+                id: `${this.namespaceId(action.type)}-actiontrigger`,
                 class: destructive ? 'error' : null,
                 data: {action},
                 text: action.name,
