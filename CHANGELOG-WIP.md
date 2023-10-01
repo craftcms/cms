@@ -156,6 +156,8 @@
 - Added `craft\helpers\ElementHelper::addElementEditorUrlParams()`.
 - Added `craft\helpers\ElementHelper::elementEditorUrl()`.
 - Added `craft\helpers\Gql::getSchemaContainedSections()`.
+- Added `craft\helpers\Json::detectIndent()`.
+- Added `craft\helpers\Json::encodeToFile()`.
 - Added `craft\helpers\ProjectConfig::ensureAllEntryTypesProcessed()`.
 - Added `craft\i18n\Locale::$aliasOf`.
 - Added `craft\i18n\Locale::setDisplayName()`.

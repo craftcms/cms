@@ -61,4 +61,23 @@ class JsonHelperTest extends TestCase
             [false, '{"foo":true'],
         ];
     }
+
+    /**
+     * @dataProvider detectIndentDataProvider
+     * @param string $expected
+     * @param string $json
+     */
+    public function testDetectIndent(string $expected, string $json): void
+    {
+        self::assertSame($expected, Json::detectIndent($json));
+    }
+
+    public static function detectIndentDataProvider(): array
+    {
+        return [
+            [' ', "{\n \"foo\": true\n}"],
+            ["\t", "{\n\t\"foo\": true\n}"],
+            ['  ', '{}'],
+        ];
+    }
 }

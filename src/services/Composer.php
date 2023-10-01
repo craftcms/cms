@@ -85,7 +85,7 @@ class Composer extends Component
     public function getConfig(): array
     {
         try {
-            return Json::decode(file_get_contents($this->getJsonPath()));
+            return Json::decodeFromFile($this->getJsonPath());
         } catch (Throwable) {
             return [];
         }
@@ -238,7 +238,7 @@ class Composer extends Component
             $config['repositories'][] = $repoConfig;
         }
 
-        $this->writeJson($jsonPath, $config);
+        Json::encodeToFile($jsonPath, $config);
     }
 
     /**
@@ -278,7 +278,7 @@ class Composer extends Component
             $config['config']['allow-plugins'][$plugin] = true;
         }
 
-        $this->writeJson($jsonPath, $config);
+        Json::encodeToFile($jsonPath, $config);
     }
 
     /**
@@ -307,7 +307,7 @@ class Composer extends Component
             ksort($config['require']);
         }
 
-        $this->writeJson($jsonPath, $config);
+        Json::encodeToFile($jsonPath, $config);
     }
 
     /**
@@ -352,27 +352,5 @@ class Composer extends Component
                 ],
             ], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT));
         }
-    }
-
-    private function writeJson(string $path, array $value): void
-    {
-        $json = Json::encode($value, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
-
-        $indent = $this->detectJsonIndent(file_get_contents($path));
-        if ($indent !== '    ') {
-            $json = preg_replace_callback('/^ {4,}/m', function(array $match) use ($indent) {
-                return strtr($match[0], ['    ' => $indent]);
-            }, $json);
-        }
-
-        FileHelper::writeToFile($path, $json);
-    }
-
-    private function detectJsonIndent(string $json): string
-    {
-        if (!preg_match('/^\s*\{\s*[\r\n]+([ \t]+)"/', $json, $match)) {
-            return '  ';
-        }
-        return $match[1];
     }
 }
