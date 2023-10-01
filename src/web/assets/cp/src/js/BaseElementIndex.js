@@ -3196,7 +3196,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       });
     },
 
-    _createTriggers: function () {
+    _createTriggers: async function () {
       this._$triggers = $();
       const safeMenuActions = [];
       const destructiveMenuActions = [];
@@ -3283,8 +3283,8 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       }
 
       this._$triggers.appendTo(this.$actionsContainer);
-      Craft.appendHeadHtml(this.actionsHeadHtml);
-      Craft.appendBodyHtml(this.actionsBodyHtml);
+      await Craft.appendHeadHtml(this.actionsHeadHtml);
+      await Craft.appendBodyHtml(this.actionsBodyHtml);
 
       Craft.initUiElements(this._$triggers);
 
