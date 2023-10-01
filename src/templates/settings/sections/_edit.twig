@@ -27,15 +27,6 @@
 {% set headlessMode = craft.app.config.general.headlessMode %}
 
 
-{% block submitButton %}
-    {% if section.id %}
-        {{ parent() }}
-    {% else %}
-        <button type="submit" class="btn submit">{{ 'Save and edit entry types'|t('app') }}</button>
-    {% endif %}
-{% endblock %}
-
-
 {% block content %}
     {{ actionInput('sections/save-section') }}
     {{ redirectInput('settings/sections') }}
