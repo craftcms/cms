@@ -213,7 +213,7 @@
 - `craft\base\ElementInterface::setParent()` no longer needs to specify a default value for the `parent` argument.
 - `craft\base\ElementInterface::setRevisionCreatorId()` no longer needs to specify a default value for the `creatorId` argument.
 - `craft\base\ElementInterface::setRevisionNotes()` no longer needs to specify a default value for the `notes` argument.
-- `craft\base\Field::inputHtml()` now has a `$default` argument.
+- `craft\base\Field::inputHtml()` now has an `$inline` argument.
 - `craft\base\FieldInterface::getIsTranslatable()`, `getTranslationDescription()`, `getInputHtml()`, `normalizeValue()`, `normalizeValueFromRequest()`, and `serializeValue()` no longer need to specify a default value for the `$element` argument.
 - `craft\db\Connection::getSupportsMb4()` is now dynamic for MySQL installs, based on whether the `elements_sites` table has an `mb4` charset.
 - `craft\elemens\db\ElementQueryInterface::collect()` now has an `ElementCollection` return type, rather than `Collection`.
