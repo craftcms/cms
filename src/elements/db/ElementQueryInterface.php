@@ -1440,6 +1440,15 @@ interface ElementQueryInterface extends QueryInterface, Arrayable
     // -------------------------------------------------------------------------
 
     /**
+     * Prepares the query for lazy eager loading.
+     *
+     * @param string $handle The eager loading handle the query is for
+     * @param ElementInterface $sourceElement One of the source elements the query is fetching elements for
+     * @since 5.0.0
+     */
+    public function prepForEagerLoading(string $handle, ElementInterface $sourceElement): static;
+
+    /**
      * Returns whether the query results were already eager loaded by the query's source element.
      *
      * @param string|null $alias The eager-loading alias to check

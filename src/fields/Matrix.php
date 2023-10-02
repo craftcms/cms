@@ -692,10 +692,8 @@ class Matrix extends Field implements
                 },
             ], true));
 
-            // Set the query up for lazy eager loading
-            $query->eagerLoadSourceElement = $owner;
-            $providerHandle = $owner->getFieldLayout()?->provider?->getHandle();
-            $query->eagerLoadHandle = $providerHandle ? "$providerHandle:$this->handle" : $this->handle;
+            // Prepare the query for lazy eager loading
+            $query->prepForEagerLoading($this->handle, $owner);
         } else {
             $query->id = false;
         }

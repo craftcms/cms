@@ -122,9 +122,11 @@
 - Added `craft\elements\db\EagerLoadPlan::$lazy`.
 - Added `craft\elements\db\ElementQuery::$eagerLoadAlias`.
 - Added `craft\elements\db\ElementQuery::$eagerLoadHandle`.
-- Added `craft\elements\db\ElementQuery::wasCountEagerLoaded()`.
-- Added `craft\elements\db\ElementQuery::wasEagerLoaded()`.
-- Added `craft\elements\db\ElementQueryInterface::fieldLayouts()`
+- Added `craft\elements\db\ElementQueryInterface::eagerly()`.
+- Added `craft\elements\db\ElementQueryInterface::fieldLayouts()`.
+- Added `craft\elements\db\ElementQueryInterface::prepForEagerLoading()`.
+- Added `craft\elements\db\ElementQueryInterface::wasCountEagerLoaded()`.
+- Added `craft\elements\db\ElementQueryInterface::wasEagerLoaded()`.
 - Added `craft\enums\AttributeStatus`.
 - Added `craft\enums\ElementIndexViewMode`.
 - Added `craft\enums\PropagationMethod`.
