@@ -845,6 +845,15 @@ class Request extends \yii\web\Request
     }
 
     /**
+     * @inheritdoc
+     */
+    public function setBodyParams($values)
+    {
+        parent::setBodyParams($values);
+        $this->_setBodyParams = false;
+    }
+
+    /**
      * Returns the named request body parameter value.
      *
      * If the parameter does not exist, the second argument passed to this method will be returned.
