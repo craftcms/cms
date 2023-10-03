@@ -598,10 +598,12 @@ class Volumes extends Component
         if ($db->columnExists(Table::VOLUMES, 'fs')) {
             $query->addSelect([
                 'fs',
-                'subpath',
                 'transformFs',
                 'transformSubpath',
             ]);
+        }
+        if ($db->columnExists(Table::VOLUMES, 'subpath')) {
+            $query->addSelect(['subpath']);
         }
 
         return $query;
