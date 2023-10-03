@@ -79,11 +79,11 @@
         (site.uid): {
             heading: site.name|t('site')|e,
             uriFormat: {
-                value: siteSettings ? siteSettings.uriFormat,
+                value: siteSettings.uriFormat ?? null,
                 hasErrors: siteSettings.errors.uriFormat is defined,
             },
             template: not headlessMode ? {
-                value: siteSettings ? siteSettings.template,
+                value: siteSettings.template ?? null,
                 hasErrors: siteSettings.errors.template is defined,
             },
         }|filter
