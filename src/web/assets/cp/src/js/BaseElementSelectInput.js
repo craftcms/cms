@@ -164,7 +164,7 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
               case 'large':
                 return '> .element > .chip-content > .chip-actions > .move';
               case 'cards':
-                return '> .element > .card-actions > .move';
+                return '> .element > .card-actions-container > .card-actions > .move';
               default:
                 return null;
             }

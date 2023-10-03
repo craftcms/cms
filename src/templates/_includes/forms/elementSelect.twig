@@ -18,6 +18,7 @@
 {% set sortable = (not limit or limit > 1) and (sortable ?? true) %}
 {% set disabled = (disabled ?? false) ? true : false %}
 {% set maintainHierarchy = maintainHierarchy ?? false %}
+{% set registerJs = registerJs ?? true %}
 
 {% set containerAttributes = {
     id: id,
@@ -77,7 +78,7 @@
     </div>
 {% endtag %}
 
-{% if not disabled %}
+{% if not disabled and registerJs %}
     {% set jsSettings = {
         id: id|namespaceInputId,
         name: name|namespaceInputName,

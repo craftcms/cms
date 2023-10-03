@@ -279,8 +279,10 @@ Craft.AssetSelectInput = Craft.BaseElementSelectInput.extend({
       },
     })
       .then(({data}) => {
-        const html = $(data.elements[result.assetId][0]);
-        this.selectUploadedFile(Craft.getElementInfo(html));
+        const elementInfo = Craft.getElementInfo(
+          data.elements[result.assetId][0]
+        );
+        this.selectElements([elementInfo]);
 
         // Last file
         if (this.uploader.isLastUpload()) {
@@ -289,8 +291,13 @@ Craft.AssetSelectInput = Craft.BaseElementSelectInput.extend({
           this.$container.trigger('change');
         }
       })
-      .catch(({response}) => {
-        Craft.cp.displayError(response.data.message);
+      .catch((error) => {
+        if (error && error.response) {
+          Craft.cp.displayError(response.data.message);
+        } else {
+          Craft.cp.displayError();
+          throw error;
+        }
       });
 
     Craft.cp.runQueue();
