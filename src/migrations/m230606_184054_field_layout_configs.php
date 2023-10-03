@@ -27,6 +27,9 @@ class m230606_184054_field_layout_configs extends Migration
             $fieldsService->saveLayout($fieldLayout, false);
         }
 
+        $this->dropAllForeignKeysToTable('{{%fieldlayoutfields}}');
+        $this->dropAllForeignKeysToTable('{{%fieldlayouttabs}}');
+
         $this->dropTableIfExists('{{%fieldlayoutfields}}');
         $this->dropTableIfExists('{{%fieldlayouttabs}}');
 
