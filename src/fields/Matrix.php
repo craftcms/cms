@@ -443,23 +443,17 @@ class Matrix extends Field implements
     {
         $entriesService = Craft::$app->getEntries();
 
-        $this->_entryTypes = array_map(function(EntryType|string|int $entryType) use ($entriesService) {
+        $this->_entryTypes = array_filter(array_map(function(EntryType|string|int $entryType) use ($entriesService) {
             if (is_numeric($entryType)) {
                 $entryType = $entriesService->getEntryTypeById($entryType);
-                if (!$entryType) {
-                    throw new InvalidArgumentException("Invalid entry type ID: $entryType");
-                }
             } elseif (is_string($entryType)) {
                 $entryTypeUid = $entryType;
                 $entryType = $entriesService->getEntryTypeByUid($entryTypeUid);
-                if (!$entryType) {
-                    throw new InvalidArgumentException("Invalid entry type UUID: $entryTypeUid");
-                }
             } elseif (!$entryType instanceof EntryType) {
                 throw new InvalidArgumentException('Invalid entry type');
             }
             return $entryType;
-        }, $entryTypes);
+        }, $entryTypes));
     }
 
     /**
