@@ -12,6 +12,7 @@ use craft\base\ElementInterface;
 use craft\base\Field;
 use craft\base\PreviewableFieldInterface;
 use craft\base\SortableFieldInterface;
+use craft\db\mysql\Schema as MySqlSchema;
 use craft\fields\conditions\TextFieldConditionRule;
 use craft\helpers\Db;
 use craft\helpers\StringHelper;
@@ -186,11 +187,29 @@ class PlainText extends Field implements PreviewableFieldInterface, SortableFiel
             $bytes = $this->byteLimit;
         } elseif ($this->charLimit) {
             $bytes = $this->charLimit * 4;
-        } else {
-            return Schema::TYPE_TEXT;
         }
 
-        return Schema::TYPE_STRING . "($bytes)";
+        if (Craft::$app->getDb()->getIsPgsql()) {
+            if (isset($bytes)) {
+                return Schema::TYPE_STRING . "($bytes)";
+            } else {
+                return Schema::TYPE_TEXT;
+            }
+        } else {
+            if (isset($bytes)) {
+                if ($bytes <= 1020) {
+                    return Schema::TYPE_STRING . "($bytes)";
+                } elseif ($bytes <= 65535) {
+                    return Schema::TYPE_TEXT;
+                } elseif ($bytes <= 16777215) {
+                    return MySqlSchema::TYPE_MEDIUMTEXT;
+                } else {
+                    return MySqlSchema::TYPE_LONGTEXT;
+                }
+            }
+
+            return Schema::TYPE_TEXT;
+        }
     }
 
     /**
