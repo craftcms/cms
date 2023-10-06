@@ -31,11 +31,11 @@
 
 {% block actionButton %}
     {% if not currentUser.can('registerUsers') or CraftEdition != CraftPro %}
-        <button type="button" class="btn submit formsubmit" data-form="userform">{{ 'Save'|t('app') }}</button>
+        <button type="button" class="btn submit formsubmit" data-formsubmit="userform">{{ 'Save'|t('app') }}</button>
     {% else %}
         <div class="btngroup">
-            <button type="button" class="btn submit formsubmit" data-form="userform">{{ 'Save'|t('app') }}</button>
-            <button type="button" class="btn submit menubtn" data-form="userform"></button>
+            <button type="button" class="btn submit formsubmit" data-formsubmit="userform">{{ 'Save'|t('app') }}</button>
+            <button type="button" class="btn submit menubtn" data-formsubmit="userform"></button>
             <div class="menu">
                 <ul>
                     <li>
