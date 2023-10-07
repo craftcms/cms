@@ -91,6 +91,7 @@ class ResaveElements extends BaseBatchedJob
      */
     protected function processItem(mixed $item): void
     {
+//        sleep(1);
         // Make sure the element was queried with its content
         /** @var ElementInterface $item */
         if ($item::hasContent() && $item->contentId === null) {

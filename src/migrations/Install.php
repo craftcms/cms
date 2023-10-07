@@ -557,6 +557,12 @@ class Install extends Migration
             'dateFailed' => $this->dateTime(),
             'error' => $this->text(),
         ]);
+        $this->createTable(Table::QUEUEPROFILES, [
+            'key' => $this->string(),
+            'dateExecuted' => $this->dateTime()->notNull(),
+            'duration' => $this->integer()->notNull(),
+            'PRIMARY KEY([[key]], [[dateExecuted]])',
+        ]);
         $this->createTable(Table::RELATIONS, [
             'id' => $this->primaryKey(),
             'fieldId' => $this->integer()->notNull(),

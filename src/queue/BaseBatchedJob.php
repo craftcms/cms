@@ -9,6 +9,7 @@ namespace craft\queue;
 
 use Craft;
 use craft\base\Batchable;
+use craft\helpers\ArrayHelper;
 use craft\helpers\ConfigHelper;
 use craft\helpers\Queue as QueueHelper;
 use craft\i18n\Translation;
@@ -31,7 +32,7 @@ use craft\i18n\Translation;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.4.0
  */
-abstract class BaseBatchedJob extends BaseJob
+abstract class BaseBatchedJob extends BaseJob implements ProfilableJobInterface
 {
     /**
      * @var int The number of items that should be processed in a single batch
@@ -171,5 +172,15 @@ abstract class BaseBatchedJob extends BaseJob
             'index' => $this->batchIndex + 1,
             'total' => $totalBatches,
         ]);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getProfileAttributes(): array
+    {
+        $arr = ArrayHelper::toArray($this);
+        unset($arr['batchIndex'], $arr['itemOffset'], $arr['priority'], $arr['ttr']);
+        return $arr;
     }
 }
