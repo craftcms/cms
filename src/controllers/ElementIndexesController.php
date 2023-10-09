@@ -18,6 +18,7 @@ use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\exporters\Raw;
 use craft\events\ElementActionEvent;
+use craft\helpers\Component;
 use craft\helpers\ElementHelper;
 use yii\base\InvalidValueException;
 use yii\web\BadRequestHttpException;
@@ -480,7 +481,7 @@ class ElementIndexesController extends BaseElementsController
                     $criteria['draftOf'] = filter_var($criteria['draftOf'], FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE);
                 }
             }
-            Craft::configure($query, $criteria);
+            Craft::configure($query, Component::cleanseConfig($criteria));
         }
 
         // Exclude descendants of the collapsed element IDs

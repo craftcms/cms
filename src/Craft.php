@@ -16,6 +16,7 @@ use craft\helpers\FileHelper;
 use craft\helpers\StringHelper;
 use GuzzleHttp\Client;
 use yii\base\ExitException;
+use yii\base\InvalidConfigException;
 use yii\db\Expression;
 use yii\helpers\VarDumper;
 use yii\web\Request;
@@ -58,6 +59,10 @@ class Craft extends Yii
      */
     public static function createObject($type, array $params = [])
     {
+        if (is_array($type) && isset($type['__class']) && isset($type['class'])) {
+            throw new InvalidConfigException('`__class` and `class` cannot both be specified.');
+        }
+
         return parent::createObject($type, $params);
     }
 

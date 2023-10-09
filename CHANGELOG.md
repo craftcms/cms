@@ -4,7 +4,7 @@
 
 - Fixed a bug where the `defaultDirMode` config setting wasn’t being respected when the `storage/runtime/` and `storage/logs/` folders were created. ([#13756](https://github.com/craftcms/cms/issues/13756))
 - Fixed a bug where the `CRAFT_VENDOR_PATH`, `CRAFT_BASE_PATH`, `CRAFT_CONFIG_PATH`, `CRAFT_CONTENT_MIGRATIONS_PATH`, `CRAFT_STORAGE_PATH`, `CRAFT_TEMPLATES_PATH`, `CRAFT_TRANSLATIONS_PATH`, and `CRAFT_TESTS_PATH` PHP constants weren’t being respected if the directories didn’t exist.
-- Fixed an RCE vulnerability.
+- Fixed RCE vulnerabilities.
 
 ## 3.9.4 - 2023-09-26
 

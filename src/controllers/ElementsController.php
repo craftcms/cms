@@ -14,6 +14,7 @@ use craft\elements\Category;
 use craft\errors\InvalidTypeException;
 use craft\fieldlayoutelements\BaseField;
 use craft\helpers\ArrayHelper;
+use craft\helpers\Component;
 use craft\helpers\Cp;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\ElementHelper;
@@ -163,7 +164,7 @@ class ElementsController extends BaseElementsController
         }
 
         // Configure the element
-        Craft::configure($element, $params);
+        Craft::configure($element, Component::cleanseConfig($params));
         $element->setFieldValuesFromRequest($namespace . '.fields');
 
         // Now save it
@@ -385,7 +386,7 @@ class ElementsController extends BaseElementsController
         }
 
         // Populate it with any posted attributes
-        Craft::configure($element, $attributes);
+        Craft::configure($element, Component::cleanseConfig($attributes));
         $element->siteId = $siteId;
 
         return $element;

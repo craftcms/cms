@@ -12,6 +12,7 @@ use craft\elements\GlobalSet;
 use craft\errors\MissingComponentException;
 use craft\helpers\App;
 use craft\helpers\ArrayHelper;
+use craft\helpers\Component;
 use craft\helpers\MailerHelper;
 use craft\helpers\UrlHelper;
 use craft\mail\Mailer;
@@ -206,7 +207,7 @@ class SystemSettingsController extends Controller
         if ($settingsIsValid && $adapterIsValid) {
             // Try to send the test email
             /** @var Mailer $mailer */
-            $mailer = Craft::createObject(App::mailerConfig($settings));
+            $mailer = Craft::createObject(App::mailerConfig(Component::cleanseConfig($settings)));
             $message = $mailer
                 ->composeFromKey('test_email', [
                     'settings' => MailerHelper::settingsReport($mailer, $adapter),
