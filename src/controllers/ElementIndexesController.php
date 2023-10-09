@@ -609,7 +609,7 @@ class ElementIndexesController extends BaseElementsController
                     $criteria['draftOf'] = filter_var($criteria['draftOf'], FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE);
                 }
             }
-            Craft::configure($query, $criteria);
+            Craft::configure($query, Component::cleanseConfig($criteria));
         }
 
         // Override with the custom filters
