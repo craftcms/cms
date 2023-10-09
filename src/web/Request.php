@@ -1286,7 +1286,27 @@ class Request extends \yii\web\Request
      */
     public function accepts(string $contentType): bool
     {
-        return array_key_exists($contentType, $this->getAcceptableContentTypes());
+        $acceptableContentTypes = $this->getAcceptableContentTypes();
+
+        // if we have "*/*" listed in the acceptable content types, just return true
+        if (array_key_exists('*/*', $acceptableContentTypes)) {
+            return true;
+        }
+
+        // then check if the actual key exists
+        if (array_key_exists($contentType, $acceptableContentTypes)) {
+            return true;
+        }
+
+        // finally, check for cases where acceptable content type contains mimeType/*
+        foreach ($acceptableContentTypes as $mime => $params) {
+            $mimeParts = explode('/', $mime);
+            if ($mimeParts[1] === '*' && str_starts_with($contentType, $mimeParts[0] . '/')) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**
