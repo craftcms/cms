@@ -207,7 +207,7 @@ class SystemSettingsController extends Controller
         if ($settingsIsValid && $adapterIsValid) {
             // Try to send the test email
             /** @var Mailer $mailer */
-            $mailer = Craft::createObject(App::mailerConfig(Component::cleanseConfig($settings)));
+            $mailer = Craft::createObject(App::mailerConfig($settings));
             $message = $mailer
                 ->composeFromKey('test_email', [
                     'settings' => MailerHelper::settingsReport($mailer, $adapter),
@@ -295,7 +295,7 @@ class SystemSettingsController extends Controller
         $settings->fromName = $this->request->getBodyParam('fromName');
         $settings->template = $this->request->getBodyParam('template');
         $settings->transportType = $this->request->getBodyParam('transportType');
-        $settings->transportSettings = $this->request->getBodyParam('transportTypes.' . $settings->transportType);
+        $settings->transportSettings = Component::cleanseConfig($this->request->getBodyParam('transportTypes.' . $settings->transportType) ?? []);
 
         return $settings;
     }
