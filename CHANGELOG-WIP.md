@@ -134,6 +134,12 @@
 - Added `craft\events\BulkElementsEvent`.
 - Added `craft\events\DefineEntryTypesForFieldEvent`.
 - Added `craft\events\DefineFieldHtmlEvent::$inline`.
+- Added `craft\fieldlayoutelements\BaseField::$includeInCards`.
+- Added `craft\fieldlayoutelements\BaseField::$providesThumbs`.
+- Added `craft\fieldlayoutelements\BaseField::previewHtml()`.
+- Added `craft\fieldlayoutelements\BaseField::previewable()`.
+- Added `craft\fieldlayoutelements\BaseField::thumbHtml()`.
+- Added `craft\fieldlayoutelements\BaseField::thumbable()`.
 - Added `craft\fieldlayoutelements\CustomField::$handle`.
 - Added `craft\fields\Addresses`.
 - Added `craft\fields\Matrix::EVENT_DEFINE_ENTRY_TYPES`.
