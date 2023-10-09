@@ -1294,9 +1294,8 @@ class Request extends \yii\web\Request
         }
 
         // check for cases where acceptable content type contains mimeType/*
-        foreach ($acceptableContentTypes as $mime => $params) {
-            $mimeParts = explode('/', $mime);
-            if ($mimeParts[1] === '*' && str_starts_with($contentType, $mimeParts[0] . '/')) {
+        foreach (array_keys($acceptableContentTypes) as $mime) {
+            if (str_ends_with($mime, '/*') && str_starts_with($contentType, substr($mime, 0, -1))) {
                 return true;
             }
         }
