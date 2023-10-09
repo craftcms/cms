@@ -21,7 +21,6 @@ use craft\fieldlayoutelements\addresses\OrganizationTaxIdField;
 use craft\fieldlayoutelements\BaseNativeField;
 use craft\fieldlayoutelements\FullNameField;
 use craft\helpers\Db;
-use craft\helpers\Html;
 use craft\models\FieldLayout;
 use craft\records\Address as AddressRecord;
 use yii\base\InvalidConfigException;
@@ -611,15 +610,6 @@ class Address extends Element implements AddressInterface, NestedElementInterfac
         $rules[] = [['longitude', 'latitude'], 'safe'];
         $rules[] = [self::_addressAttributes(), 'safe'];
         return $rules;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getCardBodyHtml(): ?string
-    {
-        return Html::tag('div', Craft::$app->getAddresses()->formatAddress($this)) .
-            parent::getCardBodyHtml();
     }
 
     /**

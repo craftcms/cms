@@ -25,6 +25,11 @@ class AddressField extends BaseField
     /**
      * @inheritdoc
      */
+    public bool $includeInCards = true;
+
+    /**
+     * @inheritdoc
+     */
     public function attribute(): string
     {
         return 'address';
@@ -44,6 +49,23 @@ class AddressField extends BaseField
     public function hasCustomWidth(): bool
     {
         return false;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function previewable(): bool
+    {
+        return true;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function previewHtml(ElementInterface $element): string
+    {
+        /** @var Address $element */
+        return Craft::$app->getAddresses()->formatAddress($element);
     }
 
     /**

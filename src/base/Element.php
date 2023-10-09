@@ -3116,7 +3116,7 @@ abstract class Element extends Component implements ElementInterface
     public function getCardBodyHtml(): ?string
     {
         $previews = array_filter(array_map(
-            fn(PreviewableFieldInterface $field) => $field->getPreviewHtml($this->getFieldValue($field->handle), $this),
+            fn(BaseField $layoutElement) => $layoutElement->previewHtml($this),
             $this->getFieldLayout()?->getCardBodyFields($this) ?? [],
         ));
 
@@ -3429,7 +3429,7 @@ abstract class Element extends Component implements ElementInterface
     {
         $thumbField = $this->getFieldLayout()?->getThumbField();
         if ($thumbField) {
-            $thumbHtml = $thumbField->getThumbHtml($this->getFieldValue($thumbField->handle), $this, $size);
+            $thumbHtml = $thumbField->thumbHtml($this, $size);
             if ($thumbHtml) {
                 return $thumbHtml;
             }

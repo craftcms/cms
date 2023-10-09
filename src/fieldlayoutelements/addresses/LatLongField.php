@@ -74,6 +74,23 @@ class LatLongField extends BaseNativeField
     /**
      * @inheritdoc
      */
+    public function previewable(): bool
+    {
+        return true;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function previewHtml(ElementInterface $element): string
+    {
+        /** @var Address $element */
+        return sprintf('%s, %s', $element->longitude ?? '0', $element->latitude ?? '0');
+    }
+
+    /**
+     * @inheritdoc
+     */
     protected function showLabel(): bool
     {
         return false;

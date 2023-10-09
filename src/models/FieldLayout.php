@@ -13,8 +13,6 @@ use craft\base\FieldInterface;
 use craft\base\FieldLayoutElement;
 use craft\base\FieldLayoutProviderInterface;
 use craft\base\Model;
-use craft\base\PreviewableFieldInterface;
-use craft\base\ThumbableFieldInterface;
 use craft\events\CreateFieldLayoutFormEvent;
 use craft\events\DefineFieldLayoutCustomFieldsEvent;
 use craft\events\DefineFieldLayoutElementsEvent;
@@ -647,39 +645,34 @@ class FieldLayout extends Model
     /**
      * Returns the field layout’s designated thumbnail field.
      *
-     * @return ThumbableFieldInterface|null
+     * @return BaseField|null
      * @since 5.0.0
      */
-    public function getThumbField(): ?ThumbableFieldInterface
+    public function getThumbField(): ?BaseField
     {
-        /** @var CustomField|null $layoutElement */
-        $layoutElement = $this->_element(fn(FieldLayoutElement $layoutElement) => (
-            $layoutElement instanceof CustomField &&
-            $layoutElement->providesThumbs &&
-            $layoutElement->getField() instanceof ThumbableFieldInterface
+        /** @var BaseField|null */
+        return $this->_element(fn(FieldLayoutElement $layoutElement) => (
+            $layoutElement instanceof BaseField &&
+            $layoutElement->thumbable() &&
+            $layoutElement->providesThumbs
         ));
-        /** @var ThumbableFieldInterface|null */
-        return $layoutElement?->getField();
     }
 
     /**
      * Returns the custom fields that should be used in element card bodies.
      *
      * @param ElementInterface|null $element
-     * @return PreviewableFieldInterface[]
+     * @return BaseField[]
      * @since 5.0.0
      */
     public function getCardBodyFields(?ElementInterface $element): array
     {
-        /** @var PreviewableFieldInterface[] */
-        return array_map(
-            fn(CustomField $layoutElement) => $layoutElement->getField(),
-            iterator_to_array($this->_elements(fn(FieldLayoutElement $layoutElement) => (
-                $layoutElement instanceof CustomField &&
-                $layoutElement->includeInCards &&
-                $layoutElement->getField() instanceof PreviewableFieldInterface
-            ), $element)),
-        );
+        /** @var BaseField[] */
+        return iterator_to_array($this->_elements(fn(FieldLayoutElement $layoutElement) => (
+            $layoutElement instanceof BaseField &&
+            $layoutElement->previewable() &&
+            $layoutElement->includeInCards
+        ), $element));
     }
 
     /**

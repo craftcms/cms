@@ -61,6 +61,14 @@ class FullNameField extends TextField
     /**
      * @inheritdoc
      */
+    public function previewable(): bool
+    {
+        return true;
+    }
+
+    /**
+     * @inheritdoc
+     */
     protected function defaultLabel(?ElementInterface $element = null, bool $static = false): ?string
     {
         return Craft::t('app', 'Full Name');

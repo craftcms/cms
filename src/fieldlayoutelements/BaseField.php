@@ -12,6 +12,7 @@ use craft\base\ElementInterface;
 use craft\base\FieldLayoutElement;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Cp;
+use craft\helpers\ElementHelper;
 use craft\helpers\Html;
 use craft\helpers\StringHelper;
 
@@ -47,6 +48,18 @@ abstract class BaseField extends FieldLayoutElement
      * @var bool Whether the field is required.
      */
     public bool $required = false;
+
+    /**
+     * @var bool Whether this field should be used to define element thumbnails.
+     * @since 5.0.0
+     */
+    public bool $providesThumbs = false;
+
+    /**
+     * @var bool Whether this field’s contents should be included in element cards.
+     * @since 5.0.0
+     */
+    public bool $includeInCards = false;
 
     /**
      * @inheritdoc
@@ -124,6 +137,28 @@ abstract class BaseField extends FieldLayoutElement
     }
 
     /**
+     * Returns whether the field can be chosen as elements’ thumbnail provider.
+     *
+     * @return bool
+     * @since 5.0.0
+     */
+    public function thumbable(): bool
+    {
+        return false;
+    }
+
+    /**
+     * Returns whether the field can be included in element cards.
+     *
+     * @return bool
+     * @since 5.0.0
+     */
+    public function previewable(): bool
+    {
+        return false;
+    }
+
+    /**
      * @inheritdoc
      */
     public function selectorHtml(): string
@@ -189,6 +224,8 @@ abstract class BaseField extends FieldLayoutElement
                 'attribute' => $this->attribute(),
                 'mandatory' => $this->mandatory(),
                 'requirable' => $this->requirable(),
+                'thumbable' => $this->thumbable(),
+                'previewable' => $this->previewable(),
             ],
         ];
     }
@@ -223,6 +260,20 @@ abstract class BaseField extends FieldLayoutElement
             $indicators[] = [
                 'label' => Craft::t('app', 'This field is conditional'),
                 'icon' => 'condition',
+            ];
+        }
+
+        if ($this->thumbable() && $this->providesThumbs) {
+            $indicators[] = [
+                'label' => Craft::t('app', 'This field provides thumbnails for elements'),
+                'icon' => 'asset',
+            ];
+        }
+
+        if ($this->previewable() && $this->includeInCards) {
+            $indicators[] = [
+                'label' => Craft::t('app', 'This field is included in element cards'),
+                'icon' => 'check',
             ];
         }
 
@@ -291,6 +342,30 @@ abstract class BaseField extends FieldLayoutElement
             'translationDescription' => $this->translationDescription($element, $static),
             'errors' => !$static ? $this->errors($element) : [],
         ]);
+    }
+
+    /**
+     * Returns the HTML for an element’s thumbnail.
+     *
+     * @param ElementInterface $element The element the field is associated with
+     * @param int $size The width and height the thumbnail should have.
+     * @return string|null
+     */
+    public function thumbHtml(ElementInterface $element, int $size): ?string
+    {
+        return null;
+    }
+
+    /**
+     * Returns the field’s preview HTMl.
+     *
+     * @param ElementInterface $element The element the form is being rendered for
+     * @return string
+     */
+    public function previewHtml(ElementInterface $element): string
+    {
+        $attribute = $this->attribute();
+        return ElementHelper::attributeHtml($element->$attribute);
     }
 
     /**
