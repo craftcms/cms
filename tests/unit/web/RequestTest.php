@@ -503,7 +503,7 @@ class RequestTest extends TestCase
     /**
      * @return array
      */
-    public function acceptsDataProvider(): array
+    public static function acceptsDataProvider(): array
     {
         return [
             [false, 'application/json', ['text/html']],
