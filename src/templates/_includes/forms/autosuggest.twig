@@ -30,8 +30,6 @@
         @focus="updateFilteredOptions"
         @blur="onBlur"
         @input="onInputChange"
-        @opened="onOpened"
-        @closed="onClosed"
         v-model="inputProps.initialValue"
     >
         <template slot-scope="{suggestion}">
@@ -80,26 +78,6 @@ new Vue({
         onInputChange(q) {
             this.query = (q || '').toLowerCase();
             this.updateFilteredOptions();
-        },
-        onOpened() {
-            let $element = $(this.$el);
-
-            // clicking on autosuggestion value won't work if the element's parent has any sort of tabindex set
-            // (it's not vue-autosuggest issue as on its own it works fine with tabindex)
-            // so we have to temporary remove that tabindex when opening the suggestions list
-            // and then add it back in when closing the list
-            // see https://github.com/craftcms/cms/issues/13553 for more details
-            let $tabindexParent = $element.parents('[tabindex="-1"]');
-            if ($tabindexParent.length > 0) {
-                this.$refs.tabindexParent = $tabindexParent;
-                $tabindexParent.removeAttr('tabindex');
-            }
-        },
-        onClosed() {
-            if (this.$refs.tabindexParent !== undefined) {
-                this.$refs.tabindexParent.attr('tabindex', '-1');
-                this.$refs.tabindexParent = null;
-            }
         },
         updateFilteredOptions() {
             if (this.query === '') {
