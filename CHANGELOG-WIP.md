@@ -4,6 +4,7 @@
 - All elements can now have thumbnails, provided by Assets fields. ([#12484](https://github.com/craftcms/cms/discussions/12484), [#12706](https://github.com/craftcms/cms/discussions/12706))
 - Element indexes and relational fields now have the option to use card views. ([#6024](https://github.com/craftcms/cms/pull/6024))
 - Element indexes now support inline editing for some custom field values.
+- Entry conditions can now have a “Matrix field” rule. ([#13794](https://github.com/craftcms/cms/discussions/13794))
 - User addresses are now displayed within an embedded element index.
 - Selected elements within relational fields now include a context menu with “View in a new tab”, “Edit”, and “Remove” options.
 - Selected elements within relational fields now include a dedicated drag handle.
@@ -118,6 +119,7 @@
 - Added `craft\elements\Tag::gqlTypeName()`.
 - Added `craft\elements\User::GQL_TYPE_NAME`.
 - Added `craft\elements\conditions\ElementConditionInterface::getFieldLayouts()`.
+- Added `craft\elements\conditions\entries\MatrixFieldConditionRule`.
 - Added `craft\elements\db\EagerLoadInfo`.
 - Added `craft\elements\db\EagerLoadPlan::$lazy`.
 - Added `craft\elements\db\ElementQuery::$eagerLoadAlias`.
