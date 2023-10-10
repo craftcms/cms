@@ -506,7 +506,7 @@ JS, [
             $elementType = static::elementType();
             $element->addError($this->handle, Craft::t('app', 'Validation errors found in {attribute} {type}; please fix them.', [
                 'type' => $errorCount === 1 ? $elementType::lowerDisplayName() : $elementType::pluralLowerDisplayName(),
-                'attribute' => $this->getAttributeLabel($this->handle),
+                'attribute' => Craft::t('site', $this->name),
             ]));
         }
     }
