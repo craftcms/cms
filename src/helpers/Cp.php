@@ -1164,7 +1164,6 @@ JS, [
                     'data' => [
                         'attribute' => $attribute,
                     ],
-                    'tabindex' => -1,
                 ],
                 $config['fieldAttributes'] ?? []
             )) .

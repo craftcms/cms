@@ -744,7 +744,7 @@ class ElementIndexesController extends BaseElementsController
                 }
             }
 
-            Craft::configure($query, $criteria);
+            Craft::configure($query, Component::cleanseConfig($criteria));
             return true;
         };
 

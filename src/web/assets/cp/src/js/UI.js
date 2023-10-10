@@ -1272,7 +1272,7 @@ Craft.ui = {
   setFocusOnErrorSummary: function ($body, namespace = '') {
     const errorSummaryContainer = $body.find('.error-summary');
     if (errorSummaryContainer.length > 0) {
-      errorSummaryContainer.focus();
+      errorSummaryContainer.trigger('focus');
 
       // start listening for clicks on summary errors
       errorSummaryContainer.find('a').on('click', (ev) => {
@@ -1378,11 +1378,11 @@ Craft.ui = {
       // focus on the field container that contains the error
       let $field = $fieldErrorsContainer.parents('.field:first');
       if ($field.is(':visible')) {
-        $field.trigger('focus');
+        $field.attr('tabindex', '-1').trigger('focus');
       } else {
         // wait in case the field isn't yet visible; (MatrixInput.expand() has a timeout of 200)
         setTimeout(() => {
-          $field.trigger('focus');
+          $field.attr('tabindex', '-1').trigger('focus');
         }, 201);
       }
     }
