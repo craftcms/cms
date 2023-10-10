@@ -60,6 +60,6 @@ class SectionConditionRule extends BaseMultiSelectConditionRule implements Eleme
     public function matchElement(ElementInterface $element): bool
     {
         /** @var Entry $element */
-        return $this->matchValue($element->getSection()->uid);
+        return $this->matchValue($element->getSection()?->uid);
     }
 }
