@@ -18,6 +18,7 @@ use craft\db\Query;
 use craft\db\Table;
 use craft\errors\MissingComponentException;
 use craft\events\ConfigEvent;
+use craft\events\DefineCompatibleFieldTypesEvent;
 use craft\events\FieldEvent;
 use craft\events\FieldLayoutEvent;
 use craft\events\RegisterComponentTypesEvent;
@@ -91,6 +92,13 @@ class Fields extends Component
      * ```
      */
     public const EVENT_REGISTER_FIELD_TYPES = 'registerFieldTypes';
+
+    /**
+     * @event DefineCompatibleFieldTypesEvent The event that is triggered when defining the compatible field types for a field.
+     * @see getCompatibleFieldTypes()
+     * @since 4.5.7
+     */
+    public const EVENT_DEFINE_COMPATIBLE_FIELD_TYPES = 'defineCompatibleFieldTypes';
 
     /**
      * @event FieldEvent The event that is triggered before a field is saved.
@@ -244,34 +252,40 @@ class Fields extends Component
             $field = $this->getFieldById($field->id);
         }
 
+        $types = [];
         $dbType = $field::dbType();
 
-        if (!is_string($dbType)) {
-            return $includeCurrent ? [get_class($field)] : [];
-        }
+        if (is_string($dbType)) {
+            foreach ($this->getAllFieldTypes() as $class) {
+                /** @var string|FieldInterface $class */
+                /** @phpstan-var class-string<FieldInterface>|FieldInterface $class */
+                if ($class === get_class($field)) {
+                    if ($includeCurrent) {
+                        $types[] = $class;
+                    }
+                    continue;
+                }
 
-        $types = [];
+                $otherDbType = $class::dbType();
 
-        foreach ($this->getAllFieldTypes() as $class) {
-            /** @var string|FieldInterface $class */
-            /** @phpstan-var class-string<FieldInterface>|FieldInterface $class */
-            if ($class === get_class($field)) {
-                if ($includeCurrent) {
+                if (is_string($otherDbType) && Db::areColumnTypesCompatible($dbType, $otherDbType)) {
                     $types[] = $class;
                 }
-                continue;
-            }
-
-            $otherDbType = $class::dbType();
-
-            if (is_string($otherDbType) && Db::areColumnTypesCompatible($dbType, $otherDbType)) {
-                $types[] = $class;
             }
         }
 
         // Make sure the current field class is in there if it's supposed to be
         if ($includeCurrent && !in_array(get_class($field), $types, true)) {
             $types[] = get_class($field);
+        }
+
+        if ($this->hasEventHandlers(self::EVENT_DEFINE_COMPATIBLE_FIELD_TYPES)) {
+            $event = new DefineCompatibleFieldTypesEvent([
+                'field' => $field,
+                'compatibleTypes' => $types,
+            ]);
+            $this->trigger(self::EVENT_DEFINE_COMPATIBLE_FIELD_TYPES, $event);
+            return $event->compatibleTypes;
         }
 
         return $types;
