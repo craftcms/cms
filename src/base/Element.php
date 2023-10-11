@@ -80,6 +80,7 @@ use Throwable;
 use Traversable;
 use Twig\Markup;
 use UnitEnum;
+use yii\base\ArrayableTrait;
 use yii\base\ErrorHandler;
 use yii\base\Event;
 use yii\base\InvalidCallException;
@@ -139,6 +140,9 @@ use yii\web\Response;
 abstract class Element extends Component implements ElementInterface
 {
     use ElementTrait;
+    use ArrayableTrait {
+        toArray as traitToArray;
+    }
 
     /**
      * @since 3.3.6
@@ -2133,6 +2137,11 @@ abstract class Element extends Component implements ElementInterface
     private ?bool $_isFresh = null;
 
     /**
+     * @see toArray()
+     */
+    private $_serializeFields = false;
+
+    /**
      * @inheritdoc
      */
     public function __construct($config = [])
@@ -2351,13 +2360,35 @@ abstract class Element extends Component implements ElementInterface
         $fields = parent::fields();
 
         foreach ($this->fieldLayoutFields() as $field) {
-            $value = $this->getFieldValue($field->handle);
             if (!isset($fields[$field->handle])) {
-                $fields[$field->handle] = fn() => $field->serializeValue($value, $this);
+                if ($this->_serializeFields) {
+                    $value = $this->getFieldValue($field->handle);
+                    $fields[$field->handle] = fn() => $field->serializeValue($value, $this);
+                } else {
+                    $fields[$field->handle] = fn() => $this->clonedFieldValue($field->handle);
+                }
             }
         }
 
         return $fields;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function toArray(array $fields = [], array $expand = [], $recursive = true): array
+    {
+        if ($recursive) {
+            $this->_serializeFields = true;
+        }
+
+        $arr = $this->traitToArray($fields, $expand, $recursive);
+
+        if ($recursive) {
+            $this->_serializeFields = false;
+        }
+
+        return $arr;
     }
 
     /**
