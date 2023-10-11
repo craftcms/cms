@@ -868,6 +868,7 @@ return [
     'Manage relations on a per-site basis' => 'مدیریت رابطه ها بر اساس هر سایت به صورت جداگانه',
     'Manage your Craft Console account' => 'Manage your Craft Console account',
     'Manipulated SVG image rasterizing is unreliable. See \\craft\\services\\Images::loadImage()' => 'شطرنجی شده تصویر SVG دستکاری شده نامعتبر است. \\craft\\services\\Images::loadImage() را ببینید.',
+    'Matrix field' => 'Matrix field',
     'Matrix' => 'ماتریس',
     'Max Date' => 'بیشترین تاریخ',
     'Max Length' => 'حداکثر طول',
