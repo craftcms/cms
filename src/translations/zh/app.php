@@ -868,6 +868,7 @@ return [
     'Manage relations on a per-site basis' => '基于每个站点分别管理关系',
     'Manage your Craft Console account' => '管理 Craft Console 帐户',
     'Manipulated SVG image rasterizing is unreliable. See \\craft\\services\\Images::loadImage()' => '不可靠的 SVG 图片栅格化操作。请参阅 \\craft\\services\\Images::loadImage()',
+    'Matrix field' => 'Matrix field',
     'Matrix' => '矩阵',
     'Max Date' => '最大日期',
     'Max Length' => '最大长度',
