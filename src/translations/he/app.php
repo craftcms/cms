@@ -868,6 +868,7 @@ return [
     'Manage relations on a per-site basis' => 'נהל את הקשרים על בסיס \'לפי אתר\'',
     'Manage your Craft Console account' => 'Manage your Craft Console account',
     'Manipulated SVG image rasterizing is unreliable. See \\craft\\services\\Images::loadImage()' => 'המרת תמונת SVG שטופלה למפת סיביות אינה אמינה. ראה \\craft\\services\\Images::loadImage()',
+    'Matrix field' => 'Matrix field',
     'Matrix' => 'מטריקס',
     'Max Date' => 'תאריך מקס\'',
     'Max Length' => 'אורך מרבי',
