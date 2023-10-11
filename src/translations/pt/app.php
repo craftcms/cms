@@ -868,6 +868,7 @@ return [
     'Manage relations on a per-site basis' => 'Gerir relações numa base por site',
     'Manage your Craft Console account' => 'Manage your Craft Console account',
     'Manipulated SVG image rasterizing is unreliable. See \\craft\\services\\Images::loadImage()' => 'A rasterização da imagem SVG manipulada não é fiável. Consulte \\craft\\services\\Images::loadImage()',
+    'Matrix field' => 'Matrix field',
     'Matrix' => 'Matriz',
     'Max Date' => 'Data máxima',
     'Max Length' => 'Comprimento máximo',
