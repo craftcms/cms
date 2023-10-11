@@ -474,7 +474,9 @@ Craft.ui = {
     let allChecked = false;
 
     if (config.showAllOption) {
-      if (values === (config.allValue || '*')) {
+      const allValue = config.allValue || '*';
+
+      if (values === allValue) {
         values = config.options.map((o) => o.value);
         allChecked = true;
       }

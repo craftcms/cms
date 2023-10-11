@@ -109,7 +109,7 @@ Craft.CustomizeSourcesModal = Garnish.Modal.extend({
     this.addListener(this.$container, 'submit', 'save');
   },
 
-  buildModal: function (response) {
+  buildModal: async function (response) {
     this.baseSortOptions = response.baseSortOptions;
     this.defaultSortOptions = response.defaultSortOptions;
     this.availableTableAttributes = response.availableTableAttributes;
@@ -121,10 +121,10 @@ Craft.CustomizeSourcesModal = Garnish.Modal.extend({
     this.userGroups = response.userGroups;
 
     if (response.headHtml) {
-      Craft.appendHeadHtml(response.headHtml);
+      await Craft.appendHeadHtml(response.headHtml);
     }
     if (response.bodyHtml) {
-      Craft.appendBodyHtml(response.bodyHtml);
+      await Craft.appendBodyHtml(response.bodyHtml);
     }
 
     // Create the source item sorter
