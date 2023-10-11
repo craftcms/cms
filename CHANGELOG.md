@@ -3,6 +3,7 @@
 ## Unreleased
 
 - Field containers are no longer focusable unless a corresponding validation message is clicked on. ([#13782](https://github.com/craftcms/cms/issues/13782))
+- Improved element save performance.
 - Added `craft\events\DefineCompatibleFieldTypesEvent`.
 - Added `craft\services\Fields::EVENT_DEFINE_COMPATIBLE_FIELD_TYPES`. ([#13793](https://github.com/craftcms/cms/discussions/13793))
 - Added `craft\web\assets\inputmask\InputmaskAsset`.
