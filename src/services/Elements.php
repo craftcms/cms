@@ -3587,6 +3587,7 @@ class Elements extends Component
             $siteElement->siteId = $oldSiteElement->siteId;
             $siteElement->contentId = $oldSiteElement->contentId;
             $siteElement->setEnabledForSite($oldSiteElement->getEnabledForSite());
+            $siteElement->uri = $oldSiteElement->uri;
         } else {
             $siteElement->enabled = $element->enabled;
             $siteElement->resaving = $element->resaving;
@@ -3618,7 +3619,22 @@ class Elements extends Component
             $siteElement->slug = $element->slug;
         }
 
-        // Copy the dirty attributes (except title and slug, which may be translatable)
+        // Ensure the uri is properly localized
+        // see https://github.com/craftcms/cms/issues/13812 for more details
+        if ($element::hasUris() &&
+            ($isNewSiteForElement ||
+            in_array('uri', $siteElement->getDirtyAttributes()) ||
+            $siteElement->resaving)
+        ) {
+            // Set a unique URI on the site clone
+            try {
+                ElementHelper::setUniqueUri($siteElement);
+            } catch (OperationAbortedException) {
+                // carry on
+            }
+        }
+
+        // Copy the dirty attributes (except title, slug and uri, which may be translatable)
         $siteElement->setDirtyAttributes(array_filter($element->getDirtyAttributes(), function(string $attribute): bool {
             return $attribute !== 'title' && $attribute !== 'slug';
         }));
