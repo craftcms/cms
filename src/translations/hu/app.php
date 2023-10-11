@@ -868,6 +868,7 @@ return [
     'Manage relations on a per-site basis' => 'A kapcsolatok felügyelete webhelyenként',
     'Manage your Craft Console account' => 'Manage your Craft Console account',
     'Manipulated SVG image rasterizing is unreliable. See \\craft\\services\\Images::loadImage()' => 'A módosított SVG-kép raszterezése megbízhatatlan. Lásd: \\craft\\services\\Images::loadImage()',
+    'Matrix field' => 'Matrix field',
     'Matrix' => 'Mátrix',
     'Max Date' => 'Max. dátum',
     'Max Length' => 'Max hossz',
