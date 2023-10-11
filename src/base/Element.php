@@ -2307,27 +2307,27 @@ abstract class Element extends Component implements ElementInterface
             $names['parentId'] = true;
         } else {
             unset(
-                $names['structureId'],
-                $names['root'],
+                $names['level'],
                 $names['lft'],
                 $names['rgt'],
-                $names['level'],
+                $names['root'],
+                $names['structureId'],
             );
         }
 
         unset(
-            $names['searchScore'],
             $names['awaitingFieldValues'],
-            $names['firstSave'],
-            $names['propagating'],
-            $names['propagateAll'],
-            $names['newSiteIds'],
-            $names['resaving'],
             $names['duplicateOf'],
-            $names['mergingCanonicalChanges'],
-            $names['updatingFromDerivative'],
-            $names['previewing'],
+            $names['firstSave'],
             $names['hardDelete'],
+            $names['mergingCanonicalChanges'],
+            $names['newSiteIds'],
+            $names['previewing'],
+            $names['propagateAll'],
+            $names['propagating'],
+            $names['resaving'],
+            $names['searchScore'],
+            $names['updatingFromDerivative'],
         );
 
         $names['canonicalId'] = true;
