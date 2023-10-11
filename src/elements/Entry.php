@@ -817,12 +817,12 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
      */
     public function attributes(): array
     {
-        $names = parent::attributes();
-        ArrayHelper::removeValue($names, 'deletedWithEntryType');
-        ArrayHelper::removeValue($names, 'saveOwnership');
-        $names[] = 'authorId';
-        $names[] = 'typeId';
-        return $names;
+        $names = array_flip(parent::attributes());
+        unset($names['deletedWithEntryType']);
+        unset($names['saveOwnership']);
+        $names['authorId'] = true;
+        $names['typeId'] = true;
+        return array_keys($names);
     }
 
     /**
