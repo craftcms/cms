@@ -15,6 +15,7 @@
 - Fixed a bug where relational fields’ validation messages weren’t using the actual field name. ([#13807](https://github.com/craftcms/cms/issues/13807))
 - Fixed a bug where element editor slideouts were appearing behind element selector modals within Live Preview. ([#13798](https://github.com/craftcms/cms/issues/13798))
 - Fixed a bug where element URIs weren’t getting updated for propagated sites automatically. ([#13812](https://github.com/craftcms/cms/issues/13812))
+- Fixed a bug where dropdown input labels could overflow out of their containers. ([#13817](https://github.com/craftcms/cms/issues/13817))
 - Fixed RCE vulnerabilities.
 
 ## 4.5.6.1 - 2023-09-27
