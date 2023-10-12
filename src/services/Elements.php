@@ -3625,8 +3625,8 @@ class Elements extends Component
             $element::hasUris() &&
             (
                 $isNewSiteForElement ||
-                in_array('uri', $siteElement->getDirtyAttributes()) ||
-                $siteElement->resaving
+                in_array('uri', $element->getDirtyAttributes()) ||
+                $element->resaving
             )
         ) {
             // Set a unique URI on the site clone
