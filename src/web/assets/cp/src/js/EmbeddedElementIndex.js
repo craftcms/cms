@@ -147,8 +147,12 @@ Craft.EmbeddedElementIndex = Garnish.Base.extend(
       );
     },
 
-    createElement: function (attributes) {
+    createElement: async function (attributes) {
       this.$createBtn.addClass('loading');
+
+      if (this.elementEditor) {
+        await this.elementEditor.ensureIsDraftOrRevision();
+      }
 
       attributes = Object.assign(
         {
