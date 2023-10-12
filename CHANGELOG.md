@@ -8,6 +8,7 @@
 - Added `craft\services\Fields::EVENT_DEFINE_COMPATIBLE_FIELD_TYPES`. ([#13793](https://github.com/craftcms/cms/discussions/13793))
 - Added `craft\web\assets\inputmask\InputmaskAsset`.
 - `craft\web\Request::accepts()` now supports wildcard (e.g. `application/*`). ([#13759](https://github.com/craftcms/cms/issues/13759))
+- `Craft.ElementEditor` instances are now configured with an `elementId` setting, which is kept up-to-date when a provisional draft is created. ([#13795](https://github.com/craftcms/cms/discussions/13795))
 - Fixed a bug where relational fields’ element selector modals weren’t always getting set to the correct site per the field’s “Relate entries from a specific site?” setting. ([#13750](https://github.com/craftcms/cms/issues/13750))
 - Fixed a bug where Dropdown fields weren’t visible when viewing revisions and other static forms. ([#13753](https://github.com/craftcms/cms/issues/13753), [craftcms/commerce#3270](https://github.com/craftcms/commerce/issues/3270))
 - Fixed a bug where the `defaultDirMode` config setting wasn’t being respected when the `storage/runtime/` and `storage/logs/` folders were created. ([#13756](https://github.com/craftcms/cms/issues/13756))

@@ -1349,6 +1349,7 @@ Craft.ElementEditor = Garnish.Base.extend(
                   .attr('value', 'elements/apply-draft');
 
                 // Update the editor settings
+                this.settings.elementId = response.data.elementId;
                 this.settings.draftId = response.data.draftId;
                 this.settings.isLive = false;
                 this.previewToken = null;
@@ -2170,6 +2171,7 @@ Craft.ElementEditor = Garnish.Base.extend(
       canCreateDrafts: false,
       canEditMultipleSites: false,
       canSaveCanonical: false,
+      elementId: null,
       canonicalId: null,
       draftId: null,
       draftName: null,
