@@ -322,10 +322,36 @@ class Composer extends Component
         }
 
         if ($config['config']['sort-packages'] ?? false) {
-            ksort($config['require']);
+            $this->sortPackages($config['require']);
         }
 
         $this->writeJson($jsonPath, $config);
+    }
+
+    public function sortPackages(&$packages): void
+    {
+        // Adapted from JsonManipulator::sortPackages()
+        uksort($packages, fn($a, $b) => strnatcmp($this->prefixPackage($a), $this->prefixPackage($b)));
+    }
+
+    private function prefixPackage(string $package): string
+    {
+        if (preg_match('/^(?:php(?:-64bit|-ipv6|-zts|-debug)?|hhvm|(?:ext|lib)-[a-z0-9](?:[_.-]?[a-z0-9]+)*|composer(?:-(?:plugin|runtime)-api)?)$/iD', $package)) {
+            $lower = strtolower($package);
+            if (str_starts_with($lower, 'php')) {
+                $group = '0';
+            } elseif (str_starts_with($lower, 'hhvm')) {
+                $group = '1';
+            } elseif (str_starts_with($lower, 'ext')) {
+                $group = '2';
+            } elseif (str_starts_with($lower, 'lib')) {
+                $group = '3';
+            } elseif (preg_match('/^\D/', $lower)) {
+                $group = '4';
+            }
+        }
+
+        return sprintf('%s-%s', $group ?? '5', $package);
     }
 
     /**
