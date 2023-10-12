@@ -14,6 +14,7 @@
 - Fixed a bug where the “Save and continue editing” action wasn’t working on Edit User pages if they contained a Money field. ([#13760](https://github.com/craftcms/cms/issues/13760))
 - Fixed a bug where relational fields’ validation messages weren’t using the actual field name. ([#13807](https://github.com/craftcms/cms/issues/13807))
 - Fixed a bug where element editor slideouts were appearing behind element selector modals within Live Preview. ([#13798](https://github.com/craftcms/cms/issues/13798))
+- Fixed a bug where element URIs weren’t getting updated for propagated sites automatically. ([#13812](https://github.com/craftcms/cms/issues/13812))
 - Fixed RCE vulnerabilities.
 
 ## 4.5.6.1 - 2023-09-27
