@@ -579,27 +579,8 @@ class Entries extends Component
             // -----------------------------------------------------------------
 
             if ($section->type === Section::TYPE_SINGLE) {
-                // Ensure & get the single entry
-                $entry = $this->_ensureSingleEntry($section, $configData['siteSettings']);
-
-                // Deal with the section's entry types
-                if (!$isNewSection) {
-                    foreach ($this->getEntryTypesBySectionId($section->id) as $entryType) {
-                        if ($entryType->id === $entry->getTypeId()) {
-                            // This is *the* entry’s type. Make sure its name & handle match the section’s
-                            if ($entryType->name !== $section->name || $entryType->handle !== $section->handle) {
-                                $entryType->name = $section->name;
-                                $entryType->handle = $section->handle;
-                                $this->saveEntryType($entryType);
-                            }
-
-                            $section->setEntryTypes([$entryType]);
-                        } else {
-                            // We don’t need this one anymore
-                            $this->deleteEntryType($entryType);
-                        }
-                    }
-                }
+                // Ensure single entry
+                $this->_ensureSingleEntry($section, $configData['siteSettings']);
             }
 
             $transaction->commit();
@@ -915,6 +896,7 @@ class Entries extends Component
         /** @var Entry|null $entry */
         $entry = Entry::find()
             ->typeId($entryTypeIds)
+            ->sectionId($section->id)
             ->siteId($siteIds)
             ->status(null)
             ->one();
@@ -1015,12 +997,6 @@ class Entries extends Component
             $this->trigger(self::EVENT_BEFORE_DELETE_SECTION, new SectionEvent([
                 'section' => $section,
             ]));
-        }
-
-        // Delete the entry types first
-        $entryTypes = $this->getEntryTypesBySectionId($section->id);
-        foreach ($entryTypes as $entryType) {
-            $this->deleteEntryType($entryType);
         }
 
         // Remove the section from the project config
