@@ -3621,10 +3621,13 @@ class Elements extends Component
 
         // Ensure the uri is properly localized
         // see https://github.com/craftcms/cms/issues/13812 for more details
-        if ($element::hasUris() &&
-            ($isNewSiteForElement ||
-            in_array('uri', $siteElement->getDirtyAttributes()) ||
-            $siteElement->resaving)
+        if (
+            $element::hasUris() &&
+            (
+                $isNewSiteForElement ||
+                in_array('uri', $siteElement->getDirtyAttributes()) ||
+                $siteElement->resaving
+            )
         ) {
             // Set a unique URI on the site clone
             try {
