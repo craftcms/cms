@@ -158,16 +158,6 @@ Craft.EmbeddedElementIndex = Garnish.Base.extend(
         attributes
       );
 
-      // if (
-      //   this.settings.ownerIdAttribute &&
-      //   attributes[this.settings.ownerIdAttribute] &&
-      //   this.elementEditor &&
-      //   this.elementEditor.settings.canonicalId == attributes[this.settings.ownerIdAttribute] &&
-      //   this.elementEditor.settings.elementId != attributes[this.settings.ownerIdAttribute]
-      // ) {
-      //   attributes[this.settings.ownerIdAttribute] = elementEditor.settings.elementId;
-      // }
-
       Craft.sendActionRequest('POST', 'elements/create', {
         data: attributes,
       })
