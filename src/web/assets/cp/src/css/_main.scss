@@ -6937,6 +6937,15 @@ tr.indexingSession td.progress div.progressContainer div.progressInfo {
   border-color: inherit;
   box-shadow: none;
   background-color: transparent;
+
+  .item {
+    max-width: 100%;
+
+    span {
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+  }
 }
 
 .selectize.select .selectize-input:after {
