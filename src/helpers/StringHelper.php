@@ -1252,10 +1252,6 @@ class StringHelper extends \yii\helpers\StringHelper
      */
     public static function replaceMb4(string $str, callable|string $replace): string
     {
-        if (!static::containsMb4($str)) {
-            return $str;
-        }
-
         return preg_replace_callback('/./u', function(array $match) use ($replace): string {
             if (strlen($match[0]) >= 4) {
                 return is_callable($replace) ? $replace($match[0]) : $replace;

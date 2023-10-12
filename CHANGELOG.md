@@ -2,10 +2,24 @@
 
 ## Unreleased
 
+- Field containers are no longer focusable unless a corresponding validation message is clicked on. ([#13782](https://github.com/craftcms/cms/issues/13782))
+- Improved element save performance.
+- Added `craft\events\DefineCompatibleFieldTypesEvent`.
+- Added `craft\services\Fields::EVENT_DEFINE_COMPATIBLE_FIELD_TYPES`. ([#13793](https://github.com/craftcms/cms/discussions/13793))
+- Added `craft\web\assets\inputmask\InputmaskAsset`.
+- `craft\web\Request::accepts()` now supports wildcard (e.g. `application/*`). ([#13759](https://github.com/craftcms/cms/issues/13759))
+- `Craft.ElementEditor` instances are now configured with an `elementId` setting, which is kept up-to-date when a provisional draft is created. ([#13795](https://github.com/craftcms/cms/discussions/13795))
 - Fixed a bug where relational fields’ element selector modals weren’t always getting set to the correct site per the field’s “Relate entries from a specific site?” setting. ([#13750](https://github.com/craftcms/cms/issues/13750))
 - Fixed a bug where Dropdown fields weren’t visible when viewing revisions and other static forms. ([#13753](https://github.com/craftcms/cms/issues/13753), [craftcms/commerce#3270](https://github.com/craftcms/commerce/issues/3270))
 - Fixed a bug where the `defaultDirMode` config setting wasn’t being respected when the `storage/runtime/` and `storage/logs/` folders were created. ([#13756](https://github.com/craftcms/cms/issues/13756))
-- Fixed an RCE vulnerability.
+- Fixed a bug where the “Save and continue editing” action wasn’t working on Edit User pages if they contained a Money field. ([#13760](https://github.com/craftcms/cms/issues/13760))
+- Fixed a bug where relational fields’ validation messages weren’t using the actual field name. ([#13807](https://github.com/craftcms/cms/issues/13807))
+- Fixed a bug where element editor slideouts were appearing behind element selector modals within Live Preview. ([#13798](https://github.com/craftcms/cms/issues/13798))
+- Fixed a bug where element URIs weren’t getting updated for propagated sites automatically. ([#13812](https://github.com/craftcms/cms/issues/13812))
+- Fixed a bug where dropdown input labels could overflow out of their containers. ([#13817](https://github.com/craftcms/cms/issues/13817))
+- Fixed a bug where the `transformGifs` and `transformSvgs` config settings weren’t always being respected when using `@transform` GraphQL directives. ([#13808](https://github.com/craftcms/cms/issues/13808))
+- Fixed a bug where Composer operations were sorting `require` packages differently than how Composer does it natively, when `config.sort-packages` was set to `true`. ([#13806](https://github.com/craftcms/cms/issues/13806))
+- Fixed RCE vulnerabilities.
 
 ## 4.5.6.1 - 2023-09-27
 
