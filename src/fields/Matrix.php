@@ -1362,6 +1362,10 @@ class Matrix extends Field implements
                 $entry->enabled = (bool)$entryData['enabled'];
             }
 
+            if (isset($entryData['title']) && $entry->getType()->hasTitleField) {
+                $entry->title = $entryData['title'];
+            }
+
             // Allow setting the UID for the entry
             if (isset($entryData['uid'])) {
                 $entry->uid = $entryData['uid'];
