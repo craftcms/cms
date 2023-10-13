@@ -2497,15 +2497,18 @@ class Elements extends Component
         $reservedHandles = ['title', 'slug'];
 
         $valueChanged = false;
+        // it's a reserved handle - handle differently
         if (in_array($fieldHandle, $reservedHandles) && $element->{$fieldHandle} != $fromElement->{$fieldHandle}) {
             $element->{$fieldHandle} = $fromElement->{$fieldHandle};
             $valueChanged = true;
         } else {
-            if (($field = Craft::$app->fields->getFieldByHandle($fieldHandle)) !== null && $field instanceof CopyableFieldInterface) {
-                $field->copyValueBetweenSites($fromElement, $element);
+            /** @var FieldInterface $layoutField */
+            $layoutField = $fromElement->getFieldLayout()?->getFieldByHandle($fieldHandle);
+            if ($layoutField !== null && $layoutField instanceof CopyableFieldInterface) {
+                $layoutField->copyValueBetweenSites($fromElement, $element);
                 if (
-                    $field->serializeValue($element->getFieldValue($fieldHandle), $element) !=
-                    $field->serializeValue($originalElement->getFieldValue($fieldHandle), $originalElement)
+                    $layoutField->serializeValue($element->getFieldValue($fieldHandle), $element) !=
+                    $layoutField->serializeValue($originalElement->getFieldValue($fieldHandle), $originalElement)
                 ) {
                     $valueChanged = true;
                 }
