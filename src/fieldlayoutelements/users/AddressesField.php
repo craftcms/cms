@@ -10,8 +10,8 @@ namespace craft\fieldlayoutelements\users;
 use Craft;
 use craft\base\ElementInterface;
 use craft\elements\User;
+use craft\enums\ElementIndexViewMode;
 use craft\fieldlayoutelements\BaseNativeField;
-use craft\helpers\Cp;
 use yii\base\InvalidArgumentException;
 
 /**
@@ -72,12 +72,9 @@ class AddressesField extends BaseNativeField
             throw new InvalidArgumentException('AddressesField can only be used in the user field layout.');
         }
 
-        if (!$element->id) {
-            return null;
-        }
-
-        return Cp::addressCardsHtml($element->getAddresses(), [
-            'ownerId' => $element->id,
+        return $element->getAddressManager()->getIndexHtml($element, [
+            'canCreate' => true,
+            'allowedViewModes' => [ElementIndexViewMode::Cards],
         ]);
     }
 }

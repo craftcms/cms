@@ -8,13 +8,14 @@
 namespace crafttests\unit\gql;
 
 use Craft;
+use craft\db\Table;
 use craft\gql\resolvers\elements\Asset as AssetResolver;
 use craft\gql\resolvers\elements\Category as CategoryResolver;
 use craft\gql\resolvers\elements\Entry as EntryResolver;
 use craft\gql\resolvers\elements\GlobalSet as GlobalSetResolver;
-use craft\gql\resolvers\elements\MatrixBlock as MatrixBlockResolver;
 use craft\gql\resolvers\elements\Tag as TagResolver;
 use craft\gql\resolvers\elements\User as UserResolver;
+use craft\helpers\Db;
 use craft\helpers\StringHelper;
 use craft\models\GqlSchema;
 use craft\records\CategoryGroup;
@@ -62,7 +63,6 @@ class PrepareQueryTest extends TestCase
                         'volumes.' . self::VOLUME_UID . ':read',
                         'categorygroups.' . self::CATEGORY_GROUP_UID . ':read',
                         'sections.' . self::SECTION_UID . ':read',
-                        'entrytypes.' . self::ENTRY_TYPE_UID . ':read',
                         'globalsets.' . self::GLOBAL_SET_UID . ':read',
                         'taggroups.' . self::TAG_GROUP_UID . ':read',
                         'usergroups.' . self::USER_GROUP_UID . ':read',
@@ -184,12 +184,7 @@ class PrepareQueryTest extends TestCase
             ],
             [
                 EntryResolver::class, [null, []], function($result) {
-                    $expected = [
-                        'and',
-                        ['in', 'entries.sectionId', []],
-                        ['in', 'entries.typeId', []],
-                    ];
-                    return $result->where === $expected;
+                    return $result->where === ['in', 'entries.sectionId', []];
                 },
             ],
 
@@ -233,19 +228,6 @@ class PrepareQueryTest extends TestCase
                     return !empty($result->groupId);
                 },
             ],
-
-            // Matrix Blocks
-            [
-                MatrixBlockResolver::class, [(object)['field' => ['foo', 'bar']], [], 'field'], function($result) {
-                    return $result === ['foo', 'bar'];
-                },
-            ],
-            [
-                MatrixBlockResolver::class, [null, ['fieldId' => 2, 'typeId' => 5]], function($result) {
-                    return $result->fieldId == 2 && $result->typeId == 5;
-                },
-            ],
-
         ];
     }
 
@@ -311,6 +293,14 @@ class PrepareQueryTest extends TestCase
 
     private function _setupEntries()
     {
+        $this->_entryType = new EntryType([
+            'uid' => self::ENTRY_TYPE_UID,
+            'name' => StringHelper::randomString(),
+            'handle' => StringHelper::randomString(),
+            'hasTitleField' => false,
+        ]);
+        $this->_entryType->save();
+
         $this->_section = new Section([
             'uid' => self::SECTION_UID,
             'name' => StringHelper::randomString(),
@@ -321,14 +311,11 @@ class PrepareQueryTest extends TestCase
         ]);
         $this->_section->save();
 
-        $this->_entryType = new EntryType([
-            'uid' => self::ENTRY_TYPE_UID,
-            'name' => StringHelper::randomString(),
-            'handle' => StringHelper::randomString(),
+        Db::insert(Table::SECTIONS_ENTRYTYPES, [
             'sectionId' => $this->_section->id,
-            'hasTitleField' => false,
+            'typeId' => $this->_entryType->id,
+            'sortOrder' => 1,
         ]);
-        $this->_entryType->save();
     }
 
     private function _setupGlobals()

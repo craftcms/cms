@@ -70,7 +70,7 @@ class StructureOperationMutationTest extends TestCase
         $this->invokeMethod($resolver, 'performStructureOperations', [$element, $arguments]);
     }
 
-    public function structureOperationDataProvider(): array
+    public static function structureOperationDataProvider(): array
     {
         return [
             [

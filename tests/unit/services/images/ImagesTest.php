@@ -172,7 +172,7 @@ class ImagesTest extends TestCase
      * @return array
      * @todo Can we get this to fail?
      */
-    public function checkMemoryForImageDataProvider(): array
+    public static function checkMemoryForImageDataProvider(): array
     {
         return [
             [true, 'craft-logo.svg'],

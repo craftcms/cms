@@ -12,7 +12,7 @@ use craft\base\BaseFsInterface;
 use craft\base\FsInterface;
 use craft\base\LocalFsInterface;
 use craft\elements\Asset;
-use craft\enums\PeriodType;
+use craft\enums\TimePeriod;
 use craft\errors\FsException;
 use craft\events\RegisterAssetFileKindsEvent;
 use craft\events\SetAssetFilenameEvent;
@@ -35,7 +35,7 @@ class Assets
     public const INDEX_SKIP_ITEMS_PATTERN = '/.*(Thumbs\.db|__MACOSX|__MACOSX\/|__MACOSX\/.*|\.DS_STORE)$/i';
 
     /**
-     * @event SetElementTableAttributeHtmlEvent The event that is triggered when defining an asset’s filename.
+     * @event SetAssetFilenameEvent The event that is triggered when defining an asset’s filename.
      */
     public const EVENT_SET_FILENAME = 'setFilename';
 
@@ -180,7 +180,7 @@ class Assets
         }
 
         $revParams = self::revParams($asset, $dateUpdated);
-        return sprintf('?%s', http_build_query($revParams));
+        return sprintf('?%s', UrlHelper::buildQuery($revParams));
     }
 
     /**
@@ -333,12 +333,12 @@ class Assets
     public static function periodList(): array
     {
         return [
-            PeriodType::Seconds => Craft::t('app', 'Seconds'),
-            PeriodType::Minutes => Craft::t('app', 'Minutes'),
-            PeriodType::Hours => Craft::t('app', 'Hours'),
-            PeriodType::Days => Craft::t('app', 'Days'),
-            PeriodType::Months => Craft::t('app', 'Months'),
-            PeriodType::Years => Craft::t('app', 'Years'),
+            TimePeriod::Seconds->value => Craft::t('app', 'Seconds'),
+            TimePeriod::Minutes->value => Craft::t('app', 'Minutes'),
+            TimePeriod::Hours->value => Craft::t('app', 'Hours'),
+            TimePeriod::Days->value => Craft::t('app', 'Days'),
+            TimePeriod::Months->value => Craft::t('app', 'Months'),
+            TimePeriod::Years->value => Craft::t('app', 'Years'),
         ];
     }
 

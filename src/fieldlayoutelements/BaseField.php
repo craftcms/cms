@@ -12,7 +12,9 @@ use craft\base\ElementInterface;
 use craft\base\FieldLayoutElement;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Cp;
+use craft\helpers\ElementHelper;
 use craft\helpers\Html;
+use craft\helpers\StringHelper;
 
 /**
  * BaseField is the base class for native and custom fields that can be included in field layouts.
@@ -48,6 +50,18 @@ abstract class BaseField extends FieldLayoutElement
     public bool $required = false;
 
     /**
+     * @var bool Whether this field should be used to define element thumbnails.
+     * @since 5.0.0
+     */
+    public bool $providesThumbs = false;
+
+    /**
+     * @var bool Whether this field’s contents should be included in element cards.
+     * @since 5.0.0
+     */
+    public bool $includeInCards = false;
+
+    /**
      * @inheritdoc
      */
     public function __construct($config = [])
@@ -65,6 +79,17 @@ abstract class BaseField extends FieldLayoutElement
      * @return string
      */
     abstract public function attribute(): string;
+
+    /**
+     * Returns whether the attribute should be shown for admin users with “Show field handles in edit forms” enabled.
+     *
+     * @return bool
+     * @since 4.5.4
+     */
+    public function showAttribute(): bool
+    {
+        return false;
+    }
 
     /**
      * Returns the field’s value.
@@ -112,6 +137,28 @@ abstract class BaseField extends FieldLayoutElement
     }
 
     /**
+     * Returns whether the field can be chosen as elements’ thumbnail provider.
+     *
+     * @return bool
+     * @since 5.0.0
+     */
+    public function thumbable(): bool
+    {
+        return false;
+    }
+
+    /**
+     * Returns whether the field can be included in element cards.
+     *
+     * @return bool
+     * @since 5.0.0
+     */
+    public function previewable(): bool
+    {
+        return false;
+    }
+
+    /**
      * @inheritdoc
      */
     public function selectorHtml(): string
@@ -129,21 +176,14 @@ abstract class BaseField extends FieldLayoutElement
         $innerHtml = '';
 
         $label = $this->selectorLabel();
-        $indicatorHtml =
-            ($this->required ? Html::tag('div', '', [
-                'class' => ['fld-indicator'],
-                'title' => Craft::t('app', 'This field is required'),
-                'aria' => ['label' => Craft::t('app', 'This field is required')],
-                'data' => ['icon' => 'asterisk'],
-                'role' => 'img',
-            ]) : '') .
-            ($this->hasConditions() ? Html::tag('div', '', [
-                'class' => ['fld-indicator'],
-                'title' => Craft::t('app', 'This field is conditional'),
-                'aria' => ['label' => Craft::t('app', 'This field is conditional')],
-                'data' => ['icon' => 'condition'],
-                'role' => 'img',
-            ]) : '');
+
+        $indicatorHtml = implode('', array_map(fn(array $indicator) => Html::tag('div', '', [
+            'class' => ['fld-indicator'],
+            'title' => $indicator['label'],
+            'aria' => ['label' => $indicator['label']],
+            'data' => ['icon' => $indicator['icon']],
+            'role' => 'img',
+        ]), $this->selectorIndicators()));
 
         if ($label !== null) {
             $label = Html::encode($label);
@@ -155,13 +195,16 @@ abstract class BaseField extends FieldLayoutElement
                 ]);
         }
 
-        $innerHtml .= Html::tag('div',
-            Html::tag('div', $this->attribute(), [
-                'class' => ['smalltext', 'light', 'code'],
-                'title' => $this->attribute(),
-            ]) . ($label === null ? $indicatorHtml : ''), [
+        $innerHtml .=
+            Html::beginTag('div', [
                 'class' => 'fld-attribute',
-            ]);
+            ]) .
+            Html::tag('div', $this->attribute(), [
+                'class' => ['smalltext', 'light', 'code', 'fld-attribute-label'],
+                'title' => $this->attribute(),
+            ]) .
+            ($label === null ? $indicatorHtml : '') .
+            Html::endTag('div'); // .fld-attribute
 
         return Html::tag('div', $innerHtml, [
             'class' => ['field-name'],
@@ -181,6 +224,8 @@ abstract class BaseField extends FieldLayoutElement
                 'attribute' => $this->attribute(),
                 'mandatory' => $this->mandatory(),
                 'requirable' => $this->requirable(),
+                'thumbable' => $this->thumbable(),
+                'previewable' => $this->previewable(),
             ],
         ];
     }
@@ -193,6 +238,46 @@ abstract class BaseField extends FieldLayoutElement
     protected function selectorLabel(): ?string
     {
         return $this->showLabel() ? $this->label() : null;
+    }
+
+    /**
+     * Returns the indicators that should be shown within the selector.
+     *
+     * @since 5.0.0
+     */
+    protected function selectorIndicators(): array
+    {
+        $indicators = [];
+
+        if ($this->required) {
+            $indicators[] = [
+                'label' => Craft::t('app', 'This field is required'),
+                'icon' => 'asterisk',
+            ];
+        }
+
+        if ($this->hasConditions()) {
+            $indicators[] = [
+                'label' => Craft::t('app', 'This field is conditional'),
+                'icon' => 'condition',
+            ];
+        }
+
+        if ($this->thumbable() && $this->providesThumbs) {
+            $indicators[] = [
+                'label' => Craft::t('app', 'This field provides thumbnails for elements'),
+                'icon' => 'asset',
+            ];
+        }
+
+        if ($this->previewable() && $this->includeInCards) {
+            $indicators[] = [
+                'label' => Craft::t('app', 'This field is included in element cards'),
+                'icon' => 'check',
+            ];
+        }
+
+        return $indicators;
     }
 
     /**
@@ -247,6 +332,7 @@ abstract class BaseField extends FieldLayoutElement
             'status' => $statusClass ? [$statusClass, $this->statusLabel($element, $static) ?? ucfirst($statusClass)] : null,
             'label' => $label !== null ? Html::encode($label) : null,
             'attribute' => $this->attribute(),
+            'showAttribute' => $this->showAttribute(),
             'required' => !$static && $this->required,
             'instructions' => $instructions !== null ? Html::encode($instructions) : null,
             'tip' => $tip !== null ? Html::encode($tip) : null,
@@ -257,6 +343,30 @@ abstract class BaseField extends FieldLayoutElement
             'copyable' => $this->isCopyable($element, $static),
             'errors' => !$static ? $this->errors($element) : [],
         ]);
+    }
+
+    /**
+     * Returns the HTML for an element’s thumbnail.
+     *
+     * @param ElementInterface $element The element the field is associated with
+     * @param int $size The width and height the thumbnail should have.
+     * @return string|null
+     */
+    public function thumbHtml(ElementInterface $element, int $size): ?string
+    {
+        return null;
+    }
+
+    /**
+     * Returns the field’s preview HTMl.
+     *
+     * @param ElementInterface $element The element the form is being rendered for
+     * @return string
+     */
+    public function previewHtml(ElementInterface $element): string
+    {
+        $attribute = $this->attribute();
+        return ElementHelper::attributeHtml($element->$attribute);
     }
 
     /**
@@ -452,7 +562,7 @@ abstract class BaseField extends FieldLayoutElement
     protected function statusClass(?ElementInterface $element = null, bool $static = false): ?string
     {
         if ($element && ($status = $element->getAttributeStatus($this->attribute()))) {
-            return $status[0];
+            return StringHelper::toString($status[0]);
         }
         return null;
     }

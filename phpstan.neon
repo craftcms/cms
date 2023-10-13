@@ -15,7 +15,6 @@ parameters:
         - tests/_data/*
         - tests/_output/*
         - tests/_support/_generated/
-        - tests/unit/helpers/typecast/
     scanFiles:
         - lib/craft/behaviors/CustomFieldBehavior.php
         - tests/_support/_generated/AcceptanceTesterActions.php
@@ -54,3 +53,5 @@ parameters:
         - '#^Dead catch#'
         - '#^PHPDoc tag @mixin contains invalid type CraftTrait\.$#'
         - '#^Parameter \#2 \$callback of function usort expects#'
+        - '#^Access to an undefined property .*Interface\b.*::\$\w+\.$#'
+        - '#Cannot access property \$\w+ on .*Interface\.$#'

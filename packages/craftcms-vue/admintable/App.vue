@@ -79,6 +79,7 @@
             :detail-row-component="detailRowComponent"
             :fields="fields"
             :per-page="perPage"
+            :no-data-template="noDataTemplate"
             :query-params="queryParams"
             pagination-path="pagination"
             @vuetable:loaded="init"
@@ -544,6 +545,7 @@
 
         this.isLoading = true;
         this.deselectAll();
+        this.$refs.vuetable.normalizeFields();
         this.$refs.vuetable.reload();
       },
 
@@ -608,7 +610,9 @@
         };
 
         if (this.onQueryParams instanceof Function) {
-          params = this.onQueryParams(params);
+          let callbackParams = this.onQueryParams(params);
+          // if `callbackParams` is not undefined, use them instead of `params`
+          params = callbackParams || params;
         }
 
         return params;
@@ -765,6 +769,12 @@
           loadingClass: 'loading',
           tableClass: tableClass,
         };
+      },
+
+      noDataTemplate() {
+        return this.isLoading
+          ? '<div class="spinner"></div>'
+          : '<div class="zilch">' + this.emptyMessage + '</div>';
       },
     },
 

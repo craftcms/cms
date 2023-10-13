@@ -1423,12 +1423,9 @@ JS,
         // set the default group on the user, so that any content
         // based on user group condition can be validated and saved against them
         if ($isPublicRegistration) {
-            $defaultGroupUid = Craft::$app->getProjectConfig()->get('users.defaultGroup');
-            if ($defaultGroupUid) {
-                $group = Craft::$app->userGroups->getGroupByUid($defaultGroupUid);
-                if ($group) {
-                    $user->setGroups([$group]);
-                }
+            $groups = Craft::$app->getUsers()->getDefaultUserGroups($user);
+            if (!empty($groups)) {
+                $user->setGroups($groups);
             }
         }
 
@@ -1448,6 +1445,8 @@ JS,
         // Don't validate required custom fields if it's public registration
         if (!$isPublicRegistration || ($userSettings['validateOnPublicRegistration'] ?? false)) {
             $user->setScenario(Element::SCENARIO_LIVE);
+        } elseif ($isPublicRegistration) {
+            $user->setScenario(User::SCENARIO_REGISTRATION);
         }
 
         // Manually validate the user so we can pass $clearErrors=false
@@ -1841,7 +1840,7 @@ JS,
 
         $summary = [];
 
-        foreach (Craft::$app->getSections()->getAllSections() as $section) {
+        foreach (Craft::$app->getEntries()->getAllSections() as $section) {
             $entryCount = Entry::find()
                 ->sectionId($section->id)
                 ->authorId($userId)
@@ -2105,10 +2104,21 @@ JS,
         $fieldLayout = Craft::$app->getFields()->assembleLayoutFromPost();
         $fieldLayout->type = User::class;
         $fieldLayout->reservedFieldHandles = [
-            'groups',
-            'photo',
+            'active',
+            'addresses',
+            'admin',
+            'email',
             'firstName',
+            'friendlyName',
+            'groups',
             'lastName',
+            'locked',
+            'name',
+            'password',
+            'pending',
+            'photo',
+            'suspended',
+            'username',
         ];
 
         if (!Craft::$app->getUsers()->saveLayout($fieldLayout)) {

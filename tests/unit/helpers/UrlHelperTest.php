@@ -159,7 +159,7 @@ class UrlHelperTest extends TestCase
      */
     public function testEncodeParams(string $expected, string $url): void
     {
-        $this->assertSame($expected, UrlHelper::encodeParams($url));
+        self::assertSame($expected, UrlHelper::encodeParams($url));
     }
 
     /**
@@ -250,7 +250,7 @@ class UrlHelperTest extends TestCase
      */
     public function testActionUrl(): void
     {
-        $expected = str_replace('https', 'http', TestSetup::SITE_URL) . 'index.php?p=actions%2Fendpoint';
+        $expected = str_replace('https', 'http', TestSetup::SITE_URL) . 'index.php?p=actions/endpoint';
         self::assertSame($expected, UrlHelper::actionUrl('endpoint'));
 
         $expected = TestSetup::SITE_URL . 'actions/endpoint';
@@ -270,7 +270,7 @@ class UrlHelperTest extends TestCase
     /**
      * @return array
      */
-    public function buildQueryDataProvider(): array
+    public static function buildQueryDataProvider(): array
     {
         return [
             ['', []],
@@ -279,22 +279,22 @@ class UrlHelperTest extends TestCase
             ['foo=0', ['foo' => false]],
             ['foo=1', ['foo' => true]],
             ['foo=1&bar=2', ['foo' => 1, 'bar' => 2]],
-            ['foo%5B0%5D=1&foo%5B1%5D=2', ['foo' => [1, 2]]],
-            ['foo%5Bbar%5D=baz', ['foo[bar]' => 'baz']],
-            ['foo%5Bbar%5D=baz', ['foo' => ['bar' => 'baz']]],
+            ['foo[0]=1&foo[1]=2', ['foo' => [1, 2]]],
+            ['foo[bar]=baz', ['foo[bar]' => 'baz']],
+            ['foo[bar]=baz', ['foo' => ['bar' => 'baz']]],
             ['foo=bar%2Bbaz', ['foo' => 'bar+baz']],
-            ['foo%2Bbar=baz', ['foo+bar' => 'baz']],
+            ['foo+bar=baz', ['foo+bar' => 'baz']],
             ['foo=bar%5Bbaz%5D', ['foo' => 'bar[baz]']],
             ['foo={bar}', ['foo' => '{bar}']],
-            ['foo%5B1%5D=bar', ['foo[1]' => 'bar']],
-            ['foo%5B1%5D%5Bbar%5D=1&foo%5B1%5D%5Bbaz%5D=2', ['foo[1][bar]' => 1, 'foo[1][baz]' => 2]],
+            ['foo[1]=bar', ['foo[1]' => 'bar']],
+            ['foo[1][bar]=1&foo[1][baz]=2', ['foo[1][bar]' => 1, 'foo[1][baz]' => 2]],
         ];
     }
 
     /**
      * @return array
      */
-    public function isAbsoluteUrlDataProvider(): array
+    public static function isAbsoluteUrlDataProvider(): array
     {
         return [
             'absolute-url' => [true, self::ABSOLUTE_URL],
@@ -309,7 +309,7 @@ class UrlHelperTest extends TestCase
     /**
      * @return array
      */
-    public function isFulUrlDataProvider(): array
+    public static function isFulUrlDataProvider(): array
     {
         return [
             'absolute-url' => [true, self::ABSOLUTE_URL],
@@ -329,7 +329,7 @@ class UrlHelperTest extends TestCase
     /**
      * @return array
      */
-    public function isRootRelativeUrlDataProvider(): array
+    public static function isRootRelativeUrlDataProvider(): array
     {
         return [
             'root-relative-true' => [true, '/22'],
@@ -342,7 +342,7 @@ class UrlHelperTest extends TestCase
     /**
      * @return array
      */
-    public function cpUrlCreationDataProvider(): array
+    public static function cpUrlCreationDataProvider(): array
     {
         return [
             'test-empty' => ['{cpUrl}', '', []],
@@ -379,7 +379,7 @@ class UrlHelperTest extends TestCase
      *
      * @return array
      */
-    public function stripQueryStringDataProvider(): array
+    public static function stripQueryStringDataProvider(): array
     {
         return [
             'invalid-query-string' => [
@@ -406,7 +406,7 @@ class UrlHelperTest extends TestCase
      *
      * @return array
      */
-    public function urlWithParametersDataProvider(): array
+    public static function urlWithParametersDataProvider(): array
     {
         return [
             'with-fragment' => [
@@ -467,7 +467,7 @@ class UrlHelperTest extends TestCase
      *
      * @return array
      */
-    public function urlWithTokenDataProvider(): array
+    public static function urlWithTokenDataProvider(): array
     {
         $https = true;
         $baseUrl = self::ABSOLUTE_URL_HTTPS;
@@ -484,7 +484,7 @@ class UrlHelperTest extends TestCase
                 'value2',
             ],
             [
-                $baseUrl . '?token=',
+                $baseUrl . '?token',
                 $baseUrl . '',
                 '',
             ],
@@ -506,7 +506,7 @@ class UrlHelperTest extends TestCase
      *
      * @return array
      */
-    public function urlWithSchemeDataProvider(): array
+    public static function urlWithSchemeDataProvider(): array
     {
         return [
             'no-scheme' => [
@@ -560,7 +560,7 @@ class UrlHelperTest extends TestCase
     /**
      * @return array
      */
-    public function encodeParamsDataProvider(): array
+    public static function encodeParamsDataProvider(): array
     {
         return [
             ['http://example.test', 'http://example.test?'],
@@ -576,7 +576,7 @@ class UrlHelperTest extends TestCase
      *
      * @return array
      */
-    public function rootRelativeUrlDataProvider(): array
+    public static function rootRelativeUrlDataProvider(): array
     {
         return [
             ['/', ''],
@@ -598,7 +598,7 @@ class UrlHelperTest extends TestCase
     /**
      * @return array
      */
-    public function urlFunctionDataProvider(): array
+    public static function urlFunctionDataProvider(): array
     {
         return [
             'base' => [
@@ -623,7 +623,7 @@ class UrlHelperTest extends TestCase
         ];
     }
 
-    public function hostInfoDataProvider(): array
+    public static function hostInfoDataProvider(): array
     {
         return [
             ['https://google.com', 'https://google.com'],
@@ -634,12 +634,12 @@ class UrlHelperTest extends TestCase
         ];
     }
 
-    public function siteUrlDataProvider(): array
+    public static function siteUrlDataProvider(): array
     {
         return [
             ['{siteUrl}endpoint', 'endpoint'],
             // https://github.com/craftcms/cms/issues/4778
-            ['{siteUrl}endpoint?param1=x&param2%5B0%5D=y&param2%5B1%5D=z', 'endpoint', 'param1=x&param2[]=y&param2[]=z'],
+            ['{siteUrl}endpoint?param1=x&param2[0]=y&param2[1]=z', 'endpoint', 'param1=x&param2[]=y&param2[]=z'],
         ];
     }
 

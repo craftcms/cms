@@ -352,7 +352,7 @@ class DbController extends Controller
 
         if ($collation === null) {
             $collation = $this->prompt('Which collation should be used?', [
-                'default' => $dbConfig->collation ?? 'utf8_unicode_ci',
+                'default' => $dbConfig->collation ?? Db::defaultCollation($db),
             ]);
         }
 

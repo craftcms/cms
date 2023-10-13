@@ -54,26 +54,20 @@ Craft.BaseElementIndexView = Garnish.Base.extend(
       if (this.settings.selectable) {
         this.elementSelect = new Garnish.Select(
           this.$elementContainer,
-          $(
-            $elements
-              .toArray()
-              .filter((element) => this.canSelectElement($(element)))
-          ),
+          this.filterSelectableElements($elements),
           {
             multi: this.settings.multiSelect,
             vertical: this.isVerticalList(),
-            handle:
-              this.settings.context === 'index'
-                ? '.checkbox, .element:first'
-                : null,
-            filter: ':not(a):not(.toggle)',
+            filter: ':not(a[href]):not(.toggle):not(.btn)',
             checkboxMode: this.settings.checkboxMode,
             onSelectionChange: this.onSelectionChange.bind(this),
           }
         );
 
         this._handleEnableElements = (ev) => {
-          this.elementSelect.addItems(ev.elements);
+          this.elementSelect.addItems(
+            this.filterSelectableElements($(ev.elements))
+          );
         };
 
         this._handleDisableElements = (ev) => {
@@ -85,7 +79,7 @@ Craft.BaseElementIndexView = Garnish.Base.extend(
       }
 
       // Enable inline element editing if this is an index page
-      if (this.settings.context === 'index') {
+      if (this.elementIndex.isAdministrative) {
         this._handleElementEditing = (ev) => {
           var $target = $(ev.target);
 
@@ -106,7 +100,10 @@ Craft.BaseElementIndexView = Garnish.Base.extend(
             }
           }
 
-          if (Garnish.hasAttr($element, 'data-editable')) {
+          if (
+            Garnish.hasAttr($element, 'data-editable') &&
+            !$element.closest('.elementselect').length
+          ) {
             Craft.createElementEditor($element.data('type'), $element);
           }
         };
@@ -124,7 +121,7 @@ Craft.BaseElementIndexView = Garnish.Base.extend(
       this.afterInit();
 
       // Set up lazy-loading
-      if (this.settings.batchSize) {
+      if (!this.elementIndex.paginated && this.settings.batchSize) {
         if (this.settings.context === 'index') {
           this.$scroller = Garnish.$scrollContainer;
         } else {
@@ -137,10 +134,26 @@ Craft.BaseElementIndexView = Garnish.Base.extend(
       }
     },
 
-    canSelectElement: function ($element) {
-      if ($element.hasClass('disabled')) {
-        return false;
+    filterSelectableElements: function ($elements) {
+      const selectable = [];
+
+      for (let i = 0; i < $elements.length; i++) {
+        const $element = $elements.eq(i);
+        if ($element.hasClass('disabled')) {
+          continue;
+        }
+        if (this.canSelectElement($element)) {
+          selectable.push($element[0]);
+        } else {
+          // make sure it doesn't have a checkbox
+          $element.find('.checkbox').remove();
+        }
       }
+
+      return $(selectable);
+    },
+
+    canSelectElement: function ($element) {
       if (this.settings.canSelectElement) {
         return this.settings.canSelectElement($element);
       }
@@ -148,7 +161,7 @@ Craft.BaseElementIndexView = Garnish.Base.extend(
     },
 
     getElementContainer: function () {
-      throw 'Classes that extend Craft.BaseElementIndexView must supply a getElementContainer() method.';
+      return this.$container;
     },
 
     afterInit: function () {},
@@ -190,7 +203,10 @@ Craft.BaseElementIndexView = Garnish.Base.extend(
       let ids = [];
       if ($selectedElements) {
         for (var i = 0; i < $selectedElements.length; i++) {
-          ids.push($selectedElements.eq(i).data('id'));
+          const id = $selectedElements.eq(i).data('id');
+          if (id) {
+            ids.push(id);
+          }
         }
       }
       return ids;
@@ -313,6 +329,11 @@ Craft.BaseElementIndexView = Garnish.Base.extend(
           this.loadingMore = false;
           this.$loadingMoreSpinner.addClass('hidden');
 
+          if (this.isAdministrative) {
+            // set Craft.currentElementIndex for actions
+            Craft.currentElementIndex = this;
+          }
+
           let $newElements = $(response.data.html);
 
           this.appendElements($newElements);
@@ -320,7 +341,9 @@ Craft.BaseElementIndexView = Garnish.Base.extend(
           Craft.appendBodyHtml(response.data.bodyHtml);
 
           if (this.elementSelect) {
-            this.elementSelect.addItems($newElements.filter(':not(.disabled)'));
+            this.elementSelect.addItems(
+              this.filterSelectableElements($newElements)
+            );
             this.elementIndex.updateActionTriggers();
           }
 
@@ -410,9 +433,11 @@ Craft.BaseElementIndexView = Garnish.Base.extend(
       multiSelect: false,
       canSelectElement: null,
       checkboxMode: false,
+      sortable: false,
       loadMoreElementsAction: 'element-indexes/get-more-elements',
       onAppendElements: $.noop,
       onSelectionChange: $.noop,
+      onSortChange: $.noop,
     },
   }
 );

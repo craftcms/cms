@@ -21,6 +21,7 @@ use craft\elements\conditions\users\UserCondition;
 use craft\elements\db\AddressQuery;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\db\UserQuery;
+use craft\enums\PropagationMethod;
 use craft\events\AuthenticateUserEvent;
 use craft\events\DefineValueEvent;
 use craft\helpers\App;
@@ -78,6 +79,11 @@ class User extends Element implements IdentityInterface
     use NameTrait;
 
     /**
+     * @since 5.0.0
+     */
+    public const GQL_TYPE_NAME = 'User';
+
+    /**
      * @event AuthenticateUserEvent The event that is triggered before a user is authenticated.
      *
      * If you wish to offload authentication logic, then set [[AuthenticateUserEvent::$performAuthentication]] to `false`, and set [[$authError]] to
@@ -98,6 +104,26 @@ class User extends Element implements IdentityInterface
     public const EVENT_DEFINE_FRIENDLY_NAME = 'defineFriendlyName';
 
     public const IMPERSONATE_KEY = 'Craft.UserSessionService.prevImpersonateUserId';
+
+    private static array $photoColors = [
+        'red-100',
+        'orange-200',
+        'amber-200',
+        'yellow-200',
+        'lime-200',
+        'green-200',
+        'emerald-200',
+        'teal-200',
+        'cyan-200',
+        'sky-200',
+        'blue-200',
+        'indigo-200',
+        'violet-200',
+        'purple-200',
+        'fuchsia-200',
+        'pink-100',
+        'rose-200',
+    ];
 
     // User statuses
     // -------------------------------------------------------------------------
@@ -185,7 +211,7 @@ class User extends Element implements IdentityInterface
     /**
      * @inheritdoc
      */
-    public static function hasContent(): bool
+    public static function hasThumbs(): bool
     {
         return true;
     }
@@ -500,15 +526,6 @@ class User extends Element implements IdentityInterface
         return parent::eagerLoadingMap($sourceElements, $handle);
     }
 
-    /**
-     * @inheritdoc
-     * @since 3.3.0
-     */
-    public static function gqlTypeNameByContext(mixed $context): string
-    {
-        return 'User';
-    }
-
     // IdentityInterface Methods
     // -------------------------------------------------------------------------
 
@@ -684,6 +701,11 @@ class User extends Element implements IdentityInterface
      * @see getAddresses()
      */
     private array $_addresses;
+
+    /**
+     * @see getAddressManager()
+     */
+    private NestedElementManager $_addressManager;
 
     /**
      * @var string|null
@@ -953,14 +975,40 @@ class User extends Element implements IdentityInterface
             }
 
             /** @var Address[] $addresses */
-            $addresses = Address::find()
-                ->ownerId($this->id)
-                ->orderBy(['id' => SORT_ASC])
-                ->all();
+            $addresses = $this->createAddressQuery()->all();
             $this->_addresses = $addresses;
         }
 
         return $this->_addresses;
+    }
+
+    /**
+     * Returns a nested element manager for the user’s addresses.
+     *
+     * @return NestedElementManager
+     * @since 5.0.0
+     */
+    public function getAddressManager(): NestedElementManager
+    {
+        if (!isset($this->_addressManager)) {
+            $this->_addressManager = new NestedElementManager(
+                Address::class,
+                fn() => $this->createAddressQuery(),
+                [
+                    'attribute' => 'addresses',
+                    'propagationMethod' => PropagationMethod::None,
+                ],
+            );
+        }
+
+        return $this->_addressManager;
+    }
+
+    private function createAddressQuery(): AddressQuery
+    {
+        return Address::find()
+            ->ownerId($this->id)
+            ->orderBy(['id' => SORT_ASC]);
     }
 
     /**
@@ -1250,7 +1298,7 @@ class User extends Element implements IdentityInterface
     /**
      * @inheritdoc
      */
-    public function getThumbUrl(int $size): ?string
+    protected function thumbUrl(int $size): ?string
     {
         $photo = $this->getPhoto();
 
@@ -1266,13 +1314,41 @@ class User extends Element implements IdentityInterface
      */
     protected function thumbSvg(): ?string
     {
-        return file_get_contents(Craft::getAlias('@appicons/user.svg'));
+        $names = array_filter([$this->firstName, $this->lastName]) ?: [$this->getName()];
+        $initials = implode('', array_map(fn($name) => mb_strtoupper(mb_substr($name, 0, 1)), $names));
+
+        // Choose a color based on the UUID
+        $uid = strtolower($this->uid ?? '00ff');
+        $totalColors = count(self::$photoColors);
+        $color1Index = base_convert(substr($uid, 0, 2), 16, 10) % $totalColors;
+        $color2Index = base_convert(substr($uid, 2, 2), 16, 10) % $totalColors;
+        if ($color2Index === $color1Index) {
+            $color2Index = ($color1Index + 1) % $totalColors;
+        }
+        $color1 = self::$photoColors[$color1Index % $totalColors];
+        $color2 = self::$photoColors[$color2Index % $totalColors];
+
+        $gradientId = sprintf('gradient-%s', StringHelper::randomString(10));
+
+        return <<<XML
+<svg version="1.1" baseProfile="full" width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <linearGradient id="$gradientId" x1="0" y1="1" x2="1"  y2="0">
+        <stop offset="0%" style="stop-color:var(--$color1)" />
+        <stop offset="100%" style="stop-color:var(--$color2)" />
+      </linearGradient>
+    </defs>
+    <circle cx="50" cy="50" r="50" fill="url(#$gradientId)"/>
+    <text x="50" y="69" font-size="46" font-family="sans-serif" text-anchor="middle" fill="var(--white)" fill-opacity="0.4">$initials</text>
+    <text x="50" y="66" font-size="46" font-family="sans-serif" text-anchor="middle" fill="var(--black)" fill-opacity="0.65">$initials</text>
+</svg>
+XML;
     }
 
     /**
      * @inheritdoc
      */
-    public function getThumbAlt(): ?string
+    protected function thumbAlt(): ?string
     {
         return $this->getPhoto()?->alt ?? $this->getName();
     }
@@ -1280,7 +1356,7 @@ class User extends Element implements IdentityInterface
     /**
      * @inheritdoc
      */
-    public function getHasRoundedThumb(): bool
+    protected function hasRoundedThumb(): bool
     {
         return true;
     }
@@ -1579,7 +1655,7 @@ class User extends Element implements IdentityInterface
     /**
      * @inheritdoc
      */
-    protected function tableAttributeHtml(string $attribute): string
+    protected function attributeHtml(string $attribute): string
     {
         switch ($attribute) {
             case 'email':
@@ -1592,14 +1668,14 @@ class User extends Element implements IdentityInterface
 
             case 'preferredLanguage':
                 $language = $this->getPreferredLanguage();
-                return $language ? (new Locale($language))->getDisplayName(Craft::$app->language) : '';
+                return $language ? Craft::$app->getI18n()->getLocaleById($language)->getDisplayName(Craft::$app->language) : '';
 
             case 'preferredLocale':
                 $locale = $this->getPreferredLocale();
-                return $locale ? (new Locale($locale))->getDisplayName(Craft::$app->language) : '';
+                return $locale ? Craft::$app->getI18n()->getLocaleById($locale)->getDisplayName(Craft::$app->language) : '';
         }
 
-        return parent::tableAttributeHtml($attribute);
+        return parent::attributeHtml($attribute);
     }
 
     /**
@@ -1690,7 +1766,7 @@ class User extends Element implements IdentityInterface
      */
     public function getGqlTypeName(): string
     {
-        return static::gqlTypeNameByContext($this);
+        return self::GQL_TYPE_NAME;
     }
 
     // Events

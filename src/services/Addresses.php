@@ -18,13 +18,13 @@ use CommerceGuys\Addressing\Formatter\DefaultFormatter;
 use CommerceGuys\Addressing\Formatter\FormatterInterface;
 use Craft;
 use craft\addresses\SubdivisionRepository;
+use craft\base\FieldLayoutProviderInterface;
 use craft\elements\Address;
 use craft\events\ConfigEvent;
 use craft\events\DefineAddressFieldLabelEvent;
 use craft\events\DefineAddressFieldsEvent;
 use craft\events\DefineAddressSubdivisionsEvent;
 use craft\helpers\ProjectConfig as ProjectConfigHelper;
-use craft\helpers\StringHelper;
 use craft\models\FieldLayout;
 use craft\models\FieldLayoutTab;
 use yii\base\Component;
@@ -39,7 +39,7 @@ use yii\base\Component;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.0.0
  */
-class Addresses extends Component
+class Addresses extends Component implements FieldLayoutProviderInterface
 {
     /**
      * @event DefineAddressFieldsEvent The event that is triggered when defining the address fields that are used by a given country code.
@@ -330,11 +330,18 @@ class Addresses extends Component
     }
 
     /**
-     * Returns the address field layout.
-     *
-     * @return FieldLayout
+     * @inheritdoc
      */
-    public function getLayout(): FieldLayout
+    public function getHandle(): ?string
+    {
+        return null;
+    }
+
+    /**
+     * @inheritdoc
+     * @since 5.0.0
+     */
+    public function getFieldLayout(): FieldLayout
     {
         $fieldLayout = Craft::$app->getFields()->getLayoutByType(Address::class);
 
@@ -367,11 +374,10 @@ class Addresses extends Component
             return false;
         }
 
-        $projectConfig = Craft::$app->getProjectConfig();
-        $fieldLayoutConfig = $layout->getConfig();
-        $uid = StringHelper::UUID();
+        Craft::$app->getProjectConfig()->set(ProjectConfig::PATH_ADDRESS_FIELD_LAYOUTS, [
+            $layout->uid => $layout->getConfig(),
+        ], 'Save the address field layout');
 
-        $projectConfig->set(ProjectConfig::PATH_ADDRESS_FIELD_LAYOUTS, [$uid => $fieldLayoutConfig], 'Save the address field layout');
         return true;
     }
 
@@ -396,7 +402,7 @@ class Addresses extends Component
 
         // Save the field layout
         $layout = FieldLayout::createFromConfig($config);
-        $layout->id = $this->getLayout()->id;
+        $layout->id = $this->getFieldLayout()->id;
         $layout->type = Address::class;
         $layout->uid = key($data);
         $fieldsService->saveLayout($layout);

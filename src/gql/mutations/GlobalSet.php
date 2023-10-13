@@ -55,7 +55,6 @@ class GlobalSet extends Mutation
      */
     public static function createSaveMutation(GlobalSetElement $globalSet): array
     {
-        $mutationName = GlobalSetElement::gqlMutationNameByContext($globalSet);
         $generatedType = GlobalSetType::generateType($globalSet);
 
         /** @var GlobalSetResolver $resolver */
@@ -66,7 +65,7 @@ class GlobalSet extends Mutation
         $mutationArguments = $resolver->getResolutionData(ElementMutationResolver::CONTENT_FIELD_KEY);
 
         return [
-            'name' => $mutationName,
+            'name' => "save_{$globalSet->handle}_GlobalSet",
             'description' => 'Update the ”' . $globalSet . '“ global set.',
             'args' => $mutationArguments,
             'resolve' => [$resolver, 'saveGlobalSet'],

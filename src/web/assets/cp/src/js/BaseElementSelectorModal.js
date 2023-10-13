@@ -448,7 +448,7 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend(
           condition: this.settings.condition,
           referenceElementId: this.settings.referenceElementId,
           referenceElementSiteId: this.settings.referenceElementSiteId,
-          criteria: this.settings.criteria,
+          criteria: Object.assign({}, this.settings.criteria),
           disabledElementIds: this.settings.disabledElementIds,
           selectable: true,
           multiSelect: this.settings.multiSelect,

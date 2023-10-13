@@ -14,8 +14,9 @@ namespace crafttests\unit\helpers\typecast;
  */
 class EnumModel
 {
-    /** @phpstan-ignore-next-line */
     public Suit $suit;
-    /** @phpstan-ignore-next-line */
+
+    public Suit $anotherSuit;
+
     public ?Suit $nullableSuit;
 }

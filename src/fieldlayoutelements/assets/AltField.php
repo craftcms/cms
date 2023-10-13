@@ -11,6 +11,7 @@ use Craft;
 use craft\base\ElementInterface;
 use craft\base\Field;
 use craft\fieldlayoutelements\TextareaField;
+use craft\helpers\Html;
 
 /**
  * AltField represents an Alternative Text field that can be included within a volume’s field layout designer.
@@ -65,6 +66,26 @@ class AltField extends TextareaField
             $fields['translatable'],
         );
         return $fields;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function previewable(): bool
+    {
+        return true;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function previewHtml(ElementInterface $element): string
+    {
+        return Html::tag('div', parent::previewHtml($element), [
+            'aria' => [
+                'hidden' => true,
+            ],
+        ]);
     }
 
     /**

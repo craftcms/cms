@@ -13,6 +13,7 @@ use craft\helpers\DateTimeHelper;
 use craft\test\TestCase;
 use DateInterval;
 use DateTime;
+use DateTimeImmutable;
 use DateTimeZone;
 use Exception;
 use UnitTester;
@@ -136,6 +137,10 @@ class DateTimeHelperTest extends TestCase
     {
         if (is_callable($expected)) {
             $expected = $expected();
+        }
+
+        if (is_callable($value)) {
+            $value = $value();
         }
 
         if ($expected === false) {
@@ -421,7 +426,7 @@ class DateTimeHelperTest extends TestCase
     /**
      * @return array
      */
-    public function constantsDataProvider(): array
+    public static function constantsDataProvider(): array
     {
         return [
             [86400, DateTimeHelper::SECONDS_DAY],
@@ -435,14 +440,12 @@ class DateTimeHelperTest extends TestCase
     /**
      * @return array
      */
-    public function toDateTimeDataProvider(): array
+    public static function toDateTimeDataProvider(): array
     {
         return [
             'timestamp' => [new DateTime('@1625575906'), 1625575906],
             'now' => [
-                function() {
-                    return new DateTime();
-                },
+                fn() => new DateTime(),
                 'now',
             ],
             'no-params' => [false, ['date' => '', 'time' => '']],
@@ -452,16 +455,20 @@ class DateTimeHelperTest extends TestCase
             'empty-string' => [false, ''],
             'empty-array' => [false, []],
             'year' => [
-                function() {
-                    return new DateTime('2021-01-01 00:00:00', new DateTimeZone('UTC'));
-                },
+                fn() => new DateTime('2021-01-01 00:00:00', new DateTimeZone('UTC')),
                 '2021',
             ],
             'datetime-with-timezone' => [
-                function() {
-                    return new DateTime('2021-09-01T12:00', new DateTimeZone('Europe/Berlin'));
-                },
+                fn() => new DateTime('2021-09-01T12:00', new DateTimeZone('Europe/Berlin')),
                 ['datetime' => '2021-09-01T12:00', 'timezone' => 'Europe/Berlin'],
+            ],
+            'datetime-immutable' => [
+                fn() => new DateTime('@1625575906'),
+                fn() => new DateTimeImmutable('@1625575906'),
+            ],
+            'other-locale' => [
+                new DateTime('2023-09-26 00:00:00', new DateTimeZone('UTC')),
+                ['date' => '26/9/2023', 'locale' => 'en-GB'],
             ],
         ];
     }
@@ -470,7 +477,7 @@ class DateTimeHelperTest extends TestCase
      * @return array
      * @throws Exception
      */
-    public function simpleDateTimeFormatsDataProvider(): array
+    public static function simpleDateTimeFormatsDataProvider(): array
     {
         return [
             'mysql' => ['2018-08-08 20:00:00'],
@@ -483,7 +490,7 @@ class DateTimeHelperTest extends TestCase
     /**
      * @return array
      */
-    public function isInvalidIntervalStringDataProvider(): array
+    public static function isInvalidIntervalStringDataProvider(): array
     {
         return [
             [true, '1 day'],
@@ -503,7 +510,7 @@ class DateTimeHelperTest extends TestCase
     /**
      * @return array
      */
-    public function formatsWithTimezoneDataProvider(): array
+    public static function formatsWithTimezoneDataProvider(): array
     {
         $dt = function() {
             $dt = new DateTime('2018-08-09 20:00:00', new DateTimeZone('Asia/Tokyo'));
@@ -527,7 +534,7 @@ class DateTimeHelperTest extends TestCase
     /**
      * @return array
      */
-    public function toDateTimeWithTzFormatsDataProvider(): array
+    public static function toDateTimeWithTzFormatsDataProvider(): array
     {
         $basicDateTimeCreator = function($timezone) {
             $tz = new DateTimezone($timezone);
@@ -556,7 +563,7 @@ class DateTimeHelperTest extends TestCase
     /**
      * @return array
      */
-    public function toDateTimeFormatsDataProvider(): array
+    public static function toDateTimeFormatsDataProvider(): array
     {
         // Because we dont have access to Craft::$app here we smuggle this in via callback and call it in the test function. Which does have access to Craft::$app.
         $dt = function($dateParam = '2018-08-09 20:00:00') {
@@ -603,7 +610,7 @@ class DateTimeHelperTest extends TestCase
     /**
      * @return array
      */
-    public function normalizeTimeZoneDataProvider(): array
+    public static function normalizeTimeZoneDataProvider(): array
     {
         return [
             ['America/New_York', 'EST'],
@@ -621,7 +628,7 @@ class DateTimeHelperTest extends TestCase
      * @return array
      * @throws Exception
      */
-    public function isIsIso8601DataProvider(): array
+    public static function isIsIso8601DataProvider(): array
     {
         return [
             [true, '2018-09-30T13:41:06+00:00'],
@@ -637,7 +644,7 @@ class DateTimeHelperTest extends TestCase
     /**
      * @return array
      */
-    public function humanDurationDataProvider(): array
+    public static function humanDurationDataProvider(): array
     {
         return [
             ['1 day', 'P1D'],
@@ -678,17 +685,18 @@ class DateTimeHelperTest extends TestCase
     /**
      * @return array
      */
-    public function toDateIntervalDataProvider(): array
+    public static function toDateIntervalDataProvider(): array
     {
         return [
             [10, 10],
+            [-10, -10],
         ];
     }
 
     /**
      * @return array
      */
-    public function secondsToIntervalDataProvider(): array
+    public static function secondsToIntervalDataProvider(): array
     {
         return [
             [10, 10000, 10],
@@ -700,7 +708,7 @@ class DateTimeHelperTest extends TestCase
     /**
      * @return array
      */
-    public function intervalToSecondsDataProvider(): array
+    public static function intervalToSecondsDataProvider(): array
     {
         return [
             [86400, 'P1D'],
@@ -712,7 +720,7 @@ class DateTimeHelperTest extends TestCase
      * @return array
      * @throws Exception
      */
-    public function toIso8601DataProvider(): array
+    public static function toIso8601DataProvider(): array
     {
         $amsterdamTime = new DateTime('2018-08-08 20:00:00', new DateTimeZone('Europe/Amsterdam'));
         $tokyoTime = new DateTime('2018-08-08 20:00:00', new DateTimeZone('Asia/Tokyo'));
@@ -728,7 +736,7 @@ class DateTimeHelperTest extends TestCase
      * @return array
      * @throws Exception
      */
-    public function isValidTimeStampDataProvider(): array
+    public static function isValidTimeStampDataProvider(): array
     {
         $amsterdamTime = new DateTime('2018-12-30 20:00:00', new DateTimeZone('Europe/Amsterdam'));
         $tokyoTime = new DateTime('2018-12-30 20:00:00', new DateTimeZone('Asia/Tokyo'));

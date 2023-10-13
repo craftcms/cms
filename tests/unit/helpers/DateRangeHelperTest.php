@@ -67,7 +67,7 @@ class DateRangeHelperTest extends TestCase
     /**
      * @return array[]
      */
-    public function dateRangeByTypeDataProvider(): array
+    public static function dateRangeByTypeDataProvider(): array
     {
         return [
             'today' => [
@@ -125,7 +125,7 @@ class DateRangeHelperTest extends TestCase
      * @return array[]
      * @throws Exception
      */
-    public function getDateIntervalByTimePeriodDataProvider(): array
+    public static function getDateIntervalByTimePeriodDataProvider(): array
     {
         $now = new DateTime('now', new DateTimeZone('America/Los_Angeles'));
         $then = (clone $now)->modify("+" . (86400 * 4) . " seconds");

@@ -774,7 +774,7 @@ li.breadcrumb-toggle-wrapper {
       .notification-details {
         margin-top: var(--xs);
 
-        .element {
+        .chip {
           border: 1px solid $hairlineColor;
         }
       }
@@ -794,8 +794,8 @@ li.breadcrumb-toggle-wrapper {
 
 #crumbs,
 #header {
-  padding-left: var(--xl);
-  padding-right: var(--xl);
+  padding-left: var(--padding);
+  padding-right: var(--padding);
 }
 
 #primary-nav-toggle {
@@ -937,7 +937,7 @@ li.breadcrumb-toggle-wrapper {
   flex-direction: row;
   align-items: flex-start;
   width: calc(100vw - #{$sidebarWidth});
-  padding: 0 var(--xl) 48px;
+  padding: 0 var(--padding) 48px;
   box-sizing: border-box;
 
   // for the Dashboard and any other full-page grids:
@@ -961,16 +961,14 @@ li.breadcrumb-toggle-wrapper {
 }
 
 #sidebar {
+  position: relative;
   box-sizing: border-box;
-  padding: 0 31px;
+  padding: 0 31px var(--m);
   width: $sidebarWidth;
   background-color: transparent;
 
   &.fixed {
     position: fixed;
-    overflow-y: auto;
-    padding-top: var(--m);
-    padding-bottom: var(--m);
   }
 
   nav {
@@ -1032,7 +1030,7 @@ li.breadcrumb-toggle-wrapper {
   border-radius: var(--large-border-radius);
   position: relative;
   background-clip: padding-box;
-  padding: var(--xl);
+  padding: var(--xl) var(--padding);
   word-wrap: break-word;
 
   & > hr {
@@ -1045,8 +1043,9 @@ li.breadcrumb-toggle-wrapper {
   position: sticky;
   bottom: 0;
   z-index: 1;
-  margin: 25px calc((var(--xl) * -1) + 2px) calc((var(--xl) * -1) + 2px); // 1px extra on top is intentional
-  padding: var(--s) var(--xl);
+  margin: calc(var(--xl) + 1px) calc(var(--padding) * -1 + 2px)
+    calc(var(--xl) * -1 + 2px);
+  padding: var(--s) var(--padding);
   background-color: var(--gray-050);
   border-radius: var(--small-border-radius);
   box-sizing: border-box;
@@ -1093,14 +1092,15 @@ li.breadcrumb-toggle-wrapper {
   @include padding-right(var(--xl));
   @include padding-left(var(--m));
   width: $detailsWidth + 38;
+  z-index: 1;
 
   &.fixed {
     position: fixed;
-    overflow-y: auto;
-    padding-top: var(--m);
   }
 
   .details {
+    padding-bottom: calc(var(--xl) + 11.5em);
+
     .meta {
       border-radius: var(--large-border-radius);
 
@@ -1264,16 +1264,18 @@ li.breadcrumb-toggle-wrapper {
   #details {
     padding: 0 !important;
     margin-top: var(--m);
+
+    .details {
+      margin-bottom: auto;
+    }
   }
 }
 
 // Tighten up the padding at < 768
 @media only screen and (max-width: 767px) {
-  #crumbs,
-  #header,
-  #main-content {
-    padding-left: 10px !important;
-    padding-right: 10px !important;
+  :root {
+    --padding: var(--s);
+    --neg-padding: calc(var(--s) * -1);
   }
 
   #tabs ul li {
@@ -1285,6 +1287,11 @@ li.breadcrumb-toggle-wrapper {
     & + li {
       @include margin-left(-7px);
     }
+  }
+
+  .card-grid {
+    display: flex !important;
+    flex-direction: column;
   }
 }
 
@@ -1508,6 +1515,38 @@ li.breadcrumb-toggle-wrapper {
           display: block;
         }
       }
+    }
+  }
+}
+
+.error-summary {
+  margin-bottom: var(--l);
+  padding: var(--l) var(--xl) var(--xl);
+  box-sizing: border-box;
+  box-shadow: 0 0 0 1px #cdd8e4, 0 2px 12px rgba(205, 216, 228, 0.5);
+  border-radius: var(--large-border-radius);
+  background-color: var(--gray-050);
+
+  .notification-icon {
+    color: var(--error-color);
+    margin: -2px 6px 0 0;
+    float: left;
+  }
+
+  h2 {
+    margin-top: var(--xs);
+  }
+
+  & > ul.errors li,
+  & > ul.errors li a {
+    color: var(--text-color);
+
+    em {
+      font-weight: 600;
+    }
+
+    &:hover {
+      color: var(--link-color);
     }
   }
 }

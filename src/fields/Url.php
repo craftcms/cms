@@ -11,7 +11,7 @@ use Craft;
 use craft\base\CopyableFieldInterface;
 use craft\base\ElementInterface;
 use craft\base\Field;
-use craft\base\PreviewableFieldInterface;
+use craft\base\InlineEditableFieldInterface;
 use craft\fields\conditions\TextFieldConditionRule;
 use craft\helpers\Cp;
 use craft\helpers\ElementHelper;
@@ -31,7 +31,7 @@ use yii\validators\EmailValidator;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
-class Url extends Field implements PreviewableFieldInterface, CopyableFieldInterface
+class Url extends Field implements InlineEditableFieldInterface, CopyableFieldInterface
 {
     /**
      * @since 3.6.0
@@ -57,9 +57,17 @@ class Url extends Field implements PreviewableFieldInterface, CopyableFieldInter
     /**
      * @inheritdoc
      */
-    public static function valueType(): string
+    public static function phpType(): string
     {
         return 'string|null';
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function dbType(): string
+    {
+        return Schema::TYPE_STRING;
     }
 
     /**
@@ -112,14 +120,6 @@ class Url extends Field implements PreviewableFieldInterface, CopyableFieldInter
     /**
      * @inheritdoc
      */
-    public function getContentColumnType(): string
-    {
-        return sprintf('%s(%s)', Schema::TYPE_STRING, $this->maxLength);
-    }
-
-    /**
-     * @inheritdoc
-     */
     public function getSettingsHtml(): ?string
     {
         return
@@ -151,7 +151,7 @@ class Url extends Field implements PreviewableFieldInterface, CopyableFieldInter
     /**
      * @inheritdoc
      */
-    public function normalizeValue(mixed $value, ?ElementInterface $element = null): mixed
+    public function normalizeValue(mixed $value, ?ElementInterface $element): mixed
     {
         if (is_array($value) && isset($value['value'])) {
             $type = $value['type'] ?? self::TYPE_URL;
@@ -195,7 +195,7 @@ class Url extends Field implements PreviewableFieldInterface, CopyableFieldInter
     /**
      * @inheritdoc
      */
-    protected function inputHtml(mixed $value, ?ElementInterface $element = null): string
+    protected function inputHtml(mixed $value, ?ElementInterface $element, bool $inline): string
     {
         if (is_string($value)) {
             $valueType = $this->_urlType($value);
@@ -328,6 +328,7 @@ JS;
                 UrlValidator::class,
                 'pattern' => '/' . implode('|', $patterns) . '/i',
             ],
+            ['string', 'max' => $this->maxLength],
         ];
     }
 
@@ -342,7 +343,7 @@ JS;
     /**
      * @inheritdoc
      */
-    public function getTableAttributeHtml(mixed $value, ElementInterface $element): string
+    public function getPreviewHtml(mixed $value, ElementInterface $element): string
     {
         if (!$value) {
             return '';

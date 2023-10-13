@@ -126,7 +126,6 @@ JS;
             'Apply',
             'Are you sure you want to close the editor? Any changes will be lost.',
             'Are you sure you want to close this screen? Any changes will be lost.',
-            'Are you sure you want to delete this address?',
             'Are you sure you want to delete this image?',
             'Are you sure you want to delete “{name}”?',
             'Are you sure you want to discard your changes?',
@@ -136,6 +135,8 @@ JS;
             'Breadcrumbs',
             'Buy {name}',
             'Cancel',
+            'Changes saved.',
+            'Choose a page',
             'Choose a user',
             'Choose which sites this source should be visible for.',
             'Choose which table columns should be visible for this source by default.',
@@ -152,6 +153,7 @@ JS;
             'Copy the URL',
             'Copy the reference tag',
             'Copy to clipboard',
+            'Could not save due to validation errors.',
             'Couldn’t delete “{name}”.',
             'Couldn’t save new order.',
             'Create',
@@ -177,6 +179,7 @@ JS;
             'Done',
             'Draft Name',
             'Edit draft settings',
+            'Edit {type}',
             'Edit',
             'Edited',
             'Element',
@@ -199,15 +202,16 @@ JS;
             'Folder renamed.',
             'Folder renamed.',
             'Format',
+            'Found {num, number} {num, plural, =1{error} other{errors}}',
             'From {date}',
             'From',
             'Give your tab a name.',
             'Handle',
             'Heading',
             'Height unit',
-            'Hide nested sources',
             'Hide sidebar',
             'Hide',
+            'Include this field in element cards',
             'Incorrect password.',
             'Information',
             'Instructions',
@@ -222,7 +226,6 @@ JS;
             'Loading',
             'Make not required',
             'Make required',
-            'Matrix block could not be added. Maximum number of blocks reached.',
             'Merge the folder (any conflicting files will be replaced)',
             'Missing or empty {items}',
             'Missing {items}',
@@ -250,6 +253,7 @@ JS;
             'New heading',
             'New order saved.',
             'New position saved.',
+            'New position saved.',
             'New subfolder',
             'New {group} category',
             'New {section} entry',
@@ -274,7 +278,9 @@ JS;
             'Previewing {type} device',
             'Previous Page',
             'Really delete folder “{folder}”?',
+            'Recent Activity',
             'Refresh',
+            'Reload',
             'Remove {label}',
             'Remove',
             'Rename folder',
@@ -335,6 +341,7 @@ JS;
             'This tab is conditional',
             'This week',
             'This year',
+            'This {type} has been updated.',
             'Tip',
             'Title',
             'To {date}',
@@ -351,7 +358,9 @@ JS;
             'Upload failed.',
             'Upload files',
             'Use defaults',
+            'Use this field’s values for element thumbnails',
             'User Groups',
+            'View in a new tab',
             'View',
             'Volume path',
             'Warning',
@@ -366,6 +375,8 @@ JS;
             'by {creator}',
             'day',
             'days',
+            'draft',
+            'element',
             'files',
             'folders',
             'hour',
@@ -380,6 +391,7 @@ JS;
             '{element} pagination',
             '{first, number}-{last, number} of {total, number} {total, plural, =1{{item}} other{{items}}}',
             '{first}-{last} of {total}',
+            '{name} active, more info',
             '{name} folder',
             '{num, number} {num, plural, =1{Available Update} other{Available Updates}}',
             '{num, number} {num, plural, =1{degree} other{degrees}}',
@@ -429,8 +441,9 @@ JS;
             'path' => $request->getPathInfo(),
             'pathParam' => $generalConfig->pathParam,
             'Pro' => Craft::Pro,
-            'registeredAssetBundles' => ['' => ''], // force encode as JS object
-            'registeredJsFiles' => ['' => ''], // force encode as JS object
+            'registeredAssetBundles' => [], // force encode as JS object
+            'registeredJsFiles' => [], // force encode as JS object
+            'resourceBaseUrl' => Craft::$app->getAssetManager()->baseUrl,
             'right' => $orientation === 'ltr' ? 'right' : 'left',
             'scriptName' => basename($request->getScriptFile()),
             'Solo' => Craft::Solo,
@@ -590,7 +603,7 @@ JS;
     {
         $sections = [];
 
-        foreach (Craft::$app->getSections()->getEditableSections() as $section) {
+        foreach (Craft::$app->getEntries()->getEditableSections() as $section) {
             if ($section->type !== Section::TYPE_SINGLE && $currentUser->can("createEntries:$section->uid")) {
                 $sections[] = [
                     'entryTypes' => $this->_entryTypes($section),
@@ -641,13 +654,17 @@ JS;
 
     private function _timepickerOptions(Locale $formattingLocale, string $orientation): array
     {
+        // normalize the AM/PM names consistently with time2int() in jQuery Timepicker
+        $am = preg_replace('/[\s.]/', '', $formattingLocale->getAMName());
+        $pm = preg_replace('/[\s.]/', '', $formattingLocale->getPMName());
+
         return [
             'closeOnWindowScroll' => false,
             'lang' => [
-                'AM' => $formattingLocale->getAMName(),
-                'am' => mb_strtolower($formattingLocale->getAMName()),
-                'PM' => $formattingLocale->getPMName(),
-                'pm' => mb_strtolower($formattingLocale->getPMName()),
+                'AM' => $am,
+                'am' => mb_strtolower($am),
+                'PM' => $pm,
+                'pm' => mb_strtolower($pm),
             ],
             'orientation' => $orientation[0],
             'timeFormat' => $formattingLocale->getTimeFormat(Locale::LENGTH_SHORT, Locale::FORMAT_PHP),

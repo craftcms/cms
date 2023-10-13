@@ -67,7 +67,7 @@ class CpScreenResponseFormatter extends Component implements ResponseFormatterIn
             $view->setNamespace(null);
         }
 
-        $notice = $behavior->notice ? $view->namespaceInputs($behavior->notice, $namespace) : null;
+        $notice = $behavior->noticeHtml ? $view->namespaceInputs($behavior->noticeHtml, $namespace) : null;
 
         $tabs = count($behavior->tabs) > 1 ? $view->namespaceInputs(fn() => $view->renderTemplate('_includes/tabs.twig', [
             'tabs' => $behavior->tabs,
@@ -75,8 +75,8 @@ class CpScreenResponseFormatter extends Component implements ResponseFormatterIn
 
         $content = $view->namespaceInputs(function() use ($behavior) {
             $components = [];
-            if ($behavior->content) {
-                $components[] = is_callable($behavior->content) ? call_user_func($behavior->content) : $behavior->content;
+            if ($behavior->contentHtml) {
+                $components[] = is_callable($behavior->contentHtml) ? call_user_func($behavior->contentHtml) : $behavior->contentHtml;
             }
             if ($behavior->action) {
                 $components[] = Html::actionInput($behavior->action, [
@@ -86,7 +86,9 @@ class CpScreenResponseFormatter extends Component implements ResponseFormatterIn
             return implode("\n", $components);
         }, $namespace);
 
-        $sidebar = $behavior->sidebar ? $view->namespaceInputs($behavior->sidebar, $namespace) : null;
+        $sidebar = $behavior->metaSidebarHtml ? $view->namespaceInputs($behavior->metaSidebarHtml, $namespace) : null;
+
+        $errorSummary = $behavior->errorSummary ? $view->namespaceInputs($behavior->errorSummary, $namespace) : null;
 
         $response->data = [
             'editUrl' => $behavior->editUrl,
@@ -100,6 +102,7 @@ class CpScreenResponseFormatter extends Component implements ResponseFormatterIn
             'submitButtonLabel' => $behavior->submitButtonLabel,
             'content' => $content,
             'sidebar' => $sidebar,
+            'errorSummary' => $errorSummary,
             'headHtml' => $view->getHeadHtml(),
             'bodyHtml' => $view->getBodyHtml(),
             'deltaNames' => $view->getDeltaNames(),
@@ -119,13 +122,14 @@ class CpScreenResponseFormatter extends Component implements ResponseFormatterIn
         }
 
         $crumbs = is_callable($behavior->crumbs) ? call_user_func($behavior->crumbs) : $behavior->crumbs;
-        $contextMenu = is_callable($behavior->contextMenu) ? call_user_func($behavior->contextMenu) : $behavior->contextMenu;
-        $addlButtons = is_callable($behavior->additionalButtons) ? call_user_func($behavior->additionalButtons) : $behavior->additionalButtons;
+        $contextMenu = is_callable($behavior->contextMenuHtml) ? call_user_func($behavior->contextMenuHtml) : $behavior->contextMenuHtml;
+        $addlButtons = is_callable($behavior->additionalButtonsHtml) ? call_user_func($behavior->additionalButtonsHtml) : $behavior->additionalButtonsHtml;
         $altActions = is_callable($behavior->altActions) ? call_user_func($behavior->altActions) : $behavior->altActions;
-        $notice = is_callable($behavior->notice) ? call_user_func($behavior->notice) : $behavior->notice;
-        $content = is_callable($behavior->content) ? call_user_func($behavior->content) : ($behavior->content ?? '');
-        $sidebar = is_callable($behavior->sidebar) ? call_user_func($behavior->sidebar) : $behavior->sidebar;
-        $pageSidebar = is_callable($behavior->pageSidebar) ? call_user_func($behavior->pageSidebar) : $behavior->pageSidebar;
+        $notice = is_callable($behavior->noticeHtml) ? call_user_func($behavior->noticeHtml) : $behavior->noticeHtml;
+        $content = is_callable($behavior->contentHtml) ? call_user_func($behavior->contentHtml) : ($behavior->contentHtml ?? '');
+        $sidebar = is_callable($behavior->metaSidebarHtml) ? call_user_func($behavior->metaSidebarHtml) : $behavior->metaSidebarHtml;
+        $pageSidebar = is_callable($behavior->pageSidebarHtml) ? call_user_func($behavior->pageSidebarHtml) : $behavior->pageSidebarHtml;
+        $errorSummary = is_callable($behavior->errorSummary) ? call_user_func($behavior->errorSummary) : $behavior->errorSummary;
 
         if ($behavior->action) {
             $content .= Html::actionInput($behavior->action, [
@@ -166,6 +170,7 @@ class CpScreenResponseFormatter extends Component implements ResponseFormatterIn
                 'content' => $content,
                 'details' => $sidebar,
                 'sidebar' => $pageSidebar,
+                'errorSummary' => $errorSummary,
             ],
             'templateMode' => View::TEMPLATE_MODE_CP,
         ]);

@@ -11,7 +11,7 @@ use Craft;
 use craft\base\CopyableFieldInterface;
 use craft\base\ElementInterface;
 use craft\base\Field;
-use craft\base\PreviewableFieldInterface;
+use craft\base\InlineEditableFieldInterface;
 use craft\fields\data\ColorData;
 use craft\helpers\Cp;
 use craft\helpers\ElementHelper;
@@ -25,7 +25,7 @@ use yii\db\Schema;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
-class Color extends Field implements PreviewableFieldInterface, CopyableFieldInterface
+class Color extends Field implements InlineEditableFieldInterface, CopyableFieldInterface
 {
     /**
      * @inheritdoc
@@ -38,23 +38,23 @@ class Color extends Field implements PreviewableFieldInterface, CopyableFieldInt
     /**
      * @inheritdoc
      */
-    public static function valueType(): string
+    public static function phpType(): string
     {
         return sprintf('\\%s|null', ColorData::class);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function dbType(): string
+    {
+        return sprintf('%s(7)', Schema::TYPE_CHAR);
     }
 
     /**
      * @var string|null The default color hex
      */
     public ?string $defaultColor = null;
-
-    /**
-     * @inheritdoc
-     */
-    public function getContentColumnType(): string
-    {
-        return sprintf('%s(7)', Schema::TYPE_CHAR);
-    }
 
     /** @inheritdoc */
     public function getSettingsHtml(): ?string
@@ -89,7 +89,7 @@ class Color extends Field implements PreviewableFieldInterface, CopyableFieldInt
     /**
      * @inheritdoc
      */
-    public function normalizeValue(mixed $value, ?ElementInterface $element = null): mixed
+    public function normalizeValue(mixed $value, ?ElementInterface $element): mixed
     {
         if ($value instanceof ColorData) {
             return $value;
@@ -123,7 +123,7 @@ class Color extends Field implements PreviewableFieldInterface, CopyableFieldInt
     /**
      * @inheritdoc
      */
-    protected function inputHtml(mixed $value, ?ElementInterface $element = null): string
+    protected function inputHtml(mixed $value, ?ElementInterface $element, bool $inline): string
     {
         /** @var ColorData|null $value */
         return Craft::$app->getView()->renderTemplate('_includes/forms/color.twig', [
@@ -154,7 +154,7 @@ class Color extends Field implements PreviewableFieldInterface, CopyableFieldInt
     /**
      * @inheritdoc
      */
-    public function getTableAttributeHtml(mixed $value, ElementInterface $element): string
+    public function getPreviewHtml(mixed $value, ElementInterface $element): string
     {
         /** @var ColorData|null $value */
         if (!$value) {

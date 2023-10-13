@@ -8,6 +8,7 @@
 namespace craft\services;
 
 use Craft;
+use craft\base\conditions\ConditionInterface;
 use craft\base\ElementInterface;
 use craft\base\PreviewableFieldInterface;
 use craft\base\SortableFieldInterface;
@@ -205,9 +206,15 @@ class ElementSources extends Component
             $sourceKey = substr($sourceKey, 0, $slash);
         }
 
+        if ($sourceKey === '__IMP__') {
+            $sourceAttributes = $this->getTableAttributesForFieldLayouts($elementType::fieldLayouts(null));
+        } else {
+            $sourceAttributes = $this->getSourceTableAttributes($elementType, $sourceKey);
+        }
+
         $availableAttributes = array_merge(
             $this->getAvailableTableAttributes($elementType),
-            $this->getSourceTableAttributes($elementType, $sourceKey)
+            $sourceAttributes,
         );
 
         $attributeKeys = $customAttributes
@@ -274,9 +281,27 @@ class ElementSources extends Component
             'source' => $sourceKey,
         ]);
 
-        $processedFieldIds = [];
+        $fieldLayouts = $this->getFieldLayoutsForSource($elementType, $sourceKey);
+        $event->sortOptions = array_merge($event->sortOptions, $this->getSortOptionsForFieldLayouts($fieldLayouts));
 
-        foreach ($this->getFieldLayoutsForSource($elementType, $sourceKey) as $fieldLayout) {
+        $this->trigger(self::EVENT_DEFINE_SOURCE_SORT_OPTIONS, $event);
+        return $event->sortOptions;
+    }
+
+    /**
+     * Returns additional sort options that should be available for an element index source that includes the given
+     * field layouts.
+     *
+     * @param FieldLayout[] $fieldLayouts
+     * @return array[]
+     * @since 5.0.0
+     */
+    public function getSortOptionsForFieldLayouts(array $fieldLayouts): array
+    {
+        $processedFieldIds = [];
+        $sortOptions = [];
+
+        foreach ($fieldLayouts as $fieldLayout) {
             foreach ($fieldLayout->getCustomFieldElements() as $layoutElement) {
                 $field = $layoutElement->getField();
                 if (
@@ -287,14 +312,16 @@ class ElementSources extends Component
                     if (!isset($sortOption['attribute'])) {
                         $sortOption['attribute'] = $sortOption['orderBy'];
                     }
-                    $event->sortOptions[] = $sortOption;
+                    if (!isset($sortOption['defaultDir'])) {
+                        $sortOption['defaultDir'] = 'asc';
+                    }
+                    $sortOptions[] = $sortOption;
                     $processedFieldIds[$field->id] = true;
                 }
             }
         }
 
-        $this->trigger(self::EVENT_DEFINE_SOURCE_SORT_OPTIONS, $event);
-        return $event->sortOptions;
+        return $sortOptions;
     }
 
     /**
@@ -312,8 +339,24 @@ class ElementSources extends Component
             'source' => $sourceKey,
         ]);
 
-        $user = Craft::$app->getUser()->getIdentity();
         $fieldLayouts = $this->getFieldLayoutsForSource($elementType, $sourceKey);
+        $event->attributes = array_merge($event->attributes, $this->getTableAttributesForFieldLayouts($fieldLayouts));
+
+        $this->trigger(self::EVENT_DEFINE_SOURCE_TABLE_ATTRIBUTES, $event);
+        return $event->attributes;
+    }
+
+    /**
+     * Returns any table attributes that should be available for an element index source that includes the given
+     * field layouts.
+     *
+     * @param FieldLayout[] $fieldLayouts
+     * @return array[]
+     * @since 5.0.0
+     */
+    public function getTableAttributesForFieldLayouts(array $fieldLayouts): array
+    {
+        $user = Craft::$app->getUser()->getIdentity();
         /** @var CustomField[][] $groupedFieldElements */
         $groupedFieldElements = [];
 
@@ -340,16 +383,17 @@ class ElementSources extends Component
             }
         }
 
+        $attributes = [];
+
         foreach ($groupedFieldElements as $fieldElements) {
             $field = $fieldElements[0]->getField();
             $labels = array_unique(array_map(fn(CustomField $layoutElement) => $layoutElement->label(), $fieldElements));
-            $event->attributes["field:$field->uid"] = [
+            $attributes["field:$field->uid"] = [
                 'label' => count($labels) === 1 ? $labels[0] : Craft::t('site', $field->name),
             ];
         }
 
-        $this->trigger(self::EVENT_DEFINE_SOURCE_TABLE_ATTRIBUTES, $event);
-        return $event->attributes;
+        return $attributes;
     }
 
     /**
@@ -366,18 +410,36 @@ class ElementSources extends Component
         /** @phpstan-var class-string<ElementInterface>|ElementInterface $elementType */
         $sources = $elementType::sources($context);
         $normalized = [];
+
         foreach ($sources as $source) {
-            if (isset($source['type'])) {
-                $normalized[] = $source;
-            } elseif (array_key_exists('heading', $source)) {
-                $source['type'] = self::TYPE_HEADING;
-                $normalized[] = $source;
-            } elseif (isset($source['key'])) {
-                $source['type'] = self::TYPE_NATIVE;
-                $normalized[] = $source;
+            if (!isset($source['type'])) {
+                if (array_key_exists('heading', $source)) {
+                    $source['type'] = self::TYPE_HEADING;
+                } elseif (isset($source['key'])) {
+                    $source['type'] = self::TYPE_NATIVE;
+                } else {
+                    continue;
+                }
+            }
+
+            $this->normalizeNativeSource($source);
+            $normalized[] = $source;
+        }
+
+        return $normalized;
+    }
+
+    private function normalizeNativeSource(array &$source): void
+    {
+        if (isset($source['defaultFilter']) && $source['defaultFilter'] instanceof ConditionInterface) {
+            $source['defaultFilter'] = $source['defaultFilter']->getConfig();
+        }
+
+        if (isset($source['nested'])) {
+            foreach ($source['nested'] as &$nested) {
+                $this->normalizeNativeSource($nested);
             }
         }
-        return $normalized;
     }
 
     /**

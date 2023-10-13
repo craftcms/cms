@@ -20,6 +20,7 @@ use craft\helpers\ArrayHelper;
 use craft\helpers\Cp as CpHelper;
 use craft\helpers\StringHelper;
 use craft\helpers\UrlHelper;
+use craft\models\EntryType;
 use craft\models\FieldLayout;
 use craft\models\Site;
 use craft\models\Volume;
@@ -217,7 +218,7 @@ class Cp extends Component
             ],
         ];
 
-        if (Craft::$app->getSections()->getTotalEditableSections()) {
+        if (Craft::$app->getEntries()->getTotalEditableSections()) {
             $navItems[] = [
                 'label' => Craft::t('app', 'Entries'),
                 'url' => 'entries',
@@ -412,6 +413,10 @@ class Cp extends Component
             'iconMask' => '@appicons/users.svg',
             'label' => Craft::t('app', 'Users'),
         ];
+        $settings[$label]['addresses'] = [
+            'iconMask' => '@appicons/location.svg',
+            'label' => Craft::t('app', 'Addresses'),
+        ];
         $settings[$label]['email'] = [
             'iconMask' => '@appicons/envelope.svg',
             'label' => Craft::t('app', 'Email'),
@@ -426,6 +431,10 @@ class Cp extends Component
         $settings[$label]['fields'] = [
             'iconMask' => '@appicons/field.svg',
             'label' => Craft::t('app', 'Fields'),
+        ];
+        $settings[$label]['entry-types'] = [
+            'iconMask' => '@appicons/entry-types.svg',
+            'label' => Craft::t('app', 'Entry Types'),
         ];
         $settings[$label]['sections'] = [
             'iconMask' => '@appicons/newspaper.svg',
@@ -552,7 +561,7 @@ class Cp extends Component
 
             $resolvableLicenseItem = null;
 
-            if ($licenseInfo['status'] === LicenseKeyStatus::Trial) {
+            if ($licenseInfo['status'] === LicenseKeyStatus::Trial->value) {
                 $resolvableLicenseItem = array_filter([
                     'type' => $isCraft ? 'cms-edition' : 'plugin-edition',
                     'plugin' => !$isCraft ? $handle : null,
@@ -698,13 +707,11 @@ class Cp extends Component
                     $data['hint'] = $security->redactIfSensitive($var, Craft::getAlias($value, false));
                 }
 
-                $options[] = [
+                $options[] = array_filter([
                     'label' => "$$var",
                     'value' => "$$var",
-                    'data' => [
-                        'data' => !empty($data) ? $data : false,
-                    ],
-                ];
+                    'data' => !empty($data) ? $data : null,
+                ]);
             }
         }
 
@@ -735,9 +742,7 @@ class Cp extends Component
                     'label' => "$$var",
                     'value' => "$$var",
                     'data' => [
-                        'data' => [
-                            'boolean' => $booleanValue,
-                        ],
+                        'boolean' => $booleanValue ? '1' : '0',
                     ],
                 ];
             }
@@ -807,16 +812,32 @@ class Cp extends Component
 
             $offsets[] = $offset;
             $timezoneIds[] = $timezoneId;
-            $options[] = [
+            $options[] = array_filter([
                 'value' => $timezoneId,
                 'label' => $label,
-                'data' => [
-                    'data' => !empty($data) ? $data : false,
-                ],
-            ];
+                'data' => !empty($data) ? $data : null,
+            ]);
         }
 
         array_multisort($offsets, SORT_ASC, SORT_NUMERIC, $timezoneIds, $options);
+
+        return $options;
+    }
+
+    /**
+     * Returns all options for an entry type input.
+     *
+     * @return array
+     * @since 5.0.0
+     */
+    public function getEntryTypeOptions(): array
+    {
+        $options = array_map(fn(EntryType $entryType) => [
+            'label' => Craft::t('site', $entryType->name),
+            'value' => $entryType->id,
+        ], Craft::$app->getEntries()->getAllEntryTypes());
+
+        ArrayHelper::multisort($options, 'label');
 
         return $options;
     }
