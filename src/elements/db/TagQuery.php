@@ -38,11 +38,6 @@ use yii\db\Connection;
  */
 class TagQuery extends ElementQuery
 {
-    /**
-     * @inheritdoc
-     */
-    protected array $defaultOrderBy = ['content.title' => SORT_ASC];
-
     // General parameters
     // -------------------------------------------------------------------------
 
