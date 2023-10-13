@@ -967,7 +967,7 @@ class Entry extends Element implements ExpirableElementInterface
         }
 
         // Make sure the section is set to have URLs for this site
-        $siteId = Craft::$app->getSites()->getCurrentSite()->id;
+        $siteId = Craft::$app->request->getIsCpRequest() ? $this->siteId : Craft::$app->getSites()->getCurrentSite()->id;
         $sectionSiteSettings = $this->getSection()->getSiteSettings();
 
         if (!isset($sectionSiteSettings[$siteId]) || !$sectionSiteSettings[$siteId]->hasUrls) {

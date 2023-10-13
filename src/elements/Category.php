@@ -435,7 +435,7 @@ class Category extends Element
     protected function route(): array|string|null
     {
         // Make sure the category group is set to have URLs for this site
-        $siteId = Craft::$app->getSites()->getCurrentSite()->id;
+        $siteId = Craft::$app->request->getIsCpRequest() ? $this->siteId : Craft::$app->getSites()->getCurrentSite()->id;
         $categoryGroupSiteSettings = $this->getGroup()->getSiteSettings();
 
         if (!isset($categoryGroupSiteSettings[$siteId]) || !$categoryGroupSiteSettings[$siteId]->hasUrls) {
