@@ -39,6 +39,8 @@ use craft\gql\resolvers\elements\Entry as EntryResolver;
 use craft\gql\types\generators\EntryType as EntryTypeGenerator;
 use craft\gql\types\input\Matrix as MatrixInputType;
 use craft\helpers\ArrayHelper;
+use craft\helpers\Cp;
+use craft\helpers\ElementHelper;
 use craft\helpers\Gql;
 use craft\helpers\Json;
 use craft\helpers\Queue;
@@ -1369,6 +1371,17 @@ class Matrix extends Field implements
             // Allow setting the UID for the entry
             if (isset($entryData['uid'])) {
                 $entry->uid = $entryData['uid'];
+            }
+
+            if ($this->getUriFormatForElement($entry) !== null) {
+                // take care of setting a slug
+                if ($entry->title && !$entry->slug) {
+                    $site = Cp::requestedSite();
+                    $entry->slug = ElementHelper::generateSlug($entry->title, null, $site?->language);
+                }
+                if (!$entry->slug) {
+                    $entry->slug = ElementHelper::tempSlug();
+                }
             }
 
             // Skip disabled entries on Live Preview requests
