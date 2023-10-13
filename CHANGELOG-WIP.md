@@ -11,6 +11,7 @@
 - Selected assets within Assets fields now include a “Preview file” option within their context menu.
 - Selected assets within Assets fields no longer open the file preview modal when their thumbnail is clicked on. The “Preview file” context menu option, or <kbd>Shift</kbd> + <kbd>Spacebar</kbd> keyboard shortcut can be used instead.
 - Improved the styling of element chips.
+- Improved checkbox-style deselection behavior for control panel items, to account for double-clicks. 
 - Table views are no longer available for element indexes on mobile.
 
 ### Accessibility

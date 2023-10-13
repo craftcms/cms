@@ -667,7 +667,6 @@ class AppController extends Controller
                 ->revisions(null)
                 ->siteId($siteId)
                 ->status(null)
-                ->indexBy('siteId')
                 ->all();
 
             foreach ($elements as $element) {
