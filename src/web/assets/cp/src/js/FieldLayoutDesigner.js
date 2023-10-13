@@ -1080,10 +1080,13 @@ Craft.FieldLayoutDesigner.BaseDrag = Garnish.Drag.extend({
       this.$insertion.insertBefore(this.checkForNewClosestItem._closestItem);
     }
 
-    this.$items = $().add(this.$items.add(this.$insertion));
-    this.showingInsertion = true;
-    this.designer.tabGrid.refreshCols(true);
-    this.setMidpoints();
+    // we only want to do it all if there's at least one tab in the layout
+    if (this.designer.tabGrid.$items.length > 0) {
+      this.$items = $().add(this.$items.add(this.$insertion));
+      this.showingInsertion = true;
+      this.designer.tabGrid.refreshCols(true);
+      this.setMidpoints();
+    }
   },
 
   /**
