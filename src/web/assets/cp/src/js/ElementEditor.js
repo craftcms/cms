@@ -670,7 +670,14 @@ Craft.ElementEditor = Garnish.Base.extend(
 
       this.sitesDisclosureMenu(hud);
 
-      this.addListener($('.copyBetweenSites'), 'submit', 'copyValuesFromSite');
+      this.addListener(
+        $('.copyBetweenSites'),
+        'submit',
+        {
+          hud: hud,
+        },
+        'copyValuesFromSite'
+      );
     },
 
     showFieldCopyDialogue: function (ev) {
@@ -701,7 +708,14 @@ Craft.ElementEditor = Garnish.Base.extend(
       let hud = new Garnish.HUD($btn, hudContent);
       this.sitesDisclosureMenu(hud);
 
-      this.addListener($('.copyBetweenSites'), 'submit', 'copyValuesFromSite');
+      this.addListener(
+        $('.copyBetweenSites'),
+        'submit',
+        {
+          hud: hud,
+        },
+        'copyValuesFromSite'
+      );
     },
 
     sitesDisclosureMenu: function (hud) {
@@ -756,8 +770,10 @@ Craft.ElementEditor = Garnish.Base.extend(
 
     copyValuesFromSite: function (ev) {
       ev.preventDefault();
-      let $form = $(ev.target);
+      // hide the HUD
+      ev.data.hud.$hud.hide();
 
+      let $form = $(ev.target);
       let params = {
         copyFromSiteId: $form.find('[name="copyFromSiteId"]').val(),
         elementId: this.settings.canonicalId,
@@ -773,42 +789,38 @@ Craft.ElementEditor = Garnish.Base.extend(
         params[Craft.csrfTokenName] = Craft.csrfTokenValue;
       }
 
-      return new Promise((resolve, reject) => {
-        Craft.sendActionRequest('POST', $form.data('action'), {
-          data: params,
+      Craft.sendActionRequest('POST', $form.data('action'), {
+        data: params,
+      })
+        .then((response) => {
+          let element = response.data.element;
+
+          if (Craft.broadcaster) {
+            Craft.broadcaster.postMessage({
+              pageId: Craft.pageId,
+              event: 'saveDraft',
+              canonicalId: element.canonicalId,
+              draftId: element.draftId,
+              isProvisionalDraft: element.isProvisionalDraft,
+            });
+          }
+
+          // TODO: trigger reload - doesn't work - figure out something else!
+          window.location.replace(window.location.href);
         })
-          .then((response) => {
-            window.location.reload();
-
-            let element = response.data.element;
-
-            if (Craft.broadcaster) {
-              Craft.broadcaster.postMessage({
-                pageId: Craft.pageId,
-                event: 'saveDraft',
-                canonicalId: element.canonicalId,
-                draftId: element.draftId,
-                isProvisionalDraft: element.isProvisionalDraft,
-              });
-            }
-
-            resolve();
-          })
-          .catch((e) => {
-            let $errorContainer = $form.find('p.error');
-            if ($form.find('p.error').length > 0) {
-              $errorContainer.contents(e.response.data.message);
-            } else {
-              $form.append(
-                '<p class="error">' + e.response.data.message + '</p>'
-              );
-            }
-            /*if (e.response.data.message) {
-              Craft.cp.displayError(e.response.data.message);
-            }*/
-            reject(e);
-          });
-      });
+        .catch((e) => {
+          let $errorContainer = $form.find('p.error');
+          if ($form.find('p.error').length > 0) {
+            $errorContainer.contents(e.response.data.message);
+          } else {
+            $form.append(
+              '<p class="error">' + e.response.data.message + '</p>'
+            );
+          }
+          /*if (e.response.data.message) {
+            Craft.cp.displayError(e.response.data.message);
+          }*/
+        });
     },
 
     /**
