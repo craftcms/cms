@@ -480,6 +480,14 @@ Craft.CpScreenSlideout = Craft.Slideout.extend(
         this.$container.data('initial-delta-values')
       );
 
+      // If `data` was passed by reference and mutable, it'd be really great
+      // because then JS could check the slideout submission, make any last
+      // minute changes, like creating a draft and swapping element IDs
+      this.trigger('beforeSubmit', {
+        data,
+        namespace: this.namespace
+      })
+
       Craft.sendActionRequest('POST', null, {
         data,
         headers: {
