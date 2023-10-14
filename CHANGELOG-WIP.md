@@ -359,3 +359,4 @@
 - The `defaultTemplateExtensions` config setting now lists `twig` before `html` by default. ([#11809](https://github.com/craftcms/cms/discussions/11809))
 - Improved the initial page load performance for element edit pages that contain Matrix fields.
 - Improved the performance of autosaves for elements with newly-created Matrix entries.
+- Slugs are no longer required for elements that don’t have a URI format that contains `slug`.
