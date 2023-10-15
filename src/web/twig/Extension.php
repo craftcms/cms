@@ -1674,7 +1674,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
             $forbidden = ['system', 'passthru', 'exec'];
 
             $arrow = strtolower($arrow);
-            if (isset($arrow[0]) && $arrow[0] === "\\") {
+            if (str_starts_with($arrow, "\\")) {
                 $arrow = substr($arrow, 1);
             }
 
