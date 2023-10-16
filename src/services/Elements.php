@@ -1502,8 +1502,6 @@ class Elements extends Component
      * @param bool $placeInStructure whether to position the cloned element after the original one in its structure.
      * (This will only happen if the duplicated element is canonical.)
      * @param bool $asUnpublishedDraft whether the duplicate should be created as unpublished draft
-     * @param bool|int $originalProvisionalDraftId if the original element was a provisional draft (if yes,
-     * contains id of the element that is the draft)
      * @return T the duplicated element
      * @throws UnsupportedSiteException if the element is being duplicated into a site it doesn’t support
      * @throws InvalidElementException if saveElement() returns false for any of the sites
@@ -1514,7 +1512,6 @@ class Elements extends Component
         array $newAttributes = [],
         bool $placeInStructure = true,
         bool $asUnpublishedDraft = false,
-        bool|int $originalProvisionalDraftId = false,
     ): ElementInterface {
         // Make sure the element exists
         if (!$element->id) {
@@ -1746,8 +1743,8 @@ class Elements extends Component
         // Clean up our tracks
         $mainClone->duplicateOf = null;
         // discard draft from the original element, if it was a provisional draft
-        if ($originalProvisionalDraftId) {
-            Craft::$app->elements->deleteElementById($originalProvisionalDraftId);
+        if ($asUnpublishedDraft && $element->isProvisionalDraft) {
+            Craft::$app->elements->deleteElementById($element->id);
         }
 
         return $mainClone;

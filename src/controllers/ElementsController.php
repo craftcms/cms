@@ -1143,20 +1143,15 @@ JS, [
             throw new ForbiddenHttpException('User not authorized to duplicate this element.');
         }
 
-        $clonedElement = clone $element;
-        $clonedElement->draftId = null;
-        $clonedElement->isProvisionalDraft = false;
-
         try {
             $newElement = $elementsService->duplicateElement(
-                $clonedElement,
-                newAttributes: [
+                $element,
+                [
                     'isProvisionalDraft' => false,
+                    'draftId' => null,
                 ],
                 // Entries and Categories to be saved as unpublished drafts
                 asUnpublishedDraft: $element instanceof Entry || $element instanceof Category,
-                // if original element is a provisional draft, get id of that element, so that we can discard it after duplication
-                originalProvisionalDraftId: $element->isProvisionalDraft ? $element->id : false,
             );
         } catch (InvalidElementException $e) {
             return $this->_asFailure($e->element, Craft::t('app', 'Couldn’t duplicate {type}.', [
