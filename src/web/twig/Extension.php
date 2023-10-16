@@ -1670,17 +1670,12 @@ class Extension extends AbstractExtension implements GlobalsInterface
      */
     private function _checkFilterSupport(mixed $arrow): void
     {
-        if (is_string($arrow)) {
-            $forbidden = ['system', 'passthru', 'exec'];
-
-            $arrow = strtolower($arrow);
-            if (str_starts_with($arrow, "\\")) {
-                $arrow = substr($arrow, 1);
-            }
-
-            if (in_array($arrow, $forbidden, true)) {
-                throw new RuntimeError('Not supported in this filter.');
-            }
+        if (is_string($arrow) && in_array(ltrim(strtolower($arrow), '\\'), [
+            'system',
+            'passthru',
+            'exec',
+        ])) {
+            throw new RuntimeError('Not supported in this filter.');
         }
     }
 }
