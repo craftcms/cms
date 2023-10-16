@@ -29,7 +29,8 @@ interface CopyableFieldInterface
      *
      * @param ElementInterface $from
      * @param ElementInterface $to
-     * @since 4.4.0
+     * @return bool
+     * @since 5.0.0
      */
-    public function copyValueBetweenSites(ElementInterface $from, ElementInterface $to): void;
+    public function copyValueBetweenSites(ElementInterface $from, ElementInterface $to): bool;
 }

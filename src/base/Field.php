@@ -481,12 +481,19 @@ abstract class Field extends SavableComponent implements FieldInterface
     }
 
     /**
-     * Copies field’s value from one site to another.
+     * @inheritdoc
      */
-    public function copyValueBetweenSites(ElementInterface $from, ElementInterface $to): void
+    public function copyValueBetweenSites(ElementInterface $from, ElementInterface $to): bool
     {
-        $value = $this->serializeValue($from->getFieldValue($this->handle), $from);
-        $to->setFieldValue($this->handle, $value);
+        $fromValue = $this->serializeValue($from->getFieldValue($this->handle), $from);
+        $toValue = $this->serializeValue($to->getFieldValue($this->handle), $to);
+
+        if ($fromValue != $toValue) {
+            $to->setFieldValue($this->handle, $fromValue);
+            return true;
+        }
+
+        return false;
     }
 
     /**

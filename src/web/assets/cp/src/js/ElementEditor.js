@@ -721,7 +721,10 @@ Craft.ElementEditor = Garnish.Base.extend(
     sitesDisclosureMenu: function (hud) {
       let submitBtn = hud.$body.find('.copyBetweenSites button.submit');
 
-      if (this.$sitesMenuCopyBtn) {
+      if (
+        this.$sitesMenuCopyBtn &&
+        this.$sitesMenuCopyBtn.data('trigger') !== undefined
+      ) {
         this.$sitesMenuCopyBtn.data('trigger').destroy();
         $(`#${this.copySitesMenuId}`).remove();
         this.$sitesMenuCopyBtn = null;
@@ -805,7 +808,7 @@ Craft.ElementEditor = Garnish.Base.extend(
             });
           }
 
-          // TODO: trigger reload - doesn't work - figure out something else!
+          // window.location.reload() doesn't work
           window.location.replace(window.location.href);
         })
         .catch((e) => {

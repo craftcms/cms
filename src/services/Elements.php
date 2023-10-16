@@ -2381,7 +2381,6 @@ class Elements extends Component
             ];
         }
 
-        $originalElement = clone($element);
         $transaction = Craft::$app->getDb()->beginTransaction();
         try {
             // check if element is a draft - if not, create one
@@ -2402,13 +2401,13 @@ class Elements extends Component
                 );
 
                 foreach ($translatableFields as $translatableField) {
-                    $changed = $this->_copyFieldValueByHandle($element, $fromElement, $originalElement, $translatableField);
+                    $changed = $this->_copyFieldValueByHandle($fromElement, $element, $translatableField);
                     if ($changed === true && $valueChanged !== true) {
                         $valueChanged = true;
                     }
                 }
             } else {
-                $valueChanged = $this->_copyFieldValueByHandle($element, $fromElement, $originalElement, $fieldHandle);
+                $valueChanged = $this->_copyFieldValueByHandle($fromElement, $element, $fieldHandle);
             }
 
 
@@ -2485,33 +2484,27 @@ class Elements extends Component
     /**
      * Copy field value from one element to another and check if it changed
      *
-     * @param $element
-     * @param $fromElement
-     * @param $originalElement
+     * @param $from
+     * @param $to
      * @param $fieldHandle
      * @return bool
+     * @since 5.0.0
      */
-    private function _copyFieldValueByHandle($element, $fromElement, $originalElement, $fieldHandle): bool
+    private function _copyFieldValueByHandle($from, $to, $fieldHandle): bool
     {
         // reserved $fieldHandles which we need to treat differently
         $reservedHandles = ['title', 'slug'];
 
         $valueChanged = false;
         // it's a reserved handle - handle differently
-        if (in_array($fieldHandle, $reservedHandles) && $element->{$fieldHandle} != $fromElement->{$fieldHandle}) {
-            $element->{$fieldHandle} = $fromElement->{$fieldHandle};
+        if (in_array($fieldHandle, $reservedHandles) && $to->{$fieldHandle} != $from->{$fieldHandle}) {
+            $to->{$fieldHandle} = $from->{$fieldHandle};
             $valueChanged = true;
         } else {
-            /** @var FieldInterface $layoutField */
-            $layoutField = $fromElement->getFieldLayout()?->getFieldByHandle($fieldHandle);
-            if ($layoutField !== null && $layoutField instanceof CopyableFieldInterface) {
-                $layoutField->copyValueBetweenSites($fromElement, $element);
-                if (
-                    $layoutField->serializeValue($element->getFieldValue($fieldHandle), $element) !=
-                    $layoutField->serializeValue($originalElement->getFieldValue($fieldHandle), $originalElement)
-                ) {
-                    $valueChanged = true;
-                }
+            /** @var FieldInterface $field */
+            $field = $from->getFieldLayout()?->getFieldByHandle($fieldHandle);
+            if ($field instanceof CopyableFieldInterface) {
+                $valueChanged = $field->copyValueBetweenSites($from, $to);
             }
         }
 
