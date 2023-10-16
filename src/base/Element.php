@@ -2530,7 +2530,7 @@ abstract class Element extends Component implements ElementInterface
             $rules[] = [
                 ['slug'],
                 'required',
-                'when' => fn() => $this->getUriFormat() !== null,
+                'when' => fn() => (bool)preg_match('/\bslug\b/', $this->getUriFormat() ?? ''),
                 'on' => [self::SCENARIO_DEFAULT, self::SCENARIO_LIVE, self::SCENARIO_ESSENTIALS],
             ];
             $rules[] = [['uri'], ElementUriValidator::class, 'on' => [self::SCENARIO_DEFAULT, self::SCENARIO_LIVE, self::SCENARIO_ESSENTIALS]];

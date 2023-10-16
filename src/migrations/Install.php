@@ -256,7 +256,7 @@ class Install extends Migration
             'dateUpdated' => $this->dateTime()->notNull(),
             'propagated' => $this->boolean()->notNull(),
             'userId' => $this->integer(),
-            'PRIMARY KEY([[elementId]], [[siteId]], [[fieldId]])',
+            'PRIMARY KEY([[elementId]], [[siteId]], [[fieldId]], [[layoutElementUid]])',
         ]);
         $this->createTable(Table::CRAFTIDTOKENS, [
             'id' => $this->primaryKey(),

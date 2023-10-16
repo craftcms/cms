@@ -26,6 +26,16 @@ class EntryTitleField extends TitleField
     /**
      * @inheritdoc
      */
+    public bool $mandatory = false;
+
+    /**
+     * @inheritdoc
+     */
+    public bool $required = false;
+
+    /**
+     * @inheritdoc
+     */
     protected function selectorInnerHtml(): string
     {
         return
