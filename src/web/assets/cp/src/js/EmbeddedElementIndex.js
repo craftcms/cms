@@ -174,9 +174,14 @@ Craft.EmbeddedElementIndex = Garnish.Base.extend(
               fresh: 1,
             },
           });
-          slideout.on('submit', () => {
+          slideout.on('submit', async () => {
             this.elementIndex.clearSearch();
             this.elementIndex.updateElements();
+            if (this.settings.fieldHandle) {
+              await this.elementEditor.markFieldAsDirty(
+                this.settings.fieldHandle
+              );
+            }
           });
         })
         .catch(({response}) => {
@@ -204,6 +209,7 @@ Craft.EmbeddedElementIndex = Garnish.Base.extend(
       ownerIdParam: null,
       ownerIdAttribute: null,
       createAttributes: null,
+      fieldHandle: null,
     },
   }
 );

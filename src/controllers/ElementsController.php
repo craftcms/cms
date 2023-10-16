@@ -76,6 +76,7 @@ class ElementsController extends Controller
     private ?string $_draftName = null;
     private ?string $_notes = null;
     private string $_fieldsLocation;
+    private ?array $_dirtyFields = null;
     private bool $_provisional;
     private bool $_dropProvisional;
     private bool $_addAnother;
@@ -112,6 +113,7 @@ class ElementsController extends Controller
         $this->_draftName = $this->_param('draftName');
         $this->_notes = $this->_param('notes');
         $this->_fieldsLocation = $this->_param('fieldsLocation') ?? 'fields';
+        $this->_dirtyFields = $this->_param('dirtyFields');
         $this->_provisional = (bool)$this->_param('provisional');
         $this->_dropProvisional = (bool)$this->_param('dropProvisional');
         $this->_addAnother = (bool)$this->_param('addAnother');
@@ -1862,6 +1864,11 @@ JS, [
 
         // Set the custom field values
         $element->setFieldValuesFromRequest($this->_fieldsLocation);
+
+        // Mark additional fields as dirty?
+        if (!empty($this->_dirtyFields)) {
+            $element->setDirtyFields($this->_dirtyFields);
+        }
     }
 
     /**

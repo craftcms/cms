@@ -391,6 +391,7 @@ class NestedElementManager extends Component
                 ]),
                 'ownerIdParam' => $this->ownerIdParam,
                 'ownerIdAttribute' => $this->ownerIdAttribute,
+                'fieldHandle' => $this->fieldHandle,
             ];
 
             if (!empty($config['createAttributes'])) {
