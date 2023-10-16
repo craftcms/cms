@@ -11,6 +11,7 @@
 
 {% set elementInstance = craft.app.elements.createElement(elementType) %}
 {% set context = context is defined ? context : 'index' %}
+{% set isAdministrative = context in ['index', 'embedded-index'] %}
 {% set showStatusMenu = (showStatusMenu is defined and showStatusMenu != 'auto' ? showStatusMenu : elementInstance.hasStatuses()) %}
 {% set showSiteMenu = (craft.app.getIsMultiSite() ? (showSiteMenu ?? 'auto') : false) %}
 {% if showSiteMenu == 'auto' %}
@@ -18,7 +19,7 @@
 {% endif %}
 {% set idPrefix = "elementtoolbar#{random()}-" %}
 
-{% if showStatusMenu or context == 'index' %}
+{% if showStatusMenu or isAdministrative %}
     <div>
         <label id="{{ idPrefix }}status-label" class="visually-hidden">{{ "Status"|t('app') }}</label>
         <button id="{{ idPrefix }}status-button" aria-labelledby="{{ idPrefix }}status-label" type="button" class="btn menubtn statusmenubtn"><span class="status all"></span>{{ "All"|t('app') }}</button>
@@ -33,7 +34,7 @@
                     {% endfor %}
                 {% endif %}
             </ul>
-            {% if context == 'index' %}
+            {% if isAdministrative %}
                 {% if showStatusMenu %}<hr class="padded">{% endif %}
                 <ul class="padded">
                     {% if canHaveDrafts ?? false %}
@@ -48,10 +49,12 @@
 {% if showSiteMenu %}
     {% include "_elements/sitemenu" %}
 {% endif %}
-<div class="flex-grow texticon search icon has-filter-btn">
+<div class="search-container flex-grow texticon has-filter-btn">
+    <span class="texticon-icon search icon" aria-hidden="true"></span>
     {{ text({
         class: 'clearable',
         placeholder: "Search"|t('app'),
+        value: craft.app.request.getParam('search'),
         inputAttributes: {
             aria: {
                 label: 'Search'|t('app'),
@@ -66,5 +69,5 @@
             label: 'Clear search'|t('app'),
         },
     }) }}
-    <button class="filter-btn" title="{{ 'Filter results'|t('app') }}" aria-label="{{ 'Filter results'|t('app') }}" aria-expanded="false"></button>
+    <button type="button" class="filter-btn" title="{{ 'Filter results'|t('app') }}" aria-label="{{ 'Filter results'|t('app') }}" aria-expanded="false"></button>
 </div>

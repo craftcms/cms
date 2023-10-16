@@ -53,6 +53,9 @@ class FileHelper extends \yii\helpers\FileHelper
      */
     public static function normalizePath($path, $ds = DIRECTORY_SEPARATOR): string
     {
+        // Remove any file protocol wrappers
+        $path = StringHelper::removeLeft($path, 'file://');
+
         // Is this a UNC network share path?
         $isUnc = (str_starts_with($path, '//') || str_starts_with($path, '\\\\'));
 
@@ -65,6 +68,86 @@ class FileHelper extends \yii\helpers\FileHelper
         }
 
         return $path;
+    }
+
+    /**
+     * Returns a relative path based on a source location or the current working directory.
+     *
+     * @param string $to The target path.
+     * @param string|null $from The source location. Defaults to the current working directory.
+     * @param string $ds the directory separator to be used in the normalized result. Defaults to `DIRECTORY_SEPARATOR`.
+     * @return string The relative path if possible, or an absolute path if the directory is not contained within `$from`.
+     * @since 4.3.5
+     */
+    public static function relativePath(
+        string $to,
+        ?string $from = null,
+        string $ds = DIRECTORY_SEPARATOR,
+    ): string {
+        $to = static::absolutePath($to, ds: $ds);
+
+        if ($from === null) {
+            $from = FileHelper::normalizePath(getcwd(), $ds);
+        } else {
+            $from = static::absolutePath($from, ds: $ds);
+        }
+
+        if ($from === $to) {
+            return '.';
+        }
+
+        if (!str_starts_with($to . $ds, $from . $ds)) {
+            return $to;
+        }
+
+        return substr($to, strlen($from) + 1);
+    }
+
+    /**
+     * Returns an absolute path based on a source location or the current working directory.
+     *
+     * @param string $to The target path.
+     * @param string|null $from The source location. Defaults to the current working directory.
+     * @param string $ds the directory separator to be used in the normalized result. Defaults to `DIRECTORY_SEPARATOR`.
+     * @return string
+     * @since 4.3.5
+     */
+    public static function absolutePath(
+        string $to,
+        ?string $from = null,
+        string $ds = DIRECTORY_SEPARATOR,
+    ): string {
+        $to = static::normalizePath($to, $ds);
+
+        // Already absolute?
+        if (
+            str_starts_with($to, $ds) ||
+            preg_match(sprintf('/^[A-Z]:%s/', preg_quote($ds, '/')), $to)
+        ) {
+            return $to;
+        }
+
+        if ($from === null) {
+            $from = FileHelper::normalizePath(getcwd(), $ds);
+        } else {
+            $from = static::absolutePath($from, ds: $ds);
+        }
+
+        return $from . $ds . $to;
+    }
+
+    /**
+     * Returns whether the given path is within another path.
+     *
+     * @param string $path the path to check
+     * @param string $parentPath the parent path that `$path` should be within
+     * @return bool
+     */
+    public static function isWithin(string $path, string $parentPath): bool
+    {
+        $path = static::absolutePath($path, ds: '/');
+        $parentPath = static::absolutePath($parentPath, ds: '/');
+        return $path !== $parentPath && str_starts_with("$path/", "$parentPath/");
     }
 
     /**
@@ -171,10 +254,17 @@ class FileHelper extends \yii\helpers\FileHelper
         // Replace any control characters in the name with a space.
         $filename = preg_replace("/\\x{00a0}/iu", ' ', $filename);
 
+        // https://github.com/craftcms/cms/issues/12741
+        // Remove soft hyphens (00ad), no break (0083),
+        // zero width space (200b), zero width non-joiner (200c), zero width joiner (200d),
+        // invisible times (2062), invisible comma (2063), invisible plus (2064),
+        // zero width non-brak space (feff) in the name
+        $filename = preg_replace('/\\x{00ad}|\\x{0083}|\\x{200b}|\\x{200c}|\\x{200d}|\\x{2062}|\\x{2063}|\\x{2064}|\\x{feff}/iu', '', $filename);
+
         // Strip any characters not allowed.
         $filename = str_replace($disallowedChars, '', strip_tags($filename));
 
-        if (Craft::$app->getDb()->getIsMysql()) {
+        if (!Craft::$app->getDb()->getSupportsMb4()) {
             // Strip emojis
             $filename = StringHelper::replaceMb4($filename, '');
         }
@@ -506,6 +596,41 @@ class FileHelper extends \yii\helpers\FileHelper
     }
 
     /**
+     * Traverses up the filesystem looking for the closest file to the given directory.
+     *
+     * @param string $dir the directory at or above which the file will be looked for
+     * @param array $options options for file searching. See [[findFiles()]].
+     * @return string|null the closest matching file
+     * @throws InvalidArgumentException if the directory is invalid
+     * @since 4.3.5
+     */
+    public static function findClosestFile(string $dir, array $options = []): ?string
+    {
+        $options['recursive'] = false;
+        $dir = static::absolutePath($dir, ds: '/');
+        while (true) {
+            $exists = file_exists($dir);
+            try {
+                $files = static::findFiles($dir, $options);
+            } catch (InvalidArgumentException $e) {
+                if ($exists) {
+                    return null;
+                }
+                throw $e;
+            }
+
+            if (!empty($files)) {
+                return reset($files);
+            }
+            $parent = dirname($dir);
+            if ($parent === $dir) {
+                return null;
+            }
+            $dir = $parent;
+        }
+    }
+
+    /**
      * Returns the last modification time for the given path.
      *
      * If the path is a directory, any nested files/directories will be checked as well.
@@ -729,26 +854,42 @@ class FileHelper extends \yii\helpers\FileHelper
      * Return a file extension for the given MIME type.
      *
      * @param string $mimeType
+     * @param bool $preferShort
+     * @param string|null $magicFile
      * @return string
      * @throws InvalidArgumentException if no known extensions exist for the given MIME type.
      * @since 3.5.15
      */
-    public static function getExtensionByMimeType(string $mimeType): string
+    public static function getExtensionByMimeType($mimeType, $preferShort = false, $magicFile = null): string
     {
-        $extensions = FileHelper::getExtensionsByMimeType($mimeType);
+        // cover the ambiguous, web-friendly MIME types up front
+        switch (strtolower($mimeType)) {
+            case 'application/msword': return 'doc';
+            case 'application/x-yaml': return 'yml';
+            case 'application/xml': return 'xml';
+            case 'audio/mp4': return 'm4a';
+            case 'audio/mpeg': return 'mp3';
+            case 'audio/ogg': return 'ogg';
+            case 'image/heic': return 'heic';
+            case 'image/jpeg': return 'jpg';
+            case 'image/svg+xml': return 'svg';
+            case 'image/tiff': return 'tif';
+            case 'text/calendar': return 'ics';
+            case 'text/html': return 'html';
+            case 'text/markdown': return 'md';
+            case 'text/plain': return 'txt';
+            case 'video/mp4': return 'mp4';
+            case 'video/mpeg': return 'mpg';
+            case 'video/quicktime': return 'mov';
+        }
+
+        $extensions = self::getExtensionsByMimeType($mimeType);
 
         if (empty($extensions)) {
             throw new InvalidArgumentException("No file extensions are known for the MIME Type $mimeType.");
         }
 
-        $extension = reset($extensions);
-
-        // Manually correct for some types.
-        return match ($extension) {
-            'svgz' => 'svg',
-            'jpe' => 'jpg',
-            default => $extension,
-        };
+        return reset($extensions);
     }
 
     /**
@@ -778,5 +919,27 @@ class FileHelper extends \yii\helpers\FileHelper
                 self::unlink($source);
             }
         }
+    }
+
+    /**
+     * Returns a unique version of a filename with `uniqid()`, ensuring the result is at most 255 characters.
+     *
+     * @param string $baseName The original filename, or just a file extension prefixed with a `.`.
+     * @return string
+     * @since 4.4.3
+     */
+    public static function uniqueName(string $baseName)
+    {
+        $name = pathinfo($baseName, PATHINFO_FILENAME);
+        $ext = pathinfo($baseName, PATHINFO_EXTENSION);
+        if ($ext !== '') {
+            $ext = ".$ext";
+        }
+        $extLength = strlen($ext);
+        $maxLength = 232; // 255 - 23 (entropy chars)
+        if (strlen($name) + $extLength > $maxLength) {
+            $name = substr($name, 0, $maxLength - $extLength);
+        }
+        return uniqid($name, true) . $ext;
     }
 }

@@ -22,7 +22,9 @@ use craft\db\Table;
  * @property int $width Width
  * @property string $format Format
  * @property string $interlace Interlace
+ * @property string $fill Fill Color
  * @property int $quality Quality
+ * @property bool $upscale Allow Upscaling
  * @property string|null $parameterChangeTime Critical parameter change time
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.0.0

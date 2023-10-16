@@ -390,6 +390,29 @@ class ExtensionTest extends TestCase
     /**
      *
      */
+    public function testBase64DecodeFilter(): void
+    {
+        $encoded = base64_encode('foo');
+        $this->testRenderResult(
+            'foo',
+            "{{ '$encoded'|base64_decode }}",
+        );
+    }
+
+    /**
+     *
+     */
+    public function testBase64EncodeFilter(): void
+    {
+        $this->testRenderResult(
+            base64_encode('foo'),
+            '{{ "foo"|base64_encode }}',
+        );
+    }
+
+    /**
+     *
+     */
     public function testParseAttrFilter(): void
     {
         $this->testRenderResult(
@@ -507,6 +530,27 @@ class ExtensionTest extends TestCase
         $this->testRenderResult(
             'foo qux baz',
             '{{ "foo bar baz"|replace("bar", "qux") }}'
+        );
+
+        $this->testRenderResult(
+            'foo zar zazzy',
+            '{{ "foo bar baz"|replace({"/b(\\\w+)/": "z$1", zaz: "zazzy"}) }}',
+        );
+
+        // https://github.com/craftcms/cms/issues/13618
+        $this->testRenderResult(
+            'qux',
+            '{{ "https://foo.com/bar/baz/"|replace("/(http(s?):)?\\\/\\\/foo\\\.com\\\/bar\\\/baz\\\//", "qux") }}',
+        );
+
+        $this->testRenderResult(
+            '/baz/bar/',
+            '{{ "/foo/bar/"|replace({"/foo/": "baz"}, regex=true) }}',
+        );
+
+        $this->testRenderResult(
+            'bazbar/',
+            '{{ "/foo/bar/"|replace({"/foo/": "baz"}, regex=false) }}',
         );
     }
 
@@ -761,7 +805,7 @@ class ExtensionTest extends TestCase
         $this->testRenderResult($expected, $renderString, $variables);
     }
 
-    public function addressFilterDataProvider(): array
+    public static function addressFilterDataProvider(): array
     {
         return [
             ['{{ myAddress|address }}', ['myAddress' => Craft::createObject(Address::class, ['config' => ['attributes' => ['addressLine1' => '1 Main Stree', 'postalCode' => '12345', 'countryCode' => 'US', 'administrativeArea' => 'OR']]])], '<p translate="no">

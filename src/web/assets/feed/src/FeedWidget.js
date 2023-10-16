@@ -17,14 +17,14 @@
         })
         .then((response) => {
           this.$widget.removeClass('loading');
-          this.$widget.find('table').attr('dir', response.data.direction);
-          let $tds = this.$widget.find('td');
+          this.$widget.find('ol').attr('dir', response.data.direction);
+          let $listItems = this.$widget.find('li');
           // Filter out any invalid links
           response.data.items = (response.data.items || []).filter((item) =>
             item.permalink.match(/^https?:\/\//)
           );
           response.data.items.forEach((item, i) => {
-            const $td = $($tds[i]);
+            const $listItem = $($listItems[i]);
             let widgetHtml =
               $('<a/>', {
                 href: item.permalink,
@@ -39,7 +39,7 @@
                 '</span>';
             }
 
-            $td.html(widgetHtml);
+            $listItem.html(widgetHtml);
           });
 
           // Now cache the data

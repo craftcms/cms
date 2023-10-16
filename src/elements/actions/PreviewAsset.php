@@ -50,16 +50,16 @@ class PreviewAsset extends ElementAction
 (() => {
     new Craft.ElementActionTrigger({
         type: $type,
-        batch: false,
-        validateSelection: \$selectedItems => \$selectedItems.length === 1,
-        activate: \$selectedItems => {
-            const \$element = \$selectedItems.find('.element');
+        bulk: false,
+        validateSelection: (selectedItems, elementIndex) => selectedItems.length === 1,
+        activate: (selectedItems, elementIndex) => {
+            const \$element = selectedItems.find('.element');
             const settings = {};
             if (\$element.data('image-width')) {
                 settings.startingWidth = \$element.data('image-width');
                 settings.startingHeight = \$element.data('image-height');
             }
-            new Craft.PreviewFileModal(\$element.data('id'), Craft.elementIndex.view.elementSelect, settings);
+            new Craft.PreviewFileModal(\$element.data('id'), elementIndex.view.elementSelect, settings);
         },
     });
 })();

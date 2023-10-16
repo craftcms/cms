@@ -45,11 +45,11 @@ class CopyReferenceTag extends ElementAction
 (() => {
     new Craft.ElementActionTrigger({
         type: $type,
-        batch: false,
-        activate: \$selectedItems => {
+        bulk: false,
+        activate: (selectedItems, elementIndex) => {
             Craft.ui.createCopyTextPrompt({
                 label: Craft.t('app', 'Copy the reference tag'),
-                value: '{' + $refHandle + ':' + \$selectedItems.find('.element').data('id') + '}',
+                value: '{' + $refHandle + ':' + selectedItems.find('.element').data('id') + '}',
             });
         },
     });

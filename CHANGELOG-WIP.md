@@ -1,19 +1,362 @@
 # Release Notes for Craft CMS 5.0 (WIP)
 
 ### Content Management
+- All elements can now have thumbnails, provided by Assets fields. ([#12484](https://github.com/craftcms/cms/discussions/12484), [#12706](https://github.com/craftcms/cms/discussions/12706))
+- Element indexes and relational fields now have the option to use card views. ([#6024](https://github.com/craftcms/cms/pull/6024))
+- Element indexes now support inline editing for some custom field values.
+- Entry conditions can now have a “Matrix field” rule. ([#13794](https://github.com/craftcms/cms/discussions/13794))
+- User addresses are now displayed within an embedded element index.
+- Selected elements within relational fields now include a context menu with “View in a new tab”, “Edit”, and “Remove” options.
+- Selected elements within relational fields now include a dedicated drag handle.
+- Selected assets within Assets fields now include a “Preview file” option within their context menu.
+- Selected assets within Assets fields no longer open the file preview modal when their thumbnail is clicked on. The “Preview file” context menu option, or <kbd>Shift</kbd> + <kbd>Spacebar</kbd> keyboard shortcut can be used instead.
+- Improved the styling of element chips.
+- Improved checkbox-style deselection behavior for control panel items, to account for double-clicks. 
+- Table views are no longer available for element indexes on mobile.
 
 ### Accessibility
 - Improved source item navigation for screen readers. ([#12054](https://github.com/craftcms/cms/pull/12054))
+- Content tab menus are now implemented as disclosure menus. ([#12963](https://github.com/craftcms/cms/pull/12963))
+- Element selection modals now show checkboxes for selectable elements.
+- Elements within relational fields are no longer focusable at the container level.
+- Relational fields now use the proper list semantics.
 
 ### Administration
+- Field layouts can now designate an Assets field as the source for elements’ thumbnails. ([#12484](https://github.com/craftcms/cms/discussions/12484), [#12706](https://github.com/craftcms/cms/discussions/12706))
+- Field layouts can now choose to include previewable fields’ content in element cards. ([#12484](https://github.com/craftcms/cms/discussions/12484), [#6024](https://github.com/craftcms/cms/pull/6024))
+- Field layouts can now override custom fields’ handles.
+- Most custom fields can now be included multiple times within the same field layout. ([#8497](https://github.com/craftcms/cms/discussions/8497))
+- Entry types are now managed independently of sections.
+- Entry types are no longer required to have a Title Format, if the Title field isn’t shown.
+- Added the “Addresses” field type. ([#11438](https://github.com/craftcms/cms/discussions/11438))
+- Matrix fields now manage nested entries, rather than Matrix blocks. During the upgrade, existing Matrix block types will be converted to entry types; their nested fields will be made global; and Matrix blocks will be converted to entries.
+- Matrix fields now have “Entry URI Format” and “Template” settings for each site.
+- Matrix fields now have a “View Mode” setting, which can be used to have nested entries display within an element index, rather than as inline blocks.
+- The address field layout is now accessed via **Settings** → **Addresses**.
+- Volumes now have a “Subpath” setting, and can reuse filesystems so long as the subpaths don’t overlap. ([#11044](https://github.com/craftcms/cms/discussions/11044))
+- Added support for defining custom locale aliases, via a new `localeAliases` config setting. ([#12705](https://github.com/craftcms/cms/pull/12705))
+- Removed the concept of field groups.
+- `entrify/*` commands now ask if an entry type already exists for the section.
+- The `resave/entries` command now accepts a `--field` option.
+- The `up`, `migrate/up`, and `migrate/all` commands no longer overwrite pending project config YAML changes, if new project config changes were made by migrations.
+- Removed the `resave/matrix-blocks` command.
 
 ### Development
+- Entry type names and handles must now be unique globally, rather than just within a single section. Existing entry type names and handles will be renamed automatically where needed, to ensure uniqueness.
+- Assets, categories, entries, and tags now support eager-loading paths prefixed with a field layout provider’s handle (e.g. `myEntryType:myField`).
+- Element queries now have an `eagerly` param, which can be used to lazily eager-load the resulting elements for all peer elements, when `all()`, `collect()`, `one()`, `nth()`, or `count()` is called.
+- Entry queries now have `field`, `fieldId`, `primaryOwner`, `primaryOwnerId`, `owner`, `ownerId`, `allowOwnerDrafts`, and `allowOwnerRevisions` params.
+- Entries’ GraphQL type names are now formatted as `<entryTypeHandle>_Entry`, and are no longer prefixed with their section’s handle. (That goes for Matrix-nested entries as well.)
+- Matrix fields’ GraphQL mutation types now expect nested entries to be defined by an `entries` field rather than `blocks`.
+- Removed the `craft.matrixBlocks()` Twig function. `craft.entries()` should be used instead.
+- Controller actions which require a `POST` request will now respond with a 405 error code if another request method is used. ([#13397](https://github.com/craftcms/cms/discussions/13397))
 
 ### Extensibility
-- The control panel now defines new CSS variables for orange, green, and violet colors. Existing color palette CSS variables have been updated to match the Tailwind 3 color palette.
+- Elements now store their content in an `elements_sites.content` column as JSON, rather than across multiple columns in a `content` table. ([#2009](https://github.com/craftcms/cms/issues/2009), [#4308](https://github.com/craftcms/cms/issues/4308), [#7221](https://github.com/craftcms/cms/issues/7221), [#7750](https://github.com/craftcms/cms/issues/7750), [#12954](https://github.com/craftcms/cms/issues/12954))
+- Slugs are no longer required on elements that don’t have a URI format.
+- Element types’ `fieldLayouts()` and `defineFieldLayouts()` methods’ `$source` arguments must now accept `null` values.
+- All element types can now support eager-loading paths prefixed with a field layout provider’s handle (e.g. `myEntryType:myField`), by implementing `craft\base\FieldLayoutProviderInterface` on the field layout provider class, and ensuring that `defineFieldLayouts()` is returning field layouts via their providers.
 - All core element query param methods now return `static` instead of `self`. ([#11868](https://github.com/craftcms/cms/pull/11868))
+- Migrations that modify the project config no longer need to worry about whether the same changes were already applied to the incoming project config YAML files.
 - Selectize menus no longer apply special styling to options with the value `new`. The `_includes/forms/selectize.twig` control panel template should be used instead (or `craft\helpers\Cp::selectizeHtml()`/`selectizeFieldHtml()`), which will append an styled “Add” option when `addOptionFn` and `addOptionLabel` settings are passed. ([#11946](https://github.com/craftcms/cms/issues/11946))
+- Added the `elementChip()` and `elementCard()` global functions for control panel templates.
+- The `assets/move-asset` and `assets/move-folder` actions no longer include `success` keys in responses. ([#12159](https://github.com/craftcms/cms/pull/12159))
+- The `assets/upload` controller action now includes `errors` object in failure responses. ([#12159](https://github.com/craftcms/cms/pull/12159))
+- Element action triggers’ `validateSelection()` and `activate()` methods are now passed an `elementIndex` argument, with a reference to the trigger’s corresponding element index.
+- Added `craft\base\Element::EVENT_DEFINE_INLINE_ATTRIBUTE_INPUT_HTML`.
+- Added `craft\base\Element::inlineAttributeInputHtml()`.
+- Added `craft\base\Element::shouldValidateTitle()`.
+- Added `craft\base\ElementContainerFieldInterface`, which should be implemented by fields which contain nested elements, such as Matrix.
+- Added `craft\base\ElementInterface::getCardBodyHtml()`.
+- Added `craft\base\ElementInterface::getChipLabelHtml()`.
+- Added `craft\base\ElementInterface::getInlineAttributeInputHtml()`.
+- Added `craft\base\ElementInterface::hasDrafts()`.
+- Added `craft\base\ElementInterface::hasThumbs()`.
+- Added `craft\base\ElementInterface::setLazyEagerLoadedElements()`.
+- Added `craft\base\ElementTrait::$deletedWithOwner`.
+- Added `craft\base\ElementTrait::$eagerLoadInfo`.
+- Added `craft\base\ElementTrait::$elementQueryResult`.
+- Added `craft\base\ElementTrait::$forceSave`.
+- Added `craft\base\Field::valueSql()`.
+- Added `craft\base\FieldInterface::dbType()`, which defines the type(s) of values the field will store in the `elements_sites.content` column (if any).
+- Added `craft\base\FieldInterface::getValueSql()`.
+- Added `craft\base\FieldInterface::isMultiInstance()`.
+- Added `craft\base\FieldInterface::queryCondition()`, which accepts an element query param value and returns the corresponding query condition.
+- Added `craft\base\FieldLayoutElement::isMultiInstance()`.
+- Added `craft\base\FieldLayoutProviderInterface::getHandle()`.
+- Added `craft\base\FieldTrait::$layoutElement`.
+- Added `craft\base\InlineEditableFieldInterface`.
+- Added `craft\base\NestedElementInterface`, which should be implemented by element types which could be nested by other elements.
+- Added `craft\base\ThumbableFieldInterface`.
+- Added `craft\base\conditions\ConditionInterface::createConditionRule()`.
+- Added `craft\behaviors\EventBehavior`.
+- Added `craft\controllers\EntryTypesController`.
+- Added `craft\db\Connection::getIsMaria()`.
+- Added `craft\db\QueryParam`.
+- Added `craft\db\Table::ELEMENTS_OWNERS`.
+- Added `craft\db\Table::SECTIONS_ENTRYTYPES`.
+- Added `craft\db\mysql\ColumnSchema::$collation`.
+- Added `craft\db\mysql\QueryBuilder::jsonContains()`.
+- Added `craft\db\mysql\QueryBuilder::jsonExtract()`.
+- Added `craft\db\mysql\Schema::supportsMb4()`.
+- Added `craft\db\pgsql\QueryBuilder::jsonContains()`.
+- Added `craft\db\pgsql\QueryBuilder::jsonExtract()`.
+- Added `craft\db\pgsql\Schema::supportsMb4()`.
+- Added `craft\elements\Address::GQL_TYPE_NAME`.
+- Added `craft\elements\Asset::gqlTypeName()`.
+- Added `craft\elements\Category::gqlTypeName()`.
+- Added `craft\elements\Entry::$collapsed`.
+- Added `craft\elements\Entry::$dirty`.
+- Added `craft\elements\Entry::$fieldId`.
+- Added `craft\elements\Entry::$ownerId`.
+- Added `craft\elements\Entry::$primaryOwnerId`.
+- Added `craft\elements\Entry::$saveOwnership`.
+- Added `craft\elements\Entry::$sortOrder`.
+- Added `craft\elements\Entry::getField()`.
+- Added `craft\elements\Entry::getOwner()`.
+- Added `craft\elements\Entry::gqlTypeName()`.
+- Added `craft\elements\Entry::setOwner()`.
+- Added `craft\elements\NestedElementManager`.
+- Added `craft\elements\Tag::gqlTypeName()`.
+- Added `craft\elements\User::GQL_TYPE_NAME`.
+- Added `craft\elements\conditions\ElementConditionInterface::getFieldLayouts()`.
+- Added `craft\elements\conditions\entries\MatrixFieldConditionRule`.
+- Added `craft\elements\db\EagerLoadInfo`.
+- Added `craft\elements\db\EagerLoadPlan::$lazy`.
+- Added `craft\elements\db\ElementQuery::$eagerLoadAlias`.
+- Added `craft\elements\db\ElementQuery::$eagerLoadHandle`.
+- Added `craft\elements\db\ElementQueryInterface::eagerly()`.
+- Added `craft\elements\db\ElementQueryInterface::fieldLayouts()`.
+- Added `craft\elements\db\ElementQueryInterface::prepForEagerLoading()`.
+- Added `craft\elements\db\ElementQueryInterface::wasCountEagerLoaded()`.
+- Added `craft\elements\db\ElementQueryInterface::wasEagerLoaded()`.
+- Added `craft\enums\AttributeStatus`.
+- Added `craft\enums\ElementIndexViewMode`.
+- Added `craft\enums\PropagationMethod`.
+- Added `craft\enums\TimePeriod`.
+- Added `craft\events\BulkElementsEvent`.
+- Added `craft\events\DefineEntryTypesForFieldEvent`.
+- Added `craft\events\DefineFieldHtmlEvent::$inline`.
+- Added `craft\fieldlayoutelements\BaseField::$includeInCards`.
+- Added `craft\fieldlayoutelements\BaseField::$providesThumbs`.
+- Added `craft\fieldlayoutelements\BaseField::previewHtml()`.
+- Added `craft\fieldlayoutelements\BaseField::previewable()`.
+- Added `craft\fieldlayoutelements\BaseField::thumbHtml()`.
+- Added `craft\fieldlayoutelements\BaseField::thumbable()`.
+- Added `craft\fieldlayoutelements\CustomField::$handle`.
+- Added `craft\fields\Addresses`.
+- Added `craft\fields\Matrix::EVENT_DEFINE_ENTRY_TYPES`.
+- Added `craft\fields\Matrix::getEntryTypes()`.
+- Added `craft\fields\Matrix::getEntryTypesForField()`.
+- Added `craft\fields\Matrix::getSupportedSitesForElement()`.
+- Added `craft\fields\Matrix::setEntryTypes()`.
+- Added `craft\fields\Matrix::supportedSiteIds()`.
+- Added `craft\fields\conditions\FieldConditionRuleTrait::fieldInstances()`.
+- Added `craft\fields\conditions\FieldConditionRuleTrait::setLayoutElementUid()`.
+- Added `craft\helpers\App::isWindows()`.
+- Added `craft\helpers\App::silence()`.
+- Added `craft\helpers\ArrayHelper::lastValue()`.
+- Added `craft\helpers\Cp::checkboxGroupFieldHtml()`.
+- Added `craft\helpers\Cp::checkboxGroupHtml()`.
+- Added `craft\helpers\Cp::elementCardHtml()`.
+- Added `craft\helpers\Cp::elementChipHtml()`.
+- Added `craft\helpers\Cp::elementIndexHtml()`.
+- Added `craft\helpers\Db::defaultCollation()`.
+- Added `craft\helpers\Db::prepareForJsonColumn()`.
+- Added `craft\helpers\ElementHelper::actionConfig()`.
+- Added `craft\helpers\ElementHelper::addElementEditorUrlParams()`.
+- Added `craft\helpers\ElementHelper::elementEditorUrl()`.
+- Added `craft\helpers\Gql::getSchemaContainedSections()`.
+- Added `craft\helpers\Json::detectIndent()`.
+- Added `craft\helpers\Json::encodeToFile()`.
+- Added `craft\helpers\ProjectConfig::ensureAllEntryTypesProcessed()`.
+- Added `craft\i18n\Locale::$aliasOf`.
+- Added `craft\i18n\Locale::setDisplayName()`.
+- Added `craft\migrations\BaseContentRefactorMigration`.
+- Added `craft\models\FieldLayout::getCardBodyFields()`.
+- Added `craft\models\FieldLayout::getElementByUid()`.
+- Added `craft\models\FieldLayout::getFieldById()`.
+- Added `craft\models\FieldLayout::getThumbField()`.
+- Added `craft\models\FsListing::getAdjustedUri()`.
+- Added `craft\models\Section::getCpEditUrl()`.
+- Added `craft\models\Volume::getSubpath()`.
+- Added `craft\models\Volume::setSubpath()`.
+- Added `craft\services\Entries::refreshEntryTypes()`.
+- Added `craft\services\Fields::$fieldContext`, which replaces `craft\services\Content::$fieldContext`.
+- Added `craft\services\Fields::getAllLayouts()`.
+- Added `craft\services\Gql::defineContentArgumentsForFieldLayouts()`.
+- Added `craft\services\Gql::defineContentArgumentsForFields()`.
+- Added `craft\services\Gql::getOrSetContentArguments()`.
+- Added `craft\services\ProjectConfig::find()`.
+- Added `craft\services\ProjectConfig::flush()`.
+- Added `craft\services\ProjectConfig::writeYamlFiles()`.
+- Added `craft\web\twig\variables\Cp::getEntryTypeOptions()`.
+- All of the `craft\services\Sections` members have been moved into `craft\services\Entries`.
+- Renamed `craft\base\BlockElementInterface` to `NestedElementInterface`, and added the `getField()`, `getSortOrder()`, and `setOwner()` methods to it. 
+- Renamed `craft\base\Element::EVENT_SET_TABLE_ATTRIBUTE_HTML` to `EVENT_DEFINE_ATTRIBUTE_HTML`.
+- Renamed `craft\base\Element::getHasCheckeredThumb()` to `hasCheckeredThumb()` and made it protected.
+- Renamed `craft\base\Element::getHasRoundedThumb()` to `hasRoundedThumb()` and made it protected.
+- Renamed `craft\base\Element::getThumbAlt()` to `thumbAlt()` and made it protected.
+- Renamed `craft\base\Element::getThumbUrl()` to `thumbUrl()` and made it protected.
+- Renamed `craft\base\Element::tableAttributeHtml()` to `attributeHtml()`.
+- Renamed `craft\base\ElementInterface::getTableAttributeHtml()` to `getAttributeHtml()`.
+- Renamed `craft\base\FieldInterface::valueType()` to `phpType()`.
+- Renamed `craft\base\PreviewableFieldInterface::getTableAttributeHtml()` to `getPreviewHtml()`.
+- Renamed `craft\events\SetElementTableAttributeHtmlEvent` to `DefineAttributeHtmlEvent`.
+- Renamed `craft\fields\BaseRelationField::tableAttributeHtml()` to `previewHtml()`, and it now accepts an `ElementCollection` argument, rather than `Collection`.
+- Renamed `craft\fields\Matrix::$maxBlocks` to `$maxEntries`.
+- Renamed `craft\fields\Matrix::$minBlocks` to `$minEntries`.
+- Renamed `craft\web\CpScreenResponseBehavior::$additionalButtons()` and `additionalButtons()` to `$additionalButtonsHtml` and `additionalButtonsHtml()`. ([#13037](https://github.com/craftcms/cms/pull/13037))
+- Renamed `craft\web\CpScreenResponseBehavior::$content()` and `content()` to `$contentHtml` and `contentHtml()`. ([#13037](https://github.com/craftcms/cms/pull/13037))
+- Renamed `craft\web\CpScreenResponseBehavior::$contextMenu()` and `contextMenu()` to `$contextMenuHtml` and `contextMenuHtml()`. ([#13037](https://github.com/craftcms/cms/pull/13037))
+- Renamed `craft\web\CpScreenResponseBehavior::$notice()` and `notice()` to `$noticeHtml` and `noticeHtml()`. ([#13037](https://github.com/craftcms/cms/pull/13037))
+- Renamed `craft\web\CpScreenResponseBehavior::$pageSidebar()` and `pageSidebar()` to `$pageSidebarHtml` and `pageSidebarHtml()`. ([#13037](https://github.com/craftcms/cms/pull/13037))
+- Renamed `craft\web\CpScreenResponseBehavior::$sidebar()` and `sidebar()` to `$metaSidebarHtml` and `metaSidebarHtml()`. ([#13037](https://github.com/craftcms/cms/pull/13037))
+- `craft\base\ConfigurableComponent::getSettings()` now converts backed enum cases to their values.
+- `craft\base\Element::getCpEditUrl()` now returns a URL to `edit/<ID>` if `cpEditUrl()` returns `null`.
+- `craft\base\ElementInterface::findSource()` no longer needs to specify a default value for the `context` argument.
+- `craft\base\ElementInterface::getAncestors()`, `getDescendants()`, `getChildren()`, and `getSiblings()` now have `ElementQueryInterface|ElementCollection` return types, rather than `ElementQueryInterface|Collection`.
+- `craft\base\ElementInterface::getEagerLoadedElementCount()` can now return `null` for counts that haven’t been eager-loaded yet.
+- `craft\base\ElementInterface::getEagerLoadedElements` now has an `ElementCollection|null` return type, rather than `Collection|null`.
+- `craft\base\ElementInterface::indexHtml()`’ `$showCheckboxes` argument is now `$selectable`, and it now has a `$sortable` argument.
+- `craft\base\ElementInterface::setParent()` no longer needs to specify a default value for the `parent` argument.
+- `craft\base\ElementInterface::setRevisionCreatorId()` no longer needs to specify a default value for the `creatorId` argument.
+- `craft\base\ElementInterface::setRevisionNotes()` no longer needs to specify a default value for the `notes` argument.
+- `craft\base\Field::inputHtml()` now has an `$inline` argument.
+- `craft\base\FieldInterface::getIsTranslatable()`, `getTranslationDescription()`, `getInputHtml()`, `normalizeValue()`, `normalizeValueFromRequest()`, and `serializeValue()` no longer need to specify a default value for the `$element` argument.
+- `craft\db\Connection::getSupportsMb4()` is now dynamic for MySQL installs, based on whether the `elements_sites` table has an `mb4` charset.
+- `craft\elemens\db\ElementQueryInterface::collect()` now has an `ElementCollection` return type, rather than `Collection`.
+- `craft\elements\Entry::getSection()` can now return `null`, for nested entries.
+- `craft\enums\LicenseKeyStatus` is now an enum.
+- `craft\fields\BaseOptionsField::$multi` and `$optgroups` properties are now static.
+- `craft\fields\Matrix::$propagationMethod` now has a type of `craft\enums\PropagationMethod`.
+- `craft\gql\mutations\Entry::createSaveMutations()` now accepts a `$section` argument.
+- `craft\helpers\Db::parseParam()`, `parseDateParam()`, `parseMoneyParam()`, and `parseNumericParam()` now return `null` instead of an empty string if no condition should be applied.
+- `craft\helpers\StringHelper::toString()` now supports backed enums.
+- `craft\i18n\I18N::getPrimarySiteLocale()` is now deprecated. `craft\models\Site::getLocale()` should be used instead.
+- `craft\i18n\I18N::getPrimarySiteLocaleId()` is now deprecated. `craft\models\Site::$language` should be used instead.
+- `craft\models\Section::$propagationMethod` now has a type of `craft\enums\PropagationMethod`.
+- `craft\services\AssetIndexer::indexFileByListing()` now has a `$volume` argument in place of `$volumeId`.
+- `craft\services\AssetIndexer::indexFolderByListing()` now has a `$volume` argument in place of `$volumeId`.
+- `craft\services\AssetIndexer::storeIndexList()` now has a `$volume` argument in place of `$volumeId`.
+- `craft\services\Elements::duplicateElement()` no longer has a `$trackDuplication` argument.
+- `craft\services\Plugins::getPluginLicenseKeyStatus()` now returns a `craft\enums\LicenseKeyStatus` case.
+- `craft\services\ProjectConfig::saveModifiedConfigData()` no longer has a `$writeExternalConfig` argument, and no longer writes out updated project config YAML files.
+- Deprecated the `_elements/element.twig` control panel template. `elementChip()` or `elementCard()` should be used instead.
+- Deprecated the `cp.elements.element` control panel template hook.
+- Deprecated `craft\events\DefineElementInnerHtmlEvent`.
+- Deprecated `craft\helpers\Cp::elementHtml()`. `elementChipHtml()` or `elementCardHtml()` should be used instead.
+- Removed `craft\base\ApplicationTrait::getMatrix()`.
+- Removed `craft\base\Element::$contentId`.
+- Removed `craft\base\Element::ATTR_STATUS_MODIFIED`. `craft\enums\AttributeStatus::Modified` should be used instead.
+- Removed `craft\base\Element::ATTR_STATUS_OUTDATED`. `craft\enums\AttributeStatus::Outdated` should be used instead.
+- Removed `craft\base\ElementInterface::getContentTable()`.
+- Removed `craft\base\ElementInterface::getFieldColumnPrefix()`.
+- Removed `craft\base\ElementInterface::gqlMutationNameByContext()`.
+- Removed `craft\base\ElementInterface::gqlTypeNameByContext()`.
+- Removed `craft\base\ElementInterface::hasContent()`.
+- Removed `craft\base\FieldInterface::getContentColumnType()`. `dbType()` should be implemented instead.
+- Removed `craft\base\FieldInterface::getGroup()`.
+- Removed `craft\base\FieldInterface::hasContentColumn()`. Fields that don’t need to store values in the `elements_sites.content` column should return `null` from `dbType()`.
+- Removed `craft\base\FieldInterface::modifyElementsQuery()`. Fields can customize how their element query params are handled by implementing `queryCondition()`.
+- Removed `craft\base\FieldTrait::$groupId`.
+- Removed `craft\base\FieldTrait::$layoutId`.
+- Removed `craft\base\FieldTrait::$sortOrder`.
+- Removed `craft\base\FieldTrait::$tabId`.
+- Removed `craft\controllers\Sections::actionDeleteEntryType()`.
+- Removed `craft\controllers\Sections::actionEditEntryType()`.
+- Removed `craft\controllers\Sections::actionEntryTypesIndex()`.
+- Removed `craft\controllers\Sections::actionReorderEntryTypes()`.
+- Removed `craft\controllers\Sections::actionSaveEntryType()`.
+- Removed `craft\db\Table::FIELDGROUPS`.
+- Removed `craft\elements\MatrixBlock`.
+- Removed `craft\elements\db\ElementQuery::$contentTable`.
+- Removed `craft\elements\db\MatrixBlockQuery`.
+- Removed `craft\enums\PatchManifestFileAction`.
+- Removed `craft\enums\PeriodType`.
+- Removed `craft\enums\PluginUpdateStatus`.
+- Removed `craft\enums\VersionUpdateStatus`.
+- Removed `craft\errors\MatrixBlockTypeNotFoundException`.
+- Removed `craft\events\BlockTypesEvent`.
+- Removed `craft\events\FieldGroupEvent`.
+- Removed `craft\fields\Matrix::EVENT_SET_FIELD_BLOCK_TYPES`.
+- Removed `craft\fields\Matrix::PROPAGATION_METHOD_ALL`. `craft\enums\PropagationMethod::All` should be used instead.
+- Removed `craft\fields\Matrix::PROPAGATION_METHOD_CUSTOM`. `craft\enums\PropagationMethod::Custom` should be used instead.
+- Removed `craft\fields\Matrix::PROPAGATION_METHOD_LANGUAGE`. `craft\enums\PropagationMethod::Language` should be used instead.
+- Removed `craft\fields\Matrix::PROPAGATION_METHOD_NONE`. `craft\enums\PropagationMethod::None` should be used instead.
+- Removed `craft\fields\Matrix::PROPAGATION_METHOD_SITE_GROUP`. `craft\enums\PropagationMethod::SiteGroup` should be used instead.
+- Removed `craft\fields\Matrix::contentTable`.
+- Removed `craft\fields\Matrix::getBlockTypeFields()`.
+- Removed `craft\fields\Matrix::getBlockTypes()`.
+- Removed `craft\fields\Matrix::setBlockTypes()`.
+- Removed `craft\gql\arguments\elements\MatrixBlock`.
+- Removed `craft\gql\interfaces\elements\MatrixBlock`.
+- Removed `craft\gql\resolvers\elements\MatrixBlock`.
+- Removed `craft\gql\types\elements\MatrixBlock`.
+- Removed `craft\gql\types\generators\MatrixBlockType`.
+- Removed `craft\helpers\Db::GLUE_AND`, `GLUE_OR`, and `GLUE_NOT`. `craft\db\QueryParam::AND`, `OR`, and `NOT` can be used instead.
+- Removed `craft\helpers\Db::extractGlue()`. `craft\db\QueryParam::extractOperator()` can be used instead.
+- Removed `craft\helpers\ElementHelper::fieldColumn()`.
+- Removed `craft\helpers\ElementHelper::fieldColumnFromField()`.
+- Removed `craft\helpers\FieldHelper`.
+- Removed `craft\helpers\Gql::canMutateEntries()`.
+- Removed `craft\models\EntryType::$sectionId`.
+- Removed `craft\models\EntryType::$sortOrder`.
+- Removed `craft\models\EntryType::getSection()`.
+- Removed `craft\models\FieldGroup`.
+- Removed `craft\models\MatrixBlockType`.
+- Removed `craft\models\Section::PROPAGATION_METHOD_ALL`. `craft\enums\PropagationMethod::All` should be used instead.
+- Removed `craft\models\Section::PROPAGATION_METHOD_CUSTOM`. `craft\enums\PropagationMethod::Custom` should be used instead.
+- Removed `craft\models\Section::PROPAGATION_METHOD_LANGUAGE`. `craft\enums\PropagationMethod::Language` should be used instead.
+- Removed `craft\models\Section::PROPAGATION_METHOD_NONE`. `craft\enums\PropagationMethod::None` should be used instead.
+- Removed `craft\models\Section::PROPAGATION_METHOD_SITE_GROUP`. `craft\enums\PropagationMethod::SiteGroup` should be used instead.
+- Removed `craft\records\EntryType::getSection()`.
+- Removed `craft\records\Field::getGroup()`.
+- Removed `craft\records\Field::getOldColumnSuffix()`.
+- Removed `craft\records\FieldGroup`.
+- Removed `craft\records\FieldLayout::getFields()`.
+- Removed `craft\records\FieldLayout::getTabs()`.
+- Removed `craft\records\FieldLayoutField`.
+- Removed `craft\records\FieldLayoutTab`.
+- Removed `craft\records\MatrixBlockType`.
+- Removed `craft\records\MatrixBlock`.
+- Removed `craft\services\Content`.
+- Removed `craft\services\Elements::$duplicatedElementIds`.
+- Removed `craft\services\Elements::$duplicatedElementSourceIds`.
+- Removed `craft\services\Fields::EVENT_AFTER_DELETE_FIELD_GROUP`.
+- Removed `craft\services\Fields::EVENT_AFTER_SAVE_FIELD_GROUP`.
+- Removed `craft\services\Fields::EVENT_BEFORE_APPLY_GROUP_DELETE`.
+- Removed `craft\services\Fields::EVENT_BEFORE_DELETE_FIELD_GROUP`.
+- Removed `craft\services\Fields::EVENT_BEFORE_SAVE_FIELD_GROUP`.
+- Removed `craft\services\Fields::deleteGroup()`.
+- Removed `craft\services\Fields::deleteGroupById()`.
+- Removed `craft\services\Fields::getAllGroups()`.
+- Removed `craft\services\Fields::getFieldIdsByLayoutIds()`.
+- Removed `craft\services\Fields::getFieldsByGroupId()`.
+- Removed `craft\services\Fields::getGroupById()`.
+- Removed `craft\services\Fields::getGroupByUid()`.
+- Removed `craft\services\Fields::getLayoutTabsById()`.
+- Removed `craft\services\Fields::handleChangedGroup()`.
+- Removed `craft\services\Fields::handleDeletedGroup()`.
+- Removed `craft\services\Fields::saveGroup()`.
+- Removed `craft\services\Fields::updateColumn()`.
+- Removed `craft\services\Matrix`.
+- Removed `craft\services\Plugins::setPluginLicenseKeyStatus()`.
+- Removed `craft\services\ProjectConfig::PATH_MATRIX_BLOCK_TYPES`.
+- Removed `craft\services\ProjectConfig::PATH_MATRIX_BLOCK_TYPES`.
+- Removed `craft\services\ProjectConfig::PATH_MATRIX_BLOCK_TYPES`.
+- Removed `craft\services\ProjectConfig::updateStoredConfigAfterRequest()`.
+- Removed `craft\services\Sections::reorderEntryTypes()`.
+- Added `Craft.BaseElementSelectInput::defineElementActions()`.
+- `Craft.appendBodyHtml()` and `appendHeadHtml()` are now promise-based, and load JavaScript resources over Ajax.
 
 ### System
-- Craft now requires PHP 8.1 or later.
+- Craft now requires PHP 8.2 or later.
+- Craft now requires the Symfony Filesystem component directly.
+- Craft now requires `composer/semver` directly.
+- Craft no longer requires `composer/composer`.
+- New database tables now default to the `utf8mb4` charset, and the `utf8mb4_0900_ai_ci` or `utf8mb4_unicode_ci` collation, on MySQL. Existing installs should run `db/convert-charset` after upgrading, to ensure all tables have consistent charsets and collations. ([#11823](https://github.com/craftcms/cms/discussions/11823))
 - The `defaultTemplateExtensions` config setting now lists `twig` before `html` by default. ([#11809](https://github.com/craftcms/cms/discussions/11809))
+- Improved the initial page load performance for element edit pages that contain Matrix fields.
+- Improved the performance of autosaves for elements with newly-created Matrix entries.
+- Slugs are no longer required for elements that don’t have a URI format that contains `slug`.

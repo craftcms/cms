@@ -538,18 +538,22 @@ export default Base.extend(
      * @param {object} $item
      */
     setFocusableItem: function ($item) {
-      if (this.$focusable) {
-        this.$focusable.removeAttr('tabindex');
-      }
+      if (this.settings.makeFocusable) {
+        if (this.$focusable) {
+          this.$focusable.removeAttr('tabindex');
+        }
 
-      this.$focusable = $item.attr('tabindex', '0');
+        this.$focusable = $item.attr('tabindex', '0');
+      }
     },
 
     /**
      * Sets the focus on an item.
      */
     focusItem: function ($item, preventScroll) {
-      $item[0].focus({preventScroll: !!preventScroll});
+      if (this.settings.makeFocusable) {
+        $item[0].focus({preventScroll: !!preventScroll});
+      }
       this.$focusedItem = $item;
       this.trigger('focusItem', {item: $item});
     },
@@ -577,6 +581,8 @@ export default Base.extend(
      * On Mouse Down
      */
     onMouseDown: function (ev) {
+      this.mousedownTarget = null;
+
       // ignore right clicks
       if (ev.which !== Garnish.PRIMARY_CLICK) {
         return;
@@ -587,15 +593,17 @@ export default Base.extend(
         return;
       }
 
-      this.mousedownTarget = ev.currentTarget;
-
       var $item = $($.data(ev.currentTarget, 'select-item'));
 
       if (this.first !== null && ev.shiftKey) {
         // Shift key is consistent for both selection modes
         this.selectRange($item, true);
-      } else if (this._actAsCheckbox(ev)) {
-        this.toggleItem($item, true);
+      } else if (this._actAsCheckbox(ev) && !this.isSelected($item)) {
+        // Checkbox-style selection is handled from onMouseUp()
+        this.selectItem($item, true, true);
+      } else {
+        // Prepare for click handling in onMouseUp()
+        this.mousedownTarget = ev.currentTarget;
       }
     },
 
@@ -608,7 +616,7 @@ export default Base.extend(
         return;
       }
 
-      // Enfore the filter
+      // Enforce the filter
       if (this.settings.filter && !$(ev.target).is(this.settings.filter)) {
         return;
       }
@@ -616,22 +624,23 @@ export default Base.extend(
       var $item = $($.data(ev.currentTarget, 'select-item'));
 
       // was this a click?
-      if (
-        !this._actAsCheckbox(ev) &&
-        !ev.shiftKey &&
-        ev.currentTarget === this.mousedownTarget
-      ) {
+      if (!ev.shiftKey && ev.currentTarget === this.mousedownTarget) {
         // If this is already selected, wait a moment to see if this is a double click before making any rash decisions
         if (this.isSelected($item)) {
           this.clearMouseUpTimeout();
 
           this.mouseUpTimeout = setTimeout(
             function () {
-              this.deselectOthers($item);
+              if (this._actAsCheckbox(ev)) {
+                this.deselectItem($item);
+              } else {
+                this.deselectOthers($item);
+              }
             }.bind(this),
             300
           );
-        } else {
+        } else if (!this._actAsCheckbox(ev)) {
+          // Checkbox-style deselection is handled from onMouseDown()
           this.deselectAll();
           this.selectItem($item, true, true);
         }
@@ -799,7 +808,9 @@ export default Base.extend(
         } else {
           // just set the new item to be focusable
           this.setFocusableItem($item);
-          $item.focus();
+          if (this.settings.makeFocusable) {
+            $item.focus();
+          }
           this.$focusedItem = $item;
           this.trigger('focusItem', {item: $item});
         }
@@ -880,6 +891,7 @@ export default Base.extend(
       handle: null,
       filter: null,
       checkboxMode: false,
+      makeFocusable: true,
       onSelectionChange: $.noop,
     },
 

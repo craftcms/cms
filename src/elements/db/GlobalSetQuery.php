@@ -9,6 +9,7 @@ namespace craft\elements\db;
 
 use Craft;
 use craft\db\QueryAbortedException;
+use craft\db\Table;
 use craft\elements\GlobalSet;
 use craft\helpers\Db;
 use yii\db\Connection;
@@ -107,7 +108,11 @@ class GlobalSetQuery extends ElementQuery
      */
     protected function beforePrepare(): bool
     {
-        $this->joinElementTable('globalsets');
+        if (!parent::beforePrepare()) {
+            return false;
+        }
+
+        $this->joinElementTable(Table::GLOBALSETS);
 
         $this->query->select([
             'globalsets.name',
@@ -123,7 +128,7 @@ class GlobalSetQuery extends ElementQuery
         $this->_applyEditableParam();
         $this->_applyRefParam();
 
-        return parent::beforePrepare();
+        return true;
     }
 
 

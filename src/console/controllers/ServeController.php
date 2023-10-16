@@ -31,22 +31,5 @@ class ServeController extends BaseServeController
     /**
      * @inheritdoc
      */
-    public function init(): void
-    {
-        parent::init();
-        $this->checkTty();
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function beforeAction($action): bool
-    {
-        // Make sure this isn’t a root user
-        if (!$this->checkRootUser()) {
-            return false;
-        }
-
-        return parent::beforeAction($action);
-    }
+    public $router = '@craftcms/bootstrap/router.php';
 }

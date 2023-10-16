@@ -8,8 +8,11 @@
 namespace crafttests\fixtures;
 
 use Craft;
+use craft\db\Table;
+use craft\helpers\ArrayHelper;
+use craft\helpers\Db;
 use craft\records\Section;
-use craft\services\Sections;
+use craft\services\Entries;
 use craft\test\ActiveFixture;
 
 /**
@@ -34,7 +37,9 @@ class SectionsFixture extends ActiveFixture
     /**
      * @inheritdoc
      */
-    public $depends = [SectionSettingFixture::class];
+    public $depends = [SectionSettingFixture::class, EntryTypeFixture::class];
+
+    private array $entryTypeIds = [];
 
     /**
      * @inheritdoc
@@ -43,6 +48,40 @@ class SectionsFixture extends ActiveFixture
     {
         parent::load();
 
-        Craft::$app->set('sections', new Sections());
+        $entriesService = new Entries();
+        Craft::$app->set('entries', $entriesService);
+
+        foreach ($this->entryTypeIds as $key => $entryTypeIds) {
+            $data = [];
+            foreach ($entryTypeIds as $i => $id) {
+                $data[] = [$this->ids[$key], $id, $i + 1];
+            }
+            Db::batchInsert(
+                Table::SECTIONS_ENTRYTYPES,
+                ['sectionId', 'typeId', 'sortOrder'],
+                $data,
+            );
+        }
+    }
+
+    public function unload(): void
+    {
+        parent::unload();
+        Db::delete(Table::SECTIONS_ENTRYTYPES);
+        $this->entryTypeIds = [];
+    }
+
+    protected function loadData($file, $throwException = true)
+    {
+        $this->entryTypeIds = [];
+        $data = parent::loadData($file, $throwException);
+
+        foreach ($data as $key => &$row) {
+            if (isset($row['entryTypes'])) {
+                $this->entryTypeIds[$key] = ArrayHelper::remove($row, 'entryTypes') ?? [];
+            }
+        }
+
+        return $data;
     }
 }

@@ -58,11 +58,11 @@ class UriFormatValidatorTest extends TestCase
     /**
      * @return array
      */
-    public function validateAttributeDataProvider(): array
+    public static function validateAttributeDataProvider(): array
     {
         return [
             [true, ''],
-            [true, '', true],
+            [false, '', true],
             [true, 'test', false],
             [true, 'slug', true],
             [false, 'entry/{test}/test', true],

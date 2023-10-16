@@ -276,7 +276,16 @@ Craft.CpScreenSlideout = Craft.Slideout.extend(
     update: function (data) {
       return new Promise((resolve) => {
         this.namespace = data.namespace;
+
+        if (data.bodyClass) {
+          this.$body.addClass(data.bodyClass);
+        }
+
         this.$content.html(data.content);
+
+        if (data.submitButtonLabel) {
+          this.$saveBtn.text(data.submitButtonLabel);
+        }
 
         this.updateTabs(data.tabs);
 
@@ -329,11 +338,11 @@ Craft.CpScreenSlideout = Craft.Slideout.extend(
           Craft.appendBodyHtml(data.bodyHtml);
 
           Craft.initUiElements(this.$content);
-          new Craft.ElementThumbLoader().load($(this.$content));
+          Craft.cp.elementThumbLoader.load($(this.$content));
 
           if (data.sidebar) {
             Craft.initUiElements(this.$sidebar);
-            new Craft.ElementThumbLoader().load(this.$sidebar);
+            Craft.cp.elementThumbLoader.load(this.$sidebar);
           }
 
           if (!Garnish.isMobileBrowser()) {
@@ -542,11 +551,15 @@ Craft.CpScreenSlideout = Craft.Slideout.extend(
     },
 
     isDirty: function () {
-      return (
-        typeof this.$container.data('initialSerializedValue') !== 'undefined' &&
-        this.$container.serialize() !==
-          this.$container.data('initialSerializedValue')
-      );
+      const initialValue = this.$container.data('initialSerializedValue');
+      if (typeof initialValue === 'undefined') {
+        return false;
+      }
+
+      const serializer =
+        this.$container.data('serializer') ||
+        (() => this.$container.serialize());
+      return initialValue !== serializer();
     },
 
     closeMeMaybe: function () {

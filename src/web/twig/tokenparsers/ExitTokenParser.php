@@ -32,6 +32,10 @@ class ExitTokenParser extends AbstractTokenParser
 
         if ($stream->test(Token::NUMBER_TYPE)) {
             $nodes['status'] = $parser->getExpressionParser()->parseExpression();
+
+            if (!$stream->test(Token::BLOCK_END_TYPE)) {
+                $nodes['message'] = $parser->getExpressionParser()->parseExpression();
+            }
         }
 
         $stream->expect(Token::BLOCK_END_TYPE);

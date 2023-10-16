@@ -34,7 +34,7 @@ class AdminTableHelperTest extends TestCase
     /**
      * @return array
      */
-    public function paginationLinksDataProvider(): array
+    public static function paginationLinksDataProvider(): array
     {
         return [
             [

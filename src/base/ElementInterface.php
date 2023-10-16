@@ -9,18 +9,20 @@ namespace craft\base;
 
 use craft\behaviors\CustomFieldBehavior;
 use craft\elements\conditions\ElementConditionInterface;
+use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
+use craft\elements\ElementCollection;
 use craft\elements\User;
+use craft\enums\AttributeStatus;
 use craft\errors\InvalidFieldException;
 use craft\models\FieldLayout;
 use craft\models\Site;
-use Illuminate\Support\Collection;
 use Twig\Markup;
 use yii\web\Response;
 
 /**
  * ElementInterface defines the common interface to be implemented by element classes.
- * A class implementing this interface should also use [[ElementTrait]] and [[ContentTrait]].
+ * A class implementing this interface should also use [[ElementTrait]].
  *
  * @mixin ElementTrait
  * @mixin CustomFieldBehavior
@@ -62,6 +64,14 @@ interface ElementInterface extends ComponentInterface
     public static function refHandle(): ?string;
 
     /**
+     * Returns whether element indexes should show the “Drafts” status option.
+     *
+     * @return bool
+     * @since 5.0.0
+     */
+    public static function hasDrafts(): bool;
+
+    /**
      * Returns whether Craft should keep track of attribute and custom field changes made to this element type,
      * including when the last time they were changed, and who was logged-in at the time.
      *
@@ -73,18 +83,19 @@ interface ElementInterface extends ComponentInterface
     public static function trackChanges(): bool;
 
     /**
-     * Returns whether elements of this type will be storing any data in the `content` table (titles or custom fields).
-     *
-     * @return bool Whether elements of this type will be storing any data in the `content` table.
-     */
-    public static function hasContent(): bool;
-
-    /**
      * Returns whether elements of this type have traditional titles.
      *
      * @return bool Whether elements of this type have traditional titles.
      */
     public static function hasTitles(): bool;
+
+    /**
+     * Returns whether element indexes should include a thumbnail view by default.
+     *
+     * @return bool
+     * @since 5.0.0
+     */
+    public static function hasThumbs(): bool;
 
     /**
      * Returns whether elements of this type can have their own slugs and URIs.
@@ -269,8 +280,8 @@ interface ElementInterface extends ComponentInterface
      * - **`status`** – The status color that should be shown beside the source label. Possible values include `green`,
      *   `orange`, `red`, `yellow`, `pink`, `purple`, `blue`, `turquoise`, `light`, `grey`, `black`, and `white`. (Optional)
      * - **`badgeCount`** – The badge count that should be displayed alongside the label. (Optional)
-     * - **`sites`** – An array of site IDs that the source should be shown for, on multi-site element indexes. (Optional;
-     *   by default the source will be shown for all sites.)
+     * - **`sites`** – An array of site IDs or UUIDs that the source should be shown for, on multi-site element indexes.
+     *   (Optional; by default the source will be shown for all sites.)
      * - **`criteria`** – An array of element criteria parameters that the source should use when the source is selected.
      *   (Optional)
      * - **`data`** – An array of `data-X` attributes that should be set on the source’s `<a>` tag in the source list’s,
@@ -278,6 +289,8 @@ interface ElementInterface extends ComponentInterface
      *   the attribute. (Optional)
      * - **`defaultSort`** – A string identifying the sort attribute that should be selected by default, or an array where
      *   the first value identifies the sort attribute, and the second determines which direction to sort by. (Optional)
+     * - **`defaultFilter`** – An element condition instance or config, which should be used by default when the source
+     *   is first selected.
      * - **`hasThumbs`** – A bool that defines whether this source supports Thumbs View. (Use your element’s
      *   [[getThumbUrl()]] method to define your elements’ thumb URL.) (Optional)
      * - **`structureId`** – The ID of the Structure that contains the elements in this source. If set, Structure View
@@ -298,19 +311,49 @@ interface ElementInterface extends ComponentInterface
     public static function sources(string $context): array;
 
     /**
-     * Returns all of the field layouts associated with elements from the given source.
+     * Returns a source definition by a given source key/path and context.
+     *
+     * @param string $sourceKey
+     * @param string|null $context
+     * @return array|null
+     * @since 4.4.0
+     */
+    public static function findSource(string $sourceKey, ?string $context): ?array;
+
+    /**
+     * Returns the source path for a given source key, step key, and context.
+     *
+     * @param string $sourceKey
+     * @param string $stepKey
+     * @param string|null $context
+     * @return array[]|null
+     * @since 4.4.12
+     */
+    public static function sourcePath(string $sourceKey, string $stepKey, ?string $context): ?array;
+
+    /**
+     * Returns all the field layouts associated with elements from the given source.
      *
      * This is used to determine which custom fields should be included in the element index sort menu,
      * and other things.
      *
-     * @param string $source The selected source’s key
+     * @param string|null $source The selected source’s key, or `null` if all known field layouts should be returned
      * @return FieldLayout[]
      * @since 3.5.0
      */
-    public static function fieldLayouts(string $source): array;
+    public static function fieldLayouts(?string $source): array;
 
     /**
-     * Returns the available [element actions](https://craftcms.com/docs/4.x/extend/element-action-types.html) for a
+     * Modifies a custom source’s config, before it’s returned by [[craft\services\ElementSources::getSources()]]
+     *
+     * @param array $config
+     * @return array
+     * @since 4.5.0
+     */
+    public static function modifyCustomSource(array $config): array;
+
+    /**
+     * Returns the available [element actions](https://craftcms.com/docs/4.x/extend/element-actions.html) for a
      * given source.
      *
      * The actions can be represented by their fully qualified class name, a config array with the class name
@@ -382,10 +425,30 @@ interface ElementInterface extends ComponentInterface
      * @param string|null $sourceKey
      * @param string|null $context
      * @param bool $includeContainer
-     * @param bool $showCheckboxes
+     * @param bool $selectable
+     * @param bool $sortable
      * @return string The element index HTML
      */
-    public static function indexHtml(ElementQueryInterface $elementQuery, ?array $disabledElementIds, array $viewState, ?string $sourceKey, ?string $context, bool $includeContainer, bool $showCheckboxes): string;
+    public static function indexHtml(
+        ElementQueryInterface $elementQuery,
+        ?array $disabledElementIds,
+        array $viewState,
+        ?string $sourceKey,
+        ?string $context,
+        bool $includeContainer,
+        bool $selectable,
+        bool $sortable,
+    ): string;
+
+    /**
+     * Returns the total number of elements that will be shown on an element index, for the given element query.
+     *
+     * @param ElementQueryInterface $elementQuery
+     * @param string|null $sourceKey
+     * @return int
+     * @since 4.4.0
+     */
+    public static function indexElementCount(ElementQueryInterface $elementQuery, ?string $sourceKey): int;
 
     /**
      * Returns the sort options for the element type.
@@ -455,8 +518,11 @@ interface ElementInterface extends ComponentInterface
      * This method aids in the eager-loading of elements when performing an element query. The returned array should
      * contain the following keys:
      * - `elementType` – the fully qualified class name of the element type that should be eager-loaded
-     * - `map` – an array of element ID mappings, where each element is a sub-array with `source` and `target` keys.
-     * - `criteria` *(optional)* – Any criteria parameters that should be applied to the element query when fetching the eager-loaded elements.
+     * - `map` – an array of element ID mappings, where each element is a sub-array with `source` and `target` keys
+     * - `criteria` *(optional)* – any criteria parameters that should be applied to the element query when fetching the
+     *   eager-loaded elements
+     * - `createElement` *(optional)* - an element factory function, which will be passed the element query, the current
+     *   query result data, and the first source element that the result was eager-loaded for
      *
      * ```php
      * use craft\db\Query;
@@ -501,27 +567,9 @@ interface ElementInterface extends ComponentInterface
     public static function eagerLoadingMap(array $sourceElements, string $handle): array|null|false;
 
     /**
-     * Returns the GraphQL type name by an element’s context.
-     *
-     * @param mixed $context The element’s context, such as a Volume, Entry Type or Matrix Block Type.
-     * @return string
-     * @since 3.3.0
-     */
-    public static function gqlTypeNameByContext(mixed $context): string;
-
-    /**
-     * Returns the GraphQL mutation name by an element’s context.
-     *
-     * @param mixed $context The element’s context, such as a volume, entry type, or Matrix block type.
-     * @return string
-     * @since 3.5.0
-     */
-    public static function gqlMutationNameByContext(mixed $context): string;
-
-    /**
      * Returns the GraphQL scopes required by element’s context.
      *
-     * @param mixed $context The element’s context, such as a Volume, Entry Type or Matrix Block Type.
+     * @param mixed $context The element’s context, such as a volume, entry type or Matrix block type.
      * @return array
      * @since 3.3.0
      */
@@ -738,6 +786,38 @@ interface ElementInterface extends ComponentInterface
     public function setUiLabel(?string $label): void;
 
     /**
+     * Returns any path segment labels that should be prepended to the element’s UI label.
+     *
+     * @return string[]
+     * @since 4.4.0
+     */
+    public function getUiLabelPath(): array;
+
+    /**
+     * Defines any path segment labels that should be prepended to the element’s UI label.
+     *
+     * @param string[] $path
+     * @since 4.4.0
+     */
+    public function setUiLabelPath(array $path): void;
+
+    /**
+     * Returns the label HTML for element chips.
+     *
+     * @return string
+     * @since 5.0.0
+     */
+    public function getChipLabelHtml(): string;
+
+    /**
+     * Returns the body HTML for element cards.
+     *
+     * @return string|null
+     * @since 5.0.0
+     */
+    public function getCardBodyHtml(): ?string;
+
+    /**
      * Returns the reference string to this element.
      *
      * @return string|null
@@ -770,6 +850,8 @@ interface ElementInterface extends ComponentInterface
     /**
      * Returns whether the given user is authorized to save this element in its current form.
      *
+     * This will only be called if the element can be [[canView()|viewed]].
+     *
      * @param User $user
      * @return bool
      * @since 4.0.0
@@ -778,6 +860,8 @@ interface ElementInterface extends ComponentInterface
 
     /**
      * Returns whether the given user is authorized to duplicate this element.
+     *
+     * This will only be called if the element can be [[canView()|viewed]] and/or [[canSave()|saved]].
      *
      * @param User $user
      * @return bool
@@ -788,7 +872,7 @@ interface ElementInterface extends ComponentInterface
     /**
      * Returns whether the given user is authorized to delete this element.
      *
-     * This will only be called if the element can be [[canView()|viewed]].
+     * This will only be called if the element can be [[canView()|viewed]] and/or [[canSave()|saved]].
      *
      * @param User $user
      * @return bool
@@ -799,6 +883,8 @@ interface ElementInterface extends ComponentInterface
     /**
      * Returns whether the given user is authorized to delete this element for its current site.
      *
+     * This will only be called if the element can be [[canView()|viewed]] and/or [[canSave()|saved]].
+     *
      * @param User $user
      * @return bool
      * @since 4.0.0
@@ -807,6 +893,8 @@ interface ElementInterface extends ComponentInterface
 
     /**
      * Returns whether the given user is authorized to create drafts for this element.
+     *
+     * This will only be called if the element can be [[canView()|viewed]] and/or [[canSave()|saved]].
      *
      * ::: tip
      * If this is going to return `true` under any circumstances, make sure [[trackChanges()]] is returning `true`,
@@ -852,6 +940,14 @@ interface ElementInterface extends ComponentInterface
     public function getPostEditUrl(): ?string;
 
     /**
+     * Returns the element’s revisions index URL in the control panel.
+     *
+     * @return string|null
+     * @since 4.4.0
+     */
+    public function getCpRevisionsUrl(): ?string;
+
+    /**
      * Returns additional buttons that should be shown at the top of the element’s edit page.
      *
      * @return string
@@ -879,36 +975,13 @@ interface ElementInterface extends ComponentInterface
     public function getPreviewTargets(): array;
 
     /**
-     * Returns the URL to the element’s thumbnail, if there is one.
+     * Returns the HTML for the element’s thumbnail, if it has one.
      *
-     * @param int $size The maximum width and height the thumbnail should have.
+     * @param int $size The width and height the thumbnail should have.
      * @return string|null
+     * @since 4.5.0
      */
-    public function getThumbUrl(int $size): ?string;
-
-    /**
-     * Returns alt text for the element’s thumbnail.
-     *
-     * @return string|null
-     * @since 4.0.0
-     */
-    public function getThumbAlt(): ?string;
-
-    /**
-     * Returns whether the element’s thumbnail should have a checkered background.
-     *
-     * @return bool
-     * @since 3.5.5
-     */
-    public function getHasCheckeredThumb(): bool;
-
-    /**
-     * Returns whether the element’s thumbnail should be rounded.
-     *
-     * @return bool
-     * @since 3.5.5
-     */
-    public function getHasRoundedThumb(): bool;
+    public function getThumbHtml(int $size): ?string;
 
     /**
      * Returns whether the element is enabled for the current site.
@@ -942,9 +1015,9 @@ interface ElementInterface extends ComponentInterface
     /**
      * Returns the same element in other locales.
      *
-     * @return ElementQueryInterface|Collection
+     * @return ElementQueryInterface|ElementCollection
      */
-    public function getLocalized(): ElementQueryInterface|Collection;
+    public function getLocalized(): ElementQueryInterface|ElementCollection;
 
     /**
      * Returns the next element relative to this one, from a given set of criteria.
@@ -997,37 +1070,37 @@ interface ElementInterface extends ComponentInterface
      *
      * @param self|null $parent
      */
-    public function setParent(?self $parent = null): void;
+    public function setParent(?self $parent): void;
 
     /**
      * Returns the element’s ancestors.
      *
      * @param int|null $dist
-     * @return ElementQueryInterface|Collection
+     * @return ElementQueryInterface|ElementCollection
      */
-    public function getAncestors(?int $dist = null): ElementQueryInterface|Collection;
+    public function getAncestors(?int $dist = null): ElementQueryInterface|ElementCollection;
 
     /**
      * Returns the element’s descendants.
      *
      * @param int|null $dist
-     * @return ElementQueryInterface|Collection
+     * @return ElementQueryInterface|ElementCollection
      */
-    public function getDescendants(?int $dist = null): ElementQueryInterface|Collection;
+    public function getDescendants(?int $dist = null): ElementQueryInterface|ElementCollection;
 
     /**
      * Returns the element’s children.
      *
-     * @return ElementQueryInterface|Collection
+     * @return ElementQueryInterface|ElementCollection
      */
-    public function getChildren(): ElementQueryInterface|Collection;
+    public function getChildren(): ElementQueryInterface|ElementCollection;
 
     /**
      * Returns all of the element’s siblings.
      *
-     * @return ElementQueryInterface|Collection
+     * @return ElementQueryInterface|ElementCollection
      */
-    public function getSiblings(): ElementQueryInterface|Collection;
+    public function getSiblings(): ElementQueryInterface|ElementCollection;
 
     /**
      * Returns the element’s previous sibling.
@@ -1125,7 +1198,7 @@ interface ElementInterface extends ComponentInterface
      * Returns the status of a given attribute.
      *
      * @param string $attribute
-     * @return array|null
+     * @return array{0:AttributeStatus|value-of<AttributeStatus>,1:string}|null
      * @since 3.4.0
      */
     public function getAttributeStatus(string $attribute): ?array;
@@ -1220,8 +1293,41 @@ interface ElementInterface extends ComponentInterface
      * to the target site.
      *
      * @return string The translation key
+     * @since 3.5.0
      */
     public function getTitleTranslationKey(): string;
+
+    /**
+     * Returns whether the Slug field should be shown as translatable in the UI.
+     *
+     * Note this method has no effect on whether slugs will get copied over to other
+     * sites when the element is actually getting saved. That is determined by [[getSlugTranslationKey()]].
+     *
+     * @return bool
+     * @since 4.5.0
+     */
+    public function getIsSlugTranslatable(): bool;
+
+    /**
+     * Returns the description of the Slug field’s translation support.
+     *
+     * @return string|null
+     * @since 4.5.0
+     */
+    public function getSlugTranslationDescription(): ?string;
+
+    /**
+     * Returns the Slug’s translation key.
+     *
+     * When saving an element on a multi-site Craft install, if `$propagate` is `true` for [[\craft\services\Elements::saveElement()]],
+     * then `getSlugTranslationKey()` will be called for each site the element should be propagated to.
+     * If the method returns the same value as it did for the initial site, then the initial site’s slug will be copied over
+     * to the target site.
+     *
+     * @return string The translation key
+     * @since 4.5.0
+     */
+    public function getSlugTranslationKey(): string;
 
     /**
      * Returns whether a field is empty.
@@ -1274,6 +1380,16 @@ interface ElementInterface extends ComponentInterface
      * @param mixed $value The value to set on the field
      */
     public function setFieldValue(string $fieldHandle, mixed $value): void;
+
+    /**
+     * Sets the value for a given field. The value should have originated from post data.
+     *
+     * @param string $fieldHandle The field handle whose value needs to be set
+     * @param mixed $value The value to set on the field
+     * @throws InvalidFieldException if `$fieldHandle` is an invalid field handle
+     * @since 4.5.0
+     */
+    public function setFieldValueFromRequest(string $fieldHandle, mixed $value): void;
 
     /**
      * Returns the field handles that have been updated on the canonical element since the last time it was
@@ -1330,6 +1446,16 @@ interface ElementInterface extends ComponentInterface
     public function getDirtyFields(): array;
 
     /**
+     * Sets the list of dirty field handles.
+     *
+     * @param string[] $fieldHandles
+     * @param bool $merge Whether these fields should be merged with existing dirty fields
+     * @see getDirtyFields()
+     * @since 4.5.0
+     */
+    public function setDirtyFields(array $fieldHandles, bool $merge = true): void;
+
+    /**
      * Marks all fields and attributes as dirty.
      *
      * @since 3.4.10
@@ -1373,20 +1499,6 @@ interface ElementInterface extends ComponentInterface
     public function setFieldParamNamespace(string $namespace): void;
 
     /**
-     * Returns the name of the table this element’s content is stored in.
-     *
-     * @return string
-     */
-    public function getContentTable(): string;
-
-    /**
-     * Returns the field column prefix this element’s content uses.
-     *
-     * @return string
-     */
-    public function getFieldColumnPrefix(): string;
-
-    /**
      * Returns the field context this element’s content uses.
      *
      * @return string
@@ -1405,9 +1517,9 @@ interface ElementInterface extends ComponentInterface
      * Returns the eager-loaded elements for a given handle.
      *
      * @param string $handle The handle of the eager-loaded elements
-     * @return Collection|null The eager-loaded elements, or null if they hadn't been eager-loaded
+     * @return ElementCollection|null The eager-loaded elements, or null if they hadn't been eager-loaded
      */
-    public function getEagerLoadedElements(string $handle): ?Collection;
+    public function getEagerLoadedElements(string $handle): ?ElementCollection;
 
     /**
      * Sets some eager-loaded elements on a given handle.
@@ -1418,13 +1530,21 @@ interface ElementInterface extends ComponentInterface
     public function setEagerLoadedElements(string $handle, array $elements): void;
 
     /**
+     * Sets whether the given eager-loaded element handles were eager-loaded lazily.
+     *
+     * @param string $handle The handle that was used to eager-load the elements
+     * @param bool $value
+     */
+    public function setLazyEagerLoadedElements(string $handle, bool $value = true): void;
+
+    /**
      * Returns the count of eager-loaded elements for a given handle.
      *
      * @param string $handle The handle of the eager-loaded elements
-     * @return int The eager-loaded element count
+     * @return int|null The eager-loaded element count, or null if it hadn't been eager-loaded
      * @since 3.4.0
      */
-    public function getEagerLoadedElementCount(string $handle): int;
+    public function getEagerLoadedElementCount(string $handle): ?int;
 
     /**
      * Sets the count of eager-loaded elements for a given handle.
@@ -1457,7 +1577,7 @@ interface ElementInterface extends ComponentInterface
      * @param int|null $creatorId
      * @since 3.2.0
      */
-    public function setRevisionCreatorId(?int $creatorId = null): void;
+    public function setRevisionCreatorId(?int $creatorId): void;
 
     /**
      * Sets the revision notes to be saved.
@@ -1465,7 +1585,7 @@ interface ElementInterface extends ComponentInterface
      * @param string|null $notes
      * @since 3.2.0
      */
-    public function setRevisionNotes(?string $notes = null): void;
+    public function setRevisionNotes(?string $notes): void;
 
     /**
      * Returns the element’s current revision, if one exists.
@@ -1494,17 +1614,27 @@ interface ElementInterface extends ComponentInterface
     public function getHtmlAttributes(string $context): array;
 
     /**
-     * Returns the HTML that should be shown for a given attribute in Table View.
+     * Returns the HTML that should be shown for a given attribute in table and card views.
      *
      * ::: tip
-     * Element types that extend [[\craft\base\Element]] should override [[\craft\base\Element::tableAttributeHtml()]]
+     * Element types that extend [[\craft\base\Element]] should override [[\craft\base\Element::attributeHtml()]]
      * instead of this method.
      * :::
      *
      * @param string $attribute The attribute name.
-     * @return string The HTML that should be shown for a given attribute in Table View.
+     * @return string The HTML that should be shown for a given attribute in table and card views.
+     * @since 5.0.0
      */
-    public function getTableAttributeHtml(string $attribute): string;
+    public function getAttributeHtml(string $attribute): string;
+
+    /**
+     * Returns the HTML that should be shown for a given attribute's inline editing input.
+     *
+     * @param string $attribute The attribute name.
+     * @return string The HTML that should be shown for the element input.
+     * @since 5.0.0
+     */
+    public function getInlineAttributeInputHtml(string $attribute): string;
 
     /**
      * Returns the HTML for any fields/info that should be shown within the editor sidebar.
@@ -1595,6 +1725,9 @@ interface ElementInterface extends ComponentInterface
      *
      * @param int $structureId The structure ID
      * @return bool Whether the element should be moved within the structure
+     * @deprecated in 4.5.0. [[\craft\services\Structures::EVENT_BEFORE_INSERT_ELEMENT]] or
+     * [[\craft\services\Structures::EVENT_BEFORE_MOVE_ELEMENT|EVENT_BEFORE_MOVE_ELEMENT]]
+     * should be used instead.
      */
     public function beforeMoveInStructure(int $structureId): bool;
 
@@ -1602,6 +1735,9 @@ interface ElementInterface extends ComponentInterface
      * Performs actions after an element is moved within a structure.
      *
      * @param int $structureId The structure ID
+     * @deprecated in 4.5.0. [[\craft\services\Structures::EVENT_AFTER_INSERT_ELEMENT]] or
+     * [[\craft\services\Structures::EVENT_AFTER_MOVE_ELEMENT|EVENT_AFTER_MOVE_ELEMENT]]
+     * should be used instead.
      */
     public function afterMoveInStructure(int $structureId): void;
 

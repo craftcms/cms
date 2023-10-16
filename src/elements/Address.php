@@ -5,10 +5,13 @@ namespace craft\elements;
 use CommerceGuys\Addressing\AddressFormat\AddressField;
 use CommerceGuys\Addressing\AddressInterface;
 use Craft;
-use craft\base\BlockElementInterface;
 use craft\base\Element;
+use craft\base\ElementContainerFieldInterface;
 use craft\base\ElementInterface;
 use craft\base\NameTrait;
+use craft\base\NestedElementInterface;
+use craft\db\Query;
+use craft\db\Table;
 use craft\elements\conditions\addresses\AddressCondition;
 use craft\elements\conditions\ElementConditionInterface;
 use craft\elements\db\AddressQuery;
@@ -17,6 +20,7 @@ use craft\fieldlayoutelements\addresses\OrganizationField;
 use craft\fieldlayoutelements\addresses\OrganizationTaxIdField;
 use craft\fieldlayoutelements\BaseNativeField;
 use craft\fieldlayoutelements\FullNameField;
+use craft\helpers\Db;
 use craft\models\FieldLayout;
 use craft\records\Address as AddressRecord;
 use yii\base\InvalidConfigException;
@@ -27,9 +31,14 @@ use yii\base\InvalidConfigException;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.0.0
  */
-class Address extends Element implements AddressInterface, BlockElementInterface
+class Address extends Element implements AddressInterface, NestedElementInterface
 {
     use NameTrait;
+
+    /**
+     * @since 5.0.0
+     */
+    public const GQL_TYPE_NAME = 'Address';
 
     /**
      * @inheritdoc
@@ -67,14 +76,6 @@ class Address extends Element implements AddressInterface, BlockElementInterface
      * @inheritdoc
      */
     public static function trackChanges(): bool
-    {
-        return true;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public static function hasContent(): bool
     {
         return true;
     }
@@ -160,17 +161,27 @@ class Address extends Element implements AddressInterface, BlockElementInterface
     }
 
     /**
-     * @inheritdoc
+     * @var int|null Field ID
+     * @since 5.0.0
      */
-    public static function gqlTypeNameByContext(mixed $context): string
-    {
-        return 'Address';
-    }
+    public ?int $fieldId = null;
+
+    /**
+     * @var int|null Primary owner ID
+     * @since 5.0.0
+     */
+    public ?int $primaryOwnerId = null;
 
     /**
      * @var int|null Owner ID
      */
     public ?int $ownerId = null;
+
+    /**
+     * @var int|null Sort order
+     * @since 5.0.0
+     */
+    public ?int $sortOrder = null;
 
     /**
      * @var ElementInterface|null The owner element
@@ -182,7 +193,7 @@ class Address extends Element implements AddressInterface, BlockElementInterface
      * @var string Two-letter country code
      * @see https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2
      */
-    public string $countryCode = 'US';
+    public string $countryCode;
 
     /**
      * @var string|null Administrative area
@@ -240,11 +251,22 @@ class Address extends Element implements AddressInterface, BlockElementInterface
     public ?string $longitude = null;
 
     /**
+     * @var bool Whether to save the address’s row in the `elements_owners` table in [[afterSave()]].
+     * @since 5.0.0
+     */
+    public bool $saveOwnership = true;
+
+    /**
      * @inheritdoc
      */
     public function init(): void
     {
         parent::init();
+
+        if (!isset($this->countryCode)) {
+            $this->countryCode = Craft::$app->getConfig()->getGeneral()->defaultCountryCode;
+        }
+
         $this->normalizeNames();
     }
 
@@ -288,19 +310,52 @@ class Address extends Element implements AddressInterface, BlockElementInterface
      */
     public function getOwner(): ?ElementInterface
     {
-        if (!isset($this->ownerId)) {
-            return null;
-        }
-
         if (!isset($this->_owner)) {
-            $owner = Craft::$app->getElements()->getElementById($this->ownerId);
-            if ($owner === null) {
-                throw new InvalidConfigException("Invalid owner ID: $this->ownerId");
+            $ownerId = $this->ownerId ?? $this->primaryOwnerId;
+            if (!$ownerId) {
+                throw new InvalidConfigException('Address is missing its owner ID');
             }
-            $this->_owner = $owner;
+
+            $this->_owner = Craft::$app->getElements()->getElementById($ownerId, null, $this->siteId);
+            if (!isset($this->_owner)) {
+                throw new InvalidConfigException("Invalid owner ID: $ownerId");
+            }
         }
 
         return $this->_owner;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function setOwner(?ElementInterface $owner): void
+    {
+        $this->_owner = $owner;
+        $this->ownerId = $owner?->id;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getField(): ?ElementContainerFieldInterface
+    {
+        if (!isset($this->fieldId)) {
+            return null;
+        }
+
+        $field = $this->getOwner()->getFieldLayout()->getFieldById($this->fieldId);
+        if (!$field instanceof ElementContainerFieldInterface) {
+            throw new InvalidConfigException("Invalid field ID: $this->fieldId");
+        }
+        return $field;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getSortOrder(): ?int
+    {
+        return $this->sortOrder;
     }
 
     /**
@@ -468,6 +523,15 @@ class Address extends Element implements AddressInterface, BlockElementInterface
 
     /**
      * @inheritdoc
+     * @since 3.3.0
+     */
+    public function getGqlTypeName(): string
+    {
+        return self::GQL_TYPE_NAME;
+    }
+
+    /**
+     * @inheritdoc
      */
     public function beforeValidate(): bool
     {
@@ -498,7 +562,7 @@ class Address extends Element implements AddressInterface, BlockElementInterface
     {
         $rules = parent::defineRules();
 
-        $rules[] = [['ownerId'], 'number'];
+        $rules[] = [['fieldId', 'ownerId', 'primaryOwnerId'], 'number'];
         $rules[] = [['countryCode'], 'required'];
 
         $addressesService = Craft::$app->getAddresses();
@@ -550,20 +614,6 @@ class Address extends Element implements AddressInterface, BlockElementInterface
 
     /**
      * @inheritdoc
-     */
-    protected function cacheTags(): array
-    {
-        $tags = [];
-
-        if ($this->ownerId) {
-            $tags[] = "owner:$this->ownerId";
-        }
-
-        return $tags;
-    }
-
-    /**
-     * @inheritdoc
      * @throws InvalidConfigException
      */
     public function afterSave(bool $isNew): void
@@ -581,7 +631,8 @@ class Address extends Element implements AddressInterface, BlockElementInterface
 
         $this->prepareNamesForSave();
 
-        $record->ownerId = $this->ownerId;
+        $record->fieldId = $this->fieldId;
+        $record->primaryOwnerId = $this->primaryOwnerId ?? $this->ownerId;
         $record->countryCode = $this->countryCode;
         $record->administrativeArea = $this->administrativeArea;
         $record->locality = $this->locality;
@@ -603,6 +654,35 @@ class Address extends Element implements AddressInterface, BlockElementInterface
 
         $record->save(false);
 
+        // ownerId will be null when creating a revision
+        if (isset($this->fieldId, $this->ownerId) && $this->saveOwnership) {
+            if (($isNew && $this->getIsCanonical()) || !isset($this->sortOrder)) {
+                $max = (new Query())
+                    ->from(['eo' => Table::ELEMENTS_OWNERS])
+                    ->innerJoin(['a' => Table::ADDRESSES], '[[a.id]] = [[eo.elementId]]')
+                    ->where([
+                        'eo.ownerId' => $this->ownerId,
+                        'a.fieldId' => $this->fieldId,
+                    ])
+                    ->max('[[eo.sortOrder]]');
+                $this->sortOrder = $max ? $max + 1 : 1;
+            }
+            if ($isNew) {
+                Db::insert(Table::ELEMENTS_OWNERS, [
+                    'elementId' => $this->id,
+                    'ownerId' => $this->ownerId,
+                    'sortOrder' => $this->sortOrder,
+                ]);
+            } else {
+                Db::update(Table::ELEMENTS_OWNERS, [
+                    'sortOrder' => $this->sortOrder,
+                ], [
+                    'elementId' => $this->id,
+                    'ownerId' => $this->ownerId,
+                ]);
+            }
+        }
+
         $this->setDirtyAttributes($dirtyAttributes);
 
         parent::afterSave($isNew);
@@ -613,6 +693,6 @@ class Address extends Element implements AddressInterface, BlockElementInterface
      */
     public function getFieldLayout(): ?FieldLayout
     {
-        return Craft::$app->getAddresses()->getLayout();
+        return Craft::$app->getAddresses()->getFieldLayout();
     }
 }

@@ -73,11 +73,11 @@ class LanguageValidatorTest extends TestCase
     /**
      * @return array
      */
-    public function validateAttributeDataProvider(): array
+    public static function validateAttributeDataProvider(): array
     {
         $returnArray = [];
 
-        foreach ($this->validateValueDataProvider() as $item) {
+        foreach (static::validateValueDataProvider() as $item) {
             $mustValidate = true;
             if (!empty($item[0])) {
                 $mustValidate = false;
@@ -106,7 +106,7 @@ class LanguageValidatorTest extends TestCase
     /**
      * @return array
      */
-    public function validateValueDataProvider(): array
+    public static function validateValueDataProvider(): array
     {
         return [
             [['{value} is not a valid site language.', []], 'nolang'],

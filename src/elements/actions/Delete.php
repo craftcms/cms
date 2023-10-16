@@ -10,9 +10,7 @@ namespace craft\elements\actions;
 use Craft;
 use craft\base\ElementAction;
 use craft\base\ElementInterface;
-use craft\db\Table;
 use craft\elements\db\ElementQueryInterface;
-use craft\helpers\Db;
 use craft\helpers\Html;
 
 /**
@@ -75,13 +73,14 @@ class Delete extends ElementAction implements DeleteActionInterface
 (() => {
     new Craft.ElementActionTrigger({
         type: $type,
-        validateSelection: \$selectedItems => {
-            for (let i = 0; i < \$selectedItems.length; i++) {
-                if (!Garnish.hasAttr(\$selectedItems.eq(i).find('.element'), 'data-deletable')) {
+        validateSelection: (selectedItems, elementIndex) => {
+            for (let i = 0; i < selectedItems.length; i++) {
+                if (!Garnish.hasAttr(selectedItems.eq(i).find('.element'), 'data-deletable')) {
                     return false;
                 }
             }
-            return true;
+
+            return elementIndex.settings.canDeleteElements(selectedItems);
         },
     });
 })();
@@ -174,31 +173,24 @@ JS, [static::class]);
         $user = Craft::$app->getUser()->getIdentity();
 
         foreach ($query->all() as $element) {
-            if (!$elementsService->canDelete($element, $user)) {
+            if (!$elementsService->canView($element, $user) || !$elementsService->canDelete($element, $user)) {
                 continue;
             }
             if (!isset($deletedElementIds[$element->id])) {
                 if ($withDescendants) {
                     foreach ($element->getDescendants()->all() as $descendant) {
-                        if (!isset($deletedElementIds[$descendant->id]) && $elementsService->canDelete($descendant, $user)) {
-                            $elementsService->deleteElement($descendant);
+                        if (
+                            !isset($deletedElementIds[$descendant->id]) &&
+                            $elementsService->canView($descendant, $user) &&
+                            $elementsService->canDelete($descendant, $user)
+                        ) {
+                            $elementsService->deleteElement($descendant, $this->hard);
                             $deletedElementIds[$descendant->id] = true;
                         }
                     }
                 }
-                $elementsService->deleteElement($element);
+                $elementsService->deleteElement($element, $this->hard);
                 $deletedElementIds[$element->id] = true;
-            }
-        }
-
-        if ($this->hard) {
-            if (!empty($deletedElementIds)) {
-                Db::delete(Table::ELEMENTS, [
-                    'id' => array_keys($deletedElementIds),
-                ]);
-                Db::delete(Table::SEARCHINDEX, [
-                    'elementId' => array_keys($deletedElementIds),
-                ]);
             }
         }
 

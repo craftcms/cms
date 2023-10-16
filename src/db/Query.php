@@ -10,7 +10,6 @@ namespace craft\db;
 use ArrayAccess;
 use ArrayIterator;
 use craft\base\ClonefixTrait;
-use craft\elements\ElementCollection;
 use craft\events\DefineBehaviorsEvent;
 use craft\helpers\ArrayHelper;
 use Illuminate\Support\Collection;
@@ -261,11 +260,12 @@ class Query extends \yii\db\Query implements ArrayAccess, IteratorAggregate
      */
     public function collect(?YiiConnection $db = null): Collection
     {
-        return ElementCollection::make($this->all($db));
+        return Collection::make($this->all($db));
     }
 
     /**
      * @inheritdoc
+     * @return array|null
      */
     public function one($db = null): mixed
     {

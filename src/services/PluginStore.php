@@ -29,14 +29,14 @@ use yii\base\Component;
 class PluginStore extends Component
 {
     /**
-     * @var string Craft ID endpoint
+     * @var string Craft Console endpoint
      */
-    public string $craftIdEndpoint = 'https://id.craftcms.com';
+    public string $craftIdEndpoint = 'https://console.craftcms.com';
 
     /**
      * @var string OAuth endpoint
      */
-    public string $craftOauthEndpoint = 'https://id.craftcms.com/oauth';
+    public string $craftOauthEndpoint = 'https://console.craftcms.com/oauth';
 
     /**
      * @var string API endpoint
@@ -130,6 +130,7 @@ class PluginStore extends Component
         }
 
         // Or use the token from the database otherwise
+        /** @var OauthTokenRecord|null $oauthTokenRecord */
         $oauthTokenRecord = OauthTokenRecord::find()
             ->where(['userId' => $userId])
             ->one();

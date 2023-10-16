@@ -1,0 +1,25 @@
+{% set elements = elements ?? [] %}
+{% set disabled = disabled ?? null %}
+{% set viewMode = viewMode ?? null %}
+
+{% tag 'ul' with {
+  class: [
+    'elements',
+    (inline ?? false) ? 'inline-chips' : null,
+  ]|filter,
+} %}
+  {% for element in elements %}
+    <li>
+      {% set element = elementChip(element, {
+        context: context ?? 'index',
+        size: size ?? (viewMode == 'large' ? 'large' : 'small'),
+        inputName: inputName ?? ((name ?? false) ? "#{name}[]" : null),
+        checkbox: selectable ?? false,
+      }) %}
+      {% if disabled %}
+        {% set element = element|removeClass('removable') %}
+      {% endif %}
+      {{ element|raw }}
+    </li>
+  {% endfor %}
+{% endtag %}

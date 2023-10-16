@@ -452,7 +452,7 @@ Craft.EditableTable = Garnish.Base.extend(
               Craft.ui
                 .createColorInput({
                   name: name,
-                  value: value,
+                  value: typeof value !== 'object' ? value : null,
                   small: true,
                 })
                 .appendTo($cell);
@@ -517,7 +517,7 @@ Craft.EditableTable = Garnish.Base.extend(
               Craft.ui
                 .createTextInput({
                   name: name,
-                  value: value,
+                  value: typeof value !== 'object' ? value : null,
                   type: col.type,
                   placeholder: col.placeholder || null,
                 })
@@ -528,7 +528,7 @@ Craft.EditableTable = Garnish.Base.extend(
               $('<textarea/>', {
                 name: name,
                 rows: col.rows || 1,
-                val: value,
+                val: typeof value !== 'object' ? value : null,
                 placeholder: col.placeholder,
               }).appendTo($cell);
           }
@@ -715,7 +715,8 @@ Craft.EditableTable.Row = Garnish.Base.extend(
         if (
           col.autopopulate &&
           typeof textareasByColId[col.autopopulate] !== 'undefined' &&
-          !textareasByColId[colId].val()
+          !textareasByColId[colId].val() &&
+          !textareasByColId[col.autopopulate].val()
         ) {
           new Craft.HandleGenerator(
             textareasByColId[colId],
@@ -823,15 +824,6 @@ Craft.EditableTable.Row = Garnish.Base.extend(
         }
         return;
       }
-
-      // Was this an invalid number character?
-      if (
-        ev.data.type === 'number' &&
-        !ctrl &&
-        !Craft.inArray(keyCode, Craft.EditableTable.Row.numericKeyCodes)
-      ) {
-        ev.preventDefault();
-      }
     },
 
     handlePaste: function (ev) {
@@ -851,22 +843,13 @@ Craft.EditableTable.Row = Garnish.Base.extend(
         return;
       }
 
-      var safeValue;
-
       if (ev.data.type === 'number') {
-        // Only grab the number at the beginning of the value (if any)
-        var match = ev.currentTarget.value.match(/^\s*(-?[\d\\.]*)/);
-
-        if (match !== null) {
-          safeValue = match[1];
-        } else {
-          safeValue = '';
-        }
-      } else {
-        // Just strip any newlines
-        safeValue = ev.currentTarget.value.replace(/[\r\n]/g, '');
+        Craft.filterNumberInputVal(ev.currentTarget);
+        return;
       }
 
+      // Strip any newlines
+      const safeValue = ev.currentTarget.value.replace(/[\r\n]/g, '');
       if (safeValue !== ev.currentTarget.value) {
         ev.currentTarget.value = safeValue;
       }
@@ -901,6 +884,7 @@ Craft.EditableTable.Row = Garnish.Base.extend(
     },
   },
   {
+    /** @deprecated */
     numericKeyCodes: [
       9 /* (tab) */, 8 /* (delete) */, 37, 38, 39, 40 /* (arrows) */, 45,
       91 /* (minus) */, 46, 190 /* period */, 48, 49, 50, 51, 52, 53, 54, 55,
