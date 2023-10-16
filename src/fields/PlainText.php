@@ -186,11 +186,25 @@ class PlainText extends Field implements PreviewableFieldInterface, SortableFiel
             $bytes = $this->byteLimit;
         } elseif ($this->charLimit) {
             $bytes = $this->charLimit * 4;
-        } else {
-            return Schema::TYPE_TEXT;
         }
 
-        return Schema::TYPE_STRING . "($bytes)";
+        if (Craft::$app->getDb()->getIsPgsql()) {
+            if (isset($bytes)) {
+                return Schema::TYPE_STRING . "($bytes)";
+            } else {
+                return Schema::TYPE_TEXT;
+            }
+        } else {
+            if (!isset($bytes)) {
+                return Schema::TYPE_TEXT;
+            }
+
+            if ($bytes <= 1020) {
+                return sprintf('%s(%s)', Schema::TYPE_STRING, $bytes);
+            }
+
+            return Db::getTextualColumnTypeByContentLength($bytes);
+        }
     }
 
     /**
