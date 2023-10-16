@@ -1044,16 +1044,15 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
         }
 
         // Make sure the section is set to have URLs for this site
-        $siteId = Craft::$app->getSites()->getCurrentSite()->id;
-        $sectionSiteSettings = $section->getSiteSettings();
+        $sectionSiteSettings = $section->getSiteSettings()[$this->siteId] ?? null;
 
-        if (!isset($sectionSiteSettings[$siteId]) || !$sectionSiteSettings[$siteId]->hasUrls) {
+        if (!$sectionSiteSettings?->hasUrls) {
             return null;
         }
 
         return [
             'templates/render', [
-                'template' => (string)$sectionSiteSettings[$siteId]->template,
+                'template' => (string)$sectionSiteSettings->template,
                 'variables' => [
                     'entry' => $this,
                 ],

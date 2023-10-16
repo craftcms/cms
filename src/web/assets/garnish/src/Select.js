@@ -583,8 +583,8 @@ export default Base.extend(
     onMouseDown: function (ev) {
       this.mousedownTarget = null;
 
-      // ignore right clicks
-      if (ev.which !== Garnish.PRIMARY_CLICK) {
+      // ignore right/ctrl-clicks
+      if (!Garnish.isPrimaryClick(ev)) {
         return;
       }
 
@@ -612,7 +612,7 @@ export default Base.extend(
      */
     onMouseUp: function (ev) {
       // ignore right clicks
-      if (ev.which !== Garnish.PRIMARY_CLICK) {
+      if (!Garnish.isPrimaryClick(ev)) {
         return;
       }
 

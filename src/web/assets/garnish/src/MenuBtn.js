@@ -319,11 +319,7 @@ export default Base.extend(
     },
 
     onMouseDown: function (ev) {
-      if (
-        ev.which !== Garnish.PRIMARY_CLICK ||
-        Garnish.isCtrlKeyPressed(ev) ||
-        ev.target.nodeName === 'INPUT'
-      ) {
+      if (!Garnish.isPrimaryClick(ev) || ev.target.nodeName === 'INPUT') {
         return;
       }
 

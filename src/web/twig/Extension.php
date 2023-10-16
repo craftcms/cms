@@ -1670,7 +1670,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
      */
     private function _checkFilterSupport(mixed $arrow): void
     {
-        if (is_string($arrow) && in_array(strtolower($arrow), [
+        if (is_string($arrow) && in_array(ltrim(strtolower($arrow), '\\'), [
             'system',
             'passthru',
             'exec',
