@@ -8,13 +8,18 @@ Craft.TableElementIndexView = Craft.BaseElementIndexView.extend({
   $tableCaption: null,
   $selectedSortHeader: null,
   $statusMessage: null,
+  $editBtn: null,
+  $saveBtn: null,
+  $cancelBtn: null,
 
-  structureTableSort: null,
+  tableSort: null,
 
   _totalVisiblePostStructureTableDraggee: null,
   _morePendingPostStructureTableDraggee: false,
 
   _broadcastListener: null,
+
+  initialSerializedValue: null,
 
   getElementContainer: function () {
     // Save a reference to the table
@@ -36,22 +41,32 @@ Craft.TableElementIndexView = Craft.BaseElementIndexView.extend({
       this._updateScreenReaderStatus();
     });
 
-    // Create the Structure Table Sorter
+    // Create the table sorter
     if (
-      this.elementIndex.settings.context === 'index' &&
-      this.elementIndex.viewMode === 'structure' &&
-      Garnish.hasAttr(this.$table, 'data-structure-id')
+      (this.settings.sortable ||
+        (this.elementIndex.isAdministrative &&
+          this.elementIndex.viewMode === 'structure' &&
+          Garnish.hasAttr(this.$table, 'data-structure-id'))) &&
+      !this.elementIndex.inlineEditing
     ) {
-      this.structureTableSort = new Craft.StructureTableSorter(
+      this.tableSort = new Craft.ElementTableSorter(
         this,
-        this.getAllElements()
+        this.getAllElements(),
+        {
+          structureId: this.$table.data('structure-id'),
+          maxLevels: this.$table.attr('data-max-levels'),
+          onSortChange: () => {
+            this.settings.onSortChange(this.tableSort.$draggee);
+          },
+        }
       );
-    } else {
-      this.structureTableSort = null;
     }
 
     // Handle expand/collapse toggles for Structures
-    if (this.elementIndex.viewMode === 'structure') {
+    if (
+      this.elementIndex.viewMode === 'structure' &&
+      !this.elementIndex.inlineEditing
+    ) {
       this.addListener(this.$elementContainer, 'click', function (ev) {
         var $target = $(ev.target);
 
@@ -61,6 +76,14 @@ Craft.TableElementIndexView = Craft.BaseElementIndexView.extend({
           }
         }
       });
+    }
+
+    if (
+      this.elementIndex.isAdministrative &&
+      this.elementIndex.settings.inlineEditable !== false &&
+      this.$elementContainer.has('> tr[data-id] > th .element[data-editable]')
+    ) {
+      this.initForInlineEditing();
     }
 
     // Set up the broadcast listener
@@ -108,7 +131,156 @@ Craft.TableElementIndexView = Craft.BaseElementIndexView.extend({
     }
   },
 
+  initForInlineEditing: function () {
+    if (this.elementIndex.inlineEditing) {
+      Craft.initUiElements(this.$elementContainer);
+      this.initialSerializedValue = this.serializeInputs();
+
+      this.$saveBtn = Craft.ui
+        .createSubmitButton({
+          label: Craft.t('app', 'Save'),
+          spinner: true,
+        })
+        .insertBefore(this.elementIndex.$exportBtn);
+      this.$cancelBtn = Craft.ui
+        .createButton({
+          label: Craft.t('app', 'Cancel'),
+          spinner: true,
+        })
+        .insertBefore(this.elementIndex.$exportBtn);
+
+      this.addListener(this.$saveBtn, 'activate', () => {
+        this.$saveBtn.addClass('loading');
+        this.saveChanges()
+          .then((data) => {
+            if (data.errors) {
+              for (let elementId in data.errors) {
+                if (data.errors.hasOwnProperty(elementId)) {
+                  const $row = this.$elementContainer.children(
+                    `[data-id="${elementId}"]`
+                  );
+                  for (let attribute in data.errors[elementId]) {
+                    $row
+                      .find(`[name*="${attribute}"]`)
+                      .closest('td')
+                      .addClass('errors');
+                  }
+                }
+              }
+
+              this.elementIndex.setIndexAvailable();
+              Craft.cp.displayError(
+                Craft.t('app', 'Could not save due to validation errors.')
+              );
+              return;
+            }
+
+            Craft.cp.displaySuccess(Craft.t('app', 'Changes saved.'));
+            this.elementIndex.inlineEditing = false;
+            this.elementIndex.updateElements(true, false);
+          })
+          .catch(() => {
+            this.elementIndex.setIndexAvailable();
+            Craft.cp.displayError();
+          })
+          .finally(() => {
+            this.$saveBtn.removeClass('loading');
+          });
+      });
+
+      this.addListener(this.$cancelBtn, 'activate', () => {
+        this.$cancelBtn.addClass('loading');
+        this.elementIndex.inlineEditing = false;
+        this.elementIndex.updateElements(true, false);
+      });
+
+      this.addListener(this.$elementContainer, 'keydown', (event) => {
+        if (
+          event.keyCode === Garnish.RETURN_KEY &&
+          Garnish.isCtrlKeyPressed(event)
+        ) {
+          this.$saveBtn.trigger('click');
+        } else if (
+          event.keyCode === Garnish.S_KEY &&
+          Garnish.isCtrlKeyPressed(event)
+        ) {
+          event.stopPropagation();
+          event.preventDefault();
+          this.$saveBtn.trigger('click');
+        }
+      });
+    } else {
+      this.$editBtn = Craft.ui
+        .createButton({
+          label: Craft.t('app', 'Edit'),
+          spinner: true,
+        })
+        .insertBefore(this.elementIndex.$exportBtn);
+      this.addListener(this.$editBtn, 'activate', () => {
+        this.$editBtn.addClass('loading');
+        this.elementIndex.inlineEditing = true;
+        this.elementIndex.updateElements(true, false);
+      });
+    }
+  },
+
+  serializeInputs: function () {
+    const data = Garnish.getPostData(this.$elementContainer);
+    const serialized = [];
+    for (let i in data) {
+      serialized.push(encodeURIComponent(`${i}=${data[i]}`));
+    }
+    return serialized.join('&');
+  },
+
+  getDeltaInputChanges: function () {
+    const deltaNames = this.$elementContainer
+      .children()
+      .toArray()
+      .map(
+        (e) => `${this.elementIndex.nestedInputNamespace}[${$(e).data('id')}]`
+      );
+    return Craft.findDeltaData(
+      this.initialSerializedValue,
+      this.serializeInputs(),
+      deltaNames
+    );
+  },
+
+  haveInputsChanged: function () {
+    return this.serializeInputs() !== this.initialSerializedValue;
+  },
+
+  saveChanges: async function () {
+    let data = this.getDeltaInputChanges();
+    if (!data) {
+      return {};
+    }
+
+    data +=
+      '&' +
+      $.param({
+        elementType: this.elementIndex.elementType,
+        siteId: this.elementIndex.siteId,
+        namespace: this.elementIndex.nestedInputNamespace,
+      });
+
+    const response = await Craft.sendActionRequest(
+      'POST',
+      'element-indexes/save-elements',
+      {
+        data,
+      }
+    );
+
+    return response.data;
+  },
+
   initTableHeaders: function () {
+    if (this.settings.sortable || this.elementIndex.inlineEditing) {
+      return;
+    }
+
     let selectedSortAttr, selectedSortDir;
     if (this.elementIndex.viewMode === 'structure') {
       selectedSortAttr = 'structure';
@@ -216,8 +388,7 @@ Craft.TableElementIndexView = Craft.BaseElementIndexView.extend({
     // If we are dragging the last elements on the page,
     // tell the controller to only load elements positioned after the draggee.
     if (this._isStructureTableDraggingLastElements()) {
-      params.criteria.positionedAfter =
-        this.structureTableSort.$targetItem.data('id');
+      params.criteria.positionedAfter = this.tableSort.$targetItem.data('id');
     }
 
     return params;
@@ -226,8 +397,8 @@ Craft.TableElementIndexView = Craft.BaseElementIndexView.extend({
   appendElements: function ($newElements) {
     this.base($newElements);
 
-    if (this.structureTableSort) {
-      this.structureTableSort.addItems($newElements);
+    if (this.tableSort) {
+      this.tableSort.addItems($newElements);
     }
 
     Craft.cp.updateResponsiveTables();
@@ -257,8 +428,8 @@ Craft.TableElementIndexView = Craft.BaseElementIndexView.extend({
           this.elementSelect.removeItems($nextRow);
         }
 
-        if (this.structureTableSort) {
-          this.structureTableSort.removeItems($nextRow);
+        if (this.tableSort) {
+          this.tableSort.removeItems($nextRow);
         }
 
         this._totalVisible--;
@@ -340,8 +511,8 @@ Craft.TableElementIndexView = Craft.BaseElementIndexView.extend({
                 this.elementSelect.removeItems($nextRows);
               }
 
-              if (this.structureTableSort) {
-                this.structureTableSort.removeItems($nextRows);
+              if (this.tableSort) {
+                this.tableSort.removeItems($nextRows);
               }
 
               $nextRows.remove();
@@ -361,8 +532,8 @@ Craft.TableElementIndexView = Craft.BaseElementIndexView.extend({
               this.elementIndex.updateActionTriggers();
             }
 
-            if (this.structureTableSort) {
-              this.structureTableSort.addItems($newElements);
+            if (this.tableSort) {
+              this.tableSort.addItems($newElements);
             }
 
             Craft.appendHeadHtml(response.data.headHtml);
@@ -399,9 +570,9 @@ Craft.TableElementIndexView = Craft.BaseElementIndexView.extend({
 
   _isStructureTableDraggingLastElements: function () {
     return (
-      this.structureTableSort &&
-      this.structureTableSort.dragging &&
-      this.structureTableSort.draggingLastElements
+      this.tableSort &&
+      this.tableSort.dragging &&
+      this.tableSort.draggingLastElements
     );
   },
 
@@ -499,6 +670,13 @@ Craft.TableElementIndexView = Craft.BaseElementIndexView.extend({
   },
 
   destroy: function () {
+    if (this.$editBtn) {
+      this.$editBtn.remove();
+    } else if (this.$cancelBtn) {
+      this.$saveBtn.remove();
+      this.$cancelBtn.remove();
+    }
+
     if (this._broadcastListener) {
       Craft.messageReceiver.removeEventListener(
         'message',

@@ -14,7 +14,8 @@ use craft\db\Table;
  * Class Address record.
  *
  * @property int $id ID
- * @property int|null $ownerId Owner ID
+ * @property int|null $fieldId Field ID
+ * @property int|null $primaryOwnerId Owner ID
  * @property string $countryCode Country code
  * @property string|null $administrativeArea Administrative area
  * @property string|null $locality Locality

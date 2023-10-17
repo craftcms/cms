@@ -883,6 +883,10 @@ class AssetQuery extends ElementQuery
      */
     protected function beforePrepare(): bool
     {
+        if (!parent::beforePrepare()) {
+            return false;
+        }
+
         $this->_normalizeVolumeId();
 
         // See if 'volume' was set to an invalid handle
@@ -980,7 +984,7 @@ class AssetQuery extends ElementQuery
         $this->_applyAuthParam($this->editable, 'viewAssets', 'viewPeerAssets');
         $this->_applyAuthParam($this->savable, 'saveAssets', 'savePeerAssets');
 
-        return parent::beforePrepare();
+        return true;
     }
 
     /**
@@ -1092,5 +1096,25 @@ class AssetQuery extends ElementQuery
             }
         }
         return $tags;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    protected function fieldLayouts(): array
+    {
+        if ($this->volumeId && $this->volumeId !== ':empty:') {
+            $fieldLayouts = [];
+            $volumesService = Craft::$app->getVolumes();
+            foreach ($this->volumeId as $volumeId) {
+                $volume = $volumesService->getVolumeById($volumeId);
+                if ($volume) {
+                    $fieldLayouts[] = $volume->getFieldLayout();
+                }
+            }
+            return $fieldLayouts;
+        }
+
+        return parent::fieldLayouts();
     }
 }

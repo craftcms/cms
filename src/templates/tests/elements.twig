@@ -5,16 +5,16 @@
     {% if element %}
         <tr>
             <td>
-                {% include "_elements/element" with {
+                {{ elementChip(element, {
                     size: 'small',
-                } %}
+                }) }}
             </td>
         </tr>
         <tr>
             <td>
-                {% include "_elements/element" with {
+                {{ elementChip(element, {
                     size: 'large',
-                } %}
+                }) }}
             </td>
         </tr>
     {% endif %}

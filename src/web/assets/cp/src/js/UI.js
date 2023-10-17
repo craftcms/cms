@@ -464,17 +464,22 @@ Craft.ui = {
   },
 
   createCheckboxSelect: function (config) {
-    var $container = $('<fieldset class="checkbox-select"/>');
+    const $container = $('<fieldset class="checkbox-select"/>');
 
     if (config.class) {
       $container.addClass(config.class);
     }
 
-    var allValue, allChecked;
+    let values = config.values || [];
+    let allChecked = false;
 
     if (config.showAllOption) {
-      allValue = config.allValue || '*';
-      allChecked = config.values == allValue;
+      const allValue = config.allValue || '*';
+
+      if (values === allValue) {
+        values = config.options.map((o) => o.value);
+        allChecked = true;
+      }
 
       // Create the "All" checkbox
       $('<div/>')
@@ -490,32 +495,62 @@ Craft.ui = {
             autofocus: config.autofocus,
           })
         );
+
+      // omit the “all” value from the options
+      config.options = config.options.filter((o) => o.value !== allValue);
     } else {
       allChecked = false;
     }
 
-    // Create the actual options
-    for (var i = 0; i < config.options.length; i++) {
-      var option = config.options[i];
+    if (!Array.isArray(values)) {
+      values = [];
+    }
 
-      if (option.value == allValue) {
-        continue;
+    if (config.sortable) {
+      // Make sure the selected options are listed first
+      config.options.sort((a, b) => {
+        let aPos = values.indexOf(a.value);
+        let bPos = values.indexOf(b.value);
+        if (aPos === -1) {
+          aPos = values.length;
+        }
+        if (bPos === -1) {
+          bPos = values.length;
+        }
+        return aPos - bPos;
+      });
+    }
+
+    // Create the actual options
+    for (let i = 0; i < config.options.length; i++) {
+      const option = config.options[i];
+
+      const $option = $('<div/>', {
+        class: 'checkbox-select-item',
+      }).appendTo($container);
+
+      if (config.sortable) {
+        $('<div/>', {class: 'icon move'}).appendTo($option);
       }
 
-      $('<div/>')
-        .appendTo($container)
-        .append(
-          this.createCheckbox({
-            label: option.label,
-            name: config.name ? config.name + '[]' : null,
-            value: option.value,
-            checked: allChecked || (config.values || []).includes(option.value),
-            disabled: allChecked,
-          })
-        );
+      this.createCheckbox({
+        label: Craft.escapeHtml(option.label),
+        name: config.name ? Craft.ensureEndsWith(config.name, '[]') : null,
+        value: option.value,
+        checked: allChecked || values.includes(option.value),
+        disabled: allChecked,
+      }).appendTo($option);
     }
 
     new Garnish.CheckboxSelect($container);
+
+    if (config.sortable) {
+      const dragSort = new Garnish.DragSort($container.children(':not(.all)'), {
+        handle: '.move',
+        axis: 'y',
+      });
+      $container.data('dragSort', dragSort);
+    }
 
     return $container;
   },
@@ -1239,7 +1274,7 @@ Craft.ui = {
   setFocusOnErrorSummary: function ($body, namespace = '') {
     const errorSummaryContainer = $body.find('.error-summary');
     if (errorSummaryContainer.length > 0) {
-      errorSummaryContainer.focus();
+      errorSummaryContainer.trigger('focus');
 
       // start listening for clicks on summary errors
       errorSummaryContainer.find('a').on('click', (ev) => {
@@ -1345,11 +1380,11 @@ Craft.ui = {
       // focus on the field container that contains the error
       let $field = $fieldErrorsContainer.parents('.field:first');
       if ($field.is(':visible')) {
-        $field.trigger('focus');
+        $field.attr('tabindex', '-1').trigger('focus');
       } else {
         // wait in case the field isn't yet visible; (MatrixInput.expand() has a timeout of 200)
         setTimeout(() => {
-          $field.trigger('focus');
+          $field.attr('tabindex', '-1').trigger('focus');
         }, 201);
       }
     }

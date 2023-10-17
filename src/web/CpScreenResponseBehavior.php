@@ -148,6 +148,7 @@ class CpScreenResponseBehavior extends Behavior
      *
      * @see contextMenuHtml()
      * @see contextMenuTemplate()
+     * @since 5.0.0
      */
     public $contextMenuHtml = null;
 
@@ -164,6 +165,7 @@ class CpScreenResponseBehavior extends Behavior
      *
      * @see additionalButtonsHtml()
      * @see additionalButtonsTemplate()
+     * @since 5.0.0
      */
     public $additionalButtonsHtml = null;
 
@@ -171,6 +173,7 @@ class CpScreenResponseBehavior extends Behavior
      * @var string|callable|null The content HTML.
      * @see contentHtml()
      * @see contentTemplate()
+     * @since 5.0.0
      */
     public $contentHtml = null;
 
@@ -178,6 +181,7 @@ class CpScreenResponseBehavior extends Behavior
      * @var string|callable|null The right-hand meta sidebar HTML.
      * @see metaSidebarHtml()
      * @see metaSidebarTemplate()
+     * @since 5.0.0
      */
     public $metaSidebarHtml = null;
 
@@ -185,7 +189,7 @@ class CpScreenResponseBehavior extends Behavior
      * @var string|callable|null The left-hand page sidebar HTML (only used by full-page screens).
      * @see pageSidebarHtml()
      * @see pageSidebarTemplate()
-     * @since 4.5.0
+     * @since 5.0.0
      */
     public $pageSidebarHtml = null;
 
@@ -193,6 +197,7 @@ class CpScreenResponseBehavior extends Behavior
      * @var string|callable|null The content notice HTML.
      * @see noticeHtml()
      * @see noticeTemplate()
+     * @since 5.0.0
      */
     public $noticeHtml = null;
 
@@ -474,6 +479,7 @@ class CpScreenResponseBehavior extends Behavior
      *
      * @param callable|string|null $value
      * @return Response
+     * @since 5.0.0
      */
     public function contextMenuHtml(callable|string|null $value): Response
     {
@@ -516,6 +522,7 @@ class CpScreenResponseBehavior extends Behavior
      *
      * @param callable|string|null $value
      * @return Response
+     * @since 5.0.0
      */
     public function additionalButtonsHtml(callable|string|null $value): Response
     {
@@ -544,6 +551,7 @@ class CpScreenResponseBehavior extends Behavior
      *
      * @param callable|string|null $value
      * @return Response
+     * @since 5.0.0
      */
     public function contentHtml(callable|string|null $value): Response
     {
@@ -570,6 +578,7 @@ class CpScreenResponseBehavior extends Behavior
      *
      * @param callable|string|null $value
      * @return Response
+     * @since 5.0.0
      */
     public function metaSidebarHtml(callable|string|null $value): Response
     {
@@ -596,7 +605,7 @@ class CpScreenResponseBehavior extends Behavior
      *
      * @param callable|string|null $value
      * @return Response
-     * @since 4.5.0
+     * @since 5.0.0
      */
     public function pageSidebarHtml(callable|string|null $value): Response
     {
@@ -624,6 +633,7 @@ class CpScreenResponseBehavior extends Behavior
      *
      * @param callable|string|null $value
      * @return Response
+     * @since 5.0.0
      */
     public function noticeHtml(callable|string|null $value): Response
     {

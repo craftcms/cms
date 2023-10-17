@@ -59,6 +59,7 @@
     inset 0 0 0 3px hsla(var(--dark-focus-hsl), 0.7);
   --touch-target-size: 24px; /* Minimum recommended touch target size */
   --elements-busy-top-position: calc(50% - var(--size, 20px) / 2);
+  --lh: 1.42em;
 }
 
 body,
@@ -76,7 +77,7 @@ body {
   width: 100vw;
   overflow-x: hidden;
   @include fontSize(14);
-  line-height: 1.42;
+  line-height: var(--lh);
   color: var(--text-color);
   -webkit-font-smoothing: subpixel-antialiased;
 }
@@ -138,6 +139,7 @@ fieldset:last-child,
 
 .draghelper {
   box-sizing: border-box;
+  list-style-type: none;
 }
 
 .offset-drag-helper {
@@ -176,7 +178,6 @@ table.editable textarea {
 .menu ul.padded li a.sel:before,
 .menu .flex.padded.sel:before,
 .texticon:before,
-.element:before,
 #help:before,
 .secure:before,
 .insecure:before,
@@ -410,13 +411,27 @@ a {
     cursor: default;
   }
 
-  body.underline-links & {
+  body.underline-links &,
+  &:hover {
     text-decoration: underline;
   }
 }
 
-a:hover {
-  text-decoration: underline;
+a:not([href]) {
+  color: inherit;
+  cursor: inherit;
+
+  body.underline-links &,
+  &:hover {
+    text-decoration: none;
+  }
+}
+
+a.iconlink {
+  &:before {
+    width: 16px;
+    @include margin-right(var(--xs));
+  }
 }
 
 a.sel,
@@ -926,10 +941,6 @@ td.right {
   color: var(--error-color) !important;
 }
 
-.icon.move {
-  display: inline-block;
-}
-
 .icon.move:not(.disabled) {
   cursor: move;
 }
@@ -1171,7 +1182,7 @@ td.right {
   margin: 3px;
 }
 
-.customize-sources-table-column {
+.checkbox-select-item {
   display: flex;
   align-items: flex-start;
   align-content: stretch;
@@ -1280,7 +1291,7 @@ ul.icons {
 
 .toolbar {
   position: relative;
-  margin-bottom: 14px;
+  margin-bottom: var(--s);
   min-height: 34px;
 
   &.flex,
@@ -1506,11 +1517,8 @@ ul.icons {
 
 .disabled {
   opacity: 0.25;
-}
-
-.disabled,
-.disabled .btn {
-  cursor: default;
+  pointer-events: none;
+  user-select: none;
 }
 
 .btn,
@@ -2399,7 +2407,9 @@ h2 + .actions {
 /* ----------------------------------------*/
 
 .tablepane {
-  margin: -22px -22px -10px;
+  margin: calc(var(--pane-padding, 22px) * -1)
+    calc(var(--pane-padding, 22px) * -1)
+    calc(var(--pane-padding, 24px) * -1 + var(--pane-padding, var(--m)));
   overflow-x: auto;
 
   table.data {
@@ -2407,9 +2417,6 @@ h2 + .actions {
     td {
       &:first-child {
         @include padding-left(24px);
-      }
-      &:last-child {
-        @include padding-right(24px);
       }
     }
   }
@@ -2487,12 +2494,20 @@ table {
         th,
         td {
           &:first-child {
-            @include border-top-left-radius(var(--small-border-radius));
-            @include border-bottom-left-radius(var(--small-border-radius));
+            @include border-top-left-radius(
+              var(--border-radius, var(--small-border-radius))
+            );
+            @include border-bottom-left-radius(
+              var(--border-radius, var(--small-border-radius))
+            );
           }
           &:last-child {
-            @include border-top-right-radius(var(--small-border-radius));
-            @include border-bottom-right-radius(var(--small-border-radius));
+            @include border-top-right-radius(
+              var(--border-radius, var(--small-border-radius))
+            );
+            @include border-bottom-right-radius(
+              var(--border-radius, var(--small-border-radius))
+            );
           }
         }
       }
@@ -2508,8 +2523,8 @@ table {
 
       th:not(.orderable),
       td {
-        padding-top: 15px;
-        padding-bottom: 15px;
+        padding-top: var(--pane-padding, var(--m));
+        padding-bottom: var(--pane-padding, var(--m));
       }
 
       th {
@@ -2518,8 +2533,7 @@ table {
 
         &.orderable {
           position: relative;
-          padding-left: 0;
-          padding-right: 0;
+          padding: 0 !important;
 
           body:not(.dragging) &:not(.ordered):hover {
             background-color: var(--gray-100);
@@ -2532,7 +2546,7 @@ table {
               button:after {
                 @include angle(up);
                 position: absolute;
-                @include right(10px);
+                @include right(var(--m));
                 top: calc(50% - 3px);
               }
 
@@ -2544,10 +2558,10 @@ table {
 
           button {
             position: relative;
-            @include padding-right(26px);
+            @include padding-right(35px);
             font: inherit;
             width: 100%;
-            padding: 14px;
+            padding: var(--pane-padding, var(--m)) var(--m);
             @include alignleft;
 
             &:focus {
@@ -2708,7 +2722,7 @@ table {
 }
 
 .datatablesorthelper,
-.datatablesorthelper .element,
+.datatablesorthelper .chip,
 .datatablesorthelper a {
   cursor: move !important;
 }
@@ -2723,38 +2737,50 @@ table {
   border-bottom: none !important;
 }
 
-/* elements */
-$smallThumbSize: 34px;
-$largeThumbSize: 120px;
-$statusSize: 10px;
-$baseElementSidePadding: 7px;
-$elementInnerSpacing: 5px;
-
-.element {
+/* chips */
+.chip {
   position: relative;
+  display: flex;
+  align-items: center;
   cursor: default;
   user-select: none;
   font-weight: normal;
-  border-radius: var(--small-border-radius);
+  padding: var(--xs) var(--s);
   max-width: 100%;
+  gap: var(--xs);
+  border-radius: var(--large-border-radius);
+  background-color: var(--gray-050);
 
-  .label {
-    .segment:after {
-      display: inline-flex !important;
-      position: relative;
-      top: -2px;
-      @include margin(0, 5px, 0, 2px);
-      @include angle(right, var(--light-text-color), 1px);
+  &.small {
+    flex-direction: row;
+    height: 34px;
+    --thumb-size: 30px;
 
-      .sel & {
-        @include angle(right, var(--white), 1px);
-      }
+    & > .thumb {
+      margin: calc(var(--xs) * -1 + 2px) calc(var(--s) * -1 + 2px);
+      @include margin-right(2px);
     }
   }
 
-  &:focus,
-  li:focus & {
-    background-color: var(--gray-050);
+  &.large {
+    flex-direction: column;
+    --thumb-size: 120px;
+    min-width: calc(var(--s) * 2 + var(--thumb-size));
+
+    .chip-content {
+      width: 100%;
+    }
+  }
+
+  .chip-content {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: var(--s);
+
+    .status {
+      margin: 0;
+    }
   }
 
   &.sel,
@@ -2772,15 +2798,15 @@ $elementInnerSpacing: 5px;
   }
 
   &.sel,
-  li.sel & {
+  .sel & {
     cursor: default;
 
-    &.hasthumb {
-      .elementthumb {
-        img {
-          box-shadow: 0 0 0 1px transparentize($darkSelColor, 0.9),
-            0 6px 4px -4px transparentize($darkSelColor, 0.8);
-        }
+    .thumb {
+      filter: brightness(0.85);
+
+      img {
+        box-shadow: 0 0 0 1px transparentize($darkSelColor, 0.9),
+          0 6px 4px -4px transparentize($darkSelColor, 0.8);
       }
     }
   }
@@ -2790,57 +2816,221 @@ $elementInnerSpacing: 5px;
     @include shadow;
   }
 
-  &.hasthumb {
-    .elementthumb:not(:empty) {
-      position: absolute;
-      display: flex;
-      justify-content: center;
-      -ms-flex-pack: center;
-      align-items: center;
-      -ms-flex-align: center;
+  & > .thumb {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: var(--thumb-size);
+    height: var(--thumb-size);
 
+    &.rounded {
       img,
       svg {
-        display: block;
-        flex-shrink: 0;
-        pointer-events: none;
-        border-radius: var(--small-border-radius);
-      }
-
-      img {
-        max-width: 100%;
-        max-height: 100%;
-      }
-
-      svg {
-        width: 100%;
-        height: 100%;
-      }
-
-      &.rounded {
-        img,
-        svg {
-          border-radius: 50%;
-        }
+        border: var(--xs) solid transparent;
+        border-radius: 50%;
       }
     }
-    .elementthumb.open-preview {
-      cursor: pointer;
+
+    &.checkered img {
+      @include checkered-bg(8px);
+    }
+
+    img,
+    svg {
+      display: block;
+      flex-shrink: 0;
+      border-radius: var(--small-border-radius);
+      max-width: 100%;
+      max-height: 100%;
+    }
+  }
+}
+
+.inline-chips {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--xs);
+
+  .chip {
+    margin: 0 !important;
+  }
+}
+
+/** cards */
+.card {
+  position: relative;
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+  padding: var(--m);
+  gap: var(--l);
+  border-radius: var(--large-border-radius);
+  background-color: var(--gray-050);
+  cursor: default;
+  user-select: none;
+  color: var(--medium-text-color);
+
+  &:after {
+    border-radius: var(--large-border-radius);
+  }
+
+  &.sel,
+  li.sel & {
+    --text-color: var(--white);
+    --medium-dark-text-color: var(--white);
+    --medium-text-color: var(--white);
+    --light-text-color: var(--white);
+    --link-color: var(--white);
+    --ui-control-color: var(--white);
+    @include custom-color-focus-ring(hsl(var(--light-focus-hsl)));
+    color: var(--white);
+    background-color: var(--dark-sel-color) !important;
+
+    & > .thumb {
+      background-color: var(--dark-sel-color) !important;
+      filter: brightness(0.85);
     }
   }
 
-  &.error {
-    [data-icon='alert'] {
-      margin-left: var(--xs);
+  & > .thumb {
+    position: relative;
+    display: flex;
+    align-items: stretch;
+    margin: calc(var(--m) * -1);
+    @include margin-right(0);
+    width: 120px;
+    min-width: 120px; // needed for flex
+    min-height: calc(var(--m) * 2 + var(--lh) * 3 + var(--xs));
+    background-color: var(--gray-100);
+    overflow: hidden;
+
+    &:after {
+      display: block;
+      content: '';
+      font-size: 0;
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      @include shadow();
+      width: 10px;
+
+      body.ltr & {
+        right: -10px;
+      }
+
+      body.rtl & {
+        left: -10px;
+      }
     }
+
+    &,
+    &:after {
+      @include border-radius(
+        var(--large-border-radius),
+        0,
+        0,
+        var(--large-border-radius)
+      );
+    }
+
+    img,
+    svg {
+      width: 100%;
+      max-height: 120px;
+      object-fit: cover;
+    }
+  }
+
+  .card-content,
+  .card-content .card-body {
+    display: flex;
+    flex-direction: column;
+    gap: var(--xs);
+    flex: 1;
+  }
+
+  .card-content {
+    flex: 1 0 0 !important;
+    overflow: hidden;
+    position: relative;
+    --focus-ring: var(--inner-focus-ring);
+
+    .card-heading {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      gap: 5px;
+
+      .status {
+        margin: 0;
+        flex: 0 0 10px;
+      }
+
+      .label {
+        font-weight: 600;
+      }
+    }
+
+    .card-body {
+      &:empty {
+        display: none;
+      }
+
+      & > * {
+        --max-lines: 2;
+        margin: 0;
+        max-height: calc(var(--lh) * var(--max-lines));
+        overflow: hidden;
+        text-wrap: pretty;
+      }
+    }
+  }
+
+  & > .card-actions-container {
+    display: flex;
+    align-items: flex-start !important;
+    position: relative;
+  }
+}
+
+.card-grid {
+  display: grid !important;
+  gap: var(--s) !important;
+  grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+
+  & > li {
+    border-radius: var(--large-border-radius);
+    height: 100%;
+
+    & > .card {
+      margin: 0 !important;
+      height: 100%;
+    }
+  }
+}
+
+.chip,
+.card {
+  // prevent double focus ring (chip/card already gets it)
+  .checkbox:before {
+    box-shadow: none !important;
   }
 
   .label {
-    display: inline-block;
+    display: flex;
+    align-items: center;
+    gap: var(--xs);
     overflow: hidden;
-    vertical-align: bottom; // https://stackoverflow.com/a/37427386/1688568
-    text-overflow: ellipsis;
-    max-width: 100%;
+
+    .label-link {
+      flex: 1 1 0;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
 
     .draft-label {
       display: inline-block;
@@ -2852,128 +3042,61 @@ $elementInnerSpacing: 5px;
       background: var(--gray-100);
       border-radius: var(--large-border-radius);
     }
-  }
 
-  &.small,
-  &.large:not(.hasthumb) {
-    display: inline-block;
-    padding: $baseElementSidePadding;
-    box-sizing: border-box;
+    .segment:after {
+      display: inline-flex !important;
+      position: relative;
+      top: -2px;
+      @include margin(0, 5px, 0, 2px);
+      @include angle(right, var(--light-text-color), 1px);
 
-    &.hasstatus {
-      @include padding-left(
-        $baseElementSidePadding + $statusSize + $elementInnerSpacing
-      );
-
-      .status {
-        position: absolute;
-        @include left($baseElementSidePadding);
-        top: calc(50% - 5px);
-      }
-
-      .icon:not(.delete) {
-        position: absolute;
-        @include left($baseElementSidePadding - 1);
-        top: calc(50% - 11px);
-      }
-    }
-
-    &.hasthumb {
-      @include padding-left($smallThumbSize + $elementInnerSpacing);
-
-      .elementthumb:not(:empty) {
-        top: calc(50% - 17px);
-        @include left(0);
-        width: $smallThumbSize;
-        height: $smallThumbSize;
-
-        &.checkered img {
-          @include checkered-bg(8px);
-        }
-      }
-
-      &.hasstatus {
-        @include padding-left(
-          $smallThumbSize + $elementInnerSpacing * 2 + $statusSize
-        );
-
-        .status {
-          @include left($smallThumbSize + $elementInnerSpacing);
-        }
+      .sel & {
+        @include angle(right, var(--white), 1px);
       }
     }
   }
 
-  &.large.hasthumb {
-    display: block;
-    padding: #{$baseElementSidePadding + $largeThumbSize + $elementInnerSpacing}
-      $baseElementSidePadding $baseElementSidePadding;
-    width: #{120px + $baseElementSidePadding + $baseElementSidePadding};
-    box-sizing: border-box;
+  & > .chip-content > .chip-actions,
+  & > .card-actions-container > .card-actions {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: var(--s);
+    min-height: var(--lh);
 
-    &.hasstatus {
-      @include padding-left(
-        $baseElementSidePadding + $statusSize + $elementInnerSpacing
-      );
-
-      .status {
-        position: absolute;
-        @include left($baseElementSidePadding);
-        top: #{$baseElementSidePadding + $largeThumbSize + $elementInnerSpacing +
-          6};
-      }
-    }
-
-    .elementthumb:not(:empty) {
-      top: $baseElementSidePadding;
-      @include left(0);
-      width: 100%;
-      height: $largeThumbSize;
-
-      &.checkered img {
-        @include checkered-bg(15px);
-      }
-    }
-
-    .label {
-      display: block;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      word-wrap: normal;
-    }
-  }
-
-  &.removable {
-    .label {
-      @include padding-right(20px);
-    }
-
-    .delete:before {
-      color: var(--ui-control-color);
-    }
-
-    &.small,
-    &.large:not(.hasthumb) {
-      .delete {
-        position: absolute;
-        top: calc(50% - 11px);
-        @include right($baseElementSidePadding);
-      }
-    }
-
-    &.large.hasthumb {
-      .delete {
-        position: absolute;
-        @include right($baseElementSidePadding);
-      }
-    }
-  }
-
-  &:not(.removable) {
-    .delete {
+    &:empty {
       display: none;
     }
+
+    & > .status {
+      margin: 0;
+    }
+
+    & > .move,
+    & > .menubtn {
+      @include touch-target;
+      margin: 0 -4px;
+    }
+
+    .settings {
+      color: var(--ui-control-color);
+
+      &:before {
+        @include margin-right(0 !important);
+      }
+
+      &:not(:hover):not(:active) {
+        background-color: transparent;
+      }
+    }
+
+    .move {
+      margin-top: -2px !important;
+    }
+  }
+
+  &.error .label .label-link {
+    color: var(--error-color);
   }
 }
 
@@ -3033,13 +3156,56 @@ $checkboxPadding: $checkboxSize + 4;
 
   &.main {
     .source-path {
-      margin: -22px -22px 24px;
+      margin: -22px calc(var(--padding) * -1 + 2px) 24px;
     }
   }
 
   .elementselectormodal & {
     .source-path {
       margin-bottom: 2px;
+    }
+  }
+
+  &.pane {
+    .toolbar {
+      position: relative;
+      z-index: 2;
+      margin: calc(var(--pane-padding) * -1) calc(var(--pane-padding) * -1)
+        var(--pane-padding) !important;
+      border-radius: calc(var(--large-border-radius) - 1px)
+        calc(var(--large-border-radius) - 1px) 0 0;
+      padding: var(--pane-padding);
+      box-shadow: 0 1px 0 var(--hairline-color);
+      background-color: var(--gray-050);
+    }
+
+    .header {
+      padding-top: var(--pane-padding);
+      padding-bottom: var(--pane-padding);
+      background-color: transparent;
+      border-bottom: 1px solid var(--hairline-color);
+    }
+
+    .elements {
+      --border-radius: 0;
+
+      .tableview table.data thead {
+        th,
+        td {
+          border-bottom: 1px solid var(--hairline-color);
+          &:not(.ordered) {
+            background-color: transparent;
+          }
+        }
+      }
+    }
+
+    .footer {
+      border-radius: 0 0 calc(var(--large-border-radius) - 1px)
+        calc(var(--large-border-radius) - 1px) !important;
+      box-shadow: none;
+      border-top: 1px solid var(--hairline-color);
+      background: transparent;
     }
   }
 }
@@ -3054,32 +3220,33 @@ $checkboxPadding: $checkboxSize + 4;
   }
 
   &.busy {
-    min-height: 200px;
+    min-height: 72px;
 
     &:after {
       display: block;
       content: '';
       font-size: 0;
       position: absolute;
+      z-index: 100;
       top: 0;
-      left: -24px;
-      width: calc(100% + #{24 + 24}px);
+      left: calc(var(--pane-padding, 24px) * -1);
+      width: calc(100% + var(--pane-padding, 24px) + var(--pane-padding, 24px));
       height: 100%;
       background: transparentize($white, 0.25);
       border-radius: var(--large-border-radius);
     }
 
     .update-spinner {
-      z-index: 1;
+      z-index: 101;
     }
   }
 
   .header {
-    margin: -22px -22px 24px;
-    padding: 14px 24px;
+    margin: calc(var(--xl) * -1 + 2px) calc(var(--padding) * -1 + 2px) var(--xl);
+    padding: var(--s);
     background-color: var(--gray-050);
     box-shadow: none;
-    border-radius: var(--small-border-radius);
+    border-radius: var(--border-radius, var(--small-border-radius));
 
     &:after {
       content: '';
@@ -3088,7 +3255,7 @@ $checkboxPadding: $checkboxSize + 4;
     .selectallcontainer {
       display: flex;
       align-items: center;
-      gap: $elementInnerSpacing;
+      gap: 5px;
       cursor: default;
     }
   }
@@ -3101,87 +3268,60 @@ $checkboxPadding: $checkboxSize + 4;
 
   // table views
   .tableview {
-    .move,
-    .toggle {
-      display: flex;
-      position: absolute;
-      justify-content: center;
-      align-items: center;
-      top: 50%;
-      transform: translateY(-50%);
-      @include margin-left(calc(var(--touch-target-size) * -1));
-      width: var(--touch-target-size);
-      height: var(--touch-target-size);
+    th {
+      .move,
+      .toggle {
+        display: flex;
+        position: absolute;
+        justify-content: center;
+        align-items: center;
+        top: 50%;
+        transform: translateY(-50%);
+        @include margin-left(calc(var(--touch-target-size) * -1));
+        width: var(--touch-target-size);
+        height: var(--touch-target-size);
+      }
+
+      .move {
+        font-size: 11px;
+        text-decoration: none;
+      }
+
+      .toggle {
+        text-align: center;
+        padding: 4px;
+        border-radius: 50%;
+      }
+
+      .move + .toggle {
+        @include margin-left(calc(var(--touch-target-size) * -2));
+      }
+
+      .enabled-label {
+        margin-left: var(--xs);
+      }
     }
 
-    .move {
-      font-size: 11px;
-      text-decoration: none;
-    }
-
-    .toggle {
-      text-align: center;
-      padding: 4px;
-      border-radius: 50%;
-    }
-
-    .move + .toggle {
-      @include margin-left(calc(var(--touch-target-size) * -2));
-    }
-
-    .enabled-label {
-      margin-left: var(--xs);
+    .chip {
+      background-color: transparent;
     }
   }
 
   // thumbs views
   .thumbsview {
     display: grid;
-    gap: 5px;
-    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: var(--xs);
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
 
     li {
       position: relative;
       @include margin(0, 1px, 1px, 0);
       max-width: 226px;
+      border-radius: var(--large-border-radius);
 
       &:hover {
-        .element {
+        .chip {
           background-color: var(--gray-050);
-        }
-      }
-
-      .element.large.hasthumb {
-        width: unset;
-      }
-
-      &.has-checkbox {
-        .element.hasthumb {
-          &:not(.hasstatus) {
-            @include padding-left(
-              $baseElementSidePadding + $checkboxSize + $elementInnerSpacing
-            );
-          }
-
-          &.hasstatus {
-            @include padding-left(
-              $baseElementSidePadding + $checkboxSize + $elementInnerSpacing +
-                $statusSize + $elementInnerSpacing
-            );
-
-            .status {
-              @include left(
-                $baseElementSidePadding + $checkboxSize + $elementInnerSpacing
-              );
-            }
-          }
-        }
-
-        .checkbox {
-          position: absolute;
-          top: $baseElementSidePadding + $largeThumbSize + $elementInnerSpacing +
-            (20px - $checkboxSize) * 0.5;
-          @include left($baseElementSidePadding);
         }
       }
 
@@ -3324,7 +3464,7 @@ $checkboxPadding: $checkboxSize + 4;
 
   .row {
     &.draghover {
-      .element {
+      .chip {
         z-index: 2;
         border-radius: 15px;
         box-shadow: inset 0 0 0 2px var(--link-color);
@@ -3342,19 +3482,14 @@ $checkboxPadding: $checkboxSize + 4;
 .elementselect {
   position: relative;
   min-height: 34px;
-  margin-top: -7px;
 
   .elements {
     display: flex;
-    flex-direction: column;
     align-items: flex-start;
+    gap: var(--xs);
 
-    &.flex-row {
-      flex-direction: row;
-    }
-
-    &.flex-wrap {
-      flex-wrap: wrap;
+    &:not(.inline-chips) {
+      flex-direction: column;
     }
 
     li {
@@ -3362,12 +3497,9 @@ $checkboxPadding: $checkboxSize + 4;
     }
   }
 
-  .elements:after {
-    @include clearafter;
-  }
-
-  .element {
-    @include margin(7px, 7px, 0, 0);
+  .chip:not(:first-child),
+  .card:not(:first-child) {
+    margin-top: var(--s);
   }
 
   .flex,
@@ -3375,21 +3507,8 @@ $checkboxPadding: $checkboxSize + 4;
     clear: both;
   }
 
-  .element {
+  .chip {
     z-index: 1;
-
-    &.small {
-      max-width: 100%;
-
-      .label {
-        display: block;
-        max-width: 100%;
-        box-sizing: border-box;
-        overflow: hidden;
-        white-space: nowrap;
-        text-overflow: ellipsis;
-      }
-    }
   }
 
   .flex {
@@ -3402,7 +3521,7 @@ $checkboxPadding: $checkboxSize + 4;
     li {
       background-position: 0 2px !important;
 
-      .element {
+      .chip {
         margin: 0;
       }
     }
@@ -3954,10 +4073,12 @@ ul.tree,
 /* ----------------------------------------*/
 
 .pane {
+  --pane-padding: var(--xl);
+  --border: 1px solid var(--hairline-color);
   @include pane;
   position: relative;
   margin: 14px 0;
-  padding: 24px;
+  padding: var(--pane-padding);
   border-radius: var(--large-border-radius);
   word-wrap: break-word;
   box-sizing: border-box;
@@ -3967,6 +4088,31 @@ ul.tree,
     background-color: var(--gray-050);
     border: 1px solid var(--hairline-color);
     box-shadow: none;
+  }
+
+  &.dashed {
+    background-color: transparent !important;
+    box-shadow: none;
+    border: 1px dashed var(--medium-hairline-color) !important;
+  }
+
+  &.hairline {
+    background-color: transparent !important;
+    box-shadow: none;
+    border: 1px solid #{transparentize($inputColor, 0.75)} !important;
+  }
+
+  &.padding-xs {
+    --pane-padding: var(--xs);
+  }
+  &.padding-s {
+    --pane-padding: var(--s);
+  }
+  &.padding-m {
+    --pane-padding: var(--m);
+  }
+  &.padding-l {
+    --pane-padding: var(--l);
   }
 
   &.loading {
@@ -4798,16 +4944,6 @@ $min2ColWidth: 400px;
 .header,
 .hud-header,
 .footer,
-.hud-footer,
-.body {
-  &:after {
-    @include clearafter;
-  }
-}
-
-.header,
-.hud-header,
-.footer,
 .hud-footer {
   position: relative;
   z-index: 1;
@@ -4835,7 +4971,7 @@ $min2ColWidth: 400px;
 .footer,
 .hud-footer {
   border-radius: 0 0 var(--large-border-radius) var(--large-border-radius);
-  padding: var(--s) var(--xl);
+  padding: var(--s) var(--pane-padding, var(--xl));
   box-shadow: inset 0 1px 0 var(--hairline-color);
 
   &.flex {
@@ -4855,11 +4991,13 @@ $min2ColWidth: 400px;
 .pane,
 .modal .body {
   .header {
-    margin: -24px -24px 24px;
+    margin: calc(var(--pane-padding, 24px) * -1)
+      calc(var(--pane-padding, 24px) * -1) var(--pane-padding, 24px);
   }
 
   .footer {
-    margin: 24px -24px -24px;
+    margin: var(--pane-padding, 24px) calc(var(--pane-padding, 24px) * -1)
+      calc(var(--pane-padding, 24px) * -1);
   }
 }
 
@@ -5157,7 +5295,7 @@ $min2ColWidth: 400px;
   padding-bottom: 50px;
   user-select: none;
 
-  .header {
+  & > .header {
     padding-top: 14px;
     padding-bottom: 14px;
     text-align: center;
@@ -5203,28 +5341,20 @@ $min2ColWidth: 400px;
             min-height: calc(100% - 48px);
           }
 
+          .header {
+            margin: 0 0 var(--m);
+          }
+
           .tableview table {
-            .element {
-              display: inline-block;
-            }
-
             tr {
-              &.disabled {
-                opacity: 1;
-                color: var(--gray-200);
-
-                .element {
-                  opacity: 0.25;
-                }
-              }
-
               th,
               td {
                 cursor: default;
               }
 
-              td:first-child {
-                @include padding-left(7px);
+              // prevent double focus ring (the row already gets it)
+              .checkbox:before {
+                box-shadow: none !important;
               }
             }
           }
@@ -5378,7 +5508,6 @@ $min2ColWidth: 400px;
   margin-bottom: 4px;
 
   .icon.move {
-    margin-top: -3px;
     @include margin-right(10px);
     position: relative;
     z-index: 1;
@@ -5813,7 +5942,7 @@ $min2ColWidth: 400px;
     display: inline;
   }
 
-  .element.small {
+  .chip.small {
     clear: none;
   }
 
@@ -5838,7 +5967,7 @@ $min2ColWidth: 400px;
   // todo: why are body.ltr and body.rtl needed here?
   body.ltr &,
   body.rtl & {
-    &.elementselect .element {
+    &.elementselect .chip {
       float: none !important;
       display: inline-block;
     }
@@ -5924,7 +6053,6 @@ table.editable {
 .text,
 .passwordwrapper,
 .border-box,
-.matrix-configurator > .field > .input,
 .selectize.multiselect .selectize-input,
 .multiselect > select {
   @include input-styles;
@@ -6260,14 +6388,21 @@ input.checkbox:disabled + label,
 input.checkbox:disabled + label,
 div.checkbox.disabled:before,
 div.checkbox.disabled + label {
-  opacity: 0.25;
+  opacity: 0.25 !important;
 }
 
 input.checkbox:checked + label:before,
 div.checkbox.checked:before,
 .sel div.checkbox:before,
 input.checkbox:indeterminate + label:before,
-div.checkbox.indeterminate:before {
+div.checkbox.indeterminate:before,
+.elementselectormodal
+  .body
+  .content
+  .main
+  .elements
+  .disabled
+  .checkbox:before {
   @include icon;
   line-height: var(--checkbox-size);
   color: var(--gray-900);
@@ -6275,7 +6410,14 @@ div.checkbox.indeterminate:before {
 
 input.checkbox:checked:not(:indeterminate) + label:before,
 div.checkbox.checked:not(.indeterminate):before,
-.sel div.checkbox:not(.indeterminate):before {
+.sel div.checkbox:not(.indeterminate):before,
+.elementselectormodal
+  .body
+  .content
+  .main
+  .elements
+  .disabled
+  .checkbox:before {
   content: 'check';
   font-size: 15px;
 }
@@ -6480,6 +6622,7 @@ body.reduce-focus-visibility {
   }
 }
 
+td.errors .text,
 .input.errors > .text,
 .input.errors > .border-box,
 .input.errors > .passwordwrapper,
@@ -6615,7 +6758,7 @@ body.reduce-focus-visibility {
 
 .datetimewrapper {
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   flex-direction: row;
   align-items: center;
   gap: 5px;
@@ -6809,6 +6952,15 @@ tr.indexingSession td.progress div.progressContainer div.progressInfo {
   border-color: inherit;
   box-shadow: none;
   background-color: transparent;
+
+  .item {
+    max-width: 100%;
+
+    span {
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+  }
 }
 
 .selectize.select .selectize-input:after {
@@ -7222,192 +7374,6 @@ ul.errors li {
 /* Matrix
 /* ----------------------------------------*/
 
-.matrix-configurator {
-  & > .field {
-    max-width: none;
-
-    & > .input {
-      display: flex;
-      align-items: stretch;
-      background-color: var(--gray-050);
-      box-shadow: none;
-    }
-  }
-
-  .mc-sidebar {
-    box-sizing: border-box;
-
-    .mc-col-items {
-      margin-top: -1px;
-      padding-top: 1px;
-    }
-
-    &.block-types {
-      width: 200px;
-      @include border-top-left-radius(var(--small-border-radius));
-      @include border-bottom-left-radius(var(--small-border-radius));
-
-      & > .mc-col-inner-container {
-        & > .mc-col-heading {
-          @include border-top-left-radius(var(--small-border-radius));
-        }
-
-        & > .mc-col-items {
-          .btn {
-            margin: 14px;
-          }
-        }
-      }
-    }
-
-    &.mc-fields {
-      width: 240px;
-      z-index: 1;
-      background: #fff;
-      box-shadow: -1px 0 0 0 transparentize($grey900, 0.9),
-        1px 0 0 0 transparentize($grey900, 0.9);
-
-      .mc-col-items {
-        padding: 14px;
-
-        .btn {
-          margin-top: 14px;
-        }
-      }
-    }
-  }
-
-  .mc-sidebar,
-  .mc-field-settings {
-    & > .mc-col-inner-container > .mc-col-heading {
-      margin: 0;
-      padding: 7px 14px 6px;
-      border-bottom: 1px solid var(--hairline-color);
-      background-color: var(--gray-050);
-      background-image: linear-gradient(
-        transparentize($grey800, 1),
-        transparentize($grey800, 0.95)
-      );
-    }
-  }
-
-  .mc-field-settings {
-    flex: 1;
-    position: relative;
-    @include border-top-right-radius(var(--small-border-radius));
-    @include border-bottom-right-radius(var(--small-border-radius));
-
-    & > .mc-col-inner-container {
-      & > .mc-col-heading {
-        padding-left: 24px;
-        padding-right: 24px;
-        @include border-top-right-radius(var(--small-border-radius));
-      }
-
-      & > .mc-col-items {
-        padding: 24px;
-      }
-    }
-  }
-}
-
-.matrixconfigitem {
-  position: relative;
-  display: flex;
-  align-items: center;
-  user-select: none;
-  cursor: default;
-  min-height: 48px;
-  box-sizing: border-box;
-
-  &.mci-blocktype {
-    margin-top: -1px;
-    padding: 8px 14px;
-    border: solid var(--hairline-color);
-    border-width: 1px 0;
-    background-color: var(--gray-100);
-
-    &.sel {
-      z-index: 1;
-      background-color: var(--gray-200);
-    }
-  }
-
-  &.mci-field {
-    border-radius: var(--medium-border-radius);
-    padding: 7px 10px;
-    background-color: var(--gray-100);
-
-    &.sel {
-      background-color: var(--gray-200);
-
-      .slide-picker:focus a.active {
-        background-color: darken($lightTextColor, 0.5%);
-      }
-    }
-
-    & + .mci-field {
-      margin-top: 7px;
-    }
-  }
-
-  .mci-name {
-    flex: 1;
-    overflow: hidden;
-
-    h4,
-    .smalltext {
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-
-    h4 {
-      margin-bottom: 2px;
-      font-weight: normal;
-      color: var(--text-color);
-
-      &.mci-required:after {
-        @include icon;
-        @include margin(-2px, 0, 0, 4px);
-        content: 'asterisk';
-        font-size: 8px;
-      }
-    }
-  }
-
-  &.error .mci-name h4 {
-    color: var(--error-color);
-  }
-
-  .slide-picker,
-  .icon {
-    @include margin-left(7px);
-  }
-
-  .icon {
-    display: block;
-
-    &:not(.error) {
-      &:before {
-        color: var(--ui-control-color);
-      }
-
-      &:hover:before {
-        color: var(--ui-control-hover-color);
-      }
-
-      &:active:before {
-        color: var(--ui-control-active-color);
-      }
-    }
-
-    &.error:before {
-      color: var(--error-color);
-    }
-  }
-}
-
 /* Matrix fields */
 .matrix {
   & > .buttons {
@@ -7522,7 +7488,7 @@ $titlebarBorderRadius: calc(var(--large-border-radius) - 1px);
       @include margin(0, 0, 0, 5px);
     }
 
-    & .settings {
+    .settings {
       padding: 0 8px;
       height: 20px;
       color: var(--ui-control-color);
@@ -7536,8 +7502,8 @@ $titlebarBorderRadius: calc(var(--large-border-radius) - 1px);
       }
     }
 
-    & > .move {
-      margin-top: -3px !important;
+    .move {
+      margin-top: -4px !important;
     }
 
     & > .status {

@@ -195,6 +195,10 @@ class CategoryQuery extends ElementQuery
      */
     protected function beforePrepare(): bool
     {
+        if (!parent::beforePrepare()) {
+            return false;
+        }
+
         $this->_normalizeGroupId();
 
         // See if 'group' was set to an invalid handle
@@ -212,7 +216,7 @@ class CategoryQuery extends ElementQuery
         $this->_applyGroupIdParam();
         $this->_applyRefParam();
 
-        return parent::beforePrepare();
+        return true;
     }
 
     /**
@@ -322,5 +326,25 @@ class CategoryQuery extends ElementQuery
             }
         }
         return $tags;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    protected function fieldLayouts(): array
+    {
+        if ($this->groupId) {
+            $fieldLayouts = [];
+            $categoriesService = Craft::$app->getCategories();
+            foreach ($this->groupId as $groupId) {
+                $group = $categoriesService->getGroupById($groupId);
+                if ($group) {
+                    $fieldLayouts[] = $group->getFieldLayout();
+                }
+            }
+            return $fieldLayouts;
+        }
+
+        return parent::fieldLayouts();
     }
 }

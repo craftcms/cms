@@ -11,6 +11,7 @@ use craft\helpers\Json;
 use craft\helpers\UrlHelper;
 use craft\web\assets\conditionbuilder\ConditionBuilderAsset;
 use Illuminate\Support\Collection;
+use Throwable;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
 
@@ -106,6 +107,21 @@ abstract class BaseCondition extends Component implements ConditionInterface
     /**
      * @inheritdoc
      */
+    public function createConditionRule(array|string $config): ConditionRuleInterface
+    {
+        if (is_string($config)) {
+            $config = ['class' => $config];
+        }
+
+        // Set the condition before anything else
+        $config = ['condition' => $this] + $config;
+
+        return Craft::$app->getConditions()->createConditionRule($config);
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function getConditionRuleTypes(): array
     {
         if (!isset($this->_conditionRuleTypes)) {
@@ -142,10 +158,9 @@ abstract class BaseCondition extends Component implements ConditionInterface
     public function getSelectableConditionRules(): array
     {
         if (!isset($this->_selectableConditionRules)) {
-            $conditionsService = Craft::$app->getConditions();
             $this->_selectableConditionRules = Collection::make($this->getConditionRuleTypes())
                 ->keyBy(fn($type) => is_string($type) ? $type : Json::encode($type))
-                ->map(fn($type) => $conditionsService->createConditionRule($type))
+                ->map(fn($type) => $this->createConditionRule($type))
                 ->filter(fn(ConditionRuleInterface $rule) => $this->isConditionRuleSelectable($rule))
                 ->all();
         }
@@ -183,14 +198,13 @@ abstract class BaseCondition extends Component implements ConditionInterface
      */
     public function setConditionRules(array $rules): void
     {
-        $conditionsService = Craft::$app->getConditions();
         $this->_conditionRules = Collection::make($rules)
-            ->map(function($rule) use ($conditionsService) {
+            ->map(function($rule) {
                 if ($rule instanceof ConditionRuleInterface) {
                     return $rule;
                 }
                 try {
-                    return $conditionsService->createConditionRule($rule);
+                    return $this->createConditionRule($rule);
                 } catch (InvalidArgumentException $e) {
                     Craft::warning("Invalid condition rule: {$e->getMessage()}");
                     return null;
@@ -469,7 +483,11 @@ JS,
         }
 
         foreach ($selectableRules as $value => $selectableRule) {
-            $label = $selectableRule->getLabel();
+            try {
+                $label = $selectableRule->getLabel();
+            } catch (Throwable) {
+                continue;
+            }
             $groupLabel = $selectableRule->getGroupLabel() ?? '__UNGROUPED__';
             if (!isset($labelsByGroup[$groupLabel][$label])) {
                 $groupedRuleTypeOptions[$groupLabel][] = compact('value', 'label');

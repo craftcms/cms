@@ -16,7 +16,6 @@ use craft\elements\Category;
 use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\Entry;
-use craft\elements\MatrixBlock;
 use craft\elements\Tag;
 use craft\elements\User;
 use craft\errors\InvalidElementException;
@@ -181,7 +180,7 @@ class ResaveController extends Controller
     public ?string $volume = null;
 
     /**
-     * @var string|null The field handle to save Matrix blocks for.
+     * @var string|null The field handle to save nested entries for.
      */
     public ?string $field = null;
 
@@ -260,17 +259,14 @@ class ResaveController extends Controller
                 break;
             case 'entries':
                 $options[] = 'section';
+                $options[] = 'field';
+                $options[] = 'ownerId';
                 $options[] = 'type';
                 $options[] = 'drafts';
                 $options[] = 'provisionalDrafts';
                 $options[] = 'revisions';
                 $options[] = 'propagateTo';
                 $options[] = 'setEnabledForSite';
-                break;
-            case 'matrix-blocks':
-                $options[] = 'field';
-                $options[] = 'ownerId';
-                $options[] = 'type';
                 break;
         }
 
@@ -374,23 +370,6 @@ class ResaveController extends Controller
         if (isset($this->section)) {
             $criteria['section'] = explode(',', $this->section);
         }
-        if (isset($this->type)) {
-            $criteria['type'] = explode(',', $this->type);
-        }
-        return $this->resaveElements(Entry::class, $criteria);
-    }
-
-    /**
-     * Re-saves Matrix blocks.
-     *
-     * You must supply the `--field` or `--element-id` argument for this to work properly.
-     *
-     * @return int
-     * @since 3.2.0
-     */
-    public function actionMatrixBlocks(): int
-    {
-        $criteria = [];
         if (isset($this->field)) {
             $criteria['field'] = explode(',', $this->field);
         }
@@ -400,7 +379,7 @@ class ResaveController extends Controller
         if (isset($this->type)) {
             $criteria['type'] = explode(',', $this->type);
         }
-        return $this->resaveElements(MatrixBlock::class, $criteria);
+        return $this->resaveElements(Entry::class, $criteria);
     }
 
     /**

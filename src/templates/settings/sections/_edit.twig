@@ -1,4 +1,16 @@
-{% extends 'settings/sections/_layout.twig' %}
+{% extends "_layouts/cp" %}
+
+{% set crumbs = [
+    {
+        label: 'Settings'|t('app'),
+        url: url('settings'),
+    },
+    {
+        label: 'Sections'|t('app'),
+        url: url('settings/sections'),
+    },
+] %}
+
 {% set selectedTab = 'settings' %}
 {% set fullPageForm = true %}
 {% set formActions = [
@@ -15,18 +27,9 @@
 {% set headlessMode = craft.app.config.general.headlessMode %}
 
 
-{% block submitButton %}
-    {% if section.id %}
-        {{ parent() }}
-    {% else %}
-        <button type="submit" class="btn submit">{{ 'Save and edit entry types'|t('app') }}</button>
-    {% endif %}
-{% endblock %}
-
-
 {% block content %}
     {{ actionInput('sections/save-section') }}
-    {{ redirectInput(section.id ? 'settings/sections' : "settings/sections/{id}/entrytypes") }}
+    {{ redirectInput('settings/sections') }}
 
     {% if section.id %}{{ hiddenInput('sectionId', section.id) }}{% endif %}
 
@@ -75,6 +78,42 @@
     }) }}
 
     <hr>
+
+    {% tag 'div' with {
+        class: [
+            'type-single',
+            section.type != 'single' ? 'hidden',
+        ]|filter,
+    } %}
+        {{ forms.field({
+            label: 'Entry Type',
+            instructions: 'Choose the type of entry this section’s entry will have.'|t('app'),
+            id: 'single-entry-type',
+            name: 'singleEntryType',
+            options: singleEntryTypeOptions,
+            value: section.getEntryTypes()|map(entryType => entryType.id)|first,
+            errors: section.getErrors('entryTypes'),
+        }, 'template:_includes/forms/entryType.twig') }}
+    {% endtag %}
+
+    {% tag 'div' with {
+        class: [
+            'type-channel',
+            'type-structure',
+            section.type not in ['channel', 'structure'] ? 'hidden',
+        ]|filter,
+    } %}
+        {{ forms.entryTypeField({
+            label: 'Entry Types'|t('app'),
+            instructions: 'Choose the types of entries that can be included in this section.'|t('app'),
+            id: 'entry-types',
+            name: 'entryTypes',
+            options: entryTypeOptions,
+            values: section.getEntryTypes()|map(entryType => entryType.id),
+            multi: true,
+            errors: section.getErrors('entryTypes'),
+        }) }}
+    {% endtag %}
 
     {% set siteRows = [] %}
     {% set siteErrors = section.getErrors('siteSettings') %}
@@ -184,7 +223,7 @@
             {{ forms.selectField({
                 label: 'Propagation Method'|t('app'),
                 instructions: 'Of the enabled sites above, which sites should entries in this section be saved to?'|t('app'),
-                warning: section.id and section.propagationMethod != 'none' and section.siteSettings|length > 1 ? 'Changing this may result in data loss.'|t('app'),
+                warning: section.id and section.propagationMethod.value != 'none' and section.siteSettings|length > 1 ? 'Changing this may result in data loss.'|t('app'),
                 id: 'propagationMethod',
                 name: 'propagationMethod',
                 options: [
@@ -194,7 +233,7 @@
                     { value: 'all', label: 'Save entries to all sites enabled for this section'|t('app') },
                     { value: 'custom', label: 'Let each entry choose which sites it should be saved to'|t('app') },
                 ],
-                value: section.propagationMethod
+                value: section.propagationMethod.value
             }) }}
         </div>
     {% endif %}

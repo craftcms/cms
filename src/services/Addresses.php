@@ -18,6 +18,7 @@ use CommerceGuys\Addressing\Formatter\DefaultFormatter;
 use CommerceGuys\Addressing\Formatter\FormatterInterface;
 use Craft;
 use craft\addresses\SubdivisionRepository;
+use craft\base\FieldLayoutProviderInterface;
 use craft\elements\Address;
 use craft\events\ConfigEvent;
 use craft\events\DefineAddressFieldLabelEvent;
@@ -38,7 +39,7 @@ use yii\base\Component;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.0.0
  */
-class Addresses extends Component
+class Addresses extends Component implements FieldLayoutProviderInterface
 {
     /**
      * @event DefineAddressFieldsEvent The event that is triggered when defining the address fields that are used by a given country code.
@@ -329,11 +330,18 @@ class Addresses extends Component
     }
 
     /**
-     * Returns the address field layout.
-     *
-     * @return FieldLayout
+     * @inheritdoc
      */
-    public function getLayout(): FieldLayout
+    public function getHandle(): ?string
+    {
+        return null;
+    }
+
+    /**
+     * @inheritdoc
+     * @since 5.0.0
+     */
+    public function getFieldLayout(): FieldLayout
     {
         $fieldLayout = Craft::$app->getFields()->getLayoutByType(Address::class);
 
@@ -394,7 +402,7 @@ class Addresses extends Component
 
         // Save the field layout
         $layout = FieldLayout::createFromConfig($config);
-        $layout->id = $this->getLayout()->id;
+        $layout->id = $this->getFieldLayout()->id;
         $layout->type = Address::class;
         $layout->uid = key($data);
         $fieldsService->saveLayout($layout);

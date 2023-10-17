@@ -100,6 +100,11 @@ class ControllerTest extends TestCase
      */
     public function testRedirectToPostedUrl(): void
     {
+        $this->tester->mockCraftMethods('request', [
+            'getPathInfo' => '',
+        ]);
+        $this->controller->request = Craft::$app->getRequest();
+
         $redirect = Craft::$app->getSecurity()->hashData('craft/do/stuff');
 
         // Default

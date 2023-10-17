@@ -1,0 +1,29 @@
+{% import "_includes/forms" as forms %}
+
+{{ forms.textField({
+  label: 'Min {type}'|t('app', {
+    type: 'Addresses'|t('app'),
+  }),
+  instructions: 'The minimum number of {type} the field is allowed to have.'|t('app', {
+    type: 'addresses'|t('app'),
+  }),
+  id: 'min-addresses',
+  name: 'minAddresses',
+  value: field.minAddresses,
+  size: 3,
+  errors: field.getErrors('minAddresses')
+}) }}
+
+{{ forms.textField({
+  label: 'Max {type}'|t('app', {
+    type: 'Addresses'|t('app'),
+  }),
+  instructions: 'The maximum number of {type} the field is allowed to have.'|t('app', {
+    type: 'addresses'|t('app'),
+  }),
+  id: 'max-addresses',
+  name: 'maxAddresses',
+  value: field.maxAddresses,
+  size: 3,
+  errors: field.getErrors('maxAddresses')
+}) }}

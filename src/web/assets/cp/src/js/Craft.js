@@ -1890,7 +1890,7 @@ $.extend(Craft, {
    * @returns {Promise}
    */
   appendHeadHtml: async function (html) {
-    this._appendHtml(html, $('head'));
+    await this._appendHtml(html, $('head'));
   },
 
   /**
@@ -1900,7 +1900,7 @@ $.extend(Craft, {
    * @returns {Promise}
    */
   appendBodyHtml: async function (html) {
-    this._appendHtml(html, Garnish.$bod);
+    await this._appendHtml(html, Garnish.$bod);
   },
 
   /**
@@ -2221,7 +2221,7 @@ $.extend(Craft, {
    * @returns {Object}
    */
   getElementInfo: function (element) {
-    var $element = $(element);
+    let $element = $(element);
 
     if (!$element.hasClass('element')) {
       $element = $element.find('.element:first');
@@ -2233,7 +2233,7 @@ $.extend(Craft, {
       label: $element.data('label'),
       status: $element.data('status'),
       url: $element.data('url'),
-      hasThumb: $element.hasClass('hasthumb'),
+      hasThumb: $element.hasClass('has-thumb'),
       $element: $element,
     };
   },
@@ -2245,7 +2245,7 @@ $.extend(Craft, {
    * @param {string} size
    */
   setElementSize: function (element, size) {
-    var $element = $(element);
+    const $element = $(element);
 
     if (size !== 'small' && size !== 'large') {
       size = 'small';
@@ -2255,12 +2255,12 @@ $.extend(Craft, {
       return;
     }
 
-    var otherSize = size === 'small' ? 'large' : 'small';
+    const otherSize = size === 'small' ? 'large' : 'small';
 
     $element.addClass(size).removeClass(otherSize);
 
-    if ($element.hasClass('hasthumb')) {
-      var $oldImg = $element.find('> .elementthumb > img'),
+    if ($element.hasClass('has-thumb')) {
+      const $oldImg = $element.find('> .thumb > img'),
         imgSize = size === 'small' ? '30' : '100',
         $newImg = $('<img/>', {
           sizes: imgSize + 'px',
@@ -2471,40 +2471,49 @@ if (typeof BroadcastChannel !== 'undefined') {
       if (!$elements.length) {
         return;
       }
-      const data = {
-        type: $elements.data('type'),
-        id: ev.data.id,
-        instances: [],
-      };
+      const elementsBySite = {};
       for (let i = 0; i < $elements.length; i++) {
         const $element = $elements.eq(i);
-        data.instances.push(
-          Object.assign(
-            {
-              siteId: $element.data('site-id'),
-            },
-            $element.data('settings')
-          )
-        );
+        const siteId = $element.data('site-id');
+        if (typeof elementsBySite[siteId] === 'undefined') {
+          elementsBySite[siteId] = {
+            key: i,
+            type: $element.data('type'),
+            id: ev.data.id,
+            siteId,
+            instances: [],
+          };
+        }
+        elementsBySite[siteId].instances.push($element.data('settings'));
       }
-      Craft.sendActionRequest('POST', 'app/render-element', {data}).then(
+      const data = {
+        elements: Object.values(elementsBySite),
+      };
+      Craft.sendActionRequest('POST', 'app/render-elements', {data}).then(
         ({data}) => {
-          for (let i = 0; i < $elements.length; i++) {
-            const $element = $elements.eq(i);
-            if (data.elementHtml[i]) {
-              const $replacement = $(data.elementHtml[i]);
-              for (let attribute of $replacement[0].attributes) {
-                if (attribute.name === 'class') {
-                  $element.addClass(attribute.value);
-                } else {
-                  $element.attr(attribute.name, attribute.value);
-                }
+          const instances = data.elements[ev.data.id] || {};
+          for (let key of Object.keys(instances)) {
+            const $element = $elements.eq(key);
+            const $replacement = $(instances[key]);
+            for (let attribute of $replacement[0].attributes) {
+              if (attribute.name === 'class') {
+                $element.addClass(attribute.value);
+              } else {
+                $element.attr(attribute.name, attribute.value);
               }
-              const $inputs = $element.find('input,button').detach();
-              $element.html($replacement.html());
-              if ($inputs.length) {
-                $inputs.prependTo($element);
-              }
+            }
+            const $actions = $element
+              .find('.chip-actions,.card-actions')
+              .detach();
+            const $inputs = $element.find('input,button').detach();
+            $element.html($replacement.html());
+            if ($actions.length) {
+              $element
+                .find('.chip-actions,.card-actions')
+                .replaceWith($actions);
+            }
+            if ($inputs.length) {
+              $inputs.appendTo($element);
             }
           }
           Craft.cp.elementThumbLoader.load($elements);
@@ -2680,16 +2689,15 @@ $.extend($.fn, {
   formsubmit: function () {
     // Secondary form submit buttons
     return this.on('click', function (ev) {
-      let $btn = $(ev.currentTarget);
-      let params = $btn.data('params') || {};
+      const $btn = $(ev.currentTarget);
+      const params = $btn.data('params') || {};
       if ($btn.data('param')) {
         params[$btn.data('param')] = $btn.data('value');
       }
 
-      let $anchor = $btn.data('menu') ? $btn.data('menu').$anchor : $btn;
-      let $form = $anchor.attr('data-form')
-        ? $('#' + $anchor.attr('data-form'))
-        : $anchor.closest('form');
+      const $anchor = $btn.data('menu') ? $btn.data('menu').$anchor : $btn;
+      const formId = $btn.attr('data-form') || $anchor.attr('data-form');
+      let $form = formId ? $(`#${formId}`) : $anchor.closest('form');
 
       Craft.submitForm($form, {
         confirm: $btn.data('confirm'),

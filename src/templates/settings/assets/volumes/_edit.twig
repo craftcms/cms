@@ -37,6 +37,15 @@
     options: fsOptions
 }) }}
 
+{{ forms.textField({
+    label: 'Subpath'|t('app'),
+    instructions: 'Where assets should be stored on the filesystem.'|t('app'),
+    id: 'subpath',
+    name: 'subpath',
+    value: volume.getSubpath(false),
+    errors: volume.getErrors('subpath'),
+}) }}
+
 {{ forms.fsField({
     label: 'Transform Filesystem'|t('app'),
     instructions: 'Choose which filesystem image transforms should be stored in.'|t('app'),

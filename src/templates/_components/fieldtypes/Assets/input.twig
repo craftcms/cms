@@ -1,47 +1,6 @@
-{% if name ?? false %}
-    {{ hiddenInput(name, '') }}
-{% endif -%}
+{% extends '_includes/forms/elementSelect.twig' %}
 
-{% set elements = elements ?? [] -%}
-{% set jsClass = jsClass ?? 'Craft.BaseElementSelectInput' -%}
-{% set sources = sources ?? null -%}
-{% set condition = condition ?? null -%}
-{% set criteria = criteria ?? null -%}
-{% set storageKey = storageKey ?? null -%}
-{% set disabled = (disabled ?? false) ? true : false %}
-
-<div id="{{ id }}" class="elementselect">
-    <div class="elements {% if viewMode == 'large' %}flex-row flex-wrap{% endif %}">
-        {% for element in elements %}
-            {% include "_elements/element" with {
-                context: 'field',
-                size: (viewMode == 'large' ? 'large' : 'small')
-            } %}
-        {% endfor %}
-    </div>
-
-    <div class="flex">
-        {% if sources %}
-            {{ tag('button', {
-                type: 'button',
-                text: selectionLabel,
-                class: [
-                    'btn',
-                    'add',
-                    'icon',
-                    'dashed',
-                    disabled ? 'disabled',
-                    limit and elements|length >= limit ? 'hidden',
-                ],
-                aria: {
-                    label: selectionLabel,
-                    describedby: describedBy ?? false,
-                },
-            }) }}
-        {% endif %}
-        <div class="spinner hidden"></div>
-    </div>
-</div>
+{% set registerJs = false %}
 
 {% do view.registerAssetBundle("craft\\web\\assets\\prismjs\\PrismJsAsset") %}
 

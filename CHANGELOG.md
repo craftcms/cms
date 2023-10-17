@@ -1,5 +1,35 @@
 # Release Notes for Craft CMS 4
 
+## Unreleased
+
+- Field containers are no longer focusable unless a corresponding validation message is clicked on. ([#13782](https://github.com/craftcms/cms/issues/13782))
+- Improved element save performance.
+- Added `craft\events\DefineCompatibleFieldTypesEvent`.
+- Added `craft\services\Fields::EVENT_DEFINE_COMPATIBLE_FIELD_TYPES`. ([#13793](https://github.com/craftcms/cms/discussions/13793))
+- Added `craft\web\assets\inputmask\InputmaskAsset`.
+- `craft\web\Request::accepts()` now supports wildcard (e.g. `application/*`). ([#13759](https://github.com/craftcms/cms/issues/13759))
+- `Craft.ElementEditor` instances are now configured with an `elementId` setting, which is kept up-to-date when a provisional draft is created. ([#13795](https://github.com/craftcms/cms/discussions/13795))
+- Added `Garnish.isPrimaryClick()`.
+- Fixed a bug where relational fields’ element selector modals weren’t always getting set to the correct site per the field’s “Relate entries from a specific site?” setting. ([#13750](https://github.com/craftcms/cms/issues/13750))
+- Fixed a bug where Dropdown fields weren’t visible when viewing revisions and other static forms. ([#13753](https://github.com/craftcms/cms/issues/13753), [craftcms/commerce#3270](https://github.com/craftcms/commerce/issues/3270))
+- Fixed a bug where the `defaultDirMode` config setting wasn’t being respected when the `storage/runtime/` and `storage/logs/` folders were created. ([#13756](https://github.com/craftcms/cms/issues/13756))
+- Fixed a bug where the “Save and continue editing” action wasn’t working on Edit User pages if they contained a Money field. ([#13760](https://github.com/craftcms/cms/issues/13760))
+- Fixed a bug where relational fields’ validation messages weren’t using the actual field name. ([#13807](https://github.com/craftcms/cms/issues/13807))
+- Fixed a bug where element editor slideouts were appearing behind element selector modals within Live Preview. ([#13798](https://github.com/craftcms/cms/issues/13798))
+- Fixed a bug where element URIs weren’t getting updated for propagated sites automatically. ([#13812](https://github.com/craftcms/cms/issues/13812))
+- Fixed a bug where dropdown input labels could overflow out of their containers. ([#13817](https://github.com/craftcms/cms/issues/13817))
+- Fixed a bug where the `transformGifs` and `transformSvgs` config settings weren’t always being respected when using `@transform` GraphQL directives. ([#13808](https://github.com/craftcms/cms/issues/13808))
+- Fixed a bug where Composer operations were sorting `require` packages differently than how Composer does it natively, when `config.sort-packages` was set to `true`. ([#13806](https://github.com/craftcms/cms/issues/13806))
+- Fixed a MySQL error that could occur when creating a Plain Text field with a high charcter limit. ([#13781](https://github.com/craftcms/cms/pull/13781))
+- Fixed a bug where entries weren’t always being treated as live for View and Preview buttons, when editing a non-primary site. ([#13746](https://github.com/craftcms/cms/issues/13746))
+- Fixed a bug where Ctrl-clicks were being treated as primary clicks in some browsers. ([#13823](https://github.com/craftcms/cms/issues/13823))
+- Fixed RCE vulnerabilities.
+
+## 4.5.6.1 - 2023-09-27
+
+- Crossdomain JavaScript resources are now loaded via a proxy action.
+- Fixed JavaScript errors that could occur after loading new UI components over Ajax. ([#13751](https://github.com/craftcms/cms/issues/13751))
+
 ## 4.5.6 - 2023-09-26
 
 - When slideouts are opened within Live Preview, they now slide up over the editor pane, rather than covering the preview pane. ([#13739](https://github.com/craftcms/cms/pull/13739))
@@ -9,7 +39,6 @@
 - Added the `resave/addresses` command. ([#13720](https://github.com/craftcms/cms/discussions/13720))
 - The `resave/matrix-blocks` command now supports an `--owner-id` option.
 - Added `craft\helpers\App::phpExecutable()`.
-- Added `craft\helpers\Component::cleanseConfig()`.
 - `craft\helpers\Component::createComponent()` now filters out `as X` and `on X` keys from the component config.
 - `craft\services\Announcements::push()` now has an `$adminsOnly` argument. ([#13728](https://github.com/craftcms/cms/discussions/13728))
 - `Craft.appendHeadHtml()` and `appendBodyHtml()` now load external scripts asynchronously, and return promises.

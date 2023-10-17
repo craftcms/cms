@@ -74,24 +74,3 @@
         errors: field.getErrors('initialRows')
     }) }}
 </div>
-
-{% if craft.app.db.isMysql %}
-    <hr>
-    <a class="fieldtoggle" data-target="advanced">{{ "Advanced"|t('app') }}</a>
-    <div id="advanced" class="hidden">
-        {{ forms.selectField({
-            label: "Column Type"|t('app'),
-            id: 'column-type',
-            name: 'columnType',
-            instructions: "The type of column this field should get in the database."|t('app'),
-            options: [
-                { value: 'auto', label: 'Automatic'|t('app') },
-                { value: 'string', label: 'varchar (255B)' },
-                { value: 'text', label: 'text (~64KB)' },
-                { value: 'mediumtext', label: 'mediumtext (~16MB)' },
-            ],
-            value: field.columnType ?? 'auto',
-            warning: (field.id ? "Changing this may result in data loss."|t('app')),
-        }) }}
-    </div>
-{% endif %}

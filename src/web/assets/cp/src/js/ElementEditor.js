@@ -41,7 +41,6 @@ Craft.ElementEditor = Garnish.Base.extend(
     queue: null,
     submittingForm: false,
 
-    duplicatedElements: null,
     failed: false,
     httpStatus: null,
     httpError: null,
@@ -95,7 +94,6 @@ Craft.ElementEditor = Garnish.Base.extend(
       this.queue = this._createQueue();
       this.previewTokenQueue = this._createQueue();
 
-      this.duplicatedElements = {};
       this.enableAutosave = Craft.autosaveDrafts;
       this.previewLinks = [];
 
@@ -1127,6 +1125,9 @@ Craft.ElementEditor = Garnish.Base.extend(
         );
       }
 
+      // remove embedded element index names
+      data = data.replace(/&elementindex-[^&]*/g, '');
+
       return data;
     },
 
@@ -1349,6 +1350,7 @@ Craft.ElementEditor = Garnish.Base.extend(
                   .attr('value', 'elements/apply-draft');
 
                 // Update the editor settings
+                this.settings.elementId = response.data.elementId;
                 this.settings.draftId = response.data.draftId;
                 this.settings.isLive = false;
                 this.previewToken = null;
@@ -1391,16 +1393,6 @@ Craft.ElementEditor = Garnish.Base.extend(
 
             if (this.$nameTextInput) {
               this.checkMetaValues();
-            }
-
-            for (const oldId in response.data.duplicatedElements) {
-              if (
-                oldId != this.settings.canonicalId &&
-                response.data.duplicatedElements.hasOwnProperty(oldId)
-              ) {
-                this.duplicatedElements[oldId] =
-                  response.data.duplicatedElements[oldId];
-              }
             }
 
             // Add missing field modified indicators
@@ -1648,9 +1640,6 @@ Craft.ElementEditor = Garnish.Base.extend(
         this.$container.data('modified-delta-names')
       );
 
-      // Swap out element IDs with their duplicated ones
-      data = this.swapDuplicatedElementIds(data);
-
       const extraData = {};
 
       // Add the draft info
@@ -1684,84 +1673,6 @@ Craft.ElementEditor = Garnish.Base.extend(
       }
 
       return headers;
-    },
-
-    /**
-     * @param {string} data
-     * @returns {string}
-     */
-    swapDuplicatedElementIds: function (data) {
-      const idsRE = Object.keys(this.duplicatedElements).join('|');
-      if (idsRE === '') {
-        return data;
-      }
-      const lb = encodeURIComponent('[');
-      const rb = encodeURIComponent(']');
-      let namespacedFields = this.namespaceInputName('fields');
-
-      if (this.isFullPage) {
-        namespacedFields = Craft.escapeRegex(namespacedFields);
-      } else {
-        // don't escape namespaced input names, but URI encode them (for cases like: cnuvbcxlgq[fields])
-        namespacedFields = encodeURIComponent(namespacedFields);
-      }
-
-      // Keep replacing field IDs until data stops changing
-      while (true) {
-        if (
-          data ===
-          (data = data
-            // &fields[...][X]
-            .replace(
-              new RegExp(
-                `(&${namespacedFields}${lb}[^=]+${rb}${lb})(${idsRE})(${rb})`,
-                'g'
-              ),
-              (m, pre, id, post) => {
-                if (!this._filterFieldInputName(pre)) {
-                  return m;
-                }
-                return pre + this.duplicatedElements[id] + post;
-              }
-            )
-            // &fields[...=X
-            .replace(
-              new RegExp(`&(${namespacedFields}${lb}[^=]+)=(${idsRE})\\b`, 'g'),
-              (m, name, id) => {
-                // Ignore param names that end in `[enabled]`, `[type]`, etc.
-                // (`[sortOrder]` should pass here, which could be set to a specific order index, but *not* `[sortOrder][]`!)
-                if (
-                  !this._filterFieldInputName(name) ||
-                  name.match(
-                    new RegExp(`${lb}(enabled|sortOrder|type|typeId)${rb}$`)
-                  )
-                ) {
-                  return m;
-                }
-                return `&${name}=${this.duplicatedElements[id]}`;
-              }
-            ))
-        ) {
-          break;
-        }
-      }
-      return data;
-    },
-
-    _filterFieldInputName: function (name) {
-      // Find the last referenced field handle
-      const lb = encodeURIComponent('[');
-      const rb = encodeURIComponent(']');
-      const nestedNames = name.match(
-        new RegExp(`(\\bfields|${lb}fields${rb})${lb}.+?${rb}`, 'g')
-      );
-      if (!nestedNames) {
-        throw `Unexpected input name: ${name}`;
-      }
-      const lastHandle = nestedNames[nestedNames.length - 1].match(
-        new RegExp(`(?:\\bfields|${lb}fields${rb})${lb}(.+?)${rb}`)
-      )[1];
-      return Craft.fieldsWithoutContent.includes(lastHandle);
     },
 
     updatePreviewTargets: function (previewTargets) {
@@ -2170,6 +2081,7 @@ Craft.ElementEditor = Garnish.Base.extend(
       canCreateDrafts: false,
       canEditMultipleSites: false,
       canSaveCanonical: false,
+      elementId: null,
       canonicalId: null,
       draftId: null,
       draftName: null,

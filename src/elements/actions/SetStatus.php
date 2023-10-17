@@ -60,7 +60,7 @@ class SetStatus extends ElementAction
 (() => {
     new Craft.ElementActionTrigger({
         type: $type,
-        validateSelection: (selectedItems) => {
+        validateSelection: (selectedItems, elementIndex) => {
             const element = selectedItems.find('.element');
             return (
                 Garnish.hasAttr(element, 'data-savable') &&

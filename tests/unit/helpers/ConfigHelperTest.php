@@ -89,7 +89,7 @@ class ConfigHelperTest extends TestCase
     /**
      * @return array
      */
-    public function localizedValueDataProvider(): array
+    public static function localizedValueDataProvider(): array
     {
         return [
             // Ensure if array that it is accessed by the handle and returns the value of the index.
@@ -116,7 +116,7 @@ class ConfigHelperTest extends TestCase
     /**
      * @return array
      */
-    public function sizeInBytesDataProvider(): array
+    public static function sizeInBytesDataProvider(): array
     {
         return [
             [5368709120, '5G'],
@@ -134,7 +134,7 @@ class ConfigHelperTest extends TestCase
     /**
      * @return array
      */
-    public function durationInSecondsDataProvider(): array
+    public static function durationInSecondsDataProvider(): array
     {
         return [
             [86400, 'P1D'],

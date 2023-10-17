@@ -8,9 +8,10 @@
 namespace craft\fields;
 
 use Craft;
-use craft\base\Element;
 use craft\base\ElementInterface;
+use craft\base\InlineEditableFieldInterface;
 use craft\base\SortableFieldInterface;
+use craft\enums\AttributeStatus;
 use craft\fields\data\SingleOptionFieldData;
 use craft\helpers\Cp;
 
@@ -20,8 +21,13 @@ use craft\helpers\Cp;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
-class Dropdown extends BaseOptionsField implements SortableFieldInterface
+class Dropdown extends BaseOptionsField implements SortableFieldInterface, InlineEditableFieldInterface
 {
+    /**
+     * @inheritdoc
+     */
+    protected static bool $optgroups = true;
+
     /**
      * @inheritdoc
      */
@@ -33,7 +39,7 @@ class Dropdown extends BaseOptionsField implements SortableFieldInterface
     /**
      * @inheritdoc
      */
-    public static function valueType(): string
+    public static function phpType(): string
     {
         return sprintf('\\%s', SingleOptionFieldData::class);
     }
@@ -41,8 +47,6 @@ class Dropdown extends BaseOptionsField implements SortableFieldInterface
     /**
      * @inheritdoc
      */
-    protected bool $optgroups = true;
-
     public function getStatus(ElementInterface $element): ?array
     {
         // If the value is invalid and has a default value (which is going to be pulled in via inputHtml()),
@@ -52,7 +56,7 @@ class Dropdown extends BaseOptionsField implements SortableFieldInterface
 
         if (!$value->valid && $this->defaultValue() !== null) {
             return [
-                Element::ATTR_STATUS_MODIFIED,
+                AttributeStatus::Modified,
                 Craft::t('app', 'This field has been modified.'),
             ];
         }
@@ -63,7 +67,20 @@ class Dropdown extends BaseOptionsField implements SortableFieldInterface
     /**
      * @inheritdoc
      */
-    protected function inputHtml(mixed $value, ?ElementInterface $element = null): string
+    protected function inputHtml(mixed $value, ?ElementInterface $element, bool $inline): string
+    {
+        return $this->inputHtmlInternal($value, $element, false);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getStaticHtml(mixed $value, ?ElementInterface $element = null): string
+    {
+        return $this->inputHtmlInternal($value, $element, true);
+    }
+
+    private function inputHtmlInternal(mixed $value, ?ElementInterface $element, bool $static): string
     {
         /** @var SingleOptionFieldData $value */
         $options = $this->translatedOptions(true, $value, $element);
@@ -77,11 +94,13 @@ class Dropdown extends BaseOptionsField implements SortableFieldInterface
         }
 
         if (!$value->valid) {
-            Craft::$app->getView()->setInitialDeltaValue($this->handle, $this->encodeValue($value->value));
+            if (!$static) {
+                Craft::$app->getView()->setInitialDeltaValue($this->handle, $this->encodeValue($value->value));
+            }
             $default = $this->defaultValue();
 
             if ($default !== null) {
-                $value = $this->normalizeValue($this->defaultValue());
+                $value = $this->normalizeValue($this->defaultValue(), null);
             } else {
                 $value = null;
 
@@ -103,6 +122,7 @@ class Dropdown extends BaseOptionsField implements SortableFieldInterface
             'name' => $this->handle,
             'value' => $encValue,
             'options' => $options,
+            'disabled' => $static,
         ]);
     }
 

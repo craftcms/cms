@@ -11,11 +11,12 @@ use craft\behaviors\CustomFieldBehavior;
 use craft\elements\conditions\ElementConditionInterface;
 use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
+use craft\elements\ElementCollection;
 use craft\elements\User;
+use craft\enums\AttributeStatus;
 use craft\errors\InvalidFieldException;
 use craft\models\FieldLayout;
 use craft\models\Site;
-use Illuminate\Support\Collection;
 use Twig\Markup;
 use yii\web\Response;
 
@@ -63,6 +64,14 @@ interface ElementInterface extends ComponentInterface
     public static function refHandle(): ?string;
 
     /**
+     * Returns whether element indexes should show the “Drafts” status option.
+     *
+     * @return bool
+     * @since 5.0.0
+     */
+    public static function hasDrafts(): bool;
+
+    /**
      * Returns whether Craft should keep track of attribute and custom field changes made to this element type,
      * including when the last time they were changed, and who was logged-in at the time.
      *
@@ -74,18 +83,19 @@ interface ElementInterface extends ComponentInterface
     public static function trackChanges(): bool;
 
     /**
-     * Returns whether elements of this type will be storing any data in the `content` table (titles or custom fields).
-     *
-     * @return bool Whether elements of this type will be storing any data in the `content` table.
-     */
-    public static function hasContent(): bool;
-
-    /**
      * Returns whether elements of this type have traditional titles.
      *
      * @return bool Whether elements of this type have traditional titles.
      */
     public static function hasTitles(): bool;
+
+    /**
+     * Returns whether element indexes should include a thumbnail view by default.
+     *
+     * @return bool
+     * @since 5.0.0
+     */
+    public static function hasThumbs(): bool;
 
     /**
      * Returns whether elements of this type can have their own slugs and URIs.
@@ -308,7 +318,7 @@ interface ElementInterface extends ComponentInterface
      * @return array|null
      * @since 4.4.0
      */
-    public static function findSource(string $sourceKey, ?string $context = null): ?array;
+    public static function findSource(string $sourceKey, ?string $context): ?array;
 
     /**
      * Returns the source path for a given source key, step key, and context.
@@ -322,6 +332,18 @@ interface ElementInterface extends ComponentInterface
     public static function sourcePath(string $sourceKey, string $stepKey, ?string $context): ?array;
 
     /**
+     * Returns all the field layouts associated with elements from the given source.
+     *
+     * This is used to determine which custom fields should be included in the element index sort menu,
+     * and other things.
+     *
+     * @param string|null $source The selected source’s key, or `null` if all known field layouts should be returned
+     * @return FieldLayout[]
+     * @since 3.5.0
+     */
+    public static function fieldLayouts(?string $source): array;
+
+    /**
      * Modifies a custom source’s config, before it’s returned by [[craft\services\ElementSources::getSources()]]
      *
      * @param array $config
@@ -329,18 +351,6 @@ interface ElementInterface extends ComponentInterface
      * @since 4.5.0
      */
     public static function modifyCustomSource(array $config): array;
-
-    /**
-     * Returns all of the field layouts associated with elements from the given source.
-     *
-     * This is used to determine which custom fields should be included in the element index sort menu,
-     * and other things.
-     *
-     * @param string $source The selected source’s key
-     * @return FieldLayout[]
-     * @since 3.5.0
-     */
-    public static function fieldLayouts(string $source): array;
 
     /**
      * Returns the available [element actions](https://craftcms.com/docs/4.x/extend/element-actions.html) for a
@@ -415,10 +425,20 @@ interface ElementInterface extends ComponentInterface
      * @param string|null $sourceKey
      * @param string|null $context
      * @param bool $includeContainer
-     * @param bool $showCheckboxes
+     * @param bool $selectable
+     * @param bool $sortable
      * @return string The element index HTML
      */
-    public static function indexHtml(ElementQueryInterface $elementQuery, ?array $disabledElementIds, array $viewState, ?string $sourceKey, ?string $context, bool $includeContainer, bool $showCheckboxes): string;
+    public static function indexHtml(
+        ElementQueryInterface $elementQuery,
+        ?array $disabledElementIds,
+        array $viewState,
+        ?string $sourceKey,
+        ?string $context,
+        bool $includeContainer,
+        bool $selectable,
+        bool $sortable,
+    ): string;
 
     /**
      * Returns the total number of elements that will be shown on an element index, for the given element query.
@@ -545,24 +565,6 @@ interface ElementInterface extends ComponentInterface
      * should be ignored
      */
     public static function eagerLoadingMap(array $sourceElements, string $handle): array|null|false;
-
-    /**
-     * Returns the GraphQL type name by an element’s context.
-     *
-     * @param mixed $context The element’s context, such as a volume, entry type or Matrix block type.
-     * @return string
-     * @since 3.3.0
-     */
-    public static function gqlTypeNameByContext(mixed $context): string;
-
-    /**
-     * Returns the GraphQL mutation name by an element’s context.
-     *
-     * @param mixed $context The element’s context, such as a volume, entry type, or Matrix block type.
-     * @return string
-     * @since 3.5.0
-     */
-    public static function gqlMutationNameByContext(mixed $context): string;
 
     /**
      * Returns the GraphQL scopes required by element’s context.
@@ -800,6 +802,22 @@ interface ElementInterface extends ComponentInterface
     public function setUiLabelPath(array $path): void;
 
     /**
+     * Returns the label HTML for element chips.
+     *
+     * @return string
+     * @since 5.0.0
+     */
+    public function getChipLabelHtml(): string;
+
+    /**
+     * Returns the body HTML for element cards.
+     *
+     * @return string|null
+     * @since 5.0.0
+     */
+    public function getCardBodyHtml(): ?string;
+
+    /**
      * Returns the reference string to this element.
      *
      * @return string|null
@@ -997,9 +1015,9 @@ interface ElementInterface extends ComponentInterface
     /**
      * Returns the same element in other locales.
      *
-     * @return ElementQueryInterface|Collection
+     * @return ElementQueryInterface|ElementCollection
      */
-    public function getLocalized(): ElementQueryInterface|Collection;
+    public function getLocalized(): ElementQueryInterface|ElementCollection;
 
     /**
      * Returns the next element relative to this one, from a given set of criteria.
@@ -1052,37 +1070,37 @@ interface ElementInterface extends ComponentInterface
      *
      * @param self|null $parent
      */
-    public function setParent(?self $parent = null): void;
+    public function setParent(?self $parent): void;
 
     /**
      * Returns the element’s ancestors.
      *
      * @param int|null $dist
-     * @return ElementQueryInterface|Collection
+     * @return ElementQueryInterface|ElementCollection
      */
-    public function getAncestors(?int $dist = null): ElementQueryInterface|Collection;
+    public function getAncestors(?int $dist = null): ElementQueryInterface|ElementCollection;
 
     /**
      * Returns the element’s descendants.
      *
      * @param int|null $dist
-     * @return ElementQueryInterface|Collection
+     * @return ElementQueryInterface|ElementCollection
      */
-    public function getDescendants(?int $dist = null): ElementQueryInterface|Collection;
+    public function getDescendants(?int $dist = null): ElementQueryInterface|ElementCollection;
 
     /**
      * Returns the element’s children.
      *
-     * @return ElementQueryInterface|Collection
+     * @return ElementQueryInterface|ElementCollection
      */
-    public function getChildren(): ElementQueryInterface|Collection;
+    public function getChildren(): ElementQueryInterface|ElementCollection;
 
     /**
      * Returns all of the element’s siblings.
      *
-     * @return ElementQueryInterface|Collection
+     * @return ElementQueryInterface|ElementCollection
      */
-    public function getSiblings(): ElementQueryInterface|Collection;
+    public function getSiblings(): ElementQueryInterface|ElementCollection;
 
     /**
      * Returns the element’s previous sibling.
@@ -1180,7 +1198,7 @@ interface ElementInterface extends ComponentInterface
      * Returns the status of a given attribute.
      *
      * @param string $attribute
-     * @return array|null
+     * @return array{0:AttributeStatus|value-of<AttributeStatus>,1:string}|null
      * @since 3.4.0
      */
     public function getAttributeStatus(string $attribute): ?array;
@@ -1481,20 +1499,6 @@ interface ElementInterface extends ComponentInterface
     public function setFieldParamNamespace(string $namespace): void;
 
     /**
-     * Returns the name of the table this element’s content is stored in.
-     *
-     * @return string
-     */
-    public function getContentTable(): string;
-
-    /**
-     * Returns the field column prefix this element’s content uses.
-     *
-     * @return string
-     */
-    public function getFieldColumnPrefix(): string;
-
-    /**
      * Returns the field context this element’s content uses.
      *
      * @return string
@@ -1513,9 +1517,9 @@ interface ElementInterface extends ComponentInterface
      * Returns the eager-loaded elements for a given handle.
      *
      * @param string $handle The handle of the eager-loaded elements
-     * @return Collection|null The eager-loaded elements, or null if they hadn't been eager-loaded
+     * @return ElementCollection|null The eager-loaded elements, or null if they hadn't been eager-loaded
      */
-    public function getEagerLoadedElements(string $handle): ?Collection;
+    public function getEagerLoadedElements(string $handle): ?ElementCollection;
 
     /**
      * Sets some eager-loaded elements on a given handle.
@@ -1526,13 +1530,21 @@ interface ElementInterface extends ComponentInterface
     public function setEagerLoadedElements(string $handle, array $elements): void;
 
     /**
+     * Sets whether the given eager-loaded element handles were eager-loaded lazily.
+     *
+     * @param string $handle The handle that was used to eager-load the elements
+     * @param bool $value
+     */
+    public function setLazyEagerLoadedElements(string $handle, bool $value = true): void;
+
+    /**
      * Returns the count of eager-loaded elements for a given handle.
      *
      * @param string $handle The handle of the eager-loaded elements
-     * @return int The eager-loaded element count
+     * @return int|null The eager-loaded element count, or null if it hadn't been eager-loaded
      * @since 3.4.0
      */
-    public function getEagerLoadedElementCount(string $handle): int;
+    public function getEagerLoadedElementCount(string $handle): ?int;
 
     /**
      * Sets the count of eager-loaded elements for a given handle.
@@ -1565,7 +1577,7 @@ interface ElementInterface extends ComponentInterface
      * @param int|null $creatorId
      * @since 3.2.0
      */
-    public function setRevisionCreatorId(?int $creatorId = null): void;
+    public function setRevisionCreatorId(?int $creatorId): void;
 
     /**
      * Sets the revision notes to be saved.
@@ -1573,7 +1585,7 @@ interface ElementInterface extends ComponentInterface
      * @param string|null $notes
      * @since 3.2.0
      */
-    public function setRevisionNotes(?string $notes = null): void;
+    public function setRevisionNotes(?string $notes): void;
 
     /**
      * Returns the element’s current revision, if one exists.
@@ -1602,17 +1614,27 @@ interface ElementInterface extends ComponentInterface
     public function getHtmlAttributes(string $context): array;
 
     /**
-     * Returns the HTML that should be shown for a given attribute in Table View.
+     * Returns the HTML that should be shown for a given attribute in table and card views.
      *
      * ::: tip
-     * Element types that extend [[\craft\base\Element]] should override [[\craft\base\Element::tableAttributeHtml()]]
+     * Element types that extend [[\craft\base\Element]] should override [[\craft\base\Element::attributeHtml()]]
      * instead of this method.
      * :::
      *
      * @param string $attribute The attribute name.
-     * @return string The HTML that should be shown for a given attribute in Table View.
+     * @return string The HTML that should be shown for a given attribute in table and card views.
+     * @since 5.0.0
      */
-    public function getTableAttributeHtml(string $attribute): string;
+    public function getAttributeHtml(string $attribute): string;
+
+    /**
+     * Returns the HTML that should be shown for a given attribute's inline editing input.
+     *
+     * @param string $attribute The attribute name.
+     * @return string The HTML that should be shown for the element input.
+     * @since 5.0.0
+     */
+    public function getInlineAttributeInputHtml(string $attribute): string;
 
     /**
      * Returns the HTML for any fields/info that should be shown within the editor sidebar.

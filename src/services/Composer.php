@@ -85,7 +85,7 @@ class Composer extends Component
     public function getConfig(): array
     {
         try {
-            return Json::decode(file_get_contents($this->getJsonPath()));
+            return Json::decodeFromFile($this->getJsonPath());
         } catch (Throwable) {
             return [];
         }
@@ -238,7 +238,7 @@ class Composer extends Component
             $config['repositories'][] = $repoConfig;
         }
 
-        $this->writeJson($jsonPath, $config);
+        Json::encodeToFile($jsonPath, $config);
     }
 
     /**
@@ -278,7 +278,7 @@ class Composer extends Component
             $config['config']['allow-plugins'][$plugin] = true;
         }
 
-        $this->writeJson($jsonPath, $config);
+        Json::encodeToFile($jsonPath, $config);
     }
 
     /**
@@ -304,10 +304,36 @@ class Composer extends Component
         }
 
         if ($config['config']['sort-packages'] ?? false) {
-            ksort($config['require']);
+            $this->sortPackages($config['require']);
         }
 
-        $this->writeJson($jsonPath, $config);
+        Json::encodeToFile($jsonPath, $config);
+    }
+
+    public function sortPackages(&$packages): void
+    {
+        // Adapted from JsonManipulator::sortPackages()
+        uksort($packages, fn($a, $b) => strnatcmp($this->prefixPackage($a), $this->prefixPackage($b)));
+    }
+
+    private function prefixPackage(string $package): string
+    {
+        if (preg_match('/^(?:php(?:-64bit|-ipv6|-zts|-debug)?|hhvm|(?:ext|lib)-[a-z0-9](?:[_.-]?[a-z0-9]+)*|composer(?:-(?:plugin|runtime)-api)?)$/iD', $package)) {
+            $lower = strtolower($package);
+            if (str_starts_with($lower, 'php')) {
+                $group = '0';
+            } elseif (str_starts_with($lower, 'hhvm')) {
+                $group = '1';
+            } elseif (str_starts_with($lower, 'ext')) {
+                $group = '2';
+            } elseif (str_starts_with($lower, 'lib')) {
+                $group = '3';
+            } elseif (preg_match('/^\D/', $lower)) {
+                $group = '4';
+            }
+        }
+
+        return sprintf('%s-%s', $group ?? '5', $package);
     }
 
     /**
@@ -352,27 +378,5 @@ class Composer extends Component
                 ],
             ], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT));
         }
-    }
-
-    private function writeJson(string $path, array $value): void
-    {
-        $json = Json::encode($value, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
-
-        $indent = $this->detectJsonIndent(file_get_contents($path));
-        if ($indent !== '    ') {
-            $json = preg_replace_callback('/^ {4,}/m', function(array $match) use ($indent) {
-                return strtr($match[0], ['    ' => $indent]);
-            }, $json);
-        }
-
-        FileHelper::writeToFile($path, $json);
-    }
-
-    private function detectJsonIndent(string $json): string
-    {
-        if (!preg_match('/^\s*\{\s*[\r\n]+([ \t]+)"/', $json, $match)) {
-            return '  ';
-        }
-        return $match[1];
     }
 }

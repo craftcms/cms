@@ -17,7 +17,6 @@ use craft\helpers\UrlHelper;
 use craft\records\EntryType as EntryTypeRecord;
 use craft\validators\HandleValidator;
 use craft\validators\UniqueValidator;
-use yii\base\InvalidConfigException;
 
 /**
  * EntryType model class.
@@ -34,11 +33,6 @@ class EntryType extends Model implements FieldLayoutProviderInterface
     public ?int $id = null;
 
     /**
-     * @var int|null Section ID
-     */
-    public ?int $sectionId = null;
-
-    /**
      * @var int|null Field layout ID
      */
     public ?int $fieldLayoutId = null;
@@ -52,12 +46,6 @@ class EntryType extends Model implements FieldLayoutProviderInterface
      * @var string|null Handle
      */
     public ?string $handle = null;
-
-    /**
-     * @var int|null Sort order
-     * @since 3.5.0
-     */
-    public ?int $sortOrder = null;
 
     /**
      * @var bool Has title field
@@ -109,6 +97,26 @@ class EntryType extends Model implements FieldLayoutProviderInterface
     /**
      * @inheritdoc
      */
+    public function init(): void
+    {
+        parent::init();
+
+        if ($this->titleFormat === '') {
+            $this->titleFormat = null;
+        }
+
+        if ($this->titleTranslationKeyFormat === '') {
+            $this->titleTranslationKeyFormat = null;
+        }
+
+        if ($this->slugTranslationKeyFormat === '') {
+            $this->slugTranslationKeyFormat = null;
+        }
+    }
+
+    /**
+     * @inheritdoc
+     */
     protected function defineBehaviors(): array
     {
         return [
@@ -138,7 +146,7 @@ class EntryType extends Model implements FieldLayoutProviderInterface
     protected function defineRules(): array
     {
         $rules = parent::defineRules();
-        $rules[] = [['id', 'sectionId', 'fieldLayoutId'], 'number', 'integerOnly' => true];
+        $rules[] = [['id', 'fieldLayoutId'], 'number', 'integerOnly' => true];
         $rules[] = [['name', 'handle'], 'required'];
         $rules[] = [['name', 'handle'], 'string', 'max' => 255];
         $rules[] = [
@@ -150,21 +158,17 @@ class EntryType extends Model implements FieldLayoutProviderInterface
             ['name'],
             UniqueValidator::class,
             'targetClass' => EntryTypeRecord::class,
-            'targetAttribute' => ['name', 'sectionId'],
+            'targetAttribute' => 'name',
             'message' => Craft::t('yii', '{attribute} "{value}" has already been taken.'),
         ];
         $rules[] = [
             ['handle'],
             UniqueValidator::class,
             'targetClass' => EntryTypeRecord::class,
-            'targetAttribute' => ['handle', 'sectionId'],
+            'targetAttribute' => 'handle',
             'message' => Craft::t('yii', '{attribute} "{value}" has already been taken.'),
         ];
         $rules[] = [['fieldLayout'], 'validateFieldLayout'];
-
-        if (!$this->hasTitleField) {
-            $rules[] = [['titleFormat'], 'required'];
-        }
 
         return $rules;
     }
@@ -201,6 +205,14 @@ class EntryType extends Model implements FieldLayoutProviderInterface
     /**
      * @inheritdoc
      */
+    public function getHandle(): ?string
+    {
+        return $this->handle;
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function getFieldLayout(): FieldLayout
     {
         /** @var FieldLayoutBehavior $behavior */
@@ -215,26 +227,7 @@ class EntryType extends Model implements FieldLayoutProviderInterface
      */
     public function getCpEditUrl(): string
     {
-        return UrlHelper::cpUrl('settings/sections/' . $this->sectionId . '/entrytypes/' . $this->id);
-    }
-
-    /**
-     * Returns the entry type’s section.
-     *
-     * @return Section
-     * @throws InvalidConfigException if [[sectionId]] is missing or invalid
-     */
-    public function getSection(): Section
-    {
-        if (!isset($this->sectionId)) {
-            throw new InvalidConfigException('Entry type is missing its section ID');
-        }
-
-        if (($section = Craft::$app->getSections()->getSectionById($this->sectionId)) === null) {
-            throw new InvalidConfigException('Invalid section ID: ' . $this->sectionId);
-        }
-
-        return $section;
+        return UrlHelper::cpUrl("settings/entry-types/$this->id");
     }
 
     /**
@@ -250,13 +243,11 @@ class EntryType extends Model implements FieldLayoutProviderInterface
             'handle' => $this->handle,
             'hasTitleField' => $this->hasTitleField,
             'titleTranslationMethod' => $this->titleTranslationMethod,
-            'titleTranslationKeyFormat' => $this->titleTranslationKeyFormat ?: null,
-            'titleFormat' => $this->titleFormat ?: null,
+            'titleTranslationKeyFormat' => $this->titleTranslationKeyFormat,
+            'titleFormat' => $this->titleFormat,
             'slugTranslationMethod' => $this->slugTranslationMethod,
-            'slugTranslationKeyFormat' => $this->slugTranslationKeyFormat ?: null,
+            'slugTranslationKeyFormat' => $this->slugTranslationKeyFormat,
             'showStatusField' => $this->showStatusField,
-            'sortOrder' => (int)$this->sortOrder,
-            'section' => $this->getSection()->uid,
         ];
 
         $fieldLayout = $this->getFieldLayout();
