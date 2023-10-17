@@ -1138,7 +1138,7 @@ JS, [
                         ])
                         : '') .
                     ($translatable
-                        ? Html::tag('button', '', [
+                        ? Html::tag('span', '', [
                             'class' => array_filter(['t9n-indicator', ($copyable ? 'copyable' : '')]),
                             'title' => $config['translationDescription'] ?? Craft::t('app', 'This field is translatable.'),
                             'data' => [
@@ -1147,6 +1147,7 @@ JS, [
                             ],
                             'aria' => [
                                 'label' => $config['translationDescription'] ?? Craft::t('app', 'This field is translatable.'),
+                                'role' => 'button',
                             ],
                         ])
                         : '')
