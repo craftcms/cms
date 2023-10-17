@@ -164,10 +164,7 @@ class NestedElementManager extends Component
             $query
                 ->drafts(null)
                 ->status(null)
-                ->site('*')
-                ->preferSites([$owner->siteId])
-                ->limit(null)
-                ->unique();
+                ->limit(null);
         }
 
         return $query;
