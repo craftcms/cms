@@ -9,6 +9,7 @@ namespace craft\log;
 
 use Craft;
 use craft\helpers\ArrayHelper;
+use craft\helpers\Json;
 use Illuminate\Support\Collection;
 use Monolog\Processor\ProcessorInterface;
 use yii\helpers\VarDumper;
@@ -68,6 +69,14 @@ class ContextProcessor implements ProcessorInterface
             // Log the raw request body instead
             $this->vars = array_merge($this->vars);
             array_splice($this->vars, $postPos, 1);
+
+            // Redact sensitive bits
+            $body = Json::decodeIfJson($body);
+            if (is_array($body)) {
+                $body = Collection::make($body);
+                $body = $body->map(fn($value, $key) => Craft::$app->getSecurity()->redactIfSensitive($key, $value))->all();
+            }
+
             $record[$this->key]['body'] = $body;
         }
 
