@@ -4,6 +4,7 @@
 
 - Field containers are no longer focusable unless a corresponding validation message is clicked on. ([#13782](https://github.com/craftcms/cms/issues/13782))
 - Improved element save performance.
+- Added `pgpassword` and `pwd` to the list of keywords that Craft will look for when determining whether a value is sensitive and should be redacted from logs, etc.
 - Craft now redacts sensitive keywords from contexts in the logs.
 - Added `craft\events\DefineCompatibleFieldTypesEvent`.
 - Added `craft\services\Fields::EVENT_DEFINE_COMPATIBLE_FIELD_TYPES`. ([#13793](https://github.com/craftcms/cms/discussions/13793))
