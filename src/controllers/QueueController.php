@@ -9,6 +9,7 @@ namespace craft\controllers;
 
 use Craft;
 use craft\helpers\App;
+use craft\helpers\DateTimeHelper;
 use craft\helpers\Json;
 use craft\queue\QueueInterface;
 use craft\web\Controller;
@@ -174,7 +175,12 @@ class QueueController extends Controller
 
         return $this->asJson([
             'total' => $this->queue->getTotalJobs(),
-            'jobs' => $this->queue->getJobInfo($limit),
+            'jobs' => array_map(function(array $info) {
+                if (isset($info['averageDuration'])) {
+                    $info['averageDurationLabel'] = DateTimeHelper::humanDuration($info['averageDuration']);
+                }
+                return $info;
+            }, $this->queue->getJobInfo($limit)),
         ]);
     }
 

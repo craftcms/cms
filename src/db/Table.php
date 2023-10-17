@@ -74,6 +74,8 @@ abstract class Table
     /** @since 3.4.0 */
     public const PROJECTCONFIG = '{{%projectconfig}}';
     public const QUEUE = '{{%queue}}';
+    /** @since 4.6.0 */
+    public const QUEUEPROFILES = '{{%queueprofiles}}';
     public const RELATIONS = '{{%relations}}';
     public const SECTIONS = '{{%sections}}';
     public const SECTIONS_SITES = '{{%sections_sites}}';

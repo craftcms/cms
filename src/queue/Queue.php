@@ -12,6 +12,7 @@ use craft\db\Connection;
 use craft\db\Table;
 use craft\helpers\App;
 use craft\helpers\ArrayHelper;
+use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
 use craft\helpers\Json;
 use craft\helpers\Queue as QueueHelper;
@@ -20,6 +21,7 @@ use craft\helpers\UrlHelper;
 use craft\i18n\Translation;
 use craft\queue\jobs\Proxy;
 use DateTime;
+use Throwable;
 use yii\base\Exception;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
@@ -143,12 +145,22 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
             $this->proxyQueue = Instance::ensure($this->proxyQueue, BaseQueue::class);
         }
 
-        $this->on(self::EVENT_BEFORE_EXEC, function(ExecEvent $e) {
-            $this->_executingJobId = $e->id;
+        $time = null;
+
+        $this->on(self::EVENT_BEFORE_EXEC, function(ExecEvent $event) use (&$time) {
+            $this->_executingJobId = $event->id;
+            $time = microtime(true);
         });
 
-        $this->on(self::EVENT_AFTER_EXEC, function(ExecEvent $e) {
+        $this->on(self::EVENT_AFTER_EXEC, function(ExecEvent $event) use (&$time) {
             $this->_executingJobId = null;
+
+            // save the profile info
+            Db::upsert(Table::QUEUEPROFILES, [
+                'key' => $this->_profileKey($event->job),
+                'dateExecuted' => Db::prepareDateForDb(DateTimeHelper::now()),
+                'duration' => round(microtime(true) - $time),
+            ]);
         });
     }
 
@@ -174,6 +186,43 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
     }
 
     /**
+     * Returns the average duration for the given job.
+     *
+     * @param string $id The job ID
+     * @return float|null The average job duration, or null if not knwn
+     * @since 4.6.0
+     */
+    public function getAverageDuration(string $id): ?float
+    {
+        $result = $this->_job($id);
+
+        if (!$result) {
+            throw new InvalidArgumentException("Invalid job ID: $id");
+        }
+
+        $job = $this->serializer->unserialize($result['job']);
+        $key = $this->_profileKey($job);
+
+        // delete all but the last 5 rows
+        $time = (new Query())
+            ->select('dateExecuted')
+            ->from(Table::QUEUEPROFILES)
+            ->where(['key' => $key])
+            ->orderBy(['dateExecuted' => SORT_DESC])
+            ->offset(5)
+            ->scalar();
+
+        if ($time) {
+            Db::delete(Table::QUEUEPROFILES, ['<=', 'dateExecuted', $time]);
+        }
+
+        return (new Query())
+            ->from(Table::QUEUEPROFILES)
+            ->where(['key' => $key])
+            ->average('duration') ?: null;
+    }
+
+    /**
      * Executes a single job.
      *
      * @param string|null $id The job ID, if a specific job should be run
@@ -181,24 +230,24 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
      */
     public function executeJob(?string $id = null): bool
     {
-        $payload = $this->reserve($id);
+        $result = $this->reserve($id);
 
-        if (!$payload) {
+        if (!$result) {
             return false;
         }
 
-        if ($this->handleMessage($payload['id'], $payload['job'], $payload['ttr'], $payload['attempt'])) {
-            $this->release($payload['id']);
+        if ($this->handleMessage($result['id'], $result['job'], $result['ttr'], $result['attempt'])) {
+            $this->release($result['id']);
 
             if ($this->hasEventHandlers(self::EVENT_AFTER_EXEC_AND_RELEASE)) {
                 // Can't just capture the exec event from handleMessage()
                 // because it was probably created in a subprocess
-                [$job, $error] = $this->unserializeMessage($payload['job']);
+                [$job, $error] = $this->unserializeMessage($result['job']);
                 $this->trigger(self::EVENT_AFTER_EXEC_AND_RELEASE, new ExecEvent([
-                    'id' => $payload['id'],
+                    'id' => $result['id'],
                     'job' => $job,
-                    'ttr' => $payload['ttr'],
-                    'attempt' => $payload['attempt'],
+                    'ttr' => $result['ttr'],
+                    'attempt' => $result['attempt'],
                     'error' => $error,
                 ]));
             }
@@ -233,15 +282,13 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
      */
     public function status($id): int
     {
-        $payload = $this->db->usePrimary(function() use ($id) {
-            return $this->_createJobQuery()
-                ->select(['fail', 'timeUpdated'])
-                // No need to use andWhere() here since we're fetching by ID
-                ->where(['id' => $id])
-                ->one($this->db);
-        });
+        $result = $this->_job($id);
 
-        return $this->_status($payload);
+        if (!$result) {
+            return self::STATUS_DONE;
+        }
+
+        return $this->_status($result);
     }
 
     /**
@@ -473,19 +520,14 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
      */
     public function getJobDetails(string $id): array
     {
-        $result = $this->db->usePrimary(function() use ($id) {
-            return (new Query())
-                ->from($this->tableName)
-                ->where(['id' => $id])
-                ->one($this->db);
-        });
+        $result = $this->_job($id);
 
-        if ($result === false) {
+        if (!$result) {
             throw new InvalidArgumentException("Invalid job ID: $id");
         }
 
         $formatter = Craft::$app->getFormatter();
-        $job = $this->serializer->unserialize($this->_jobData($result['job']));
+        $job = $this->serializer->unserialize($result['job']);
 
         return ArrayHelper::filterEmptyStringsFromArray([
             'delay' => max(0, $result['timePushed'] + $result['delay'] - time()),
@@ -500,6 +542,7 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
             'Pushed at' => $result['timePushed'] ? $formatter->asDatetime($result['timePushed']) : '',
             'Updated at' => $result['timeUpdated'] ? $formatter->asDatetime($result['timeUpdated']) : '',
             'Failed at' => $result['dateFailed'] ? $formatter->asDatetime($result['dateFailed']) : '',
+//            'Average duration' => $result['averageDuration'] ?
         ]);
     }
 
@@ -706,48 +749,56 @@ EOD;
      */
     protected function reserve(?string $id = null): ?array
     {
-        $payload = null;
+        $result = null;
 
-        $this->_lock(function() use (&$payload, $id) {
+        $this->_lock(function() use (&$result, $id) {
             // Move expired messages into waiting list
             $this->_moveExpired();
 
             // Reserve one message
-            /** @var array|null $payload */
-            $payload = $this->db->usePrimary(function() use ($id) {
-                $query = $this->_createJobQuery()
-                    ->andWhere(['fail' => false, 'timeUpdated' => null])
-                    ->andWhere('[[timePushed]] + [[delay]] <= :time', ['time' => time()])
-                    ->orderBy(['priority' => SORT_ASC, 'id' => SORT_ASC])
-                    ->limit(1);
+            $result = $this->_job($id);
 
-                if ($id) {
-                    $query->andWhere(['id' => $id]);
-                }
-
-                return $query->one($this->db) ?: null;
-            });
-
-            if (is_array($payload)) {
-                $payload['dateReserved'] = new DateTime();
-                $payload['timeUpdated'] = $payload['dateReserved']->getTimestamp();
-                $payload['attempt'] = (int)$payload['attempt'] + 1;
+            if (is_array($result)) {
+                $result['dateReserved'] = new DateTime();
+                $result['timeUpdated'] = $result['dateReserved']->getTimestamp();
+                $result['attempt'] = (int)$result['attempt'] + 1;
                 Db::update($this->tableName, [
-                    'dateReserved' => Db::prepareDateForDb($payload['dateReserved']),
-                    'timeUpdated' => $payload['timeUpdated'],
-                    'attempt' => $payload['attempt'],
+                    'dateReserved' => Db::prepareDateForDb($result['dateReserved']),
+                    'timeUpdated' => $result['timeUpdated'],
+                    'attempt' => $result['attempt'],
                 ], [
-                    'id' => $payload['id'],
+                    'id' => $result['id'],
                 ], [], false, $this->db);
             }
         });
 
+        return $result;
+    }
+
+    private function _job(?string $id): ?array
+    {
+        // Reserve one message
+        /** @var array|null $result */
+        $result = $this->db->usePrimary(function() use ($id) {
+            $query = $this->_createJobQuery()
+                ->andWhere(['fail' => false, 'timeUpdated' => null])
+                ->andWhere('[[timePushed]] + [[delay]] <= :time', ['time' => time()])
+                ->orderBy(['priority' => SORT_ASC, 'id' => SORT_ASC])
+                ->limit(1);
+
+            if ($id) {
+                $query->andWhere(['id' => $id]);
+            }
+
+            return $query->one($this->db) ?: null;
+        });
+
         // pgsql
-        if (is_array($payload)) {
-            $payload['job'] = $this->_jobData($payload['job']);
+        if (is_array($result)) {
+            $result['job'] = $this->_jobData($result['job']);
         }
 
-        return $payload;
+        return $result;
     }
 
     /**
@@ -770,6 +821,26 @@ EOD;
         }
 
         return $job;
+    }
+
+    private function _profileKey(object $job): string
+    {
+        $class = $key = get_class($job);
+
+        if ($job instanceof ProfilableJobInterface) {
+            try {
+                $attributes = $job->getProfileAttributes();
+                if ($job instanceof BaseJob) {
+                    unset($attributes['description']);
+                }
+                $key .= sprintf(':%s', md5(Json::encode($attributes)));
+            } catch (Throwable $e) {
+                Craft::warning(sprintf("Couldn't build a profile key for queue job %s: %s", $class, $e->getMessage()), __METHOD__);
+                Craft::$app->getErrorHandler()->logException($e);
+            }
+        }
+
+        return $key;
     }
 
     /**
@@ -885,20 +956,16 @@ EOD;
     /**
      * Returns a job's status.
      *
-     * @param array|false $payload
+     * @param array $result
      * @return int
      */
-    private function _status(array|false $payload): int
+    private function _status(array $result): int
     {
-        if (!$payload) {
-            return self::STATUS_DONE;
-        }
-
-        if ($payload['fail']) {
+        if ($result['fail']) {
             return self::STATUS_FAILED;
         }
 
-        if (!$payload['timeUpdated']) {
+        if (!$result['timeUpdated']) {
             return self::STATUS_WAITING;
         }
 
