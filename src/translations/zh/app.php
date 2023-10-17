@@ -309,6 +309,7 @@ return [
     'Connect the database' => '连接数据库',
     'Connecting to CraftCMS.com…' => '正在连接 craftcms.com…',
     'Constraints' => '约束',
+    'Contact Developer Support' => 'Contact Developer Support',
     'Content' => '内容',
     'Contents of {path}' => '{path} 的内容',
     'Context' => '上下文',
