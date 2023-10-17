@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 3.x
 
-## Unreleased
+## 3.9.5 - 2023-10-17
 
 - Added `pgpassword` and `pwd` to the list of keywords that Craft will look for when determining whether a value is sensitive and should be redacted from logs, etc.
 - Fixed a bug where the `defaultDirMode` config setting wasn’t being respected when the `storage/runtime/` and `storage/logs/` folders were created. ([#13756](https://github.com/craftcms/cms/issues/13756))
