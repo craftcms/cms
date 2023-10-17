@@ -309,6 +309,7 @@ return [
     'Connect the database' => 'الاتصال بقاعدة البيانات',
     'Connecting to CraftCMS.com…' => 'جاري الاتصال بـ CraftCMS.com...',
     'Constraints' => 'القيود',
+    'Contact Developer Support' => 'Contact Developer Support',
     'Content' => 'المحتوى',
     'Contents of {path}' => 'محتوى {path}',
     'Context' => 'السياق',
