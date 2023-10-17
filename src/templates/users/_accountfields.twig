@@ -8,7 +8,7 @@
         id: 'username',
         name: 'username',
         value: (user is defined ? user.username : null),
-        autocomplete: false,
+        autocomplete: true,
         autocapitalize: false,
         disabled: static or (isNewUser or (currentUser.admin or user.getIsCurrent()) ? false : true),
         errors: (user is defined ? user.getErrors('username') : null),

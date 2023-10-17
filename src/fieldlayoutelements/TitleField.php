@@ -46,7 +46,7 @@ class TitleField extends TextField
     /**
      * @inheritdoc
      */
-    public bool $autofocus = false;
+    public bool $autofocus = true;
 
     /**
      * @inheritdoc
