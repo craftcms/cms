@@ -374,7 +374,8 @@ class ElementHelper
             $element->siteSettingsId &&
             $element->duplicateOf === null &&
             $element::trackChanges() &&
-            !$element->mergingCanonicalChanges
+            !$element->mergingCanonicalChanges &&
+            !$element->resaving
         );
     }
 
