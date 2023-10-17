@@ -309,6 +309,7 @@ return [
     'Connect the database' => '데이터베이스 연결',
     'Connecting to CraftCMS.com…' => 'CraftCMS.com에 연결 중…',
     'Constraints' => '제약 조건',
+    'Contact Developer Support' => 'Contact Developer Support',
     'Content' => '콘텐츠',
     'Contents of {path}' => '{path}의 콘텐츠',
     'Context' => '컨텍스트',
