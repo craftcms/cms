@@ -26,6 +26,7 @@
 - Fixed a bug where Ctrl-clicks were being treated as primary clicks in some browsers. ([#13823](https://github.com/craftcms/cms/issues/13823))
 - Fixed a bug where some language options were showing “false” hints. ([#13837](https://github.com/craftcms/cms/issues/13837))
 - Fixed a bug where Craft was tracking changes to elements when they were being resaved. ([#13761](https://github.com/craftcms/cms/issues/13761))
+- Fixed a bug where sensitive keywords weren’t getting redacted from log contexts.
 - Fixed RCE vulnerabilities.
 
 ## 4.5.6.1 - 2023-09-27
