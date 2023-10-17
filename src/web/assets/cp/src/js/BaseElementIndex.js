@@ -91,6 +91,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
     showingActionTriggers: false,
     exporters: null,
     exportersByType: null,
+    triggers: null,
     _$triggers: null,
 
     _cancelToken: null,
@@ -1593,13 +1594,13 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       this.showingActionTriggers = true;
     },
 
-    submitAction: function (action, actionParams) {
+    submitAction: async function (action, actionParams, beforeCallback) {
       // Make sure something's selected
       var selectedElementIds = this.view.getSelectedElementIds(),
         totalSelected = selectedElementIds.length;
 
       if (totalSelected === 0) {
-        return;
+        return false;
       }
 
       if (typeof action === 'string') {
@@ -1607,7 +1608,11 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       }
 
       if (action.confirm && !confirm(action.confirm)) {
-        return;
+        return false;
+      }
+
+      if (beforeCallback) {
+        await beforeCallback();
       }
 
       // Cancel any ongoing requests
@@ -1630,43 +1635,46 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         if (Craft.csrfTokenName) {
           params[Craft.csrfTokenName] = Craft.csrfTokenValue;
         }
-        Craft.downloadFromUrl(
-          'POST',
-          Craft.getActionUrl(this.settings.submitActionsAction),
-          params
-        )
-          .then((response) => {
-            this.setIndexAvailable();
-          })
-          .catch((e) => {
-            this.setIndexAvailable();
-          });
+        try {
+          await Craft.downloadFromUrl(
+            'POST',
+            Craft.getActionUrl(this.settings.submitActionsAction),
+            params
+          );
+        } finally {
+          this.setIndexAvailable();
+        }
       } else {
-        Craft.sendActionRequest('POST', this.settings.submitActionsAction, {
-          data: params,
-          cancelToken: this._createCancelToken(),
-        })
-          .then((response) => {
-            // Update the count text too
-            this._resetCount();
-            this._updateView(viewParams, response.data);
-
-            if (typeof response.data.badgeCounts !== 'undefined') {
-              this._updateBadgeCounts(response.data.badgeCounts);
+        try {
+          const response = await Craft.sendActionRequest(
+            'POST',
+            this.settings.submitActionsAction,
+            {
+              data: params,
+              cancelToken: this._createCancelToken(),
             }
+          );
 
-            if (response.data.message) {
-              Craft.cp.displaySuccess(response.data.message);
-            }
+          // Update the count text too
+          this._resetCount();
+          this._updateView(viewParams, response.data);
 
-            this.afterAction(action, params);
-          })
-          .catch(({response}) => {
-            Craft.cp.displayError(response.data.message);
-          })
-          .finally(() => {
-            this.setIndexAvailable();
-          });
+          if (typeof response.data.badgeCounts !== 'undefined') {
+            this._updateBadgeCounts(response.data.badgeCounts);
+          }
+
+          if (response.data.message) {
+            Craft.cp.displaySuccess(response.data.message);
+          }
+
+          this.afterAction(action, params);
+        } catch (e) {
+          Craft.cp.displayError(
+            e && e.response && e.response.data && e.response.data.message
+          );
+        } finally {
+          this.setIndexAvailable();
+        }
       }
     },
 
@@ -2647,25 +2655,46 @@ Craft.BaseElementIndex = Garnish.Base.extend(
     _handleActionTriggerSubmit: function (ev) {
       ev.preventDefault();
 
-      var $form = $(ev.currentTarget);
+      const $form = $(ev.currentTarget);
 
       // Make sure Craft.ElementActionTrigger isn't overriding this
       if ($form.hasClass('disabled') || $form.data('custom-handler')) {
         return;
       }
 
-      this.submitAction($form.data('action'), Garnish.getPostData($form));
+      this._submitActionInternal(
+        $form.data('action'),
+        $form.data('trigger') && $form.data('trigger').data('trigger'),
+        Garnish.getPostData($form)
+      );
     },
 
     _handleMenuActionTriggerSubmit: function (ev) {
-      var $option = $(ev.option);
+      const $option = $(ev.option);
 
       // Make sure Craft.ElementActionTrigger isn't overriding this
       if ($option.hasClass('disabled') || $option.data('custom-handler')) {
         return;
       }
 
-      this.submitAction($option.data('action'));
+      this._submitActionInternal(
+        $option.data('action'),
+        $option.data('trigger')
+      );
+    },
+
+    _submitActionInternal: async function (action, trigger, actionParams) {
+      const $selectedElements = this.getSelectedElements();
+
+      await this.submitAction(action, actionParams, async () => {
+        if (trigger) {
+          await trigger.settings.beforeActivate($selectedElements, this);
+        }
+      });
+
+      if (trigger) {
+        await trigger.settings.afterActivate($selectedElements, this);
+      }
     },
 
     _handleStatusChange: function (ev) {
@@ -2889,9 +2918,17 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       // Get rid of the old action triggers regardless of whether the new batch has actions or not
       if (this.actions) {
         this.hideActionTriggers();
+
+        if (this.triggers) {
+          for (let trigger of this.triggers) {
+            trigger.destroy();
+          }
+        }
+
         this.actions =
           this.actionsHeadHtml =
           this.actionsBodyHtml =
+          this.triggers =
           this._$triggers =
           this.$actionMenuBtn =
             null;
@@ -3197,6 +3234,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
     },
 
     _createTriggers: async function () {
+      this.triggers = [];
       this._$triggers = $();
       const safeMenuActions = [];
       const destructiveMenuActions = [];
@@ -3238,6 +3276,8 @@ Craft.BaseElementIndex = Garnish.Base.extend(
             .find('button[type=submit],input[type=submit],.formsubmit')
             .addClass('formsubmit')
             .attr('data-form', formId);
+
+          $form.data('trigger', $trigger);
 
           this.addListener($form, 'submit', '_handleActionTriggerSubmit');
           this._$triggers = this._$triggers.add($trigger);
@@ -3527,8 +3567,12 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       selectable: false,
       multiSelect: false,
       canSelectElement: null,
-      canDuplicateElements: () => true,
-      canDeleteElements: () => true,
+      canDuplicateElements: (selectedItems) => true,
+      onBeforeDuplicateElements: async (selectedItems) => {},
+      onDuplicateElements: async (selectedItems) => {},
+      canDeleteElements: (selectedItems) => true,
+      onBeforeDeleteElements: async (selectedItems) => {},
+      onDeleteElements: async (selectedItems) => {},
       sortable: false,
       inlineEditable: null,
       actions: null,

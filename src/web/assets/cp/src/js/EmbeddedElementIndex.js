@@ -40,6 +40,22 @@ Craft.EmbeddedElementIndex = Garnish.Base.extend(
             canDeleteElements: ($selectedItems) => {
               return this.canDelete($selectedItems.length);
             },
+            onBeforeDuplicateElements: async () => {
+              await this.elementEditor.ensureIsDraftOrRevision();
+            },
+            onDuplicateElements: async () => {
+              await this.elementEditor.markFieldAsDirty(
+                this.settings.fieldHandle
+              );
+            },
+            onBeforeDeleteElements: async () => {
+              await this.elementEditor.ensureIsDraftOrRevision();
+            },
+            onDeleteElements: async () => {
+              await this.elementEditor.markFieldAsDirty(
+                this.settings.fieldHandle
+              );
+            },
             onBeforeUpdateElements: this.onBeforeUpdateElements.bind(this),
             onCountResults: this.onCountResults.bind(this),
           }

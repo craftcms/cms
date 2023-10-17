@@ -16,6 +16,9 @@ Craft.ElementActionTrigger = Garnish.Base.extend(
       // Save a reference to the element index that this trigger will be used with
       this.elementIndex = Craft.currentElementIndex;
 
+      // Register the trigger on the element index, so it can be destroyed when the view is updated
+      this.elementIndex.triggers.push(this);
+
       if (!$.isPlainObject(settings)) {
         settings = {};
       }
@@ -38,7 +41,7 @@ Craft.ElementActionTrigger = Garnish.Base.extend(
 
       this.$trigger = $(
         `#${this.elementIndex.namespaceId(settings.type)}-actiontrigger`
-      );
+      ).data('trigger', this);
 
       // Do we have a custom handler?
       if (this.settings.activate) {
@@ -138,7 +141,9 @@ Craft.ElementActionTrigger = Garnish.Base.extend(
       bulk: true,
       requireId: true,
       validateSelection: null,
+      beforeActivate: async ($selectedElements, elementIndex) => {},
       activate: null,
+      afterActivate: async ($selectedElements, elementIndex) => {},
     },
   }
 );
