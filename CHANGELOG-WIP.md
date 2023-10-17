@@ -87,6 +87,7 @@
 - Added `craft\base\FieldTrait::$layoutElement`.
 - Added `craft\base\InlineEditableFieldInterface`.
 - Added `craft\base\NestedElementInterface`, which should be implemented by element types which could be nested by other elements.
+- Added `craft\base\NestedElementTrait`.
 - Added `craft\base\ThumbableFieldInterface`.
 - Added `craft\base\conditions\ConditionInterface::createConditionRule()`.
 - Added `craft\behaviors\EventBehavior`.
@@ -107,13 +108,6 @@
 - Added `craft\elements\Category::gqlTypeName()`.
 - Added `craft\elements\Entry::$collapsed`.
 - Added `craft\elements\Entry::$dirty`.
-- Added `craft\elements\Entry::$fieldId`.
-- Added `craft\elements\Entry::$ownerId`.
-- Added `craft\elements\Entry::$primaryOwnerId`.
-- Added `craft\elements\Entry::$saveOwnership`.
-- Added `craft\elements\Entry::$sortOrder`.
-- Added `craft\elements\Entry::getField()`.
-- Added `craft\elements\Entry::getOwner()`.
 - Added `craft\elements\Entry::gqlTypeName()`.
 - Added `craft\elements\Entry::setOwner()`.
 - Added `craft\elements\NestedElementManager`.

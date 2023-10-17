@@ -100,11 +100,10 @@ Craft.EmbeddedElementIndex = Garnish.Base.extend(
 
             if (
               this.settings.baseCreateAttributes &&
-              this.settings.baseCreateAttributes[this.settings.ownerIdAttribute]
+              this.settings.baseCreateAttributes.ownerId
             ) {
-              this.settings.baseCreateAttributes[
-                this.settings.ownerIdAttribute
-              ] = this.elementEditor.settings.elementId;
+              this.settings.baseCreateAttributes.ownerId =
+                this.elementEditor.settings.elementId;
             }
           });
         }
@@ -207,7 +206,6 @@ Craft.EmbeddedElementIndex = Garnish.Base.extend(
       createButtonLabel: Craft.t('app', 'Create'),
       baseCreateAttributes: null,
       ownerIdParam: null,
-      ownerIdAttribute: null,
       createAttributes: null,
       fieldHandle: null,
     },

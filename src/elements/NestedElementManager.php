@@ -82,26 +82,6 @@ class NestedElementManager extends Component
     public string $primaryOwnerIdParam = 'primaryOwnerId';
 
     /**
-     * @var string The name of the nested element attribute that holds the owner element’s ID.
-     */
-    public string $ownerIdAttribute = 'ownerId';
-
-    /**
-     * @var string The name of the nested element attribute that holds the primary owner element’s ID.
-     */
-    public string $primaryOwnerIdAttribute = 'primaryOwnerId';
-
-    /**
-     * @var string The name of the nested element attribute that holds the element’s sort order.
-     */
-    public string $sortOrderAttribute = 'sortOrder';
-
-    /**
-     * @var string The name of the nested element attribute that determines whether ownership info should be saved.
-     */
-    public string $saveOwnershipAttribute = 'saveOwnership';
-
-    /**
      * @var array Additional element query params that should be set when fetching nested elements.
      */
     public array $criteria = [];
@@ -386,11 +366,10 @@ class NestedElementManager extends Component
                 'createButtonLabel' => $config['createButtonLabel'],
                 'baseCreateAttributes' => array_filter([
                     'elementType' => $elementType,
-                    $this->ownerIdAttribute => $owner->id,
+                    'ownerId' => $owner->id,
                     'siteId' => $elementType::isLocalized() ? $owner->siteId : null,
                 ]),
                 'ownerIdParam' => $this->ownerIdParam,
-                'ownerIdAttribute' => $this->ownerIdAttribute,
                 'fieldHandle' => $this->fieldHandle,
             ];
 
@@ -542,11 +521,7 @@ JS, [
                 $sortOrder++;
                 if ($saveAll || !$element->id || $element->forceSave) {
                     $element->setOwner($owner);
-                    // If the element already has an ID and primary owner ID, don't reassign it
-                    if (!$element->id || !$element->{$this->primaryOwnerIdAttribute}) {
-                        $element->{$this->primaryOwnerIdAttribute} = $owner->id;
-                    }
-                    $element->{$this->sortOrderAttribute} = $sortOrder;
+                    $element->setSortOrder($sortOrder);
                     $elementsService->saveElement($element, false);
 
                     // If this is a draft, we can shed the draft data now
@@ -558,9 +533,9 @@ JS, [
                             'ownerId' => $owner->id,
                         ]);
                     }
-                } elseif ((int)$element->{$this->sortOrderAttribute} !== $sortOrder) {
+                } elseif ((int)$element->getSortOrder() !== $sortOrder) {
                     // Just update its sortOrder
-                    $element->{$this->sortOrderAttribute} = $sortOrder;
+                    $element->setSortOrder($sortOrder);
                     Db::update(Table::ELEMENTS_OWNERS, [
                         'sortOrder' => $sortOrder,
                     ], [
@@ -686,7 +661,7 @@ JS, [
         $deleteOwnership = [];
 
         foreach ($elements as $element) {
-            if ($element->{$this->primaryOwnerIdAttribute} === $owner->id) {
+            if ($element->getPrimaryOwnerId() === $owner->id) {
                 $elementsService->deleteElement($element);
             } else {
                 // Just delete the ownership relation
@@ -740,7 +715,7 @@ JS, [
                     // and if the target's canonical element is not the same as target element, see
                     // https://app.frontapp.com/open/msg_ukaoki1?key=U6zkE_S6_ApMXn3ntPMwUxSLe0sUPsmY for more info
                     'canonicalId' => $setCanonicalId ? $element->id : null,
-                    $this->primaryOwnerIdAttribute => $target->id,
+                    'primaryOwner' => $target,
                     'owner' => $target,
                     'siteId' => $target->siteId,
                     'propagating' => false,
@@ -756,15 +731,15 @@ JS, [
                     } else {
                         $newElementId = $element->getCanonicalId();
                     }
-                } elseif (!$force && $element->{$this->primaryOwnerIdAttribute} === $target->id) {
+                } elseif (!$force && $element->getPrimaryOwnerId() === $target->id) {
                     // Only the element ownership was duplicated, so just update its sort order for the target element
                     // (use upsert in case the row doesn’t exist though)
                     Db::upsert(Table::ELEMENTS_OWNERS, [
                         'elementId' => $element->id,
                         'ownerId' => $target->id,
-                        'sortOrder' => $element->{$this->sortOrderAttribute},
+                        'sortOrder' => $element->getSortOrder(),
                     ], [
-                        'sortOrder' => $element->{$this->sortOrderAttribute},
+                        'sortOrder' => $element->getSortOrder(),
                     ], updateTimestamp: false);
                     $newElementId = $element->id;
                 } else {
@@ -863,9 +838,9 @@ JS, [
         foreach ($elements as $element) {
             $elementRevisionId = $revisionsService->createRevision($element, null, null, [
                 'primaryOwnerId' => $revision->id,
-                $this->saveOwnershipAttribute => false,
+                'saveOwnership' => false,
             ]);
-            $ownershipData[] = [$elementRevisionId, $revision->id, $element->{$this->sortOrderAttribute}];
+            $ownershipData[] = [$elementRevisionId, $revision->id, $element->getSortOrder()];
         }
 
         Db::batchInsert(Table::ELEMENTS_OWNERS, ['elementId', 'ownerId', 'sortOrder'], $ownershipData);
@@ -944,7 +919,7 @@ JS, [
                     // This is a new element, so duplicate it into the derivative owner
                     $elementsService->duplicateElement($canonicalElement, [
                         'canonicalId' => $canonicalElement->id,
-                        $this->primaryOwnerIdAttribute => $owner->id,
+                        'primaryOwner' => $owner,
                         'owner' => $localizedOwners[$canonicalElement->siteId],
                         'siteId' => $canonicalElement->siteId,
                         'propagating' => false,

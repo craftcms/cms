@@ -13,6 +13,8 @@ use yii\base\InvalidConfigException;
  * NestedElementInterface defines the common interface to be implemented by elements that can be
  * nested within other elements via a custom field.
  *
+ * [[NestedElementTrait]] provides a base implementation.
+ *
  * @mixin ElementTrait
  * @mixin Component
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
@@ -20,6 +22,37 @@ use yii\base\InvalidConfigException;
  */
 interface NestedElementInterface extends ElementInterface
 {
+    /**
+     * Returns the primary owner element’s ID, if the element has one.
+     *
+     * @return int|null
+     * @throws InvalidConfigException if the element is misconfigured
+     */
+    public function getPrimaryOwnerId(): ?int;
+
+    /**
+     * Returns the primary owner element, if the element has one.
+     *
+     * @return ElementInterface|null
+     * @throws InvalidConfigException if the element is misconfigured
+     */
+    public function getPrimaryOwner(): ?ElementInterface;
+
+    /**
+     * Sets the primary owner element, if the element has one.
+     *
+     * @param ElementInterface|null $owner
+     */
+    public function setPrimaryOwner(?ElementInterface $owner): void;
+
+    /**
+     * Returns the owner element’s ID, if the element has one.
+     *
+     * @return int|null
+     * @throws InvalidConfigException if the element is misconfigured
+     */
+    public function getOwnerId(): ?int;
+
     /**
      * Returns the owner element, if the element has one.
      *
@@ -49,4 +82,18 @@ interface NestedElementInterface extends ElementInterface
      * @return int|null
      */
     public function getSortOrder(): ?int;
+
+    /**
+     * Sets the element’s sort order.
+     *
+     * @param int|null $sortOrder
+     */
+    public function setSortOrder(?int $sortOrder): void;
+
+    /**
+     * Sets whether the element’s ownership should be saved when the element is saved.
+     *
+     * @param bool $saveOwnership
+     */
+    public function setSaveOwnership(bool $saveOwnership): void;
 }
