@@ -169,6 +169,7 @@ import './CraftSupportWidget.scss';
       $cancelBtn: null,
       mode: null,
       bodyStartHeight: null,
+      csHeadingText: null,
 
       $searchResultsContainer: null,
       $searchResults: null,
@@ -273,6 +274,21 @@ import './CraftSupportWidget.scss';
             this.$supportSubmit.removeClass('disabled');
           } else {
             this.$supportSubmit.addClass('disabled');
+          }
+        }
+      },
+
+      handleHeadingChange: function () {
+        const $csHeading = this.$formContainer.parent().find('.cs-heading');
+        if ($csHeading.length > 0) {
+          if (this.mode == BaseSearchScreen.MODE_SUPPORT) {
+            this.csHeadingText = $csHeading.text();
+            $csHeading.text(Craft.t('app', 'Contact Developer Support'));
+          } else {
+            if (this.csHeadingText !== null) {
+              $csHeading.text(this.csHeadingText);
+              this.csHeadingText = null;
+            }
           }
         }
       },
@@ -446,6 +462,7 @@ import './CraftSupportWidget.scss';
 
         // In case there's already a search value
         this.handleBodyTextChange();
+        this.handleHeadingChange();
         this.search();
       },
 
@@ -467,6 +484,7 @@ import './CraftSupportWidget.scss';
 
         // In case there's already a search value
         this.handleBodyTextChange();
+        this.handleHeadingChange();
       },
 
       swapForms: function ($out, $in, animate) {
