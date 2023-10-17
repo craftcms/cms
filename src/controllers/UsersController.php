@@ -8,7 +8,7 @@
 namespace craft\controllers;
 
 use Craft;
-use craft\auth\type\WebAuthn;
+use craft\auth\passkeys\type\WebAuthn;
 use craft\base\Element;
 use craft\base\ModelInterface;
 use craft\base\NameTrait;
@@ -33,7 +33,6 @@ use craft\helpers\Html;
 use craft\helpers\Image;
 use craft\helpers\Json;
 use craft\helpers\Session;
-use craft\helpers\Template;
 use craft\helpers\UrlHelper;
 use craft\helpers\User as UserHelper;
 use craft\i18n\Locale;

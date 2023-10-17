@@ -5,7 +5,7 @@
  * @license https://craftcms.github.io/license/
  */
 
-namespace craft\auth\webauthn;
+namespace craft\auth\passkeys\webauthn;
 
 use Base64Url\Base64Url;
 use Craft;

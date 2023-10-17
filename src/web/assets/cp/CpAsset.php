@@ -8,7 +8,7 @@
 namespace craft\web\assets\cp;
 
 use Craft;
-use craft\auth\type\WebAuthn;
+use craft\auth\passkeys\type\WebAuthn;
 use craft\base\ElementInterface;
 use craft\base\FieldInterface;
 use craft\config\GeneralConfig;

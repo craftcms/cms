@@ -995,7 +995,7 @@ return [
     'Next Page' => 'Next Page',
     'Next' => 'Next',
     'No GraphQL tokens exist yet.' => 'No GraphQL tokens exist yet.',
-    'No 2FA options available.' => 'No 2FA options available.',
+    'No authentication options available.' => 'No authentication options available.',
     'No alternative 2FA methods available.' => 'No alternative 2FA methods available.',
     'No category groups exist yet.' => 'No category groups exist yet.',
     'No deprecation warnings to report!' => 'No deprecation warnings to report!',

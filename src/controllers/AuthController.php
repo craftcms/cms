@@ -9,8 +9,8 @@ namespace craft\controllers;
 
 use Craft;
 use craft\auth\ConfigurableAuthInterface;
-use craft\auth\type\RecoveryCodes;
-use craft\auth\type\WebAuthn;
+use craft\auth\passkeys\type\WebAuthn;
+use craft\auth\twofa\type\RecoveryCodes;
 use craft\helpers\StringHelper;
 use craft\web\Controller;
 use craft\web\View;
@@ -34,6 +34,88 @@ class AuthController extends Controller
         'fetch-alternative-2fa-types' => self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE,
         'load-alternative-2fa-type' => self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE,
     ];
+
+    // shared methods
+    ////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * Returns setup HTML for the slideout (for 2FA or Passkeys). Only triggered when editing your own account
+     *
+     * @return Response|null
+     * @throws \Throwable
+     */
+    public function actionSetupSlideoutHtml(): ?Response
+    {
+        if (!$this->request->getIsPost() || !$this->request->getIsAjax()) {
+            return null;
+        }
+
+        $user = Craft::$app->getUser()->getIdentity();
+
+        if ($user === null) {
+            return null;
+        }
+
+        $selectedMethod = Craft::$app->getRequest()->getRequiredBodyParam('selectedMethod');
+        if (empty($selectedMethod)) {
+            return null;
+        }
+
+        $auth2faType = new $selectedMethod();
+        if (!($auth2faType instanceof ConfigurableAuthInterface)) {
+            throw new Exception('This 2FA type can’t be configured.');
+        }
+
+        $html = $auth2faType->getSetupFormHtml('',true, $user);
+
+        return $this->asJson(['html' => $html]);
+    }
+
+    /**
+     * Remove auth type setup (for 2FA or Passkeys) from the database
+     *
+     * @return Response|null
+     * @throws \Throwable
+     * @throws \yii\web\BadRequestHttpException
+     */
+    public function actionRemoveSetup(): ?Response
+    {
+        if (!$this->request->getIsPost()) {
+            return null;
+        }
+
+        $user = Craft::$app->getUser()->getIdentity();
+
+        if ($user === null) {
+            return null;
+        }
+
+        $currentMethod = Craft::$app->getRequest()->getRequiredBodyParam('currentMethod');
+        if (empty($currentMethod)) {
+            return null;
+        }
+
+        $success = (new $currentMethod())->removeSetup();
+
+        if ($this->request->getAcceptsJson()) {
+            if ($success) {
+                return $this->asSuccess(Craft::t('app', 'Setup removed.'));
+            } else {
+                return $this->asFailure(Craft::t('app', 'Something went wrong.'));
+            }
+        }
+
+        if ($success) {
+            $this->setSuccessFlash(Craft::t('app', 'Setup removed.'));
+        } else {
+            $this->setFailFlash(Craft::t('app', 'Something went wrong.'));
+        }
+
+        return $this->redirectToPostedUrl();
+    }
+
+    // 2fa methods
+    ////////////////////////////////////////////////////////////////////////////
 
     /**
      * Get all available alternative 2FA types for logging in.
@@ -103,49 +185,6 @@ class AuthController extends Controller
     }
 
     /**
-     * Remove 2FA Type setup from the database
-     *
-     * @return Response|null
-     * @throws \Throwable
-     * @throws \yii\web\BadRequestHttpException
-     */
-    public function actionRemoveSetup(): ?Response
-    {
-        if (!$this->request->getIsPost()) {
-            return null;
-        }
-
-        $user = Craft::$app->getUser()->getIdentity();
-
-        if ($user === null) {
-            return null;
-        }
-
-        $currentMethod = Craft::$app->getRequest()->getRequiredBodyParam('currentMethod');
-        if (empty($currentMethod)) {
-            return null;
-        }
-
-        $success = (new $currentMethod())->removeSetup();
-
-        if ($this->request->getAcceptsJson()) {
-            if ($success) {
-                return $this->asSuccess(Craft::t('app', 'Setup removed.'));
-            } else {
-                return $this->asFailure(Craft::t('app', 'Something went wrong.'));
-            }
-        }
-
-        if ($success) {
-            $this->setSuccessFlash(Craft::t('app', 'Setup removed.'));
-        } else {
-            $this->setFailFlash(Craft::t('app', 'Something went wrong.'));
-        }
-
-        return $this->redirectToPostedUrl();
-    }
-
-    /**
      * Save 2FA type setup
      *
      * @return Response|null
@@ -189,39 +228,6 @@ class AuthController extends Controller
         }
 
         return $this->redirectToPostedUrl();
-    }
-
-    /**
-     * Returns 2FA setup HTML for the slideout. Only triggered when editing your own account
-     *
-     * @return Response|null
-     * @throws \Throwable
-     */
-    public function actionSetupSlideoutHtml(): ?Response
-    {
-        if (!$this->request->getIsPost() || !$this->request->getIsAjax()) {
-            return null;
-        }
-
-        $user = Craft::$app->getUser()->getIdentity();
-
-        if ($user === null) {
-            return null;
-        }
-
-        $selectedMethod = Craft::$app->getRequest()->getRequiredBodyParam('selectedMethod');
-        if (empty($selectedMethod)) {
-            return null;
-        }
-
-        $auth2faType = new $selectedMethod();
-        if (!($auth2faType instanceof ConfigurableAuthInterface)) {
-            throw new Exception('This 2FA type can’t be configured.');
-        }
-
-        $html = $auth2faType->getSetupFormHtml('',true, $user);
-
-        return $this->asJson(['html' => $html]);
     }
 
     // WebAuthn methods

@@ -89,12 +89,12 @@ import {browserSupportsWebAuthn} from '@simplewebauthn/browser';
             this.slideout = new Craft.Slideout(response.data.html);
 
             if (
-              data.selectedMethod === 'craft\\auth\\type\\WebAuthn' &&
+              data.selectedMethod === 'craft\\auth\\passkeys\\type\\WebAuthn' &&
               browserSupportsWebAuthn()
             ) {
               new Craft.WebAuthnSetup(this.slideout, this.settings);
             } else if (
-              data.selectedMethod === 'craft\\auth\\type\\RecoveryCodes'
+              data.selectedMethod === 'craft\\auth\\twofa\\type\\RecoveryCodes'
             ) {
               new Craft.RecoveryCodesSetup(this.slideout, this.settings);
             } else {

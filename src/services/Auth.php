@@ -8,9 +8,9 @@
 namespace craft\services;
 
 use Craft;
-use craft\auth\type\GoogleAuthenticator;
-use craft\auth\type\RecoveryCodes;
-use craft\auth\type\WebAuthn;
+use craft\auth\passkeys\type\WebAuthn;
+use craft\auth\twofa\type\GoogleAuthenticator;
+use craft\auth\twofa\type\RecoveryCodes;
 use craft\base\auth\BaseAuthType;
 use craft\elements\User;
 use craft\events\Auth2faTypeEvent;
@@ -123,7 +123,7 @@ class Auth extends Component
      */
     public function getInputHtml(): string
     {
-        $user = $this->getUserFor2fa();
+        $user = $this->getUserForAuth();
 
         if ($user === null) {
             return '';
@@ -143,7 +143,7 @@ class Auth extends Component
      */
     public function verify(array $auth2faFields, string $currentMethod): bool
     {
-        $user = $this->getUserFor2fa();
+        $user = $this->getUserForAuth();
 
         if ($user === null) {
             return false;
@@ -216,6 +216,7 @@ class Auth extends Component
 
         if (!$withConfig) {
             foreach ($event->types as $key => $types) {
+                /** @phpstan-ignore-next-line */
                 unset($event->types[$key]['config']);
             }
         }
@@ -224,12 +225,12 @@ class Auth extends Component
     }
 
     /**
-     * Get WebAuthn auth type
+     * Returns a list of all available passkeys types
      *
      * @param bool $withConfig
      * @return array[]
      */
-    public function getWebAuthnType(bool $withConfig = false): array
+    public function getAllPasskeysTypes(bool $withConfig = false): array
     {
         $types = [
             WebAuthn::class => [
@@ -251,7 +252,7 @@ class Auth extends Component
     }
 
     /**
-     * Get user for 2FA login.
+     * Get user for 2FA or passkeys login.
      * First try to get the logged in user (used e.g. when changing a setup).
      * Then try to get one from the session.
      *
@@ -260,7 +261,7 @@ class Auth extends Component
      * @throws \craft\errors\MissingComponentException
      * @throws \yii\base\Exception
      */
-    public function getUserFor2fa(): ?User
+    public function getUserForAuth(): ?User
     {
         // first let's check if user is logged in; if yes, this is run via a setup action from their profile
         $user = Craft::$app->getUser()->getIdentity();

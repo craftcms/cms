@@ -9,7 +9,7 @@ namespace craft\elements;
 
 use Craft;
 use craft\auth\ConfigurableAuthInterface;
-use craft\auth\type\WebAuthn;
+use craft\auth\passkeys\type\WebAuthn;
 use craft\base\auth\BaseAuthType;
 use craft\base\Element;
 use craft\base\NameTrait;
@@ -37,7 +37,6 @@ use craft\helpers\Session;
 use craft\helpers\StringHelper;
 use craft\helpers\UrlHelper;
 use craft\i18n\Formatter;
-use craft\i18n\Locale;
 use craft\models\FieldLayout;
 use craft\models\UserGroup;
 use craft\records\User as UserRecord;

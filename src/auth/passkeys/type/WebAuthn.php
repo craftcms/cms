@@ -5,12 +5,12 @@
  * @license https://craftcms.github.io/license/
  */
 
-namespace craft\auth\type;
+namespace craft\auth\passkeys\type;
 
 use Base64Url\Base64Url;
 use Craft;
 use craft\auth\ConfigurableAuthType;
-use craft\auth\webauthn\CredentialRepository;
+use craft\auth\passkeys\webauthn\CredentialRepository;
 use craft\elements\User;
 use craft\helpers\Json;
 use craft\records\WebAuthn as WebAuthnRecord;
@@ -73,7 +73,7 @@ class WebAuthn extends ConfigurableAuthType
      */
     public function getInputHtml(string $html = '', array $options = []): string
     {
-        $user = Craft::$app->getAuth()->getUserFor2fa();
+        $user = Craft::$app->getAuth()->getUserForAuth();
 
         if ($user === null) {
             return '';

@@ -12,7 +12,7 @@ use craft\web\assets\cp\CpAsset;
 use craft\web\View;
 
 /**
- * Authentication bundle for 2FA
+ * Authentication bundle for 2FA & passkeys
  */
 class AuthAsset extends AssetBundle
 {

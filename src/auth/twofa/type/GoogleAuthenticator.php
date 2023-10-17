@@ -5,7 +5,7 @@
  * @license https://craftcms.github.io/license/
  */
 
-namespace craft\auth\type;
+namespace craft\auth\twofa\type;
 
 use BaconQrCode\Renderer\Image\SvgImageBackEnd;
 use BaconQrCode\Renderer\ImageRenderer;
@@ -64,7 +64,7 @@ class GoogleAuthenticator extends ConfigurableAuthType
      */
     public function getInputHtml(string $html = '', array $options = []): string
     {
-        $user = Craft::$app->getAuth()->getUserFor2fa();
+        $user = Craft::$app->getAuth()->getUserForAuth();
 
         if ($user === null) {
             return '';
@@ -98,7 +98,7 @@ class GoogleAuthenticator extends ConfigurableAuthType
     public function getSetupFormHtml(string $html = '', bool $withInto = false, ?User $user = null): string
     {
         if ($user === null) {
-            $user = Craft::$app->getAuth()->getUserFor2fa();
+            $user = Craft::$app->getAuth()->getUserForAuth();
         }
 
         if ($user === null) {
@@ -156,7 +156,7 @@ class GoogleAuthenticator extends ConfigurableAuthType
      */
     public function verify(array $data): bool
     {
-        $user = Craft::$app->getAuth()->getUserFor2fa();
+        $user = Craft::$app->getAuth()->getUserForAuth();
 
         if ($user === null) {
             return false;

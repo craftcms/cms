@@ -12,7 +12,7 @@
 {% endif %}
 
 {% if currentMethod is not defined or currentMethod is empty %}
-    {% set currentMethod = 'craft\\auth\\type\\RecoveryCodes' %}
+    {% set currentMethod = 'craft\\auth\\twofa\\type\\RecoveryCodes' %}
 {% endif %}
 
 <div class="field">
