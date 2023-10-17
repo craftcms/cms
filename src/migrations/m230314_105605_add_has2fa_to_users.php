@@ -19,9 +19,9 @@ class m230314_105605_add_has2fa_to_users extends Migration
         $projectConfig = Craft::$app->getProjectConfig();
         $schemaVersion = $projectConfig->get('system.schemaVersion', true);
 
-        if (version_compare($schemaVersion, '4.5.0', '<')) {
+        if (version_compare($schemaVersion, '5.0.0.10', '<')) {
             $userSettings = $projectConfig->get(ProjectConfig::PATH_USERS);
-            $userSettings['has2fa'] = [];
+            $userSettings[''] = [];
             $projectConfig->set(ProjectConfig::PATH_USERS, $userSettings);
         }
 
@@ -36,7 +36,7 @@ class m230314_105605_add_has2fa_to_users extends Migration
         $projectConfig = Craft::$app->getProjectConfig();
         $schemaVersion = $projectConfig->get('system.schemaVersion', true);
 
-        if (version_compare($schemaVersion, '4.5.0', '<')) {
+        if (version_compare($schemaVersion, '5.0.0.10', '<')) {
             $userSettings = $projectConfig->get(ProjectConfig::PATH_USERS);
             if (isset($userSettings['has2fa'])) {
                 unset($userSettings['has2fa']);

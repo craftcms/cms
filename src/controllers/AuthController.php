@@ -30,7 +30,10 @@ class AuthController extends Controller
     /**
      * @inheritdoc
      */
-    protected array|bool|int $allowAnonymous = true;
+    protected array|bool|int $allowAnonymous = [
+        'fetch-alternative-2fa-types' => self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE,
+        'load-alternative-2fa-type' => self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE,
+    ];
 
     /**
      * Get all available alternative 2FA types for logging in.
