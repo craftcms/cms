@@ -309,6 +309,7 @@ return [
     'Connect the database' => 'Veritabanını bağlayın',
     'Connecting to CraftCMS.com…' => 'CraftCMS.com ile bağlantı kuruluyor…',
     'Constraints' => 'Kısıtlamalar',
+    'Contact Developer Support' => 'Contact Developer Support',
     'Content' => 'İçerik',
     'Contents of {path}' => '{path} içerikleri',
     'Context' => 'İçerik',
