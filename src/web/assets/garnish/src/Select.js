@@ -577,8 +577,8 @@ export default Base.extend(
      * On Mouse Down
      */
     onMouseDown: function (ev) {
-      // ignore right clicks
-      if (ev.which !== Garnish.PRIMARY_CLICK) {
+      // ignore right/ctrl-clicks
+      if (!Garnish.isPrimaryClick(ev)) {
         return;
       }
 
@@ -604,7 +604,7 @@ export default Base.extend(
      */
     onMouseUp: function (ev) {
       // ignore right clicks
-      if (ev.which !== Garnish.PRIMARY_CLICK) {
+      if (!Garnish.isPrimaryClick(ev)) {
         return;
       }
 

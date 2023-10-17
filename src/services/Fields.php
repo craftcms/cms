@@ -19,6 +19,7 @@ use craft\db\Query;
 use craft\db\Table;
 use craft\errors\MissingComponentException;
 use craft\events\ConfigEvent;
+use craft\events\DefineCompatibleFieldTypesEvent;
 use craft\events\FieldEvent;
 use craft\events\FieldGroupEvent;
 use craft\events\FieldLayoutEvent;
@@ -103,6 +104,13 @@ class Fields extends Component
      * ```
      */
     public const EVENT_REGISTER_FIELD_TYPES = 'registerFieldTypes';
+
+    /**
+     * @event DefineCompatibleFieldTypesEvent The event that is triggered when defining the compatible field types for a field.
+     * @see getCompatibleFieldTypes()
+     * @since 4.5.7
+     */
+    public const EVENT_DEFINE_COMPATIBLE_FIELD_TYPES = 'defineCompatibleFieldTypes';
 
     /**
      * @event FieldGroupEvent The event that is triggered before a field group is saved.
@@ -518,55 +526,62 @@ class Fields extends Component
      */
     public function getCompatibleFieldTypes(FieldInterface $field, bool $includeCurrent = true): array
     {
-        if (!$field::hasContentColumn()) {
-            return $includeCurrent ? [get_class($field)] : [];
-        }
-
-        // If the field has any validation errors and has an ID, swap it with the saved field
-        if (!$field->getIsNew() && $field->hasErrors()) {
-            $field = $this->getFieldById($field->id);
-        }
-
-        $fieldColumnType = $field->getContentColumnType();
-
-        if (is_array($fieldColumnType)) {
-            return $includeCurrent ? [get_class($field)] : [];
-        }
-
         $types = [];
 
-        foreach ($this->getAllFieldTypes() as $class) {
-            /** @var string|FieldInterface $class */
-            /** @phpstan-var class-string<FieldInterface>|FieldInterface $class */
-            if ($class === get_class($field)) {
-                if ($includeCurrent) {
-                    $types[] = $class;
+        if ($field::hasContentColumn()) {
+            // If the field has any validation errors and has an ID, swap it with the saved field
+            if (!$field->getIsNew() && $field->hasErrors()) {
+                $field = $this->getFieldById($field->id);
+            }
+
+            $fieldColumnType = $field->getContentColumnType();
+
+            if (is_array($fieldColumnType)) {
+                return $includeCurrent ? [get_class($field)] : [];
+            }
+
+            foreach ($this->getAllFieldTypes() as $class) {
+                /** @var string|FieldInterface $class */
+                /** @phpstan-var class-string<FieldInterface>|FieldInterface $class */
+                if ($class === get_class($field)) {
+                    if ($includeCurrent) {
+                        $types[] = $class;
+                    }
+                    continue;
                 }
-                continue;
+
+                if (!$class::hasContentColumn()) {
+                    continue;
+                }
+
+                /** @var FieldInterface $tempField */
+                $tempField = new $class();
+                $tempFieldColumnType = $tempField->getContentColumnType();
+
+                if (is_array($tempFieldColumnType)) {
+                    continue;
+                }
+
+                if (!Db::areColumnTypesCompatible($fieldColumnType, $tempFieldColumnType)) {
+                    continue;
+                }
+
+                $types[] = $class;
             }
-
-            if (!$class::hasContentColumn()) {
-                continue;
-            }
-
-            /** @var FieldInterface $tempField */
-            $tempField = new $class();
-            $tempFieldColumnType = $tempField->getContentColumnType();
-
-            if (is_array($tempFieldColumnType)) {
-                continue;
-            }
-
-            if (!Db::areColumnTypesCompatible($fieldColumnType, $tempFieldColumnType)) {
-                continue;
-            }
-
-            $types[] = $class;
         }
 
         // Make sure the current field class is in there if it's supposed to be
         if ($includeCurrent && !in_array(get_class($field), $types, true)) {
             $types[] = get_class($field);
+        }
+
+        if ($this->hasEventHandlers(self::EVENT_DEFINE_COMPATIBLE_FIELD_TYPES)) {
+            $event = new DefineCompatibleFieldTypesEvent([
+                'field' => $field,
+                'compatibleTypes' => $types,
+            ]);
+            $this->trigger(self::EVENT_DEFINE_COMPATIBLE_FIELD_TYPES, $event);
+            return $event->compatibleTypes;
         }
 
         return $types;
