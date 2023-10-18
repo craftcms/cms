@@ -175,10 +175,15 @@ class EntrifyController extends Controller
                     'id' => $category->id,
                     'sectionId' => $section->id,
                     'typeId' => $entryType->id,
-                    'authorId' => $author->id,
                     'postDate' => Db::prepareDateForDb($category->dateCreated),
                     'dateCreated' => Db::prepareDateForDb($category->dateCreated),
                     'dateUpdated' => Db::prepareDateForDb($category->dateUpdated),
+                ]);
+
+                Db::insert(Table::ENTRIES_AUTHORS, [
+                    'elementId' => $category->id,
+                    'authorId' => $author->id,
+                    'sortOrder' => 1,
                 ]);
 
                 Db::update(Table::ELEMENTS, [
@@ -363,10 +368,15 @@ class EntrifyController extends Controller
                     'id' => $tag->id,
                     'sectionId' => $section->id,
                     'typeId' => $entryType->id,
-                    'authorId' => $author->id,
                     'postDate' => Db::prepareDateForDb($tag->dateCreated),
                     'dateCreated' => Db::prepareDateForDb($tag->dateCreated),
                     'dateUpdated' => Db::prepareDateForDb($tag->dateUpdated),
+                ]);
+
+                Db::insert(Table::ENTRIES_AUTHORS, [
+                    'elementId' => $tag->id,
+                    'authorId' => $author->id,
+                    'sortOrder' => 1,
                 ]);
 
                 Db::update(Table::ELEMENTS, [

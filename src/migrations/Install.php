@@ -369,7 +369,6 @@ class Install extends Migration
             'primaryOwnerId' => $this->integer(),
             'fieldId' => $this->integer(),
             'typeId' => $this->integer()->notNull(),
-            'authorId' => $this->integer(),
             'postDate' => $this->dateTime(),
             'expiryDate' => $this->dateTime(),
             'deletedWithEntryType' => $this->boolean()->null(),

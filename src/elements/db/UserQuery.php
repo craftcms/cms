@@ -840,7 +840,7 @@ class UserQuery extends ElementQuery
             $this->subQuery->andWhere([
                 $this->authors ? 'exists' : 'not exists',
                 (new Query())
-                    ->from(Table::ENTRIES)
+                    ->from(Table::ENTRIES_AUTHORS)
                     ->where(['authorId' => new Expression('[[elements.id]]')]),
             ]);
         }

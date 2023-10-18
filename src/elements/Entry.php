@@ -1971,6 +1971,7 @@ EOD;
                         'elements' => $authors ?: null,
                         'disabled' => $static,
                         'errors' => $this->getErrors('authorsIds'),
+                        'limit' => $section->maxAuthors,
                     ]);
                     return $html;
                 })();

@@ -1892,7 +1892,6 @@ XML;
 
                 // Update the entry/version/draft tables to point to the new user
                 $userRefs = [
-                    Table::ENTRIES => 'authorId',
                     Table::DRAFTS => 'creatorId',
                     Table::REVISIONS => 'creatorId',
                     Table::ENTRIES_AUTHORS => 'authorId',
