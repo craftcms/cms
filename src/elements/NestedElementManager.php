@@ -11,6 +11,7 @@ use Closure;
 use Craft;
 use craft\base\ElementInterface;
 use craft\base\NestedElementInterface;
+use craft\behaviors\DraftBehavior;
 use craft\db\Table;
 use craft\elements\actions\ChangeSortOrder;
 use craft\elements\db\ElementQueryInterface;
@@ -335,8 +336,15 @@ class NestedElementManager extends Component
             'maxElements' => null,
         ];
 
+        $authorizedOwnerId = $owner->id;
+        if ($owner->isProvisionalDraft) {
+            /** @var ElementInterface|DraftBehavior $owner */
+            if ($owner->creatorId === Craft::$app->getUser()->getIdentity()?->id) {
+                $authorizedOwnerId = $owner->getCanonicalId();
+            }
+        }
         $attribute = $this->attribute ?? "field:$this->fieldHandle";
-        Craft::$app->getSession()->authorize("editNestedElements::$owner->id::$attribute");
+        Craft::$app->getSession()->authorize(sprintf('editNestedElements::%s::%s', $authorizedOwnerId, $attribute));
 
         $view = Craft::$app->getView();
         return $view->namespaceInputs(function() use ($elementType, $attribute, $view, $owner, $config) {
