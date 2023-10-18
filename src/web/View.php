@@ -277,6 +277,14 @@ class View extends \yii\web\View
     private array $_htmlBuffers = [];
 
     /**
+     * @var array
+     * @see startMetaTagBuffer()
+     * @see clearMetaTagBuffer()
+     * @since 4.5.8
+     */
+    private array $_metaTagBuffers = [];
+
+    /**
      * @var array|null the registered generic `<script>` code blocks
      * @see registerScript()
      */
@@ -1202,6 +1210,39 @@ class View extends \yii\web\View
         $bufferedHtml = $this->_html;
         $this->_html = array_pop($this->_htmlBuffers);
         return $bufferedHtml;
+    }
+
+    /**
+     * Starts a buffer for any `<meta>` tags registered with [[registerMetaTag()]].
+     *
+     * The buffer’s contents can be cleared and returned later via [[clearMetaTagBuffer()]].
+     *
+     * @see clearMetaTagBuffer()
+     * @since 4.5.8
+     */
+    public function startMetaTagBuffer(): void
+    {
+        $this->_metaTagBuffers[] = $this->metaTags;
+        $this->metaTags = [];
+    }
+
+    /**
+     * Clears and ends a buffer started via [[startMetaTagBuffer()]], returning any `<meta>` tags that were registered
+     * while the buffer was active.
+     *
+     * @return array|false The `<meta>` tags that were registered while the buffer was active (indexed by position), or `false` if there wasn’t an active buffer.
+     * @see startMetaTagBuffer()
+     * @since 4.5.8
+     */
+    public function clearMetaTagBuffer(): array|false
+    {
+        if (empty($this->_metaTagBuffers)) {
+            return false;
+        }
+
+        $bufferedMetaTags = $this->metaTags;
+        $this->metaTags = array_pop($this->_metaTagBuffers);
+        return $bufferedMetaTags;
     }
 
     /**
