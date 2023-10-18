@@ -20,7 +20,7 @@ use yii\db\ActiveQueryInterface;
  * @property string|null $title Title
  * @property string|null $slug Slug
  * @property string|null $uri URI
- * @property string $alt Alt Text for assets
+ * @property string|null $alt Alt Text for assets
  * @property array|string|null $content Content
  * @property bool $enabled Enabled
  * @property Element $element Element
