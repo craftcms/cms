@@ -832,6 +832,11 @@ class EntryQuery extends ElementQuery
      */
     public function authorId(mixed $value): static
     {
+        // we always need the entry id
+        // to be able to join with entries_authors table when populating
+        // in the _processAuthors() method
+        $this->addSelect('id');
+
         $this->authorId = $value;
         return $this;
     }
@@ -869,6 +874,11 @@ class EntryQuery extends ElementQuery
      */
     public function authorsIds(mixed $values): self
     {
+        // we always need the entry id
+        // to be able to join with entries_authors table when populating
+        // in the _processAuthors() method
+        $this->addSelect('id');
+
         if (!is_array($values)) {
             $values = ArrayHelper::toArray($values);
         }
