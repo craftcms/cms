@@ -9,11 +9,10 @@ namespace craft\elements;
 
 use Craft;
 use craft\base\Element;
-use craft\base\ElementContainerFieldInterface;
-use craft\base\ElementInterface;
 use craft\base\ExpirableElementInterface;
 use craft\base\Field;
 use craft\base\NestedElementInterface;
+use craft\base\NestedElementTrait;
 use craft\behaviors\DraftBehavior;
 use craft\controllers\ElementIndexesController;
 use craft\db\Connection;
@@ -69,14 +68,14 @@ use yii\web\Response;
  * @property int|null $authorId the entry author’s ID
  * @property EntryType $type the entry type
  * @property Section|null $section the entry’s section
- * @property ElementContainerFieldInterface|null $field the entry’s field
- * @property ElementInterface|null $owner the entry’s owner element
  * @property User|null $author the entry’s author
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
 class Entry extends Element implements NestedElementInterface, ExpirableElementInterface
 {
+    use NestedElementTrait;
+
     public const STATUS_LIVE = 'live';
     public const STATUS_PENDING = 'pending';
     public const STATUS_EXPIRED = 'expired';
@@ -700,30 +699,6 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
     public ?int $sectionId = null;
 
     /**
-     * @var int|null Field ID
-     * @since 5.0.0
-     */
-    public ?int $fieldId = null;
-
-    /**
-     * @var int|null Primary owner ID
-     * @since 5.0.0
-     */
-    public ?int $primaryOwnerId = null;
-
-    /**
-     * @var int|null Owner ID
-     * @since 5.0.0
-     */
-    public ?int $ownerId = null;
-
-    /**
-     * @var int|null Sort order
-     * @since 5.0.0
-     */
-    public ?int $sortOrder = null;
-
-    /**
      * @var bool Collapsed
      * @since 5.0.0
      */
@@ -765,12 +740,6 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
     public bool $deletedWithEntryType = false;
 
     /**
-     * @var bool Whether to save the entry’s row in the `elements_owners` table in [[afterSave()]].
-     * @since 5.0.0
-     */
-    public bool $saveOwnership = true;
-
-    /**
      * @var int|null Author ID
      * @see getAuthorId()
      * @see setAuthorId()
@@ -789,13 +758,6 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
      * @see getType()
      */
     private ?int $_typeId = null;
-
-    /**
-     * @var ElementInterface|null The owner element, or false if [[ownerId]] is invalid
-     * @see getOwner()
-     * @see setOwner()
-     */
-    private ?ElementInterface $_owner = null;
 
     /**
      * @var int|null
@@ -1246,30 +1208,6 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
     }
 
     /**
-     * @inheritdoc
-     */
-    public function getField(): ?ElementContainerFieldInterface
-    {
-        if (!isset($this->fieldId)) {
-            return null;
-        }
-
-        $field = $this->getOwner()->getFieldLayout()->getFieldById($this->fieldId);
-        if (!$field instanceof ElementContainerFieldInterface) {
-            throw new InvalidConfigException("Invalid field ID: $this->fieldId");
-        }
-        return $field;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getSortOrder(): ?int
-    {
-        return $this->sortOrder;
-    }
-
-    /**
      * Returns the entry type ID.
      *
      * @return int
@@ -1351,39 +1289,6 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
         }
 
         return Craft::$app->getEntries()->getEntryTypeById($this->_typeId);
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getOwner(): ?ElementInterface
-    {
-        if (!isset($this->fieldId)) {
-            return null;
-        }
-
-        if (!isset($this->_owner)) {
-            $ownerId = $this->ownerId ?? $this->primaryOwnerId;
-            if (!$ownerId) {
-                throw new InvalidConfigException('Entry is missing its owner ID');
-            }
-
-            $this->_owner = Craft::$app->getElements()->getElementById($ownerId, null, $this->siteId);
-            if (!isset($this->_owner)) {
-                throw new InvalidConfigException("Invalid owner ID: $ownerId");
-            }
-        }
-
-        return $this->_owner;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function setOwner(?ElementInterface $owner = null): void
-    {
-        $this->_owner = $owner;
-        $this->ownerId = $owner->id ?? null;
     }
 
     /**

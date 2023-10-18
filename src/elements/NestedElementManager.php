@@ -11,6 +11,7 @@ use Closure;
 use Craft;
 use craft\base\ElementInterface;
 use craft\base\NestedElementInterface;
+use craft\behaviors\DraftBehavior;
 use craft\db\Table;
 use craft\elements\actions\ChangeSortOrder;
 use craft\elements\db\ElementQueryInterface;
@@ -80,26 +81,6 @@ class NestedElementManager extends Component
      * @var string The name of the element query param that nested elements use to associate with the primary owner’s ID
      */
     public string $primaryOwnerIdParam = 'primaryOwnerId';
-
-    /**
-     * @var string The name of the nested element attribute that holds the owner element’s ID.
-     */
-    public string $ownerIdAttribute = 'ownerId';
-
-    /**
-     * @var string The name of the nested element attribute that holds the primary owner element’s ID.
-     */
-    public string $primaryOwnerIdAttribute = 'primaryOwnerId';
-
-    /**
-     * @var string The name of the nested element attribute that holds the element’s sort order.
-     */
-    public string $sortOrderAttribute = 'sortOrder';
-
-    /**
-     * @var string The name of the nested element attribute that determines whether ownership info should be saved.
-     */
-    public string $saveOwnershipAttribute = 'saveOwnership';
 
     /**
      * @var array Additional element query params that should be set when fetching nested elements.
@@ -184,10 +165,7 @@ class NestedElementManager extends Component
             $query
                 ->drafts(null)
                 ->status(null)
-                ->site('*')
-                ->preferSites([$owner->siteId])
-                ->limit(null)
-                ->unique();
+                ->limit(null);
         }
 
         return $query;
@@ -358,8 +336,15 @@ class NestedElementManager extends Component
             'maxElements' => null,
         ];
 
+        $authorizedOwnerId = $owner->id;
+        if ($owner->isProvisionalDraft) {
+            /** @var ElementInterface|DraftBehavior $owner */
+            if ($owner->creatorId === Craft::$app->getUser()->getIdentity()?->id) {
+                $authorizedOwnerId = $owner->getCanonicalId();
+            }
+        }
         $attribute = $this->attribute ?? "field:$this->fieldHandle";
-        Craft::$app->getSession()->authorize("editNestedElements::$owner->id::$attribute");
+        Craft::$app->getSession()->authorize(sprintf('editNestedElements::%s::%s', $authorizedOwnerId, $attribute));
 
         $view = Craft::$app->getView();
         return $view->namespaceInputs(function() use ($elementType, $attribute, $view, $owner, $config) {
@@ -386,11 +371,11 @@ class NestedElementManager extends Component
                 'createButtonLabel' => $config['createButtonLabel'],
                 'baseCreateAttributes' => array_filter([
                     'elementType' => $elementType,
-                    $this->ownerIdAttribute => $owner->id,
+                    'ownerId' => $owner->id,
                     'siteId' => $elementType::isLocalized() ? $owner->siteId : null,
                 ]),
                 'ownerIdParam' => $this->ownerIdParam,
-                'ownerIdAttribute' => $this->ownerIdAttribute,
+                'fieldHandle' => $this->fieldHandle,
             ];
 
             if (!empty($config['createAttributes'])) {
@@ -412,7 +397,7 @@ class NestedElementManager extends Component
   const settings = $settings;
   const index = new Craft.EmbeddedElementIndex('#' + $id, $elementType, Object.assign(settings, {
     indexSettings: Object.assign(settings.indexSettings, {
-      onSortChange: (draggee) => {
+      onSortChange: async (draggee) => {
         const elementIndex = index.elementIndex;
         const id = parseInt(draggee.find('.element').data('id'));
         const allIds = elementIndex.view.getAllElements()
@@ -425,13 +410,22 @@ class NestedElementManager extends Component
           elementIds: [id],
           offset: (elementIndex.settings.batchSize * (elementIndex.page - 1)) + allIds.indexOf(id),
         });
-        Craft.sendActionRequest('POST', 'nested-elements/reorder', {data})
-          .then(({data}) => {
-            Craft.cp.displayNotice(data.message);
-          })
-          .catch(({response}) => {
-            Craft.cp.displayError(response.data && response.data.error);
-          });
+        
+        if (index.elementEditor) {
+          await index.elementEditor.ensureIsDraftOrRevision();
+          data.ownerId = index.elementEditor.settings.elementId;
+        }
+
+        try {
+          const response = await Craft.sendActionRequest('POST', 'nested-elements/reorder', {data});
+          Craft.cp.displayNotice(response.data.message);
+        } catch (e) {
+          Craft.cp.displayError(e && e.response && e.response.data && e.response.data.error);
+        }
+        
+        if (index.elementEditor && index.settings.fieldHandle) {
+          await index.elementEditor.markFieldAsDirty(index.settings.fieldHandle);
+        }
       },
     }),
   }));
@@ -541,11 +535,7 @@ JS, [
                 $sortOrder++;
                 if ($saveAll || !$element->id || $element->forceSave) {
                     $element->setOwner($owner);
-                    // If the element already has an ID and primary owner ID, don't reassign it
-                    if (!$element->id || !$element->{$this->primaryOwnerIdAttribute}) {
-                        $element->{$this->primaryOwnerIdAttribute} = $owner->id;
-                    }
-                    $element->{$this->sortOrderAttribute} = $sortOrder;
+                    $element->setSortOrder($sortOrder);
                     $elementsService->saveElement($element, false);
 
                     // If this is a draft, we can shed the draft data now
@@ -557,9 +547,9 @@ JS, [
                             'ownerId' => $owner->id,
                         ]);
                     }
-                } elseif ((int)$element->{$this->sortOrderAttribute} !== $sortOrder) {
+                } elseif ((int)$element->getSortOrder() !== $sortOrder) {
                     // Just update its sortOrder
-                    $element->{$this->sortOrderAttribute} = $sortOrder;
+                    $element->setSortOrder($sortOrder);
                     Db::update(Table::ELEMENTS_OWNERS, [
                         'sortOrder' => $sortOrder,
                     ], [
@@ -685,7 +675,7 @@ JS, [
         $deleteOwnership = [];
 
         foreach ($elements as $element) {
-            if ($element->{$this->primaryOwnerIdAttribute} === $owner->id) {
+            if ($element->getPrimaryOwnerId() === $owner->id) {
                 $elementsService->deleteElement($element);
             } else {
                 // Just delete the ownership relation
@@ -739,7 +729,7 @@ JS, [
                     // and if the target's canonical element is not the same as target element, see
                     // https://app.frontapp.com/open/msg_ukaoki1?key=U6zkE_S6_ApMXn3ntPMwUxSLe0sUPsmY for more info
                     'canonicalId' => $setCanonicalId ? $element->id : null,
-                    $this->primaryOwnerIdAttribute => $target->id,
+                    'primaryOwner' => $target,
                     'owner' => $target,
                     'siteId' => $target->siteId,
                     'propagating' => false,
@@ -755,15 +745,15 @@ JS, [
                     } else {
                         $newElementId = $element->getCanonicalId();
                     }
-                } elseif (!$force && $element->{$this->primaryOwnerIdAttribute} === $target->id) {
+                } elseif (!$force && $element->getPrimaryOwnerId() === $target->id) {
                     // Only the element ownership was duplicated, so just update its sort order for the target element
                     // (use upsert in case the row doesn’t exist though)
                     Db::upsert(Table::ELEMENTS_OWNERS, [
                         'elementId' => $element->id,
                         'ownerId' => $target->id,
-                        'sortOrder' => $element->{$this->sortOrderAttribute},
+                        'sortOrder' => $element->getSortOrder(),
                     ], [
-                        'sortOrder' => $element->{$this->sortOrderAttribute},
+                        'sortOrder' => $element->getSortOrder(),
                     ], updateTimestamp: false);
                     $newElementId = $element->id;
                 } else {
@@ -862,9 +852,9 @@ JS, [
         foreach ($elements as $element) {
             $elementRevisionId = $revisionsService->createRevision($element, null, null, [
                 'primaryOwnerId' => $revision->id,
-                $this->saveOwnershipAttribute => false,
+                'saveOwnership' => false,
             ]);
-            $ownershipData[] = [$elementRevisionId, $revision->id, $element->{$this->sortOrderAttribute}];
+            $ownershipData[] = [$elementRevisionId, $revision->id, $element->getSortOrder()];
         }
 
         Db::batchInsert(Table::ELEMENTS_OWNERS, ['elementId', 'ownerId', 'sortOrder'], $ownershipData);
@@ -943,7 +933,7 @@ JS, [
                     // This is a new element, so duplicate it into the derivative owner
                     $elementsService->duplicateElement($canonicalElement, [
                         'canonicalId' => $canonicalElement->id,
-                        $this->primaryOwnerIdAttribute => $owner->id,
+                        'primaryOwner' => $owner,
                         'owner' => $localizedOwners[$canonicalElement->siteId],
                         'siteId' => $canonicalElement->siteId,
                         'propagating' => false,

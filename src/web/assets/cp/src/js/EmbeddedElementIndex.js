@@ -40,6 +40,30 @@ Craft.EmbeddedElementIndex = Garnish.Base.extend(
             canDeleteElements: ($selectedItems) => {
               return this.canDelete($selectedItems.length);
             },
+            onBeforeDuplicateElements: async () => {
+              if (this.elementEditor) {
+                await this.elementEditor.ensureIsDraftOrRevision();
+              }
+            },
+            onDuplicateElements: async () => {
+              if (this.elementEditor && this.settings.fieldHandle) {
+                await this.elementEditor.markFieldAsDirty(
+                  this.settings.fieldHandle
+                );
+              }
+            },
+            onBeforeDeleteElements: async () => {
+              if (this.elementEditor) {
+                await this.elementEditor.ensureIsDraftOrRevision();
+              }
+            },
+            onDeleteElements: async () => {
+              if (this.elementEditor && this.settings.fieldHandle) {
+                await this.elementEditor.markFieldAsDirty(
+                  this.settings.fieldHandle
+                );
+              }
+            },
             onBeforeUpdateElements: this.onBeforeUpdateElements.bind(this),
             onCountResults: this.onCountResults.bind(this),
           }
@@ -96,15 +120,13 @@ Craft.EmbeddedElementIndex = Garnish.Base.extend(
           this.elementEditor.on('createProvisionalDraft', () => {
             this.elementIndex.settings.criteria[this.settings.ownerIdParam] =
               this.elementEditor.settings.elementId;
-            this.elementIndex.updateElements();
 
             if (
               this.settings.baseCreateAttributes &&
-              this.settings.baseCreateAttributes[this.settings.ownerIdAttribute]
+              this.settings.baseCreateAttributes.ownerId
             ) {
-              this.settings.baseCreateAttributes[
-                this.settings.ownerIdAttribute
-              ] = this.elementEditor.settings.elementId;
+              this.settings.baseCreateAttributes.ownerId =
+                this.elementEditor.settings.elementId;
             }
           });
         }
@@ -174,9 +196,14 @@ Craft.EmbeddedElementIndex = Garnish.Base.extend(
               fresh: 1,
             },
           });
-          slideout.on('submit', () => {
+          slideout.on('submit', async () => {
             this.elementIndex.clearSearch();
             this.elementIndex.updateElements();
+            if (this.elementEditor && this.settings.fieldHandle) {
+              await this.elementEditor.markFieldAsDirty(
+                this.settings.fieldHandle
+              );
+            }
           });
         })
         .catch(({response}) => {
@@ -202,8 +229,8 @@ Craft.EmbeddedElementIndex = Garnish.Base.extend(
       createButtonLabel: Craft.t('app', 'Create'),
       baseCreateAttributes: null,
       ownerIdParam: null,
-      ownerIdAttribute: null,
       createAttributes: null,
+      fieldHandle: null,
     },
   }
 );
