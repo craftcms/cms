@@ -397,7 +397,7 @@ class NestedElementManager extends Component
   const settings = $settings;
   const index = new Craft.EmbeddedElementIndex('#' + $id, $elementType, Object.assign(settings, {
     indexSettings: Object.assign(settings.indexSettings, {
-      onSortChange: (draggee) => {
+      onSortChange: async (draggee) => {
         const elementIndex = index.elementIndex;
         const id = parseInt(draggee.find('.element').data('id'));
         const allIds = elementIndex.view.getAllElements()
@@ -410,13 +410,22 @@ class NestedElementManager extends Component
           elementIds: [id],
           offset: (elementIndex.settings.batchSize * (elementIndex.page - 1)) + allIds.indexOf(id),
         });
-        Craft.sendActionRequest('POST', 'nested-elements/reorder', {data})
-          .then(({data}) => {
-            Craft.cp.displayNotice(data.message);
-          })
-          .catch(({response}) => {
-            Craft.cp.displayError(response.data && response.data.error);
-          });
+        
+        if (index.elementEditor) {
+          await index.elementEditor.ensureIsDraftOrRevision();
+          data.ownerId = index.elementEditor.settings.elementId;
+        }
+
+        try {
+          const response = await Craft.sendActionRequest('POST', 'nested-elements/reorder', {data});
+          Craft.cp.displayNotice(response.data.message);
+        } catch (e) {
+          Craft.cp.displayError(e && e.response && e.response.data && e.response.data.error);
+        }
+        
+        if (index.elementEditor && index.settings.fieldHandle) {
+          await index.elementEditor.markFieldAsDirty(index.settings.fieldHandle);
+        }
       },
     }),
   }));

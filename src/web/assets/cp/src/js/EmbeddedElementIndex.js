@@ -120,7 +120,6 @@ Craft.EmbeddedElementIndex = Garnish.Base.extend(
           this.elementEditor.on('createProvisionalDraft', () => {
             this.elementIndex.settings.criteria[this.settings.ownerIdParam] =
               this.elementEditor.settings.elementId;
-            this.elementIndex.updateElements();
 
             if (
               this.settings.baseCreateAttributes &&
