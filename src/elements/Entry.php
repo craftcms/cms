@@ -71,12 +71,10 @@ use yii\web\Response;
  * @property int|null $authorId the entry author’s ID
  * @property EntryType $type the entry type
  * @property Section|null $section the entry’s section
- * @property User|null $author the entry’s author
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  *
  * @property array|null $authorsIds the entry authors' IDs
- * @property array|null $authors the entry’s authors
  * @since 5.0.0
  */
 class Entry extends Element implements NestedElementInterface, ExpirableElementInterface
@@ -863,17 +861,19 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
         }];
         $rules[] = [['postDate', 'expiryDate'], DateTimeValidator::class];
 
-        $sectionMaxAuthors = $this->section->maxAuthors;
-        $rules[] = [
-            ['authorsIds'],
-            ArrayValidator::class,
-            'max' => $sectionMaxAuthors,
-            'tooMany' => Craft::t(
-                'app',
-                "Maximum {num, number} {num, plural, =1{author} other{authors}} allowed.",
-                ['num' => $sectionMaxAuthors]
-            ),
-        ];
+        if (isset($this->sectionId)) {
+            $sectionMaxAuthors = $this->section->maxAuthors;
+            $rules[] = [
+                ['authorsIds'],
+                ArrayValidator::class,
+                'max' => $sectionMaxAuthors,
+                'tooMany' => Craft::t(
+                    'app',
+                    "Maximum {num, number} {num, plural, =1{author} other{authors}} allowed.",
+                    ['num' => $sectionMaxAuthors]
+                ),
+            ];
+        }
 
         $rules[] = [['postDate', 'expiryDate'], DateTimeValidator::class];
         $rules[] = [
