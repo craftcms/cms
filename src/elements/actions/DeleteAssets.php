@@ -9,6 +9,7 @@ namespace craft\elements\actions;
 
 use Craft;
 use craft\base\ElementAction;
+use craft\elements\Asset;
 use craft\elements\db\ElementQueryInterface;
 use yii\base\Exception;
 
@@ -42,7 +43,9 @@ class DeleteAssets extends ElementAction
      */
     public function getConfirmationMessage(): ?string
     {
-        return Craft::t('app', 'Are you sure you want to delete the selected assets?');
+        return Craft::t('app', 'Are you sure you want to delete the selected {type}?', [
+            'type' => Asset::pluralLowerDisplayName(),
+        ]);
     }
 
     /**
@@ -56,9 +59,9 @@ class DeleteAssets extends ElementAction
 (() => {
     new Craft.ElementActionTrigger({
         type: $type,
-        validateSelection: \$selectedItems => {
-            for (let i = 0; i < \$selectedItems.length; i++) {
-                if (!Garnish.hasAttr(\$selectedItems.eq(i).find('.element'), 'data-deletable')) {
+        validateSelection: (selectedItems, elementIndex) => {
+            for (let i = 0; i < selectedItems.length; i++) {
+                if (!Garnish.hasAttr(selectedItems.eq(i).find('.element'), 'data-deletable')) {
                     return false;
                 }
             }
@@ -81,7 +84,7 @@ JS, [static::class]);
 
         try {
             foreach ($query->all() as $asset) {
-                if ($elementsService->canDelete($asset, $user)) {
+                if ($elementsService->canView($asset, $user) && $elementsService->canDelete($asset, $user)) {
                     $elementsService->deleteElement($asset);
                 }
             }
@@ -90,7 +93,9 @@ JS, [static::class]);
             return false;
         }
 
-        $this->setMessage(Craft::t('app', 'Assets deleted.'));
+        $this->setMessage(Craft::t('app', '{type} deleted.', [
+            'type' => Asset::pluralDisplayName(),
+        ]));
 
         return true;
     }

@@ -4,12 +4,18 @@
  * Info icon class
  */
 Craft.InfoIcon = Garnish.Base.extend({
+  $container: null,
   $icon: null,
+  $liveRegion: null,
   content: null,
   hud: null,
 
   init: function (icon) {
     this.$icon = $(icon);
+    this.$liveRegion = $('<span/>', {
+      role: 'status',
+      class: 'visually-hidden',
+    });
 
     if (this.$icon.data('infoicon')) {
       console.warn('Double-instantiating an info icon on an element');
@@ -17,11 +23,22 @@ Craft.InfoIcon = Garnish.Base.extend({
       this.$icon.data('infoicon').destroy();
     } else {
       this.content = this.$icon.html();
-      this.$icon.html('').attr({
-        tabindex: 0,
-        role: 'button',
-        'aria-label': Craft.t('app', 'Information'),
-      });
+      this.$icon
+        .html('')
+        .attr({
+          tabindex: 0,
+          role: 'button',
+          type: 'button',
+          'aria-label': Craft.t('app', 'More info'),
+        })
+        .wrap(
+          $('<span/>', {
+            class: 'infoicon-container',
+          })
+        );
+
+      this.$container = this.$icon.parent();
+      this.$container.append(this.$liveRegion);
     }
 
     this.$icon.data('infoicon', this);
@@ -75,6 +92,15 @@ Craft.InfoIcon = Garnish.Base.extend({
           Garnish.uiLayerManager.registerShortcut(Garnish.SPACE_KEY, () => {
             this.hud.hide();
           });
+
+          this.$liveRegion.html('');
+
+          setTimeout(() => {
+            this.$liveRegion.html(this.content);
+          }, 200);
+        },
+        onHide: () => {
+          this.$liveRegion.html('');
         },
       });
       Craft.initUiElements(this.hud.$body);

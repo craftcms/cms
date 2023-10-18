@@ -36,20 +36,20 @@ class ReplaceFile extends ElementAction
     new Craft.ElementActionTrigger({
         type: $type,
         bulk: false,
-        validateSelection: \$selectedItems => Garnish.hasAttr(\$selectedItems.find('.element'), 'data-replaceable'),
-        activate: \$selectedItems => {
+        validateSelection: (selectedItems, elementIndex) => Garnish.hasAttr(selectedItems.find('.element'), 'data-replaceable'),
+        activate: (selectedItems, elementIndex) => {
             $('.replaceFile').remove();
 
-            const \$element = \$selectedItems.find('.element');
+            const \$element = selectedItems.find('.element');
             const \$fileInput = $('<input type="file" name="replaceFile" class="replaceFile" style="display: none;"/>').appendTo(Garnish.\$bod);
-            const options = Craft.elementIndex._currentUploaderSettings;
-
-            options.url = Craft.getActionUrl('assets/replace-file');
-            options.dropZone = null;
-            options.fileInput = \$fileInput;
-            options.paramName = 'replaceFile';
-
-            const tempUploader = new Craft.Uploader(\$fileInput, options);
+            const settings = elementIndex._currentUploaderSettings;
+            
+            settings.dropZone = null;
+            settings.fileInput = \$fileInput;
+            settings.paramName = 'replaceFile';
+            settings.replace = true;
+            
+            const tempUploader = Craft.createUploader(elementIndex.uploader.fsType, \$fileInput, settings);
             tempUploader.setParams({
                 assetId: \$element.data('id')
             });

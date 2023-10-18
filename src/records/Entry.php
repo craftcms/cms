@@ -15,7 +15,9 @@ use yii\db\ActiveQueryInterface;
  * Class Entry record.
  *
  * @property int $id ID
- * @property int $sectionId Section ID
+ * @property int|null $sectionId Section ID
+ * @property int|null $fieldId Field ID
+ * @property int $primaryOwnerId Primary owner ID
  * @property int $typeId Type ID
  * @property int|null $authorId Author ID
  * @property string|null $postDate Post date

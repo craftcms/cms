@@ -97,6 +97,22 @@ class ImageTransformIndex extends Model
     /**
      * @inheritdoc
      */
+    public function init(): void
+    {
+        parent::init();
+
+        // Only respect inProgress if it's been less than 30 seconds since the last time the index was updated
+        if ($this->inProgress) {
+            $duration = time() - ($this->dateUpdated?->getTimestamp() ?? 0);
+            if ($duration > 30) {
+                $this->inProgress = false;
+            }
+        }
+    }
+
+    /**
+     * @inheritdoc
+     */
     protected function defineRules(): array
     {
         $rules = parent::defineRules();

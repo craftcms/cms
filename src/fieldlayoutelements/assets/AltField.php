@@ -82,6 +82,26 @@ class AltField extends TextareaField
     /**
      * @inheritdoc
      */
+    public function previewable(): bool
+    {
+        return true;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function previewHtml(ElementInterface $element): string
+    {
+        return Html::tag('div', parent::previewHtml($element), [
+            'aria' => [
+                'hidden' => true,
+            ],
+        ]);
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function defaultLabel(?ElementInterface $element = null, bool $static = false): ?string
     {
         return Craft::t('app', 'Alternative Text');

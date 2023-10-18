@@ -41,13 +41,15 @@ class Announcements extends Component
      * @param string $heading The announcement heading.
      * @param string $body The announcement body.
      * @param string|null $pluginHandle The plugin handle, if this announcement belongs to a plugin
+     * @param bool $adminsOnly Whether only admin users should receive the announcement
      */
-    public function push(string $heading, string $body, ?string $pluginHandle = null): void
+    public function push(string $heading, string $body, ?string $pluginHandle = null, bool $adminsOnly = false): void
     {
         Queue::push(new Announcement([
             'heading' => $heading,
             'body' => $body,
             'pluginHandle' => $pluginHandle,
+            'adminsOnly' => $adminsOnly,
         ]));
     }
 

@@ -1,6 +1,9 @@
 /** global: Craft */
 /** global: Garnish */
 
+import $ from 'jquery';
+import Garnish from '../../../garnish/src';
+
 /**
  * Element index class
  */
@@ -16,6 +19,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
     searchTimeout: null,
     sourceSelect: null,
+    sourceNav: null,
 
     $container: null,
     $main: null,
@@ -56,19 +60,27 @@ Craft.BaseElementIndex = Garnish.Base.extend(
     siteMenu: null,
     siteId: null,
 
+    sourcePaths: null,
+    $sourcePathOuterContainer: null,
+    $sourcePathInnerContainer: null,
+    $sourcePathOverflowBtnContainer: null,
+    $sourcePathActionsBtn: null,
+
     $elements: null,
     $updateSpinner: null,
     $viewModeBtnContainer: null,
     viewModeBtns: null,
-    viewMode: null,
+    _viewMode: null,
     view: null,
     _autoSelectElements: null,
     $countSpinner: null,
     $countContainer: null,
     $actionsContainer: null,
+    $actionMenuBtn: null,
     page: 1,
     resultSet: null,
     totalResults: null,
+    totalUnfilteredResults: null,
     $exportBtn: null,
 
     actions: null,
@@ -79,14 +91,76 @@ Craft.BaseElementIndex = Garnish.Base.extend(
     showingActionTriggers: false,
     exporters: null,
     exportersByType: null,
+    triggers: null,
     _$triggers: null,
 
-    _ignoreFailedRequest: false,
     _cancelToken: null,
 
     viewMenus: null,
     activeViewMenu: null,
     filterHuds: null,
+
+    _activeElement: null,
+
+    inlineEditing: false,
+    nestedInputNamespace: null,
+
+    get viewMode() {
+      if (this._viewMode === 'structure' && !this.canSort) {
+        // return the default
+        return this.validateViewMode(null);
+      }
+
+      return this.validateViewMode(this._viewMode);
+    },
+
+    set viewMode(viewMode) {
+      this._viewMode = viewMode ? this.validateViewMode(viewMode) : null;
+    },
+
+    get paginated() {
+      return !!(this.isAdministrative && this.viewMode !== 'structure');
+    },
+
+    get selectable() {
+      return (
+        !!(this.actions || this.settings.selectable) && !this.inlineEditing
+      );
+    },
+
+    get multiSelect() {
+      return !!(
+        this.actions ||
+        (this.settings.selectable && this.settings.multiSelect)
+      );
+    },
+
+    get sortable() {
+      return this.settings.sortable && this.canSort && !this.inlineEditing;
+    },
+
+    get canSort() {
+      return (
+        this.isAdministrative &&
+        !this.status &&
+        !this.trashed &&
+        !this.drafts &&
+        !this.searching &&
+        !this.hasActiveFilter
+      );
+    },
+
+    get isAdministrative() {
+      return ['index', 'embedded-index'].includes(this.settings.context);
+    },
+
+    get hasActiveFilter() {
+      return (
+        this.filterHuds[this.siteId] &&
+        this.filterHuds[this.siteId][this.sourceKey] &&
+        this.filterHuds[this.siteId][this.sourceKey].isActive
+      );
+    },
 
     /**
      * Constructor
@@ -95,6 +169,11 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       this.elementType = elementType;
       this.$container = $container;
       this.setSettings(settings, Craft.BaseElementIndex.defaults);
+
+      this.nestedInputNamespace = `elementindex-${Math.floor(
+        Math.random() * 100000
+      )}`;
+      this.sourcePaths = {};
 
       // Define an ID prefix that can be used for dynamically created elements
       // ---------------------------------------------------------------------
@@ -134,13 +213,15 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       this.$statusMenuContainer = this.$statusMenuBtn.parent();
       this.$siteMenuBtn = this.$container.find('.sitemenubtn:first');
 
-      this.$searchContainer = this.$toolbar.find('.search:first');
+      this.$searchContainer = this.$toolbar.find('.search-container:first');
       this.$search = this.$searchContainer.children('input:first');
       this.$filterBtn = this.$searchContainer.children('.filter-btn:first');
       this.$clearSearchBtn = this.$searchContainer.children('.clear-btn:first');
 
       this.$sidebar = this.$container.find('.sidebar:first');
-      this.$sourceActionsContainer = this.$sidebar.find('#source-actions');
+      this.$sourceActionsContainer = this.$sidebar.find(
+        `#${this.namespaceId('source-actions')}`
+      );
 
       this.$elements = this.$container.find('.elements:first');
       this.$updateSpinner = this.$elements.find('.spinner');
@@ -151,10 +232,18 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         }).appendTo(this.$elements);
       }
 
-      this.$countSpinner = this.$container.find('#count-spinner');
-      this.$countContainer = this.$container.find('#count-container');
-      this.$actionsContainer = this.$container.find('#actions-container');
-      this.$exportBtn = this.$container.find('#export-btn');
+      this.$countSpinner = this.$container.find(
+        `#${this.namespaceId('count-spinner')}`
+      );
+      this.$countContainer = this.$container.find(
+        `#${this.namespaceId('count-container')}`
+      );
+      this.$actionsContainer = this.$container.find(
+        `#${this.namespaceId('actions-container')}`
+      );
+      this.$exportBtn = this.$container.find(
+        `#${this.namespaceId('export-btn')}`
+      );
 
       // Hide sidebar if needed
       if (this.settings.hideSidebar) {
@@ -275,8 +364,11 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         }
       });
 
-      // Auto-focus the Search box
-      if (!Garnish.isMobileBrowser(true)) {
+      // Autofocus the Search box, unless this is an embedded index
+      if (
+        this.settings.context !== 'embedded-index' &&
+        !Garnish.isMobileBrowser(true)
+      ) {
         this.$search.trigger('focus');
       }
 
@@ -290,7 +382,8 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       // Set the default status
       // ---------------------------------------------------------------------
 
-      const queryParams = Craft.getQueryParams();
+      const queryParams =
+        this.settings.context === 'index' ? Craft.getQueryParams() : {};
 
       if (queryParams.status) {
         let selector;
@@ -309,7 +402,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         if ($option.length) {
           this.statusMenu.selectOption($option[0]);
         } else {
-          this.setQueryParam('status', null);
+          Craft.setQueryParam('status', null);
         }
       }
 
@@ -324,10 +417,102 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       this.initialized = true;
       this.afterInit();
 
-      // Select the initial source
+      // Select the initial source + source path
       // ---------------------------------------------------------------------
 
+      // Grab the localStorage step key up front, so we don's lose track of it when the default source's default
+      // source path is selected
+      const stepKey = this.getSelectedSourceState('sourcePathStep');
+
       this.selectDefaultSource();
+
+      const sourcePath = this.getDefaultSourcePath();
+
+      // If no default source path was explicitly configured, use the localStorage key
+      if (!sourcePath && stepKey) {
+        this.loadSourcePathByKey(stepKey).then((sourcePath) => {
+          if (sourcePath) {
+            // Filter out any source path steps that are above the source's root
+            const lastSourceKey = this.sourceKey.split('/').slice(-1)[0];
+            const sourceRootIndex = sourcePath.findIndex(
+              (p) => p.key === lastSourceKey
+            );
+            if (sourceRootIndex !== -1) {
+              this.sourcePath = sourcePath.slice(sourceRootIndex);
+            }
+          }
+          this.afterSetInitialSource(queryParams);
+        });
+      } else {
+        if (sourcePath) {
+          this.sourcePath = sourcePath;
+        }
+        this.afterSetInitialSource(queryParams);
+      }
+    },
+
+    afterInit: function () {
+      this.onAfterInit();
+    },
+
+    namespaceInputName(name) {
+      return Craft.namespaceInputName(name, this.settings.namespace);
+    },
+
+    namespaceId(id) {
+      return Craft.namespaceId(id, this.settings.namespace);
+    },
+
+    loadSourcePathByKey: function (stepKey) {
+      return new Promise((resolve, reject) => {
+        // If the step key is equal to the current source key, then it represents the root. No source path needed.
+        if (stepKey === this.sourceKey) {
+          resolve([]);
+          return;
+        }
+
+        const params = this.getViewParams();
+        params.stepKey = stepKey;
+
+        Craft.sendActionRequest('POST', 'element-indexes/source-path', {
+          data: params,
+        })
+          .then(({data}) => {
+            resolve(data.sourcePath);
+          })
+          .catch(reject);
+      });
+    },
+
+    afterSetInitialSource: function (queryParams) {
+      // Resize handler
+      // ---------------------------------------------------------------------
+
+      if (this.settings.context === 'index') {
+        this.addListener(Garnish.$win, 'resize', 'handleResize');
+      }
+
+      this.handleResize();
+
+      // Respect initial search
+      // ---------------------------------------------------------------------
+      // Has to go after selecting the default source because selecting a source
+      // clears out search params
+
+      if (queryParams.search) {
+        this.startSearching();
+        this.searchText = queryParams.search;
+      }
+
+      // Respect the initial filters
+      // ---------------------------------------------------------------------
+
+      if (queryParams.filters) {
+        this.createFilterHud({
+          showOnInit: false,
+          serialized: queryParams.filters,
+        });
+      }
 
       // Select the default sort attribute/direction
       // ---------------------------------------------------------------------
@@ -350,8 +535,10 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       this.updateElements(true);
     },
 
-    afterInit: function () {
-      this.onAfterInit();
+    handleResize: function () {
+      if (this.sourcePath.length && this.settings.showSourcePath) {
+        this._updateSourcePathVisibility();
+      }
     },
 
     _createCancelToken: function () {
@@ -361,11 +548,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
     _cancelRequests: function () {
       if (this._cancelToken) {
-        this._ignoreFailedRequest = true;
         this._cancelToken.cancel();
-        Garnish.requestAnimationFrame(() => {
-          this._ignoreFailedRequest = false;
-        });
       }
     },
 
@@ -374,11 +557,11 @@ Craft.BaseElementIndex = Garnish.Base.extend(
     },
 
     get $sources() {
-      if (!this.sourceSelect) {
+      if (!this.sourceNav) {
         return undefined;
       }
 
-      return this.sourceSelect.$items;
+      return this.sourceNav.$items;
     },
 
     getSite: function () {
@@ -396,12 +579,8 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         return false;
       }
 
-      // The source selector
-      if (!this.sourceSelect) {
-        this.sourceSelect = new Garnish.Select(this.$sidebar.find('nav'), {
-          multi: false,
-          allowEmpty: false,
-          vertical: true,
+      if (!this.sourceNav) {
+        this.sourceNav = new SourceNav(this.$sidebar.find('nav'), {
           onSelectionChange: this._handleSourceSelectionChange.bind(this),
         });
       }
@@ -446,7 +625,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
     },
 
     refreshSources: function () {
-      this.sourceSelect.removeAllItems();
+      this.sourceNav.removeAllItems();
 
       this.setIndexBusy();
 
@@ -462,16 +641,16 @@ Craft.BaseElementIndex = Garnish.Base.extend(
           this.initSources();
           this.selectDefaultSource();
         })
-        .catch(() => {
-          this.setIndexAvailable();
-          if (!this._ignoreFailedRequest) {
+        .catch((e) => {
+          if (!axios.isCancel(e)) {
+            this.setIndexAvailable();
             Craft.cp.displayError(Craft.t('app', 'A server error occurred.'));
           }
         });
     },
 
     initSource: function ($source) {
-      this.sourceSelect.addItems($source);
+      this.sourceNav.addItems($source);
       this.initSourceToggle($source);
       this.sourcesByKey[$source.data('key')] = $source;
 
@@ -499,7 +678,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
     },
 
     deinitSource: function ($source) {
-      this.sourceSelect.removeItems($source);
+      this.sourceNav.removeItems($source);
       this.deinitSourceToggle($source);
       delete this.sourcesByKey[$source.data('key')];
     },
@@ -521,35 +700,414 @@ Craft.BaseElementIndex = Garnish.Base.extend(
     },
 
     getDefaultSourceKey: function () {
-      if (this.settings.defaultSource) {
-        const paths = this.settings.defaultSource.split('/');
-        let path = '';
-
-        // Expand the tree
-        for (let i = 0; i < paths.length; i++) {
-          path += paths[i];
-          const $source = this.getSourceByKey(path);
-
-          // If the folder can't be found, then just go to the stored instance source.
-          if (!$source) {
-            return this.instanceState.selectedSource;
-          }
-
-          this._expandSource($source);
-          path += '/';
-        }
-
-        // Just make sure that the modal is aware of the newly expanded sources, too.
-        this._setSite(this.siteId);
-
-        return this.settings.defaultSource;
+      if (
+        this.settings.preferStoredSource &&
+        this.instanceState.selectedSource
+      ) {
+        // Discard the defaults and go with localStorage
+        this.settings.defaultSource = null;
+        this.settings.defaultSourcePath = null;
+        return this.instanceState.selectedSource;
       }
 
-      return this.instanceState.selectedSource;
+      let sourceKey = null;
+
+      if (this.settings.defaultSource) {
+        let $lastSource = null;
+        let refreshSources = false;
+
+        for (const segment of this.settings.defaultSource.split('/')) {
+          if ($lastSource) {
+            this._expandSource($lastSource);
+            refreshSources = true;
+          }
+
+          const testSourceKey =
+            (sourceKey !== null ? `${sourceKey}/` : '') + segment;
+          const $source = this.getSourceByKey(testSourceKey);
+
+          if (!$source) {
+            if ($lastSource) {
+              this._collapseSource($lastSource);
+            }
+            break;
+          }
+
+          $lastSource = $source;
+          sourceKey = testSourceKey;
+        }
+
+        if (refreshSources) {
+          // Make sure that the modal is aware of the newly expanded sources
+          this._setSite(this.siteId);
+        }
+      }
+
+      if (!sourceKey) {
+        // If we couldn't resolve a default source, clear out the defaultSource and defaultSourcePath
+        // settings, as defaultSourcePath is expected to be relative to defaultSource
+        // (https://github.com/craftcms/cms/issues/13072)
+        this.settings.defaultSource = null;
+        this.settings.defaultSourcePath = null;
+      }
+
+      return sourceKey ?? this.instanceState.selectedSource;
+    },
+
+    /**
+     * @returns {Object[]|null}
+     */
+    getDefaultSourcePath: function () {
+      // @link https://github.com/craftcms/cms/issues/13006
+      if (
+        this.settings.defaultSourcePath !== null &&
+        this.settings.defaultSourcePath[0] !== undefined &&
+        this.settings.defaultSourcePath[0].canView === true
+      ) {
+        return this.settings.defaultSourcePath;
+      } else {
+        return null;
+      }
     },
 
     getDefaultExpandedSources: function () {
       return this.instanceState.expandedSources;
+    },
+
+    /**
+     * @returns {Object[]}
+     */
+    get sourcePath() {
+      return this.sourcePaths[this.sourceKey] || [];
+    },
+
+    /**
+     * @param {Object[]|null} sourcePath
+     */
+    set sourcePath(sourcePath) {
+      this.sourcePaths[this.sourceKey] =
+        sourcePath && sourcePath.length ? sourcePath : null;
+
+      if (this.$sourcePathOuterContainer) {
+        this.$sourcePathOuterContainer.remove();
+        this.$sourcePathOuterContainer = null;
+        this.$sourcePathInnerContainer = null;
+        this.$sourcePathOverflowBtnContainer = null;
+        this.$sourcePathActionsBtn = null;
+      }
+
+      if (this.sourcePaths[this.sourceKey] && this.settings.showSourcePath) {
+        const actions = this.getSourcePathActions();
+
+        this.$sourcePathOuterContainer = $('<div/>', {
+          class: 'source-path',
+        }).insertBefore(this.$elements);
+        this.$sourcePathInnerContainer = $('<div/>', {
+          class: 'chevron-btns',
+        }).appendTo(this.$sourcePathOuterContainer);
+        const $nav = $('<nav/>', {
+          'aria-label': this.getSourcePathLabel(),
+        }).appendTo(this.$sourcePathInnerContainer);
+        const $ol = $('<ol/>').appendTo($nav);
+
+        let $overflowBtn, overflowMenuId, $overflowUl;
+
+        if (sourcePath.length > 1) {
+          this.$sourcePathOverflowBtnContainer = $('<li/>', {
+            class: 'first-step hidden',
+          }).appendTo($ol);
+
+          overflowMenuId = 'menu' + Math.floor(Math.random() * 1000000);
+          $overflowBtn = $('<button/>', {
+            type: 'button',
+            class: 'btn',
+            title: Craft.t('app', 'More items'),
+            'aria-label': Craft.t('app', 'More items'),
+            'data-disclosure-trigger': true,
+            'aria-controls': overflowMenuId,
+          })
+            .append(
+              $('<span/>', {class: 'btn-body'}).append(
+                $('<span/>', {class: 'label'}).append(
+                  $('<span/>', {'data-icon': 'ellipsis', 'aria-hidden': 'true'})
+                )
+              )
+            )
+            .append($('<span/>', {class: 'chevron-right'}))
+            .appendTo(this.$sourcePathOverflowBtnContainer);
+
+          const $overflowMenu = $('<div/>', {
+            id: overflowMenuId,
+            class: 'menu menu--disclosure',
+          }).appendTo(this.$sourcePathOverflowBtnContainer);
+          $overflowUl = $('<ul/>').appendTo($overflowMenu);
+
+          $overflowBtn.disclosureMenu();
+        }
+
+        for (let i = 0; i < sourcePath.length; i++) {
+          ((i) => {
+            const step = sourcePath[i];
+
+            if ($overflowUl && i < sourcePath.length - 1) {
+              step.$overflowLi = $('<li/>', {
+                class: 'hidden',
+              }).appendTo($overflowUl);
+
+              $('<a/>', {
+                class: 'flex flex-nowrap',
+                href: '#',
+                type: 'button',
+                role: 'button',
+                html: step.icon
+                  ? `<span data-icon="${step.icon}" aria-hidden="true"></span><span>${step.label}</span>`
+                  : step.label,
+              })
+                .appendTo(step.$overflowLi)
+                .on('click', (ev) => {
+                  ev.preventDefault();
+                  $overflowBtn.data('trigger').hide();
+                  this.selectSourcePathStep(i);
+                });
+            }
+
+            const isFirst = i === 0;
+            const isLast = i === sourcePath.length - 1;
+
+            step.$li = $('<li/>').appendTo($ol);
+
+            if (isFirst) {
+              step.$li.addClass('first-step');
+            }
+
+            step.$btn = $('<a/>', {
+              href: step.uri ? Craft.getCpUrl(step.uri) : '#',
+              class: 'btn',
+              role: 'button',
+            });
+
+            if (step.icon) {
+              step.$btn.attr('aria-label', step.label);
+            }
+
+            const $btnBody = $('<span/>', {
+              class: 'btn-body',
+            }).appendTo(step.$btn);
+
+            step.$label = $('<span/>', {
+              class: 'label',
+              html: step.icon
+                ? `<span data-icon="${step.icon}" aria-hidden="true"></span>`
+                : step.label,
+            }).appendTo($btnBody);
+
+            step.$btn.append($('<span class="chevron-left"/>'));
+
+            if (!isLast || !actions.length) {
+              step.$btn.append($('<span class="chevron-right"/>'));
+            } else {
+              step.$btn.addClass('has-action-menu');
+            }
+
+            if (isLast) {
+              step.$btn.addClass('current-step').attr('aria-current', 'page');
+            }
+
+            step.$btn.appendTo(step.$li);
+
+            this.addListener(step.$btn, 'activate', () => {
+              this.selectSourcePathStep(i);
+            });
+          })(i);
+        }
+
+        // Action menu
+        if (actions && actions.length) {
+          const actionBtnLabel = this.getSourcePathActionLabel();
+          const menuId = 'menu' + Math.floor(Math.random() * 1000000);
+          this.$sourcePathActionsBtn = $('<button/>', {
+            type: 'button',
+            class: 'btn current-step',
+            title: actionBtnLabel,
+            'aria-label': actionBtnLabel,
+            'data-disclosure-trigger': true,
+            'aria-controls': menuId,
+          })
+            .append(
+              $('<span/>', {class: 'btn-body'}).append(
+                $('<span/>', {class: 'label'})
+              )
+            )
+            .append($('<span/>', {class: 'chevron-right'}))
+            .appendTo(this.$sourcePathInnerContainer);
+
+          const groupedActions = [
+            actions.filter((a) => !a.destructive && !a.administrative),
+            actions.filter((a) => a.destructive && !a.administrative),
+            actions.filter((a) => a.administrative),
+          ].filter((group) => group.length);
+
+          const $menu = $('<div/>', {
+            id: menuId,
+            class: 'menu menu--disclosure',
+          }).appendTo(this.$sourcePathInnerContainer);
+
+          groupedActions.forEach((group, index) => {
+            if (index !== 0) {
+              $('<hr/>').appendTo($menu);
+            }
+            this._buildSourcePathActionList(group).appendTo($menu);
+          });
+
+          this.$sourcePathActionsBtn.disclosureMenu();
+          this._updateSourcePathVisibility();
+        }
+
+        // Update the URL if we're on the index page
+        if (
+          this.settings.context === 'index' &&
+          typeof sourcePath[sourcePath.length - 1].uri !== 'undefined' &&
+          typeof history != 'undefined'
+        ) {
+          history.replaceState(
+            {},
+            '',
+            Craft.getCpUrl(sourcePath[sourcePath.length - 1].uri)
+          );
+        }
+      }
+
+      // Store the source path
+      this.setSelecetedSourceState(
+        'sourcePathStep',
+        (this.sourcePaths[this.sourceKey]
+          ? this.sourcePaths[this.sourceKey][
+              this.sourcePaths[this.sourceKey].length - 1
+            ].key
+          : null) || null
+      );
+
+      this.onSourcePathChange();
+    },
+
+    /**
+     * @returns {string}
+     */
+    getSourcePathLabel: function () {
+      return '';
+    },
+
+    /**
+     * @returns {Object[]}
+     */
+    getSourcePathActions: function () {
+      return [];
+    },
+
+    /**
+     * @returns {string}
+     */
+    getSourcePathActionLabel: function () {
+      return '';
+    },
+
+    _updateSourcePathVisibility: function () {
+      const firstStep = this.sourcePath[0];
+      const lastStep = this.sourcePath[this.sourcePath.length - 1];
+
+      // reset the source path styles
+      if (this.$sourcePathOverflowBtnContainer) {
+        this.$sourcePathOverflowBtnContainer.addClass('hidden');
+        firstStep.$li.addClass('first-step');
+      }
+
+      for (const step of this.sourcePath) {
+        if (step.$overflowLi) {
+          step.$overflowLi.addClass('hidden');
+        }
+        step.$li.removeClass('hidden');
+      }
+
+      lastStep.$label.css('width', '');
+      lastStep.$btn.removeAttr('title');
+
+      let overage = this._checkSourcePathOverage();
+      if (!overage) {
+        return;
+      }
+
+      // show the overflow menu, if we have one
+      if (this.$sourcePathOverflowBtnContainer) {
+        this.$sourcePathOverflowBtnContainer.removeClass('hidden');
+        firstStep.$li.removeClass('first-step');
+
+        for (let i = 0; i < this.sourcePath.length - 1; i++) {
+          const step = this.sourcePath[i];
+          step.$overflowLi.removeClass('hidden');
+          step.$li.addClass('hidden');
+
+          // are we done yet?
+          overage = this._checkSourcePathOverage();
+          if (!overage) {
+            return;
+          }
+        }
+      }
+
+      // if we're still here, truncation is the only remaining strategy
+      if (!lastStep.icon) {
+        const width = lastStep.$label[0].getBoundingClientRect().width;
+        lastStep.$label.width(Math.floor(width - overage));
+        lastStep.$btn.attr('title', lastStep.label);
+      }
+    },
+
+    _checkSourcePathOverage: function () {
+      const outerWidth =
+        this.$sourcePathOuterContainer[0].getBoundingClientRect().width;
+      const innerWidth =
+        this.$sourcePathInnerContainer[0].getBoundingClientRect().width;
+      return Math.max(innerWidth - outerWidth, 0);
+    },
+
+    _buildSourcePathActionList: function (actions) {
+      const $ul = $('<ul/>');
+
+      actions.forEach((action) => {
+        const $a = $('<a/>', {
+          href: '#',
+          type: 'button',
+          role: 'button',
+          'aria-label': action.label,
+          text: action.label,
+        }).on('click', (ev) => {
+          ev.preventDefault();
+          this.$sourcePathActionsBtn.data('trigger').hide();
+          if (action.onSelect) {
+            action.onSelect();
+          }
+        });
+
+        if (action.destructive) {
+          $a.addClass('error');
+        }
+
+        $('<li/>').append($a).appendTo($ul);
+      });
+
+      return $ul;
+    },
+
+    onSourcePathChange: function () {
+      this.settings.onSourcePathChange();
+      this.trigger('sourcePathChange');
+    },
+
+    selectSourcePathStep: function (num) {
+      this.sourcePath = this.sourcePath.slice(0, num + 1);
+      this.sourcePath[num].$btn.focus();
+      this.clearSearch(false);
+      this.updateElements();
     },
 
     startSearching: function () {
@@ -611,6 +1169,11 @@ Craft.BaseElementIndex = Garnish.Base.extend(
     },
 
     getSourceState: function (sourceKey, key, defaultValue) {
+      // account for when all sources are disabled
+      if (sourceKey == undefined) {
+        return null;
+      }
+
       sourceKey = sourceKey.replace(/\/.*/, '');
 
       if (typeof this.sourceStates[sourceKey] === 'undefined') {
@@ -638,6 +1201,11 @@ Craft.BaseElementIndex = Garnish.Base.extend(
     setSelecetedSourceState: function (key, value) {
       var viewState = this.getSelectedSourceState();
 
+      // account for when all sources are disabled
+      if (viewState == null) {
+        viewState = [];
+      }
+
       if (typeof key === 'object') {
         for (let k in key) {
           if (key.hasOwnProperty(k)) {
@@ -654,7 +1222,12 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         delete viewState[key];
       }
 
-      const sourceKey = this.instanceState.selectedSource.replace(/\/.*/, '');
+      // account for when all sources are disabled
+      let sourceKey = '*';
+      if (this.instanceState.selectedSource != undefined) {
+        // otherwise do what we used to do
+        sourceKey = this.instanceState.selectedSource.replace(/\/.*/, '');
+      }
 
       this.sourceStates[sourceKey] = viewState;
 
@@ -678,7 +1251,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
      * Sets the page number.
      */
     setPage: function (page) {
-      if (this.settings.context !== 'index') {
+      if (!this.isAdministrative) {
         return;
       }
 
@@ -692,6 +1265,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
     _resetCount: function () {
       this.resultSet = null;
       this.totalResults = null;
+      this.totalUnfilteredResults = null;
     },
 
     updateSourceMenu: function () {
@@ -702,7 +1276,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       if (this.$sourceActionsBtn) {
         this.$sourceActionsBtn.data('trigger').destroy();
         this.$sourceActionsContainer.empty();
-        $('#source-actions-menu').remove();
+        $(`#${this.namespaceId('source-actions-menu')}`).remove();
         this.$sourceActionsBtn = null;
       }
 
@@ -791,6 +1365,14 @@ Craft.BaseElementIndex = Garnish.Base.extend(
           this.activeViewMenu.hideTrigger();
         }
         if (!this.viewMenus[this.rootSourceKey]) {
+          if (
+            !this.getViewModesForSource().find(
+              (mode) => mode.mode === 'table'
+            ) &&
+            this.settings.sortable
+          ) {
+            return;
+          }
           this.viewMenus[this.rootSourceKey] = new ViewMenu(
             this,
             this.$rootSource
@@ -802,69 +1384,112 @@ Craft.BaseElementIndex = Garnish.Base.extend(
     },
 
     /**
+     * Returns any additional settings that should be passed to the view instance.
+     */
+    getViewSettings: function () {
+      return {};
+    },
+
+    /**
      * Returns the data that should be passed to the elementIndex/getElements controller action
      * when loading elements.
      */
     getViewParams: function () {
-      var criteria = {
+      const baseCriteria = {
         siteId: this.siteId,
-        search: this.searchText,
         offset: this.settings.batchSize * (this.page - 1),
         limit: this.settings.batchSize,
       };
+      const criteria = {};
+
+      if (this.searchText) {
+        criteria.search = this.searchText;
+      }
 
       // Only set drafts/draftOf/trashed params when needed, so we don't potentially override a source's criteria
-      if (
-        this.settings.canHaveDrafts &&
-        (this.drafts || (this.settings.context === 'index' && !this.status))
-      ) {
-        criteria.drafts = this.drafts || null;
-        criteria.savedDraftsOnly = true;
-        if (!this.drafts) {
-          criteria.draftOf = false;
-        }
+      if (this.settings.canHaveDrafts && this.drafts) {
+        criteria.drafts = true;
       }
+
       if (this.trashed) {
         criteria.trashed = true;
       }
 
       if (!Garnish.hasAttr(this.$source, 'data-override-status')) {
-        criteria.status = this.status;
+        baseCriteria.status = null;
+
+        if (this.status) {
+          criteria.status = this.status;
+        }
       }
 
-      $.extend(criteria, this.settings.criteria);
+      $.extend(baseCriteria, this.settings.criteria);
 
-      var params = {
+      if (this.sourcePath.length) {
+        const currentStep = this.sourcePath[this.sourcePath.length - 1];
+        if (typeof currentStep.criteria !== 'undefined') {
+          $.extend(baseCriteria, currentStep.criteria);
+        }
+      }
+
+      const params = {
         context: this.settings.context,
         elementType: this.elementType,
+        canHaveDrafts: this.settings.canHaveDrafts,
         source: this.instanceState.selectedSource,
         condition: this.settings.condition,
-        criteria: criteria,
+        referenceElementId: this.settings.referenceElementId,
+        referenceElementSiteId: this.settings.referenceElementSiteId,
+        baseCriteria,
+        criteria,
         disabledElementIds: this.settings.disabledElementIds,
         viewState: $.extend({}, this.getSelectedSourceState()),
-        paginated: this._isViewPaginated() ? 1 : 0,
+        paginated: this.paginated,
+        selectable: this.selectable,
+        sortable: this.sortable,
       };
 
-      // Possible that the order/sort isn't entirely accurate if we're sorting by Score
-      const [sortAttribute, sortDirection] =
-        this.getSortAttributeAndDirection();
-      params.viewState.order = sortAttribute;
-      params.viewState.sort = sortDirection;
+      params.viewState.showHeaderColumn = this.settings.showHeaderColumn;
+      params.viewState.inlineEditing = this.inlineEditing;
+      params.viewState.nestedInputNamespace = this.nestedInputNamespace;
 
-      if (sortAttribute === 'structure') {
+      // override viewState.mode in case it's different from what's stored
+      params.viewState.mode = this.viewMode;
+
+      if (this.viewMode === 'structure') {
+        params.viewState.mode = 'table';
+        params.viewState.order = 'structure';
+        params.viewState.sort = 'asc';
+
         if (typeof this.instanceState.collapsedElementIds === 'undefined') {
           this.instanceState.collapsedElementIds = [];
         }
         params.collapsedElementIds = this.instanceState.collapsedElementIds;
+      } else if (!this.sortable) {
+        // Possible that the order/sort isn't entirely accurate if we're sorting by Score
+        const [sortAttribute, sortDirection] =
+          this.getSortAttributeAndDirection();
+        params.viewState.order = sortAttribute;
+        params.viewState.sort = sortDirection;
       }
 
       if (
         this.filterHuds[this.siteId] &&
         this.filterHuds[this.siteId][this.sourceKey] &&
-        this.filterHuds[this.siteId][this.sourceKey].serialized
+        (this.filterHuds[this.siteId][this.sourceKey].conditionConfig ||
+          this.filterHuds[this.siteId][this.sourceKey].serialized)
       ) {
+        params.filterConfig =
+          this.filterHuds[this.siteId][this.sourceKey].conditionConfig;
         params.filters =
           this.filterHuds[this.siteId][this.sourceKey].serialized;
+      }
+
+      if (
+        this.sourceKey === '__IMP__' &&
+        typeof params.viewState.tableColumns === 'undefined'
+      ) {
+        params.viewState.tableColumns = this.getDefaultTableColumns();
       }
 
       // Give plugins a chance to hook in here
@@ -876,52 +1501,70 @@ Craft.BaseElementIndex = Garnish.Base.extend(
     },
 
     updateElements: function (preservePagination, pageChanged) {
-      // Ignore if we're not fully initialized yet
-      if (!this.initialized) {
-        return;
-      }
+      return new Promise((resolve, reject) => {
+        // Ignore if we're not fully initialized yet
+        if (!this.initialized) {
+          reject('The element index isn’t initialized yet.');
+          return;
+        }
 
-      // Cancel any ongoing requests
-      this._cancelRequests();
+        this.onBeforeUpdateElements();
 
-      this.setIndexBusy();
+        // Cancel any ongoing requests
+        this._cancelRequests();
 
-      // Kill the old view class
-      if (this.view) {
-        this.view.destroy();
-        delete this.view;
-      }
+        this.setIndexBusy();
 
-      if (preservePagination !== true) {
-        this.setPage(1);
-        this._resetCount();
-      }
+        // Kill the old view class
+        if (this.view) {
+          this.view.disable();
+        }
 
-      var params = this.getViewParams();
+        if (preservePagination !== true) {
+          this.setPage(1);
+          this._resetCount();
+        }
 
-      Craft.sendActionRequest('POST', this.settings.updateElementsAction, {
-        data: params,
-        cancelToken: this._createCancelToken(),
-      })
-        .then((response) => {
-          this.setIndexAvailable();
-          (this.settings.context === 'index'
-            ? Garnish.$scrollContainer
-            : this.$main
-          ).scrollTop(0);
-          this._updateView(params, response.data);
+        var params = this.getViewParams();
 
-          if (pageChanged) {
-            const $elementContainer = this.view.getElementContainer();
-            Garnish.firstFocusableElement($elementContainer).trigger('focus');
-          }
+        Craft.sendActionRequest('POST', this.settings.updateElementsAction, {
+          data: params,
+          cancelToken: this._createCancelToken(),
         })
-        .catch((e) => {
-          this.setIndexAvailable();
-          if (!this._ignoreFailedRequest) {
-            Craft.cp.displayError(Craft.t('app', 'A server error occurred.'));
-          }
-        });
+          .then((response) => {
+            this.setIndexAvailable();
+
+            if (this.settings.context === 'index') {
+              if (Craft.cp.fixedHeader) {
+                const headerContainerHeight =
+                  Craft.cp.$headerContainer.height();
+                const maxScrollTop =
+                  this.$main.offset().top - headerContainerHeight;
+                if (maxScrollTop < Garnish.$scrollContainer.scrollTop()) {
+                  Garnish.$scrollContainer.scrollTop(maxScrollTop);
+                }
+              }
+            } else {
+              this.$main.scrollTop(0);
+            }
+
+            this._updateView(params, response.data);
+
+            if (pageChanged) {
+              const $elementContainer = this.view.getElementContainer();
+              Garnish.firstFocusableElement($elementContainer).trigger('focus');
+            }
+
+            resolve();
+          })
+          .catch((e) => {
+            if (!axios.isCancel(e)) {
+              this.setIndexAvailable();
+              Craft.cp.displayError(Craft.t('app', 'A server error occurred.'));
+            }
+            reject(e);
+          });
+      });
     },
 
     updateElementsIfSearchTextChanged: function () {
@@ -929,6 +1572,9 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         this.searchText !==
         (this.searchText = this.searching ? this.$search.val() : null)
       ) {
+        if (this.settings.context === 'index') {
+          Craft.setQueryParam('search', this.$search.val());
+        }
         this.updateElements();
       }
     },
@@ -948,13 +1594,13 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       this.showingActionTriggers = true;
     },
 
-    submitAction: function (action, actionParams) {
+    submitAction: async function (action, actionParams, beforeCallback) {
       // Make sure something's selected
       var selectedElementIds = this.view.getSelectedElementIds(),
         totalSelected = selectedElementIds.length;
 
       if (totalSelected === 0) {
-        return;
+        return false;
       }
 
       if (typeof action === 'string') {
@@ -962,7 +1608,11 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       }
 
       if (action.confirm && !confirm(action.confirm)) {
-        return;
+        return false;
+      }
+
+      if (beforeCallback) {
+        await beforeCallback();
       }
 
       // Cancel any ongoing requests
@@ -985,43 +1635,46 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         if (Craft.csrfTokenName) {
           params[Craft.csrfTokenName] = Craft.csrfTokenValue;
         }
-        Craft.downloadFromUrl(
-          'POST',
-          Craft.getActionUrl(this.settings.submitActionsAction),
-          params
-        )
-          .then((response) => {
-            this.setIndexAvailable();
-          })
-          .catch((e) => {
-            this.setIndexAvailable();
-          });
+        try {
+          await Craft.downloadFromUrl(
+            'POST',
+            Craft.getActionUrl(this.settings.submitActionsAction),
+            params
+          );
+        } finally {
+          this.setIndexAvailable();
+        }
       } else {
-        Craft.sendActionRequest('POST', this.settings.submitActionsAction, {
-          data: params,
-          cancelToken: this._createCancelToken(),
-        })
-          .then((response) => {
-            // Update the count text too
-            this._resetCount();
-            this._updateView(viewParams, response.data);
-
-            if (typeof response.data.badgeCounts !== 'undefined') {
-              this._updateBadgeCounts(response.data.badgeCounts);
+        try {
+          const response = await Craft.sendActionRequest(
+            'POST',
+            this.settings.submitActionsAction,
+            {
+              data: params,
+              cancelToken: this._createCancelToken(),
             }
+          );
 
-            if (response.data.message) {
-              Craft.cp.displaySuccess(response.data.message);
-            }
+          // Update the count text too
+          this._resetCount();
+          this._updateView(viewParams, response.data);
 
-            this.afterAction(action, params);
-          })
-          .catch(({response}) => {
-            Craft.cp.displayError(response.data.message);
-          })
-          .finally(() => {
-            this.setIndexAvailable();
-          });
+          if (typeof response.data.badgeCounts !== 'undefined') {
+            this._updateBadgeCounts(response.data.badgeCounts);
+          }
+
+          if (response.data.message) {
+            Craft.cp.displaySuccess(response.data.message);
+          }
+
+          this.afterAction(action, params);
+        } catch (e) {
+          Craft.cp.displayError(
+            e && e.response && e.response.data && e.response.data.message
+          );
+        } finally {
+          this.setIndexAvailable();
+        }
       }
     },
 
@@ -1052,10 +1705,9 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       this.showingActionTriggers = false;
     },
 
-    updateActionTriggers: function () {
-      // Do we have an action UI to update?
-      if (this.actions) {
-        var totalSelected = this.view.getSelectedElements().length;
+    updateSelectAllCheckbox: function () {
+      if (this.$selectAllCheckbox) {
+        const totalSelected = this.view.getSelectedElements().length;
 
         if (totalSelected !== 0) {
           if (totalSelected === this.view.getEnabledElements().length) {
@@ -1067,11 +1719,21 @@ Craft.BaseElementIndex = Garnish.Base.extend(
             this.$selectAllCheckbox.removeClass('checked');
             this.$selectAllCheckbox.attr('aria-checked', 'mixed');
           }
-
-          this.showActionTriggers();
         } else {
           this.$selectAllCheckbox.removeClass('indeterminate checked');
           this.$selectAllCheckbox.attr('aria-checked', 'false');
+        }
+      }
+    },
+
+    updateActionTriggers: function () {
+      // Do we have an action UI to update?
+      if (this.actions) {
+        const totalSelected = this.view.getSelectedElements().length;
+
+        if (totalSelected !== 0) {
+          this.showActionTriggers();
+        } else {
           this.hideActionTriggers();
         }
       }
@@ -1102,7 +1764,8 @@ Craft.BaseElementIndex = Garnish.Base.extend(
      * @returns {string}
      */
     getSelectedSortAttribute: function ($source) {
-      $source = $source || this.$source;
+      $source = $source ? this.getRootSource($source) : this.$rootSource;
+
       if ($source) {
         const attribute = this.getSourceState($source.data('key'), 'order');
 
@@ -1168,10 +1831,8 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         return;
       }
 
-      if (attr === 'structure') {
-        dir = 'asc';
-      } else {
-        dir = dir || sortOption.defaultDir;
+      if (!dir) {
+        dir = sortOption.defaultDir;
       }
 
       const history = [];
@@ -1208,8 +1869,10 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         this.activeViewMenu.updateSortField();
       }
 
-      // Update the query string
-      Craft.setQueryParam('sort', `${attr}-${dir}`);
+      if (this.settings.context === 'index') {
+        // Update the query string
+        Craft.setQueryParam('sort', `${attr}-${dir}`);
+      }
     },
 
     /**
@@ -1228,16 +1891,6 @@ Craft.BaseElementIndex = Garnish.Base.extend(
     },
 
     /**
-     * Returns whether sorting by a structure is permitted for the current state.
-     * @returns {boolean}
-     */
-    canSortByStructure: function () {
-      return (
-        !this.trashed && !this.drafts && !this.searching && !this.sortByScore
-      );
-    },
-
-    /**
      * Returns the actual sort attribute, which may be different from what's selected.
      * @returns {string[]}
      */
@@ -1246,20 +1899,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         return ['score', 'desc'];
       }
 
-      let attribute = this.getSelectedSortAttribute();
-      let direction = this.getSelectedSortDirection();
-
-      if (attribute === 'structure') {
-        if (!this.canSortByStructure()) {
-          const alt = this.getSortOptions().find((a) => a.attr !== 'structure');
-          attribute = alt.attr;
-          direction = alt.defaultDir;
-        } else {
-          direction = 'asc';
-        }
-      }
-
-      return [attribute, direction];
+      return [this.getSelectedSortAttribute(), this.getSelectedSortDirection()];
     },
 
     getSortLabel: function (attr) {
@@ -1268,7 +1908,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
     },
 
     getSelectedViewMode: function () {
-      return this.getSelectedSourceState('mode') || 'table';
+      return this.validateViewMode(this.getSelectedSourceState('mode') || null);
     },
 
     /**
@@ -1333,7 +1973,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       this.sourceKey = $source.data('key');
       this.rootSourceKey = this.$rootSource.data('key');
       this.setInstanceState('selectedSource', this.sourceKey);
-      this.sourceSelect.selectItem($source);
+      this.sourceNav.selectItem($source);
 
       Craft.cp.updateContentHeading();
 
@@ -1341,6 +1981,9 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         // Clear the search value without causing it to update elements
         this.searchText = null;
         this.$search.val('');
+        if (this.settings.context === 'index') {
+          Craft.setQueryParam('search', null);
+        }
         this.stopSearching();
       }
 
@@ -1379,13 +2022,9 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       if (this.sourceViewModes.length > 1) {
         this.$viewModeBtnContainer = $(
           '<section class="btngroup btngroup--exclusive"/>'
-        ).attr('aria-label', Craft.t('app', 'View'));
-
-        if (this.activeViewMenu) {
-          this.$viewModeBtnContainer.insertBefore(this.activeViewMenu.$trigger);
-        } else {
-          this.$viewModeBtnContainer.appendTo(this.$toolbar);
-        }
+        )
+          .attr('aria-label', Craft.t('app', 'View'))
+          .insertAfter(this.$searchContainer);
 
         for (var i = 0; i < this.sourceViewModes.length; i++) {
           let sourceViewMode = this.sourceViewModes[i];
@@ -1419,7 +2058,15 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       }
 
       // Figure out which mode we should start with
-      var viewMode = this.getSelectedViewMode();
+      var viewMode = this.getSelectedSourceState('mode');
+
+      // Maintain the structure view for source states that were saved with an older Craft version
+      if (
+        viewMode === 'table' &&
+        this.getSourceState($source.data('key'), 'order') === 'structure'
+      ) {
+        viewMode = 'structure';
+      }
 
       if (!viewMode || !this.doesSourceHaveViewMode(viewMode)) {
         // Try to keep using the current view mode
@@ -1436,7 +2083,19 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
       this.updateSourceMenu();
       this.updateViewMenu();
-      this.updateFilterBtn();
+
+      if (!this.filterHudExists() && this.$source.data('default-filter')) {
+        this.createFilterHud({
+          showOnInit: false,
+          conditionConfig: this.$source.data('default-filter'),
+        });
+      } else {
+        this.updateFilterBtn();
+      }
+
+      this.sourcePath =
+        this.sourcePaths[this.sourceKey] ||
+        this.$source.data('default-source-path');
 
       this.onSelectSource();
 
@@ -1465,11 +2124,11 @@ Craft.BaseElementIndex = Garnish.Base.extend(
      * @returns {Object[]}
      */
     getSortOptions: function ($source) {
-      $source = $source || this.$rootSource;
+      $source = $source ? this.getRootSource($source) : this.$rootSource;
       const sortOptions = ($source ? $source.data('sort-opts') : null) || [];
 
-      // Make sure there's at least one non-structure attribute
-      if (!sortOptions.find((a) => a.attr !== 'structure')) {
+      // Make sure there's at least one attribute
+      if (!sortOptions.length) {
         sortOptions.push({
           label: Craft.t('app', 'Title'),
           attr: 'title',
@@ -1498,7 +2157,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
      * @returns {string[]}
      */
     getDefaultSort: function ($source) {
-      $source = $source || this.$rootSource;
+      $source = $source ? this.getRootSource($source) : this.$rootSource;
       if ($source) {
         let defaultSort = $source.data('default-sort');
         if (defaultSort) {
@@ -1530,7 +2189,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
      * @returns {Object[]}
      */
     getTableColumnOptions: function ($source) {
-      $source = $source || this.$rootSource;
+      $source = $source ? this.getRootSource($source) : this.$rootSource;
       return ($source ? $source.data('table-col-opts') : null) || [];
     },
 
@@ -1553,7 +2212,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
      * @returns {string[]}
      */
     getDefaultTableColumns: function ($source) {
-      $source = $source || this.$rootSource;
+      $source = $source ? this.getRootSource($source) : this.$rootSource;
       return ($source ? $source.data('default-table-cols') : null) || [];
     },
 
@@ -1563,7 +2222,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
      * @returns {string[]}
      */
     getSelectedTableColumns: function ($source) {
-      $source = $source || this.$rootSource;
+      $source = $source ? this.getRootSource($source) : this.$rootSource;
       if ($source) {
         const attributes = this.getSourceState(
           $source.data('key'),
@@ -1593,13 +2252,23 @@ Craft.BaseElementIndex = Garnish.Base.extend(
     },
 
     getViewModesForSource: function () {
-      var viewModes = [
-        {
+      const viewModes = [];
+
+      if (!Garnish.isMobileBrowser(true)) {
+        if (Garnish.hasAttr(this.$source, 'data-has-structure')) {
+          viewModes.push({
+            mode: 'structure',
+            title: Craft.t('app', 'Display in a structured table'),
+            icon: Craft.orientation === 'rtl' ? 'structurertl' : 'structure',
+          });
+        }
+
+        viewModes.push({
           mode: 'table',
           title: Craft.t('app', 'Display in a table'),
           icon: 'list',
-        },
-      ];
+        });
+      }
 
       if (this.$source && Garnish.hasAttr(this.$source, 'data-has-thumbs')) {
         viewModes.push({
@@ -1609,10 +2278,26 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         });
       }
 
+      viewModes.push({
+        mode: 'cards',
+        title: Craft.t('app', 'Display as cards'),
+        icon: 'cards',
+      });
+
+      if (this.settings.allowedViewModes) {
+        return viewModes.filter((mode) =>
+          this.settings.allowedViewModes.includes(mode.mode)
+        );
+      }
+
       return viewModes;
     },
 
     doesSourceHaveViewMode: function (viewMode) {
+      if (!this.sourceViewModes) {
+        return false;
+      }
+
       for (var i = 0; i < this.sourceViewModes.length; i++) {
         if (this.sourceViewModes[i].mode === viewMode) {
           return true;
@@ -1622,6 +2307,18 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       return false;
     },
 
+    validateViewMode: function (viewMode) {
+      if (viewMode && this.doesSourceHaveViewMode(viewMode)) {
+        return viewMode;
+      }
+
+      if (this.sourceViewModes && this.sourceViewModes.length) {
+        return this.sourceViewModes[0].mode;
+      }
+
+      return this.doesSourceHaveViewMode('table') ? 'table' : 'cards';
+    },
+
     selectViewMode: function (viewMode, force) {
       // Make sure that the current source supports it
       if (!force && !this.doesSourceHaveViewMode(viewMode)) {
@@ -1629,27 +2326,32 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       }
 
       // Has anything changed?
-      if (viewMode === this.viewMode) {
+      if (viewMode === this._viewMode) {
         return;
       }
 
       // Deselect the previous view mode
       if (
-        this.viewMode &&
-        typeof this.viewModeBtns[this.viewMode] !== 'undefined'
+        this._viewMode &&
+        typeof this.viewModeBtns[this._viewMode] !== 'undefined'
       ) {
-        this.viewModeBtns[this.viewMode]
+        this.viewModeBtns[this._viewMode]
           .removeClass('active')
           .attr('aria-pressed', 'false');
       }
 
-      this.viewMode = viewMode;
-      this.setSelecetedSourceState('mode', this.viewMode);
+      this._viewMode = viewMode;
+      this.setSelecetedSourceState('mode', this._viewMode);
 
-      if (typeof this.viewModeBtns[this.viewMode] !== 'undefined') {
-        this.viewModeBtns[this.viewMode]
+      if (typeof this.viewModeBtns[this._viewMode] !== 'undefined') {
+        this.viewModeBtns[this._viewMode]
           .addClass('active')
           .attr('aria-pressed', 'true');
+      }
+
+      // Update the view menu
+      if (this.activeViewMenu) {
+        this.activeViewMenu.updateSortField();
       }
     },
 
@@ -1661,7 +2363,10 @@ Craft.BaseElementIndex = Garnish.Base.extend(
     getViewClass: function (mode) {
       switch (mode) {
         case 'table':
+        case 'structure':
           return Craft.TableElementIndexView;
+        case 'cards':
+          return Craft.CardsElementIndexView;
         case 'thumbs':
           return Craft.ThumbsElementIndexView;
         default:
@@ -1770,10 +2475,12 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       if (this.settings.buttonContainer) {
         return $(this.settings.buttonContainer);
       } else {
-        var $container = $('#action-buttons');
+        var $container = $(`#${this.namespaceId('action-buttons')}`);
 
         if (!$container.length) {
-          $container = $('<div id="action-buttons"/>').appendTo($('#header'));
+          $container = $(`<div/>`, {
+            id: this.namespaceId('action-buttons'),
+          }).appendTo($(`#${this.namespaceId('header')}`));
         }
 
         return $container;
@@ -1784,17 +2491,62 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       this.$elements.addClass('busy');
       this.$updateSpinner.appendTo(this.$elements);
       this.isIndexBusy = true;
+
+      // Blur the active element, if it's within the element listing pane
+      if (
+        document.activeElement &&
+        this.$elements[0].contains(document.activeElement)
+      ) {
+        this._activeElement = document.activeElement;
+        document.activeElement.blur();
+      }
+
+      let elementsHeight = this.$elements.height();
+      let windowHeight = window.innerHeight;
+      let scrollTop = $(document).scrollTop();
+
+      if (this.settings.context == 'modal') {
+        windowHeight = this.$elements.parents('.modal').height();
+        scrollTop = this.$elements.scrollParent().scrollTop();
+      }
+
+      if (elementsHeight > windowHeight) {
+        let positionTop = Math.floor(scrollTop + windowHeight / 2) - 100;
+        positionTop = Math.floor((positionTop / elementsHeight) * 100);
+
+        document.documentElement.style.setProperty(
+          '--elements-busy-top-position',
+          positionTop + '%'
+        );
+      }
     },
 
     setIndexAvailable: function () {
       this.$elements.removeClass('busy');
       this.$updateSpinner.remove();
       this.isIndexBusy = false;
+
+      // Refocus the previously-focused element
+      if (this._activeElement) {
+        if (
+          !document.activeElement ||
+          document.activeElement === document.body
+        ) {
+          if (document.body.contains(this._activeElement)) {
+            this._activeElement.focus();
+          } else if (this._activeElement.id) {
+            $(`#${this._activeElement.id}`).focus();
+          }
+        }
+        this._activeElement = null;
+      }
     },
 
     createCustomizeSourcesModal: function () {
       // Recreate it each time
       var modal = new Craft.CustomizeSourcesModal(this, {
+        hideOnEsc: false,
+        hideOnShadeClick: false,
         onHide: function () {
           modal.destroy();
         },
@@ -1804,8 +2556,8 @@ Craft.BaseElementIndex = Garnish.Base.extend(
     },
 
     disable: function () {
-      if (this.sourceSelect) {
-        this.sourceSelect.disable();
+      if (this.sourceNav) {
+        this.sourceNav.disable();
       }
 
       if (this.view) {
@@ -1816,8 +2568,8 @@ Craft.BaseElementIndex = Garnish.Base.extend(
     },
 
     enable: function () {
-      if (this.sourceSelect) {
-        this.sourceSelect.enable();
+      if (this.sourceNav) {
+        this.sourceNav.enable();
       }
 
       if (this.view) {
@@ -1842,9 +2594,25 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       this.trigger('selectSite', {siteId: this.siteId});
     },
 
+    onBeforeUpdateElements: function () {
+      this.settings.onBeforeUpdateElements();
+      this.trigger('beforeUpdateElements');
+    },
+
     onUpdateElements: function () {
       this.settings.onUpdateElements();
       this.trigger('updateElements');
+    },
+
+    onCountResults: function () {
+      this.settings.onCountResults(
+        this.totalResults,
+        this.totalUnfilteredResults
+      );
+      this.trigger('countResults', {
+        total: this.totalResults,
+        totalUnfiltered: this.totalUnfilteredResults,
+      });
     },
 
     onSelectionChange: function () {
@@ -1870,15 +2638,16 @@ Craft.BaseElementIndex = Garnish.Base.extend(
     // UI state handlers
     // -------------------------------------------------------------------------
 
-    _handleSourceSelectionChange: function () {
+    _handleSourceSelectionChange: function (event) {
       // If the selected source was just removed (maybe because its parent was collapsed),
       // there won't be a selected source
-      if (!this.sourceSelect.totalSelected) {
-        this.sourceSelect.selectItem(this.$visibleSources.first());
+
+      if (!this.sourceNav.$selectedItem) {
+        this.sourceNav.selectItem(this.$visibleSources.first());
         return;
       }
 
-      if (this.selectSource(this.sourceSelect.$selectedItems)) {
+      if (this.selectSource(this.sourceNav.$selectedItem)) {
         this.updateElements();
       }
     },
@@ -1886,25 +2655,46 @@ Craft.BaseElementIndex = Garnish.Base.extend(
     _handleActionTriggerSubmit: function (ev) {
       ev.preventDefault();
 
-      var $form = $(ev.currentTarget);
+      const $form = $(ev.currentTarget);
 
       // Make sure Craft.ElementActionTrigger isn't overriding this
       if ($form.hasClass('disabled') || $form.data('custom-handler')) {
         return;
       }
 
-      this.submitAction($form.data('action'), Garnish.getPostData($form));
+      this._submitActionInternal(
+        $form.data('action'),
+        $form.data('trigger') && $form.data('trigger').data('trigger'),
+        Garnish.getPostData($form)
+      );
     },
 
     _handleMenuActionTriggerSubmit: function (ev) {
-      var $option = $(ev.option);
+      const $option = $(ev.option);
 
       // Make sure Craft.ElementActionTrigger isn't overriding this
       if ($option.hasClass('disabled') || $option.data('custom-handler')) {
         return;
       }
 
-      this.submitAction($option.data('action'));
+      this._submitActionInternal(
+        $option.data('action'),
+        $option.data('trigger')
+      );
+    },
+
+    _submitActionInternal: async function (action, trigger, actionParams) {
+      const $selectedElements = this.getSelectedElements();
+
+      await this.submitAction(action, actionParams, async () => {
+        if (trigger) {
+          await trigger.settings.beforeActivate($selectedElements, this);
+        }
+      });
+
+      if (trigger) {
+        await trigger.settings.afterActivate($selectedElements, this);
+      }
     },
 
     _handleStatusChange: function (ev) {
@@ -1931,7 +2721,10 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         this.activeViewMenu.updateSortField();
       }
 
-      Craft.setQueryParam('status', queryParam);
+      if (this.settings.context === 'index') {
+        Craft.setQueryParam('status', queryParam);
+      }
+
       this.updateElements();
     },
 
@@ -1940,6 +2733,9 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       var $option = $(ev.selectedOption).addClass('sel');
       this.$siteMenuBtn.html($option.html());
       this._setSite($option.data('site-id'));
+      if (this.initialized) {
+        this.updateElements();
+      }
       this.onSelectSite();
     },
 
@@ -1977,8 +2773,6 @@ Craft.BaseElementIndex = Garnish.Base.extend(
           Craft.cp.setSiteId(siteId);
         }
 
-        // Update the elements
-        this.updateElements();
         this.updateFilterBtn();
       }
     },
@@ -1996,7 +2790,22 @@ Craft.BaseElementIndex = Garnish.Base.extend(
               .data('sites')
               .toString()
               .split(',')
-              .indexOf(this.siteId.toString()) !== -1)
+              .some((siteId) => {
+                if (siteId == this.siteId) {
+                  return true;
+                }
+                // maybe UUIDs were used
+                if (siteId != parseInt(siteId)) {
+                  const site = Craft.sites.find(
+                    (site) => site.id == this.siteId
+                  );
+                  if (site && siteId == site.uid) {
+                    return true;
+                  }
+                }
+
+                return false;
+              }))
         ) {
           $source.parent().removeClass('hidden');
           this.$visibleSources = this.$visibleSources.add($source);
@@ -2015,6 +2824,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
     },
 
     _handleSelectionChange: function () {
+      this.updateSelectAllCheckbox();
       this.updateActionTriggers();
       this.onSelectionChange();
     },
@@ -2060,7 +2870,6 @@ Craft.BaseElementIndex = Garnish.Base.extend(
     _expandSource: function ($source) {
       $source.next('.toggle').attr({
         'aria-expanded': 'true',
-        'aria-label': Craft.t('app', 'Hide nested sources'),
       });
       $source.parent('li').addClass('expanded');
 
@@ -2102,13 +2911,6 @@ Craft.BaseElementIndex = Garnish.Base.extend(
     // View
     // -------------------------------------------------------------------------
 
-    _isViewPaginated: function () {
-      return (
-        this.settings.context === 'index' &&
-        this.getSortAttributeAndDirection()[0] !== 'structure'
-      );
-    },
-
     _updateView: function (params, response) {
       // Cleanup
       // -------------------------------------------------------------
@@ -2116,15 +2918,21 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       // Get rid of the old action triggers regardless of whether the new batch has actions or not
       if (this.actions) {
         this.hideActionTriggers();
+
+        if (this.triggers) {
+          for (let trigger of this.triggers) {
+            trigger.destroy();
+          }
+        }
+
         this.actions =
           this.actionsHeadHtml =
           this.actionsBodyHtml =
+          this.triggers =
           this._$triggers =
+          this.$actionMenuBtn =
             null;
       }
-
-      // Capture the focused element, in case it's about to get removed from the DOM
-      const activeElement = document.activeElement;
 
       // Update the count text
       // -------------------------------------------------------------
@@ -2144,7 +2952,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
               ? Craft.elementTypeNames[this.elementType][3]
               : this.settings.elementTypePluralName.toLowerCase();
 
-            if (!this._isViewPaginated()) {
+            if (!this.paginated) {
               let countLabel = Craft.t(
                 'app',
                 '{total, number} {total, plural, =1{{item}} other{{items}}}',
@@ -2189,6 +2997,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
               }).appendTo($paginationContainer);
 
               let $prevBtn = $('<button/>', {
+                type: 'button',
                 role: 'button',
                 class:
                   'page-link prev-page' + (this.page > 1 ? '' : ' disabled'),
@@ -2196,6 +3005,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
                 title: Craft.t('app', 'Previous Page'),
               }).appendTo($paginationNav);
               let $nextBtn = $('<button/>', {
+                type: 'button',
                 role: 'button',
                 class:
                   'page-link next-page' +
@@ -2236,6 +3046,11 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       // Update the view with the new container + elements HTML
       // -------------------------------------------------------------
 
+      if (this.isAdministrative) {
+        // set Craft.currentElementIndex for actions
+        Craft.currentElementIndex = this;
+      }
+
       this.$elements.html(response.html);
       Craft.appendHeadHtml(response.headHtml);
       Craft.appendBodyHtml(response.bodyHtml);
@@ -2247,11 +3062,29 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         '.selectallcontainer:first'
       );
 
-      if (response.actions && response.actions.length) {
+      if (this.multiSelect || (response.actions && response.actions.length)) {
         if (this.$selectAllContainer.length) {
-          this.actions = response.actions;
-          this.actionsHeadHtml = response.actionsHeadHtml;
-          this.actionsBodyHtml = response.actionsBodyHtml;
+          if (response.actions && response.actions.length) {
+            this.actions = response.actions;
+            this.actionsHeadHtml = response.actionsHeadHtml;
+            this.actionsBodyHtml = response.actionsBodyHtml;
+          }
+
+          if (this.settings.actions && this.settings.actions.length) {
+            if (!this.actions) {
+              this.actions = [];
+            }
+
+            for (let action of this.settings.actions) {
+              // clone it so bodyHtml doesn't make it into this.actions
+              action = Object.assign({}, action);
+              if (action.bodyHtml) {
+                this.actionsBodyHtml += action.bodyHtml;
+                delete action.bodyHtml;
+              }
+              this.actions.push(action);
+            }
+          }
 
           // Create the select all checkbox
           this.$selectAllCheckbox = $('<div class="checkbox"/>')
@@ -2263,7 +3096,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
               'aria-label': Craft.t('app', 'Select all'),
             });
 
-          this.addListener(this.$selectAllCheckbox, 'click', function () {
+          this.addListener(this.$selectAllContainer, 'click', function () {
             if (this.view.getSelectedElements().length === 0) {
               this.view.selectAllElements();
             } else {
@@ -2301,39 +3134,38 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       // Create the view
       // -------------------------------------------------------------
 
-      // Should we make the view selectable?
-      var selectable = this.actions || this.settings.selectable;
+      const settings = Object.assign(
+        {
+          context: this.settings.context,
+          batchSize:
+            this.isAdministrative || this.viewMode === 'structure'
+              ? this.settings.batchSize
+              : null,
+          params: params,
+          selectable: this.selectable,
+          multiSelect: this.multiSelect,
+          canSelectElement: this.settings.canSelectElement,
+          checkboxMode: this.selectable,
+          sortable: this.sortable,
+          onSelectionChange: this._handleSelectionChange.bind(this),
+          onSortChange: this.settings.onSortChange,
+        },
+        this.getViewSettings()
+      );
 
-      this.view = this.createView(this.getSelectedViewMode(), {
-        context: this.settings.context,
-        batchSize:
-          this.settings.context !== 'index' ||
-          this.getSortAttributeAndDirection()[0] === 'structure'
-            ? this.settings.batchSize
-            : null,
-        params: params,
-        selectable: selectable,
-        multiSelect: this.actions || this.settings.multiSelect,
-        checkboxMode: !!this.actions,
-        onSelectionChange: this._handleSelectionChange.bind(this),
-      });
-
-      // Refocus the previously-focused element
-      // -------------------------------------------------------------
-
-      if (
-        activeElement &&
-        activeElement.id &&
-        !document.body.contains(activeElement)
-      ) {
-        $(`#${activeElement.id}`).focus();
+      // Kill the old view class
+      if (this.view) {
+        this.view.destroy();
+        delete this.view;
       }
+
+      this.view = this.createView(this.getSelectedViewMode(), settings);
 
       // Auto-select elements
       // -------------------------------------------------------------
 
       if (this._autoSelectElements) {
-        if (selectable) {
+        if (this.selectable) {
           for (var i = 0; i < this._autoSelectElements.length; i++) {
             this.view.selectElementById(this._autoSelectElements[i]);
           }
@@ -2370,11 +3202,11 @@ Craft.BaseElementIndex = Garnish.Base.extend(
     _countResults: function () {
       return new Promise((resolve, reject) => {
         if (this.totalResults !== null) {
-          resolve(this.totalResults);
+          resolve(this.totalResults, this.totalUnfilteredResults);
         } else {
           var params = this.getViewParams();
-          delete params.criteria.offset;
-          delete params.criteria.limit;
+          delete params.baseCriteria.offset;
+          delete params.baseCriteria.limit;
 
           // Make sure we've got an active result set ID
           if (this.resultSet === null) {
@@ -2388,8 +3220,10 @@ Craft.BaseElementIndex = Garnish.Base.extend(
           })
             .then((response) => {
               if (response.data.resultSet == this.resultSet) {
-                this.totalResults = response.data.count;
-                resolve(response.data.count);
+                this.totalResults = response.data.total;
+                this.totalUnfilteredResults = response.data.unfilteredTotal;
+                resolve(this.totalResults, this.totalUnfilteredResults);
+                this.onCountResults();
               } else {
                 reject();
               }
@@ -2399,27 +3233,54 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       });
     },
 
-    _createTriggers: function () {
-      var triggers = [],
-        safeMenuActions = [],
-        destructiveMenuActions = [];
+    _createTriggers: async function () {
+      this.triggers = [];
+      this._$triggers = $();
+      const safeMenuActions = [];
+      const destructiveMenuActions = [];
 
-      var i;
-
-      for (i = 0; i < this.actions.length; i++) {
-        var action = this.actions[i];
+      for (let i = 0; i < this.actions.length; i++) {
+        const action = this.actions[i];
 
         if (action.trigger) {
-          var $form = $(
-            '<form id="' +
-              Craft.formatInputId(action.type) +
-              '-actiontrigger"/>'
-          )
-            .data('action', action)
-            .append(action.trigger);
+          const $trigger = $('<div/>', {
+            id: `${this.namespaceId(action.type)}-actiontrigger`,
+          }).append(action.trigger);
+          $trigger.find('.btn').addClass('secondary');
+
+          // Add any active inputs to action.settings,
+          // and remove their input names so they don't muck up the parent form
+          if (!action.settings) {
+            action.settings = {};
+          }
+          $.extend(
+            action.settings,
+            Craft.expandPostArray(Garnish.getPostData($trigger))
+          );
+          $trigger.find('[name]').removeAttr('name');
+
+          // create a new form at the end of the DOM, in case the element index is within another form
+          const formId = `element-action-form-${Math.floor(
+            Math.random() * 1000000
+          )}`;
+          const $form = $('<form/>', {
+            id: formId,
+            method: 'post',
+            action: '',
+            class: 'hidden',
+            data: {action},
+          }).appendTo(Garnish.$bod);
+
+          // redirect all submits to the remote form
+          $trigger
+            .find('button[type=submit],input[type=submit],.formsubmit')
+            .addClass('formsubmit')
+            .attr('data-form', formId);
+
+          $form.data('trigger', $trigger);
 
           this.addListener($form, 'submit', '_handleActionTriggerSubmit');
-          triggers.push($form);
+          this._$triggers = this._$triggers.add($trigger);
         } else {
           if (!action.destructive) {
             safeMenuActions.push(action);
@@ -2429,19 +3290,17 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         }
       }
 
-      var $btn;
-
       if (safeMenuActions.length || destructiveMenuActions.length) {
-        var $menuTrigger = $('<form/>');
+        const $menuTrigger = $('<form/>');
 
-        $btn = $('<button/>', {
+        this.$actionMenuBtn = $('<button/>', {
           type: 'button',
-          class: 'btn menubtn',
+          class: 'btn secondary menubtn',
           'data-icon': 'settings',
           title: Craft.t('app', 'Actions'),
         }).appendTo($menuTrigger);
 
-        var $menu = $('<ul class="menu"/>').appendTo($menuTrigger),
+        const $menu = $('<ul class="menu"/>').appendTo($menuTrigger),
           $safeList = this._createMenuTriggerList(safeMenuActions, false),
           $destructiveList = this._createMenuTriggerList(
             destructiveMenuActions,
@@ -2460,24 +3319,17 @@ Craft.BaseElementIndex = Garnish.Base.extend(
           $destructiveList.appendTo($menu);
         }
 
-        triggers.push($menuTrigger);
-      }
-
-      this._$triggers = $();
-
-      for (i = 0; i < triggers.length; i++) {
-        var $div = $('<div/>').append(triggers[i]);
-        this._$triggers = this._$triggers.add($div);
+        this._$triggers = this._$triggers.add($menuTrigger);
       }
 
       this._$triggers.appendTo(this.$actionsContainer);
-      Craft.appendHeadHtml(this.actionsHeadHtml);
-      Craft.appendBodyHtml(this.actionsBodyHtml);
+      await Craft.appendHeadHtml(this.actionsHeadHtml);
+      await Craft.appendBodyHtml(this.actionsBodyHtml);
 
       Craft.initUiElements(this._$triggers);
 
-      if ($btn) {
-        $btn
+      if (this.$actionMenuBtn) {
+        this.$actionMenuBtn
           .data('menubtn')
           .on('optionSelect', this._handleMenuActionTriggerSubmit.bind(this));
       }
@@ -2551,6 +3403,8 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         })
         .appendTo($form);
 
+      const $exportSubmit = new Garnish.MultiFunctionBtn($submitBtn);
+
       var hud = new Garnish.HUD(this.$exportBtn, $form);
 
       hud.on('hide', () => {
@@ -2567,11 +3421,11 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         }
 
         submitting = true;
-        $submitBtn.addClass('loading');
+        $exportSubmit.busyEvent();
 
         var params = this.getViewParams();
-        delete params.criteria.offset;
-        delete params.criteria.limit;
+        delete params.baseCriteria.offset;
+        delete params.baseCriteria.limit;
         delete params.collapsedElementIds;
 
         params.type = $typeField.find('select').val();
@@ -2595,32 +3449,30 @@ Craft.BaseElementIndex = Garnish.Base.extend(
           Craft.getActionUrl('element-indexes/export'),
           params
         )
-          .catch(() => {
-            if (!this._ignoreFailedRequest) {
+          .catch((e) => {
+            if (!axios.isCancel(e)) {
               Craft.cp.displayError(Craft.t('app', 'A server error occurred.'));
             }
           })
           .finally(() => {
             submitting = false;
-            $submitBtn.removeClass('loading');
+            $exportSubmit.successEvent();
           });
       });
     },
 
     _createMenuTriggerList: function (actions, destructive) {
       if (actions && actions.length) {
-        var $ul = $('<ul/>');
+        const $ul = $('<ul/>');
 
-        for (var i = 0; i < actions.length; i++) {
+        for (let action of actions) {
           $('<li/>')
             .append(
               $('<a/>', {
-                id: Craft.formatInputId(actions[i].type) + '-actiontrigger',
+                id: `${this.namespaceId(action.type)}-actiontrigger`,
                 class: destructive ? 'error' : null,
-                data: {
-                  action: actions[i],
-                },
-                text: actions[i].name,
+                data: {action},
+                text: action.name,
               })
             )
             .appendTo($ul);
@@ -2630,24 +3482,42 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       }
     },
 
+    filterHudExists: function () {
+      return (
+        this.filterHuds[this.siteId] &&
+        this.filterHuds[this.siteId][this.sourceKey]
+      );
+    },
+
     showFilterHud: function () {
-      if (!this.filterHuds[this.siteId]) {
-        this.filterHuds[this.siteId] = {};
-      }
-      if (!this.filterHuds[this.siteId][this.sourceKey]) {
-        this.filterHuds[this.siteId][this.sourceKey] = new FilterHud(
-          this,
-          this.sourceKey,
-          this.siteId
-        );
-        this.updateFilterBtn();
+      if (!this.filterHudExists()) {
+        this.createFilterHud();
       } else {
         this.filterHuds[this.siteId][this.sourceKey].show();
       }
     },
 
+    createFilterHud: function (settings) {
+      if (!this.filterHuds[this.siteId]) {
+        this.filterHuds[this.siteId] = {};
+      }
+
+      this.filterHuds[this.siteId][this.sourceKey] = new FilterHud(
+        this,
+        this.sourceKey,
+        this.siteId,
+        settings
+      );
+
+      this.updateFilterBtn();
+    },
+
     updateFilterBtn: function () {
       this.$filterBtn.removeClass('active');
+
+      if (this.settings.context === 'index') {
+        Craft.setQueryParam('filters', null);
+      }
 
       if (
         this.filterHuds[this.siteId] &&
@@ -2665,11 +3535,15 @@ Craft.BaseElementIndex = Garnish.Base.extend(
               : 'false'
           );
 
-        if (
-          this.filterHuds[this.siteId][this.sourceKey].showing ||
-          this.filterHuds[this.siteId][this.sourceKey].hasRules()
-        ) {
+        if (this.hasActiveFilter) {
           this.$filterBtn.addClass('active');
+
+          if (this.settings.context === 'index') {
+            Craft.setQueryParam(
+              'filters',
+              this.filterHuds[this.siteId][this.sourceKey].serialized
+            );
+          }
         }
       } else {
         this.$filterBtn.attr('aria-controls', null);
@@ -2679,14 +3553,29 @@ Craft.BaseElementIndex = Garnish.Base.extend(
   {
     defaults: {
       context: 'index',
+      namespace: null,
       modal: null,
       storageKey: null,
       condition: null,
+      referenceElementId: null,
+      referenceElementSiteId: null,
+      allowedViewModes: null,
+      showHeaderColumn: true,
       criteria: null,
       batchSize: 100,
       disabledElementIds: [],
       selectable: false,
       multiSelect: false,
+      canSelectElement: null,
+      canDuplicateElements: (selectedItems) => true,
+      onBeforeDuplicateElements: async (selectedItems) => {},
+      onDuplicateElements: async (selectedItems) => {},
+      canDeleteElements: (selectedItems) => true,
+      onBeforeDeleteElements: async (selectedItems) => {},
+      onDeleteElements: async (selectedItems) => {},
+      sortable: false,
+      inlineEditable: null,
+      actions: null,
       buttonContainer: null,
       hideSidebar: false,
       toolbarSelector: '.toolbar:first',
@@ -2696,6 +3585,9 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       submitActionsAction: 'element-indexes/perform-action',
       defaultSiteId: null,
       defaultSource: null,
+      defaultSourcePath: null,
+      preferStoredSource: false,
+      showSourcePath: true,
       canHaveDrafts: false,
 
       elementTypeName: Craft.t('app', 'Element'),
@@ -2704,11 +3596,159 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       onAfterInit: $.noop,
       onSelectSource: $.noop,
       onSelectSite: $.noop,
+      onBeforeUpdateElements: $.noop,
       onUpdateElements: $.noop,
+      onCountResults: $.noop,
       onSelectionChange: $.noop,
+      onSourcePathChange: $.noop,
       onEnableElements: $.noop,
       onDisableElements: $.noop,
       onAfterAction: $.noop,
+      onSortChange: $.noop,
+    },
+  }
+);
+
+const SourceNav = Garnish.Base.extend(
+  {
+    $container: null,
+    $items: null,
+    $selectedItem: null,
+
+    init: function (container, settings) {
+      this.$container = $(container);
+
+      const items = this.$container.find('[data-source-item]');
+
+      this.setSettings(settings, SourceNav.defaults);
+
+      this.$items = $();
+      this.addItems(items);
+    },
+
+    addItems: function (items) {
+      const $items = $(items);
+
+      for (var i = 0; i < $items.length; i++) {
+        const item = $items[i];
+
+        this.addListener(item, 'click', this.handleClick.bind(this));
+        this.addListener(item, 'keydown', this.handleKeypress.bind(this));
+      }
+
+      this.$items = this.$items.add($items);
+    },
+
+    /**
+     * Remove All Items
+     */
+    removeAllItems: function () {
+      for (var i = 0; i < this.$items.length; i++) {
+        this._deinitItem(this.$items[i]);
+      }
+
+      this.$items = $();
+      this.$selectedItem = $();
+    },
+
+    handleKeypress: function (event) {
+      const {keyCode} = event;
+
+      if (keyCode === Garnish.RETURN_KEY || keyCode === Garnish.SPACE_KEY) {
+        event.preventDefault();
+        this.selectItem(event.target);
+      }
+    },
+
+    handleClick: function (event) {
+      const $item = this.getClosestItem(event.target);
+
+      this.selectItem($item);
+    },
+
+    getClosestItem: function (element) {
+      return $(element).closest('[data-source-item]');
+    },
+
+    selectItem: function (item) {
+      const $item = $(item);
+      this.deselectAll();
+
+      this.$selectedItem = $item
+        .attr('aria-current', 'true')
+        .addClass(this.settings.selectedClass);
+
+      this.onSelectionChange();
+    },
+
+    deselectAll: function () {
+      this.$items
+        .attr('aria-current', 'false')
+        .removeClass(this.settings.selectedClass);
+
+      this.onSelectionChange();
+    },
+
+    removeItems: function (items) {
+      let selectedItem;
+
+      items = $.makeArray(items);
+
+      let itemsChanged = false,
+        selectionChanged = false;
+
+      for (let i = 0; i < items.length; i++) {
+        const item = items[i];
+
+        // Is this item in the list of navigation items?
+        const index = $.inArray(item, this.$items);
+
+        // Yes! Then deinitialize the item and remove it from the list
+        if (index !== -1) {
+          this._deinitItem(item);
+          this.$items.splice(index, 1);
+          itemsChanged = true;
+
+          // One of the items is currently selected
+          if ($(item).is(this.$selectedItem)) {
+            selectionChanged = true;
+            this.$selectedItem = null;
+          }
+        }
+      }
+
+      if (itemsChanged) {
+        if (selectionChanged) {
+          $(items).removeClass(this.settings.selectedClass);
+          this.onSelectionChange();
+        }
+      }
+    },
+
+    onSelectionChange: function () {
+      if (this.callbackFrame) {
+        Garnish.cancelAnimationFrame(this.callbackFrame);
+        this.callbackFrame = null;
+      }
+
+      this.callbackFrame = Garnish.requestAnimationFrame(
+        function () {
+          this.callbackFrame = null;
+          this.trigger('selectionChange');
+          this.settings.onSelectionChange();
+        }.bind(this)
+      );
+    },
+
+    _deinitItem: function (item) {
+      const $item = $(item);
+      this.removeAllListeners($item);
+    },
+  },
+  {
+    defaults: {
+      selectedClass: 'sel',
+      onSelectionChange: $.noop,
     },
   }
 );
@@ -2722,9 +3762,11 @@ const ViewMenu = Garnish.Base.extend({
 
   $trigger: null,
   $container: null,
+  $sortField: null,
   $sortAttributeSelect: null,
   $sortDirectionPicker: null,
   sortDirectionListbox: null,
+  $tableColumnsField: null,
   $tableColumnsContainer: null,
   $revertContainer: null,
   $revertBtn: null,
@@ -2784,6 +3826,24 @@ const ViewMenu = Garnish.Base.extend({
   },
 
   updateSortField: function () {
+    if (this.elementIndex.settings.sortable) {
+      return;
+    }
+
+    if (this.$sortField) {
+      if (this.elementIndex.viewMode === 'structure') {
+        this.$sortField.addClass('hidden');
+        if (this.$tableColumnsField) {
+          this.$tableColumnsField.addClass('first-child');
+        }
+      } else {
+        this.$sortField.removeClass('hidden');
+        if (this.$tableColumnsField) {
+          this.$tableColumnsField.removeClass('first-child');
+        }
+      }
+    }
+
     let [attribute, direction] =
       this.elementIndex.getSortAttributeAndDirection();
 
@@ -2809,26 +3869,20 @@ const ViewMenu = Garnish.Base.extend({
     this.$sortAttributeSelect.val(attribute);
     this.sortDirectionListbox.select(direction === 'asc' ? 0 : 1);
 
-    if (['structure', 'score'].includes(attribute)) {
+    if (attribute === 'score') {
       this.sortDirectionListbox.disable();
       this.$sortDirectionPicker.addClass('disabled');
     } else {
       this.sortDirectionListbox.enable();
       this.$sortDirectionPicker.removeClass('disabled');
     }
-
-    if (!this.elementIndex.canSortByStructure()) {
-      this.$sortAttributeSelect
-        .children('option[value="structure"]')
-        .attr('disabled', 'disabled');
-    } else {
-      this.$sortAttributeSelect
-        .children('option[value="structure"]')
-        .removeAttr('disabled');
-    }
   },
 
   updateTableColumnField: function () {
+    if (!this.$tableColumnsContainer) {
+      return;
+    }
+
     const attributes = this.elementIndex.getSelectedTableColumns();
     let $lastContainer, lastIndex;
 
@@ -2861,6 +3915,10 @@ const ViewMenu = Garnish.Base.extend({
   },
 
   tidyTableColumnField: function () {
+    if (!this.$tableColumnsContainer) {
+      return;
+    }
+
     const defaultOrder = this.elementIndex
       .getTableColumnOptions(this.$source)
       .map((column) => column.attr)
@@ -2906,10 +3964,21 @@ const ViewMenu = Garnish.Base.extend({
 
   _buildMenu: function () {
     const $metaContainer = $('<div class="meta"/>').appendTo(this.$container);
-    this._createSortField().appendTo($metaContainer);
-    this._createTableColumnsField().appendTo($metaContainer);
 
-    this.$sortAttributeSelect.focus();
+    if (!this.elementIndex.settings.sortable) {
+      this.$sortField = this._createSortField().appendTo($metaContainer);
+    }
+
+    if (!Garnish.isMobileBrowser(true)) {
+      this.$tableColumnsField =
+        this._createTableColumnsField().appendTo($metaContainer);
+    }
+
+    this.updateSortField();
+
+    if (this.$sortAttributeSelect) {
+      this.$sortAttributeSelect.focus();
+    }
 
     const $footerContainer = $('<div/>', {
       class: 'flex menu-footer',
@@ -2946,7 +4015,7 @@ const ViewMenu = Garnish.Base.extend({
       .createSelect({
         options: this.elementIndex.getSortOptions(this.$source).map((o) => {
           return {
-            label: o.label,
+            label: Craft.escapeHtml(o.label),
             value: o.attr,
           };
         }),
@@ -2996,6 +4065,12 @@ const ViewMenu = Garnish.Base.extend({
             this.$sortAttributeSelect.val(),
             $selectedOption.data('dir')
           );
+
+          if (!this.elementIndex.sortByScore) {
+            // In case it's actually the structure view
+            this.elementIndex.selectViewMode(this.elementIndex.viewMode);
+          }
+
           this.elementIndex.updateElements();
           this._createRevertBtn();
         }
@@ -3008,11 +4083,13 @@ const ViewMenu = Garnish.Base.extend({
         null,
         false
       );
+
+      // In case it's actually the structure view
+      this.elementIndex.selectViewMode(this.elementIndex.viewMode);
+
       this.elementIndex.updateElements();
       this._createRevertBtn();
     });
-
-    this.updateSortField();
 
     const $field = Craft.ui.createField($container, {
       label: Craft.t('app', 'Sort by'),
@@ -3023,6 +4100,10 @@ const ViewMenu = Garnish.Base.extend({
   },
 
   _getTableColumnCheckboxes: function () {
+    if (!this.$tableColumnsContainer) {
+      return $();
+    }
+
     return this.$tableColumnsContainer.find('input[type="checkbox"]');
   },
 
@@ -3033,29 +4114,19 @@ const ViewMenu = Garnish.Base.extend({
       return $();
     }
 
-    this.$tableColumnsContainer = $('<div/>');
-
-    columns.forEach((column) => {
-      $('<div class="element-index-view-menu-table-column"/>')
-        .append('<div class="icon move"/>')
-        .append(
-          Craft.ui.createCheckbox({
-            label: Craft.escapeHtml(column.label),
-            value: column.attr,
-          })
-        )
-        .appendTo(this.$tableColumnsContainer);
+    this.$tableColumnsContainer = Craft.ui.createCheckboxSelect({
+      options: columns.map((c) => ({
+        label: c.label,
+        value: c.attr,
+      })),
+      sortable: true,
     });
 
     this.updateTableColumnField();
     this.tidyTableColumnField();
 
-    new Garnish.DragSort(this.$tableColumnsContainer.children(), {
-      handle: '.move',
-      axis: 'y',
-      onSortChange: () => {
-        this._onTableColumnChange();
-      },
+    this.$tableColumnsContainer.data('dragSort').on('sortChange', () => {
+      this._onTableColumnChange();
     });
 
     this._getTableColumnCheckboxes().on('change', (ev) => {
@@ -3123,15 +4194,30 @@ const FilterHud = Garnish.HUD.extend({
   siteId: null,
   id: null,
   loading: true,
+  conditionConfig: null,
   serialized: null,
   $clearBtn: null,
   cleared: false,
 
-  init: function (elementIndex, sourceKey, siteId) {
+  get isActive() {
+    return this.showing || this.conditionConfig || this.serialized;
+  },
+
+  init: function (elementIndex, sourceKey, siteId, settings) {
     this.elementIndex = elementIndex;
     this.sourceKey = sourceKey;
     this.siteId = siteId;
     this.id = `filter-${Math.floor(Math.random() * 1000000000)}`;
+
+    if (settings) {
+      if (settings.conditionConfig) {
+        this.conditionConfig = settings.conditionConfig;
+        delete settings.conditionConfig;
+      } else if (settings.serialized) {
+        this.serialized = settings.serialized;
+        delete settings.serialized;
+      }
+    }
 
     const $loadingContent = $('<div/>')
       .append(
@@ -3147,9 +4233,16 @@ const FilterHud = Garnish.HUD.extend({
         })
       );
 
-    this.base(this.elementIndex.$filterBtn, $loadingContent, {
-      hudClass: 'hud element-filter-hud loading',
-    });
+    this.base(
+      this.elementIndex.$filterBtn,
+      $loadingContent,
+      Object.assign(
+        {
+          hudClass: 'hud element-filter-hud loading',
+        },
+        settings
+      )
+    );
 
     this.$hud.attr({
       id: this.id,
@@ -3169,6 +4262,8 @@ const FilterHud = Garnish.HUD.extend({
         elementType: this.elementIndex.elementType,
         source: this.sourceKey,
         condition: this.elementIndex.settings.condition,
+        conditionConfig: this.conditionConfig,
+        serialized: this.serialized,
         id: `${this.id}-filters`,
       },
     })
@@ -3207,8 +4302,15 @@ const FilterHud = Garnish.HUD.extend({
 
         this.$hud.find('.condition-container').on('htmx:load', () => {
           this.setReady();
+          this.updateSizeAndPosition(true);
         });
         this.setFocus();
+
+        if (this.conditionConfig) {
+          // conditionConfig => serialized
+          this.conditionConfig = null;
+          this.serialized = this.serialize();
+        }
       })
       .catch(() => {
         Craft.cp.displayError(Craft.t('app', 'A server error occurred.'));
@@ -3251,14 +4353,24 @@ const FilterHud = Garnish.HUD.extend({
   },
 
   updateSizeAndPositionInternal: function () {
-    // const searchOffset = this.elementIndex.$searchContainer.offset();
     const searchOffset =
       this.elementIndex.$searchContainer[0].getBoundingClientRect();
+
+    // Ensure HUD is scrollable if content falls off-screen
+    const windowHeight = Garnish.$win.height();
+    let hudHeight;
+    const availableSpace = windowHeight - searchOffset.bottom;
+
+    if (this.$body.height() > availableSpace) {
+      hudHeight = windowHeight - searchOffset.bottom - 10;
+    }
 
     this.$hud.css({
       width: this.elementIndex.$searchContainer.outerWidth() - 2,
       top: searchOffset.top + this.elementIndex.$searchContainer.outerHeight(),
       left: searchOffset.left + 1,
+      height: hudHeight ? `${hudHeight}px` : 'unset',
+      overflowY: hudHeight ? 'scroll' : 'unset',
     });
   },
 

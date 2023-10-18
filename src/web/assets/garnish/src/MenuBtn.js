@@ -144,7 +144,7 @@ export default Base.extend(
         this.searchStr += ev.key.toLowerCase();
         for (let i = 0; i < this.menu.$options.length; i++) {
           const $o = this.menu.$options.eq(i);
-          if (Craft.ltrim($o.text().toLowerCase()).startsWith(this.searchStr)) {
+          if ($o.text().toLowerCase().trimStart().startsWith(this.searchStr)) {
             $option = $o;
             break;
           }
@@ -319,11 +319,7 @@ export default Base.extend(
     },
 
     onMouseDown: function (ev) {
-      if (
-        ev.which !== Garnish.PRIMARY_CLICK ||
-        Garnish.isCtrlKeyPressed(ev) ||
-        ev.target.nodeName === 'INPUT'
-      ) {
+      if (!Garnish.isPrimaryClick(ev) || ev.target.nodeName === 'INPUT') {
         return;
       }
 

@@ -31,6 +31,11 @@ class UpController extends Controller
     /**
      * @inheritdoc
      */
+    public bool $isolated = true;
+
+    /**
+     * @inheritdoc
+     */
     public function options($actionID): array
     {
         return array_merge(parent::options($actionID), [
@@ -45,36 +50,36 @@ class UpController extends Controller
      */
     public function actionIndex(): int
     {
-        $lockName = 'craft-up';
-        $mutex = Craft::$app->getMutex();
-        $this->stdout('🔒 Acquiring lock ... ');
-        if (!$mutex->acquire($lockName) && !$this->force) {
-            $this->stderr("Couldn’t acquire a mutex lock. Run again with --force to bypass.\n", Console::FG_RED);
-            return ExitCode::UNAVAILABLE;
-        }
-        $this->stdout("done\n\n", Console::FG_GREEN);
-
         try {
-            $pendingChanges = Craft::$app->getProjectConfig()->areChangesPending();
+            $projectConfig = Craft::$app->getProjectConfig();
+            $pendingChanges = $projectConfig->areChangesPending(force: true);
+            $writeYamlAutomatically = $projectConfig->writeYamlAutomatically;
 
             // Craft + plugin migrations
-            if ($this->run('migrate/all', ['noContent' => true]) !== ExitCode::OK) {
-                $this->stderr("\nAborting remaining tasks.\n", Console::FG_RED);
-                throw new OperationAbortedException();
+            $res = $this->run('migrate/all', ['noContent' => true]);
+            if ($res !== ExitCode::OK) {
+                $this->stderr("\nAborting remaining tasks.\n", Console::FG_YELLOW);
+                return $res;
             }
             $this->stdout("\n");
 
+            // Save and reset the project config
+            $projectConfig->saveModifiedConfigData();
+            $projectConfig->reset();
+
             // Project Config
             if ($pendingChanges) {
-                if ($this->run('project-config/apply') !== ExitCode::OK) {
-                    throw new OperationAbortedException();
+                $res = $this->run('project-config/apply');
+                if ($res !== ExitCode::OK) {
+                    return $res;
                 }
                 $this->stdout("\n");
             }
 
-            // Content migrations
-            if ($this->run('migrate/up', ['track' => MigrationManager::TRACK_CONTENT]) !== ExitCode::OK) {
-                throw new OperationAbortedException();
+            // Content migration
+            $res = $this->run('migrate/up', ['track' => MigrationManager::TRACK_CONTENT]);
+            if ($res !== ExitCode::OK) {
+                return $res;
             }
             $this->stdout("\n");
         } catch (Throwable $e) {
@@ -82,13 +87,10 @@ class UpController extends Controller
                 throw $e;
             }
             return ExitCode::UNSPECIFIED_ERROR;
-        } finally {
-            $this->stdout("🔓 Releasing lock ... ");
-            if ($mutex->release($lockName)) {
-                $this->stdout("done\n", Console::FG_GREEN);
-            } else {
-                $this->stderr("Couldn’t release lock.\n");
-            }
+        }
+
+        if ($writeYamlAutomatically) {
+            $projectConfig->writeYamlFiles(true);
         }
 
         return ExitCode::OK;

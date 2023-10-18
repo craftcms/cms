@@ -7,7 +7,6 @@
 
 namespace craft\db;
 
-use Composer\Util\Platform;
 use Craft;
 use craft\db\mysql\QueryBuilder as MysqlQueryBuilder;
 use craft\db\mysql\Schema as MysqlSchema;
@@ -17,6 +16,7 @@ use craft\errors\DbConnectException;
 use craft\errors\ShellCommandException;
 use craft\events\BackupEvent;
 use craft\events\RestoreEvent;
+use craft\helpers\App;
 use craft\helpers\Db;
 use craft\helpers\FileHelper;
 use craft\helpers\StringHelper;
@@ -67,6 +67,12 @@ class Connection extends \yii\db\Connection
     public const EVENT_AFTER_RESTORE_BACKUP = 'afterRestoreBackup';
 
     /**
+     * @var bool|null whether this is MariaDB.
+     * @see getIsMaria()
+     */
+    private ?bool $_isMaria = null;
+
+    /**
      * @var bool|null whether the database supports 4+ byte characters
      * @see getSupportsMb4()
      * @see setSupportsMb4()
@@ -74,13 +80,27 @@ class Connection extends \yii\db\Connection
     private ?bool $_supportsMb4 = null;
 
     /**
-     * Returns whether this is a MySQL connection.
+     * Returns whether this is a MySQL (or MySQL-like) connection.
      *
      * @return bool
      */
     public function getIsMysql(): bool
     {
         return $this->getDriverName() === Connection::DRIVER_MYSQL;
+    }
+
+    /**
+     * Returns whether this is a MariaDB connection.
+     *
+     * @return bool
+     * @since 5.0.0
+     */
+    public function getIsMaria(): bool
+    {
+        if (!isset($this->_isMaria)) {
+            $this->_isMaria = $this->getIsMysql() && str_contains(strtolower($this->getSchema()->getServerVersion()), 'mariadb');
+        }
+        return $this->_isMaria;
     }
 
     /**
@@ -94,16 +114,32 @@ class Connection extends \yii\db\Connection
     }
 
     /**
+     * Returns the human-facing driver label (MySQL, MariaDB, or PostgreSQL).
+     *
+     * @return string
+     * @since 4.4.1
+     */
+    public function getDriverLabel(): string
+    {
+        return match (true) {
+            $this->getIsMaria() => 'MariaDB',
+            $this->getIsMysql() => 'MySQL',
+            default => 'PostgreSQL',
+        };
+    }
+
+    /**
      * Returns whether the database supports 4+ byte characters.
      *
      * @return bool
      */
     public function getSupportsMb4(): bool
     {
-        if (isset($this->_supportsMb4)) {
-            return $this->_supportsMb4;
+        if (!isset($this->_supportsMb4)) {
+            // if elements_sites supports mb4, pretty good chance everything else does too
+            $this->_supportsMb4 = $this->getSchema()->supportsMb4(Table::ELEMENTS_SITES);
         }
-        return $this->_supportsMb4 = $this->getIsPgsql();
+        return $this->_supportsMb4;
     }
 
     /**
@@ -479,7 +515,7 @@ class Connection extends \yii\db\Connection
 
         // PostgreSQL specific cleanup.
         if ($this->getIsPgsql()) {
-            if (Platform::isWindows()) {
+            if (App::isWindows()) {
                 $envCommand = 'set PGPASSWORD=';
             } else {
                 $envCommand = 'unset PGPASSWORD';

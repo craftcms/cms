@@ -34,7 +34,11 @@ use yii\helpers\Inflector;
  */
 class Controller extends YiiController
 {
-    use ControllerTrait;
+    use ControllerTrait {
+        ControllerTrait::init as private traitInit;
+        ControllerTrait::options as private traitOptions;
+        ControllerTrait::runAction as private traitRunAction;
+    }
 
     /**
      * @event DefineConsoleActionsEvent The event that is triggered when defining custom actions for this controller.
@@ -130,8 +134,7 @@ class Controller extends YiiController
      */
     public function init(): void
     {
-        parent::init();
-        $this->checkTty();
+        $this->traitInit();
 
         $this->_actions = [];
         foreach ($this->defineActions() as $id => $action) {
@@ -170,19 +173,6 @@ class Controller extends YiiController
     /**
      * @inheritdoc
      */
-    public function beforeAction($action): bool
-    {
-        // Make sure this isn't a root user
-        if (!$this->checkRootUser()) {
-            return false;
-        }
-
-        return parent::beforeAction($action);
-    }
-
-    /**
-     * @inheritdoc
-     */
     public function actions(): array
     {
         return ArrayHelper::getColumn($this->_actions, 'action');
@@ -193,7 +183,7 @@ class Controller extends YiiController
      */
     public function options($actionID): array
     {
-        $options = parent::options($actionID);
+        $options = $this->traitOptions($actionID);
 
         if (isset($this->_actions[$actionID]['options'])) {
             $options = array_merge($options, array_keys($this->_actions[$actionID]['options']));
@@ -224,7 +214,7 @@ class Controller extends YiiController
     public function runAction($id, $params = []): int
     {
         $this->_actionId = $id;
-        $result = parent::runAction($id, $params);
+        $result = $this->traitRunAction($id, $params);
         $this->_actionId = null;
         return $result;
     }
@@ -353,22 +343,6 @@ class Controller extends YiiController
     }
 
     /**
-     * Converts Markdown to be better readable in console environments by applying some ANSI format.
-     *
-     * @param string $markdown
-     * @return string
-     * @since 4.3.5
-     */
-    public function markdownToAnsi(string $markdown): string
-    {
-        if (!$this->isColorEnabled()) {
-            return $markdown;
-        }
-
-        return trim(Console::markdownToAnsi($markdown));
-    }
-
-    /**
      * Prompts the user for a password and validates it.
      *
      * @param array $options options to customize the behavior of the prompt:
@@ -457,62 +431,6 @@ class Controller extends YiiController
     }
 
     /**
-     * Outputs a note to the console.
-     *
-     * @param string $message The message. Supports Markdown formatting.
-     * @since 4.3.5
-     */
-    public function note(string $message, string $icon = 'ℹ️ '): void
-    {
-        $this->stdout("\n$icon ", Console::FG_YELLOW, Console::BOLD);
-        $this->stdout(trim(preg_replace('/^/m', '   ', $this->markdownToAnsi($message))) . "\n\n");
-    }
-
-    /**
-     * Outputs a success message to the console.
-     *
-     * @param string $message The message. Supports Markdown formatting.
-     * @since 4.3.5
-     */
-    public function success(string $message): void
-    {
-        $this->note($message, '✅');
-    }
-
-    /**
-     * Outputs a failure message to the console.
-     *
-     * @param string $message The message. Supports Markdown formatting.
-     * @since 4.3.5
-     */
-    public function failure(string $message): void
-    {
-        $this->note($message, '❌');
-    }
-
-    /**
-     * Outputs a tip to the console.
-     *
-     * @param string $message The message. Supports Markdown formatting.
-     * @since 4.3.5
-     */
-    public function tip(string $message): void
-    {
-        $this->note($message, '💡');
-    }
-
-    /**
-     * Outputs a warning to the console.
-     *
-     * @param string $message The message. Supports Markdown formatting.
-     * @since 4.3.5
-     */
-    public function warning(string $message): void
-    {
-        $this->note($message, '⚠️ ');
-    }
-
-    /**
      * Performs an action with descriptive output.
      *
      * @param string $description The action description. Supports Markdown formatting.
@@ -540,7 +458,7 @@ class Controller extends YiiController
 
         $this->stdout('✓', Console::FG_GREEN, Console::BOLD);
         if ($withDuration) {
-            $this->stdout(sprintf(' (time: %.3fs', microtime(true) - $time), Console::FG_GREY);
+            $this->stdout(sprintf(' (time: %.3fs)', microtime(true) - $time), Console::FG_GREY);
         }
         $this->stdout(PHP_EOL);
     }
@@ -588,7 +506,10 @@ class Controller extends YiiController
      */
     public function writeJson(string $file, mixed $value): void
     {
-        $json = Json::encode($value, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT) . "\n";
-        $this->writeToFile($file, "$json\n");
+        $file = FileHelper::relativePath($file);
+        $description = file_exists($file) ? "Updating `$file`" : "Creating `$file`";
+        $this->do($description, function() use ($file, $value) {
+            Json::encodeToFile($file, $value);
+        });
     }
 }

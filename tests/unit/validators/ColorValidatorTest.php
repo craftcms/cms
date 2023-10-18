@@ -42,7 +42,7 @@ class ColorValidatorTest extends TestCase
      */
     public function testPattern(): void
     {
-        self::assertSame('/^#[0-9a-f]{6}$/', $this->colorValidator->pattern);
+        self::assertSame('/^(?:#[0-9a-f]{6}|transparent)$/', $this->colorValidator->pattern);
     }
 
     /**
@@ -89,7 +89,7 @@ class ColorValidatorTest extends TestCase
     /**
      * @return array
      */
-    public function normalizeColorDataProvider(): array
+    public static function normalizeColorDataProvider(): array
     {
         return [
             ['#ffc10e', 'ffc10e'],
@@ -106,7 +106,7 @@ class ColorValidatorTest extends TestCase
     /**
      * @return array
      */
-    public function colorValidatorAttributesDataProvider(): array
+    public static function colorValidatorAttributesDataProvider(): array
     {
         return [
             ['#ffc', true],

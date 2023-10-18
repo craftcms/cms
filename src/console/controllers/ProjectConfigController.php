@@ -33,6 +33,12 @@ class ProjectConfigController extends Controller
     public bool $force = false;
 
     /**
+     * @var bool Whether to reduce the command output.
+     * @since 4.4.0
+     */
+    public bool $quiet = false;
+
+    /**
      * @var bool Whether to treat the loaded project config as the source of truth, instead of the YAML files.
      * @since 3.5.13
      */
@@ -90,6 +96,7 @@ class ProjectConfigController extends Controller
             case 'apply':
             case 'sync':
                 $options[] = 'force';
+                $options[] = 'quiet';
                 break;
             case 'diff':
                 $options[] = 'invert';
@@ -119,6 +126,8 @@ class ProjectConfigController extends Controller
      * php craft project-config/get system.edition
      * ```
      *
+     * The “path” syntax used here may be composed of directory and filenames (within your `config/project` folder), YAML object keys (including UUIDs for many Craft resources), and integers (referencing numerically-indexed arrays), joined by a dot (`.`): `path.to.nested.array.0.property`.
+     *
      * @param string $path The config item path
      * @return int
      * @since 4.1.0
@@ -137,8 +146,16 @@ class ProjectConfigController extends Controller
      *
      * Example:
      * ```
-     * php craft project-config/set system.edition pro
+     * php craft project-config/set some.nested.key
      * ```
+     *
+     * See [get](#project-config-get) for the accepted key formats.
+     *
+     * ::: danger
+     * This should only be used when the equivalent change is not possible through the control panel or other Craft APIs. By directly modifying project config values, you are bypassing all validation and can easily destabilize configuration.
+     * :::
+     *
+     * Values are updated in the database *and* in your local YAML files, but the root `dateModified` project config property is only touched when using the [`--update-timestamp` flag](#project-config-set-options). If you do not update the timestamp along with the value, the change may not be detected or applied in other environments!
      *
      * @param string $path The config item path
      * @param string $value The config item value as a valid YAML string
@@ -186,8 +203,14 @@ class ProjectConfigController extends Controller
      *
      * Example:
      * ```
-     * php craft project-config/set system.edition pro
+     * php craft project-config/remove some.nested.key
      * ```
+     *
+     * ::: danger
+     * This should only be used when the equivalent change is not possible through the control panel or other Craft APIs. By directly modifying project config values, you are bypassing all validation and can easily destabilize configuration.
+     * :::
+     *
+     * As with [set](#project-config-set), removing values only updates the root `dateModified` key when using the [`--update-timestamp` flag](#project-config-set-options). If you do not include this flag, you must run `project-config/touch` before changes will be detected or applied in other environments!
      *
      * @param string $path The config item path
      * @return int
@@ -291,14 +314,16 @@ class ProjectConfigController extends Controller
             try {
                 $forceUpdate = $projectConfig->forceUpdate;
                 $projectConfig->forceUpdate = $this->force;
-                $this->_processingPaths = [];
 
-                $projectConfig->on(ProjectConfigService::EVENT_ADD_ITEM, [$this, 'onStartProcessingItem'], ['label' => 'adding'], false);
-                $projectConfig->on(ProjectConfigService::EVENT_ADD_ITEM, [$this, 'onFinishProcessingItem'], ['label' => 'adding'], true);
-                $projectConfig->on(ProjectConfigService::EVENT_REMOVE_ITEM, [$this, 'onStartProcessingItem'], ['label' => 'removing'], false);
-                $projectConfig->on(ProjectConfigService::EVENT_REMOVE_ITEM, [$this, 'onFinishProcessingItem'], ['label' => 'removing'], true);
-                $projectConfig->on(ProjectConfigService::EVENT_UPDATE_ITEM, [$this, 'onStartProcessingItem'], ['label' => 'updating'], false);
-                $projectConfig->on(ProjectConfigService::EVENT_UPDATE_ITEM, [$this, 'onFinishProcessingItem'], ['label' => 'updating'], true);
+                if (!$this->quiet) {
+                    $this->_processingPaths = [];
+                    $projectConfig->on(ProjectConfigService::EVENT_ADD_ITEM, [$this, 'onStartProcessingItem'], ['label' => 'adding'], false);
+                    $projectConfig->on(ProjectConfigService::EVENT_ADD_ITEM, [$this, 'onFinishProcessingItem'], ['label' => 'adding'], true);
+                    $projectConfig->on(ProjectConfigService::EVENT_REMOVE_ITEM, [$this, 'onStartProcessingItem'], ['label' => 'removing'], false);
+                    $projectConfig->on(ProjectConfigService::EVENT_REMOVE_ITEM, [$this, 'onFinishProcessingItem'], ['label' => 'removing'], true);
+                    $projectConfig->on(ProjectConfigService::EVENT_UPDATE_ITEM, [$this, 'onStartProcessingItem'], ['label' => 'updating'], false);
+                    $projectConfig->on(ProjectConfigService::EVENT_UPDATE_ITEM, [$this, 'onFinishProcessingItem'], ['label' => 'updating'], true);
+                }
 
                 $projectConfig->applyExternalChanges();
 

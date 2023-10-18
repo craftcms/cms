@@ -162,7 +162,9 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
      */
     loadEditor: function (data) {
       if (!data.html) {
-        alert(Craft.t('app', 'Could not load the image editor.'));
+        Craft.cp.displayError(
+          Craft.t('app', 'Could not load the image editor.')
+        );
       }
 
       this.$body.html(data.html);
@@ -1684,7 +1686,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
           Craft.Preview.refresh();
         })
         .catch(({response}) => {
-          alert(response.data.message);
+          Craft.cp.displayError(response.data.message);
         })
         .finally(() => {
           this.$buttons.find('.btn').removeClass('loading');

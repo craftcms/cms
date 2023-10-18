@@ -7,7 +7,6 @@
 
 namespace craft\db\mysql;
 
-use Composer\Util\Platform;
 use Craft;
 use craft\db\Connection;
 use craft\db\TableSchema;
@@ -16,8 +15,10 @@ use craft\helpers\Db;
 use craft\helpers\FileHelper;
 use craft\helpers\StringHelper;
 use mikehaertl\shellcommand\Command as ShellCommand;
+use PDO;
 use PDOException;
 use yii\base\ErrorException;
+use yii\base\InvalidArgumentException;
 use yii\base\NotSupportedException;
 use yii\db\Exception;
 
@@ -61,6 +62,31 @@ class Schema extends \yii\db\mysql\Schema
         $this->typeMap['mediumtext'] = self::TYPE_MEDIUMTEXT;
         $this->typeMap['longtext'] = self::TYPE_LONGTEXT;
         $this->typeMap['enum'] = self::TYPE_ENUM;
+    }
+
+    /**
+     * Returns whether a table supports 4-byte characters.
+     *
+     * @param string $table The table to check
+     * @return bool
+     * @throws InvalidArgumentException if $table is invalid
+     * @since 5.0.0
+     */
+    public function supportsMb4(string $table): bool
+    {
+        $tableSchema = $this->getTableSchema($table);
+        if (!$tableSchema) {
+            throw new InvalidArgumentException("Invalid table: $table");
+        }
+        foreach ($tableSchema->columns as $column) {
+            // collation names always start with the charset name,
+            // so if a collation includes "mb4" we can safely assume the table has an mb4 charset
+            /** @var ColumnSchema $column */
+            if (isset($column->collation) && str_contains($column->collation, 'mb4')) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
@@ -151,6 +177,18 @@ class Schema extends \yii\db\mysql\Schema
      */
     public function getDefaultBackupCommand(?array $ignoreTables = null): string
     {
+        $useSingleTransaction = true;
+        $serverVersion = App::normalizeVersion($this->getServerVersion());
+
+        $isMySQL5 = version_compare($serverVersion, '8', '<');
+        $isMySQL8 = version_compare($serverVersion, '8', '>=');
+
+        // https://bugs.mysql.com/bug.php?id=109685
+        if (($isMySQL5 && version_compare($serverVersion, '5.7.41', '>=')) ||
+            ($isMySQL8 && version_compare($serverVersion, '8.0.32', '>='))) {
+            $useSingleTransaction = false;
+        }
+
         $defaultArgs =
             ' --defaults-file="' . $this->_createDumpConfigFile() . '"' .
             ' --add-drop-table' .
@@ -164,28 +202,29 @@ class Schema extends \yii\db\mysql\Schema
             ' --triggers' .
             ' --no-tablespaces';
 
-        // If the server is MySQL 5.x, we need to see what version of mysqldump is installed (5.x or 8.x)
-        if (version_compare(App::normalizeVersion(Craft::$app->getDb()->getSchema()->getServerVersion()), "8", "<")) {
-            // Find out if the db supports column-statistics
-            $shellCommand = new ShellCommand();
+        if ($useSingleTransaction) {
+            $defaultArgs .= ' --single-transaction';
+        }
 
-            if (Platform::isWindows()) {
-                $shellCommand->setCommand('mysqldump --help | findstr "column-statistics"');
-            } else {
-                $shellCommand->setCommand('mysqldump --help | grep "column-statistics"');
-            }
+        // Find out if the db/dump client supports column-statistics
+        $shellCommand = new ShellCommand();
 
-            // If we don't have proc_open, maybe we've got exec
-            if (!function_exists('proc_open') && function_exists('exec')) {
-                $shellCommand->useExec = true;
-            }
+        if (App::isWindows()) {
+            $shellCommand->setCommand('mysqldump --help | findstr "column-statistics"');
+        } else {
+            $shellCommand->setCommand('mysqldump --help | grep "column-statistics"');
+        }
 
-            $success = $shellCommand->execute();
+        // If we don't have proc_open, maybe we've got exec
+        if (!function_exists('proc_open') && function_exists('exec')) {
+            $shellCommand->useExec = true;
+        }
 
-            // if there was output, then they're running mysqldump 8.x against a 5.x database.
-            if ($success && $shellCommand->getOutput()) {
-                $defaultArgs .= ' --skip-column-statistics';
-            }
+        $success = $shellCommand->execute();
+
+        // if there was output, then column-statistics is supported and we should disable it
+        if ($success && $shellCommand->getOutput()) {
+            $defaultArgs .= ' --column-statistics=0';
         }
 
         if ($ignoreTables === null) {
@@ -199,7 +238,6 @@ class Schema extends \yii\db\mysql\Schema
 
         $schemaDump = 'mysqldump' .
             $defaultArgs .
-            ' --single-transaction' .
             ' --no-data' .
             ' --result-file="{file}"' .
             ' {database}';
@@ -285,6 +323,18 @@ class Schema extends \yii\db\mysql\Schema
         }
 
         return null;
+    }
+
+    /**
+     * @param array $info
+     * @return ColumnSchema
+     */
+    protected function loadColumnSchema($info): ColumnSchema
+    {
+        /** @var ColumnSchema $column */
+        $column = parent::loadColumnSchema($info);
+        $column->collation = $info['collation'] ?? null;
+        return $column;
     }
 
     /**
@@ -392,6 +442,17 @@ SQL;
         } else {
             $contents .= PHP_EOL . 'host=' . ($parsed['host'] ?? '') .
                 PHP_EOL . 'port=' . ($parsed['port'] ?? '');
+        }
+
+        // Certificates
+        if (isset($this->db->attributes[PDO::MYSQL_ATTR_SSL_CA])) {
+            $contents .= PHP_EOL . 'ssl_ca=' . $this->db->attributes[PDO::MYSQL_ATTR_SSL_CA];
+        }
+        if (isset($this->db->attributes[PDO::MYSQL_ATTR_SSL_CERT])) {
+            $contents .= PHP_EOL . 'ssl_cert=' . $this->db->attributes[PDO::MYSQL_ATTR_SSL_CERT];
+        }
+        if (isset($this->db->attributes[PDO::MYSQL_ATTR_SSL_KEY])) {
+            $contents .= PHP_EOL . 'ssl_key=' . $this->db->attributes[PDO::MYSQL_ATTR_SSL_KEY];
         }
 
         FileHelper::writeToFile($this->tempMyCnfPath, '');

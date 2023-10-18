@@ -32,7 +32,7 @@ class ElementRelationParamParserTest extends TestCase
     /**
      * @return array
      */
-    public function normalizeRelatedToParamDataProvider(): array
+    public static function normalizeRelatedToParamDataProvider(): array
     {
         return [
             [['or'], []],
@@ -63,7 +63,7 @@ class ElementRelationParamParserTest extends TestCase
     /**
      * @return array
      */
-    public function normalizeRelatedToCriteriaDataProvider(): array
+    public static function normalizeRelatedToCriteriaDataProvider(): array
     {
         return [
             [false, ['element' => 1, 'sourceSite' => 'notARealSiteHandle']],

@@ -54,10 +54,11 @@ class Image
             return [(int)$sourceWidth, (int)$sourceHeight];
         }
 
-        // Fill in the blank
+        // Fill in the blank,
+        // ensure that the target width/height is at least 1
         return [
-            (int)($targetWidth ?: round($targetHeight * ($sourceWidth / $sourceHeight))),
-            (int)($targetHeight ?: round($targetWidth * ($sourceHeight / $sourceWidth))),
+            (int)($targetWidth ?: max(round($targetHeight * ($sourceWidth / $sourceHeight)), 1)),
+            (int)($targetHeight ?: max(round($targetWidth * ($sourceHeight / $sourceWidth)), 1)),
         ];
     }
 
@@ -69,7 +70,7 @@ class Image
      * @param int $sourceHeight
      * @param int|null $transformWidth
      * @param int|null $transformHeight
-     * @param string $mode The transform mode (`crop`, `fit`, or `stretch`)
+     * @param string $mode The transform mode (`crop`, `fit`, `letterbox` or `stretch`)
      * @param bool|null $upscale Whether to upscale the image to fill the transform dimensions.
      * Defaults to the `upscaleImages` config setting.
      * @return int[]
@@ -87,6 +88,14 @@ class Image
         [$width, $height] = static::calculateMissingDimension($transformWidth, $transformHeight, $sourceWidth, $sourceHeight);
         $factor = max($sourceWidth / $width, $sourceHeight / $height);
 
+        $imageRatio = $sourceWidth / $sourceHeight;
+        $transformRatio = $width / $height;
+
+        // When mode is `letterbox` always use the transform size
+        if ($mode === 'letterbox') {
+            return [$width, $height];
+        }
+
         if ($upscale ?? Craft::$app->getConfig()->getGeneral()->upscaleImages) {
             // Special case for 'fit' since that's the only one whose dimensions vary from the transform dimensions
             if ($mode === 'fit') {
@@ -97,14 +106,7 @@ class Image
             return [$width, $height];
         }
 
-        if ($transformWidth === null || $transformHeight === null) {
-            $transformRatio = $sourceWidth / $sourceHeight;
-        } else {
-            $transformRatio = $transformWidth / $transformHeight;
-        }
-
-        $imageRatio = $sourceWidth / $sourceHeight;
-
+        // When mode is `fit` or the source is the same ratio as the transform
         if ($mode === 'fit' || $imageRatio === $transformRatio) {
             $targetWidth = min($sourceWidth, $width, (int)round($sourceWidth / $factor));
             $targetHeight = min($sourceHeight, $height, (int)round($sourceHeight / $factor));
@@ -112,8 +114,9 @@ class Image
         }
 
         // Since we don't want to upscale, make sure the calculated ratios aren't bigger than the actual image size.
-        $newWidth = min($sourceWidth, $transformWidth, (int)round($sourceHeight * $transformRatio));
-        $newHeight = min($sourceHeight, $transformHeight, (int)round($sourceWidth / $transformRatio));
+        // transformWidth and transformHeight can be null, so check for that and if they are, use the calculatedMissingDimensions
+        $newWidth = min($sourceWidth, $transformWidth ?? $width, (int)round($sourceHeight * $transformRatio));
+        $newHeight = min($sourceHeight, $transformHeight ?? $height, (int)round($sourceWidth / $transformRatio));
 
         return [$newWidth, $newHeight];
     }
@@ -271,7 +274,8 @@ class Image
 
             $image = Craft::$app->getImages()->loadImage($filePath);
             return [$image->getWidth(), $image->getHeight()];
-        } catch (Throwable) {
+        } catch (Throwable $e) {
+            Craft::warning($e->getMessage(), __METHOD__);
             return [0, 0];
         }
     }

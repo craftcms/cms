@@ -5,7 +5,11 @@
             <li id="{{ id }}-category-{{ category.id }}">
                 {% set indent = (category.level - 1) * 35 %}
                 <div class="row" style="margin-left: -{{ indent }}px; padding-left: {{ indent }}px;">
-                    {%- include "_elements/element" with { element: category, context: 'field' } -%}
+                    {{- elementChip(element, {
+                        element: category,
+                        context: 'field',
+                        inputName: (name ?? false) ? "#{name}[]" : null,
+                    }) -}}
                 </div>
 
                 {% ifchildren %}
@@ -49,7 +53,8 @@
             branchLimit: {{ branchLimit ?: 'null' }},
             showSiteMenu: {{ (showSiteMenu ?? false)|json_encode|raw }},
             modalStorageKey: "{{ storageKey|e('js') }}",
-            selectionLabel: "{{ selectionLabel|e('js') }}"
+            selectionLabel: "{{ selectionLabel|e('js') }}",
+            allowSelfRelations: {{ (allowSelfRelations ?? false)|json_encode|raw }},
         });
     {% endjs %}
 {% endif %}

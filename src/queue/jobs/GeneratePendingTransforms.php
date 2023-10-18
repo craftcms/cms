@@ -19,6 +19,7 @@ use Throwable;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
+ * @deprecated in 4.4.0. [[GenerateImageTransform]] should be used instead.
  */
 class GeneratePendingTransforms extends BaseJob
 {

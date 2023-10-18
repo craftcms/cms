@@ -1,6 +1,6 @@
 <template>
   <a
-    :title="'Delete' | t('app')"
+    :title="deleteTitle"
     v-on:click.prevent="handleClick"
     class="delete icon"
     :class="{disabled}"
@@ -18,6 +18,10 @@
       actionUrl: String,
       before: Function,
       confirmationMessage: String,
+      deleteTitle: {
+        type: String,
+        default: Craft.escapeHtml(Craft.t('app', 'Delete')),
+      },
       disabled: Boolean,
       failMessage: String,
       id: [Number, String],

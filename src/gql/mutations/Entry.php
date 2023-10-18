@@ -8,7 +8,6 @@
 namespace craft\gql\mutations;
 
 use Craft;
-use craft\elements\Entry as EntryElement;
 use craft\gql\arguments\mutations\Draft as DraftMutationArguments;
 use craft\gql\arguments\mutations\Entry as EntryMutationArguments;
 use craft\gql\arguments\mutations\Structure as StructureArguments;
@@ -17,8 +16,6 @@ use craft\gql\base\Mutation;
 use craft\gql\resolvers\mutations\Entry as EntryMutationResolver;
 use craft\gql\types\generators\EntryType;
 use craft\helpers\Gql;
-use craft\helpers\Gql as GqlHelper;
-use craft\helpers\StringHelper;
 use craft\models\EntryType as EntryTypeModel;
 use craft\models\Section;
 use GraphQL\Type\Definition\Type;
@@ -37,24 +34,22 @@ class Entry extends Mutation
      */
     public static function getMutations(): array
     {
-        if (!GqlHelper::canMutateEntries()) {
-            return [];
-        }
-
         $mutationList = [];
-
         $createDeleteMutation = false;
         $createDraftMutations = false;
 
-        foreach (Craft::$app->getSections()->getAllEntryTypes() as $entryType) {
-            $scope = 'entrytypes.' . $entryType->uid;
-            $canCreate = Gql::canSchema($scope, 'create');
+        foreach (Craft::$app->getEntries()->getAllSections() as $section) {
+            $scope = "sections.$section->uid";
+            $isSingle = $section->type === Section::TYPE_SINGLE;
+            $canCreate = !$isSingle && Gql::canSchema($scope, 'create');
             $canSave = Gql::canSchema($scope, 'save');
 
             if ($canCreate || $canSave) {
-                // Create a mutation for each entry type
-                foreach (static::createSaveMutations($entryType, $canSave) as $mutation) {
-                    $mutationList[$mutation['name']] = $mutation;
+                // Create a mutation for each editable section that includes the entry type
+                foreach ($section->getEntryTypes() as $entryType) {
+                    foreach (static::createSaveMutations($section, $entryType, $canSave) as $mutation) {
+                        $mutationList[$mutation['name']] = $mutation;
+                    }
                 }
             }
 
@@ -62,7 +57,7 @@ class Entry extends Mutation
                 $createDraftMutations = true;
             }
 
-            if (!$createDeleteMutation && Gql::canSchema($scope, 'delete')) {
+            if (!$createDeleteMutation && !$isSingle && Gql::canSchema($scope, 'delete')) {
                 $createDeleteMutation = true;
             }
         }
@@ -105,7 +100,12 @@ class Entry extends Mutation
                         'provisional' => [
                             'name' => 'provisional',
                             'type' => Type::boolean(),
-                            'description' => 'Whether the draft should be a provisional draft or not.',
+                            'description' => 'Whether the draft should be a provisional draft.',
+                        ],
+                        'creatorId' => [
+                            'name' => 'creatorId',
+                            'type' => Type::int(),
+                            'description' => 'The id of the creator of the draft.',
                         ],
                     ],
                     'resolve' => [$resolver, 'createDraft'],
@@ -140,21 +140,22 @@ class Entry extends Mutation
     /**
      * Create the per-entry-type save mutations.
      *
+     * @param Section $section
      * @param EntryTypeModel $entryType
      * @param bool $createSaveDraftMutation
      * @return array
      * @throws InvalidConfigException
      */
-    public static function createSaveMutations(EntryTypeModel $entryType, bool $createSaveDraftMutation): array
-    {
+    public static function createSaveMutations(
+        Section $section,
+        EntryTypeModel $entryType,
+        bool $createSaveDraftMutation,
+    ): array {
         $mutations = [];
 
-        $mutationName = EntryElement::gqlMutationNameByContext($entryType);
         $entryMutationArguments = EntryMutationArguments::getArguments();
         $draftMutationArguments = DraftMutationArguments::getArguments();
         $generatedType = EntryType::generateType($entryType);
-
-        $section = $entryType->getSection();
 
         /** @var EntryMutationResolver $resolver */
         $resolver = Craft::createObject(EntryMutationResolver::class);
@@ -165,8 +166,8 @@ class Entry extends Mutation
 
         switch ($section->type) {
             case Section::TYPE_SINGLE:
-                $description = 'Save the “' . $entryType->name . '” entry.';
-                $draftDescription = 'Save the “' . $entryType->name . '” draft.';
+                $description = sprintf('Save the “%s” entry.', $section->name);
+                $draftDescription = sprintf('Save the “%s” draft.', $section->name);
 
                 unset($entryMutationArguments['authorId'], $entryMutationArguments['id'], $entryMutationArguments['uid']);
                 unset($draftMutationArguments['authorId'], $draftMutationArguments['id'], $draftMutationArguments['uid']);
@@ -175,8 +176,8 @@ class Entry extends Mutation
                 $entryMutationArguments = array_merge($entryMutationArguments, StructureArguments::getArguments());
             // no break
             default:
-                $description = 'Save a “' . $entryType->name . '” entry in the “' . $section->name . '” section.';
-                $draftDescription = 'Save a “' . $entryType->name . '” entry draft in the “' . $section->name . '” section.';
+                $description = sprintf('Save a “%s” entry in the “%s” section.', $entryType->name, $section->name);
+                $draftDescription = sprintf('Save a “%s” entry draft in the “%s” section.', $entryType->name, $section->name);
         }
 
         $contentFields = $resolver->getResolutionData(ElementMutationResolver::CONTENT_FIELD_KEY);
@@ -184,7 +185,7 @@ class Entry extends Mutation
         $draftMutationArguments = array_merge($draftMutationArguments, $contentFields);
 
         $mutations[] = [
-            'name' => $mutationName,
+            'name' => "save_{$section->handle}_{$entryType->handle}_Entry",
             'description' => $description,
             'args' => $entryMutationArguments,
             'resolve' => [$resolver, 'saveEntry'],
@@ -194,7 +195,7 @@ class Entry extends Mutation
         // This gets created only if allowed to save entries
         if ($createSaveDraftMutation) {
             $mutations[] = [
-                'name' => StringHelper::replaceEnding($mutationName, '_Entry', '_Draft'),
+                'name' => "save_{$section->handle}_{$entryType->handle}_Draft",
                 'description' => $draftDescription,
                 'args' => $draftMutationArguments,
                 'resolve' => [$resolver, 'saveEntry'],

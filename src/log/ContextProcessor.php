@@ -8,8 +8,11 @@
 namespace craft\log;
 
 use Craft;
+use craft\helpers\ArrayHelper;
+use craft\helpers\Json;
 use Illuminate\Support\Collection;
 use Monolog\Processor\ProcessorInterface;
+use yii\base\InvalidArgumentException;
 use yii\helpers\VarDumper;
 use yii\web\Request;
 use yii\web\Session;
@@ -67,6 +70,18 @@ class ContextProcessor implements ProcessorInterface
             // Log the raw request body instead
             $this->vars = array_merge($this->vars);
             array_splice($this->vars, $postPos, 1);
+
+            // Redact sensitive bits
+            try {
+                $decoded = Json::decode($body);
+                if (is_array($decoded)) {
+                    $decoded = Craft::$app->getSecurity()->redactIfSensitive('', $decoded);
+                }
+                $body = Json::encode($decoded);
+            } catch (InvalidArgumentException) {
+                // NBD
+            }
+
             $record[$this->key]['body'] = $body;
         }
 
@@ -92,17 +107,15 @@ class ContextProcessor implements ProcessorInterface
 
     protected function filterVars(array $vars = []): array
     {
-        $filtered = Collection::make($GLOBALS)
-            ->filter(fn($value, $key) => in_array($key, $vars, true));
+        $filtered = ArrayHelper::filter($GLOBALS, $vars);
 
         // Workaround for codeception testing until these gets addressed:
         // https://github.com/yiisoft/yii-core/issues/49
         // https://github.com/yiisoft/yii2/issues/15847
         if (Craft::$app) {
-            $security = Craft::$app->getSecurity();
-            $filtered = $filtered->map(fn($value, $key) => $security->redactIfSensitive($key, $value));
+            $filtered = Craft::$app->getSecurity()->redactIfSensitive('', $filtered);
         }
 
-        return $filtered->all();
+        return $filtered;
     }
 }

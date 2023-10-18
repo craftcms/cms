@@ -408,11 +408,11 @@ class Html extends \yii\helpers\Html
 
                 $offset += strlen($m[0]);
                 if (isset($m[1]) && $m[1] !== '') {
-                    $value = $m[1];
+                    $value = static::decode($m[1]);
                 }
             } elseif (preg_match('/[^\s>]+/A', $html, $m, 0, $offset)) {
                 $offset += strlen($m[0]);
-                $value = $m[0];
+                $value = static::decode($m[0]);
             }
         }
 
@@ -589,8 +589,8 @@ class Html extends \yii\helpers\Html
      * @param string $content
      * @return array[] An array containing the HTML content, and the condition (if there is one).
      * @phpstan-return array{string,string|null}
-     * @since 4.0.0
      * @see wrapIntoCondition()
+     * @since 4.0.0
      */
     public static function unwrapCondition(string $content): array
     {
@@ -712,9 +712,9 @@ class Html extends \yii\helpers\Html
      * @param string $html The HTML code
      * @param string $namespace The namespace
      * @return string The HTML with namespaced input names
-     * @since 3.5.0
      * @see namespaceHtml()
      * @see namespaceAttributes()
+     * @since 3.5.0
      */
     public static function namespaceInputs(string $html, string $namespace): string
     {
@@ -756,9 +756,9 @@ class Html extends \yii\helpers\Html
      * @param string $namespace The namespace
      * @param bool $withClasses Whether class names should be namespaced as well (affects both `class` attributes and class name CSS selectors)
      * @return string The HTML with namespaced attributes
-     * @since 3.5.0
      * @see namespaceHtml()
      * @see namespaceInputs()
+     * @since 3.5.0
      */
     public static function namespaceAttributes(string $html, string $namespace, bool $withClasses = false): string
     {
@@ -836,7 +836,7 @@ class Html extends \yii\helpers\Html
                         return $match[0];
                     }, $match[2]);
                 if ($withClasses) {
-                    $html = preg_replace("/(?<![\\w'\"])\\.([\\w\\-]+)(?=[,\\s\\{])/", ".$namespace-$1", $match[2]);
+                    $html = preg_replace("/(?<![\\w'\"])\\.([\\w\\-]+)(?=[,:\\s{])/", ".$namespace-$1", $match[2]);
                 }
                 return $match[1] . $html . $match[3];
             }, $html);
@@ -851,11 +851,19 @@ class Html extends \yii\helpers\Html
     private static function _escapeTextareas(string &$html): array
     {
         $markers = [];
-        $html = preg_replace_callback('/(<textarea\b[^>]*>)(.*?)(<\/textarea>)/is', function(array $matches) use (&$markers) {
-            $marker = '{marker:' . StringHelper::randomString() . '}';
-            $markers[$marker] = $matches[2];
-            return $matches[1] . $marker . $matches[3];
-        }, $html);
+        $offset = 0;
+
+        while (preg_match('/<textarea\b[^>]*>/i', $html, $openMatch, PREG_OFFSET_CAPTURE, $offset)) {
+            $innerOffset = $openMatch[0][1] + strlen($openMatch[0][0]);
+            if (!preg_match('/<\/textarea>/', $html, $closeMatch, PREG_OFFSET_CAPTURE, $innerOffset)) {
+                break;
+            }
+            $marker = sprintf('{marker:%s}', StringHelper::randomString());
+            $markers[$marker] = substr($html, $innerOffset, $closeMatch[0][1] - $innerOffset);
+            $html = substr($html, 0, $innerOffset) . $marker . substr($html, $closeMatch[0][1]);
+            $offset = $innerOffset + strlen($marker) + strlen($closeMatch[0][0]);
+        }
+
         return $markers;
     }
 
@@ -1007,12 +1015,13 @@ class Html extends \yii\helpers\Html
      *
      * @param string|Asset $svg An SVG asset, a file path, or raw SVG markup
      * @param bool|null $sanitize Whether the SVG should be sanitized of potentially
-     * malicious scripts. By default the SVG will only be sanitized if an asset
+     * malicious scripts. By default, the SVG will only be sanitized if an asset
      * or markup is passed in. (File paths are assumed to be safe.)
      * @param bool|null $namespace Whether class names and IDs within the SVG
      * should be namespaced to avoid conflicts with other elements in the DOM.
-     * By default the SVG will only be namespaced if an asset or markup is passed in.
+     * By default, the SVG will only be namespaced if an asset or markup is passed in.
      * @return string
+     * @since 4.3.0
      */
     public static function svg(Asset|string $svg, ?bool $sanitize = null, ?bool $namespace = null): string
     {

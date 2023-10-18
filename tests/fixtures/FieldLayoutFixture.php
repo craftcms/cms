@@ -22,4 +22,9 @@ class FieldLayoutFixture extends BaseFieldLayoutFixture
      * @inheritdoc
      */
     public $dataFile = __DIR__ . '/data/field-layout.php';
+
+    /**
+     * @inheritdoc
+     */
+    public $depends = [EntryTypeFixture::class];
 }

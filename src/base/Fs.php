@@ -30,9 +30,7 @@ abstract class Fs extends SavableComponent implements FsInterface
     public const VISIBILITY_PUBLIC = 'public';
 
     /**
-     * Return the root URL for a filesystem or `null` if the filesystem does not have any.
-     *
-     * @return string|null
+     * @inheritdoc
      */
     public function getRootUrl(): ?string
     {
@@ -41,7 +39,11 @@ abstract class Fs extends SavableComponent implements FsInterface
         }
 
         $url = App::parseEnv($this->url);
-        return $url ? rtrim($url, '/') . '/' : null;
+        if (is_string($url)) {
+            $url = rtrim($url, '/');
+        }
+
+        return $url ? "$url/" : null;
     }
 
     /**
@@ -52,7 +54,24 @@ abstract class Fs extends SavableComponent implements FsInterface
         return [
             'handle' => Craft::t('app', 'Handle'),
             'name' => Craft::t('app', 'Name'),
+            'url' => Craft::t('app', 'Base URL'),
         ];
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getShowHasUrlSetting(): bool
+    {
+        return static::$showHasUrlSetting;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getShowUrlSetting(): bool
+    {
+        return static::$showUrlSetting;
     }
 
     /**
@@ -62,6 +81,12 @@ abstract class Fs extends SavableComponent implements FsInterface
     {
         $rules = parent::defineRules();
         $rules[] = [['name', 'handle'], 'required'];
+        $rules[] = [
+            'url',
+            'required',
+            'when' => fn(self $fs) => $fs->hasUrls && $this->getShowUrlSetting(),
+        ];
+
         $rules[] = [
             ['handle'],
             HandleValidator::class,

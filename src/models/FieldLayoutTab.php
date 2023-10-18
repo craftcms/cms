@@ -11,8 +11,6 @@ use Craft;
 use craft\base\ElementInterface;
 use craft\base\FieldLayoutComponent;
 use craft\base\FieldLayoutElement;
-use craft\db\Query;
-use craft\db\Table;
 use craft\errors\FieldNotFoundException;
 use craft\fieldlayoutelements\BaseField;
 use craft\fieldlayoutelements\CustomField;
@@ -104,7 +102,7 @@ class FieldLayoutTab extends FieldLayoutComponent
      * @see getElements()
      * @see setElements()
      */
-    private array $_elements;
+    private array $_elements = [];
 
     /**
      * @inheritdoc
@@ -122,38 +120,6 @@ class FieldLayoutTab extends FieldLayoutComponent
         }
 
         parent::__construct($config);
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function init(): void
-    {
-        parent::init();
-
-        if (!isset($this->_elements) && isset($this->id)) {
-            // No element configs for this tab yet, so create the elements ourselves
-            $fieldsService = Craft::$app->getFields();
-            $layoutElements = [];
-
-            $fieldInfo = (new Query())
-                ->select(['fieldId', 'required'])
-                ->from([Table::FIELDLAYOUTFIELDS])
-                ->where(['tabId' => $this->id])
-                ->orderBy(['sortOrder' => SORT_ASC])
-                ->all();
-
-            foreach ($fieldInfo as $row) {
-                $field = $fieldsService->getFieldById($row['fieldId']);
-                if ($field) {
-                    $layoutElements[] = new CustomField($field, [
-                        'required' => $row['required'],
-                    ]);
-                }
-            }
-
-            $this->setElements($layoutElements);
-        }
     }
 
     /**
@@ -308,8 +274,18 @@ class FieldLayoutTab extends FieldLayoutComponent
      */
     public function getHtmlId(): string
     {
+        $asciiName = StringHelper::toKebabCase(StringHelper::toAscii($this->name, 'en'));
+
+        if ($asciiName === '') {
+            // Use md5() as a fallback
+            $asciiName = sprintf('tab-%s', md5($this->name));
+        }
+
+        // ensure unique tab id even if there are multiple tabs with the same name
+        $tabOrder = StringHelper::pad((string)$this->sortOrder, 2, '0', 'left');
+
         // Use two dashes here in case a tab name starts with “Tab”
-        return 'tab--' . StringHelper::toKebabCase(StringHelper::toAscii($this->name, 'en'));
+        return "tab$tabOrder--$asciiName";
     }
 
     /**

@@ -8,6 +8,7 @@
 namespace craft\web;
 
 use Craft;
+use craft\helpers\ArrayHelper;
 use craft\helpers\UrlHelper;
 use Throwable;
 use yii\base\Application as BaseApplication;
@@ -27,6 +28,38 @@ class Response extends \yii\web\Response
      * @since 3.4.0
      */
     public const FORMAT_CSV = 'csv';
+
+    /**
+     * Default response formatter configurations.
+     *
+     * This could be set from `config/app.web.php` to append additional default response formatters, or modify existing ones.
+     *
+     * ```php
+     * use craft\helpers\App;
+     * use craft\helpers\ArrayHelper;
+     * use craft\web\Response;
+     *
+     * return [
+     *     'components' => [
+     *         'response' => fn() => Craft::createObject(ArrayHelper::merge(
+     *             App::webResponseConfig(),
+     *             [
+     *                 'defaultFormatters' => [
+     *                     Response::FORMAT_CSV => [
+     *                         'delimiter' => chr(9),
+     *                     ],
+     *                 ],
+     *             ]
+     *         )),
+     *     ],
+     * ];
+     * ```
+     *
+     * @see defaultFormatters()
+     * @since 4.5.0
+     */
+    public array $defaultFormatters = [];
+
 
     /**
      * @var bool whether the response has been prepared.
@@ -77,31 +110,45 @@ class Response extends \yii\web\Response
     /**
      * Sets headers that will instruct the client to cache this response.
      *
+     * @param int $duration The total cache duration, in seconds. Defaults to 1 year.
+     * @param bool $overwrite Whether the headers should overwrite existing headers, if already set
      * @return self self reference
      */
-    public function setCacheHeaders(): self
+    public function setCacheHeaders(int $duration = 31536000, bool $overwrite = true): self
     {
-        $cacheTime = 31536000; // 1 year
-        $this->getHeaders()
-            ->set('Expires', gmdate('D, d M Y H:i:s', time() + $cacheTime) . ' GMT')
-            ->set('Pragma', 'cache')
-            ->set('Cache-Control', 'max-age=' . $cacheTime);
+        if ($duration <= 0) {
+            $this->setNoCacheHeaders($overwrite);
+            return $this;
+        }
+
+        $this->setHeader('Expires', sprintf('%s GMT', gmdate('D, d M Y H:i:s', time() + $duration)), $overwrite);
+        $this->setHeader('Pragma', 'cache', $overwrite);
+        $this->setHeader('Cache-Control', "max-age=$duration", $overwrite);
         return $this;
     }
 
     /**
      * Sets headers that will instruct the client to not cache this response.
      *
+     * @param bool $overwrite Whether the headers should overwrite existing headers, if already set
      * @return self self reference
      * @since 3.5.0
      */
-    public function setNoCacheHeaders(): self
+    public function setNoCacheHeaders(bool $overwrite = true): self
     {
-        $this->getHeaders()
-            ->set('Expires', '0')
-            ->set('Pragma', 'no-cache')
-            ->set('Cache-Control', 'no-cache, no-store, must-revalidate');
+        $this->setHeader('Expires', '0', $overwrite);
+        $this->setHeader('Pragma', 'no-cache', $overwrite);
+        $this->setHeader('Cache-Control', 'no-cache, no-store, must-revalidate', $overwrite);
         return $this;
+    }
+
+    private function setHeader(string $name, string $value, bool $overwrite): void
+    {
+        if ($overwrite) {
+            $this->getHeaders()->set($name, $value);
+        } else {
+            $this->getHeaders()->setDefault($name, $value);
+        }
     }
 
     /**
@@ -271,11 +318,15 @@ class Response extends \yii\web\Response
      */
     protected function defaultFormatters(): array
     {
-        $formatters = parent::defaultFormatters();
-        $formatters[self::FORMAT_CSV] = [
-            'class' => CsvResponseFormatter::class,
-        ];
-        return $formatters;
+        return ArrayHelper::merge(
+            parent::defaultFormatters(),
+            [
+                self::FORMAT_CSV => [
+                    'class' => CsvResponseFormatter::class,
+                ],
+            ],
+            $this->defaultFormatters,
+        );
     }
 
     /**

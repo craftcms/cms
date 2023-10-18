@@ -1,4 +1,4 @@
-{% extends "_layouts/cp" %}
+{% extends '_layouts/cp.twig' %}
 
 {% set elementInstance = craft.app.elements.createElement(elementType) %}
 {% set title = title ?? elementInstance.pluralDisplayName() %}
@@ -15,6 +15,8 @@
     {% set showSiteMenu = elementInstance.isLocalized() %}
 {% endif %}
 
+{% set canHaveDrafts = canHaveDrafts ?? elementInstance.hasDrafts() %}
+
 
 {% block contextMenu %}
     {% if showSiteMenu %}
@@ -25,7 +27,14 @@
 
 {% block sidebar %}
     {% if sources is not empty %}
-        <nav aria-label="{{ 'Sources'|t('app') }}">
+        {{ tag('a', {
+            class: 'btn skip-link',
+            href: '#elements',
+            html: 'Skip to {title}'|t('app', {title: title}),
+        }) }}
+
+        <nav aria-labelledby="source-heading">
+            <h2 id="source-heading" class="visually-hidden">{{ 'Sources'|t('app') }}</h2>
             {% include "_elements/sources" %}
         </nav>
 
@@ -42,9 +51,9 @@
 
 
 {% block content %}
-    <div class="main">
+    <div class="main element-index">
         <a class="skip-link btn" href="#footer">{{ 'Skip to {title}'|t('app', { title: 'Footer'|t }) }}</a>
-        <div class="elements busy">
+        <div id="elements" class="elements busy">
             <div class="update-spinner spinner spinner-absolute"></div>
         </div>
     </div>
@@ -52,10 +61,7 @@
 
 
 {% block footer %}
-    <div id="count-spinner" class="spinner small hidden"></div>
-    <div id="count-container" class="light flex-grow">&nbsp;</div>
-    <div id="actions-container" class="flex"></div>
-    <button type="button" id="export-btn" class="btn hidden" aria-expanded="false">{{ 'Export…'|t('app') }}</button>
+    {% include '_elements/footer' %}
 {% endblock %}
 
 
@@ -67,7 +73,9 @@
         storageKey: 'elementindex.{{ elementType|e("js") }}',
         criteria: Craft.defaultIndexCriteria,
         toolbarSelector: '#toolbar',
-        canHaveDrafts: {{ (canHaveDrafts ?? false) ? 'true' : 'false' }},
+        defaultSource: {{ (defaultSource ?? null)|json_encode|raw }},
+        defaultSourcePath: {{ (defaultSourcePath ?? null)|json_encode|raw }},
+        canHaveDrafts: {{ canHaveDrafts ? 'true' : 'false' }},
     });
 {% endblock %}
 

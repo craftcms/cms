@@ -14,7 +14,7 @@ use craft\helpers\StringHelper;
 use yii\console\ExitCode;
 
 /**
- * Fixes any duplicate UUIDs found within field layout components in the project config.
+ * Fixes any duplicate or missing UUIDs found within field layout components in the project config.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.2.3
@@ -33,7 +33,7 @@ class FixFieldLayoutUidsController extends Controller
         $this->_fixUids(Craft::$app->getProjectConfig()->get(), $count);
 
         if ($count) {
-            $summary = sprintf('Fixed %s duplicate %s.', $count, $count === 1 ? 'UUID' : 'UUIDs');
+            $summary = sprintf('Fixed %s duplicate or missing %s.', $count, $count === 1 ? 'UUID' : 'UUIDs');
         } else {
             $summary = 'No duplicate UUIDs were found.';
         }
@@ -82,20 +82,23 @@ class FixFieldLayoutUidsController extends Controller
 
     private function _checkUid(array &$config, int &$count, array &$uids, bool &$modified, string $path): void
     {
-        if (isset($config['uid'])) {
-            if (isset($uids[$config['uid']])) {
-                $config['uid'] = StringHelper::UUID();
-                $count++;
-                $modified = true;
-
-                $this->stdout('    > Duplicate found at ');
-                $this->stdout($path, Console::FG_CYAN);
-                $this->stdout(".\n    Changing to ");
-                $this->stdout($config['uid'], Console::FG_CYAN);
-                $this->stdout(".\n");
-            } else {
-                $uids[$config['uid']] = true;
-            }
+        if (empty($config['uid'])) {
+            $reason = 'Duplicate UUID found at';
+        } elseif (isset($uids[$config['uid']])) {
+            $reason = 'Missing UUID at';
+        } else {
+            $uids[$config['uid']] = true;
+            return;
         }
+
+        $config['uid'] = StringHelper::UUID();
+        $count++;
+        $modified = true;
+
+        $this->stdout("    > $reason ");
+        $this->stdout($path, Console::FG_CYAN);
+        $this->stdout(".\n    Setting to ");
+        $this->stdout($config['uid'], Console::FG_CYAN);
+        $this->stdout(".\n");
     }
 }

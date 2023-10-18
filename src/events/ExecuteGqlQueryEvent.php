@@ -18,7 +18,7 @@ use yii\base\Event;
 class ExecuteGqlQueryEvent extends Event
 {
     /**
-     * @var int|null The id of the schema used for this request.
+     * @var int|null The ID of the schema used for this request.
      * @since 3.4.0
      */
     public ?int $schemaId = null;

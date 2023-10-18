@@ -57,7 +57,7 @@ class ColorDataTest extends TestCase
         self::assertSame("hsl($h,$s%,$l%)", $color->getHsl());
     }
 
-    public function rgbDataProvider(): array
+    public static function rgbDataProvider(): array
     {
         return [
             [0, 0, 0, '#000000'],
@@ -69,7 +69,7 @@ class ColorDataTest extends TestCase
         ];
     }
 
-    public function hslDataProvider(): array
+    public static function hslDataProvider(): array
     {
         return [
             [0, 0, 0, '#000000'],

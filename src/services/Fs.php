@@ -70,13 +70,21 @@ class Fs extends Component
      */
     public function createFilesystemConfig(FsInterface $fs): array
     {
-        return [
+        $config = [
             'name' => $fs->name,
             'type' => get_class($fs),
-            'hasUrls' => $fs->hasUrls,
-            'url' => $fs->url,
             'settings' => ProjectConfigHelper::packAssociativeArrays($fs->getSettings()),
         ];
+
+        if ($fs->getShowHasUrlSetting()) {
+            $config['hasUrls'] = $fs->hasUrls;
+        }
+
+        if ($fs->getShowUrlSetting()) {
+            $config['url'] = $fs->url;
+        }
+
+        return $config;
     }
 
     /**
