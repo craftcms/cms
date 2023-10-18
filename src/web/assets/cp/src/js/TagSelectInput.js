@@ -168,7 +168,11 @@ Craft.TagSelectInput = Craft.BaseElementSelectInput.extend(
           }
         }
 
-        if (this.settings.sourceElementId) {
+        // take allowSelfRelations into consideration too
+        if (
+          this.settings.sourceElementId &&
+          !this.settings.allowSelfRelations
+        ) {
           excludeIds.push(this.settings.sourceElementId);
         }
 
@@ -271,13 +275,6 @@ Craft.TagSelectInput = Craft.BaseElementSelectInput.extend(
         class: 'title',
         text: title,
       }).appendTo($titleContainer);
-
-      var margin = -($element.outerWidth() + 10);
-      this.$addTagInput.css('margin-' + Craft.left, margin + 'px');
-
-      var animateCss = {};
-      animateCss['margin-' + Craft.left] = 0;
-      this.$addTagInput.velocity(animateCss, 'fast');
 
       this.$elements = this.$elements.add($element);
 

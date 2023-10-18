@@ -49,7 +49,11 @@ use yii\helpers\Console;
  */
 class MigrateController extends BaseMigrateController
 {
-    use ControllerTrait;
+    use ControllerTrait {
+        ControllerTrait::init as private traitInit;
+        ControllerTrait::options as private traitOptions;
+        ControllerTrait::beforeAction as private traitBeforeAction;
+    }
     use BackupTrait;
 
     /**
@@ -122,8 +126,7 @@ class MigrateController extends BaseMigrateController
      */
     public function init(): void
     {
-        parent::init();
-        $this->checkTty();
+        $this->traitInit();
 
         $this->templateFile = Craft::getAlias('@app/updates/migration.php.template');
     }
@@ -137,12 +140,12 @@ class MigrateController extends BaseMigrateController
      * Note that the values setting via options are not available
      * until [[beforeAction()]] is being called.
      *
-     * @param string $actionID the action id of the current request
+     * @param string $actionID the action ID of the current request
      * @return string[] the names of the options valid for the action
      */
     public function options($actionID): array
     {
-        $options = parent::options($actionID);
+        $options = $this->traitOptions($actionID);
 
         // Remove options we end up overriding
         ArrayHelper::removeValue($options, 'migrationPath');
@@ -176,11 +179,6 @@ class MigrateController extends BaseMigrateController
      */
     public function beforeAction($action): bool
     {
-        // Make sure this isn't a root user
-        if (!$this->checkRootUser()) {
-            return false;
-        }
-
         if ($action->id !== 'all') {
             if ($this->plugin) {
                 $this->track = "plugin:$this->plugin";
@@ -204,17 +202,24 @@ class MigrateController extends BaseMigrateController
             }
 
             $this->migrationPath = $this->getMigrator()->migrationPath;
-            FileHelper::createDirectory($this->migrationPath);
         }
 
         // Make sure that the project config YAML exists in case any migrations need to check incoming YAML values
         $projectConfig = Craft::$app->getProjectConfig();
         if ($projectConfig->writeYamlAutomatically && !$projectConfig->getDoesExternalConfigExist()) {
             $projectConfig->regenerateExternalConfig();
+        } elseif ($projectConfig->areChangesPending(force: true)) {
+            // allow project config changes, but don't overwrite the pending changes
+            $projectConfig->readOnly = false;
+            $projectConfig->writeYamlAutomatically = false;
         }
 
-        if (!parent::beforeAction($action)) {
-            return false;
+        try {
+            if (!$this->traitBeforeAction($action)) {
+                return false;
+            }
+        } catch (InvalidConfigException $e) {
+            // migrations folder not created, but we don't mind.
         }
 
         return true;
@@ -361,6 +366,10 @@ class MigrateController extends BaseMigrateController
                     $this->stdout(PHP_EOL . "$applied from $total " . ($applied === 1 ? 'migration was' : 'migrations were') . ' applied.' . PHP_EOL, Console::FG_RED);
                     $this->stdout(PHP_EOL . 'Migration failed. The rest of the migrations are canceled.' . PHP_EOL, Console::FG_RED);
                     Craft::$app->disableMaintenanceMode();
+                    Craft::$app->getProjectConfig()->reset();
+                    if (!$this->restore()) {
+                        $this->stdout("\nRestore a database backup before trying again.\n", Console::FG_RED);
+                    }
                     return ExitCode::UNSPECIFIED_ERROR;
                 }
                 $applied++;
@@ -411,6 +420,14 @@ class MigrateController extends BaseMigrateController
         }
 
         $res = parent::actionUp($limit);
+
+        if ($res === ExitCode::UNSPECIFIED_ERROR) {
+            Craft::$app->getProjectConfig()->reset();
+            if (!$this->restore()) {
+                $this->stdout("\nRestore a database backup before trying again.\n", Console::FG_RED);
+            }
+            return $res;
+        }
 
         if ($res === ExitCode::OK && empty($this->getNewMigrations())) {
             // Update any schema versions.

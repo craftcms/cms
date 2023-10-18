@@ -33,7 +33,7 @@ class FormatterTest extends TestCase
     /**
      * @return array[]
      */
-    public function asPercentDataProvider(): array
+    public static function asPercentDataProvider(): array
     {
         return [
             ['0%', null],

@@ -86,6 +86,20 @@ class Category extends Structure
                 'description' => 'The category’s children.',
                 'complexity' => Gql::relatedArgumentComplexity(GqlService::GRAPHQL_COMPLEXITY_EAGER_LOAD),
             ],
+            'descendants' => [
+                'name' => 'descendants',
+                'args' => CategoryArguments::getArguments(),
+                'type' => Type::nonNull(Type::listOf(Type::nonNull(static::getType()))),
+                'description' => 'The category’s descendants, if the section is a structure. Accepts the same arguments as the `entries` query.',
+                'complexity' => Gql::relatedArgumentComplexity(GqlService::GRAPHQL_COMPLEXITY_EAGER_LOAD),
+            ],
+            'ancestors' => [
+                'name' => 'ancestors',
+                'args' => CategoryArguments::getArguments(),
+                'type' => Type::nonNull(Type::listOf(Type::nonNull(static::getType()))),
+                'description' => 'The category’s ancestors, if the section is a structure. Accepts the same arguments as the `entries` query.',
+                'complexity' => Gql::relatedArgumentComplexity(GqlService::GRAPHQL_COMPLEXITY_EAGER_LOAD),
+            ],
             'parent' => [
                 'name' => 'parent',
                 'args' => CategoryArguments::getArguments(),

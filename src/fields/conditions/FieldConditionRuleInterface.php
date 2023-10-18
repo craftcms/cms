@@ -25,4 +25,12 @@ interface FieldConditionRuleInterface extends ElementConditionRuleInterface
      * @param string $uid
      */
     public function setFieldUid(string $uid): void;
+
+    /**
+     * Sets the UUID of the custom field layout element associated with this rule.
+     *
+     * @param string|null $uid
+     * @since 5.0.0
+     */
+    public function setLayoutElementUid(?string $uid): void;
 }

@@ -8,6 +8,7 @@
 namespace craft\models;
 
 use Craft;
+use craft\base\FieldLayoutProviderInterface;
 use craft\base\Model;
 use craft\behaviors\FieldLayoutBehavior;
 use craft\db\Table;
@@ -18,6 +19,7 @@ use craft\helpers\StringHelper;
 use craft\records\CategoryGroup as CategoryGroupRecord;
 use craft\validators\HandleValidator;
 use craft\validators\UniqueValidator;
+use DateTime;
 
 /**
  * CategoryGroup model.
@@ -27,7 +29,7 @@ use craft\validators\UniqueValidator;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
-class CategoryGroup extends Model
+class CategoryGroup extends Model implements FieldLayoutProviderInterface
 {
     /** @since 3.7.0 */
     public const DEFAULT_PLACEMENT_BEGINNING = 'beginning';
@@ -75,6 +77,12 @@ class CategoryGroup extends Model
      * @var string|null UID
      */
     public ?string $uid = null;
+
+    /**
+     * @var DateTime|null The date that the category group was trashed
+     * @since 4.4.0
+     */
+    public ?DateTime $dateDeleted = null;
 
     /**
      * @var CategoryGroup_SiteSettings[]
@@ -159,6 +167,24 @@ class CategoryGroup extends Model
     public function __toString(): string
     {
         return Craft::t('site', $this->name) ?: static::class;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getHandle(): ?string
+    {
+        return $this->handle;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getFieldLayout(): FieldLayout
+    {
+        /** @var FieldLayoutBehavior $behavior */
+        $behavior = $this->getBehavior('fieldLayout');
+        return $behavior->getFieldLayout();
     }
 
     /**

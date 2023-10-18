@@ -10,6 +10,7 @@ namespace craft\records;
 use craft\db\ActiveRecord;
 use craft\db\SoftDeleteTrait;
 use craft\db\Table;
+use DateTime;
 use yii\db\ActiveQueryInterface;
 use yii2tech\ar\softdelete\SoftDeleteBehavior;
 
@@ -20,6 +21,7 @@ use yii2tech\ar\softdelete\SoftDeleteBehavior;
  * @property int|null $fieldLayoutId Field layout ID
  * @property string $name Name
  * @property string $handle Handle
+ * @property DateTime|string|null $dateDeleted Date deleted
  * @property FieldLayout $fieldLayout Field layout
  * @property Tag[] $tags Tags
  * @mixin SoftDeleteBehavior

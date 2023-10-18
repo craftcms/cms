@@ -5,6 +5,7 @@
  */
 Craft.ElementActionTrigger = Garnish.Base.extend(
   {
+    elementIndex: null,
     maxLevels: null,
     newChildUrl: null,
     $trigger: null,
@@ -12,32 +13,55 @@ Craft.ElementActionTrigger = Garnish.Base.extend(
     triggerEnabled: true,
 
     init: function (settings) {
+      // Save a reference to the element index that this trigger will be used with
+      this.elementIndex = Craft.currentElementIndex;
+
+      // Register the trigger on the element index, so it can be destroyed when the view is updated
+      this.elementIndex.triggers.push(this);
+
+      if (!$.isPlainObject(settings)) {
+        settings = {};
+      }
+
+      // batch => bulk
+      if (typeof settings.batch !== 'undefined') {
+        settings.bulk = settings.batch;
+        delete settings.batch;
+      }
+      Object.defineProperty(settings, 'batch', {
+        get() {
+          return this.bulk;
+        },
+        set(v) {
+          this.bulk = v;
+        },
+      });
+
       this.setSettings(settings, Craft.ElementActionTrigger.defaults);
 
       this.$trigger = $(
-        '#' + settings.type.replace(/[\[\]\\]+/g, '-') + '-actiontrigger'
-      );
+        `#${this.elementIndex.namespaceId(settings.type)}-actiontrigger`
+      ).data('trigger', this);
 
       // Do we have a custom handler?
       if (this.settings.activate) {
         // Prevent the element index's click handler
         this.$trigger.data('custom-handler', true);
 
-        // Is this a custom trigger?
-        if (this.$trigger.prop('nodeName') === 'FORM') {
-          this.addListener(this.$trigger, 'submit', 'handleTriggerActivation');
-        } else {
-          this.addListener(this.$trigger, 'click', 'handleTriggerActivation');
+        let $button = this.$trigger.find('button,.btn');
+        if (!$button.length) {
+          $button = this.$trigger;
         }
+        this.addListener($button, 'activate', 'handleTriggerActivation');
       }
 
       this.updateTrigger();
-      Craft.elementIndex.on('selectionChange', this.updateTrigger.bind(this));
+      this.elementIndex.on('selectionChange', this.updateTrigger.bind(this));
     },
 
     updateTrigger: function () {
       // Ignore if the last element was just unselected
-      if (Craft.elementIndex.getSelectedElements().length === 0) {
+      if (this.elementIndex.getSelectedElements().length === 0) {
         return;
       }
 
@@ -54,16 +78,26 @@ Craft.ElementActionTrigger = Garnish.Base.extend(
      * @returns {boolean}
      */
     validateSelection: function () {
-      var valid = true;
-      this.$selectedItems = Craft.elementIndex.getSelectedElements();
+      this.$selectedItems = this.elementIndex.getSelectedElements();
 
-      if (!this.settings.batch && this.$selectedItems.length > 1) {
-        valid = false;
-      } else if (typeof this.settings.validateSelection === 'function') {
-        valid = this.settings.validateSelection(this.$selectedItems);
+      if (!this.settings.bulk && this.$selectedItems.length > 1) {
+        return false;
       }
 
-      return valid;
+      if (this.settings.requireId && this.$selectedItems.is('[data-id=""]')) {
+        return false;
+      }
+
+      if (typeof this.settings.validateSelection === 'function') {
+        return this._call(() =>
+          this.settings.validateSelection(
+            this.$selectedItems,
+            this.elementIndex
+          )
+        );
+      }
+
+      return true;
     },
 
     enableTrigger: function () {
@@ -71,7 +105,7 @@ Craft.ElementActionTrigger = Garnish.Base.extend(
         return;
       }
 
-      this.$trigger.removeClass('disabled');
+      this.$trigger.removeClass('disabled').removeAttr('aria-disabled');
       this.triggerEnabled = true;
     },
 
@@ -80,25 +114,36 @@ Craft.ElementActionTrigger = Garnish.Base.extend(
         return;
       }
 
-      this.$trigger.addClass('disabled');
+      this.$trigger.addClass('disabled').attr('aria-disabled', 'true');
       this.triggerEnabled = false;
     },
 
-    handleTriggerActivation: function (ev) {
-      ev.preventDefault();
-      ev.stopPropagation();
-
+    handleTriggerActivation: function () {
       if (this.triggerEnabled) {
-        this.settings.activate(this.$selectedItems);
+        this._call(() =>
+          this.settings.activate(this.$selectedItems, this.elementIndex)
+        );
       }
+    },
+
+    _call: function (fn) {
+      // temporarily set Craft.elementIndex to the trigger's index instance, for BC
+      const globalElementIndex = Craft.elementIndex;
+      Craft.elementIndex = this.elementIndex;
+      const response = fn();
+      Craft.elementIndex = globalElementIndex;
+      return response;
     },
   },
   {
     defaults: {
       type: null,
-      batch: true,
+      bulk: true,
+      requireId: true,
       validateSelection: null,
+      beforeActivate: async ($selectedElements, elementIndex) => {},
       activate: null,
+      afterActivate: async ($selectedElements, elementIndex) => {},
     },
   }
 );

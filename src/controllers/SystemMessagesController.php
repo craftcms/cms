@@ -27,12 +27,16 @@ class SystemMessagesController extends Controller
      */
     public function beforeAction($action): bool
     {
+        if (!parent::beforeAction($action)) {
+            return false;
+        }
+
         Craft::$app->requireEdition(Craft::Pro);
 
         // Make sure they have access to the System Messages utility
         $this->requirePermission('utility:system-messages');
 
-        return parent::beforeAction($action);
+        return true;
     }
 
     /**

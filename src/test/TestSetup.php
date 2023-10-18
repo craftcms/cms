@@ -28,7 +28,6 @@ use craft\services\Assets;
 use craft\services\Categories;
 use craft\services\Composer;
 use craft\services\Config;
-use craft\services\Content;
 use craft\services\Dashboard;
 use craft\services\Deprecator;
 use craft\services\Elements;
@@ -38,7 +37,6 @@ use craft\services\Fields;
 use craft\services\Globals;
 use craft\services\Images;
 use craft\services\ImageTransforms;
-use craft\services\Matrix;
 use craft\services\Path;
 use craft\services\Plugins;
 use craft\services\PluginStore;
@@ -46,7 +44,6 @@ use craft\services\ProjectConfig;
 use craft\services\Relations;
 use craft\services\Routes;
 use craft\services\Search;
-use craft\services\Sections;
 use craft\services\Sites;
 use craft\services\Structures;
 use craft\services\SystemMessages;
@@ -340,14 +337,16 @@ class TestSetup
         defined('CURLOPT_TIMEOUT_MS') || define('CURLOPT_TIMEOUT_MS', 155);
         defined('CURLOPT_CONNECTTIMEOUT_MS') || define('CURLOPT_CONNECTTIMEOUT_MS', 156);
 
-        $libPath = dirname(__DIR__, 2) . '/lib';
-        $srcPath = dirname(__DIR__);
+        $repoRoot = dirname(__DIR__, 2);
+        $libPath = $repoRoot . '/lib';
+        $srcPath = $repoRoot . '/src';
 
         require $libPath . '/yii2/Yii.php';
         require $srcPath . '/Craft.php';
 
         // Set aliases
         Craft::setAlias('@vendor', $vendorPath);
+        Craft::setAlias('@craftcms', $repoRoot);
         Craft::setAlias('@lib', $libPath);
         Craft::setAlias('@craft', $srcPath);
         Craft::setAlias('@appicons', $srcPath . DIRECTORY_SEPARATOR . 'icons');
@@ -574,7 +573,6 @@ class TestSetup
             [Categories::class, ['getCategories', 'categories']],
             [Composer::class, ['getComposer', 'composer']],
             [Config::class, ['getConfig', 'config']],
-            [Content::class, ['getContent', 'content']],
             [MigrationManager::class, ['getContentMigrator', 'contentMigrator']],
             [Dashboard::class, ['getDashboard', 'dashboard']],
             [Deprecator::class, ['getDeprecator', 'deprecator']],
@@ -587,7 +585,6 @@ class TestSetup
             [Images::class, ['getImages', 'images']],
             [Locale::class, ['getLocale', 'locale']],
             [Mailer::class, ['getMailer', 'mailer']],
-            [Matrix::class, ['getMatrix', 'matrix']],
             [MigrationManager::class, ['getMigrator', 'migrator']],
             [Mutex::class, ['getMutex', 'mutex']],
             [Path::class, ['getPath', 'path']],
@@ -598,7 +595,6 @@ class TestSetup
             [Relations::class, ['getRelations', 'relations']],
             [Routes::class, ['getRoutes', 'routes']],
             [Search::class, ['getSearch', 'search']],
-            [Sections::class, ['getSections', 'sections']],
             [Sites::class, ['getSites', 'sites']],
             [Structures::class, ['getStructures', 'structures']],
             [SystemMessages::class, ['getSystemMessages', 'systemMessages']],

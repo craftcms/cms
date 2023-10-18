@@ -8,6 +8,7 @@
 namespace craft\gql\types\generators;
 
 use Craft;
+use craft\base\ElementContainerFieldInterface;
 use craft\elements\Entry as EntryElement;
 use craft\gql\base\Generator;
 use craft\gql\base\GeneratorInterface;
@@ -17,6 +18,7 @@ use craft\gql\GqlEntityRegistry;
 use craft\gql\interfaces\elements\Entry as EntryInterface;
 use craft\gql\types\elements\Entry;
 use craft\helpers\Gql as GqlHelper;
+use craft\models\EntryType as EntryTypeModel;
 
 /**
  * Class EntryType
@@ -31,9 +33,18 @@ class EntryType extends Generator implements GeneratorInterface, SingleGenerator
      */
     public static function generateTypes(mixed $context = null): array
     {
-        $gqlTypes = [];
+        if ($context instanceof ElementContainerFieldInterface) {
+            $entryTypes = [];
+            foreach ($context->getFieldLayoutProviders() as $provider) {
+                if ($provider instanceof EntryTypeModel) {
+                    $entryTypes[] = $provider;
+                }
+            }
+        } else {
+            $entryTypes = GqlHelper::getSchemaContainedEntryTypes();
+        }
 
-        $entryTypes = GqlHelper::getSchemaContainedEntryTypes();
+        $gqlTypes = [];
 
         foreach ($entryTypes as $entryType) {
             // Generate a type for each entry type
@@ -49,18 +60,14 @@ class EntryType extends Generator implements GeneratorInterface, SingleGenerator
      */
     public static function generateType(mixed $context): ObjectType
     {
-        $typeName = EntryElement::gqlTypeNameByContext($context);
+        /** @var EntryTypeModel $context */
+        $typeName = EntryElement::gqlTypeName($context);
 
-        if ($createdType = GqlEntityRegistry::getEntity($typeName)) {
-            return $createdType;
-        }
-
-        $contentFieldGqlTypes = self::getContentFields($context);
-        $entryTypeFields = array_merge(EntryInterface::getFieldDefinitions(), $contentFieldGqlTypes);
-
-        return GqlEntityRegistry::createEntity($typeName, new Entry([
+        return GqlEntityRegistry::getOrCreate($typeName, fn() => new Entry([
             'name' => $typeName,
-            'fields' => function() use ($entryTypeFields, $typeName) {
+            'fields' => function() use ($context, $typeName) {
+                $contentFieldGqlTypes = self::getContentFields($context);
+                $entryTypeFields = array_merge(EntryInterface::getFieldDefinitions(), $contentFieldGqlTypes);
                 return Craft::$app->getGql()->prepareFieldDefinitions($entryTypeFields, $typeName);
             },
         ]));

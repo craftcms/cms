@@ -24,7 +24,7 @@ class CraftTest extends TestCase
         $env = App::parseEnv('$CRAFT_TEST');
 
         // Assert
-        $this->assertEquals('testing', $env);
+        self::assertEquals('testing', $env);
         putenv('CRAFT_TEST');
     }
 
@@ -40,8 +40,8 @@ class CraftTest extends TestCase
         $env = App::parseEnv('$CRAFT_TEST');
 
         // Assert
-        $this->assertEquals(true, $env);
-        $this->assertIsBool($env);
+        self::assertEquals(true, $env);
+        self::assertIsBool($env);
         putenv('CRAFT_TEST');
     }
 
@@ -57,8 +57,8 @@ class CraftTest extends TestCase
         $env = App::parseEnv('$CRAFT_TEST');
 
         // Assert
-        $this->assertEquals(false, $env);
-        $this->assertIsBool($env);
+        self::assertEquals(false, $env);
+        self::assertIsBool($env);
         putenv('CRAFT_TEST');
     }
 }

@@ -28,9 +28,11 @@ class DdTokenParser extends AbstractTokenParser
         $parser = $this->parser;
         $stream = $parser->getStream();
 
-        $nodes = [
-            'var' => $parser->getExpressionParser()->parseExpression(),
-        ];
+        $nodes = [];
+
+        if (!$stream->test(Token::BLOCK_END_TYPE)) {
+            $nodes['var'] = $parser->getExpressionParser()->parseExpression();
+        }
 
         $stream->expect(Token::BLOCK_END_TYPE);
 

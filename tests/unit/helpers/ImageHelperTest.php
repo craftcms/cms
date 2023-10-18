@@ -88,7 +88,7 @@ class ImageHelperTest extends TestCase
         ));
     }
 
-    public function targetDimensionsDataProvider(): array
+    public static function targetDimensionsDataProvider(): array
     {
         return [
             'crop1' => [200, 100, 600, 400, 200, 100, 'crop', true],
@@ -132,6 +132,12 @@ class ImageHelperTest extends TestCase
             'fit12' => [240, 160, 360, 240, 240, 240, 'fit', false],
             'fit13' => [160, 240, 240, 360, 240, 240, 'fit', true],
             'fit14' => [240, 160, 360, 240, 240, 240, 'fit', true],
+
+            'fill no upscale' => [100, 200, 100, 200, 200, 400, 'fit', false],
+            'fill differing ratios' => [300, 400, 300, 400, 400, 400, 'fit', false],
+            'fill with upscale' => [200, 400, 100, 200, 200, 400, 'fit', true],
+
+            'crop with fill' => [200, 400, 400, 800, 200, 400, 'crop', true],
         ];
     }
 
@@ -242,7 +248,7 @@ class ImageHelperTest extends TestCase
     /**
      * @return array
      */
-    public function imageSizeByStreamDataProvider(): array
+    public static function imageSizeByStreamDataProvider(): array
     {
         $dirnameFile3 = dirname(__FILE__, 3);
 
@@ -257,7 +263,7 @@ class ImageHelperTest extends TestCase
     /**
      * @return array
      */
-    public function exceptionTriggeringImageByStreamDataProvider(): array
+    public static function exceptionTriggeringImageByStreamDataProvider(): array
     {
         $dirnameFile3 = dirname(__FILE__, 3);
 
@@ -287,7 +293,7 @@ class ImageHelperTest extends TestCase
     /**
      * @return array
      */
-    public function imageSizeDataProvider(): array
+    public static function imageSizeDataProvider(): array
     {
         return [
             [[960, 640], dirname(__FILE__, 3) . '/_data/assets/files/background.jpg', false],
@@ -300,7 +306,7 @@ class ImageHelperTest extends TestCase
     /**
      * @return array
      */
-    public function canHaveExitDataProvider(): array
+    public static function canHaveExitDataProvider(): array
     {
         return [
             [true, dirname(__FILE__, 3) . '/_data/assets/files/background.jpg'],
@@ -317,7 +323,7 @@ class ImageHelperTest extends TestCase
      * @return array
      * @todo Test empty unpack() function and invalid IHDR chunks and INVALID color value. See coverage for more.
      */
-    public function pngImageInfoDataProvider(): array
+    public static function pngImageInfoDataProvider(): array
     {
         return [
             [
@@ -343,7 +349,7 @@ class ImageHelperTest extends TestCase
     /**
      * @return array
      */
-    public function calculateMissingDimensionDataProvider(): array
+    public static function calculateMissingDimensionDataProvider(): array
     {
         return [
             [[1, 1], 1, 1, 1, 1],
@@ -360,7 +366,7 @@ class ImageHelperTest extends TestCase
     /**
      * @return array
      */
-    public function canManipulateAsImageDataProvider(): array
+    public static function canManipulateAsImageDataProvider(): array
     {
         return [
             [true, 'jpg'],

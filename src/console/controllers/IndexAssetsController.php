@@ -16,6 +16,7 @@ use craft\errors\AssetNotIndexableException;
 use craft\errors\FsObjectNotFoundException;
 use craft\errors\MissingAssetException;
 use craft\errors\MissingVolumeFolderException;
+use craft\helpers\App;
 use craft\helpers\Db;
 use craft\models\FsListing;
 use craft\models\Volume;
@@ -58,7 +59,9 @@ class IndexAssetsController extends Controller
     public function options($actionID): array
     {
         $options = parent::options($actionID);
-        $options[] = 'cacheRemoteImages';
+        if (!App::isEphemeral()) {
+            $options[] = 'cacheRemoteImages';
+        }
         $options[] = 'createMissingAssets';
         $options[] = 'deleteMissingAssets';
         return $options;
@@ -149,6 +152,7 @@ class IndexAssetsController extends Controller
             $this->stdout($volume->name, Console::FG_CYAN);
             $this->stdout(' ...' . PHP_EOL, Console::FG_YELLOW);
             $fileList = $assetIndexer->getIndexListOnVolume($volume, $path);
+            $fsSubpath = $volume->getSubpath();
 
             $index = 0;
             /** @var MissingAssetException[] $missingRecords */
@@ -159,7 +163,7 @@ class IndexAssetsController extends Controller
             foreach ($fileList as $item) {
                 $count = $index;
                 $this->stdout('    > #' . $count . ': ');
-                $this->stdout($item->getUri() . ($item->getIsDir() ? '/' : ''), Console::FG_CYAN);
+                $this->stdout($item->getAdjustedUri($fsSubpath) . ($item->getIsDir() ? '/' : ''), Console::FG_CYAN);
                 $this->stdout(' ... ');
                 if ($index++ < $startAt) {
                     $this->stdout('skipped' . PHP_EOL, Console::FG_YELLOW);
@@ -168,9 +172,9 @@ class IndexAssetsController extends Controller
 
                 try {
                     if ($item->getIsDir()) {
-                        $assetIndexer->indexFolderByListing((int)$volume->id, $item, $session->id, $this->createMissingAssets);
+                        $assetIndexer->indexFolderByListing($volume, $item, $session->id, $this->createMissingAssets);
                     } else {
-                        $assetIndexer->indexFileByListing((int)$volume->id, $item, $session->id, $this->cacheRemoteImages, $this->createMissingAssets);
+                        $assetIndexer->indexFileByListing($volume, $item, $session->id, $this->cacheRemoteImages, $this->createMissingAssets);
                     }
                 } catch (MissingAssetException $e) {
                     $this->stdout('missing' . PHP_EOL, Console::FG_YELLOW);
@@ -230,6 +234,16 @@ class IndexAssetsController extends Controller
                     }
                     $this->stdout(' (maybe ' . implode(', ', $maybePaths) . ')');
                 }
+                $this->stdout(PHP_EOL);
+            }
+            $this->stdout(PHP_EOL);
+        }
+
+        if (!empty($missingFolders)) {
+            $totalMissing = count($missingFolders);
+            $this->stdout(($totalMissing === 1 ? 'One missing folder:' : "$totalMissing missing folders:") . PHP_EOL, Console::FG_YELLOW);
+            foreach ($missingFolders as $folderId => $folderPath) {
+                $this->stdout("- $folderPath ($folderId)");
                 $this->stdout(PHP_EOL);
             }
             $this->stdout(PHP_EOL);

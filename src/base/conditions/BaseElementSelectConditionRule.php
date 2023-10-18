@@ -4,9 +4,11 @@ namespace craft\base\conditions;
 
 use Craft;
 use craft\base\ElementInterface;
+use craft\elements\conditions\ElementCondition;
 use craft\elements\conditions\ElementConditionInterface;
 use craft\helpers\App;
 use craft\helpers\Cp;
+use stdClass;
 
 /**
  * BaseElementSelectConditionRule provides a base implementation for element query condition rules that are composed of an element select input.
@@ -68,7 +70,13 @@ abstract class BaseElementSelectConditionRule extends BaseConditionRule
     public function getElementId(bool $parse = true): int|string|null
     {
         if ($parse && is_string($this->_elementId)) {
-            return App::parseEnv($this->_elementId);
+            $elementId = App::parseEnv($this->_elementId);
+            if ($this->condition instanceof ElementCondition && isset($this->condition->referenceElement)) {
+                $referenceElement = $this->condition->referenceElement;
+            } else {
+                $referenceElement = new stdClass();
+            }
+            return Craft::$app->getView()->renderObjectTemplate($elementId, $referenceElement);
         }
         return $this->_elementId;
     }
@@ -107,8 +115,10 @@ abstract class BaseElementSelectConditionRule extends BaseConditionRule
                 'suggestionFilter' => fn($value) => is_int($value) && $value > 0,
                 'required' => true,
                 'id' => 'elementId',
+                'class' => 'code',
                 'name' => 'elementId',
                 'value' => $this->getElementId(false),
+                'tip' => Craft::t('app', 'This can be set to an environment variable, or a Twig template that outputs an ID.'),
                 'placeholder' => Craft::t('app', '{type} ID', [
                     'type' => $this->elementType()::displayName(),
                 ]),

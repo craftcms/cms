@@ -8,6 +8,7 @@
 namespace craft\helpers;
 
 use Craft;
+use craft\queue\BaseBatchedJob;
 use yii\base\NotSupportedException;
 use yii\queue\JobInterface;
 use yii\queue\Queue as BaseQueue;
@@ -39,6 +40,12 @@ class Queue
     ): ?string {
         if ($queue === null) {
             $queue = Craft::$app->getQueue();
+        }
+
+        if ($job instanceof BaseBatchedJob) {
+            // Keep track of the priority and TTR in case there will be additional jobs
+            $job->priority = $priority;
+            $job->ttr = $ttr;
         }
 
         try {

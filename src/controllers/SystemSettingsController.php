@@ -12,6 +12,7 @@ use craft\elements\GlobalSet;
 use craft\errors\MissingComponentException;
 use craft\helpers\App;
 use craft\helpers\ArrayHelper;
+use craft\helpers\Component;
 use craft\helpers\MailerHelper;
 use craft\helpers\UrlHelper;
 use craft\mail\Mailer;
@@ -40,10 +41,14 @@ class SystemSettingsController extends Controller
      */
     public function beforeAction($action): bool
     {
+        if (!parent::beforeAction($action)) {
+            return false;
+        }
+
         // All system setting actions require an admin
         $this->requireAdmin();
 
-        return parent::beforeAction($action);
+        return true;
     }
 
     /**
@@ -253,7 +258,9 @@ class SystemSettingsController extends Controller
         }
 
         if ($globalSet->id) {
-            $title = trim($globalSet->name) ?: Craft::t('app', 'Edit Global Set');
+            $title = trim($globalSet->name) ?: Craft::t('app', 'Edit {type}', [
+                'type' => GlobalSet::displayName(),
+            ]);
         } else {
             $title = Craft::t('app', 'Create a new global set');
         }
@@ -293,7 +300,7 @@ class SystemSettingsController extends Controller
         $settings->fromName = $this->request->getBodyParam('fromName');
         $settings->template = $this->request->getBodyParam('template');
         $settings->transportType = $this->request->getBodyParam('transportType');
-        $settings->transportSettings = $this->request->getBodyParam('transportTypes.' . $settings->transportType);
+        $settings->transportSettings = Component::cleanseConfig($this->request->getBodyParam('transportTypes.' . $settings->transportType) ?? []);
 
         return $settings;
     }

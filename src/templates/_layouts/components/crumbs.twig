@@ -4,7 +4,13 @@
         <nav aria-label="{{ 'Breadcrumbs'|t('app') }}">
             <ul class="breadcrumb-list">
                 {% for crumb in crumbs %}
-                    <li><a href="{{ crumb.url }}">{{ crumb.label }}</a></li>
+                    <li>
+                        {% if crumb.html ?? false %}
+                            {{ crumb.html|raw }}
+                        {% else %}
+                            <a href="{{ crumb.url }}">{{ crumb.label }}</a>
+                        {% endif %}
+                    </li>
                 {% endfor %}
             </ul>
         </nav>

@@ -108,16 +108,13 @@ Craft.PreviewFileModal = Garnish.Modal.extend(
     _addModalName: function () {
       const headingId = 'preview-heading';
 
-      this.$container
-        .prepend(
-          $('h1')
-            .attr({
-              class: 'visually-hidden',
-              id: headingId,
-            })
-            .text(Craft.t('app', 'Preview file'))
-        )
-        .attr('aria-labelledby', headingId);
+      $('<h1/>', {
+        class: 'visually-hidden',
+        id: headingId,
+        text: Craft.t('app', 'Preview file'),
+      }).prependTo(this.$container);
+
+      this.$container.attr('aria-labelledby', headingId);
     },
 
     /**
@@ -233,7 +230,7 @@ Craft.PreviewFileModal = Garnish.Modal.extend(
         })
         .catch(({response}) => {
           onResponse();
-          alert(response.data.message);
+          Craft.cp.displayError(response.data.message);
           this.hide();
         });
     },

@@ -12,10 +12,12 @@ use craft\base\Model;
 use craft\db\Query;
 use craft\db\Table;
 use craft\elements\Entry;
+use craft\enums\PropagationMethod;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Db;
 use craft\helpers\ProjectConfig as ProjectConfigHelper;
 use craft\helpers\StringHelper;
+use craft\helpers\UrlHelper;
 use craft\records\Section as SectionRecord;
 use craft\validators\HandleValidator;
 use craft\validators\UniqueValidator;
@@ -88,19 +90,19 @@ class Section extends Model
     public bool $enableVersioning = true;
 
     /**
-     * @var string Propagation method
-     * @phpstan-var self::PROPAGATION_METHOD_NONE|self::PROPAGATION_METHOD_SITE_GROUP|self::PROPAGATION_METHOD_LANGUAGE|self::PROPAGATION_METHOD_ALL|self::PROPAGATION_METHOD_CUSTOM
+     * @var PropagationMethod Propagation method
      *
      * This will be set to one of the following:
      *
-     * - `none` – Only save entries in the site they were created in
-     * - `siteGroup` – Save entries to other sites in the same site group
-     * - `language` – Save entries to other sites with the same language
-     * - `all` – Save entries to all sites enabled for this section
+     *  - [[PropagationMethod::None]] – Only save entries in the site they were created in
+     *  - [[PropagationMethod::SiteGroup]] – Save  entries to other sites in the same site group
+     *  - [[PropagationMethod::Language]] – Save entries to other sites with the same language
+     *  - [[PropagationMethod::Custom]] – Save entries to other sites based on a custom [[$propagationKeyFormat|propagation key format]]
+     *  - [[PropagationMethod::All]] – Save entries to all sites supported by the owner element
      *
      * @since 3.2.0
      */
-    public string $propagationMethod = self::PROPAGATION_METHOD_ALL;
+    public PropagationMethod $propagationMethod = PropagationMethod::All;
 
     /**
      * @var string Default placement
@@ -157,6 +159,9 @@ class Section extends Model
             'handle' => Craft::t('app', 'Handle'),
             'name' => Craft::t('app', 'Name'),
             'type' => Craft::t('app', 'Section Type'),
+            'entryTypes' => $this->type === self::TYPE_SINGLE
+                ? Craft::t('app', 'Entry Type')
+                : Craft::t('app', 'Entry Types'),
         ];
     }
 
@@ -176,17 +181,8 @@ class Section extends Model
                 self::TYPE_STRUCTURE,
             ],
         ];
-        $rules[] = [
-            ['propagationMethod'], 'in', 'range' => [
-                self::PROPAGATION_METHOD_NONE,
-                self::PROPAGATION_METHOD_SITE_GROUP,
-                self::PROPAGATION_METHOD_LANGUAGE,
-                self::PROPAGATION_METHOD_ALL,
-                self::PROPAGATION_METHOD_CUSTOM,
-            ],
-        ];
         $rules[] = [['name', 'handle'], UniqueValidator::class, 'targetClass' => SectionRecord::class];
-        $rules[] = [['name', 'handle', 'type', 'propagationMethod', 'siteSettings'], 'required'];
+        $rules[] = [['name', 'handle', 'type', 'entryTypes', 'propagationMethod', 'siteSettings'], 'required'];
         $rules[] = [['name', 'handle'], 'string', 'max' => 255];
         $rules[] = [['siteSettings'], 'validateSiteSettings'];
         $rules[] = [['defaultPlacement'], 'in', 'range' => [self::DEFAULT_PLACEMENT_BEGINNING, self::DEFAULT_PLACEMENT_END]];
@@ -269,7 +265,7 @@ class Section extends Model
         }
 
         // Set them with setSiteSettings() so they get indexed by site ID and setSection() gets called on them
-        $this->setSiteSettings(Craft::$app->getSections()->getSectionSiteSettings($this->id));
+        $this->setSiteSettings(Craft::$app->getEntries()->getSectionSiteSettings($this->id));
 
         return $this->_siteSettings;
     }
@@ -329,7 +325,7 @@ class Section extends Model
             return [];
         }
 
-        $this->_entryTypes = Craft::$app->getSections()->getEntryTypesBySectionId($this->id);
+        $this->_entryTypes = Craft::$app->getEntries()->getEntryTypesBySectionId($this->id);
 
         return $this->_entryTypes;
     }
@@ -356,8 +352,19 @@ class Section extends Model
         return (
             Craft::$app->getIsMultiSite() &&
             count($this->getSiteSettings()) > 1 &&
-            $this->propagationMethod !== self::PROPAGATION_METHOD_NONE
+            $this->propagationMethod !== PropagationMethod::None
         );
+    }
+
+    /**
+     * Returns the section’s edit URL in the control panel.
+     *
+     * @return string
+     * @since 5.0.0
+     */
+    public function getCpEditUrl(): string
+    {
+        return UrlHelper::cpUrl("settings/sections/$this->id");
     }
 
     /**
@@ -372,9 +379,10 @@ class Section extends Model
             'name' => $this->name,
             'handle' => $this->handle,
             'type' => $this->type,
+            'entryTypes' => array_map(fn(EntryType $entryType) => $entryType->uid, $this->getEntryTypes()),
             'enableVersioning' => $this->enableVersioning,
             'maxAuthors' => $this->maxAuthors,
-            'propagationMethod' => $this->propagationMethod,
+            'propagationMethod' => $this->propagationMethod->value,
             'siteSettings' => [],
             'defaultPlacement' => $this->defaultPlacement ?? self::DEFAULT_PLACEMENT_END,
         ];

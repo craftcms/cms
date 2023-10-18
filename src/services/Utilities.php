@@ -36,11 +36,11 @@ use yii\base\Component;
 class Utilities extends Component
 {
     /**
-     * @event RegisterComponentTypesEvent The event that is triggered when registering utility types.
+     * @event RegisterComponentTypesEvent The event that is triggered when registering utilities.
      *
-     * Utility types must implement [[UtilityInterface]]. [[\craft\base\Utility]] provides a base implementation.
+     * Utilities must implement [[UtilityInterface]]. [[\craft\base\Utility]] provides a base implementation.
      *
-     * See [Utility Types](https://craftcms.com/docs/4.x/extend/utility-types.html) for documentation on creating utility types.
+     * Read more about creating utilities in the [documentation](https://craftcms.com/docs/4.x/extend/utilities.html).
      * ---
      * ```php
      * use craft\events\RegisterComponentTypesEvent;

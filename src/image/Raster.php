@@ -24,6 +24,7 @@ use Imagine\Image\Box;
 use Imagine\Image\BoxInterface;
 use Imagine\Image\ImageInterface;
 use Imagine\Image\Metadata\ExifMetadataReader;
+use Imagine\Image\Palette\Color\ColorInterface;
 use Imagine\Image\Palette\RGB;
 use Imagine\Image\Point;
 use Imagine\Imagick\Imagine as ImagickImagine;
@@ -59,9 +60,9 @@ class Raster extends Image
     private int $_quality = 0;
 
     /**
-     * @var AbstractImage|null
+     * @var ImageInterface|null
      */
-    private ?AbstractImage $_image = null;
+    private ?ImageInterface $_image = null;
 
     /**
      * @var AbstractImagine|null
@@ -77,6 +78,11 @@ class Raster extends Image
      * @var Font|null
      */
     private ?Font $_font = null;
+
+    /**
+     * @var ColorInterface|null
+     */
+    private ?ColorInterface $_fill = null;
 
     /**
      * @inheritdoc
@@ -163,13 +169,23 @@ class Raster extends Image
         $mimeType = FileHelper::getMimeType($path, null, false);
 
         if ($mimeType !== null && !str_starts_with($mimeType, 'image/') && !str_starts_with($mimeType, 'application/pdf')) {
-            throw new ImageException(Craft::t('app', 'The file “{name}” does not appear to be an image.', ['name' => basename($path)]));
+            throw new ImageException(Craft::t('app', 'The file “{name}” does not appear to be an image.', [
+                'name' => basename($path),
+            ]));
         }
 
         try {
             $this->_image = $this->_instance->open($path);
         } catch (Throwable $e) {
-            throw new ImageException(Craft::t('app', 'The file “{path}” does not appear to be an image.', ['path' => $path]), 0, $e);
+            // Imagick can throw all sorts of errors via the open() method
+            // we should log them to better know what's going on
+            Craft::warning($e->getMessage(), $e->getFile());
+            if (($instanceException = $e->getPrevious()) !== null) {
+                Craft::warning($instanceException->getMessage(), $instanceException->getFile() . ':' . $instanceException->getLine());
+            }
+            throw new ImageException(Craft::t('app', 'The file “{name}” does not appear to be an image.', [
+                'name' => basename($path),
+            ]), 0, $e);
         }
 
         // For Imagick, convert CMYK to RGB, save and re-open.
@@ -234,16 +250,75 @@ class Raster extends Image
     /**
      * @inheritdoc
      */
-    public function scaleToFit(?int $targetWidth, ?int $targetHeight, bool $scaleIfSmaller = true): self
+    public function scaleToFit(?int $targetWidth, ?int $targetHeight, bool $scaleIfSmaller = null): self
     {
         $this->normalizeDimensions($targetWidth, $targetHeight);
 
-        $scaleIfSmaller = $scaleIfSmaller && Craft::$app->getConfig()->getGeneral()->upscaleImages;
+        $scaleIfSmaller = $scaleIfSmaller ?? Craft::$app->getConfig()->getGeneral()->upscaleImages;
 
         if ($scaleIfSmaller || $this->getWidth() > $targetWidth || $this->getHeight() > $targetHeight) {
             $factor = max($this->getWidth() / $targetWidth, $this->getHeight() / $targetHeight);
             $this->resize(round($this->getWidth() / $factor), round($this->getHeight() / $factor));
         }
+
+        return $this;
+    }
+
+    /**
+     * Scales an image to the target size and fills empty pixels with color.
+     *
+     * @param int|null $targetWidth
+     * @param int|null $targetHeight
+     * @param string|null $fill
+     * @param string|array $position
+     * @param bool|null $upscale
+     * @return Raster
+     * @since 4.4.0
+     */
+    public function scaleToFitAndFill(?int $targetWidth, ?int $targetHeight, string $fill = null, string|array $position = 'center-center', bool $upscale = null): static
+    {
+        $upscale = $upscale ?? Craft::$app->getConfig()->getGeneral()->upscaleImages;
+
+        $this->normalizeDimensions($targetWidth, $targetHeight);
+        $this->scaleToFit($targetWidth, $targetHeight, $upscale);
+        $this->setFill($fill);
+
+        $box = new Box($targetWidth, $targetHeight);
+        $canvas = $this->_instance->create($box, $this->_fill);
+
+        [$verticalPosition, $horizontalPosition] = explode('-', $position);
+
+        $y = match ($verticalPosition) {
+            'top' => 0,
+            'bottom' => ($box->getHeight() - $this->getHeight()),
+            default => ($box->getHeight() - $this->getHeight()) / 2,
+        };
+
+        $x = match ($horizontalPosition) {
+            'left' => 0,
+            'right' => ($box->getWidth() - $this->getWidth()),
+            default => ($box->getWidth() - $this->getWidth()) / 2,
+        };
+
+        $point = new Point($x, $y);
+
+        if ($this->_isAnimated) {
+            $canvas->layers()->remove(0);
+            $this->_image->layers()->coalesce();
+
+            foreach ($this->_image->layers() as $layer) {
+                $newLayer = $this->_instance->create($box, $this->_fill);
+                $newLayer->paste($layer, $point);
+                $canvas->layers()->add($newLayer);
+
+                // Hopefully this doesn't take _too_ long, but it might
+                $this->heartbeat();
+            }
+        } else {
+            $canvas->paste($this->_image, $point);
+        }
+
+        $this->_image = $canvas;
 
         return $this;
     }
@@ -459,6 +534,25 @@ class Raster extends Image
     }
 
     /**
+     * Sets the fill color based on the image's palette.
+     *
+     * @param string $fill Hex color of the fill.
+     * @return $this Self reference
+     * @since 4.4.0
+     */
+    public function setFill(string $fill = null): self
+    {
+        $fill = $fill ?? 'transparent';
+        if ($fill === 'transparent') {
+            $this->_fill = $this->_image->palette()->color('#ffffff', 0);
+        } else {
+            $this->_fill = $this->_image->palette()->color($fill);
+        }
+
+        return $this;
+    }
+
+    /**
      * @inheritdoc
      */
     public function saveAs(string $targetPath, bool $autoQuality = false): bool
@@ -525,8 +619,13 @@ class Raster extends Image
      */
     public function getIsTransparent(): bool
     {
-        if (Craft::$app->getImages()->getIsImagick() && method_exists(Imagick::class, 'getImageAlphaChannel')) {
-            return $this->_image->getImagick()->getImageAlphaChannel();
+        if (Craft::$app->getImages()->getIsImagick()) {
+            // https://github.com/php-imagine/Imagine/issues/842#issuecomment-1402748019
+            $alphaRange = $this->_image->getImagick()->getImageChannelRange(Imagick::CHANNEL_ALPHA);
+            return (
+                isset($alphaRange['minima'], $alphaRange['maxima']) &&
+                $alphaRange['minima'] < $alphaRange['maxima']
+            );
         }
 
         return false;
@@ -636,7 +735,9 @@ class Raster extends Image
     private function _autoGuessImageQuality(string $tempFileName, int $originalSize, string $extension, int $minQuality, int $maxQuality, int $step = 0): string
     {
         if ($step === 0) {
-            $tempFileName = pathinfo($tempFileName, PATHINFO_DIRNAME) . DIRECTORY_SEPARATOR . pathinfo($tempFileName, PATHINFO_FILENAME) . '-temp.' . $extension;
+            $tempFileName = pathinfo($tempFileName, PATHINFO_DIRNAME) .
+                DIRECTORY_SEPARATOR .
+                FileHelper::uniqueName(sprintf('%s.%s', pathinfo($tempFileName, PATHINFO_FILENAME), $extension));
         }
 
         // Find our target quality by splitting the min and max qualities

@@ -73,6 +73,14 @@ class CountryCodeField extends BaseNativeField
     /**
      * @inheritdoc
      */
+    public function previewable(): bool
+    {
+        return true;
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function defaultLabel(?ElementInterface $element = null, bool $static = false): ?string
     {
         return Craft::t('app', 'Country');

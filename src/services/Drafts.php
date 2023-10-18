@@ -165,6 +165,21 @@ class Drafts extends Component
 
             $draft = Craft::$app->getElements()->duplicateElement($canonical, $newAttributes);
 
+            // Duplicate nested element ownership
+            Craft::$app->getDb()->createCommand(sprintf(
+                <<<SQL
+INSERT INTO %s ([[elementId]], [[ownerId]], [[sortOrder]]) 
+SELECT [[o.elementId]], :draftId, [[o.sortOrder]] 
+FROM %s AS [[o]]
+WHERE [[o.ownerId]] = :canonicalId
+SQL,
+                Table::ELEMENTS_OWNERS,
+                Table::ELEMENTS_OWNERS,
+            ), [
+                ':draftId' => $draft->id,
+                ':canonicalId' => $canonical->id,
+            ])->execute();
+
             $transaction->commit();
         } catch (Throwable $e) {
             $transaction->rollBack();
@@ -261,6 +276,7 @@ class Drafts extends Component
         /** @var DraftBehavior $behavior */
         $behavior = $draft->getBehavior('draft');
         $canonical = $draft->getCanonical(true);
+        $originalDraft = $draft;
 
         // If the canonical element ended up being from a different site than the draft, get the draft in that site
         if ($canonical->siteId != $draft->siteId) {
@@ -299,7 +315,7 @@ class Drafts extends Component
                     $elementsService->mergeCanonicalChanges($draft);
                 }
 
-                // "Duplicate" the draft with the canonical element’s ID, UID, and content ID
+                // "Duplicate" the draft with the canonical element’s ID and UID
                 $newCanonical = $elementsService->updateCanonicalElement($draft, [
                     'revisionNotes' => $draftNotes ?: Craft::t('app', 'Applied “{name}”', ['name' => $draft->draftName]),
                 ]);
@@ -339,6 +355,12 @@ class Drafts extends Component
                 'draftNotes' => $behavior->draftNotes,
                 'draft' => $draft,
             ]));
+        }
+
+        // if we were on another site when the applyDraft was triggered,
+        // ensure we return the canonical element for the site we were on
+        if ($newCanonical->siteId !== $originalDraft->siteId) {
+            $newCanonical = $originalDraft->getCanonical();
         }
 
         return $newCanonical;

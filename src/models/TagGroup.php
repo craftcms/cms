@@ -8,12 +8,14 @@
 namespace craft\models;
 
 use Craft;
+use craft\base\FieldLayoutProviderInterface;
 use craft\base\Model;
 use craft\behaviors\FieldLayoutBehavior;
 use craft\elements\Tag;
 use craft\records\TagGroup as TagGroupRecord;
 use craft\validators\HandleValidator;
 use craft\validators\UniqueValidator;
+use DateTime;
 
 /**
  * TagGroup model.
@@ -22,7 +24,7 @@ use craft\validators\UniqueValidator;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
-class TagGroup extends Model
+class TagGroup extends Model implements FieldLayoutProviderInterface
 {
     /**
      * @var int|null ID
@@ -48,6 +50,12 @@ class TagGroup extends Model
      * @var string|null Field layout ID
      */
     public ?string $uid = null;
+
+    /**
+     * @var DateTime|null The date that the tag group was trashed
+     * @since 4.4.0
+     */
+    public ?DateTime $dateDeleted = null;
 
     /**
      * @inheritdoc
@@ -113,6 +121,24 @@ class TagGroup extends Model
     public function __toString(): string
     {
         return Craft::t('site', $this->name) ?: static::class;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getHandle(): ?string
+    {
+        return $this->handle;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getFieldLayout(): FieldLayout
+    {
+        /** @var FieldLayoutBehavior $behavior */
+        $behavior = $this->getBehavior('fieldLayout');
+        return $behavior->getFieldLayout();
     }
 
     /**

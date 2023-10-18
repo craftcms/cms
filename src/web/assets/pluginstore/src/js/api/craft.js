@@ -32,7 +32,7 @@ export default {
   },
 
   /**
-   * Get Craft ID data.
+   * Get Craft Console data.
    */
   getCraftIdData({accessToken}) {
     return new Promise((resolve, reject) => {

@@ -41,6 +41,13 @@ use yii\web\Response;
 class Queue extends \yii\queue\cli\Queue implements QueueInterface
 {
     /**
+     * @event ExecEvent The event that is triggered after a job is executed and released.
+     * @see executeJob()
+     * @since 4.4.8
+     */
+    public const EVENT_AFTER_EXEC_AND_RELEASE = 'afterExecAndRelease';
+
+    /**
      * @see isFailed()
      */
     public const STATUS_FAILED = 4;
@@ -182,6 +189,19 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
 
         if ($this->handleMessage($payload['id'], $payload['job'], $payload['ttr'], $payload['attempt'])) {
             $this->release($payload['id']);
+
+            if ($this->hasEventHandlers(self::EVENT_AFTER_EXEC_AND_RELEASE)) {
+                // Can't just capture the exec event from handleMessage()
+                // because it was probably created in a subprocess
+                [$job, $error] = $this->unserializeMessage($payload['job']);
+                $this->trigger(self::EVENT_AFTER_EXEC_AND_RELEASE, new ExecEvent([
+                    'id' => $payload['id'],
+                    'job' => $job,
+                    'ttr' => $payload['ttr'],
+                    'attempt' => $payload['attempt'],
+                    'error' => $error,
+                ]));
+            }
         }
 
         return true;
@@ -257,33 +277,9 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
      */
     public function retry(string $id): void
     {
-        $this->_lock(function() use ($id) {
-            Db::update($this->tableName, [
-                'dateReserved' => null,
-                'timeUpdated' => null,
-                'progress' => 0,
-                'progressLabel' => null,
-                'attempt' => 0,
-                'fail' => false,
-                'dateFailed' => null,
-                'error' => null,
-            ], [
-                'id' => $id,
-            ], [], false, $this->db);
-        });
-
-        // If there's a proxy queue, send a new job to that as well
-        if ($this->proxyQueue) {
-            $job = (new Query())
-                ->select(['priority', 'delay', 'ttr'])
-                ->from($this->tableName)
-                ->where(['id' => $id])
-                ->one();
-
-            if ($job) {
-                $this->pushProxyJob($id, $job['priority'], $job['delay'], $job['ttr']);
-            }
-        }
+        $this->_retry([
+            'id' => $id,
+        ]);
     }
 
     /**
@@ -291,23 +287,53 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
      */
     public function retryAll(): void
     {
-        $this->_lock(function() {
+        $this->_retry([
+            'channel' => $this->channel(),
+            'fail' => true,
+        ]);
+    }
+
+    private function _retry(array $condition): void
+    {
+        $this->_lock(function() use ($condition) {
             // Move expired messages into waiting list
             $this->_moveExpired();
 
-            Db::update($this->tableName, [
-                'dateReserved' => null,
-                'timeUpdated' => null,
-                'progress' => 0,
-                'progressLabel' => null,
-                'attempt' => 0,
-                'fail' => false,
-                'dateFailed' => null,
-                'error' => null,
-            ], [
-                'channel' => $this->channel(),
-                'fail' => true,
-            ], [], false, $this->db);
+            if ($this->proxyQueue) {
+                $jobs = (new Query())
+                    ->select(['id', 'priority', 'delay', 'ttr'])
+                    ->from($this->tableName)
+                    ->where($condition)
+                    ->all();
+
+                foreach ($jobs as $job) {
+                    Db::update($this->tableName, [
+                        'dateReserved' => null,
+                        'timeUpdated' => null,
+                        'progress' => 0,
+                        'progressLabel' => null,
+                        'attempt' => 0,
+                        'fail' => false,
+                        'dateFailed' => null,
+                        'error' => null,
+                    ], [
+                        'id' => $job['id'],
+                    ], [], false, $this->db);
+
+                    $this->pushProxyJob($job['id'], $job['priority'], $job['delay'], $job['ttr']);
+                }
+            } else {
+                Db::update($this->tableName, [
+                    'dateReserved' => null,
+                    'timeUpdated' => null,
+                    'progress' => 0,
+                    'progressLabel' => null,
+                    'attempt' => 0,
+                    'fail' => false,
+                    'dateFailed' => null,
+                    'error' => null,
+                ], $condition, updateTimestamp: false, db: $this->db);
+            }
         });
     }
 
@@ -362,7 +388,7 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
     public function getHasWaitingJobs(): bool
     {
         // Move expired messages into waiting list
-        $this->_moveExpired();
+        $this->_moveExpired(0, false);
 
         return $this->db->usePrimary(function() {
             return $this->_createWaitingJobQuery()->exists($this->db);
@@ -375,7 +401,7 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
     public function getHasReservedJobs(): bool
     {
         // Move expired messages into waiting list
-        $this->_moveExpired();
+        $this->_moveExpired(0, false);
 
         return $this->db->usePrimary(function() {
             return $this->_createReservedJobQuery()->exists($this->db);
@@ -390,7 +416,7 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
     public function getTotalWaiting(): int
     {
         // Move expired messages into waiting list
-        $this->_moveExpired();
+        $this->_moveExpired(0, false);
 
         return $this->db->usePrimary(function() {
             return $this->_createWaitingJobQuery()->count('*', $this->db);
@@ -405,7 +431,7 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
     public function getTotalDelayed(): int
     {
         // Move expired messages into waiting list
-        $this->_moveExpired();
+        $this->_moveExpired(0, false);
 
         return $this->db->usePrimary(function() {
             return $this->_createDelayedJobQuery()->count('*', $this->db);
@@ -420,7 +446,7 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
     public function getTotalReserved(): int
     {
         // Move expired messages into waiting list
-        $this->_moveExpired();
+        $this->_moveExpired(0, false);
 
         return $this->db->usePrimary(function() {
             return $this->_createReservedJobQuery()->count('*', $this->db);
@@ -435,7 +461,7 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
     public function getTotalFailed(): int
     {
         // Move expired messages into waiting list
-        $this->_moveExpired();
+        $this->_moveExpired(0, false);
 
         return $this->db->usePrimary(function() {
             return $this->_createFailedJobQuery()->count('*', $this->db);
@@ -494,7 +520,7 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
     public function getJobInfo(?int $limit = null): array
     {
         // Move expired messages into waiting list
-        $this->_moveExpired();
+        $this->_moveExpired(0, false);
 
         $query = $this->_createJobQuery();
 
@@ -590,26 +616,13 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
 <script type="text/javascript">
 /*<![CDATA[*/
 (function(){
-    var XMLHttpFactories = [
-        function () {return new XMLHttpRequest()},
-        function () {return new ActiveXObject("Msxml2.XMLHTTP")},
-        function () {return new ActiveXObject("Msxml3.XMLHTTP")},
-        function () {return new ActiveXObject("Microsoft.XMLHTTP")}
-    ];
-    var req = false;
-    for (var i = 0; i < XMLHttpFactories.length; i++) {
-        try {
-            req = XMLHttpFactories[i]();
-        }
-        catch (e) {
-            continue;
-        }
-        break;
-    }
-    if (!req) return;
+  try {
+    var req = new XMLHttpRequest();
     req.open('GET', $url, true);
-    if (req.readyState == 4) return;
+    req.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
+    if (req.readyState === 4) return;
     req.send();
+  } catch (e) {}
 })();
 /*]]>*/
 </script>
@@ -761,8 +774,11 @@ EOD;
 
     /**
      * Moves expired messages into waiting list.
+     *
+     * @param int|null $mutexTimeout
+     * @param bool $throwMutexException
      */
-    private function _moveExpired(): void
+    private function _moveExpired(?int $mutexTimeout = null, bool $throwMutexException = true): void
     {
         if ($this->_reserveTime !== time()) {
             $this->_lock(function() {
@@ -793,7 +809,7 @@ EOD;
                         'progressLabel' => null,
                     ], ['id' => $expiredIds], [], false, $this->db);
                 }
-            });
+            }, $mutexTimeout, $throwMutexException);
         }
     }
 
@@ -893,25 +909,33 @@ EOD;
      * Acquires a lock and then executes the provided callback
      *
      * @param callable $callback
+     * @param int|null $timeout
+     * @param bool $throwException
      * @throws Exception
      */
-    private function _lock(callable $callback): void
+    private function _lock(callable $callback, ?int $timeout = null, bool $throwException = true): void
     {
         $acquireLock = !$this->_locked;
 
         if ($acquireLock) {
             $channel = $this->channel();
-            if (!$this->mutex->acquire(__CLASS__ . "::$channel", $this->mutexTimeout)) {
-                throw new Exception("Could not acquire a mutex lock for the queue ($channel).");
+            $mutexName = sprintf('%s::%s', __CLASS__, $channel);
+            if (!$this->mutex->acquire($mutexName, $timeout ?? $this->mutexTimeout)) {
+                if ($throwException) {
+                    throw new Exception("Could not acquire a mutex lock for the queue ($channel).");
+                }
+                return;
             }
             $this->_locked = true;
         }
 
-        $callback();
-
-        if ($acquireLock) {
-            $this->mutex->release(__CLASS__ . "::$channel");
-            $this->_locked = false;
+        try {
+            $callback();
+        } finally {
+            if ($acquireLock) {
+                $this->mutex->release($mutexName);
+                $this->_locked = false;
+            }
         }
     }
 

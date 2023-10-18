@@ -9,9 +9,7 @@ namespace craft\elements\db;
 
 use craft\base\ElementInterface;
 use craft\db\Query;
-use craft\models\Site;
-use craft\search\SearchQuery;
-use Illuminate\Support\Collection;
+use craft\elements\ElementCollection;
 use yii\base\Arrayable;
 use yii\db\Connection;
 use yii\db\QueryInterface;
@@ -1045,6 +1043,16 @@ interface ElementQueryInterface extends QueryInterface, Arrayable
     public function andWith(array|string|null $value): static;
 
     /**
+     * Causes the query to be used to eager-load results for the query’s source element
+     * and any other elements in its collection.
+     *
+     * @param string|bool $value The property value. If a string, the value will be used as the eager-loading alias.
+     * @return static
+     * @since 5.0.0
+     */
+    public function eagerly(string|bool $value = true): static;
+
+    /**
      * Explicitly determines whether the query should join in the structure data.
      *
      * @param bool $value The property value (defaults to true)
@@ -1432,6 +1440,33 @@ interface ElementQueryInterface extends QueryInterface, Arrayable
     // -------------------------------------------------------------------------
 
     /**
+     * Prepares the query for lazy eager loading.
+     *
+     * @param string $handle The eager loading handle the query is for
+     * @param ElementInterface $sourceElement One of the source elements the query is fetching elements for
+     * @since 5.0.0
+     */
+    public function prepForEagerLoading(string $handle, ElementInterface $sourceElement): static;
+
+    /**
+     * Returns whether the query results were already eager loaded by the query's source element.
+     *
+     * @param string|null $alias The eager-loading alias to check
+     * @return bool
+     * @since 5.0.0
+     */
+    public function wasEagerLoaded(?string $alias = null): bool;
+
+    /**
+     * Returns whether the query result count was already eager loaded by the query's source element.
+     *
+     * @param string|null $alias The eager-loading alias to check
+     * @return bool
+     * @since 5.0.0
+     */
+    public function wasCountEagerLoaded(?string $alias = null): bool;
+
+    /**
      * Executes the query and returns all results as an array.
      *
      * @param Connection|null $db The database connection used to generate the SQL statement.
@@ -1445,10 +1480,10 @@ interface ElementQueryInterface extends QueryInterface, Arrayable
      *
      * @param Connection|null $db The database connection used to generate the SQL statement.
      * If this parameter is not given, the `db` application component will be used.
-     * @return Collection A collection of the resulting elements.
+     * @return ElementCollection A collection of the resulting elements.
      * @since 4.0.0
      */
-    public function collect(?Connection $db = null): Collection;
+    public function collect(?Connection $db = null): ElementCollection;
 
     /**
      * Executes the query and returns a single row of result.
