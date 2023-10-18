@@ -1,5 +1,11 @@
 # Release Notes for Craft CMS 4
 
+## Unreleased
+
+- `{% cache %}` tags now store any `<meta>` tags registered with `yii\web\View::registerMetaTag()`. ([#13832](https://github.com/craftcms/cms/issues/13832))
+- Added `craft\web\View::startMetaTagBuffer()`.
+- Added `craft\web\View::clearMetaTagBuffer()`.
+
 ## 4.5.7 - 2023-10-17
 
 - Field containers are no longer focusable unless a corresponding validation message is clicked on. ([#13782](https://github.com/craftcms/cms/issues/13782))
