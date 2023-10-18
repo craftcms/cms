@@ -309,6 +309,7 @@ return [
     'Connect the database' => 'Koble til databasen',
     'Connecting to CraftCMS.com…' => 'Kobler til craftcms.com…',
     'Constraints' => 'Begrensninger',
+    'Contact Developer Support' => 'Contact Developer Support',
     'Content' => 'Innhold',
     'Contents of {path}' => 'Innhold i {path}',
     'Context' => 'Kontekst',

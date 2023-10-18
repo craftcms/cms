@@ -309,6 +309,7 @@ return [
     'Connect the database' => 'Під\'єднатися до бази даних',
     'Connecting to CraftCMS.com…' => 'Триває під\'єднання до CraftCMS.com…',
     'Constraints' => 'Обмеження',
+    'Contact Developer Support' => 'Contact Developer Support',
     'Content' => 'Вміст',
     'Contents of {path}' => 'Вміст {path}',
     'Context' => 'Контекст',
