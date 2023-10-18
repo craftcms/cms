@@ -309,6 +309,7 @@ return [
     'Connect the database' => 'התחבר למסד הנתונים',
     'Connecting to CraftCMS.com…' => 'מתחבר ל-CraftCMS.com…',
     'Constraints' => 'אילוצים',
+    'Contact Developer Support' => 'Contact Developer Support',
     'Content' => 'תוכן',
     'Contents of {path}' => 'התוכן של {path}',
     'Context' => 'הקשר',

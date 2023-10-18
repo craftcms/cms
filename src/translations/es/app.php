@@ -309,6 +309,7 @@ return [
     'Connect the database' => 'Conectarse a la base de datos',
     'Connecting to CraftCMS.com…' => 'Conectándose a CraftCMS.com…',
     'Constraints' => 'Limitaciones',
+    'Contact Developer Support' => 'Contact Developer Support',
     'Content' => 'Contenido',
     'Contents of {path}' => 'Contenido de {path}',
     'Context' => 'Contexto',

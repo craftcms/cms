@@ -309,6 +309,7 @@ return [
     'Connect the database' => 'Pripojiť databázu',
     'Connecting to CraftCMS.com…' => 'Pripája sa k webu CraftSMS.com…',
     'Constraints' => 'Obmedzenia',
+    'Contact Developer Support' => 'Contact Developer Support',
     'Content' => 'Obsah',
     'Contents of {path}' => 'Obsah {path}',
     'Context' => 'Kontext',
