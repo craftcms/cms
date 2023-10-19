@@ -41,20 +41,28 @@ Craft.EmbeddedElementIndex = Garnish.Base.extend(
               return this.canDelete($selectedItems.length);
             },
             onBeforeDuplicateElements: async () => {
-              await this.elementEditor.ensureIsDraftOrRevision();
+              if (this.elementEditor) {
+                await this.elementEditor.ensureIsDraftOrRevision();
+              }
             },
             onDuplicateElements: async () => {
-              await this.elementEditor.markFieldAsDirty(
-                this.settings.fieldHandle
-              );
+              if (this.elementEditor && this.settings.fieldHandle) {
+                await this.elementEditor.markFieldAsDirty(
+                  this.settings.fieldHandle
+                );
+              }
             },
             onBeforeDeleteElements: async () => {
-              await this.elementEditor.ensureIsDraftOrRevision();
+              if (this.elementEditor) {
+                await this.elementEditor.ensureIsDraftOrRevision();
+              }
             },
             onDeleteElements: async () => {
-              await this.elementEditor.markFieldAsDirty(
-                this.settings.fieldHandle
-              );
+              if (this.elementEditor && this.settings.fieldHandle) {
+                await this.elementEditor.markFieldAsDirty(
+                  this.settings.fieldHandle
+                );
+              }
             },
             onBeforeUpdateElements: this.onBeforeUpdateElements.bind(this),
             onCountResults: this.onCountResults.bind(this),
@@ -112,7 +120,6 @@ Craft.EmbeddedElementIndex = Garnish.Base.extend(
           this.elementEditor.on('createProvisionalDraft', () => {
             this.elementIndex.settings.criteria[this.settings.ownerIdParam] =
               this.elementEditor.settings.elementId;
-            this.elementIndex.updateElements();
 
             if (
               this.settings.baseCreateAttributes &&
@@ -192,7 +199,7 @@ Craft.EmbeddedElementIndex = Garnish.Base.extend(
           slideout.on('submit', async () => {
             this.elementIndex.clearSearch();
             this.elementIndex.updateElements();
-            if (this.settings.fieldHandle) {
+            if (this.elementEditor && this.settings.fieldHandle) {
               await this.elementEditor.markFieldAsDirty(
                 this.settings.fieldHandle
               );

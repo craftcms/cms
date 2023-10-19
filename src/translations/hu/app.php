@@ -306,6 +306,7 @@ return [
     'Connect the database' => 'Az adatbázis csatlakoztatása',
     'Connecting to CraftCMS.com…' => 'Kapcsolódás a CraftCMS.com webhelyhez…',
     'Constraints' => 'Korlátozások',
+    'Contact Developer Support' => 'Contact Developer Support',
     'Content' => 'Tartalom',
     'Contents of {path}' => '{path} tartalma',
     'Context' => 'Környezet',

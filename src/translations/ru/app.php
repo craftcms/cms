@@ -306,6 +306,7 @@ return [
     'Connect the database' => 'Подключиться к базе данных',
     'Connecting to CraftCMS.com…' => 'Выполняется подключение к CraftCMS.com…',
     'Constraints' => 'Ограничения',
+    'Contact Developer Support' => 'Contact Developer Support',
     'Content' => 'Контент',
     'Contents of {path}' => 'Содержимое {path}',
     'Context' => 'Контекст',

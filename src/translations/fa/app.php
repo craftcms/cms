@@ -306,6 +306,7 @@ return [
     'Connect the database' => 'اتصال پایگاه داده',
     'Connecting to CraftCMS.com…' => 'در حال اتصال به CraftCMS.com…',
     'Constraints' => 'محدودیت‌ها',
+    'Contact Developer Support' => 'Contact Developer Support',
     'Content' => 'محتوا',
     'Contents of {path}' => 'محتوای {path}',
     'Context' => 'بافت',
