@@ -241,7 +241,7 @@ $config = ArrayHelper::merge(
 );
 
 if (function_exists('craft_modify_app_config')) {
-    craft_modify_app_config($config);
+    craft_modify_app_config($config, $appType);
 }
 
 // Initialize the application
