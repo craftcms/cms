@@ -139,7 +139,7 @@ class ProjectConfigHelperTest extends TestCase
     /**
      * @return array
      */
-    public function packedUnpackedDataProvider(): array
+    public static function packedUnpackedDataProvider(): array
     {
         return [
             [
@@ -199,7 +199,7 @@ class ProjectConfigHelperTest extends TestCase
         ];
     }
 
-    public function cleanupConfigDataProvider(): array
+    public static function cleanupConfigDataProvider(): array
     {
         return [
             [
@@ -414,7 +414,7 @@ class ProjectConfigHelperTest extends TestCase
         ];
     }
 
-    public function encodeTestDataProvider(): array
+    public static function encodeTestDataProvider(): array
     {
         return [
             [
@@ -452,7 +452,7 @@ class ProjectConfigHelperTest extends TestCase
         ];
     }
 
-    public function touchDataProvider(): array
+    public static function touchDataProvider(): array
     {
         $input1 = <<<EOL
 dateModified: 1603054241
@@ -577,7 +577,7 @@ EOL;
     /**
      * @return array[]
      */
-    public function pathSegmentsDataProvider(): array
+    public static function pathSegmentsDataProvider(): array
     {
         return [
             [['foo'], 'foo'],
@@ -591,7 +591,7 @@ EOL;
     /**
      * @return array[]
      */
-    public function lastPathSegmentDataProvider(): array
+    public static function lastPathSegmentDataProvider(): array
     {
         return [
             ['foo', 'foo'],
@@ -605,7 +605,7 @@ EOL;
     /**
      * @return array[]
      */
-    public function pathWithoutLastSegmentDataProvider(): array
+    public static function pathWithoutLastSegmentDataProvider(): array
     {
         return [
             [null, 'foo'],

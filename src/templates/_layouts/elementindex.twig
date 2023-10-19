@@ -15,6 +15,8 @@
     {% set showSiteMenu = elementInstance.isLocalized() %}
 {% endif %}
 
+{% set canHaveDrafts = canHaveDrafts ?? elementInstance.hasDrafts() %}
+
 
 {% block contextMenu %}
     {% if showSiteMenu %}
@@ -59,12 +61,7 @@
 
 
 {% block footer %}
-    <div id="count-spinner" class="spinner small hidden"></div>
-    <div id="count-container" class="light">&nbsp;</div>
-    <div id="actions-container" class="flex"></div>
-    <div id="export-container">
-        <button type="button" id="export-btn" class="btn hidden" aria-expanded="false">{{ 'Export…'|t('app') }}</button>
-    </div>
+    {% include '_elements/footer' %}
 {% endblock %}
 
 
@@ -78,7 +75,7 @@
         toolbarSelector: '#toolbar',
         defaultSource: {{ (defaultSource ?? null)|json_encode|raw }},
         defaultSourcePath: {{ (defaultSourcePath ?? null)|json_encode|raw }},
-        canHaveDrafts: {{ (canHaveDrafts ?? false) ? 'true' : 'false' }},
+        canHaveDrafts: {{ canHaveDrafts ? 'true' : 'false' }},
     });
 {% endblock %}
 

@@ -21,6 +21,7 @@ use craft\elements\conditions\users\UserCondition;
 use craft\elements\db\AddressQuery;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\db\UserQuery;
+use craft\enums\PropagationMethod;
 use craft\events\AuthenticateUserEvent;
 use craft\events\DefineValueEvent;
 use craft\events\RegisterUserActionsEvent;
@@ -79,6 +80,11 @@ use yii\web\IdentityInterface;
 class User extends Element implements IdentityInterface
 {
     use NameTrait;
+
+    /**
+     * @since 5.0.0
+     */
+    public const GQL_TYPE_NAME = 'User';
 
     /**
      * @event AuthenticateUserEvent The event that is triggered before a user is authenticated.
@@ -213,7 +219,7 @@ class User extends Element implements IdentityInterface
     /**
      * @inheritdoc
      */
-    public static function hasContent(): bool
+    public static function hasThumbs(): bool
     {
         return true;
     }
@@ -528,15 +534,6 @@ class User extends Element implements IdentityInterface
         return parent::eagerLoadingMap($sourceElements, $handle);
     }
 
-    /**
-     * @inheritdoc
-     * @since 3.3.0
-     */
-    public static function gqlTypeNameByContext(mixed $context): string
-    {
-        return 'User';
-    }
-
     // IdentityInterface Methods
     // -------------------------------------------------------------------------
 
@@ -712,6 +709,11 @@ class User extends Element implements IdentityInterface
      * @see getAddresses()
      */
     private array $_addresses;
+
+    /**
+     * @see getAddressManager()
+     */
+    private NestedElementManager $_addressManager;
 
     /**
      * @var string|null
@@ -981,14 +983,40 @@ class User extends Element implements IdentityInterface
             }
 
             /** @var Address[] $addresses */
-            $addresses = Address::find()
-                ->ownerId($this->id)
-                ->orderBy(['id' => SORT_ASC])
-                ->all();
+            $addresses = $this->createAddressQuery()->all();
             $this->_addresses = $addresses;
         }
 
         return $this->_addresses;
+    }
+
+    /**
+     * Returns a nested element manager for the user’s addresses.
+     *
+     * @return NestedElementManager
+     * @since 5.0.0
+     */
+    public function getAddressManager(): NestedElementManager
+    {
+        if (!isset($this->_addressManager)) {
+            $this->_addressManager = new NestedElementManager(
+                Address::class,
+                fn() => $this->createAddressQuery(),
+                [
+                    'attribute' => 'addresses',
+                    'propagationMethod' => PropagationMethod::None,
+                ],
+            );
+        }
+
+        return $this->_addressManager;
+    }
+
+    private function createAddressQuery(): AddressQuery
+    {
+        return Address::find()
+            ->ownerId($this->id)
+            ->orderBy(['id' => SORT_ASC]);
     }
 
     /**
@@ -1868,7 +1896,7 @@ XML;
     /**
      * @inheritdoc
      */
-    protected function tableAttributeHtml(string $attribute): string
+    protected function attributeHtml(string $attribute): string
     {
         switch ($attribute) {
             case 'email':
@@ -1888,7 +1916,7 @@ XML;
                 return $locale ? Craft::$app->getI18n()->getLocaleById($locale)->getDisplayName(Craft::$app->language) : '';
         }
 
-        return parent::tableAttributeHtml($attribute);
+        return parent::attributeHtml($attribute);
     }
 
     /**
@@ -1979,7 +2007,7 @@ XML;
      */
     public function getGqlTypeName(): string
     {
-        return static::gqlTypeNameByContext($this);
+        return self::GQL_TYPE_NAME;
     }
 
     // Events

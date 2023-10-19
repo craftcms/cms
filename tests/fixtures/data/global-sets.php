@@ -9,28 +9,28 @@ return [
     [
         'name' => 'A global set',
         'handle' => 'aGlobalSet',
-        'fieldLayoutType' => 'field_layout_with_matrix_and_normal_fields',
-        'plainTextField' => 'There is some information here',
+        'fieldLayoutUid' => 'field-layout-1004----------------uid',
+        'plainTextField3' => 'There is some information here',
         'uid' => 'globalset-1000-------------------uid',
-        'appointments' => [['col1' => 'foo', 'col2' => '2019-06-25 07:00:00', 'col3' => '7', 'col4' => '1']],
+        'appointments2' => [['col1' => 'foo', 'col2' => '2019-06-25 07:00:00', 'col3' => '7', 'col4' => '1']],
     ],
 
     [
         'name' => 'A different global set',
         'handle' => 'aDifferentGlobalSet',
-        'fieldLayoutType' => 'field_layout_with_matrix_and_normal_fields',
-        'plainTextField' => 'No more information to give.',
+        'fieldLayoutUid' => 'field-layout-1004----------------uid',
+        'plainTextField3' => 'No more information to give.',
         'uid' => 'globalset-1001-------------------uid',
-        'appointments' => [['col1' => 'foo', 'col2' => '2019-06-25 07:00:00', 'col3' => '7', 'col4' => '1']],
+        'appointments2' => [['col1' => 'foo', 'col2' => '2019-06-25 07:00:00', 'col3' => '7', 'col4' => '1']],
     ],
 
     [
         'name' => 'A third global set',
         'handle' => 'aThirdGlobalSet',
-        'fieldLayoutType' => 'field_layout_with_matrix_and_normal_fields',
-        'plainTextField' => 'No more information to give.',
+        'fieldLayoutUid' => 'field-layout-1004----------------uid',
+        'plainTextField3' => 'No more information to give.',
         'uid' => 'globalset-1002-------------------uid',
-        'appointments' => [['col1' => 'foo', 'col2' => '2019-06-25 07:00:00', 'col3' => '7', 'col4' => '1']],
+        'appointments2' => [['col1' => 'foo', 'col2' => '2019-06-25 07:00:00', 'col3' => '7', 'col4' => '1']],
     ],
 
     // Deleted

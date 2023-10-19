@@ -7,12 +7,12 @@
 
 namespace craft\base;
 
-use craft\db\QueryAbortedException;
 use craft\elements\db\ElementQueryInterface;
-use craft\models\FieldGroup;
+use craft\enums\AttributeStatus;
 use craft\models\GqlSchema;
 use GraphQL\Type\Definition\Type;
 use yii\base\Component as YiiComponent;
+use yii\db\ExpressionInterface;
 use yii\validators\Validator;
 
 /**
@@ -29,23 +29,20 @@ use yii\validators\Validator;
 interface FieldInterface extends SavableComponentInterface
 {
     /**
+     * Returns whether the field can be included multiple times within a field layout.
+     *
+     * @return bool
+     * @since 5.0.0
+     */
+    public static function isMultiInstance(): bool;
+
+    /**
      * Returns whether the field can be marked as required.
      *
      * @return bool
      * @since 4.0.0
      */
     public static function isRequirable(): bool;
-
-    /**
-     * Returns whether this field has a column in the content table.
-     *
-     * ::: warning
-     * If you set this to `false`, you will be on your own in terms of saving and retrieving your field values.
-     * :::
-     *
-     * @return bool
-     */
-    public static function hasContentColumn(): bool;
 
     /**
      * Returns which translation methods the field supports.
@@ -76,16 +73,25 @@ interface FieldInterface extends SavableComponentInterface
      * ```
      *
      * @return string
-     * @since 3.2.0
+     * @since 5.0.0
      */
-    public static function valueType(): string;
+    public static function phpType(): string;
 
     /**
-     * Returns the column type(s) that this field should get within the content table.
+     * Returns the DB data type(s) that this field will store within the `elements_sites.content` column.
      *
-     * This method will only be called if [[hasContentColumn()]] returns true.
+     * ```php
+     * return 'string(100)';
+     * ```
      *
-     * If the field type requires multiple columns, an array should be returned:
+     * [[\yii\db\QueryBuilder::getColumnType()]] will be used to normalize the provided type.
+     * For example, `string(100)` will become `varchar(100)`.
+     *
+     * Specifying the DB type isn’t strictly necessary, but it enables individual field values to be targeted
+     * by functional indexes.
+     *
+     * If field values will consist of an associative array, each of the array keys can be specified here,
+     * so the nested values can receive their own functional indexes.
      *
      * ```php
      * return [
@@ -94,17 +100,30 @@ interface FieldInterface extends SavableComponentInterface
      * ];
      * ```
      *
-     * When this is the case, all columns’ values will be passed to [[normalizeValue()]] as an associative
-     * array, whose keys match the keys returned by this method. The field type should also override
-     * [[serializeValue()]] to ensure values are being returned as associative arrays using the same keys.
+     * If `null` is returned, the field’s values won’t be stored in the `elements_sites.content` column at all.
+     * In that case, the field will be solely responsible for storing and retrieving its own values from
+     * [[normalizeValue()]] and [[afterElementSave()]]/[[afterElementPropagate()]].
      *
-     * @return string|string[] The column type(s). [[\yii\db\QueryBuilder::getColumnType()]] will be called
-     * to convert the give column type to the physical one. For example, `string` will be converted
-     * as `varchar(255)` and `string(100)` becomes `varchar(100)`. `not null` will automatically be
-     * appended as well.
-     * @see \yii\db\QueryBuilder::getColumnType()
+     * @return string|string[]|null The column type(s).
      */
-    public function getContentColumnType(): array|string;
+    public static function dbType(): array|string|null;
+
+    /**
+     * Returns a query builder-compatible condition for the given field instances, for a user-provided param value.
+     *
+     * If `false` is returned, an always-false condition will be used.
+     *
+     * @param static[] $instances The field instances to search
+     * @param mixed $value The user-supplied param value
+     * @param array $params Additional parameters that should be bound to the query via [[\yii\db\Query::addParams()]]
+     * @return array|string|ExpressionInterface|false|null
+     * @since 5.0.0
+     */
+    public static function queryCondition(
+        array $instances,
+        mixed $value,
+        array &$params,
+    ): array|string|ExpressionInterface|false|null;
 
     /**
      * Returns the orientation the field should use (`ltr` or `rtl`).
@@ -124,7 +143,7 @@ interface FieldInterface extends SavableComponentInterface
      * @param ElementInterface|null $element The element being edited
      * @return bool
      */
-    public function getIsTranslatable(?ElementInterface $element = null): bool;
+    public function getIsTranslatable(?ElementInterface $element): bool;
 
     /**
      * Returns the description of this field’s translation support.
@@ -133,7 +152,7 @@ interface FieldInterface extends SavableComponentInterface
      * @return string|null
      * @since 3.4.0
      */
-    public function getTranslationDescription(?ElementInterface $element = null): ?string;
+    public function getTranslationDescription(?ElementInterface $element): ?string;
 
     /**
      * Returns the field’s translation key, based on a given element.
@@ -153,17 +172,17 @@ interface FieldInterface extends SavableComponentInterface
      *
      * If the field has a known status, an array should be returned with two elements:
      *
-     * - The status class (modified, outdated, or conflicted)
+     * - A [[\craft\enums\AttributeStatus]] case
      * - The status label
      *
      * For example:
      *
      * ```php
-     * return ['modified', 'The field has been modified.');
+     * return [AttributeStatus::Modified, 'The field has been modified.');
      * ```
      *
      * @param ElementInterface $element
-     * @return array|null
+     * @return array{0:AttributeStatus|value-of<AttributeStatus>,1:string}|null
      * @since 3.7.0
      */
     public function getStatus(ElementInterface $element): ?array;
@@ -281,7 +300,7 @@ interface FieldInterface extends SavableComponentInterface
      * @param ElementInterface|null $element The element the field is associated with, if there is one
      * @return string The input HTML.
      */
-    public function getInputHtml(mixed $value, ?ElementInterface $element = null): string;
+    public function getInputHtml(mixed $value, ?ElementInterface $element): string;
 
     /**
      * Returns a static (non-editable) version of the field’s input HTML.
@@ -370,7 +389,7 @@ interface FieldInterface extends SavableComponentInterface
      * @param ElementInterface|null $element The element the field is associated with, if there is one
      * @return mixed The prepared field value
      */
-    public function normalizeValue(mixed $value, ?ElementInterface $element = null): mixed;
+    public function normalizeValue(mixed $value, ?ElementInterface $element): mixed;
 
     /**
      * Normalizes a posted field value for use.
@@ -383,7 +402,7 @@ interface FieldInterface extends SavableComponentInterface
      * @return mixed The prepared field value
      * @since 4.5.0
      */
-    public function normalizeValueFromRequest(mixed $value, ?ElementInterface $element = null): mixed;
+    public function normalizeValueFromRequest(mixed $value, ?ElementInterface $element): mixed;
 
     /**
      * Prepares the field’s value to be stored somewhere, like the content table.
@@ -395,7 +414,7 @@ interface FieldInterface extends SavableComponentInterface
      * @param ElementInterface|null $element The element the field is associated with, if there is one
      * @return mixed The serialized field value
      */
-    public function serializeValue(mixed $value, ?ElementInterface $element = null): mixed;
+    public function serializeValue(mixed $value, ?ElementInterface $element): mixed;
 
     /**
      * Copies the field’s value from one element to another.
@@ -417,19 +436,12 @@ interface FieldInterface extends SavableComponentInterface
     public function getElementConditionRuleType(): array|string|null;
 
     /**
-     * Modifies an element query.
+     * Returns a SQL expression which extracts the field’s value from the `elements_sites.content` column.
      *
-     * This method will be called whenever elements are being searched for that
-     * may have this field assigned to them. If the method returns `false`, the
-     * query will be stopped before it ever gets a chance to execute.
-     *
-     * @param ElementQueryInterface $query The element query
-     * @param mixed $value The value that was set on this field’s corresponding
-     * element query param, if any.
-     * @throws QueryAbortedException in the event that the method is sure that
-     * no elements are going to be found.
+     * @return string|null
+     * @since 5.0.0
      */
-    public function modifyElementsQuery(ElementQueryInterface $query, mixed $value): void;
+    public function getValueSql(): ?string;
 
     /**
      * Modifies an element index query.
@@ -448,13 +460,6 @@ interface FieldInterface extends SavableComponentInterface
      * @param bool|null $isFresh Whether the field is fresh.
      */
     public function setIsFresh(?bool $isFresh = null): void;
-
-    /**
-     * Returns the field’s group.
-     *
-     * @return FieldGroup|null
-     */
-    public function getGroup(): ?FieldGroup;
 
     /**
      * Returns whether the field should be included in the given GraphQL schema.

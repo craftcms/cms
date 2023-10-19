@@ -16,6 +16,7 @@ use craft\behaviors\CustomFieldBehavior;
 use craft\behaviors\DraftBehavior;
 use craft\behaviors\RevisionBehavior;
 use craft\cache\ElementQueryTagDependency;
+use craft\db\Connection;
 use craft\db\FixedOrderExpression;
 use craft\db\Query;
 use craft\db\QueryAbortedException;
@@ -31,7 +32,9 @@ use craft\helpers\App;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Db;
 use craft\helpers\ElementHelper;
+use craft\helpers\Json;
 use craft\helpers\StringHelper;
+use craft\models\FieldLayout;
 use craft\models\Site;
 use Illuminate\Support\Collection;
 use ReflectionClass;
@@ -41,7 +44,7 @@ use yii\base\ArrayableTrait;
 use yii\base\Exception;
 use yii\base\InvalidArgumentException;
 use yii\base\NotSupportedException;
-use yii\db\Connection;
+use yii\db\Connection as YiiConnection;
 use yii\db\Expression;
 use yii\db\ExpressionInterface;
 use yii\db\QueryBuilder;
@@ -115,11 +118,6 @@ class ElementQuery extends Query implements ElementQueryInterface
      * @see prepare()
      */
     public ?Query $subQuery = null;
-
-    /**
-     * @var string|null The content table that will be joined by this query.
-     */
-    public ?string $contentTable = Table::CONTENT;
 
     /**
      * @var FieldInterface[]|null The fields that may be involved in this query.
@@ -355,6 +353,16 @@ class ElementQuery extends Query implements ElementQueryInterface
     public mixed $ref = null;
 
     /**
+     * @inheritdoc
+     * @used-by orderBy()
+     * @used-by addOrderBy()
+     */
+    public $orderBy = '';
+
+    // Eager-loading
+    // -------------------------------------------------------------------------
+
+    /**
      * @var string|array|null The eager-loading declaration.
      *
      * See [Eager-Loading Elements](https://craftcms.com/docs/4.x/dev/eager-loading-elements.html) for supported syntax options.
@@ -365,11 +373,30 @@ class ElementQuery extends Query implements ElementQueryInterface
     public array|string|null $with = null;
 
     /**
-     * @inheritdoc
-     * @used-by orderBy()
-     * @used-by addOrderBy()
+     * @var ElementInterface|null The source element that this query is fetching relations for.
+     * @since 5.0.0
      */
-    public $orderBy = '';
+    public ?ElementInterface $eagerLoadSourceElement = null;
+
+    /**
+     * @var string|null The handle that could be used to eager-load the query's target elmeents.
+     * @since 5.0.0
+     */
+    public ?string $eagerLoadHandle = null;
+
+    /**
+     * @var string|null The eager-loading alias that should be used.
+     * @since 5.0.0
+     */
+    public ?string $eagerLoadAlias = null;
+
+    /**
+     * @var bool Whether the query should be used to eager-load results for the [[$eagerSourceElement|source element]]
+     * and any other elements in its collection.
+     * @used-by eagerly()
+     * @since 5.0.0
+     */
+    public bool $eagerly = false;
 
     // Structure parameters
     // -------------------------------------------------------------------------
@@ -1087,6 +1114,16 @@ class ElementQuery extends Query implements ElementQueryInterface
 
     /**
      * @inheritdoc
+     */
+    public function eagerly(string|bool $value = true): static
+    {
+        $this->eagerly = $value !== false;
+        $this->eagerLoadAlias = is_string($value) ? $value : null;
+        return $this;
+    }
+
+    /**
+     * @inheritdoc
      * @uses $withStructure
      */
     public function withStructure(bool $value = true): static
@@ -1244,6 +1281,60 @@ class ElementQuery extends Query implements ElementQueryInterface
     /**
      * @inheritdoc
      */
+    public function prepForEagerLoading(string $handle, ElementInterface $sourceElement): static
+    {
+        // Prefix the handle with the provider's handle, if there is one
+        $providerHandle = $sourceElement->getFieldLayout()?->provider?->getHandle();
+        $this->eagerLoadHandle = $providerHandle ? "$providerHandle:$handle" : $handle;
+
+        $this->eagerLoadSourceElement = $sourceElement;
+
+        return $this;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function wasEagerLoaded(?string $alias = null): bool
+    {
+        if (!isset($this->eagerLoadHandle, $this->eagerLoadSourceElement)) {
+            return false;
+        }
+
+        if ($alias !== null) {
+            return $this->eagerLoadSourceElement->hasEagerLoadedElements($alias);
+        }
+
+        $planHandle = $this->eagerLoadHandle;
+        if (str_contains($planHandle, ':')) {
+            $planHandle = explode(':', $planHandle, 2)[1];
+        }
+        return $this->eagerLoadSourceElement->hasEagerLoadedElements($planHandle);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function wasCountEagerLoaded(?string $alias = null): bool
+    {
+        if (!isset($this->eagerLoadHandle, $this->eagerLoadSourceElement)) {
+            return false;
+        }
+
+        if ($alias !== null) {
+            return $this->eagerLoadSourceElement->getEagerLoadedElementCount($alias) !== null;
+        }
+
+        $planHandle = $this->eagerLoadHandle;
+        if (str_contains($planHandle, ':')) {
+            $planHandle = explode(':', $planHandle, 2)[1];
+        }
+        return $this->eagerLoadSourceElement->getEagerLoadedElementCount($planHandle) !== null;
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function cache($duration = true, $dependency = null): \yii\db\Query|ElementQuery
     {
         if ($dependency === null) {
@@ -1266,6 +1357,17 @@ class ElementQuery extends Query implements ElementQueryInterface
                 App::backtrace(),
                 __METHOD__
             );
+        }
+
+        $db = $builder->db;
+        if (!$db instanceof Connection) {
+            throw new QueryAbortedException(sprintf('Element queries must be executed for %s connections.', Connection::class));
+        }
+
+        // todo: remove after the next breakpoint
+        /** @var  */
+        if (!$db->columnExists(Table::ELEMENTS_SITES, 'content')) {
+            throw new QueryAbortedException("The elements_sites.content column doesn't exist yet.");
         }
 
         // Is the query already doomed?
@@ -1311,7 +1413,7 @@ class ElementQuery extends Query implements ElementQueryInterface
         $this->query
             ->from(['subquery' => $this->subQuery])
             ->innerJoin(['elements' => Table::ELEMENTS], '[[elements.id]] = [[subquery.elementsId]]')
-            ->innerJoin(['elements_sites' => Table::ELEMENTS_SITES], '[[elements_sites.id]] = [[subquery.elementsSitesId]]');
+            ->innerJoin(['elements_sites' => Table::ELEMENTS_SITES], '[[elements_sites.id]] = [[subquery.siteSettingsId]]');
 
         // Prepare a new column mapping
         // (for use in SELECT and ORDER BY clauses)
@@ -1334,7 +1436,7 @@ class ElementQuery extends Query implements ElementQueryInterface
         $this->subQuery
             ->addSelect([
                 'elementsId' => 'elements.id',
-                'elementsSitesId' => 'elements_sites.id',
+                'siteSettingsId' => 'elements_sites.id',
             ])
             ->from(['elements' => Table::ELEMENTS])
             ->innerJoin(['elements_sites' => Table::ELEMENTS_SITES], '[[elements_sites.elementId]] = [[elements.id]]')
@@ -1347,13 +1449,8 @@ class ElementQuery extends Query implements ElementQueryInterface
             $this->subQuery->andWhere(['elements_sites.siteId' => $this->siteId]);
         }
 
-        $hasContent = $class::hasContent() && isset($this->contentTable);
-        if ($hasContent) {
-            $this->customFields = $this->customFields();
-            $this->_joinContentTable($class);
-        } else {
-            $this->customFields = null;
-        }
+        $this->customFields = $this->customFields();
+        $this->_loopInCustomFields();
 
         if ($this->distinct) {
             $this->query->distinct();
@@ -1405,7 +1502,7 @@ class ElementQuery extends Query implements ElementQueryInterface
             if (is_string($this->title)) {
                 $this->title = Db::escapeCommas($this->title);
             }
-            $this->subQuery->andWhere(Db::parseParam('content.title', $this->title, '=', true));
+            $this->subQuery->andWhere(Db::parseParam('elements_sites.title', $this->title, '=', true));
         }
 
         if ($this->slug) {
@@ -1416,28 +1513,25 @@ class ElementQuery extends Query implements ElementQueryInterface
             $this->subQuery->andWhere(Db::parseParam('elements_sites.uri', $this->uri, '=', true));
         }
 
-        if ($hasContent) {
-            if ($class::hasTitles()) {
-                $this->_columnMap['title'] = 'content.title';
-            }
+        if ($class::hasTitles()) {
+            $this->_columnMap['title'] = 'elements_sites.title';
+        }
 
-            // Map custom field handles to their content columns
-            foreach ($this->customFields as $field) {
-                if (!isset($this->_columnMap[$field->handle])) {
-                    $column = $this->_fieldColumn($field);
-                    if ($column !== null) {
-                        $firstCol = is_string($column) ? $column : reset($column);
-                        $this->_columnMap[$field->handle] = "content.$firstCol";
-                    }
-                }
+        // Map custom field handles to their content values
+        foreach ($this->customFields as $field) {
+            if (
+                !isset($this->_columnMap[$field->handle]) &&
+                ($valueSql = $field->getValueSql()) !== null
+            ) {
+                $this->_columnMap[$field->handle] = $valueSql;
             }
         }
 
         $this->_applyRelatedToParam();
         $this->_applyStructureParams($class);
         $this->_applyRevisionParams();
-        $this->_applySearchParam($builder->db);
-        $this->_applyOrderByParams($builder->db);
+        $this->_applySearchParam($db);
+        $this->_applyOrderByParams($db);
         $this->_applySelectParam();
         $this->_applyJoinParams();
 
@@ -1459,7 +1553,7 @@ class ElementQuery extends Query implements ElementQueryInterface
             }
         }
 
-        $this->_applyUniqueParam($builder->db);
+        $this->_applyUniqueParam($db);
 
         // Pass along the cache info
         if ($this->queryCacheDuration !== null) {
@@ -1498,6 +1592,31 @@ class ElementQuery extends Query implements ElementQueryInterface
      */
     public function afterPopulate(array $elements): array
     {
+        if (!$this->asArray) {
+            $elementsService = Craft::$app->getElements();
+
+            foreach ($elements as $element) {
+                // Set the full query result on the element, in case it's needed for lazy eager loading
+                $element->elementQueryResult = $elements;
+
+                // If we're collecting cache info and the element is expirable, register its expiry date
+                if (
+                    $element instanceof ExpirableElementInterface &&
+                    $elementsService->getIsCollectingCacheInfo() &&
+                    ($expiryDate = $element->getExpiryDate()) !== null
+                ) {
+                    $elementsService->setCacheExpiryDate($expiryDate);
+                }
+            }
+
+            ElementHelper::setNextPrevOnElements($elements);
+
+            // Should we eager-load some elements onto these?
+            if ($this->with) {
+                Craft::$app->getElements()->eagerLoadElements($this->elementType, $elements, $this->with);
+            }
+        }
+
         return $elements;
     }
 
@@ -1511,7 +1630,7 @@ class ElementQuery extends Query implements ElementQueryInterface
             return count($cachedResult);
         }
 
-        return parent::count($q, $db) ?: 0;
+        return $this->eagerLoad(true) ?? parent::count($q, $db) ?: 0;
     }
 
     /**
@@ -1528,16 +1647,58 @@ class ElementQuery extends Query implements ElementQueryInterface
             return $cachedResult;
         }
 
-        return parent::all($db);
+        return $this->eagerLoad()?->all() ?? parent::all($db);
     }
 
     /**
-     * @param Connection|null $db
-     * @return Collection
+     * @param YiiConnection|null $db
+     * @return ElementCollection
      */
-    public function collect(?Connection $db = null): Collection
+    public function collect(?YiiConnection $db = null): ElementCollection
     {
-        return ElementCollection::make($this->all($db));
+        /** @phpstan-ignore-next-line */
+        return $this->eagerLoad() ?? ElementCollection::make($this->all($db));
+    }
+
+    private function eagerLoad(bool $count = false, array $criteria = []): ElementCollection|int|null
+    {
+        if (!$this->eagerly || !isset($this->eagerLoadSourceElement->elementQueryResult, $this->eagerLoadHandle)) {
+            return null;
+        }
+
+        $planHandle = $this->eagerLoadHandle;
+        if (str_contains($planHandle, ':')) {
+            $planHandle = explode(':', $planHandle, 2)[1];
+        }
+
+        // see if it was already eager-loaded
+        $eagerLoaded = match ($count) {
+            true => $this->wasCountEagerLoaded($this->eagerLoadAlias),
+            false => $this->wasEagerLoaded($this->eagerLoadAlias),
+        };
+
+        if (!$eagerLoaded) {
+            Craft::$app->getElements()->eagerLoadElements(
+                $this->elementType,
+                $this->eagerLoadSourceElement->elementQueryResult,
+                [
+                    new EagerLoadPlan([
+                        'handle' => $this->eagerLoadHandle,
+                        'alias' => $this->eagerLoadAlias ?? $planHandle,
+                        'criteria' => $criteria + $this->getCriteria() + ['with' => $this->with],
+                        'all' => !$count,
+                        'count' => $count,
+                        'lazy' => true,
+                    ]),
+                ],
+            );
+        }
+
+        if ($count) {
+            return $this->eagerLoadSourceElement->getEagerLoadedElementCount($planHandle);
+        }
+
+        return $this->eagerLoadSourceElement->getEagerLoadedElements($planHandle);
     }
 
     /**
@@ -1549,6 +1710,12 @@ class ElementQuery extends Query implements ElementQueryInterface
         // Cached?
         if (($cachedResult = $this->getCachedResult()) !== null) {
             return reset($cachedResult) ?: null;
+        }
+
+        // Eagerly?
+        $eagerResult = $this->eagerLoad(criteria: ['limit' => 1]);
+        if ($eagerResult !== null) {
+            return $eagerResult->first();
         }
 
         if ($row = parent::one($db)) {
@@ -1592,11 +1759,20 @@ class ElementQuery extends Query implements ElementQueryInterface
      * @inheritdoc
      * @return ElementInterface|array|null
      */
-    public function nth(int $n, ?Connection $db = null): mixed
+    public function nth(int $n, ?YiiConnection $db = null): mixed
     {
         // Cached?
         if (($cachedResult = $this->getCachedResult()) !== null) {
             return $cachedResult[$n] ?? null;
+        }
+
+        // Eagerly?
+        $eagerResult = $this->eagerLoad(criteria: [
+            'offset' => ($this->offset ?: 0) + $n,
+            'limit' => 1,
+        ]);
+        if ($eagerResult !== null) {
+            return $eagerResult->first();
         }
 
         return parent::nth($n, $db);
@@ -1605,7 +1781,7 @@ class ElementQuery extends Query implements ElementQueryInterface
     /**
      * @inheritdoc
      */
-    public function ids(?Connection $db = null): array
+    public function ids(?YiiConnection $db = null): array
     {
         $select = $this->select;
         $this->select = ['elements.id' => 'elements.id'];
@@ -1670,12 +1846,7 @@ class ElementQuery extends Query implements ElementQueryInterface
      */
     public function getCriteria(): array
     {
-        $attributes = $this->criteriaAttributes();
-
-        // Ignore the 'with' param
-        ArrayHelper::removeValue($attributes, 'with');
-
-        return $this->toArray($attributes, [], false);
+        return $this->toArray($this->criteriaAttributes(), [], false);
     }
 
     /**
@@ -1693,7 +1864,7 @@ class ElementQuery extends Query implements ElementQueryInterface
                 $dec = $property->getDeclaringClass();
                 if (
                     ($dec->getName() === self::class || $dec->isSubclassOf(self::class)) &&
-                    !in_array($property->getName(), ['elementType', 'query', 'subQuery', 'contentTable', 'customFields', 'asArray'], true)
+                    !in_array($property->getName(), ['elementType', 'query', 'subQuery', 'customFields', 'asArray', 'with', 'eagerly'], true)
                 ) {
                     $names[] = $property->getName();
                 }
@@ -1815,62 +1986,30 @@ class ElementQuery extends Query implements ElementQueryInterface
             $row['structureId'] = $this->structureId;
         }
 
-        if ($class::hasContent() && isset($this->contentTable)) {
-            if ($class::hasTitles()) {
-                // Ensure the title is a string
-                $row['title'] = (string)($row['title'] ?? '');
+        if ($class::hasTitles()) {
+            // Ensure the title is a string
+            $row['title'] = (string)($row['title'] ?? '');
+        }
+
+        // Set the field values
+        $content = ArrayHelper::remove($row, 'content');
+        $row['fieldValues'] = [];
+
+        if (!empty($this->customFields) && !empty($content)) {
+            if (is_string($content)) {
+                $content = Json::decode($content);
             }
 
-            // Separate the content values from the main element attributes
-            $fieldValues = [];
-
-            if (!empty($this->customFields)) {
-                foreach ($this->customFields as $field) {
-                    if (($column = $this->_fieldColumn($field)) !== null) {
-                        // Account for results where multiple fields have the same handle, but from
-                        // different columns e.g. two Matrix block types that each have a field with the
-                        // same handle
-                        $firstCol = is_string($column) ? $column : reset($column);
-                        $setValue = !isset($fieldValues[$field->handle]) || (empty($fieldValues[$field->handle]) && !empty($row[$firstCol]));
-
-                        if (is_string($column)) {
-                            if ($setValue) {
-                                $fieldValues[$field->handle] = $row[$column] ?? null;
-                            }
-                            unset($row[$column]);
-                        } else {
-                            if ($setValue) {
-                                $columnValues = [];
-                                $hasColumnValues = false;
-
-                                foreach ($column as $key => $col) {
-                                    $columnValues[$key] = $row[$col] ?? null;
-                                    $hasColumnValues = $hasColumnValues || $columnValues[$key] !== null;
-                                }
-
-                                // Only actually set it on $fieldValues if any of the columns weren't null.
-                                // Otherwise, leave it alone in case another field has the same handle.
-                                if ($hasColumnValues) {
-                                    $fieldValues[$field->handle] = $columnValues;
-                                }
-                            }
-
-                            foreach ($column as $col) {
-                                unset($row[$col]);
-                            }
-                        }
-                    }
+            foreach ($this->customFields as $field) {
+                if ($field::dbType() !== null && isset($content[$field->layoutElement->uid])) {
+                    $handle = $field->layoutElement->handle ?? $field->handle;
+                    $row['fieldValues'][$handle] = $content[$field->layoutElement->uid];
                 }
             }
         }
 
         if (array_key_exists('dateDeleted', $row)) {
             $row['trashed'] = $row['dateDeleted'] !== null;
-        }
-
-        // Set the custom field values
-        if (isset($fieldValues)) {
-            $row['fieldValues'] = $fieldValues;
         }
 
         $behaviors = [];
@@ -2004,7 +2143,7 @@ class ElementQuery extends Query implements ElementQueryInterface
 
             // If specific IDs were requested, then use those
             if (is_numeric($this->id) || (is_array($this->id) && ArrayHelper::isNumeric($this->id))) {
-                $queryTags = (array)$this->id;
+                array_push($this->_cacheTags, ...array_map(fn($id) => "element::$id", (array)$this->id));
             } else {
                 $queryTags = $this->cacheTags();
 
@@ -2026,10 +2165,14 @@ class ElementQuery extends Query implements ElementQueryInterface
                 } else {
                     $queryTags[] = '*';
                 }
-            }
 
-            foreach ($queryTags as $tag) {
-                $this->_cacheTags[] = "element::$this->elementType::$tag";
+                foreach ($queryTags as $tag) {
+                    // tags can be provided fully-formed, or relative to the element type
+                    if (!str_starts_with($tag, 'element::')) {
+                        $tag = sprintf('element::%s::%s', $this->elementType, $tag);
+                    }
+                    $this->_cacheTags[] = $tag;
+                }
             }
         }
 
@@ -2059,13 +2202,22 @@ class ElementQuery extends Query implements ElementQueryInterface
      */
     protected function customFields(): array
     {
-        $contentService = Craft::$app->getContent();
-        $originalFieldContext = $contentService->fieldContext;
-        $contentService->fieldContext = 'global';
-        $fields = Craft::$app->getFields()->getAllFields();
-        $contentService->fieldContext = $originalFieldContext;
-
+        $fields = [];
+        foreach ($this->fieldLayouts() as $fieldLayout) {
+            array_push($fields, ...$fieldLayout->getCustomFields());
+        }
         return $fields;
+    }
+
+    /**
+     * Returns the field layouts whose custom fields should be returned by [[customFields()]].
+     *
+     * @return FieldLayout[]
+     * @since 5.0.0
+     */
+    protected function fieldLayouts(): array
+    {
+        return Craft::$app->getFields()->getLayoutsByType($this->elementType);
     }
 
     /**
@@ -2184,78 +2336,40 @@ class ElementQuery extends Query implements ElementQueryInterface
     }
 
     /**
-     * Joins the content table into the query being prepared.
+     * Allow the custom fields to modify the query.
      *
-     * @param string $class
-     * @phpstan-param class-string<ElementInterface> $class
      * @throws QueryAbortedException
      */
-    private function _joinContentTable(string $class): void
+    private function _loopInCustomFields(): void
     {
-        /** @var ElementInterface|string $class */
-        // Join in the content table on both queries
-        $joinCondition = [
-            'and',
-            '[[content.elementId]] = [[elements.id]]',
-        ];
-        if (Craft::$app->getIsMultiSite(false, true)) {
-            $joinCondition[] = '[[content.siteId]] = [[elements_sites.siteId]]';
-        }
-        $this->subQuery
-            ->innerJoin($this->contentTable . ' content', $joinCondition)
-            ->addSelect(['contentId' => 'content.id']);
-
-        $this->query->innerJoin($this->contentTable . ' content', '[[content.id]] = [[subquery.contentId]]');
-
-        // Select the content table columns on the main query
-        $this->query->addSelect(['contentId' => 'content.id']);
-
-        if ($class::hasTitles()) {
-            $this->query->addSelect(['content.title']);
-        }
-
         if (is_array($this->customFields)) {
-            $contentService = Craft::$app->getContent();
-            $originalFieldColumnPrefix = $contentService->fieldColumnPrefix;
             $fieldAttributes = $this->getBehavior('customFields');
 
-            foreach ($this->customFields as $field) {
-                if (($column = $this->_fieldColumn($field)) !== null) {
-                    if (is_string($column)) {
-                        $this->query->addSelect("content.$column");
-                    } else {
-                        foreach ($column as $c) {
-                            $this->query->addSelect("content.$c");
-                        }
-                    }
-                }
+            // Group the fields by handle
+            /** @var FieldInterface[][] $fieldsByHandle */
+            $fieldsByHandle = ArrayHelper::index($this->customFields, null, [
+                fn(FieldInterface $field) => $field->handle,
+            ]);
 
-                $handle = $field->handle;
-
+            foreach ($fieldsByHandle as $handle => $instances) {
                 // In theory all field handles will be accounted for on the CustomFieldBehavior, but just to be safe...
-                if ($handle !== 'owner' && isset($fieldAttributes->$handle)) {
-                    $fieldAttributeValue = $fieldAttributes->$handle;
-                } else {
-                    $fieldAttributeValue = null;
-                }
+                // ($fieldAttributes->$handle will return true even if it's set to null, so can't use isset() alone here)
+                if ($handle !== 'owner' && ($fieldAttributes->$handle ?? null) !== null) {
+                    // Ignore any field instances that aren't the same custom field as the first one
+                    $firstInstance = $instances[0];
+                    $instances = array_filter($instances, fn(FieldInterface $field) => $field->uid === $firstInstance->uid);
 
-                // Set the field's column prefix on the Content service.
-                if ($field->columnPrefix !== null) {
-                    $contentService->fieldColumnPrefix = $field->columnPrefix;
-                }
+                    $params = [];
+                    $condition = $firstInstance::queryCondition($instances, $fieldAttributes->$handle, $params);
 
-                $exception = null;
-                try {
-                    $field->modifyElementsQuery($this, $fieldAttributeValue);
-                } catch (QueryAbortedException $exception) {
-                }
+                    // aborting?
+                    if ($condition === false) {
+                        throw new QueryAbortedException();
+                    }
 
-                // Set it back
-                $contentService->fieldColumnPrefix = $originalFieldColumnPrefix;
-
-                // Need to bail early?
-                if ($exception !== null) {
-                    throw $exception;
+                    if ($condition !== null) {
+                        $this->subQuery->andWhere($condition, $params);
+                    }
                 }
             }
         }
@@ -2754,7 +2868,7 @@ class ElementQuery extends Query implements ElementQueryInterface
                     $ids = is_string($ids) ? StringHelper::split($ids) : [$ids];
                 }
 
-                if (!$db instanceof \craft\db\Connection) {
+                if (!$db instanceof Connection) {
                     throw new Exception('The database connection doesn’t support fixed ordering.');
                 }
                 $this->orderBy = [new FixedOrderExpression('elements.id', $ids, $db)];
@@ -2879,9 +2993,11 @@ class ElementQuery extends Query implements ElementQueryInterface
                 'elements.dateCreated' => 'elements.dateCreated',
                 'elements.dateUpdated' => 'elements.dateUpdated',
                 'siteSettingsId' => 'elements_sites.id',
-                'elements_sites.slug' => 'elements_sites.slug',
                 'elements_sites.siteId' => 'elements_sites.siteId',
+                'elements_sites.title' => 'elements_sites.title',
+                'elements_sites.slug' => 'elements_sites.slug',
                 'elements_sites.uri' => 'elements_sites.uri',
+                'elements_sites.content' => 'elements_sites.content',
                 'enabledForSite' => 'elements_sites.enabled',
             ]);
 
@@ -2978,31 +3094,6 @@ class ElementQuery extends Query implements ElementQueryInterface
     }
 
     /**
-     * Returns a field’s content column name(s).
-     *
-     * @param FieldInterface $field
-     * @return string|string[]|null
-     */
-    private function _fieldColumn(FieldInterface $field): array|string|null
-    {
-        if (!$field::hasContentColumn()) {
-            return null;
-        }
-
-        $type = $field->getContentColumnType();
-
-        if (is_array($type)) {
-            $columns = [];
-            foreach (array_keys($type) as $i => $key) {
-                $columns[$key] = ElementHelper::fieldColumnFromField($field, $i !== 0 ? $key : null);
-            }
-            return $columns;
-        }
-
-        return ElementHelper::fieldColumnFromField($field);
-    }
-
-    /**
      * Converts found rows into element instances
      *
      * @param array $rows
@@ -3043,22 +3134,6 @@ class ElementQuery extends Query implements ElementQueryInterface
 
                     $elements[$key] = $element;
                 }
-
-                // If we're collecting cache info and the element is expirable, register its expiry date
-                if (
-                    $element instanceof ExpirableElementInterface &&
-                    $elementsService->getIsCollectingCacheInfo() &&
-                    ($expiryDate = $element->getExpiryDate()) !== null
-                ) {
-                    $elementsService->setCacheExpiryDate($expiryDate);
-                }
-            }
-
-            ElementHelper::setNextPrevOnElements($elements);
-
-            // Should we eager-load some elements onto these?
-            if ($this->with) {
-                Craft::$app->getElements()->eagerLoadElements($this->elementType, $elements, $this->with);
             }
 
             // Fire an 'afterPopulateElements' event

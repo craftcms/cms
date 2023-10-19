@@ -43,7 +43,6 @@ Craft.ElementEditor = Garnish.Base.extend(
     queue: null,
     submittingForm: false,
 
-    duplicatedElements: null,
     failed: false,
     httpStatus: null,
     httpError: null,
@@ -97,7 +96,6 @@ Craft.ElementEditor = Garnish.Base.extend(
       this.queue = this._createQueue();
       this.previewTokenQueue = this._createQueue();
 
-      this.duplicatedElements = {};
       this.enableAutosave = Craft.autosaveDrafts;
       this.previewLinks = [];
 
@@ -194,7 +192,7 @@ Craft.ElementEditor = Garnish.Base.extend(
         this.addListener(this.$container, 'submit.saveShortcut', (ev) => {
           if (ev.saveShortcut) {
             ev.preventDefault();
-            this.createDraft();
+            this.saveDraft();
             this.removeListener(this.$container, 'submit.saveShortcut');
           }
         });
@@ -1098,10 +1096,20 @@ Craft.ElementEditor = Garnish.Base.extend(
             return;
           }
 
-          this.createDraft().then(resolve).catch(reject);
+          this.saveDraft().then(resolve).catch(reject);
         } else {
           resolve();
         }
+      });
+    },
+
+    markFieldAsDirty: async function (fieldHandle) {
+      if (this.settings.revisionId) {
+        throw 'Unable to mark fields as dirty on a revision.';
+      }
+
+      await this.saveDraft({
+        dirtyFields: [fieldHandle],
       });
     },
 
@@ -1133,6 +1141,9 @@ Craft.ElementEditor = Garnish.Base.extend(
           ''
         );
       }
+
+      // remove embedded element index names
+      data = data.replace(/&elementindex-[^&]*/g, '');
 
       return data;
     },
@@ -1180,7 +1191,7 @@ Craft.ElementEditor = Garnish.Base.extend(
               return;
             }
 
-            this.saveDraft(data)
+            this._saveDraftInternal(data)
               .then(resolve)
               .catch((e) => {
                 console.warn('Couldn’t save draft:', e);
@@ -1194,11 +1205,15 @@ Craft.ElementEditor = Garnish.Base.extend(
       return this.preview && this.preview.isActive;
     },
 
-    createDraft: function () {
+    /**
+     * @param {Object} [params]
+     * @returns {Promise}
+     */
+    saveDraft: function (params) {
       return this.queue.push(
         () =>
           new Promise((resolve, reject) => {
-            this.saveDraft(this.serializeForm(true))
+            this._saveDraftInternal(this.serializeForm(true), params)
               .then(resolve)
               .catch(reject);
           })
@@ -1207,9 +1222,10 @@ Craft.ElementEditor = Garnish.Base.extend(
 
     /**
      * @param {Object} data
+     * @param {Object} [params]
      * @returns {Promise}
      */
-    saveDraft: function (data) {
+    _saveDraftInternal: function (data, params) {
       return new Promise((resolve, reject) => {
         // Ignore if we're already submitting the main form
         if (this.submittingForm) {
@@ -1251,24 +1267,26 @@ Craft.ElementEditor = Garnish.Base.extend(
             : null
         );
 
-        const extraData = {
-          [this.namespaceInputName('visibleLayoutElements')]:
-            this.settings.visibleLayoutElements,
-        };
+        if (!params) {
+          params = {};
+        }
+
+        params[this.namespaceInputName('visibleLayoutElements')] =
+          this.settings.visibleLayoutElements;
 
         // Are we saving a provisional draft?
         if (this.settings.isProvisionalDraft || !this.settings.draftId) {
-          extraData[this.namespaceInputName('provisional')] = 1;
+          params[this.namespaceInputName('provisional')] = 1;
         }
 
         const selectedTabId = this.$contentContainer
           .children('[data-layout-tab]:not(.hidden)')
           .data('id');
         if (selectedTabId) {
-          extraData[this.namespaceInputName('selectedTab')] = selectedTabId;
+          params[this.namespaceInputName('selectedTab')] = selectedTabId;
         }
 
-        preparedData += `&${$.param(extraData)}`;
+        preparedData += `&${$.param(params)}`;
 
         Craft.sendActionRequest('POST', 'elements/save-draft', {
           cancelToken: this.cancelToken.token,
@@ -1356,6 +1374,7 @@ Craft.ElementEditor = Garnish.Base.extend(
                   .attr('value', 'elements/apply-draft');
 
                 // Update the editor settings
+                this.settings.elementId = response.data.elementId;
                 this.settings.draftId = response.data.draftId;
                 this.settings.isLive = false;
                 this.previewToken = null;
@@ -1400,16 +1419,6 @@ Craft.ElementEditor = Garnish.Base.extend(
               this.checkMetaValues();
             }
 
-            for (const oldId in response.data.duplicatedElements) {
-              if (
-                oldId != this.settings.canonicalId &&
-                response.data.duplicatedElements.hasOwnProperty(oldId)
-              ) {
-                this.duplicatedElements[oldId] =
-                  response.data.duplicatedElements[oldId];
-              }
-            }
-
             // Add missing field modified indicators
             const selectors = response.data.modifiedAttributes
               .map((attr) => {
@@ -1418,9 +1427,22 @@ Craft.ElementEditor = Garnish.Base.extend(
               })
               .concat(modifiedFieldNames.map((name) => `[name="${name}"]`));
 
-            const $fields = $(selectors.join(','))
+            let $fields = $(selectors.join(','))
               .parents()
               .filter('.flex-fields > .field:not(:has(> .status-badge))');
+
+            if (params.dirtyFields) {
+              $fields = $fields.add(
+                this.$contentContainer
+                  .children('[data-layout-tab]')
+                  .children(
+                    params.dirtyFields
+                      .map((handle) => `[data-attribute="${handle}"]`)
+                      .join(',')
+                  )
+              );
+            }
+
             for (let i = 0; i < $fields.length; i++) {
               $fields.eq(i).prepend(
                 $('<div/>', {
@@ -1655,27 +1677,23 @@ Craft.ElementEditor = Garnish.Base.extend(
         this.$container.data('modified-delta-names')
       );
 
-      // Swap out element IDs with their duplicated ones
-      data = this.swapDuplicatedElementIds(data);
-
-      const extraData = {};
+      const params = {};
 
       // Add the draft info
       if (this.settings.draftId) {
-        extraData[this.namespaceInputName('draftId')] = this.settings.draftId;
+        params[this.namespaceInputName('draftId')] = this.settings.draftId;
 
         if (this.settings.isProvisionalDraft) {
-          extraData[this.namespaceInputName('provisional')] = 1;
+          params[this.namespaceInputName('provisional')] = 1;
         }
       }
 
       if (this.settings.draftName !== null) {
-        extraData[this.namespaceInputName('draftName')] =
-          this.settings.draftName;
+        params[this.namespaceInputName('draftName')] = this.settings.draftName;
       }
 
-      if (!$.isEmptyObject(extraData)) {
-        data += `&${$.param(extraData)}`;
+      if (!$.isEmptyObject(params)) {
+        data += `&${$.param(params)}`;
       }
 
       return data;
@@ -1691,84 +1709,6 @@ Craft.ElementEditor = Garnish.Base.extend(
       }
 
       return headers;
-    },
-
-    /**
-     * @param {string} data
-     * @returns {string}
-     */
-    swapDuplicatedElementIds: function (data) {
-      const idsRE = Object.keys(this.duplicatedElements).join('|');
-      if (idsRE === '') {
-        return data;
-      }
-      const lb = encodeURIComponent('[');
-      const rb = encodeURIComponent(']');
-      let namespacedFields = this.namespaceInputName('fields');
-
-      if (this.isFullPage) {
-        namespacedFields = Craft.escapeRegex(namespacedFields);
-      } else {
-        // don't escape namespaced input names, but URI encode them (for cases like: cnuvbcxlgq[fields])
-        namespacedFields = encodeURIComponent(namespacedFields);
-      }
-
-      // Keep replacing field IDs until data stops changing
-      while (true) {
-        if (
-          data ===
-          (data = data
-            // &fields[...][X]
-            .replace(
-              new RegExp(
-                `(&${namespacedFields}${lb}[^=]+${rb}${lb})(${idsRE})(${rb})`,
-                'g'
-              ),
-              (m, pre, id, post) => {
-                if (!this._filterFieldInputName(pre)) {
-                  return m;
-                }
-                return pre + this.duplicatedElements[id] + post;
-              }
-            )
-            // &fields[...=X
-            .replace(
-              new RegExp(`&(${namespacedFields}${lb}[^=]+)=(${idsRE})\\b`, 'g'),
-              (m, name, id) => {
-                // Ignore param names that end in `[enabled]`, `[type]`, etc.
-                // (`[sortOrder]` should pass here, which could be set to a specific order index, but *not* `[sortOrder][]`!)
-                if (
-                  !this._filterFieldInputName(name) ||
-                  name.match(
-                    new RegExp(`${lb}(enabled|sortOrder|type|typeId)${rb}$`)
-                  )
-                ) {
-                  return m;
-                }
-                return `&${name}=${this.duplicatedElements[id]}`;
-              }
-            ))
-        ) {
-          break;
-        }
-      }
-      return data;
-    },
-
-    _filterFieldInputName: function (name) {
-      // Find the last referenced field handle
-      const lb = encodeURIComponent('[');
-      const rb = encodeURIComponent(']');
-      const nestedNames = name.match(
-        new RegExp(`(\\bfields|${lb}fields${rb})${lb}.+?${rb}`, 'g')
-      );
-      if (!nestedNames) {
-        throw `Unexpected input name: ${name}`;
-      }
-      const lastHandle = nestedNames[nestedNames.length - 1].match(
-        new RegExp(`(?:\\bfields|${lb}fields${rb})${lb}(.+?)${rb}`)
-      )[1];
-      return Craft.fieldsWithoutContent.includes(lastHandle);
     },
 
     updatePreviewTargets: function (previewTargets) {
@@ -2177,6 +2117,7 @@ Craft.ElementEditor = Garnish.Base.extend(
       canCreateDrafts: false,
       canEditMultipleSites: false,
       canSaveCanonical: false,
+      elementId: null,
       canonicalId: null,
       draftId: null,
       draftName: null,

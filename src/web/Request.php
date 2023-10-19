@@ -845,6 +845,15 @@ class Request extends \yii\web\Request
     }
 
     /**
+     * @inheritdoc
+     */
+    public function setBodyParams($values)
+    {
+        parent::setBodyParams($values);
+        $this->_setBodyParams = false;
+    }
+
+    /**
      * Returns the named request body parameter value.
      *
      * If the parameter does not exist, the second argument passed to this method will be returned.
@@ -1286,7 +1295,21 @@ class Request extends \yii\web\Request
      */
     public function accepts(string $contentType): bool
     {
-        return array_key_exists($contentType, $this->getAcceptableContentTypes());
+        $acceptableContentTypes = $this->getAcceptableContentTypes();
+
+        // then check if the actual key exists
+        if (array_key_exists($contentType, $acceptableContentTypes)) {
+            return true;
+        }
+
+        // check for cases where acceptable content type contains mimeType/*
+        foreach (array_keys($acceptableContentTypes) as $mime) {
+            if (str_ends_with($mime, '/*') && str_starts_with($contentType, substr($mime, 0, -1))) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**

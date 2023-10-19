@@ -10,6 +10,12 @@ namespace craft\db\mysql;
 class ColumnSchema extends \yii\db\mysql\ColumnSchema
 {
     /**
+     * @var string|null Collation
+     * @since 5.0.0
+     */
+    public ?string $collation = null;
+
+    /**
      * @inheritdoc
      */
     protected function typecast($value)

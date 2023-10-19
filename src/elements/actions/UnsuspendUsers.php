@@ -40,9 +40,9 @@ class UnsuspendUsers extends ElementAction
     new Craft.ElementActionTrigger({
         type: $type,
         bulk: true,
-        validateSelection: \$selectedItems => {
-            for (let i = 0; i < \$selectedItems.length; i++) {
-                const \$element = \$selectedItems.eq(i).find('.element');
+        validateSelection: (selectedItems, elementIndex) => {
+            for (let i = 0; i < selectedItems.length; i++) {
+                const \$element = selectedItems.eq(i).find('.element');
                 if (
                     !Garnish.hasAttr(\$element, 'data-can-suspend') ||
                     !Garnish.hasAttr(\$element, 'data-suspended')

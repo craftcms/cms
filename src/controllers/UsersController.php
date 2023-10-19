@@ -991,7 +991,7 @@ class UsersController extends Controller
                 'value' => $locale->id,
                 'data' => [
                     'data' => [
-                        'hint' => $locale->getLanguageID() !== $languageId ? $locale->getDisplayName() : false,
+                        'hint' => $locale->getLanguageID() !== $languageId ? $locale->getDisplayName() : '',
                         'hintLang' => $locale->id,
                     ],
                 ],
@@ -1708,7 +1708,7 @@ JS,
 
         $summary = [];
 
-        foreach (Craft::$app->getSections()->getAllSections() as $section) {
+        foreach (Craft::$app->getEntries()->getAllSections() as $section) {
             $entryCount = Entry::find()
                 ->sectionId($section->id)
                 ->authorId($userId)

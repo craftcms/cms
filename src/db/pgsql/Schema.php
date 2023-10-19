@@ -28,6 +28,18 @@ class Schema extends \yii\db\pgsql\Schema
     public int $maxObjectNameLength = 63;
 
     /**
+     * Returns whether a table supports 4-byte characters.
+     *
+     * @param string $table The table to check
+     * @return bool
+     * @since 5.0.0
+     */
+    public function supportsMb4(string $table): bool
+    {
+        return true;
+    }
+
+    /**
      * Creates a query builder for the database.
      *
      * This method may be overridden by child classes to create a DBMS-specific query builder.

@@ -253,7 +253,7 @@ class Asset extends Element
     /**
      * @inheritdoc
      */
-    public static function hasContent(): bool
+    public static function hasTitles(): bool
     {
         return true;
     }
@@ -261,7 +261,7 @@ class Asset extends Element
     /**
      * @inheritdoc
      */
-    public static function hasTitles(): bool
+    public static function hasThumbs(): bool
     {
         return true;
     }
@@ -333,12 +333,13 @@ class Asset extends Element
     }
 
     /**
-     * @inheritdoc
-     * @since 3.3.0
+     * Returns the GraphQL type name that assets should use, based on their volume.
+     *
+     * @since 5.0.0
      */
-    public static function gqlTypeNameByContext(mixed $context): string
+    public static function gqlTypeName(Volume $volume): string
     {
-        return $context->handle . '_Asset';
+        return sprintf('%s_Asset', $volume->handle);
     }
 
     /**
@@ -348,16 +349,6 @@ class Asset extends Element
     public static function gqlScopesByContext(mixed $context): array
     {
         return ['volumes.' . $context->uid];
-    }
-
-    /**
-     * @inheritdoc
-     * @since 3.5.0
-     */
-    public static function gqlMutationNameByContext(mixed $context): string
-    {
-        /** @var Volume $context */
-        return 'save_' . $context->handle . '_Asset';
     }
 
     /**
@@ -398,7 +389,7 @@ class Asset extends Element
     /**
      * @inheritdoc
      */
-    public static function findSource(string $sourceKey, ?string $context = null): ?array
+    public static function findSource(string $sourceKey, ?string $context): ?array
     {
         if (preg_match('/^volume:[\w\-]+(?:\/.+)?\/folder:([\w\-]+)$/', $sourceKey, $match)) {
             $folder = Craft::$app->getAssets()->getFolderByUid($match[1]);
@@ -436,18 +427,22 @@ class Asset extends Element
 
     /**
      * @inheritdoc
-     * @since 3.5.0
      */
-    protected static function defineFieldLayouts(string $source): array
+    protected static function defineFieldLayouts(?string $source): array
     {
-        $fieldLayouts = [];
-        if (
-            preg_match('/^volume:(.+)$/', $source, $matches) &&
-            ($volume = Craft::$app->getVolumes()->getVolumeByUid($matches[1]))
-        ) {
-            $fieldLayouts[] = $volume->getFieldLayout();
+        if ($source !== null) {
+            $volumes = [];
+            if (preg_match('/^volume:(.+)$/', $source, $matches)) {
+                $volume = Craft::$app->getVolumes()->getVolumeByUid($matches[1]);
+                if ($volume) {
+                    $volumes[] = $volume;
+                }
+            }
+        } else {
+            $volumes = Craft::$app->getVolumes()->getAllVolumes();
         }
-        return $fieldLayouts;
+
+        return array_map(fn(Volume $volume) => $volume->getFieldLayout(), $volumes);
     }
 
     /**
@@ -2389,10 +2384,11 @@ JS;
      */
     public function getImageTransformSourcePath(): string
     {
-        $fs = $this->getVolume()->getFs();
+        $volume = $this->getVolume();
+        $fs = $volume->getFs();
 
         if ($fs instanceof LocalFsInterface) {
-            return FileHelper::normalizePath($fs->getRootPath() . DIRECTORY_SEPARATOR . $this->getPath());
+            return FileHelper::normalizePath($fs->getRootPath() . DIRECTORY_SEPARATOR . $volume->getSubpath() . $this->getPath());
         }
 
         return Craft::$app->getPath()->getAssetSourcesPath() . DIRECTORY_SEPARATOR . $this->id . '.' . $this->getExtension();
@@ -2539,24 +2535,24 @@ JS;
     /**
      * @inheritdoc
      */
-    public function getTableAttributeHtml(string $attribute): string
+    public function getAttributeHtml(string $attribute): string
     {
         if ($this->isFolder) {
             return '';
         }
 
-        return parent::getTableAttributeHtml($attribute);
+        return parent::getAttributeHtml($attribute);
     }
 
     /**
      * @inheritdoc
      */
-    protected function tableAttributeHtml(string $attribute): string
+    protected function attributeHtml(string $attribute): string
     {
         switch ($attribute) {
             case 'uploader':
                 $uploader = $this->getUploader();
-                return $uploader ? Cp::elementHtml($uploader) : '';
+                return $uploader ? Cp::elementChipHtml($uploader) : '';
 
             case 'filename':
                 return Html::tag('span', Html::encode($this->_filename), [
@@ -2586,7 +2582,7 @@ JS;
                 return $this->locationHtml();
         }
 
-        return parent::tableAttributeHtml($attribute);
+        return parent::attributeHtml($attribute);
     }
 
     /**
@@ -2709,7 +2705,7 @@ JS;
             },
             Craft::t('app', 'Uploaded by') => function() {
                 $uploader = $this->getUploader();
-                return $uploader ? Cp::elementHtml($uploader) : false;
+                return $uploader ? Cp::elementChipHtml($uploader) : false;
             },
             Craft::t('app', 'Dimensions') => function() {
                 $dimensions = $this->getDimensions();
@@ -2750,7 +2746,7 @@ JS;
      */
     public function getGqlTypeName(): string
     {
-        return static::gqlTypeNameByContext($this->getVolume());
+        return static::gqlTypeName($this->getVolume());
     }
 
     /**

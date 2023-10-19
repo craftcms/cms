@@ -10,15 +10,12 @@ namespace craft\fields;
 use Craft;
 use craft\base\ElementInterface;
 use craft\base\Field;
-use craft\base\PreviewableFieldInterface;
+use craft\base\InlineEditableFieldInterface;
 use craft\base\SortableFieldInterface;
-use craft\elements\db\ElementQuery;
-use craft\elements\db\ElementQueryInterface;
 use craft\fields\conditions\LightswitchFieldConditionRule;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Cp;
 use craft\helpers\Db;
-use craft\helpers\ElementHelper;
 use craft\helpers\Html;
 use GraphQL\Type\Definition\Type;
 use yii\db\Schema;
@@ -29,7 +26,7 @@ use yii\db\Schema;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
-class Lightswitch extends Field implements PreviewableFieldInterface, SortableFieldInterface
+class Lightswitch extends Field implements InlineEditableFieldInterface, SortableFieldInterface
 {
     /**
      * @inheritdoc
@@ -50,9 +47,26 @@ class Lightswitch extends Field implements PreviewableFieldInterface, SortableFi
     /**
      * @inheritdoc
      */
-    public static function valueType(): string
+    public static function phpType(): string
     {
         return 'bool';
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function dbType(): string
+    {
+        return Schema::TYPE_BOOLEAN;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function queryCondition(array $instances, mixed $value, array &$params): array
+    {
+        $valueSql = static::valueSql($instances);
+        return Db::parseBooleanParam($valueSql, $value, $instances[0]->default, Schema::TYPE_JSON);
     }
 
     /**
@@ -88,14 +102,6 @@ class Lightswitch extends Field implements PreviewableFieldInterface, SortableFi
     /**
      * @inheritdoc
      */
-    public function getContentColumnType(): string
-    {
-        return Schema::TYPE_BOOLEAN;
-    }
-
-    /**
-     * @inheritdoc
-     */
     public function getSettingsHtml(): ?string
     {
         return
@@ -124,7 +130,7 @@ class Lightswitch extends Field implements PreviewableFieldInterface, SortableFi
     /**
      * @inheritdoc
      */
-    protected function inputHtml(mixed $value, ?ElementInterface $element = null): string
+    protected function inputHtml(mixed $value, ?ElementInterface $element, bool $inline): string
     {
         $id = $this->getInputId();
         return Craft::$app->getView()->renderTemplate('_includes/forms/lightswitch.twig', [
@@ -141,7 +147,7 @@ class Lightswitch extends Field implements PreviewableFieldInterface, SortableFi
     /**
      * @inheritdoc
      */
-    public function normalizeValue(mixed $value, ?ElementInterface $element = null): mixed
+    public function normalizeValue(mixed $value, ?ElementInterface $element): mixed
     {
         // If this is a new entry, look for a default option
         if ($value === null) {
@@ -157,20 +163,6 @@ class Lightswitch extends Field implements PreviewableFieldInterface, SortableFi
     public function getElementConditionRuleType(): array|string|null
     {
         return LightswitchFieldConditionRule::class;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function modifyElementsQuery(ElementQueryInterface $query, mixed $value): void
-    {
-        /** @var ElementQuery $query */
-        if ($value === null) {
-            return;
-        }
-
-        $column = ElementHelper::fieldColumnFromField($this);
-        $query->subQuery->andWhere(Db::parseBooleanParam("content.$column", $value, $this->default));
     }
 
     /**
@@ -209,7 +201,7 @@ class Lightswitch extends Field implements PreviewableFieldInterface, SortableFi
     /**
      * @inheritdoc
      */
-    public function getTableAttributeHtml(mixed $value, ElementInterface $element): string
+    public function getPreviewHtml(mixed $value, ElementInterface $element): string
     {
         if (!$value) {
             return '';

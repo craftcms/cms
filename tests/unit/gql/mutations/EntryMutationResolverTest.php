@@ -48,7 +48,7 @@ class EntryMutationResolverTest extends TestCase
         ]));
 
         $resolver->saveEntry(null, $arguments, null, $this->make(ResolveInfo::class));
-        $this->assertSame($scenario, $entry->scenario);
+        self::assertSame($scenario, $entry->scenario);
     }
 
     /**
@@ -81,10 +81,10 @@ class EntryMutationResolverTest extends TestCase
         ]));
 
         $entry = $resolver->saveEntry(null, $arguments, null, $this->make(ResolveInfo::class));
-        $this->assertIsObject($entry);
+        self::assertIsObject($entry);
     }
 
-    public function saveEntryDataProvider(): array
+    public static function saveEntryDataProvider(): array
     {
         return [
             [['draftId' => 5], Element::SCENARIO_ESSENTIALS],
@@ -93,7 +93,7 @@ class EntryMutationResolverTest extends TestCase
         ];
     }
 
-    public function saveNewEntryDataProvider(): array
+    public static function saveNewEntryDataProvider(): array
     {
         return [
             [['draftId' => 5], true],
