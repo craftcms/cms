@@ -309,6 +309,7 @@ return [
     'Connect the database' => 'Tilslut databasen',
     'Connecting to CraftCMS.com…' => 'Opretter forbindelse til CraftCMS.com…',
     'Constraints' => 'Begrænsninger',
+    'Contact Developer Support' => 'Contact Developer Support',
     'Content' => 'Indhold',
     'Contents of {path}' => 'Indhold af {path}',
     'Context' => 'Kontekst',
@@ -1845,6 +1846,7 @@ return [
     'Your system isn’t set up to save content for the site “{site}”.' => 'Dit system er ikke konfigureret til at gemme indhold for sitet “{site}”.',
     'Your {folder} folder isn’t writable.' => 'Din {folder}- mappe er ikke skrivbar.',
     'You’re all up to date!' => 'Du er helt up-to-date!',
+    'You’re viewing a revision. None of the {type}’s fields are editable.' => 'You’re viewing a revision. None of the {type}’s fields are editable.',
     'Zip Code' => 'Postnummer',
     'account_activation_body' => "Hej {{user.friendlyName|e}}. Tak fordi du opretter en konto med {{siteName}}! Aktiver din konto ved at klikke på følgende link:
 
