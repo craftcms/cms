@@ -1846,6 +1846,7 @@ return [
     'Your system isn’t set up to save content for the site “{site}”.' => '시스템이 “{site}” 사이트의 콘텐츠를 저장하도록 설정되지 않았습니다.',
     'Your {folder} folder isn’t writable.' => '{folder} 폴더에는 쓸 수 없습니다.',
     'You’re all up to date!' => '모두 업데이트되었습니다!',
+    'You’re viewing a revision. None of the {type}’s fields are editable.' => 'You’re viewing a revision. None of the {type}’s fields are editable.',
     'Zip Code' => '우편번호',
     'account_activation_body' => "안녕하세요 {{user.friendlyName|e}}님,\n\n{{siteName}}에서 계정을 생성해 주셔서 감사합니다! 계정을 활성화시키려면, 다음 링크를 클릭해 주세요:\n\n<{{link}}>\n\n본 이메일에 관해서 모르신다면, 그냥 무시해 주세요.",
     'account_activation_heading' => '누군가 계정을 생성했을 때:',

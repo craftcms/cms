@@ -1846,6 +1846,7 @@ return [
     'Your system isn’t set up to save content for the site “{site}”.' => 'O seu sistema não está configurado para guardar conteúdo para o site “{site}”.',
     'Your {folder} folder isn’t writable.' => 'A sua pasta {folder} não é gravável.',
     'You’re all up to date!' => 'Tudo está atualizado!',
+    'You’re viewing a revision. None of the {type}’s fields are editable.' => 'You’re viewing a revision. None of the {type}’s fields are editable.',
     'Zip Code' => 'Código Postal',
     'account_activation_body' => "Oi {{user.friendlyName|e}},\n\nObrigado por criar uma conta em {{siteName}}! Para ativar sua conta, clique no link a seguir:\n\n<{{link}}>\n\nSe você não estava esperando esse e-mail, ignore-o.",
     'account_activation_heading' => 'Quando alguém cria uma conta:',

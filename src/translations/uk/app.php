@@ -1846,6 +1846,7 @@ return [
     'Your system isn’t set up to save content for the site “{site}”.' => 'Ваша система не налаштована для збереження вмісту для цього сайту: {site}.',
     'Your {folder} folder isn’t writable.' => 'Запис у папку {folder} неможливий.',
     'You’re all up to date!' => 'У вас актуальна версія!',
+    'You’re viewing a revision. None of the {type}’s fields are editable.' => 'You’re viewing a revision. None of the {type}’s fields are editable.',
     'Zip Code' => 'Поштовий індекс',
     'account_activation_body' => "Привіт, {{user.friendlyName|e}}!\n\nДякуємо за реєстрацію на сайті {{systemName}}! Щоб завершити реєстрацію та активувати обліковий запис, перейдіть за наступним посиланням:\n\n<{{link}}>\n\nЯкщо ви вважаєте, що отримали цей лист помилково, просто проігноруйте його.",
     'account_activation_heading' => 'Коли хтось створює обліковий запис:',
