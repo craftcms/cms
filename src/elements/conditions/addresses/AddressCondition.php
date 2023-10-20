@@ -20,6 +20,14 @@ class AddressCondition extends ElementCondition
         return array_merge(parent::conditionRuleTypes(), [
             CountryConditionRule::class,
             AdministrativeAreaConditionRule::class,
+            LocalityConditionRule::class,
+            DependentLocalityConditionRule::class,
+            PostalCodeConditionRule::class,
+            OrganizationConditionRule::class,
+            OrganizationTaxIdConditionRule::class,
+            AddressLine1ConditionRule::class,
+            AddressLine2ConditionRule::class,
+
         ]);
     }
 }
