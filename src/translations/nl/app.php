@@ -1846,6 +1846,7 @@ return [
     'Your system isn’t set up to save content for the site “{site}”.' => 'Uw systeem is niet geconfigureerd om content op te slaan voor de website \'{site}\'.',
     'Your {folder} folder isn’t writable.' => 'Uw map {folder} is niet schrijfbaar.',
     'You’re all up to date!' => 'U bent helemaal up-to-date!',
+    'You’re viewing a revision. None of the {type}’s fields are editable.' => 'You’re viewing a revision. None of the {type}’s fields are editable.',
     'Zip Code' => 'Postcode',
     'account_activation_body' => "Hallo {{user.friendlyName|e}},\n\nBedankt voor het maken van een account op {{siteName}}! Klik op de volgende link om je account te activeren:\n\n<{{link}}>\n\nAls je deze e-mail niet verwachtte, kun je hem gewoon negeren.",
     'account_activation_heading' => 'Als iemand een account aanmaakt:',
