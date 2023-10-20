@@ -90,6 +90,12 @@ JS, [static::class]);
         foreach ($elements as $element) {
             switch ($this->status) {
                 case self::ENABLED:
+                    // Skip if we're not supposed to allow changing status
+                    /** @var Element $element */
+                    if (!$element->showStatusField()) {
+                        continue 2;
+                    }
+
                     // Skip if there's nothing to change
                     if ($element->enabled && $element->getEnabledForSite()) {
                         continue 2;
@@ -101,6 +107,12 @@ JS, [static::class]);
                     break;
 
                 case self::DISABLED:
+                    // Skip if we're not supposed to allow changing status
+                    /** @var Element $element */
+                    if (!$element->showStatusField()) {
+                        continue 2;
+                    }
+
                     // Is this a multi-site element?
                     if ($isLocalized && count($element->getSupportedSites()) !== 1) {
                         // Skip if there's nothing to change
