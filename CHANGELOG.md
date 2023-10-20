@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Improved the styling and accessibility of revision pages. ([#13857](https://github.com/craftcms/cms/pull/13857), [#13850](https://github.com/craftcms/cms/issues/13850))
 - Added the `focalPoint` argument to asset save mutations. ([#13846](https://github.com/craftcms/cms/discussions/13846))
 - The `up` command now accepts a `--no-backup` option.
 - `{% cache %}` tags now store any `<meta>` tags registered with `yii\web\View::registerMetaTag()`. ([#13832](https://github.com/craftcms/cms/issues/13832))
