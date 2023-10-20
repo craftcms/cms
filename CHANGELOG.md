@@ -3,9 +3,13 @@
 ## Unreleased
 
 - Added the `focalPoint` argument to asset save mutations. ([#13846](https://github.com/craftcms/cms/discussions/13846))
+- The `up` command now accepts a `--no-backup` option.
 - `{% cache %}` tags now store any `<meta>` tags registered with `yii\web\View::registerMetaTag()`. ([#13832](https://github.com/craftcms/cms/issues/13832))
+- Added `craft\errors\ExitException`.
 - Added `craft\web\View::startMetaTagBuffer()`.
 - Added `craft\web\View::clearMetaTagBuffer()`.
+- Added support for modifying the application config via a global `craft_modify_app_config()` function. ([#13855](https://github.com/craftcms/cms/pull/13855))
+- Fixed a bug where `{% exit %}` tags without a status code weren’t outputting any HTML that had already been output in the template. ([#13848](https://github.com/craftcms/cms/discussions/13848))
 
 ## 4.5.7 - 2023-10-17
 
