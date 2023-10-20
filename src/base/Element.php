@@ -4944,7 +4944,7 @@ JS,
      * @return bool
      * @since 4.5.0
      */
-    protected function showStatusField(): bool
+    public function showStatusField(): bool
     {
         return true;
     }
