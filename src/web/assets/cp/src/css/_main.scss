@@ -642,6 +642,58 @@ button {
   }
 }
 
+.revision-notice {
+  display: flex;
+  align-items: center;
+  align-content: stretch;
+  justify-content: center;
+  gap: var(--s);
+  color: var(--gray-600);
+
+  #content-notice & {
+    display: inline-flex;
+    justify-content: flex-start;
+  }
+
+  p {
+    flex: 1;
+    margin: 0;
+  }
+
+  .revision-icon {
+    position: relative;
+    flex-shrink: 0;
+    width: 34px;
+    height: 34px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-radius: 100%;
+    border: 2px solid transparentize($grey800, 0.8);
+    box-sizing: border-box;
+    box-shadow: 0 1px 1px 1px var(--white);
+
+    &:before {
+      position: relative;
+      left: 1px;
+      color: var(--grey-800) !important;
+      font-size: 18px;
+    }
+
+    &:after {
+      content: '';
+      font-size: 0;
+      position: absolute;
+      top: -2px;
+      left: -2px;
+      right: -2px;
+      bottom: -2px;
+      border-radius: 100%;
+      box-shadow: inset 0 2px 0 transparentize($blue900, 0.8);
+    }
+  }
+}
+
 /* toggles */
 button.toggle {
   appearance: none;
@@ -1513,6 +1565,16 @@ ul.icons {
   cursor: default;
 }
 
+.noteditable {
+  cursor: not-allowed;
+
+  .element,
+  .lightswitch-container,
+  & + .colorhex {
+    cursor: not-allowed;
+  }
+}
+
 .btn,
 .spinner {
   height: var(--ui-control-height);
@@ -2132,7 +2194,7 @@ div.btn.submit input {
   border-radius: 17px;
   padding: 0;
 
-  &:not(.static) {
+  &:not(.static):not(.noteditable) {
     cursor: pointer;
   }
 
@@ -6119,6 +6181,11 @@ fieldset {
     & + .instructions {
       margin: 5px 0 0;
     }
+
+    input:disabled,
+    textarea:disabled {
+      cursor: not-allowed;
+    }
   }
 
   & > .notice,
@@ -6239,13 +6306,7 @@ div.checkbox {
 
 input.checkbox:disabled + label,
 .disabled div.checkbox {
-  cursor: default;
-}
-
-input.checkbox:disabled + label,
-div.checkbox.disabled:before,
-div.checkbox.disabled + label {
-  opacity: 0.25;
+  cursor: not-allowed;
 }
 
 input.checkbox:checked + label:before,
@@ -6344,7 +6405,7 @@ div.radio {
 
 input.radio:disabled + label,
 .disabled div.radio {
-  cursor: default;
+  cursor: not-allowed;
 }
 
 input.radio + label:empty,
@@ -6383,12 +6444,6 @@ div.radio:after {
   transform: translateY(-50%);
   width: calc(var(--radio-size) - 8px);
   height: calc(var(--radio-size) - 8px);
-}
-
-input.radio:disabled + label,
-div.radio.disabled:before,
-div.radio.disabled + label {
-  opacity: 0.25;
 }
 
 input.radio:checked + label:after,
@@ -6789,6 +6844,15 @@ tr.indexingSession td.progress div.progressContainer div.progressInfo {
 }
 
 /* selectize reset */
+.selectize-control .selectize-input.disabled {
+  opacity: 1;
+  cursor: not-allowed !important;
+
+  * {
+    cursor: not-allowed !important;
+  }
+}
+
 .selectize .selectize-input {
   display: block;
   border-color: inherit;

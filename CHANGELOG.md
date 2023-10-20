@@ -1,9 +1,23 @@
 # Release Notes for Craft CMS 4
 
-## Unreleased
+## 4.5.8 - 2023-10-20
+
+- Improved the styling and accessibility of revision pages. ([#13857](https://github.com/craftcms/cms/pull/13857), [#13850](https://github.com/craftcms/cms/issues/13850))
+- Added the `focalPoint` argument to asset save mutations. ([#13846](https://github.com/craftcms/cms/discussions/13846))
+- The `up` command now accepts a `--no-backup` option.
+- `{% cache %}` tags now store any `<meta>` tags registered with `yii\web\View::registerMetaTag()`. ([#13832](https://github.com/craftcms/cms/issues/13832))
+- Added `craft\errors\ExitException`.
+- Added `craft\web\View::startMetaTagBuffer()`.
+- Added `craft\web\View::clearMetaTagBuffer()`.
+- Added support for modifying the application config via a global `craft_modify_app_config()` function. ([#13855](https://github.com/craftcms/cms/pull/13855))
+- Fixed a bug where `{% exit %}` tags without a status code weren’t outputting any HTML that had already been output in the template. ([#13848](https://github.com/craftcms/cms/discussions/13848))
+- Fixed a bug where it wasn’t possible to Ctrl/Command-click on multiple elements to select them. ([#13853](https://github.com/craftcms/cms/issues/13853))
+
+## 4.5.7 - 2023-10-17
 
 - Field containers are no longer focusable unless a corresponding validation message is clicked on. ([#13782](https://github.com/craftcms/cms/issues/13782))
 - Improved element save performance.
+- Added `pgpassword` and `pwd` to the list of keywords that Craft will look for when determining whether a value is sensitive and should be redacted from logs, etc.
 - Added `craft\events\DefineCompatibleFieldTypesEvent`.
 - Added `craft\services\Fields::EVENT_DEFINE_COMPATIBLE_FIELD_TYPES`. ([#13793](https://github.com/craftcms/cms/discussions/13793))
 - Added `craft\web\assets\inputmask\InputmaskAsset`.
@@ -23,6 +37,9 @@
 - Fixed a MySQL error that could occur when creating a Plain Text field with a high charcter limit. ([#13781](https://github.com/craftcms/cms/pull/13781))
 - Fixed a bug where entries weren’t always being treated as live for View and Preview buttons, when editing a non-primary site. ([#13746](https://github.com/craftcms/cms/issues/13746))
 - Fixed a bug where Ctrl-clicks were being treated as primary clicks in some browsers. ([#13823](https://github.com/craftcms/cms/issues/13823))
+- Fixed a bug where some language options were showing “false” hints. ([#13837](https://github.com/craftcms/cms/issues/13837))
+- Fixed a bug where Craft was tracking changes to elements when they were being resaved. ([#13761](https://github.com/craftcms/cms/issues/13761))
+- Fixed a bug where sensitive keywords weren’t getting redacted from log contexts.
 - Fixed RCE vulnerabilities.
 
 ## 4.5.6.1 - 2023-09-27

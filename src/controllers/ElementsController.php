@@ -376,6 +376,12 @@ class ElementsController extends Controller
         }
 
         $security = Craft::$app->getSecurity();
+        $notice = null;
+        if ($element->isProvisionalDraft) {
+            $notice = $this->_draftNotice();
+        } elseif ($element->getIsRevision()) {
+            $notice = $this->_revisionNotice($element::lowerDisplayName());
+        }
 
         $response = $this->asCpScreen()
             ->editUrl($element->getCpEditUrl())
@@ -400,7 +406,7 @@ class ElementsController extends Controller
                 $isUnpublishedDraft,
                 $isDraft
             ))
-            ->notice($element->isProvisionalDraft ? fn() => $this->_draftNotice() : null)
+            ->notice(fn() => $notice)
             ->errorSummary(fn() => $this->_errorSummary($element))
             ->prepareScreen(
                 fn(Response $response, string $containerId) => $this->_prepareEditor(
@@ -998,6 +1004,27 @@ JS, [
             Html::button(Craft::t('app', 'Discard'), [
                 'class' => ['discard-changes-btn', 'btn'],
             ]) .
+            Html::endTag('div');
+    }
+
+    private function _revisionNotice($elementType): string
+    {
+        return
+            Html::beginTag('div', [
+                'class' => 'revision-notice',
+            ]) .
+            Html::tag('div', '', [
+                'class' => ['revision-icon'],
+                'aria' => ['hidden' => 'true'],
+                'data' => ['icon' => 'lightbulb'],
+            ]) .
+            Html::tag('p', Craft::t(
+                'app',
+                'You’re viewing a revision. None of the {type}’s fields are editable.',
+                [
+                    'type' => $elementType,
+                ]
+            )) .
             Html::endTag('div');
     }
 

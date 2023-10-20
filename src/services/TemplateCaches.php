@@ -69,7 +69,7 @@ class TemplateCaches extends Component
             return null;
         }
 
-        [$body, $cacheInfo, $bufferedJs, $bufferedScripts, $bufferedCss, $bufferedJsFiles, $bufferedCssFiles, $bufferedHtml] = array_pad($data, 8, null);
+        [$body, $cacheInfo, $bufferedJs, $bufferedScripts, $bufferedCss, $bufferedJsFiles, $bufferedCssFiles, $bufferedHtml, $bufferedMetaTags] = array_pad($data, 9, null);
 
         // If we're actively collecting element cache info, register this cache's tags and duration
         $elementsService = Craft::$app->getElements();
@@ -82,7 +82,7 @@ class TemplateCaches extends Component
             }
         }
 
-        // Register JS and CSS tags
+        // Register JS, CSS and meta tags
         if ($registerResources) {
             $this->_registerResources(
                 $bufferedJs ?? [],
@@ -90,7 +90,8 @@ class TemplateCaches extends Component
                 $bufferedCss ?? [],
                 $bufferedJsFiles ?? [],
                 $bufferedCssFiles ?? [],
-                $bufferedHtml ?? []
+                $bufferedHtml ?? [],
+                $bufferedMetaTags ?? []
             );
         }
 
@@ -124,6 +125,7 @@ class TemplateCaches extends Component
             $view->startJsFileBuffer();
             $view->startCssFileBuffer();
             $view->startHtmlBuffer();
+            $view->startMetaTagBuffer();
         }
     }
 
@@ -159,6 +161,7 @@ class TemplateCaches extends Component
             $bufferedJsFiles = $view->clearJsFileBuffer();
             $bufferedCssFiles = $view->clearCssFileBuffer();
             $bufferedHtml = $view->clearHtmlBuffer();
+            $bufferedMetaTags = $view->clearMetaTagBuffer();
         }
 
         // If there are any transform generation URLs in the body, don't cache it.
@@ -192,13 +195,14 @@ class TemplateCaches extends Component
             $bufferedCss = $this->_parseInlineResourceTags($bufferedCss);
             $bufferedJsFiles = array_map(fn(array $tags) => $this->_parseExternalResourceTags($tags, 'src'), $bufferedJsFiles);
             $bufferedCssFiles = $this->_parseExternalResourceTags($bufferedCssFiles, 'href');
+            $bufferedMetaTags = $this->_parseSelfClosingTags($bufferedMetaTags);
 
             if ($saveCache) {
-                array_push($cacheValue, $bufferedJs, $bufferedScripts, $bufferedCss, $bufferedJsFiles, $bufferedCssFiles, $bufferedHtml);
+                array_push($cacheValue, $bufferedJs, $bufferedScripts, $bufferedCss, $bufferedJsFiles, $bufferedCssFiles, $bufferedHtml, $bufferedMetaTags);
             }
 
             // Re-register the JS and CSS
-            $this->_registerResources($bufferedJs, $bufferedScripts, $bufferedCss, $bufferedJsFiles, $bufferedCssFiles, $bufferedHtml);
+            $this->_registerResources($bufferedJs, $bufferedScripts, $bufferedCss, $bufferedJsFiles, $bufferedCssFiles, $bufferedHtml, $bufferedMetaTags);
         }
 
         if (!$saveCache) {
@@ -235,6 +239,20 @@ class TemplateCaches extends Component
         }, $tags);
     }
 
+    /**
+     * Parse each tag and return an array of its attributes
+     * where the key is the name of the attribute and the value is its value.
+     *
+     * @param array $tags
+     * @return array
+     */
+    private function _parseSelfClosingTags(array $tags): array
+    {
+        return array_map(function($tag) {
+            return Html::parseTagAttributes($tag);
+        }, $tags);
+    }
+
     private function _parseExternalResourceTags(array $tags, string $urlAttribute): array
     {
         return array_map(function($tag) use ($urlAttribute) {
@@ -260,6 +278,7 @@ class TemplateCaches extends Component
         array $bufferedJsFiles,
         array $bufferedCssFiles,
         array $bufferedHtml,
+        array $bufferedMetaTags,
     ): void {
         $view = Craft::$app->getView();
 
@@ -294,6 +313,10 @@ class TemplateCaches extends Component
             foreach ($tags as $key => $html) {
                 $view->registerHtml($html, $pos, $key);
             }
+        }
+
+        foreach ($bufferedMetaTags as $key => $options) {
+            $view->registerMetaTag($options, $key);
         }
     }
 
