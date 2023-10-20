@@ -126,6 +126,27 @@ class Lightswitch extends Field implements PreviewableFieldInterface, SortableFi
      */
     protected function inputHtml(mixed $value, ?ElementInterface $element = null): string
     {
+        return $this->_inputHtmlInternal($value, $element, false);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getStaticHtml(mixed $value, ?ElementInterface $element = null): string
+    {
+        return $this->_inputHtmlInternal($value, $element, true);
+    }
+
+    /**
+     * Render html for both static and interactive lightswitch field
+     *
+     * @param mixed $value
+     * @param ElementInterface|null $element
+     * @param bool $static
+     * @return string
+     */
+    private function _inputHtmlInternal(mixed $value, ?ElementInterface $element, bool $static): string
+    {
         $id = $this->getInputId();
         return Craft::$app->getView()->renderTemplate('_includes/forms/lightswitch.twig', [
             'id' => $id,
@@ -135,6 +156,7 @@ class Lightswitch extends Field implements PreviewableFieldInterface, SortableFi
             'on' => (bool)$value,
             'onLabel' => Craft::t('site', $this->onLabel),
             'offLabel' => Craft::t('site', $this->offLabel),
+            'disabled' => $static,
         ]);
     }
 
