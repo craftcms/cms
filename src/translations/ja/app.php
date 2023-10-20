@@ -1846,6 +1846,7 @@ return [
     'Your system isn’t set up to save content for the site “{site}”.' => 'システムは、サイト「{site}」のコンテンツを保存するようには設定されていません。',
     'Your {folder} folder isn’t writable.' => 'フォルダ「{folder}」は書き込み不可能です。',
     'You’re all up to date!' => '最新の状態に更新されています！',
+    'You’re viewing a revision. None of the {type}’s fields are editable.' => 'You’re viewing a revision. None of the {type}’s fields are editable.',
     'Zip Code' => '郵便番号',
     'account_activation_body' => "こんにちは {{user.friendlyName|e}} さん、\n\n {{siteName}}のアカウントを作成してくださりありがとうございます！アカウントを有効にするには、以下のリンクをクリックしてください：\n\n<{{link}}>\n\nこのメールに心当たりがない場合は無視してください。",
     'account_activation_heading' => '誰かがアカウントを作成する時：',
