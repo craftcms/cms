@@ -1660,13 +1660,13 @@ JS;
             // If no namespace was passed in, just return the callable response directly.
             // No need to namespace it via the currently-set namespace in this case; if there is one, it should get applied later on.
             if ($namespace === null) {
-                return $html();
+                return (string)$html();
             }
 
             $oldNamespace = $this->getNamespace();
             $this->setNamespace($this->namespaceInputName($namespace));
             try {
-                $response = $this->namespaceInputs($html(), $namespace, $otherAttributes, $withClasses);
+                $response = $this->namespaceInputs((string)$html(), $namespace, $otherAttributes, $withClasses);
             } finally {
                 $this->setNamespace($oldNamespace);
             }
