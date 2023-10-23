@@ -378,9 +378,9 @@ class ElementsController extends Controller
         $security = Craft::$app->getSecurity();
         $notice = null;
         if ($element->isProvisionalDraft) {
-            $notice = $this->_draftNotice();
+            $notice = fn() => $this->_draftNotice();
         } elseif ($element->getIsRevision()) {
-            $notice = $this->_revisionNotice($element::lowerDisplayName());
+            $notice = fn() => $this->_revisionNotice($element::lowerDisplayName());
         }
 
         $response = $this->asCpScreen()
@@ -406,7 +406,7 @@ class ElementsController extends Controller
                 $isUnpublishedDraft,
                 $isDraft
             ))
-            ->notice(fn() => $notice)
+            ->notice($notice)
             ->errorSummary(fn() => $this->_errorSummary($element))
             ->prepareScreen(
                 fn(Response $response, string $containerId) => $this->_prepareEditor(
