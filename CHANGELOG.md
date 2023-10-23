@@ -1,5 +1,9 @@
 # Release Notes for Craft CMS 4
 
+## Unreleased
+
+- Fixed a bug where it was possible to change the status for entries that didn’t show the Status field, via bulk editing. ([#13854](https://github.com/craftcms/cms/issues/13854))
+
 ## 4.5.8 - 2023-10-20
 
 - Improved the styling and accessibility of revision pages. ([#13857](https://github.com/craftcms/cms/pull/13857), [#13850](https://github.com/craftcms/cms/issues/13850))
