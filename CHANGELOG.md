@@ -3,6 +3,7 @@
 ## Unreleased
 
 - Fixed a bug where it was possible to change the status for entries that didn’t show the Status field, via bulk editing. ([#13854](https://github.com/craftcms/cms/issues/13854))
+- Fixed a PHP error that could occur when editing elements via slideouts. ([#13867](https://github.com/craftcms/cms/issues/13867))
 
 ## 4.5.8 - 2023-10-20
 
