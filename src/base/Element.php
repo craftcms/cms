@@ -4950,6 +4950,20 @@ JS,
     }
 
     /**
+     * Public method that returns whether status field should be shown for given element.
+     * It's a temporary solution, to be removed in v5 when Element::showStatusField() can be set to be public.
+     * (introduced to deal with #13854)
+     *
+     * @return bool
+     * @since 4.5.9
+     * @deprecated @4.5.9
+     */
+    public function getShowStatusField(): bool
+    {
+        return $this->showStatusField();
+    }
+
+    /**
      * Returns the status field HTML for the sidebar.
      *
      * @return string

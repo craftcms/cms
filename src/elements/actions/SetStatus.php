@@ -92,7 +92,7 @@ JS, [static::class]);
                 case self::ENABLED:
                     // Skip if we're not supposed to allow changing status
                     /** @var Element $element */
-                    if (!$element->showStatusField()) {
+                    if (!$element->getShowStatusField()) {
                         continue 2;
                     }
 
@@ -109,7 +109,7 @@ JS, [static::class]);
                 case self::DISABLED:
                     // Skip if we're not supposed to allow changing status
                     /** @var Element $element */
-                    if (!$element->showStatusField()) {
+                    if (!$element->getShowStatusField()) {
                         continue 2;
                     }
 
