@@ -130,6 +130,7 @@ if (!App::env('CRAFT_LICENSE_KEY') && !App::isEphemeral()) {
     }
 }
 
+$createFolder($storagePath);
 $ensureFolderIsReadable($storagePath, true);
 
 // Create the storage/runtime/ folder if it doesn't already exist
