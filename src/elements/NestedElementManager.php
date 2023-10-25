@@ -12,6 +12,7 @@ use Craft;
 use craft\base\ElementInterface;
 use craft\base\NestedElementInterface;
 use craft\behaviors\DraftBehavior;
+use craft\db\Query;
 use craft\db\Table;
 use craft\elements\actions\ChangeSortOrder;
 use craft\elements\db\ElementQueryInterface;
@@ -682,7 +683,8 @@ JS, [
         $deleteOwnership = [];
 
         foreach ($elements as $element) {
-            if ($element->getPrimaryOwnerId() === $owner->id) {
+            // only fully delete the element if it's not used in any revisions or drafts
+            if ($element->getPrimaryOwnerId() === $owner->id && $this->_usedInDerivatives($element)) {
                 $elementsService->deleteElement($element);
             } else {
                 // Just delete the ownership relation
@@ -696,6 +698,27 @@ JS, [
                 'ownerId' => $owner->id,
             ]);
         }
+    }
+
+    /**
+     * Returns if current element is used in any derivatives (revisions or drafts).
+     *
+     * @param ElementInterface $element
+     * @return bool
+     */
+    private function _usedInDerivatives(ElementInterface $element): bool
+    {
+        return (new Query())
+            ->select('elements.id')
+            ->from(['elements' => Table::ELEMENTS])
+            ->leftJoin(['elementsowners' => Table::ELEMENTS_OWNERS], '[[elementsowners.elementId]] = [[elements.id]]')
+            ->where(['elements.canonicalId' => $element->id])
+            ->andWhere([
+                'or',
+                ['not', ['elements.draftId' => null]],
+                ['not', ['elements.revisionId' => null]],
+            ])
+            ->count() === 0;
     }
 
     /**
@@ -749,6 +772,17 @@ JS, [
                         (!$source::trackChanges() || $this->isModified($source, true))
                     ) {
                         $newElementId = $elementsService->updateCanonicalElement($element, $newAttributes)->id;
+                        // upsert newElementId in case it was removed from the ownership table before
+                        // this will happen if we add a nested element to the owner & save,
+                        // then remove that nested element & save,
+                        // and then revert to the revision that still has that nested element
+                        Db::upsert(Table::ELEMENTS_OWNERS, [
+                            'elementId' => $newElementId,
+                            'ownerId' => $target->id,
+                            'sortOrder' => $element->getSortOrder(),
+                        ], [
+                            'sortOrder' => $element->getSortOrder(),
+                        ], updateTimestamp: false);
                     } else {
                         $newElementId = $element->getCanonicalId();
                     }
