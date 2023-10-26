@@ -3,6 +3,7 @@
 ## Unreleased
 
 - Addresses’ owner elements are now automatically set on them during initialization, if they were queried with the `owner` address query param.
+- Entry Title fields are no longer shown when “Show the Title field” is disabled and there’s a validation error on the `title` attribute. ([#13876](https://github.com/craftcms/cms/issues/13876))
 
 ## 4.5.9 - 2023-10-23
 
