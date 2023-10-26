@@ -118,6 +118,12 @@ class NestedElementManager extends Component
     public ?string $propagationKeyFormat = null;
 
     /**
+     * @var bool Whether nested element deletion is allowed
+     * (as opposed to only allowing to delete an owner relation)
+     */
+    public bool $allowDeletion = true;
+
+    /**
      * @inheritdoc
      */
     public function init()
@@ -683,8 +689,7 @@ JS, [
         $deleteOwnership = [];
 
         foreach ($elements as $element) {
-            // only fully delete the element if it's not used in any revisions or drafts
-            if ($element->getPrimaryOwnerId() === $owner->id && $this->_usedInDerivatives($element)) {
+            if ($this->allowDeletion && $element->getPrimaryOwnerId() === $owner->id) {
                 $elementsService->deleteElement($element);
             } else {
                 // Just delete the ownership relation
@@ -698,27 +703,6 @@ JS, [
                 'ownerId' => $owner->id,
             ]);
         }
-    }
-
-    /**
-     * Returns if current element is used in any derivatives (revisions or drafts).
-     *
-     * @param ElementInterface $element
-     * @return bool
-     */
-    private function _usedInDerivatives(ElementInterface $element): bool
-    {
-        return (new Query())
-            ->select('elements.id')
-            ->from(['elements' => Table::ELEMENTS])
-            ->leftJoin(['elementsowners' => Table::ELEMENTS_OWNERS], '[[elementsowners.elementId]] = [[elements.id]]')
-            ->where(['elements.canonicalId' => $element->id])
-            ->andWhere([
-                'or',
-                ['not', ['elements.draftId' => null]],
-                ['not', ['elements.revisionId' => null]],
-            ])
-            ->count() === 0;
     }
 
     /**
