@@ -1,5 +1,9 @@
 # Release Notes for Craft CMS 4
 
+## Unreleased
+
+- Addresses’ owner elements are now automatically set on them during initialization, if they were queried with the `owner` address query param.
+
 ## 4.5.9 - 2023-10-23
 
 - Fixed a bug where it was possible to change the status for entries that didn’t show the Status field, via bulk editing. ([#13854](https://github.com/craftcms/cms/issues/13854))
