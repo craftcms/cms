@@ -29,7 +29,6 @@ use Symfony\Component\Console\Helper\HelperSet;
 use Symfony\Component\Console\Helper\QuestionHelper;
 use Symfony\Component\Console\Input\StringInput;
 use Symfony\Component\Console\Output\StreamOutput;
-use Symfony\Component\Process\PhpExecutableFinder;
 use Symfony\Component\Process\Process;
 use Throwable;
 use yii\base\InvalidConfigException;
@@ -184,8 +183,8 @@ EOD;
     /**
      * Generates an application ID and security key (if they don’t exist), and saves them in the `.env` file.
      *
-     * @since 4.2.7
      * @return int
+     * @since 4.2.7
      */
     public function actionKeys(): int
     {
@@ -627,7 +626,7 @@ EOD;
         }
 
         $process = new Process([
-            (new PhpExecutableFinder())->find() ?: 'php',
+            App::phpExecutable() ?? 'php',
             $script,
             'cloud/setup',
         ]);

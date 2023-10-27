@@ -495,7 +495,7 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
           condition: this.settings.condition,
           referenceElementId: this.settings.referenceElementId,
           referenceElementSiteId: this.settings.referenceElementSiteId,
-          criteria: this.settings.criteria,
+          criteria: Object.assign({}, this.settings.criteria),
           multiSelect: this.settings.limit != 1,
           hideOnSelect: !this.settings.maintainHierarchy,
           showSiteMenu: this.settings.showSiteMenu,

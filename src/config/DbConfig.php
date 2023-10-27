@@ -534,8 +534,8 @@ class DbConfig extends BaseConfig
      * @param string|null $value
      * @return self
      * @throws InvalidConfigException
-     * @since 4.2.0
      * @see $tablePrefix
+     * @since 4.2.0
      */
     public function tablePrefix(?string $value): self
     {
@@ -627,8 +627,8 @@ class DbConfig extends BaseConfig
      * @param string|null $value
      * @return self
      * @throws InvalidConfigException
-     * @since 4.2.0
      * @see $driver
+     * @since 4.2.0
      */
     public function driver(?string $value): self
     {
@@ -647,8 +647,8 @@ class DbConfig extends BaseConfig
      * @param string|null $value
      * @return self
      * @throws InvalidConfigException
-     * @since 4.2.0
      * @see $server
+     * @since 4.2.0
      */
     public function server(?string $value): self
     {
@@ -667,8 +667,8 @@ class DbConfig extends BaseConfig
      * @param int|null $value
      * @return self
      * @throws InvalidConfigException
-     * @since 4.2.0
      * @see $port
+     * @since 4.2.0
      */
     public function port(?int $value): self
     {
@@ -688,8 +688,8 @@ class DbConfig extends BaseConfig
      * @param string|null $value
      * @return self
      * @throws InvalidConfigException
-     * @since 4.2.0
      * @see $unixSocket
+     * @since 4.2.0
      */
     public function unixSocket(?string $value): self
     {
@@ -708,8 +708,8 @@ class DbConfig extends BaseConfig
      * @param string|null $value
      * @return self
      * @throws InvalidConfigException
-     * @since 4.2.0
      * @see $database
+     * @since 4.2.0
      */
     public function database(?string $value): self
     {

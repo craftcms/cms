@@ -21,7 +21,6 @@ use craft\models\Update;
 use craft\models\Updates;
 use craft\models\Updates as UpdatesModel;
 use Symfony\Component\Process\Exception\ProcessFailedException;
-use Symfony\Component\Process\PhpExecutableFinder;
 use Symfony\Component\Process\Process;
 use Throwable;
 use yii\base\InvalidConfigException;
@@ -416,7 +415,7 @@ class UpdateController extends Controller
 
         $this->stdout('Applying new migrations ... ', Console::FG_YELLOW);
 
-        $php = (new PhpExecutableFinder())->find() ?: 'php';
+        $php = App::phpExecutable() ?? 'php';
         $process = new Process([$php, $script, 'migrate/all', '--no-backup', '--no-content']);
         $process->setTimeout(null);
         try {
@@ -480,7 +479,7 @@ class UpdateController extends Controller
 
         $this->stdout('Reverting Composer changes ... ', Console::FG_YELLOW);
 
-        $php = (new PhpExecutableFinder())->find() ?: 'php';
+        $php = App::phpExecutable() ?? 'php';
         $process = new Process([$php, $script, 'update/composer-install']);
         $process->setTimeout(null);
         try {

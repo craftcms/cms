@@ -140,7 +140,7 @@ class Component
 
         // Instantiate and return
         $config['class'] = $class;
-        return Craft::createObject($config);
+        return Craft::createObject(static::cleanseConfig($config));
     }
 
     /**

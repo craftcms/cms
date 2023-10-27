@@ -376,6 +376,12 @@ class ElementsController extends Controller
         }
 
         $security = Craft::$app->getSecurity();
+        $notice = null;
+        if ($element->isProvisionalDraft) {
+            $notice = fn() => $this->_draftNotice();
+        } elseif ($element->getIsRevision()) {
+            $notice = fn() => $this->_revisionNotice($element::lowerDisplayName());
+        }
 
         $response = $this->asCpScreen()
             ->editUrl($element->getCpEditUrl())
@@ -400,7 +406,7 @@ class ElementsController extends Controller
                 $isUnpublishedDraft,
                 $isDraft
             ))
-            ->notice($element->isProvisionalDraft ? fn() => $this->_draftNotice() : null)
+            ->notice($notice)
             ->errorSummary(fn() => $this->_errorSummary($element))
             ->prepareScreen(
                 fn(Response $response, string $containerId) => $this->_prepareEditor(
@@ -416,6 +422,7 @@ class ElementsController extends Controller
                         'canCreateDrafts' => $canCreateDrafts,
                         'canEditMultipleSites' => $canEditMultipleSites,
                         'canSaveCanonical' => $canSaveCanonical,
+                        'elementId' => $element->id,
                         'canonicalId' => $canonical->id,
                         'draftId' => $element->draftId,
                         'draftName' => $isDraft ? $element->draftName : null,
@@ -1000,6 +1007,27 @@ JS, [
             Html::endTag('div');
     }
 
+    private function _revisionNotice($elementType): string
+    {
+        return
+            Html::beginTag('div', [
+                'class' => 'revision-notice',
+            ]) .
+            Html::tag('div', '', [
+                'class' => ['revision-icon'],
+                'aria' => ['hidden' => 'true'],
+                'data' => ['icon' => 'lightbulb'],
+            ]) .
+            Html::tag('p', Craft::t(
+                'app',
+                'You’re viewing a revision. None of the {type}’s fields are editable.',
+                [
+                    'type' => $elementType,
+                ]
+            )) .
+            Html::endTag('div');
+    }
+
     /**
      * Saves an element.
      *
@@ -1308,6 +1336,7 @@ JS, [
 
             $data = [
                 'canonicalId' => $element->getCanonicalId(),
+                'elementId' => $element->id,
                 'draftId' => $element->draftId,
                 'timestamp' => Craft::$app->getFormatter()->asTimestamp($element->dateUpdated, 'short', true),
                 'creator' => $creator?->getName(),

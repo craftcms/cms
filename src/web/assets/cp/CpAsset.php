@@ -434,6 +434,7 @@ JS;
             'Pro' => Craft::Pro,
             'registeredAssetBundles' => [], // force encode as JS object
             'registeredJsFiles' => [], // force encode as JS object
+            'resourceBaseUrl' => Craft::$app->getAssetManager()->baseUrl,
             'right' => $orientation === 'ltr' ? 'right' : 'left',
             'scriptName' => basename($request->getScriptFile()),
             'Solo' => Craft::Solo,

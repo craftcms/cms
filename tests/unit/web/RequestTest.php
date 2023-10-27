@@ -387,6 +387,17 @@ class RequestTest extends TestCase
     }
 
     /**
+     * @dataProvider acceptsDataProvider
+     */
+    public function testAccepts(bool $expected, string $contentType, array $accepts): void
+    {
+        $request = $this->make(Request::class, [
+            'getAcceptableContentTypes' => array_flip($accepts),
+        ]);
+        self::assertEquals($expected, $request->accepts($contentType));
+    }
+
+    /**
      * https://deviceatlas.com/blog/list-of-user-agent-strings
      *
      * @return array
@@ -486,6 +497,20 @@ class RequestTest extends TestCase
             ['login'],
             ['logout'],
             ['update'],
+        ];
+    }
+
+    /**
+     * @return array
+     */
+    public function acceptsDataProvider(): array
+    {
+        return [
+            [false, 'application/json', ['text/html']],
+            [true, 'application/json', ['application/json']],
+            [true, 'application/json', ['application/*']],
+            [true, 'text/*', ['text/*']],
+            [false, 'text/*', ['text/html']],
         ];
     }
 

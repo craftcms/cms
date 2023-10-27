@@ -1,6 +1,5 @@
 {%- set class = (class ?? [])|explodeClass|merge([
     'select',
-    (disabled ?? false) ? 'disabled' : null,
 ]|filter) %}
 
 {%- set options = options ?? [] %}
