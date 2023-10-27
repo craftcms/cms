@@ -368,4 +368,67 @@ class DbController extends Controller
         $this->stdout("Finished converting tables to $charset/$collation." . PHP_EOL, Console::FG_GREEN);
         return ExitCode::OK;
     }
+
+    /**
+     * Modifies the database table prefix.
+     *
+     *  Example to remove a prefix:
+     *  ```
+     *  php craft db/modify-table-prefix
+     * ```
+     *
+     *  Example to add a prefix:
+     *  ```
+     *  php craft db/modify-table-prefix craft
+     *  ```
+     *
+     * @param string $prefix The table prefix to use. It should be no longer than 5 characters.
+     * @return int
+     * @throws NotSupportedException
+     */
+    public function actionModifyTablePrefix(string $prefix = ''): int
+    {
+        if (strlen($prefix) > 5) {
+            $this->stderr('The table prefix cannot be longer than 5 characters.' . PHP_EOL, Console::FG_RED);
+            return ExitCode::UNSPECIFIED_ERROR;
+        }
+
+        $existingTablePrefix = (string)Craft::$app->getConfig()->getDb()->tablePrefix;
+
+        $newPrefix = $prefix;
+        if ($prefix !== '') {
+            $newPrefix .= '_';
+        }
+
+        if ($newPrefix === $existingTablePrefix) {
+            $this->stderr('The new table prefix matches the existing one. There is nothing to change.' . PHP_EOL, Console::FG_RED);
+            return ExitCode::UNSPECIFIED_ERROR;
+        }
+
+        if (!$this->interactive || $this->confirm("You should not run this command one a live site. Proceed?", true)) {
+            $db = Craft::$app->getDb();
+            $schema = $db->getSchema();
+            $existingTableNames = $schema->getTableNames();
+
+            foreach ($existingTableNames as $existingTableName) {
+                $existingTableName = $schema->getRawTableName($existingTableName);
+
+                if ($existingTablePrefix) {
+                    $newTableName = str_replace($existingTablePrefix, $newPrefix, $existingTableName);
+                } else {
+                    $newTableName = $newPrefix . $existingTableName;
+                }
+
+                $this->stdout('Renaming ');
+                $this->stdout($existingTableName, Console::FG_CYAN);
+                $this->stdout(' to ');
+                $this->stdout($newTableName, Console::FG_CYAN);
+                Db::renameTable($existingTableName, $newTableName, $db);
+                $this->stdout(' ... ');
+                $this->stdout('done' . PHP_EOL, Console::FG_GREEN);
+            }
+
+            return ExitCode::OK;
+        }
+    }
 }
