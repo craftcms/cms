@@ -119,7 +119,9 @@ class Fs extends Component
             $configs = Craft::$app->getProjectConfig()->get(ProjectConfig::PATH_FS) ?? [];
             $filesystems = array_map(function(string $handle, array $config) {
                 $config['handle'] = $handle;
-                $config['settings'] = ProjectConfigHelper::unpackAssociativeArrays($config['settings']);
+                $config['settings'] = !isset($config['settings'])
+                    ? []
+                    : ProjectConfigHelper::unpackAssociativeArrays($config['settings']);
                 return $this->createFilesystem($config);
             }, array_keys($configs), $configs);
             $this->_filesystems = new MemoizableArray($filesystems);
