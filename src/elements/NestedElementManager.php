@@ -688,12 +688,14 @@ JS, [
         $elementsService = Craft::$app->getElements();
         $deleteOwnership = [];
 
-        foreach ($elements as $element) {
-            if ($this->allowDeletion && $element->getPrimaryOwnerId() === $owner->id) {
-                $elementsService->deleteElement($element);
-            } else {
-                // Just delete the ownership relation
-                $deleteOwnership[] = $element->id;
+        if ($this->allowDeletion) {
+            foreach ($elements as $element) {
+                if (/*$this->allowDeletion && */ $element->getPrimaryOwnerId() === $owner->id) {
+                    $elementsService->deleteElement($element);
+                } else {
+                    // Just delete the ownership relation
+                    $deleteOwnership[] = $element->id;
+                }
             }
         }
 
