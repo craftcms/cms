@@ -141,6 +141,7 @@ class Gc extends Component
 
         $this->hardDeleteVolumes();
         $this->removeEmptyTempFolders();
+        $this->_softDeleteOrphanedNestedElements();
         $this->_gcCache();
 
         // Invalidate all element caches so any hard-deleted elements don't look like they still exist
@@ -566,6 +567,45 @@ SQL;
         }
 
         $this->db->createCommand($sql)->execute();
+        $this->_stdout("done\n", Console::FG_GREEN);
+    }
+
+    /**
+     * Soft deleted nested elements,
+     * so ones that have entries assigned to a field (not section),
+     * and are not referenced in the elements_owners table.
+     */
+    private function _softDeleteOrphanedNestedElements(): void
+    {
+        $this->_stdout('    > soft deleting orphaned nested elements ... ');
+
+        $now = Db::prepareDateForDb(new DateTime());
+        $elementsTable = Table::ELEMENTS;
+        $entriesTable = Table::ENTRIES;
+        $elementsOwnersTable = Table::ELEMENTS_OWNERS;
+
+        if ($this->db->getIsMysql()) {
+            $sql = <<<SQL
+UPDATE $elementsTable [[el]]
+LEFT JOIN $entriesTable [[en]] ON [[el.id]] = [[en.id]]
+LEFT JOIN $elementsOwnersTable [[eo]] ON [[el.id]] = [[eo.elementId]]
+SET [[el.dateDeleted]] = '$now'
+WHERE [[en.fieldId]] IS NOT NULL AND [[eo.elementId]] IS NULL
+SQL;
+        } else {
+            $sql = <<<SQL
+UPDATE $elementsTable
+USING $elementsTable [[el]]
+LEFT JOIN $entriesTable [[en]] ON [el.id]] = [[en.id]]
+LEFT JOIN $elementsOwnersTable [[eo]] ON [[el.id]] = [[eo.elementId]]
+WHERE
+  [[en.fieldId]] IS NOT NULL AND
+  [[eo.elementId]] IS NULL
+SQL;
+        }
+
+        $this->db->createCommand($sql)->execute();
+
         $this->_stdout("done\n", Console::FG_GREEN);
     }
 
