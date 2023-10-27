@@ -82,8 +82,8 @@ class GeneralConfig extends BaseConfig
      * ])
      * ```
      *
-     * @since 3.6.4
      * @group System
+     * @since 3.6.4
      */
     public array $accessibilityDefaults = [
         'alwaysShowFocusRings' => false,
@@ -178,8 +178,8 @@ class GeneralConfig extends BaseConfig
      * ```
      * :::
      *
-     * @since 3.1.0
      * @group System
+     * @since 3.1.0
      */
     public bool $allowAdminChanges = true;
 
@@ -200,8 +200,8 @@ class GeneralConfig extends BaseConfig
      * ```
      * :::
      *
-     * @since 3.5.0
      * @group GraphQL
+     * @since 3.5.0
      */
     public array|null|false $allowedGraphqlOrigins = null;
 
@@ -397,9 +397,9 @@ class GeneralConfig extends BaseConfig
      * ```
      * :::
      *
+     * @group System
      * @since 3.5.6
      * @deprecated in 4.0.0
-     * @group System
      */
     public bool $autosaveDrafts = true;
 
@@ -513,8 +513,8 @@ class GeneralConfig extends BaseConfig
      * ```
      * :::
      *
-     * @since 3.5.0
      * @group Image Handling
+     * @since 3.5.0
      */
     public ?string $brokenImagePath = null;
 
@@ -532,8 +532,8 @@ class GeneralConfig extends BaseConfig
      * ```
      * :::
      *
-     * @since 4.0.0
      * @group Environment
+     * @since 4.0.0
      */
     public ?string $buildId = null;
 
@@ -620,8 +620,8 @@ class GeneralConfig extends BaseConfig
      * ])
      * ```
      *
-     * @since 3.5.0
      * @group System
+     * @since 3.5.0
      */
     public array $cpHeadTags = [];
 
@@ -740,8 +740,8 @@ class GeneralConfig extends BaseConfig
      * ```
      * :::
      *
-     * @since 3.5.0
      * @group System
+     * @since 3.5.0
      */
     public ?string $defaultCpLocale = null;
 
@@ -951,8 +951,8 @@ class GeneralConfig extends BaseConfig
      * ```
      * :::
      *
-     * @since 3.1.9
      * @group System
+     * @since 3.1.9
      */
     public string|array|null $disabledPlugins = null;
 
@@ -973,8 +973,8 @@ class GeneralConfig extends BaseConfig
      * ```
      * :::
      *
-     * @since 3.5.10
      * @group System
+     * @since 3.5.10
      */
     public bool $disallowRobots = false;
 
@@ -990,8 +990,8 @@ class GeneralConfig extends BaseConfig
      * ```
      * :::
      *
-     * @since 3.6.0
      * @group GraphQL
+     * @since 3.6.0
      */
     public bool $disableGraphqlTransformDirective = false;
 
@@ -1007,8 +1007,8 @@ class GeneralConfig extends BaseConfig
      * ```
      * :::
      *
-     * @since 3.5.0
      * @group Security
+     * @since 3.5.0
      */
     public bool $enableBasicHttpAuth = false;
 
@@ -1043,8 +1043,8 @@ class GeneralConfig extends BaseConfig
      * ```
      * :::
      *
-     * @since 3.6.0
      * @group GraphQL
+     * @since 3.6.0
      */
     public bool $enableGraphqlIntrospection = true;
 
@@ -1062,8 +1062,8 @@ class GeneralConfig extends BaseConfig
      * ```
      * :::
      *
-     * @since 3.3.1
      * @group GraphQL
+     * @since 3.3.1
      */
     public bool $enableGql = true;
 
@@ -1124,8 +1124,8 @@ class GeneralConfig extends BaseConfig
      * ```
      * :::
      *
-     * @since 3.3.12
      * @group GraphQL
+     * @since 3.3.12
      */
     public bool $enableGraphqlCaching = true;
 
@@ -1141,8 +1141,8 @@ class GeneralConfig extends BaseConfig
      * ```
      * :::
      *
-     * @since 3.7.0
      * @group GraphQL
+     * @since 3.7.0
      */
     public bool $setGraphqlDatesToSystemTimeZone = false;
 
@@ -1210,8 +1210,8 @@ class GeneralConfig extends BaseConfig
      * ```
      * :::
      *
-     * @since 3.0.24
      * @group System
+     * @since 3.0.24
      */
     public ?array $extraAppLocales = null;
 
@@ -1238,8 +1238,8 @@ class GeneralConfig extends BaseConfig
      * the <config4:extraAllowedFileExtensions> config setting.
      * :::
      *
-     * @since 3.0.37
      * @group Assets
+     * @since 3.0.37
      */
     public array $extraFileKinds = [];
 
@@ -1361,8 +1361,8 @@ class GeneralConfig extends BaseConfig
      * ```
      * :::
      *
-     * @since 3.6.0
      * @group System
+     * @since 3.6.0
      */
     public string $handleCasing = self::CAMEL_CASE;
 
@@ -1393,8 +1393,8 @@ class GeneralConfig extends BaseConfig
      * ```
      * :::
      *
-     * @since 3.3.0
      * @group System
+     * @since 3.3.0
      */
     public bool $headlessMode = false;
 
@@ -1642,8 +1642,24 @@ class GeneralConfig extends BaseConfig
     public int $maxCachedCloudImageSize = 2000;
 
     /**
+     * @var int The maximum allowed GraphQL queries that can be executed in a single batched request. Set to `0` to allow any number of queries.
+     *
+     *  ::: code
+     *  ```php Static Config
+     *  ->maxGraphqlBatchSize(5)
+     *  ```
+     *  ```shell Environment Override
+     *  CRAFT_MAX_GRAPHQL_BATCH_SIZE=5
+     *  ```
+     *  :::
+     *
+     * @group GraphQL
+     * @since 4.5.5
+     */
+    public int $maxGraphqlBatchSize = 0;
+
+    /**
      * @var int The maximum allowed complexity a GraphQL query is allowed to have. Set to `0` to allow any complexity.
-     * @since 3.6.0
      *
      * ::: code
      * ```php Static Config
@@ -1655,6 +1671,7 @@ class GeneralConfig extends BaseConfig
      * :::
      *
      * @group GraphQL
+     * @since 3.6.0
      */
     public int $maxGraphqlComplexity = 0;
 
@@ -1670,8 +1687,8 @@ class GeneralConfig extends BaseConfig
      * ```
      * :::
      *
-     * @since 3.6.0
      * @group GraphQL
+     * @since 3.6.0
      */
     public int $maxGraphqlDepth = 0;
 
@@ -1687,8 +1704,8 @@ class GeneralConfig extends BaseConfig
      * ```
      * :::
      *
-     * @since 3.6.0
      * @group GraphQL
+     * @since 3.6.0
      */
     public int $maxGraphqlResults = 0;
 
@@ -1739,8 +1756,8 @@ class GeneralConfig extends BaseConfig
      * ```
      * :::
      *
-     * @since 3.2.0
      * @group System
+     * @since 3.2.0
      */
     public ?int $maxRevisions = 50;
 
@@ -1896,8 +1913,8 @@ class GeneralConfig extends BaseConfig
      * ```
      * :::
      *
-     * @since 3.6.14
      * @group System
+     * @since 3.6.14
      */
     public ?string $permissionsPolicyHeader = null;
 
@@ -2012,8 +2029,8 @@ class GeneralConfig extends BaseConfig
      * ```
      * :::
      *
-     * @since 3.6.6
      * @group GraphQL
+     * @since 3.6.6
      */
     public bool $prefixGqlRootTypes = true;
 
@@ -2056,8 +2073,8 @@ class GeneralConfig extends BaseConfig
      * ```
      * :::
      *
-     * @since 3.0.8
      * @group Image Handling
+     * @since 3.0.8
      */
     public bool $preserveCmykColorspace = false;
 
@@ -2129,8 +2146,8 @@ class GeneralConfig extends BaseConfig
      * ])
      * ```
      *
-     * @since 3.5.0
      * @group System
+     * @since 3.5.0
      */
     public array $previewIframeResizerOptions = [];
 
@@ -2223,9 +2240,9 @@ class GeneralConfig extends BaseConfig
      * ```
      * :::
      *
-     * @since 3.3.0
      * @group Garbage Collection
      * @defaultAlt 90 days
+     * @since 3.3.0
      */
     public mixed $purgeStaleUserSessionDuration = 7776000;
 
@@ -2245,9 +2262,9 @@ class GeneralConfig extends BaseConfig
      * ```
      * :::
      *
-     * @since 3.2.0
      * @group Garbage Collection
      * @defaultAlt 30 days
+     * @since 3.2.0
      */
     public mixed $purgeUnsavedDraftsDuration = 2592000;
 
@@ -2265,8 +2282,8 @@ class GeneralConfig extends BaseConfig
      * ```
      * :::
      *
-     * @since 3.6.0
      * @group Image Handling
+     * @since 3.6.0
      */
     public bool $rasterizeSvgThumbs = false;
 
@@ -2417,8 +2434,8 @@ class GeneralConfig extends BaseConfig
      * ```
      * :::
      *
-     * @since 3.7.0
      * @group Assets
+     * @since 3.7.0
      */
     public bool $revAssetUrls = false;
 
@@ -2479,8 +2496,8 @@ class GeneralConfig extends BaseConfig
      * ```
      * :::
      *
-     * @since 3.6.0
      * @group Security
+     * @since 3.6.0
      */
     public bool $sanitizeCpImageUploads = true;
 
@@ -2499,8 +2516,8 @@ class GeneralConfig extends BaseConfig
      * ```
      * :::
      *
-     * @since 3.1.33
      * @group System
+     * @since 3.1.33
      */
     public ?string $sameSiteCookieValue = null;
 
@@ -2547,8 +2564,8 @@ class GeneralConfig extends BaseConfig
      * ```
      * :::
      *
-     * @since 3.7.3
      * @group System
+     * @since 3.7.3
      */
     public bool $sendContentLengthHeader = false;
 
@@ -2652,8 +2669,8 @@ class GeneralConfig extends BaseConfig
      * ```
      * :::
      *
-     * @since 3.5.0
      * @group Routing
+     * @since 3.5.0
      */
     public string $siteToken = 'siteToken';
 
@@ -2741,9 +2758,9 @@ class GeneralConfig extends BaseConfig
      * ```
      * :::
      *
-     * @since 3.1.0
      * @group Garbage Collection
      * @defaultAlt 30 days
+     * @since 3.1.0
      */
     public mixed $softDeleteDuration = 2592000;
 
@@ -2759,8 +2776,8 @@ class GeneralConfig extends BaseConfig
      * ```
      * :::
      *
-     * @since 3.1.0
      * @group Security
+     * @since 3.1.0
      */
     public bool $storeUserIps = false;
 
@@ -2814,8 +2831,8 @@ class GeneralConfig extends BaseConfig
      * ```
      * :::
      *
-     * @since 3.0.7
      * @group Image Handling
+     * @since 3.0.7
      */
     public bool $transformGifs = true;
 
@@ -2831,8 +2848,8 @@ class GeneralConfig extends BaseConfig
      * ```
      * :::
      *
-     * @since 3.7.1
      * @group Image Handling
+     * @since 3.7.1
      */
     public bool $transformSvgs = true;
 
@@ -2901,8 +2918,8 @@ class GeneralConfig extends BaseConfig
      * ```
      * :::
      *
-     * @since 3.4.0
      * @group Image Handling
+     * @since 3.4.0
      */
     public bool $upscaleImages = true;
 
@@ -2955,8 +2972,8 @@ class GeneralConfig extends BaseConfig
      * ```
      * :::
      *
-     * @since 3.5.5
      * @group System
+     * @since 3.5.5
      */
     public bool $useIframeResizer = false;
 
@@ -3099,8 +3116,8 @@ class GeneralConfig extends BaseConfig
      * :::
      *
      * @see getVerifyEmailPath()
-     * @since 3.4.0
      * @group Routing
+     * @since 3.4.0
      */
     public mixed $verifyEmailPath = 'verifyemail';
 
@@ -3119,8 +3136,8 @@ class GeneralConfig extends BaseConfig
      * :::
      *
      * @see getVerifyEmailSuccessPath()
-     * @since 3.1.20
      * @group Routing
+     * @since 3.1.20
      */
     public mixed $verifyEmailSuccessPath = '';
 
@@ -3796,8 +3813,8 @@ class GeneralConfig extends BaseConfig
      * @param string|null $value
      * @return self
      * @throws InvalidConfigException
-     * @since 4.2.0
      * @see $defaultCpLanguage
+     * @since 4.2.0
      */
     public function defaultCpLanguage(?string $value): self
     {
@@ -4367,8 +4384,8 @@ class GeneralConfig extends BaseConfig
      * @param string[]|null $value
      * @return self
      * @throws InvalidConfigException
-     * @since 4.2.0
      * @see $extraAppLocales
+     * @since 4.2.0
      */
     public function extraAppLocales(?array $value): self
     {
@@ -4860,6 +4877,25 @@ class GeneralConfig extends BaseConfig
     public function maxCachedCloudImageSize(int $value): self
     {
         $this->maxCachedCloudImageSize = $value;
+        return $this;
+    }
+
+    /**
+     * The maximum allowed GraphQL queries that can be executed in a single batched request. Set to `0` to allow any number of queries.
+     *
+     * ```php
+     * ->maxGraphqlBatchSize(500)
+     * ```
+     *
+     * @group GraphQL
+     * @param int $value
+     * @return self
+     * @see $maxGraphqlBatchSize
+     * @since 4.5.5
+     */
+    public function maxGraphqlBatchSize(int $value): self
+    {
+        $this->maxGraphqlBatchSize = $value;
         return $this;
     }
 
@@ -6542,8 +6578,8 @@ class GeneralConfig extends BaseConfig
      * @param mixed $value
      * @return self
      * @see $verifyEmailSuccessPath
-     * @since 4.2.0
      * @see getVerifyEmailSuccessPath()
+     * @since 4.2.0
      */
     public function verifyEmailSuccessPath(mixed $value): self
     {

@@ -962,13 +962,12 @@ li.breadcrumb-toggle-wrapper {
 
 #sidebar {
   box-sizing: border-box;
-  padding: 0 31px;
+  padding: 0 31px var(--m);
   width: $sidebarWidth;
   background-color: transparent;
 
   &.fixed {
     position: fixed;
-    padding-bottom: var(--m);
   }
 
   nav {
@@ -1098,7 +1097,7 @@ li.breadcrumb-toggle-wrapper {
   }
 
   .details {
-    margin-bottom: 11.5em;
+    padding-bottom: calc(var(--xl) + 11.5em);
 
     .meta {
       border-radius: var(--large-border-radius);

@@ -309,6 +309,7 @@ return [
     'Connect the database' => 'Az adatbázis csatlakoztatása',
     'Connecting to CraftCMS.com…' => 'Kapcsolódás a CraftCMS.com webhelyhez…',
     'Constraints' => 'Korlátozások',
+    'Contact Developer Support' => 'Contact Developer Support',
     'Content' => 'Tartalom',
     'Contents of {path}' => '{path} tartalma',
     'Context' => 'Környezet',
@@ -1845,6 +1846,7 @@ return [
     'Your system isn’t set up to save content for the site “{site}”.' => 'A rendszere úgy van beállítva, hogy ne mentse a(z) {site} webhely tartalmát.',
     'Your {folder} folder isn’t writable.' => 'A {folder} mappa nem írható.',
     'You’re all up to date!' => 'Ön teljesen naprakész!',
+    'You’re viewing a revision. None of the {type}’s fields are editable.' => 'You’re viewing a revision. None of the {type}’s fields are editable.',
     'Zip Code' => 'Zip-kód',
     'account_activation_body' => "Hello {{user.friendlyName|e}},
 

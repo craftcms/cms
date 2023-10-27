@@ -707,8 +707,8 @@ class Assets extends Component
      * @param int $maxWidth
      * @param int $maxHeight
      * @return string
-     * @since 4.0.0
      * @throws NotSupportedException if the asset’s volume doesn’t have a filesystem with public URLs
+     * @since 4.0.0
      */
     public function getImagePreviewUrl(Asset $asset, int $maxWidth, int $maxHeight): string
     {

@@ -40,6 +40,11 @@ class Asset extends ElementMutationArguments
                 'description' => 'The ID of the user who first added this asset (if known).',
                 'type' => Type::id(),
             ],
+            'focalPoint' => [
+                'name' => 'focalPoint',
+                'description' => 'The image focal point, in the format of "0.5;0.5".',
+                'type' => Type::string(),
+            ],
         ]);
     }
 }

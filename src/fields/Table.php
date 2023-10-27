@@ -440,6 +440,15 @@ class Table extends Field
 
         $defaults = $this->defaults ?? [];
 
+        // Apply static translations
+        foreach ($defaults as &$row) {
+            foreach ($this->columns as $colId => $col) {
+                if ($col['type'] === 'heading' && isset($row[$colId])) {
+                    $row[$colId] = Craft::t('site', $row[$colId]);
+                }
+            }
+        }
+
         if (is_string($value) && !empty($value)) {
             $value = Json::decodeIfJson($value);
         } elseif ($value === null && $this->isFresh($element)) {

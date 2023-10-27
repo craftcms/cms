@@ -73,7 +73,6 @@ use craft\validators\SiteIdValidator;
 use craft\validators\SlugValidator;
 use craft\validators\StringValidator;
 use craft\web\UploadedFile;
-use DateTime;
 use Illuminate\Support\Collection;
 use Throwable;
 use Traversable;
@@ -574,8 +573,8 @@ abstract class Element extends Component implements ElementInterface
      *
      * Note that [[EVENT_DEFINE_URL]] will still be called regardless of what happens with this event.
      *
-     * @since 4.4.6
      * @see getUrl()
+     * @since 4.4.6
      */
     public const EVENT_BEFORE_DEFINE_URL = 'beforeDefineUrl';
 
@@ -609,8 +608,8 @@ abstract class Element extends Component implements ElementInterface
      * To prevent the element from getting a URL, ensure `$event->url` is set to `null`,
      * and set `$event->handled` to `true`.
      *
-     * @since 4.3.0
      * @see getUrl()
+     * @since 4.3.0
      */
     public const EVENT_DEFINE_URL = 'defineUrl';
 
@@ -2261,41 +2260,45 @@ abstract class Element extends Component implements ElementInterface
      */
     public function attributes(): array
     {
-        $names = parent::attributes();
+        $names = array_flip(parent::attributes());
 
         if ($this->structureId) {
-            $names[] = 'parentId';
+            $names['parentId'] = true;
         } else {
-            ArrayHelper::removeValue($names, 'structureId');
-            ArrayHelper::removeValue($names, 'root');
-            ArrayHelper::removeValue($names, 'lft');
-            ArrayHelper::removeValue($names, 'rgt');
-            ArrayHelper::removeValue($names, 'level');
+            unset(
+                $names['structureId'],
+                $names['root'],
+                $names['lft'],
+                $names['rgt'],
+                $names['level'],
+            );
         }
 
-        ArrayHelper::removeValue($names, 'searchScore');
-        ArrayHelper::removeValue($names, 'awaitingFieldValues');
-        ArrayHelper::removeValue($names, 'firstSave');
-        ArrayHelper::removeValue($names, 'propagating');
-        ArrayHelper::removeValue($names, 'propagateAll');
-        ArrayHelper::removeValue($names, 'newSiteIds');
-        ArrayHelper::removeValue($names, 'resaving');
-        ArrayHelper::removeValue($names, 'duplicateOf');
-        ArrayHelper::removeValue($names, 'mergingCanonicalChanges');
-        ArrayHelper::removeValue($names, 'updatingFromDerivative');
-        ArrayHelper::removeValue($names, 'previewing');
-        ArrayHelper::removeValue($names, 'hardDelete');
+        unset(
+            $names['searchScore'],
+            $names['awaitingFieldValues'],
+            $names['firstSave'],
+            $names['propagating'],
+            $names['propagateAll'],
+            $names['newSiteIds'],
+            $names['resaving'],
+            $names['duplicateOf'],
+            $names['mergingCanonicalChanges'],
+            $names['updatingFromDerivative'],
+            $names['previewing'],
+            $names['hardDelete'],
+        );
 
-        $names[] = 'canonicalId';
-        $names[] = 'isDraft';
-        $names[] = 'isRevision';
-        $names[] = 'isUnpublishedDraft';
-        $names[] = 'ref';
-        $names[] = 'status';
-        $names[] = 'structureId';
-        $names[] = 'url';
+        $names['canonicalId'] = true;
+        $names['isDraft'] = true;
+        $names['isRevision'] = true;
+        $names['isUnpublishedDraft'] = true;
+        $names['ref'] = true;
+        $names['status'] = true;
+        $names['structureId'] = true;
+        $names['url'] = true;
 
-        return $names;
+        return array_keys($names);
     }
 
     /**
@@ -4934,9 +4937,9 @@ JS,
     }
 
     /**
-     * Whether status field should be shown for this element.
-     * If set to `false`, status can't be updated via editing entry, action or resave command.
-     * `true` for all elements by default for backwards compatibility.
+     * Returns whether the Status field should be shown for this element.
+     *
+     *  If set to `false`, the element’s status can't be updated via edit forms, the Set Status action, or `resave/*` commands.
      *
      * @return bool
      * @since 4.5.0
