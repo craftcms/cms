@@ -427,8 +427,8 @@ class DbController extends Controller
                 $this->stdout(' ... ');
                 $this->stdout('done' . PHP_EOL, Console::FG_GREEN);
             }
-
-            return ExitCode::OK;
         }
+
+        return ExitCode::OK;
     }
 }
