@@ -1842,6 +1842,7 @@ return [
     'Your system isn’t set up to save content for the site “{site}”.' => 'Votre système n’est pas paramétré pour enregistrer le contenu du site « {site} ».',
     'Your {folder} folder isn’t writable.' => 'Votre dossier {folder} n’est pas accessible en écriture.',
     'You’re all up to date!' => 'Vous êtes totalement à jour !',
+    'You’re viewing a revision. None of the {type}’s fields are editable.' => 'You’re viewing a revision. None of the {type}’s fields are editable.',
     'Zip Code' => 'Code postal',
     '`sectionId` and `fieldId` cannot both be set on an entry.' => '`sectionId` and `fieldId` cannot both be set on an entry.',
     'account_activation_body' => "Bonjour {{user.friendlyName|e}},\n\nMerci d’avoir créé un compte sur {{siteName}} ! Afin d’activer ce compte, merci de cliquer sur le lien suivant :\n\n<{{link}}>\n\nSi vous n’attendiez aucun email de ce type, ignorez-le, tout simplement.",

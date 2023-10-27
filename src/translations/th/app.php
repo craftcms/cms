@@ -1842,6 +1842,7 @@ return [
     'Your system isn’t set up to save content for the site “{site}”.' => 'Your system isn’t set up to save content for the site “{site}”.',
     'Your {folder} folder isn’t writable.' => 'Your {folder} folder isn’t writable.',
     'You’re all up to date!' => 'คุณได้รับข้อมูลล่าสุดแล้ว!',
+    'You’re viewing a revision. None of the {type}’s fields are editable.' => 'You’re viewing a revision. None of the {type}’s fields are editable.',
     'Zip Code' => 'Zip Code',
     '`sectionId` and `fieldId` cannot both be set on an entry.' => '`sectionId` and `fieldId` cannot both be set on an entry.',
     'account_activation_body' => "สวัสดี {{user.friendlyName|e}}\n\nขอขอบคุณที่สร้างบัญชีด้วย {{systemName}}! โปรดคลิกลิงก์ต่อไปนี้เพื่อเปิดใช้บัญชีของคุณ:\n\n<{{link}}>\n\nหากคุณได้รับอีเมลนี้โดยไม่คาดคิด โปรดไม่ต้องสนใจอีเมลนี้",

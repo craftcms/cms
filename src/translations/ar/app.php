@@ -1842,6 +1842,7 @@ return [
     'Your system isn’t set up to save content for the site “{site}”.' => 'لم يتم إعداد النظام لديك على حفظ المحتوى للموقع "{site}".',
     'Your {folder} folder isn’t writable.' => 'مجلد {folder} الخاص بك غير قابل للكتابة فوقه.',
     'You’re all up to date!' => 'لديك آخر تحديث!',
+    'You’re viewing a revision. None of the {type}’s fields are editable.' => 'You’re viewing a revision. None of the {type}’s fields are editable.',
     'Zip Code' => 'الرمز البريدي',
     '`sectionId` and `fieldId` cannot both be set on an entry.' => '`sectionId` and `fieldId` cannot both be set on an entry.',
     'account_activation_body' => "مرحبا {{user.friendlyName|e}}،\n\nشكراً لإنشائك حساباً في {{siteName}}! لتفعيل حسابك، انقر على الرابط التالي:\n\n<{{link}}>\n\nإذا لم تكن تتوقع هذه الرسالة، ما عليك سوى تجاهلها.",
