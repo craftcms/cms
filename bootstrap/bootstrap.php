@@ -9,6 +9,7 @@
 
 use craft\helpers\App;
 use craft\helpers\ArrayHelper;
+use craft\helpers\FileHelper;
 use craft\services\Config;
 use yii\base\ErrorException;
 
@@ -16,38 +17,60 @@ use yii\base\ErrorException;
 // see https://stackoverflow.com/a/21601349/1688568
 $lastError = error_get_last();
 
-// Setup
+// Validate the app type
 // -----------------------------------------------------------------------------
 
-// Validate the app type
 if (!isset($appType) || ($appType !== 'web' && $appType !== 'console')) {
     throw new Exception('$appType must be set to "web" or "console".');
 }
 
-$createFolder = function($path) {
-    // Code borrowed from Io...
-    if (!is_dir($path)) {
-        $oldumask = umask(0);
+// Determine the paths
+// -----------------------------------------------------------------------------
 
-        if (!mkdir($path, 0755, true)) {
-            // Set a 503 response header so things like Varnish won't cache a bad page.
-            http_response_code(503);
-            exit('Tried to create a folder at ' . $path . ', but could not.' . PHP_EOL);
-        }
-
-        // Because setting permission with mkdir is a crapshoot.
-        chmod($path, 0755);
-        umask($oldumask);
-    }
+$findConfig = function(string $cliName, string $envName) {
+    return App::cliOption($cliName, true) ?? App::env($envName);
 };
 
-$findConfigPath = function($cliName, $envName) use ($createFolder) {
-    $path = App::cliOption($cliName, true) ?? App::env($envName);
-    if (!$path) {
-        return null;
+// Set the vendor path. By default assume that it's 4 levels up from here
+$vendorPath = FileHelper::normalizePath($findConfig('--vendorPath', 'CRAFT_VENDOR_PATH') ?? dirname(__DIR__, 3));
+
+// Set the "project root" path that contains config/, storage/, etc. By default assume that it's up a level from vendor/.
+$rootPath = FileHelper::normalizePath($findConfig('--basePath', 'CRAFT_BASE_PATH') ?? dirname($vendorPath));
+
+// By default the remaining files/directories will be in the base directory
+$dotenvPath = FileHelper::normalizePath($findConfig('--dotenvPath', 'CRAFT_DOTENV_PATH') ?? "$rootPath/.env");
+$configPath = FileHelper::normalizePath($findConfig('--configPath', 'CRAFT_CONFIG_PATH') ?? "$rootPath/config");
+$contentMigrationsPath = FileHelper::normalizePath($findConfig('--contentMigrationsPath', 'CRAFT_CONTENT_MIGRATIONS_PATH') ?? "$rootPath/migrations");
+$storagePath = FileHelper::normalizePath($findConfig('--storagePath', 'CRAFT_STORAGE_PATH') ?? "$rootPath/storage");
+$templatesPath = FileHelper::normalizePath($findConfig('--templatesPath', 'CRAFT_TEMPLATES_PATH') ?? "$rootPath/templates");
+$translationsPath = FileHelper::normalizePath($findConfig('--translationsPath', 'CRAFT_TRANSLATIONS_PATH') ?? "$rootPath/translations");
+$testsPath = FileHelper::normalizePath($findConfig('--testsPath', 'CRAFT_TESTS_PATH') ?? "$rootPath/tests");
+
+// Set the environment
+// -----------------------------------------------------------------------------
+
+$environment = App::cliOption('--env', true)
+    ?? App::env('CRAFT_ENVIRONMENT')
+    ?? App::env('ENVIRONMENT')
+    ?? $_SERVER['SERVER_NAME']
+    ?? null;
+
+// Load the general config
+// -----------------------------------------------------------------------------
+
+$configService = new Config();
+$configService->env = $environment;
+$configService->configDir = $configPath;
+$configService->appDefaultsDir = dirname(__DIR__) . DIRECTORY_SEPARATOR . 'src' . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . 'defaults';
+$generalConfig = $configService->getConfigFromFile('general');
+
+// Validation
+// -----------------------------------------------------------------------------
+
+$createFolder = function($path) use ($generalConfig) {
+    if (!is_dir($path)) {
+        FileHelper::createDirectory($path, $generalConfig['defaultDirMode'] ?? 0775);
     }
-    $createFolder($path);
-    return realpath($path);
 };
 
 $ensureFolderIsReadable = function($path, $writableToo = false) {
@@ -66,31 +89,6 @@ $ensureFolderIsReadable = function($path, $writableToo = false) {
         exit($realPath . ' isn\'t writable by PHP. Please fix that.' . PHP_EOL);
     }
 };
-
-// Determine the paths
-// -----------------------------------------------------------------------------
-
-// Set the vendor path. By default assume that it's 4 levels up from here
-$vendorPath = $findConfigPath('--vendorPath', 'CRAFT_VENDOR_PATH') ?? dirname(__DIR__, 3);
-
-// Set the "project root" path that contains config/, storage/, etc. By default assume that it's up a level from vendor/.
-$rootPath = $findConfigPath('--basePath', 'CRAFT_BASE_PATH') ?? dirname($vendorPath);
-
-// By default the remaining directories will be in the base directory
-$dotenvPath = $findConfigPath('--dotenvPath', 'CRAFT_DOTENV_PATH') ?? "$rootPath/.env";
-$configPath = $findConfigPath('--configPath', 'CRAFT_CONFIG_PATH') ?? "$rootPath/config";
-$contentMigrationsPath = $findConfigPath('--contentMigrationsPath', 'CRAFT_CONTENT_MIGRATIONS_PATH') ?? "$rootPath/migrations";
-$storagePath = $findConfigPath('--storagePath', 'CRAFT_STORAGE_PATH') ?? "$rootPath/storage";
-$templatesPath = $findConfigPath('--templatesPath', 'CRAFT_TEMPLATES_PATH') ?? "$rootPath/templates";
-$translationsPath = $findConfigPath('--translationsPath', 'CRAFT_TRANSLATIONS_PATH') ?? "$rootPath/translations";
-$testsPath = $findConfigPath('--testsPath', 'CRAFT_TESTS_PATH') ?? "$rootPath/tests";
-
-// Set the environment
-$environment = App::cliOption('--env', true)
-    ?? App::env('CRAFT_ENVIRONMENT')
-    ?? App::env('ENVIRONMENT')
-    ?? $_SERVER['SERVER_NAME']
-    ?? null;
 
 // Validate the paths
 // -----------------------------------------------------------------------------
@@ -132,6 +130,7 @@ if (!App::env('CRAFT_LICENSE_KEY') && !App::isEphemeral()) {
     }
 }
 
+$createFolder($storagePath);
 $ensureFolderIsReadable($storagePath, true);
 
 // Create the storage/runtime/ folder if it doesn't already exist
@@ -157,15 +156,6 @@ if (App::parseBooleanEnv('$CRAFT_LOG_PHP_ERRORS') !== false) {
 
 $errorLevel = E_ALL & ~E_DEPRECATED & ~E_USER_DEPRECATED;
 error_reporting($errorLevel);
-
-// Load the general config
-// -----------------------------------------------------------------------------
-
-$configService = new Config();
-$configService->env = $environment;
-$configService->configDir = $configPath;
-$configService->appDefaultsDir = dirname(__DIR__) . DIRECTORY_SEPARATOR . 'src' . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . 'defaults';
-$generalConfig = $configService->getConfigFromFile('general');
 
 // Determine if Craft is running in Dev Mode
 // -----------------------------------------------------------------------------
@@ -250,6 +240,10 @@ $config = ArrayHelper::merge(
     $configService->getConfigFromFile('app'),
     $configService->getConfigFromFile("app.{$appType}")
 );
+
+if (function_exists('craft_modify_app_config')) {
+    craft_modify_app_config($config, $appType);
+}
 
 // Initialize the application
 /** @var \craft\web\Application|craft\console\Application $app */

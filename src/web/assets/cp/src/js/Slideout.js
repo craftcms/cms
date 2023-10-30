@@ -74,21 +74,29 @@
 
           // Keep the shade + container to the end of <body> so they get the highest sub-z-indexes
           if (activePreview) {
-            this.$shade.appendTo(activePreview.$editorContainer);
-          } else {
-            this.$shade.appendTo(Garnish.$bod);
           }
 
-          this.$shade.show();
+          this.$shade.appendTo(Garnish.$bod).show();
+        } else if (this.$shade) {
+          this.$shade.remove();
+          delete this.$shade;
         }
+
+        this.$outerContainer.appendTo(Garnish.$bod).removeClass('hidden');
 
         if (activePreview) {
-          this.$outerContainer.appendTo(activePreview.$editorContainer);
-        } else {
-          this.$outerContainer.appendTo(Garnish.$bod);
+          // keep the width equal to the editp ane width
+          this.updateWidthsForPreviewPane(activePreview);
+          const dragHandler = () => {
+            if (this.isOpen) {
+              this.updateWidthsForPreviewPane(activePreview);
+            }
+          };
+          activePreview.on('drag', dragHandler);
+          activePreview.on('beforeClose', () => {
+            activePreview.off('drag', dragHandler);
+          });
         }
-
-        this.$outerContainer.removeClass('hidden');
 
         if (this.useMobileStyles) {
           this.$container
@@ -124,6 +132,14 @@
 
         this.isOpen = true;
         this.trigger('open');
+      },
+
+      updateWidthsForPreviewPane: function (activePreview) {
+        const width = activePreview.$editorContainer.width() - 1;
+        if (this.$shade) {
+          this.$shade.width(width);
+        }
+        this.$outerContainer.css('width', `calc(${width}px - var(--m) * 2)`);
       },
 
       setTriggerElement: function (trigger) {

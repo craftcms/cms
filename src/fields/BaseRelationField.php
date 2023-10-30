@@ -506,7 +506,7 @@ JS, [
             $elementType = static::elementType();
             $element->addError($this->handle, Craft::t('app', 'Validation errors found in {attribute} {type}; please fix them.', [
                 'type' => $errorCount === 1 ? $elementType::lowerDisplayName() : $elementType::pluralLowerDisplayName(),
-                'attribute' => $this->getAttributeLabel($this->handle),
+                'attribute' => Craft::t('site', $this->name),
             ]));
         }
     }
@@ -821,7 +821,7 @@ JS, [
 
         $view = Craft::$app->getView();
         $id = $this->getInputId();
-        $html = "<div id='$id' class='elementselect'>" .
+        $html = "<div id='$id' class='elementselect noteditable'>" .
             "<div class='elements" . ($size === Cp::ELEMENT_SIZE_LARGE ? ' flex-row flex-wrap' : '') . "'>";
 
         foreach ($value as $relatedElement) {

@@ -42,13 +42,13 @@ export default Base.extend(
         return;
       }
 
-      var triggerId = this.$trigger.attr('aria-controls');
+      const triggerId = this.$trigger.attr('aria-controls');
       this.$container = $('#' + triggerId);
 
       this.$trigger.data('trigger', this);
 
       // Get and store expanded state from trigger
-      var expanded = this.$trigger.attr('aria-expanded');
+      const expanded = this.$trigger.attr('aria-expanded');
 
       // If no expanded state exists on trigger, add for a11y
       if (!expanded) {
@@ -56,7 +56,7 @@ export default Base.extend(
       }
 
       // Capture additional alignment element
-      var alignmentSelector = this.$container.data('align-to');
+      const alignmentSelector = this.$container.data('align-to');
       if (alignmentSelector) {
         this.$alignmentElement = this.$trigger.find(alignmentSelector).first();
       } else {
@@ -99,12 +99,12 @@ export default Base.extend(
     },
 
     focusElement: function (direction) {
-      var currentFocus = $(':focus');
+      const currentFocus = $(':focus');
 
-      var focusable = this.$container.find(':focusable');
+      const focusable = this.$container.find(':focusable');
 
-      var currentIndex = focusable.index(currentFocus);
-      var newIndex;
+      const currentIndex = focusable.index(currentFocus);
+      let newIndex;
 
       if (direction === 'prev') {
         newIndex = currentIndex - 1;
@@ -113,15 +113,15 @@ export default Base.extend(
       }
 
       if (newIndex >= 0 && newIndex < focusable.length) {
-        var elementToFocus = focusable[newIndex];
+        const elementToFocus = focusable[newIndex];
         elementToFocus.focus();
       }
     },
 
     handleMousedown: function (event) {
-      var newTarget = event.target;
-      var triggerButton = $(newTarget).closest('[data-disclosure-trigger]');
-      var newTargetIsInsideDisclosure =
+      const newTarget = event.target;
+      const triggerButton = $(newTarget).closest('[data-disclosure-trigger]');
+      const newTargetIsInsideDisclosure =
         this.$container[0] === event.target ||
         this.$container.has(newTarget).length > 0;
 
@@ -134,7 +134,7 @@ export default Base.extend(
     },
 
     handleKeypress: function (event) {
-      var keyCode = event.keyCode;
+      const keyCode = event.keyCode;
 
       switch (keyCode) {
         case Garnish.RIGHT_KEY:
@@ -167,8 +167,7 @@ export default Base.extend(
     },
 
     isExpanded: function () {
-      var isExpanded = this.$trigger.attr('aria-expanded');
-
+      const isExpanded = this.$trigger.attr('aria-expanded');
       return isExpanded === 'true';
     },
 
@@ -181,7 +180,7 @@ export default Base.extend(
     },
 
     show: function () {
-      if (this.isExpanded()) {
+      if (this.isExpanded() || this.$trigger.hasClass('disabled')) {
         return;
       }
 
@@ -211,7 +210,7 @@ export default Base.extend(
       this.$trigger.attr('aria-expanded', 'true');
 
       // Focus first focusable element
-      var firstFocusableEl = this.$container.find(':focusable')[0];
+      const firstFocusableEl = this.$container.find(':focusable')[0];
       if (firstFocusableEl) {
         firstFocusableEl.focus();
       } else {
@@ -297,13 +296,18 @@ export default Base.extend(
       this._menuWidth = this.$container.outerWidth();
       this._menuHeight = this.$container.outerHeight();
 
+      if (this._menuWidth > this._viewportWidth) {
+        this.$container.css('maxWidth', this._viewportWidth);
+        this._menuWidth = this._viewportWidth;
+      }
+
       // Is there room for the menu below the trigger?
-      var topClearance =
-          this._alignmentElementOffset.top - this._viewportScrollTop,
-        bottomClearance =
-          this._viewportHeight +
-          this._viewportScrollTop -
-          this._alignmentElementOffsetBottom;
+      const topClearance =
+        this._alignmentElementOffset.top - this._viewportScrollTop;
+      const bottomClearance =
+        this._viewportHeight +
+        this._viewportScrollTop -
+        this._alignmentElementOffsetBottom;
 
       if (
         bottomClearance >= this._menuHeight ||
@@ -325,24 +329,30 @@ export default Base.extend(
         });
       }
 
-      // Figure out how we're aliging it
-      var align = this.$container.data('align');
+      // Figure out how we're aligning it
+      let align = this.$container.data('align');
 
       if (align !== 'left' && align !== 'center' && align !== 'right') {
         align = 'left';
       }
 
-      if (align === 'center') {
+      if (this._menuWidth === this._viewportWidth || align === 'center') {
         this._alignCenter();
       } else {
         // Figure out which options are actually possible
-        var rightClearance =
-            this._viewportWidth +
-            this._viewportScrollLeft -
-            (this._alignmentElementOffset.left + this._menuWidth),
-          leftClearance = this._alignmentElementOffsetRight - this._menuWidth;
+        const rightClearance =
+          this._viewportWidth +
+          this._viewportScrollLeft -
+          (this._alignmentElementOffset.left + this._menuWidth);
+        const leftClearance =
+          this._alignmentElementOffsetRight - this._menuWidth;
 
-        if ((align === 'right' && leftClearance >= 0) || rightClearance < 0) {
+        if (leftClearance < 0 && rightClearance < 0) {
+          this._alignCenter();
+        } else if (
+          (align === 'right' && leftClearance >= 0) ||
+          rightClearance < 0
+        ) {
           this._alignRight();
         } else {
           this._alignLeft();
@@ -374,32 +384,33 @@ export default Base.extend(
 
     _alignLeft: function () {
       this.$container.css({
-        left: this._alignmentElementOffset.left,
+        left: Math.max(this._alignmentElementOffset.left, 0),
         right: 'auto',
       });
     },
 
     _alignRight: function () {
+      const right =
+        this._viewportWidth -
+        (this._alignmentElementOffset.left + this._alignmentElementWidth);
+
       this.$container.css({
-        right:
-          this._viewportWidth -
-          (this._alignmentElementOffset.left + this._alignmentElementWidth),
+        right: Math.max(right, 0),
         left: 'auto',
       });
     },
 
     _alignCenter: function () {
-      var left = Math.round(
+      const left = Math.round(
         this._alignmentElementOffset.left +
           this._alignmentElementWidth / 2 -
           this._menuWidth / 2
       );
 
-      if (left < 0) {
-        left = 0;
-      }
-
-      this.$container.css('left', left);
+      this.$container.css({
+        left: Math.max(left, 0),
+        right: 'auto',
+      });
     },
   },
   {

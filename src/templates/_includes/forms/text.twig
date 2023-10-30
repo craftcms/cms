@@ -3,7 +3,6 @@
 
 {%- set class = (class ?? [])|explodeClass|merge([
     'text',
-    (disabled ?? false) ? 'disabled' : null,
     not (size ?? false) ? 'fullwidth' : null,
 ]|filter) %}
 

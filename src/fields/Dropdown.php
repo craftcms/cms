@@ -65,6 +65,19 @@ class Dropdown extends BaseOptionsField implements SortableFieldInterface
      */
     protected function inputHtml(mixed $value, ?ElementInterface $element = null): string
     {
+        return $this->inputHtmlInternal($value, $element, false);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getStaticHtml(mixed $value, ?ElementInterface $element = null): string
+    {
+        return $this->inputHtmlInternal($value, $element, true);
+    }
+
+    private function inputHtmlInternal(mixed $value, ?ElementInterface $element, bool $static): string
+    {
         /** @var SingleOptionFieldData $value */
         $options = $this->translatedOptions(true, $value, $element);
 
@@ -77,7 +90,9 @@ class Dropdown extends BaseOptionsField implements SortableFieldInterface
         }
 
         if (!$value->valid) {
-            Craft::$app->getView()->setInitialDeltaValue($this->handle, $this->encodeValue($value->value));
+            if (!$static) {
+                Craft::$app->getView()->setInitialDeltaValue($this->handle, $this->encodeValue($value->value));
+            }
             $default = $this->defaultValue();
 
             if ($default !== null) {
@@ -103,6 +118,7 @@ class Dropdown extends BaseOptionsField implements SortableFieldInterface
             'name' => $this->handle,
             'value' => $encValue,
             'options' => $options,
+            'disabled' => $static,
         ]);
     }
 
@@ -112,5 +128,24 @@ class Dropdown extends BaseOptionsField implements SortableFieldInterface
     protected function optionsSettingLabel(): string
     {
         return Craft::t('app', 'Dropdown Options');
+    }
+
+    /**
+     * @inheritdoc
+     */
+    protected function isOptionSelected(array $option, mixed $value, array &$selectedValues, bool &$selectedBlankOption): bool
+    {
+        // special case for blank options, when $value is null
+        if ($value === null && $option['value'] === '') {
+            if (!$selectedBlankOption) {
+                $selectedValues[] = '';
+                $selectedBlankOption = true;
+                return true;
+            }
+
+            return false;
+        }
+
+        return in_array($option['value'], $selectedValues, true);
     }
 }
