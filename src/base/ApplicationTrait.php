@@ -895,6 +895,8 @@ trait ApplicationTrait
         try {
             $this->getDb()->open();
         } catch (DbConnectException|InvalidConfigException $e) {
+
+            // Allow console requests to bypass error
             if ($this instanceof WebApplication) {
                 Craft::error('There was a problem connecting to the database: ' . $e->getMessage(), __METHOD__);
                 /** @var ErrorHandler $errorHandler */
