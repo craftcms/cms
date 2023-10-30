@@ -5167,9 +5167,9 @@ JS,
     }
 
     /**
-     * Whether status field should be shown for this element.
-     * If set to `false`, status can't be updated via editing entry, action or resave command.
-     * `true` for all elements by default for backwards compatibility.
+     * Returns whether the Status field should be shown for this element.
+     *
+     *  If set to `false`, the element’s status can't be updated via edit forms, the Set Status action, or `resave/*` commands.
      *
      * @return bool
      * @since 4.5.0

@@ -1842,6 +1842,7 @@ return [
     'Your system isn’t set up to save content for the site “{site}”.' => 'Ihr System ist für das Speichern von Inhalten der Website „{site}“ nicht eingerichtet.',
     'Your {folder} folder isn’t writable.' => 'Ihr Ordner {folder} ist nicht schreibbar.',
     'You’re all up to date!' => 'Sie sind auf dem aktuellen Stand!',
+    'You’re viewing a revision. None of the {type}’s fields are editable.' => 'You’re viewing a revision. None of the {type}’s fields are editable.',
     'Zip Code' => 'Postleitzahl',
     '`sectionId` and `fieldId` cannot both be set on an entry.' => '`sectionId` and `fieldId` cannot both be set on an entry.',
     'account_activation_body' => "Hallo {{user.friendlyName|e}},\n\ndanke für das Einrichten eines Benutzerkontos auf {{siteName}}. Um Ihr Konto zu aktivieren, klicken Sie bitte auf den folgenden Link:\n\n<{{link}}>\n\nWenn Sie diese E-Mail nicht erwartet haben, ignorieren Sie sie bitte einfach.",
