@@ -13,7 +13,6 @@ use craft\console\controllers\HelpController;
 use craft\db\Query;
 use craft\db\Table;
 use craft\errors\MissingComponentException;
-use craft\helpers\ArrayHelper;
 use craft\helpers\Console;
 use craft\queue\QueueLogBehavior;
 use IntlDateFormatter;
@@ -71,7 +70,7 @@ class Application extends \yii\console\Application
      */
     public function runAction($route, $params = []): int|BaseResponse|null
     {
-        if ($this->_requireInfoTable($route, $params) && !$this->getIsInstalled(true)) {
+        if (!$this->getIsInstalled(true) && $this->_requireInfoTable($route, $params)) {
             // Is the connection valid at least?
             if (!$this->getIsDbConnectionValid()) {
                 Console::outputWarning('Craft can’t connect to the database. Check your connection settings.');
@@ -180,13 +179,9 @@ class Application extends \yii\console\Application
         return $component;
     }
 
-    private function _requireInfoTable(string $route, array &$params): bool
+    private function _requireInfoTable(string $route, array $params): bool
     {
-        $skipCheck = ArrayHelper::remove($params, 'skipInstallCheck')
-            ?? ArrayHelper::remove($params, 'skip-install-check')
-            ?? false;
-
-        if ($skipCheck || isset($params['help'])) {
+        if (isset($params['help'])) {
             return false;
         }
 
