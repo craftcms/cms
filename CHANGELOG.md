@@ -4,6 +4,7 @@
 
 - Addresses’ owner elements are now automatically set on them during initialization, if they were queried with the `owner` address query param.
 - Entry Title fields are no longer shown when “Show the Title field” is disabled and there’s a validation error on the `title` attribute. ([#13876](https://github.com/craftcms/cms/issues/13876))
+- Added `craft\web\AssetManager::$cacheSourcePaths`.
 - Fixed a bug where disclosure menus could be positioned off-screen on mobile.
 - Fixed a bug where element edit pages could show a context menu when it wasn’t necessary.
 
