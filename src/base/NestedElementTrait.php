@@ -74,14 +74,10 @@ trait NestedElementTrait
      */
     public function getPrimaryOwner(): ?ElementInterface
     {
-        if (!isset($this->fieldId)) {
-            return null;
-        }
-
         if (!isset($this->_primaryOwner)) {
             $primaryOwnerId = $this->getPrimaryOwnerId();
             if (!$primaryOwnerId) {
-                throw new InvalidConfigException('Element is missing its primary owner ID');
+                return null;
             }
 
             $this->_primaryOwner = Craft::$app->getElements()->getElementById($primaryOwnerId, null, $this->siteId) ?? false;
@@ -115,14 +111,10 @@ trait NestedElementTrait
      */
     public function getOwner(): ?ElementInterface
     {
-        if (!isset($this->fieldId)) {
-            return null;
-        }
-
         if (!isset($this->_owner)) {
             $ownerId = $this->getOwnerId();
             if (!$ownerId) {
-                throw new InvalidConfigException('Element is missing its owner ID');
+                return null;
             }
 
             // If ownerId and primaryOwnerId are the same, return the primary owner

@@ -162,6 +162,23 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       );
     },
 
+    get baseCriteria() {
+      const criteria = {};
+      if (this.$source) {
+        Object.assign(criteria, this.$source.data('criteria'));
+      }
+      if (this.settings.criteria) {
+        Object.assign(criteria, this.settings.criteria);
+      }
+      if (this.sourcePath.length) {
+        const currentStep = this.sourcePath[this.sourcePath.length - 1];
+        if (currentStep.criteria) {
+          Object.assign(criteria, currentStep.criteria);
+        }
+      }
+      return criteria;
+    },
+
     /**
      * Constructor
      */
@@ -1395,16 +1412,30 @@ Craft.BaseElementIndex = Garnish.Base.extend(
      * when loading elements.
      */
     getViewParams: function () {
-      const baseCriteria = {
-        siteId: this.siteId,
+      // baseCriteria: the criteria properties determined by the source and element index config
+      // criteria: everything the user had some say in
+
+      // baseCriteria will determine the unfilteredTotal count, in case something needs to know
+      // the total number of elements the user has access to
+
+      const baseCriteria = Object.assign(
+        {
+          status: null,
+          drafts: this.settings.canHaveDrafts ? null : false,
+          draftOf: this.settings.canHaveDrafts && this.drafts ? null : false,
+          savedDraftsOnly: true,
+        },
+        this.baseCriteria,
+        {
+          siteId: this.siteId,
+        }
+      );
+
+      const criteria = {
         offset: this.settings.batchSize * (this.page - 1),
         limit: this.settings.batchSize,
+        search: this.searching ? this.searchText : null,
       };
-      const criteria = {};
-
-      if (this.searchText) {
-        criteria.search = this.searchText;
-      }
 
       // Only set drafts/draftOf/trashed params when needed, so we don't potentially override a source's criteria
       if (this.settings.canHaveDrafts && this.drafts) {
@@ -1415,21 +1446,8 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         criteria.trashed = true;
       }
 
-      if (!Garnish.hasAttr(this.$source, 'data-override-status')) {
-        baseCriteria.status = null;
-
-        if (this.status) {
-          criteria.status = this.status;
-        }
-      }
-
-      $.extend(baseCriteria, this.settings.criteria);
-
-      if (this.sourcePath.length) {
-        const currentStep = this.sourcePath[this.sourcePath.length - 1];
-        if (typeof currentStep.criteria !== 'undefined') {
-          $.extend(baseCriteria, currentStep.criteria);
-        }
+      if (!this.$statusMenuContainer.hasClass('hidden') && this.status) {
+        criteria.status = this.status;
       }
 
       const params = {
@@ -1991,7 +2009,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       // ----------------------------------------------------------------------
 
       if (this.$statusMenuBtn.length) {
-        if (Garnish.hasAttr(this.$source, 'data-override-status')) {
+        if (typeof this.baseCriteria.status !== 'undefined') {
           this.$statusMenuContainer.addClass('hidden');
         } else {
           this.$statusMenuContainer.removeClass('hidden');

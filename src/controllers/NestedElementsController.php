@@ -10,6 +10,7 @@ namespace craft\controllers;
 use Craft;
 use craft\base\ElementInterface;
 use craft\base\NestedElementInterface;
+use craft\behaviors\DraftBehavior;
 use craft\db\Table;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\ElementCollection;
@@ -61,7 +62,14 @@ class NestedElementsController extends Controller
             throw new BadRequestHttpException('Invalid owner params');
         }
 
-        $this->requireAuthorization("editNestedElements::$owner->id::$attribute");
+        $authorizedOwnerId = $owner->id;
+        if ($owner->isProvisionalDraft) {
+            /** @var ElementInterface|DraftBehavior $owner */
+            if ($owner->creatorId === Craft::$app->getUser()->getIdentity()?->id) {
+                $authorizedOwnerId = $owner->getCanonicalId();
+            }
+        }
+        $this->requireAuthorization(sprintf('editNestedElements::%s::%s', $authorizedOwnerId, $attribute));
 
         // Get the current sort orders, so we know what needs to change
         /** @var ElementQueryInterface|ElementCollection $nestedElements */

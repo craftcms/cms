@@ -1007,7 +1007,7 @@ class User extends Element implements IdentityInterface
     private function createAddressQuery(): AddressQuery
     {
         return Address::find()
-            ->ownerId($this->id)
+            ->owner($this)
             ->orderBy(['id' => SORT_ASC]);
     }
 
