@@ -383,6 +383,11 @@ trait ApplicationTrait
      */
     public function getIsInstalled(bool $strict = false): bool
     {
+        $installedOverride = App::env('CRAFT_INSTALLED');
+        $this->_isInstalled = $installedOverride !== null
+            ? (bool) $installedOverride
+            : null;
+
         if ($strict) {
             $this->_isInstalled = null;
             $this->_info = null;
