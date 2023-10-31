@@ -391,6 +391,7 @@ class ElementsController extends Controller
                 $element,
                 $isMultiSiteElement,
                 $isUnpublishedDraft,
+                $canCreateDrafts,
                 $propSiteIds,
                 $elementsService,
                 $user,
@@ -681,6 +682,7 @@ class ElementsController extends Controller
         ElementInterface $element,
         bool $isMultiSiteElement,
         bool $isUnpublishedDraft,
+        bool $canCreateDrafts,
         array $propSiteIds,
         Elements $elementsService,
         User $user,
@@ -701,7 +703,7 @@ class ElementsController extends Controller
                 ->collect()
                 ->filter(fn(ElementInterface $draft) => $elementsService->canView($draft, $user))
                 ->all();
-            $showDrafts = !empty($drafts) || $elementsService->canCreateDrafts($element, $user);
+            $showDrafts = !empty($drafts) || $canCreateDrafts;
 
             $generalConfig = Craft::$app->getConfig()->getGeneral();
             if ($element->hasRevisions() && (!$generalConfig->maxRevisions || $generalConfig->maxRevisions > 1)) {
