@@ -391,7 +391,9 @@ class ElementsController extends Controller
                 $element,
                 $isMultiSiteElement,
                 $isUnpublishedDraft,
-                $propSiteIds
+                $propSiteIds,
+                $elementsService,
+                $user,
             ))
             ->additionalButtons(fn() => $this->_additionalButtons(
                 $element,
@@ -680,17 +682,67 @@ class ElementsController extends Controller
         bool $isMultiSiteElement,
         bool $isUnpublishedDraft,
         array $propSiteIds,
+        Elements $elementsService,
+        User $user,
     ): ?string {
-        $showDrafts = !$isUnpublishedDraft;
+        if ($isUnpublishedDraft || !$element->id) {
+            $drafts = [];
+            $showDrafts = false;
+            $revisions = [];
+            $revisionsPageUrl = null;
+            $hasMoreRevisions = false;
+        } else {
+            $drafts = $element::find()
+                ->draftOf($element)
+                ->siteId($element->siteId)
+                ->status(null)
+                ->orderBy(['dateUpdated' => SORT_DESC])
+                ->with(['draftCreator'])
+                ->collect()
+                ->filter(fn(ElementInterface $draft) => $elementsService->canView($draft, $user))
+                ->all();
+            $showDrafts = !empty($drafts) || $elementsService->canCreateDrafts($element, $user);
+
+            $generalConfig = Craft::$app->getConfig()->getGeneral();
+            if ($element->hasRevisions() && (!$generalConfig->maxRevisions || $generalConfig->maxRevisions > 1)) {
+                $revisionQuery = $element::find()
+                    ->revisionOf($element)
+                    ->siteId($element->siteId)
+                    ->status(null)
+                    ->offset(1)
+                    ->limit($generalConfig->maxRevisions ? min($generalConfig->maxRevisions - 1, 10) : 10)
+                    ->orderBy(['dateCreated' => SORT_DESC])
+                    ->with(['revisionCreator']);
+                $revisions = $revisionQuery->all();
+                $revisionsPageUrl = $element->getCpRevisionsUrl();
+                if ($revisionsPageUrl) {
+                    $hasMoreRevisions = (
+                        count($revisions) === $revisionQuery->limit &&
+                        $revisionQuery->limit < ($generalConfig->maxRevisions - 1) &&
+                        ($revisionQuery->count() - 1) > $revisionQuery->limit
+                    );
+                } else {
+                    $hasMoreRevisions = false;
+                }
+            } else {
+                $revisions = [];
+                $revisionsPageUrl = null;
+                $hasMoreRevisions = false;
+            }
+        }
 
         if (
             $isMultiSiteElement ||
             $showDrafts ||
-            ($element->hasRevisions() && $element::find()->revisionOf($element)->status(null)->exists())
+            !empty($revisions)
         ) {
             return Craft::$app->getView()->renderTemplate('_includes/revisionmenu.twig', [
                 'element' => $element,
+                'drafts' => $drafts,
                 'showDrafts' => $showDrafts,
+                'revisions' => $revisions,
+                'revisionsPageUrl' => $revisionsPageUrl,
+                'hasMoreRevisions' => $hasMoreRevisions,
                 'supportedSiteIds' => $propSiteIds,
                 'showSiteLabel' => $isMultiSiteElement,
             ], View::TEMPLATE_MODE_CP);
