@@ -7506,6 +7506,17 @@ $titlebarBorderRadius: calc(var(--large-border-radius) - 1px);
         }
       }
     }
+
+    & > .titlebar,
+    .actions,
+    .checkbox {
+      pointer-events: auto;
+      user-select: auto;
+    }
+
+    div.checkbox {
+      cursor: pointer;
+    }
   }
 
   &.collapsed {
