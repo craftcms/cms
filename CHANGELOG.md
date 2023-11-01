@@ -7,6 +7,7 @@
 - Added `craft\web\AssetManager::$cacheSourcePaths`.
 - Fixed a bug where disclosure menus could be positioned off-screen on mobile.
 - Fixed a bug where element edit pages could show a context menu when it wasn’t necessary.
+- Fixed a bug where the “Delete entry for this site” action wasn’t deleting the canonical entry for the selected site, when editing a provisional draft.
 
 ## 4.5.9 - 2023-10-23
 

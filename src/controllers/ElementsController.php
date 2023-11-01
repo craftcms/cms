@@ -1303,6 +1303,15 @@ JS, [
 
         $elementsService->deleteElementForSite($element);
 
+        if ($element->isProvisionalDraft) {
+            // see if the canonical element exists for this site
+            $canonical = $element->getCanonical();
+            if ($canonical->id !== $element->id) {
+                $element = $canonical;
+                $elementsService->deleteElementForSite($element);
+            }
+        }
+
         return $this->_asSuccess(Craft::t('app', '{type} deleted for site.', [
             'type' => $element->getIsDraft() && !$element->isProvisionalDraft ? Craft::t('app', 'Draft') : $element::displayName(),
         ]), $element);
