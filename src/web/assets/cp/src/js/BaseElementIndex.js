@@ -3134,6 +3134,15 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         .appendTo($form);
 
       let $typeSelect = $typeField.find('select');
+      this.addListener($typeSelect, 'change', () => {
+        let type = $typeSelect.val();
+        if (this.exportersByType[type].formattable) {
+          $formatField.removeClass('hidden');
+        } else {
+          $formatField.addClass('hidden');
+        }
+      });
+      $typeSelect.trigger('change');
 
       // Only show the Limit field if there aren't any selected elements
       var selectedElementIds = this.view.getSelectedElementIds();
@@ -3148,33 +3157,6 @@ Craft.BaseElementIndex = Garnish.Base.extend(
           })
           .appendTo($form);
       }
-
-      var $includeDisabledEagerloadables = Craft.ui
-        .createCheckboxField({
-          label: Craft.t('app', 'Include disabled field elements'),
-          instructions: Craft.t(
-            'app',
-            'Whether to include disabled related elements (e.g. Entries) or block elements (e.g. Matrix Blocks).'
-          ),
-          checked: false,
-          class: 'hidden',
-        })
-        .appendTo($form);
-
-      this.addListener($typeSelect, 'change', () => {
-        let type = $typeSelect.val();
-        if (this.exportersByType[type].formattable) {
-          $formatField.removeClass('hidden');
-        } else {
-          $formatField.addClass('hidden');
-        }
-        if (this.exportersByType[type].canIncludeDisabledEagerloadables) {
-          $includeDisabledEagerloadables.removeClass('hidden');
-        } else {
-          $includeDisabledEagerloadables.addClass('hidden');
-        }
-      });
-      $typeSelect.trigger('change');
 
       const $submitBtn = Craft.ui
         .createSubmitButton({
@@ -3220,10 +3202,6 @@ Craft.BaseElementIndex = Garnish.Base.extend(
             params.criteria.limit = limit;
           }
         }
-
-        params.includeDisabledEagerloadables = $includeDisabledEagerloadables
-          .find('input')
-          .is(':checked');
 
         if (Craft.csrfTokenValue) {
           params[Craft.csrfTokenName] = Craft.csrfTokenValue;

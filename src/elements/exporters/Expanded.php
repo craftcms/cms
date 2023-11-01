@@ -9,7 +9,6 @@ namespace craft\elements\exporters;
 
 use Craft;
 use craft\base\EagerLoadingFieldInterface;
-use craft\base\Element;
 use craft\base\ElementExporter;
 use craft\base\ElementInterface;
 use craft\elements\db\ElementQuery;
@@ -24,14 +23,6 @@ use craft\helpers\Db;
  */
 class Expanded extends ElementExporter
 {
-    /**
-     * @inerhitdoc
-     */
-    public static function canIncludeDisabledEagerloadables(): bool
-    {
-        return true;
-    }
-
     /**
      * @inheritdoc
      */
@@ -49,16 +40,12 @@ class Expanded extends ElementExporter
         $eagerLoadableFields = [];
         foreach (Craft::$app->getFields()->getAllFields() as $field) {
             if ($field instanceof EagerLoadingFieldInterface) {
-                if ($this->includeDisabledEagerloadables) {
-                    $eagerLoadableFields[] = [
-                        'path' => $field->handle,
-                        'criteria' => [
-                            'status' => null,
-                        ],
-                    ];
-                } else {
-                    $eagerLoadableFields[] = $field->handle;
-                }
+                $eagerLoadableFields[] = [
+                    'path' => $field->handle,
+                    'criteria' => [
+                        'status' => null,
+                    ],
+                ];
             }
         }
 

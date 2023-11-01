@@ -26,23 +26,6 @@ interface ElementExporterInterface extends ComponentInterface
     public static function isFormattable(): bool;
 
     /**
-     * Returns whether the exported data can support including disabled values when they're from eager-loadable fields.
-     * e.g. disabled entry ids from the Entries field; disabled matrix blocks from a Matrix field;
-     *
-     * @return bool
-     * @since 4.5.0
-     */
-    public static function canIncludeDisabledEagerloadables(): bool;
-
-    /**
-     * Sets if the exported data should include disabled values when they're eager loaded.
-     *
-     * @param bool $includeDisabledEagerloadables
-     * @since 4.5.0
-     */
-    public function setIncludeDisabledEagerloadables(bool $includeDisabledEagerloadables): void;
-
-    /**
      * Sets the element type on the exporter.
      *
      * @param string $elementType

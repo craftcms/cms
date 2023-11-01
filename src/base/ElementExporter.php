@@ -24,28 +24,6 @@ abstract class ElementExporter extends Component implements ElementExporterInter
     }
 
     /**
-     * @inheritdoc
-     */
-    public static function canIncludeDisabledEagerloadables(): bool
-    {
-        return false;
-    }
-
-    /**
-     * @var bool
-     * @since 4.5.0
-     */
-    protected bool $includeDisabledEagerloadables = false;
-
-    /**
-     * @inheritdoc
-     */
-    public function setIncludeDisabledEagerloadables(bool $includeDisabledEagerloadables): void
-    {
-        $this->includeDisabledEagerloadables = $includeDisabledEagerloadables;
-    }
-
-    /**
      * @var string
      * @phpstan-var class-string<ElementInterface>
      */
