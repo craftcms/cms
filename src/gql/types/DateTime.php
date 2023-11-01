@@ -84,7 +84,7 @@ class DateTime extends ScalarType implements SingularTypeInterface
     {
         if ($valueNode instanceof StringValueNode) {
             $date = new \DateTime($valueNode->value);
-            // if we don't have a location, then it's timezone_type 1 (e.g. +01:00) or 2 (e.g. CEST)
+            // if we don't have a location, then it's timezone_type 1 (e.g. +01:00) or 2 (e.g. CET)
             // and we need to do something about it
             if (!$date->getTimezone()->getLocation()) {
                 $date = DateTimeHelper::toTimezoneTypeThree($date);
