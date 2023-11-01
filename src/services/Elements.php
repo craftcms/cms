@@ -3357,10 +3357,6 @@ class Elements extends Component
             $siteSettingsRecord->title = $title !== null && $title !== '' ? $title : null;
             $siteSettingsRecord->slug = $element->slug;
             $siteSettingsRecord->uri = $element->uri;
-            if (property_exists($element::class, 'alt')) {
-                /** @phpstan-ignore-next-line */
-                $siteSettingsRecord->alt = $element->alt;
-            }
 
             // Avoid `enabled` getting marked as dirty if it’s not really changing
             $enabledForSite = $element->getEnabledForSite();
@@ -3373,7 +3369,6 @@ class Elements extends Component
                 array_push($dirtyAttributes, ...array_keys($siteSettingsRecord->getDirtyAttributes([
                     'slug',
                     'uri',
-                    'alt',
                 ])));
                 if ($siteSettingsRecord->isAttributeChanged('enabled')) {
                     $dirtyAttributes[] = 'enabledForSite';
@@ -3654,14 +3649,6 @@ class Elements extends Component
             }
         }
 
-        // Copy the alt value?
-        if (property_exists($element::class, 'alt') &&
-            /** @phpstan-ignore-next-line */
-            $siteElement->getAltTranslationKey() === $element->getAltTranslationKey()
-        ) {
-            /** @phpstan-ignore-next-line */
-            $siteElement->alt = $element->alt;
-        }
 
         // Copy the dirty attributes (except title, slug and uri, which may be translatable)
         $siteElement->setDirtyAttributes(array_filter($element->getDirtyAttributes(), function(string $attribute): bool {

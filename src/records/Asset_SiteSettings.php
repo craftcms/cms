@@ -15,19 +15,13 @@ use yii\db\ActiveQueryInterface;
  * Element_SiteSettings record class.
  *
  * @property int $id ID
- * @property int $elementId Element ID
+ * @property int $assetId Element ID
  * @property int $siteId Site ID
- * @property string|null $title Title
- * @property string|null $slug Slug
- * @property string|null $uri URI
- * @property array|string|null $content Content
- * @property bool $enabled Enabled
- * @property Element $element Element
- * @property Site $site Site
+ * @property string|null $alt Alt text
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0.0
+ * @since 5.0.0
  */
-class Element_SiteSettings extends ActiveRecord
+class Asset_SiteSettings extends ActiveRecord
 {
     /**
      * @inheritdoc
@@ -35,17 +29,17 @@ class Element_SiteSettings extends ActiveRecord
      */
     public static function tableName(): string
     {
-        return Table::ELEMENTS_SITES;
+        return Table::ASSETS_SITES;
     }
 
     /**
-     * Returns the associated element.
+     * Returns the associated asset.
      *
      * @return ActiveQueryInterface The relational query object.
      */
-    public function getElement(): ActiveQueryInterface
+    public function getAsset(): ActiveQueryInterface
     {
-        return $this->hasOne(Element::class, ['id' => 'elementId']);
+        return $this->hasOne(Asset::class, ['id' => 'assetId']);
     }
 
     /**

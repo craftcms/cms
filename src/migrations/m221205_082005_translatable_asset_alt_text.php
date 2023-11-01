@@ -5,6 +5,8 @@ namespace craft\migrations;
 use Craft;
 use craft\db\Migration;
 use craft\db\Table;
+use craft\helpers\Db;
+use craft\helpers\StringHelper;
 use craft\records\Asset as AssetRecord;
 
 /**
@@ -17,8 +19,18 @@ class m221205_082005_translatable_asset_alt_text extends Migration
      */
     public function safeUp(): bool
     {
-        // alter elements_sites table - add alt
-        $this->addColumn(Table::ELEMENTS_SITES, 'alt', $this->text()->after('uri'));
+        $this->createTable(Table::ASSETS_SITES, [
+            'id' => $this->primaryKey(),
+            'assetId' => $this->integer()->notNull(),
+            'siteId' => $this->integer()->notNull(),
+            'alt' => $this->text(),
+            'dateCreated' => $this->dateTime()->notNull(),
+            'dateUpdated' => $this->dateTime()->notNull(),
+            'uid' => $this->uid(),
+        ]);
+
+        $this->addForeignKey(null, Table::ASSETS_SITES, ['assetId'], Table::ASSETS, ['id'], 'CASCADE', null);
+        $this->addForeignKey(null, Table::ASSETS_SITES, ['siteId'], Table::SITES, ['id'], 'CASCADE', 'CASCADE');
 
         // migrate data from assets.alt to elements_sites.alt
         $assetRecords = AssetRecord::find()
@@ -28,18 +40,29 @@ class m221205_082005_translatable_asset_alt_text extends Migration
             ->asArray()
             ->all();
 
+        $siteIds = Craft::$app->getSites()->getAllSiteIds(true);
 
-        if (!empty($assetRecords)) {
-            $db = Craft::$app->getDb();
-            foreach ($assetRecords as $record) {
-                $db->createCommand()
-                    ->update(
-                        Table::ELEMENTS_SITES,
-                        ['alt' => $record['alt']],
-                        ['elementId' => $record['id']]
-                    )
-                    ->execute();
+        $now = Db::prepareDateForDb(new \DateTime('now'));
+        $data = [];
+        foreach ($assetRecords as $assetRecord) {
+            foreach ($siteIds as $siteId) {
+                $data[] = [
+                    'assetId' => $assetRecord['id'],
+                    'siteId' => $siteId,
+                    'alt' => $assetRecord['alt'],
+                    'dateCreated' => $now,
+                    'dateUpdated' => $now,
+                    'uid' => StringHelper::UUID(),
+                ];
             }
+        }
+
+
+        if (!empty($data)) {
+            $db = Craft::$app->getDb();
+            $db->createCommand()
+                ->batchInsert(Table::ASSETS_SITES, ['assetId', 'siteId', 'alt', 'dateCreated', 'dateUpdated', 'uid'], $data)
+                ->execute();
         }
 
         // remove assets.alt

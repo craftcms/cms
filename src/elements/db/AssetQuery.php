@@ -897,6 +897,10 @@ class AssetQuery extends ElementQuery
         $this->joinElementTable(Table::ASSETS);
         $this->subQuery->innerJoin(['volumeFolders' => Table::VOLUMEFOLDERS], '[[volumeFolders.id]] = [[assets.folderId]]');
         $this->query->innerJoin(['volumeFolders' => Table::VOLUMEFOLDERS], '[[volumeFolders.id]] = [[assets.folderId]]');
+        $this->query->leftJoin(
+            ['assets_sites' => Table::ASSETS_SITES],
+            '[[assets_sites.assetId]] = [[assets.id]] AND [[assets_sites.siteId]] = [[elements_sites.siteId]]'
+        );
 
         $this->query->select([
             'assets.volumeId',
@@ -911,13 +915,8 @@ class AssetQuery extends ElementQuery
             'assets.keptFile',
             'assets.dateModified',
             'volumeFolders.path AS folderPath',
-            'elements_sites.alt',
+            'assets_sites.alt',
         ]);
-
-        // todo: cleanup after next breakpoint
-        if (Craft::$app->getDb()->columnExists(Table::ASSETS, 'alt')) {
-            $this->query->addSelect(['assets.alt']);
-        }
 
         if ($this->volumeId) {
             if ($this->volumeId === ':empty:') {
@@ -963,7 +962,7 @@ class AssetQuery extends ElementQuery
         }
 
         if ($this->hasAlt !== null) {
-            $this->subQuery->andWhere($this->hasAlt ? ['not', ['elements_sites.alt' => null]] : ['elements_sites.alt' => null]);
+            $this->subQuery->andWhere($this->hasAlt ? ['not', ['assets_sites.alt' => null]] : ['assets_sites.alt' => null]);
         }
 
         if ($this->width) {

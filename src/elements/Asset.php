@@ -59,6 +59,7 @@ use craft\models\ImageTransform;
 use craft\models\Volume;
 use craft\models\VolumeFolder;
 use craft\records\Asset as AssetRecord;
+use craft\records\Asset_SiteSettings;
 use craft\search\SearchQuery;
 use craft\search\SearchQueryTerm;
 use craft\search\SearchQueryTermGroup;
@@ -2929,7 +2930,6 @@ JS;
             $record->folderId = (int)$this->folderId;
             $record->uploaderId = (int)$this->uploaderId ?: null;
             $record->kind = $this->kind;
-            //$record->alt = $this->alt;
             $record->size = (int)$this->size ?: null;
             $record->width = (int)$this->_width ?: null;
             $record->height = (int)$this->_height ?: null;
@@ -2943,9 +2943,38 @@ JS;
             }
 
             $record->save(false);
+
+            $this->siteSettings($this);
         }
 
         parent::afterSave($isNew);
+    }
+
+    /**
+     * Store site settings for the asset element
+     *
+     * @param Element $element
+     * @return void
+     */
+    public function siteSettings(Element $element): void
+    {
+        $siteSettingsRecord = Asset_SiteSettings::findOne([
+            'assetId' => $element->id,
+            'siteId' => $element->siteId,
+        ]);
+
+        if (empty($siteSettingsRecord)) {
+            $siteSettingsRecord = new Asset_SiteSettings();
+            $siteSettingsRecord->assetId = $element->id;
+            $siteSettingsRecord->siteId = $element->siteId;
+            $siteSettingsRecord->alt = $this->alt;
+        } else {
+            if (!$element->propagating) {
+                $siteSettingsRecord->alt = $this->alt;
+            }
+        }
+
+        $siteSettingsRecord->save(false);
     }
 
     /**
