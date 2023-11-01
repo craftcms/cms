@@ -890,10 +890,15 @@ trait ApplicationTrait
         try {
             $this->getDb()->open();
         } catch (DbConnectException|InvalidConfigException $e) {
-            Craft::error('There was a problem connecting to the database: ' . $e->getMessage(), __METHOD__);
-            /** @var ErrorHandler $errorHandler */
-            $errorHandler = $this->getErrorHandler();
-            $errorHandler->logException($e);
+
+            // Only log for web requests
+            if ($this instanceof WebApplication) {
+                Craft::error('There was a problem connecting to the database: ' . $e->getMessage(), __METHOD__);
+                /** @var ErrorHandler $errorHandler */
+                $errorHandler = $this->getErrorHandler();
+                $errorHandler->logException($e);
+            }
+
             return false;
         }
 
