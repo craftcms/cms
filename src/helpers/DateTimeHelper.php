@@ -1003,4 +1003,53 @@ class DateTimeHelper
         $user = Craft::$app->getUser()->getIdentity();
         return (int)(($user?->getPreference('weekStartDay')) ?? Craft::$app->getConfig()->getGeneral()->defaultWeekStartDay);
     }
+
+    /**
+     * Converts DateTime object that uses timezone_type 1 or 2 into one that uses timezone_type 3.
+     *
+     * @param DateTime $date
+     * @return DateTime
+     * @throws Exception
+     */
+    public static function toTimezoneTypeThree(DateTime $date): DateTime
+    {
+        // if we're able to get a location from the timezone, then we're probably fine
+        if ($date->getTimezone()->getLocation()) {
+            return $date;
+        }
+
+        // get offset (in seconds) against UTC
+        $offset = $date->format('Z');
+        $map = self::timezoneMap();
+
+        if (isset($map[$offset])) {
+            return new DateTime($date->format('Y-m-d H:i:s'), new DateTimeZone($map[$offset]));
+        }
+
+        return $date;
+    }
+
+    /**
+     * Returns an offset indexed timezones map - first named timezone is returned for every offset.
+     *
+     * @return array
+     * @throws Exception
+     */
+    private static function timezoneMap(): array
+    {
+        $timezones = [];
+        $now = new DateTime('now', new DateTimeZone('UTC'));
+
+        foreach (DateTimeZone::listIdentifiers() as $timezone) {
+            $now->setTimezone(new DateTimeZone($timezone));
+            $offset = $now->getOffset();
+            if (!isset($timezones[$offset])) {
+                $timezones[$offset] = $timezone;
+            }
+        }
+
+        ksort($timezones);
+
+        return $timezones;
+    }
 }

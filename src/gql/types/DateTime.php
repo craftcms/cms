@@ -11,6 +11,7 @@ use craft\errors\GqlException;
 use craft\gql\base\SingularTypeInterface;
 use craft\gql\directives\FormatDateTime;
 use craft\gql\GqlEntityRegistry;
+use craft\helpers\DateTimeHelper;
 use GraphQL\Language\AST\StringValueNode;
 use GraphQL\Type\Definition\ScalarType;
 
@@ -82,7 +83,13 @@ class DateTime extends ScalarType implements SingularTypeInterface
     public function parseLiteral($valueNode, ?array $variables = null)
     {
         if ($valueNode instanceof StringValueNode) {
-            return new \DateTime($valueNode->value);
+            $date = new \DateTime($valueNode->value);
+            // if we don't have a location, then it's timezone_type 1 (e.g. +01:00) or 2 (e.g. CEST)
+            // and we need to do something about it
+            if (!$date->getTimezone()->getLocation()) {
+                $date = DateTimeHelper::toTimezoneTypeThree($date);
+            }
+            return $date;
         }
 
         // This message will be lost by the wrapping exception, but it feels good to provide one.
