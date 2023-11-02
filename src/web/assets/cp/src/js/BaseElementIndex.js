@@ -1483,7 +1483,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
           this.instanceState.collapsedElementIds = [];
         }
         params.collapsedElementIds = this.instanceState.collapsedElementIds;
-      } else if (!this.sortable) {
+      } else if (!this.sortable && !this.inlineEditing) {
         // Possible that the order/sort isn't entirely accurate if we're sorting by Score
         const [sortAttribute, sortDirection] =
           this.getSortAttributeAndDirection();
