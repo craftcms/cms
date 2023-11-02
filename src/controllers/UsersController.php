@@ -859,7 +859,7 @@ class UsersController extends Controller
         // Determine which actions should be available and get status labels
         // ---------------------------------------------------------------------
 
-        $additionalMenuComponents = $user->getAdditionalMenuComponents();
+        $additionalMenuComponents = $user->getActionMenuItems();
 
         $statusLabel = null;
 
@@ -1047,18 +1047,6 @@ class UsersController extends Controller
         $bodyClass = 'edit-user';
 
         $this->getView()->registerAssetBundle(EditUserAsset::class);
-
-        $deleteModalRedirect = Craft::$app->getSecurity()->hashData(Craft::$app->getEdition() === Craft::Pro ? 'users' : 'dashboard');
-
-        $this->getView()->registerJsWithVars(
-            fn($userId, $isCurrent, $deleteModalRedirect) => <<<JS
-new Craft.AccountSettingsForm($userId, $isCurrent, {
-    deleteModalRedirect: $deleteModalRedirect,
-})
-JS,
-            [$user->id, $isCurrentUser, $deleteModalRedirect],
-            View::POS_END
-        );
 
         return $this->renderTemplate('users/_edit.twig', compact(
             'user',

@@ -4804,7 +4804,7 @@ $min2ColWidth: 400px;
       display: flex;
       flex-direction: row;
       align-items: center;
-      gap: var(--s);
+      gap: var(--xs);
       min-height: calc(50px - 16px);
 
       & > .pane-tabs {
@@ -5817,35 +5817,6 @@ $min2ColWidth: 400px;
     }
   }
 
-  &.additional-menu {
-    padding: 0;
-
-    li {
-      display: flex;
-      flex-direction: column;
-      flex-grow: 1;
-    }
-
-    .btn,
-    a {
-      background-color: transparent;
-      border-radius: 0;
-      max-width: 100%;
-      text-align: center;
-      margin: 0;
-      justify-content: start;
-
-      &:hover {
-        @include menu-item-active-styles;
-      }
-    }
-
-    hr {
-      max-width: 100%;
-      margin: 5px 0;
-    }
-  }
-
   h6 {
     &:first-child {
       margin-top: 14px !important;
@@ -5858,14 +5829,15 @@ $min2ColWidth: 400px;
         a,
         .menu-item,
         .menu-option {
-          @include padding-left(24px);
+          @include padding-left(30px);
 
           &[data-icon],
           &.icon,
           &.sel {
             &:before {
               @include floatleft;
-              @include margin(3px, 0, 0, -17px);
+              @include margin(3px, 0, 0, -20px);
+              width: 14px;
               font-size: 14px;
               color: var(--ui-control-color);
             }
@@ -5968,7 +5940,6 @@ $min2ColWidth: 400px;
 }
 
 .menu:not(.menu--disclosure) ul li a:not(.sel):not(.disabled):hover,
-.menu.additional-menu.menu--disclosure ul li a:not(.sel):not(.disabled):hover,
 .menu:not(.menu--disclosure):not(:hover) ul li a:not(.disabled).hover {
   @include menu-item-active-styles;
   --text-color: var(--white);
@@ -5990,7 +5961,7 @@ $min2ColWidth: 400px;
 .menu {
   hr.padded,
   h6.padded {
-    @include margin-left(10px);
+    @include margin-left(16px);
   }
 }
 

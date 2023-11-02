@@ -90,12 +90,6 @@ class CpScreenResponseFormatter extends Component implements ResponseFormatterIn
         }, $namespace);
 
         $sidebar = $behavior->metaSidebarHtml ? $view->namespaceInputs($behavior->metaSidebarHtml, $namespace) : null;
-        
-        $additionalMenu = $view->namespaceInputs(fn() => $view->renderTemplate('_layouts/components/additional-menu.twig', [
-            'additionalMenuComponents' => is_callable($behavior->additionalMenuComponents) ? call_user_func($behavior->additionalMenuComponents) : $behavior->additionalMenuComponents,
-            'fullPage' => false,
-        ], View::TEMPLATE_MODE_CP), $namespace);
-
         $errorSummary = $behavior->errorSummary ? $view->namespaceInputs($behavior->errorSummary, $namespace) : null;
 
         $response->data = [
@@ -108,7 +102,7 @@ class CpScreenResponseFormatter extends Component implements ResponseFormatterIn
             'formAttributes' => $behavior->formAttributes,
             'action' => $behavior->action,
             'submitButtonLabel' => $behavior->submitButtonLabel,
-            'additionalMenu' => $additionalMenu,
+            'actionMenu' => $this->_actionMenu($behavior, false, $namespace),
             'content' => $content,
             'sidebar' => $sidebar,
             'errorSummary' => $errorSummary,
@@ -134,7 +128,6 @@ class CpScreenResponseFormatter extends Component implements ResponseFormatterIn
         $crumbs = (is_callable($behavior->crumbs) ? call_user_func($behavior->crumbs) : $behavior->crumbs) ?? [];
         $addlButtons = is_callable($behavior->additionalButtonsHtml) ? call_user_func($behavior->additionalButtonsHtml) : $behavior->additionalButtonsHtml;
         $altActions = is_callable($behavior->altActions) ? call_user_func($behavior->altActions) : $behavior->altActions;
-        $addlMenuComponents = is_callable($behavior->additionalMenuComponents) ? call_user_func($behavior->additionalMenuComponents) : $behavior->additionalMenuComponents;
         $notice = is_callable($behavior->noticeHtml) ? call_user_func($behavior->noticeHtml) : $behavior->noticeHtml;
         $content = is_callable($behavior->contentHtml) ? call_user_func($behavior->contentHtml) : ($behavior->contentHtml ?? '');
         $sidebar = is_callable($behavior->metaSidebarHtml) ? call_user_func($behavior->metaSidebarHtml) : $behavior->metaSidebarHtml;
@@ -208,17 +201,9 @@ class CpScreenResponseFormatter extends Component implements ResponseFormatterIn
                     return $crumb;
                 }, $crumbs ?? []),
                 'contextMenu' => $this->_contextMenu($behavior),
+                'actionMenu' => $this->_actionMenu($behavior),
                 'submitButtonLabel' => $behavior->submitButtonLabel,
                 'additionalButtons' => $addlButtons,
-                'additionalMenuComponents' => array_map(function(array $component) use ($security): array {
-                    if (isset($component['options']['redirect'])) {
-                        $component['options']['redirect'] = $security->hashData($component['options']['redirect']);
-                    }
-                    if (isset($component['data']['redirect'])) {
-                        $component['data']['redirect'] = $security->hashData($component['data']['redirect']);
-                    }
-                    return $component;
-                }, $addlMenuComponents ?? []),
                 'tabs' => $behavior->tabs,
                 'fullPageForm' => (bool)$behavior->action,
                 'mainAttributes' => $behavior->mainAttributes,
@@ -255,6 +240,30 @@ class CpScreenResponseFormatter extends Component implements ResponseFormatterIn
                 'class' => ['context-label'],
             ],
             'hiddenLabel' => Craft::t('app', 'Context'),
+        ], $namespace);
+    }
+
+    private function _actionMenu(
+        CpScreenResponseBehavior $behavior,
+        bool $withDestructive = true,
+        ?string $namespace = null,
+    ): ?string {
+        if ($behavior->actionMenuItems === null) {
+            return null;
+        }
+
+        if ($withDestructive) {
+            $itemsFactory = $behavior->actionMenuItems;
+        } else {
+            $itemsFactory = fn() => array_filter(
+                call_user_func($behavior->actionMenuItems),
+                fn(array $item) => !($item['destructive'] ?? false),
+            );
+        }
+
+        return $this->_menu($itemsFactory, [
+            'id' => 'action-menu',
+            'withButton' => false,
         ], $namespace);
     }
 

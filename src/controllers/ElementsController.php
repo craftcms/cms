@@ -307,22 +307,8 @@ class ElementsController extends Controller
         $propSites = array_values(array_filter($supportedSites, fn($site) => $site['propagate']));
         $propSiteIds = array_column($propSites, 'siteId');
         $propEditableSiteIds = array_intersect($propSiteIds, $allEditableSiteIds);
-        $isMultiSiteElement = count($supportedSites) > 1;
         $addlEditableSites = array_values(array_filter($supportedSites, fn($site) => !$site['propagate'] && in_array($site['siteId'], $allEditableSiteIds)));
         $canEditMultipleSites = count($propEditableSiteIds) > 1 || $addlEditableSites;
-
-        // Is this a new site that isn’t supported by the canonical element yet?
-        if ($isUnpublishedDraft) {
-            $isNewSite = true;
-        } elseif ($isDraft) {
-            $isNewSite = !$element::find()
-                ->id($element->getCanonicalId())
-                ->siteId($element->siteId)
-                ->status(null)
-                ->exists();
-        } else {
-            $isNewSite = false;
-        }
 
         // Permissions
         $canSave = $this->_canSave($element, $user);
@@ -334,15 +320,7 @@ class ElementsController extends Controller
         }
 
         $canCreateDrafts = $elementsService->canCreateDrafts($canonical, $user);
-        $canDeleteDraft = $isDraft && !$element->isProvisionalDraft && $elementsService->canDelete($element, $user);
         $canDuplicateCanonical = $elementsService->canDuplicate($canonical, $user);
-        $canDeleteCanonical = $elementsService->canDelete($canonical, $user);
-        $canDeleteForSite = (
-            $isMultiSiteElement &&
-            count($propSiteIds) > 1 &&
-            (($isCurrent && $canDeleteCanonical) || ($canDeleteDraft && $isNewSite)) &&
-            $elementsService->canDeleteForSite($element, $user)
-        );
 
         // Preview targets
         $previewTargets = (
@@ -422,18 +400,10 @@ class ElementsController extends Controller
                 $isUnpublishedDraft,
                 $isDraft
             ))
-            ->additionalMenuComponents(fn() => $this->_additionalMenuComponents(
-                $element,
-                $canonical,
-                $type,
-                $redirectUrl,
-                $isCurrent,
-                $isUnpublishedDraft,
-                $isDraft,
-                $canDeleteForSite,
-                $canDeleteCanonical,
-                $canDeleteDraft
-            ))
+            ->actionMenuItems(fn() => $element->id ? array_filter(
+                $element->getActionMenuItems(),
+                fn(array $item) => ($item['id'] ?? null) !== 'action-edit',
+            ) : [])
             ->noticeHtml($notice)
             ->errorSummary(fn() => $this->_errorSummary($element))
             ->prepareScreen(
@@ -936,109 +906,6 @@ class ElementsController extends Controller
         return implode("\n", array_filter($components));
     }
 
-    /**
-     * Returns a list of components for the additional menu
-     *
-     * Component array should consist of:
-     * 'label' => {text to show in the a or button element; can be an empty string}
-     * 'tag' => {optional, defaults to "a"}
-     * 'data' => {data attributes; optional}
-     * 'aria' => {aria attributes; optional}
-     * 'options' => {any other attributes, e.g. class; optional}
-     *
-     * @param ElementInterface $element
-     * @param ElementInterface $canonical
-     * @param string $type
-     * @param string $redirectUrl
-     * @param bool $isCurrent
-     * @param bool $isUnpublishedDraft
-     * @param bool $isDraft
-     * @param bool $canDeleteForSite
-     * @param bool $canDeleteCanonical
-     * @param bool $canDeleteDraft
-     * @return array
-     */
-    private function _additionalMenuComponents(
-        ElementInterface $element,
-        ElementInterface $canonical,
-        string $type,
-        string $redirectUrl,
-        bool $isCurrent,
-        bool $isUnpublishedDraft,
-        bool $isDraft,
-        bool $canDeleteForSite,
-        bool $canDeleteCanonical,
-        bool $canDeleteDraft,
-    ): array {
-        $components = [];
-
-        if ($isCurrent) {
-            if ($canDeleteForSite) {
-                $components[] = [
-                    'label' => Craft::t('app', 'Delete {type} for this site', [
-                        'type' => $isUnpublishedDraft ? Craft::t('app', 'draft') : $type,
-                    ]),
-                    'data' => [
-                        'destructive' => true,
-                        'action' => 'elements/delete-for-site',
-                        'redirect' => "$redirectUrl#",
-                        'confirm' => Craft::t('app', 'Are you sure you want to delete the {type} for this site?', [
-                            'type' => $isUnpublishedDraft ? Craft::t('app', 'draft') : $type,
-                        ]),
-                    ],
-                ];
-            }
-
-            if ($canDeleteCanonical) {
-                $components[] = [
-                    'label' => Craft::t('app', 'Delete {type}', [
-                        'type' => $isUnpublishedDraft ? Craft::t('app', 'draft') : $type,
-                    ]),
-                    'data' => [
-                        'destructive' => true,
-                        'action' => $isUnpublishedDraft ? 'elements/delete-draft' : 'elements/delete',
-                        'redirect' => "$redirectUrl#",
-                        'confirm' => Craft::t('app', 'Are you sure you want to delete this {type}?', [
-                            'type' => $isUnpublishedDraft ? Craft::t('app', 'draft') : $type,
-                        ]),
-                    ],
-                ];
-            }
-        } elseif ($isDraft && $canDeleteDraft) {
-            if ($canDeleteForSite) {
-                $components[] = [
-                    'label' => Craft::t('app', 'Delete {type} for this site', [
-                        'type' => Craft::t('app', 'draft'),
-                    ]),
-                    'data' => [
-                        'destructive' => true,
-                        'action' => 'elements/delete-for-site',
-                        'redirect' => "$redirectUrl#",
-                        'confirm' => Craft::t('app', 'Are you sure you want to delete the {type} for this site?',
-                            compact('type')
-                        ),
-                    ],
-                ];
-            }
-
-            $components[] = [
-                'label' => Craft::t('app', 'Delete {type}', [
-                    'type' => Craft::t('app', 'draft'),
-                ]),
-                'data' => [
-                    'destructive' => true,
-                    'action' => 'elements/delete-draft',
-                    'redirect' => $canonical->getCpEditUrl(),
-                    'confirm' => Craft::t('app', 'Are you sure you want to delete this {type}?', [
-                        'type' => Craft::t('app', 'draft'),
-                    ]),
-                ],
-            ];
-        }
-
-        return array_merge($components, $element->getAdditionalMenuComponents());
-    }
-
     private function _prepareEditor(
         ElementInterface $element,
         bool $isUnpublishedDraft,
@@ -1477,7 +1344,7 @@ JS, [
         $this->requirePostRequest();
 
         /** @var Element|null $element */
-        $element = $this->_element();
+        $element = $this->_element(provisional: true);
 
         if (!$element || $element->getIsRevision()) {
             throw new BadRequestHttpException('No element was identified by the request.');

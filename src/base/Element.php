@@ -30,13 +30,14 @@ use craft\elements\exporters\Expanded;
 use craft\elements\exporters\Raw;
 use craft\elements\User;
 use craft\enums\AttributeStatus;
+use craft\enums\MenuItemType;
 use craft\errors\InvalidFieldException;
 use craft\events\AuthorizationCheckEvent;
 use craft\events\DefineAttributeHtmlEvent;
 use craft\events\DefineAttributeKeywordsEvent;
 use craft\events\DefineEagerLoadingMapEvent;
 use craft\events\DefineHtmlEvent;
-use craft\events\DefineMenuComponentEvent;
+use craft\events\DefineMenuItemsEvent;
 use craft\events\DefineMetadataEvent;
 use craft\events\DefineUrlEvent;
 use craft\events\DefineValueEvent;
@@ -346,11 +347,11 @@ abstract class Element extends Component implements ElementInterface
     public const EVENT_DEFINE_ADDITIONAL_BUTTONS = 'defineAdditionalButtons';
 
     /**
-     * @event DefineMenuComponentEvent The event that is triggered when defining items for the additional menu that shows at the top of the element’s edit page.
-     * @see getAdditionalMenuComponents()
+     * @event DefineMenuComponentEvent The event that is triggered when defining action menu items..
+     * @see getActionMenuItems()
      * @since 5.0.0
      */
-    public const EVENT_DEFINE_ADDITIONAL_MENU_COMPONENTS = 'defineAdditionalMenuComponents';
+    public const EVENT_DEFINE_ACTION_MENU_ITEMS = 'defineActionMenuItems';
 
     /**
      * @event DefineHtmlEvent The event that is triggered when defining the HTML for the editor sidebar.
@@ -3426,18 +3427,227 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
-    public function getAdditionalMenuComponents(): array
+    public function getActionMenuItems(): array
     {
-        // Fire a defineAdditionalMenuComponents event
-        if ($this->hasEventHandlers(self::EVENT_DEFINE_ADDITIONAL_MENU_COMPONENTS)) {
-            $event = new DefineMenuComponentEvent([
-                'element' => $this,
+        $items = [
+            ...$this->safeActionMenuItems(),
+            ...array_map(fn(array $item) => $item + ['destructive' => true], $this->destructiveActionMenuItems()),
+        ];
+
+        // Fire a defineActionMenuItems event
+        if ($this->hasEventHandlers(self::EVENT_DEFINE_ACTION_MENU_ITEMS)) {
+            $event = new DefineMenuItemsEvent([
+                'items' => $items,
             ]);
-            $this->trigger(self::EVENT_DEFINE_ADDITIONAL_MENU_COMPONENTS, $event);
-            return $event->components;
+            $this->trigger(self::EVENT_DEFINE_ACTION_MENU_ITEMS, $event);
+            return $event->items;
         }
 
-        return [];
+        return $items;
+    }
+
+    /**
+     * Returns action menu items for the element’s edit screens.
+     *
+     * See [[\craft\helpers\Cp::disclosureMenu()]] for documentation on supported item properties.
+     *
+     * @return array
+     * @see getActionMenuItems()
+     * @since 5.0.0
+     */
+    protected function safeActionMenuItems(): array
+    {
+        $items = [];
+
+        // View
+        $url = $this->getUrl();
+        if ($url) {
+            $items[] = [
+                'id' => 'action-view',
+                'icon' => 'share',
+                'label' => Craft::t('app', 'View in a new tab'),
+                'url' => $url,
+                'attributes' => [
+                    'target' => '_blank',
+                ],
+            ];
+        }
+
+        // Edit
+        if (Craft::$app->getElements()->canView($this)) {
+            $editId = 'action-edit';
+            $items[] = [
+                'type' => MenuItemType::Button,
+                'id' => $editId,
+                'icon' => 'edit',
+                'label' => Craft::t('app', 'Edit {type}', [
+                    'type' => static::lowerDisplayName(),
+                ]),
+            ];
+
+
+            $view = Craft::$app->getView();
+            $view->registerJsWithVars(fn($id, $elementType, $settings) => <<<JS
+$('#' + $id).on('click', () => {
+  Craft.createElementEditor($elementType, $settings);
+});
+JS, [
+                $view->namespaceInputId($editId),
+                static::class,
+                [
+                    'elementId' => $this->id,
+                    'draftId' => $this->draftId,
+                    'revisionId' => $this->revisionId,
+                    'siteId' => $this->siteId,
+                ],
+            ]);
+        }
+
+        return $items;
+    }
+
+    /**
+     * Returns destructive action menu items for the element’s edit screens.
+     *
+     * See [[\craft\helpers\Cp::disclosureMenu()]] for documentation on supported item properties.
+     *
+     * `'destructive' => true` will be automatically added to all returned items.
+     *
+     * @return array
+     * @see getActionMenuItems()
+     * @since 5.0.0
+     */
+    protected function destructiveActionMenuItems(): array
+    {
+        $items = [];
+
+        $elementsService = Craft::$app->getElements();
+        $user = Craft::$app->getUser()->getIdentity();
+
+        // Figure out what we're dealing with here
+        $isCanonical = $this->getIsCanonical();
+        $isDraft = $this->getIsDraft();
+        $isUnpublishedDraft = $this->getIsUnpublishedDraft();
+        $isCurrent = $isCanonical || $this->isProvisionalDraft;
+        $canonical = $this->getCanonical(true);
+        $redirectUrl = $this->getPostEditUrl() ?? Craft::$app->getConfig()->getGeneral()->getPostCpLoginRedirect();
+
+        // Site info
+        $supportedSites = ElementHelper::supportedSitesForElement($this, true);
+        $propSites = array_values(array_filter($supportedSites, fn($site) => $site['propagate']));
+        $propSiteIds = array_column($propSites, 'siteId');
+        $isMultiSiteElement = count($supportedSites) > 1;
+
+        // Is this a new site that isn’t supported by the canonical element yet?
+        if ($isUnpublishedDraft) {
+            $isNewSite = true;
+        } elseif ($isDraft) {
+            $isNewSite = !static::find()
+                ->id($this->getCanonicalId())
+                ->siteId($this->siteId)
+                ->status(null)
+                ->exists();
+        } else {
+            $isNewSite = false;
+        }
+
+        // Permissions
+        $canDeleteDraft = $isDraft && !$this->isProvisionalDraft && $elementsService->canDelete($this, $user);
+        $canDeleteCanonical = $elementsService->canDelete($canonical, $user);
+        $canDeleteForSite = (
+            $isMultiSiteElement &&
+            count($propSiteIds) > 1 &&
+            (($isCurrent && $canDeleteCanonical) || ($canDeleteDraft && $isNewSite)) &&
+            $elementsService->canDeleteForSite($this, $user)
+        );
+
+        if ($isCurrent) {
+            // Delete for site
+            if ($canDeleteForSite) {
+                $items[] = [
+                    'id' => 'action-delete-for-site',
+                    'icon' => 'remove',
+                    'label' => Craft::t('app', 'Delete {type} for this site', [
+                        'type' => $isUnpublishedDraft ? Craft::t('app', 'draft') : static::lowerDisplayName(),
+                    ]),
+                    'action' => 'elements/delete-for-site',
+                    'params' => [
+                        'elementId' => $this->getCanonicalId(),
+                        'siteId' => $this->siteId,
+                    ],
+                    'redirect' => "$redirectUrl#",
+                    'confirm' => Craft::t('app', 'Are you sure you want to delete the {type} for this site?', [
+                        'type' => $isUnpublishedDraft ? Craft::t('app', 'draft') : static::lowerDisplayName(),
+                    ]),
+                    'destructive' => true,
+                ];
+            }
+
+            // Delete
+            if ($canDeleteCanonical) {
+                $items[] = [
+                    'id' => 'action-delete',
+                    'icon' => 'trash',
+                    'label' => Craft::t('app', 'Delete {type}', [
+                        'type' => $isUnpublishedDraft ? Craft::t('app', 'draft') : static::lowerDisplayName(),
+                    ]),
+                    'action' => $isUnpublishedDraft ? 'elements/delete-draft' : 'elements/delete',
+                    'params' => [
+                        'elementId' => $this->getCanonicalId(),
+                        'siteId' => $this->siteId,
+                    ],
+                    'redirect' => "$redirectUrl#",
+                    'confirm' => Craft::t('app', 'Are you sure you want to delete this {type}?', [
+                        'type' => $isUnpublishedDraft ? Craft::t('app', 'draft') : static::lowerDisplayName(),
+                    ]),
+                    'destructive' => true,
+                ];
+            }
+        } elseif ($isDraft && $canDeleteDraft) {
+            // Delete draft for site
+            if ($canDeleteForSite) {
+                $items[] = [
+                    'id' => 'action-delete-draft-for-site',
+                    'icon' => 'remove',
+                    'label' => Craft::t('app', 'Delete {type} for this site', [
+                        'type' => Craft::t('app', 'draft'),
+                    ]),
+                    'action' => 'elements/delete-for-site',
+                    'params' => [
+                        'elementId' => $this->getCanonicalId(),
+                        'siteId' => $this->siteId,
+                        'draftId' => $this->draftId,
+                    ],
+                    'redirect' => "$redirectUrl#",
+                    'confirm' => Craft::t('app', 'Are you sure you want to delete the {type} for this site?', [
+                        'type' => static::lowerDisplayName(),
+                    ]),
+                    'destructive' => true,
+                ];
+            }
+
+            // Delete draft
+            $items[] = [
+                'id' => 'action-delete-draft',
+                'icon' => 'trash',
+                'label' => Craft::t('app', 'Delete {type}', [
+                    'type' => Craft::t('app', 'draft'),
+                ]),
+                'action' => 'elements/delete-draft',
+                'params' => [
+                    'elementId' => $this->getCanonicalId(),
+                    'siteId' => $this->siteId,
+                    'draftId' => $this->draftId,
+                ],
+                'redirect' => $canonical->getCpEditUrl(),
+                'confirm' => Craft::t('app', 'Are you sure you want to delete this {type}?', [
+                    'type' => Craft::t('app', 'draft'),
+                ]),
+                'destructive' => true,
+            ];
+        }
+
+        return $items;
     }
 
     /**

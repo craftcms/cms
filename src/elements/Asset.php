@@ -31,6 +31,7 @@ use craft\elements\conditions\assets\AssetCondition;
 use craft\elements\conditions\ElementConditionInterface;
 use craft\elements\db\AssetQuery;
 use craft\elements\db\ElementQueryInterface;
+use craft\enums\MenuItemType;
 use craft\errors\AssetException;
 use craft\errors\FileException;
 use craft\errors\FsException;
@@ -1421,231 +1422,194 @@ class Asset extends Element
     /**
      * @inheritdoc
      */
-    public function getAdditionalMenuComponents(): array
+    protected function safeActionMenuItems(): array
     {
+        $items = parent::safeActionMenuItems();
+
         $volume = $this->getVolume();
         $userSession = Craft::$app->getUser();
         $user = $userSession->getIdentity();
         $view = Craft::$app->getView();
+        $updatePreviewThumbJs = $this->_updatePreviewThumbJs();
 
-        $previewable = Craft::$app->getAssets()->getAssetPreviewHandler($this) !== null;
-        $editable = (
-            $this->getSupportsImageEditor() &&
-            $userSession->checkPermission("editImages:$volume->uid") &&
-            ($userSession->getId() == $this->uploaderId || $userSession->checkPermission("editPeerImages:$volume->uid"))
-        );
+        $viewItems = [];
 
-        $components = [];
-
-        if (($url = $this->getUrl()) !== null) {
-            $components[] = [
-                'label' => Craft::t('app', 'View'),
-                'options' => [
-                    'href' => $url,
-                    'class' => 'btn',
-                    'target' => '_blank',
-                ],
-                'data' => [
-                    'icon' => 'share',
-                ],
+        // Preview
+        if (Craft::$app->getAssets()->getAssetPreviewHandler($this) !== null) {
+            $previewId = 'action-preview';
+            $viewItems[] = [
+                'type' => MenuItemType::Button,
+                'id' => $previewId,
+                'icon' => 'view',
+                'label' => Craft::t('app', 'Preview file'),
             ];
+
+            $view->registerJsWithVars(fn($id, $assetId, $settings) => <<<JS
+$('#' + $id).on('click', () => {
+  new Craft.PreviewFileModal($assetId, $settings);
+});
+JS, [
+                $view->namespaceInputId($previewId),
+                $this->id,
+                [
+                    'startingWidth' => $this->width,
+                    'startingHeight' => $this->height,
+                ],
+            ]);
         }
 
-        $components[] = [
-            'tag' => 'button',
+        // Download
+        $downloadId = 'action-download';
+        $viewItems[] = [
+            'type' => MenuItemType::Button,
+            'id' => $downloadId,
+            'icon' => 'download',
             'label' => Craft::t('app', 'Download'),
-            'options' => [
-                'id' => 'download-btn',
-                'class' => 'btn',
-            ],
-            'data' => [
-                'icon' => 'download',
-            ],
-            'aria' => [
-                'label' => Craft::t('app', 'Download'),
-            ],
         ];
 
-        $downloadBtnId = $view->namespaceInputId('download-btn');
-        $js = <<<JS
-$('#$downloadBtnId').on('click', () => {
-        const \$form = Craft.createForm().appendTo(Garnish.\$bod);
-        \$form.append(Craft.getCsrfInput());
-        $('<input/>', {type: 'hidden', name: 'action', value: 'assets/download-asset'}).appendTo(\$form);
-        $('<input/>', {type: 'hidden', name: 'assetId', value: $this->id}).appendTo(\$form);
-        $('<input/>', {type: 'submit', value: 'Submit'}).appendTo(\$form);
-        \$form.submit();
-        \$form.remove();
-    });
-JS;
-        $view->registerJs($js);
+        $view->registerJsWithVars(fn($id, $assetId) => <<<JS
+$('#' + $id).on('click', () => {
+  const form = Craft.createForm().appendTo(Garnish.\$bod);
+  form.append(Craft.getCsrfInput());
+  $('<input/>', {type: 'hidden', name: 'action', value: 'assets/download-asset'}).appendTo(form);
+  $('<input/>', {type: 'hidden', name: 'assetId', value: $assetId}).appendTo(form);
+  $('<input/>', {type: 'submit', value: 'Submit'}).appendTo(form);
+  form.submit();
+  form.remove();
+});
+JS, [
+            $view->namespaceInputId($downloadId),
+            $this->id,
+        ]);
 
+        $viewIndex = Collection::make($items)->search(fn(array $item) => ($item['id'] ?? null) === 'view');
+        array_splice($items, $viewIndex !== false ? $viewIndex + 1 : 0, 0, $viewItems);
+
+        $items[] = ['type' => MenuItemType::HR];
+
+        // Replace file
         if (
             $user->can("replaceFiles:$volume->uid") &&
             ($user->id === $this->uploaderId || $user->can("replacePeerFiles:$volume->uid"))
         ) {
-            $components[] = [
-                'tag' => 'button',
+            $replaceId = 'action-replace';
+            $items[] = [
+                'type' => MenuItemType::Button,
+                'id' => $replaceId,
+                'icon' => 'upload',
                 'label' => Craft::t('app', 'Replace file'),
-                'options' => [
-                    'id' => 'replace-btn',
-                    'class' => 'btn',
-                ],
-                'data' => [
-                    'icon' => 'upload',
-                ],
             ];
 
-            $dimensionsLabel = Html::encode(Craft::t('app', 'Dimensions'));
-            $updatePreviewThumbJs = $this->_updatePreviewThumbJs();
-            $replaceBtnId = $view->namespaceInputId('replace-btn');
-            $fsClass = addslashes($this->fs::class);
-            $js = <<<JS
-$('#$replaceBtnId').on('click', () => {
-    const \$fileInput = $('<input/>', {type: 'file', name: 'replaceFile', class: 'replaceFile hidden'}).appendTo(Garnish.\$bod);
-    const uploader = Craft.createUploader('{$fsClass}', \$fileInput, {
-        dropZone: null,
-        fileInput: \$fileInput,
-        paramName: 'replaceFile',
-        replace: true,
-        events: {
-            fileuploadstart: () => {
-                $('#thumb-container').addClass('loading');
-            },
-            fileuploaddone: (event, data) => {
-                const result = event instanceof CustomEvent ? event.detail : data.result;
-                
-                $('#new-filename').val(result.filename);
-                $('#file-size-value')
-                    .text(result.formattedSize)
-                    .attr('title', result.formattedSizeInBytes);
-                let \$dimensionsVal = $('#dimensions-value');
-                if (result.dimensions) {
-                    if (!\$dimensionsVal.length) {
-                        $(
-                            '<div class="data">' +
-                            '<dt class="heading">$dimensionsLabel</div>' +
-                            '<dd id="dimensions-value" class="value"></div>' +
-                            '</div>'
-                        ).appendTo($('#details > .meta.read-only'));
-                        \$dimensionsVal = $('#dimensions-value');
-                    }
-                    \$dimensionsVal.text(result.dimensions);
-                } else if (\$dimensionsVal.length) {
-                    \$dimensionsVal.parent().remove();
-                }
-                $updatePreviewThumbJs
-                Craft.cp.runQueue();
-                if (result.error) {
-                    $('#thumb-container').removeClass('loading');
-                    alert(result.error);
-                } else {
-
-                }
-            },
-            fileuploadfail: (event, data) => {
-                const response = event instanceof Event
-                    ? event.detail
-                    : data?.jqXHR?.responseJSON;
-                
-                let {message, filename} = response || {};
-                
-                if (!message) {
-                    message = filename
-                        ? Craft.t('app', 'Replace file failed for “{filename}”.', {filename})
-                        : Craft.t('app', 'Replace file failed.');
-                }
-                
-              Craft.cp.displayError(message);
-            },
-            fileuploadalways: (event, data) => {
-                $('#thumb-container').removeClass('loading');
-            },
+            $view->registerJsWithVars(fn($id, $namespace, $assetId, $fsType, $dimensionsLabel) => <<<JS
+$('#' + $id).on('click', () => {
+  const fileInput = $('<input/>', {type: 'file', name: 'replaceFile', class: 'replaceFile hidden'}).appendTo(Garnish.\$bod);
+  const uploader = Craft.createUploader($fsType, fileInput, {
+    dropZone: null,
+    fileInput: fileInput,
+    paramName: 'replaceFile',
+    replace: true,
+    events: {
+      fileuploadstart: () => {
+        $('#' + Craft.namespaceId('thumb-container', $namespace)).addClass('loading');
+      },
+      fileuploaddone: (event, data) => {
+        const result = event instanceof CustomEvent ? event.detail : data.result;
+        $('#' + Craft.namespaceId('new-filename', $namespace)).val(result.filename);
+        $('#' + Craft.namespaceId('file-size-value', $namespace))
+          .text(result.formattedSize)
+          .attr('title', result.formattedSizeInBytes);
+        let dimensionsVal = $('#' + Craft.namespaceId('dimensions-value', $namespace));
+        if (result.dimensions) {
+          if (!dimensionsVal.length) {
+            $(
+              '<div class="data">' +
+              '<dt class="heading">' + $dimensionsLabel + '</div>' +
+              '<dd id="dimensions-value" class="value"></div>' +
+              '</div>'
+            ).appendTo($('#' + Craft.namespaceId('details', $namespace) + ' > .meta.read-only'));
+            dimensionsVal = $('#' + Craft.namespaceId('dimensions-value', $namespace));
+          }
+          dimensionsVal.text(result.dimensions);
+        } else if (dimensionsVal.length) {
+          dimensionsVal.parent().remove();
         }
-    });
-    uploader.setParams({
-        assetId: $this->id,
-    });
-    \$fileInput.click();
+
+        $updatePreviewThumbJs
+        Craft.cp.runQueue();
+
+        if (result.error) {
+          $('#' + Craft.namespaceId('thumb-container', $namespace)).removeClass('loading');
+          alert(result.error);
+        }
+      },
+      fileuploadfail: (event, data) => {
+        const response = event instanceof Event
+          ? event.detail
+          : data?.jqXHR?.responseJSON;
+
+        let {message, filename} = response || {};
+
+        if (!message) {
+          message = filename
+            ? Craft.t('app', 'Replace file failed for “{filename}”.', {filename})
+            : Craft.t('app', 'Replace file failed.');
+        }
+
+        Craft.cp.displayError(message);
+      },
+      fileuploadalways: (event, data) => {
+        $('#' + Craft.namespaceId('thumb-container', $namespace)).removeClass('loading');
+      },
+    }
+  });
+
+  uploader.setParams({
+    assetId: $assetId,
+  });
+
+  fileInput.click();
 });
-JS;
-            $view->registerJs($js);
+JS, [
+                $view->namespaceInputId($replaceId),
+                $view->getNamespace(),
+                $this->id,
+                $this->fs::class,
+                Craft::t('app', 'Dimensions'),
+            ]);
         }
 
-        if ($previewable || $editable) {
-            $components[] = [
-                'tag' => 'hr',
+        // Image editor
+        if (
+            $this->getSupportsImageEditor() &&
+            $userSession->checkPermission("editImages:$volume->uid") &&
+            ($userSession->getId() == $this->uploaderId || $userSession->checkPermission("editPeerImages:$volume->uid"))
+        ) {
+            $editImageId = 'action-edit-image';
+            $items[] = [
+                'type' => MenuItemType::Button,
+                'id' => $editImageId,
+                'icon' => 'edit',
+                'label' => Craft::t('app', 'Edit Image'),
             ];
-            if ($previewable) {
-                $components[] = [
-                    'tag' => 'button',
-                    'label' => Craft::t('app', 'Preview'),
-                    'options' => [
-                        'id' => 'preview-btn',
-                        'class' => ['btn'],
-                    ],
-                    'data' => [
-                        'icon' => 'view',
-                    ],
-                ];
 
-                $previewBtnId = $view->namespaceInputId('preview-btn');
-                $settings = [];
-                $width = $this->getWidth();
-                $height = $this->getHeight();
-                if ($width && $height) {
-                    $settings['startingWidth'] = $width;
-                    $settings['startingHeight'] = $height;
-                }
-                $jsSettings = Json::encode($settings);
-                $js = <<<JS
-    $('#$previewBtnId').on('click', () => {
-        new Craft.PreviewFileModal($this->id, null, $jsSettings);
-    });
-    JS;
-                $view->registerJs($js);
-            }
-
-            if ($editable) {
-                $components[] = [
-                    'tag' => 'button',
-                    'label' => Craft::t('app', 'Edit Image'),
-                    'options' => [
-                        'id' => 'edit-btn',
-                        'class' => ['btn', 'edit-btn'],
-                    ],
-                    'data' => [
-                        'icon' => 'edit',
-                    ],
-                ];
-
-                $editBtnId = $view->namespaceInputId('edit-btn');
-                $updatePreviewThumbJs = $this->_updatePreviewThumbJs();
-                $js = <<<JS
-    $('#$editBtnId').on('click', () => {
-        new Craft.AssetImageEditor($this->id, {
-            allowDegreeFractions: Craft.isImagick,
-            onSave: data => {
-                if (data.newAssetId) {
-                    // If this is within an Assets field’s editor slideout, replace the selected asset 
-                    const slideout = $('#$editBtnId').closest('[data-slideout]').data('slideout');
-                    if (slideout && slideout.settings.elementSelectInput) {
-                        slideout.settings.elementSelectInput.replaceElement(slideout.\$element.data('id'), data.newAssetId)
-                            .catch(() => {});
-                    }
-                    return;
-                }
-    
-                $updatePreviewThumbJs
-            },
-        });
-    });
-    JS;
-                $view->registerJs($js);
-            }
+            $view->registerJsWithVars(fn($id, $assetId) => <<<JS
+$('#' + $id).on('click', () => {
+  new Craft.AssetImageEditor($assetId, {
+    allowDegreeFractions: Craft.isImagick,
+    onSave: (data) => {
+      if (!data.newAssetId) {
+        $updatePreviewThumbJs
+      }
+    },
+  });
+});
+JS,[
+                $view->namespaceInputId($editImageId),
+                $this->id,
+            ]);
         }
 
-        return array_merge($components, parent::getAdditionalMenuComponents());
+        return $items;
     }
 
     /**

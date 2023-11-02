@@ -1082,8 +1082,6 @@ return [
     'Placeholder Text' => 'Placeholder Text',
     'Plain Text' => 'Plain Text',
     'Plane' => 'Plane',
-    'Please enter your current password.' => 'Please enter your current password.',
-    'Please enter your password.' => 'Please enter your password.',
     'Please fix on an environment where administrative changes are allowed.' => 'Please fix on an environment where administrative changes are allowed.',
     'Please fix the following in your {file} file before proceeding:' => 'Please fix the following in your {file} file before proceeding:',
     'Please notify one of your site’s admins.' => 'Please notify one of your site’s admins.',

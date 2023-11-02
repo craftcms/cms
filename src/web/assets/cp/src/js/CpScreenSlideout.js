@@ -301,8 +301,27 @@ Craft.CpScreenSlideout = Craft.Slideout.extend(
           this.hasCpLink = false;
         }
 
-        if (data.additionalMenu) {
-          $(data.additionalMenu).insertAfter(this.$editLink);
+        if (data.actionMenu) {
+          const labelId = Craft.namespaceId(
+            'action-menu-label',
+            this.namespace
+          );
+          const menuId = Craft.namespaceId('action-menu', this.namespace);
+          $('<label/>', {
+            id: labelId,
+            class: 'visually-hidden',
+            text: Craft.t('app', 'Actions'),
+          }).insertBefore(this.$editLink);
+          const $trigger = $('<button/>', {
+            class: 'btn action-btn header-btn',
+            type: 'button',
+            'aria-controls': menuId,
+            'aria-describedby': labelId,
+            'data-disclosure-trigger': 'true',
+            'data-icon': 'ellipsis',
+          }).insertBefore(this.$editLink);
+          $(data.actionMenu).insertBefore(this.$editLink);
+          $trigger.disclosureMenu();
         }
 
         if (data.sidebar) {

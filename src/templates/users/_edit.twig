@@ -5,6 +5,14 @@
         { label: "Users"|t('app'), url: url('users') },
         user.id ? { html: elementChip(user), current: true } : null,
     ]|filter %}
+
+    {% if user.id %}
+        {% set actionItems = user.getActionMenuItems()|filter(i => (i.id ?? null) != 'action-edit') %}
+        {% set actionMenu = disclosureMenu(actionItems, {
+            id: 'action-menu',
+            withButton: false,
+        }) %}
+    {% endif %}
 {% endif %}
 
 {% import '_includes/forms.twig' as forms %}

@@ -171,6 +171,13 @@ class CpScreenResponseBehavior extends Behavior
     public $contextMenuItems = null;
 
     /**
+     * @var callable|null Action menu items factory.
+     * @see actionMenuItems()
+     * @since 5.0.0
+     */
+    public $actionMenuItems = null;
+
+    /**
      * @var string|null The submit button label.
      * @see submitButtonLabel()
      */
@@ -186,13 +193,6 @@ class CpScreenResponseBehavior extends Behavior
      * @since 5.0.0
      */
     public $additionalButtonsHtml = null;
-
-    /**
-     * @var array|callable|null Additional menu items.
-     *
-     * @see additionalMenuComponents()
-     */
-    public $additionalMenuComponents = null;
 
     /**
      * @var string|callable|null The content HTML.
@@ -559,6 +559,21 @@ class CpScreenResponseBehavior extends Behavior
     }
 
     /**
+     * Sets the action menu items.
+     *
+     * See [[\craft\helpers\Cp::disclosureMenu()]] for documentation on supported item properties.
+     *
+     * @param callable|null $value A callback function which returns the menu items
+     * @return Response
+     * @since 5.0.0
+     */
+    public function actionMenuItems(?callable $value): Response
+    {
+        $this->actionMenuItems = $value;
+        return $this->owner;
+    }
+
+    /**
      * Sets the submit button label.
      *
      * @param string|null $value
@@ -599,18 +614,6 @@ class CpScreenResponseBehavior extends Behavior
         return $this->additionalButtonsHtml(
             fn() => Craft::$app->getView()->renderTemplate($template, $variables, View::TEMPLATE_MODE_CP)
         );
-    }
-
-    /**
-     * Sets the components to show in the additional menu.
-     *
-     * @param callable|array|null $value
-     * @return Response
-     */
-    public function additionalMenuComponents(callable|array|null $value): Response
-    {
-        $this->additionalMenuComponents = $value;
-        return $this->owner;
     }
 
     /**

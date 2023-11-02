@@ -70,11 +70,11 @@
 {% set toolbar = (toolbar ?? block('toolbar') ?? '')|trim %}
 {% set actionButton = (block('actionButton') ?? '')|trim %}
 {% set additionalButtons = additionalButtons ?? null %}
-{% set additionalMenuComponents = additionalMenuComponents ?? [] %}
 {% set details = (details ?? block('details') ?? '')|trim %}
 {% set footer = (footer ?? block('footer') ?? '')|trim %}
 {% set crumbs = crumbs ?? null %}
 {% set contextMenu = (contextMenu ?? block('contextMenu') ?? '')|trim %}
+{% set actionMenu = actionMenu ?? null %}
 {% set tabs = (tabs ?? [])|length > 1 ? tabs : null %}
 {% set errorSummary = errorSummary ?? null %}
 
@@ -151,6 +151,22 @@
                             {{ contextMenu|raw }}
                         </div>
                     {% endif %}
+                    {% if actionMenu %}
+                        <label id="action-menu-label" class="visually-hidden">{{ 'Actions'|t('app') }}</label>
+                        {{ tag('button', {
+                            class: ['btn', 'action-btn'],
+                            type: 'button',
+                            aria: {
+                                controls: 'action-menu',
+                                describedby: 'action-menu-label',
+                            },
+                            data: {
+                                'disclosure-trigger': true,
+                                icon: 'ellipsis',
+                            },
+                        }) }}
+                        {{ actionMenu|raw }}
+                    {% endif %}
                     <div class="flex-grow"></div>
                     <button type="button" id="announcements-btn" class="btn hidden" title="{{ 'What’s New'|t('app') }}">
                         <span class="visually-hidden">{{ 'What’s New'|t('app') }}</span>
@@ -217,11 +233,10 @@
                                             {{ toolbar|raw }}
                                         </div>
                                     {% endif %}
-                                    {% if actionButton or additionalButtons or additionalMenuComponents %}
+                                    {% if actionButton or additionalButtons %}
                                         <div id="action-buttons" class="flex">
                                             {{ additionalButtons|raw }}
                                             {{ actionButton|raw }}
-                                            {% include '_layouts/components/additional-menu.twig' with additionalMenuComponents %}
                                         </div>
                                     {% endif %}
                                 {% endblock %}

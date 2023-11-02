@@ -964,12 +964,14 @@ interface ElementInterface extends ComponentInterface
     public function getAdditionalButtons(): string;
 
     /**
-     * Returns additional items for the disclosure menu that shows at the top of the element’s edit page.
+     * Returns action menu items for the element’s edit screens.
+     *
+     * See [[\craft\helpers\Cp::disclosureMenu()]] for documentation on supported item properties.
      *
      * @return array
      * @since 5.0.0
      */
-    public function getAdditionalMenuComponents(): array;
+    public function getActionMenuItems(): array;
 
     /**
      * Returns the additional locations that should be available for previewing the element, besides its primary [[getUrl()|URL]].
