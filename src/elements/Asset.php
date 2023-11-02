@@ -1589,7 +1589,7 @@ JS, [
                 'type' => MenuItemType::Button,
                 'id' => $editImageId,
                 'icon' => 'edit',
-                'label' => Craft::t('app', 'Edit Image'),
+                'label' => Craft::t('app', 'Open in Image Editor'),
             ];
 
             $view->registerJsWithVars(fn($id, $assetId) => <<<JS

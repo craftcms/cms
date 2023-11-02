@@ -1045,6 +1045,7 @@ return [
     'Only up to {version} is compatible with your version of Craft.' => 'Only up to {version} is compatible with your version of Craft.',
     'Oops!' => 'Oops!',
     'Open PRs' => 'Open PRs',
+    'Open in Image Editor' => 'Open in Image Editor',
     'Open the full edit page in a new tab' => 'Open the full edit page in a new tab',
     'Opens in a new window' => 'Opens in a new window',
     'Operator' => 'Operator',
