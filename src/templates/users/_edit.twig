@@ -3,7 +3,8 @@
 {% if CraftEdition == CraftPro and currentUser.can('editUsers') %}
     {% set crumbs = [
         { label: "Users"|t('app'), url: url('users') },
-    ] %}
+        user.id ? { html: elementChip(user), current: true } : null,
+    ]|filter %}
 {% endif %}
 
 {% import '_includes/forms.twig' as forms %}

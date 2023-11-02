@@ -45,6 +45,10 @@ export default Base.extend(
       const triggerId = this.$trigger.attr('aria-controls');
       this.$container = $('#' + triggerId);
 
+      this.$trigger.data('disclosureMenu', this);
+      this.$container.data('disclosureMenu', this);
+
+      // for BC
       this.$trigger.data('trigger', this);
       this.$container.data('trigger', this);
 
@@ -73,19 +77,29 @@ export default Base.extend(
     },
 
     addDisclosureMenuEventListeners: function () {
-      this.addListener(this.$trigger, 'mousedown', function (event) {
-        event.stopPropagation();
+      this.addListener(this.$trigger, 'mousedown', (ev) => {
+        ev.stopPropagation();
+        ev.preventDefault();
       });
 
-      this.addListener(this.$trigger, 'click', () => {
+      this.addListener(this.$trigger, 'mouseup', (ev) => {
+        ev.stopPropagation();
+        ev.preventDefault();
+      });
+
+      this.addListener(this.$trigger, 'click', (ev) => {
+        ev.stopPropagation();
+        ev.preventDefault();
         this.handleTriggerClick();
       });
 
-      this.addListener(this.$container, 'keydown', function (event) {
-        this.handleKeypress(event);
+      this.addListener(this.$container, 'keydown', (ev) => {
+        this.handleKeypress(ev);
       });
 
-      this.addListener(Garnish.$doc, 'mousedown', this.handleMousedown);
+      this.addListener(Garnish.$doc, 'mousedown', (ev) => {
+        this.handleMousedown(ev);
+      });
 
       // When the menu is expanded, tabbing on the trigger should move focus into it
       this.addListener(this.$trigger, 'keydown', (ev) => {
@@ -382,8 +396,6 @@ export default Base.extend(
      */
     destroy: function () {
       this.$trigger.removeData('trigger');
-      this.removeListener(this.$trigger, 'click');
-      this.removeListener(this.$container, 'keydown');
       this.base();
     },
 

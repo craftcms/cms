@@ -883,6 +883,7 @@ return [
     'Media' => 'Media',
     'Medium' => 'Medium',
     'Meet the Craft community' => 'Meet the Craft community',
+    'Menu' => 'Menu',
     'Merge the folder (any conflicting files will be replaced)' => 'Merge the folder (any conflicting files will be replaced)',
     'Merged PRs' => 'Merged PRs',
     'Message saved.' => 'Message saved.',

@@ -1338,7 +1338,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       actions.forEach((action) => {
         const $button = $('<button/>', {
           type: 'button',
-          class: 'menu-option',
+          class: 'menu-item',
           text: action.label,
         }).on('click', () => {
           this.$sourceActionsBtn.data('trigger').hide();

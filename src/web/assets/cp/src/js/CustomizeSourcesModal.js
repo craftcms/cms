@@ -170,7 +170,7 @@ Craft.CustomizeSourcesModal = Garnish.Modal.extend({
 
     const $newHeadingBtn = $('<button/>', {
       type: 'button',
-      class: 'menu-option',
+      class: 'menu-item',
       text: Craft.t('app', 'New heading'),
     }).on('click', () => {
       addSource({
@@ -181,7 +181,7 @@ Craft.CustomizeSourcesModal = Garnish.Modal.extend({
 
     const $newCustomSourceBtn = $('<button/>', {
       type: 'button',
-      class: 'menu-option',
+      class: 'menu-item',
       text: Craft.t('app', 'New custom source'),
       'data-type': 'custom',
     }).on('click', () => {

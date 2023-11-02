@@ -14,6 +14,7 @@ use craft\base\FieldLayoutElement;
 use craft\behaviors\DraftBehavior;
 use craft\elements\Address;
 use craft\enums\LicenseKeyStatus;
+use craft\enums\MenuItemType;
 use craft\errors\InvalidHtmlTagException;
 use craft\errors\InvalidPluginException;
 use craft\events\DefineElementHtmlEvent;
@@ -679,15 +680,16 @@ class Cp
             $uiLabel();
 
         // show the draft name?
-        if (($config['showDraftName'] ?? true) && $element->getIsDraft() && !$element->getIsUnpublishedDraft()) {
+        if (($config['showDraftName'] ?? true) && $element->getIsDraft() && !$element->isProvisionalDraft && !$element->getIsUnpublishedDraft()) {
             /** @var DraftBehavior|ElementInterface $element */
             $content .= Html::tag('span', $element->draftName ?: Craft::t('app', 'Draft'), [
-                'class' => 'draft-label',
+                'class' => 'context-label',
             ]);
         }
 
-        $content = ($content !== '' ? Html::tag('a', $content, [
-                'class' => 'label-link',
+        // the inner span is needed for `text-overflow: ellipsis` (e.g. within breadcrumbs)
+        $content = ($content !== '' ? Html::tag('a', Html::tag('span', $content), [
+                'class' => ['label-link'],
                 'href' => !$element->trashed && $config['context'] !== 'modal'
                     ? ($attributes['data']['cp-url'] ?? null) : null,
             ]) : '') .
@@ -2204,6 +2206,125 @@ JS;
         return Html::tag('dl', implode("\n", $defs), [
             'class' => ['meta', 'read-only'],
         ]);
+    }
+
+    /**
+     * Returns a disclosure menu’s HTML.
+     *
+     * Each item can contain a `type` key set to a [[MenuItemType]] case. By default, it will be set to:
+     *
+     * - [[MenuItemType::Button]] if an `action` key is set
+     * - [[MenuItemType::Group]] if `heading` or `items` keys are set
+     * - [[MenuItemType::Link]] in all other cases
+     *
+     * Link and button items can contain the following keys:
+     *
+     *  - `id` – The item’s ID
+     *  - `label` – The item label, to be HTML-encoded
+     *  - `html` - The item label, which will be output verbatim, without being HTML-encoded
+     *  - `description` – The item description
+     *  - `status` – The status indicator that should be shown beside the item label
+     *  - `url` – The URL that the item should link to
+     *  - `action` – The controller action that the item should trigger
+     *  - `params` – Request parameters that should be sent to the `action`
+     *  - `confirm` – A confirmation message that should be presented to the user before triggering the `action`
+     *  - `redirect` – The redirect path that the `action` should use
+     *  - `selected` – Whether the item should be marked as selected
+     *  - `hidden` – Whether the item should be hidden
+     *  - `attributes` – Any HTML attributes that should be set on the item’s `<a>` or `<button>` tag
+     *
+     *  Horizontal rules can be defined with the following key:
+     *
+     *  - `hr` - Set to `true`
+     *
+     *  Groups of items can be defined as well, using the following keys:
+     *
+     *  - `group` – Set to `true`
+     *  - `heading` – The group heading
+     *  - `items` – The nested item definitions
+     *  - `listAttributes` - any HTML attributes that should be included on the `<ul>`
+     *
+     * @param array $items The menu items.
+     * @param array $config
+     * @return string
+     * @since 5.0.0
+     */
+    public static function disclosureMenu(array $items, array $config = []): string
+    {
+        $config += [
+            'id' => sprintf('menu-%s', mt_rand()),
+            'class' => null,
+            'withButton' => true,
+            'buttonLabel' => null,
+            'buttonHtml' => null,
+            'autoLabel' => false,
+            'buttonAttributes' => [],
+            'hiddenLabel' => null,
+        ];
+
+        // Item normalization & cleanup
+        $items = Collection::make(self::normalizeMenuItems($items));
+
+        // Place all the destructive items at the end
+        $destructiveItems = $items->filter(fn(array $item) => $item['destructive'] ?? false);
+        $items = $items->filter(fn(array $item) => !($item['destructive'] ?? false))
+            ->push(['type' => MenuItemType::HR->value])
+            ->push(...$destructiveItems->all());
+
+        // Remove leading/trailing/repetitive HRs
+        while (($items->first()['type'] ?? null) === MenuItemType::HR->value) {
+            $items->shift();
+        }
+        while (($items->last()['type'] ?? null) === MenuItemType::HR->value) {
+            $items->pop();
+        }
+        $items = $items->values();
+        $items = $items->filter(fn(array $item, int $i) => (
+            ($item['type'] ?? null) !== MenuItemType::HR->value ||
+            ($items->get($i + 1)['type'] ?? null) !== MenuItemType::HR->value
+        ));
+
+        $config['items'] = $items->all();
+
+        if ($config['withButton'] && $config['autoLabel']) {
+            // Find the selected item, also looking within nested item groups
+            $selectedItem = $items
+                ->map(fn(array $i) => $i['type'] === MenuItemType::Group->value ? ($i['items'] ?? []) : [$i])
+                ->flatten(1)
+                ->first(fn(array $i) => $i['selected'] ?? false);
+
+            if ($selectedItem) {
+                $config['buttonLabel'] = $selectedItem['label'] ?? null;
+                $config['buttonHtml'] = $selectedItem['html'] ?? null;
+            }
+        }
+
+        return Craft::$app->getView()->renderTemplate('_includes/disclosuremenu.twig', $config, View::TEMPLATE_MODE_CP);
+    }
+
+    private static function normalizeMenuItems(array $items): array
+    {
+        return array_map(function(array $item) {
+            if (!isset($item['type'])) {
+                if (isset($item['action'])) {
+                    $item['type'] = MenuItemType::Button;
+                } elseif (isset($item['heading']) || isset($item['items'])) {
+                    $item['type'] = MenuItemType::Group;
+                } else {
+                    $item['type'] = MenuItemType::Link;
+                }
+            }
+
+            if ($item['type'] instanceof MenuItemType) {
+                $item['type'] = $item['type']->value;
+            }
+
+            if ($item['type'] === MenuItemType::Group->value) {
+                $item['items'] = self::normalizeMenuItems($item['items'] ?? []);
+            }
+
+            return $item;
+        }, $items);
     }
 
     /**

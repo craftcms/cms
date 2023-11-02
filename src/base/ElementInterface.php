@@ -770,6 +770,14 @@ interface ElementInterface extends ComponentInterface
     public function getLink(): ?Markup;
 
     /**
+     * Returns the breadcrumbs that lead up to the element.
+     *
+     * @return array
+     * @since 5.0.0
+     */
+    public function getCrumbs(): array;
+
+    /**
      * Returns what the element should be called within the control panel.
      *
      * @return string

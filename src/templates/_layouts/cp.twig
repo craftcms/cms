@@ -67,7 +67,6 @@
 
 {% set contentNotice = (contentNotice ?? block('contentNotice') ?? '')|trim %}
 {% set sidebar = (sidebar ?? block('sidebar') ?? '')|trim %}
-{% set contextMenu = (contextMenu ?? block('contextMenu') ?? '')|trim %}
 {% set toolbar = (toolbar ?? block('toolbar') ?? '')|trim %}
 {% set actionButton = (block('actionButton') ?? '')|trim %}
 {% set additionalButtons = additionalButtons ?? null %}
@@ -75,6 +74,7 @@
 {% set details = (details ?? block('details') ?? '')|trim %}
 {% set footer = (footer ?? block('footer') ?? '')|trim %}
 {% set crumbs = crumbs ?? null %}
+{% set contextMenu = (contextMenu ?? block('contextMenu') ?? '')|trim %}
 {% set tabs = (tabs ?? [])|length > 1 ? tabs : null %}
 {% set errorSummary = errorSummary ?? null %}
 
@@ -144,8 +144,13 @@
             {% include '_layouts/components/alerts' %}
 
             <div id="global-header" role="region" aria-label="{{ 'My Account'|t('app') }}">
-                <div class="flex">
+                <div class="flex flex-nowrap gap-xs">
                     {% include '_layouts/components/crumbs' %}
+                    {% if contextMenu %}
+                        <div class="context-menu-container">
+                            {{ contextMenu|raw }}
+                        </div>
+                    {% endif %}
                     <div class="flex-grow"></div>
                     <button type="button" id="announcements-btn" class="btn hidden" title="{{ 'What’s New'|t('app') }}">
                         <span class="visually-hidden">{{ 'What’s New'|t('app') }}</span>
@@ -206,7 +211,6 @@
                                                 <h1 class="screen-title" title="{{ title }}">{{ title }}</h1>
                                             {% endif %}
                                         {% endblock %}
-                                        {{ contextMenu|raw }}
                                     </div>
                                     {% if toolbar %}
                                         <div id="toolbar" class="flex">

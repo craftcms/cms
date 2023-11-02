@@ -66,8 +66,8 @@ use craft\services\ElementSources;
 use craft\validators\AssetLocationValidator;
 use craft\validators\DateTimeValidator;
 use craft\validators\StringValidator;
-use craft\web\CpScreenResponseBehavior;
 use DateTime;
+use Illuminate\Support\Collection;
 use Throwable;
 use Twig\Markup;
 use yii\base\ErrorHandler;
@@ -78,7 +78,6 @@ use yii\base\InvalidConfigException;
 use yii\base\NotSupportedException;
 use yii\base\UnknownPropertyException;
 use yii\validators\RequiredValidator;
-use yii\web\Response;
 
 /**
  * Asset represents an asset element.
@@ -1275,6 +1274,45 @@ class Asset extends Element
     /**
      * @inheritdoc
      */
+    protected function crumbs(): array
+    {
+        $volume = $this->getVolume();
+
+        $crumbs = [
+            [
+                'label' => Craft::t('app', 'Assets'),
+                'url' => UrlHelper::cpUrl('assets'),
+            ],
+            [
+                'menu' => Collection::make(Craft::$app->getVolumes()->getViewableVolumes())
+                    ->map(fn(Volume $v) => [
+                        'label' => Craft::t('site', $v->name),
+                        'url' => "assets/$v->handle",
+                        'selected' => $v->id === $volume->id,
+                    ])
+                    ->all(),
+            ],
+        ];
+
+        $uri = "assets/$volume->handle";
+
+        if ($this->folderPath !== null) {
+            $subfolders = ArrayHelper::filterEmptyStringsFromArray(explode('/', $this->folderPath));
+            foreach ($subfolders as $subfolder) {
+                $uri .= "/$subfolder";
+                $crumbs[] = [
+                    'label' => $subfolder,
+                    'url' => UrlHelper::cpUrl($uri),
+                ];
+            }
+        }
+
+        return $crumbs;
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function canView(User $user): bool
     {
         if ($this->isFolder) {
@@ -1378,40 +1416,6 @@ class Asset extends Element
     public function getPostEditUrl(): ?string
     {
         return UrlHelper::cpUrl('assets');
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function prepareEditScreen(Response $response, string $containerId): void
-    {
-        $volume = $this->getVolume();
-        $uri = "assets/$volume->handle";
-
-        $crumbs = [
-            [
-                'label' => Craft::t('app', 'Assets'),
-                'url' => UrlHelper::cpUrl('assets'),
-            ],
-            [
-                'label' => Craft::t('site', $volume->name),
-                'url' => UrlHelper::cpUrl($uri),
-            ],
-        ];
-
-        if ($this->folderPath !== null) {
-            $subfolders = ArrayHelper::filterEmptyStringsFromArray(explode('/', $this->folderPath));
-            foreach ($subfolders as $subfolder) {
-                $uri .= "/$subfolder";
-                $crumbs[] = [
-                    'label' => $subfolder,
-                    'url' => UrlHelper::cpUrl($uri),
-                ];
-            }
-        }
-
-        /** @var Response|CpScreenResponseBehavior $response */
-        $response->crumbs($crumbs);
     }
 
     /**

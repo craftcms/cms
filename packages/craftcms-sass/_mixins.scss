@@ -612,7 +612,7 @@ $radioSize: 16px;
     0 5px 20px transparentize($grey900, 0.75);
 }
 
-@mixin menu-option-styles {
+@mixin menu-item-styles {
   margin: 0 -14px;
   padding: 10px 14px;
   color: $menuOptionColor;
@@ -620,7 +620,7 @@ $radioSize: 16px;
   white-space: nowrap;
 }
 
-@mixin menu-option-active-styles {
+@mixin menu-item-active-styles {
   color: $menuOptionActiveColor;
   background-color: $menuOptionActiveBackgroundColor;
 }

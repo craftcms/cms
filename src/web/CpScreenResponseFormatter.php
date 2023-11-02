@@ -8,9 +8,12 @@
 namespace craft\web;
 
 use Craft;
+use craft\helpers\Cp;
 use craft\helpers\Html;
 use craft\helpers\StringHelper;
 use craft\helpers\UrlHelper;
+use craft\models\Site;
+use Illuminate\Support\Collection;
 use yii\base\Component;
 use yii\base\InvalidConfigException;
 use yii\web\BadRequestHttpException;
@@ -127,8 +130,8 @@ class CpScreenResponseFormatter extends Component implements ResponseFormatterIn
             call_user_func($behavior->prepareScreen, $response, 'main-form');
         }
 
-        $crumbs = is_callable($behavior->crumbs) ? call_user_func($behavior->crumbs) : $behavior->crumbs;
-        $contextMenu = is_callable($behavior->contextMenuHtml) ? call_user_func($behavior->contextMenuHtml) : $behavior->contextMenuHtml;
+        $docTitle = $behavior->docTitle ?? strip_tags($behavior->title ?? '');
+        $crumbs = (is_callable($behavior->crumbs) ? call_user_func($behavior->crumbs) : $behavior->crumbs) ?? [];
         $addlButtons = is_callable($behavior->additionalButtonsHtml) ? call_user_func($behavior->additionalButtonsHtml) : $behavior->additionalButtonsHtml;
         $altActions = is_callable($behavior->altActions) ? call_user_func($behavior->altActions) : $behavior->altActions;
         $addlMenuComponents = is_callable($behavior->additionalMenuComponents) ? call_user_func($behavior->additionalMenuComponents) : $behavior->additionalMenuComponents;
@@ -137,6 +140,49 @@ class CpScreenResponseFormatter extends Component implements ResponseFormatterIn
         $sidebar = is_callable($behavior->metaSidebarHtml) ? call_user_func($behavior->metaSidebarHtml) : $behavior->metaSidebarHtml;
         $pageSidebar = is_callable($behavior->pageSidebarHtml) ? call_user_func($behavior->pageSidebarHtml) : $behavior->pageSidebarHtml;
         $errorSummary = is_callable($behavior->errorSummary) ? call_user_func($behavior->errorSummary) : $behavior->errorSummary;
+
+        if (Craft::$app->getIsMultiSite() && isset($behavior->site)) {
+            $siteCrumb = [
+                'icon' => 'world',
+                'label' => Craft::t('site', $behavior->site->name),
+                'menu' => [],
+            ];
+
+            if (isset($behavior->selectableSites)) {
+                $siteGroups = Craft::$app->getSites()->getAllGroups();
+                $showSiteGroupHeadings = count($siteGroups) > 1;
+                /** @var array<int,array{site:Site,status?:string}> $selectableSites */
+                $selectableSites = Collection::make($behavior->selectableSites)
+                    ->map(fn(Site|array $site) => $site instanceof Site ? ['site' => $site] : $site)
+                    ->keyBy(fn(array $site) => $site['site']->id)
+                    ->all();
+
+                $request = Craft::$app->getRequest();
+                $path = $request->getPathInfo();
+                $params = $request->getQueryParamsWithoutPath();
+
+                foreach ($siteGroups as $siteGroup) {
+                    $groupSiteOptions = array_map(fn(Site $site) => [
+                        'status' => $selectableSites[$site->id]['status'] ?? null,
+                        'label' => Craft::t('site', $site->name),
+                        'url' => UrlHelper::cpUrl($path, ['site' => $site->handle] + $params),
+                        'hidden' => !isset($selectableSites[$site->id]),
+                        'selected' => $site->id === $behavior->site->id,
+                    ], $siteGroup->getSites());
+
+                    if ($showSiteGroupHeadings) {
+                        $siteCrumb['menu'][] = [
+                            'heading' => Craft::t('site', $siteGroup->name),
+                            'options' => $groupSiteOptions,
+                        ];
+                    } else {
+                        array_push($siteCrumb['menu'], ...$groupSiteOptions);
+                    }
+                }
+            }
+
+            array_unshift($crumbs, $siteCrumb);
+        }
 
         if ($behavior->action) {
             $content .= Html::actionInput($behavior->action, [
@@ -152,14 +198,16 @@ class CpScreenResponseFormatter extends Component implements ResponseFormatterIn
             'class' => TemplateResponseBehavior::class,
             'template' => '_layouts/cp',
             'variables' => [
-                'docTitle' => $behavior->docTitle ?? strip_tags($behavior->title ?? ''),
+                'docTitle' => $docTitle,
                 'title' => $behavior->title,
                 'selectedSubnavItem' => $behavior->selectedSubnavItem,
                 'crumbs' => array_map(function(array $crumb): array {
-                    $crumb['url'] = UrlHelper::cpUrl($crumb['url'] ?? '');
+                    if (isset($crumb['url'])) {
+                        $crumb['url'] = UrlHelper::cpUrl($crumb['url']);
+                    }
                     return $crumb;
                 }, $crumbs ?? []),
-                'contextMenu' => $contextMenu,
+                'contextMenu' => $this->_contextMenu($behavior),
                 'submitButtonLabel' => $behavior->submitButtonLabel,
                 'additionalButtons' => $addlButtons,
                 'additionalMenuComponents' => array_map(function(array $component) use ($security): array {
@@ -192,5 +240,43 @@ class CpScreenResponseFormatter extends Component implements ResponseFormatterIn
         ]);
 
         (new TemplateResponseFormatter())->format($response);
+    }
+
+    private function _contextMenu(
+        CpScreenResponseBehavior $behavior,
+        ?string $namespace = null,
+    ): ?string {
+        return $this->_menu($behavior->contextMenuItems, [
+            'id' => 'context-menu',
+            'class' => 'padded',
+            'autoLabel' => true,
+            'buttonAttributes' => [
+                'id' => 'context-btn',
+                'class' => ['context-label'],
+            ],
+            'hiddenLabel' => Craft::t('app', 'Context'),
+        ], $namespace);
+    }
+
+    private function _menu(?callable $itemsFactory, array $config, ?string $namespace): ?string
+    {
+        if ($itemsFactory === null) {
+            return null;
+        }
+
+        $render = function() use ($itemsFactory, $config): ?string {
+            $items = $itemsFactory();
+            if (empty($items)) {
+                return null;
+            }
+
+            return Cp::disclosureMenu($items, $config);
+        };
+
+        if ($namespace) {
+            return Craft::$app->getView()->namespaceInputs($render, $namespace);
+        }
+
+        return $render();
     }
 }

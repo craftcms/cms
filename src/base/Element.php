@@ -3101,6 +3101,25 @@ abstract class Element extends Component implements ElementInterface
 
     /**
      * @inheritdoc
+     * @see crumbs()
+     */
+    public function getCrumbs(): array
+    {
+        if ($this instanceof NestedElementInterface) {
+            $owner = $this->getPrimaryOwner();
+            if ($owner) {
+                return [
+                    ...$owner->getCrumbs(),
+                    ['html' => Cp::elementChipHtml($owner)],
+                ];
+            }
+        }
+
+        return $this->crumbs();
+    }
+
+    /**
+     * @inheritdoc
      */
     public function getUiLabel(): string
     {
@@ -3129,6 +3148,18 @@ abstract class Element extends Component implements ElementInterface
     public function setUiLabelPath(array $path): void
     {
         $this->_uiLabelPath = $path;
+    }
+
+    /**
+     * Returns the breadcrumbs that lead up to the element.
+     *
+     * @return array
+     * @since 5.0.0
+     * @see getCrumbs()
+     */
+    protected function crumbs(): array
+    {
+        return [];
     }
 
     /**

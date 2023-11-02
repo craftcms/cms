@@ -1270,7 +1270,7 @@ $.extend(Craft, {
   /**
    * Creates a form element populated with hidden inputs based on a string of serialized form data.
    *
-   * @param {string} data
+   * @param {string} [data]
    * @returns {(jQuery|HTMLElement)}
    */
   createForm: function (data) {
@@ -2697,32 +2697,37 @@ $.extend($.fn, {
         params[$btn.data('param')] = $btn.data('value');
       }
 
-      // const $anchor = $btn.data('menu') ? $btn.data('menu').$anchor : $btn;
-      let $anchor = $btn.closest('.menu--disclosure').length
-        ? $btn.closest('.menu--disclosure').data('trigger').$trigger
-        : $btn.data('menu')
-        ? $btn.data('menu').$anchor
-        : $btn;
-
-      let isFullPage = $anchor.parents('.slideout').length == 0;
-      let $form = null;
+      let $form;
       let namespace = null;
 
-      if (isFullPage) {
-        $form = $anchor.attr('data-form')
-          ? $('#' + $anchor.attr('data-form'))
-          : $btn.attr('data-form')
-          ? $('#' + $btn.attr('data-form'))
-          : $anchor.closest('form');
+      if ($btn.attr('data-form') === 'false') {
+        $form = Craft.createForm()
+          .addClass('hidden')
+          .append(Craft.getCsrfInput())
+          .appendTo(Garnish.$bod);
       } else {
-        $form = $anchor.closest('form');
-        namespace = $anchor.parents('.slideout').data('cpScreen').namespace;
-      }
+        let $anchor = $btn.closest('.menu--disclosure').length
+          ? $btn.closest('.menu--disclosure').data('trigger').$trigger
+          : $btn.data('menu')
+          ? $btn.data('menu').$anchor
+          : $btn;
 
-      // if we're in the slideout, and in a disclosure menu,
-      // make sure we close the menu on clicking action
-      if (!isFullPage && $anchor.data('trigger')) {
-        $anchor.data('trigger').hide();
+        let isFullPage = $anchor.parents('.slideout').length == 0;
+
+        if (isFullPage) {
+          $form = $anchor.attr('data-form')
+            ? $('#' + $anchor.attr('data-form'))
+            : $btn.attr('data-form')
+            ? $('#' + $btn.attr('data-form'))
+            : $anchor.closest('form');
+        } else {
+          $form = $anchor.closest('form');
+          namespace = $anchor.parents('.slideout').data('cpScreen').namespace;
+        }
+
+        if ($anchor.data('disclosureMenu')) {
+          $anchor.data('disclosureMenu').hide();
+        }
       }
 
       Craft.submitForm($form, {
