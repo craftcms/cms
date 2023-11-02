@@ -583,6 +583,13 @@ $.extend(Craft, {
     }
 
     history.replaceState({}, '', url);
+
+    // If there's a site crumb menu, update each of its URLs
+    const siteLinks = document.querySelectorAll('#site-crumb-menu a[href]');
+    for (const link of siteLinks) {
+      const site = this.getQueryParam('site', link.href);
+      link.href = this.getUrl(url, {site});
+    }
   },
 
   /**
@@ -1615,18 +1622,33 @@ $.extend(Craft, {
     };
   },
 
-  getQueryParams: function () {
-    return Object.fromEntries(
-      new URLSearchParams(window.location.search).entries()
-    );
+  /**
+   * Returns a URL’s query params as an object.
+   * @param {string} [url] The URL. The window’s URL will be used by default.
+   * @returns Object
+   */
+  getQueryParams: function (url) {
+    let qs;
+    if (url) {
+      const m = url.match(/\?.+/);
+      if (!m) {
+        return {};
+      }
+      qs = m[0];
+    } else {
+      qs = window.location.search;
+    }
+    return Object.fromEntries(new URLSearchParams(qs).entries());
   },
 
-  getQueryParam: function (name) {
-    // h/t https://stackoverflow.com/a/901144/1688568
-    const params = new Proxy(new URLSearchParams(window.location.search), {
-      get: (searchParams, prop) => searchParams.get(prop),
-    });
-    return params[name];
+  /**
+   * Returns a query param.
+   * @param {string} name The param name
+   * @param {string} [url] The URL. The window’s URL will be used by default.
+   * @returns Object
+   */
+  getQueryParam: function (name, url) {
+    return this.getQueryParams(url)[name];
   },
 
   isSameHost: function (url) {

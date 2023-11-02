@@ -2328,6 +2328,54 @@ JS;
     }
 
     /**
+     * Returns a menu item array for the given sites, possibly grouping them by site group.
+     *
+     * @param array<int,Site|array{site:Site,status?:string}> $sites
+     * @param Site|null $selectedSite
+     * @return array
+     * @since 5.0.0
+     */
+    public static function siteMenuItems(array $sites, ?Site $selectedSite = null): array
+    {
+        $items = [];
+
+        $siteGroups = Craft::$app->getSites()->getAllGroups();
+        $showSiteGroupHeadings = count($siteGroups) > 1;
+
+        // Normalize and index the sites
+        /** @var array<int,array{site:Site,status?:string}> $sites */
+        $sites = Collection::make($sites)
+            ->map(fn(Site|array $site) => $site instanceof Site ? ['site' => $site] : $site)
+            ->keyBy(fn(array $site) => $site['site']->id)
+            ->all();
+
+        $request = Craft::$app->getRequest();
+        $path = $request->getPathInfo();
+        $params = $request->getQueryParamsWithoutPath();
+
+        foreach ($siteGroups as $siteGroup) {
+            $groupSiteOptions = array_map(fn(Site $site) => [
+                'status' => $sites[$site->id]['status'] ?? null,
+                'label' => Craft::t('site', $site->name),
+                'url' => UrlHelper::cpUrl($path, ['site' => $site->handle] + $params),
+                'hidden' => !isset($sites[$site->id]),
+                'selected' => $site->id === $selectedSite->id,
+            ], $siteGroup->getSites());
+
+            if ($showSiteGroupHeadings) {
+                $items[] = [
+                    'heading' => Craft::t('site', $siteGroup->name),
+                    'options' => $groupSiteOptions,
+                ];
+            } else {
+                array_push($items, ...$groupSiteOptions);
+            }
+        }
+
+        return $items;
+    }
+
+    /**
      * Returns the site the control panel is currently working with, via a `site` query string param if sent.
      *
      * @return Site|null The site, or `null` if the user doesn’t have permission to edit any sites.

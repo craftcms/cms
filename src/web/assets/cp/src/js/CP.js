@@ -580,10 +580,10 @@ Craft.CP = Garnish.Base.extend(
         // Fixes Redactor fixed toolbars on previously hidden panes
         Garnish.$doc.trigger('scroll');
 
-        // If there is a context menu, set its links to this tab ID
+        // If there is a site crumb menu or context menu, set their links to this tab ID
         if (href && href.charAt(0) === '#') {
           const contextLinks = document.querySelectorAll(
-            '#context-menu a[href]'
+            '#site-crumb-menu a[href], #context-menu a[href]'
           );
           for (const link of contextLinks) {
             link.href = link.href.match(/^[^#]*/)[0] + href;

@@ -12,8 +12,6 @@ use craft\helpers\Cp;
 use craft\helpers\Html;
 use craft\helpers\StringHelper;
 use craft\helpers\UrlHelper;
-use craft\models\Site;
-use Illuminate\Support\Collection;
 use yii\base\Component;
 use yii\base\InvalidConfigException;
 use yii\web\BadRequestHttpException;
@@ -135,46 +133,14 @@ class CpScreenResponseFormatter extends Component implements ResponseFormatterIn
         $errorSummary = is_callable($behavior->errorSummary) ? call_user_func($behavior->errorSummary) : $behavior->errorSummary;
 
         if (Craft::$app->getIsMultiSite() && isset($behavior->site)) {
-            $siteCrumb = [
+            array_unshift($crumbs, [
+                'id' => 'site-crumb',
                 'icon' => 'world',
                 'label' => Craft::t('site', $behavior->site->name),
-                'menu' => [],
-            ];
-
-            if (isset($behavior->selectableSites)) {
-                $siteGroups = Craft::$app->getSites()->getAllGroups();
-                $showSiteGroupHeadings = count($siteGroups) > 1;
-                /** @var array<int,array{site:Site,status?:string}> $selectableSites */
-                $selectableSites = Collection::make($behavior->selectableSites)
-                    ->map(fn(Site|array $site) => $site instanceof Site ? ['site' => $site] : $site)
-                    ->keyBy(fn(array $site) => $site['site']->id)
-                    ->all();
-
-                $request = Craft::$app->getRequest();
-                $path = $request->getPathInfo();
-                $params = $request->getQueryParamsWithoutPath();
-
-                foreach ($siteGroups as $siteGroup) {
-                    $groupSiteOptions = array_map(fn(Site $site) => [
-                        'status' => $selectableSites[$site->id]['status'] ?? null,
-                        'label' => Craft::t('site', $site->name),
-                        'url' => UrlHelper::cpUrl($path, ['site' => $site->handle] + $params),
-                        'hidden' => !isset($selectableSites[$site->id]),
-                        'selected' => $site->id === $behavior->site->id,
-                    ], $siteGroup->getSites());
-
-                    if ($showSiteGroupHeadings) {
-                        $siteCrumb['menu'][] = [
-                            'heading' => Craft::t('site', $siteGroup->name),
-                            'options' => $groupSiteOptions,
-                        ];
-                    } else {
-                        array_push($siteCrumb['menu'], ...$groupSiteOptions);
-                    }
-                }
-            }
-
-            array_unshift($crumbs, $siteCrumb);
+                'menu' => !empty($behavior->selectableSites)
+                    ? Cp::siteMenuItems($behavior->selectableSites, $behavior->site)
+                    : null,
+            ]);
         }
 
         if ($behavior->action) {
