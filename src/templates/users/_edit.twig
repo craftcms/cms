@@ -10,7 +10,13 @@
         {% set actionItems = user.getActionMenuItems()|filter(i => (i.id ?? null) != 'action-edit') %}
         {% set actionMenu = disclosureMenu(actionItems, {
             id: 'action-menu',
-            withButton: false,
+            hiddenLabel: 'Actions'|t('app'),
+            buttonAttributes: {
+                class: ['action-btn'],
+                removeClass: 'menubtn',
+                title: 'Actions'|t('app'),
+                data: {icon: 'ellipsis'},
+            },
         }) %}
     {% endif %}
 {% endif %}

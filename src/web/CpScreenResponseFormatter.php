@@ -100,7 +100,9 @@ class CpScreenResponseFormatter extends Component implements ResponseFormatterIn
             'formAttributes' => $behavior->formAttributes,
             'action' => $behavior->action,
             'submitButtonLabel' => $behavior->submitButtonLabel,
-            'actionMenu' => $this->_actionMenu($behavior, false, $namespace),
+            'actionMenu' => $this->_actionMenu($behavior, false, [
+                'withButton' => false,
+            ], $namespace),
             'content' => $content,
             'sidebar' => $sidebar,
             'errorSummary' => $errorSummary,
@@ -167,7 +169,15 @@ class CpScreenResponseFormatter extends Component implements ResponseFormatterIn
                     return $crumb;
                 }, $crumbs ?? []),
                 'contextMenu' => $this->_contextMenu($behavior),
-                'actionMenu' => $this->_actionMenu($behavior),
+                'actionMenu' => $this->_actionMenu($behavior, config: [
+                    'hiddenLabel' => Craft::t('app', 'Actions'),
+                    'buttonAttributes' => [
+                        'class' => ['action-btn'],
+                        'removeClass' => 'menubtn',
+                        'title' => Craft::t('app', 'Actions'),
+                        'data' => ['icon' => 'ellipsis'],
+                    ],
+                ]),
                 'submitButtonLabel' => $behavior->submitButtonLabel,
                 'additionalButtons' => $addlButtons,
                 'tabs' => $behavior->tabs,
@@ -212,6 +222,7 @@ class CpScreenResponseFormatter extends Component implements ResponseFormatterIn
     private function _actionMenu(
         CpScreenResponseBehavior $behavior,
         bool $withDestructive = true,
+        array $config = [],
         ?string $namespace = null,
     ): ?string {
         if ($behavior->actionMenuItems === null) {
@@ -227,9 +238,8 @@ class CpScreenResponseFormatter extends Component implements ResponseFormatterIn
             );
         }
 
-        return $this->_menu($itemsFactory, [
+        return $this->_menu($itemsFactory, $config + [
             'id' => 'action-menu',
-            'withButton' => false,
         ], $namespace);
     }
 

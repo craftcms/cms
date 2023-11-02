@@ -315,6 +315,7 @@ Craft.CpScreenSlideout = Craft.Slideout.extend(
           const $trigger = $('<button/>', {
             class: 'btn action-btn header-btn',
             type: 'button',
+            title: Craft.t('app', 'Actions'),
             'aria-controls': menuId,
             'aria-describedby': labelId,
             'data-disclosure-trigger': 'true',
