@@ -1227,6 +1227,7 @@ SQL)->execute();
         // todo: remove after the next breakpoint
         if (Craft::$app->getDb()->columnExists(Table::ENTRYTYPES, 'slugTranslationMethod')) {
             $query->addSelect([
+                'showSlugField',
                 'slugTranslationMethod',
                 'slugTranslationKeyFormat',
                 'showStatusField',
@@ -1371,6 +1372,7 @@ SQL)->execute();
             $entryTypeRecord->titleTranslationMethod = $data['titleTranslationMethod'] ?? '';
             $entryTypeRecord->titleTranslationKeyFormat = $data['titleTranslationKeyFormat'] ?? null;
             $entryTypeRecord->titleFormat = $data['titleFormat'];
+            $entryTypeRecord->showSlugField = $data['showSlugField'] ?? true;
             $entryTypeRecord->slugTranslationMethod = $data['slugTranslationMethod'] ?? Field::TRANSLATION_METHOD_SITE;
             $entryTypeRecord->slugTranslationKeyFormat = $data['slugTranslationKeyFormat'] ?? null;
             $entryTypeRecord->showStatusField = $data['showStatusField'] ?? true;

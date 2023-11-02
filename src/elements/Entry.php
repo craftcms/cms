@@ -1804,7 +1804,9 @@ EOD;
         }
 
         // Slug
-        $fields[] = $this->slugFieldHtml($static);
+        if ($this->showSlugField()) {
+            $fields[] = $this->slugFieldHtml($static);
+        }
 
         // Parent
         if ($section?->type === Section::TYPE_STRUCTURE && $section->maxLevels !== 1) {
@@ -1896,6 +1898,20 @@ EOD;
         $fields[] = parent::metaFieldsHtml($static);
 
         return implode("\n", $fields);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function showSlugField(): bool
+    {
+        try {
+            $showSlugField = $this->getType()->showSlugField;
+        } catch (InvalidConfigException $e) {
+            $showSlugField = true;
+        }
+
+        return $showSlugField;
     }
 
     /**

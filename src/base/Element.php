@@ -5095,6 +5095,19 @@ abstract class Element extends Component implements ElementInterface
     }
 
     /**
+     * Returns whether the Slug field should be shown for this element.
+     *
+     *  If set to `false`, the element’s slug can't be updated via edit forms.
+     *
+     * @return bool
+     * @since 5.0.0
+     */
+    public function showSlugField(): bool
+    {
+        return true;
+    }
+
+    /**
      * Returns the HTML for the element’s Slug field.
      *
      * @param bool $static Whether the fields should be static (non-interactive)
