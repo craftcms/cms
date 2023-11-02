@@ -2633,6 +2633,11 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       });
     },
 
+    onCanceledInlineEditing: function () {
+      this.settings.onCanceledInlineEditing();
+      this.trigger('canceledInlineEditing');
+    },
+
     onSelectionChange: function () {
       this.settings.onSelectionChange();
       this.trigger('selectionChange');
@@ -3617,6 +3622,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       onBeforeUpdateElements: $.noop,
       onUpdateElements: $.noop,
       onCountResults: $.noop,
+      onCanceledInlineEditing: $.noop,
       onSelectionChange: $.noop,
       onSourcePathChange: $.noop,
       onEnableElements: $.noop,

@@ -191,7 +191,11 @@ Craft.TableElementIndexView = Craft.BaseElementIndexView.extend({
       this.addListener(this.$cancelBtn, 'activate', () => {
         this.$cancelBtn.addClass('loading');
         this.elementIndex.inlineEditing = false;
-        this.elementIndex.updateElements(true, false);
+        this.elementIndex.updateElements(true, false).finally(() => {
+          // wait until we're done updating elements,
+          // and then do what cancelling inline editing should do
+          this.elementIndex.onCanceledInlineEditing();
+        });
       });
 
       this.addListener(this.$elementContainer, 'keydown', (event) => {

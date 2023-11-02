@@ -66,6 +66,7 @@ Craft.EmbeddedElementIndex = Garnish.Base.extend(
             },
             onBeforeUpdateElements: this.onBeforeUpdateElements.bind(this),
             onCountResults: this.onCountResults.bind(this),
+            onCanceledInlineEditing: this.onCanceledInlineEditing.bind(this),
           }
         )
       );
@@ -140,6 +141,12 @@ Craft.EmbeddedElementIndex = Garnish.Base.extend(
     },
 
     onCountResults: function () {
+      if (this.$createBtn && this.canCreate()) {
+        this.$createBtn.removeClass('disabled');
+      }
+    },
+
+    onCanceledInlineEditing: function () {
       if (this.$createBtn && this.canCreate()) {
         this.$createBtn.removeClass('disabled');
       }
