@@ -426,6 +426,7 @@ class Cp
             'showLabel' => true,
             'showStatus' => true,
             'showThumb' => true,
+            'showActionMenu' => false,
             'size' => self::ELEMENT_SIZE_SMALL,
         ];
 
@@ -485,7 +486,10 @@ class Cp
             $html .= self::elementLabelHtml($element, $config, $attributes, fn() => $element->getChipLabelHtml());
         }
 
+        $actionMenuItems = $config['showActionMenu'] ? $element->getActionMenuItems() : null;
+
         $html .= Html::beginTag('div', ['class' => 'chip-actions']) .
+            ($config['showActionMenu'] ? self::elementActionMenu($element) : '') .
             ($config['sortable'] ? Html::button('', [
                 'class' => ['move', 'icon'],
                 'title' => Craft::t('app', 'Reorder'),
@@ -539,6 +543,7 @@ class Cp
             'context' => 'index',
             'id' => sprintf('card-%s', mt_rand()),
             'inputName' => null,
+            'showActionMenu' => false,
         ];
 
         $attributes = ArrayHelper::merge(
@@ -573,6 +578,7 @@ class Cp
                 'title' => Craft::t('app', 'Select'),
                 'aria' => ['label' => Craft::t('app', 'Select')],
             ]) : '') .
+            ($config['showActionMenu'] ? self::elementActionMenu($element) : '') .
             ($config['sortable'] ? Html::button('', [
                 'class' => ['move', 'icon'],
                 'title' => Craft::t('app', 'Reorder'),
@@ -707,6 +713,33 @@ class Cp
             'id' => sprintf('%s-label', $config['id']),
             'class' => 'label',
         ]);
+    }
+
+    private static function elementActionMenu(ElementInterface $element): string
+    {
+        return Craft::$app->getView()->namespaceInputs(
+            function() use ($element): string {
+                $actionMenuItems = array_filter(
+                    $element->getActionMenuItems(),
+                    fn(array $item) => !($item['destructive'] ?? false),
+                );
+
+                if (empty($actionMenuItems)) {
+                    return '';
+                }
+
+                return static::disclosureMenu($actionMenuItems, [
+                    'hiddenLabel' => Craft::t('app', 'Actions'),
+                    'buttonAttributes' => [
+                        'class' => ['action-btn'],
+                        'removeClass' => 'menubtn',
+                        'title' => Craft::t('app', 'Actions'),
+                        'data' => ['icon' => 'ellipsis'],
+                    ],
+                ]);
+            },
+            sprintf('element-actions-%s', mt_rand()),
+        );
     }
 
     /**
@@ -2284,6 +2317,11 @@ JS;
             ($items->get($i + 1)['type'] ?? null) !== MenuItemType::HR->value
         ));
 
+        // If we're left without any items, just return an empty string
+        if ($items->isEmpty()) {
+            return '';
+        }
+
         $config['items'] = $items->all();
 
         if ($config['withButton'] && $config['autoLabel']) {
@@ -2302,7 +2340,14 @@ JS;
         return Craft::$app->getView()->renderTemplate('_includes/disclosuremenu.twig', $config, View::TEMPLATE_MODE_CP);
     }
 
-    private static function normalizeMenuItems(array $items): array
+    /**
+     * Normalizes and cleans up the given disclosure menu items.
+     *
+     * @param array $items
+     * @return array
+     * @since 5.0.0
+     */
+    public static function normalizeMenuItems(array $items): array
     {
         return array_map(function(array $item) {
             if (!isset($item['type'])) {

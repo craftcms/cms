@@ -250,7 +250,8 @@ class CpScreenResponseFormatter extends Component implements ResponseFormatterIn
         }
 
         $render = function() use ($itemsFactory, $config): ?string {
-            $items = $itemsFactory();
+            $items = Cp::normalizeMenuItems($itemsFactory() ?? []);
+
             if (empty($items)) {
                 return null;
             }

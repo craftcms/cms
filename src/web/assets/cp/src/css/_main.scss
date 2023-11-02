@@ -3094,13 +3094,13 @@ table {
       margin: 0;
     }
 
-    & > .move,
-    & > .menubtn {
+    & > .action-btn,
+    & > .move {
       @include touch-target;
       margin: 0 -4px;
     }
 
-    .settings {
+    .action-btn {
       color: var(--ui-control-color);
 
       &:before {
