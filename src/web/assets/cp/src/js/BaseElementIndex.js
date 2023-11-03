@@ -3221,6 +3221,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       return new Promise((resolve, reject) => {
         if (this.totalResults !== null) {
           resolve(this.totalResults, this.totalUnfilteredResults);
+          this.onCountResults();
         } else {
           var params = this.getViewParams();
           delete params.baseCriteria.offset;
