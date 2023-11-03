@@ -1670,17 +1670,18 @@ Craft.ElementEditor = Garnish.Base.extend(
     _handleSlugField: function (slugFieldHtml) {
       if (this.$sidebar) {
         let $slugField = this.$sidebar.find('[id$="slug-field"]');
-        let $entryTypeField = this.$sidebar.find('[id$="entryType-field"]');
         // if the slug wasn't there, but now we have the html for it - add it
-        if ($slugField.length == 0 && slugFieldHtml) {
+        if ($slugField.length == 0 && slugFieldHtml !== null) {
+          $slugField = $(slugFieldHtml);
+          let $entryTypeField = this.$sidebar.find('[id$="entryType-field"]');
+
           if ($entryTypeField.length > 0) {
-            $(slugFieldHtml).insertAfter($entryTypeField);
+            $slugField.insertAfter($entryTypeField);
           } else {
-            $(slugFieldHtml).prependTo(
-              this.$sidebar.find('.primary-meta').first()
-            );
+            $slugField.prependTo(this.$sidebar.find('.primary-meta').first());
           }
         }
+
         // if the slug was there, but now the html for it is null - remove it
         if ($slugField.length == 1 && slugFieldHtml === null) {
           $slugField.remove();
