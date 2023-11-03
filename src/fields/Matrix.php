@@ -516,12 +516,6 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
         $query = MatrixBlock::find();
         $this->_populateQuery($query, $element);
 
-        $request = Craft::$app->getRequest();
-        // this is needed for the export
-        if ($request->getIsActionRequest() && $request->getActionSegments() === ['element-indexes', 'export']) {
-            $query->status(null);
-        }
-
         // Set the initially matched elements if $value is already set, which is the case if there was a validation
         // error or we're loading an entry revision.
         if ($value === '') {
