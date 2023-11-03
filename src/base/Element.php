@@ -5095,12 +5095,7 @@ abstract class Element extends Component implements ElementInterface
     }
 
     /**
-     * Returns whether the Slug field should be shown for this element.
-     *
-     *  If set to `false`, the element’s slug can't be updated via edit forms.
-     *
-     * @return bool
-     * @since 5.0.0
+     * @inheritdoc
      */
     public function showSlugField(): bool
     {
@@ -5108,13 +5103,9 @@ abstract class Element extends Component implements ElementInterface
     }
 
     /**
-     * Returns the HTML for the element’s Slug field.
-     *
-     * @param bool $static Whether the fields should be static (non-interactive)
-     * @return string
-     * @since 3.7.0
+     * @inheritdoc
      */
-    protected function slugFieldHtml(bool $static): string
+    public function slugFieldHtml(bool $static): string
     {
         $slug = isset($this->slug) && !ElementHelper::isTempSlug($this->slug) ? $this->slug : null;
 
