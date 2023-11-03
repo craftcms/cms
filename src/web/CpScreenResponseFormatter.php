@@ -174,6 +174,7 @@ class CpScreenResponseFormatter extends Component implements ResponseFormatterIn
                 'actionMenu' => $this->_actionMenu($behavior, config: [
                     'hiddenLabel' => Craft::t('app', 'Actions'),
                     'buttonAttributes' => [
+                        'id' => 'action-btn',
                         'class' => ['action-btn'],
                         'removeClass' => 'menubtn',
                         'title' => Craft::t('app', 'Actions'),

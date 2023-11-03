@@ -391,6 +391,180 @@ export default Base.extend(
       delete this._menuHeight;
     },
 
+    isPadded: function () {
+      return this.$container.children('.padded').length;
+    },
+
+    createItem: function (item) {
+      if (item.nodeType === Node.ELEMENT_NODE) {
+        return item;
+      }
+
+      if (item instanceof jQuery) {
+        return item[0];
+      }
+
+      if (!$.isPlainObject(item)) {
+        throw 'Unsupported item configuration.';
+      }
+
+      let type;
+      if (item.type) {
+        type = item.type;
+      } else if (item.action) {
+        type = 'button';
+      } else {
+        type = 'link';
+      }
+
+      const li = document.createElement('li');
+      if (item.hidden) {
+        li.classList.add('hidden');
+      }
+
+      const el = document.createElement(type === 'button' ? 'button' : 'a');
+      el.id = item.id || `menu-item-${Math.floor(Math.random() * 1000000)}`;
+      el.className = 'menu-item';
+      if (item.selected) {
+        el.classList.add('sel');
+      }
+      if (item.destructive) {
+        el.classList.add('error');
+        el.setAttribute('data-destructive', 'true');
+      }
+      if (item.action) {
+        el.classList.add('formsubmit');
+      }
+      if (type === 'link') {
+        el.href = Craft.getUrl(item.url);
+      }
+      if (item.icon) {
+        el.setAttribute('data-icon', item.icon);
+      }
+      if (item.action) {
+        el.setAttribute('data-action', item.action);
+        el.setAttribute('data-form', 'false');
+      }
+      if (item.params) {
+        el.setAttribute(
+          'data-params',
+          typeof item.params === 'string'
+            ? item.params
+            : JSON.stringify(item.params)
+        );
+      }
+      if (item.confirm) {
+        el.setAttribute('data-confirm', item.confirm);
+      }
+      if (item.redirect) {
+        el.setAttribute('data-redirect', item.redirect);
+      }
+      li.append(el);
+
+      if (item.status) {
+        const status = document.createElement('div');
+        status.className = `status ${item.status}`;
+        el.append(status);
+      }
+
+      const label = document.createElement('span');
+      label.className = 'menu-item-label';
+      if (item.label) {
+        label.textContent = item.label;
+      } else if (item.html) {
+        label.innerHTML = item.html;
+      }
+      el.append(label);
+
+      if (item.description) {
+        const description = document.createElement('div');
+        description.className = 'menu-item-description smalltext light';
+        description.textContent = item.description;
+        el.append(description);
+      }
+
+      this.addListener(el, 'click', () => {
+        this.hide();
+      });
+
+      return li;
+    },
+
+    addItem: function (item, ul) {
+      item = this.createItem(item);
+
+      if (!ul) {
+        ul = this.$container.children('ul').last().get(0) || this.addGroup();
+      }
+
+      ul.append(item);
+      return item.querySelector('a, button');
+    },
+
+    addHr: function (before) {
+      const hr = document.createElement('hr');
+      if (this.isPadded()) {
+        hr.className = 'padded';
+      }
+
+      if (before) {
+        before.parentNode.insertBefore(hr, before);
+      } else {
+        this.$container.append(hr);
+      }
+
+      return hr;
+    },
+
+    getFirstDestructiveGroup: function () {
+      return this.$container
+        .children('ul:has([data-destructive]):first')
+        .get(0);
+    },
+
+    addGroup: function (heading, addHrs, before) {
+      const padded = this.isPadded();
+
+      if (heading) {
+        const h6 = document.createElement('h6');
+        if (padded) {
+          h6.className = 'padded';
+        }
+        h6.textContent = heading;
+
+        if (before) {
+          before.parentNode.insertBefore(h6, before);
+        } else {
+          this.$container.append(h6);
+        }
+      }
+
+      const ul = document.createElement('ul');
+      if (padded) {
+        ul.className = 'padded';
+      }
+
+      if (before) {
+        before.parentNode.insertBefore(ul, before);
+      } else {
+        this.$container.append(ul);
+      }
+
+      if (addHrs) {
+        if (
+          ul.previousElementSibling &&
+          ul.previousElementSibling.nodeName !== 'HR'
+        ) {
+          this.addHr(ul);
+        }
+        if (ul.nextElementSibling && ul.nextElementSibling !== 'HR') {
+          this.addHr(ul.nextElementSibling);
+        }
+      }
+
+      return ul;
+    },
+
     /**
      * Destroy
      */

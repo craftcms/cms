@@ -151,10 +151,10 @@ export default Base.extend(
         Garnish.hideModalBackgroundLayers();
 
         if (this.settings.hideOnEsc) {
-          Garnish.uiLayerManager.registerShortcut(
-            Garnish.ESC_KEY,
-            this.hide.bind(this)
-          );
+          Garnish.uiLayerManager.registerShortcut(Garnish.ESC_KEY, () => {
+            this.trigger('escape');
+            this.hide();
+          });
         }
 
         this.onShow();

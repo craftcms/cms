@@ -1058,6 +1058,64 @@ Craft.CP = Garnish.Base.extend(
       }
     },
 
+    updateContext: function (label, description) {
+      const contextBtn = document.getElementById('context-btn');
+      if (contextBtn) {
+        contextBtn.textContent = label;
+      }
+
+      const menuItem = document.querySelector('#context-menu a.sel');
+      if (menuItem) {
+        const labelEl = menuItem.querySelector('.menu-item-label');
+        labelEl.textContent = label;
+
+        let descriptionEl = menuItem.querySelector('.menu-item-description');
+        if (description) {
+          if (!descriptionEl) {
+            descriptionEl = document.createElement('div');
+            descriptionEl.className = 'menu-item-description smalltext light';
+            menuItem.append(descriptionEl);
+          }
+          descriptionEl.textContent = description;
+        } else if (descriptionEl) {
+          descriptionEl.remove();
+        }
+      }
+    },
+
+    showSiteCrumbMenuItem: function (siteId) {
+      const menuItem = document.querySelector(
+        `#site-crumb-menu a[data-site-id="${siteId}"]`
+      );
+      if (menuItem) {
+        const li = menuItem.closest('li');
+        li.classList.remove('hidden');
+        const group = li.closest('.menu-group');
+        if (group) {
+          group.classList.remove('hidden');
+        }
+      }
+    },
+
+    setSiteCrumbMenuItemStatus: function (siteId, status) {
+      const menuItem = document.querySelector(
+        `#site-crumb-menu a[data-site-id="${siteId}"]`
+      );
+      if (menuItem) {
+        let statusEl = menuItem.querySelector('.status');
+
+        if (status) {
+          if (!statusEl) {
+            statusEl = document.createElement('div');
+            menuItem.prepend(statusEl);
+          }
+          statusEl.className = `status ${status}`;
+        } else if (statusEl) {
+          statusEl.remove();
+        }
+      }
+    },
+
     checkForUpdates: function (forceRefresh, includeDetails, callback) {
       // Make 'includeDetails' optional
       if (typeof includeDetails === 'function') {
