@@ -7492,9 +7492,7 @@ $titlebarBorderRadius: calc(var(--large-border-radius) - 1px);
     }
   }
 
-  &.disabled {
-    opacity: 1;
-
+  &.disabled-entry {
     & > .titlebar {
       @include padding-right(90px);
     }
@@ -7505,17 +7503,6 @@ $titlebarBorderRadius: calc(var(--large-border-radius) - 1px);
           display: block;
         }
       }
-    }
-
-    & > .titlebar,
-    .actions,
-    .checkbox {
-      pointer-events: auto;
-      user-select: auto;
-    }
-
-    div.checkbox {
-      cursor: pointer;
     }
   }
 
