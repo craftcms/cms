@@ -1588,6 +1588,7 @@ XML;
                     if ($this->email) {
                         if ($this->pending || $canAdministrateUsers) {
                             $statusItems[] = [
+                                'icon' => 'paperplane',
                                 'label' => Craft::t('app', 'Send activation email'),
                                 'action' => 'users/send-activation-email',
                                 'params' => [
@@ -1601,6 +1602,7 @@ XML;
                                 $statusItems[] = $this->_copyPasswordResetUrlActionItem(Craft::t('app', 'Copy activation URL…'), $view);
                             }
                             $statusItems[] = [
+                                'icon' => 'enabled',
                                 'label' => Craft::t('app', 'Activate account'),
                                 'action' => 'users/activate-user',
                                 'params' => [
@@ -1613,6 +1615,7 @@ XML;
                 case self::STATUS_SUSPENDED:
                     if ($usersService->canSuspend($currentUser, $this)) {
                         $statusItems[] = [
+                            'icon' => 'enabled',
                             'label' => Craft::t('app', 'Unsuspend'),
                             'action' => 'users/unsuspend-user',
                             'params' => [
@@ -1644,6 +1647,7 @@ XML;
 
                     if (!$isCurrentUser) {
                         $statusItems[] = [
+                            'icon' => 'paperplane',
                             'label' => Craft::t('app', 'Send password reset email'),
                             'action' => 'users/send-password-reset-email',
                             'params' => [
@@ -1660,6 +1664,7 @@ XML;
             if (!$isCurrentUser) {
                 if ($usersService->canImpersonate($currentUser, $this)) {
                     $sessionItems[] = [
+                        'icon' => 'key',
                         'label' => trim($this->getName())
                             ? Craft::t('app', 'Sign in as {user}', ['user' => $this->getName()])
                             : Craft::t('app', 'Sign in as user'),
@@ -1732,6 +1737,7 @@ JS, [
             if (!$isCurrentUser) {
                 if ($usersService->canSuspend($currentUser, $this) && $this->active && !$this->suspended) {
                     $items[] = [
+                        'icon' => 'ban',
                         'label' => Craft::t('app', 'Suspend'),
                         'action' => 'users/suspend-user',
                         'params' => [
@@ -1745,6 +1751,7 @@ JS, [
             if (!$this->admin || $currentUser->admin) {
                 if (($isCurrentUser || $canAdministrateUsers) && ($this->active || $this->pending)) {
                     $items[] = [
+                        'icon' => 'disabled',
                         'label' => Craft::t('app', 'Deactivate…'),
                         'action' => 'users/deactivate-user',
                         'params' => [
