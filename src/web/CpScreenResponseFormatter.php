@@ -140,7 +140,9 @@ class CpScreenResponseFormatter extends Component implements ResponseFormatterIn
                 'icon' => 'world',
                 'label' => Craft::t('site', $behavior->site->name),
                 'menu' => !empty($behavior->selectableSites)
-                    ? Cp::siteMenuItems($behavior->selectableSites, $behavior->site)
+                    ? Cp::siteMenuItems($behavior->selectableSites, $behavior->site, [
+                        'includeOmittedSites' => true,
+                    ])
                     : null,
             ]);
         }

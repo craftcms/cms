@@ -2377,15 +2377,24 @@ JS;
      *
      * @param array<int,Site|array{site:Site,status?:string}> $sites
      * @param Site|null $selectedSite
+     * @param array $config
      * @return array
      * @since 5.0.0
      */
-    public static function siteMenuItems(array $sites, ?Site $selectedSite = null): array
-    {
+    public static function siteMenuItems(
+        array $sites,
+        ?Site $selectedSite = null,
+        array $config = [],
+    ): array {
+        $config += [
+            'showSiteGroupHeadings' => null,
+            'includeOmittedSites' => false,
+        ];
+
         $items = [];
 
         $siteGroups = Craft::$app->getSites()->getAllGroups();
-        $showSiteGroupHeadings = count($siteGroups) > 1;
+        $config['showSiteGroupHeadings'] ??= count($siteGroups) > 1;
 
         // Normalize and index the sites
         /** @var array<int,array{site:Site,status?:string}> $sites */
@@ -2399,21 +2408,36 @@ JS;
         $params = $request->getQueryParamsWithoutPath();
 
         foreach ($siteGroups as $siteGroup) {
-            $groupSiteOptions = array_map(fn(Site $site) => [
+            $groupSites = $siteGroup->getSites();
+            if (!$config['includeOmittedSites']) {
+                $groupSites = array_filter($groupSites, fn(Site $site) => isset($sites[$site->id]));
+            }
+
+            if (empty($groupSites)) {
+                continue;
+            }
+
+            $groupSiteItems = array_map(fn(Site $site) => [
                 'status' => $sites[$site->id]['status'] ?? null,
                 'label' => Craft::t('site', $site->name),
                 'url' => UrlHelper::cpUrl($path, ['site' => $site->handle] + $params),
                 'hidden' => !isset($sites[$site->id]),
                 'selected' => $site->id === $selectedSite->id,
-            ], $siteGroup->getSites());
+                'attributes' => [
+                    'data' => [
+                        'site-id' => $site->id,
+                    ],
+                ],
+            ], $groupSites);
 
-            if ($showSiteGroupHeadings) {
+            if ($config['showSiteGroupHeadings']) {
                 $items[] = [
                     'heading' => Craft::t('site', $siteGroup->name),
-                    'options' => $groupSiteOptions,
+                    'items' => $groupSiteItems,
+                    'hidden' => !ArrayHelper::contains($groupSiteItems, fn(array $item) => !$item['hidden']),
                 ];
             } else {
-                array_push($items, ...$groupSiteOptions);
+                array_push($items, ...$groupSiteItems);
             }
         }
 
