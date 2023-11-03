@@ -6,7 +6,7 @@
 {% set entryAttributes = {
   class: [
     'matrixblock',
-    not entry.enabled ? 'disabled',
+    not entry.enabled ? 'disabled-entry',
     static ? 'static',
   ]|filter,
   data: {
