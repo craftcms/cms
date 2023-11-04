@@ -7,33 +7,37 @@
 {% import '_includes/forms.twig' as forms %}
 
 {% set showDrafts = showDrafts ?? false %}
-{% set drafts = element.id and showDrafts ? element.find()
-    .draftOf(element)
-    .siteId(element.siteId)
-    .status(null)
-    .orderBy({dateUpdated: SORT_DESC})
-    .with(['draftCreator'])
-    .all()|filter(d => canView(d)) : [] %}
-
-{% set maxRevisions = craft.app.config.general.maxRevisions %}
-{% set hasMoreRevisions = false %}
-{% set revisionsPageUrl = null %}
-{% if element.id and (not maxRevisions or maxRevisions > 1) %}
-    {% set revisionsQuery = element.find()
-        .revisionOf(element.getCanonicalId())
+{% if drafts is not defined %}
+    {% set drafts = element.id and showDrafts ? element.find()
+        .draftOf(element)
         .siteId(element.siteId)
         .status(null)
-        .offset(1)
-        .limit(maxRevisions ? min(maxRevisions - 1, 10) : 10)
-        .orderBy({dateCreated: SORT_DESC})
-        .with(['revisionCreator']) %}
-    {% set revisions = revisionsQuery.all() %}
-    {% set revisionsPageUrl = element.getCpRevisionsUrl() %}
-    {% if revisionsPageUrl %}
-        {% set hasMoreRevisions = (revisionsQuery.count() - 1) > revisions|length %}
+        .orderBy({dateUpdated: SORT_DESC})
+        .with(['draftCreator'])
+        .all()|filter(d => canView(d)) : [] %}
+{% endif %}
+
+{% if revisions is not defined %}
+    {% set maxRevisions = craft.app.config.general.maxRevisions %}
+    {% set hasMoreRevisions = false %}
+    {% set revisionsPageUrl = null %}
+    {% if element.id and (not maxRevisions or maxRevisions > 1) %}
+        {% set revisionsQuery = element.find()
+            .revisionOf(element.getCanonicalId())
+            .siteId(element.siteId)
+            .status(null)
+            .offset(1)
+            .limit(maxRevisions ? min(maxRevisions - 1, 10) : 10)
+            .orderBy({dateCreated: SORT_DESC})
+            .with(['revisionCreator']) %}
+        {% set revisions = revisionsQuery.all() %}
+        {% set revisionsPageUrl = element.getCpRevisionsUrl() %}
+        {% if revisionsPageUrl %}
+            {% set hasMoreRevisions = (revisionsQuery.count() - 1) > revisions|length %}
+        {% endif %}
+    {% else %}
+        {% set revisions = [] %}
     {% endif %}
-{% else %}
-    {% set revisions = [] %}
 {% endif %}
 
 {% set baseParams = craft.app.request.queryParams|withoutKey('draftId')|withoutKey('revisionId')|withoutKey('siteId')|withoutKey('fresh') %}
