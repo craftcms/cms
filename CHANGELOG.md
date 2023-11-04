@@ -11,6 +11,7 @@
 - Fixed a bug where element edit pages could show a context menu when it wasn’t necessary.
 - Fixed a bug where the “Delete entry for this site” action wasn’t deleting the canonical entry for the selected site, when editing a provisional draft.
 - Fixed an error that occurred when cropping an image that was missing its dimension info. ([#13884](https://github.com/craftcms/cms/issues/13884))])
+- Fixed an error that occurred if a filesystem didn’t have any settings. ([#13883](https://github.com/craftcms/cms/pull/13883))
 
 ## 4.5.9 - 2023-10-23
 
