@@ -42,6 +42,8 @@ class ContextProcessor implements ProcessorInterface
      */
     public function __invoke(array $record): array
     {
+        $record[$this->key]['environment'] = Craft::$app->env;
+
         if (Craft::$app->getConfig()->getGeneral()->storeUserIps) {
             $request = Craft::$app->getRequest();
 
