@@ -664,8 +664,14 @@ class ImageTransformer extends Component implements ImageTransformerInterface, E
     {
         $imageCopy = $asset->getCopyOfFile();
 
-        /** @var Raster $image */
-        $image = Craft::$app->getImages()->loadImage($imageCopy, true, max($asset->height, $asset->width));
+        if (FileHelper::isSvg($imageCopy)) {
+            $size = max($asset->width, $asset->height) ?? 1000;
+            /** @var Raster $image */
+            $image = Craft::$app->getImages()->loadImage($imageCopy, true, $size);
+        } else {
+            /** @var Raster $image */
+            $image = Craft::$app->getImages()->loadImage($imageCopy);
+        }
 
         // TODO Is this hacky? It seems hacky.
         // We're rasterizing SVG, we have to make sure that the filename change does not get lost
