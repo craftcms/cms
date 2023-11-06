@@ -502,6 +502,8 @@ JS,
 
         $optionsHtml = '';
 
+        $currentUser = Craft::$app->getUser()->getIdentity();
+
         foreach ($groupedRuleTypeOptions as $groupLabel => $groupRuleTypeOptions) {
             if ($groupLabel !== '__UNGROUPED__') {
                 $optionsHtml .= Html::tag('hr', options: ['class' => 'padded']) .
@@ -510,11 +512,11 @@ JS,
             ArrayHelper::multisort($groupRuleTypeOptions, 'label');
             $optionsHtml .=
                 Html::beginTag('ul', ['class' => 'padded']) .
-                implode("\n", array_map(function(array $option) use ($ruleValue) {
+                implode("\n", array_map(function(array $option) use ($ruleValue, $currentUser) {
                     $html = Html::beginTag('li');
 
                     $label = Html::encode($option['label']);
-                    if (isset($option['handle'])) {
+                    if (isset($option['handle']) && $currentUser?->getPreference('showFieldHandles')) {
                         $label .= ' ' . Html::tag('div', $option['handle'], [
                             'class' => ['smalltext', 'code'],
                             ]);
