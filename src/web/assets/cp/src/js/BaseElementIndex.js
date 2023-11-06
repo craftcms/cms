@@ -187,6 +187,8 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       this.$container = $container;
       this.setSettings(settings, Craft.BaseElementIndex.defaults);
 
+      this.$container.data('elementIndex', this);
+
       this.nestedInputNamespace = `elementindex-${Math.floor(
         Math.random() * 100000
       )}`;
@@ -3064,11 +3066,6 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       // Update the view with the new container + elements HTML
       // -------------------------------------------------------------
 
-      if (this.isAdministrative) {
-        // set Craft.currentElementIndex for actions
-        Craft.currentElementIndex = this;
-      }
-
       this.$elements.html(response.html);
       Craft.appendHeadHtml(response.headHtml);
       Craft.appendBodyHtml(response.bodyHtml);
@@ -3342,6 +3339,12 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       }
 
       this._$triggers.appendTo(this.$actionsContainer);
+
+      if (this.isAdministrative) {
+        // set Craft.currentElementIndex for actions
+        Craft.currentElementIndex = this;
+      }
+
       await Craft.appendHeadHtml(this.actionsHeadHtml);
       await Craft.appendBodyHtml(this.actionsBodyHtml);
 
