@@ -40,7 +40,12 @@ class Expanded extends ElementExporter
         $eagerLoadableFields = [];
         foreach (Craft::$app->getFields()->getAllFields() as $field) {
             if ($field instanceof EagerLoadingFieldInterface) {
-                $eagerLoadableFields[] = $field->handle;
+                $eagerLoadableFields[] = [
+                    'path' => $field->handle,
+                    'criteria' => [
+                        'status' => null,
+                    ],
+                ];
             }
         }
 
