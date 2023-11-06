@@ -703,10 +703,10 @@ class User extends Element implements IdentityInterface
     public ?User $inheritorOnDelete = null;
 
     /**
-     * @var Address[] Addresses
+     * @var ElementCollection<Address> Addresses
      * @see getAddresses()
      */
-    private array $_addresses;
+    private ElementCollection $_addresses;
 
     /**
      * @see getAddressManager()
@@ -970,19 +970,18 @@ class User extends Element implements IdentityInterface
     /**
      * Gets the user’s addresses.
      *
-     * @return Address[]
+     * @return ElementCollection<Address>
      * @since 4.0.0
      */
-    public function getAddresses(): array
+    public function getAddresses(): ElementCollection
     {
         if (!isset($this->_addresses)) {
             if (!$this->id) {
-                return [];
+                /** @var ElementCollection */
+                return ElementCollection::make();
             }
 
-            /** @var Address[] $addresses */
-            $addresses = $this->createAddressQuery()->all();
-            $this->_addresses = $addresses;
+            $this->_addresses = $this->createAddressQuery()->collect();
         }
 
         return $this->_addresses;

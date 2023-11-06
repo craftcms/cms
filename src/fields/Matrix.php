@@ -78,6 +78,8 @@ class Matrix extends Field implements
     public const EVENT_DEFINE_ENTRY_TYPES = 'defineEntryTypes';
 
     /** @since 5.0.0 */
+    public const VIEW_MODE_CARDS = 'cards';
+    /** @since 5.0.0 */
     public const VIEW_MODE_BLOCKS = 'blocks';
     /** @since 5.0.0 */
     public const VIEW_MODE_INDEX = 'index';
@@ -201,7 +203,7 @@ class Matrix extends Field implements
      * @phpstan-var self::VIEW_MODE_*
      * @since 5.0.0
      */
-    public string $viewMode = self::VIEW_MODE_BLOCKS;
+    public string $viewMode = self::VIEW_MODE_CARDS;
 
     /**
      * @var bool Include table view in element indexes
@@ -347,6 +349,11 @@ class Matrix extends Field implements
         $rules[] = [['entryTypes'], ArrayValidator::class, 'min' => 1, 'skipOnEmpty' => false];
         $rules[] = [['siteSettings'], fn() => $this->validateSiteSettings()];
         $rules[] = [['minEntries', 'maxEntries'], 'integer', 'min' => 0];
+        $rules[] = [['viewMode'], 'in', 'range' => [
+            self::VIEW_MODE_CARDS,
+            self::VIEW_MODE_INDEX,
+            self::VIEW_MODE_BLOCKS,
+        ]];
         return $rules;
     }
 
@@ -761,7 +768,7 @@ class Matrix extends Field implements
     {
         return match ($this->viewMode) {
             self::VIEW_MODE_BLOCKS => $this->blockInputHtml($value, $element),
-            self::VIEW_MODE_INDEX => $this->indexInputHtml($element),
+            default => $this->nestedElementManagerHtml($element),
         };
     }
 
@@ -845,11 +852,32 @@ class Matrix extends Field implements
             ]);
     }
 
-    private function indexInputHtml(?ElementInterface $owner, bool $static = false): string
+    private function nestedElementManagerHtml(?ElementInterface $owner, bool $static = false): string
     {
         $entryTypes = $this->getEntryTypes();
+        $config = [];
 
-        $config = [
+        if (!$static) {
+            $config += [
+                'sortable' => true,
+                'canCreate' => true,
+                'createAttributes' => array_map(fn(EntryType $entryType) => [
+                    'label' => Craft::t('site', $entryType->name),
+                    'attributes' => [
+                        'fieldId' => $this->id,
+                        'typeId' => $entryType->id,
+                    ],
+                ], $entryTypes),
+                'minElements' => $this->minEntries,
+                'maxElements' => $this->maxEntries,
+            ];
+        }
+
+        if ($this->viewMode === self::VIEW_MODE_CARDS) {
+            return $this->entryManager()->getCardsHtml($owner, $config);
+        }
+
+        $config += [
             'allowedViewModes' => array_filter([
                 ElementIndexViewMode::Cards,
                 $this->includeTableView ? ElementIndexViewMode::Table : null,
@@ -865,17 +893,6 @@ class Matrix extends Field implements
             $config += [
                 'fieldLayouts' => array_map(fn(EntryType $entryType) => $entryType->getFieldLayout(), $entryTypes),
                 'defaultTableColumns' => array_map(fn(string $attribute) => [$attribute], $this->defaultTableColumns),
-                'sortable' => true,
-                'canCreate' => true,
-                'createAttributes' => array_map(fn(EntryType $entryType) => [
-                    'label' => Craft::t('site', $entryType->name),
-                    'attributes' => [
-                        'fieldId' => $this->id,
-                        'typeId' => $entryType->id,
-                    ],
-                ], $entryTypes),
-                'minElements' => $this->minEntries,
-                'maxElements' => $this->maxEntries,
             ];
         }
 
@@ -983,8 +1000,8 @@ class Matrix extends Field implements
      */
     public function getStaticHtml(mixed $value, ElementInterface $element): string
     {
-        if ($this->viewMode === self::VIEW_MODE_INDEX) {
-            return $this->indexInputHtml($element, true);
+        if ($this->viewMode !== self::VIEW_MODE_BLOCKS) {
+            return $this->nestedElementManagerHtml($element, true);
         }
 
         /** @var EntryQuery|ElementCollection $value */

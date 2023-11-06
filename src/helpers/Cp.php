@@ -1062,7 +1062,7 @@ JS, [
 
     private static function contextIsAdministrative(string $context): bool
     {
-        return in_array($context, ['index', 'embedded-index']);
+        return in_array($context, ['index', 'embedded-index', 'field']);
     }
 
     /**
