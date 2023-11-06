@@ -1018,13 +1018,28 @@ class DateTimeHelper
             return $date;
         }
 
-        // get offset (in seconds) against UTC
-        $offset = $date->format('Z');
-        $map = self::timezoneMap();
-
-        if (isset($map[$offset])) {
-            return new DateTime($date->format('Y-m-d H:i:s'), new DateTimeZone($map[$offset]));
+        $tzName = strtolower($date->getTimezone()->getName());
+        // get timezone type
+        if (str_starts_with($tzName, '+')) {
+            $timezone_type = 1;
+        } else {
+            $timezone_type = 2;
         }
+
+        $map = self::timezoneMap($timezone_type);
+
+        if ($timezone_type === 1) {
+            // get offset (in seconds) against UTC
+            $offset = $date->format('Z');
+            if (isset($map[$offset])) {
+                return new DateTime($date->format('Y-m-d H:i:s'), new DateTimeZone($map[$offset]));
+            }
+        } else {
+            if (isset($map[$tzName])) {
+                return new DateTime($date->format('Y-m-d H:i:s'), new DateTimeZone($map[$tzName]));
+            }
+        }
+
 
         return $date;
     }
@@ -1035,16 +1050,24 @@ class DateTimeHelper
      * @return array
      * @throws Exception
      */
-    private static function timezoneMap(): array
+    private static function timezoneMap(int $timezone_type): array
     {
         $timezones = [];
         $now = new DateTime('now', new DateTimeZone('UTC'));
 
-        foreach (DateTimeZone::listIdentifiers() as $timezone) {
-            $now->setTimezone(new DateTimeZone($timezone));
-            $offset = $now->getOffset();
-            if (!isset($timezones[$offset])) {
-                $timezones[$offset] = $timezone;
+        if ($timezone_type === 2) {
+            foreach (DateTimeZone::listAbbreviations() as $abbreviation => $data) {
+                if ($data[0]['timezone_id'] !== null) {
+                    $timezones[$abbreviation] = $data[0]['timezone_id'];
+                }
+            }
+        } else {
+            foreach (DateTimeZone::listIdentifiers() as $timezone) {
+                $now->setTimezone(new DateTimeZone($timezone));
+                $offset = $now->getOffset();
+                if (!isset($timezones[$offset])) {
+                    $timezones[$offset] = $timezone;
+                }
             }
         }
 
