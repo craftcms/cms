@@ -2872,6 +2872,23 @@ JS;
                 Image::cleanImageByPath($this->tempFilePath);
             }
 
+            // if we're creating or replacing and image, get the width or height via getimagesize
+            // in case loadImage is not able to get them properly (e.g. imagick runs out of memory)
+            $fallbackWidth = null;
+            $fallbackHeight = null;
+            if (
+                in_array($this->getScenario(), [self::SCENARIO_REPLACE, self::SCENARIO_CREATE], true) &&
+                Assets::getFileKindByExtension($this->tempFilePath) === static::KIND_IMAGE
+            ) {
+                $imageSize = getimagesize($this->tempFilePath);
+                if (isset($imageSize[0])) {
+                    $fallbackWidth = (int)$imageSize[0];
+                }
+                if (isset($imageSize[1])) {
+                    $fallbackHeight = (int)$imageSize[1];
+                }
+            }
+
             // Relocate the file?
             if (isset($this->newLocation) || isset($this->tempFilePath)) {
                 $this->_relocateFile();
@@ -2896,8 +2913,8 @@ JS;
             $record->kind = $this->kind;
             $record->alt = $this->alt;
             $record->size = (int)$this->size ?: null;
-            $record->width = (int)$this->_width ?: null;
-            $record->height = (int)$this->_height ?: null;
+            $record->width = (int)$this->_width ?: $fallbackWidth;
+            $record->height = (int)$this->_height ?: $fallbackHeight;
             $record->dateModified = Db::prepareDateForDb($this->dateModified);
 
             if ($this->getHasFocalPoint()) {
