@@ -18,7 +18,6 @@ use Exception;
  *
  * @property string|null $startDate
  * @property string|null $endDate
- * @property bool $endDateInclusive
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.0.0
  */
@@ -53,11 +52,6 @@ abstract class BaseDateRangeConditionRule extends BaseConditionRule
      * @var string|null
      */
     private ?string $_endDate = null;
-
-    /**
-     * @var bool
-     */
-    private bool $_endDateInclusive = false;
 
     /**
      * @inheritdoc
@@ -117,22 +111,6 @@ abstract class BaseDateRangeConditionRule extends BaseConditionRule
     }
 
     /**
-     * @return bool
-     */
-    public function getEndDateInclusive(): bool
-    {
-        return $this->_endDateInclusive;
-    }
-
-    /**
-     * @param mixed $value
-     */
-    public function setEndDateInclusive(mixed $value): void
-    {
-        $this->_endDateInclusive = (bool)$value;
-    }
-
-    /**
      * @inheritdoc
      */
     public function getConfig(): array
@@ -143,7 +121,6 @@ abstract class BaseDateRangeConditionRule extends BaseConditionRule
             'periodValue' => $this->periodValue,
             'startDate' => $this->getStartDate(),
             'endDate' => $this->getEndDate(),
-            'endDateInclusive' => $this->getEndDateInclusive(),
         ]);
     }
 
@@ -251,20 +228,6 @@ JS,
                             'value' => $this->getEndDate(),
                         ])
                     )
-                ) .
-                Html::tag(
-                    'div',
-                    options: ['class' => ['flex', 'flex-nowrap']],
-                    content: Html::tag('div',
-                        Cp::checkboxFieldHtml([
-                            'id' => 'end-date-inclusive',
-                            'name' => 'endDateInclusive',
-                            'checkboxLabel' => Craft::t('app', 'Including “To” Date'),
-                            'checked' => $this->getEndDateInclusive(),
-                            'value' => 1,
-                            'info' => Craft::t('app', 'By default, “To” date is not included in the range. Check this box to include it.'),
-                        ])
-                    )
                 );
         } elseif (in_array($this->rangeType, [DateRange::TYPE_BEFORE, DateRange::TYPE_AFTER])) {
             $periodValueId = 'period-value';
@@ -344,7 +307,6 @@ JS,
             [['rangeType'], 'in', 'range' => array_keys($this->rangeTypeOptions())],
             [['periodType'], 'in', 'range' => array_keys($this->periodTypeOptions())],
             [['periodValue'], 'number', 'skipOnEmpty' => true],
-            [['endDateInclusive'], 'boolean', 'skipOnEmpty' => true],
         ]);
     }
 
@@ -442,9 +404,7 @@ JS,
     private function _adjustedEndDate(): DateTime
     {
         $endDate = DateTimeHelper::toDateTime($this->_endDate);
-        if ($this->_endDateInclusive) {
-            $endDate->modify('+1 day');
-        }
+        $endDate->modify('+1 day');
 
         return $endDate;
     }

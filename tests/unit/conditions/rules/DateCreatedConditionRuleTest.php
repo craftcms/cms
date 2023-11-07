@@ -103,10 +103,6 @@ class DateCreatedConditionRuleTest extends TestCase
         return [
             'start-and-end' => [
                 ['rangeType' => DateRange::TYPE_RANGE, 'startDate' => $startDate, 'endDate' => $endDate],
-                ['and', '>= ' . $startDate->format(DateTime::ATOM), '< ' . $endDate->format(DateTime::ATOM)],
-            ],
-            'start-and-end-inclusive' => [
-                ['rangeType' => DateRange::TYPE_RANGE, 'startDate' => $startDate, 'endDate' => $endDate, 'endDateInclusive' => true],
                 ['and', '>= ' . $startDate->format(DateTime::ATOM), '< ' . (clone $endDate)->modify('+1 day')->format(DateTime::ATOM)],
             ],
             'today' => [
