@@ -371,7 +371,11 @@ Craft.NestedElementManager = Garnish.Base.extend(
 
     initElement($element) {
       if (Garnish.hasAttr($element, 'data-editable')) {
-        this.addListener($element, 'dblclick,taphold', () => {
+        this.addListener($element, 'dblclick,taphold', (ev) => {
+          if (['A', 'BUTTON'].includes(ev.target.nodeName)) {
+            // Let the link/button do its thing
+            return;
+          }
           Craft.createElementEditor(this.elementType, $element);
         });
       }
