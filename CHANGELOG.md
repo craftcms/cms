@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 4
 
-## Unreleased
+## 4.5.10 - 2023-11-07
 
 - Added the `db/drop-table-prefix` command.
 - Top-level disabled related/nested elements are now included in “Extended” element exports. ([#13496](https://github.com/craftcms/cms/issues/13496))
