@@ -17,6 +17,7 @@ use craft\errors\DbConnectException;
 use craft\errors\ShellCommandException;
 use craft\events\BackupEvent;
 use craft\events\RestoreEvent;
+use craft\helpers\App;
 use craft\helpers\Db;
 use craft\helpers\FileHelper;
 use craft\helpers\StringHelper;
@@ -143,6 +144,10 @@ class Connection extends \yii\db\Connection
      */
     public function open(): void
     {
+        if (App::env('CRAFT_NO_DB')) {
+            throw new DbConnectException('Craft CMS can’t connect to the database.');
+        }
+
         try {
             parent::open();
         } catch (DbException $e) {
