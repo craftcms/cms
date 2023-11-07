@@ -418,6 +418,7 @@ class NestedElementManager extends Component
                 return Cp::elementIndexHtml($this->elementType, [
                     'context' => 'embedded-index',
                     'id' => $id,
+                    'showSiteMenu' => false,
                     'sources' => false,
                     'fieldLayouts' => $config['fieldLayouts'],
                     'defaultTableColumns' => $config['defaultTableColumns'],

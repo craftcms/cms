@@ -78,13 +78,6 @@ class CpScreenResponseBehavior extends Behavior
     public ?array $selectableSites = null;
 
     /**
-     * @var string|null The current page’s crumb label
-     * @see currentCrumbLabel()
-     * @since 5.0.0
-     */
-    public ?string $currentCrumbLabel = null;
-
-    /**
      * @var array|callable|null Breadcrumbs.
      *
      * This will only be used by full-page screens.
@@ -367,19 +360,6 @@ class CpScreenResponseBehavior extends Behavior
     public function selectableSites(?array $value): Response
     {
         $this->selectableSites = $value;
-        return $this->owner;
-    }
-
-    /**
-     * Sets the current page’s crumb label.
-     *
-     * @param string|null $value
-     * @return Response
-     * @since 5.0.0
-     */
-    public function currentCrumbLabel(?string $value): Response
-    {
-        $this->currentCrumbLabel = $value;
         return $this->owner;
     }
 

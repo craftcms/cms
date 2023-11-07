@@ -9,6 +9,8 @@ namespace craft\console\controllers;
 
 use Craft;
 use craft\console\Controller;
+use craft\db\Connection;
+use craft\db\Table;
 use craft\helpers\Console;
 use craft\helpers\Db;
 use craft\helpers\FileHelper;
@@ -367,5 +369,121 @@ class DbController extends Controller
 
         $this->stdout("Finished converting tables to $charset/$collation." . PHP_EOL, Console::FG_GREEN);
         return ExitCode::OK;
+    }
+
+    /**
+     * Drops the database table prefix from all tables.
+     *
+     * @param string|null $prefix The current table prefix. If omitted, the prefix will be detected automatically.
+     * @return int
+     * @since 4.5.10
+     */
+    public function actionDropTablePrefix(?string $prefix = null): int
+    {
+        $db = Craft::$app->getDb();
+        $prefix ??= $this->detectPrefix($db);
+
+        if ($prefix === false) {
+            return ExitCode::UNSPECIFIED_ERROR;
+        }
+
+        $prefix = StringHelper::ensureRight($prefix, '_');
+
+        $this->warning(<<<MD
+All database tables named `$prefix*` will be renamed to drop the table prefix.
+**This should NOT be run on production!**
+MD);
+
+        if (!$this->confirm('Are you sure you want to proceed?')) {
+            return ExitCode::OK;
+        }
+
+        $tablePrefixBak = $db->tablePrefix;
+        $db->tablePrefix = $prefix;
+        $schema = $db->getSchema();
+        $quotedPrefix = preg_quote($prefix, '/');
+
+        foreach ($schema->getTableNames() as $oldName) {
+            if (!str_starts_with($oldName, $prefix)) {
+                continue;
+            }
+
+            $newName = preg_replace("/^$quotedPrefix/", '', $oldName);
+
+            $this->do(
+                $this->markdownToAnsi("Renaming `$oldName` to `$newName`"),
+                function() use ($oldName, $newName, $db) {
+                    Db::renameTable($oldName, $newName, $db);
+                },
+            );
+        }
+
+        $db->tablePrefix = $tablePrefixBak;
+
+        $this->success('Database tables renamed.');
+
+        if (Craft::$app->getConfig()->getDb()->tablePrefix) {
+            $this->tip('Don’t forget to clear out your `tablePrefix` database setting.');
+        }
+
+        return ExitCode::OK;
+    }
+
+    private function detectPrefix(Connection $db): string|false
+    {
+        $this->stdout("Detecting the current table prefix …\n");
+
+        $patterns = array_map(
+            function(string $name) {
+                // based on Schema::getRawTableName()
+                $name = preg_replace('/\\{\\{(.*?)}}/', '\1', $name);
+                $name = preg_replace_callback('/[^%]+/', fn($match) => preg_quote($match[0], '/'), $name);
+                return sprintf('/^%s$/', str_replace('%', '(\w+)_', $name));
+            },
+            [Table::ELEMENTS, Table::ENTRIES, Table::INFO, Table::SECTIONS],
+        );
+
+        $foundPrefixes = [];
+
+        foreach ($db->getSchema()->getTableNames() as $name) {
+            foreach ($patterns as $pattern) {
+                if (preg_match($pattern, $name, $match)) {
+                    if (!isset($foundPrefixes[$match[1]])) {
+                        $foundPrefixes[$match[1]] = 1;
+                    } else {
+                        $foundPrefixes[$match[1]]++;
+                    }
+                    break;
+                }
+            }
+        }
+
+        $possiblePrefixes = [];
+        foreach ($foundPrefixes as $prefix => $count) {
+            if ($count === count($patterns)) {
+                $possiblePrefixes[] = $prefix;
+            }
+        }
+
+        if (empty($possiblePrefixes)) {
+            $this->stdout("No current table prefix appears to be in use.\n", Console::FG_RED);
+            return false;
+        }
+
+        if (count($possiblePrefixes) === 1) {
+            $prefix = reset($possiblePrefixes);
+            $this->stdout($this->markdownToAnsi("`$prefix` detected.") . PHP_EOL);
+            return $prefix;
+        }
+
+        if (!$this->interactive) {
+            $this->stdout("Multiple table prefixes were detected. Run the command again with the current prefix specified.\n", Console::FG_RED);
+            return false;
+        }
+
+        return $this->select(
+            'Multiple table prefixes were detected. Which one should be removed?',
+            array_combine($possiblePrefixes, $possiblePrefixes),
+        );
     }
 }
