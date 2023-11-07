@@ -479,7 +479,10 @@ JS, [
         $value = $element->getFieldValue($this->handle);
 
         if ($value instanceof ElementQueryInterface) {
-            $value = $this->_all($value, $element);
+            $value
+                ->site('*')
+                ->unique()
+                ->preferSites([$this->targetSiteId($element)]);
         }
 
         $errorCount = 0;
