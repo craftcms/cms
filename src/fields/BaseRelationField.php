@@ -440,7 +440,7 @@ JS, [
             $value = $element->getFieldValue($this->handle);
 
             if ($value instanceof ElementQueryInterface) {
-                $value = $this->_all($value);
+                $value = $this->_all($value, $element);
             }
 
             $arrayValidator = new NumberValidator([
@@ -479,7 +479,7 @@ JS, [
         $value = $element->getFieldValue($this->handle);
 
         if ($value instanceof ElementQueryInterface) {
-            $value = $this->_all($value);
+            $value = $this->_all($value, $element);
         }
 
         $errorCount = 0;
