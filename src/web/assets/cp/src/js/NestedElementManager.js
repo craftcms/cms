@@ -109,6 +109,7 @@ Craft.NestedElementManager = Garnish.Base.extend(
     initCards() {
       this.$elements = this.$container.children('.elements');
 
+      // Was .elements just created?
       if (!this.$elements.length) {
         this.$elements = $('<ul/>', {
           class: 'elements card-grid',
@@ -369,6 +370,12 @@ Craft.NestedElementManager = Garnish.Base.extend(
     },
 
     initElement($element) {
+      if (Garnish.hasAttr($element, 'data-editable')) {
+        this.addListener($element, 'dblclick,taphold', () => {
+          Craft.createElementEditor(this.elementType, $element);
+        });
+      }
+
       if (this.settings.sortable) {
         this.elementSort.addItems($element.parent());
       }
