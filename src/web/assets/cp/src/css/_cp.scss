@@ -519,7 +519,7 @@ li.crumb {
   font-size: 13px;
   margin: 0 !important;
   max-width: 100%;
-  overflow: hidden;
+  overflow-x: hidden;
 
   &.empty {
     display: none;
@@ -527,6 +527,12 @@ li.crumb {
 
   nav {
     margin: 0;
+  }
+}
+
+#primary-nav-toggle {
+  &:focus-visible {
+    box-shadow: var(--inner-focus-ring);
   }
 }
 
