@@ -2678,6 +2678,10 @@ table {
       }
 
       td {
+        &[data-attr$='Status'] {
+          white-space: nowrap;
+        }
+
         &.timestamp {
           @include alignright;
           vertical-align: bottom;
