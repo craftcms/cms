@@ -619,8 +619,15 @@ li.crumb {
   flex-wrap: nowrap;
   gap: var(--xs);
 
+  [data-icon] {
+    position: relative;
+    top: -1px;
+  }
+
   .menubtn {
-    margin: 0 calc(var(--xs) * -1 + 2px);
+    position: relative;
+    top: -1px;
+    margin: 0 calc(var(--xs) * -1 / 2);
   }
 
   [data-icon='ellipsis']:before {

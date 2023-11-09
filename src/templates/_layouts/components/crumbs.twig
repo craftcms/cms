@@ -8,7 +8,7 @@
           {% if hasMenuItems %}
             {% set crumb = (
               crumb.menu.items|map(o => (o.group ?? false) ? (o.options ?? []) : [o])|flatten(1)|firstWhere(o => o.selected ?? false) ?: {}
-            )|merge(crumb) %}
+              )|merge(crumb) %}
           {% endif %}
 
           {% tag 'li' with {
@@ -21,35 +21,34 @@
               {{ crumb.html|raw }}
             {% else %}
               {% set labelId = "crumb-label#{random()}" %}
+              {% if crumb.icon is defined %}
+                <span data-icon="{{ crumb.icon }}" aria-hidden></span>
+              {% endif %}
+
               {% tag 'a' with {
                 id: crumb.id ?? null,
                 href: crumb.url is defined ? url(crumb.url) : null,
               } %}
-                {% if crumb.icon is defined %}
-                  <span data-icon="{{ crumb.icon }}" aria-hidden></span>
-                {% endif %}
-                <span id="{{ labelId }}">
-                  {{ crumb.label ?? crumb.html|raw }}
-                </span>
-
-                {% if crumb.menu is defined and crumb.menu.items is defined %}
-                  {% set menuId = crumb.id is defined ? "#{crumb.id}-menu" : "crumb-menu#{random()}" %}
-                  {% set menuLabel = crumb.menu.label ?? null %}
-                  {{ tag('button', {
-                    class: ['btn', 'menubtn'],
-                    type: 'button',
-                    title: 'Menu'|t('app'),
-                    aria: {
-                      label: menuLabel,
-                      controls: menuId,
-                      describedby: menuLabel ? null : labelId,
-                    },
-                    data: {
-                      'disclosure-trigger': true,
-                    },
-                  }) }}
-                {% endif %}
+                {{ crumb.label ?? crumb.html|raw }}
               {% endtag %}
+
+              {% if crumb.menu is defined and crumb.menu.items is defined %}
+                {% set menuId = crumb.id is defined ? "#{crumb.id}-menu" : "crumb-menu#{random()}" %}
+                {% set menuLabel = crumb.menu.label ?? null %}
+                {{ tag('button', {
+                  class: ['btn', 'menubtn'],
+                  type: 'button',
+                  title: 'Menu'|t('app'),
+                  aria: {
+                    label: menuLabel,
+                    controls: menuId,
+                    describedby: menuLabel ? null : labelId,
+                  },
+                  data: {
+                    'disclosure-trigger': true,
+                  },
+                }) }}
+              {% endif %}
 
               {% if hasMenuItems %}
                 {{ disclosureMenu(crumb.menu.items, {
