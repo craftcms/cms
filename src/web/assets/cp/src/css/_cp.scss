@@ -519,7 +519,7 @@ li.crumb {
   font-size: 13px;
   margin: 0 !important;
   max-width: 100%;
-  overflow-x: hidden;
+  overflow: hidden;
 
   &.empty {
     display: none;
