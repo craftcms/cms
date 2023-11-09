@@ -4,9 +4,10 @@
     <nav aria-label="{{ 'Breadcrumbs'|t('app') }}">
       <ul id="crumb-list">
         {% for crumb in crumbs %}
-          {% if crumb.menu is defined %}
+          {% set hasMenuItems = crumb.menu is defined and crumb.menu.items is defined %}
+          {% if hasMenuItems %}
             {% set crumb = (
-              crumb.menu|map(o => (o.group ?? false) ? (o.options ?? []) : [o])|flatten(1)|firstWhere(o => o.selected ?? false) ?: {}
+              crumb.menu.items|map(o => (o.group ?? false) ? (o.options ?? []) : [o])|flatten(1)|firstWhere(o => o.selected ?? false) ?: {}
             )|merge(crumb) %}
           {% endif %}
 
@@ -31,15 +32,17 @@
                   {{ crumb.label ?? crumb.html|raw }}
                 </span>
 
-                {% if crumb.menu is defined %}
+                {% if crumb.menu is defined and crumb.menu.items is defined %}
                   {% set menuId = crumb.id is defined ? "#{crumb.id}-menu" : "crumb-menu#{random()}" %}
+                  {% set menuLabel = crumb.menu.label ?? null %}
                   {{ tag('button', {
                     class: ['btn', 'menubtn'],
                     type: 'button',
                     title: 'Menu'|t('app'),
                     aria: {
+                      label: menuLabel,
                       controls: menuId,
-                      describedby: labelId,
+                      describedby: menuLabel ? null : labelId,
                     },
                     data: {
                       'disclosure-trigger': true,
@@ -48,8 +51,8 @@
                 {% endif %}
               {% endtag %}
 
-              {% if crumb.menu is defined %}
-                {{ disclosureMenu(crumb.menu, {
+              {% if hasMenuItems %}
+                {{ disclosureMenu(crumb.menu.items, {
                   id: menuId,
                   withButton: false,
                 }) }}

@@ -230,6 +230,7 @@ return [
     'Change icon' => 'Change icon',
     'Change logo' => 'Change logo',
     'Change photo' => 'Change photo',
+    'Change site' => 'Change site',
     'Changelog' => 'Changelog',
     'Changes discarded.' => 'Changes discarded.',
     'Changes saved.' => 'Changes saved.',
