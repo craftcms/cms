@@ -21,14 +21,15 @@
               {{ crumb.html|raw }}
             {% else %}
               {% set labelId = "crumb-label#{random()}" %}
-              {% if crumb.icon is defined %}
-                <span data-icon="{{ crumb.icon }}" aria-hidden></span>
-              {% endif %}
 
               {% tag 'a' with {
                 id: crumb.id ?? null,
                 href: crumb.url is defined ? url(crumb.url) : null,
               } %}
+                {% if crumb.icon is defined %}
+                  <span data-icon="{{ crumb.icon }}" aria-hidden></span>
+                {% endif %}
+
                 {{ crumb.label ?? crumb.html|raw }}
               {% endtag %}
 
