@@ -219,7 +219,6 @@ class CpScreenResponseFormatter extends Component implements ResponseFormatterIn
             'autoLabel' => true,
             'buttonAttributes' => [
                 'id' => 'context-btn',
-                'class' => ['context-label'],
             ],
             'hiddenLabel' => Craft::t('app', 'Context'),
         ], $namespace);

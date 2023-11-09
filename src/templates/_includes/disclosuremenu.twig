@@ -57,9 +57,10 @@
 {% endmacro %}
 
 {% if withButton %}
-  {% if hiddenLabel ?? false %}
-    {% set hiddenLabelId = "#{id}-label" %}
-    <label id="{{ hiddenLabelId }}" class="visually-hidden">{{ hiddenLabel }}</label>
+  {% if html ?? false %}
+    {{ html | raw }}
+  {% elseif label ?? false %}
+    <span >{{ label }}</span>
   {% endif %}
 
   {{ tag('button', {
@@ -67,7 +68,7 @@
     type: 'button',
     aria: {
       controls: id,
-      describedby: hiddenLabelId ?? null,
+      label: hiddenLabel ?? null
     },
     data: {
       'disclosure-trigger': true,

@@ -2332,8 +2332,8 @@ JS;
                 ->first(fn(array $i) => $i['selected'] ?? false);
 
             if ($selectedItem) {
-                $config['buttonLabel'] = $selectedItem['label'] ?? null;
-                $config['buttonHtml'] = $selectedItem['html'] ?? null;
+                $config['label'] = $selectedItem['label'] ?? null;
+                $config['html'] = $selectedItem['html'] ?? null;
             }
         }
 

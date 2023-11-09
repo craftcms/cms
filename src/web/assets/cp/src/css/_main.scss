@@ -3027,7 +3027,7 @@ table {
 }
 
 .context-label,
-.context-menu-container .menubtn {
+.context-menu-container {
   display: inline-flex;
   align-items: center;
   @include margin-left(var(--xs));
@@ -3039,6 +3039,22 @@ table {
   color: var(--light-text-color);
   border-radius: calc(var(--touch-target-size) / 2);
   border: 1px solid var(--medium-hairline-color);
+}
+
+.context-menu-container:has(.menubtn) {
+  padding-right: 0;
+
+  > * {
+    display: inline-block;
+    padding-right: var(--s);
+  }
+}
+
+#global-header .context-menu-container .menubtn {
+  padding-left: calc(var(--s) * 0.8) !important;
+  border-left: 1px solid var(--medium-hairline-color);
+  border-radius: 0 calc(var(--touch-target-size) / 2)
+    calc(var(--touch-target-size) / 2) 0;
 }
 
 .context-menu-container .menubtn:hover {

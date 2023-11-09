@@ -701,6 +701,11 @@ li.breadcrumb-toggle-wrapper {
   }
 }
 
+.context-menu-container {
+  border: 1px solid var(--medium-hairline-color);
+  border-radius: calc(var(--touch-target-size) / 2);
+}
+
 .context-menu-container .menubtn {
   @include margin-left(0);
 }
