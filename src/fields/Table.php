@@ -101,7 +101,7 @@ class Table extends Field
      */
     public function __construct($config = [])
     {
-        // Config normalization}
+        // Config normalization
         if (array_key_exists('columns', $config)) {
             if (!is_array($config['columns'])) {
                 unset($config['columns']);
@@ -689,6 +689,9 @@ class Table extends Field
         foreach ($this->columns as &$column) {
             if (!empty($column['heading'])) {
                 $column['heading'] = Craft::t('site', $column['heading']);
+            }
+            if (!empty($column['options'])) {
+                array_walk($column['options'], fn(&$option) => $option['label'] = Craft::t('site', $option['label']));
             }
         }
         unset($column);
