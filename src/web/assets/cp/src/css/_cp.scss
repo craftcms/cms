@@ -483,8 +483,12 @@ li.crumb {
 
   .btn {
     --ui-control-color: var(--gray-400);
-    --ui-control-hover-color: var(--gray-500);
-    --ui-control-active-color: var(--gray-600);
+    --ui-control-hover-color: var(--gray-800);
+    --ui-control-active-color: var(--gray-700);
+
+    &:hover {
+      color: var(--ui-control-hover-color);
+    }
   }
 }
 
