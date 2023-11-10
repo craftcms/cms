@@ -1,5 +1,9 @@
 # Release Notes for Craft CMS 4
 
+## Unreleased
+
+- Fixed a bug where <kbd>↑</kbd> and <kbd>↓</kbd> key presses would set focus to disabled menu options. ([#13911](https://github.com/craftcms/cms/issues/13911))
+
 ## 4.5.10 - 2023-11-07
 
 - Added the `db/drop-table-prefix` command.
