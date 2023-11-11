@@ -1622,6 +1622,9 @@ abstract class Element extends Component implements ElementInterface
             'map' => $map,
             'criteria' => [
                 'siteId' => $otherSiteIds,
+                'drafts' => null,
+                'provisionalDrafts' => null,
+                'revisions' => null,
             ],
         ];
     }
@@ -3491,11 +3494,11 @@ abstract class Element extends Component implements ElementInterface
             ->id($this->id ?: false)
             ->structureId($this->structureId)
             ->siteId(['not', $this->siteId])
-            ->drafts($this->getIsDraft())
+            ->drafts(null)
             // the provisionalDraft state could have just changed (e.g. `elements/save-draft`)
             // so don't filter based on one or the other
             ->provisionalDrafts(null)
-            ->revisions($this->getIsRevision());
+            ->revisions(null);
     }
 
     /**
@@ -4937,9 +4940,9 @@ JS,
     }
 
     /**
-     * Whether status field should be shown for this element.
-     * If set to `false`, status can't be updated via editing entry, action or resave command.
-     * `true` for all elements by default for backwards compatibility.
+     * Returns whether the Status field should be shown for this element.
+     *
+     *  If set to `false`, the element’s status can't be updated via edit forms, the Set Status action, or `resave/*` commands.
      *
      * @return bool
      * @since 4.5.0

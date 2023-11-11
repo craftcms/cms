@@ -1,5 +1,36 @@
 # Release Notes for Craft CMS 4
 
+## Unreleased
+
+- `craft\web\Response::setCacheHeaders()` now includes the `public` directive in the `Cache-Control` header. ([#13922](https://github.com/craftcms/cms/pull/13922))
+- Fixed a bug where <kbd>↑</kbd> and <kbd>↓</kbd> key presses would set focus to disabled menu options. ([#13911](https://github.com/craftcms/cms/issues/13911))
+- Fixed a bug where elements’ `localized` GraphQL field wasn’t returning any results for drafts or revisions. ([#13924](https://github.com/craftcms/cms/issues/13924))
+
+## 4.5.10 - 2023-11-07
+
+- Added the `db/drop-table-prefix` command.
+- Top-level disabled related/nested elements are now included in “Extended” element exports. ([#13496](https://github.com/craftcms/cms/issues/13496))
+- Related element validation is no longer recursive. ([#13904](https://github.com/craftcms/cms/issues/13904))
+- Addresses’ owner elements are now automatically set on them during initialization, if they were queried with the `owner` address query param.
+- Entry Title fields are no longer shown when “Show the Title field” is disabled and there’s a validation error on the `title` attribute. ([#13876](https://github.com/craftcms/cms/issues/13876))
+- Improved the reliability of image dimension detection. ([#13886](https://github.com/craftcms/cms/pull/13886))
+- The default backup command for PostgreSQL no longer passes in `--column-inserts` to `pg_dump`.
+- Log contexts now include the environment name. ([#13882](https://github.com/craftcms/cms/pull/13882))
+- Added `craft\web\AssetManager::$cacheSourcePaths`.
+- Fixed a bug where disclosure menus could be positioned off-screen on mobile.
+- Fixed a bug where element edit pages could show a context menu when it wasn’t necessary.
+- Fixed a bug where the “Delete entry for this site” action wasn’t deleting the canonical entry for the selected site, when editing a provisional draft.
+- Fixed an error that occurred when cropping an image that was missing its dimension info. ([#13884](https://github.com/craftcms/cms/issues/13884))
+- Fixed an error that occurred if a filesystem didn’t have any settings. ([#13883](https://github.com/craftcms/cms/pull/13883))
+- Fixed a bug where related element validation wansn’t ensuring that related elements were loaded in the same site as the source element when possible. ([#13907](https://github.com/craftcms/cms/issues/13907))
+- Fixed a bug where sites weren’t always getting queried in the same order, if multiple sites’ `sortOrder` values were the same. ([#13896](https://github.com/craftcms/cms/issues/13896))
+
+## 4.5.9 - 2023-10-23
+
+- Fixed a bug where it was possible to change the status for entries that didn’t show the Status field, via bulk editing. ([#13854](https://github.com/craftcms/cms/issues/13854))
+- Fixed a PHP error that could occur when editing elements via slideouts. ([#13867](https://github.com/craftcms/cms/issues/13867))
+- Fixed an error that could occur if no `storage/` folder existed.
+
 ## 4.5.8 - 2023-10-20
 
 - Improved the styling and accessibility of revision pages. ([#13857](https://github.com/craftcms/cms/pull/13857), [#13850](https://github.com/craftcms/cms/issues/13850))

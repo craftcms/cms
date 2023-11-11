@@ -164,6 +164,12 @@ trait ElementTrait
     public bool $propagating = false;
 
     /**
+     * @var bool Whether the element is currently being validated via BaseRelationField::validateRelatedElements()
+     * @since 4.5.10
+     */
+    public bool $validatingRelatedElement = false;
+
+    /**
      * @var bool Whether all element attributes should be propagated across all its supported sites, even if that means
      * overwriting existing site-specific values.
      * @since 3.2.0
