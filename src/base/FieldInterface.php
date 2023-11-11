@@ -98,6 +98,11 @@ interface FieldInterface extends SavableComponentInterface
      * array, whose keys match the keys returned by this method. The field type should also override
      * [[serializeValue()]] to ensure values are being returned as associative arrays using the same keys.
      *
+     * ::: warning
+     * JSON columns do not work with MariaDB, so they should not be used by plugins which will be
+     * shared publicly.
+     * :::
+     *
      * @return string|string[] The column type(s). [[\yii\db\QueryBuilder::getColumnType()]] will be called
      * to convert the give column type to the physical one. For example, `string` will be converted
      * as `varchar(255)` and `string(100)` becomes `varchar(100)`. `not null` will automatically be
