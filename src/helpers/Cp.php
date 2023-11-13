@@ -695,6 +695,12 @@ class Cp
 
         $status = $element->getStatus();
         $statusDef = $element::statuses()[$status] ?? null;
+
+        // Just to give the `statusIndicatorHtml` clean types
+        if (is_string($statusDef)) {
+            $statusDef = ['label' => $statusDef];
+        }
+
         return self::statusIndicatorHtml($status, $statusDef);
     }
 
