@@ -226,7 +226,7 @@ $radioSize: 16px;
 
 @mixin icon {
   font-family: 'Craft';
-  speak: none;
+  speak: never;
   -webkit-font-feature-settings: 'liga', 'dlig';
   -moz-font-feature-settings: 'liga=1, dlig=1';
   -moz-font-feature-settings: 'liga', 'dlig';
