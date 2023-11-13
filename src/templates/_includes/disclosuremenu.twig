@@ -41,7 +41,7 @@
       }|filter,
     }|merge(item.attributes ?? {}, recursive=true) %}
       {% if item.status ?? false -%}
-        <div class="status {{ item.status }}"></div>
+        {{ statusIndicator(item.status) }}
       {%- endif -%}
       <span class="menu-item-label">{{ item.label ?? item.html|raw }}</span>
       {% if item.description is defined %}
