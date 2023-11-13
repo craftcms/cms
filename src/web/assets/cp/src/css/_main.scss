@@ -5868,7 +5868,7 @@ $min2ColWidth: 400px;
             background: var(--gray-050);
 
             &:not([data-icon]):before {
-              content: 'check';
+              content: '\f00e';
             }
           }
         }
