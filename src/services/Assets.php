@@ -36,10 +36,12 @@ use craft\helpers\Image;
 use craft\helpers\Json;
 use craft\helpers\StringHelper;
 use craft\imagetransforms\FallbackTransformer;
+use craft\models\Asset_SiteSettings;
 use craft\models\FolderCriteria;
 use craft\models\ImageTransform;
 use craft\models\Volume;
 use craft\models\VolumeFolder;
+use craft\records\Asset_SiteSettings as Asset_SiteSettingsRecord;
 use craft\records\VolumeFolder as VolumeFolderRecord;
 use yii\base\Component;
 use yii\base\Exception;
@@ -1168,5 +1170,32 @@ class Assets extends Component
                 $query->andWhere(Db::parseParam('path', $criteria->path));
             }
         }
+    }
+
+    /**
+     * Returns a asset's site settings.
+     *
+     * @param int $assetId
+     * @return Asset_SiteSettings[]
+     * @since 5.0.0
+     */
+    public function getSiteSettings(int $assetId): array
+    {
+        /** @var Asset_SiteSettingsRecord[] $results */
+        $results = Asset_SiteSettingsRecord::find()
+            ->where(['assetId' => $assetId])
+            ->all();
+        $siteSettings = [];
+
+        foreach ($results as $result) {
+            $siteSettings[] = new Asset_SiteSettings($result->toArray([
+                'id',
+                'assetId',
+                'siteId',
+                'alt',
+            ]));
+        }
+
+        return $siteSettings;
     }
 }

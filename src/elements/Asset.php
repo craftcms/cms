@@ -9,6 +9,7 @@ namespace craft\elements;
 
 use Craft;
 use craft\base\Element;
+use craft\base\ElementInterface;
 use craft\base\Field;
 use craft\base\Fs;
 use craft\base\FsInterface;
@@ -1086,6 +1087,11 @@ class Asset extends Element
      * @var int|null
      */
     private ?int $_oldVolumeId = null;
+
+    /**
+     * @var Asset_SiteSettings[]
+     */
+    private array $_siteSettings;
 
     /**
      * @inheritdoc
@@ -2935,6 +2941,10 @@ JS;
             $record->height = (int)$this->_height ?: null;
             $record->dateModified = Db::prepareDateForDb($this->dateModified);
 
+            if ($record->alt === null) {
+                $record->alt = $this->alt;
+            }
+
             if ($this->getHasFocalPoint()) {
                 $focal = $this->getFocalPoint();
                 $record->focalPoint = number_format($focal['x'], 4) . ';' . number_format($focal['y'], 4);
@@ -2944,19 +2954,70 @@ JS;
 
             $record->save(false);
 
-            $this->siteSettings($this);
+            // if we've already set the default alt, and now we are getting a different value,
+            // use that value to set the site-specific alt
+            if ($record->alt !== null && $record->alt !== $this->alt) {
+                $this->saveSiteSettings($this);
+            }
         }
 
         parent::afterSave($isNew);
     }
 
     /**
+     * @inheritdoc
+     */
+    public function onPropagate(ElementInterface $siteElement, bool $isNew): void
+    {
+        // Copy the alt value if the translation key says so, or if we don't have Asset_SiteSettings record for it yet
+        if (
+            !$isNew &&
+            /** @phpstan-ignore-next-line */
+            $siteElement->getAltTranslationKey() === $this->getAltTranslationKey()
+        ) {
+            $this->saveSiteSettings($siteElement);
+        }
+    }
+
+    /**
+     * Returns the asset's site-specific settings.
+     *
+     * @return Asset_SiteSettings[]
+     * @since 5.0.0
+     */
+    public function getSiteSettings(): array
+    {
+        if (isset($this->_siteSettings)) {
+            return $this->_siteSettings;
+        }
+
+        if (!$this->id) {
+            return [];
+        }
+
+        $this->setSiteSettings(ArrayHelper::index(Craft::$app->getAssets()->getSiteSettings($this->id), 'siteId'));
+
+        return $this->_siteSettings;
+    }
+
+    /**
+     * Sets the asset's site-specific settings.
+     *
+     * @param Asset_SiteSettings[] $siteSettings
+     * @since 5.0.0
+     */
+    public function setSiteSettings(array $siteSettings): void
+    {
+        $this->_siteSettings = $siteSettings;
+    }
+
+    /**
      * Store site settings for the asset element
      *
-     * @param Element $element
+     * @param ElementInterface $element
      * @return void
      */
-    public function siteSettings(Element $element): void
+    protected function saveSiteSettings(ElementInterface $element): void
     {
         $siteSettingsRecord = Asset_SiteSettings::findOne([
             'assetId' => $element->id,

@@ -1681,6 +1681,15 @@ interface ElementInterface extends ComponentInterface
     public function afterSave(bool $isNew): void;
 
     /**
+     * Performs actions while element is being propagated to other sites.
+     *
+     * @param ElementInterface $siteElement element for the site we're propagating to
+     * @param bool $isNew Whether the element is brand new
+     * @since 5.0.0
+     */
+    public function onPropagate(ElementInterface $siteElement, bool $isNew): void;
+
+    /**
      * Performs actions after an element is fully saved and propagated to other sites.
      *
      * ::: tip

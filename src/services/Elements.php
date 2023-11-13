@@ -3649,6 +3649,7 @@ class Elements extends Component
             }
         }
 
+        $element->onPropagate($siteElement, $isNewSiteForElement);
 
         // Copy the dirty attributes (except title, slug and uri, which may be translatable)
         $siteElement->setDirtyAttributes(array_filter($element->getDirtyAttributes(), function(string $attribute): bool {

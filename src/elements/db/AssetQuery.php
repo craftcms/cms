@@ -875,6 +875,15 @@ class AssetQuery extends ElementQuery
             Craft::$app->getImageTransforms()->eagerLoadTransforms($elements, $transforms);
         }
 
+        // populate site-specific alts
+        foreach ($elements as $key => $element) {
+            $siteSettings = $element->getSiteSettings();
+            if (isset($siteSettings[$element->siteId])) {
+                $element->alt = $siteSettings[$element->siteId]->alt;
+            }
+        }
+
+
         return $elements;
     }
 
@@ -897,10 +906,6 @@ class AssetQuery extends ElementQuery
         $this->joinElementTable(Table::ASSETS);
         $this->subQuery->innerJoin(['volumeFolders' => Table::VOLUMEFOLDERS], '[[volumeFolders.id]] = [[assets.folderId]]');
         $this->query->innerJoin(['volumeFolders' => Table::VOLUMEFOLDERS], '[[volumeFolders.id]] = [[assets.folderId]]');
-        $this->query->leftJoin(
-            ['assets_sites' => Table::ASSETS_SITES],
-            '[[assets_sites.assetId]] = [[assets.id]] AND [[assets_sites.siteId]] = [[elements_sites.siteId]]'
-        );
 
         $this->query->select([
             'assets.volumeId',
@@ -911,11 +916,11 @@ class AssetQuery extends ElementQuery
             'assets.width',
             'assets.height',
             'assets.size',
+            'assets.alt',
             'assets.focalPoint',
             'assets.keptFile',
             'assets.dateModified',
             'volumeFolders.path AS folderPath',
-            'assets_sites.alt',
         ]);
 
         if ($this->volumeId) {

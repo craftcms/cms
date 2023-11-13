@@ -51,4 +51,14 @@ class Asset_SiteSettings extends ActiveRecord
     {
         return $this->hasOne(Site::class, ['id' => 'siteId']);
     }
+
+    /**
+     * Returns the asset group’s site settings.
+     *
+     * @return ActiveQueryInterface The relational query object.
+     */
+    public function getSiteSettings(): ActiveQueryInterface
+    {
+        return $this->hasMany(Asset_SiteSettings::class, ['assetId' => 'id']);
+    }
 }

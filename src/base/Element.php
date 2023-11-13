@@ -5376,6 +5376,14 @@ JS,
     /**
      * @inheritdoc
      */
+    public function onPropagate(ElementInterface $siteElement, bool $isNew): void
+    {
+        // element types can do things during propagation
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function afterPropagate(bool $isNew): void
     {
         // Tell the fields about it
