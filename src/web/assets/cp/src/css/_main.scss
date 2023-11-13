@@ -5833,7 +5833,8 @@ $min2ColWidth: 400px;
     }
   }
 
-  h6 {
+  h6,
+  .h6 {
     &:first-child {
       margin-top: 14px !important;
     }
