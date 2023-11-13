@@ -669,7 +669,7 @@ li.crumb {
     display: flex !important;
     align-items: center;
     flex-wrap: nowrap;
-    gap: var(--s);
+    gap: var(--xs);
     white-space: nowrap;
 
     .menu--disclosure & {
