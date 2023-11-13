@@ -102,6 +102,10 @@ class DateTimeHelper
             return false;
         }
 
+        if (is_string($value) && Json::isJsonObject($value)) {
+            $value = Json::decodeIfJson($value);
+        }
+
         $defaultTimeZone = ($assumeSystemTimeZone ? Craft::$app->getTimeZone() : 'UTC');
 
         if (is_array($value)) {
