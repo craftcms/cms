@@ -733,7 +733,6 @@ class Cp
                     'buttonAttributes' => [
                         'class' => ['action-btn'],
                         'removeClass' => 'menubtn',
-                        'title' => Craft::t('app', 'Actions'),
                         'data' => ['icon' => 'ellipsis'],
                     ],
                 ]);
