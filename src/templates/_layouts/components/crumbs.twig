@@ -28,7 +28,7 @@
                 href: crumb.url is defined ? url(crumb.url) : null,
               } %}
                 {% if crumb.icon is defined %}
-                  <span data-icon="{{ crumb.icon }}" aria-hidden></span>
+                  <span data-icon="{{ crumb.icon }}" aria-hidden="true"></span>
                 {% endif %}
 
                 {{ crumb.label ?? crumb.html|raw }}
