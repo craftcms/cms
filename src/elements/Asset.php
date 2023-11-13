@@ -1780,6 +1780,7 @@ JS;
      * Returns native alt field's translation key for the element
      *
      * @return string
+     * @since 5.0.0
      */
     public function getAltTranslationKey(): string
     {
@@ -1795,6 +1796,7 @@ JS;
      * Returns asset's native alt field if present, or null
      *
      * @return AltField|null
+     * @since 5.0.0
      */
     public function getAltField(): ?AltField
     {
@@ -3016,6 +3018,7 @@ JS;
      *
      * @param ElementInterface $element
      * @return void
+     * @since 5.0.0
      */
     protected function saveSiteSettings(ElementInterface $element): void
     {

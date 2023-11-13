@@ -37,11 +37,13 @@ class AltField extends TextareaField
 
     /**
      * @var string
+     * @since 5.0.0
      */
     public string $translationMethod = Field::TRANSLATION_METHOD_NONE;
 
     /**
      * @var null|string
+     * @since 5.0.0
      */
     public ?string $translationKeyFormat = null;
 

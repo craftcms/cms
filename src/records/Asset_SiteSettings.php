@@ -53,7 +53,7 @@ class Asset_SiteSettings extends ActiveRecord
     }
 
     /**
-     * Returns the asset group’s site settings.
+     * Returns the asset’s site settings.
      *
      * @return ActiveQueryInterface The relational query object.
      */
