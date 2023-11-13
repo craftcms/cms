@@ -23,6 +23,7 @@
               {% set labelId = "crumb-label#{random()}" %}
 
               {% tag 'a' with {
+                class: 'crumb-link',
                 id: crumb.id ?? null,
                 href: crumb.url is defined ? url(crumb.url) : null,
               } %}

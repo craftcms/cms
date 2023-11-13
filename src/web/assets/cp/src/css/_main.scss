@@ -5982,7 +5982,7 @@ $min2ColWidth: 400px;
 }
 
 .menu--disclosure ul li {
-  & > a,
+  & > a:not(.crumb-link),
   & > .crumb-label > a,
   & > .menu-item,
   & > .menu-option {
@@ -5992,6 +5992,12 @@ $min2ColWidth: 400px;
 
     @include focus-styles {
       box-shadow: inset 0 0 0 3px hsla(var(--dark-focus-hsl), 0.7);
+    }
+  }
+
+  & > a.crumb-link {
+    &:hover {
+      color: var(--link-color);
     }
   }
 }

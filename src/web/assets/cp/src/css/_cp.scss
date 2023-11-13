@@ -659,19 +659,21 @@ li.crumb {
     }
   }
 
+  &:has(.menubtn) > a {
+    margin-right: 0 !important;
+    padding-right: var(--xs) !important;
+  }
+
   & > a {
     flex: 1;
     display: flex !important;
     align-items: center;
     flex-wrap: nowrap;
-    gap: var(--xs);
+    gap: var(--s);
+    white-space: nowrap;
 
     .menu--disclosure & {
       min-height: 34px;
-    }
-
-    & > [data-icon] {
-      margin-top: -2px;
     }
   }
 
