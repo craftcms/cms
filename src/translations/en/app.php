@@ -1290,6 +1290,7 @@ return [
     'Select All' => 'Select All',
     'Select a volume' => 'Select a volume',
     'Select all' => 'Select all',
+    'Select context' => 'Select context',
     'Select element' => 'Select element',
     'Select transform' => 'Select transform',
     'Select {element}' => 'Select {element}',
