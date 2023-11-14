@@ -3468,7 +3468,11 @@ class Elements extends Component
         }
 
         // Update search index
-        if ($updateSearchIndex && !ElementHelper::isRevision($element)) {
+        if (
+            $updateSearchIndex &&
+            !$element->getIsRevision() &&
+            !ElementHelper::isRevision($element)
+        ) {
             $event = new ElementEvent([
                 'element' => $element,
             ]);
