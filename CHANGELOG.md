@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- Date fields with “Show Time Zone” enabled will now remember IANA-formatted time zones set via GraphQL. ([#13893](https://github.com/craftcms/cms/issues/13893))
+- Added `craft\gql\types\DateTime::$setToSystemTimeZone`.
+- `craft\gql\types\DateTime` now supports JSON-encoded objects with `date`, `time`, and `timezone` keys.
 - `craft\web\Response::setCacheHeaders()` now includes the `public` directive in the `Cache-Control` header. ([#13922](https://github.com/craftcms/cms/pull/13922))
 - Fixed a bug where <kbd>↑</kbd> and <kbd>↓</kbd> key presses would set focus to disabled menu options. ([#13911](https://github.com/craftcms/cms/issues/13911))
 - Fixed a bug where elements’ `localized` GraphQL field wasn’t returning any results for drafts or revisions. ([#13924](https://github.com/craftcms/cms/issues/13924))
