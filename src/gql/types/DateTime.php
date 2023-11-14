@@ -12,6 +12,7 @@ use craft\gql\base\SingularTypeInterface;
 use craft\gql\directives\FormatDateTime;
 use craft\gql\GqlEntityRegistry;
 use craft\helpers\DateTimeHelper;
+use craft\helpers\Json;
 use GraphQL\Language\AST\StringValueNode;
 use GraphQL\Type\Definition\ScalarType;
 
@@ -76,7 +77,10 @@ class DateTime extends ScalarType implements SingularTypeInterface
     public function parseValue($value)
     {
         if (is_string($value)) {
-            return DateTimeHelper::toDateTime($value, setToSystemTimeZone: $this->setToSystemTimeZone);
+            return DateTimeHelper::toDateTime(
+                Json::decodeIfJson($value),
+                setToSystemTimeZone: $this->setToSystemTimeZone,
+            );
         }
 
         // This message will be lost by the wrapping exception, but it feels good to provide one.
@@ -89,7 +93,10 @@ class DateTime extends ScalarType implements SingularTypeInterface
     public function parseLiteral($valueNode, ?array $variables = null)
     {
         if ($valueNode instanceof StringValueNode) {
-            return DateTimeHelper::toDateTime($valueNode->value, setToSystemTimeZone: $this->setToSystemTimeZone);
+            return DateTimeHelper::toDateTime(
+                Json::decodeIfJson($valueNode->value),
+                setToSystemTimeZone: $this->setToSystemTimeZone,
+            );
         }
 
         // This message will be lost by the wrapping exception, but it feels good to provide one.
