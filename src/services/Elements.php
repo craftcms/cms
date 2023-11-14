@@ -3211,13 +3211,15 @@ class Elements extends Component
             }
         }
 
+        $dirtyFields = $element->getDirtyFields();
+
         // Validate
         if ($runValidation) {
             // If we're propagating, only validate changed custom fields
             if ($element->propagating) {
                 $names = array_map(
                     fn(string $handle) => "field:$handle",
-                    array_unique(array_merge($element->getDirtyFields(), $element->getModifiedFields()))
+                    array_unique(array_merge($dirtyFields, $element->getModifiedFields()))
                 );
             } else {
                 $names = null;
@@ -3471,7 +3473,8 @@ class Elements extends Component
         if (
             $updateSearchIndex &&
             !$element->getIsRevision() &&
-            !ElementHelper::isRevision($element)
+            !ElementHelper::isRevision($element) &&
+            (!$trackChanges || !empty($dirtyAttributes) || !empty($dirtyFields))
         ) {
             $event = new ElementEvent([
                 'element' => $element,
@@ -3485,7 +3488,7 @@ class Elements extends Component
                         'elementType' => get_class($element),
                         'elementId' => $element->id,
                         'siteId' => $propagate ? '*' : $element->siteId,
-                        'fieldHandles' => $element->getDirtyFields(),
+                        'fieldHandles' => $dirtyFields,
                     ]), 2048);
                 }
             }
@@ -3495,7 +3498,6 @@ class Elements extends Component
         if ($trackChanges) {
             $dirtyAttributes = $element->getDirtyAttributes();
             $fieldLayout = $element->getFieldLayout();
-            $dirtyFields = $fieldLayout ? $element->getDirtyFields() : null;
 
             $userId = Craft::$app->getUser()->getId();
             $timestamp = Db::prepareDateForDb(DateTimeHelper::now());
