@@ -1810,6 +1810,8 @@ JS;
                 ));
                 if (!empty($field)) {
                     $field = $field[0];
+                } else {
+                    $field = null;
                 }
             }
         }
@@ -3023,23 +3025,25 @@ JS;
      */
     protected function saveSiteSettings(ElementInterface $element): void
     {
-        $siteSettingsRecord = Asset_SiteSettings::findOne([
-            'assetId' => $element->id,
-            'siteId' => $element->siteId,
-        ]);
+        if ($this->getAltField() !== null) {
+            $siteSettingsRecord = Asset_SiteSettings::findOne([
+                'assetId' => $element->id,
+                'siteId' => $element->siteId,
+            ]);
 
-        if (empty($siteSettingsRecord)) {
-            $siteSettingsRecord = new Asset_SiteSettings();
-            $siteSettingsRecord->assetId = $element->id;
-            $siteSettingsRecord->siteId = $element->siteId;
-            $siteSettingsRecord->alt = $this->alt;
-        } else {
-            if (!$element->propagating) {
+            if (empty($siteSettingsRecord)) {
+                $siteSettingsRecord = new Asset_SiteSettings();
+                $siteSettingsRecord->assetId = $element->id;
+                $siteSettingsRecord->siteId = $element->siteId;
                 $siteSettingsRecord->alt = $this->alt;
+            } else {
+                if (!$element->propagating) {
+                    $siteSettingsRecord->alt = $this->alt;
+                }
             }
-        }
 
-        $siteSettingsRecord->save(false);
+            $siteSettingsRecord->save(false);
+        }
     }
 
     /**
