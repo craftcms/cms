@@ -967,7 +967,28 @@ class AssetQuery extends ElementQuery
         }
 
         if ($this->hasAlt !== null) {
-            $this->subQuery->andWhere($this->hasAlt ? ['not', ['assets_sites.alt' => null]] : ['assets_sites.alt' => null]);
+            $existsQuery = (new Query())
+                ->select('assets_sites.assetId')
+                ->from(['assets_sites' => Table::ASSETS_SITES])
+                ->where('assets_sites.assetId = assets.id')
+                ->andWhere(['assets_sites.siteId' => $this->siteId])
+                ->andWhere('assets_sites.alt ' . ($this->hasAlt ? 'IS NOT NULL' : 'IS NULL'));
+
+            $notExistsQuery = (new Query())
+                ->select('assets_sites.assetId')
+                ->from(['assets_sites' => Table::ASSETS_SITES])
+                ->where('assets_sites.assetId = assets.id')
+                ->andWhere(['assets_sites.siteId' => $this->siteId]);
+
+            $this->subQuery->andWhere([
+                'or',
+                ['EXISTS', $existsQuery],
+                [
+                    'and',
+                    ['NOT EXISTS', $notExistsQuery],
+                    'assets.alt ' . ($this->hasAlt ? 'IS NOT NULL' : 'IS NULL'),
+                ],
+            ]);
         }
 
         if ($this->width) {
