@@ -9,6 +9,7 @@
 - Fixed a bug where <kbd>↑</kbd> and <kbd>↓</kbd> key presses would set focus to disabled menu options. ([#13911](https://github.com/craftcms/cms/issues/13911))
 - Fixed a bug where elements’ `localized` GraphQL field wasn’t returning any results for drafts or revisions. ([#13924](https://github.com/craftcms/cms/issues/13924))
 - Fixed a bug where dropdown option labels within Table fields weren’t getting translated. ([#13914](https://github.com/craftcms/cms/issues/13914))
+- Fixed a bug where “Updating search indexes” jobs were getting queued for Matrix block revisions. ([#13917](https://github.com/craftcms/cms/issues/13917))
 
 ## 4.5.10 - 2023-11-07
 
