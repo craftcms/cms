@@ -458,9 +458,12 @@ class Date extends Field implements PreviewableFieldInterface, SortableFieldInte
      */
     public function getContentGqlMutationArgumentType(): Type|array
     {
+        $type = DateTimeType::getType();
+        $type->setToSystemTimeZone = !$this->showTimeZone;
+
         return [
             'name' => $this->handle,
-            'type' => DateTimeType::getType(),
+            'type' => $type,
             'description' => $this->instructions,
         ];
     }

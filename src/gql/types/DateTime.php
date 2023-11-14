@@ -34,6 +34,12 @@ class DateTime extends ScalarType implements SingularTypeInterface
     public $description = 'The `DateTime` scalar type represents a point in time.';
 
     /**
+     * @var bool Whether parsed dates should be set to the system time zone
+     * @since 4.5.11
+     */
+    public bool $setToSystemTimeZone = true;
+
+    /**
      * Returns a singleton instance to ensure one type per schema.
      *
      * @return DateTime
@@ -70,7 +76,7 @@ class DateTime extends ScalarType implements SingularTypeInterface
     public function parseValue($value)
     {
         if (is_string($value)) {
-            return DateTimeHelper::toDateTime($value, false, false);
+            return DateTimeHelper::toDateTime($value, setToSystemTimeZone: $this->setToSystemTimeZone);
         }
 
         // This message will be lost by the wrapping exception, but it feels good to provide one.
@@ -83,7 +89,7 @@ class DateTime extends ScalarType implements SingularTypeInterface
     public function parseLiteral($valueNode, ?array $variables = null)
     {
         if ($valueNode instanceof StringValueNode) {
-            return DateTimeHelper::toDateTime($valueNode->value, false, false);
+            return DateTimeHelper::toDateTime($valueNode->value, setToSystemTimeZone: $this->setToSystemTimeZone);
         }
 
         // This message will be lost by the wrapping exception, but it feels good to provide one.
