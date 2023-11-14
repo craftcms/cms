@@ -74,7 +74,7 @@ class DateTime extends ScalarType implements SingularTypeInterface
         }
 
         // This message will be lost by the wrapping exception, but it feels good to provide one.
-        throw new GqlException("DateTime must be a string or a JSON string");
+        throw new GqlException('DateTime must be a string.');
     }
 
     /**
@@ -87,6 +87,6 @@ class DateTime extends ScalarType implements SingularTypeInterface
         }
 
         // This message will be lost by the wrapping exception, but it feels good to provide one.
-        throw new GqlException("DateTime must be a string or a JSON string");
+        throw new GqlException('DateTime must be a string.');
     }
 }
