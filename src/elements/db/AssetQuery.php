@@ -970,14 +970,14 @@ class AssetQuery extends ElementQuery
             $existsQuery = (new Query())
                 ->select('assets_sites.assetId')
                 ->from(['assets_sites' => Table::ASSETS_SITES])
-                ->where('assets_sites.assetId = assets.id')
+                ->where('[[assets_sites.assetId]] = [[assets.id]]')
                 ->andWhere(['assets_sites.siteId' => $this->siteId])
-                ->andWhere('assets_sites.alt ' . ($this->hasAlt ? 'IS NOT NULL' : 'IS NULL'));
+                ->andWhere('[[assets_sites.alt]] ' . ($this->hasAlt ? 'IS NOT NULL' : 'IS NULL'));
 
             $notExistsQuery = (new Query())
                 ->select('assets_sites.assetId')
                 ->from(['assets_sites' => Table::ASSETS_SITES])
-                ->where('assets_sites.assetId = assets.id')
+                ->where('[[assets_sites.assetId]] = [[assets.id]]')
                 ->andWhere(['assets_sites.siteId' => $this->siteId]);
 
             $this->subQuery->andWhere([
@@ -986,7 +986,7 @@ class AssetQuery extends ElementQuery
                 [
                     'and',
                     ['NOT EXISTS', $notExistsQuery],
-                    'assets.alt ' . ($this->hasAlt ? 'IS NOT NULL' : 'IS NULL'),
+                    '[[assets.alt]] ' . ($this->hasAlt ? 'IS NOT NULL' : 'IS NULL'),
                 ],
             ]);
         }
