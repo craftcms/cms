@@ -187,6 +187,8 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       this.$container = $container;
       this.setSettings(settings, Craft.BaseElementIndex.defaults);
 
+      this.$container.data('elementIndex', this);
+
       this.nestedInputNamespace = `elementindex-${Math.floor(
         Math.random() * 100000
       )}`;
@@ -1483,7 +1485,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
           this.instanceState.collapsedElementIds = [];
         }
         params.collapsedElementIds = this.instanceState.collapsedElementIds;
-      } else if (!this.sortable) {
+      } else if (!this.sortable && !this.inlineEditing) {
         // Possible that the order/sort isn't entirely accurate if we're sorting by Score
         const [sortAttribute, sortDirection] =
           this.getSortAttributeAndDirection();
@@ -3064,11 +3066,6 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       // Update the view with the new container + elements HTML
       // -------------------------------------------------------------
 
-      if (this.isAdministrative) {
-        // set Craft.currentElementIndex for actions
-        Craft.currentElementIndex = this;
-      }
-
       this.$elements.html(response.html);
       Craft.appendHeadHtml(response.headHtml);
       Craft.appendBodyHtml(response.bodyHtml);
@@ -3221,6 +3218,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       return new Promise((resolve, reject) => {
         if (this.totalResults !== null) {
           resolve(this.totalResults, this.totalUnfilteredResults);
+          this.onCountResults();
         } else {
           var params = this.getViewParams();
           delete params.baseCriteria.offset;
@@ -3341,6 +3339,12 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       }
 
       this._$triggers.appendTo(this.$actionsContainer);
+
+      if (this.isAdministrative) {
+        // set Craft.currentElementIndex for actions
+        Craft.currentElementIndex = this;
+      }
+
       await Craft.appendHeadHtml(this.actionsHeadHtml);
       await Craft.appendBodyHtml(this.actionsBodyHtml);
 
