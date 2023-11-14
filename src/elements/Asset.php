@@ -2975,7 +2975,8 @@ JS;
         if (
             !$isNew &&
             /** @phpstan-ignore-next-line */
-            $siteElement->getAltTranslationKey() === $this->getAltTranslationKey()
+            $siteElement->getAltTranslationKey() === $this->getAltTranslationKey() &&
+            $siteElement->alt !== $this->alt
         ) {
             $this->saveSiteSettings($siteElement);
         }
