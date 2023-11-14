@@ -161,9 +161,7 @@ class DateTimeHelper
             }
         }
 
-        // if the provided timezone is not something we can store and reuse - as in it's not in the IANA format
-        // then we force the setting to system timezone regardless of what was requested when toDateTime() was called
-        if ($setToSystemTimeZone || !$dt->getTimezone()->getLocation()) {
+        if ($setToSystemTimeZone) {
             $dt->setTimezone(new DateTimeZone(Craft::$app->getTimeZone()));
         }
 
