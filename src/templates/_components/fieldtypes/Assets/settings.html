@@ -36,6 +36,17 @@
 
 
 {% block fieldSettings %}
+    {% set hasTempVolume = false %}
+    {% set tempUploadsLocationWarning = null %}
+    {% for sourceOption in sourceOptions %}
+        {% if 'tempVolume' in sourceOption|keys %}
+            {% set hasTempVolume = true %}
+        {% endif %}
+    {% endfor %}
+    {% if hasTempVolume %}
+        {% set tempUploadsLocationWarning = "Volume marked with ⚠️ has been selected to store temporary asset uploads. Use with caution!"|t('app') %}
+    {% endif %}
+
     {{ forms.checkboxField({
         label: 'Restrict assets to a single folder'|t('app'),
         id: 'useSingleFolder-toggle',
@@ -62,6 +73,7 @@
             id: 'defaultUploadLocation',
             label: 'Default Asset Location'|t('app'),
             instructions: 'Where assets should be stored when they are uploaded directly to the field, or via a front-end form.'|t('app') ~' '~ uploadLocationNote,
+            warning: tempUploadsLocationWarning,
             name: 'defaultUploadLocation',
             sourceOptions: sourceOptions,
             sourceValue: field.defaultUploadLocationSource,
@@ -75,6 +87,7 @@
             id: 'singleUploadLocation',
             label: 'Asset Location'|t('app'),
             instructions: 'Where selected assets should be stored.'|t('app') ~' '~ uploadLocationNote,
+            warning: tempUploadsLocationWarning,
             name: 'singleUploadLocation',
             sourceOptions: sourceOptions,
             sourceValue: field.singleUploadLocationSource,
