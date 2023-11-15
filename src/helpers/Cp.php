@@ -1431,22 +1431,22 @@ JS, [
             static::textFieldHtml([
                 'status' => $address->getAttributeStatus('addressLine1'),
                 'label' => $address->getAttributeLabel('addressLine1'),
+                'autocomplete' => $address->getInputPurpose('addressLine1'),
                 'id' => 'addressLine1',
                 'name' => 'addressLine1',
                 'value' => $address->addressLine1,
                 'required' => isset($requiredFields['addressLine1']),
                 'errors' => $address->getErrors('addressLine1'),
-                'autocomplete' => 'address-line1',
             ]) .
             static::textFieldHtml([
                 'status' => $address->getAttributeStatus('addressLine2'),
                 'label' => $address->getAttributeLabel('addressLine2'),
+                'autocomplete' => $address->getInputPurpose('addressLine2'),
                 'id' => 'addressLine2',
                 'name' => 'addressLine2',
                 'value' => $address->addressLine2,
                 'required' => isset($requiredFields['addressLine2']),
                 'errors' => $address->getErrors('addressLine2'),
-                'autocomplete' => 'address-line2',
             ]) .
             self::_subdivisionField(
                 $address,
@@ -1479,12 +1479,12 @@ JS, [
                 ]),
                 'status' => $address->getAttributeStatus('postalCode'),
                 'label' => $address->getAttributeLabel('postalCode'),
+                'autocomplete' => $address->getInputPurpose('postalCode'),
                 'id' => 'postalCode',
                 'name' => 'postalCode',
                 'value' => $address->postalCode,
                 'required' => isset($requiredFields['postalCode']),
                 'errors' => $address->getErrors('postalCode'),
-                'autocomplete' => 'postal-code',
             ]) .
             static::textFieldHtml([
                 'fieldClass' => array_filter([
@@ -1550,6 +1550,7 @@ JS, [
                 'fieldClass' => !$visible ? 'hidden' : null,
                 'status' => $address->getAttributeStatus($name),
                 'label' => $address->getAttributeLabel($name),
+                'autocomplete' => $address->getInputPurpose($name),
                 'id' => $name,
                 'name' => $name,
                 'value' => $value,

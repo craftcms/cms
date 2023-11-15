@@ -288,6 +288,16 @@ class Address extends Element implements AddressInterface, BlockElementInterface
         };
     }
 
+    public function getInputPurpose($attribute): string
+    {
+        return match ($attribute) {
+            'addressLine1' => 'address-line1',
+            'addressLine2' => 'address-line2',
+            'postalCode' => 'postal-code',
+            default => 'hello',
+        };
+    }
+
     /**
      * @inheritdoc
      */
