@@ -405,7 +405,7 @@ class Date extends Field implements InlineEditableFieldInterface, SortableFieldI
             'date' => Db::prepareDateForDb($value),
         ];
 
-        if ($this->showTimeZone) {
+        if ($this->showTimeZone && $value->getTimezone()->getLocation()) {
             $serialized += [
                 'tz' => $value->getTimezone()->getName(),
             ];
@@ -450,9 +450,12 @@ class Date extends Field implements InlineEditableFieldInterface, SortableFieldI
      */
     public function getContentGqlMutationArgumentType(): Type|array
     {
+        $type = DateTimeType::getType();
+        $type->setToSystemTimeZone = !$this->showTimeZone;
+
         return [
             'name' => $this->handle,
-            'type' => DateTimeType::getType(),
+            'type' => $type,
             'description' => $this->instructions,
         ];
     }
