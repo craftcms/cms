@@ -1788,7 +1788,7 @@ XML;
     protected function metaFieldsHtml(bool $static): string
     {
         return implode("\n", [
-            Craft::$app->getView()->renderTemplate('users/_accountfields.twig', [
+            Craft::$app->getView()->renderTemplate('users/_profile-fields.twig', [
                 'user' => $this,
                 'isNewUser' => !$this->id,
                 'static' => $static,

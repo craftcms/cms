@@ -71,7 +71,7 @@
         {{ hiddenInputs }}
 
         <div id="account" class="flex-fields">
-            {% include "users/_accountfields" %}
+            {% include "users/_profile-fields.twig" %}
 
             {% if not isNewUser and showPhotoField %}
                 {{ forms.field({
