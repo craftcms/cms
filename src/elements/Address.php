@@ -293,6 +293,7 @@ class Address extends Element implements AddressInterface, BlockElementInterface
         return match ($attribute) {
             'addressLine1' => 'address-line1',
             'addressLine2' => 'address-line2',
+            'locality' => 'address-level2',
             'postalCode' => 'postal-code',
             default => 'hello',
         };
