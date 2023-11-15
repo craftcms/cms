@@ -249,13 +249,22 @@ class Assets extends BaseRelationField
     public function getSourceOptions(): array
     {
         $sourceOptions = [];
+        [$tempVolume, $tempSubpath] = Craft::$app->getAssets()->getTempVolumeAndSubpath();
 
         foreach (Asset::sources('settings') as $volume) {
             if (!isset($volume['heading'])) {
-                $sourceOptions[] = [
+                $option = [
                     'label' => $volume['label'],
                     'value' => $volume['key'],
                 ];
+
+                if ($tempVolume && $volume['key'] === 'volume:' . $tempVolume->uid) {
+                    $option['label'] .= ' ⚠️';
+                    $option['tempVolume'] = true;
+                    $option['info'] = Craft::t('app', 'This volume is used to store temporary asset uploads. Use with caution!');
+                }
+
+                $sourceOptions[] = $option;
             }
         }
 
