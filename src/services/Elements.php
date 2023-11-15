@@ -185,6 +185,16 @@ class Elements extends Component
     public const EVENT_AFTER_SAVE_ELEMENT = 'afterSaveElement';
 
     /**
+     * @event ElementEvent The event that is triggered when setting a unique URI on an element.
+     *
+     * Event handlers must set `$event->handled` to `true` for their change to take effect.
+     *
+     * @see setElementUri()
+     * @since 4.6.0
+     */
+    public const EVENT_SET_ELEMENT_URI = 'setElementUri';
+
+    /**
      * @event ElementEvent The event that is triggered before indexing an element’s search keywords,
      * or queuing the element’s search keywords to be updated.
      *
@@ -1107,6 +1117,28 @@ class Elements extends Component
     }
 
     /**
+     * Sets the URI on an element.
+     *
+     * @param ElementInterface $element
+     * @throws OperationAbortedException if a unique URI could not be found
+     * @since 4.6.0
+     */
+    public function setElementUri(ElementInterface $element): void
+    {
+        if ($this->hasEventHandlers(self::EVENT_SET_ELEMENT_URI)) {
+            $event = new ElementEvent([
+                'element' => $element,
+            ]);
+            $this->trigger(self::EVENT_SET_ELEMENT_URI, $event);
+            if ($event->handled) {
+                return;
+            }
+        }
+
+        ElementHelper::setUniqueUri($element);
+    }
+
+    /**
      * Merges recent canonical element changes into a given derivative, such as a draft.
      *
      * @param ElementInterface $element The derivative element
@@ -1703,7 +1735,7 @@ class Elements extends Component
 
                         // Set a unique URI on the site clone
                         try {
-                            ElementHelper::setUniqueUri($siteClone);
+                            $this->setElementUri($siteClone);
                         } catch (OperationAbortedException) {
                             // Oh well, not worth bailing over
                         }
@@ -1758,7 +1790,7 @@ class Elements extends Component
         }
 
         if ($element::hasUris()) {
-            ElementHelper::setUniqueUri($element);
+            $this->setElementUri($element);
         }
 
         // Fire a 'beforeUpdateSlugAndUri' event
@@ -3637,7 +3669,7 @@ class Elements extends Component
         ) {
             // Set a unique URI on the site clone
             try {
-                ElementHelper::setUniqueUri($siteElement);
+                $this->setElementUri($siteElement);
             } catch (OperationAbortedException) {
                 // carry on
             }
