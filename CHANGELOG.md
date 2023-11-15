@@ -1,5 +1,9 @@
 # Release Notes for Craft CMS 3.x
 
+## Unreleased
+
+- Fixed a potential privilege escalation bug.
+
 ## 3.9.5 - 2023-10-17
 
 - Added `pgpassword` and `pwd` to the list of keywords that Craft will look for when determining whether a value is sensitive and should be redacted from logs, etc.
