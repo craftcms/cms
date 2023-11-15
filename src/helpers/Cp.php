@@ -1537,9 +1537,11 @@ JS, [
                     ]) .
                     Html::endTag('div');
 
+                // TODO: State - autocomplete attribute not being applied
                 return static::fieldHtml($input, [
                     'fieldClass' => !$visible ? 'hidden' : null,
                     'label' => $address->getAttributeLabel($name),
+                    'autocomplete' => $address->getInputPurpose($name),
                     'id' => $name,
                     'required' => $required,
                     'errors' => $errors,
