@@ -106,7 +106,11 @@
             }|filter|keys
           } %}
             {% if item.heading is defined %}
-              <h3 class="h6 padded">{{ item.heading }}</h3>
+              {% tag 'h3' with {
+                class: ['h6', 'padded'],
+              } | merge(item.headingAttributes ??{}, recursive=true) %}
+                {{ item.heading }}
+              {% endtag %}
             {% endif %}
             {% tag 'ul' with {
               class: ['padded'],

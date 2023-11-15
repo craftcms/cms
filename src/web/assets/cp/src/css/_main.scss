@@ -5977,6 +5977,7 @@ $min2ColWidth: 400px;
 
 .menu {
   hr.padded,
+  .h6.padded,
   h6.padded {
     @include margin-left(16px);
   }
