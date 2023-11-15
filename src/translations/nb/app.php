@@ -1842,6 +1842,7 @@ return [
     'Your system isn’t set up to save content for the site “{site}”.' => 'Systemet ditt er ikke konfigurert til å lagre innhold for nettstedet «{site}».',
     'Your {folder} folder isn’t writable.' => 'Mappen {folder} er ikke skrivbar.',
     'You’re all up to date!' => 'Du er oppdatert!',
+    'You’re viewing a revision. None of the {type}’s fields are editable.' => 'You’re viewing a revision. None of the {type}’s fields are editable.',
     'Zip Code' => 'Postnummer',
     '`sectionId` and `fieldId` cannot both be set on an entry.' => '`sectionId` and `fieldId` cannot both be set on an entry.',
     'account_activation_body' => "Hei, {{user.friendlyName|e}}\n\nTakk for at du opprettet en konto hos {{siteName}}! For å aktivere kontoen din, trykk på lenken:\n\n<{{link}}>\n\nHar du ikke bedt om denne e-posten, vennligst se bort fra den.",

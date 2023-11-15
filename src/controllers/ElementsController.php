@@ -379,6 +379,12 @@ class ElementsController extends Controller
         }
 
         $security = Craft::$app->getSecurity();
+        $notice = null;
+        if ($element->isProvisionalDraft) {
+            $notice = fn() => $this->_draftNotice();
+        } elseif ($element->getIsRevision()) {
+            $notice = fn() => $this->_revisionNotice($element::lowerDisplayName());
+        }
 
         $response = $this->asCpScreen()
             ->editUrl($element->getCpEditUrl())
@@ -388,7 +394,10 @@ class ElementsController extends Controller
                 $element,
                 $isMultiSiteElement,
                 $isUnpublishedDraft,
-                $propSiteIds
+                $canCreateDrafts,
+                $propSiteIds,
+                $elementsService,
+                $user,
             ))
             ->additionalButtonsHtml(fn() => $this->_additionalButtons(
                 $element,
@@ -403,7 +412,7 @@ class ElementsController extends Controller
                 $isUnpublishedDraft,
                 $isDraft
             ))
-            ->noticeHtml($element->isProvisionalDraft ? fn() => $this->_draftNotice() : null)
+            ->noticeHtml($notice)
             ->errorSummary(fn() => $this->_errorSummary($element))
             ->prepareScreen(
                 fn(Response $response, string $containerId) => $this->_prepareEditor(
@@ -676,18 +685,69 @@ class ElementsController extends Controller
         ElementInterface $element,
         bool $isMultiSiteElement,
         bool $isUnpublishedDraft,
+        bool $canCreateDrafts,
         array $propSiteIds,
+        Elements $elementsService,
+        User $user,
     ): ?string {
-        $showDrafts = !$isUnpublishedDraft;
+        if ($isUnpublishedDraft || !$element->id) {
+            $drafts = [];
+            $showDrafts = false;
+            $revisions = [];
+            $revisionsPageUrl = null;
+            $hasMoreRevisions = false;
+        } else {
+            $drafts = $element::find()
+                ->draftOf($element)
+                ->siteId($element->siteId)
+                ->status(null)
+                ->orderBy(['dateUpdated' => SORT_DESC])
+                ->with(['draftCreator'])
+                ->collect()
+                ->filter(fn(ElementInterface $draft) => $elementsService->canView($draft, $user))
+                ->all();
+            $showDrafts = !empty($drafts) || $canCreateDrafts;
+
+            $generalConfig = Craft::$app->getConfig()->getGeneral();
+            if ($element->hasRevisions() && (!$generalConfig->maxRevisions || $generalConfig->maxRevisions > 1)) {
+                $revisionQuery = $element::find()
+                    ->revisionOf($element)
+                    ->siteId($element->siteId)
+                    ->status(null)
+                    ->offset(1)
+                    ->limit($generalConfig->maxRevisions ? min($generalConfig->maxRevisions - 1, 10) : 10)
+                    ->orderBy(['dateCreated' => SORT_DESC])
+                    ->with(['revisionCreator']);
+                $revisions = $revisionQuery->all();
+                $revisionsPageUrl = $element->getCpRevisionsUrl();
+                if ($revisionsPageUrl) {
+                    $hasMoreRevisions = (
+                        count($revisions) === $revisionQuery->limit &&
+                        $revisionQuery->limit < ($generalConfig->maxRevisions - 1) &&
+                        ($revisionQuery->count() - 1) > $revisionQuery->limit
+                    );
+                } else {
+                    $hasMoreRevisions = false;
+                }
+            } else {
+                $revisions = [];
+                $revisionsPageUrl = null;
+                $hasMoreRevisions = false;
+            }
+        }
 
         if (
             $isMultiSiteElement ||
             $showDrafts ||
-            ($element->hasRevisions() && $element::find()->revisionOf($element)->status(null)->exists())
+            !empty($revisions)
         ) {
             return Craft::$app->getView()->renderTemplate('_includes/revisionmenu.twig', [
                 'element' => $element,
+                'drafts' => $drafts,
                 'showDrafts' => $showDrafts,
+                'revisions' => $revisions,
+                'revisionsPageUrl' => $revisionsPageUrl,
+                'hasMoreRevisions' => $hasMoreRevisions,
                 'supportedSiteIds' => $propSiteIds,
                 'showSiteLabel' => $isMultiSiteElement,
             ], View::TEMPLATE_MODE_CP);
@@ -1004,6 +1064,27 @@ JS, [
             Html::endTag('div');
     }
 
+    private function _revisionNotice($elementType): string
+    {
+        return
+            Html::beginTag('div', [
+                'class' => 'revision-notice',
+            ]) .
+            Html::tag('div', '', [
+                'class' => ['revision-icon'],
+                'aria' => ['hidden' => 'true'],
+                'data' => ['icon' => 'lightbulb'],
+            ]) .
+            Html::tag('p', Craft::t(
+                'app',
+                'You’re viewing a revision. None of the {type}’s fields are editable.',
+                [
+                    'type' => $elementType,
+                ]
+            )) .
+            Html::endTag('div');
+    }
+
     /**
      * Saves an element.
      *
@@ -1224,6 +1305,15 @@ JS, [
         }
 
         $elementsService->deleteElementForSite($element);
+
+        if ($element->isProvisionalDraft) {
+            // see if the canonical element exists for this site
+            $canonical = $element->getCanonical();
+            if ($canonical->id !== $element->id) {
+                $element = $canonical;
+                $elementsService->deleteElementForSite($element);
+            }
+        }
 
         return $this->_asSuccess(Craft::t('app', '{type} deleted for site.', [
             'type' => $element->getIsDraft() && !$element->isProvisionalDraft ? Craft::t('app', 'Draft') : $element::displayName(),

@@ -1903,6 +1903,7 @@ return [
     'Your {folder} folder isn’t writable.' => 'Your {folder} folder isn’t writable.',
     'You’re all set up.' => 'You’re all set up.',
     'You’re all up to date!' => 'You’re all up to date!',
+    'You’re viewing a revision. None of the {type}’s fields are editable.' => 'You’re viewing a revision. None of the {type}’s fields are editable.',
     'Zip Code' => 'Zip Code',
     '`sectionId` and `fieldId` cannot both be set on an entry.' => '`sectionId` and `fieldId` cannot both be set on an entry.',
     'account_activation_body' => "Hey {{user.friendlyName|e}},\n\nThanks for creating an account with {{systemName}}! To activate your account, click the following link:\n\n<{{link}}>\n\nIf you were not expecting this email, just ignore it.",

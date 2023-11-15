@@ -123,7 +123,7 @@ class Response extends \yii\web\Response
 
         $this->setHeader('Expires', sprintf('%s GMT', gmdate('D, d M Y H:i:s', time() + $duration)), $overwrite);
         $this->setHeader('Pragma', 'cache', $overwrite);
-        $this->setHeader('Cache-Control', "max-age=$duration", $overwrite);
+        $this->setHeader('Cache-Control', "public, max-age=$duration", $overwrite);
         return $this;
     }
 

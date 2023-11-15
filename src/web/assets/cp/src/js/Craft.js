@@ -2747,7 +2747,7 @@ $.extend($.fn, {
       let checkValue = () => {
         let hasValue = false;
         for (let i = 0; i < $inputs.length; i++) {
-          if ($inputs.eq(i).val()) {
+          if ($inputs.eq(i).val() && !$inputs.eq(i).is(':disabled')) {
             hasValue = true;
             break;
           }

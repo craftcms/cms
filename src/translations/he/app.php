@@ -1842,6 +1842,7 @@ return [
     'Your system isn’t set up to save content for the site “{site}”.' => 'המערכת שלך אינה מוגדרת לשמירת תוכן עבור האתר "{site}".',
     'Your {folder} folder isn’t writable.' => 'התיקייה {folder} שלך אינה מורשית לכתיבה.',
     'You’re all up to date!' => 'אתה משתמש בגרסה העדכנית ביותר!',
+    'You’re viewing a revision. None of the {type}’s fields are editable.' => 'You’re viewing a revision. None of the {type}’s fields are editable.',
     'Zip Code' => 'מיקוד',
     '`sectionId` and `fieldId` cannot both be set on an entry.' => '`sectionId` and `fieldId` cannot both be set on an entry.',
     'account_activation_body' => "שלום {{user.friendlyName|e}},\n\nתודה שיצרת חשבון ב{{siteName}}! להפעל החשבון שלך, לחץ על הלינק הבא:\n\n<{{link}}>\n\nאם לא ציפית לקבל את האימייל הזה, פשוט התעלם ממנו.",

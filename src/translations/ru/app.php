@@ -1842,6 +1842,7 @@ return [
     'Your system isn’t set up to save content for the site “{site}”.' => 'Ваша система не настроена для сохранения контента для данного сайта: {site}.',
     'Your {folder} folder isn’t writable.' => 'Запись в папку {folder} невозможна.',
     'You’re all up to date!' => 'У вас актуальная версия!',
+    'You’re viewing a revision. None of the {type}’s fields are editable.' => 'You’re viewing a revision. None of the {type}’s fields are editable.',
     'Zip Code' => 'Zip-код',
     '`sectionId` and `fieldId` cannot both be set on an entry.' => '`sectionId` and `fieldId` cannot both be set on an entry.',
     'account_activation_body' => "Привет, {{user.friendlyName|e}}!\n\nБлагодарим за регистрацию на сайте {{siteName}}! Для того, чтобы завершить регистрацию и активировать свою учетную запись, перейдите по следующей ссылке:\n\n<{{link}}>\n\nЕсли вы считаете, что получили это письмо по ошибке, просто проигнорируйте его.",

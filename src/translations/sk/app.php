@@ -1842,6 +1842,7 @@ return [
     'Your system isn’t set up to save content for the site “{site}”.' => 'Váš systém nie je nastavený na ukladanie obsahu pre web {site}.',
     'Your {folder} folder isn’t writable.' => 'Do vášho priečinku {folder} nie je možné zapisovať.',
     'You’re all up to date!' => 'Všetko je aktuálne!',
+    'You’re viewing a revision. None of the {type}’s fields are editable.' => 'You’re viewing a revision. None of the {type}’s fields are editable.',
     'Zip Code' => 'PSČ',
     '`sectionId` and `fieldId` cannot both be set on an entry.' => '`sectionId` and `fieldId` cannot both be set on an entry.',
     'account_activation_body' => "Ahoj {{user.friendlyName|e}},\n\nVďaka za vytvorenie účtu na {{siteName}}! Pre jeho aktiváciu prosím klikni na nasledujúci odkaz:\n\n<{{link}}>\n\nAk si tento email neočakával, jednoducho ho ignoruj.",

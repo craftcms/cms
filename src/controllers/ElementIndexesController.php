@@ -703,26 +703,11 @@ class ElementIndexesController extends BaseElementsController
             return $query;
         }
 
-        // Are we possibly including drafts?
-        // (Get this in early, in case the source criteria has other ideas.)
-        if ($this->request->getBodyParam('canHaveDrafts')) {
-            $query
-                ->drafts(null)
-                ->savedDraftsOnly()
-                ->draftOf(null);
-        }
-
         // Does the source specify any criteria attributes?
-        switch ($this->source['type']) {
-            case ElementSources::TYPE_NATIVE:
-                if (isset($this->source['criteria'])) {
-                    Craft::configure($query, $this->source['criteria']);
-                }
-                break;
-            case ElementSources::TYPE_CUSTOM:
-                /** @var ElementConditionInterface $sourceCondition */
-                $sourceCondition = $conditionsService->createCondition($this->source['condition']);
-                $sourceCondition->modifyQuery($query);
+        if ($this->source['type'] === ElementSources::TYPE_CUSTOM) {
+            /** @var ElementConditionInterface $sourceCondition */
+            $sourceCondition = $conditionsService->createCondition($this->source['condition']);
+            $sourceCondition->modifyQuery($query);
         }
 
         $applyCriteria = function(array $criteria) use ($query): bool {

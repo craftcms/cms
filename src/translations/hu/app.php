@@ -1842,6 +1842,7 @@ return [
     'Your system isn’t set up to save content for the site “{site}”.' => 'A rendszere úgy van beállítva, hogy ne mentse a(z) {site} webhely tartalmát.',
     'Your {folder} folder isn’t writable.' => 'A {folder} mappa nem írható.',
     'You’re all up to date!' => 'Ön teljesen naprakész!',
+    'You’re viewing a revision. None of the {type}’s fields are editable.' => 'You’re viewing a revision. None of the {type}’s fields are editable.',
     'Zip Code' => 'Zip-kód',
     '`sectionId` and `fieldId` cannot both be set on an entry.' => '`sectionId` and `fieldId` cannot both be set on an entry.',
     'account_activation_body' => "Hello {{user.friendlyName|e}},

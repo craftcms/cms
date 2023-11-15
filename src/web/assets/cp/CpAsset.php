@@ -147,6 +147,7 @@ JS;
             'Close',
             'Color hex value',
             'Color picker',
+            'Content',
             'Continue',
             'Copied to clipboard.',
             'Copy the URL',
