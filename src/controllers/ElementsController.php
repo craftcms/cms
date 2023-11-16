@@ -722,6 +722,7 @@ class ElementsController extends Controller
         $items = [
             [
                 'heading' => Craft::t('app', 'Context'),
+                'headingTag' => 'h2',
                 'headingAttributes' => ['class' => ['visually-hidden']],
                 'listAttributes' => ['class' => ['revision-group-current']],
                 'items' => [

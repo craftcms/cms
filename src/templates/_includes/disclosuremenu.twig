@@ -89,6 +89,7 @@
   {% block menu %}
     {% set ulStarted = false %}
     {% for item in items %}
+      {% set headingTag = item.headingTag ?? 'h3' %}
       {% set type = _self.itemType(item) %}
       {% if type in ['hr', 'group'] %}
         {% if ulStarted %}
@@ -106,7 +107,7 @@
             }|filter|keys
           } %}
             {% if item.heading is defined %}
-              {% tag 'h3' with {
+              {% tag headingTag with {
                 class: ['h6', 'padded'],
               } | merge(item.headingAttributes ??{}, recursive=true) %}
                 {{ item.heading }}
