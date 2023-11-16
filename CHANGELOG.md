@@ -2,7 +2,7 @@
 
 ## Unreleased
 
-- Fixed a potential privilege escalation bug.
+- Fixed a privilege escalation vulnerability.
 
 ## 3.9.5 - 2023-10-17
 
