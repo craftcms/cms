@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 3.x
 
-## Unreleased
+## 3.9.6 - 2023-11-16
 
 - Fixed a privilege escalation vulnerability.
 
