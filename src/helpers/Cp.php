@@ -1401,6 +1401,11 @@ JS, [
         return $address->getIsOwnAddress();
     }
 
+    public static function getBogusAutofillValue(): string
+    {
+        return 'disable-autofill-' . mt_rand();
+    }
+
     /**
      * Returns address fields’ HTML (sans country) for a given address.
      *
@@ -1416,6 +1421,7 @@ JS, [
         $activeValidators = $address->getActiveValidators();
         $address->setScenario($scenario);
         $enableAutofill = self::enableAutofill($address);
+        $fakeAutofillValue = self::getBogusAutofillValue();
 
         foreach ($activeValidators as $validator) {
             if ($validator instanceof RequiredValidator) {
@@ -1437,7 +1443,7 @@ JS, [
             static::textFieldHtml([
                 'status' => $address->getAttributeStatus('addressLine1'),
                 'label' => $address->getAttributeLabel('addressLine1'),
-                'autocomplete' => $enableAutofill ? $address->getInputPurpose('addressLine1') : false,
+                'autocomplete' => $enableAutofill ? $address->getInputPurpose('addressLine1') : $fakeAutofillValue,
                 'id' => 'addressLine1',
                 'name' => 'addressLine1',
                 'value' => $address->addressLine1,
@@ -1447,7 +1453,7 @@ JS, [
             static::textFieldHtml([
                 'status' => $address->getAttributeStatus('addressLine2'),
                 'label' => $address->getAttributeLabel('addressLine2'),
-                'autocomplete' => $enableAutofill ? $address->getInputPurpose('addressLine2') : false,
+                'autocomplete' => $enableAutofill ? $address->getInputPurpose('addressLine2') : $fakeAutofillValue,
                 'id' => 'addressLine2',
                 'name' => 'addressLine2',
                 'value' => $address->addressLine2,
@@ -1519,6 +1525,7 @@ JS, [
         $options = Craft::$app->getAddresses()->getSubdivisionRepository()->getList($parents, Craft::$app->language);
 
         $enableAutofill = self::enableAutofill($address);
+        $fakeAutofillValue = self::getBogusAutofillValue();
         if ($options) {
             // Persist invalid values in the UI
             if ($value && !isset($options[$value])) {
@@ -1548,7 +1555,7 @@ JS, [
                 return static::fieldHtml($input, [
                     'fieldClass' => !$visible ? 'hidden' : null,
                     'label' => $address->getAttributeLabel($name),
-                    'autocomplete' => $enableAutofill ? $address->getInputPurpose($name) : false,
+                    'autocomplete' => $enableAutofill ? $address->getInputPurpose($name) : $fakeAutofillValue,
                     'id' => $name,
                     'required' => $required,
                     'errors' => $errors,
@@ -1573,7 +1580,7 @@ JS, [
             'fieldClass' => !$visible ? 'hidden' : null,
             'status' => $address->getAttributeStatus($name),
             'label' => $address->getAttributeLabel($name),
-            'autocomplete' => $enableAutofill ? $address->getInputPurpose($name) : false,
+            'autocomplete' => $enableAutofill ? $address->getInputPurpose($name) : $fakeAutofillValue,
             'id' => $name,
             'name' => $name,
             'value' => $value,
