@@ -8,7 +8,6 @@
 namespace craft\mutex;
 
 use Craft;
-use yii\base\Application;
 use yii\db\Connection;
 
 /**
@@ -42,9 +41,15 @@ trait MutexTrait
         parent::init();
 
         $this->_db = Craft::$app->getDb();
-        $this->_db->on(Connection::EVENT_COMMIT_TRANSACTION, [$this, 'releaseQueuedLocks']);
-        $this->_db->on(Connection::EVENT_ROLLBACK_TRANSACTION, [$this, 'releaseQueuedLocks']);
-        Craft::$app->on(Application::EVENT_AFTER_REQUEST, [$this, 'releaseQueuedLocks']);
+        $this->_db->on(Connection::EVENT_COMMIT_TRANSACTION, function() {
+            $this->releaseQueuedLocks();
+        });
+        $this->_db->on(Connection::EVENT_ROLLBACK_TRANSACTION, function() {
+            $this->releaseQueuedLocks();
+        });
+        Craft::$app->onAfterRequest(function() {
+            $this->releaseQueuedLocks();
+        });
     }
 
     /**

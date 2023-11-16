@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 4
 
-## Unreleased
+## 4.5.11 - 2023-11-16
 
 - Date fields with “Show Time Zone” enabled will now remember IANA-formatted time zones set via GraphQL. ([#13893](https://github.com/craftcms/cms/issues/13893))
 - Added `craft\gql\types\DateTime::$setToSystemTimeZone`.
@@ -10,6 +10,8 @@
 - Fixed a bug where elements’ `localized` GraphQL field wasn’t returning any results for drafts or revisions. ([#13924](https://github.com/craftcms/cms/issues/13924))
 - Fixed a bug where dropdown option labels within Table fields weren’t getting translated. ([#13914](https://github.com/craftcms/cms/issues/13914))
 - Fixed a bug where “Updating search indexes” jobs were getting queued for Matrix block revisions. ([#13917](https://github.com/craftcms/cms/issues/13917))
+- Fixed a bug where control panel resources weren’t getting published on demand. ([#13935](https://github.com/craftcms/cms/issues/13935))
+- Fixed privilege escalation vulnerabilities.
 
 ## 4.5.10 - 2023-11-07
 

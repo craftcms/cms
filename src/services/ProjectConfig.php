@@ -715,8 +715,10 @@ class ProjectConfig extends Component
             return;
         }
 
-        Craft::$app->on(Application::EVENT_AFTER_REQUEST, [$this, 'updateParsedConfigTimes']);
         $this->_waitingToUpdateParsedConfigTimes = true;
+        Craft::$app->onAfterRequest(function() {
+            $this->updateParsedConfigTimes();
+        });
     }
 
     /**
