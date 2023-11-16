@@ -1396,6 +1396,11 @@ JS, [
             Html::endTag('li'); // .address-card
     }
 
+    public static function enableAutofill(Address $address): bool
+    {
+        return $address->getIsOwnAddress();
+    }
+
     /**
      * Returns address fields’ HTML (sans country) for a given address.
      *
@@ -1410,6 +1415,7 @@ JS, [
         $address->setScenario(Element::SCENARIO_LIVE);
         $activeValidators = $address->getActiveValidators();
         $address->setScenario($scenario);
+        $enableAutofill = self::enableAutofill($address);
 
         foreach ($activeValidators as $validator) {
             if ($validator instanceof RequiredValidator) {
@@ -1431,7 +1437,7 @@ JS, [
             static::textFieldHtml([
                 'status' => $address->getAttributeStatus('addressLine1'),
                 'label' => $address->getAttributeLabel('addressLine1'),
-                'autocomplete' => $address->getInputPurpose('addressLine1'),
+                'autocomplete' => $enableAutofill ? $address->getInputPurpose('addressLine1') : false,
                 'id' => 'addressLine1',
                 'name' => 'addressLine1',
                 'value' => $address->addressLine1,
@@ -1441,7 +1447,7 @@ JS, [
             static::textFieldHtml([
                 'status' => $address->getAttributeStatus('addressLine2'),
                 'label' => $address->getAttributeLabel('addressLine2'),
-                'autocomplete' => $address->getInputPurpose('addressLine2'),
+                'autocomplete' => $enableAutofill ? $address->getInputPurpose('addressLine2') : false,
                 'id' => 'addressLine2',
                 'name' => 'addressLine2',
                 'value' => $address->addressLine2,
@@ -1479,7 +1485,7 @@ JS, [
                 ]),
                 'status' => $address->getAttributeStatus('postalCode'),
                 'label' => $address->getAttributeLabel('postalCode'),
-                'autocomplete' => $address->getInputPurpose('postalCode'),
+                'autocomplete' => $enableAutofill ? $address->getInputPurpose('postalCode') : false,
                 'id' => 'postalCode',
                 'name' => 'postalCode',
                 'value' => $address->postalCode,
@@ -1512,6 +1518,7 @@ JS, [
         $value = $address->$name;
         $options = Craft::$app->getAddresses()->getSubdivisionRepository()->getList($parents, Craft::$app->language);
 
+        $enableAutofill = self::enableAutofill($address);
         if ($options) {
             // Persist invalid values in the UI
             if ($value && !isset($options[$value])) {
@@ -1541,7 +1548,7 @@ JS, [
                 return static::fieldHtml($input, [
                     'fieldClass' => !$visible ? 'hidden' : null,
                     'label' => $address->getAttributeLabel($name),
-                    'autocomplete' => $address->getInputPurpose($name),
+                    'autocomplete' => $enableAutofill ? $address->getInputPurpose($name) : false,
                     'id' => $name,
                     'required' => $required,
                     'errors' => $errors,
@@ -1566,7 +1573,7 @@ JS, [
             'fieldClass' => !$visible ? 'hidden' : null,
             'status' => $address->getAttributeStatus($name),
             'label' => $address->getAttributeLabel($name),
-            'autocomplete' => $address->getInputPurpose($name),
+            'autocomplete' => $enableAutofill ? $address->getInputPurpose($name) : false,
             'id' => $name,
             'name' => $name,
             'value' => $value,
