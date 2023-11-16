@@ -459,7 +459,7 @@ trait ApplicationTrait
     }
 
     /**
-     * Invokes a callback method when Craft is fully initialized.
+     * Invokes a callback function when Craft is fully initialized.
      *
      * If Craft is already fully initialized, the callback will be invoked immediately.
      *
@@ -472,6 +472,29 @@ trait ApplicationTrait
             $callback();
         } else {
             $this->on(WebApplication::EVENT_INIT, function() use ($callback) {
+                $callback();
+            });
+        }
+    }
+
+    /**
+     * Invokes a callback function at the end of the request.
+     *
+     * If the request is already ending, the callback will be invoked immediately.
+     *
+     * @param callable $callback
+     * @since 4.5.11
+     */
+    public function onAfterRequest(callable $callback): void
+    {
+        if (in_array($this->state, [
+            Application::STATE_AFTER_REQUEST,
+            Application::STATE_SENDING_RESPONSE,
+            Application::STATE_END,
+        ], true)) {
+            $callback();
+        } else {
+            $this->on(Application::EVENT_AFTER_REQUEST, function() use ($callback) {
                 $callback();
             });
         }
@@ -783,16 +806,9 @@ trait ApplicationTrait
         if (!$this->_waitingToSaveInfo) {
             $this->_waitingToSaveInfo = true;
 
-            // If the request is already over, trigger this immediately
-            if (in_array($this->state, [
-                Application::STATE_AFTER_REQUEST,
-                Application::STATE_SENDING_RESPONSE,
-                Application::STATE_END,
-            ], true)) {
+            $this->onAfterRequest(function() {
                 $this->saveInfoAfterRequestHandler();
-            } else {
-                Craft::$app->on(WebApplication::EVENT_AFTER_REQUEST, [$this, 'saveInfoAfterRequestHandler']);
-            }
+            });
         }
     }
 
