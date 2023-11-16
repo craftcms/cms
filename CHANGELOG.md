@@ -10,7 +10,8 @@
 - Fixed a bug where elements’ `localized` GraphQL field wasn’t returning any results for drafts or revisions. ([#13924](https://github.com/craftcms/cms/issues/13924))
 - Fixed a bug where dropdown option labels within Table fields weren’t getting translated. ([#13914](https://github.com/craftcms/cms/issues/13914))
 - Fixed a bug where “Updating search indexes” jobs were getting queued for Matrix block revisions. ([#13917](https://github.com/craftcms/cms/issues/13917))
-- Fixed a potential privilege escalation bug.
+- Fixed a bug where control panel resources weren’t getting published on demand. ([#13935](https://github.com/craftcms/cms/issues/13935))
+- Fixed privilege escalation vulnerabilities.
 
 ## 4.5.10 - 2023-11-07
 
