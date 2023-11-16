@@ -1491,7 +1491,7 @@ JS, [
                 ]),
                 'status' => $address->getAttributeStatus('postalCode'),
                 'label' => $address->getAttributeLabel('postalCode'),
-                'autocomplete' => $enableAutofill ? $address->getInputPurpose('postalCode') : false,
+                'autocomplete' => $enableAutofill ? $address->getInputPurpose('postalCode') : $fakeAutofillValue,
                 'id' => 'postalCode',
                 'name' => 'postalCode',
                 'value' => $address->postalCode,
