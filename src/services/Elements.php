@@ -63,7 +63,6 @@ use craft\records\Element_SiteSettings as Element_SiteSettingsRecord;
 use craft\records\StructureElement as StructureElementRecord;
 use craft\validators\HandleValidator;
 use craft\validators\SlugValidator;
-use craft\web\Application;
 use DateTime;
 use Throwable;
 use UnitEnum;
@@ -1261,7 +1260,7 @@ class Elements extends Component
 
         $updatedCanonical = $this->duplicateElement($element, $newAttributes);
 
-        Craft::$app->on(Application::EVENT_AFTER_REQUEST, function() use ($canonical, $updatedCanonical, $changedAttributes, $changedFields) {
+        Craft::$app->onAfterRequest(function() use ($canonical, $updatedCanonical, $changedAttributes, $changedFields) {
             // Update change tracking for the canonical element
             $timestamp = Db::prepareDateForDb($updatedCanonical->dateUpdated);
 
@@ -3468,7 +3467,11 @@ class Elements extends Component
         }
 
         // Update search index
-        if ($updateSearchIndex && !ElementHelper::isRevision($element)) {
+        if (
+            $updateSearchIndex &&
+            !$element->getIsRevision() &&
+            !ElementHelper::isRevision($element)
+        ) {
             $event = new ElementEvent([
                 'element' => $element,
             ]);
