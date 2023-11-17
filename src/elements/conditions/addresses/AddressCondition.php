@@ -15,9 +15,9 @@ class AddressCondition extends ElementCondition
     /**
      * @inheritdoc
      */
-    protected function conditionRuleTypes(): array
+    protected function selectableConditionRules(): array
     {
-        return array_merge(parent::conditionRuleTypes(), [
+        return array_merge(parent::selectableConditionRules(), [
             CountryConditionRule::class,
             AdministrativeAreaConditionRule::class,
         ]);

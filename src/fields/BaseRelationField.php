@@ -1317,7 +1317,7 @@ JS, [
         }
 
         // Don't instantiate it unless we actually end up needing it.
-        // Avoids an infinite recursion bug (ElementCondition::conditionRuleTypes() => getAllFields() => setSelectionCondition() => ...)
+        // Avoids an infinite recursion bug (ElementCondition::selectableConditionRules() => getAllFields() => setSelectionCondition() => ...)
         $this->_selectionCondition = $condition;
     }
 
