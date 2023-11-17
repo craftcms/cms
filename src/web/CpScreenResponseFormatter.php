@@ -139,11 +139,14 @@ class CpScreenResponseFormatter extends Component implements ResponseFormatterIn
                 'id' => 'site-crumb',
                 'icon' => 'world',
                 'label' => Craft::t('site', $behavior->site->name),
-                'menu' => !empty($behavior->selectableSites)
-                    ? Cp::siteMenuItems($behavior->selectableSites, $behavior->site, [
-                        'includeOmittedSites' => true,
-                    ])
-                    : null,
+                'menu' => [
+                    'label' => Craft::t('site', 'Select site'),
+                    'items' => !empty($behavior->selectableSites)
+                        ? Cp::siteMenuItems($behavior->selectableSites, $behavior->site, [
+                            'includeOmittedSites' => true,
+                        ])
+                        : null,
+                ],
             ]);
         }
 
@@ -216,9 +219,8 @@ class CpScreenResponseFormatter extends Component implements ResponseFormatterIn
             'autoLabel' => true,
             'buttonAttributes' => [
                 'id' => 'context-btn',
-                'class' => ['context-label'],
             ],
-            'hiddenLabel' => Craft::t('app', 'Context'),
+            'hiddenLabel' => Craft::t('app', 'Select context'),
         ], $namespace);
     }
 

@@ -609,6 +609,44 @@ class Cp
         return $html;
     }
 
+    /**
+     * Renders accessible HTML for status indicators.
+     *
+     * When the `status` is equal to "draft" the draft icon will be displayed. The attributes passed as the
+     * second argument should be a status definition from [[\craft\base\ElementInterface::statuses]]
+     *
+     * @param string $status Status string
+     * @param array|null $attributes Attributes to be passed along.
+     * @return string|null
+     * @since 5.0.0
+     */
+    public static function statusIndicatorHtml(string $status, array $attributes = null): ?string
+    {
+        if ($status === 'draft') {
+            return Html::tag('span', '', [
+                'data' => ['icon' => 'draft'],
+                'class' => 'icon',
+                'role' => 'img',
+                'aria' => [
+                    'label' => sprintf('%s %s', Craft::t('app', 'Status:'), Craft::t('app', 'Draft')),
+                ],
+            ]);
+        }
+
+        return Html::tag('span', '', [
+            'class' => array_filter([
+                'status',
+                $status,
+                $attributes['color'] ?? null,
+            ]),
+            'role' => 'img',
+            'aria' => [
+                'label' => sprintf('%s %s', Craft::t('app', 'Status:'), $attributes['label'] ?? ucfirst($status)),
+            ],
+        ]);
+    }
+
+
     private static function baseElementAttributes(ElementInterface $element, array $config): array
     {
         $elementsService = Craft::$app->getElements();
@@ -648,14 +686,7 @@ class Cp
     private static function elementStatusHtml(ElementInterface $element): ?string
     {
         if ($element->getIsDraft()) {
-            return Html::tag('span', '', [
-                'data' => ['icon' => 'draft'],
-                'class' => 'icon',
-                'role' => 'img',
-                'aria' => [
-                    'label' => sprintf('%s %s', Craft::t('app', 'Status:'), Craft::t('app', 'Draft')),
-                ],
-            ]);
+            return self::statusIndicatorHtml('draft');
         }
 
         if (!$element::hasStatuses()) {
@@ -664,25 +695,21 @@ class Cp
 
         $status = $element->getStatus();
         $statusDef = $element::statuses()[$status] ?? null;
-        return Html::tag('span', '', [
-            'class' => array_filter([
-                'status',
-                $status,
-                $statusDef['color'] ?? null,
-            ]),
-            'role' => 'img',
-            'aria' => [
-                'label' => sprintf('%s %s', Craft::t('app', 'Status:'), $statusDef['label'] ?? $statusDef ?? ucfirst($status)),
-            ],
-        ]);
+
+        // Just to give the `statusIndicatorHtml` clean types
+        if (is_string($statusDef)) {
+            $statusDef = ['label' => $statusDef];
+        }
+
+        return self::statusIndicatorHtml($status, $statusDef);
     }
 
     private static function elementLabelHtml(ElementInterface $element, array $config, array $attributes, callable $uiLabel): string
     {
         $content = implode('', array_map(
-            fn(string $segment) => Html::tag('span', Html::encode($segment), ['class' => 'segment']),
-            $element->getUiLabelPath()
-        )) .
+                fn(string $segment) => Html::tag('span', Html::encode($segment), ['class' => 'segment']),
+                $element->getUiLabelPath()
+            )) .
             $uiLabel();
 
         // show the draft name?
@@ -733,7 +760,6 @@ class Cp
                     'buttonAttributes' => [
                         'class' => ['action-btn'],
                         'removeClass' => 'menubtn',
-                        'title' => Craft::t('app', 'Actions'),
                         'data' => ['icon' => 'ellipsis'],
                     ],
                 ]);
@@ -1896,9 +1922,9 @@ JS, [
 
         if (!$config['customizableTabs']) {
             $tab = array_shift($tabs) ?? new FieldLayoutTab([
-                    'uid' => StringHelper::UUID(),
-                    'layout' => $fieldLayout,
-                ]);
+                'uid' => StringHelper::UUID(),
+                'layout' => $fieldLayout,
+            ]);
             $tab->name = $config['pretendTabName'] ?? Craft::t('app', 'Content');
 
             // Any extra tabs?
@@ -2332,8 +2358,8 @@ JS;
                 ->first(fn(array $i) => $i['selected'] ?? false);
 
             if ($selectedItem) {
-                $config['buttonLabel'] = $selectedItem['label'] ?? null;
-                $config['buttonHtml'] = $selectedItem['html'] ?? null;
+                $config['label'] = $selectedItem['label'] ?? null;
+                $config['html'] = $selectedItem['html'] ?? null;
             }
         }
 
