@@ -1544,6 +1544,7 @@ JS, [
                         'value' => $value,
                         'options' => $options,
                         'errors' => $errors,
+                        'autocomplete' => $enableAutofill ? $address->getInputPurpose($name) : $fakeAutofillValue,
                     ]) .
                     Html::tag('div', '', [
                         'id' => "$name-spinner",
@@ -1551,11 +1552,9 @@ JS, [
                     ]) .
                     Html::endTag('div');
 
-                // TODO: State - autocomplete attribute not being applied
                 return static::fieldHtml($input, [
                     'fieldClass' => !$visible ? 'hidden' : null,
                     'label' => $address->getAttributeLabel($name),
-                    'autocomplete' => $enableAutofill ? $address->getInputPurpose($name) : $fakeAutofillValue,
                     'id' => $name,
                     'required' => $required,
                     'errors' => $errors,
@@ -1572,6 +1571,7 @@ JS, [
                 'options' => $options,
                 'required' => $required,
                 'errors' => $address->getErrors($name),
+                'autocomplete' => $enableAutofill ? $address->getInputPurpose($name) : $fakeAutofillValue,
             ]);
         }
 

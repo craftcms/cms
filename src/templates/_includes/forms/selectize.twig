@@ -60,6 +60,7 @@
     class: (class ?? [])|explodeClass|push('selectize')|unique,
     inputAttributes: {
         style: {display: 'none'},
+        autocomplete: (not multi and autocomplete is defined) ? autocomplete : false
     }|merge(inputAttributes ?? [], recursive=true),
 } %}
 
