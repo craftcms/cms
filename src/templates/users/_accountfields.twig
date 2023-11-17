@@ -9,7 +9,7 @@
         name: 'username',
         value: (user is defined ? user.username : null),
         autofocus: true,
-        autocomplete: false,
+        autocomplete: user.getIsCurrent() ? 'username' : false,
         autocapitalize: false,
         disabled: static or (isNewUser or (currentUser.admin or user.getIsCurrent()) ? false : true),
         errors: (user is defined ? user.getErrors('username') : null),
@@ -24,7 +24,7 @@
     id: 'fullName',
     name: 'fullName',
     value: user.fullName,
-    autocomplete: false,
+    autocomplete: user.getIsCurrent() ? 'name' : false,
     errors: user.getErrors('fullName'),
     autofocus: craft.app.config.general.useEmailAsUsername,
     inputAttributes: {
