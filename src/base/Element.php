@@ -1687,6 +1687,9 @@ abstract class Element extends Component implements ElementInterface
             'map' => $map,
             'criteria' => [
                 'siteId' => $otherSiteIds,
+                'drafts' => null,
+                'provisionalDrafts' => null,
+                'revisions' => null,
             ],
         ];
     }
@@ -3886,11 +3889,11 @@ JS, [
             ->id($this->id ?: false)
             ->structureId($this->structureId)
             ->siteId(['not', $this->siteId])
-            ->drafts($this->getIsDraft())
+            ->drafts(null)
             // the provisionalDraft state could have just changed (e.g. `elements/save-draft`)
             // so don't filter based on one or the other
             ->provisionalDrafts(null)
-            ->revisions($this->getIsRevision());
+            ->revisions(null);
     }
 
     /**

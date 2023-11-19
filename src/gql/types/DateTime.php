@@ -11,6 +11,8 @@ use craft\errors\GqlException;
 use craft\gql\base\SingularTypeInterface;
 use craft\gql\directives\FormatDateTime;
 use craft\gql\GqlEntityRegistry;
+use craft\helpers\DateTimeHelper;
+use craft\helpers\Json;
 use GraphQL\Language\AST\StringValueNode;
 use GraphQL\Type\Definition\ScalarType;
 
@@ -31,6 +33,12 @@ class DateTime extends ScalarType implements SingularTypeInterface
      * @var string
      */
     public $description = 'The `DateTime` scalar type represents a point in time.';
+
+    /**
+     * @var bool Whether parsed dates should be set to the system time zone
+     * @since 4.5.11
+     */
+    public bool $setToSystemTimeZone = true;
 
     /**
      * Returns a singleton instance to ensure one type per schema.
@@ -69,11 +77,14 @@ class DateTime extends ScalarType implements SingularTypeInterface
     public function parseValue($value)
     {
         if (is_string($value)) {
-            return new \DateTime($value);
+            return DateTimeHelper::toDateTime(
+                Json::decodeIfJson($value),
+                setToSystemTimeZone: $this->setToSystemTimeZone,
+            );
         }
 
         // This message will be lost by the wrapping exception, but it feels good to provide one.
-        throw new GqlException("DateTime must be a string");
+        throw new GqlException('DateTime must be a string.');
     }
 
     /**
@@ -82,10 +93,13 @@ class DateTime extends ScalarType implements SingularTypeInterface
     public function parseLiteral($valueNode, ?array $variables = null)
     {
         if ($valueNode instanceof StringValueNode) {
-            return new \DateTime($valueNode->value);
+            return DateTimeHelper::toDateTime(
+                Json::decodeIfJson($valueNode->value),
+                setToSystemTimeZone: $this->setToSystemTimeZone,
+            );
         }
 
         // This message will be lost by the wrapping exception, but it feels good to provide one.
-        throw new GqlException("DateTime must be a string");
+        throw new GqlException('DateTime must be a string.');
     }
 }

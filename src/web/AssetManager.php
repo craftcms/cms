@@ -93,24 +93,22 @@ class AssetManager extends \yii\web\AssetManager
 
         if ($this->cacheSourcePaths) {
             // Store the hash for later
-            Craft::$app->on(Application::EVENT_AFTER_REQUEST, function() use ($hash, $alias) {
+            Craft::$app->onAfterRequest(function() use ($hash, $alias) {
                 try {
                     Db::upsert(Table::RESOURCEPATHS, [
                         'hash' => $hash,
                         'path' => $alias,
                     ]);
                 } catch (DbException|DbConnectException) {
-                    // Craft is either not installed or not updated to 3.0.3+ yet
+                    // Craft is either not installed or not updated to 3.0.3+ yet,
+                    // so cache the source path instead
+                    Craft::$app->getCache()->set(
+                        $this->getCacheKeyForPathHash($hash),
+                        $alias,
+                        dependency: new TagDependency(['tags' => [self::CACHE_TAG]]),
+                    );
                 }
             });
-
-            if (App::isEphemeral()) {
-                Craft::$app->getCache()->set(
-                    $this->getCacheKeyForPathHash($hash),
-                    $alias,
-                    dependency: new TagDependency(['tags' => [self::CACHE_TAG]]),
-                );
-            }
         }
 
         return $hash;
