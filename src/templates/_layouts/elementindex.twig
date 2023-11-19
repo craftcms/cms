@@ -38,7 +38,10 @@
         id: 'site-crumb',
         icon: 'world',
         label: selectedSite.name|t('site'),
-        menu: siteMenuItems(selectableSites, selectedSite),
+        menu: {
+            items: siteMenuItems(selectableSites, selectedSite),
+            label: 'Select site'|t('site')
+        }
     }) %}
 {% endif %}
 

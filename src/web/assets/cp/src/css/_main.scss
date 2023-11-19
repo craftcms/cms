@@ -3027,7 +3027,7 @@ table {
 }
 
 .context-label,
-.context-menu-container .menubtn {
+.context-menu-container {
   display: inline-flex;
   align-items: center;
   @include margin-left(var(--xs));
@@ -3041,8 +3041,29 @@ table {
   border: 1px solid var(--medium-hairline-color);
 }
 
-.context-menu-container .menubtn:hover {
-  border-color: var(--dark-hairline-color);
+.context-menu-container {
+  @include padding-right(0);
+
+  .menubtn {
+    @include margin(0, -1px, 0, 0);
+    @include padding-right(calc(var(--s) + 1px) !important);
+    @include border-left(1px solid var(--medium-hairline-color));
+    @include border-radius(
+      0,
+      calc(var(--touch-target-size) / 2),
+      calc(var(--touch-target-size) / 2),
+      0
+    );
+
+    &:hover {
+      border-color: var(--dark-hairline-color) !important;
+    }
+  }
+
+  > * {
+    display: inline-block;
+    @include padding-right(var(--s));
+  }
 }
 
 .chip,
@@ -5814,12 +5835,6 @@ $min2ColWidth: 400px;
       li {
         margin: 0 calc(var(--m) * -1);
         padding: 0 var(--m);
-        //&.sel {
-        //  margin: 0 -14px;
-        //  padding: 0 14px;
-        //  background: var(--gray-050);
-        //  border-radius: var(--large-border-radius);
-        //}
 
         a {
           border-radius: var(--large-border-radius);
@@ -5832,7 +5847,8 @@ $min2ColWidth: 400px;
     }
   }
 
-  h6 {
+  h6,
+  .h6 {
     &:first-child {
       margin-top: 14px !important;
     }
@@ -5866,7 +5882,7 @@ $min2ColWidth: 400px;
             background: var(--gray-050);
 
             &:not([data-icon]):before {
-              content: 'check';
+              content: '\f00e';
             }
           }
         }
@@ -5877,10 +5893,15 @@ $min2ColWidth: 400px;
       a,
       .menu-item,
       .menu-option {
-        @include menu-item-styles;
+        margin: 0 -14px;
+        padding: 10px 14px;
+        white-space: nowrap;
         font-size: 14px;
-        cursor: default;
         -webkit-appearance: none;
+
+        &:not(:last-child) {
+          @include margin-right(0);
+        }
 
         &:not(.flex):not(.hidden) {
           display: block;
@@ -5939,6 +5960,14 @@ $min2ColWidth: 400px;
   .go:after {
     color: inherit;
   }
+
+  &:not(.menu--disclosure) ul li a,
+  ul li .menu-item,
+  ul li .menu-option {
+    color: $menuOptionColor;
+    text-decoration: none;
+    cursor: default;
+  }
 }
 
 .menubtn,
@@ -5975,14 +6004,14 @@ $min2ColWidth: 400px;
 
 .menu {
   hr.padded,
+  .h6.padded,
   h6.padded {
     @include margin-left(16px);
   }
 }
 
 .menu--disclosure ul li {
-  & > a,
-  & > .crumb-label > a,
+  & > a:not(.crumb-link),
   & > .menu-item,
   & > .menu-option {
     &:hover {

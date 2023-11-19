@@ -4,7 +4,7 @@ namespace craft\base\conditions;
 
 use Craft;
 use craft\base\Component;
-use craft\events\RegisterConditionRuleTypesEvent;
+use craft\events\RegisterConditionRulesEvent;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Html;
 use craft\helpers\Json;
@@ -29,10 +29,10 @@ use yii\base\InvalidConfigException;
 abstract class BaseCondition extends Component implements ConditionInterface
 {
     /**
-     * @event RegisterConditionRuleTypesEvent The event that is triggered when defining the condition rule types.
-     * @see getConditionRuleTypes()
+     * @event RegisterConditionRulesEvent The event that is triggered when defining the selectable condition rules.
+     * @see getSelectableConditionRules()
      */
-    public const EVENT_REGISTER_CONDITION_RULE_TYPES = 'registerConditionRuleTypes';
+    public const EVENT_REGISTER_CONDITION_RULES = 'registerConditionRules';
 
     /**
      * @var string The condition builder container tag name
@@ -70,13 +70,6 @@ abstract class BaseCondition extends Component implements ConditionInterface
      * @see setConditionRules()
      */
     private Collection $_conditionRules;
-
-    /**
-     * @var string[]|array[] The available rule types for this condition.
-     * @phpstan-var string[]|array{class:string}[]|array{type:string}[]
-     * @see getConditionRuleTypes()
-     */
-    private array $_conditionRuleTypes;
 
     /**
      * @var ConditionRuleInterface[]|null The selectable condition rules for this condition.
@@ -122,50 +115,36 @@ abstract class BaseCondition extends Component implements ConditionInterface
     /**
      * @inheritdoc
      */
-    public function getConditionRuleTypes(): array
-    {
-        if (!isset($this->_conditionRuleTypes)) {
-            $conditionRuleTypes = $this->conditionRuleTypes();
-
-            // Give plugins a chance to modify them
-            $event = new RegisterConditionRuleTypesEvent([
-                'conditionRuleTypes' => $conditionRuleTypes,
-            ]);
-
-            $this->trigger(self::EVENT_REGISTER_CONDITION_RULE_TYPES, $event);
-            $this->_conditionRuleTypes = $event->conditionRuleTypes;
-        }
-
-        return $this->_conditionRuleTypes;
-    }
-
-    /**
-     * Returns the rule types for this condition.
-     *
-     * Conditions should override this method instead of [[getConditionRuleTypes()]]
-     * so [[EVENT_REGISTER_CONDITION_RULE_TYPES]] handlers can modify the class-defined rule types.
-     *
-     * Rule types should be defined as either the class name or an array with a `class` key set to the class name.
-     *
-     * @return string[]|array[]
-     * @phpstan-return string[]|array{class:string}[]
-     */
-    abstract protected function conditionRuleTypes(): array;
-
-    /**
-     * @inheritdoc
-     */
     public function getSelectableConditionRules(): array
     {
         if (!isset($this->_selectableConditionRules)) {
-            $this->_selectableConditionRules = Collection::make($this->getConditionRuleTypes())
+            $event = new RegisterConditionRulesEvent([
+                'conditionRules' => $this->selectableConditionRules(),
+            ]);
+            $this->trigger(self::EVENT_REGISTER_CONDITION_RULES, $event);
+
+            $this->_selectableConditionRules = Collection::make($event->conditionRules)
                 ->keyBy(fn($type) => is_string($type) ? $type : Json::encode($type))
                 ->map(fn($type) => $this->createConditionRule($type))
                 ->filter(fn(ConditionRuleInterface $rule) => $this->isConditionRuleSelectable($rule))
                 ->all();
         }
+
         return $this->_selectableConditionRules;
     }
+
+    /**
+     * Returns the selectable rules for this condition.
+     *
+     * Conditions should override this method instead of [[getSelectableConditionRules()]]
+     * so [[EVENT_REGISTER_CONDITION_RULES]] handlers can modify the class-defined rules.
+     *
+     * Rules should be defined as either the class name or an array with a `class` key set to the class name.
+     *
+     * @return string[]|array[]
+     * @phpstan-return string[]|array{class:string}[]
+     */
+    abstract protected function selectableConditionRules(): array;
 
     /**
      * Returns whether the given rule should be selectable by the condition builder.
@@ -242,11 +221,10 @@ abstract class BaseCondition extends Component implements ConditionInterface
             return false;
         }
 
-        foreach ($this->getConditionRuleTypes() as $type) {
-            if (is_array($type)) {
-                $type = $type['class'];
-            }
-            if ($type === get_class($rule)) {
+        $ruleClass = get_class($rule);
+
+        foreach ($this->getSelectableConditionRules() as $selectableRule) {
+            if ($ruleClass === get_class($selectableRule)) {
                 return true;
             }
         }

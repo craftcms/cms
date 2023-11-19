@@ -721,6 +721,9 @@ class ElementsController extends Controller
 
         $items = [
             [
+                'heading' => Craft::t('app', 'Context'),
+                'headingTag' => 'h2',
+                'headingAttributes' => ['class' => ['visually-hidden']],
                 'listAttributes' => ['class' => ['revision-group-current']],
                 'items' => [
                     [
@@ -1160,10 +1163,16 @@ JS, [
         }
 
         $this->element = $element;
-
-        $this->_applyParamsToElement($element);
         $elementsService = Craft::$app->getElements();
         $user = static::currentUser();
+
+        // Check save permissions before and after applying POST params to the element
+        // in case the request was tampered with.
+        if (!$elementsService->canSave($element, $user)) {
+            throw new ForbiddenHttpException('User not authorized to save this element.');
+        }
+
+        $this->_applyParamsToElement($element);
 
         if (!$elementsService->canSave($element, $user)) {
             throw new ForbiddenHttpException('User not authorized to save this element.');
