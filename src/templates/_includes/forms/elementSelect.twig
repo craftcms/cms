@@ -15,6 +15,7 @@
 {% set fieldId = fieldId ?? null %}
 {% set single = single ?? false %}
 {% set limit = single ? 1 : (limit ?? null) %}
+{% set showActionMenu = showActionMenu ?? true %}
 {% set sortable = (not limit or limit > 1) and (sortable ?? true) %}
 {% set disabled = (disabled ?? false) ? true : false %}
 {% set maintainHierarchy = maintainHierarchy ?? false %}
@@ -39,6 +40,7 @@
             id,
             elements,
             context: 'field',
+            sortable: false,
         }) }}
     {% elseif viewMode == 'cards' %}
         {{ include('_elements/cards.twig', {
@@ -46,6 +48,7 @@
             viewMode,
             disabled,
             context: 'field',
+            sortable: false,
         }) }}
     {% else %}
         {{ include('_elements/list.twig', {
@@ -53,6 +56,7 @@
             viewMode,
             disabled,
             context: 'field',
+            sortable: false,
         }) }}
     {% endif %}
 
@@ -100,6 +104,7 @@
         modalStorageKey: storageKey,
         fieldId: fieldId,
         sortable: sortable,
+        showActionMenu: showActionMenu,
         prevalidate: prevalidate,
         modalSettings: modalSettings ?? {},
     } %}

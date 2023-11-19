@@ -11,15 +11,13 @@ Craft.ElementEditor = Garnish.Base.extend(
     $activityContainer: null,
     $tabContainer: null,
     $contentContainer: null,
-    $revisionBtn: null,
-    $revisionLabel: null,
     $spinner: null,
     $expandSiteStatusesBtn: null,
     $statusIcon: null,
     $previewBtn: null,
+    additionalMenu: null,
 
-    $editMetaBtn: null,
-    metaHud: null,
+    metaModal: null,
     $nameTextInput: null,
     $saveMetaBtn: null,
 
@@ -101,8 +99,6 @@ Craft.ElementEditor = Garnish.Base.extend(
         return parseInt(siteId);
       });
 
-      this.$revisionBtn = this.$container.find('.context-btn');
-      this.$revisionLabel = this.$container.find('.revision-label');
       this.$previewBtn = this.$container.find('.preview-btn');
 
       const $spinnerContainer = this.isFullPage
@@ -470,7 +466,7 @@ Craft.ElementEditor = Garnish.Base.extend(
 
     initForDraft: function () {
       // Create the edit draft button
-      this.createEditMetaBtn();
+      this.createEditMetaAction();
 
       if (this.settings.canSaveCanonical) {
         Garnish.uiLayerManager.registerShortcut(
@@ -840,17 +836,23 @@ Craft.ElementEditor = Garnish.Base.extend(
         : this.$statusMessage;
     },
 
-    createEditMetaBtn: function () {
-      const $btnGroup = this.$container.find('.context-btngroup');
-      this.$editMetaBtn = $('<button/>', {
-        type: 'button',
-        class: 'btn edit icon',
-        'aria-expanded': 'false',
-        'aria-label': Craft.t('app', 'Edit draft settings'),
-        title: Craft.t('app', 'Edit draft settings'),
-      }).appendTo($btnGroup);
-      $btnGroup.find('.btngroup-btn-last').removeClass('btngroup-btn-last');
-      this.addListener(this.$editMetaBtn, 'click', 'showMetaHud');
+    createEditMetaAction: function () {
+      if (!this.isFullPage) {
+        return;
+      }
+
+      const menu = $('#action-menu').disclosureMenu().data('disclosureMenu');
+      const destructiveGroup = menu.getFirstDestructiveGroup();
+      const group = menu.addGroup(null, true, destructiveGroup);
+      const button = menu.addItem(
+        {
+          type: 'button',
+          icon: 'edit',
+          label: Craft.t('app', 'Edit draft settings'),
+        },
+        group
+      );
+      this.addListener(button, 'click', 'showMetaModal');
     },
 
     createPreviewLink: function (target, label) {
@@ -1298,11 +1300,6 @@ Craft.ElementEditor = Garnish.Base.extend(
 
             if (createdProvisionalDraft) {
               this.settings.isProvisionalDraft = true;
-              this.$revisionLabel.append(
-                $('<span/>', {
-                  text: ` — ${Craft.t('app', 'Edited')}`,
-                })
-              );
             }
 
             if (this.isFullPage) {
@@ -1315,47 +1312,22 @@ Craft.ElementEditor = Garnish.Base.extend(
               }
             }
 
-            if (!this.settings.isProvisionalDraft) {
-              this.$revisionLabel.text(response.data.draftName);
-              this.settings.draftName = response.data.draftName;
-            }
-
-            let revisionMenu = this.$revisionBtn.data('menubtn')
-              ? this.$revisionBtn.data('menubtn').menu
-              : null;
-
             // Did we just add a site?
             if (this.newSiteIds) {
-              // Do we need to create the revision menu?
-              if (!revisionMenu) {
-                this.$revisionBtn.removeClass('disabled').addClass('menubtn');
-                new Garnish.MenuBtn(this.$revisionBtn);
-                revisionMenu = this.$revisionBtn.data('menubtn').menu;
-                revisionMenu.$container.removeClass('hidden');
-              }
               this.newSiteIds.forEach((siteId) => {
-                const $option = revisionMenu.$options.filter(
-                  `[data-site-id=${siteId}]`
-                );
                 const siteSettings = this.settings.additionalSites.find(
                   (s) => s.siteId == siteId
                 );
-                if (
+                const enabled =
                   !siteSettings ||
                   typeof siteSettings.enabledByDefault === 'undefined' ||
-                  siteSettings.enabledByDefault
-                ) {
-                  $option
-                    .find('.status')
-                    .removeClass('disabled')
-                    .addClass('enabled');
-                }
-                const $li = $option.parent().removeClass('hidden');
-                $li.closest('.site-group').removeClass('hidden');
+                  siteSettings.enabledByDefault;
+                Craft.cp.showSiteCrumbMenuItem(siteId);
+                Craft.cp.setSiteCrumbMenuItemStatus(
+                  siteId,
+                  enabled ? 'enabled' : 'disabled'
+                );
               });
-              revisionMenu.$container
-                .find('.revision-hr')
-                .removeClass('hidden');
               this.newSiteIds = null;
             }
 
@@ -1374,24 +1346,19 @@ Craft.ElementEditor = Garnish.Base.extend(
 
                 this.initForProvisionalDraft();
               }
-            } else if (revisionMenu) {
-              revisionMenu.$options
-                .filter('.sel')
-                .find('.draft-name')
-                .text(response.data.draftName);
-              revisionMenu.$options
-                .filter('.sel')
-                .find('.draft-meta')
-                .text(
-                  response.data.creator
-                    ? Craft.t('app', 'Saved {timestamp} by {creator}', {
-                        timestamp: response.data.timestamp,
-                        creator: response.data.creator,
-                      })
-                    : Craft.t('app', 'Saved {timestamp}', {
-                        timestamp: response.data.timestamp,
-                      })
-                );
+            } else {
+              this.settings.draftName = response.data.draftName;
+              Craft.cp.updateContext(
+                response.data.draftName,
+                response.data.creator
+                  ? Craft.t('app', 'Saved {timestamp} by {creator}', {
+                      timestamp: response.data.timestamp,
+                      creator: response.data.creator,
+                    })
+                  : Craft.t('app', 'Saved {timestamp}', {
+                      timestamp: response.data.timestamp,
+                    })
+              );
             }
 
             // Did the controller send us updated preview targets?
@@ -1765,21 +1732,27 @@ Craft.ElementEditor = Garnish.Base.extend(
         );
     },
 
-    showMetaHud: function () {
-      if (!this.metaHud) {
-        this.createMetaHud();
-        this.onMetaHudShow();
+    showMetaModal: function () {
+      if (!this.metaModal) {
+        this.createMetaModal();
       } else {
-        this.metaHud.show();
+        this.metaModal.show();
       }
 
       if (!Garnish.isMobileBrowser(true)) {
-        this.$nameTextInput.trigger('focus');
+        setTimeout(() => {
+          this.$nameTextInput.trigger('focus');
+        }, 100);
       }
     },
 
-    createMetaHud: function () {
-      const $hudBody = $('<div/>');
+    createMetaModal: function () {
+      const $modal = $('<form/>', {
+        class: 'modal fitted',
+      });
+      const $hudBody = $('<div/>', {
+        class: 'body',
+      }).appendTo($modal);
 
       // Add the Name field
       const $nameField = $(
@@ -1798,7 +1771,7 @@ Craft.ElementEditor = Garnish.Base.extend(
 
       // HUD footer
       const $footer = $('<div class="hud-footer flex flex-center"/>').appendTo(
-        $hudBody
+        $modal
       );
 
       $('<div class="flex-grow"></div>').appendTo($footer);
@@ -1809,33 +1782,17 @@ Craft.ElementEditor = Garnish.Base.extend(
         text: Craft.t('app', 'Save'),
       }).appendTo($footer);
 
-      this.metaHud = new Garnish.HUD(this.$editMetaBtn, $hudBody, {
-        onSubmit: this.saveMeta.bind(this),
-      });
+      this.metaModal = new Garnish.Modal($modal);
 
       this.addListener(this.$nameTextInput, 'input', 'checkMetaValues');
+      this.addListener($modal, 'submit', (ev) => {
+        ev.preventDefault();
+        this.saveMeta();
+      });
 
-      this.metaHud.on('show', this.onMetaHudShow.bind(this));
-      this.metaHud.on('hide', this.onMetaHudHide.bind(this));
-      this.metaHud.on('escape', this.onMetaHudEscape.bind(this));
-    },
-
-    onMetaHudShow: function () {
-      this.$editMetaBtn.addClass('active');
-      this.$editMetaBtn.attr('aria-expanded', 'true');
-    },
-
-    onMetaHudHide: function () {
-      this.$editMetaBtn.removeClass('active');
-      this.$editMetaBtn.attr('aria-expanded', 'false');
-
-      if (Garnish.focusIsInside(this.metaHud.$body)) {
-        this.$editMetaBtn.trigger('focus');
-      }
-    },
-
-    onMetaHudEscape: function () {
-      this.$nameTextInput.val(this.settings.draftName);
+      this.metaModal.on('escape', () => {
+        this.$nameTextInput.val(this.settings.draftName);
+      });
     },
 
     checkMetaValues: function () {
@@ -1853,20 +1810,20 @@ Craft.ElementEditor = Garnish.Base.extend(
       return false;
     },
 
-    shakeMetaHud: function () {
-      Garnish.shake(this.metaHud.$hud);
+    shakeMetaModal: function () {
+      Garnish.shake(this.metaModal.$container);
     },
 
     saveMeta: function () {
       return new Promise((resolve, reject) => {
         if (!this.checkMetaValues()) {
-          this.shakeMetaHud();
+          this.shakeMetaModal();
           reject();
           return;
         }
 
         this.settings.draftName = this.$nameTextInput.val();
-        this.metaHud.hide();
+        this.metaModal.hide();
         this.checkForm(true).then(resolve).catch(reject);
       });
     },

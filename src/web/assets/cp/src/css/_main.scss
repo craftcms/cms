@@ -462,13 +462,6 @@ button {
   cursor: pointer;
 }
 
-/* revision button */
-.context-btn.disabled {
-  opacity: 1;
-  color: var(--medium-dark-text-color);
-  background-color: transparentize($grey200, 0.5) !important;
-}
-
 /* status icons */
 .checkmark-icon,
 .alert-icon {
@@ -502,52 +495,6 @@ button {
   &:before {
     content: 'alert';
     color: var(--error-color);
-  }
-}
-
-.menu.revision-menu {
-  padding: 10px 24px;
-
-  hr {
-    margin: 10px -24px;
-  }
-
-  ul {
-    li {
-      &.sel {
-        margin: 0 -14px;
-        padding: 0 14px;
-        background: var(--gray-050);
-        border-radius: var(--large-border-radius);
-
-        .edited-desc {
-          display: flex;
-          align-items: center;
-          @include margin-left(10px);
-          border-top: 1px solid var(--hairline-color);
-          padding: 10px 0;
-          color: var(--light-text-color);
-          white-space: normal;
-
-          p {
-            margin: 0;
-          }
-
-          .btn {
-            @include margin-left(14px);
-          }
-        }
-      }
-
-      a {
-        padding-top: 7px;
-        border-radius: var(--large-border-radius);
-      }
-    }
-  }
-
-  .extralight {
-    margin-top: 2px;
   }
 }
 
@@ -1866,7 +1813,7 @@ ul.icons {
 /* small buttons */
 .btngroup.small .btn,
 .btn.small {
-  padding: 0 7px !important;
+  padding: 0 var(--s) !important;
   font-size: 12px;
   line-height: 22px;
 }
@@ -2585,8 +2532,8 @@ table {
 
       th:not(.orderable),
       td {
-        padding-top: var(--pane-padding, var(--m));
-        padding-bottom: var(--pane-padding, var(--m));
+        padding-top: var(--pane-padding, var(--s));
+        padding-bottom: var(--pane-padding, var(--s));
       }
 
       th {
@@ -2840,8 +2787,13 @@ table {
     align-items: center;
     gap: var(--s);
 
-    .status {
-      margin: 0;
+    .status,
+    .icon {
+      @include margin-right(0);
+    }
+
+    .icon {
+      margin-top: -4px;
     }
   }
 
@@ -3074,6 +3026,46 @@ table {
   }
 }
 
+.context-label,
+.context-menu-container {
+  display: inline-flex;
+  align-items: center;
+  @include margin-left(var(--xs));
+  height: var(--touch-target-size);
+  padding: 0 var(--s);
+  font-size: 11px;
+  font-weight: normal;
+  text-decoration: none !important;
+  color: var(--light-text-color);
+  border-radius: calc(var(--touch-target-size) / 2);
+  border: 1px solid var(--medium-hairline-color);
+}
+
+.context-menu-container {
+  @include padding-right(0);
+
+  .menubtn {
+    @include margin(0, -1px, 0, 0);
+    @include padding-right(calc(var(--s) + 1px) !important);
+    @include border-left(1px solid var(--medium-hairline-color));
+    @include border-radius(
+      0,
+      calc(var(--touch-target-size) / 2),
+      calc(var(--touch-target-size) / 2),
+      0
+    );
+
+    &:hover {
+      border-color: var(--dark-hairline-color) !important;
+    }
+  }
+
+  > * {
+    display: inline-block;
+    @include padding-right(var(--s));
+  }
+}
+
 .chip,
 .card {
   // prevent double focus ring (chip/card already gets it)
@@ -3092,17 +3084,6 @@ table {
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
-    }
-
-    .draft-label {
-      display: inline-block;
-      @include margin(-1px, 0, -1px, 7px);
-      padding: 1px 5px;
-      font-weight: normal;
-      text-decoration: none !important;
-      color: var(--medium-text-color);
-      background: var(--gray-100);
-      border-radius: var(--large-border-radius);
     }
 
     .segment:after {
@@ -3134,13 +3115,13 @@ table {
       margin: 0;
     }
 
-    & > .move,
-    & > .menubtn {
+    & > .action-btn,
+    & > .move {
       @include touch-target;
       margin: 0 -4px;
     }
 
-    .settings {
+    .action-btn {
       color: var(--ui-control-color);
 
       &:before {
@@ -3587,6 +3568,17 @@ $checkboxPadding: $checkboxSize + 4;
         margin: 0;
       }
     }
+  }
+}
+
+/* nested element cards */
+.nested-element-cards {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s);
+
+  & > .pane {
+    margin: 0;
   }
 }
 
@@ -4162,6 +4154,10 @@ ul.tree,
     background-color: transparent !important;
     box-shadow: none;
     border: 1px solid #{transparentize($inputColor, 0.75)} !important;
+  }
+
+  &.no-border {
+    border: none !important;
   }
 
   &.padding-xs {
@@ -4844,7 +4840,7 @@ $min2ColWidth: 400px;
       display: flex;
       flex-direction: row;
       align-items: center;
-      gap: var(--s);
+      gap: var(--xs);
       min-height: calc(50px - 16px);
 
       & > .pane-tabs {
@@ -5843,7 +5839,31 @@ $min2ColWidth: 400px;
   display: none;
   position: absolute;
 
-  h6 {
+  &.padded {
+    padding: var(--s) calc(var(--m) + var(--s));
+
+    hr {
+      margin: var(--s) calc((var(--m) + var(--s)) * -1);
+    }
+
+    ul {
+      li {
+        margin: 0 calc(var(--m) * -1);
+        padding: 0 var(--m);
+
+        a {
+          border-radius: var(--large-border-radius);
+        }
+      }
+    }
+
+    .extralight {
+      margin-top: 2px;
+    }
+  }
+
+  h6,
+  .h6 {
     &:first-child {
       margin-top: 14px !important;
     }
@@ -5853,15 +5873,17 @@ $min2ColWidth: 400px;
     &.padded {
       li {
         a,
+        .menu-item,
         .menu-option {
-          @include padding-left(24px);
+          @include padding-left(30px);
 
           &[data-icon],
           &.icon,
           &.sel {
             &:before {
               @include floatleft;
-              @include margin(3px, 0, 0, -17px);
+              @include margin(3px, 0, 0, -20px);
+              width: 14px;
               font-size: 14px;
               color: var(--ui-control-color);
             }
@@ -5871,8 +5893,12 @@ $min2ColWidth: 400px;
             }
           }
 
-          &.sel:not([data-icon]):before {
-            content: 'check';
+          &.sel {
+            background: var(--gray-050);
+
+            &:not([data-icon]):before {
+              content: '\f00e';
+            }
           }
         }
       }
@@ -5880,15 +5906,20 @@ $min2ColWidth: 400px;
 
     li {
       a,
+      .menu-item,
       .menu-option {
-        @include menu-option-styles;
+        margin: 0 -14px;
+        padding: 10px 14px;
+        white-space: nowrap;
         font-size: 14px;
-        cursor: default;
         -webkit-appearance: none;
 
-        &:not(.flex) {
-          display: table !important;
-          box-sizing: border-box;
+        &:not(:last-child) {
+          @include margin-right(0);
+        }
+
+        &:not(.flex):not(.hidden) {
+          display: block;
           width: calc(100% + 28px);
           @include alignleft;
         }
@@ -5944,6 +5975,14 @@ $min2ColWidth: 400px;
   .go:after {
     color: inherit;
   }
+
+  &:not(.menu--disclosure) ul li a,
+  ul li .menu-item,
+  ul li .menu-option {
+    color: $menuOptionColor;
+    text-decoration: none;
+    cursor: default;
+  }
 }
 
 .menubtn,
@@ -5961,7 +6000,7 @@ $min2ColWidth: 400px;
 
 .menu:not(.menu--disclosure) ul li a:not(.sel):not(.disabled):hover,
 .menu:not(.menu--disclosure):not(:hover) ul li a:not(.disabled).hover {
-  @include menu-option-active-styles;
+  @include menu-item-active-styles;
   --text-color: var(--white);
   --light-text-color: var(--gray-100);
   --ui-control-color: var(--gray-050);
@@ -5970,23 +6009,25 @@ $min2ColWidth: 400px;
 
   span.icon,
   &:before {
-    color: var(--menu-option-active-color);
+    color: var(--menu-item-active-color);
   }
 
   &.error {
-    color: var(--menu-option-active-color) !important;
+    color: var(--menu-item-active-color) !important;
   }
 }
 
 .menu {
   hr.padded,
+  .h6.padded,
   h6.padded {
-    @include margin-left(10px);
+    @include margin-left(16px);
   }
 }
 
 .menu--disclosure ul li {
-  & > a,
+  & > a:not(.crumb-link),
+  & > .menu-item,
   & > .menu-option {
     &:hover {
       @include disclosure-link-hover-styles;
@@ -7124,7 +7165,7 @@ body {
 
     [data-selectable],
     .optgroup-header {
-      @include menu-option-styles;
+      @include menu-item-styles;
     }
 
     .optgroup {
@@ -7149,7 +7190,7 @@ body {
     }
 
     .selected {
-      @include menu-option-active-styles;
+      @include menu-item-active-styles;
       cursor: default !important;
 
       .light {
@@ -7418,13 +7459,13 @@ ul.errors li {
   }
 
   .autosuggest__results-item {
-    @include menu-option-styles;
+    @include menu-item-styles;
     overflow: hidden;
     text-overflow: ellipsis;
 
     &:hover,
     &.autosuggest__results-item--highlighted {
-      @include menu-option-active-styles;
+      @include menu-item-active-styles;
       cursor: pointer;
 
       .light {

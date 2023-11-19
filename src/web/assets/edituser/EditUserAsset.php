@@ -9,7 +9,6 @@ namespace craft\web\assets\edituser;
 
 use craft\web\AssetBundle;
 use craft\web\assets\cp\CpAsset;
-use craft\web\View;
 
 /**
  * Asset bundle for the Edit User page
@@ -32,7 +31,6 @@ class EditUserAsset extends AssetBundle
      * @inheritdoc
      */
     public $css = [
-        'css/AccountSettingsForm.css',
         'css/profile.css',
     ];
 
@@ -40,24 +38,6 @@ class EditUserAsset extends AssetBundle
      * @inheritdoc
      */
     public $js = [
-        'AccountSettingsForm.js',
         'profile.js',
     ];
-
-    /**
-     * @inheritdoc
-     */
-    public function registerAssetFiles($view): void
-    {
-        parent::registerAssetFiles($view);
-
-        if ($view instanceof View) {
-            $view->registerTranslations('app', [
-                'Copy the activation URL',
-                'Copy the impersonation URL, and open it in a new private window.',
-                'Please enter your current password.',
-                'Please enter your password.',
-            ]);
-        }
-    }
 }

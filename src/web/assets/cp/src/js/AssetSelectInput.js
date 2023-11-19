@@ -37,26 +37,6 @@ Craft.AssetSelectInput = Craft.BaseElementSelectInput.extend({
     }
   },
 
-  defineElementActions: function ($element) {
-    const actions = this.base($element);
-    const viewIndex = actions.findIndex((a) => a.icon === 'share');
-    const previewAction = {
-      icon: 'view',
-      label: Craft.t('app', 'Preview file'),
-      callback: () => {
-        this.openPreview($element);
-      },
-    };
-
-    if (viewIndex !== -1) {
-      actions.splice(viewIndex + 1, 0, previewAction);
-    } else {
-      actions.push(previewAction);
-    }
-
-    return actions;
-  },
-
   clearOpenPreviewTimeout: function () {
     if (this.openPreviewTimeout) {
       clearTimeout(this.openPreviewTimeout);
@@ -283,6 +263,9 @@ Craft.AssetSelectInput = Craft.BaseElementSelectInput.extend({
           data.elements[result.assetId][0]
         );
         this.selectElements([elementInfo]);
+
+        Craft.appendHeadHtml(data.headHtml);
+        Craft.appendBodyHtml(data.bodyHtml);
 
         // Last file
         if (this.uploader.isLastUpload()) {
