@@ -3571,6 +3571,17 @@ $checkboxPadding: $checkboxSize + 4;
   }
 }
 
+/* nested element cards */
+.nested-element-cards {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s);
+
+  & > .pane {
+    margin: 0;
+  }
+}
+
 /* editable tables */
 table.editable {
   border-radius: var(--large-border-radius);
@@ -4143,6 +4154,10 @@ ul.tree,
     background-color: transparent !important;
     box-shadow: none;
     border: 1px solid #{transparentize($inputColor, 0.75)} !important;
+  }
+
+  &.no-border {
+    border: none !important;
   }
 
   &.padding-xs {

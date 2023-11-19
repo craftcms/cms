@@ -155,11 +155,14 @@
 
 {{ forms.selectField({
     label: 'View Mode'|t('app'),
-    instructions: 'Choose how nested entries should be presented to authors.'|t('app'),
+    instructions: 'Choose how nested {type} should be presented to authors.'|t('app', {
+        type: 'entries'|t('app'),
+    }),
     id: 'view-mode',
     name: 'viewMode',
     options: [
-        {label: 'As inline blocks'|t('app'), value: constant('VIEW_MODE_BLOCKS', field)},
+        {label: 'As cards'|t('app'), value: constant('VIEW_MODE_CARDS', field)},
+        {label: 'As inline-editable blocks'|t('app'), value: constant('VIEW_MODE_BLOCKS', field)},
         {label: 'As an element index'|t('app'), value: constant('VIEW_MODE_INDEX', field)},
     ],
     value: field.viewMode,
