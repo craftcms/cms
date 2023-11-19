@@ -978,6 +978,23 @@ class Request extends \yii\web\Request
     }
 
     /**
+     * Returns the named GET parameters, without the path parameter.
+     *
+     * @return array
+     * @since 5.0.0
+     */
+    public function getQueryParamsWithoutPath(): array
+    {
+        $params = $this->getQueryParams();
+
+        if ($this->generalConfig->pathParam) {
+            unset($params[$this->generalConfig->pathParam]);
+        }
+
+        return $params;
+    }
+
+    /**
      * Returns the named GET parameter value.
      *
      * If the GET parameter does not exist, the second argument passed to this method will be returned.

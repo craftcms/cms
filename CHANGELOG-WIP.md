@@ -1,15 +1,18 @@
 # Release Notes for Craft CMS 5.0 (WIP)
 
 ### Content Management
+- Redesigned the global breadcrumb bar to include quick links to other areas of the control panel, page context menus, and action menus. ([#13902](https://github.com/craftcms/cms/pull/13902))
 - All elements can now have thumbnails, provided by Assets fields. ([#12484](https://github.com/craftcms/cms/discussions/12484), [#12706](https://github.com/craftcms/cms/discussions/12706))
 - Element indexes and relational fields now have the option to use card views. ([#6024](https://github.com/craftcms/cms/pull/6024))
 - Element indexes now support inline editing for some custom field values.
+- Element chips and cards now include quick action menus. ([#13902](https://github.com/craftcms/cms/pull/13902))
+- Entry edit pages now include quick links to other sections’ index sources.
+- Asset edit pages now include quick links to other volumes’ index sources.
 - Entry conditions can now have a “Matrix field” rule. ([#13794](https://github.com/craftcms/cms/discussions/13794))
 - User addresses are now displayed within an embedded element index.
 - Selected elements within relational fields now include a context menu with “View in a new tab”, “Edit”, and “Remove” options.
 - Selected elements within relational fields now include a dedicated drag handle.
-- Selected assets within Assets fields now include a “Preview file” option within their context menu.
-- Selected assets within Assets fields no longer open the file preview modal when their thumbnail is clicked on. The “Preview file” context menu option, or <kbd>Shift</kbd> + <kbd>Spacebar</kbd> keyboard shortcut can be used instead.
+- Selected assets within Assets fields no longer open the file preview modal when their thumbnail is clicked on. The “Preview file” quick action, or the <kbd>Shift</kbd> + <kbd>Spacebar</kbd> keyboard shortcut, can be used instead.
 - Improved the styling of element chips.
 - Improved checkbox-style deselection behavior for control panel items, to account for double-clicks. 
 - Table views are no longer available for element indexes on mobile.
@@ -48,6 +51,7 @@
 - Entry queries now have `field`, `fieldId`, `primaryOwner`, `primaryOwnerId`, `owner`, `ownerId`, `allowOwnerDrafts`, and `allowOwnerRevisions` params.
 - Entries’ GraphQL type names are now formatted as `<entryTypeHandle>_Entry`, and are no longer prefixed with their section’s handle. (That goes for Matrix-nested entries as well.)
 - Matrix fields’ GraphQL mutation types now expect nested entries to be defined by an `entries` field rather than `blocks`.
+- Added the `|firstWhere` and `|flatten` Twig filters.
 - Removed the `craft.matrixBlocks()` Twig function. `craft.entries()` should be used instead.
 - Controller actions which require a `POST` request will now respond with a 405 error code if another request method is used. ([#13397](https://github.com/craftcms/cms/discussions/13397))
 
@@ -59,16 +63,22 @@
 - All core element query param methods now return `static` instead of `self`. ([#11868](https://github.com/craftcms/cms/pull/11868))
 - Migrations that modify the project config no longer need to worry about whether the same changes were already applied to the incoming project config YAML files.
 - Selectize menus no longer apply special styling to options with the value `new`. The `_includes/forms/selectize.twig` control panel template should be used instead (or `craft\helpers\Cp::selectizeHtml()`/`selectizeFieldHtml()`), which will append an styled “Add” option when `addOptionFn` and `addOptionLabel` settings are passed. ([#11946](https://github.com/craftcms/cms/issues/11946))
-- Added the `elementChip()` and `elementCard()` global functions for control panel templates.
+- Added the `disclosureMenu()`, `elementCard()`, `elementChip()`, `elementIndex()`, and `siteMenuItems()` global functions for control panel templates.
 - The `assets/move-asset` and `assets/move-folder` actions no longer include `success` keys in responses. ([#12159](https://github.com/craftcms/cms/pull/12159))
 - The `assets/upload` controller action now includes `errors` object in failure responses. ([#12159](https://github.com/craftcms/cms/pull/12159))
 - Element action triggers’ `validateSelection()` and `activate()` methods are now passed an `elementIndex` argument, with a reference to the trigger’s corresponding element index.
+- Added `craft\base\Element::EVENT_DEFINE_ACTION_MENU_ITEMS`.
 - Added `craft\base\Element::EVENT_DEFINE_INLINE_ATTRIBUTE_INPUT_HTML`.
+- Added `craft\base\Element::crumbs()`.
+- Added `craft\base\Element::destructiveActionMenuItems()`.
 - Added `craft\base\Element::inlineAttributeInputHtml()`.
+- Added `craft\base\Element::safeActionMenuItems()`.
 - Added `craft\base\Element::shouldValidateTitle()`.
 - Added `craft\base\ElementContainerFieldInterface`, which should be implemented by fields which contain nested elements, such as Matrix.
+- Added `craft\base\ElementInterface::getActionMenuItems()`.
 - Added `craft\base\ElementInterface::getCardBodyHtml()`.
 - Added `craft\base\ElementInterface::getChipLabelHtml()`.
+- Added `craft\base\ElementInterface::getCrumbs()`.
 - Added `craft\base\ElementInterface::getInlineAttributeInputHtml()`.
 - Added `craft\base\ElementInterface::hasDrafts()`.
 - Added `craft\base\ElementInterface::hasThumbs()`.
@@ -152,9 +162,12 @@
 - Added `craft\helpers\ArrayHelper::lastValue()`.
 - Added `craft\helpers\Cp::checkboxGroupFieldHtml()`.
 - Added `craft\helpers\Cp::checkboxGroupHtml()`.
+- Added `craft\helpers\Cp::disclosureMenu()`.
 - Added `craft\helpers\Cp::elementCardHtml()`.
 - Added `craft\helpers\Cp::elementChipHtml()`.
 - Added `craft\helpers\Cp::elementIndexHtml()`.
+- Added `craft\helpers\Cp::normalizeMenuItems()`.
+- Added `craft\helpers\Cp::siteMenuItems()`.
 - Added `craft\helpers\Db::defaultCollation()`.
 - Added `craft\helpers\Db::prepareForJsonColumn()`.
 - Added `craft\helpers\ElementHelper::actionConfig()`.
@@ -185,6 +198,15 @@
 - Added `craft\services\ProjectConfig::find()`.
 - Added `craft\services\ProjectConfig::flush()`.
 - Added `craft\services\ProjectConfig::writeYamlFiles()`.
+- Added `craft\web\CpScreenResponseBehavior::$actionMenuItems`.
+- Added `craft\web\CpScreenResponseBehavior::$contextMenuItems`.
+- Added `craft\web\CpScreenResponseBehavior::$selectableSites`.
+- Added `craft\web\CpScreenResponseBehavior::$site`.
+- Added `craft\web\CpScreenResponseBehavior::actionMenuItems()`.
+- Added `craft\web\CpScreenResponseBehavior::contextMenuItems()`.
+- Added `craft\web\CpScreenResponseBehavior::selectableSites()`.
+- Added `craft\web\CpScreenResponseBehavior::site()`.
+- Added `craft\web\Request::getQueryParamsWithoutPath()`.
 - Added `craft\web\twig\variables\Cp::getEntryTypeOptions()`.
 - All of the `craft\services\Sections` members have been moved into `craft\services\Entries`.
 - Renamed `craft\base\BlockElementInterface` to `NestedElementInterface`, and added the `getField()`, `getSortOrder()`, and `setOwner()` methods to it. 
@@ -242,10 +264,13 @@
 - `craft\services\Elements::duplicateElement()` no longer has a `$trackDuplication` argument.
 - `craft\services\Plugins::getPluginLicenseKeyStatus()` now returns a `craft\enums\LicenseKeyStatus` case.
 - `craft\services\ProjectConfig::saveModifiedConfigData()` no longer has a `$writeExternalConfig` argument, and no longer writes out updated project config YAML files.
+- `craft\helpers\Html::tag()` and `beginTag()` now ensure that the passed-in attributes are normalized.
+- `craft\helpers\Html::normalizeTagAttributes()` now supports a `removeClass` key.
 - Deprecated the `_elements/element.twig` control panel template. `elementChip()` or `elementCard()` should be used instead.
 - Deprecated the `cp.elements.element` control panel template hook.
 - Deprecated `craft\events\DefineElementInnerHtmlEvent`.
 - Deprecated `craft\helpers\Cp::elementHtml()`. `elementChipHtml()` or `elementCardHtml()` should be used instead.
+- Removed the `_includes/revisionmenu.twig` control panel template.
 - Removed `craft\base\ApplicationTrait::getMatrix()`.
 - Removed `craft\base\Element::$contentId`.
 - Removed `craft\base\Element::ATTR_STATUS_MODIFIED`. `craft\enums\AttributeStatus::Modified` should be used instead.
@@ -269,6 +294,7 @@
 - Removed `craft\controllers\Sections::actionEntryTypesIndex()`.
 - Removed `craft\controllers\Sections::actionReorderEntryTypes()`.
 - Removed `craft\controllers\Sections::actionSaveEntryType()`.
+- Removed `craft\controllers\UsersController::EVENT_REGISTER_USER_ACTIONS`. `craft\base\Element::EVENT_DEFINE_ACTION_MENU_ITEMS` should be used instead.
 - Removed `craft\db\Table::FIELDGROUPS`.
 - Removed `craft\elements\MatrixBlock`.
 - Removed `craft\elements\db\ElementQuery::$contentTable`.
@@ -280,6 +306,7 @@
 - Removed `craft\errors\MatrixBlockTypeNotFoundException`.
 - Removed `craft\events\BlockTypesEvent`.
 - Removed `craft\events\FieldGroupEvent`.
+- Removed `craft\events\RegisterUserActionsEvent`.
 - Removed `craft\fields\Matrix::EVENT_SET_FIELD_BLOCK_TYPES`.
 - Removed `craft\fields\Matrix::PROPAGATION_METHOD_ALL`. `craft\enums\PropagationMethod::All` should be used instead.
 - Removed `craft\fields\Matrix::PROPAGATION_METHOD_CUSTOM`. `craft\enums\PropagationMethod::Custom` should be used instead.
@@ -348,7 +375,19 @@
 - Removed `craft\services\ProjectConfig::PATH_MATRIX_BLOCK_TYPES`.
 - Removed `craft\services\ProjectConfig::updateStoredConfigAfterRequest()`.
 - Removed `craft\services\Sections::reorderEntryTypes()`.
+- Removed `craft\web\CpScreenResponseBehavior::$contextMenuHtml`. `$contextMenuItems` should be used instead.
+- Removed `craft\web\CpScreenResponseBehavior::contextMenuHtml()`. `contextMenuItems()` should be used instead.
+- Removed `craft\web\CpScreenResponseBehavior::contextMenuTemplate()`. `contextMenuItems()` should be used instead.
 - Added `Craft.BaseElementSelectInput::defineElementActions()`.
+- Added `Craft.CP::setSiteCrumbMenuItemStatus()`.
+- Added `Craft.CP::showSiteCrumbMenuItem()`.
+- Added `Craft.CP::updateContext()`.
+- Added `Garnish.DisclosureMenu::addGroup()`.
+- Added `Garnish.DisclosureMenu::addHr()`.
+- Added `Garnish.DisclosureMenu::addItem()`.
+- Added `Garnish.DisclosureMenu::createItem()`.
+- Added `Garnish.DisclosureMenu::getFirstDestructiveGroup()`.
+- Added `Garnish.DisclosureMenu::isPadded()`.
 - `Craft.appendBodyHtml()` and `appendHeadHtml()` are now promise-based, and load JavaScript resources over Ajax.
 
 ### System
