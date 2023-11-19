@@ -3041,24 +3041,29 @@ table {
   border: 1px solid var(--medium-hairline-color);
 }
 
-.context-menu-container:has(.menubtn) {
-  padding-right: 0;
+.context-menu-container {
+  @include padding-right(0);
+
+  .menubtn {
+    @include margin(0, -1px, 0, 0);
+    @include padding-right(calc(var(--s) + 1px) !important);
+    @include border-left(1px solid var(--medium-hairline-color));
+    @include border-radius(
+      0,
+      calc(var(--touch-target-size) / 2),
+      calc(var(--touch-target-size) / 2),
+      0
+    );
+
+    &:hover {
+      border-color: var(--dark-hairline-color) !important;
+    }
+  }
 
   > * {
     display: inline-block;
-    padding-right: var(--s);
+    @include padding-right(var(--s));
   }
-}
-
-#global-header .context-menu-container .menubtn {
-  padding-left: calc(var(--s) * 0.8) !important;
-  border-left: 1px solid var(--medium-hairline-color);
-  border-radius: 0 calc(var(--touch-target-size) / 2)
-    calc(var(--touch-target-size) / 2) 0;
-}
-
-.context-menu-container .menubtn:hover {
-  border-color: var(--dark-hairline-color);
 }
 
 .chip,
@@ -5815,12 +5820,6 @@ $min2ColWidth: 400px;
       li {
         margin: 0 calc(var(--m) * -1);
         padding: 0 var(--m);
-        //&.sel {
-        //  margin: 0 -14px;
-        //  padding: 0 14px;
-        //  background: var(--gray-050);
-        //  border-radius: var(--large-border-radius);
-        //}
 
         a {
           border-radius: var(--large-border-radius);
@@ -5879,10 +5878,15 @@ $min2ColWidth: 400px;
       a,
       .menu-item,
       .menu-option {
-        @include menu-item-styles;
+        margin: 0 -14px;
+        padding: 10px 14px;
+        white-space: nowrap;
         font-size: 14px;
-        cursor: default;
         -webkit-appearance: none;
+
+        &:not(:last-child) {
+          @include margin-right(0);
+        }
 
         &:not(.flex):not(.hidden) {
           display: block;
@@ -5941,6 +5945,14 @@ $min2ColWidth: 400px;
   .go:after {
     color: inherit;
   }
+
+  &:not(.menu--disclosure) ul li a,
+  ul li .menu-item,
+  ul li .menu-option {
+    color: $menuOptionColor;
+    text-decoration: none;
+    cursor: default;
+  }
 }
 
 .menubtn,
@@ -5985,7 +5997,6 @@ $min2ColWidth: 400px;
 
 .menu--disclosure ul li {
   & > a:not(.crumb-link),
-  & > .crumb-label > a,
   & > .menu-item,
   & > .menu-option {
     &:hover {
@@ -5994,12 +6005,6 @@ $min2ColWidth: 400px;
 
     @include focus-styles {
       box-shadow: inset 0 0 0 3px hsla(var(--dark-focus-hsl), 0.7);
-    }
-  }
-
-  & > a.crumb-link {
-    &:hover {
-      color: var(--link-color);
     }
   }
 }
