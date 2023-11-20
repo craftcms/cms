@@ -21,6 +21,7 @@ use craft\elements\conditions\users\UserCondition;
 use craft\elements\db\AddressQuery;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\db\UserQuery;
+use craft\enums\MenuItemType;
 use craft\enums\PropagationMethod;
 use craft\events\AuthenticateUserEvent;
 use craft\events\DefineValueEvent;
@@ -34,7 +35,6 @@ use craft\helpers\Session;
 use craft\helpers\StringHelper;
 use craft\helpers\UrlHelper;
 use craft\i18n\Formatter;
-use craft\i18n\Locale;
 use craft\models\FieldLayout;
 use craft\models\UserGroup;
 use craft\records\User as UserRecord;
@@ -42,6 +42,7 @@ use craft\validators\DateTimeValidator;
 use craft\validators\UniqueValidator;
 use craft\validators\UsernameValidator;
 use craft\validators\UserPasswordValidator;
+use craft\web\View;
 use DateInterval;
 use DateTime;
 use DateTimeZone;
@@ -104,6 +105,11 @@ class User extends Element implements IdentityInterface
     public const EVENT_DEFINE_FRIENDLY_NAME = 'defineFriendlyName';
 
     public const IMPERSONATE_KEY = 'Craft.UserSessionService.prevImpersonateUserId';
+
+    /**
+     * @event RegisterUserActionsEvent The event that is triggered when a user’s available actions are being registered
+     */
+    public const EVENT_REGISTER_USER_ACTIONS = 'registerUserActions';
 
     private static array $photoColors = [
         'red-100',
@@ -697,10 +703,10 @@ class User extends Element implements IdentityInterface
     public ?User $inheritorOnDelete = null;
 
     /**
-     * @var Address[] Addresses
+     * @var ElementCollection<Address> Addresses
      * @see getAddresses()
      */
-    private array $_addresses;
+    private ElementCollection $_addresses;
 
     /**
      * @see getAddressManager()
@@ -964,19 +970,18 @@ class User extends Element implements IdentityInterface
     /**
      * Gets the user’s addresses.
      *
-     * @return Address[]
+     * @return ElementCollection<Address>
      * @since 4.0.0
      */
-    public function getAddresses(): array
+    public function getAddresses(): ElementCollection
     {
         if (!isset($this->_addresses)) {
             if (!$this->id) {
-                return [];
+                /** @var ElementCollection */
+                return ElementCollection::make();
             }
 
-            /** @var Address[] $addresses */
-            $addresses = $this->createAddressQuery()->all();
-            $this->_addresses = $addresses;
+            $this->_addresses = $this->createAddressQuery()->collect();
         }
 
         return $this->_addresses;
@@ -1007,7 +1012,7 @@ class User extends Element implements IdentityInterface
     private function createAddressQuery(): AddressQuery
     {
         return Address::find()
-            ->ownerId($this->id)
+            ->owner($this)
             ->orderBy(['id' => SORT_ASC]);
     }
 
@@ -1540,6 +1545,288 @@ XML;
         }
 
         return null;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    protected function safeActionMenuItems(): array
+    {
+        $edition = Craft::$app->getEdition();
+        $currentUser = Craft::$app->getUser()->getIdentity();
+        $view = Craft::$app->getView();
+        $usersService = Craft::$app->getUsers();
+
+        $canAdministrateUsers = $currentUser->can('administrateUsers');
+        $canModerateUsers = $currentUser->can('moderateUsers');
+
+        $isNewUser = !$this->id;
+        $isCurrentUser = $this->getIsCurrent();
+
+        $statusItems = [];
+        $sessionItems = [];
+        $miscItems = [];
+
+        if ($edition === Craft::Pro && !$isNewUser) {
+            switch ($this->getStatus()) {
+                case Element::STATUS_ARCHIVED:
+                case Element::STATUS_DISABLED:
+                    if (Craft::$app->getElements()->canSave($this)) {
+                        $statusItems[] = [
+                            'label' => Craft::t('app', 'Enable'),
+                            'action' => 'users/enable-user',
+                            'params' => [
+                                'userId' => $this->id,
+                            ],
+                        ];
+                    }
+                    break;
+                case self::STATUS_INACTIVE:
+                case self::STATUS_PENDING:
+                    // Only provide activation actions if they have an email address
+                    if ($this->email) {
+                        if ($this->pending || $canAdministrateUsers) {
+                            $statusItems[] = [
+                                'icon' => 'paperplane',
+                                'label' => Craft::t('app', 'Send activation email'),
+                                'action' => 'users/send-activation-email',
+                                'params' => [
+                                    'userId' => $this->id,
+                                ],
+                            ];
+                        }
+                        if ($canAdministrateUsers) {
+                            // Only need to show the "Copy activation URL" option if they don't have a password
+                            if (!$this->password) {
+                                $statusItems[] = $this->_copyPasswordResetUrlActionItem(Craft::t('app', 'Copy activation URL…'), $view);
+                            }
+                            $statusItems[] = [
+                                'icon' => 'enabled',
+                                'label' => Craft::t('app', 'Activate account'),
+                                'action' => 'users/activate-user',
+                                'params' => [
+                                    'userId' => $this->id,
+                                ],
+                            ];
+                        }
+                    }
+                    break;
+                case self::STATUS_SUSPENDED:
+                    if ($usersService->canSuspend($currentUser, $this)) {
+                        $statusItems[] = [
+                            'icon' => 'enabled',
+                            'label' => Craft::t('app', 'Unsuspend'),
+                            'action' => 'users/unsuspend-user',
+                            'params' => [
+                                'userId' => $this->id,
+                            ],
+                        ];
+                    }
+                    break;
+                case self::STATUS_ACTIVE:
+                    if ($this->locked) {
+                        if (
+                            !$isCurrentUser &&
+                            ($currentUser->admin || !$this->admin) &&
+                            $canModerateUsers &&
+                            (
+                                ($previousUserId = Session::get(self::IMPERSONATE_KEY)) === null ||
+                                $this->id != $previousUserId
+                            )
+                        ) {
+                            $statusItems[] = [
+                                'label' => Craft::t('app', 'Unlock'),
+                                'action' => 'users/unlock-user',
+                                'params' => [
+                                    'userId' => $this->id,
+                                ],
+                            ];
+                        }
+                    }
+
+                    if (!$isCurrentUser) {
+                        $statusItems[] = [
+                            'icon' => 'paperplane',
+                            'label' => Craft::t('app', 'Send password reset email'),
+                            'action' => 'users/send-password-reset-email',
+                            'params' => [
+                                'userId' => $this->id,
+                            ],
+                        ];
+                        if ($canAdministrateUsers) {
+                            $statusItems[] = $this->_copyPasswordResetUrlActionItem(Craft::t('app', 'Copy password reset URL…'), $view);
+                        }
+                    }
+                    break;
+            }
+
+            if (!$isCurrentUser) {
+                if ($usersService->canImpersonate($currentUser, $this)) {
+                    $sessionItems[] = [
+                        'icon' => 'key',
+                        'label' => trim($this->getName())
+                            ? Craft::t('app', 'Sign in as {user}', ['user' => $this->getName()])
+                            : Craft::t('app', 'Sign in as user'),
+                        'action' => 'users/impersonate',
+                        'params' => [
+                            'userId' => $this->id,
+                        ],
+                        'redirect' => Craft::$app->getConfig()->getGeneral()->getPostCpLoginRedirect(),
+                    ];
+
+                    $copyImpersonationUrlId = 'action-copy-impersonation-url';
+                    $sessionItems[] = [
+                        'type' => MenuItemType::Button,
+                        'id' => $copyImpersonationUrlId,
+                        'icon' => 'clipboard',
+                        'label' => Craft::t('app', 'Copy impersonation URL…'),
+                    ];
+
+                    $view->registerJsWithVars(fn($id, $userId, $message) => <<<JS
+$('#' + $id).on('click', () => {
+  Craft.sendActionRequest('POST', 'users/get-impersonation-url', {
+    data: {userId: $userId},
+  }).then((response) => {
+    Craft.ui.createCopyTextPrompt({
+      label: $message,
+      value: response.data.url,
+    });
+  });
+});
+JS, [
+                        $view->namespaceInputId($copyImpersonationUrlId),
+                        $this->id,
+                        Craft::t('app', 'Copy the impersonation URL, and open it in a new private window.'),
+                    ]);
+                }
+            }
+        }
+
+        return [
+            ...parent::safeActionMenuItems(),
+            ['type' => MenuItemType::HR],
+            ...$statusItems,
+            ['type' => MenuItemType::HR],
+            ...$miscItems,
+            ['type' => MenuItemType::HR],
+            ...$sessionItems,
+        ];
+    }
+
+    /**
+     * @inheritdoc
+     */
+    protected function destructiveActionMenuItems(): array
+    {
+        // Intentionally not calling parent::destructiveActionMenuItems() here,
+        // because we want to override the user deletion UX.
+
+        $edition = Craft::$app->getEdition();
+        $currentUser = Craft::$app->getUser()->getIdentity();
+        $usersService = Craft::$app->getUsers();
+
+        $canAdministrateUsers = $currentUser->can('administrateUsers');
+
+        $isNewUser = !$this->id;
+        $isCurrentUser = $this->getIsCurrent();
+
+        $items = [];
+
+        if ($edition === Craft::Pro && !$isNewUser) {
+            if (!$isCurrentUser) {
+                if ($usersService->canSuspend($currentUser, $this) && $this->active && !$this->suspended) {
+                    $items[] = [
+                        'icon' => 'ban',
+                        'label' => Craft::t('app', 'Suspend'),
+                        'action' => 'users/suspend-user',
+                        'params' => [
+                            'userId' => $this->id,
+                        ],
+                    ];
+                }
+            }
+
+            // Destructive actions that should only be performed on non-admins, unless the current user is also an admin
+            if (!$this->admin || $currentUser->admin) {
+                if (($isCurrentUser || $canAdministrateUsers) && ($this->active || $this->pending)) {
+                    $items[] = [
+                        'icon' => 'disabled',
+                        'label' => Craft::t('app', 'Deactivate…'),
+                        'action' => 'users/deactivate-user',
+                        'params' => [
+                            'userId' => $this->id,
+                        ],
+                        'confirm' => Craft::t('app', 'Deactivating a user revokes their ability to sign in. Are you sure you want to continue?'),
+                    ];
+                }
+
+                if ($isCurrentUser || $currentUser->can('deleteUsers')) {
+                    $view = Craft::$app->getView();
+                    $deleteId = 'action-delete';
+                    $items[] = [
+                        'type' => MenuItemType::Button,
+                        'id' => $deleteId,
+                        'icon' => 'trash',
+                        'label' => Craft::t('app', 'Delete {type}', [
+                            'type' => static::lowerDisplayName(),
+                        ]),
+                    ];
+
+                    $view->registerJsWithVars(fn($id, $userId, $redirect) => <<<JS
+$('#' + $id).on('click', () => {
+  Craft.sendActionRequest('POST', 'users/user-content-summary', {
+    data: {userId: $userId}
+  }).then((response) => {
+    new Craft.DeleteUserModal($userId, {
+      contentSummary: response.data,
+      redirect: $redirect,
+    });
+  });
+});
+JS,
+                    [
+                        $view->namespaceInputId($deleteId),
+                        $this->id,
+                        Craft::$app->getSecurity()->hashData(Craft::$app->getEdition() === Craft::Pro ? 'users' : 'dashboard'),
+                    ]);
+                }
+            }
+        }
+
+        return $items;
+    }
+
+    private function _copyPasswordResetUrlActionItem(string $label, View $view): array
+    {
+        $id = 'action-copy-password-reset-url';
+
+        $view->registerJsWithVars(fn($id, $userId, $message) => <<<JS
+$('#' + $id).on('click', () => {
+  Craft.elevatedSessionManager.requireElevatedSession(() => {
+    Craft.sendActionRequest('POST', 'users/get-password-reset-url', {
+      data: {userId: $userId}
+    }).then((response) => {
+      Craft.ui.createCopyTextPrompt({
+        label: $message,
+        value: response.data.url,
+      });
+    }).catch(({response}) => {
+      Craft.cp.displayError(response.data.message);
+    });
+  });
+});
+JS, [
+            $view->namespaceInputId($id),
+            $this->id,
+            Craft::t('app', 'Copy the activation URL'),
+        ]);
+
+        return [
+            'type' => MenuItemType::Button,
+            'id' => $id,
+            'icon' => 'clipboard',
+            'label' => $label,
+        ];
     }
 
     /**

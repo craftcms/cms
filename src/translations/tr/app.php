@@ -1842,6 +1842,7 @@ return [
     'Your system isn’t set up to save content for the site “{site}”.' => 'Sisteminiz "{site}" sitesi için içerik kaydedecek şekilde ayarlanmadı.',
     'Your {folder} folder isn’t writable.' => '{folder} klasörünüz yazılabilir değil.',
     'You’re all up to date!' => 'Tamamen güncelsiniz!',
+    'You’re viewing a revision. None of the {type}’s fields are editable.' => 'You’re viewing a revision. None of the {type}’s fields are editable.',
     'Zip Code' => 'Posta Kodu',
     '`sectionId` and `fieldId` cannot both be set on an entry.' => '`sectionId` and `fieldId` cannot both be set on an entry.',
     'account_activation_body' => "Merhaba {{user.friendlyName|e}},\n\n{{siteName}} ile bir hesap oluşturduğunuz için teşekkürler! Hesabınızı etkinleştirmek için şu bağlantıya tıklayınız:\n\n<{{link}}>\n\nBu epostayı neden aldığınızı bilmiyorsanız, kaale almayınız.",

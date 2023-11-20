@@ -38,7 +38,7 @@ class ElementCondition extends BaseCondition implements ElementConditionInterfac
 
     /**
      * @var string The field context that should be used when fetching custom fields’ condition rule types.
-     * @see conditionRuleTypes()
+     * @see selectableConditionRules()
      */
     public string $fieldContext = 'global';
 
@@ -125,7 +125,7 @@ class ElementCondition extends BaseCondition implements ElementConditionInterfac
     /**
      * @inheritdoc
      */
-    protected function conditionRuleTypes(): array
+    protected function selectableConditionRules(): array
     {
         $types = [
             DateCreatedConditionRule::class,

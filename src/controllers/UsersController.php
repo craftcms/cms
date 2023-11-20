@@ -22,7 +22,6 @@ use craft\events\DefineUserContentSummaryEvent;
 use craft\events\FindLoginUserEvent;
 use craft\events\InvalidUserTokenEvent;
 use craft\events\LoginFailureEvent;
-use craft\events\RegisterUserActionsEvent;
 use craft\events\UserEvent;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Assets;
@@ -106,11 +105,6 @@ class UsersController extends Controller
      * @event LoginFailureEvent The event that is triggered when a failed login attempt was made
      */
     public const EVENT_LOGIN_FAILURE = 'loginFailure';
-
-    /**
-     * @event RegisterUserActionsEvent The event that is triggered when a user’s available actions are being registered
-     */
-    public const EVENT_REGISTER_USER_ACTIONS = 'registerUserActions';
 
     /**
      * @event UserEvent The event that is triggered BEFORE user groups and permissions ARE assigned to the user getting saved
@@ -860,163 +854,37 @@ class UsersController extends Controller
             }
         }
 
-        $canAdministrateUsers = $currentUser->can('administrateUsers');
-        $canModerateUsers = $currentUser->can('moderateUsers');
-
         $name = trim($user->getName());
 
-        // Determine which actions should be available
+        // Determine which actions should be available and get status labels
         // ---------------------------------------------------------------------
 
+        $additionalMenuComponents = $user->getActionMenuItems();
+
         $statusLabel = null;
-        $statusActions = [];
-        $sessionActions = [];
-        $destructiveActions = [];
-        $miscActions = [];
 
         if ($edition === Craft::Pro && !$isNewUser) {
             switch ($user->getStatus()) {
                 case Element::STATUS_ARCHIVED:
                 case Element::STATUS_DISABLED:
                     $statusLabel = $user->archived ? Craft::t('app', 'Archived') : Craft::t('app', 'Disabled');
-                    if (Craft::$app->getElements()->canSave($user)) {
-                        $statusActions[] = [
-                            'action' => 'users/enable-user',
-                            'label' => Craft::t('app', 'Enable'),
-                        ];
-                    }
                     break;
                 case User::STATUS_INACTIVE:
                 case User::STATUS_PENDING:
                     $statusLabel = $user->pending ? Craft::t('app', 'Pending') : Craft::t('app', 'Inactive');
-                    // Only provide activation actions if they have an email address
-                    if ($user->email) {
-                        if ($user->pending || $canAdministrateUsers) {
-                            $statusActions[] = [
-                                'action' => 'users/send-activation-email',
-                                'label' => Craft::t('app', 'Send activation email'),
-                            ];
-                        }
-                        if ($canAdministrateUsers) {
-                            // Only need to show the "Copy activation URL" option if they don't have a password
-                            if (!$user->password) {
-                                $statusActions[] = [
-                                    'id' => 'copy-passwordreset-url',
-                                    'label' => Craft::t('app', 'Copy activation URL…'),
-                                ];
-                            }
-                            $statusActions[] = [
-                                'action' => 'users/activate-user',
-                                'label' => Craft::t('app', 'Activate account'),
-                            ];
-                        }
-                    }
                     break;
                 case User::STATUS_SUSPENDED:
                     $statusLabel = Craft::t('app', 'Suspended');
-                    if (Craft::$app->getUsers()->canSuspend($currentUser, $user)) {
-                        $statusActions[] = [
-                            'action' => 'users/unsuspend-user',
-                            'label' => Craft::t('app', 'Unsuspend'),
-                        ];
-                    }
                     break;
                 case User::STATUS_ACTIVE:
                     if ($user->locked) {
                         $statusLabel = Craft::t('app', 'Locked');
-                        if (
-                            !$isCurrentUser &&
-                            ($currentUser->admin || !$user->admin) &&
-                            $canModerateUsers &&
-                            (
-                                ($previousUserId = Session::get(User::IMPERSONATE_KEY)) === null ||
-                                $user->id != $previousUserId
-                            )
-                        ) {
-                            $statusActions[] = [
-                                'action' => 'users/unlock-user',
-                                'label' => Craft::t('app', 'Unlock'),
-                            ];
-                        }
                     } else {
                         $statusLabel = Craft::t('app', 'Active');
                     }
-
-                    if (!$isCurrentUser) {
-                        $statusActions[] = [
-                            'action' => 'users/send-password-reset-email',
-                            'label' => Craft::t('app', 'Send password reset email'),
-                        ];
-                        if ($canAdministrateUsers) {
-                            $statusActions[] = [
-                                'id' => 'copy-passwordreset-url',
-                                'label' => Craft::t('app', 'Copy password reset URL…'),
-                            ];
-                        }
-                    }
                     break;
             }
-
-            if (!$isCurrentUser) {
-                if (Craft::$app->getUsers()->canImpersonate($currentUser, $user)) {
-                    $sessionActions[] = [
-                        'action' => 'users/impersonate',
-                        'label' => $name
-                            ? Craft::t('app', 'Sign in as {user}', ['user' => $user->getName()])
-                            : Craft::t('app', 'Sign in as user'),
-                    ];
-                    $sessionActions[] = [
-                        'id' => 'copy-impersonation-url',
-                        'label' => Craft::t('app', 'Copy impersonation URL…'),
-                    ];
-                }
-
-                if (Craft::$app->getUsers()->canSuspend($currentUser, $user) && $user->active && !$user->suspended) {
-                    $destructiveActions[] = [
-                        'action' => 'users/suspend-user',
-                        'label' => Craft::t('app', 'Suspend'),
-                    ];
-                }
-            }
-
-            // Destructive actions that should only be performed on non-admins, unless the current user is also an admin
-            if (!$user->admin || $currentUser->admin) {
-                if (($isCurrentUser || $canAdministrateUsers) && ($user->active || $user->pending)) {
-                    $destructiveActions[] = [
-                        'action' => 'users/deactivate-user',
-                        'label' => Craft::t('app', 'Deactivate…'),
-                        'confirm' => Craft::t('app', 'Deactivating a user revokes their ability to sign in. Are you sure you want to continue?'),
-                    ];
-                }
-
-                if ($isCurrentUser || $currentUser->can('deleteUsers')) {
-                    $destructiveActions[] = [
-                        'id' => 'delete-btn',
-                        'label' => Craft::t('app', 'Delete…'),
-                    ];
-                }
-            }
         }
-
-        // Give plugins a chance to modify these, or add new ones
-        $event = new RegisterUserActionsEvent([
-            'user' => $user,
-            'statusActions' => $statusActions,
-            'sessionActions' => $sessionActions,
-            'destructiveActions' => $destructiveActions,
-            'miscActions' => $miscActions,
-        ]);
-        $this->trigger(self::EVENT_REGISTER_USER_ACTIONS, $event);
-
-        $actions = array_filter([
-            $event->statusActions,
-            $event->miscActions,
-            $event->sessionActions,
-            array_map(function(array $action): array {
-                $action['destructive'] = true;
-                return $action;
-            }, $event->destructiveActions),
-        ]);
 
         // Set the appropriate page title
         // ---------------------------------------------------------------------
@@ -1180,24 +1048,12 @@ class UsersController extends Controller
 
         $this->getView()->registerAssetBundle(EditUserAsset::class);
 
-        $deleteModalRedirect = Craft::$app->getSecurity()->hashData(Craft::$app->getEdition() === Craft::Pro ? 'users' : 'dashboard');
-
-        $this->getView()->registerJsWithVars(
-            fn($userId, $isCurrent, $deleteModalRedirect) => <<<JS
-new Craft.AccountSettingsForm($userId, $isCurrent, {
-    deleteModalRedirect: $deleteModalRedirect,
-})
-JS,
-            [$user->id, $isCurrentUser, $deleteModalRedirect],
-            View::POS_END
-        );
-
         return $this->renderTemplate('users/_edit.twig', compact(
             'user',
             'isNewUser',
             'isCurrentUser',
             'statusLabel',
-            'actions',
+            'additionalMenuComponents',
             'languageOptions',
             'localeOptions',
             'userLanguage',
@@ -1389,7 +1245,7 @@ JS,
         // Is the site set to use email addresses as usernames?
         if ($generalConfig->useEmailAsUsername) {
             $user->username = $user->email;
-        } else {
+        } elseif ($isNewUser || $currentUser->admin || $isCurrentUser) {
             $user->username = $this->request->getBodyParam('username', ($user->username ?: $user->email));
         }
 

@@ -143,7 +143,7 @@ class Color extends Field implements InlineEditableFieldInterface
         }
 
         return Html::encodeParams(
-            '<div class="color" style="cursor: default;"><div class="color-preview" style="background-color: {bgColor};"></div></div><div class="colorhex code">{bgColor}</div>',
+            '<div class="color noteditable"><div class="color-preview" style="background-color: {bgColor};"></div></div><div class="colorhex code">{bgColor}</div>',
             [
                 'bgColor' => $value->getHex(),
             ]);
