@@ -102,7 +102,7 @@ class ResaveElements extends BaseBatchedJob
         $item->resaving = true;
 
         if (isset($this->set) && (!$this->ifEmpty || ElementHelper::isAttributeEmpty($item, $this->set))) {
-            $to = ResaveController::normalizeTo($this->to);
+            $to = ResaveController::normalizeTo($this->to, $this->set);
             $item->{$this->set} = $to($item);
         }
 
