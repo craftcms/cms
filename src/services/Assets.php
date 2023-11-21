@@ -14,6 +14,7 @@ use craft\assetpreviews\Text;
 use craft\assetpreviews\Video;
 use craft\base\AssetPreviewHandlerInterface;
 use craft\base\FsInterface;
+use craft\base\LocalFsInterface;
 use craft\db\Query;
 use craft\db\Table;
 use craft\elements\Asset;
@@ -930,6 +931,13 @@ class Assets extends Component
         $folder->uid = $record->uid;
     }
 
+    /**
+     * Get the Filesystem that should be used for temporary uploads.
+     * If one is not specified, use a local folder wrapped in a Temp FS.
+     *
+     * @return FsInterface
+     * @throws InvalidConfigException
+     */
     public function getTempUploadsFs(): FsInterface
     {
         $generalConfig = Craft::$app->getConfig()->getGeneral();
@@ -1024,10 +1032,12 @@ class Assets extends Component
         try {
             if ($fs instanceof Temp) {
                 FileHelper::createDirectory(Craft::$app->getPath()->getTempAssetUploadsPath() . DIRECTORY_SEPARATOR . $folderName);
-            } else {
-                // TODO: this is just temporary - only works for Local FS; need to make it work for remove FSs too
-                /** @phpstan-ignore-next-line  */
+            } elseif ($fs instanceof LocalFsInterface) {
                 FileHelper::createDirectory($fs->getRootPath() . DIRECTORY_SEPARATOR . $folderName);
+            } else {
+                if (!$fs->directoryExists($folderName)) {
+                    $fs->createDirectory($folderName);
+                }
             }
         } catch (Exception) {
             throw new VolumeException('Unable to create directory for temporary uploads.');
