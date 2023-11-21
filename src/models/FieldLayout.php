@@ -229,7 +229,7 @@ class FieldLayout extends Model
     /**
      * @var FieldLayoutTab[]
      */
-    private array $_tabs = [];
+    private array $_tabs;
 
     /**
      * @inheritdoc
@@ -240,6 +240,11 @@ class FieldLayout extends Model
 
         if (!isset($this->uid)) {
             $this->uid = StringHelper::UUID();
+        }
+
+        if (!isset($this->_tabs)) {
+            // go through setTabs() so any mandatory fields get added
+            $this->setTabs([]);
         }
     }
 
@@ -292,6 +297,11 @@ class FieldLayout extends Model
      */
     public function getTabs(): array
     {
+        if (!isset($this->_tabs)) {
+            // go through setTabs() so any mandatory fields get added
+            $this->setTabs([]);
+        }
+
         return $this->_tabs;
     }
 

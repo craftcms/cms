@@ -14,6 +14,7 @@
         context: context ?? 'index',
         size: size ?? (viewMode == 'large' ? 'large' : 'small'),
         inputName: inputName ?? ((name ?? false) ? "#{name}[]" : null),
+        showActionMenu: showActionMenu ?? false,
         checkbox: selectable ?? false,
       }) %}
       {% if disabled %}

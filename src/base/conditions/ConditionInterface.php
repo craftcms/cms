@@ -48,16 +48,6 @@ interface ConditionInterface
     public function createConditionRule(array|string $config): ConditionRuleInterface;
 
     /**
-     * Returns the available rule types for this condition.
-     *
-     * Rule types should be defined as either the class name or an array with a `class` key set to the class name.
-     *
-     * @return string[]|array[]
-     * @phpstan-return string[]|array{class:string}[]
-     */
-    public function getConditionRuleTypes(): array;
-
-    /**
      * Returns the selectable rules for the condition, indexed by type.
      *
      * @return ConditionRuleInterface[]

@@ -681,8 +681,12 @@ class AppController extends Controller
             }
         }
 
+        $view = Craft::$app->getView();
+
         return $this->asJson([
             'elements' => $elementHtml,
+            'headHtml' => $view->getHeadHtml(),
+            'bodyHtml' => $view->getBodyHtml(),
         ]);
     }
 }
