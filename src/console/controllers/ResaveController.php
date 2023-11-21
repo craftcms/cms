@@ -21,6 +21,7 @@ use craft\elements\Tag;
 use craft\elements\User;
 use craft\errors\InvalidElementException;
 use craft\events\BatchElementActionEvent;
+use craft\fields\BaseRelationField;
 use craft\helpers\ElementHelper;
 use craft\helpers\Queue;
 use craft\helpers\StringHelper;
@@ -45,16 +46,26 @@ class ResaveController extends Controller
      * Returns [[to]] normalized to a callable.
      *
      * @param string|null $to
+     * @param string $set
      * @return callable
      * @since 4.2.6
      * @internal
      */
-    final public static function normalizeTo(?string $to): callable
+    final public static function normalizeTo(?string $to, string $set): callable
     {
         // empty
         if ($to === ':empty:') {
-            return function() {
-                return null;
+            $emptyValue = null;
+
+            // we need to check the type of the field we're setting;
+            // if it's a relation field, we need to return an empty string, not null
+            $field = Craft::$app->getFields()->getFieldByHandle($set);
+            if ($field instanceof BaseRelationField) {
+                $emptyValue = '';
+            }
+
+            return function() use ($emptyValue) {
+                return $emptyValue;
             };
         }
 
@@ -552,7 +563,7 @@ class ResaveController extends Controller
             $count = min($count, (int)$query->limit);
         }
 
-        $to = isset($this->set) ? self::normalizeTo($this->to) : null;
+        $to = isset($this->set) ? self::normalizeTo($this->to, $this->set) : null;
 
         $label = isset($this->propagateTo) ? 'Propagating' : 'Resaving';
         $elementsText = $count === 1 ? $elementType::lowerDisplayName() : $elementType::pluralLowerDisplayName();
