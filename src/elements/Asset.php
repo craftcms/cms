@@ -1436,7 +1436,7 @@ class Asset extends Element
 
         // Preview
         if (Craft::$app->getAssets()->getAssetPreviewHandler($this) !== null) {
-            $previewId = 'action-preview';
+            $previewId = sprintf('action-preview-%s', mt_rand());
             $viewItems[] = [
                 'type' => MenuItemType::Button,
                 'id' => $previewId,
@@ -1459,7 +1459,7 @@ JS, [
         }
 
         // Download
-        $downloadId = 'action-download';
+        $downloadId = sprintf('action-download-%s', mt_rand());
         $viewItems[] = [
             'type' => MenuItemType::Button,
             'id' => $downloadId,
@@ -1482,7 +1482,7 @@ JS, [
             $this->id,
         ]);
 
-        $viewIndex = Collection::make($items)->search(fn(array $item) => ($item['id'] ?? null) === 'view');
+        $viewIndex = Collection::make($items)->search(fn(array $item) => str_starts_with($item['id'] ?? '', 'action-view-'));
         array_splice($items, $viewIndex !== false ? $viewIndex + 1 : 0, 0, $viewItems);
 
         $items[] = ['type' => MenuItemType::HR];
@@ -1492,7 +1492,7 @@ JS, [
             $user->can("replaceFiles:$volume->uid") &&
             ($user->id === $this->uploaderId || $user->can("replacePeerFiles:$volume->uid"))
         ) {
-            $replaceId = 'action-replace';
+            $replaceId = sprintf('action-replace-%s', mt_rand());
             $items[] = [
                 'type' => MenuItemType::Button,
                 'id' => $replaceId,
@@ -1584,7 +1584,7 @@ JS, [
             $userSession->checkPermission("editImages:$volume->uid") &&
             ($userSession->getId() == $this->uploaderId || $userSession->checkPermission("editPeerImages:$volume->uid"))
         ) {
-            $editImageId = 'action-edit-image';
+            $editImageId = sprintf('action-edit-image-%s', mt_rand());
             $items[] = [
                 'type' => MenuItemType::Button,
                 'id' => $editImageId,
