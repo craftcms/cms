@@ -1764,7 +1764,7 @@ XML;
                         'redirect' => Craft::$app->getConfig()->getGeneral()->getPostCpLoginRedirect(),
                     ];
 
-                    $copyImpersonationUrlId = 'action-copy-impersonation-url';
+                    $copyImpersonationUrlId = sprintf('action-copy-impersonation-url-%s', mt_rand());
                     $sessionItems[] = [
                         'type' => MenuItemType::Button,
                         'id' => $copyImpersonationUrlId,
@@ -1852,7 +1852,7 @@ JS, [
 
                 if ($isCurrentUser || $currentUser->can('deleteUsers')) {
                     $view = Craft::$app->getView();
-                    $deleteId = 'action-delete';
+                    $deleteId = sprintf('action-delete-%s', mt_rand());
                     $items[] = [
                         'type' => MenuItemType::Button,
                         'id' => $deleteId,
@@ -1888,7 +1888,7 @@ JS,
 
     private function _copyPasswordResetUrlActionItem(string $label, View $view): array
     {
-        $id = 'action-copy-password-reset-url';
+        $id = sprintf('action-copy-password-reset-url-%s', mt_rand());
 
         $view->registerJsWithVars(fn($id, $userId, $message) => <<<JS
 $('#' + $id).on('click', () => {
