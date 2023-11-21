@@ -16,6 +16,7 @@ use craft\enums\TimePeriod;
 use craft\errors\FsException;
 use craft\events\RegisterAssetFileKindsEvent;
 use craft\events\SetAssetFilenameEvent;
+use craft\fs\Temp;
 use craft\helpers\ImageTransforms as TransformHelper;
 use craft\models\VolumeFolder;
 use DateTime;
@@ -955,5 +956,10 @@ class Assets
         ]);
 
         return Html::appendToTag($svg, $textNode);
+    }
+
+    public static function isUsedForTempUploads(FsInterface $fs): bool
+    {
+        return Craft::$app->getConfig()->getGeneral()->tempUploadsFs === $fs->handle || $fs instanceof Temp;
     }
 }

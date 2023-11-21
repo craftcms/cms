@@ -13,6 +13,7 @@ use craft\assetpreviews\Pdf;
 use craft\assetpreviews\Text;
 use craft\assetpreviews\Video;
 use craft\base\AssetPreviewHandlerInterface;
+use craft\base\FsInterface;
 use craft\db\Query;
 use craft\db\Table;
 use craft\elements\Asset;
@@ -929,30 +930,19 @@ class Assets extends Component
         $folder->uid = $record->uid;
     }
 
-    /**
-     * Returns the temporary volume and subpath, if set.
-     *
-     * @return array
-     * @phpstan-return array{Volume|null,string|null}
-     * @throws InvalidConfigException If the temp volume is invalid
-     * @since 3.7.39
-     */
-    public function getTempVolumeAndSubpath(): array
+    public function getTempUploadsFs(): FsInterface
     {
-        $assetSettings = Craft::$app->getProjectConfig()->get('assets');
-        if (empty($assetSettings['tempVolumeUid'])) {
-            return [null, null];
+        $generalConfig = Craft::$app->getConfig()->getGeneral();
+        if (empty($generalConfig->tempUploadsFs)) {
+            return new Temp();
+        }
+        $fs = Craft::$app->getFs()->getFilesystemByHandle($generalConfig->tempUploadsFs);
+
+        if (!$fs) {
+            throw new InvalidConfigException("The Temp Uploads Filesystem General Config is set to an invalid Filesystem handle: {$generalConfig->tempUploadsFs}");
         }
 
-        $volume = Craft::$app->getVolumes()->getVolumeByUid($assetSettings['tempVolumeUid']);
-
-        if (!$volume) {
-            throw new InvalidConfigException("The Temp Uploads Location is set to an invalid volume UID: {$assetSettings['tempVolumeUid']}");
-        }
-
-        /** @var string|null $subpath */
-        $subpath = ($assetSettings['tempSubpath'] ?? null) ?: null;
-        return [$volume, $subpath];
+        return $fs;
     }
 
     /**
@@ -964,18 +954,9 @@ class Assets extends Component
      */
     public function createTempAssetQuery(): AssetQuery
     {
-        /** @var Volume|null $volume */
-        /** @var string|null $subpath */
-        [$volume, $subpath] = $this->getTempVolumeAndSubpath();
         $query = Asset::find();
-        if ($volume) {
-            $query->volumeId($volume->id);
-            if ($subpath) {
-                $query->folderPath("$subpath/*");
-            }
-        } else {
-            $query->volumeId(':empty:');
-        }
+        $query->volumeId(':empty:');
+
         return $query;
     }
 
@@ -1012,20 +993,6 @@ class Assets extends Component
             $folderName = 'user_' . sha1(Craft::$app->getSession()->id);
         }
 
-        // Is there a designated temp uploads volume?
-        try {
-            /** @var Volume|null $tempVolume */
-            /** @var string|null $tempSubpath */
-            [$tempVolume, $tempSubpath] = $this->getTempVolumeAndSubpath();
-        } catch (InvalidConfigException $e) {
-            throw new VolumeException($e->getMessage(), 0, $e);
-        }
-
-        if ($tempVolume) {
-            $path = ($tempSubpath ? "$tempSubpath/" : '') . $folderName;
-            return $this->_userTempFolders[$cacheKey] = $this->ensureFolderByFullPathAndVolume($path, $tempVolume);
-        }
-
         $volumeTopFolder = $this->findFolder([
             'volumeId' => ':empty:',
             'parentId' => ':empty:',
@@ -1052,10 +1019,18 @@ class Assets extends Component
             $this->storeFolderRecord($folder);
         }
 
+        $fs = $this->getTempUploadsFs();
+
         try {
-            FileHelper::createDirectory(Craft::$app->getPath()->getTempAssetUploadsPath() . DIRECTORY_SEPARATOR . $folderName);
+            if ($fs instanceof Temp) {
+                FileHelper::createDirectory(Craft::$app->getPath()->getTempAssetUploadsPath() . DIRECTORY_SEPARATOR . $folderName);
+            } else {
+                // TODO: this is just temporary - only works for Local FS; need to make it work for remove FSs too
+                /** @phpstan-ignore-next-line  */
+                FileHelper::createDirectory($fs->getRootPath() . DIRECTORY_SEPARATOR . $folderName);
+            }
         } catch (Exception) {
-            throw new VolumeException('Unable to create directory for temporary volume.');
+            throw new VolumeException('Unable to create directory for temporary uploads.');
         }
 
         return $this->_userTempFolders[$cacheKey] = $folder;

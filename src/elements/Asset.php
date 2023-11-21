@@ -372,11 +372,11 @@ class Asset extends Element
             $sources[] = self::_assembleSourceInfoForFolder($folder, $user);
         }
 
-        // Add the Temporary Uploads location, if that's not set to a real volume
+        // Add the Temporary Uploads location.
+        // Since 5.0.0 this is never set to an actual volume; it can be a dedicated Fs or local temp folder.
         if (
             $context !== ElementSources::CONTEXT_SETTINGS &&
-            !Craft::$app->getRequest()->getIsConsoleRequest() &&
-            !Craft::$app->getProjectConfig()->get('assets.tempVolumeUid')
+            !Craft::$app->getRequest()->getIsConsoleRequest()
         ) {
             $temporaryUploadFolder = Craft::$app->getAssets()->getUserTemporaryUploadFolder();
             $temporaryUploadFolder->name = Craft::t('app', 'Temporary Uploads');
@@ -461,7 +461,8 @@ class Asset extends Element
 
         // Only match the first folder ID - ignore nested folders
         if (isset($volume)) {
-            $isTemp = $volume->getFs() instanceof Temp;
+            $fs = $volume->getFs();
+            $isTemp = Assets::isUsedForTempUploads($fs);
 
             $actions[] = [
                 'type' => PreviewAsset::class,
@@ -479,7 +480,7 @@ class Asset extends Element
             }
 
             // Copy URL
-            if ($volume->getFs()->hasUrls) {
+            if ($fs->hasUrls) {
                 $actions[] = CopyUrl::class;
             }
 
@@ -765,7 +766,7 @@ class Asset extends Element
             }
         }
 
-        if ($queryFolder->getVolume()->getFs() instanceof Temp) {
+        if (Assets::isUsedForTempUploads($queryFolder->getVolume()->getFs())) {
             return false;
         }
 
@@ -881,9 +882,7 @@ class Asset extends Element
     {
         $volume = $folder->getVolume();
         $fs = $volume->getFs();
-        if ($fs instanceof Temp) {
-            $volumeHandle = 'temp';
-        } elseif (!$folder->parentId) {
+        if (!$folder->parentId) {
             $volumeHandle = $volume->handle ?? false;
         } else {
             $volumeHandle = false;
@@ -1291,7 +1290,7 @@ class Asset extends Element
             return $user->can("viewPeerAssets:$volume->uid");
         }
 
-        if ($volume->getFs() instanceof Temp) {
+        if (Assets::isUsedForTempUploads($volume->getFs())) {
             return true;
         }
 
@@ -1331,7 +1330,7 @@ class Asset extends Element
 
         $volume = $this->getVolume();
 
-        if ($volume->getFs() instanceof Temp) {
+        if (Assets::isUsedForTempUploads($volume->getFs())) {
             return true;
         }
 
@@ -1362,7 +1361,7 @@ class Asset extends Element
         }
 
         $volume = $this->getVolume();
-        if ($volume->getFs() instanceof Temp) {
+        if (Assets::isUsedForTempUploads($volume->getFs())) {
             return null;
         }
 
@@ -2833,7 +2832,7 @@ JS;
         // Set the field layout
         $volume = Craft::$app->getAssets()->getFolderById($folderId)->getVolume();
 
-        if (!$volume->getFs() instanceof Temp) {
+        if (!Assets::isUsedForTempUploads($volume->getFs())) {
             $this->fieldLayoutId = $volume->fieldLayoutId;
         }
 
@@ -3026,7 +3025,7 @@ JS;
         $userSession = Craft::$app->getUser();
         $imageEditable = $context === ElementSources::CONTEXT_INDEX && $this->getSupportsImageEditor();
 
-        if ($volume->getFs() instanceof Temp || $userSession->getId() == $this->uploaderId) {
+        if (Assets::isUsedForTempUploads($volume->getFs()) || $userSession->getId() == $this->uploaderId) {
             $attributes['data']['own-file'] = true;
             $movable = $replaceable = true;
         } else {
