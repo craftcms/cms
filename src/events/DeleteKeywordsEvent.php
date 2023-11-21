@@ -7,8 +7,9 @@
 
 namespace craft\events;
 
-use yii\base\Event;
 use craft\base\ElementInterface;
+use craft\base\FieldInterface;
+use yii\base\Event;
 
 /**
  * CancelableEvent class.
