@@ -2046,10 +2046,10 @@ JS,[
             return $url;
         }
 
-        // todo: uncomment for v5. Currently Imager X is relying on a relative URL being returned
-        //if (!$volume->getFs()->hasUrls) {
-        //    return null;
-        //}
+        $fs = $volume->getFs();
+        if (!$fs->hasUrls || Assets::isUsedForTempUploads($fs)) {
+            return null;
+        }
 
         return Html::encodeSpaces(Assets::generateUrl($volume, $this));
     }
