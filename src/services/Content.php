@@ -130,11 +130,11 @@ class Content extends Component
             if (is_array($type)) {
                 foreach (array_keys($type) as $i => $key) {
                     $column = ElementHelper::fieldColumnFromField($field, $i !== 0 ? $key : null);
-                    $values[$column] = Db::prepareValueForDb($value[$key] ?? null);
+                    $values[$column] = Db::prepareValueForDb($value[$key] ?? null, $type[$key]);
                 }
             } else {
                 $column = ElementHelper::fieldColumnFromField($field);
-                $values[$column] = Db::prepareValueForDb($value);
+                $values[$column] = Db::prepareValueForDb($value, $type);
             }
         }
 
