@@ -60,6 +60,7 @@ use craft\models\ImageTransform;
 use craft\models\Volume;
 use craft\models\VolumeFolder;
 use craft\records\Asset as AssetRecord;
+use craft\records\Volume as VolumeRecord;
 use craft\search\SearchQuery;
 use craft\search\SearchQueryTerm;
 use craft\search\SearchQueryTermGroup;
@@ -1166,6 +1167,12 @@ class Asset extends Element
         }
 
         $this->_oldVolumeId = $this->_volumeId;
+
+        // double check that tempUploadsFs is not used by a volume
+        $tempUploadsFs = Craft::$app->getConfig()->getGeneral()->tempUploadsFs;
+        if (!empty($tempUploadsFs) && VolumeRecord::find()->where(['fs' => $tempUploadsFs])->exists()) {
+            throw new InvalidConfigException('tempUploadsFs can’t be set to a Filesystem used by a volume.', 0);
+        }
     }
 
     /**
