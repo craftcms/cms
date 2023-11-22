@@ -14,6 +14,7 @@ use craft\base\InlineEditableFieldInterface;
 use craft\base\SortableFieldInterface;
 use craft\fields\conditions\NumberFieldConditionRule;
 use craft\gql\types\Money as MoneyType;
+use craft\helpers\Cp;
 use craft\helpers\Db;
 use craft\helpers\MoneyHelper;
 use craft\validators\MoneyValidator;
@@ -274,7 +275,7 @@ class Money extends Field implements InlineEditableFieldInterface, SortableField
             'currencySymbol' => Craft::$app->getFormattingLocale()->getCurrencySymbol($this->currency),
         ]);
 
-        return $view->renderTemplate('_components/fieldtypes/Money/input.twig', [
+        return Cp::moneyInputHtml([
             'id' => $this->getInputId(),
             'currency' => $this->currency,
             'currencyLabel' => $currencyLabel,

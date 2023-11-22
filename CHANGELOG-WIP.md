@@ -166,6 +166,8 @@
 - Added `craft\helpers\Cp::elementCardHtml()`.
 - Added `craft\helpers\Cp::elementChipHtml()`.
 - Added `craft\helpers\Cp::elementIndexHtml()`.
+- Added `craft\helpers\Cp::moneyInputFieldHtml()`.
+- Added `craft\helpers\Cp::moneyInputHtml()`.
 - Added `craft\helpers\Cp::normalizeMenuItems()`.
 - Added `craft\helpers\Cp::siteMenuItems()`.
 - Added `craft\helpers\Db::defaultCollation()`.
@@ -271,6 +273,7 @@
 - Deprecated the `cp.elements.element` control panel template hook.
 - Deprecated `craft\events\DefineElementInnerHtmlEvent`.
 - Deprecated `craft\helpers\Cp::elementHtml()`. `elementChipHtml()` or `elementCardHtml()` should be used instead.
+- Removed the `_components/fieldtypes/Money/input.twig` control panel template. `Cp::moneyInputHtml()` should be used instead.
 - Removed the `_includes/revisionmenu.twig` control panel template.
 - Removed `craft\base\ApplicationTrait::getMatrix()`.
 - Removed `craft\base\Element::$contentId`.
