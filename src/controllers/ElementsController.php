@@ -402,7 +402,7 @@ class ElementsController extends Controller
             ))
             ->actionMenuItems(fn() => $element->id ? array_filter(
                 $element->getActionMenuItems(),
-                fn(array $item) => ($item['id'] ?? null) !== 'action-edit',
+                fn(array $item) => !str_starts_with($item['id'] ?? '', 'action-edit-'),
             ) : [])
             ->noticeHtml($notice)
             ->errorSummary(fn() => $this->_errorSummary($element))
