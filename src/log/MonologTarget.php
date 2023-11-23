@@ -81,9 +81,11 @@ class MonologTarget extends PsrTarget
     protected ?ProcessorInterface $processor = null;
 
     /**
-     * @var Logger|null $logger
+     * The logger instance.
+     *
+     * @var LoggerInterface|null
      */
-    protected $logger;
+    protected ?LoggerInterface $logger = null;
 
     /**
      * @inheritdoc
