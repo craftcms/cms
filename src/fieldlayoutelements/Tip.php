@@ -101,7 +101,7 @@ class Tip extends BaseUiElement
             $classes[] = 'dismissible';
         }
 
-        $tip = Markdown::process(Html::encode(Craft::t('site', $this->tip)));
+        $tip = Markdown::process(Html::encodeNoQuotes(Craft::t('site', $this->tip), false));
         $closeBtn = $this->dismissible
             ? Html::button('', [
                 'class' => 'tip-dismiss-btn',

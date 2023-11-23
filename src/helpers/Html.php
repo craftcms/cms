@@ -969,6 +969,19 @@ class Html extends \yii\helpers\Html
     }
 
     /**
+     * Variation of \yii\helpers\Html::encode where the quotes are not encoded.
+     *
+     * @param string $content the content to be encoded
+     * @param bool $doubleEncode whether to encode HTML entities in `$content`. If false, HTML entities in `$content` will not be further encoded.
+     * @return string
+     * @since 4.5.12
+     */
+    public static function encodeNoQuotes(string $content, bool $doubleEncode = true): string
+    {
+        return htmlspecialchars($content, ENT_NOQUOTES | ENT_SUBSTITUTE, Craft::$app ? Craft::$app->charset : 'UTF-8', $doubleEncode);
+    }
+
+    /**
      * Encodes invalid (unclosed) HTML tags so they appear as plain text.
      *
      * @param string $html
