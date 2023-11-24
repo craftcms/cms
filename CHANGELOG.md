@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 4
 
-## Unreleased
+## 4.5.11.1 - 2023-11-23
 
 - Fixed a PHP error that occurred due to a conflict with psr/log v3. ([#13963](https://github.com/craftcms/cms/issues/13963))
 
