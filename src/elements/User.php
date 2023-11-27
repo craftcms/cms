@@ -912,6 +912,18 @@ class User extends Element implements IdentityInterface
     }
 
     /**
+     * @inheritdoc
+     */
+    public function setAttributes($values, $safeOnly = true): void
+    {
+        if ($safeOnly) {
+            unset($values['email'], $values['unverifiedEmail']);
+        }
+
+        parent::setAttributes($values, $safeOnly);
+    }
+
+    /**
      * Returns whether the user account can be logged into.
      *
      * @return bool
