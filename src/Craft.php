@@ -348,10 +348,17 @@ EOD;
      */
     private static function _fields(): array
     {
-        return array_merge(...array_map(
+        // Fetch all the fields for every layout, which includes every instance of a field
+        $fieldInstances = array_merge(...array_map(
             fn(FieldLayout $fieldLayout) => $fieldLayout->getCustomFields(),
             Craft::$app->getFields()->getAllLayouts(),
         ));
+
+        // Then, also fetch every top-level field, just in case - to handle any fields not in a layout
+        $fields = Craft::$app->getFields()->getAllFields(false);
+
+        // Return everything unique
+        return array_values(array_unique(array_merge(...[$fieldInstances, $fields])));
     }
 
     /**
