@@ -184,6 +184,14 @@ class Volume extends Model implements BaseFsInterface, FieldLayoutProviderInterf
         ];
         $rules[] = [['fieldLayout'], 'validateFieldLayout'];
         $rules[] = [['subpath'], fn($attribute) => $this->validateUniqueSubpath($attribute), 'skipOnEmpty' => false];
+        $rules[] = [
+            ['fsHandle'],
+            'compare',
+            'compareAttribute' => 'fsHandle',
+            'compareValue' => Craft::$app->getConfig()->getGeneral()->tempUploadsFs,
+            'operator' => '!=',
+            'message' => Craft::t('app', 'This filesystem is used as a Temporary Uploads filesystem. Please choose a different one for your volume.'),
+        ];
 
         return $rules;
     }
