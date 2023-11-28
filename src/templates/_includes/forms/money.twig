@@ -11,6 +11,9 @@
 {% set decimalSeparator = decimalSeparator ?? craft.app.formattingLocale.getNumberSymbol(constant('craft\\i18n\\Locale::SYMBOL_DECIMAL_SEPARATOR')) -%}
 {% set groupSeparator = groupSeparator ?? craft.app.formattingLocale.getNumberSymbol(constant('craft\\i18n\\Locale::SYMBOL_GROUPING_SEPARATOR')) -%}
 {% set currencyLabel = currencyLabel ?? null  %}
+{% set inputAttributes = {
+  name: "#{name}[value]",
+}|merge(inputAttributes ?? {}) %}
 {% set size = size ?? null %}
 
 {{ hiddenInput("#{name}[locale]", formattingLocale) }}
@@ -22,9 +25,7 @@
         </div>
     {% endif %}
     {% include '_includes/forms/text' with {
-        inputAttributes: {
-            name: "#{name}[value]",
-        }
+        inputAttributes: inputAttributes,
     } %}
     <div class="money-clear">
         {{ forms.button({
