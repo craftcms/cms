@@ -1949,14 +1949,15 @@ $.extend(Craft, {
     $('.fieldtoggle', $container).fieldtoggle();
     $('.lightswitch', $container).lightswitch();
     $('.nicetext', $container).nicetext();
-    $('.menubtn:not([data-disclosure-trigger])', $container).menubtn();
-    $('[data-disclosure-trigger]', $container).disclosureMenu();
     $('.datetimewrapper', $container).datetime();
     $(
       '.datewrapper > input[type="date"], .timewrapper > input[type="time"]',
       $container
     ).datetimeinput();
     $('.formsubmit', $container).formsubmit();
+    // menus last, since they can mess with the DOM
+    $('.menubtn:not([data-disclosure-trigger])', $container).menubtn();
+    $('[data-disclosure-trigger]', $container).disclosureMenu();
 
     // Open outbound links in new windows
     // hat tip: https://stackoverflow.com/a/2911045/1688568

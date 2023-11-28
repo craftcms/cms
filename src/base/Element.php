@@ -3465,8 +3465,9 @@ abstract class Element extends Component implements ElementInterface
         // View
         $url = $this->getUrl();
         if ($url) {
+            $viewId = sprintf('action-view-%s', mt_rand());
             $items[] = [
-                'id' => 'action-view',
+                'id' => $viewId,
                 'icon' => 'share',
                 'label' => Craft::t('app', 'View in a new tab'),
                 'url' => $url,
@@ -3478,7 +3479,7 @@ abstract class Element extends Component implements ElementInterface
 
         // Edit
         if (Craft::$app->getElements()->canView($this)) {
-            $editId = 'action-edit';
+            $editId = sprintf('action-edit-%s', mt_rand());
             $items[] = [
                 'type' => MenuItemType::Button,
                 'id' => $editId,
@@ -3568,7 +3569,6 @@ JS, [
             // Delete for site
             if ($canDeleteForSite) {
                 $items[] = [
-                    'id' => 'action-delete-for-site',
                     'icon' => 'remove',
                     'label' => Craft::t('app', 'Delete {type} for this site', [
                         'type' => $isUnpublishedDraft ? Craft::t('app', 'draft') : static::lowerDisplayName(),
@@ -3589,7 +3589,6 @@ JS, [
             // Delete
             if ($canDeleteCanonical) {
                 $items[] = [
-                    'id' => 'action-delete',
                     'icon' => 'trash',
                     'label' => Craft::t('app', 'Delete {type}', [
                         'type' => $isUnpublishedDraft ? Craft::t('app', 'draft') : static::lowerDisplayName(),
@@ -3610,7 +3609,6 @@ JS, [
             // Delete draft for site
             if ($canDeleteForSite) {
                 $items[] = [
-                    'id' => 'action-delete-draft-for-site',
                     'icon' => 'remove',
                     'label' => Craft::t('app', 'Delete {type} for this site', [
                         'type' => Craft::t('app', 'draft'),
@@ -3631,7 +3629,6 @@ JS, [
 
             // Delete draft
             $items[] = [
-                'id' => 'action-delete-draft',
                 'icon' => 'trash',
                 'label' => Craft::t('app', 'Delete {type}', [
                     'type' => Craft::t('app', 'draft'),
