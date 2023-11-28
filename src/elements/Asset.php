@@ -2696,15 +2696,27 @@ JS;
     private function locationHtml(): string
     {
         $volume = $this->getVolume();
-        $uri = "assets/$volume->handle";
-        $items = [
-            Html::a(Craft::t('site', Html::encode($volume->name)), UrlHelper::cpUrl($uri)),
-        ];
+        $isTemp = Assets::isUsedForTempUploads($volume->getFs());
+
+        if (!$isTemp) {
+            $uri = "assets/$volume->handle";
+            $items = [
+                Html::a(Craft::t('site', Html::encode($volume->name)), UrlHelper::cpUrl($uri)),
+            ];
+        } else {
+            $items = [
+                Html::tag('span', Craft::t('site', Html::encode($volume->name))),
+            ];
+        }
         if ($this->folderPath) {
             $subfolders = ArrayHelper::filterEmptyStringsFromArray(explode('/', $this->folderPath));
             foreach ($subfolders as $subfolder) {
-                $uri .= "/$subfolder";
-                $items[] = Html::a($subfolder, UrlHelper::cpUrl($uri));
+                if (!$isTemp) {
+                    $uri .= "/$subfolder";
+                    $items[] = Html::a($subfolder, UrlHelper::cpUrl($uri));
+                } else {
+                    $items[] = Html::tag('span', $subfolder);
+                }
             }
         }
 
