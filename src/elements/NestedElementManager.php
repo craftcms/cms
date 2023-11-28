@@ -18,6 +18,7 @@ use craft\elements\actions\ChangeSortOrder;
 use craft\elements\db\ElementQueryInterface;
 use craft\enums\PropagationMethod;
 use craft\events\BulkElementsEvent;
+use craft\events\DuplicateNestedElementsEvent;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Cp;
 use craft\helpers\Db;
@@ -46,6 +47,11 @@ class NestedElementManager extends Component
      * @event BulkElementsEvent The event that is triggered after nested elements are resaved.
      */
     public const EVENT_AFTER_SAVE_ELEMENTS = 'afterSaveElements';
+
+    /**
+     * @event
+     */
+    public const EVENT_AFTER_DUPLICATE_NESTED_ELEMENTS = 'afterDuplicateNestedElements';
 
     /**
      * Constructor
@@ -690,7 +696,7 @@ JS, [
 
         if ($this->allowDeletion) {
             foreach ($elements as $element) {
-                if (/*$this->allowDeletion && */ $element->getPrimaryOwnerId() === $owner->id) {
+                if ($element->getPrimaryOwnerId() === $owner->id) {
                     $elementsService->deleteElement($element);
                 } else {
                     // Just delete the ownership relation
@@ -737,6 +743,7 @@ JS, [
         $transaction = Craft::$app->getDb()->beginTransaction();
         try {
             $setCanonicalId = $target->getIsDerivative() && $target->getCanonical()->id !== $target->id;
+            $map = [];
 
             /** @var NestedElementInterface[] $elements */
             foreach ($elements as $element) {
@@ -788,6 +795,16 @@ JS, [
                 }
 
                 $newElementIds[] = $newElementId;
+                $map[] = ['oldId' => $element->id, 'newId' => $newElementId];
+            }
+
+            // Fire a 'afterDuplicateNestedElements' event
+            if ($this->hasEventHandlers(self::EVENT_AFTER_DUPLICATE_NESTED_ELEMENTS)) {
+                $this->trigger(self::EVENT_AFTER_DUPLICATE_NESTED_ELEMENTS, new DuplicateNestedElementsEvent([
+                    'elementIds' => $map,
+                    'source' => $source,
+                    'target' => $target,
+                ]));
             }
 
             if ($deleteOtherNestedElements) {
