@@ -206,7 +206,7 @@ class ElementSources extends Component
             $sourceKey = substr($sourceKey, 0, $slash);
         }
 
-        if ($sourceKey === '__IMP__') {
+        if ($sourceKey === '__IMP__' || str_starts_with($sourceKey, 'field:')) {
             $sourceAttributes = $this->getTableAttributesForFieldLayouts($elementType::fieldLayouts(null));
         } else {
             $sourceAttributes = $this->getSourceTableAttributes($elementType, $sourceKey);

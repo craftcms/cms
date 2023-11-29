@@ -618,13 +618,13 @@ class ElementIndexesController extends BaseElementsController
             return null;
         }
 
-        if ($this->sourceKey === '__IMP__') {
+        if ($this->sourceKey === '__IMP__' || str_starts_with($this->sourceKey, 'field:')) {
             /** @var ElementInterface|string $elementType */
             $elementType = $this->elementType;
 
             return [
                 'type' => ElementSources::TYPE_NATIVE,
-                'key' => '__IMP__',
+                'key' => $this->sourceKey,
                 'label' => Craft::t('app', 'All elements'),
                 'hasThumbs' => $elementType::hasThumbs(),
             ];
