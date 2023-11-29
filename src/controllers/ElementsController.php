@@ -155,9 +155,12 @@ class ElementsController extends Controller
      * @throws ServerErrorHttpException
      * @since 4.0.0
      */
-    public function actionRedirect(?int $elementId = null, ?string $elementUid = null): Response
+    public function actionRedirect(?int $elementId = null, ?string $elementUid = null, ?ElementInterface $element = null): Response
     {
-        $element = $this->element = $this->_element($elementId, $elementUid);
+        if ($element === null) {
+            $element = $this->element = $this->_element($elementId, $elementUid);
+        }
+
         $url = $element->getCpEditUrl();
 
         if (!$url) {
@@ -167,7 +170,7 @@ class ElementsController extends Controller
         $editUrl = UrlHelper::removeParam(UrlHelper::cpUrl('edit'), 'site');
         if (str_starts_with($url, $editUrl)) {
             return $this->runAction('edit', [
-                'elementId' => $element->id,
+                'element' => $element,
             ]);
         }
 
