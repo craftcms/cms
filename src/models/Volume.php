@@ -190,6 +190,15 @@ class Volume extends Model implements BaseFsInterface, FieldLayoutProviderInterf
             'compareAttribute' => 'fsHandle',
             'compareValue' => Craft::$app->getConfig()->getGeneral()->tempUploadsFs,
             'operator' => '!=',
+            'message' => Craft::t('app', 'This filesystem has been reserved for temporary asset uploads. Please choose a different one for your volume.'),
+        ];
+        $rules[] = [
+            ['transformFsHandle'],
+            'compare',
+            'compareAttribute' => 'transformFsHandle',
+            'compareValue' => Craft::$app->getConfig()->getGeneral()->tempUploadsFs,
+            'operator' => '!=',
+            'message' => Craft::t('app', 'This filesystem has been reserved for temporary asset uploads. Please choose a different one for your volume.'),
         ];
 
         return $rules;
