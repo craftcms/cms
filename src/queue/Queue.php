@@ -10,6 +10,7 @@ namespace craft\queue;
 use Craft;
 use craft\db\Connection;
 use craft\db\Table;
+use craft\errors\MutexException;
 use craft\helpers\App;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Db;
@@ -911,7 +912,7 @@ EOD;
      * @param callable $callback
      * @param int|null $timeout
      * @param bool $throwException
-     * @throws Exception
+     * @throws MutexException
      */
     private function _lock(callable $callback, ?int $timeout = null, bool $throwException = true): void
     {
@@ -922,7 +923,10 @@ EOD;
             $mutexName = sprintf('%s::%s', __CLASS__, $channel);
             if (!$this->mutex->acquire($mutexName, $timeout ?? $this->mutexTimeout)) {
                 if ($throwException) {
-                    throw new Exception("Could not acquire a mutex lock for the queue ($channel).");
+                    throw new MutexException(
+                        $mutexName,
+                        "Could not acquire a mutex lock for the queue ($channel).",
+                    );
                 }
                 return;
             }
