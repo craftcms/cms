@@ -2352,24 +2352,31 @@ class ElementQuery extends Query implements ElementQueryInterface
             ]);
 
             foreach ($fieldsByHandle as $handle => $instances) {
+                $multipleInstances = count($instances) > 1;
                 // In theory all field handles will be accounted for on the CustomFieldBehavior, but just to be safe...
                 // ($fieldAttributes->$handle will return true even if it's set to null, so can't use isset() alone here)
                 if ($handle !== 'owner' && ($fieldAttributes->$handle ?? null) !== null) {
-                    // Ignore any field instances that aren't the same custom field as the first one
-                    $firstInstance = $instances[0];
-                    $instances = array_filter($instances, fn(FieldInterface $field) => $field->uid === $firstInstance->uid);
-
-                    $params = [];
-                    $condition = $firstInstance::queryCondition($instances, $fieldAttributes->$handle, $params);
-
-                    // aborting?
-                    if ($condition === false) {
-                        throw new QueryAbortedException();
+                    $conditions = null;
+                    if ($multipleInstances) {
+                        $conditions = ['or'];
                     }
+                    foreach ($instances as $instance) {
+                        $params = [];
+                        $condition = $instance::queryCondition([$instance], $fieldAttributes->$handle, $params);
 
-                    if ($condition !== null) {
-                        $this->subQuery->andWhere($condition, $params);
+                        if ($condition === false) {
+                            throw new QueryAbortedException();
+                        }
+
+                        if ($condition !== null) {
+                            if ($multipleInstances) {
+                                $conditions[] = $condition;
+                            } else {
+                                $conditions = $condition;
+                            }
+                        }
                     }
+                    $this->subQuery->andWhere($conditions);
                 }
             }
         }
