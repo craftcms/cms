@@ -297,17 +297,28 @@ class Search extends Component
             // Loop through results and calculate score per element
             foreach ($results as $row) {
                 $elementId = $row['elementId'];
+                $siteId = $row['siteId'];
                 $score = $this->_scoreRow($row, $elementQuery->siteId);
 
-                if (!isset($scores[$elementId])) {
-                    $scores[$elementId] = $score;
+                if (!isset($scores[$elementId][$siteId])) {
+                    $scores[$elementId][$siteId] = $score;
                 } else {
-                    $scores[$elementId] += $score;
+                    $scores[$elementId][$siteId] += $score;
                 }
             }
         }
 
-        arsort($scores);
+        // order scored element ids based on the sum of their scores across all sites
+        $scoreOrder = [];
+        array_walk($scores, function($row, $key) use (&$scoreOrder) {
+            $scoreOrder[$key] = array_sum($row);
+        });
+        arsort($scoreOrder);
+        $scoreOrder = array_keys($scoreOrder);
+
+        uksort($scores, function($a, $b) use ($scoreOrder) {
+            return (array_search($a, $scoreOrder) <=> array_search($b, $scoreOrder));
+        });
 
         // Fire an 'afterSearch' event
         if ($this->hasEventHandlers(self::EVENT_AFTER_SEARCH)) {

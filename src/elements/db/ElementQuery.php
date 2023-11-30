@@ -1577,8 +1577,10 @@ class ElementQuery extends Query implements ElementQueryInterface
         // Should we set a search score on the elements?
         if (isset($this->_searchResults)) {
             foreach ($rows as &$row) {
-                if (isset($row['id'], $this->_searchResults[$row['id']])) {
-                    $row['searchScore'] = (int)round($this->_searchResults[$row['id']]);
+                /** @phpstan-ignore-next-line */
+                if (isset($row['id'], $row['siteId'], $this->_searchResults[$row['id']][$row['siteId']])) {
+                    /** @phpstan-ignore-next-line */
+                    $row['searchScore'] = (int)round($this->_searchResults[$row['id']][$row['siteId']]);
                 }
             }
         }
@@ -2919,8 +2921,15 @@ class ElementQuery extends Query implements ElementQueryInterface
             isset($orderBy['score']) &&
             in_array($orderBy['score'], [SORT_ASC, SORT_DESC], true)
         ) {
+            // order search results element ids based on the sum of their scores across all sites
+            $scoreOrder = [];
+            array_walk($this->_searchResults, function($row, $key) use (&$scoreOrder) {
+                /** @var array $row */
+                $scoreOrder[$key] = array_sum($row);
+            });
+
             $elementIdsByScore = [];
-            foreach ($this->_searchResults as $elementId => $score) {
+            foreach ($scoreOrder as $elementId => $score) {
                 if ($score !== 0) {
                     $elementIdsByScore[$score][] = $elementId;
                 }
