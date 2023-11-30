@@ -25,6 +25,8 @@ import './Money.scss';
         if (this.$field.val() != '') {
           this.updateInputMask();
         }
+
+        this.$field.data('money-input', this);
       },
 
       showClearBtn: function () {
@@ -63,6 +65,7 @@ import './Money.scss';
         this.showClearBtn();
         const opts = {
           digits: this.settings.decimals,
+          placeholder: this.settings.placeholder,
           groupSeparator: this.settings.groupSeparator,
           radixPoint: this.settings.decimalSeparator,
         };
@@ -79,6 +82,7 @@ import './Money.scss';
         decimalSeparator: '.',
         groupSeparator: ',',
         decimals: 2,
+        placeholder: '0',
         maskOptions: {
           alias: 'currency',
           autoGroup: false,

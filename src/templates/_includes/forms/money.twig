@@ -15,6 +15,11 @@
   name: "#{name}[value]",
 }|merge(inputAttributes ?? {}) %}
 {% set size = size ?? null %}
+{% set jsSettings = {
+  decimalSeparator: decimalSeparator,
+  groupSeparator: groupSeparator,
+  decimals: decimals,
+  }|merge(jsSettings ?? {}) %}
 
 {{ hiddenInput("#{name}[locale]", formattingLocale) }}
 
@@ -39,9 +44,5 @@
 </div>
 
 {% js %}
-new Craft.Money('{{ id|namespaceInputId }}', {
-    decimalSeparator: '{{ decimalSeparator }}',
-    groupSeparator: '{{ groupSeparator }}',
-    decimals: {{ decimals }},
-});
+new Craft.Money('{{ id|namespaceInputId }}', {{ jsSettings|json_encode|raw }});
 {% endjs %}
