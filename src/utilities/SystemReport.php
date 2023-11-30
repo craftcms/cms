@@ -100,6 +100,7 @@ class SystemReport extends Utility
     private static function _appInfo(): array
     {
         $info = [
+            'Development mode' => Craft::t('app', Craft::$app->config->general->devMode ? 'Yes' : 'No'),
             'PHP version' => App::phpVersion(),
             'OS version' => PHP_OS . ' ' . php_uname('r'),
             'Database driver & version' => self::_dbDriver(),
