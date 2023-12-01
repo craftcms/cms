@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Fixed a bug where `craft\base\ApplicationTrait::onAfterRequest()` callbacks weren’t necessarily triggered if an `EVENT_AFTER_REQUEST` handler got in the way.
 - Fixed a privilege escalation vulnerability.
 
 ## 4.5.11.1 - 2023-11-23
