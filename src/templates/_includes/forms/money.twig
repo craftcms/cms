@@ -11,6 +11,7 @@
 {% set decimalSeparator = decimalSeparator ?? craft.app.formattingLocale.getNumberSymbol(constant('craft\\i18n\\Locale::SYMBOL_DECIMAL_SEPARATOR')) -%}
 {% set groupSeparator = groupSeparator ?? craft.app.formattingLocale.getNumberSymbol(constant('craft\\i18n\\Locale::SYMBOL_GROUPING_SEPARATOR')) -%}
 {% set currencyLabel = currencyLabel ?? null  %}
+{% set showClear = showClear ?? true %}
 {% set inputAttributes = {
   name: "#{name}[value]",
 }|merge(inputAttributes ?? {}) %}
@@ -32,15 +33,17 @@
     {% include '_includes/forms/text' with {
         inputAttributes: inputAttributes,
     } %}
-    <div class="money-clear">
-        {{ forms.button({
-            attributes: {
-                title: 'Clear'|t('app'),
-                class: 'clear-btn hidden',
-                'aria-label': 'Clear'|t('app'),
-            }
-        }) }}
-    </div>
+    {% if showClear %}
+        <div class="money-clear">
+            {{ forms.button({
+                attributes: {
+                    title: 'Clear'|t('app'),
+                    class: 'clear-btn hidden',
+                    'aria-label': 'Clear'|t('app'),
+                }
+            }) }}
+        </div>
+    {% endif %}
 </div>
 
 {% js %}

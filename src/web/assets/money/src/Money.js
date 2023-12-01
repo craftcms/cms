@@ -20,7 +20,9 @@ import './Money.scss';
 
         this.$field.on('focus', $.proxy(this, 'onFocus'));
         this.$field.on('keyup', $.proxy(this, 'onKeyUp'));
-        this.$clearBtn.on('click', $.proxy(this, 'onClearBtnClick'));
+        if (this.$clearBtn) {
+          this.$clearBtn.on('click', $.proxy(this, 'onClearBtnClick'));
+        }
 
         if (this.$field.val() != '') {
           this.updateInputMask();
@@ -30,10 +32,17 @@ import './Money.scss';
       },
 
       showClearBtn: function () {
+        if (!this.$clearBtn) {
+          return;
+        }
+
         this.$clearBtn.removeClass('hidden');
       },
 
       hideClearBtn: function () {
+        if (!this.$clearBtn) {
+          return;
+        }
         this.$clearBtn.addClass('hidden');
       },
 
