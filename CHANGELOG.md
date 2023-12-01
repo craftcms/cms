@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Added `craft\db\Connection::onAfterTransaction()`.
 - Fixed a bug where `craft\base\ApplicationTrait::onAfterRequest()` callbacks weren’t necessarily triggered if an `EVENT_AFTER_REQUEST` handler got in the way.
 - Fixed a privilege escalation vulnerability.
 
