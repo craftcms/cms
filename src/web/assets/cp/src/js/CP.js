@@ -1538,21 +1538,23 @@ Craft.CP.Notification = Garnish.Base.extend({
         .append(this.settings.details)
         .appendTo($main);
 
-      this._hasUiElements = !!$detailsContainer.find('button,input');
+      this._hasUiElements = !!$detailsContainer.find('button,input').length;
       if (this._hasUiElements) {
+        // move focus to the notification, but only if the notification has actionable elements (like button or input)
         this.originalActiveElement = document.activeElement;
         this.$container.attr('tabindex', '-1').focus();
-
-        // Delay adding the layer in case a slideout needs to unregister its own layer
-        Garnish.requestAnimationFrame(() => {
-          Garnish.uiLayerManager.addLayer(this.$container, {
-            bubble: true,
-          });
-          Garnish.uiLayerManager.registerShortcut(Garnish.ESC_KEY, () => {
-            this.close();
-          });
-        });
       }
+
+      // always add a layer that allows closing of the notification via escape key
+      // Delay adding the layer in case a slideout needs to unregister its own layer
+      Garnish.requestAnimationFrame(() => {
+        Garnish.uiLayerManager.addLayer(this.$container, {
+          bubble: true,
+        });
+        Garnish.uiLayerManager.registerShortcut(Garnish.ESC_KEY, () => {
+          this.close();
+        });
+      });
     }
 
     this.$container
@@ -1614,11 +1616,10 @@ Craft.CP.Notification = Garnish.Base.extend({
 
     this.closing = true;
 
-    if (this._hasUiElements) {
-      Garnish.uiLayerManager.removeLayer(this.$container);
-    }
+    Garnish.uiLayerManager.removeLayer(this.$container);
 
     if (
+      this._hasUiElements &&
       this.originalActiveElement &&
       document.activeElement &&
       (document.activeElement === this.$container[0] ||
