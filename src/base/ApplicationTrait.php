@@ -514,7 +514,7 @@ trait ApplicationTrait
             $event ??= new Event();
             $event->sender = $this;
             $event->name = $name;
-            foreach ($this->afterRequestCallbacks as $callback) {
+            while ($callback = array_shift($this->afterRequestCallbacks)) {
                 $callback($event);
             }
         }
