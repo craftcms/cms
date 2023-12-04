@@ -1,5 +1,13 @@
 # Release Notes for Craft CMS 4
 
+## Unreleased
+
+- Fixed a privilege escalation vulnerability.
+
+## 4.5.11.1 - 2023-11-23
+
+- Fixed a PHP error that occurred due to a conflict with psr/log v3. ([#13963](https://github.com/craftcms/cms/issues/13963))
+
 ## 4.5.11 - 2023-11-16
 
 - Date fields with “Show Time Zone” enabled will now remember IANA-formatted time zones set via GraphQL. ([#13893](https://github.com/craftcms/cms/issues/13893))

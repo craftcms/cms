@@ -2032,24 +2032,6 @@ $.extend(Craft, {
   },
 
   /**
-   * Registers an element editor class for a given element type.
-   *
-   * @param {string} elementType
-   * @param {function} func
-   */
-  registerElementEditorClass: function (elementType, func) {
-    if (typeof this._elementEditorClasses[elementType] !== 'undefined') {
-      throw (
-        'An element editor class has already been registered for the element type “' +
-        elementType +
-        '”.'
-      );
-    }
-
-    this._elementEditorClasses[elementType] = func;
-  },
-
-  /**
    * Creates a new element index for a given element type.
    *
    * @param {string} elementType
