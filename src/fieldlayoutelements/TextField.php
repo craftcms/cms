@@ -24,6 +24,11 @@ class TextField extends BaseNativeField
     public string $type = 'text';
 
     /**
+     * @var string
+     */
+    public string $inputType = 'text';
+
+    /**
      * @var string|bool|null The input’s `autocomplete` attribute value.
      *
      * This can be set to `true` (`"on"`), `false` ("off")`, or any other allowed `autocomplete` value.
@@ -143,6 +148,7 @@ class TextField extends BaseNativeField
             'step' => $this->step,
             'min' => $this->min,
             'max' => $this->max,
+            'inputType' => $this->inputType,
         ]);
     }
 }

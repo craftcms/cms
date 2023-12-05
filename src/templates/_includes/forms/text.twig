@@ -1,4 +1,4 @@
-{%- set type = type ?? 'text' %}
+{%- set type = inputType ?? type ?? 'text' %}
 {%- set autocomplete = autocomplete ?? false %}
 
 {%- set class = (class ?? [])|explodeClass|merge([
