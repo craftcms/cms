@@ -885,9 +885,10 @@ class Install extends Migration
                 'elementId' => $this->integer()->notNull(),
                 'attribute' => $this->string(25)->notNull(),
                 'fieldId' => $this->integer()->notNull(),
+                'layoutElementUid' => $this->uid(),
                 'siteId' => $this->integer()->notNull(),
                 'keywords' => $this->text()->notNull(),
-                'PRIMARY KEY([[elementId]], [[attribute]], [[fieldId]], [[siteId]])',
+                'PRIMARY KEY([[elementId]], [[attribute]], [[fieldId]], [[layoutElementUid]], [[siteId]])',
             ]);
 
             $sql = 'CREATE FULLTEXT INDEX ' .

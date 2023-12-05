@@ -148,8 +148,8 @@ class Search extends Component
         // Figure out which fields to update, and which to ignore
         /** @var FieldInterface[] $updateFields */
         $updateFields = [];
-        /** @var string[] $ignoreFieldIds */
-        $ignoreFieldIds = [];
+        /** @var string[] $ignoreFields */
+        $ignoreFields = [];
         $fieldLayout = $element->getFieldLayout();
         if ($fieldLayout !== null) {
             if ($fieldHandles !== null) {
@@ -162,7 +162,7 @@ class Search extends Component
                         $updateFields[] = $field;
                     } else {
                         // Leave its existing keywords alone
-                        $ignoreFieldIds[] = (string)$field->id;
+                        $ignoreFields[] = $field->layoutElement->uid;
                     }
                 }
             }
@@ -173,8 +173,8 @@ class Search extends Component
             'elementId' => $element->id,
             'siteId' => $element->siteId,
         ];
-        if (!empty($ignoreFieldIds)) {
-            $deleteCondition = ['and', $deleteCondition, ['not', ['fieldId' => $ignoreFieldIds]]];
+        if (!empty($ignoreFields)) {
+            $deleteCondition = ['and', $deleteCondition, ['not', ['layoutElementUid' => $ignoreFields]]];
         }
         Db::delete(Table::SEARCHINDEX, $deleteCondition);
 
@@ -193,7 +193,7 @@ class Search extends Component
         foreach ($updateFields as $field) {
             $fieldValue = $element->getFieldValue($field->handle);
             $keywords = $field->getSearchKeywords($fieldValue, $element);
-            $this->_indexKeywords($element, $keywords, fieldId: $field->id);
+            $this->_indexKeywords($element, $keywords, fieldId: $field->id, layoutElementUid: $field->layoutElement->uid);
         }
 
         // Release the lock
@@ -388,8 +388,9 @@ SQL;
      * @param string $keywords
      * @param string|null $attribute
      * @param int|null $fieldId
+     * @param string|null $layoutElementUid
      */
-    private function _indexKeywords(ElementInterface $element, string $keywords, ?string $attribute = null, ?int $fieldId = null): void
+    private function _indexKeywords(ElementInterface $element, string $keywords, ?string $attribute = null, ?int $fieldId = null, ?string $layoutElementUid = null): void
     {
         if ($attribute !== null) {
             $attribute = strtolower($attribute);
@@ -404,6 +405,7 @@ SQL;
                 'element' => $element,
                 'attribute' => $attribute,
                 'fieldId' => $fieldId,
+                'layoutElementUid' => $layoutElementUid,
                 'keywords' => $keywords,
             ]);
             $this->trigger(self::EVENT_BEFORE_INDEX_KEYWORDS, $event);
@@ -420,6 +422,7 @@ SQL;
             'elementId' => $element->id,
             'attribute' => $attribute ?? 'field',
             'fieldId' => $fieldId ? (string)$fieldId : '0',
+            'layoutElementUid' => $layoutElementUid ?? '0',
             'siteId' => $site->id,
         ];
 
@@ -654,9 +657,12 @@ SQL;
         // Check for other attributes
         if ($term->attribute !== null) {
             // Is attribute a valid fieldId?
-            $fieldId = $this->_getFieldIdFromAttribute($term->attribute, $customFields);
+            [$fieldId, $layoutElementUid] = $this->_getFieldIdFromAttribute($term->attribute, $customFields);
 
-            if (!empty($fieldId)) {
+            if (!empty($layoutElementUid)) {
+                $attr = 'layoutElementUid';
+                $val = $layoutElementUid;
+            } elseif (!empty($fieldId)) {
                 $attr = 'fieldId';
                 $val = $fieldId;
             } else {
@@ -785,16 +791,36 @@ SQL;
      *
      * @param string $attribute
      * @param MemoizableArray<FieldInterface>|null $customFields
-     * @return int|int[]|null
+     * @return array
      */
-    private function _getFieldIdFromAttribute(string $attribute, ?MemoizableArray $customFields): array|int|null
+    private function _getFieldIdFromAttribute(string $attribute, ?MemoizableArray $customFields): array
     {
         if ($customFields !== null) {
-            return ArrayHelper::getColumn($customFields->where('handle', $attribute)->all(), 'id');
+            return [
+                ArrayHelper::getColumn($customFields->where('handle', $attribute)->all(), 'id'),
+                ArrayHelper::getColumn($customFields->where('handle', $attribute)->all(), 'layoutElement.uid'),
+            ];
         }
 
-        $field = Craft::$app->getFields()->getFieldByHandle($attribute);
-        return $field->id ?? null;
+        // we can no longer just get one field by handle; we need to find them all because we now support multiple instanced
+        $fields = [];
+        foreach (Craft::$app->getFields()->getAllLayouts() as $fieldLayout) {
+            array_push($fields, ...$fieldLayout->getCustomFields());
+        }
+
+        /** @var FieldInterface[][] $fieldsByHandle */
+        $fieldsByHandle = ArrayHelper::index($fields, null, [
+            fn(FieldInterface $field) => $field->handle,
+        ]);
+
+        if (isset($fieldsByHandle[$attribute])) {
+            return [
+                ArrayHelper::getColumn($fieldsByHandle[$attribute], 'id'),
+                ArrayHelper::getColumn($fieldsByHandle[$attribute], 'layoutElement.uid'),
+            ];
+        }
+
+        return [null, null];
     }
 
     /**
