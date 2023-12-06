@@ -35,7 +35,8 @@
     name: 'fsHandle',
     includeEnvVars: true,
     value: volume.getFsHandle(false),
-    options: fsOptions
+    options: fsOptions,
+    errors: volume.getErrors('fsHandle'),
 }) }}
 
 {{ forms.fsField({
