@@ -15,11 +15,17 @@ class m231205_081215_searchindex_amend_pk extends Migration
      */
     public function safeUp(): bool
     {
-        $this->dropPrimaryKey('elementId', Table::SEARCHINDEX);
+        if ($this->db->getIsMysql()) {
+            $this->dropPrimaryKey('elementId', Table::SEARCHINDEX);
+            $this->addColumn(Table::SEARCHINDEX, 'layoutElementUid', $this->uid()->after('fieldId'));
+            $this->addPrimaryKey('layoutUid', Table::SEARCHINDEX, ['elementId', 'attribute', 'fieldId', 'layoutElementUid', 'siteId']);
+        } else {
+            $pkName = $this->db->getSchema()->getRawTableName(Table::SEARCHINDEX) . '_pkey';
 
-        $this->addColumn(Table::SEARCHINDEX, 'layoutElementUid', $this->uid()->after('fieldId'));
-
-        $this->addPrimaryKey('layoutUid', Table::SEARCHINDEX, ['elementId', 'attribute', 'fieldId', 'layoutElementUid', 'siteId']);
+            $this->dropPrimaryKey($pkName, Table::SEARCHINDEX);
+            $this->addColumn(Table::SEARCHINDEX, 'layoutElementUid', $this->uid()->after('fieldId'));
+            $this->addPrimaryKey($pkName, Table::SEARCHINDEX, ['elementId', 'attribute', 'fieldId', 'layoutElementUid', 'siteId']);
+        }
 
         return true;
     }
@@ -29,12 +35,7 @@ class m231205_081215_searchindex_amend_pk extends Migration
      */
     public function safeDown(): bool
     {
-        $this->dropPrimaryKey('layoutUid', Table::SEARCHINDEX);
-
-        $this->dropColumn(Table::SEARCHINDEX, 'layoutElementUid');
-
-        $this->addPrimaryKey('elementId', Table::SEARCHINDEX, ['elementId', 'attribute', 'fieldId', 'siteId']);
-
-        return true;
+        echo "m231205_081215_searchindex_amend_pk cannot be reverted.\n";
+        return false;
     }
 }
