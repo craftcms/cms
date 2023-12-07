@@ -277,6 +277,64 @@ class AddressQuery extends ElementQuery
      */
     public ?string $addressLine2 = null;
 
+
+    /**
+     * @var ?string The address lastName that the resulting address must be.
+     * ---
+     * ```php
+     * // fetch addresses by last name
+     * $addresses = \craft\elements\Address::find()
+     *     ->lastName('Doe')
+     *     ->all();
+     * ```
+     * ```twig
+     * {# fetch addresses by last name #}
+     * {% set addresses = craft.addresses()
+     *   .lastName('Doe')
+     *   .all() %}
+     * ```
+     * @used-by lastName()
+     */
+    public ?string $lastName = null;
+
+    /**
+     * @var ?string The address firstName that the resulting address must be.
+     * ---
+     * ```php
+     * // fetch addresses by first name
+     * $addresses = \craft\elements\Address::find()
+     *     ->firstName('Doe')
+     *     ->all();
+     * ```
+     * ```twig
+     * {# fetch addresses by first name #}
+     * {% set addresses = craft.addresses()
+     *   .firstName('Doe')
+     *   .all() %}
+     * ```
+     * @used-by firstName()
+     */
+    public ?string $firstName = null;
+
+    /**
+     * @var ?string The address fullName that the resulting address must be.
+     * ---
+     * ```php
+     * // fetch addresses by full name
+     * $addresses = \craft\elements\Address::find()
+     *     ->fullName('John Doe')
+     *     ->all();
+     * ```
+     * ```twig
+     * {# fetch addresses by full name #}
+     * {% set addresses = craft.addresses()
+     *   .fullName('John Doe')
+     *   .all() %}
+     * ```
+     * @used-by fullName()
+     */
+    public ?string $fullName = null;
+
     /**
      * Narrows the query results based on the country the address belong to.
      *
@@ -1177,6 +1235,18 @@ class AddressQuery extends ElementQuery
 
         if ($this->addressLine2) {
             $this->subQuery->andWhere(Db::parseParam('addresses.addressLine2', $this->addressLine2));
+        }
+
+        if ($this->lastName) {
+            $this->subQuery->andWhere(Db::parseParam('addresses.lastName', $this->lastName));
+        }
+
+        if ($this->firstName) {
+            $this->subQuery->andWhere(Db::parseParam('addresses.firstName', $this->firstName));
+        }
+
+        if ($this->fullName) {
+            $this->subQuery->andWhere(Db::parseParam('addresses.fullName', $this->fullName));
         }
 
         return true;
