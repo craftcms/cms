@@ -311,7 +311,7 @@ class AuthController extends Controller
         ));
 
         $content = <<<EOD
-Recovery codes for $systemName
+Recovery Codes for $systemName
 ===================$systemNameUnderline
 
 These codes can be used as a backup form of verification, when you’re unable to
