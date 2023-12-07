@@ -1229,6 +1229,7 @@ class Install extends Migration
                 'defaultGroup' => null,
                 'photoVolumeUid' => null,
                 'photoSubpath' => null,
+                'require2fa' => false,
             ],
         ];
     }

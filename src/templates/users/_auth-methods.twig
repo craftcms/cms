@@ -1,10 +1,19 @@
 {% import '_includes/forms' as forms %}
 
-<div id="auth-method-setup" class="pane hairline">
+{% tag 'div' with {
+  id: 'auth-method-setup',
+  class: ['pane', 'fullwidth']|merge((paneClass ?? [])|explodeClass),
+} %}
   {% for method in craft.app.auth.getAvailableMethods() %}
     {% set isActive = method.isActive() %}
 
-    <div class="auth-method" data-method="{{ className(method) }}">
+    {% tag 'div' with {
+      class: 'auth-method',
+      data: {
+        method: className(method),
+        active: isActive,
+      },
+    } %}
       <div class="auth-method-details">
         <h3>{{ method.displayName() }}</h3>
         <div class="instructions">
@@ -56,10 +65,10 @@
           },
         }) }}
       {% endif %}
-    </div>
+    {% endtag %}
 
     {% if not loop.last %}
       <hr />
     {% endif %}
   {% endfor %}
-</div>
+{% endtag %}

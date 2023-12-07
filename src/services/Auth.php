@@ -19,6 +19,7 @@ use craft\helpers\ArrayHelper;
 use craft\helpers\Component as ComponentHelper;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Json;
+use craft\models\UserGroup;
 use craft\records\WebAuthn as WebAuthnRecord;
 use craft\web\Session;
 use DateTime;
@@ -268,6 +269,23 @@ class Auth extends Component
     }
 
     /**
+     * Returns whether any authentication methods are active for the given user.
+     *
+     * @param User|null $user
+     * @return bool
+     */
+    public function hasActiveMethod(?User $user = null): bool
+    {
+        foreach ($this->getAvailableMethods($user) as $method) {
+            if ($method->isActive()) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
      * Returns the authentication methods that are active for the given user.
      *
      * @param User|null $user
@@ -299,6 +317,40 @@ class Auth extends Component
         }
 
         throw new InvalidArgumentException("Invalid authentication method: $class");
+    }
+
+    /**
+     * Returns whether 2FA is required for a user.
+     *
+     * @param User $user
+     * @return bool
+     */
+    public function is2faRequired(User $user): bool
+    {
+        if (Craft::$app->getEdition() !== Craft::Pro) {
+            return false;
+        }
+
+        $require2fa = Craft::$app->getProjectConfig()->get(sprintf('%s.require2fa', ProjectConfig::PATH_USERS));
+
+        if ($require2fa === 'all') {
+            return true;
+        }
+
+        if (is_array($require2fa)) {
+            $groups = array_flip(array_map(fn(UserGroup $group) => $group->uid, $user->getGroups()));
+            foreach ($require2fa as $group) {
+                if ($group === 'admins') {
+                    if ($user->admin) {
+                        return true;
+                    }
+                } elseif (isset($groups[$group])) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 
     /**

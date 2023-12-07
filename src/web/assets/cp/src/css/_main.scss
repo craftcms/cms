@@ -7485,6 +7485,33 @@ ul.errors li {
   }
 }
 
+/* 2FA setup page */
+body.setup-2fa {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100%;
+
+  #setup-2fa {
+    display: flex;
+    flex-direction: column;
+    gap: var(--l);
+    width: 550px;
+    max-width: 100%;
+    padding: var(--padding);
+
+    #setup-2fa-intro {
+      text-align: center;
+    }
+
+    #setup-2fa-btn {
+      display: flex;
+      justify-content: center;
+    }
+  }
+}
+
 /* auto-suggest */
 .autosuggest-container {
   position: relative;

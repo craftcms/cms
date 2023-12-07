@@ -2,98 +2,109 @@ import {browserSupportsWebAuthn} from '@simplewebauthn/browser';
 
 /** global: Craft */
 /** global: Garnish */
-Craft.AuthMethodSetup = Garnish.Base.extend({
-  methodListings: null,
+Craft.AuthMethodSetup = Garnish.Base.extend(
+  {
+    methodListings: null,
 
-  init(settings) {
-    this.setSettings(settings, Craft.AuthMethodSetup.defaults);
-    this.initUi();
-  },
+    init(settings) {
+      this.setSettings(settings, Craft.AuthMethodSetup.defaults);
+      this.initUi();
+    },
 
-  initUi() {
-    this.methodListings = Craft.index(
-      document.querySelectorAll('#auth-method-setup .auth-method'),
-      (container) => container.getAttribute('data-method')
-    );
+    initUi() {
+      this.methodListings = Craft.index(
+        document.querySelectorAll('#auth-method-setup .auth-method'),
+        (container) => container.getAttribute('data-method')
+      );
 
-    for (let container of Object.values(this.methodListings)) {
-      this.initListing(container);
-    }
-  },
-
-  initListing(container) {
-    const setupBtn = container.querySelector('.auth-method-setup-btn');
-    this.addListener(setupBtn, 'activate', (ev) => {
-      const method = container.getAttribute('data-method');
-      this.showSetupSlideout(method);
-    });
-  },
-
-  showSetupSlideout(method) {
-    const button = this.methodListings[method].querySelector(
-      '.auth-method-setup-btn'
-    );
-    if (button.classList.contains('loading')) {
-      return;
-    }
-
-    button.classList.add('loading');
-
-    Craft.elevatedSessionManager.requireElevatedSession(
-      () => {
-        Craft.sendActionRequest('POST', 'auth/method-setup-html', {
-          data: {method},
-        })
-          .then(async ({data}) => {
-            const slideout = new Craft.AuthMethodSetup.Slideout(data);
-            await Craft.appendHeadHtml(data.headHtml);
-            await Craft.appendBodyHtml(data.bodyHtml);
-            this.addListener(
-              slideout.$container.find('.auth-method-close-btn'),
-              'activate',
-              () => {
-                slideout.close();
-              }
-            );
-
-            // todo
-            if (
-              data.selectedMethod === 'craft\\auth\\passkeys\\type\\WebAuthn' &&
-              browserSupportsWebAuthn()
-            ) {
-              new Craft.WebAuthnSetup(slideout, this.settings);
-            }
-          })
-          .catch(({response}) => {
-            // Add the error message
-            Craft.cp.displayError(response.data.message);
-          })
-          .finally(() => {
-            button.classList.remove('loading');
-          });
-      },
-      () => {
-        button.classList.remove('loading');
-      },
-      // give them 5 minutes to complete setup
-      Math.min(Craft.elevatedSessionDuration, 300)
-    );
-  },
-
-  refresh() {
-    Craft.sendActionRequest('POST', 'auth/method-listing-html').then(
-      ({data}) => {
-        const $container = $(data.html);
-        $('#auth-method-setup').replaceWith($container);
-        Craft.initUiElements($container);
-        Craft.appendHeadHtml(data.headHtml);
-        Craft.appendBodyHtml(data.bodyHtml);
-        this.removeAllListeners();
-        this.initUi();
+      for (let container of Object.values(this.methodListings)) {
+        this.initListing(container);
       }
-    );
+    },
+
+    initListing(container) {
+      const setupBtn = container.querySelector('.auth-method-setup-btn');
+      this.addListener(setupBtn, 'activate', (ev) => {
+        const method = container.getAttribute('data-method');
+        this.showSetupSlideout(method);
+      });
+    },
+
+    showSetupSlideout(method) {
+      const button = this.methodListings[method].querySelector(
+        '.auth-method-setup-btn'
+      );
+      if (button.classList.contains('loading')) {
+        return;
+      }
+
+      button.classList.add('loading');
+
+      Craft.elevatedSessionManager.requireElevatedSession(
+        () => {
+          Craft.sendActionRequest('POST', 'auth/method-setup-html', {
+            data: {method},
+          })
+            .then(async ({data}) => {
+              const slideout = new Craft.AuthMethodSetup.Slideout(data);
+              await Craft.appendHeadHtml(data.headHtml);
+              await Craft.appendBodyHtml(data.bodyHtml);
+              this.addListener(
+                slideout.$container.find('.auth-method-close-btn'),
+                'activate',
+                () => {
+                  slideout.close();
+                }
+              );
+
+              // todo
+              if (
+                data.selectedMethod ===
+                  'craft\\auth\\passkeys\\type\\WebAuthn' &&
+                browserSupportsWebAuthn()
+              ) {
+                new Craft.WebAuthnSetup(slideout, this.settings);
+              }
+            })
+            .catch(({response}) => {
+              // Add the error message
+              Craft.cp.displayError(response.data.message);
+            })
+            .finally(() => {
+              button.classList.remove('loading');
+            });
+        },
+        () => {
+          button.classList.remove('loading');
+        },
+        // give them 5 minutes to complete setup
+        Math.min(Craft.elevatedSessionDuration, 300)
+      );
+    },
+
+    refresh() {
+      Craft.sendActionRequest('POST', 'auth/method-listing-html').then(
+        ({data}) => {
+          const $container = $('#auth-method-setup').html(
+            $(data.html).children()
+          );
+          Craft.initUiElements($container);
+          Craft.appendHeadHtml(data.headHtml);
+          Craft.appendBodyHtml(data.bodyHtml);
+          this.removeAllListeners();
+          this.initUi();
+          this.settings.onRefresh();
+          this.trigger('refresh');
+        }
+      );
+    },
   },
-});
+  {
+    defaults: {
+      onRefresh: () => {},
+    },
+  }
+);
 
 Craft.AuthMethodSetup.Slideout = Craft.Slideout.extend({
   methodName: null,

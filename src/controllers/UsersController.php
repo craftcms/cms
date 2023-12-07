@@ -1312,6 +1312,21 @@ JS);
     }
 
     /**
+     * Returns a 2FA setup screen, for users who require a 2FA method.
+     *
+     * @return Response
+     * @since 5.0.0
+     */
+    public function actionSetup2fa(): Response
+    {
+        $this->requireCpRequest();
+
+        $this->getView()->registerAssetBundle(AuthMethodSetupAsset::class);
+
+        return $this->renderTemplate('_special/setup-2fa.twig');
+    }
+
+    /**
      * @param self::SCREEN_* $screen
      * @return string
      */
