@@ -12,11 +12,11 @@ Craft.ImageUpload = Garnish.Base.extend(
 
     init: function (settings) {
       this.setSettings(settings, Craft.ImageUpload.defaults);
+      this.$container = $(this.settings.containerSelector);
       this.initImageUpload();
     },
 
     initImageUpload: function () {
-      this.$container = $(this.settings.containerSelector);
       this.progressBar = new Craft.ProgressBar(
         $('<div class="progress-shade"></div>').appendTo(this.$container)
       );
@@ -79,10 +79,9 @@ Craft.ImageUpload = Garnish.Base.extend(
     },
 
     refreshImage: function (response) {
-      const $container = $(response.html);
-      $(this.settings.containerSelector).replaceWith($container);
+      this.$container.replaceWith((this.$container = $(response.html)));
       this.settings.onAfterRefreshImage(response);
-      Craft.cp.elementThumbLoader.load($container);
+      Craft.cp.elementThumbLoader.load(this.$container);
       this.initImageUpload();
     },
 
@@ -111,7 +110,6 @@ Craft.ImageUpload = Garnish.Base.extend(
      * On a file being uploaded.
      */
     _onUploadComplete: function (event, data) {
-      var html = $(data.result.html);
       this.refreshImage(data.result);
 
       // Last file

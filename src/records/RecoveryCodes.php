@@ -18,7 +18,7 @@ use yii\db\ActiveQueryInterface;
  * @property int $userId Volume ID
  * @property string $recoveryCodes Recovery codes
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 5.0
+ * @since 5.0.0
  */
 class RecoveryCodes extends ActiveRecord
 {

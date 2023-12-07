@@ -117,11 +117,7 @@
     },
 }|merge(mainFormAttributes ?? [], recursive=true) %}
 
-{% set userPhoto %}
-    <div class="header-photo">
-        {{ currentUser.getThumbHtml(30)|raw }}
-    </div>
-{% endset %}
+{% set userPhoto = include('_layouts/components/header-photo.twig') %}
 
 {% js at head %}
     // Remove the hash so the browser doesn't scroll to it
@@ -167,14 +163,14 @@
                             aria-label="{{ 'My Account'|t('app') }}"
                             title="{{ 'My Account'|t('app') }}"
                             data-disclosure-trigger>
-                            {{ userPhoto }}
+                            {{ userPhoto|raw }}
                         </button>
                         <div id="account-menu" class="menu menu--disclosure" data-align="right" data-align-to=".header-photo">
                             <ul>
                                 <li>
                                     <a href="{{ url('myaccount') }}" class="flex flex-nowrap">
                                         {% if currentUser.photoId %}
-                                            {{ userPhoto }}
+                                            {{ userPhoto|raw }}
                                         {% endif %}
                                         <div class="flex-grow">
                                             <div>{{ currentUser.username }}</div>

@@ -8,10 +8,8 @@
 namespace craft\elements;
 
 use Craft;
-use craft\auth\ConfigurableAuthInterface;
-use craft\auth\passkeys\type\WebAuthn;
-use craft\base\auth\BaseAuthType;
 use craft\base\Element;
+use craft\base\ElementInterface;
 use craft\base\NameTrait;
 use craft\db\Query;
 use craft\db\Table;
@@ -41,7 +39,7 @@ use craft\i18n\Formatter;
 use craft\models\FieldLayout;
 use craft\models\UserGroup;
 use craft\records\User as UserRecord;
-use craft\services\ProjectConfig;
+use craft\records\WebAuthn as WebAuthnRecord;
 use craft\validators\DateTimeValidator;
 use craft\validators\UniqueValidator;
 use craft\validators\UsernameValidator;
@@ -56,10 +54,10 @@ use yii\base\ErrorHandler;
 use yii\base\Exception;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
-use yii\base\InvalidValueException;
 use yii\base\NotSupportedException;
 use yii\validators\InlineValidator;
 use yii\validators\Validator;
+use yii\web\BadRequestHttpException;
 use yii\web\IdentityInterface;
 
 /**
@@ -161,8 +159,6 @@ class User extends Element implements IdentityInterface
     public const AUTH_NO_CP_ACCESS = 'no_cp_access';
     public const AUTH_NO_CP_OFFLINE_ACCESS = 'no_cp_offline_access';
     public const AUTH_NO_SITE_OFFLINE_ACCESS = 'no_site_offline_access';
-    public const AUTH_INVALID_2FA_CODE = 'invalid_2fa_code';
-    public const AUTH_WEBAUTHN_NOT_SETUP = 'webauthn_not_setup';
 
     // Validation scenarios
     // -------------------------------------------------------------------------
@@ -793,9 +789,35 @@ class User extends Element implements IdentityInterface
     /**
      * @inheritdoc
      */
+    public function getPostEditUrl(): ?string
+    {
+        if (Craft::$app->getEdition() === Craft::Pro && Craft::$app->getUser()->checkPermission('editUsers')) {
+            return 'users';
+        }
+
+        return null;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    protected function crumbs(): array
+    {
+        if (Craft::$app->getEdition() !== Craft::Pro) {
+            return [];
+        }
+
+        return [
+            ['label' => Craft::t('app', 'Users'), 'url' => 'users'],
+        ];
+    }
+
+    /**
+     * @inheritdoc
+     */
     protected function uiLabel(): ?string
     {
-        return $this->getName() ?: ($this->email ?? $this->id ?? static::class);
+        return $this->getName() ?: $this->email;
     }
 
     /**
@@ -917,7 +939,35 @@ class User extends Element implements IdentityInterface
     public function setAttributes($values, $safeOnly = true): void
     {
         if ($safeOnly) {
-            unset($values['email'], $values['unverifiedEmail']);
+            unset($values['unverifiedEmail']);
+
+            if (isset($values['email'])) {
+                $values['email'] = trim($values['email']);
+                if ($values['email'] === '' || $values['email'] === $this->email) {
+                    unset($values['email']);
+                }
+            }
+
+            if (isset($values['email'])) {
+                // make sure they have an elevated session
+                $userSession = Craft::$app->getUser();
+                if (!$userSession->getHasElevatedSession()) {
+                    throw new BadRequestHttpException('An elevated session is required to change a user’s email.');
+                }
+
+                // are they allowed to set the email?
+                if ($this->getIsCurrent() || $userSession->checkPermission('administrateUsers')) {
+                    if (
+                        Craft::$app->getProjectConfig()->get('users.requireEmailVerification') &&
+                        !$userSession->checkPermission('administrateUsers')
+                    ) {
+                        // set it as the unverified email instead, and
+                        $values['unverifiedEmail'] = ArrayHelper::remove($values, 'email');
+                    }
+                } else {
+                    unset($values['email']);
+                }
+            }
         }
 
         parent::setAttributes($values, $safeOnly);
@@ -1111,111 +1161,84 @@ class User extends Element implements IdentityInterface
         ]);
         $this->trigger(self::EVENT_BEFORE_AUTHENTICATE, $event);
 
-        if (!isset($this->authError) && $event->performAuthentication) {
-            // Validate the password
-            try {
-                $passwordValid = Craft::$app->getSecurity()->validatePassword($password, $this->password);
-            } catch (InvalidArgumentException) {
-                $passwordValid = false;
-            }
-
-            if ($passwordValid) {
-                $this->authError = $this->_getAuthError();
-            } else {
-                Craft::$app->getUsers()->handleInvalidLogin($this);
-                // Was that one bad password too many?
-                if ($this->locked && !Craft::$app->getConfig()->getGeneral()->preventUserEnumeration) {
-                    // Will set the authError to either AccountCooldown or AccountLocked
-                    $this->authError = $this->_getAuthError();
-                } else {
-                    $this->authError = self::AUTH_INVALID_CREDENTIALS;
-                }
-            }
+        if (isset($this->authError)) {
+            return false;
         }
 
+        if (!$event->performAuthentication) {
+            return true;
+        }
+
+        // Validate the password
+        try {
+            $passwordValid = Craft::$app->getSecurity()->validatePassword($password, $this->password);
+        } catch (InvalidArgumentException) {
+            $passwordValid = false;
+        }
+
+        if (!$passwordValid) {
+            Craft::$app->getUsers()->handleInvalidLogin($this);
+            // Was that one bad password too many?
+            if ($this->locked && !Craft::$app->getConfig()->getGeneral()->preventUserEnumeration) {
+                // Will set the authError to either AccountCooldown or AccountLocked
+                $this->authError = $this->_getAuthError();
+            } else {
+                $this->authError = self::AUTH_INVALID_CREDENTIALS;
+            }
+            return false;
+        }
+
+        $this->authError = $this->_getAuthError();
         return !isset($this->authError);
     }
 
     /**
      * Determines whether the user is allowed to be logged in with a security key.
      *
-     * @param string $authenticationOptions
-     * @param string $authResponse
+     * @param PublicKeyCredentialRequestOptions|array|string $requestOptions The public key credential request options
+     * @param string $response The authentication response data
      * @return bool
-     * @since 5.0
+     * @since 5.0.0
      */
-    public function authenticateWebAuthn(string $authenticationOptions, string $authResponse): bool
-    {
+    public function authenticateWithPasskey(
+        PublicKeyCredentialRequestOptions|array|string $requestOptions,
+        string $response,
+    ): bool {
         $this->authError = null;
 
-        /** @var PublicKeyCredentialRequestOptions $optionsArray */
-        $optionsArray = PublicKeyCredentialRequestOptions::createFromArray(Json::decodeIfJson($authenticationOptions));
+        // Fire a 'beforeAuthenticate' event
+        $event = new AuthenticateUserEvent();
+        $this->trigger(self::EVENT_BEFORE_AUTHENTICATE, $event);
 
-        if (!isset($this->authError) /*&& $event->performAuthentication*/) {
-            $webAuthn = new WebAuthn();
-            // Validate the security key
-            try {
-                $keyValid = $webAuthn->verifyAuthenticationResponse($this, $optionsArray, $authResponse);
-            } catch (InvalidArgumentException) {
-                $keyValid = false;
-            }
-
-            if ($keyValid) {
-                $this->authError = $this->_getAuthError();
-            } else {
-                Craft::$app->getUsers()->handleInvalidLogin($this);
-                // Was that one bad password too many?
-                if ($this->locked && !Craft::$app->getConfig()->getGeneral()->preventUserEnumeration) {
-                    // Will set the authError to either AccountCooldown or AccountLocked
-                    $this->authError = $this->_getAuthError();
-                } else {
-                    $this->authError = self::AUTH_INVALID_CREDENTIALS;
-                }
-            }
+        if (isset($this->authError)) {
+            return false;
         }
 
+        if (!$event->performAuthentication) {
+            return true;
+        }
+
+        // make sure the passkey exists and belongs to this user
+        $credential = WebAuthnRecord::findOne(['credentialId' => Json::decode($response)['id']]);
+        if (!$credential || $credential['userId'] != $this->id) {
+            $this->authError = self::AUTH_INVALID_CREDENTIALS;
+            return false;
+        }
+
+        // Validate the security key
+        try {
+            $keyValid = Craft::$app->getAuth()->verifyPasskey($this, $requestOptions, $response);
+        } catch (InvalidArgumentException) {
+            $keyValid = false;
+        }
+
+        if (!$keyValid) {
+            $this->authError = self::AUTH_INVALID_CREDENTIALS;
+            return false;
+        }
+
+        $this->authError = $this->_getAuthError();
         return !isset($this->authError);
-    }
-
-    /**
-     * Return whether user is required to use 2FA to login
-     *
-     * @return bool
-     * @since 5.0
-     */
-    public function is2faRequired(): bool
-    {
-        // get all 2fa types
-        $all2faTypes = Craft::$app->getAuth()->getAll2faTypes();
-
-        // for each type check if isSetupForUser
-        foreach ($all2faTypes as $class => $type) {
-            $service = new $class();
-            if ($service->isSetupForUser($this)) {
-                return true;
-            }
-        }
-
-        $has2fa = Craft::$app->getProjectConfig()->get(ProjectConfig::PATH_USERS)['has2fa'] ?? [];
-
-        if (!is_array($has2fa)) {
-            if ($has2fa === 'all') {
-                return true;
-            }
-        } else {
-            if ($this->admin && in_array('admin', $has2fa, true)) {
-                return true;
-            }
-
-            $userGroups = $this->getGroups();
-            foreach ($userGroups as $userGroup) {
-                if (in_array($userGroup->handle, $has2fa, true)) {
-                    return true;
-                }
-            }
-        }
-
-        return false;
     }
 
     /**
@@ -1421,6 +1444,10 @@ class User extends Element implements IdentityInterface
      */
     protected function thumbSvg(): ?string
     {
+        if (!$this->uid) {
+            return null;
+        }
+
         $names = array_filter([$this->firstName, $this->lastName]) ?: [$this->getName()];
         $initials = implode('', array_map(fn($name) => mb_strtoupper(mb_substr($name, 0, 1)), $names));
 
@@ -1466,6 +1493,14 @@ XML;
     protected function hasRoundedThumb(): bool
     {
         return true;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function createAnother(): ?ElementInterface
+    {
+        return Craft::createObject(self::class);
     }
 
     /**
@@ -1654,6 +1689,10 @@ XML;
      */
     protected function safeActionMenuItems(): array
     {
+        if (!$this->id || $this->getIsUnpublishedDraft()) {
+            return parent::safeActionMenuItems();
+        }
+
         $edition = Craft::$app->getEdition();
         $currentUser = Craft::$app->getUser()->getIdentity();
         $view = Craft::$app->getView();
@@ -1662,14 +1701,13 @@ XML;
         $canAdministrateUsers = $currentUser->can('administrateUsers');
         $canModerateUsers = $currentUser->can('moderateUsers');
 
-        $isNewUser = !$this->id;
         $isCurrentUser = $this->getIsCurrent();
 
         $statusItems = [];
         $sessionItems = [];
         $miscItems = [];
 
-        if ($edition === Craft::Pro && !$isNewUser) {
+        if ($edition === Craft::Pro) {
             switch ($this->getStatus()) {
                 case Element::STATUS_ARCHIVED:
                 case Element::STATUS_DISABLED:
@@ -1820,6 +1858,10 @@ JS, [
      */
     protected function destructiveActionMenuItems(): array
     {
+        if (!$this->id || $this->getIsUnpublishedDraft()) {
+            return parent::destructiveActionMenuItems();
+        }
+
         // Intentionally not calling parent::destructiveActionMenuItems() here,
         // because we want to override the user deletion UX.
 
@@ -1829,12 +1871,11 @@ JS, [
 
         $canAdministrateUsers = $currentUser->can('administrateUsers');
 
-        $isNewUser = !$this->id;
         $isCurrentUser = $this->getIsCurrent();
 
         $items = [];
 
-        if ($edition === Craft::Pro && !$isNewUser) {
+        if ($edition === Craft::Pro) {
             if (!$isCurrentUser) {
                 if ($usersService->canSuspend($currentUser, $this) && $this->active && !$this->suspended) {
                     $items[] = [
@@ -2085,21 +2126,6 @@ JS, [
     /**
      * @inheritdoc
      */
-    protected function metaFieldsHtml(bool $static): string
-    {
-        return implode("\n", [
-            Craft::$app->getView()->renderTemplate('users/_profile-fields.twig', [
-                'user' => $this,
-                'isNewUser' => !$this->id,
-                'static' => $static,
-            ]),
-            parent::metaFieldsHtml($static),
-        ]);
-    }
-
-    /**
-     * @inheritdoc
-     */
     protected function statusFieldHtml(): string
     {
         return '';
@@ -2316,44 +2342,6 @@ JS, [
         return true;
     }
 
-    // 2FA-related
-    // -------------------------------------------------------------------------
-
-    /**
-     * Return default 2FA method
-     *
-     * @return BaseAuthType
-     * @since 5.0
-     */
-    public function getDefault2faType(): BaseAuthType
-    {
-        $all2faTypes = Craft::$app->getAuth()->getAll2faTypes();
-
-        if (empty($all2faTypes)) {
-            throw new InvalidValueException('No registered 2FA types.');
-        }
-
-        return new (array_keys($all2faTypes)[0]);
-    }
-
-    /**
-     * Check if given authentication option is fully set up for the user
-     *
-     * @param string $authClass
-     * @return bool
-     * @since 5.0
-     */
-    public function isAuthTypeSetup(string $authClass): bool
-    {
-        $authType = new $authClass();
-
-        if (!($authType instanceof ConfigurableAuthInterface)) {
-            return true;
-        }
-
-        return $authType->isSetupForUser($this);
-    }
-
     /**
      * Validates a cookie's stored user agent against the current request's user agent string,
      * if the 'requireMatchingUserAgentForSession' config setting is enabled.
@@ -2378,9 +2366,9 @@ JS, [
     }
 
     /**
-     * Returns the [[authError]] value for [[authenticate()]] and [[authenticateWebAuthn()]]
+     * Returns the [[authError]] value for [[authenticate()]] and [[authenticateWithPasskey()]].
      *
-     * @return null|string
+     * @return self::AUTH_*|null
      */
     private function _getAuthError(): ?string
     {

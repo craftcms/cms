@@ -38,7 +38,10 @@ use craft\fieldlayoutelements\assets\AssetTitleField;
 use craft\fieldlayoutelements\entries\EntryTitleField;
 use craft\fieldlayoutelements\FullNameField;
 use craft\fieldlayoutelements\TitleField;
-use craft\fieldlayoutelements\users\AddressesField;
+use craft\fieldlayoutelements\users\EmailField;
+use craft\fieldlayoutelements\users\FullNameField as UserFullNameField;
+use craft\fieldlayoutelements\users\PhotoField;
+use craft\fieldlayoutelements\users\UsernameField;
 use craft\helpers\App;
 use craft\helpers\Db;
 use craft\helpers\Session;
@@ -134,7 +137,7 @@ use yii\web\ServerErrorHttpException;
  * @property-read AssetIndexer $assetIndexer The asset indexer service
  * @property-read AssetManager $assetManager The asset manager component
  * @property-read Assets $assets The assets service
- * @property-read Auth $auth The Auth service
+ * @property-read Auth $auth The user authentication service
  * @property-read Categories $categories The categories service
  * @property-read Composer $composer The Composer service
  * @property-read Conditions $conditions The conditions service
@@ -984,6 +987,18 @@ trait ApplicationTrait
     }
 
     /**
+     * Returns the user authentication service.
+     *
+     * @return Auth The Auth service
+     * @since 5.0.0
+     */
+    public function getAuth(): Auth
+    {
+        /** @noinspection PhpIncompatibleReturnTypeInspection */
+        return $this->get('auth');
+    }
+
+    /**
      * Returns the image transforms service.
      *
      * @return ImageTransforms The asset transforms service
@@ -992,17 +1007,6 @@ trait ApplicationTrait
     {
         /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->get('imageTransforms');
-    }
-
-    /**
-     * Returns the Auth service.
-     *
-     * @return Auth The Auth service
-     */
-    public function getAuth(): Auth
-    {
-        /** @noinspection PhpIncompatibleReturnTypeInspection */
-        return $this->get('auth');
     }
 
     /**
@@ -1693,7 +1697,12 @@ trait ApplicationTrait
                     $event->fields[] = EntryTitleField::class;
                     break;
                 case User::class:
-                    $event->fields[] = AddressesField::class;
+                    if (!$this->getConfig()->getGeneral()->useEmailAsUsername) {
+                        $event->fields[] = UsernameField::class;
+                    }
+                    $event->fields[] = UserFullNameField::class;
+                    $event->fields[] = PhotoField::class;
+                    $event->fields[] = EmailField::class;
                     break;
             }
         });

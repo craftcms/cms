@@ -55,7 +55,6 @@
                         {% endif %}
                         {% set chip = elementChip(element, {
                           context: context ?? 'index',
-                          autoReload: false,
                         }) %}
                         {% if not (showHeaderColumn ?? false) %}
                             {% set chip = chip|attr({class: 'hidden'}) %}

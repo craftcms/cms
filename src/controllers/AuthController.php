@@ -8,22 +8,21 @@
 namespace craft\controllers;
 
 use Craft;
-use craft\auth\ConfigurableAuthInterface;
-use craft\auth\passkeys\type\WebAuthn;
-use craft\auth\twofa\type\RecoveryCodes;
-use craft\helpers\StringHelper;
+use craft\auth\methods\RecoveryCodes;
+use craft\auth\methods\TOTP;
+use craft\helpers\Html;
+use craft\i18n\Locale;
 use craft\web\Controller;
-use craft\web\View;
-use yii\base\Exception;
+use yii\base\InvalidConfigException;
 use yii\web\Response;
 
 /** @noinspection ClassOverridesFieldOfSuperClassInspection */
 
 /**
- * The AuthController class is a controller that handles various 2FA-related actions.
+ * AuthController handles various user authentication actions.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 5.0
+ * @since 5.0.0
  */
 class AuthController extends Controller
 {
@@ -31,44 +30,76 @@ class AuthController extends Controller
      * @inheritdoc
      */
     protected array|bool|int $allowAnonymous = [
-        'fetch-alternative-2fa-types' => self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE,
-        'load-alternative-2fa-type' => self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE,
+        'passkey-request-options' => self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE,
+        'verify-recovery-code' => self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE,
+        'verify-totp' => self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE,
     ];
 
-    // shared methods
-    ////////////////////////////////////////////////////////////////////////////
+    /**
+     * @inheritdoc
+     */
+    public function beforeAction($action): bool
+    {
+        if (!parent::beforeAction($action)) {
+            return false;
+        }
+
+        $this->requireCpRequest();
+        ;
+        return true;
+    }
 
     /**
-     * Returns setup HTML for the slideout (for 2FA or Passkeys). Only triggered when editing your own account
+     * Returns the HTML for an authentication method’s setup slideout.
      *
-     * @return Response|null
-     * @throws \Throwable
+     * @return Response
      */
-    public function actionSetupSlideoutHtml(): ?Response
+    public function actionMethodSetupHtml(): ?Response
     {
-        if (!$this->request->getIsPost() || !$this->request->getIsAjax()) {
-            return null;
-        }
+        $this->requirePostRequest();
+        $this->requireAcceptsJson();
 
-        $user = Craft::$app->getUser()->getIdentity();
+        $class = $this->request->getRequiredBodyParam('method');
+        $method = Craft::$app->getAuth()->getMethod($class);
+        $containerId = sprintf('auth-method-setup-%s', mt_rand());
+        $displayName = $method::displayName();
+        $view = Craft::$app->getView();
 
-        if ($user === null) {
-            return null;
-        }
+        $html = Html::tag('h1', Craft::t('app', '{name} Setup', [
+                'name' => $displayName,
+            ])) .
+            $view->namespaceInputs(
+                fn() => $method->getSetupHtml($containerId),
+                $containerId,
+            );
 
-        $selectedMethod = Craft::$app->getRequest()->getRequiredBodyParam('selectedMethod');
-        if (empty($selectedMethod)) {
-            return null;
-        }
+        return $this->asJson([
+            'containerId' => $containerId,
+            'html' => $html,
+            'headHtml' => $view->getHeadHtml(),
+            'bodyHtml' => $view->getBodyHtml(),
+            'methodName' => $displayName,
+        ]);
+    }
 
-        $auth2faType = new $selectedMethod();
-        if (!($auth2faType instanceof ConfigurableAuthInterface)) {
-            throw new Exception('This 2FA type can’t be configured.');
-        }
+    /**
+     * Returns the HTML for an authentication method’s listing.
+     *
+     * @return Response
+     */
+    public function actionMethodListingHtml(): ?Response
+    {
+        $this->requirePostRequest();
+        $this->requireAcceptsJson();
 
-        $html = $auth2faType->getSetupFormHtml('',true, $user);
+        $view = Craft::$app->getView();
+        $html = $view->renderTemplate('users/_auth-methods.twig');
 
-        return $this->asJson(['html' => $html]);
+        return $this->asJson([
+            'html' => $html,
+            'headHtml' => $view->getHeadHtml(),
+            'bodyHtml' => $view->getBodyHtml(),
+        ]);
     }
 
     /**
@@ -78,269 +109,172 @@ class AuthController extends Controller
      * @throws \Throwable
      * @throws \yii\web\BadRequestHttpException
      */
-    public function actionRemoveSetup(): ?Response
+    public function actionRemoveMethod(): ?Response
     {
-        if (!$this->request->getIsPost()) {
-            return null;
-        }
-
-        $user = Craft::$app->getUser()->getIdentity();
-
-        if ($user === null) {
-            return null;
-        }
-
-        $currentMethod = Craft::$app->getRequest()->getRequiredBodyParam('currentMethod');
-        if (empty($currentMethod)) {
-            return null;
-        }
-
-        $success = (new $currentMethod())->removeSetup();
-
-        if ($this->request->getAcceptsJson()) {
-            if ($success) {
-                return $this->asSuccess(Craft::t('app', 'Setup removed.'));
-            } else {
-                return $this->asFailure(Craft::t('app', 'Something went wrong.'));
-            }
-        }
-
-        if ($success) {
-            $this->setSuccessFlash(Craft::t('app', 'Setup removed.'));
-        } else {
-            $this->setFailFlash(Craft::t('app', 'Something went wrong.'));
-        }
-
-        return $this->redirectToPostedUrl();
-    }
-
-    // 2fa methods
-    ////////////////////////////////////////////////////////////////////////////
-
-    /**
-     * Get all available alternative 2FA types for logging in.
-     *
-     * @return ?Response
-     * @throws \yii\web\BadRequestHttpException
-     */
-    public function actionFetchAlternative2faTypes(): ?Response
-    {
-        if (!$this->request->getIsPost()) {
-            return null;
-        }
-
-        $currentMethod = Craft::$app->getRequest()->getBodyParam('currentMethod');
-        $alternativeTypes = Craft::$app->getAuth()->getAlternative2faTypes($currentMethod);
-
-        if ($this->request->getAcceptsJson()) {
-            return $this->asSuccess(
-                data: ['alternativeTypes' => $alternativeTypes],
-            );
-        }
-
-        $template = Craft::$app->getRequest()->getBodyParam('template');
-
-        return $this->renderTemplate($template, [
-            'alternativeTypes' => $alternativeTypes,
-        ], View::TEMPLATE_MODE_SITE);
-    }
-
-    /**
-     * Return HTML for selected alternative 2FA type
-     *
-     * @return Response|null
-     * @throws \craft\errors\MissingComponentException
-     * @throws \yii\base\Exception
-     * @throws \yii\web\BadRequestHttpException
-     */
-    public function actionLoadAlternative2faType(): ?Response
-    {
-        if (!$this->request->getIsPost()) {
-            return null;
-        }
-
-        $selectedMethod = Craft::$app->getRequest()->getRequiredBodyParam('selectedMethod');
-        if (empty($selectedMethod)) {
-            return null;
-        }
-
-        $auth2faForm = (new $selectedMethod())->getInputHtml();
-
-        if ($this->request->getAcceptsJson()) {
-            if (empty($auth2faForm)) {
-                return $this->asFailure(Craft::t('app', 'Something went wrong. Please start again.'));
-            }
-
-            return $this->asSuccess(
-                data: ['auth2faForm' => $auth2faForm],
-            );
-        }
-
-        $template = Craft::$app->getRequest()->getBodyParam('template');
-
-        return $this->renderTemplate($template, [
-            'auth2fa' => true,
-            'auth2faForm' => $auth2faForm,
-        ], View::TEMPLATE_MODE_SITE);
-    }
-
-    /**
-     * Save 2FA type setup
-     *
-     * @return Response|null
-     * @throws Exception
-     * @throws \Throwable
-     * @throws \yii\web\BadRequestHttpException
-     */
-    public function actionSaveSetup(): ?Response
-    {
-        if (!$this->request->getIsPost()) {
-            return null;
-        }
-
-        $auth2faFields = Craft::$app->request->getRequiredBodyParam('auth2faFields');
-        $currentMethod = Craft::$app->request->getRequiredBodyParam('currentMethod');
-
-        if (empty($auth2faFields)) {
-            return $this->asFailure(Craft::t('app', 'Please fill out the form.'));
-        }
-
-        if ($currentMethod === null) {
-            return $this->asFailure(Craft::t('app', 'Something went wrong.'));
-        }
-
-        $authService = Craft::$app->getAuth();
-
-        $verified = $authService->verify($auth2faFields, $currentMethod);
-
-        if ($this->request->getAcceptsJson()) {
-            if ($verified === false) {
-                return $this->asFailure(Craft::t('app', 'Unable to verify.'));
-            }
-
-            return $this->asSuccess(Craft::t('app', 'Setup saved.'));
-        }
-
-        if ($verified === false) {
-            $this->setFailFlash(Craft::t('app', 'Unable to verify.'));
-        } else {
-            $this->setSuccessFlash(Craft::t('app', 'Setup saved.'));
-        }
-
-        return $this->redirectToPostedUrl();
-    }
-
-    // WebAuthn methods
-    ////////////////////////////////////////////////////////////////////////////
-
-    /**
-     * Generate & return the Public Key Credential Options for WebAuthn Registration
-     *
-     * @return Response
-     * @throws \Throwable
-     * @throws \yii\web\BadRequestHttpException
-     * @throws \yii\web\ForbiddenHttpException
-     */
-    public function actionGenerateRegistrationOptions(): Response
-    {
-        $this->requireAcceptsJson();
         $this->requirePostRequest();
-        $this->requireLogin();
         $this->requireElevatedSession();
 
-        $user = Craft::$app->getUser()->getIdentity();
+        $methodClass = $this->request->getRequiredBodyParam('method');
 
-        $webAuthn = new WebAuthn();
-        $options = $webAuthn->getCredentialCreationOptions($user, true);
+        $auth = Craft::$app->getAuth();
+        $method = $auth->getMethod($methodClass);
+        $method->remove();
 
-        return $this->asJson(['registrationOptions' => $options]);
+        // if that was the last non-Recovery Codes method, remove Recovery Codes too
+        if (empty($auth->getActiveMethods())) {
+            $recoveryCodes = $auth->getMethod(RecoveryCodes::class);
+            if ($recoveryCodes->isActive()) {
+                $recoveryCodes->remove();
+            }
+        }
+
+        return $this->asSuccess(Craft::t('app', 'Authentication method removed.'));
     }
 
     /**
-     * Verify the WebAuthn Registration Response and return the result + updated html markup for the slideout
+     * Verifies a TOTP code.
      *
      * @return Response
-     * @throws \Throwable
-     * @throws \yii\web\BadRequestHttpException
-     * @throws \yii\web\ForbiddenHttpException
      */
-    public function actionVerifyRegistration(): Response
+    public function actionVerifyTotp(): Response
+    {
+        $this->requirePostRequest();
+        $this->requireAcceptsJson();
+
+        $code = $this->request->getRequiredBodyParam('code');
+
+        if (!Craft::$app->getAuth()->verify(TOTP::class, $code)) {
+            return $this->asFailure(Craft::t('app', 'Invalid verification code.'));
+        }
+
+        return $this->asSuccess(Craft::t('app', 'Verification successful.'));
+    }
+
+    /**
+     * Verifies a recovery code.
+     *
+     * @return Response
+     */
+    public function actionVerifyRecoveryCode(): Response
+    {
+        $this->requirePostRequest();
+        $this->requireAcceptsJson();
+
+        $code = $this->request->getRequiredBodyParam('code');
+
+        if (!Craft::$app->getAuth()->verify(RecoveryCodes::class, $code)) {
+            return $this->asFailure(Craft::t('app', 'Invalid recovery code.'));
+        }
+
+        return $this->asSuccess(Craft::t('app', 'Verification successful.'));
+    }
+
+    /**
+     * Generates new passkey credential creation options for the user.
+     *
+     * @return Response
+     */
+    public function actionPasskeyCreationOptions(): Response
     {
         $this->requireAcceptsJson();
         $this->requirePostRequest();
-        $this->requireLogin();
         $this->requireElevatedSession();
 
-        $user = Craft::$app->getUser()->getIdentity();
-        $credentials = Craft::$app->getRequest()->getRequiredBodyParam('credentials');
-        $credentialName = Craft::$app->getRequest()->getBodyParam('credentialName');
+        $options = Craft::$app->getAuth()->getPasskeyCreationOptions(static::currentUser());
 
-        $webAuthn = new WebAuthn();
-        if ($webAuthn->verifyRegistrationResponse($user, $credentials, $credentialName)) {
-            $data['verified'] = true;
-            $data['html'] = $webAuthn->getSetupFormHtml('',true, $user);
-        } else {
-            $data['verified'] = false;
-        }
-
-        return $this->asJson($data);
+        return $this->asJson([
+            'options' => $options,
+        ]);
     }
 
     /**
-     * Process deleting a security key request
+     * Returns the available passkey options.
      *
      * @return Response
-     * @throws \Throwable
-     * @throws \yii\db\StaleObjectException
-     * @throws \yii\web\BadRequestHttpException
      */
-    public function actionDeleteSecurityKey(): Response
+    public function actionPasskeyRequestOptions(): Response
+    {
+        $this->requirePostRequest();
+        $this->requireAcceptsJson();
+
+        $options = Craft::$app->getAuth()->getPasskeyRequestOptions();
+
+        return $this->asJson([
+            'options' => $options,
+        ]);
+    }
+
+    /**
+     * Verifies the new passkey credential creation.
+     *
+     * @return Response
+     */
+    public function actionVerifyPasskeyCreation(): Response
     {
         $this->requireAcceptsJson();
         $this->requirePostRequest();
-        $this->requireLogin();
+        $this->requireElevatedSession();
 
-        $user = Craft::$app->getUser()->getIdentity();
-        $uid = Craft::$app->getRequest()->getRequiredBodyParam('uid');
+        $credentials = $this->request->getRequiredBodyParam('credentials');
+        $credentialName = $this->request->getBodyParam('credentialName');
 
-        $webAuthn = new WebAuthn();
-        if (!$webAuthn->deleteSecurityKey($user, $uid)) {
-            return $this->asFailure(Craft::t('app', 'Something went wrong.'));
+        $verified = Craft::$app->getAuth()->verifyPasskeyCreationResponse($credentials, $credentialName);
+
+        if (!$verified) {
+            return $this->asFailure(Craft::t('app', 'Passkey creation failed.'));
         }
 
-        $data['html'] = $webAuthn->getSetupFormHtml('',true, $user);
-
-        return $this->asSuccess(Craft::t('app', 'Security key removed.'), $data);
+        return $this->asSuccess(Craft::t('app', 'Passkey created.'), [
+            'tableHtml' => $this->passkeyTableHtml(),
+        ]);
     }
 
+    /**
+     * Deletes a passkey.
+     *
+     * @return Response
+     */
+    public function actionDeletePasskey(): Response
+    {
+        $this->requireAcceptsJson();
+        $this->requirePostRequest();
 
-    // Recovery Codes methods
-    ////////////////////////////////////////////////////////////////////////////
+        $uid = $this->request->getRequiredBodyParam('uid');
+        Craft::$app->getAuth()->deletePasskey(static::currentUser(), $uid);
 
+        return $this->asSuccess(Craft::t('app', 'Passkey deleted.'), [
+            'tableHtml' => $this->passkeyTableHtml(),
+        ]);
+    }
+
+    private function passkeyTableHtml(): string
+    {
+        return $this->getView()->renderTemplate('users/_passkeys-table.twig', [
+            'passkeys' => Craft::$app->getAuth()->getPasskeys(static::currentUser()),
+        ]);
+    }
+
+    /**
+     * Generates new recovery codes.
+     *
+     * @return Response
+     */
     public function actionGenerateRecoveryCodes(): Response
     {
         $this->requireAcceptsJson();
         $this->requirePostRequest();
-        $this->requireLogin();
         $this->requireElevatedSession();
 
-        $user = Craft::$app->getUser()->getIdentity();
+        $recoveryCodes = Craft::$app->getAuth()->getMethod(RecoveryCodes::class);
+        $codes = $recoveryCodes->generateRecoveryCodes();
 
-        $recoveryCodes = new RecoveryCodes();
-        $codes = $recoveryCodes->generateRecoveryCodes($user);
-
-        $data['verified'] = true;
-
-        if (empty($codes)) {
-            $data['verified'] = false;
-        }
-        $data['html'] = $recoveryCodes->getSetupFormHtml('',true, $user);
-
-        return $this->asJson($data);
+        return $this->asSuccess(Craft::t('app', 'Recovery codes generated.'), [
+            'codes' => $codes,
+        ]);
     }
 
     /**
-     * Get user's recovery codes for download and return them as a file
+     * Downloads the user’s recovery codes as a text file.
      *
      * @return Response|null
      * @throws \Throwable
@@ -355,15 +289,47 @@ class AuthController extends Controller
         $this->requireLogin();
         $this->requireElevatedSession();
 
+        $recoveryCodes = Craft::$app->getAuth()->getMethod(RecoveryCodes::class);
+        [$codes, $dateCreated] = $recoveryCodes->getRecoveryCodes();
+
+        if (empty($codes)) {
+            throw new InvalidConfigException('No recovery codes exist for this user.');
+        }
+
+        $systemName = Craft::t('site', Craft::$app->getSystemName());
+        $systemNameUnderline = str_repeat('=', mb_strlen($systemName));
+        $primarySite = Craft::$app->getSites()->getPrimarySite();
+        $website = $primarySite->getBaseUrl() ?? $primarySite->getName();
         $user = Craft::$app->getUser()->getIdentity();
-
-        $recoveryCodes = new RecoveryCodes();
-        $codes = $recoveryCodes->getRecoveryCodesForDownload($user->id);
-
-        return $this->response->sendContentAsFile(
+        $generalConfig = Craft::$app->getConfig()->getGeneral();
+        $username = !$generalConfig->useEmailAsUsername && $user->username ? $user->username : null;
+        $account = $username ? sprintf('%s (%s)', $username, $user->email) : $user->email;
+        $generated = Craft::$app->getFormatter()->asDate($dateCreated, Locale::LENGTH_SHORT);
+        $codeContent = implode('', array_map(
+            fn(string $code) => $code ? "- $code\n" : "- ~~~~~~~~~~~~~\n",
             $codes,
-            StringHelper::toKebabCase(Craft::$app->getSystemName()) . '-recovery-codes.txt',
-            ['mimeType' => 'text/plain']
-        );
+        ));
+
+        $content = <<<EOD
+Recovery codes for $systemName
+===================$systemNameUnderline
+
+These codes can be used as a backup form of verification, when you’re unable to
+use your primary two-step verification method(s).
+
+Each code can only be used once. Store them in a safe place!
+
+Website:   $website
+Account:   $account
+Generated: $generated
+
+$codeContent
+EOD;
+
+        $name = sprintf('%s recovery codes - %s.txt', $systemName, $username ?? $user->email);
+
+        return $this->response->sendContentAsFile($content, $name, [
+            'mimeType' => 'text/plain',
+        ]);
     }
 }

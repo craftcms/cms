@@ -7,113 +7,152 @@
 
 namespace craft\services;
 
+use Base64Url\Base64Url;
 use Craft;
-use craft\auth\passkeys\type\WebAuthn;
-use craft\auth\twofa\type\GoogleAuthenticator;
-use craft\auth\twofa\type\RecoveryCodes;
-use craft\base\auth\BaseAuthType;
+use craft\auth\methods\AuthMethodInterface;
+use craft\auth\methods\RecoveryCodes;
+use craft\auth\methods\TOTP;
+use craft\auth\passkeys\CredentialRepository;
 use craft\elements\User;
-use craft\events\Auth2faTypeEvent;
+use craft\events\RegisterComponentTypesEvent;
+use craft\helpers\ArrayHelper;
+use craft\helpers\Component as ComponentHelper;
+use craft\helpers\DateTimeHelper;
+use craft\helpers\Json;
+use craft\records\WebAuthn as WebAuthnRecord;
+use craft\web\Session;
+use DateTime;
+use GuzzleHttp\Psr7\ServerRequest;
+use Throwable;
+use Webauthn\AuthenticatorSelectionCriteria;
+use Webauthn\PublicKeyCredentialCreationOptions;
+use Webauthn\PublicKeyCredentialOptions;
+use Webauthn\PublicKeyCredentialRequestOptions;
+use Webauthn\PublicKeyCredentialRpEntity;
+use Webauthn\PublicKeyCredentialSource;
+use Webauthn\PublicKeyCredentialUserEntity;
+use Webauthn\Server;
 use yii\base\Component;
-use yii\base\Exception;
+use yii\base\InvalidArgumentException;
 
 /**
- * Auth service.
- * An instance of the Auth service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getAuth()|`Craft::$app->auth`]].
+ * User authentication service.
+ *
+ * An instance of the service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getAuth()|`Craft::$app->auth`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 5.0
+ * @since 5.0.0
  */
 class Auth extends Component
 {
-    public const EVENT_REGISTER_2FA_TYPES = 'register2faTypes';
+    /**
+     * @event RegisterComponentTypesEvent The event that is triggered when registering user authentication methods.
+     * @see getAllMethods()
+     */
+    public const EVENT_REGISTER_METHODS = 'registerMethods';
 
     /**
-     * @var string the session key used to store the id of the user we're logging in.
+     * @var string The session variable name used to store the ID of the user being authenticated.
      */
-    protected const AUTH_USER_SESSION_KEY = 'craft.auth.user';
+    public string $userIdParam;
 
     /**
-     * @var BaseAuthType|null 2FA Type instance in use
+     * @var string The session variable name used to store the number of seconds that the user can remain logged-in.
      */
-    private ?BaseAuthType $_2faType = null;
+    public string $sessionDurationParam;
 
     /**
-     * @var array $_2faTypes all available 2FA types
+     * @var string The session variable name used to store passkey credential creation options.
      */
-    private array $_2faTypes = [];
-
-
-//    public function mfaEnabled(User $user): bool
-//    {
-//        return $user->has2fa && $this->_getStoredSecret($user->id) !== null;
-//    }
+    public string $passkeyCreationOptionsParam;
 
     /**
-     * Store the user id and duration in session while we proceed to the 2FA step of logging them in
-     *
-     * @param User $user
-     * @param int $duration
-     * @return void
-     * @throws \craft\errors\MissingComponentException
+     * @var AuthMethodInterface[][] All user authentication methods
+     * @see getAllMethods()
      */
-    public function storeDataFor2faLogin(User $user, int $duration): void
+    private array $_methods = [];
+
+    /**
+     * @var User|false The user being authenticated.
+     * @see getUser()
+     * @see setUser()
+     */
+    private User|false $_user;
+
+    /**
+     * @var Server
+     * @see webauthnServer()
+     */
+    private Server $_webauthnServer;
+
+    /**
+     * @var int|false The session duration for the user being authenticated.
+     * @see getUser()
+     * @see setUser()
+     */
+    private int|false $_sessionDuration;
+
+    public function init(): void
     {
-        Craft::$app->getSession()->set(self::AUTH_USER_SESSION_KEY, [$user->id, $duration]);
+        parent::init();
+
+        $stateKeyPrefix = md5(sprintf('Craft.%s.%s', Session::class, Craft::$app->id));
+        if (!isset($this->userIdParam)) {
+            $this->userIdParam = sprintf('%s__userId', $stateKeyPrefix);
+        }
+        if (!isset($this->sessionDurationParam)) {
+            $this->sessionDurationParam = sprintf('%s__duration', $stateKeyPrefix);
+        }
+        if (!isset($this->passkeyCreationOptionsParam)) {
+            $this->passkeyCreationOptionsParam = sprintf('%s__pkCredCreationOptions', $stateKeyPrefix);
+        }
     }
 
     /**
      * Get user and duration data from session
      *
-     * @return array|null
-     * @throws Exception
-     * @throws \craft\errors\MissingComponentException
-     */
-    public function get2faDataFromSession(): ?array
-    {
-        $data = Craft::$app->getSession()->get(self::AUTH_USER_SESSION_KEY);
-
-        if ($data === null) {
-            return null;
-        }
-
-        if (is_array($data)) {
-            [$userId, $duration] = $data;
-            $user = User::findOne(['id' => $userId]);
-
-            if ($user === null) {
-                throw new Exception(Craft::t('app', 'Something went wrong. Please start again.'));
-            }
-
-            return compact('user', 'duration');
-        }
-
-        return null;
-    }
-
-    /**
-     * Get the user we're logging in via 2FA from session
-     *
      * @return User|null
-     * @throws Exception
-     * @throws \craft\errors\MissingComponentException
      */
-    public function get2faUserFromSession(): ?User
+    public function getUser(?int &$sessionDuration = null): ?User
     {
-        $data = $this->get2faDataFromSession();
+        if (!isset($this->_user)) {
+            $this->_user = false;
+            $this->_sessionDuration = false;
+            $session = Craft::$app->getSession();
+            $userId = $session->get($this->userIdParam);
 
-        return $data['user'] ?? null;
+            if ($userId) {
+                $user = User::findOne($userId);
+                if ($user) {
+                    $this->_user = $user;
+                    $this->_sessionDuration = $session->get($this->sessionDurationParam) ?? false;
+                }
+            }
+        }
+
+        $sessionDuration = $this->_sessionDuration ?: null;
+        return $this->_user ?: null;
     }
 
     /**
-     * Remove user's data from session
+     * Stores the user being logged-in, along with the expected session duration.
      *
-     * @return void
-     * @throws \craft\errors\MissingComponentException
+     * @param User|null $user
+     * @param int|null $sessionDuration
      */
-    public function remove2faDataFromSession(): void
+    public function setUser(?User $user, ?int $sessionDuration = null): void
     {
-        Craft::$app->getSession()->remove(self::AUTH_USER_SESSION_KEY);
+        $this->_user = $user ?? false;
+        $this->_sessionDuration = $user ? ($sessionDuration ?? Craft::$app->getConfig()->getGeneral()->userSessionDuration) : false;
+        $session = Craft::$app->getSession();
+
+        if ($user) {
+            $session->set($this->userIdParam, $user->id);
+            $session->set($this->sessionDurationParam, $this->_sessionDuration);
+        } else {
+            $session->remove($this->userIdParam);
+            $session->remove($this->sessionDurationParam);
+        }
     }
 
     /**
@@ -123,154 +162,391 @@ class Auth extends Component
      */
     public function getInputHtml(): string
     {
-        $user = $this->getUserForAuth();
+        $user = $this->getUser();
 
-        if ($user === null) {
+        if (!$user) {
             return '';
         }
 
-        $this->_2faType = $user->getDefault2faType();
-
-        return $this->_2faType->getInputHtml();
+        $method = $this->getAvailableMethods()[0] ?? null;
+        return $method?->getAuthFormHtml();
     }
 
     /**
-     * Verify 2FA step
+     * Authenticates the user.
      *
-     * @param array $auth2faFields
-     * @param string $currentMethod
+     * Any arguments
+     *
+     * @param class-string<AuthMethodInterface> $methodClass
+     * @param mixed $args,...
      * @return bool
      */
-    public function verify(array $auth2faFields, string $currentMethod): bool
+    public function verify(string $methodClass, mixed ...$args): bool
     {
-        $user = $this->getUserForAuth();
+        $user = $this->getUser($sessionDuration);
 
-        if ($user === null) {
+        if (!$this->getMethod($methodClass, $user)->verify(...$args)) {
             return false;
         }
 
-        if (empty($currentMethod)) {
-            throw new Exception('2FA method not specified.');
+        // success!
+        if ($user) {
+            $this->setUser(null);
+            Craft::$app->getUser()->login($user, $sessionDuration);
         }
 
-        $auth2faType = new $currentMethod();
-
-        if (!($auth2faType instanceof BaseAuthType)) {
-            throw new Exception('2FA Type needs to be an instance of ' . BaseAuthType::class);
-        }
-
-        $this->_2faType = new $auth2faType();
-
-        return $this->_2faType->verify($auth2faFields);
+        return true;
     }
 
     /**
-     * Returns a list of all available 2FA types except the one passed in as current
+     * Returns all available user authentication methods.
      *
-     * @param ?string $currentMethod
-     * @return array
+     * @param User|null $user
+     * @return AuthMethodInterface[]
      */
-    public function getAlternative2faTypes(?string $currentMethod = null): array
+    public function getAllMethods(?User $user = null): array
     {
-        return array_filter($this->getAll2faTypes(), function($type) use ($currentMethod) {
-            return $type !== $currentMethod;
-        }, ARRAY_FILTER_USE_KEY);
-    }
+        $user ??= Craft::$app->getUser()->getIdentity() ?? $this->getUser();
 
-    /**
-     * Returns a list of all available 2FA types
-     *
-     * @param bool $withConfig
-     * @return array
-     */
-    public function getAll2faTypes(bool $withConfig = false): array
-    {
-        if (!empty($this->_2faTypes)) {
-            $types = $this->_2faTypes;
-        } else {
-            $types = [
-                GoogleAuthenticator::class => [
-                    'name' => GoogleAuthenticator::displayName(),
-                    'description' => GoogleAuthenticator::getDescription(),
-                    'config' => [
-                        'requiresSetup' => GoogleAuthenticator::$requiresSetup,
-                    ],
-                ],
-                RecoveryCodes::class => [
-                    'name' => RecoveryCodes::displayName(),
-                    'description' => RecoveryCodes::getDescription(),
-                    'config' => [
-                        'requiresSetup' => RecoveryCodes::$requiresSetup,
-                    ],
-                ],
+        if (!$user?->id) {
+            return [];
+        }
+
+        if (!isset($this->_methods[$user->id])) {
+            $methods = [
+                TOTP::class,
+                RecoveryCodes::class,
             ];
+
+            $event = new RegisterComponentTypesEvent([
+                'types' => $methods,
+            ]);
+            $this->trigger(self::EVENT_REGISTER_METHODS, $event);
+
+            $this->_methods[$user->id] = array_map(fn(string $class) => ComponentHelper::createComponent([
+                'type' => $class,
+                'user' => $user,
+            ], AuthMethodInterface::class), $event->types);
+
+            usort($this->_methods[$user->id], function(AuthMethodInterface $a, AuthMethodInterface $b) {
+                // place Recovery Codes at the end
+                if ($a instanceof RecoveryCodes) {
+                    return 1;
+                }
+                if ($b instanceof RecoveryCodes) {
+                    return -1;
+                }
+
+                return $a::displayName() <=> $b::displayName();
+            });
         }
 
-        $event = new Auth2faTypeEvent([
-            'types' => $types,
-        ]);
+        return $this->_methods[$user->id];
+    }
 
-        $this->trigger(self::EVENT_REGISTER_2FA_TYPES, $event);
+    /**
+     * Returns the authentication methods that are available for the given user.
+     *
+     * @param User|null $user
+     * @return AuthMethodInterface[]
+     */
+    public function getAvailableMethods(?User $user = null): array
+    {
+        $methods = $this->getAllMethods($user);
 
-        $this->_2faTypes = $event->types;
+        // only include Recovery Codes if at least one other method is active
+        $hasActiveMethod = ArrayHelper::contains(
+            $methods,
+            fn(AuthMethodInterface $method) => !$method instanceof RecoveryCodes && $method->isActive(),
+        );
 
-        if (!$withConfig) {
-            foreach ($event->types as $key => $types) {
-                /** @phpstan-ignore-next-line */
-                unset($event->types[$key]['config']);
+        if ($hasActiveMethod) {
+            return $methods;
+        }
+
+        return array_values(array_filter($methods, fn($method) => !$method instanceof RecoveryCodes));
+    }
+
+    /**
+     * Returns the authentication methods that are active for the given user.
+     *
+     * @param User|null $user
+     * @return AuthMethodInterface[]
+     */
+    public function getActiveMethods(?User $user = null): array
+    {
+        return array_values(array_filter(
+            $this->getAvailableMethods($user),
+            fn(AuthMethodInterface $method) => $method->isActive(),
+        ));
+    }
+
+    /**
+     * Returns an authentication method by its class name.
+     *
+     * @template T of AuthMethodInterface
+     * @param class-string<T> $class
+     * @param User|null $user
+     * @return T
+     * @throws InvalidArgumentException
+     */
+    public function getMethod(string $class, ?User $user = null): AuthMethodInterface
+    {
+        foreach ($this->getAllMethods($user) as $method) {
+            if (get_class($method) === $class) {
+                return $method;
             }
         }
 
-        return $event->types;
+        throw new InvalidArgumentException("Invalid authentication method: $class");
     }
 
     /**
-     * Returns a list of all available passkeys types
+     * Returns whether 2FA is required for a user.
      *
-     * @param bool $withConfig
-     * @return array[]
+     * @param User $user
+     * @return bool
+     * @since 5.0.0
      */
-    public function getAllPasskeysTypes(bool $withConfig = false): array
+    public function is2faRequiredForUser(User $user): bool
     {
-        $types = [
-            WebAuthn::class => [
-                'name' => WebAuthn::displayName(),
-                'description' => WebAuthn::getDescription(),
-                'config' => [
-                    'requiresSetup' => WebAuthn::$requiresSetup,
-                ],
-            ],
+        // get all 2fa types
+        $methods = $this->getAvailableMethods($user);
+
+        // for each type check if isEnabledForUser
+        foreach ($methods as $method) {
+            if ($method->isActive()) {
+                return true;
+            }
+        }
+
+        $has2fa = Craft::$app->getProjectConfig()->get(ProjectConfig::PATH_USERS)['has2fa'] ?? [];
+
+        if (!is_array($has2fa)) {
+            if ($has2fa === 'all') {
+                return true;
+            }
+        } else {
+            if ($user->admin && in_array('admin', $has2fa, true)) {
+                return true;
+            }
+
+            foreach ($user->getGroups() as $userGroup) {
+                if (in_array($userGroup->handle, $has2fa, true)) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Returns whether the given user has passkeys.
+     *
+     * @param User $user
+     * @return bool
+     */
+    public function hasPasskeys(User $user): bool
+    {
+        if (!$user->id) {
+            return false;
+        }
+
+        return WebAuthnRecord::find()
+            ->where(['userId' => $user->id])
+            ->exists();
+    }
+
+    /**
+     * Returns info about the given user’s saved passkeys.
+     *
+     * @param User $user
+     * @return array{credentialName:string, dateLasteUsed:DateTime, uid:string}[]
+     */
+    public function getPasskeys(User $user): array
+    {
+        if (!$user->id) {
+            return [];
+        }
+
+        /** @var array[] $passkeys */
+        $passkeys = WebAuthnRecord::find()
+            ->select(['credentialName', 'dateLastUsed', 'uid'])
+            ->where(['userId' => $user->id])
+            ->asArray()
+            ->all();
+
+        return array_map(function(array $passkey) {
+            if ($passkey['dateLastUsed']) {
+                $passkey['dateLastUsed'] = DateTimeHelper::toDateTime($passkey['dateLastUsed']);
+            }
+            return $passkey;
+        }, $passkeys);
+    }
+
+    /**
+     * Generates new passkey credential creation options for the given user.
+     *
+     * @param User $user
+     * @return PublicKeyCredentialOptions
+     */
+    public function getPasskeyCreationOptions(User $user): PublicKeyCredentialOptions
+    {
+        $userEntity = $this->passkeyUserEntity($user);
+
+        $excludeCredentials = array_map(
+            fn(PublicKeyCredentialSource $credential) => $credential->getPublicKeyCredentialDescriptor(),
+            (new CredentialRepository())->findAllForUserEntity($userEntity),
+        );
+
+        $options = $this->webauthnServer()->generatePublicKeyCredentialCreationOptions(
+            $userEntity,
+            PublicKeyCredentialCreationOptions::ATTESTATION_CONVEYANCE_PREFERENCE_NONE,
+            $excludeCredentials,
+            $this->passkeyAuthenticatorSelectionCriteria(),
+        );
+
+        Craft::$app->getSession()->set($this->passkeyCreationOptionsParam, Json::encode($options));
+        return $options;
+    }
+
+    /**
+     * Verifies a passkey creation response and stores the passkey.
+     *
+     * @param string $credentials
+     * @param string|null $credentialName
+     * @return bool
+     */
+    public function verifyPasskeyCreationResponse(string $credentials, ?string $credentialName = null): bool
+    {
+        $optionsJson = Craft::$app->getSession()->get($this->passkeyCreationOptionsParam);
+
+        if (!$optionsJson) {
+            return false;
+        }
+
+        /** @var PublicKeyCredentialCreationOptions $options */
+        $options = PublicKeyCredentialCreationOptions::createFromArray(Json::decode($optionsJson));
+
+        try {
+            $verifiedCredentials = $this->webauthnServer()->loadAndCheckAttestationResponse(
+                $credentials,
+                $options,
+                $this->webauthnServerRequest(),
+            );
+        } catch (Throwable) {
+            return false;
+        }
+
+        $credentialRepository = new CredentialRepository();
+        $credentialRepository->savedNamedCredentialSource($verifiedCredentials, $credentialName);
+
+        return true;
+    }
+
+    /**
+     * Verifies a passkey authentication response and stores the passkey.
+     *
+     * @param User $user
+     * @param PublicKeyCredentialRequestOptions|array|string $requestOptions The public key credential request options
+     * @param string $response The authentication response data
+     * @return bool
+     */
+    public function verifyPasskey(
+        User $user,
+        PublicKeyCredentialRequestOptions|array|string $requestOptions,
+        string $response,
+    ): bool {
+        if (is_array($requestOptions)) {
+            $requestOptions = PublicKeyCredentialRequestOptions::createFromArray($requestOptions);
+        } elseif (is_string($requestOptions)) {
+            $requestOptions = PublicKeyCredentialRequestOptions::createFromString($requestOptions);
+        }
+
+        try {
+            /** @var PublicKeyCredentialRequestOptions $requestOptions */
+            $this->webauthnServer()->loadAndCheckAssertionResponse(
+                $response,
+                $requestOptions,
+                $this->passkeyUserEntity($user),
+                $this->webauthnServerRequest(),
+            );
+        } catch (Throwable) {
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * Deletes a passkey.
+     *
+     * @param User $user
+     * @param string $uid
+     */
+    public function deletePasskey(User $user, string $uid): void
+    {
+        WebAuthnRecord::findOne(['userId' => $user->id, 'uid' => $uid])?->delete();
+    }
+
+    /**
+     * Returns the credential request options.
+     *
+     * @return PublicKeyCredentialRequestOptions
+     */
+    public function getPasskeyRequestOptions(): PublicKeyCredentialRequestOptions
+    {
+        return $this->webauthnServer()->generatePublicKeyCredentialRequestOptions(
+            PublicKeyCredentialRequestOptions::USER_VERIFICATION_REQUIREMENT_PREFERRED,
+        );
+    }
+
+    private function webauthnServer(): Server
+    {
+        if (!isset($this->_webauthnServer)) {
+            $this->_webauthnServer = new Server($this->passkeyRpEntity(), new CredentialRepository());
+        }
+
+        return $this->_webauthnServer;
+    }
+
+    private function webauthnServerRequest(): ServerRequest
+    {
+        $request = Craft::$app->getRequest();
+
+        return new ServerRequest(
+            $request->getMethod(),
+            $request->getFullUri(),
+            $request->getHeaders()->toArray(),
+            $request->getRawBody(),
+        );
+    }
+
+    private function passkeyUserEntity(User $user): PublicKeyCredentialUserEntity
+    {
+        $data = [
+            'name' => $user->email,
+            'id' => Base64Url::encode($user->uid),
+            'displayName' => $user->getName(),
         ];
 
-        if (!$withConfig) {
-            foreach ($types as $key => $type) {
-                unset($types[$key]['config']);
-            }
-        }
-
-        return $types;
+        return PublicKeyCredentialUserEntity::createFromArray($data);
     }
 
-    /**
-     * Get user for 2FA or passkeys login.
-     * First try to get the logged in user (used e.g. when changing a setup).
-     * Then try to get one from the session.
-     *
-     * @return User|null
-     * @throws \Throwable
-     * @throws \craft\errors\MissingComponentException
-     * @throws \yii\base\Exception
-     */
-    public function getUserForAuth(): ?User
+    public function passkeyRpEntity(): PublicKeyCredentialRpEntity
     {
-        // first let's check if user is logged in; if yes, this is run via a setup action from their profile
-        $user = Craft::$app->getUser()->getIdentity();
+        return PublicKeyCredentialRpEntity::createFromArray([
+            'name' => Craft::$app->getSystemName(),
+            'id' => Craft::$app->getRequest()->getHostName(),
+        ]);
+    }
 
-        if ($user === null) {
-            // then try to get data from session
-            $user = Craft::$app->getAuth()->get2faUserFromSession();
-        }
-
-        return $user;
+    private function passkeyAuthenticatorSelectionCriteria(): AuthenticatorSelectionCriteria
+    {
+        $authenticatorSelectionCriteria = new AuthenticatorSelectionCriteria();
+        $authenticatorSelectionCriteria->setRequireResidentKey(true);
+        $authenticatorSelectionCriteria->setUserVerification(AuthenticatorSelectionCriteria::USER_VERIFICATION_REQUIREMENT_PREFERRED);
+        return $authenticatorSelectionCriteria;
     }
 }
