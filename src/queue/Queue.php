@@ -28,7 +28,6 @@ use yii\db\Query;
 use yii\di\Instance;
 use yii\mutex\Mutex;
 use yii\queue\ExecEvent;
-use yii\queue\Queue as BaseQueue;
 use yii\web\Response;
 
 /**
@@ -87,7 +86,7 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
     public $commandClass = Command::class;
 
     /**
-     * @var BaseQueue|array|string|null An external queue that proxy jobs should be sent to.
+     * @var Queue|array|string|null An external queue that proxy jobs should be sent to.
      *
      * If this is set, [[push()]] will send [[Proxy]] jobs to it that reference the internal job IDs.
      * When executed, those jobs will cause the referenced internal jobs to be executed, unless they’ve
@@ -95,7 +94,7 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
      *
      * @since 4.0.0
      */
-    public BaseQueue|array|string|null $proxyQueue = null;
+    public Queue|array|string|null $proxyQueue = null;
 
     /**
      * @var string|null The description of the job being pushed into the queue
@@ -140,7 +139,7 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
         $this->mutex = Instance::ensure($this->mutex, Mutex::class);
 
         if (isset($this->proxyQueue)) {
-            $this->proxyQueue = Instance::ensure($this->proxyQueue, BaseQueue::class);
+            $this->proxyQueue = Instance::ensure($this->proxyQueue, static::class);
         }
 
         $this->on(self::EVENT_BEFORE_EXEC, function(ExecEvent $e) {
