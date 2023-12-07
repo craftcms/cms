@@ -1198,11 +1198,11 @@ class AddressQuery extends ElementQuery
         }
 
         if ($this->countryCode) {
-            $this->subQuery->andWhere(['addresses.countryCode' => $this->countryCode]);
+            $this->subQuery->andWhere(Db::parseParam('addresses.countryCode', $this->countryCode));
         }
 
         if ($this->administrativeArea) {
-            $this->subQuery->andWhere(['addresses.administrativeArea' => $this->administrativeArea]);
+            $this->subQuery->andWhere(Db::parseParam('addresses.administrativeArea', $this->administrativeArea));
         }
 
         if ($this->locality) {
