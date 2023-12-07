@@ -91,16 +91,20 @@ Craft.PasskeySetup = Garnish.Base.extend({
     }
 
     let defaultName = this.browserName() + ' on ' + this.platformName();
-    const credentialName = Craft.escapeHtml(
-      prompt(Craft.t('app', 'Enter a name for the passkey.'), defaultName)
+    const credentialName = prompt(
+      Craft.t('app', 'Enter a name for the passkey.'),
+      defaultName
     );
+
+    if (credentialName === null) {
+      return;
+    }
 
     let regResponse;
 
     try {
       regResponse = await startRegistration(data.options);
     } catch (e) {
-      debugger;
       Craft.cp.displayError(e?.message);
       return;
     }
