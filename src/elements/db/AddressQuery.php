@@ -102,15 +102,15 @@ class AddressQuery extends ElementQuery
      * @var mixed The address administrativeArea(s) that the resulting address must be in.
      * ---
      * ```php
-     * // fetch addresses that are located in AU
+     * // fetch addresses that are located in Western Australia
      * $addresses = \craft\elements\Address::find()
-     *     ->administrativeArea('AU')
+     *     ->administrativeArea('WA')
      *     ->all();
      * ```
      * ```twig
-     * {# fetch addresses that are located in AU #}
+     * {# fetch addresses that are located in Western Australia #}
      * {% set addresses = craft.addresses()
-     *   .administrativeArea('AU')
+     *   .administrativeArea('WA')
      *   .all() %}
      * ```
      * @used-by administrativeArea()
@@ -123,13 +123,13 @@ class AddressQuery extends ElementQuery
      * ```php
      * // fetch addresses by locality
      * $addresses = \craft\elements\Address::find()
-     *     ->locality('New York')
+     *     ->locality('Perth')
      *     ->all();
      * ```
      * ```twig
      * {# fetch addresses by locality #}
      * {% set addresses = craft.addresses()
-     *   .locality('New York')
+     *   .locality('Perth')
      *   .all() %}
      * ```
      * @used-by locality()
@@ -143,13 +143,13 @@ class AddressQuery extends ElementQuery
      * ```php
      * // fetch addresses by dependent locality
      * $addresses = \craft\elements\Address::find()
-     *     ->dependentLocality('Brooklyn')
+     *     ->dependentLocality('Darlington')
      *     ->all();
      * ```
      * ```twig
      * {# fetch addresses by dependent locality #}
      * {% set addresses = craft.addresses()
-     *   .dependentLocality('Brooklyn')
+     *   .dependentLocality('Darlington')
      *   .all() %}
      * ```
      * @used-by dependentLocality()
@@ -381,24 +381,24 @@ class AddressQuery extends ElementQuery
      *
      * | Value | Fetches addresses…
      * | - | -
-     * | `'AU'` | with a administrativeArea of `AU`.
-     * | `'not US'` | not in a administrativeArea of `US`.
-     * | `['AU', 'US']` | in a administrativeArea of `AU` or `US`.
-     * | `['not', 'AU', 'US']` | not in a administrativeArea of `AU` or `US`.
+     * | `'WA'` | with a administrativeArea of `WA`.
+     * | `'not WA'` | not in a administrativeArea of `WA`.
+     * | `['WA', 'SA']` | in a administrativeArea of `WA` or `SA`.
+     * | `['not', 'WA', 'SA']` | not in a administrativeArea of `WA` or `SA`.
      *
      * ---
      *
      * ```twig
-     * {# Fetch addresses in the AU #}
+     * {# Fetch addresses in Western Australia #}
      * {% set {elements-var} = {twig-method}
-     *   .administrativeArea('AU')
+     *   .administrativeArea('WA')
      *   .all() %}
      * ```
      *
      * ```php
-     * // Fetch addresses in the AU
+     * // Fetch addresses in Western Australia
      * ${elements-var} = {php-method}
-     *     ->administrativeArea('AU')
+     *     ->administrativeArea('WA')
      *     ->all();
      * ```
      *
@@ -420,23 +420,23 @@ class AddressQuery extends ElementQuery
      *
      * | Value | Fetches addresses…
      * | - | -
-     * | `'New York'` | with a locality of `New York`.
-     * | `'*York*'` | with a locality containing `York`.
-     * | `'New*'` | with a locality beginning with `New`.
+     * | `'Perth'` | with a locality of `Perth`.
+     * | `'*Perth*'` | with a locality containing `Perth`.
+     * | `'Ner*'` | with a locality beginning with `Per`.
      *
      * ---
      *
      * ```twig
-     * {# Fetch addresses in New York #}
+     * {# Fetch addresses in Perth #}
      * {% set {elements-var} = {twig-method}
-     *   .locality('New York')
+     *   .locality('Perth')
      *   .all() %}
      * ```
      *
      * ```php
-     * // Fetch addresses in New York
+     * // Fetch addresses in Perth
      * ${elements-var} = {php-method}
-     *     ->locality('New York')
+     *     ->locality('Perth')
      *     ->all();
      * ```
      *
@@ -458,23 +458,23 @@ class AddressQuery extends ElementQuery
      *
      * | Value | Fetches addresses…
      * | - | -
-     * | `'Brooklyn'` | with a dependentLocality of `Brooklyn`.
-     * | `'*Brook*'` | with a dependentLocality containing `Brook`.
-     * | `'Brook*'` | with a dependentLocality beginning with `Brook`.
+     * | `'Darlington'` | with a dependentLocality of `Darlington`.
+     * | `'*Darling*'` | with a dependentLocality containing `Darling`.
+     * | `'Dar*'` | with a dependentLocality beginning with `Dar`.
      *
      * ---
      *
      * ```twig
-     * {# Fetch addresses in Brooklyn #}
+     * {# Fetch addresses in Darlington #}
      * {% set {elements-var} = {twig-method}
-     *   .dependentLocality('Brooklyn')
+     *   .dependentLocality('Darlington')
      *   .all() %}
      * ```
      *
      * ```php
-     * // Fetch addresses in Brooklyn
+     * // Fetch addresses in Darlington
      * ${elements-var} = {php-method}
-     *     ->dependentLocality('Brooklyn')
+     *     ->dependentLocality('Darlington')
      *     ->all();
      * ```
      *
