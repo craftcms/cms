@@ -5,7 +5,7 @@
 {% set showPermissions = currentUser.can('assignUserPermissions') %}
 
 {% if showUserGroups %}
-  <fieldset>
+  <fieldset class="first">
     <h2>{{ 'User Groups'|t('app') }}</h2>
 
     {% do view.registerDeltaName('groups') %}
