@@ -126,28 +126,6 @@
             </div>
         {% endif %}
 
-        {% set has2fa = settings.has2fa|default([]) %}
-        {% set groups = [
-            {'value': 'admin','label': 'Admin'|t('app')}
-        ] %}
-        {% for group in craft.app.userGroups.getAllGroups() %}
-            {% set key = group.handle %}
-            {% set groups = groups|merge([{
-                'value': (group.handle),
-                'label': group.name
-            }]) %}
-        {% endfor %}
-
-        <h3>{{ 'Require 2FA'|t('app') }}</h3>
-        {{ forms.checkboxSelect({
-            name: 'has2fa',
-            options: groups,
-            showAllOption: true,
-            allLabel: 'All Users'|t('app'),
-            allValue: 'all',
-            values: has2fa
-        }) }}
-
         <div class="buttons">
             <button type="submit" class="btn submit">{{ 'Save'|t('app') }}</button>
         </div>

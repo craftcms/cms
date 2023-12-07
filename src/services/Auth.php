@@ -302,46 +302,6 @@ class Auth extends Component
     }
 
     /**
-     * Returns whether 2FA is required for a user.
-     *
-     * @param User $user
-     * @return bool
-     * @since 5.0.0
-     */
-    public function is2faRequiredForUser(User $user): bool
-    {
-        // get all 2fa types
-        $methods = $this->getAvailableMethods($user);
-
-        // for each type check if isEnabledForUser
-        foreach ($methods as $method) {
-            if ($method->isActive()) {
-                return true;
-            }
-        }
-
-        $has2fa = Craft::$app->getProjectConfig()->get(ProjectConfig::PATH_USERS)['has2fa'] ?? [];
-
-        if (!is_array($has2fa)) {
-            if ($has2fa === 'all') {
-                return true;
-            }
-        } else {
-            if ($user->admin && in_array('admin', $has2fa, true)) {
-                return true;
-            }
-
-            foreach ($user->getGroups() as $userGroup) {
-                if (in_array($userGroup->handle, $has2fa, true)) {
-                    return true;
-                }
-            }
-        }
-
-        return false;
-    }
-
-    /**
      * Returns whether the given user has passkeys.
      *
      * @param User $user

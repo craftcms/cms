@@ -1235,7 +1235,6 @@ return [
     'Reply-To Address' => 'Reply-To Address',
     'Report plugin' => 'Report plugin',
     'Repository' => 'Repository',
-    'Require 2FA' => 'Require 2FA',
     'Require a password reset on next login' => 'Require a password reset on next login',
     'Required' => 'Required',
     'Requirements' => 'Requirements',
