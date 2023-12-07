@@ -325,7 +325,10 @@ Craft.LoginForm = Garnish.Base.extend(
 
         this.settings.onLogin(loginResponse.data.returnUrl);
       } catch (e) {
-        this.showError(e?.response?.data?.message);
+        const message = e?.response?.data?.message;
+        if (message) {
+          this.showError(message);
+        }
       } finally {
         this.$passkeyBtn.removeClass('loading');
       }
