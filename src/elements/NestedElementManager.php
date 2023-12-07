@@ -12,7 +12,6 @@ use Craft;
 use craft\base\ElementInterface;
 use craft\base\NestedElementInterface;
 use craft\behaviors\DraftBehavior;
-use craft\db\Query;
 use craft\db\Table;
 use craft\elements\actions\ChangeSortOrder;
 use craft\elements\db\ElementQueryInterface;
