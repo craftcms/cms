@@ -11,7 +11,7 @@ use craft\elements\db\AddressQuery;
 use craft\elements\db\ElementQueryInterface;
 
 /**
- * Address address line 1 condition rule.
+ * Address address line 2 condition rule.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 5.0.0
