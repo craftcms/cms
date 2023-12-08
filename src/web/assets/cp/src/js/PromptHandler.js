@@ -48,7 +48,8 @@ Craft.PromptHandler = Garnish.Base.extend({
       prompt.message,
       prompt.choices,
       this._handleBatchPromptSelection.bind(this),
-      remainingInBatch
+      remainingInBatch,
+      prompt.settings
     );
   },
 
@@ -99,12 +100,15 @@ Craft.PromptHandler = Garnish.Base.extend({
    * @param {Array} choices
    * @param {showPromptCallback} callback
    * @param {number} itemsToGo
+   * @param {Array} settings
    */
-  _showPrompt: function (message, choices, callback, itemsToGo) {
+  _showPrompt: function (message, choices, callback, itemsToGo, settings) {
     this._promptCallback = callback;
 
     if (this.modal === null) {
-      this.modal = new Garnish.Modal({closeOtherModals: false});
+      this.modal = new Garnish.Modal(
+        $.extend({closeOtherModals: false}, settings)
+      );
     }
 
     if (this.$modalContainerDiv === null) {
