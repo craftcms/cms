@@ -885,7 +885,7 @@ class User extends Element implements IdentityInterface
         $rules[] = [['email', 'unverifiedEmail'], 'email', 'enableIDN' => App::supportsIdn(), 'enableLocalIDN' => false];
         $rules[] = [['email', 'username', 'fullName', 'firstName', 'lastName', 'password', 'unverifiedEmail'], 'string', 'max' => 255];
         $rules[] = [['verificationCode'], 'string', 'max' => 100];
-        $rules[] = [['email'], 'required', 'when' => $treatAsActive];
+        $rules[] = [['email'], 'required', 'when' => fn() => !$this->getIsDraft()];
         $rules[] = [['lastLoginAttemptIp'], 'string', 'max' => 45];
 
         if (!Craft::$app->getConfig()->getGeneral()->useEmailAsUsername) {
@@ -899,6 +899,8 @@ class User extends Element implements IdentityInterface
                 UniqueValidator::class,
                 'targetClass' => UserRecord::class,
                 'caseInsensitive' => true,
+                'filter' => ['or', ['active' => true], ['pending' => true]],
+                'when' => $treatAsActive,
             ];
 
             $rules[] = [['unverifiedEmail'], 'validateUnverifiedEmail'];
@@ -1006,6 +1008,8 @@ class User extends Element implements IdentityInterface
                 'lower([[email]])' => mb_strtolower($this->unverifiedEmail),
             ]);
         }
+
+        $query->andWhere(['or', ['active' => true], ['pending' => true]]);
 
         if ($this->id) {
             $query->andWhere(['not', ['elements.id' => $this->id]]);
