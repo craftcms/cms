@@ -908,22 +908,22 @@ class UsersController extends Controller
      * User profile screen
      *
      * @param int|null $userId The user’s ID.
-     * @param User|null $user The user being edited, if there were any validation errors.
+     * @param User|null $element The user being edited, if there were any validation errors.
      * @return Response
      * @since 5.0.0
      */
-    public function actionProfile(?int $userId = null, ?User $user = null): Response
+    public function actionProfile(?int $userId = null, ?User $element = null): Response
     {
         $this->requireCpRequest();
 
-        $user ??= $this->editScreenUser($userId);
+        $element ??= $this->editScreenUser($userId);
 
         // let the elements/edit action do most of the work
         Craft::$app->runAction('elements/edit', [
-            'element' => $user,
+            'element' => $element,
         ]);
 
-        return $this->asEditScreen($user, self::SCREEN_PROFILE);
+        return $this->asEditScreen($element, self::SCREEN_PROFILE);
     }
 
     /**
