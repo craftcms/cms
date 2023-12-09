@@ -645,9 +645,17 @@ class UsersController extends Controller
 
         try {
             $url = Craft::$app->getUsers()->getPasswordResetUrl($user);
-        } catch (InvalidElementException) {
-            $errors = $user->getFirstErrors();
-            throw new BadRequestHttpException(reset($errors));
+        } catch (InvalidElementException $e) {
+            if (in_array($user->getStatus(), [User::STATUS_INACTIVE, User::STATUS_PENDING])) {
+                $message = Craft::t('app', 'Couldn’t generate an activation URL: {error}', [
+                    'error' => $e->getMessage(),
+                ]);
+            } else {
+                $message = Craft::t('app', 'Couldn’t generate a password reset URL: {error}', [
+                    'error' => $e->getMessage(),
+                ]);
+            }
+            return $this->asFailure($message);
         }
 
         return $this->asJson([
@@ -713,12 +721,16 @@ class UsersController extends Controller
         }
 
         // If they're pending, try to activate them, and maybe treat this as an activation request
-        if (
-            $user->getStatus() == User::STATUS_PENDING &&
-            Craft::$app->getUsers()->activateUser($user) &&
-            ($response = $this->_onAfterActivateUser($user)) !== null
-        ) {
-            return $response;
+        if ($user->getStatus() === User::STATUS_PENDING) {
+            try {
+                Craft::$app->getUsers()->activateUser($user);
+                $response = $this->_onAfterActivateUser($user);
+                if ($response !== null) {
+                    return $response;
+                }
+            } catch (InvalidElementException) {
+                // NBD
+            }
         }
 
         // Maybe automatically log them in
@@ -765,7 +777,9 @@ class UsersController extends Controller
 
         // Do they have an unverified email?
         if ($user->unverifiedEmail) {
-            if (!$usersService->verifyEmailForUser($user)) {
+            try {
+                $usersService->verifyEmailForUser($user);
+            } catch (InvalidElementException) {
                 return $this->renderTemplate('_special/emailtaken.twig', [
                     'email' => $user->unverifiedEmail,
                 ]);
@@ -845,13 +859,13 @@ class UsersController extends Controller
         }
 
         try {
-            if (!Craft::$app->getUsers()->activateUser($user)) {
-                throw new InvalidElementException($user);
-            }
-        } catch (InvalidElementException) {
+            Craft::$app->getUsers()->activateUser($user);
+        } catch (InvalidElementException $e) {
             return $this->asModelFailure(
                 $user,
-                Craft::t('app', 'There was a problem activating the user.'),
+                Craft::t('app', 'There was a problem activating the user: {error}', [
+                    'error' => $e->getMessage(),
+                ]),
                 $userVariable,
             );
         }
@@ -1836,17 +1850,16 @@ JS);
             $this->requirePermission('administrateUsers');
         }
 
+        $userVariable = $this->request->getValidatedBodyParam('userVariable') ?? 'user';
+
         try {
             $emailSent = Craft::$app->getUsers()->sendActivationEmail($user);
-        } catch (InvalidElementException) {
-            $emailSent = false;
-        }
-
-        $userVariable = $this->request->getValidatedBodyParam('userVariable') ?? 'user';
-        if ($user->hasErrors()) {
+        } catch (InvalidElementException $e) {
             return $this->asModelFailure(
                 $user,
-                Craft::t('app', 'Couldn’t send activation email.'),
+                Craft::t('app', 'Couldn’t send the activation email: {error}', [
+                    'error' => $e->getMessage(),
+                ]),
                 $userVariable,
             );
         }
@@ -1915,7 +1928,14 @@ JS);
         $usersService = Craft::$app->getUsers();
         $currentUser = static::currentUser();
 
-        if (!$usersService->canSuspend($currentUser, $user) || !$usersService->suspendUser($user)) {
+        if (!$usersService->canSuspend($currentUser, $user)) {
+            $this->setFailFlash(Craft::t('app', 'Couldn’t suspend user.'));
+            return null;
+        }
+
+        try {
+            $usersService->suspendUser($user);
+        } catch (InvalidElementException) {
             $this->setFailFlash(Craft::t('app', 'Couldn’t suspend user.'));
             return null;
         }
@@ -2002,9 +2022,10 @@ JS);
         }
 
         // Deactivate the user
-        if (Craft::$app->getUsers()->deactivateUser($user)) {
+        try {
+            Craft::$app->getUsers()->deactivateUser($user);
             $this->setSuccessFlash(Craft::t('app', 'Successfully deactivated the user.'));
-        } else {
+        } catch (InvalidElementException) {
             $this->setFailFlash(Craft::t('app', 'There was a problem deactivating the user.'));
         }
 
@@ -2091,7 +2112,14 @@ JS);
         $usersService = Craft::$app->getUsers();
         $currentUser = static::currentUser();
 
-        if (!$usersService->canSuspend($currentUser, $user) || !$usersService->unsuspendUser($user)) {
+        if (!$usersService->canSuspend($currentUser, $user)) {
+            $this->setFailFlash(Craft::t('app', 'Couldn’t unsuspend user.'));
+            return null;
+        }
+
+        try {
+            $usersService->unsuspendUser($user);
+        } catch (InvalidElementException) {
             $this->setFailFlash(Craft::t('app', 'Couldn’t unsuspend user.'));
             return null;
         }
