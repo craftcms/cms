@@ -1291,7 +1291,11 @@ JS);
         }
 
         $response = $this->asCpScreen();
-        $response->title($user->getUiLabel());
+        if ($user->getIsCurrent()) {
+            $response->title(Craft::t('app', 'My Account'));
+        } else {
+            $response->title($user->getUiLabel());
+        }
 
         $navItems = [];
         $currentNavItems = &$navItems;
