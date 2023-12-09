@@ -9,6 +9,7 @@ namespace craft\elements;
 
 use Craft;
 use craft\base\Element;
+use craft\base\ElementInterface;
 use craft\base\NameTrait;
 use craft\db\Query;
 use craft\db\Table;
@@ -38,6 +39,7 @@ use craft\i18n\Formatter;
 use craft\models\FieldLayout;
 use craft\models\UserGroup;
 use craft\records\User as UserRecord;
+use craft\records\WebAuthn as WebAuthnRecord;
 use craft\validators\DateTimeValidator;
 use craft\validators\UniqueValidator;
 use craft\validators\UsernameValidator;
@@ -47,6 +49,7 @@ use DateInterval;
 use DateTime;
 use DateTimeZone;
 use Throwable;
+use Webauthn\PublicKeyCredentialRequestOptions;
 use yii\base\ErrorHandler;
 use yii\base\Exception;
 use yii\base\InvalidArgumentException;
@@ -54,6 +57,7 @@ use yii\base\InvalidConfigException;
 use yii\base\NotSupportedException;
 use yii\validators\InlineValidator;
 use yii\validators\Validator;
+use yii\web\BadRequestHttpException;
 use yii\web\IdentityInterface;
 
 /**
@@ -785,9 +789,35 @@ class User extends Element implements IdentityInterface
     /**
      * @inheritdoc
      */
+    public function getPostEditUrl(): ?string
+    {
+        if (Craft::$app->getEdition() === Craft::Pro && Craft::$app->getUser()->checkPermission('editUsers')) {
+            return 'users';
+        }
+
+        return null;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    protected function crumbs(): array
+    {
+        if (Craft::$app->getEdition() !== Craft::Pro) {
+            return [];
+        }
+
+        return [
+            ['label' => Craft::t('app', 'Users'), 'url' => 'users'],
+        ];
+    }
+
+    /**
+     * @inheritdoc
+     */
     protected function uiLabel(): ?string
     {
-        return $this->getName() ?: ($this->email ?? $this->id ?? static::class);
+        return $this->getName() ?: $this->email;
     }
 
     /**
@@ -855,7 +885,7 @@ class User extends Element implements IdentityInterface
         $rules[] = [['email', 'unverifiedEmail'], 'email', 'enableIDN' => App::supportsIdn(), 'enableLocalIDN' => false];
         $rules[] = [['email', 'username', 'fullName', 'firstName', 'lastName', 'password', 'unverifiedEmail'], 'string', 'max' => 255];
         $rules[] = [['verificationCode'], 'string', 'max' => 100];
-        $rules[] = [['email'], 'required', 'when' => $treatAsActive];
+        $rules[] = [['email'], 'required', 'when' => fn() => !$this->getIsDraft()];
         $rules[] = [['lastLoginAttemptIp'], 'string', 'max' => 45];
 
         if (!Craft::$app->getConfig()->getGeneral()->useEmailAsUsername) {
@@ -869,6 +899,8 @@ class User extends Element implements IdentityInterface
                 UniqueValidator::class,
                 'targetClass' => UserRecord::class,
                 'caseInsensitive' => true,
+                'filter' => ['or', ['active' => true], ['pending' => true]],
+                'when' => $treatAsActive,
             ];
 
             $rules[] = [['unverifiedEmail'], 'validateUnverifiedEmail'];
@@ -909,7 +941,35 @@ class User extends Element implements IdentityInterface
     public function setAttributes($values, $safeOnly = true): void
     {
         if ($safeOnly) {
-            unset($values['email'], $values['unverifiedEmail']);
+            unset($values['unverifiedEmail']);
+
+            if (isset($values['email'])) {
+                $values['email'] = trim($values['email']);
+                if ($values['email'] === '' || $values['email'] === $this->email) {
+                    unset($values['email']);
+                }
+            }
+
+            if (isset($values['email'])) {
+                // make sure they have an elevated session
+                $userSession = Craft::$app->getUser();
+                if (!$userSession->getHasElevatedSession()) {
+                    throw new BadRequestHttpException('An elevated session is required to change a user’s email.');
+                }
+
+                // are they allowed to set the email?
+                if ($this->getIsCurrent() || $userSession->checkPermission('administrateUsers')) {
+                    if (
+                        Craft::$app->getProjectConfig()->get('users.requireEmailVerification') &&
+                        !$userSession->checkPermission('administrateUsers')
+                    ) {
+                        // set it as the unverified email instead, and
+                        $values['unverifiedEmail'] = ArrayHelper::remove($values, 'email');
+                    }
+                } else {
+                    unset($values['email']);
+                }
+            }
         }
 
         parent::setAttributes($values, $safeOnly);
@@ -948,6 +1008,8 @@ class User extends Element implements IdentityInterface
                 'lower([[email]])' => mb_strtolower($this->unverifiedEmail),
             ]);
         }
+
+        $query->andWhere(['or', ['active' => true], ['pending' => true]]);
 
         if ($this->id) {
             $query->andWhere(['not', ['elements.id' => $this->id]]);
@@ -1103,28 +1165,83 @@ class User extends Element implements IdentityInterface
         ]);
         $this->trigger(self::EVENT_BEFORE_AUTHENTICATE, $event);
 
-        if (!isset($this->authError) && $event->performAuthentication) {
-            // Validate the password
-            try {
-                $passwordValid = Craft::$app->getSecurity()->validatePassword($password, $this->password);
-            } catch (InvalidArgumentException) {
-                $passwordValid = false;
-            }
-
-            if ($passwordValid) {
-                $this->authError = $this->_getAuthError();
-            } else {
-                Craft::$app->getUsers()->handleInvalidLogin($this);
-                // Was that one bad password too many?
-                if ($this->locked && !Craft::$app->getConfig()->getGeneral()->preventUserEnumeration) {
-                    // Will set the authError to either AccountCooldown or AccountLocked
-                    $this->authError = $this->_getAuthError();
-                } else {
-                    $this->authError = self::AUTH_INVALID_CREDENTIALS;
-                }
-            }
+        if (isset($this->authError)) {
+            return false;
         }
 
+        if (!$event->performAuthentication) {
+            return true;
+        }
+
+        // Validate the password
+        try {
+            $passwordValid = Craft::$app->getSecurity()->validatePassword($password, $this->password);
+        } catch (InvalidArgumentException) {
+            $passwordValid = false;
+        }
+
+        if (!$passwordValid) {
+            Craft::$app->getUsers()->handleInvalidLogin($this);
+            // Was that one bad password too many?
+            if ($this->locked && !Craft::$app->getConfig()->getGeneral()->preventUserEnumeration) {
+                // Will set the authError to either AccountCooldown or AccountLocked
+                $this->authError = $this->_getAuthError();
+            } else {
+                $this->authError = self::AUTH_INVALID_CREDENTIALS;
+            }
+            return false;
+        }
+
+        $this->authError = $this->_getAuthError();
+        return !isset($this->authError);
+    }
+
+    /**
+     * Determines whether the user is allowed to be logged in with a security key.
+     *
+     * @param PublicKeyCredentialRequestOptions|array|string $requestOptions The public key credential request options
+     * @param string $response The authentication response data
+     * @return bool
+     * @since 5.0.0
+     */
+    public function authenticateWithPasskey(
+        PublicKeyCredentialRequestOptions|array|string $requestOptions,
+        string $response,
+    ): bool {
+        $this->authError = null;
+
+        // Fire a 'beforeAuthenticate' event
+        $event = new AuthenticateUserEvent();
+        $this->trigger(self::EVENT_BEFORE_AUTHENTICATE, $event);
+
+        if (isset($this->authError)) {
+            return false;
+        }
+
+        if (!$event->performAuthentication) {
+            return true;
+        }
+
+        // make sure the passkey exists and belongs to this user
+        $credential = WebAuthnRecord::findOne(['credentialId' => Json::decode($response)['id']]);
+        if (!$credential || $credential['userId'] != $this->id) {
+            $this->authError = self::AUTH_INVALID_CREDENTIALS;
+            return false;
+        }
+
+        // Validate the security key
+        try {
+            $keyValid = Craft::$app->getAuth()->verifyPasskey($this, $requestOptions, $response);
+        } catch (InvalidArgumentException) {
+            $keyValid = false;
+        }
+
+        if (!$keyValid) {
+            $this->authError = self::AUTH_INVALID_CREDENTIALS;
+            return false;
+        }
+
+        $this->authError = $this->_getAuthError();
         return !isset($this->authError);
     }
 
@@ -1331,6 +1448,10 @@ class User extends Element implements IdentityInterface
      */
     protected function thumbSvg(): ?string
     {
+        if (!$this->uid) {
+            return null;
+        }
+
         $names = array_filter([$this->firstName, $this->lastName]) ?: [$this->getName()];
         $initials = implode('', array_map(fn($name) => mb_strtoupper(mb_substr($name, 0, 1)), $names));
 
@@ -1376,6 +1497,14 @@ XML;
     protected function hasRoundedThumb(): bool
     {
         return true;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function createAnother(): ?ElementInterface
+    {
+        return Craft::createObject(self::class);
     }
 
     /**
@@ -1564,6 +1693,10 @@ XML;
      */
     protected function safeActionMenuItems(): array
     {
+        if (!$this->id || $this->getIsUnpublishedDraft()) {
+            return parent::safeActionMenuItems();
+        }
+
         $edition = Craft::$app->getEdition();
         $currentUser = Craft::$app->getUser()->getIdentity();
         $view = Craft::$app->getView();
@@ -1572,14 +1705,13 @@ XML;
         $canAdministrateUsers = $currentUser->can('administrateUsers');
         $canModerateUsers = $currentUser->can('moderateUsers');
 
-        $isNewUser = !$this->id;
         $isCurrentUser = $this->getIsCurrent();
 
         $statusItems = [];
         $sessionItems = [];
         $miscItems = [];
 
-        if ($edition === Craft::Pro && !$isNewUser) {
+        if ($edition === Craft::Pro) {
             switch ($this->getStatus()) {
                 case Element::STATUS_ARCHIVED:
                 case Element::STATUS_DISABLED:
@@ -1730,6 +1862,10 @@ JS, [
      */
     protected function destructiveActionMenuItems(): array
     {
+        if (!$this->id || $this->getIsUnpublishedDraft()) {
+            return parent::destructiveActionMenuItems();
+        }
+
         // Intentionally not calling parent::destructiveActionMenuItems() here,
         // because we want to override the user deletion UX.
 
@@ -1739,12 +1875,11 @@ JS, [
 
         $canAdministrateUsers = $currentUser->can('administrateUsers');
 
-        $isNewUser = !$this->id;
         $isCurrentUser = $this->getIsCurrent();
 
         $items = [];
 
-        if ($edition === Craft::Pro && !$isNewUser) {
+        if ($edition === Craft::Pro) {
             if (!$isCurrentUser) {
                 if ($usersService->canSuspend($currentUser, $this) && $this->active && !$this->suspended) {
                     $items[] = [
@@ -1995,21 +2130,6 @@ JS, [
     /**
      * @inheritdoc
      */
-    protected function metaFieldsHtml(bool $static): string
-    {
-        return implode("\n", [
-            Craft::$app->getView()->renderTemplate('users/_accountfields.twig', [
-                'user' => $this,
-                'isNewUser' => !$this->id,
-                'static' => $static,
-            ]),
-            parent::metaFieldsHtml($static),
-        ]);
-    }
-
-    /**
-     * @inheritdoc
-     */
     protected function statusFieldHtml(): string
     {
         return '';
@@ -2250,9 +2370,9 @@ JS, [
     }
 
     /**
-     * Returns the [[authError]] value for [[authenticate()]]
+     * Returns the [[authError]] value for [[authenticate()]] and [[authenticateWithPasskey()]].
      *
-     * @return null|string
+     * @return self::AUTH_*|null
      */
     private function _getAuthError(): ?string
     {

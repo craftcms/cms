@@ -9,12 +9,10 @@ namespace crafttests\unit\web;
 
 use Craft;
 use craft\elements\User as UserElement;
-use craft\errors\UserLockedException;
 use craft\helpers\Session;
 use craft\services\Config;
 use craft\test\TestCase;
 use craft\web\User as WebUser;
-use ReflectionException;
 use UnitTester;
 
 /**
@@ -162,58 +160,6 @@ class UserTest extends TestCase
     }
 
     /**
-     * @throws UserLockedException
-     */
-    public function testGetElevatedSession(): void
-    {
-        // Setup a password and a mismatching hash to work with.
-        $passwordHash = Craft::$app->getSecurity()->hashPassword('this is not the correct password');
-        $this->userElement->password = Craft::$app->getSecurity()->hashPassword('this is a password');
-
-        // Ensure no user is logged in.
-        $this->user->setIdentity(null);
-
-        // If no user it should return false
-        self::assertFalse($this->user->startElevatedSession('Doesnt matter'));
-
-        // With a user it should still return false.
-        $this->user->setIdentity($this->userElement);
-        self::assertFalse($this->user->startElevatedSession($passwordHash));
-
-        // Ensure password validation returns true
-        $this->_passwordValidationStub(true);
-
-        // If we set this to 0. It should return true
-        $this->config->getGeneral()->elevatedSessionDuration = 0;
-        self::assertTrue($this->user->startElevatedSession($passwordHash));
-    }
-
-    /**
-     * @throws UserLockedException
-     * @throws ReflectionException
-     */
-    public function testStartElevatedSessionSetting(): void
-    {
-        $passwordHash = Craft::$app->getSecurity()->hashPassword('this is not the correct password');
-        $this->user->setIdentity($this->userElement);
-
-        // Ensure password validation always works.
-        $this->_passwordValidationStub(true);
-
-        // Ensure a specific value is set to when setting a session
-        $this->_ensureSetSessionIsOfValue(time() + $this->config->getGeneral()->elevatedSessionDuration);
-
-        // With a user and Craft::$app->getSecurity()->validatePassword() returning true it should return null because the current user doesnt exist or doesnt have a password
-        self::assertFalse($this->user->startElevatedSession($passwordHash));
-
-        $this->userElement->password = 'doesntmatter';
-        $this->setInaccessibleProperty(Craft::$app->getUser(), '_identity', $this->userElement);
-
-        // With all the above and a current user with a password. Starting should work.
-        self::assertTrue($this->user->startElevatedSession($passwordHash));
-    }
-
-    /**
      * @inheritdoc
      */
     protected function _before(): void
@@ -222,30 +168,6 @@ class UserTest extends TestCase
         $this->userElement = $this->_getUser();
         $this->config = Craft::$app->getConfig();
         $this->user = Craft::$app->getUser();
-    }
-
-    /**
-     * Sets the Craft::$app->getSession(); to a stub where the get() method returns what you want.
-     *
-     * @param bool $returnValue
-     */
-    private function _passwordValidationStub(bool $returnValue)
-    {
-        $this->tester->mockCraftMethods('security', ['validatePassword' => $returnValue]);
-    }
-
-    /**
-     * Ensure that the param $value is equal to the value that is trying to be set to the session.
-     *
-     * @param int $value
-     */
-    private function _ensureSetSessionIsOfValue(int $value)
-    {
-        $this->tester->mockCraftMethods('session', [
-            'set' => function($name, $val) use ($value) {
-                self::assertEqualsWithDelta($value, $val, 1);
-            },
-        ]);
     }
 
     /**

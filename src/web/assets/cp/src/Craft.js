@@ -67,6 +67,7 @@ import './js/InfoIcon.js';
 import './js/LightSwitch.js';
 import './js/Listbox.js';
 import './js/LivePreview.js';
+import './js/LoginForm.js';
 import './js/NestedElementManager.js';
 import './js/PasswordInput.js';
 import './js/Preview.js';
