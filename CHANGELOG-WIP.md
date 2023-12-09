@@ -142,32 +142,32 @@
 - Added `craft\elements\Tag::gqlTypeName()`.
 - Added `craft\elements\User::GQL_TYPE_NAME`.
 - Added `craft\elements\User::authenticateWithPasskey()`.
-- Added `craft\elements\condditions\addresses\AddressLine1ConditionRule`,
-- Added `craft\elements\condditions\addresses\AddressLine2ConditionRule`,
-- Added `craft\elements\condditions\addresses\AdministrativeAreaConditionRule`,
-- Added `craft\elements\condditions\addresses\CountryConditionRule`,
-- Added `craft\elements\condditions\addresses\DependentLocalityConditionRule`,
-- Added `craft\elements\condditions\addresses\FullNameConditionRule`,
-- Added `craft\elements\condditions\addresses\LocalityConditionRule`,
-- Added `craft\elements\condditions\addresses\OrganizationConditionRule`,
-- Added `craft\elements\condditions\addresses\OrganizationTaxIdConditionRule`,
-- Added `craft\elements\condditions\addresses\PostalCodeConditionRule`,
-- Added `craft\elements\condditions\addresses\SortingCodeConditionRule`,
 - Added `craft\elements\conditions\ElementConditionInterface::getFieldLayouts()`.
+- Added `craft\elements\conditions\addresses\AddressLine1ConditionRule`.
+- Added `craft\elements\conditions\addresses\AddressLine2ConditionRule`.
+- Added `craft\elements\conditions\addresses\AdministrativeAreaConditionRule`.
+- Added `craft\elements\conditions\addresses\CountryConditionRule`.
+- Added `craft\elements\conditions\addresses\DependentLocalityConditionRule`.
+- Added `craft\elements\conditions\addresses\FullNameConditionRule`.
+- Added `craft\elements\conditions\addresses\LocalityConditionRule`.
+- Added `craft\elements\conditions\addresses\OrganizationConditionRule`.
+- Added `craft\elements\conditions\addresses\OrganizationTaxIdConditionRule`.
+- Added `craft\elements\conditions\addresses\PostalCodeConditionRule`.
+- Added `craft\elements\conditions\addresses\SortingCodeConditionRule`.
 - Added `craft\elements\conditions\entries\MatrixFieldConditionRule`.
-- Added `craft\elements\db\AddressQuery::$addressLine1`
-- Added `craft\elements\db\AddressQuery::$addressLine2`
-- Added `craft\elements\db\AddressQuery::$administrativeArea`
-- Added `craft\elements\db\AddressQuery::$countryCode`
-- Added `craft\elements\db\AddressQuery::$dependentLocality`
-- Added `craft\elements\db\AddressQuery::$firstName`
-- Added `craft\elements\db\AddressQuery::$fullName`
-- Added `craft\elements\db\AddressQuery::$lastName`
-- Added `craft\elements\db\AddressQuery::$locality`
-- Added `craft\elements\db\AddressQuery::$organizationTaxId`
-- Added `craft\elements\db\AddressQuery::$organization`
-- Added `craft\elements\db\AddressQuery::$postalCode`
-- Added `craft\elements\db\AddressQuery::$sortingCode`
+- Added `craft\elements\db\AddressQuery::$addressLine1`.
+- Added `craft\elements\db\AddressQuery::$addressLine2`.
+- Added `craft\elements\db\AddressQuery::$administrativeArea`.
+- Added `craft\elements\db\AddressQuery::$countryCode`.
+- Added `craft\elements\db\AddressQuery::$dependentLocality`.
+- Added `craft\elements\db\AddressQuery::$firstName`.
+- Added `craft\elements\db\AddressQuery::$fullName`.
+- Added `craft\elements\db\AddressQuery::$lastName`.
+- Added `craft\elements\db\AddressQuery::$locality`.
+- Added `craft\elements\db\AddressQuery::$organizationTaxId`.
+- Added `craft\elements\db\AddressQuery::$organization`.
+- Added `craft\elements\db\AddressQuery::$postalCode`.
+- Added `craft\elements\db\AddressQuery::$sortingCode`.
 - Added `craft\elements\db\EagerLoadInfo`.
 - Added `craft\elements\db\EagerLoadPlan::$lazy`.
 - Added `craft\elements\db\ElementQuery::$eagerLoadAlias`.
@@ -269,7 +269,7 @@
 - Renamed `craft\base\FieldInterface::valueType()` to `phpType()`.
 - Renamed `craft\base\PreviewableFieldInterface::getTableAttributeHtml()` to `getPreviewHtml()`.
 - Renamed `craft\base\conditions\BaseCondition::EVENT_REGISTER_CONDITION_RULE_TYPES` to `EVENT_REGISTER_CONDITION_RULES`.
-  - Renamed `craft\base\conditions\BaseCondition::conditionRuleTypes()` to `selectableConditionRules()`.
+- Renamed `craft\base\conditions\BaseCondition::conditionRuleTypes()` to `selectableConditionRules()`.
 - Renamed `craft\events\RegisterConditionRuleTypesEvent` to `RegisterConditionRulesEvent`, and its `$conditionRuleTypes` property has been renamed to `$conditionRules`.
 - Renamed `craft\events\SetElementTableAttributeHtmlEvent` to `DefineAttributeHtmlEvent`.
 - Renamed `craft\fields\BaseRelationField::tableAttributeHtml()` to `previewHtml()`, and it now accepts an `ElementCollection` argument, rather than `Collection`.
