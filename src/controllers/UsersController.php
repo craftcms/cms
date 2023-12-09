@@ -1007,7 +1007,21 @@ class UsersController extends Controller
     {
         $this->requireCpRequest();
 
+        $currentUser = static::currentUser();
         $user = $this->editScreenUser((int)$this->request->getRequiredBodyParam('userId'));
+
+        // Is their admin status changing?
+        if ($currentUser->admin) {
+            $adminParam = (bool)($this->request->getBodyParam('admin') ?? $user->admin);
+            if ($adminParam !== $user->admin) {
+                if ($adminParam) {
+                    $this->requireElevatedSession();
+                }
+
+                $user->admin = $adminParam;
+                Craft::$app->getElements()->saveElement($user, false);
+            }
+        }
 
         // Fire an 'beforeAssignGroupsAndPermissions' event
         if ($this->hasEventHandlers(self::EVENT_BEFORE_ASSIGN_GROUPS_AND_PERMISSIONS)) {
@@ -1017,7 +1031,6 @@ class UsersController extends Controller
         }
 
         // Assign user groups and permissions if the current user is allowed to do that
-        $currentUser = static::currentUser();
         $this->_saveUserGroups($user, $currentUser);
         $this->_saveUserPermissions($user, $currentUser);
 
@@ -1556,20 +1569,6 @@ JS);
 
         if ($canAdministrateUsers) {
             $user->passwordResetRequired = (bool)$this->request->getBodyParam('passwordResetRequired', $user->passwordResetRequired);
-        }
-
-        // Is their admin status changing?
-        if (
-            $currentUser &&
-            $currentUser->admin &&
-            ($adminParam = $this->request->getBodyParam('admin', $user->admin)) != $user->admin
-        ) {
-            if ($adminParam) {
-                $this->requireElevatedSession();
-                $user->admin = true;
-            } else {
-                $user->admin = false;
-            }
         }
 
         // If this is public registration and it's a Pro version,

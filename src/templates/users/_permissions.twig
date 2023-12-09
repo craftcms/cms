@@ -68,7 +68,7 @@
 
 {% js %}
 new Craft.ElevatedSessionForm('#main-form', [
-  '#admin:not(:checked)',
+  '[name="admin"][value=""]',
   '#user-groups input[type="checkbox"]:not(:checked)',
   '#permissions input[type="checkbox"]:not(:checked)',
 ]);
