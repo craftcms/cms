@@ -15,6 +15,7 @@
 - Improved the styling of element chips.
 - Improved checkbox-style deselection behavior for control panel items, to account for double-clicks. 
 - Table views are no longer available for element indexes on mobile.
+- Address conditions now have “Address Line 1”, “Address Line 2”, “Administrative Area”, “Country”, “Dependent Locality”, “First Name”, “Full Name”, “Last Name”, “Locality”, “Organization Tax ID”, “Organization”, “Postal Code”, and “Sorting Code” rules.
 
 ### User Management
 - Added two-step verification support, with built-in “Authenticator App” (TOTP) and “Recovery Codes” methods. Additional methods can be provided by plugins.
@@ -60,6 +61,7 @@
 - Entry type names and handles must now be unique globally, rather than just within a single section. Existing entry type names and handles will be renamed automatically where needed, to ensure uniqueness.
 - Assets, categories, entries, and tags now support eager-loading paths prefixed with a field layout provider’s handle (e.g. `myEntryType:myField`).
 - Element queries now have an `eagerly` param, which can be used to lazily eager-load the resulting elements for all peer elements, when `all()`, `collect()`, `one()`, `nth()`, or `count()` is called.
+- Address queries now have `addressLine1`, `addressLine2`, `administrativeArea`, `countryCode`, `dependentLocality`, `firstName`, `fullName`, `lastName`, `locality`, `organizationTaxId`, `organization`, `postalCode`, and `sortingCode` params.
 - Entry queries now have `field`, `fieldId`, `primaryOwner`, `primaryOwnerId`, `owner`, `ownerId`, `allowOwnerDrafts`, and `allowOwnerRevisions` params.
 - Entries’ GraphQL type names are now formatted as `<entryTypeHandle>_Entry`, and are no longer prefixed with their section’s handle. (That goes for Matrix-nested entries as well.)
 - Matrix fields’ GraphQL mutation types now expect nested entries to be defined by an `entries` field rather than `blocks`.
@@ -155,19 +157,6 @@
 - Added `craft\elements\conditions\addresses\PostalCodeConditionRule`.
 - Added `craft\elements\conditions\addresses\SortingCodeConditionRule`.
 - Added `craft\elements\conditions\entries\MatrixFieldConditionRule`.
-- Added `craft\elements\db\AddressQuery::$addressLine1`.
-- Added `craft\elements\db\AddressQuery::$addressLine2`.
-- Added `craft\elements\db\AddressQuery::$administrativeArea`.
-- Added `craft\elements\db\AddressQuery::$countryCode`.
-- Added `craft\elements\db\AddressQuery::$dependentLocality`.
-- Added `craft\elements\db\AddressQuery::$firstName`.
-- Added `craft\elements\db\AddressQuery::$fullName`.
-- Added `craft\elements\db\AddressQuery::$lastName`.
-- Added `craft\elements\db\AddressQuery::$locality`.
-- Added `craft\elements\db\AddressQuery::$organizationTaxId`.
-- Added `craft\elements\db\AddressQuery::$organization`.
-- Added `craft\elements\db\AddressQuery::$postalCode`.
-- Added `craft\elements\db\AddressQuery::$sortingCode`.
 - Added `craft\elements\db\EagerLoadInfo`.
 - Added `craft\elements\db\EagerLoadPlan::$lazy`.
 - Added `craft\elements\db\ElementQuery::$eagerLoadAlias`.
