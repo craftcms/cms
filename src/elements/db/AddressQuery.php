@@ -95,11 +95,12 @@ class AddressQuery extends ElementQuery
      *   .all() %}
      * ```
      * @used-by countryCode()
+     * @since 5.0.0
      */
     public mixed $countryCode = null;
 
     /**
-     * @var mixed The address administrativeArea(s) that the resulting address must be in.
+     * @var mixed Narrows the query results based on the administrative areas the addresses belongs to.
      * ---
      * ```php
      * // fetch addresses that are located in Western Australia
@@ -114,11 +115,12 @@ class AddressQuery extends ElementQuery
      *   .all() %}
      * ```
      * @used-by administrativeArea()
+     * @since 5.0.0
      */
     public mixed $administrativeArea = null;
 
     /**
-     * @var ?string The address locality that the resulting address must be.
+     * @var string|null Narrows the query results based on the locality the addresses belong to.
      * ---
      * ```php
      * // fetch addresses by locality
@@ -138,7 +140,7 @@ class AddressQuery extends ElementQuery
     public ?string $locality = null;
 
     /**
-     * @var ?string The address dependentLocality that the resulting address must be.
+     * @var string|null Narrows the query results based on the dependent locality the addresses belong to.
      * ---
      * ```php
      * // fetch addresses by dependent locality
@@ -158,7 +160,7 @@ class AddressQuery extends ElementQuery
     public ?string $dependentLocality = null;
 
     /**
-     * @var ?string The address postalCode that the resulting address must be.
+     * @var string|null Narrows the query results based on the postal code the addresses belong to.
      * ---
      * ```php
      * // fetch addresses by postal code
@@ -178,7 +180,7 @@ class AddressQuery extends ElementQuery
     public ?string $postalCode = null;
 
     /**
-     * @var ?string The address sortingCode that the resulting address must be.
+     * @var string|null Narrows the query results based on the sorting code the addresses have.
      * ---
      * ```php
      * // fetch addresses by sorting code
@@ -198,7 +200,7 @@ class AddressQuery extends ElementQuery
     public ?string $sortingCode = null;
 
     /**
-     * @var ?string The address organization that the resulting address must be.
+     * @var string|null Narrows the query results based on the organization the addresses have.
      * ---
      * ```php
      * // fetch addresses by organization
@@ -218,7 +220,7 @@ class AddressQuery extends ElementQuery
     public ?string $organization = null;
 
     /**
-     * @var ?string The address organizationTaxId that the resulting address must be.
+     * @var string|null Narrows the query results based on the tax ID the addresses have.
      * ---
      * ```php
      * // fetch addresses by organization tax ID
@@ -235,11 +237,11 @@ class AddressQuery extends ElementQuery
      * @used-by organizationTaxId()
      * @since 5.0.0
      */
-    public ?string $organizationTaxId = '';
+    public ?string $organizationTaxId = null;
 
 
     /**
-     * @var ?string The address addressLine1 that the resulting address must be.
+     * @var string|null Narrows the query results based on the first address line the addresses have.
      * ---
      * ```php
      * // fetch addresses by address line 1
@@ -259,7 +261,7 @@ class AddressQuery extends ElementQuery
     public ?string $addressLine1 = null;
 
     /**
-     * @var ?string The address addressLine2 that the resulting address must be.
+     * @var string|null Narrows the query results based on the second address line the addresses have.
      * ---
      * ```php
      * // fetch addresses by address line 2
@@ -274,50 +276,12 @@ class AddressQuery extends ElementQuery
      *   .all() %}
      * ```
      * @used-by addressLine2()
+     * @since 5.0.0
      */
     public ?string $addressLine2 = null;
 
-
     /**
-     * @var ?string The address lastName that the resulting address must be.
-     * ---
-     * ```php
-     * // fetch addresses by last name
-     * $addresses = \craft\elements\Address::find()
-     *     ->lastName('Doe')
-     *     ->all();
-     * ```
-     * ```twig
-     * {# fetch addresses by last name #}
-     * {% set addresses = craft.addresses()
-     *   .lastName('Doe')
-     *   .all() %}
-     * ```
-     * @used-by lastName()
-     */
-    public ?string $lastName = null;
-
-    /**
-     * @var ?string The address firstName that the resulting address must be.
-     * ---
-     * ```php
-     * // fetch addresses by first name
-     * $addresses = \craft\elements\Address::find()
-     *     ->firstName('Doe')
-     *     ->all();
-     * ```
-     * ```twig
-     * {# fetch addresses by first name #}
-     * {% set addresses = craft.addresses()
-     *   .firstName('Doe')
-     *   .all() %}
-     * ```
-     * @used-by firstName()
-     */
-    public ?string $firstName = null;
-
-    /**
-     * @var ?string The address fullName that the resulting address must be.
+     * @var string|null Narrows the query results based on the full name the addresses have.
      * ---
      * ```php
      * // fetch addresses by full name
@@ -332,11 +296,52 @@ class AddressQuery extends ElementQuery
      *   .all() %}
      * ```
      * @used-by fullName()
+     * @since 5.0.0
      */
     public ?string $fullName = null;
 
     /**
-     * Narrows the query results based on the country the address belong to.
+     * @var string|null Narrows the query results based on the first name the addresses have.
+     * ---
+     * ```php
+     * // fetch addresses by first name
+     * $addresses = \craft\elements\Address::find()
+     *     ->firstName('Doe')
+     *     ->all();
+     * ```
+     * ```twig
+     * {# fetch addresses by first name #}
+     * {% set addresses = craft.addresses()
+     *   .firstName('Doe')
+     *   .all() %}
+     * ```
+     * @used-by firstName()
+     * @since 5.0.0
+     */
+    public ?string $firstName = null;
+
+    /**
+     * @var string|null Narrows the query results based on the last name the addresses have.
+     * ---
+     * ```php
+     * // fetch addresses by last name
+     * $addresses = \craft\elements\Address::find()
+     *     ->lastName('Doe')
+     *     ->all();
+     * ```
+     * ```twig
+     * {# fetch addresses by last name #}
+     * {% set addresses = craft.addresses()
+     *   .lastName('Doe')
+     *   .all() %}
+     * ```
+     * @used-by lastName()
+     * @since 5.0.0
+     */
+    public ?string $lastName = null;
+
+    /**
+     * Narrows the query results based on the country the addresses belong to.
      *
      * Possible values include:
      *
@@ -350,14 +355,14 @@ class AddressQuery extends ElementQuery
      * ---
      *
      * ```twig
-     * {# Fetch addresses in the AU #}
+     * {# Fetch Australian addresses #}
      * {% set {elements-var} = {twig-method}
      *   .countryCode('AU')
      *   .all() %}
      * ```
      *
      * ```php
-     * // Fetch addresses in the AU
+     * // Fetch Australian addresses
      * ${elements-var} = {php-method}
      *     ->countryCode('AU')
      *     ->all();
@@ -375,16 +380,16 @@ class AddressQuery extends ElementQuery
     }
 
     /**
-     * Narrows the query results based on the administrative area the address belong to.
+     * Narrows the query results based on the administrative areas the addresses belongs to.
      *
      * Possible values include:
      *
      * | Value | Fetches addresses…
      * | - | -
-     * | `'WA'` | with a administrativeArea of `WA`.
-     * | `'not WA'` | not in a administrativeArea of `WA`.
-     * | `['WA', 'SA']` | in a administrativeArea of `WA` or `SA`.
-     * | `['not', 'WA', 'SA']` | not in a administrativeArea of `WA` or `SA`.
+     * | `'WA'` | with a administrative area of `WA`.
+     * | `'not WA'` | not in a administrative area of `WA`.
+     * | `['WA', 'SA']` | in a administrative area of `WA` or `SA`.
+     * | `['not', 'WA', 'SA']` | not in a administrative area of `WA` or `SA`.
      *
      * ---
      *
@@ -405,6 +410,7 @@ class AddressQuery extends ElementQuery
      * @param string|string[]|null $value The property value
      * @return static self reference
      * @uses $administrativeArea
+     * @since 5.0.0
      */
     public function administrativeArea(array|string|null $value): static
     {
@@ -414,7 +420,7 @@ class AddressQuery extends ElementQuery
     }
 
     /**
-     * Narrows the query results based on the locality.
+     * Narrows the query results based on the locality the addresses belong to.
      *
      * Possible values include:
      *
@@ -440,11 +446,12 @@ class AddressQuery extends ElementQuery
      *     ->all();
      * ```
      *
-     * @param string $value The property value
+     * @param string|null $value The property value
      * @return static self reference
      * @uses $locality
+     * @since 5.0.0
      */
-    public function locality(string $value): static
+    public function locality(?string $value): static
     {
         $this->locality = $value;
 
@@ -452,7 +459,7 @@ class AddressQuery extends ElementQuery
     }
 
     /**
-     * Narrows the query results based on the dependentLocality.
+     * Narrows the query results based on the dependent locality the addresses belong to.
      *
      * Possible values include:
      *
@@ -478,11 +485,12 @@ class AddressQuery extends ElementQuery
      *     ->all();
      * ```
      *
-     * @param string $value The property value
+     * @param string|null $value The property value
      * @return static self reference
      * @uses $dependentLocality
+     * @since 5.0.0
      */
-    public function dependentLocality(string $value): static
+    public function dependentLocality(?string $value): static
     {
         $this->dependentLocality = $value;
 
@@ -490,7 +498,7 @@ class AddressQuery extends ElementQuery
     }
 
     /**
-     * Narrows the query results based on the postalCode.
+     * Narrows the query results based on the postal code the addresses belong to.
      *
      * Possible values include:
      *
@@ -516,11 +524,12 @@ class AddressQuery extends ElementQuery
      *     ->all();
      * ```
      *
-     * @param string $value The property value
+     * @param string|null $value The property value
      * @return static self reference
      * @uses $postalCode
+     * @since 5.0.0
      */
-    public function postalCode(string $value): static
+    public function postalCode(?string $value): static
     {
         $this->postalCode = $value;
 
@@ -528,7 +537,7 @@ class AddressQuery extends ElementQuery
     }
 
     /**
-     * Narrows the query results based on the sortingCode.
+     * Narrows the query results based on the sorting code the addresses have.
      *
      * Possible values include:
      *
@@ -554,11 +563,12 @@ class AddressQuery extends ElementQuery
      *     ->all();
      * ```
      *
-     * @param string $value The property value
+     * @param string|null $value The property value
      * @return static self reference
      * @uses $sortingCode
+     * @since 5.0.0
      */
-    public function sortingCode(string $value): static
+    public function sortingCode(?string $value): static
     {
         $this->sortingCode = $value;
 
@@ -566,7 +576,7 @@ class AddressQuery extends ElementQuery
     }
 
     /**
-     * Narrows the query results based on the organization.
+     * Narrows the query results based on the organization the addresses have.
      *
      * Possible values include:
      *
@@ -592,11 +602,12 @@ class AddressQuery extends ElementQuery
      *     ->all();
      * ```
      *
-     * @param string $value The property value
+     * @param string|null $value The property value
      * @return static self reference
      * @uses $organization
+     * @since 5.0.0
      */
-    public function organization(string $value): static
+    public function organization(?string $value): static
     {
         $this->organization = $value;
 
@@ -604,7 +615,7 @@ class AddressQuery extends ElementQuery
     }
 
     /**
-     * Narrows the query results based on the organizationTaxId.
+     * Narrows the query results based on the tax ID the addresses have.
      *
      * Possible values include:
      *
@@ -633,6 +644,7 @@ class AddressQuery extends ElementQuery
      * @param string $value The property value
      * @return static self reference
      * @uses $organizationTaxId
+     * @since 5.0.0
      */
     public function organizationTaxId(string $value): static
     {
@@ -642,7 +654,7 @@ class AddressQuery extends ElementQuery
     }
 
     /**
-     * Narrows the query results based on the addressLine1.
+     * Narrows the query results based on the first address line the addresses have.
      *
      * Possible values include:
      *
@@ -668,11 +680,12 @@ class AddressQuery extends ElementQuery
      *     ->all();
      * ```
      *
-     * @param string $value The property value
+     * @param string|null $value The property value
      * @return static self reference
      * @uses $addressLine1
+     * @since 5.0.0
      */
-    public function addressLine1(string $value): static
+    public function addressLine1(?string $value): static
     {
         $this->addressLine1 = $value;
 
@@ -680,7 +693,7 @@ class AddressQuery extends ElementQuery
     }
 
     /**
-     * Narrows the query results based on the addressLine2.
+     * Narrows the query results based on the second address line the addresses have.
      *
      * Possible values include:
      *
@@ -706,11 +719,12 @@ class AddressQuery extends ElementQuery
      *     ->all();
      * ```
      *
-     * @param string $value The property value
+     * @param string|null $value The property value
      * @return static self reference
      * @uses $addressLine2
+     * @since 5.0.0
      */
-    public function addressLine2(string $value): static
+    public function addressLine2(?string $value): static
     {
         $this->addressLine2 = $value;
 
@@ -718,7 +732,7 @@ class AddressQuery extends ElementQuery
     }
 
     /**
-     * Narrows the query results based on the fullName.
+     * Narrows the query results based on the full name the addresses have.
      *
      * Possible values include:
      *
@@ -744,11 +758,12 @@ class AddressQuery extends ElementQuery
      *     ->all();
      * ```
      *
-     * @param string $value The property value
+     * @param string|null $value The property value
      * @return static self reference
      * @uses $fullName
+     * @since 5.0.0
      */
-    public function fullName(string $value): static
+    public function fullName(?string $value): static
     {
         $this->fullName = $value;
 
@@ -756,7 +771,7 @@ class AddressQuery extends ElementQuery
     }
 
     /**
-     * Narrows the query results based on the firstName.
+     * Narrows the query results based on the first name the addresses have.
      *
      * Possible values include:
      *
@@ -782,11 +797,12 @@ class AddressQuery extends ElementQuery
      *     ->all();
      * ```
      *
-     * @param string $value The property value
+     * @param string|null $value The property value
      * @return static self reference
      * @uses $firstName
+     * @since 5.0.0
      */
-    public function firstName(string $value): static
+    public function firstName(?string $value): static
     {
         $this->firstName = $value;
 
@@ -794,7 +810,7 @@ class AddressQuery extends ElementQuery
     }
 
     /**
-     * Narrows the query results based on the lastName.
+     * Narrows the query results based on the last name the addresses have.
      *
      * Possible values include:
      *
@@ -820,11 +836,12 @@ class AddressQuery extends ElementQuery
      *     ->all();
      * ```
      *
-     * @param string $value The property value
+     * @param string|null $value The property value
      * @return static self reference
      * @uses $lastName
+     * @since 5.0.0
      */
-    public function lastName(string $value): static
+    public function lastName(?string $value): static
     {
         $this->lastName = $value;
 
