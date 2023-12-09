@@ -462,7 +462,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
             {value: 'keepBoth', title: Craft.t('app', 'Keep both')},
             {value: 'replace', title: Craft.t('app', 'Replace it')},
           ],
-          settings: {
+          modalSettings: {
             hideOnEsc: false,
             hideOnShadeClick: false,
           },
