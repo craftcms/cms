@@ -382,14 +382,6 @@ class User extends \yii\web\User
     /**
      * @inheritdoc
      */
-    public function setIdentity($identity)
-    {
-        parent::setIdentity($identity);
-    }
-
-    /**
-     * @inheritdoc
-     */
     public function switchIdentity($identity, $duration = 0): void
     {
         if ($this->enableSession) {

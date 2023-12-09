@@ -43,7 +43,6 @@ use yii\db\ActiveQueryInterface;
  * @property Element $element Element
  * @property Session[] $sessions Sessions
  * @property UserGroup[] $groups User groups
- * @property bool $has2fa Whether 2FA is required to log in
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */

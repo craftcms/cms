@@ -255,6 +255,8 @@
 - `craft\fields\Matrix::$propagationMethod` now has a type of `craft\enums\PropagationMethod`.
 - `craft\gql\mutations\Entry::createSaveMutations()` now accepts a `$section` argument.
 - `craft\helpers\Db::parseParam()`, `parseDateParam()`, `parseMoneyParam()`, and `parseNumericParam()` now return `null` instead of an empty string if no condition should be applied.
+- `craft\helpers\Html::normalizeTagAttributes()` now supports a `removeClass` key.
+- `craft\helpers\Html::tag()` and `beginTag()` now ensure that the passed-in attributes are normalized.
 - `craft\helpers\StringHelper::toString()` now supports backed enums.
 - `craft\i18n\I18N::getPrimarySiteLocale()` is now deprecated. `craft\models\Site::getLocale()` should be used instead.
 - `craft\i18n\I18N::getPrimarySiteLocaleId()` is now deprecated. `craft\models\Site::$language` should be used instead.
@@ -265,8 +267,6 @@
 - `craft\services\Elements::duplicateElement()` no longer has a `$trackDuplication` argument.
 - `craft\services\Plugins::getPluginLicenseKeyStatus()` now returns a `craft\enums\LicenseKeyStatus` case.
 - `craft\services\ProjectConfig::saveModifiedConfigData()` no longer has a `$writeExternalConfig` argument, and no longer writes out updated project config YAML files.
-- `craft\helpers\Html::tag()` and `beginTag()` now ensure that the passed-in attributes are normalized.
-- `craft\helpers\Html::normalizeTagAttributes()` now supports a `removeClass` key.
 - Deprecated the `_elements/element.twig` control panel template. `elementChip()` or `elementCard()` should be used instead.
 - Deprecated the `cp.elements.element` control panel template hook.
 - Deprecated `craft\events\DefineElementInnerHtmlEvent`.
