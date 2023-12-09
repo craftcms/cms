@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Fixed a bug where WebP image transforms weren’t respecting transform quality settings. ([#13998](https://github.com/craftcms/cms/issues/13998))
 - It’s no longer possible to dismiss asset conflict resolution modals by pressing <kbd>Esc</kbd> or clicking outside of the modal. ([#14002](https://github.com/craftcms/cms/issues/14002))
 - Added `craft\db\Connection::onAfterTransaction()`.
 - Fixed a bug where `craft\base\ApplicationTrait::onAfterRequest()` callbacks weren’t necessarily triggered if an `EVENT_AFTER_REQUEST` handler got in the way.
