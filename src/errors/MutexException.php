@@ -2,6 +2,7 @@
 
 namespace craft\errors;
 
+use Throwable;
 use yii\base\Exception;
 
 class MutexException extends Exception
