@@ -1846,8 +1846,7 @@ JS;
             ]),
             'data' => [
                 'uid' => !$forLibrary ? $element->uid : false,
-                /** @phpstan-ignore-next-line */
-                'config' => $forLibrary ? ['type' => get_class($element)] + ($element->hasProperty('type') && $element->type ? ['inputType' => $element->type] : []) + $element->toArray() : false,
+                'config' => $forLibrary ? ['type' => get_class($element)] + $element->toArray() : false,
                 'has-custom-width' => $element->hasCustomWidth(),
                 'settings-namespace' => $namespace,
                 'settings-html' => $settingsHtml ?: false,

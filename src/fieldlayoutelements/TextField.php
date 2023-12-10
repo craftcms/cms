@@ -19,14 +19,16 @@ use craft\base\ElementInterface;
 class TextField extends BaseNativeField
 {
     /**
-     * @var string The input type
+     * @var string|null The input type
+     * @since 4.5.12
      */
-    public string $type = 'text';
+    public ?string $inputType = null;
 
     /**
-     * @var string
+     * @var string The input type
+     * @deprecated in 4.5.12. [[$inputType]] should be used instead.
      */
-    public string $inputType = 'text';
+    public string $type = 'text';
 
     /**
      * @var string|bool|null The input’s `autocomplete` attribute value.
@@ -128,7 +130,7 @@ class TextField extends BaseNativeField
     protected function inputHtml(?ElementInterface $element = null, bool $static = false): ?string
     {
         return Craft::$app->getView()->renderTemplate('_includes/forms/text.twig', [
-            'type' => $this->type,
+            'type' => $this->inputType ?? $this->type,
             'autocomplete' => $this->autocomplete,
             'class' => $this->class,
             'id' => $this->id(),
@@ -148,7 +150,6 @@ class TextField extends BaseNativeField
             'step' => $this->step,
             'min' => $this->min,
             'max' => $this->max,
-            'inputType' => $this->inputType,
         ]);
     }
 }
