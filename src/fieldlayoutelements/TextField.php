@@ -19,7 +19,14 @@ use craft\base\ElementInterface;
 class TextField extends BaseNativeField
 {
     /**
+     * @var string|null The input type
+     * @since 4.5.12
+     */
+    public ?string $inputType = null;
+
+    /**
      * @var string The input type
+     * @deprecated in 4.5.12. [[$inputType]] should be used instead.
      */
     public string $type = 'text';
 
@@ -123,7 +130,7 @@ class TextField extends BaseNativeField
     protected function inputHtml(?ElementInterface $element = null, bool $static = false): ?string
     {
         return Craft::$app->getView()->renderTemplate('_includes/forms/text.twig', [
-            'type' => $this->type,
+            'type' => $this->inputType ?? $this->type,
             'autocomplete' => $this->autocomplete,
             'class' => $this->class,
             'id' => $this->id(),
