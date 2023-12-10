@@ -5,16 +5,36 @@ namespace craft\errors;
 use Throwable;
 use yii\base\Exception;
 
+/**
+ * Mutex Exception
+ *
+ * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @since 4.5.12
+ */
 class MutexException extends Exception
 {
     /**
-     * The name of the mutex lock being acquired or released
+     * Constructor
+     *
+     * @param string $name
+     * @param string $message
+     * @param int $code
+     * @param Throwable|null $previous
      */
-    public string $name;
-
-    public function __construct(string $name, string $message = "", int $code = 0, ?Throwable $previous = null)
-    {
-        $this->name = $name;
+    public function __construct(
+        public string $name,
+        string $message = '',
+        int $code = 0,
+        ?Throwable $previous = null,
+    ) {
         parent::__construct($message, $code, $previous);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getName()
+    {
+        return 'Mutex Exception';
     }
 }
