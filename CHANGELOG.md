@@ -4,6 +4,8 @@
 
 - It’s no longer possible to dismiss asset conflict resolution modals by pressing <kbd>Esc</kbd> or clicking outside of the modal. ([#14002](https://github.com/craftcms/cms/issues/14002))
 - Added `craft\db\Connection::onAfterTransaction()`.
+- Added `craft\fieldlayoutelements\TextField::$inputType`. ([#13988](https://github.com/craftcms/cms/issues/13988))
+- Deprecated `craft\fieldlayoutelements\TextField::$type`. `$inputType` should be used instead. ([#13988](https://github.com/craftcms/cms/issues/13988))
 - Fixed a bug where WebP image transforms weren’t respecting transform quality settings. ([#13998](https://github.com/craftcms/cms/issues/13998))
 - Fixed a bug where `craft\base\ApplicationTrait::onAfterRequest()` callbacks weren’t necessarily triggered if an `EVENT_AFTER_REQUEST` handler got in the way.
 - Fixed a bug where keyboard shortcuts could stop working. ([#14011](https://github.com/craftcms/cms/issues/14011))
