@@ -18,8 +18,17 @@ class AddressCondition extends ElementCondition
     protected function selectableConditionRules(): array
     {
         return array_merge(parent::selectableConditionRules(), [
-            CountryConditionRule::class,
+            AddressLine1ConditionRule::class,
+            AddressLine2ConditionRule::class,
             AdministrativeAreaConditionRule::class,
+            CountryConditionRule::class,
+            DependentLocalityConditionRule::class,
+            FullNameConditionRule::class,
+            LocalityConditionRule::class,
+            OrganizationConditionRule::class,
+            OrganizationTaxIdConditionRule::class,
+            PostalCodeConditionRule::class,
+            SortingCodeConditionRule::class,
         ]);
     }
 }

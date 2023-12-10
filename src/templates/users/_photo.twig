@@ -1,7 +1,8 @@
 {% set volume = craft.app.volumes.getUserPhotoVolume() %}
 {% if volume %}
-    <div class="user-photo" data-user="{{ user.id }}">
-        <div id="current-photo">
+    {% set id = id ?? "userphoto-#{random()}" %}
+    <div id="{{ id }}" class="user-photo">
+        <div class="current-photo">
             {% if user.photoId %}
                 {{ user.getThumbHtml(100)|raw }}
             {% else %}
@@ -11,7 +12,7 @@
             {% endif %}
         </div>
         <div class="user-photo-controls">
-            <input type="file" name="photo" class="hidden" />
+            <input type="file" class="hidden">
             {% if user.photo %}
                 <div class="flex flex-nowrap">
                     <button type="button" class="btn upload-photo">{{ "Change photo"|t('app') }}</button>

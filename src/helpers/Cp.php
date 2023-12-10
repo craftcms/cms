@@ -486,8 +486,6 @@ class Cp
             $html .= self::elementLabelHtml($element, $config, $attributes, fn() => $element->getChipLabelHtml());
         }
 
-        $actionMenuItems = $config['showActionMenu'] ? $element->getActionMenuItems() : null;
-
         $html .= Html::beginTag('div', ['class' => 'chip-actions']) .
             ($config['showActionMenu'] ? self::elementActionMenu($element) : '') .
             ($config['sortable'] ? Html::button('', [
@@ -660,7 +658,7 @@ class Cp
                 'class' => array_filter([
                     'element',
                     $config['context'] === 'field' ? 'removable' : null,
-                    $element->hasErrors() ? 'error' : null,
+                    ($config['context'] === 'field' && $element->hasErrors()) ? 'error' : null,
                 ]),
                 'data' => array_filter([
                     'type' => get_class($element),
@@ -726,7 +724,7 @@ class Cp
                 'href' => !$element->trashed && $config['context'] !== 'modal'
                     ? ($attributes['data']['cp-url'] ?? null) : null,
             ]) : '') .
-            ($element->hasErrors() ? Html::tag('span', '', [
+            ($config['context'] === 'field' && $element->hasErrors() ? Html::tag('span', '', [
                 'data' => ['icon' => 'alert'],
                 'aria' => ['label' => Craft::t('app', 'Error')],
                 'role' => 'img',
@@ -1177,6 +1175,8 @@ JS, [
             $showAttribute = false;
         }
 
+        $showLabelExtra = $showAttribute || isset($config['labelExtra']);
+
         $instructionsHtml = $instructions
             ? Html::tag('div', preg_replace('/&amp;(\w+);/', '&$1;', Markdown::process(Html::encodeInvalidTags($instructions), 'gfm-comment')), [
                 'id' => $instructionsId,
@@ -1247,7 +1247,7 @@ JS, [
                 ]) .
                 Html::endTag('div')
                 : '') .
-            (($label || $showAttribute)
+            (($label || $showLabelExtra)
                 ? (
                     Html::beginTag('div', ['class' => 'heading']) .
                     ($config['headingPrefix'] ?? '') .
@@ -1261,14 +1261,16 @@ JS, [
                             ],
                         ], $config['labelAttributes'] ?? []))
                         : '') .
-                    ($showAttribute
+                    ($showLabelExtra
                         ? Html::tag('div', '', [
                             'class' => ['flex-grow'],
-                        ]) . static::renderTemplate('_includes/forms/copytextbtn.twig', [
+                        ]) .
+                        ($showAttribute ? static::renderTemplate('_includes/forms/copytextbtn.twig', [
                             'id' => "$id-attribute",
                             'class' => ['code', 'small', 'light'],
                             'value' => $config['attribute'],
-                        ])
+                        ]) : '') .
+                        ($config['labelExtra'] ?? '')
                         : '') .
                     ($config['headingSuffix'] ?? '') .
                     Html::endTag('div')
@@ -2315,6 +2317,7 @@ JS;
      *  - `params` – Request parameters that should be sent to the `action`
      *  - `confirm` – A confirmation message that should be presented to the user before triggering the `action`
      *  - `redirect` – The redirect path that the `action` should use
+     *  - `requireElevatedSession` – Whether an elevated session is required before the `action` is triggered
      *  - `selected` – Whether the item should be marked as selected
      *  - `hidden` – Whether the item should be hidden
      *  - `attributes` – Any HTML attributes that should be set on the item’s `<a>` or `<button>` tag

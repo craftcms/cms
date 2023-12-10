@@ -38,6 +38,7 @@
         params: item.params ?? null,
         confirm: item.confirm ?? null,
         redirect: (item.redirect ?? false) ? item.redirect|hash : null,
+        'require-elevated-session': item.requireElevatedSession ?? false,
         form: (item.action ?? false) ? 'false' : null,
       }|filter,
     }|merge(item.attributes ?? {}, recursive=true) %}

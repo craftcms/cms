@@ -2182,7 +2182,6 @@ abstract class Element extends Component implements ElementInterface
      * Returns the string representation of the element.
      *
      * @return string
-     * @noinspection PhpInconsistentReturnPointsInspection
      */
     public function __toString(): string
     {
@@ -2191,13 +2190,13 @@ abstract class Element extends Component implements ElementInterface
         }
 
         try {
-            if ($this->id) {
-                return sprintf('%s %s', static::displayName(), $this->id);
+            if (!$this->id || $this->getIsUnpublishedDraft()) {
+                return Craft::t('app', 'New {type}', [
+                    'type' => static::lowerDisplayName(),
+                ]);
             }
 
-            return Craft::t('app', 'New {type}', [
-                'type' => static::displayName(),
-            ]);
+            return sprintf('%s %s', static::displayName(), $this->id);
         } catch (Throwable $e) {
             ErrorHandler::convertExceptionToError($e);
         }
