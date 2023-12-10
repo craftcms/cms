@@ -1487,7 +1487,6 @@ Craft.CP.Notification = Garnish.Base.extend({
   $container: null,
   $closeBtn: null,
   originalActiveElement: null,
-  _hasUiElements: false,
 
   init: function (type, message, settings) {
     this.type = type;
@@ -1538,19 +1537,13 @@ Craft.CP.Notification = Garnish.Base.extend({
         .append(this.settings.details)
         .appendTo($main);
 
-      this._hasUiElements = !!$detailsContainer.find('button,input');
-      if (this._hasUiElements) {
+      if ($detailsContainer.find('button,input').length) {
         this.originalActiveElement = document.activeElement;
         this.$container.attr('tabindex', '-1').focus();
-
-        // Delay adding the layer in case a slideout needs to unregister its own layer
-        Garnish.requestAnimationFrame(() => {
-          Garnish.uiLayerManager.addLayer(this.$container, {
-            bubble: true,
-          });
-          Garnish.uiLayerManager.registerShortcut(Garnish.ESC_KEY, () => {
+        this.addListener(this.$container, 'keydown', (ev) => {
+          if (ev.keyCode === Garnish.ESC_KEY) {
             this.close();
-          });
+          }
         });
       }
     }
@@ -1614,10 +1607,6 @@ Craft.CP.Notification = Garnish.Base.extend({
 
     this.closing = true;
 
-    if (this._hasUiElements) {
-      Garnish.uiLayerManager.removeLayer(this.$container);
-    }
-
     if (
       this.originalActiveElement &&
       document.activeElement &&
@@ -1632,7 +1621,7 @@ Craft.CP.Notification = Garnish.Base.extend({
       {
         duration: 'fast',
         complete: () => {
-          this.$container.remove();
+          this.destroy();
         },
       }
     );
@@ -1666,6 +1655,11 @@ Craft.CP.Notification = Garnish.Base.extend({
     }
 
     this.$container.off('mouseover mouseout');
+  },
+
+  destroy: function () {
+    this.$container.remove();
+    this.base();
   },
 });
 
