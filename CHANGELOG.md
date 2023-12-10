@@ -2,6 +2,17 @@
 
 ## Unreleased
 
+- It’s no longer possible to dismiss asset conflict resolution modals by pressing <kbd>Esc</kbd> or clicking outside of the modal. ([#14002](https://github.com/craftcms/cms/issues/14002))
+- Improved performance for sites with lots of custom fields in non-global contexts. ([#13992](https://github.com/craftcms/cms/issues/13992))
+- Queue job info is now broadcasted to other browser tabs opened to the same control panel. ([#13990](https://github.com/craftcms/cms/issues/13990))
+- Added `craft\db\Connection::onAfterTransaction()`.
+- Added `craft\errors\MutexException`. ([#13985](https://github.com/craftcms/cms/pull/13985))
+- Added `craft\fieldlayoutelements\TextField::$inputType`. ([#13988](https://github.com/craftcms/cms/issues/13988))
+- Deprecated `craft\fieldlayoutelements\TextField::$type`. `$inputType` should be used instead. ([#13988](https://github.com/craftcms/cms/issues/13988))
+- Fixed a bug where WebP image transforms weren’t respecting transform quality settings. ([#13998](https://github.com/craftcms/cms/issues/13998))
+- Fixed a bug where `craft\base\ApplicationTrait::onAfterRequest()` callbacks weren’t necessarily triggered if an `EVENT_AFTER_REQUEST` handler got in the way.
+- Fixed a bug where keyboard shortcuts could stop working. ([#14011](https://github.com/craftcms/cms/issues/14011))
+- Fixed a bug where the `craft\services\Elements::EVENT_AUTHORIZE_VIEW` event wasn’t always triggered when editing elements. ([#13981](https://github.com/craftcms/cms/issues/13981)))
 - Fixed a privilege escalation vulnerability.
 
 ## 4.5.11.1 - 2023-11-23
