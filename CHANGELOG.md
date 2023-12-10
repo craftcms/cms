@@ -13,6 +13,7 @@
 - Fixed a bug where `craft\base\ApplicationTrait::onAfterRequest()` callbacks weren’t necessarily triggered if an `EVENT_AFTER_REQUEST` handler got in the way.
 - Fixed a bug where keyboard shortcuts could stop working. ([#14011](https://github.com/craftcms/cms/issues/14011))
 - Fixed a bug where the `craft\services\Elements::EVENT_AUTHORIZE_VIEW` event wasn’t always triggered when editing elements. ([#13981](https://github.com/craftcms/cms/issues/13981)))
+- Fixed a bug that prevented Live Preview from opening for edited entries, when the `autosaveDrafts` config setting was disabled. ([#13921](https://github.com/craftcms/cms/issues/13921))
 - Fixed a privilege escalation vulnerability.
 
 ## 4.5.11.1 - 2023-11-23
