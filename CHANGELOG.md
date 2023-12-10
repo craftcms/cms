@@ -4,6 +4,7 @@
 
 - It’s no longer possible to dismiss asset conflict resolution modals by pressing <kbd>Esc</kbd> or clicking outside of the modal. ([#14002](https://github.com/craftcms/cms/issues/14002))
 - Improved performance for sites with lots of custom fields in non-global contexts. ([#13992](https://github.com/craftcms/cms/issues/13992))
+- Queue job info is now broadcasted to other browser tabs opened to the same control panel. ([#13990](https://github.com/craftcms/cms/issues/13990))
 - Added `craft\db\Connection::onAfterTransaction()`.
 - Added `craft\fieldlayoutelements\TextField::$inputType`. ([#13988](https://github.com/craftcms/cms/issues/13988))
 - Deprecated `craft\fieldlayoutelements\TextField::$type`. `$inputType` should be used instead. ([#13988](https://github.com/craftcms/cms/issues/13988))
