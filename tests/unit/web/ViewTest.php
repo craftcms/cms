@@ -645,6 +645,7 @@ TWIG;
             ['foo[bar][1]', false],
             ['foo[bar', false],
             [' foo', false],
+            ['__FOO__', true],
         ];
     }
 
