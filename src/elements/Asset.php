@@ -1525,6 +1525,9 @@ $('#replace-btn').on('click', () => {
                 }
             },
             fileuploadfail: (event, data) => {
+                const file = data.data.getAll('replaceFile');
+                const backupFilename = file[0].name;
+                
                 const response = event instanceof Event
                     ? event.detail
                     : data?.jqXHR?.responseJSON;
@@ -1532,6 +1535,9 @@ $('#replace-btn').on('click', () => {
                 let {message, filename} = response || {};
                 
                 if (!message) {
+                    if (!filename) {
+                        filename = backupFilename;
+                    }
                     message = filename
                         ? Craft.t('app', 'Replace file failed for “{filename}”.', {filename})
                         : Craft.t('app', 'Replace file failed.');
