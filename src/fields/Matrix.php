@@ -1245,9 +1245,19 @@ class Matrix extends Field implements
 
         // Were the entries posted by UUID or ID?
         $uids = (
-            (isset($value['entries']) && StringHelper::isUUID(array_key_first($value['entries']))) ||
+            (isset($value['entries']) && str_starts_with(array_key_first($value['entries']), 'uid:')) ||
             (isset($value['sortOrder']) && StringHelper::isUUID(reset($value['sortOrder'])))
         );
+
+        if ($uids) {
+            // strip out the `uid:` key prefixes
+            if (isset($value['entries'])) {
+                $value['entries'] = array_combine(
+                    array_map(fn(string $key) => StringHelper::removeLeft($key, 'uid:'), array_keys($value['entries'])),
+                    array_values($value['entries']),
+                );
+            }
+        }
 
         // Get the old entries
         if ($element->id) {
