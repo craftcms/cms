@@ -4,6 +4,7 @@
 
 - It’s no longer possible to dismiss asset conflict resolution modals by pressing <kbd>Esc</kbd> or clicking outside of the modal. ([#14002](https://github.com/craftcms/cms/issues/14002))
 - Improved performance for sites with lots of custom fields in non-global contexts. ([#13992](https://github.com/craftcms/cms/issues/13992))
+- Username, Full Name, and Email fields now have the appropriate `autocomplete` values when editing the current user. ([#13941](https://github.com/craftcms/cms/pull/13941))
 - Queue job info is now broadcasted to other browser tabs opened to the same control panel. ([#13990](https://github.com/craftcms/cms/issues/13990))
 - Added `craft\db\Connection::onAfterTransaction()`.
 - Added `craft\errors\MutexException`. ([#13985](https://github.com/craftcms/cms/pull/13985))

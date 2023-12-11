@@ -112,6 +112,7 @@
                     name: 'email',
                     value: user.email,
                     type: 'email',
+                    autocomplete: isCurrentUser ? 'email' : false,
                     errors: user.getErrors('email')|merge(user.getErrors('unverifiedEmail')),
                     inputAttributes: {
                         data: {lpignore: 'true'},
