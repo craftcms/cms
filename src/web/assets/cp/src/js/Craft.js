@@ -2444,6 +2444,26 @@ if (typeof BroadcastChannel !== 'undefined') {
   Craft.broadcaster = new BroadcastChannel(channelName);
   Craft.messageReceiver = new BroadcastChannel(channelName);
 
+  Craft.broadcaster.addEventListener('message', (ev) => {
+    switch (ev.data.event) {
+      case 'beforeTrackJobProgress':
+        Craft.cp.cancelJobTracking();
+        break;
+
+      case 'trackJobProgress':
+        Craft.cp.setJobData(ev.data.jobData);
+
+        if (Craft.cp.jobInfo.length) {
+          // Check again after a longer delay than usual,
+          // as it looks like another browser tab is driving for now
+          const delay = Craft.cp.getNextJobDelay() + 1000;
+          Craft.cp.trackJobProgress(delay);
+        }
+
+        break;
+    }
+  });
+
   Craft.messageReceiver.addEventListener('message', (ev) => {
     if (ev.data.event === 'saveElement') {
       // Are there any instances of the same element on the page?
