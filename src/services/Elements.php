@@ -3255,6 +3255,7 @@ class Elements extends Component
             }
         }
 
+        $fieldLayout = $element->getFieldLayout();
         $dirtyFields = $element->getDirtyFields();
 
         // Validate
@@ -3308,7 +3309,7 @@ class Elements extends Component
                 $elementRecord->canonicalId = $element->getIsDerivative() ? $element->getCanonicalId() : null;
                 $elementRecord->draftId = (int)$element->draftId ?: null;
                 $elementRecord->revisionId = (int)$element->revisionId ?: null;
-                $elementRecord->fieldLayoutId = $element->fieldLayoutId = (int)($element->fieldLayoutId ?? $fieldLayout->id ?? 0) ?: null;
+                $elementRecord->fieldLayoutId = $element->fieldLayoutId = (int)($element->fieldLayoutId ?? $fieldLayout?->id ?? 0) ?: null;
                 $elementRecord->enabled = (bool)$element->enabled;
                 $elementRecord->archived = (bool)$element->archived;
                 $elementRecord->dateLastMerged = Db::prepareDateForDb($element->dateLastMerged);
@@ -3515,33 +3516,38 @@ class Elements extends Component
         }
 
         // Update search index
-        if (
-            $updateSearchIndex &&
-            !$element->getIsRevision() &&
-            !ElementHelper::isRevision($element) &&
-            (!$trackChanges || !empty($dirtyAttributes) || !empty($dirtyFields))
-        ) {
-            $event = new ElementEvent([
-                'element' => $element,
-            ]);
-            $this->trigger(self::EVENT_BEFORE_UPDATE_SEARCH_INDEX, $event);
-            if ($event->isValid) {
-                if (Craft::$app->getRequest()->getIsConsoleRequest()) {
-                    Craft::$app->getSearch()->indexElementAttributes($element);
-                } else {
-                    Queue::push(new UpdateSearchIndex([
-                        'elementType' => get_class($element),
-                        'elementId' => $element->id,
-                        'siteId' => $propagate ? '*' : $element->siteId,
-                        'fieldHandles' => $dirtyFields,
-                    ]), 2048);
+        if ($updateSearchIndex && !$element->getIsRevision() && !ElementHelper::isRevision($element)) {
+            $searchableDirtyFields = array_filter(
+                $dirtyFields,
+                fn(string $handle) => $fieldLayout?->getFieldByHandle($handle)?->searchable,
+            );
+
+            if (
+                !$trackChanges ||
+                !empty($searchableDirtyFields) ||
+                !empty(array_intersect($dirtyAttributes, ElementHelper::searchableAttributes($element)))
+            ) {
+                $event = new ElementEvent([
+                    'element' => $element,
+                ]);
+                $this->trigger(self::EVENT_BEFORE_UPDATE_SEARCH_INDEX, $event);
+                if ($event->isValid) {
+                    if (Craft::$app->getRequest()->getIsConsoleRequest()) {
+                        Craft::$app->getSearch()->indexElementAttributes($element, $searchableDirtyFields);
+                    } else {
+                        Queue::push(new UpdateSearchIndex([
+                            'elementType' => get_class($element),
+                            'elementId' => $element->id,
+                            'siteId' => $propagate ? '*' : $element->siteId,
+                            'fieldHandles' => $searchableDirtyFields,
+                        ]), 2048);
+                    }
                 }
             }
         }
 
         // Update the changed attributes & fields
         if ($trackChanges) {
-            $dirtyAttributes = $element->getDirtyAttributes();
             $userId = Craft::$app->getUser()->getId();
             $timestamp = Db::prepareDateForDb(DateTimeHelper::now());
 
