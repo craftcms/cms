@@ -78,7 +78,7 @@ class EntryTitleField extends TitleField
             throw new InvalidArgumentException('EntryTitleField can only be used in entry field layouts.');
         }
 
-        if (!$element->getType()->hasTitleField && !$element->hasErrors('title')) {
+        if (!$element->getType()->hasTitleField) {
             return null;
         }
 

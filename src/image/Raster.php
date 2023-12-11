@@ -804,8 +804,10 @@ class Raster extends Image
                 return ['jpeg_quality' => $quality, 'flatten' => true];
 
             case 'gif':
-            case 'webp':
                 return ['animated' => $this->_isAnimated];
+
+            case 'webp':
+                return ['animated' => $this->_isAnimated, 'webp_quality' => $quality];
 
             case 'png':
                 // Valid PNG quality settings are 0-9, so normalize and flip, because we're talking about compression

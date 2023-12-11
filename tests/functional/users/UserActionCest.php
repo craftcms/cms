@@ -10,10 +10,8 @@ namespace crafttests\functional\users;
 use Craft;
 use craft\elements\User;
 use craft\errors\WrongEditionException;
-use craft\helpers\UrlHelper;
 use FunctionalTester;
 use Throwable;
-use yii\base\InvalidConfigException;
 use yii\db\Exception;
 
 /**
@@ -70,30 +68,5 @@ class UserActionCest
             ->id($user->id)
             ->one();
         $this->activeUser = $user;
-    }
-
-    /**
-     * @param FunctionalTester $I
-     * @throws InvalidConfigException
-     * @throws \yii\base\Exception
-     */
-    public function seeUserImpersonation(FunctionalTester $I)
-    {
-        $I->amOnPage('/' . $this->cpTrigger . '/users/' . $this->activeUser->id . '');
-
-        $I->see('Sign in as');
-
-        Craft::$app->getConfig()->getGeneral()->requireUserAgentAndIpForSession = false;
-        $I->submitForm('#userform', [
-            'action' => 'users/impersonate',
-            'redirect' => Craft::$app->getSecurity()->hashData(UrlHelper::cpUrl('dashboard')),
-        ]);
-
-        $I->see('Dashboard');
-
-        $I->assertSame(
-            (string)$this->activeUser->id,
-            (string)Craft::$app->getUser()->getId()
-        );
     }
 }

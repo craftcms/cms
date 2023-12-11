@@ -374,7 +374,8 @@ class ElementHelper
             $element->siteSettingsId &&
             $element->duplicateOf === null &&
             $element::trackChanges() &&
-            !$element->mergingCanonicalChanges
+            !$element->mergingCanonicalChanges &&
+            !$element->resaving
         );
     }
 
@@ -452,6 +453,30 @@ class ElementHelper
                 return static::rootElement($owner);
             }
         }
+
+        return $element;
+    }
+
+    /**
+     * Returns the root element of a given element, unless the element or any of its owners are not canonical.
+     *
+     * @param ElementInterface $element
+     * @return ElementInterface|null
+     * @since 5.0.0
+     */
+    public static function rootElementIfCanonical(ElementInterface $element): ?ElementInterface
+    {
+        if (!$element->getIsCanonical()) {
+            return null;
+        }
+
+        if ($element instanceof NestedElementInterface) {
+            $owner = $element->getOwner();
+            if ($owner) {
+                return static::rootElementIfCanonical($owner);
+            }
+        }
+
         return $element;
     }
 

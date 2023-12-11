@@ -727,7 +727,7 @@
 
     disable: function () {
       this.$container.children('input[name$="[enabled]"]:first').val('');
-      this.$container.addClass('disabled');
+      this.$container.addClass('disabled-entry');
 
       setTimeout(() => {
         this.$actionMenu
@@ -745,7 +745,7 @@
 
     enable: function () {
       this.$container.children('input[name$="[enabled]"]:first').val('1');
-      this.$container.removeClass('disabled');
+      this.$container.removeClass('disabled-entry');
 
       setTimeout(() => {
         this.$actionMenu

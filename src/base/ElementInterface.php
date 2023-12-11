@@ -770,6 +770,14 @@ interface ElementInterface extends ComponentInterface
     public function getLink(): ?Markup;
 
     /**
+     * Returns the breadcrumbs that lead up to the element.
+     *
+     * @return array
+     * @since 5.0.0
+     */
+    public function getCrumbs(): array;
+
+    /**
      * Returns what the element should be called within the control panel.
      *
      * @return string
@@ -954,6 +962,16 @@ interface ElementInterface extends ComponentInterface
      * @since 4.0.0
      */
     public function getAdditionalButtons(): string;
+
+    /**
+     * Returns action menu items for the element’s edit screens.
+     *
+     * See [[\craft\helpers\Cp::disclosureMenu()]] for documentation on supported item properties.
+     *
+     * @return array
+     * @since 5.0.0
+     */
+    public function getActionMenuItems(): array;
 
     /**
      * Returns the additional locations that should be available for previewing the element, besides its primary [[getUrl()|URL]].

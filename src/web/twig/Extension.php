@@ -60,6 +60,7 @@ use DateInterval;
 use DateTime;
 use DateTimeInterface;
 use DateTimeZone;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
 use IteratorAggregate;
 use Money\Money;
@@ -201,6 +202,8 @@ class Extension extends AbstractExtension implements GlobalsInterface
             new TwigFilter('filesize', [$this, 'filesizeFilter']),
             new TwigFilter('filter', [$this, 'filterFilter'], ['needs_environment' => true]),
             new TwigFilter('filterByValue', [ArrayHelper::class, 'where'], ['deprecated' => '3.5.0', 'alternative' => 'where']),
+            new TwigFilter('firstWhere', [ArrayHelper::class, 'firstWhere']),
+            new TwigFilter('flatten', [Arr::class, 'flatten']),
             new TwigFilter('group', [$this, 'groupFilter']),
             new TwigFilter('hash', [$security, 'hashData']),
             new TwigFilter('httpdate', [$this, 'httpdateFilter'], ['needs_environment' => true]),
@@ -1670,7 +1673,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
      */
     private function _checkFilterSupport(mixed $arrow): void
     {
-        if (is_string($arrow) && in_array(strtolower($arrow), [
+        if (is_string($arrow) && in_array(ltrim(strtolower($arrow), '\\'), [
             'system',
             'passthru',
             'exec',

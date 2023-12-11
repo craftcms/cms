@@ -16,7 +16,6 @@ use Symfony\Component\Filesystem\Exception\IOException;
 use Symfony\Component\Filesystem\Filesystem;
 use Throwable;
 use UnexpectedValueException;
-use yii\base\Application;
 use yii\base\ErrorException;
 use yii\base\Exception;
 use yii\base\InvalidArgumentException;
@@ -903,7 +902,9 @@ class FileHelper extends \yii\helpers\FileHelper
         self::$_filesToBeDeleted[] = $filename;
 
         if (count(self::$_filesToBeDeleted) === 1) {
-            Craft::$app->on(Application::EVENT_AFTER_REQUEST, [static::class, 'deleteQueuedFiles']);
+            Craft::$app->onAfterRequest(function() {
+                static::deleteQueuedFiles();
+            });
         }
     }
 
@@ -919,6 +920,8 @@ class FileHelper extends \yii\helpers\FileHelper
                 self::unlink($source);
             }
         }
+
+        self::$_filesToBeDeleted = [];
     }
 
     /**
