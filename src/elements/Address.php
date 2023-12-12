@@ -288,22 +288,6 @@ class Address extends Element implements AddressInterface, BlockElementInterface
         };
     }
 
-    public function getInputPurpose($attribute): string
-    {
-        return match ($attribute) {
-            'fullName' => 'name',
-            'addressLine1' => 'address-line1',
-            'addressLine2' => 'address-line2',
-            'administrativeArea' => 'address-level1',
-            'locality' => 'address-level2',
-            'dependentLocality' => 'address-level3',
-            'countryCode' => 'country',
-            'postalCode' => 'postal-code',
-            'organization' => 'organization',
-            default => 'on',
-        };
-    }
-
     /**
      * Whether the address is owned by the current user
      *

@@ -1396,12 +1396,45 @@ JS, [
             Html::endTag('li'); // .address-card
     }
 
-    public static function enableAutofill(Address $address): bool
+    /**
+     * Returns an autocomplete value consistent with Input Purposes for User Interface Components ({@link https://www.w3.org/TR/WCAG21/#input-purposes})
+     *
+     * @param string $attribute
+     * @return string
+     */
+    private static function getInputPurpose(string $attribute): string
+    {
+        return match ($attribute) {
+            'fullName' => 'name',
+            'addressLine1' => 'address-line1',
+            'addressLine2' => 'address-line2',
+            'administrativeArea' => 'address-level1',
+            'locality' => 'address-level2',
+            'dependentLocality' => 'address-level3',
+            'countryCode' => 'country',
+            'postalCode' => 'postal-code',
+            'organization' => 'organization',
+            default => 'on',
+        };
+    }
+
+    /**
+     * Returns true or false based on whether the address is the current user's own address
+     *
+     * @param Address $address
+     * @return boolean
+     */
+    private static function enableAutofill(Address $address): bool
     {
         return $address->getIsOwnAddress();
     }
 
-    public static function getBogusAutofillValue(): string
+    /**
+     * Returns a randomized string for the autocomplete value to disable browser autocomplete
+     *
+     * @return string
+     */
+    private static function getBogusAutofillValue(): string
     {
         return 'disable-autofill-' . mt_rand();
     }
@@ -1443,7 +1476,7 @@ JS, [
             static::textFieldHtml([
                 'status' => $address->getAttributeStatus('addressLine1'),
                 'label' => $address->getAttributeLabel('addressLine1'),
-                'autocomplete' => $enableAutofill ? $address->getInputPurpose('addressLine1') : $fakeAutofillValue,
+                'autocomplete' => $enableAutofill ? self::getInputPurpose('addressLine1') : $fakeAutofillValue,
                 'id' => 'addressLine1',
                 'name' => 'addressLine1',
                 'value' => $address->addressLine1,
@@ -1453,7 +1486,7 @@ JS, [
             static::textFieldHtml([
                 'status' => $address->getAttributeStatus('addressLine2'),
                 'label' => $address->getAttributeLabel('addressLine2'),
-                'autocomplete' => $enableAutofill ? $address->getInputPurpose('addressLine2') : $fakeAutofillValue,
+                'autocomplete' => $enableAutofill ? self::getInputPurpose('addressLine2') : $fakeAutofillValue,
                 'id' => 'addressLine2',
                 'name' => 'addressLine2',
                 'value' => $address->addressLine2,
@@ -1491,7 +1524,7 @@ JS, [
                 ]),
                 'status' => $address->getAttributeStatus('postalCode'),
                 'label' => $address->getAttributeLabel('postalCode'),
-                'autocomplete' => $enableAutofill ? $address->getInputPurpose('postalCode') : $fakeAutofillValue,
+                'autocomplete' => $enableAutofill ? self::getInputPurpose('postalCode') : $fakeAutofillValue,
                 'id' => 'postalCode',
                 'name' => 'postalCode',
                 'value' => $address->postalCode,
@@ -1544,7 +1577,7 @@ JS, [
                         'value' => $value,
                         'options' => $options,
                         'errors' => $errors,
-                        'autocomplete' => $enableAutofill ? $address->getInputPurpose($name) : $fakeAutofillValue,
+                        'autocomplete' => $enableAutofill ? self::getInputPurpose($name) : $fakeAutofillValue,
                     ]) .
                     Html::tag('div', '', [
                         'id' => "$name-spinner",
@@ -1571,7 +1604,7 @@ JS, [
                 'options' => $options,
                 'required' => $required,
                 'errors' => $address->getErrors($name),
-                'autocomplete' => $enableAutofill ? $address->getInputPurpose($name) : $fakeAutofillValue,
+                'autocomplete' => $enableAutofill ? self::getInputPurpose($name) : $fakeAutofillValue,
             ]);
         }
 
@@ -1580,7 +1613,7 @@ JS, [
             'fieldClass' => !$visible ? 'hidden' : null,
             'status' => $address->getAttributeStatus($name),
             'label' => $address->getAttributeLabel($name),
-            'autocomplete' => $enableAutofill ? $address->getInputPurpose($name) : $fakeAutofillValue,
+            'autocomplete' => $enableAutofill ? self::getInputPurpose($name) : $fakeAutofillValue,
             'id' => $name,
             'name' => $name,
             'value' => $value,
