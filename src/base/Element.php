@@ -3476,6 +3476,19 @@ abstract class Element extends Component implements ElementInterface
             ];
         }
 
+        if (ElementHelper::supportsFieldCopying($this)) {
+            $copyId = sprintf('action-copy-content-%s', mt_rand());
+            $items[] = [
+                'id' => $copyId,
+                'icon' => 'edit',
+                'label' => Craft::t('app', 'Copy content from site'),
+                'type' => MenuItemType::Button,
+                'attributes' => [
+                    'class' => ['copy-all-from-site'],
+                ],
+            ];
+        }
+
         // Edit
         if (Craft::$app->getElements()->canView($this)) {
             $editId = sprintf('action-edit-%s', mt_rand());

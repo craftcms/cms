@@ -51,6 +51,7 @@ import './js/DeleteUserModal.js';
 import './js/DynamicGenerator.js';
 import './js/EditableTable.js';
 import './js/ElementActionTrigger.js';
+import './js/ElementCopyContent.js';
 import './js/ElementEditor.js';
 import './js/ElementFieldSettings.js';
 import './js/ElementTableSorter.js';
