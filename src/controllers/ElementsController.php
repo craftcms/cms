@@ -956,15 +956,6 @@ class ElementsController extends Controller
                         'params' => ['dropProvisional' => 1],
                     ],
                 ]);
-                if (ElementHelper::supportsFieldCopying($element)) {
-                    $components[] = Html::button(Craft::t('app', 'Copy content'), [
-                        'type' => 'button',
-                        'class' => ['btn', 'copy-all-from-site'],
-                        'aria' => [
-                            'label' => Craft::t('app', 'Copy content'),
-                        ],
-                    ]);
-                }
             } else {
                 $components[] = Html::beginForm() .
                     Html::actionInput('elements/save-draft') .

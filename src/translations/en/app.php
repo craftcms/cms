@@ -332,7 +332,6 @@ return [
     'Copy' => 'Copy',
     'Copy URL' => 'Copy URL',
     'Copy activation URL…' => 'Copy activation URL…',
-    'Copy content' => 'Copy content',
     'Copy content from site' => 'Copy content from site',
     'Copy impersonation URL…' => 'Copy impersonation URL…',
     'Copy password reset URL…' => 'Copy password reset URL…',
