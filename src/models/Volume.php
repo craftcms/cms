@@ -157,6 +157,9 @@ class Volume extends Model implements BaseFsInterface, FieldLayoutProviderInterf
             'handle' => Craft::t('app', 'Handle'),
             'name' => Craft::t('app', 'Name'),
             'url' => Craft::t('app', 'URL'),
+            'fsHandle' => Craft::t('app', 'Asset Filesystem'),
+            'transformFsHandle' => Craft::t('app', 'Transform Filesystem'),
+            'transformSubpath' => Craft::t('app', 'Transform Subpath'),
         ];
     }
 
@@ -168,7 +171,7 @@ class Volume extends Model implements BaseFsInterface, FieldLayoutProviderInterf
         $rules = parent::defineRules();
         $rules[] = [['id', 'fieldLayoutId'], 'number', 'integerOnly' => true];
         $rules[] = [['name', 'handle'], UniqueValidator::class, 'targetClass' => VolumeRecord::class];
-        $rules[] = [['name', 'handle'], 'required'];
+        $rules[] = [['name', 'handle', 'fsHandle'], 'required'];
         $rules[] = [
             ['handle'],
             HandleValidator::class,
