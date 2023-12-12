@@ -1331,6 +1331,7 @@ return [
     'See all' => 'Просмотреть все',
     'See logs' => 'См. журналы',
     'Select All' => 'Выбрать все',
+    'Select a filesystem' => 'Select a filesystem',
     'Select a volume' => 'Выберите том',
     'Select all' => 'Выбрать все',
     'Select context' => 'Select context',
