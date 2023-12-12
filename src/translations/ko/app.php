@@ -1296,6 +1296,7 @@ return [
     'See all' => '모두 보기',
     'See logs' => '로그 보기',
     'Select All' => '전체 선택',
+    'Select a filesystem' => 'Select a filesystem',
     'Select a volume' => '볼륨 선택',
     'Select all' => '모두 선택',
     'Select element' => '요소 선택',

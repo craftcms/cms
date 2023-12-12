@@ -1296,6 +1296,7 @@ return [
     'See all' => 'Переглянути все',
     'See logs' => 'Див. журнали',
     'Select All' => 'Вибрати все',
+    'Select a filesystem' => 'Select a filesystem',
     'Select a volume' => 'Виберіть том',
     'Select all' => 'Вибрати все',
     'Select element' => 'Виберіть елемент',
