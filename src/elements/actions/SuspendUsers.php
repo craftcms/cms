@@ -83,7 +83,11 @@ JS;
 
         $successCount = count(array_filter($users, function(User $user) use ($usersService, $currentUser) {
             try {
-                return $usersService->canSuspend($currentUser, $user) && $usersService->suspendUser($user);
+                if (!$usersService->canSuspend($currentUser, $user)) {
+                    return false;
+                }
+                $usersService->suspendUser($user);
+                return true;
             } catch (Throwable) {
                 return false;
             }

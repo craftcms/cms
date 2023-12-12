@@ -154,10 +154,16 @@ class Fields extends Component
     public string $fieldContext = 'global';
 
     /**
-     * @var MemoizableArray<FieldInterface>|null
-     * @see _fields()
+     * @var MemoizableArray<array>|null
+     * @see _fieldConfigs()
      */
-    private ?MemoizableArray $_fields = null;
+    private ?MemoizableArray $_fieldConfigs = null;
+
+    /**
+     * @var FieldInterface[]
+     * @see _field()
+     */
+    private array $_fields = [];
 
     /**
      * @var MemoizableArray<FieldLayout>|null
@@ -326,36 +332,55 @@ class Fields extends Component
     }
 
     /**
-     * Returns a memoizable array of all fields.
+     * Returns a memoizable array field configs.
      *
      * @param string|string[]|false|null $context The field context(s) to fetch fields from. Defaults to [[\craft\services\Fields::$fieldContext]].
      * Set to `false` to get all fields regardless of context.
      *
-     * @return MemoizableArray<FieldInterface>
+     * @return MemoizableArray<array>
      */
-    private function _fields(mixed $context = null): MemoizableArray
+    private function _fieldConfigs(mixed $context = null): MemoizableArray
     {
-        if (!isset($this->_fields)) {
-            $fields = [];
-            foreach ($this->_createFieldQuery()->all() as $result) {
-                $fields[] = $this->createField($result);
-            }
-            $this->_fields = new MemoizableArray($fields);
+        $context ??= $this->fieldContext;
+
+        if (!isset($this->_fieldConfigs)) {
+            $this->_fieldConfigs = new MemoizableArray($this->_createFieldQuery()->all());
         }
 
         if ($context === false) {
-            return $this->_fields;
-        }
-
-        if ($context === null) {
-            $context = $this->fieldContext;
+            return $this->_fieldConfigs;
         }
 
         if (is_array($context)) {
-            return $this->_fields->whereIn('context', $context, true);
+            return $this->_fieldConfigs->whereIn('context', $context, true);
         }
 
-        return $this->_fields->where('context', $context, true);
+        return $this->_fieldConfigs->where('context', $context, true);
+    }
+
+    /**
+     * @param array[] $configs
+     * @return FieldInterface[]
+     */
+    private function _fields(array $configs): array
+    {
+        return array_map(fn(array $config) => $this->_field($config), $configs);
+    }
+
+    /**
+     * @param array|null $config
+     * @return FieldInterface|null
+     */
+    private function _field(?array $config): ?FieldInterface
+    {
+        if ($config === null) {
+            return null;
+        }
+
+        if (!isset($this->_fields[$config['id']])) {
+            $this->_fields[$config['id']] = $this->createField($config);
+        }
+        return $this->_fields[$config['id']];
     }
 
     /**
@@ -367,7 +392,7 @@ class Fields extends Component
      */
     public function getAllFields(mixed $context = null): array
     {
-        return $this->_fields($context)->all();
+        return $this->_fields($this->_fieldConfigs($context)->all());
     }
 
     /**
@@ -430,7 +455,7 @@ class Fields extends Component
      */
     public function getFieldById(int $fieldId): ?FieldInterface
     {
-        return $this->_fields(false)->firstWhere('id', $fieldId);
+        return $this->_field($this->_fieldConfigs(false)->firstWhere('id', $fieldId));
     }
 
     /**
@@ -441,7 +466,7 @@ class Fields extends Component
      */
     public function getFieldByUid(string $fieldUid): ?FieldInterface
     {
-        return $this->_fields(false)->firstWhere('uid', $fieldUid, true);
+        return $this->_field($this->_fieldConfigs(false)->firstWhere('uid', $fieldUid, true));
     }
 
     /**
@@ -464,7 +489,7 @@ class Fields extends Component
      */
     public function getFieldByHandle(string $handle, mixed $context = null): ?FieldInterface
     {
-        return $this->_fields($context)->firstWhere('handle', $handle, true);
+        return $this->_field($this->_fieldConfigs($context)->firstWhere('handle', $handle, true));
     }
 
     /**
@@ -704,7 +729,7 @@ class Fields extends Component
         }
 
         // Clear caches
-        $this->_fields = null;
+        $this->_fieldConfigs = null;
 
         // Update the field version
         $this->updateFieldVersion();
@@ -730,7 +755,7 @@ class Fields extends Component
      */
     public function refreshFields(): void
     {
-        $this->_fields = null;
+        $this->_fieldConfigs = null;
         $this->updateFieldVersion();
     }
 

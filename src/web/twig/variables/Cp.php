@@ -348,7 +348,7 @@ class Cp extends Component
         // Figure out which item is selected, and normalize the items
         $path = Craft::$app->getRequest()->getPathInfo();
 
-        if ($path === 'myaccount') {
+        if ($path === 'myaccount' || str_starts_with($path, 'myaccount/')) {
             $path = 'users';
         }
 

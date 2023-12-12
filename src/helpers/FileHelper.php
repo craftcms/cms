@@ -8,6 +8,7 @@
 namespace craft\helpers;
 
 use Craft;
+use craft\errors\MutexException;
 use craft\errors\SiteNotFoundException;
 use FilesystemIterator;
 use RecursiveDirectoryIterator;
@@ -725,10 +726,10 @@ class FileHelper extends \yii\helpers\FileHelper
             $mutex = Craft::$app->getMutex();
             $name = uniqid('test_lock', true);
             if (!$mutex->acquire($name)) {
-                throw new Exception('Unable to acquire test lock.');
+                throw new MutexException($name, 'Unable to acquire test lock.');
             }
             if (!$mutex->release($name)) {
-                throw new Exception('Unable to release test lock.');
+                throw new MutexException($name, 'Unable to release test lock.');
             }
             self::$_useFileLocks = true;
         } catch (Throwable $e) {
