@@ -108,7 +108,7 @@ class EmailField extends TextField
     {
         if ($element) {
             if (!$element instanceof User) {
-                throw new InvalidArgumentException('EmailField can only be used in user field layouts.');
+                throw new InvalidArgumentException(sprintf('%s can only be used in user field layouts.', __CLASS__));
             }
 
             if (!$element->getIsCurrent() && !Craft::$app->getUser()->checkPermission('administrateUsers')) {

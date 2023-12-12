@@ -74,7 +74,7 @@ class PhotoField extends BaseNativeField
     protected function inputHtml(?ElementInterface $element = null, bool $static = false): ?string
     {
         if ($element && !$element instanceof User) {
-            throw new InvalidArgumentException('PhotoField can only be used in user field layouts.');
+            throw new InvalidArgumentException(sprintf('%s can only be used in user field layouts.', __CLASS__));
         }
 
         if (!$element?->id) {
