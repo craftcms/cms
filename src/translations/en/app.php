@@ -1340,6 +1340,7 @@ return [
     'See all' => 'See all',
     'See logs' => 'See logs',
     'Select All' => 'Select All',
+    'Select a filesystem' => 'Select a filesystem',
     'Select a site' => 'Select a site',
     'Select a volume' => 'Select a volume',
     'Select all' => 'Select all',

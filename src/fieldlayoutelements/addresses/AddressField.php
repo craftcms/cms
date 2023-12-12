@@ -90,7 +90,7 @@ class AddressField extends BaseField
     public function formHtml(ElementInterface $element = null, bool $static = false): ?string
     {
         if (!$element instanceof Address) {
-            throw new InvalidArgumentException('AddressField can only be used in address field layouts.');
+            throw new InvalidArgumentException(sprintf('%s can only be used in address field layouts.', __CLASS__));
         }
 
         $view = Craft::$app->getView();

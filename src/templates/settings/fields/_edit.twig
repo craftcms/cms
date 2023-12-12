@@ -129,7 +129,7 @@
     <div id="settings">
         <div id="{{ className(field)|id }}">
             {% include 'settings/fields/_type-settings' with {
-                namespace: 'types['~className(field)~']'
+                namespace: 'types['~className(field)|id~']'
             } %}
         </div>
     </div>

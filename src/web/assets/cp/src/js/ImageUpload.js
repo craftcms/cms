@@ -123,6 +123,8 @@ Craft.ImageUpload = Garnish.Base.extend(
      * On Upload Failure.
      */
     _onUploadFailure: function (event, data) {
+      const file = data.data.getAll('photo');
+      const backupFilename = file[0].name;
       const response = data.response();
       let {
         message,
@@ -132,6 +134,9 @@ Craft.ImageUpload = Garnish.Base.extend(
       let errorMessages = errors ? Object.values(errors).flat() : [];
 
       if (!message) {
+        if (!filename) {
+          filename = backupFilename;
+        }
         if (errorMessages.length) {
           message = errorMessages.join('\n');
         } else if (filename) {
