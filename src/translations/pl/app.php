@@ -1331,6 +1331,7 @@ return [
     'See all' => 'Zobacz wszystko',
     'See logs' => 'Sprawdź dzienniki',
     'Select All' => 'Zaznacz wszystko',
+    'Select a filesystem' => 'Select a filesystem',
     'Select a volume' => 'Wybierz wolumin',
     'Select all' => 'Zaznacz wszystko',
     'Select context' => 'Select context',
