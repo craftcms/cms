@@ -11,6 +11,7 @@ use Craft;
 use craft\base\ElementInterface;
 use craft\elements\User;
 use craft\fieldlayoutelements\TextField;
+use yii\base\InvalidArgumentException;
 
 /**
  * UsernameField represents a Username field that can be included in the user field layout.
@@ -81,5 +82,19 @@ class UsernameField extends TextField
     public function defaultLabel(?ElementInterface $element = null, bool $static = false): ?string
     {
         return Craft::t('app', 'Username');
+    }
+
+    /**
+     * @inheritdoc
+     */
+    protected function inputAttributes(?ElementInterface $element = null, bool $static = false): array
+    {
+        if (!$element instanceof User) {
+            throw new InvalidArgumentException(sprintf('%s can only be used in user field layouts.', __CLASS__));
+        }
+
+        return [
+            'autocomplete' => $element->getIsCurrent() ? 'username' : 'off',
+        ];
     }
 }

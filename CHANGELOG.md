@@ -4,6 +4,7 @@
 
 - It’s no longer possible to dismiss asset conflict resolution modals by pressing <kbd>Esc</kbd> or clicking outside of the modal. ([#14002](https://github.com/craftcms/cms/issues/14002))
 - Improved performance for sites with lots of custom fields in non-global contexts. ([#13992](https://github.com/craftcms/cms/issues/13992))
+- Username, Full Name, and Email fields now have the appropriate `autocomplete` values when editing the current user. ([#13941](https://github.com/craftcms/cms/pull/13941))
 - Queue job info is now broadcasted to other browser tabs opened to the same control panel. ([#13990](https://github.com/craftcms/cms/issues/13990))
 - Added `craft\db\Connection::onAfterTransaction()`.
 - Added `craft\errors\MutexException`. ([#13985](https://github.com/craftcms/cms/pull/13985))
@@ -15,6 +16,8 @@
 - Fixed a bug where the `craft\services\Elements::EVENT_AUTHORIZE_VIEW` event wasn’t always triggered when editing elements. ([#13981](https://github.com/craftcms/cms/issues/13981)))
 - Fixed a bug that prevented Live Preview from opening for edited entries, when the `autosaveDrafts` config setting was disabled. ([#13921](https://github.com/craftcms/cms/issues/13921))
 - Fixed a bug where JavaScript-based slug generation wasn’t working consistently with PHP. ([#13971](https://github.com/craftcms/cms/pull/13971))
+- Fixed a bug where asset upload failure notifications could be ambiguous if a server connection issue occurred. ([#14003](https://github.com/craftcms/cms/issues/14003))
+- Fixed a “Changes to the project config are not possible while in read-only mode.” error that could occur when adimn changes were disallowed. ([#14018](https://github.com/craftcms/cms/issues/14018))
 - Fixed a privilege escalation vulnerability.
 
 ## 4.5.11.1 - 2023-11-23
