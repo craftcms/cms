@@ -1296,6 +1296,7 @@ return [
     'See all' => 'مشاهده همه',
     'See logs' => 'مشاهده لاگ ها',
     'Select All' => 'انتخاب همه',
+    'Select a filesystem' => 'Select a filesystem',
     'Select a volume' => 'انتخاب یک مخزن',
     'Select all' => 'انتخاب همه',
     'Select element' => 'انتخاب مؤلفه',
