@@ -18,6 +18,7 @@ use craft\errors\AssetNotIndexableException;
 use craft\errors\FsException;
 use craft\errors\MissingAssetException;
 use craft\errors\MissingVolumeFolderException;
+use craft\errors\MutexException;
 use craft\errors\VolumeException;
 use craft\helpers\Assets as AssetsHelper;
 use craft\helpers\DateTimeHelper;
@@ -299,7 +300,7 @@ class AssetIndexer extends Component
         $lockName = 'idx--' . $indexingSession->id . '--';
 
         if (!$mutex->acquire($lockName, 3)) {
-            throw new Exception('Could not acquire a lock for the indexing session "' . $indexingSession->id . '".');
+            throw new MutexException($lockName, sprintf('Could not acquire a lock for the indexing session "%s".', $indexingSession->id));
         }
 
         $indexEntry = $this->getNextIndexEntry($indexingSession);
@@ -835,7 +836,7 @@ class AssetIndexer extends Component
         $lockName = 'idx--update-' . $session->id . '--';
 
         if (!$mutex->acquire($lockName, 5)) {
-            throw new Exception('Could not acquire a lock for the indexing session "' . $session->id . '".');
+            throw new MutexException($lockName, sprintf('Could not acquire a lock for the indexing session "%s".', $session->id));
         }
 
         /** @var AssetIndexingSessionRecord $record */
