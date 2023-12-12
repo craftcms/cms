@@ -1331,6 +1331,7 @@ return [
     'See all' => 'Tümünü görüntüle',
     'See logs' => 'Günlüklere bak',
     'Select All' => 'Tümünü Seç',
+    'Select a filesystem' => 'Select a filesystem',
     'Select a volume' => 'Bir birim seçin',
     'Select all' => 'Tümünü seç',
     'Select context' => 'Select context',

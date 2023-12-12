@@ -1331,6 +1331,7 @@ return [
     'See all' => '查看全部',
     'See logs' => '查看日志',
     'Select All' => '全选',
+    'Select a filesystem' => 'Select a filesystem',
     'Select a volume' => '选择存储卷',
     'Select all' => '全选',
     'Select context' => 'Select context',

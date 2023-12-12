@@ -1331,6 +1331,7 @@ return [
     'See all' => 'See all',
     'See logs' => 'See logs',
     'Select All' => 'Select All',
+    'Select a filesystem' => 'Select a filesystem',
     'Select a volume' => 'เลือกไดรฟ์ข้อมูล',
     'Select all' => 'Select all',
     'Select context' => 'Select context',

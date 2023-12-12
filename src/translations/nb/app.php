@@ -1331,6 +1331,7 @@ return [
     'See all' => 'Se alle',
     'See logs' => 'Se logger',
     'Select All' => 'Velg alle',
+    'Select a filesystem' => 'Select a filesystem',
     'Select a volume' => 'Velg et volum',
     'Select all' => 'Velg alle',
     'Select context' => 'Select context',

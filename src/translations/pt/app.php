@@ -1331,6 +1331,7 @@ return [
     'See all' => 'Ver tudo',
     'See logs' => 'Ver registos',
     'Select All' => 'Selecionar todos',
+    'Select a filesystem' => 'Select a filesystem',
     'Select a volume' => 'Selecione um volume',
     'Select all' => 'Selecionar tudo',
     'Select context' => 'Select context',
