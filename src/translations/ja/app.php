@@ -1331,6 +1331,7 @@ return [
     'See all' => 'すべて表示',
     'See logs' => 'ログを表示',
     'Select All' => 'すべてを選択',
+    'Select a filesystem' => 'Select a filesystem',
     'Select a volume' => 'ボリュームを選択',
     'Select all' => 'すべてを選択',
     'Select context' => 'Select context',
