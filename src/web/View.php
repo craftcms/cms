@@ -1441,7 +1441,7 @@ JS;
     {
         if (
             $namespace !== null &&
-            !preg_match('/^(__.+__|[A-Za-z][A-Za-z0-9\-_:.]*(\[[A-Za-z][A-Za-z0-9\-_:.]*])*)$/', $namespace)
+            !preg_match('/^(__.+__|[A-Za-z][A-Za-z0-9\\\\\-_:.]*(\[[A-Za-z][A-Za-z0-9\\\\\-_:.]*])*)$/', $namespace)
         ) {
             throw new InvalidArgumentException(sprintf('Invalid namespace ("%s"). Namespaces must begin with a letter, and may be followed by letters, numbers, hyphens, underscores, colons, and periods (possibly followed by sets of correctly-formatted strings wrapped in square brackets).', $namespace));
         }
