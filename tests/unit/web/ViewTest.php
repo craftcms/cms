@@ -634,6 +634,7 @@ TWIG;
             ['foo[bar]', true],
             ['foo[bar][baz]', true],
             ['foo[bar0:baz.1-_]', true],
+            ['foo[bar\baz]', true],
             ['', false],
             ['0', false],
             ['1', false],
