@@ -54,7 +54,7 @@ class ResaveController extends Controller
         // empty
         if ($to === ':empty:') {
             return function() {
-                return null;
+                return '';
             };
         }
 

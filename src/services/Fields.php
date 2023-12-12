@@ -29,6 +29,7 @@ use craft\fields\Assets as AssetsField;
 use craft\fields\Categories as CategoriesField;
 use craft\fields\Checkboxes;
 use craft\fields\Color;
+use craft\fields\Country;
 use craft\fields\Date;
 use craft\fields\Dropdown;
 use craft\fields\Email;
@@ -478,6 +479,7 @@ class Fields extends Component
             CategoriesField::class,
             Checkboxes::class,
             Color::class,
+            Country::class,
             Date::class,
             Dropdown::class,
             Email::class,

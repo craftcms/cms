@@ -796,4 +796,21 @@ class ElementHelper
 
         return Html::encode(StringHelper::stripHtml($value));
     }
+
+    /**
+     * Returns the searchable attributes for a given element, ensuring that `slug` and `title` are included.
+     *
+     * @param ElementInterface $element
+     * @return string[]
+     * @since 4.6.0
+     */
+    public static function searchableAttributes(ElementInterface $element): array
+    {
+        $searchableAttributes = array_flip($element::searchableAttributes());
+        $searchableAttributes['slug'] = true;
+        if ($element::hasTitles()) {
+            $searchableAttributes['title'] = true;
+        }
+        return array_keys($searchableAttributes);
+    }
 }
