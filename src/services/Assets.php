@@ -938,16 +938,16 @@ class Assets extends Component
      * @return FsInterface
      * @throws InvalidConfigException
      */
-    public function getTempUploadsFs(): FsInterface
+    public function getTempAssetUploadFs(): FsInterface
     {
         $generalConfig = Craft::$app->getConfig()->getGeneral();
-        if (empty($generalConfig->tempUploadsFs)) {
+        if (empty($generalConfig->tempAssetUploadFs)) {
             return new Temp();
         }
-        $fs = Craft::$app->getFs()->getFilesystemByHandle($generalConfig->tempUploadsFs);
+        $fs = Craft::$app->getFs()->getFilesystemByHandle($generalConfig->tempAssetUploadFs);
 
         if (!$fs) {
-            throw new InvalidConfigException("The Temp Uploads Filesystem General Config is set to an invalid Filesystem handle: {$generalConfig->tempUploadsFs}");
+            throw new InvalidConfigException("The Temp Uploads Filesystem General Config is set to an invalid Filesystem handle: {$generalConfig->tempAssetUploadFs}");
         }
 
         return $fs;
@@ -1027,7 +1027,7 @@ class Assets extends Component
             $this->storeFolderRecord($folder);
         }
 
-        $fs = $this->getTempUploadsFs();
+        $fs = $this->getTempAssetUploadFs();
 
         try {
             if ($fs instanceof Temp) {

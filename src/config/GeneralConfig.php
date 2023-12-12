@@ -2798,17 +2798,17 @@ class GeneralConfig extends BaseConfig
      *
      * ::: code
      * ```php Static Config
-     * ->tempUploadsFs('myTempFs')
+     * ->tempAssetUploadFs('myTempFs')
      * ```
      * ```shell Environment Override
-     * CRAFT_TEMP_UPLOADS_FS=myTempFs
+     * CRAFT_TEMP_ASSET_UPLOAD_FS=myTempFs
      * ```
      * :::
      *
      * @group Assets
      * @since 5.0.0
      */
-    public ?string $tempUploadsFs = null;
+    public ?string $tempAssetUploadFs = null;
 
     /**
      * @var string|array|null|false Configures Craft to send all system emails to either a single email address or an array of email addresses
@@ -6234,18 +6234,18 @@ class GeneralConfig extends BaseConfig
      * The handle of the Filesystem to use for storing temporary asset uploads. If not specified local temp folder will be used.
      *
      *  ```php
-     *  ->tempUploadsFs('myTempFs')
+     *  ->tempAssetUploadFs('myTempFs')
      *  ```
      *
      * @group Assets
      * @param string|null $value
      * @return self
-     * @see $tempUploadsFs
+     * @see $tempAssetUploadFs
      * @since 5.0.0
      */
-    public function tempUploadsFs(string|null $value): self
+    public function tempAssetUploadFs(string|null $value): self
     {
-        $this->tempUploadsFs = $value;
+        $this->tempAssetUploadFs = $value;
         return $this;
     }
 

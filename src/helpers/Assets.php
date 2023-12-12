@@ -960,6 +960,6 @@ class Assets
 
     public static function isUsedForTempUploads(FsInterface $fs): bool
     {
-        return Craft::$app->getConfig()->getGeneral()->tempUploadsFs === $fs->handle || $fs instanceof Temp;
+        return Craft::$app->getConfig()->getGeneral()->tempAssetUploadFs === $fs->handle || $fs instanceof Temp;
     }
 }

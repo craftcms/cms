@@ -1168,10 +1168,10 @@ class Asset extends Element
 
         $this->_oldVolumeId = $this->_volumeId;
 
-        // double check that tempUploadsFs is not used by a volume
-        $tempUploadsFs = Craft::$app->getConfig()->getGeneral()->tempUploadsFs;
-        if (!empty($tempUploadsFs) && VolumeRecord::find()->where(['fs' => $tempUploadsFs])->exists()) {
-            throw new InvalidConfigException('tempUploadsFs can’t be set to a Filesystem used by a volume.', 0);
+        // double check that tempAssetUploadFs is not used by a volume
+        $tempAssetUploadFs = Craft::$app->getConfig()->getGeneral()->tempAssetUploadFs;
+        if (!empty($tempAssetUploadFs) && VolumeRecord::find()->where(['fs' => $tempAssetUploadFs])->exists()) {
+            throw new InvalidConfigException('tempAssetUploadFs can’t be set to a Filesystem used by a volume.', 0);
         }
     }
 
