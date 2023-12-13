@@ -1056,7 +1056,7 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
             ],
             [
                 'menu' => [
-                    'label' => Craft::t('app', 'Select entry type'),
+                    'label' => Craft::t('app', 'Select section'),
                     'items' => $sectionOptions->all(),
                 ],
             ],

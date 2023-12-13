@@ -1336,7 +1336,7 @@ return [
     'Select all' => 'Select all',
     'Select context' => 'Select context',
     'Select element' => 'Select element',
-    'Select entry type' => 'Select entry type',
+    'Select section' => 'Select section',
     'Select transform' => 'Select transform',
     'Select {element}' => 'Select {element}',
     'Select' => 'Select',
