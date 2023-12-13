@@ -1493,7 +1493,7 @@ $('#replace-btn').on('click', () => {
             fileuploadstart: () => {
                 $('#thumb-container').addClass('loading');
             },
-            fileuploaddone: (event, data) => {
+            fileuploaddone: (event, data = null) => {
                 const result = event instanceof CustomEvent ? event.detail : data.result;
                 
                 $('#new-filename').val(result.filename);
@@ -1524,20 +1524,16 @@ $('#replace-btn').on('click', () => {
 
                 }
             },
-            fileuploadfail: (event, data) => {
-                const file = data.data.getAll('replaceFile');
-                const backupFilename = file[0].name;
-                
+            fileuploadfail: (event, data = null) => {
                 const response = event instanceof Event
                     ? event.detail
                     : data?.jqXHR?.responseJSON;
                 
                 let {message, filename} = response || {};
                 
+                filename = filename || data?.files?.[0].name;
+                
                 if (!message) {
-                    if (!filename) {
-                        filename = backupFilename;
-                    }
                     message = filename
                         ? Craft.t('app', 'Replace file failed for “{filename}”.', {filename})
                         : Craft.t('app', 'Replace file failed.');
@@ -1545,7 +1541,7 @@ $('#replace-btn').on('click', () => {
                 
               Craft.cp.displayError(message);
             },
-            fileuploadalways: (event, data) => {
+            fileuploadalways: (event, data = null) => {
                 $('#thumb-container').removeClass('loading');
             },
         }
