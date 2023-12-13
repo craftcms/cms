@@ -899,7 +899,7 @@ class AssetQuery extends ElementQuery
         $this->query->leftJoin(['assets_sites' => Table::ASSETS_SITES], [
             'and',
             '[[assets_sites.assetId]] = [[assets.id]]',
-            '[[assets_sites.siteId]] = [[elements_sites.id]]',
+            '[[assets_sites.siteId]] = [[elements_sites.siteId]]',
         ]);
         $this->subQuery->innerJoin(['volumeFolders' => Table::VOLUMEFOLDERS], '[[volumeFolders.id]] = [[assets.folderId]]');
         $this->query->innerJoin(['volumeFolders' => Table::VOLUMEFOLDERS], '[[volumeFolders.id]] = [[assets.folderId]]');
@@ -974,7 +974,7 @@ class AssetQuery extends ElementQuery
                 ->leftJoin(['assets_sites' => Table::ASSETS_SITES], [
                     'and',
                     '[[assets_sites.assetId]] = [[assets.id]]',
-                    '[[assets_sites.siteId]] = [[elements_sites.id]]',
+                    '[[assets_sites.siteId]] = [[elements_sites.siteId]]',
                 ])
                 ->andWhere($this->hasAlt ? ['not', $hasAltCondition] : $hasAltCondition);
         }

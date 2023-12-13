@@ -22,10 +22,10 @@ class m221205_082005_translatable_asset_alt_text extends Migration
         $this->dropTableIfExists(Table::ASSETS_SITES);
 
         $this->createTable(Table::ASSETS_SITES, [
-            'id' => $this->primaryKey(),
             'assetId' => $this->integer()->notNull(),
             'siteId' => $this->integer()->notNull(),
             'alt' => $this->text(),
+            'PRIMARY KEY([[assetId]], [[siteId]])',
         ]);
 
         $this->addForeignKey(null, Table::ASSETS_SITES, ['assetId'], Table::ASSETS, ['id'], 'CASCADE', null);

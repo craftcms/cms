@@ -175,10 +175,10 @@ class Install extends Migration
             'PRIMARY KEY([[id]])',
         ]);
         $this->createTable(Table::ASSETS_SITES, [
-            'id' => $this->primaryKey(),
             'assetId' => $this->integer()->notNull(),
             'siteId' => $this->integer()->notNull(),
             'alt' => $this->text(),
+            'PRIMARY KEY([[assetId, siteId]])',
         ]);
         $this->createTable(Table::IMAGETRANSFORMINDEX, [
             'id' => $this->primaryKey(),
