@@ -2,6 +2,7 @@
 
 namespace craft\migrations;
 
+use craft\base\Field;
 use craft\db\Migration;
 use craft\db\Table;
 
@@ -15,6 +16,9 @@ class m221205_082005_translatable_asset_alt_text extends Migration
      */
     public function safeUp(): bool
     {
+        $this->addColumn(Table::VOLUMES, 'altTranslationMethod', $this->string()->notNull()->defaultValue(Field::TRANSLATION_METHOD_SITE)->after('titleTranslationKeyFormat'));
+        $this->addColumn(Table::VOLUMES, 'altTranslationKeyFormat', $this->text()->after('altTranslationMethod'));
+
         $this->dropTableIfExists(Table::ASSETS_SITES);
 
         $this->createTable(Table::ASSETS_SITES, [
@@ -22,9 +26,6 @@ class m221205_082005_translatable_asset_alt_text extends Migration
             'assetId' => $this->integer()->notNull(),
             'siteId' => $this->integer()->notNull(),
             'alt' => $this->text(),
-            'dateCreated' => $this->dateTime()->notNull(),
-            'dateUpdated' => $this->dateTime()->notNull(),
-            'uid' => $this->uid(),
         ]);
 
         $this->addForeignKey(null, Table::ASSETS_SITES, ['assetId'], Table::ASSETS, ['id'], 'CASCADE', null);

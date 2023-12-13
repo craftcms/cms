@@ -2346,6 +2346,7 @@ abstract class Element extends Component implements ElementInterface
             $names['previewing'],
             $names['propagateAll'],
             $names['propagating'],
+            $names['propagatingFrom'],
             $names['resaving'],
             $names['searchScore'],
             $names['updatingFromDerivative'],
@@ -5636,14 +5637,6 @@ JS,
                 'isNew' => $isNew,
             ]));
         }
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function onPropagate(ElementInterface $siteElement, bool $isNew): void
-    {
-        // element types can do things during propagation
     }
 
     /**

@@ -1805,6 +1805,7 @@ class Elements extends Component
                         $siteClone = clone $siteElement;
                         $siteClone->duplicateOf = $siteElement;
                         $siteClone->propagating = true;
+                        $siteClone->propagatingFrom = $mainClone;
                         $siteClone->id = $mainClone->id;
                         $siteClone->uid = $mainClone->uid;
                         $siteClone->structureId = $mainClone->structureId;
@@ -3854,8 +3855,6 @@ class Elements extends Component
             }
         }
 
-        $element->onPropagate($siteElement, $isNewSiteForElement);
-
         // Copy the dirty attributes (except title, slug and uri, which may be translatable)
         $siteElement->setDirtyAttributes(array_filter($element->getDirtyAttributes(), function(string $attribute): bool {
             return $attribute !== 'title' && $attribute !== 'slug';
@@ -3892,6 +3891,7 @@ class Elements extends Component
         }
 
         $siteElement->propagating = true;
+        $siteElement->propagatingFrom = $element;
 
         if ($this->_saveElementInternal($siteElement, $crossSiteValidate, false, null, $supportedSites) === false) {
             // if the element we're trying to save has validation errors, notify original element about them

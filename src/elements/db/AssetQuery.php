@@ -8,6 +8,7 @@
 namespace craft\elements\db;
 
 use Craft;
+use craft\base\ElementInterface;
 use craft\db\Query;
 use craft\db\QueryAbortedException;
 use craft\db\Table;
@@ -875,15 +876,6 @@ class AssetQuery extends ElementQuery
             Craft::$app->getImageTransforms()->eagerLoadTransforms($elements, $transforms);
         }
 
-        // populate site-specific alts
-        foreach ($elements as $key => $element) {
-            $siteSettings = $element->getSiteSettings();
-            if (isset($siteSettings[$element->siteId])) {
-                $element->alt = $siteSettings[$element->siteId]->alt;
-            }
-        }
-
-
         return $elements;
     }
 
@@ -904,6 +896,11 @@ class AssetQuery extends ElementQuery
         }
 
         $this->joinElementTable(Table::ASSETS);
+        $this->query->leftJoin(['assets_sites' => Table::ASSETS_SITES], [
+            'and',
+            '[[assets_sites.assetId]] = [[assets.id]]',
+            '[[assets_sites.siteId]] = [[elements_sites.id]]',
+        ]);
         $this->subQuery->innerJoin(['volumeFolders' => Table::VOLUMEFOLDERS], '[[volumeFolders.id]] = [[assets.folderId]]');
         $this->query->innerJoin(['volumeFolders' => Table::VOLUMEFOLDERS], '[[volumeFolders.id]] = [[assets.folderId]]');
 
@@ -920,7 +917,8 @@ class AssetQuery extends ElementQuery
             'assets.focalPoint',
             'assets.keptFile',
             'assets.dateModified',
-            'volumeFolders.path AS folderPath',
+            'siteAlt' => 'assets_sites.alt',
+            'folderPath' => 'volumeFolders.path',
         ]);
 
         if ($this->volumeId) {
@@ -967,28 +965,18 @@ class AssetQuery extends ElementQuery
         }
 
         if ($this->hasAlt !== null) {
-            $existsQuery = (new Query())
-                ->select('assets_sites.assetId')
-                ->from(['assets_sites' => Table::ASSETS_SITES])
-                ->where('[[assets_sites.assetId]] = [[assets.id]]')
-                ->andWhere(['assets_sites.siteId' => $this->siteId])
-                ->andWhere('[[assets_sites.alt]] ' . ($this->hasAlt ? 'IS NOT NULL' : 'IS NULL'));
-
-            $notExistsQuery = (new Query())
-                ->select('assets_sites.assetId')
-                ->from(['assets_sites' => Table::ASSETS_SITES])
-                ->where('[[assets_sites.assetId]] = [[assets.id]]')
-                ->andWhere(['assets_sites.siteId' => $this->siteId]);
-
-            $this->subQuery->andWhere([
+            $hasAltCondition = [
                 'or',
-                ['EXISTS', $existsQuery],
-                [
+                ['assets.alt' => null],
+                ['assets_site.alt' => null],
+            ];
+            $this->subQuery
+                ->leftJoin(['assets_sites' => Table::ASSETS_SITES], [
                     'and',
-                    ['NOT EXISTS', $notExistsQuery],
-                    '[[assets.alt]] ' . ($this->hasAlt ? 'IS NOT NULL' : 'IS NULL'),
-                ],
-            ]);
+                    '[[assets_sites.assetId]] = [[assets.id]]',
+                    '[[assets_sites.siteId]] = [[elements_sites.id]]',
+                ])
+                ->andWhere($this->hasAlt ? ['not', $hasAltCondition] : $hasAltCondition);
         }
 
         if ($this->width) {
@@ -1107,6 +1095,20 @@ class AssetQuery extends ElementQuery
                 ->where(Db::parseNumericParam('id', $this->volumeId))
                 ->column();
         }
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function createElement(array $row): ElementInterface
+    {
+        // Use the site-specific alt text, if set
+        $siteAlt = ArrayHelper::remove($row, 'siteAlt');
+        if ($siteAlt !== null && $siteAlt !== '') {
+            $row['alt'] = $siteAlt;
+        }
+
+        return parent::createElement($row);
     }
 
     /**

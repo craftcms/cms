@@ -9,7 +9,6 @@ namespace craft\elements;
 
 use Craft;
 use craft\base\Element;
-use craft\base\ElementInterface;
 use craft\base\Field;
 use craft\base\Fs;
 use craft\base\FsInterface;
@@ -61,7 +60,6 @@ use craft\models\ImageTransform;
 use craft\models\Volume;
 use craft\models\VolumeFolder;
 use craft\records\Asset as AssetRecord;
-use craft\records\Asset_SiteSettings;
 use craft\search\SearchQuery;
 use craft\search\SearchQueryTerm;
 use craft\search\SearchQueryTermGroup;
@@ -1089,11 +1087,6 @@ class Asset extends Element
     private ?int $_oldVolumeId = null;
 
     /**
-     * @var Asset_SiteSettings[]
-     */
-    private array $_siteSettings;
-
-    /**
      * @inheritdoc
      */
     public function __toString(): string
@@ -1831,6 +1824,18 @@ JS,[
     }
 
     /**
+     * Returns the Alternative Text field’s translation key.
+     *
+     * @return string
+     * @since 5.0.0
+     */
+    public function getAltTranslationKey(): string
+    {
+        $volume = $this->getVolume();
+        return ElementHelper::translationKey($this, $volume->altTranslationMethod, $volume->altTranslationKeyFormat);
+    }
+
+    /**
      * @inheritdoc
      */
     public function getFieldLayout(): ?FieldLayout
@@ -1841,22 +1846,6 @@ JS,[
 
         $volume = $this->getVolume();
         return $volume->getFieldLayout();
-    }
-
-    /**
-     * Returns native alt field's translation key for the element
-     *
-     * @return string
-     * @since 5.0.0
-     */
-    public function getAltTranslationKey(): string
-    {
-        $field = $this->getAltField();
-        if ($field === null) {
-            return '';
-        }
-
-        return ElementHelper::translationKey($this, $field->translationMethod, $field->translationKeyFormat);
     }
 
     /**
@@ -2967,93 +2956,31 @@ JS;
             }
 
             $record->save(false);
+        }
 
-            // if we've already set the default alt, and now we are getting a different value,
-            // use that value to set the site-specific alt
-            if ($record->alt !== null && $record->alt !== $this->alt) {
-                $this->saveSiteSettings($this);
+        if (
+            $this->propagating &&
+            $this->propagatingFrom &&
+            !$isNew
+        ) {
+            /** @var self $from */
+            $from = $this->propagatingFrom;
+
+            if (
+                $this->alt !== $from->alt &&
+                $this->getAltTranslationKey() === $from->getAltTranslationKey()
+            ) {
+                $this->alt = $from->alt;
             }
         }
+
+        Db::upsert(Table::ASSETS_SITES, [
+            'assetId' => $this->id,
+            'siteId' => $this->siteId,
+            'alt' => $this->alt,
+        ]);
 
         parent::afterSave($isNew);
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function onPropagate(ElementInterface $siteElement, bool $isNew): void
-    {
-        // Copy the alt value if the translation key says so, or if we don't have Asset_SiteSettings record for it yet
-        if (
-            !$isNew &&
-            /** @phpstan-ignore-next-line */
-            $siteElement->getAltTranslationKey() === $this->getAltTranslationKey() &&
-            $siteElement->alt !== $this->alt
-        ) {
-            $this->saveSiteSettings($siteElement);
-        }
-    }
-
-    /**
-     * Returns the asset's site-specific settings.
-     *
-     * @return Asset_SiteSettings[]
-     * @since 5.0.0
-     */
-    public function getSiteSettings(): array
-    {
-        if (isset($this->_siteSettings)) {
-            return $this->_siteSettings;
-        }
-
-        if (!$this->id) {
-            return [];
-        }
-
-        $this->setSiteSettings(ArrayHelper::index(Craft::$app->getAssets()->getSiteSettings($this->id), 'siteId'));
-
-        return $this->_siteSettings;
-    }
-
-    /**
-     * Sets the asset's site-specific settings.
-     *
-     * @param Asset_SiteSettings[] $siteSettings
-     * @since 5.0.0
-     */
-    public function setSiteSettings(array $siteSettings): void
-    {
-        $this->_siteSettings = $siteSettings;
-    }
-
-    /**
-     * Store site settings for the asset element
-     *
-     * @param ElementInterface $element
-     * @return void
-     * @since 5.0.0
-     */
-    protected function saveSiteSettings(ElementInterface $element): void
-    {
-        if ($this->getAltField() !== null) {
-            $siteSettingsRecord = Asset_SiteSettings::findOne([
-                'assetId' => $element->id,
-                'siteId' => $element->siteId,
-            ]);
-
-            if (empty($siteSettingsRecord)) {
-                $siteSettingsRecord = new Asset_SiteSettings();
-                $siteSettingsRecord->assetId = $element->id;
-                $siteSettingsRecord->siteId = $element->siteId;
-                $siteSettingsRecord->alt = $this->alt;
-            } else {
-                if (!$element->propagating) {
-                    $siteSettingsRecord->alt = $this->alt;
-                }
-            }
-
-            $siteSettingsRecord->save(false);
-        }
     }
 
     /**
