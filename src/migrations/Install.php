@@ -174,6 +174,12 @@ class Install extends Migration
             'dateUpdated' => $this->dateTime()->notNull(),
             'PRIMARY KEY([[id]])',
         ]);
+        $this->createTable(Table::ASSETS_SITES, [
+            'assetId' => $this->integer()->notNull(),
+            'siteId' => $this->integer()->notNull(),
+            'alt' => $this->text(),
+            'PRIMARY KEY([[assetId, siteId]])',
+        ]);
         $this->createTable(Table::IMAGETRANSFORMINDEX, [
             'id' => $this->primaryKey(),
             'assetId' => $this->integer()->notNull(),
@@ -752,6 +758,8 @@ class Install extends Migration
             'transformSubpath' => $this->string(),
             'titleTranslationMethod' => $this->string()->notNull()->defaultValue(Field::TRANSLATION_METHOD_SITE),
             'titleTranslationKeyFormat' => $this->text(),
+            'altTranslationMethod' => $this->string()->notNull()->defaultValue(Field::TRANSLATION_METHOD_SITE),
+            'altTranslationKeyFormat' => $this->text(),
             'sortOrder' => $this->smallInteger()->unsigned(),
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
@@ -967,6 +975,8 @@ class Install extends Migration
         $this->addForeignKey(null, Table::ASSETS, ['id'], Table::ELEMENTS, ['id'], 'CASCADE', null);
         $this->addForeignKey(null, Table::ASSETS, ['uploaderId'], Table::USERS, ['id'], 'SET NULL', null);
         $this->addForeignKey(null, Table::ASSETS, ['volumeId'], Table::VOLUMES, ['id'], 'CASCADE', null);
+        $this->addForeignKey(null, Table::ASSETS_SITES, ['assetId'], Table::ASSETS, ['id'], 'CASCADE', null);
+        $this->addForeignKey(null, Table::ASSETS_SITES, ['siteId'], Table::SITES, ['id'], 'CASCADE', 'CASCADE');
         $this->addForeignKey(null, Table::AUTHENTICATOR, ['userId'], Table::USERS, ['id'], 'CASCADE', null);
         $this->addForeignKey(null, Table::CATEGORIES, ['groupId'], Table::CATEGORYGROUPS, ['id'], 'CASCADE', null);
         $this->addForeignKey(null, Table::CATEGORIES, ['id'], Table::ELEMENTS, ['id'], 'CASCADE', null);

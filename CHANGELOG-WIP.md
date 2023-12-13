@@ -8,6 +8,7 @@
 - Element chips and cards now include quick action menus. ([#13902](https://github.com/craftcms/cms/pull/13902))
 - Entry edit pages now include quick links to other sections’ index sources.
 - Asset edit pages now include quick links to other volumes’ index sources.
+- Assets’ Alternative Text fields are now translatable. ([#11576](https://github.com/craftcms/cms/issues/11576))
 - Entry conditions can now have a “Matrix field” rule. ([#13794](https://github.com/craftcms/cms/discussions/13794))
 - Selected elements within relational fields now include a context menu with “View in a new tab”, “Edit”, and “Remove” options.
 - Selected elements within relational fields now include a dedicated drag handle.
@@ -50,6 +51,7 @@
 - Matrix fields now have a “View Mode” setting, giving admins the choice to display nested entries as cards, inline-editable blocks, or an embedded element index.
 - The address field layout is now accessed via **Settings** → **Addresses**.
 - Volumes now have a “Subpath” setting, and can reuse filesystems so long as the subpaths don’t overlap. ([#11044](https://github.com/craftcms/cms/discussions/11044))
+- Volumes now have an “Alternative Text Translation Method” setting. ([#11576](https://github.com/craftcms/cms/issues/11576))
 - Added support for defining custom locale aliases, via a new `localeAliases` config setting. ([#12705](https://github.com/craftcms/cms/pull/12705))
 - Removed the concept of field groups.
 - `entrify/*` commands now ask if an entry type already exists for the section.
@@ -108,6 +110,7 @@
 - Added `craft\base\ElementTrait::$eagerLoadInfo`.
 - Added `craft\base\ElementTrait::$elementQueryResult`.
 - Added `craft\base\ElementTrait::$forceSave`.
+- Added `craft\base\ElementTrait::$propagatingFrom`.
 - Added `craft\base\Field::valueSql()`.
 - Added `craft\base\FieldInterface::dbType()`, which defines the type(s) of values the field will store in the `elements_sites.content` column (if any).
 - Added `craft\base\FieldInterface::getValueSql()`.
@@ -226,6 +229,8 @@
 - Added `craft\models\FieldLayout::getThumbField()`.
 - Added `craft\models\FsListing::getAdjustedUri()`.
 - Added `craft\models\Section::getCpEditUrl()`.
+- Added `craft\models\Volume::$altTranslationKeyFormat`.
+- Added `craft\models\Volume::$altTranslationMethod`.
 - Added `craft\models\Volume::getSubpath()`.
 - Added `craft\models\Volume::setSubpath()`.
 - Added `craft\queue\BaseBatchedElementJob`. ([#14032](https://github.com/craftcms/cms/pull/14032))

@@ -178,6 +178,12 @@ trait ElementTrait
     public bool $propagating = false;
 
     /**
+     * @var ElementInterface|null The element that this element is being propagated from.
+     * @since 5.0.0
+     */
+    public ?ElementInterface $propagatingFrom = null;
+
+    /**
      * @var bool Whether the element is currently being validated via BaseRelationField::validateRelatedElements()
      * @since 4.5.10
      */

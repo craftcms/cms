@@ -1805,6 +1805,7 @@ class Elements extends Component
                         $siteClone = clone $siteElement;
                         $siteClone->duplicateOf = $siteElement;
                         $siteClone->propagating = true;
+                        $siteClone->propagatingFrom = $mainClone;
                         $siteClone->id = $mainClone->id;
                         $siteClone->uid = $mainClone->uid;
                         $siteClone->structureId = $mainClone->structureId;
@@ -3890,6 +3891,7 @@ class Elements extends Component
         }
 
         $siteElement->propagating = true;
+        $siteElement->propagatingFrom = $element;
 
         if ($this->_saveElementInternal($siteElement, $crossSiteValidate, false, null, $supportedSites) === false) {
             // if the element we're trying to save has validation errors, notify original element about them
