@@ -1338,6 +1338,7 @@ return [
     'Select element' => 'Select element',
     'Select section' => 'Select section',
     'Select transform' => 'Select transform',
+    'Select volume' => 'Select volume',
     'Select {element}' => 'Select {element}',
     'Select' => 'Select',
     'Selectable {type} Condition' => 'Selectable {type} Condition',
