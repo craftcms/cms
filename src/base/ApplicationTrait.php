@@ -38,7 +38,10 @@ use craft\fieldlayoutelements\assets\AssetTitleField;
 use craft\fieldlayoutelements\entries\EntryTitleField;
 use craft\fieldlayoutelements\FullNameField;
 use craft\fieldlayoutelements\TitleField;
-use craft\fieldlayoutelements\users\AddressesField;
+use craft\fieldlayoutelements\users\EmailField;
+use craft\fieldlayoutelements\users\FullNameField as UserFullNameField;
+use craft\fieldlayoutelements\users\PhotoField;
+use craft\fieldlayoutelements\users\UsernameField;
 use craft\helpers\App;
 use craft\helpers\Db;
 use craft\helpers\Session;
@@ -58,6 +61,7 @@ use craft\services\Announcements;
 use craft\services\Api;
 use craft\services\AssetIndexer;
 use craft\services\Assets;
+use craft\services\Auth;
 use craft\services\Categories;
 use craft\services\Composer;
 use craft\services\Conditions;
@@ -133,6 +137,7 @@ use yii\web\ServerErrorHttpException;
  * @property-read AssetIndexer $assetIndexer The asset indexer service
  * @property-read AssetManager $assetManager The asset manager component
  * @property-read Assets $assets The assets service
+ * @property-read Auth $auth The user authentication service
  * @property-read Categories $categories The categories service
  * @property-read Composer $composer The Composer service
  * @property-read Conditions $conditions The conditions service
@@ -277,6 +282,12 @@ trait ApplicationTrait
      * @see saveInfoAfterRequest()
      */
     private bool $_waitingToSaveInfo = false;
+
+    /**
+     * @var callable[]
+     * @see onAfterRequest()
+     */
+    private array $afterRequestCallbacks = [];
 
     /**
      * @inheritdoc
@@ -489,10 +500,26 @@ trait ApplicationTrait
         ], true)) {
             $callback();
         } else {
-            $this->on(Application::EVENT_AFTER_REQUEST, function() use ($callback) {
-                $callback();
-            });
+            $this->afterRequestCallbacks[] = $callback;
         }
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function trigger($name, Event $event = null)
+    {
+        // call the onAfterRequest() callbacks directly
+        if ($name === self::EVENT_AFTER_REQUEST && !empty($this->afterRequestCallbacks)) {
+            $event ??= new Event();
+            $event->sender = $this;
+            $event->name = $name;
+            while ($callback = array_shift($this->afterRequestCallbacks)) {
+                $callback($event);
+            }
+        }
+
+        parent::trigger($name, $event);
     }
 
     /**
@@ -979,6 +1006,18 @@ trait ApplicationTrait
     {
         /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->get('assetIndexer');
+    }
+
+    /**
+     * Returns the user authentication service.
+     *
+     * @return Auth The Auth service
+     * @since 5.0.0
+     */
+    public function getAuth(): Auth
+    {
+        /** @noinspection PhpIncompatibleReturnTypeInspection */
+        return $this->get('auth');
     }
 
     /**
@@ -1680,7 +1719,12 @@ trait ApplicationTrait
                     $event->fields[] = EntryTitleField::class;
                     break;
                 case User::class:
-                    $event->fields[] = AddressesField::class;
+                    if (!$this->getConfig()->getGeneral()->useEmailAsUsername) {
+                        $event->fields[] = UsernameField::class;
+                    }
+                    $event->fields[] = UserFullNameField::class;
+                    $event->fields[] = PhotoField::class;
+                    $event->fields[] = EmailField::class;
                     break;
             }
         });

@@ -382,6 +382,8 @@ interface FieldInterface extends SavableComponentInterface
      * - If an existing element was retrieved from the database, the value will be whatever is stored in the field’s
      *   `content` table column. (Or if the field doesn’t have a `content` table column per [[hasContentColumn()]],
      *   the value will be `null`.)
+     * - If the field is being cleared out (e.g. via the `resave/entries` command with `--to :empty:`),
+     *   the value will be an empty string (`''`).
      *
      * There are cases where a pre-normalized value could be passed in as well, so be sure to account for that.
      *

@@ -146,6 +146,7 @@ class UserSettingsController extends Controller
             $settings['allowPublicRegistration'] = (bool)$this->request->getBodyParam('allowPublicRegistration');
             $settings['deactivateByDefault'] = (bool)$this->request->getBodyParam('deactivateByDefault');
             $settings['defaultGroup'] = $this->request->getBodyParam('defaultGroup');
+            $settings['require2fa'] = $this->request->getBodyParam('require2fa') ?: false;
         }
 
         $projectConfig->set('users', $settings, 'Update user settings');
