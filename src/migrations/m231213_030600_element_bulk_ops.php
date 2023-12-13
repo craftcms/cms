@@ -15,14 +15,14 @@ class m231213_030600_element_bulk_ops extends Migration
      */
     public function safeUp(): bool
     {
-        $this->createTable(Table::ELEMENTBULKOPS, [
+        $this->createTable(Table::ELEMENTS_BULKOPS, [
             'elementId' => $this->integer(),
             'key' => $this->char(10)->notNull(),
             'timestamp' => $this->dateTime()->notNull(),
             'PRIMARY KEY([[elementId]], [[key]])',
         ]);
-        $this->addForeignKey(null, Table::ELEMENTBULKOPS, ['elementId'], Table::ELEMENTS, ['id'], 'CASCADE', null);
-        $this->createIndex(null, Table::ELEMENTBULKOPS, ['timestamp'], false);
+        $this->addForeignKey(null, Table::ELEMENTS_BULKOPS, ['elementId'], Table::ELEMENTS, ['id'], 'CASCADE', null);
+        $this->createIndex(null, Table::ELEMENTS_BULKOPS, ['timestamp'], false);
         return true;
     }
 

@@ -44,9 +44,9 @@ abstract class Table
     public const DRAFTS = '{{%drafts}}';
     /** @since 4.5.0 */
     public const ELEMENTACTIVITY = '{{%elementactivity}}';
-    /** @since 5.0.0 */
-    public const ELEMENTBULKOPS = '{{%elementbulkops}}';
     public const ELEMENTS = '{{%elements}}';
+    /** @since 5.0.0 */
+    public const ELEMENTS_BULKOPS = '{{%elements_bulkops}}';
     /** @since 5.0.0 */
     public const ELEMENTS_OWNERS = '{{%elements_owners}}';
     public const ELEMENTS_SITES = '{{%elements_sites}}';

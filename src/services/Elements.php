@@ -1107,7 +1107,7 @@ class Elements extends Component
             ]));
         }
 
-        Db::delete(Table::ELEMENTBULKOPS, ['key' => $key]);
+        Db::delete(Table::ELEMENTS_BULKOPS, ['key' => $key]);
     }
 
     /**
@@ -1125,7 +1125,7 @@ class Elements extends Component
         $timestamp = Db::prepareDateForDb(DateTimeHelper::now());
 
         foreach (array_keys($this->bulkKeys) as $key) {
-            Db::upsert(Table::ELEMENTBULKOPS, [
+            Db::upsert(Table::ELEMENTS_BULKOPS, [
                 'elementId' => $element->id,
                 'key' => $key,
                 'timestamp' => $timestamp,

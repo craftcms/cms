@@ -1004,6 +1004,7 @@ interface ElementQueryInterface extends QueryInterface, Arrayable
      *
      * @param string|null $value The property value
      * @return static self reference
+     * @since 5.0.0
      */
     public function inBulkOp(?string $value): static;
 

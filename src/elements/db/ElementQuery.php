@@ -350,6 +350,7 @@ class ElementQuery extends Query implements ElementQueryInterface
      * @var string|null The bulk element operation key that the resulting elements were involved in.
      *
      * @used-by ElementQuery::inBulkOp()
+     * @since 5.0.0
      */
     public ?string $inBulkOp = null;
 
@@ -2871,8 +2872,8 @@ class ElementQuery extends Query implements ElementQueryInterface
     {
         if ($this->inBulkOp) {
             $this->subQuery
-                ->innerJoin(['elementbulkops' => Table::ELEMENTBULKOPS], '[[elementbulkops.elementId]] = [[elements.id]]')
-                ->andWhere(['elementbulkops.key' => $this->inBulkOp]);
+                ->innerJoin(['elements_bulkops' => Table::ELEMENTS_BULKOPS], '[[elements_bulkops.elementId]] = [[elements.id]]')
+                ->andWhere(['elements_bulkops.key' => $this->inBulkOp]);
         }
     }
 

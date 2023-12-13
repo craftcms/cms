@@ -425,7 +425,7 @@ SQL;
     private function _deleteStaleBulkElementOps(): void
     {
         $this->_stdout('    > deleting stale bulk element operation records ... ');
-        Db::delete(Table::ELEMENTBULKOPS, ['<', 'timestamp', Db::prepareDateForDb(new DateTime('2 weeks ago'))]);
+        Db::delete(Table::ELEMENTS_BULKOPS, ['<', 'timestamp', Db::prepareDateForDb(new DateTime('2 weeks ago'))]);
         $this->_stdout("done\n", Console::FG_GREEN);
     }
 
