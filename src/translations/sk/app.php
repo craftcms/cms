@@ -1296,6 +1296,7 @@ return [
     'See all' => 'Zobraziť všetko',
     'See logs' => 'Zobraziť záznamy',
     'Select All' => 'Vybrať všetko',
+    'Select a filesystem' => 'Select a filesystem',
     'Select a volume' => 'Vyberte zväzok',
     'Select all' => 'Vybrať všetko',
     'Select element' => 'Vybrať prvok',

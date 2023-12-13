@@ -284,6 +284,12 @@ trait ApplicationTrait
     private bool $_waitingToSaveInfo = false;
 
     /**
+     * @var callable[]
+     * @see onAfterRequest()
+     */
+    private array $afterRequestCallbacks = [];
+
+    /**
      * @inheritdoc
      */
     public function setVendorPath($path): void
@@ -494,10 +500,26 @@ trait ApplicationTrait
         ], true)) {
             $callback();
         } else {
-            $this->on(Application::EVENT_AFTER_REQUEST, function() use ($callback) {
-                $callback();
-            });
+            $this->afterRequestCallbacks[] = $callback;
         }
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function trigger($name, Event $event = null)
+    {
+        // call the onAfterRequest() callbacks directly
+        if ($name === self::EVENT_AFTER_REQUEST && !empty($this->afterRequestCallbacks)) {
+            $event ??= new Event();
+            $event->sender = $this;
+            $event->name = $name;
+            while ($callback = array_shift($this->afterRequestCallbacks)) {
+                $callback($event);
+            }
+        }
+
+        parent::trigger($name, $event);
     }
 
     /**
