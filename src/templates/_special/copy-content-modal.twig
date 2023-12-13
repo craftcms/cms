@@ -1,28 +1,46 @@
 {% import '_includes/forms.twig' as forms %}
 
 <div class="modal modal-copy-content fitted">
-    <div class="body">
-        <h2>{{ 'Copy content from site' | t('app') }}</h2>
-        <form
-            class="copyBetweenSites"
-            method="post"
-            accept-charset="UTF-8"
-        >
+    <form
+        class="copyBetweenSites"
+        method="post"
+        accept-charset="UTF-8"
+    >
+        <div class="body">
+            <p style="margin-top: 0">
+                {{ 'Field values will only be copied if they are translatable ({icon}) and their content differs from the current site.' | t('app', {
+                    icon: '<span class="t9n-indicator" data-icon="language" data-handle="title"></span>'
+                }) | raw }}
+            </p>
+
             {{ csrfInput() }}
             {{ actionInput('elements/copy-field-values-from-site') }}
 
             {{ hiddenInput('elementId', element.canonicalId) }}
 
+
             {{ forms.selectField({
-                label: 'Copy from' | t('app'),
+                label: 'Copy content from' | t('app'),
                 name: 'copyFromSiteId',
-                instructions: 'Only translatable (<span class="t9n-indicator" data-icon="language" data-handle="title"></span>) field values will be copied if their content differs from the current.' | t('app'),
                 options: siteOptions,
+                fullwidth:  true
             }) }}
 
-            {{ forms.submitButton({
-                label: 'Copy' | t('app')
-            }) }}
-        </form>
-    </div>
+        </div>
+        <footer class="footer">
+            <div class="buttons flex-justify-end">
+                {{ forms.button({
+                    label: 'Cancel',
+                    attributes: {
+                        data: {
+                            cancel: true
+                        }
+                    }
+                }) }}
+                {{ forms.submitButton({
+                    label: 'Copy' | t('app')
+                }) }}
+            </div>
+        </footer>
+    </form>
 </div>

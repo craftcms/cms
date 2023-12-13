@@ -77,8 +77,10 @@ Craft.ElementCopyContent = Garnish.Base.extend(
         }
       );
       const $container = $(data.html);
+      const $cancelBtn = $container.find('[data-cancel]');
 
-      new Garnish.Modal($container);
+      const modal = new Garnish.Modal($container);
+      this.addListener($cancelBtn, 'activate', () => modal.hide());
     },
 
     showFieldCopyDialogue: function (ev) {
