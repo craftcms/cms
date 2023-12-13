@@ -1,0 +1,22 @@
+{#
+Copy content fields, fetched via XHR by the "Copy content from site" tooltip
+#}
+
+{% import '_includes/forms.twig' as forms %}
+
+{{ csrfInput() }}
+{{ actionInput('elements/copy-field-values-from-site') }}
+
+{{ hiddenInput('elementId', element.canonicalId) }}
+{{ hiddenInput('copyFieldHandle', copyFieldHandle ?? null) }}
+
+<div class="fullwidth">
+    {{ forms.selectField({
+        label: 'Copy from' | t('app'),
+        name: 'copyFromSiteId',
+        options: siteOptions,
+        class: [
+            viewMode == 'tooltip' ? 'fullwidth' : false
+        ] | filter
+    }) }}
+</div>

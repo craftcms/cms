@@ -1,46 +1,38 @@
+{#
+    Copy content modal, fetched via XHR by the "Copy content from site" element action
+#}
+
 {% import '_includes/forms.twig' as forms %}
 
 <div class="modal modal-copy-content fitted">
-    <form
-        class="copyBetweenSites"
-        method="post"
-        accept-charset="UTF-8"
-    >
-        <div class="body">
-            <p style="margin-top: 0">
-                {{ 'Field values will only be copied if they are translatable ({icon}) and their content differs from the current site.' | t('app', {
-                    icon: '<span class="t9n-indicator" data-icon="language" data-handle="title"></span>'
-                }) | raw }}
-            </p>
+    <div class="body">
+        <p>
+            {{ 'Field values will only be copied if they are translatable ({icon}) and their content differs from the current site.' | t('app', {
+                icon: '<span class="t9n-indicator" data-icon="language" data-handle="title"></span>'
+            }) | raw }}
+        </p>
+        <form
+            class="copyBetweenSites"
+            method="post"
+            accept-charset="UTF-8"
+        >
+            {% include '_special/copy-content-fields.twig' %}
 
-            {{ csrfInput() }}
-            {{ actionInput('elements/copy-field-values-from-site') }}
-
-            {{ hiddenInput('elementId', element.canonicalId) }}
-
-
-            {{ forms.selectField({
-                label: 'Copy content from' | t('app'),
-                name: 'copyFromSiteId',
-                options: siteOptions,
-                fullwidth:  true
-            }) }}
-
-        </div>
-        <footer class="footer">
-            <div class="buttons flex-justify-end">
-                {{ forms.button({
-                    label: 'Cancel',
-                    attributes: {
-                        data: {
-                            cancel: true
+            <footer class="footer">
+                <div class="buttons flex-justify-end">
+                    {{ forms.button({
+                        label: 'Cancel',
+                        attributes: {
+                            data: {
+                                cancel: true
+                            }
                         }
-                    }
-                }) }}
-                {{ forms.submitButton({
-                    label: 'Copy' | t('app')
-                }) }}
-            </div>
-        </footer>
-    </form>
+                    }) }}
+                    {{ forms.submitButton({
+                        label: 'Copy' | t('app')
+                    }) }}
+                </div>
+            </footer>
+        </form>
+    </div>
 </div>

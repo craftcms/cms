@@ -3,8 +3,9 @@ Craft.ElementCopyContent = Garnish.Base.extend(
     $sitesMenuCopyBtn: null,
     $copyAllFromSiteBtn: null,
     $translationBtn: null,
-    sitesForCopyFieldAction: null,
+    tooltips: {},
     copySitesMenuId: null,
+    hud: null,
 
     init: function (settings) {
       // this.$trigger = $(trigger);
@@ -16,8 +17,6 @@ Craft.ElementCopyContent = Garnish.Base.extend(
         Math.random() * 1000000000
       )}`;
 
-      this.sitesForCopyFieldAction = this._getSitesForCopyFieldAction();
-
       this.addListener(
         this.$copyAllFromSiteBtn,
         'click',
@@ -25,50 +24,36 @@ Craft.ElementCopyContent = Garnish.Base.extend(
       );
 
       this.addListener(this.$translationBtn, 'click', 'showFieldCopyDialogue');
+      this.addListener(this.$translationBtn, 'mouseover', 'fetchCopyTooltip');
     },
 
-    _getSitesForCopyFieldAction: function () {
-      return this.settings.supportedSites.map((site) => {
-        return {
-          label: site.name,
-          value: site.id,
-        };
-      });
-    },
+    fetchCopyTooltip: async function (ev) {
+      const $btn = $(ev.target);
+      const handle = $btn.data('handle');
 
-    _getCopyBetweenSitesForm: function (fieldHandle = null) {
-      let form = '';
-
-      form +=
-        '<form class="fitted copyBetweenSites" method="post" accept-charset="UTF-8" data-action="elements/copy-field-values-from-site">' +
-        Craft.getCsrfInput();
-
-      if (fieldHandle !== null) {
-        form +=
-          '<input type="hidden" id="copyFieldHandle" name="copyFieldHandle" value="' +
-          $btn.data('handle') +
-          '"/>';
+      if (!Object.hasOwn(this.tooltips, handle)) {
+        this.tooltips[handle] = await this._getCopyBetweenSitesForm(handle);
       }
 
-      form +=
-        '<label>' +
-        Craft.t('app', 'From') +
-        '</label>' +
-        '<input type="hidden" name="copyFromSiteId" id="copyFromSiteId" value="" />' +
-        '<button type="submit" class="btn submit">' +
-        Craft.t('app', 'Copy') +
-        '</button>' +
-        '</form>';
-
-      return form;
+      return this.tooltips[handle];
     },
 
-    showElementCopyDialogue: async function (ev) {
+    /**
+     * Fetch copy element markup
+     *
+     * @param {string} viewMode View mode of the markup. Can be 'modal' or 'tooltip'
+     * @returns {Promise<string>} Markup for modal
+     * @private
+     */
+    _fetchMarkup: async function (viewMode = 'modal', copyFieldHandle = null) {
       const {data} = await Craft.sendActionRequest(
         'POST',
-        'elements/copy-from-site-modal',
+        'elements/copy-from-site-form',
         {
           data: {
+            [Craft.csrfTokenName]: Craft.csrfTokenValue,
+            viewMode,
+            copyFieldHandle,
             siteId: this.settings.siteId,
             elementId: this.settings.canonicalId,
             draftId: this.settings.draftId,
@@ -76,131 +61,97 @@ Craft.ElementCopyContent = Garnish.Base.extend(
           },
         }
       );
-      const $container = $(data.html);
+
+      return data.html;
+    },
+
+    _getCopyBetweenSitesForm: async function (copyFieldHandle = null) {
+      const html = await this._fetchMarkup('tooltip', copyFieldHandle);
+      const $form = $('<form/>', {
+        method: 'POST',
+        class: 'fitted copy flex flex-nowrap flex-end tooltip-copy-content',
+      });
+
+      // Put server HTML into our form
+      $form.append(html);
+
+      // Add submit button
+      Craft.ui
+        .createSubmitButton({
+          spinner: true,
+          label: Craft.t('app', 'Copy'),
+        })
+        .appendTo($form);
+
+      return $form;
+    },
+
+    showElementCopyDialogue: async function (ev) {
+      const html = await this._fetchMarkup('modal');
+      const $container = $(html);
       const $cancelBtn = $container.find('[data-cancel]');
 
       const modal = new Garnish.Modal($container);
       this.addListener($cancelBtn, 'activate', () => modal.hide());
     },
 
-    showFieldCopyDialogue: function (ev) {
+    showFieldCopyDialogue: async function (ev) {
       ev.preventDefault();
 
-      $btn = $(ev.target);
+      const $btn = $(ev.target);
+      const handle = $btn.data('handle');
 
-      let hudContent =
-        `<div class="copy-translation-dialogue">` +
-        `<span>` +
-        $btn.attr('title') +
-        `</span>`;
+      const $hudContent = $('<div/>', {
+        class: 'copy-translation-dialogue',
+      });
+      $hudContent.append('<span/>', $btn.attr('title'));
 
       // only allow the copy field value of a copyable field
       // only if drafts can be created for this element (both user has permissions and element supports them)
       // only if this element exists on other sites too
-      if (
-        $btn.hasClass('copyable') &&
-        this.sitesForCopyFieldAction.length > 0
-      ) {
-        hudContent +=
-          `<hr />` + this._getCopyBetweenSitesForm($btn.data('handle'));
+      if ($btn.hasClass('copyable')) {
+        $hudContent.append('<hr/>');
+
+        // If we haven't loaded this tooltip, do that and show a loading spinner along the way
+        if (!Object.hasOwn(this.tooltips, handle)) {
+          const $loadSpinner = $('<div/>', {
+            class: 'spinner',
+            title: Craft.t('app', 'Loading'),
+            'aria-label': Craft.t('app', 'Loading'),
+          });
+
+          $hudContent.append($loadSpinner);
+
+          this.fetchCopyTooltip(ev).then((html) => {
+            $loadSpinner.remove();
+            $hudContent.append(html);
+          });
+        } else {
+          $hudContent.append($(this.tooltips[handle]));
+        }
       }
 
-      hudContent += `</div>`;
-
-      let hud = new Garnish.HUD($btn, hudContent);
-      this.sitesDisclosureMenu(hud);
+      this.hud = new Garnish.HUD($btn, $hudContent);
 
       this.addListener(
-        $('.copyBetweenSites'),
+        $hudContent.find('form'),
         'submit',
-        {
-          hud: hud,
-        },
         'copyValuesFromSite'
       );
     },
 
-    sitesDisclosureMenu: function (hud) {
-      let submitBtn = hud.$body.find('.copyBetweenSites button.submit');
-
-      if (
-        this.$sitesMenuCopyBtn &&
-        this.$sitesMenuCopyBtn.data('trigger') !== undefined
-      ) {
-        this.$sitesMenuCopyBtn.data('trigger').destroy();
-        $(`#${this.copySitesMenuId}`).remove();
-        this.$sitesMenuCopyBtn = null;
-      }
-
-      this.$sitesMenuCopyBtn = $('<button />', {
-        type: 'button',
-        class: 'btn copy-sites-menu-btn menubtn',
-        text: Craft.t('app', 'Select a site'),
-        'aria-controls': this.copySitesMenuId,
-        'aria-expanded': false,
-      }).insertBefore(submitBtn);
-
-      const $menu = $('<div/>', {
-        id: this.copySitesMenuId,
-        class: 'menu menu--disclosure',
-      }).insertBefore(submitBtn);
-
-      this._buildSitesList(this.sitesForCopyFieldAction, hud).appendTo($menu);
-
-      this.$sitesMenuCopyBtn.disclosureMenu();
-    },
-
-    _buildSitesList: function (sites, hud) {
-      const $ul = $('<ul/>');
-
-      sites.forEach((site) => {
-        const $button = $('<button/>', {
-          type: 'button',
-          class: 'menu-option',
-          text: site.label,
-          'data-siteId': site.value,
-        }).on('click', (ev) => {
-          let $option = $(ev.target);
-
-          hud.$body.find('#copyFromSiteId').val($option.data('siteid'));
-          this.$sitesMenuCopyBtn.text($option.text());
-          this.$sitesMenuCopyBtn.data('trigger').hide();
-        });
-
-        $('<li/>').append($button).appendTo($ul);
-      });
-
-      return $ul;
-    },
-
     copyValuesFromSite: async function (ev) {
       ev.preventDefault();
-      // hide the HUD
-      ev.data.hud.$hud.hide();
 
-      let $form = $(ev.target);
-      let params = {
-        copyFromSiteId: $form.find('[name="copyFromSiteId"]').val(),
-        elementId: this.settings.canonicalId,
-        draftId: this.settings.draftId,
-        provisional: this.settings.isProvisionalDraft,
-        isFullPage: this.settings.isFullPage,
-      };
-
-      if ($form.find('[name="copyFieldHandle"]').length > 0) {
-        params['fieldHandle'] = $form.find('[name="copyFieldHandle"]').val();
-      }
-
-      if (Craft.csrfTokenName) {
-        params[Craft.csrfTokenName] = Craft.csrfTokenValue;
-      }
+      const $submitBtn = $(ev.target).find('[type=submit]');
+      $submitBtn.addClass('loading');
 
       try {
         const response = await Craft.sendActionRequest(
           'POST',
-          $form.data('action'),
+          'elements/copy-field-values-from-site',
           {
-            data: params,
+            data: new FormData(ev.target),
           }
         );
         const element = response.data.element;
@@ -218,6 +169,12 @@ Craft.ElementCopyContent = Garnish.Base.extend(
         if (typeof this.settings.onSuccess === 'function') {
           this.settings.onSuccess(response);
         }
+
+        if (this.hud) {
+          this.hud.hide();
+        }
+
+        $submitBtn.removeClass('loading');
         Craft.cp.displayNotice(response.data.message);
       } catch (e) {
         if (typeof this.settings.onError === 'function') {

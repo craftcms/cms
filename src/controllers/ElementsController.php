@@ -555,7 +555,7 @@ class ElementsController extends Controller
         }
 
         // if $fieldHandle is null, we're copying all element fields
-        $fieldHandle = $this->request->getBodyParam('fieldHandle', null);
+        $fieldHandle = $this->request->getBodyParam('copyFieldHandle', null);
         $copyFromSiteId = $this->request->getRequiredBodyParam('copyFromSiteId');
         $isFullPage = $this->request->getBodyParam('isFullPage');
 
@@ -617,15 +617,18 @@ class ElementsController extends Controller
         return $this->_asSuccess($result['message'], $result['element']);
     }
 
-    public function actionCopyFromSiteModal(): Response
+    public function actionCopyFromSiteForm(): Response
     {
         $this->requireAcceptsJson();
         $this->requireCpRequest();
 
+        $viewMode = Craft::$app->getRequest()->getParam('viewMode', 'modal');
+        $copyFieldHandle = Craft::$app->getRequest()->getParam('copyFieldHandle');
+        $template = $viewMode === 'modal' ? '_special/copy-content-modal.twig' : '_special/copy-content-fields.twig';
+
         $element = $this->_element();
         $sitesService = Craft::$app->getSites();
 
-        // $supportedSites = ElementHelper::supportedSitesForElement($element);
         $siteOptions = Collection::make(ElementHelper::editableSiteIdsForElement($element))
             ->filter(fn(int $siteId) => $siteId !== $this->_siteId)
             ->map(fn(int $siteId) => $sitesService->getSiteById($siteId))
@@ -635,8 +638,10 @@ class ElementsController extends Controller
             ]);
 
         $view = $this->getView();
-        $html = $view->renderTemplate('_special/copy-content-modal.twig', [
+        $html = $view->renderTemplate($template, [
+            'viewMode' => $viewMode,
             'siteOptions' => $siteOptions,
+            'copyFieldHandle' => $copyFieldHandle,
             'element' => $element,
         ]);
 

@@ -250,6 +250,8 @@ Craft.ElementEditor = Garnish.Base.extend(
               window.location.reload();
             } else {
               this.slideout.close();
+              this.slideout.destroy();
+
               this.slideout = Craft.createElementEditor(
                 'craft\\elements\\Entry',
                 {
