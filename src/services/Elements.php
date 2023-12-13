@@ -116,7 +116,19 @@ class Elements extends Component
     public const EVENT_BEFORE_EAGER_LOAD_ELEMENTS = 'beforeEagerLoadElements';
 
     /**
+     * @event Event The event that is triggered before a bulk element operation has started.
+     *
+     * Note that this won’t necessarily fire from the same request as [[EVENT_AFTER_BULK_OP]].
+     *
+     * @since 5.0.0
+     */
+    public const EVENT_BEFORE_BULK_OP = 'beforeBulkOp';
+
+    /**
      * @event Event The event that is triggered after a bulk element operation is completed.
+     *
+     * Note that this won’t necessarily fire from the same request as [[EVENT_BEFORE_BULK_OP]].
+     *
      * @since 5.0.0
      */
     public const EVENT_AFTER_BULK_OP = 'afterBulkOp';
@@ -1057,6 +1069,13 @@ class Elements extends Component
     public function beginBulkOp(): string
     {
         $key = StringHelper::randomString(10);
+
+        if ($this->hasEventHandlers(self::EVENT_BEFORE_BULK_OP)) {
+            $this->trigger(self::EVENT_BEFORE_BULK_OP, new BulkElementOpEvent([
+                'key' => $key,
+            ]));
+        }
+
         $this->resumeBulkOp($key);
         return $key;
     }
