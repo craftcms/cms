@@ -3280,7 +3280,7 @@ class Elements extends Component
     ): ElementInterface {
         $supportedSites = ArrayHelper::index(ElementHelper::supportedSitesForElement($element), 'siteId');
 
-        $this->ensureBulkOp(function() use ($element, $supportedSites, $siteId, $siteElement) {
+        $this->ensureBulkOp(function() use ($element, $supportedSites, $siteId, &$siteElement) {
             $this->_propagateElement($element, $supportedSites, $siteId, $siteElement);
 
             // Track this element in bulk operations
