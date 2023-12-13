@@ -29,9 +29,11 @@ use craft\helpers\UrlHelper;
 use craft\i18n\Locale;
 use craft\models\ElementActivity;
 use craft\models\FieldLayoutForm;
+use craft\models\Site;
 use craft\web\Controller;
 use craft\web\CpScreenResponseBehavior;
 use craft\web\View;
+use Illuminate\Support\Collection;
 use Throwable;
 use yii\helpers\Markdown;
 use yii\web\BadRequestHttpException;
@@ -543,7 +545,7 @@ class ElementsController extends Controller
      */
     public function actionCopyFieldValuesFromSite(): Response
     {
-        $this->requireAcceptsJson();
+        $this->requireCpRequest();
 
         /** @var Element|null $element */
         $element = $this->_element();
@@ -613,6 +615,34 @@ class ElementsController extends Controller
         }
 
         return $this->_asSuccess($result['message'], $result['element']);
+    }
+
+    public function actionCopyFromSiteModal(): Response
+    {
+        $this->requireAcceptsJson();
+        $this->requireCpRequest();
+
+        $element = $this->_element();
+        $sitesService = Craft::$app->getSites();
+
+        // $supportedSites = ElementHelper::supportedSitesForElement($element);
+        $siteOptions = Collection::make(ElementHelper::editableSiteIdsForElement($element))
+            ->filter(fn(int $siteId) => $siteId !== $this->_siteId)
+            ->map(fn(int $siteId) => $sitesService->getSiteById($siteId))
+            ->map(fn(Site $site) => [
+                'label' => $site->name,
+                'value' => $site->id,
+            ]);
+
+        $view = $this->getView();
+        $html = $view->renderTemplate('_special/copy-content-modal.twig', [
+            'siteOptions' => $siteOptions,
+            'element' => $element,
+        ]);
+
+        return $this->asJson([
+            'html' => $html,
+        ]);
     }
 
     /**

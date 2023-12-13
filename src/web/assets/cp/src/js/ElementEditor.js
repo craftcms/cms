@@ -237,6 +237,7 @@ Craft.ElementEditor = Garnish.Base.extend(
       // only allow copying content if drafts can be created for this element
       if (this.settings.canCreateDrafts) {
         new Craft.ElementCopyContent({
+          siteId: this.settings.siteId,
           canonicalId: this.settings.canonicalId,
           draftId: this.settings.draftId,
           isProvisionalDraft: this.settings.isProvisionalDraft,

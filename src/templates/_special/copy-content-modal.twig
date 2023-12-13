@@ -1,0 +1,28 @@
+{% import '_includes/forms.twig' as forms %}
+
+<div class="modal modal-copy-content fitted">
+    <div class="body">
+        <h2>{{ 'Copy content from site' | t('app') }}</h2>
+        <form
+            class="copyBetweenSites"
+            method="post"
+            accept-charset="UTF-8"
+        >
+            {{ csrfInput() }}
+            {{ actionInput('elements/copy-field-values-from-site') }}
+
+            {{ hiddenInput('elementId', element.canonicalId) }}
+
+            {{ forms.selectField({
+                label: 'Copy from' | t('app'),
+                name: 'copyFromSiteId',
+                instructions: 'Only translatable (<span class="t9n-indicator" data-icon="language" data-handle="title"></span>) field values will be copied if their content differs from the current.' | t('app'),
+                options: siteOptions,
+            }) }}
+
+            {{ forms.submitButton({
+                label: 'Copy' | t('app')
+            }) }}
+        </form>
+    </div>
+</div>

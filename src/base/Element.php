@@ -3480,7 +3480,7 @@ abstract class Element extends Component implements ElementInterface
             $copyId = sprintf('action-copy-content-%s', mt_rand());
             $items[] = [
                 'id' => $copyId,
-                'icon' => 'edit',
+                'icon' => 'world',
                 'label' => Craft::t('app', 'Copy content from site'),
                 'type' => MenuItemType::Button,
                 'attributes' => [

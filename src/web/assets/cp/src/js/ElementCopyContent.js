@@ -63,35 +63,22 @@ Craft.ElementCopyContent = Garnish.Base.extend(
       return form;
     },
 
-    showElementCopyDialogue: function (ev) {
-      $btn = $(ev.target);
-
-      let hudContent =
-        `<div class="copy-translation-dialogue">` +
-        `<h2>` +
-        Craft.t('app', 'Copy content from site') +
-        `</h2>` +
-        this._getCopyBetweenSitesForm() +
-        `<p class="smalltext">` +
-        Craft.t(
-          'app',
-          'Only translatable (<span class="t9n-indicator" data-icon="language" data-handle="title"></span>) field values will be copied if their content differs from the current.'
-        ) +
-        `</p>` +
-        `</div>`;
-
-      let hud = new Garnish.HUD($btn, hudContent);
-
-      this.sitesDisclosureMenu(hud);
-
-      this.addListener(
-        $('.copyBetweenSites'),
-        'submit',
+    showElementCopyDialogue: async function (ev) {
+      const {data} = await Craft.sendActionRequest(
+        'POST',
+        'elements/copy-from-site-modal',
         {
-          hud: hud,
-        },
-        'copyValuesFromSite'
+          data: {
+            siteId: this.settings.siteId,
+            elementId: this.settings.canonicalId,
+            draftId: this.settings.draftId,
+            provisional: this.settings.isProvisionalDraft,
+          },
+        }
       );
+      const $container = $(data.html);
+
+      new Garnish.Modal($container);
     },
 
     showFieldCopyDialogue: function (ev) {
