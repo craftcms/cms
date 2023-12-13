@@ -41,7 +41,8 @@
   --ui-control-color: var(--gray-550);
   --ui-control-hover-color: var(--gray-600);
   --ui-control-active-color: var(--gray-700);
-  --ui-control-bg-color: #{transparentize($inputColor, 0.75)};
+  --ui-control-static-bg-color: #{transparentize($inputColor, 0.75)};
+  --ui-control-bg-color: var(--ui-control-static-bg-color);
   --ui-control-hover-bg-color: #{transparentize($inputColor, 0.7)};
   --ui-control-active-bg-color: #{transparentize($inputColor, 0.5)};
   --ui-control-border-radius: var(--large-border-radius);
@@ -131,6 +132,44 @@ fieldset:last-child,
 .buttons:last-child,
 .condition-container:last-child {
   margin-bottom: 0 !important;
+}
+
+.mt-0 {
+  margin-top: 0 !important;
+}
+.mt-xs {
+  margin-top: var(--xs) !important;
+}
+.mt-s {
+  margin-top: var(--s) !important;
+}
+.mt-m {
+  margin-top: var(--m) !important;
+}
+.mt-l {
+  margin-top: var(--l) !important;
+}
+.mt-xl {
+  margin-top: var(--xl) !important;
+}
+
+.mb-0 {
+  margin-bottom: 0 !important;
+}
+.mb-xs {
+  margin-bottom: var(--xs) !important;
+}
+.mb-s {
+  margin-bottom: var(--s) !important;
+}
+.mb-m {
+  margin-bottom: var(--m) !important;
+}
+.mb-l {
+  margin-bottom: var(--l) !important;
+}
+.mb-xl {
+  margin-bottom: var(--xl) !important;
 }
 
 .no-scroll {
@@ -462,13 +501,6 @@ button {
   cursor: pointer;
 }
 
-/* revision button */
-.context-btn.disabled {
-  opacity: 1;
-  color: var(--medium-dark-text-color);
-  background-color: transparentize($grey200, 0.5) !important;
-}
-
 /* status icons */
 .checkmark-icon,
 .alert-icon {
@@ -502,52 +534,6 @@ button {
   &:before {
     content: 'alert';
     color: var(--error-color);
-  }
-}
-
-.menu.revision-menu {
-  padding: 10px 24px;
-
-  hr {
-    margin: 10px -24px;
-  }
-
-  ul {
-    li {
-      &.sel {
-        margin: 0 -14px;
-        padding: 0 14px;
-        background: var(--gray-050);
-        border-radius: var(--large-border-radius);
-
-        .edited-desc {
-          display: flex;
-          align-items: center;
-          @include margin-left(10px);
-          border-top: 1px solid var(--hairline-color);
-          padding: 10px 0;
-          color: var(--light-text-color);
-          white-space: normal;
-
-          p {
-            margin: 0;
-          }
-
-          .btn {
-            @include margin-left(14px);
-          }
-        }
-      }
-
-      a {
-        padding-top: 7px;
-        border-radius: var(--large-border-radius);
-      }
-    }
-  }
-
-  .extralight {
-    margin-top: 2px;
   }
 }
 
@@ -1496,6 +1482,20 @@ ul.icons {
     }
   }
 
+  &.hairline {
+    border: 1px solid var(--medium-hairline-color);
+    background-color: transparent;
+
+    &:hover,
+    &:active {
+      border-color: var(--dark-hairline-color);
+    }
+
+    &:active {
+      background-color: var(--ui-control-static-bg-color);
+    }
+  }
+
   &.wrap {
     height: auto;
     min-height: 34px;
@@ -1866,7 +1866,7 @@ ul.icons {
 /* small buttons */
 .btngroup.small .btn,
 .btn.small {
-  padding: 0 7px !important;
+  padding: 0 var(--s) !important;
   font-size: 12px;
   line-height: 22px;
 }
@@ -2472,6 +2472,7 @@ h2 + .actions {
   margin: calc(var(--pane-padding, 22px) * -1)
     calc(var(--pane-padding, 22px) * -1)
     calc(var(--pane-padding, 24px) * -1 + var(--pane-padding, var(--m)));
+  padding: 0 !important;
   overflow-x: auto;
 
   table.data {
@@ -2585,8 +2586,8 @@ table {
 
       th:not(.orderable),
       td {
-        padding-top: var(--pane-padding, var(--m));
-        padding-bottom: var(--pane-padding, var(--m));
+        padding-top: var(--s);
+        padding-bottom: var(--s);
       }
 
       th {
@@ -2840,8 +2841,13 @@ table {
     align-items: center;
     gap: var(--s);
 
-    .status {
-      margin: 0;
+    .status,
+    .icon {
+      @include margin-right(0);
+    }
+
+    .icon {
+      margin-top: -4px;
     }
   }
 
@@ -3074,6 +3080,46 @@ table {
   }
 }
 
+.context-label,
+.context-menu-container {
+  display: inline-flex;
+  align-items: center;
+  @include margin-left(var(--xs));
+  height: var(--touch-target-size);
+  padding: 0 var(--s);
+  font-size: 11px;
+  font-weight: normal;
+  text-decoration: none !important;
+  color: var(--light-text-color);
+  border-radius: calc(var(--touch-target-size) / 2);
+  border: 1px solid var(--medium-hairline-color);
+}
+
+.context-menu-container {
+  @include padding-right(0);
+
+  .menubtn {
+    @include margin(0, -1px, 0, 0);
+    @include padding-right(calc(var(--s) + 1px) !important);
+    @include border-left(1px solid var(--medium-hairline-color));
+    @include border-radius(
+      0,
+      calc(var(--touch-target-size) / 2),
+      calc(var(--touch-target-size) / 2),
+      0
+    );
+
+    &:hover {
+      border-color: var(--dark-hairline-color) !important;
+    }
+  }
+
+  > * {
+    display: inline-block;
+    @include padding-right(var(--s));
+  }
+}
+
 .chip,
 .card {
   // prevent double focus ring (chip/card already gets it)
@@ -3092,17 +3138,6 @@ table {
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
-    }
-
-    .draft-label {
-      display: inline-block;
-      @include margin(-1px, 0, -1px, 7px);
-      padding: 1px 5px;
-      font-weight: normal;
-      text-decoration: none !important;
-      color: var(--medium-text-color);
-      background: var(--gray-100);
-      border-radius: var(--large-border-radius);
     }
 
     .segment:after {
@@ -3134,13 +3169,13 @@ table {
       margin: 0;
     }
 
-    & > .move,
-    & > .menubtn {
+    & > .action-btn,
+    & > .move {
       @include touch-target;
       margin: 0 -4px;
     }
 
-    .settings {
+    .action-btn {
       color: var(--ui-control-color);
 
       &:before {
@@ -3587,6 +3622,17 @@ $checkboxPadding: $checkboxSize + 4;
         margin: 0;
       }
     }
+  }
+}
+
+/* nested element cards */
+.nested-element-cards {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s);
+
+  & > .pane {
+    margin: 0;
   }
 }
 
@@ -4162,6 +4208,10 @@ ul.tree,
     background-color: transparent !important;
     box-shadow: none;
     border: 1px solid #{transparentize($inputColor, 0.75)} !important;
+  }
+
+  &.no-border {
+    border: none !important;
   }
 
   &.padding-xs {
@@ -4844,7 +4894,7 @@ $min2ColWidth: 400px;
       display: flex;
       flex-direction: row;
       align-items: center;
-      gap: var(--s);
+      gap: var(--xs);
       min-height: calc(50px - 16px);
 
       & > .pane-tabs {
@@ -4857,9 +4907,18 @@ $min2ColWidth: 400px;
 
   & > .so-body {
     flex: 1;
-    margin: -24px var(--neg-padding) 0;
+    margin: -24px var(--neg-padding);
     overflow: hidden auto;
     position: relative;
+
+    &:not(:last-child) {
+      margin-bottom: 0;
+    }
+
+    & > h1:not(:last-child) {
+      padding-bottom: var(--s);
+      border-bottom: 1px solid var(--hairline-color);
+    }
 
     &.so-full-details,
     & > .so-sidebar {
@@ -5083,6 +5142,10 @@ $min2ColWidth: 400px;
 
   &.dark {
     background-color: transparentize($grey900, 0.5) !important;
+  }
+
+  &.blurred {
+    backdrop-filter: blur(10px);
   }
 }
 
@@ -5714,20 +5777,18 @@ $min2ColWidth: 400px;
 
 /* logout warning/login/elevated session modals */
 .logoutwarningmodalshade,
-.loginmodalshade {
+.login-modal-shade,
+#logoutwarningmodal,
+.login-modal,
+#elevatedsessionmodal,
+.prompt {
   z-index: 1001;
 }
 
 #logoutwarningmodal,
-#loginmodal,
 #elevatedsessionmodal,
 .prompt {
   width: 500px;
-}
-
-#logoutwarningmodal,
-#loginmodal {
-  z-index: 1001;
 }
 
 .prompt {
@@ -5828,7 +5889,31 @@ $min2ColWidth: 400px;
   display: none;
   position: absolute;
 
-  h6 {
+  &.padded {
+    padding: var(--s) calc(var(--m) + var(--s));
+
+    hr {
+      margin: var(--s) calc((var(--m) + var(--s)) * -1);
+    }
+
+    ul {
+      li {
+        margin: 0 calc(var(--m) * -1);
+        padding: 0 var(--m);
+
+        a {
+          border-radius: var(--large-border-radius);
+        }
+      }
+    }
+
+    .extralight {
+      margin-top: 2px;
+    }
+  }
+
+  h6,
+  .h6 {
     &:first-child {
       margin-top: 14px !important;
     }
@@ -5838,15 +5923,17 @@ $min2ColWidth: 400px;
     &.padded {
       li {
         a,
+        .menu-item,
         .menu-option {
-          @include padding-left(24px);
+          @include padding-left(30px);
 
           &[data-icon],
           &.icon,
           &.sel {
             &:before {
               @include floatleft;
-              @include margin(3px, 0, 0, -17px);
+              @include margin(3px, 0, 0, -20px);
+              width: 14px;
               font-size: 14px;
               color: var(--ui-control-color);
             }
@@ -5856,8 +5943,12 @@ $min2ColWidth: 400px;
             }
           }
 
-          &.sel:not([data-icon]):before {
-            content: 'check';
+          &.sel {
+            background: var(--gray-050);
+
+            &:not([data-icon]):before {
+              content: '\f00e';
+            }
           }
         }
       }
@@ -5865,15 +5956,20 @@ $min2ColWidth: 400px;
 
     li {
       a,
+      .menu-item,
       .menu-option {
-        @include menu-option-styles;
+        margin: 0 -14px;
+        padding: 10px 14px;
+        white-space: nowrap;
         font-size: 14px;
-        cursor: default;
         -webkit-appearance: none;
 
-        &:not(.flex) {
-          display: table !important;
-          box-sizing: border-box;
+        &:not(:last-child) {
+          @include margin-right(0);
+        }
+
+        &:not(.flex):not(.hidden) {
+          display: block;
           width: calc(100% + 28px);
           @include alignleft;
         }
@@ -5929,6 +6025,14 @@ $min2ColWidth: 400px;
   .go:after {
     color: inherit;
   }
+
+  &:not(.menu--disclosure) ul li a,
+  ul li .menu-item,
+  ul li .menu-option {
+    color: $menuOptionColor;
+    text-decoration: none;
+    cursor: default;
+  }
 }
 
 .menubtn,
@@ -5946,7 +6050,7 @@ $min2ColWidth: 400px;
 
 .menu:not(.menu--disclosure) ul li a:not(.sel):not(.disabled):hover,
 .menu:not(.menu--disclosure):not(:hover) ul li a:not(.disabled).hover {
-  @include menu-option-active-styles;
+  @include menu-item-active-styles;
   --text-color: var(--white);
   --light-text-color: var(--gray-100);
   --ui-control-color: var(--gray-050);
@@ -5955,23 +6059,25 @@ $min2ColWidth: 400px;
 
   span.icon,
   &:before {
-    color: var(--menu-option-active-color);
+    color: var(--menu-item-active-color);
   }
 
   &.error {
-    color: var(--menu-option-active-color) !important;
+    color: var(--menu-item-active-color) !important;
   }
 }
 
 .menu {
   hr.padded,
+  .h6.padded,
   h6.padded {
-    @include margin-left(10px);
+    @include margin-left(16px);
   }
 }
 
 .menu--disclosure ul li {
-  & > a,
+  & > a:not(.crumb-link),
+  & > .menu-item,
   & > .menu-option {
     &:hover {
       @include disclosure-link-hover-styles;
@@ -7108,8 +7214,9 @@ body {
     margin-top: 1px;
 
     [data-selectable],
+    .option,
     .optgroup-header {
-      @include menu-option-styles;
+      @include menu-item-styles;
     }
 
     .optgroup {
@@ -7129,12 +7236,13 @@ body {
       padding: 4px 0;
     }
 
-    .active:not(.selected) {
+    .active:not(.selected),
+    .option:hover {
       background-color: var(--gray-100);
     }
 
     .selected {
-      @include menu-option-active-styles;
+      @include menu-item-active-styles;
       cursor: default !important;
 
       .light {
@@ -7379,6 +7487,33 @@ ul.errors li {
   }
 }
 
+/* 2FA setup page */
+body.setup-2fa {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100%;
+
+  #setup-2fa {
+    display: flex;
+    flex-direction: column;
+    gap: var(--l);
+    width: 550px;
+    max-width: 100%;
+    padding: var(--padding);
+
+    #setup-2fa-intro {
+      text-align: center;
+    }
+
+    #setup-2fa-btn {
+      display: flex;
+      justify-content: center;
+    }
+  }
+}
+
 /* auto-suggest */
 .autosuggest-container {
   position: relative;
@@ -7403,13 +7538,13 @@ ul.errors li {
   }
 
   .autosuggest__results-item {
-    @include menu-option-styles;
+    @include menu-item-styles;
     overflow: hidden;
     text-overflow: ellipsis;
 
     &:hover,
     &.autosuggest__results-item--highlighted {
-      @include menu-option-active-styles;
+      @include menu-item-active-styles;
       cursor: pointer;
 
       .light {

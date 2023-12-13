@@ -125,6 +125,22 @@ Craft.ui = {
     return this.createField(this.createTextInput(config), config);
   },
 
+  createPasswordInput(config) {
+    return this.createTextInput(
+      Object.assign({}, config, {
+        type: 'password',
+      })
+    );
+  },
+
+  createPasswordField(config) {
+    return this.createTextField(
+      Object.assign({}, config, {
+        type: 'password',
+      })
+    );
+  },
+
   createCopyTextInput: function (config) {
     let id = config.id || 'copytext' + Math.floor(Math.random() * 1000000000);
     let buttonId = config.buttonId || `${id}-btn`;

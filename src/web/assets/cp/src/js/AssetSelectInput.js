@@ -37,26 +37,6 @@ Craft.AssetSelectInput = Craft.BaseElementSelectInput.extend({
     }
   },
 
-  defineElementActions: function ($element) {
-    const actions = this.base($element);
-    const viewIndex = actions.findIndex((a) => a.icon === 'share');
-    const previewAction = {
-      icon: 'view',
-      label: Craft.t('app', 'Preview file'),
-      callback: () => {
-        this.openPreview($element);
-      },
-    };
-
-    if (viewIndex !== -1) {
-      actions.splice(viewIndex + 1, 0, previewAction);
-    } else {
-      actions.push(previewAction);
-    }
-
-    return actions;
-  },
-
   clearOpenPreviewTimeout: function () {
     if (this.openPreviewTimeout) {
       clearTimeout(this.openPreviewTimeout);
@@ -284,6 +264,9 @@ Craft.AssetSelectInput = Craft.BaseElementSelectInput.extend({
         );
         this.selectElements([elementInfo]);
 
+        Craft.appendHeadHtml(data.headHtml);
+        Craft.appendBodyHtml(data.bodyHtml);
+
         // Last file
         if (this.uploader.isLastUpload()) {
           this.progressBar.hideProgressBar();
@@ -307,6 +290,8 @@ Craft.AssetSelectInput = Craft.BaseElementSelectInput.extend({
    * On Upload Failure.
    */
   _onUploadFailure: function (event, data) {
+    const file = data.data.getAll('assets-upload');
+    const backupFilename = file[0].name;
     const response =
       event instanceof CustomEvent ? event.detail : data?.jqXHR?.responseJSON;
 
@@ -315,6 +300,9 @@ Craft.AssetSelectInput = Craft.BaseElementSelectInput.extend({
     let errorMessages = errors ? Object.values(errors).flat() : [];
 
     if (!message) {
+      if (!filename) {
+        filename = backupFilename;
+      }
       if (errorMessages.length) {
         message = errorMessages.join('\n');
       } else if (filename) {

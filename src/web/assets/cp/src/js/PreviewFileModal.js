@@ -20,6 +20,15 @@ Craft.PreviewFileModal = Garnish.Modal.extend(
      * @returns {*|void}
      */
     init: function (assetId, elementSelect, settings) {
+      // (assetId, settings)
+      if (
+        typeof settings === 'undefined' &&
+        jQuery.isPlainObject(elementSelect)
+      ) {
+        settings = elementSelect;
+        elementSelect = null;
+      }
+
       settings = $.extend(this.defaultSettings, settings);
       this.$triggerElement = Garnish.getFocusedElement();
 
@@ -256,6 +265,7 @@ Craft.PreviewFileModal = Garnish.Modal.extend(
   },
   {
     defaultSettings: {
+      minGutter: 50,
       startingWidth: null,
       startingHeight: null,
     },

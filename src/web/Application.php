@@ -262,20 +262,30 @@ class Application extends \yii\web\Application
                 return $this->_processUpdateLogic($request) ?: $this->getResponse();
             }
 
-            // If this is a plugin template request, make sure the user has access to the plugin
-            // If this is a non-login, non-validate, non-setPassword control panel request, make sure the user has access to the control panel
-            if (
-                $request->getIsCpRequest() &&
-                !$request->getIsActionRequest() &&
-                ($firstSeg = $request->getSegment(1)) !== null &&
-                ($plugin = $this->getPlugins()->getPlugin($firstSeg)) !== null
-            ) {
-                $user = $this->getUser();
-                if ($user->getIsGuest()) {
-                    return $user->loginRequired();
+            if ($request->getIsCpRequest() && !$request->getIsActionRequest()) {
+                $userSession = $this->getUser();
+
+                // If this is a plugin template request, make sure the user has access to the plugin
+                // If this is a non-login, non-validate, non-setPassword control panel request, make sure the user has access to the control panel
+                if (
+                    ($firstSeg = $request->getSegment(1)) !== null &&
+                    ($plugin = $this->getPlugins()->getPlugin($firstSeg)) !== null
+                ) {
+                    if ($userSession->getIsGuest()) {
+                        return $userSession->loginRequired();
+                    }
+                    if (!$userSession->checkPermission('accessPlugin-' . $plugin->id)) {
+                        throw new ForbiddenHttpException();
+                    }
                 }
-                if (!$user->checkPermission('accessPlugin-' . $plugin->id)) {
-                    throw new ForbiddenHttpException();
+
+                // If this is a CP request, see if the user is expected to have 2FA enabled
+                if (!$userSession->getIsGuest()) {
+                    $auth = $this->getAuth();
+                    $user = $userSession->getIdentity();
+                    if ($auth->is2faRequired($user) && !$auth->hasActiveMethod($user)) {
+                        return $this->runAction('users/setup-2fa');
+                    }
                 }
             }
         }
@@ -482,25 +492,9 @@ class Application extends \yii\web\Application
         $resourceUri = substr($requestPath, strlen($resourceBaseUri));
         $slash = strpos($resourceUri, '/');
         $hash = substr($resourceUri, 0, $slash);
+        $sourcePath = $this->resourceSourcePathByHash($hash);
 
-        $sourcePath = Craft::$app->getCache()->getOrSet(
-            Craft::$app->getAssetManager()->getCacheKeyForPathHash($hash),
-            function() use ($hash) {
-                try {
-                    return (new Query())
-                        ->select(['path'])
-                        ->from(Table::RESOURCEPATHS)
-                        ->where(['hash' => $hash])
-                        ->scalar();
-                } catch (DbException) {
-                    // Craft isn't installed yet
-                }
-
-                return false;
-            }
-        );
-
-        if (empty($sourcePath)) {
+        if (!$sourcePath) {
             return;
         }
 
@@ -529,6 +523,20 @@ class Application extends \yii\web\Application
             'inline' => true,
         ]);
         $this->end();
+    }
+
+    private function resourceSourcePathByHash(string $hash): string|false
+    {
+        try {
+            return (new Query())
+                ->select(['path'])
+                ->from(Table::RESOURCEPATHS)
+                ->where(['hash' => $hash])
+                ->scalar();
+        } catch (DbException) {
+            // Craft isn't installed yet. See if it's cached as a fallback.
+            return Craft::$app->getCache()->get(Craft::$app->getAssetManager()->getCacheKeyForPathHash($hash));
+        }
     }
 
     /**
