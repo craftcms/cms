@@ -53,7 +53,7 @@ jobs:
 
       - name: 'Initialize Craft 5 starter project'
         if: ${{ startsWith(github.event.client_payload.version, '5.') }}
-        run: 'composer create-project craftcms/craft^5.0.0-alpha.1 ${{ env.PROJECT_DIRECTORY }}'
+        run: 'composer create-project craftcms/craft=^5.0.0-alpha.1 ${{ env.PROJECT_DIRECTORY }}'
 
       - name: 'Install specific Craft version'
         working-directory: ${{ env.PROJECT_DIRECTORY }}
