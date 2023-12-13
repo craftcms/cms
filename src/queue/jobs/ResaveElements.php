@@ -15,7 +15,7 @@ use craft\console\controllers\ResaveController;
 use craft\db\QueryBatcher;
 use craft\helpers\ElementHelper;
 use craft\i18n\Translation;
-use craft\queue\BaseBatchedJob;
+use craft\queue\BaseBatchedElementJob;
 use Throwable;
 
 /**
@@ -24,7 +24,7 @@ use Throwable;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
-class ResaveElements extends BaseBatchedJob
+class ResaveElements extends BaseBatchedElementJob
 {
     /**
      * @var string The element type that should be resaved

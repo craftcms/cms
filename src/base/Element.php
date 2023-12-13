@@ -2346,6 +2346,7 @@ abstract class Element extends Component implements ElementInterface
             $names['previewing'],
             $names['propagateAll'],
             $names['propagating'],
+            $names['propagatingFrom'],
             $names['resaving'],
             $names['searchScore'],
             $names['updatingFromDerivative'],

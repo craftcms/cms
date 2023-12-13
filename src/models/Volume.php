@@ -63,6 +63,18 @@ class Volume extends Model implements BaseFsInterface, FieldLayoutProviderInterf
     public ?string $titleTranslationKeyFormat = null;
 
     /**
+     * @var string Alternative text translation method
+     * @since 5.0.0
+     */
+    public string $altTranslationMethod = Field::TRANSLATION_METHOD_NONE;
+
+    /**
+     * @var null|string Alternative text translation key format
+     * @since 5.0.0
+     */
+    public ?string $altTranslationKeyFormat = null;
+
+    /**
      * @var int|null Sort order
      */
     public ?int $sortOrder = null;
