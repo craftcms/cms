@@ -37,7 +37,7 @@ use craft\errors\OperationAbortedException;
 use craft\errors\SiteNotFoundException;
 use craft\errors\UnsupportedSiteException;
 use craft\events\AuthorizationCheckEvent;
-use craft\events\BulkElementOpEvent;
+use craft\events\BulkOpEvent;
 use craft\events\DeleteElementEvent;
 use craft\events\EagerLoadElementsEvent;
 use craft\events\ElementEvent;
@@ -116,7 +116,7 @@ class Elements extends Component
     public const EVENT_BEFORE_EAGER_LOAD_ELEMENTS = 'beforeEagerLoadElements';
 
     /**
-     * @event Event The event that is triggered before a bulk element operation has started.
+     * @event BulkOpEvent The event that is triggered before a bulk element operation has started.
      *
      * Note that this won’t necessarily fire from the same request as [[EVENT_AFTER_BULK_OP]].
      *
@@ -125,7 +125,7 @@ class Elements extends Component
     public const EVENT_BEFORE_BULK_OP = 'beforeBulkOp';
 
     /**
-     * @event Event The event that is triggered after a bulk element operation is completed.
+     * @event BulkOpEvent The event that is triggered after a bulk element operation is completed.
      *
      * Note that this won’t necessarily fire from the same request as [[EVENT_BEFORE_BULK_OP]].
      *
@@ -1071,7 +1071,7 @@ class Elements extends Component
         $key = StringHelper::randomString(10);
 
         if ($this->hasEventHandlers(self::EVENT_BEFORE_BULK_OP)) {
-            $this->trigger(self::EVENT_BEFORE_BULK_OP, new BulkElementOpEvent([
+            $this->trigger(self::EVENT_BEFORE_BULK_OP, new BulkOpEvent([
                 'key' => $key,
             ]));
         }
@@ -1102,7 +1102,7 @@ class Elements extends Component
         unset($this->bulkKeys[$key]);
 
         if ($this->hasEventHandlers(self::EVENT_AFTER_BULK_OP)) {
-            $this->trigger(self::EVENT_AFTER_BULK_OP, new BulkElementOpEvent([
+            $this->trigger(self::EVENT_AFTER_BULK_OP, new BulkOpEvent([
                 'key' => $key,
             ]));
         }
