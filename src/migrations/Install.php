@@ -178,7 +178,7 @@ class Install extends Migration
             'assetId' => $this->integer()->notNull(),
             'siteId' => $this->integer()->notNull(),
             'alt' => $this->text(),
-            'PRIMARY KEY([[assetId, siteId]])',
+            'PRIMARY KEY([[assetId]], [[siteId]])',
         ]);
         $this->createTable(Table::IMAGETRANSFORMINDEX, [
             'id' => $this->primaryKey(),
