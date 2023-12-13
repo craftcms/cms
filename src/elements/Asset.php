@@ -1285,13 +1285,16 @@ class Asset extends Element
                 'url' => UrlHelper::cpUrl('assets'),
             ],
             [
-                'menu' => Collection::make(Craft::$app->getVolumes()->getViewableVolumes())
-                    ->map(fn(Volume $v) => [
-                        'label' => Craft::t('site', $v->name),
-                        'url' => "assets/$v->handle",
-                        'selected' => $v->id === $volume->id,
-                    ])
-                    ->all(),
+                'menu' => [
+                    'label' => Craft::t('app', 'Select volume'),
+                    'items' => Collection::make(Craft::$app->getVolumes()->getViewableVolumes())
+                        ->map(fn(Volume $v) => [
+                            'label' => Craft::t('site', $v->name),
+                            'url' => "assets/$v->handle",
+                            'selected' => $v->id === $volume->id,
+                        ])
+                        ->all(),
+                ],
             ],
         ];
 
