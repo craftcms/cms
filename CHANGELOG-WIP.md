@@ -61,6 +61,7 @@
 - Entry type names and handles must now be unique globally, rather than just within a single section. Existing entry type names and handles will be renamed automatically where needed, to ensure uniqueness.
 - Assets, categories, entries, and tags now support eager-loading paths prefixed with a field layout provider’s handle (e.g. `myEntryType:myField`).
 - Element queries now have an `eagerly` param, which can be used to lazily eager-load the resulting elements for all peer elements, when `all()`, `collect()`, `one()`, `nth()`, or `count()` is called.
+- Element queries now have an `inBulkOp` param, which limits the results to elements which were involved in a bulk operation. ([#14032](https://github.com/craftcms/cms/pull/14032))
 - Address queries now have `addressLine1`, `addressLine2`, `administrativeArea`, `countryCode`, `dependentLocality`, `firstName`, `fullName`, `lastName`, `locality`, `organizationTaxId`, `organization`, `postalCode`, and `sortingCode` params.
 - Entry queries now have `field`, `fieldId`, `primaryOwner`, `primaryOwnerId`, `owner`, `ownerId`, `allowOwnerDrafts`, and `allowOwnerRevisions` params.
 - Entries’ GraphQL type names are now formatted as `<entryTypeHandle>_Entry`, and are no longer prefixed with their section’s handle. (That goes for Matrix-nested entries as well.)
@@ -171,6 +172,7 @@
 - Added `craft\enums\PropagationMethod`.
 - Added `craft\enums\TimePeriod`.
 - Added `craft\events\BulkElementsEvent`.
+- Added `craft\events\BulkOpEvent`. ([#14032](https://github.com/craftcms/cms/pull/14032))
 - Added `craft\events\DefineEntryTypesForFieldEvent`.
 - Added `craft\events\DefineFieldHtmlEvent::$inline`.
 - Added `craft\fieldlayoutelements\BaseField::$includeInCards`.
@@ -226,6 +228,11 @@
 - Added `craft\models\Section::getCpEditUrl()`.
 - Added `craft\models\Volume::getSubpath()`.
 - Added `craft\models\Volume::setSubpath()`.
+- Added `craft\queue\BaseBatchedElementJob`. ([#14032](https://github.com/craftcms/cms/pull/14032))
+- Added `craft\queue\BaseBatchedJob::after()`.
+- Added `craft\queue\BaseBatchedJob::afterBatch()`.
+- Added `craft\queue\BaseBatchedJob::before()`.
+- Added `craft\queue\BaseBatchedJob::beforeBatch()`.
 - Added `craft\services\Auth`.
 - Added `craft\services\Entries::refreshEntryTypes()`.
 - Added `craft\services\Fields::$fieldContext`, which replaces `craft\services\Content::$fieldContext`.
