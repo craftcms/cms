@@ -37,13 +37,13 @@ use craft\errors\OperationAbortedException;
 use craft\errors\SiteNotFoundException;
 use craft\errors\UnsupportedSiteException;
 use craft\events\AuthorizationCheckEvent;
-use craft\events\BatchElementActionEvent;
 use craft\events\DeleteElementEvent;
 use craft\events\EagerLoadElementsEvent;
 use craft\events\ElementEvent;
 use craft\events\ElementQueryEvent;
 use craft\events\InvalidateElementCachesEvent;
 use craft\events\MergeElementsEvent;
+use craft\events\MultiElementActionEvent;
 use craft\events\RegisterComponentTypesEvent;
 use craft\fieldlayoutelements\CustomField;
 use craft\helpers\ArrayHelper;
@@ -216,12 +216,12 @@ class Elements extends Component
     public const EVENT_AFTER_RESAVE_ELEMENTS = 'afterResaveElements';
 
     /**
-     * @event BatchElementActionEvent The event that is triggered before an element is resaved.
+     * @event MultiElementActionEvent The event that is triggered before an element is resaved.
      */
     public const EVENT_BEFORE_RESAVE_ELEMENT = 'beforeResaveElement';
 
     /**
-     * @event BatchElementActionEvent The event that is triggered after an element is resaved.
+     * @event MultiElementActionEvent The event that is triggered after an element is resaved.
      */
     public const EVENT_AFTER_RESAVE_ELEMENT = 'afterResaveElement';
 
@@ -236,12 +236,12 @@ class Elements extends Component
     public const EVENT_AFTER_PROPAGATE_ELEMENTS = 'afterPropagateElements';
 
     /**
-     * @event BatchElementActionEvent The event that is triggered before an element is propagated.
+     * @event MultiElementActionEvent The event that is triggered before an element is propagated.
      */
     public const EVENT_BEFORE_PROPAGATE_ELEMENT = 'beforePropagateElement';
 
     /**
-     * @event BatchElementActionEvent The event that is triggered after an element is propagated.
+     * @event MultiElementActionEvent The event that is triggered after an element is propagated.
      */
     public const EVENT_AFTER_PROPAGATE_ELEMENT = 'afterPropagateElement';
 
@@ -1370,7 +1370,7 @@ class Elements extends Component
                 try {
                     // Fire a 'beforeResaveElement' event
                     if ($this->hasEventHandlers(self::EVENT_BEFORE_RESAVE_ELEMENT)) {
-                        $this->trigger(self::EVENT_BEFORE_RESAVE_ELEMENT, new BatchElementActionEvent([
+                        $this->trigger(self::EVENT_BEFORE_RESAVE_ELEMENT, new MultiElementActionEvent([
                             'query' => $query,
                             'element' => $element,
                             'position' => $position,
@@ -1403,7 +1403,7 @@ class Elements extends Component
 
                 // Fire an 'afterResaveElement' event
                 if ($this->hasEventHandlers(self::EVENT_AFTER_RESAVE_ELEMENT)) {
-                    $this->trigger(self::EVENT_AFTER_RESAVE_ELEMENT, new BatchElementActionEvent([
+                    $this->trigger(self::EVENT_AFTER_RESAVE_ELEMENT, new MultiElementActionEvent([
                         'query' => $query,
                         'element' => $element,
                         'position' => $position,
@@ -1459,7 +1459,7 @@ class Elements extends Component
 
                 // Fire a 'beforePropagateElement' event
                 if ($this->hasEventHandlers(self::EVENT_BEFORE_PROPAGATE_ELEMENT)) {
-                    $this->trigger(self::EVENT_BEFORE_PROPAGATE_ELEMENT, new BatchElementActionEvent([
+                    $this->trigger(self::EVENT_BEFORE_PROPAGATE_ELEMENT, new MultiElementActionEvent([
                         'query' => $query,
                         'element' => $element,
                         'position' => $position,
@@ -1500,7 +1500,7 @@ class Elements extends Component
 
                 // Fire an 'afterPropagateElement' event
                 if ($this->hasEventHandlers(self::EVENT_AFTER_PROPAGATE_ELEMENT)) {
-                    $this->trigger(self::EVENT_AFTER_PROPAGATE_ELEMENT, new BatchElementActionEvent([
+                    $this->trigger(self::EVENT_AFTER_PROPAGATE_ELEMENT, new MultiElementActionEvent([
                         'query' => $query,
                         'element' => $element,
                         'position' => $position,

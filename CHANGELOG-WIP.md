@@ -259,6 +259,7 @@
 - Renamed `craft\base\PreviewableFieldInterface::getTableAttributeHtml()` to `getPreviewHtml()`.
 - Renamed `craft\base\conditions\BaseCondition::EVENT_REGISTER_CONDITION_RULE_TYPES` to `EVENT_REGISTER_CONDITION_RULES`.
 - Renamed `craft\base\conditions\BaseCondition::conditionRuleTypes()` to `selectableConditionRules()`.
+- Renamed `craft\events\BatchElementActionEvent` to `MultiElementActionEvent`.
 - Renamed `craft\events\RegisterConditionRuleTypesEvent` to `RegisterConditionRulesEvent`, and its `$conditionRuleTypes` property has been renamed to `$conditionRules`.
 - Renamed `craft\events\SetElementTableAttributeHtmlEvent` to `DefineAttributeHtmlEvent`.
 - Renamed `craft\fields\BaseRelationField::tableAttributeHtml()` to `previewHtml()`, and it now accepts an `ElementCollection` argument, rather than `Collection`.
