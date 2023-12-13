@@ -25,7 +25,7 @@
       :type="enabled && !isMenuButton && !ajax ? 'submit' : null"
       v-on="
         enabled && !isMenuButton && ajax
-          ? {click: handleClick(param, value, action, ajax)}
+          ? {click: handleClick(param, value, action, ajax, handleClick)}
           : {}
       "
       >{{ label }}</component
@@ -37,11 +37,14 @@
             <a
               href="#"
               :class="{
-                error: act.error !== undefined && act.error,
-                disabled:
-                  act.allowMultiple !== undefined &&
-                  !act.allowMultiple &&
-                  hasMultipleSelected,
+                ...(act.class ? act.class : {}),
+                ...{
+                  error: act.error !== undefined && act.error,
+                  disabled:
+                    act.allowMultiple !== undefined &&
+                    !act.allowMultiple &&
+                    hasMultipleSelected,
+                },
               }"
               :data-param="act.param"
               :data-value="act.value"
@@ -52,7 +55,13 @@
                   !act.allowMultiple &&
                   hasMultipleSelected
                 )
-                  ? handleClick(act.param, act.value, act.action, act.ajax)
+                  ? handleClick(
+                      act.param,
+                      act.value,
+                      act.action,
+                      act.ajax,
+                      act.handleClick
+                    )
                   : null
               "
             >
@@ -91,6 +100,10 @@
         type: Boolean,
         default: true,
       },
+      handleClick: {
+        type: Boolean,
+        default: true,
+      },
       enabled: Boolean,
       ids: Array,
       label: String,
@@ -113,7 +126,15 @@
     },
 
     methods: {
-      handleClick(param, value, action, ajax) {
+      handleClick(param, value, action, ajax, handleClick) {
+        this.$emit('click', param, value, action, ajax);
+
+        // Is the action button the one to deal with the click?
+        if (!handleClick) {
+          // If not emit and event to the parent
+          return;
+        }
+
         if (ajax) {
           let data = {
             ids: this.ids,
