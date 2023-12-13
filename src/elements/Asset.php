@@ -1852,33 +1852,6 @@ JS,[
     }
 
     /**
-     * Returns asset's native alt field if present, or null
-     *
-     * @return AltField|null
-     * @since 5.0.0
-     */
-    public function getAltField(): ?AltField
-    {
-        $field = null;
-        $fieldLayout = $this->getFieldLayout();
-        if ($fieldLayout) {
-            foreach ($fieldLayout->getTabs() as $tab) {
-                $field = array_values(array_filter(
-                    $tab->getElements(),
-                    fn($nativeField) => $nativeField instanceof AltField
-                ));
-                if (!empty($field)) {
-                    $field = $field[0];
-                } else {
-                    $field = null;
-                }
-            }
-        }
-
-        return $field;
-    }
-
-    /**
      * Returns the asset’s volume folder.
      *
      * @return VolumeFolder
