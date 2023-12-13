@@ -101,6 +101,9 @@ class ElementQuery extends Query implements ElementQueryInterface
      */
     public const EVENT_AFTER_POPULATE_ELEMENTS = 'afterPopulateElements';
 
+    // Base config attributes
+    // -------------------------------------------------------------------------
+
     /**
      * @var string The name of the [[ElementInterface]] class.
      * @phpstan-var class-string<ElementInterface>
@@ -342,6 +345,14 @@ class ElementQuery extends Query implements ElementQueryInterface
      * @used-by ElementQuery::search()
      */
     public mixed $search = null;
+
+    /**
+     * @var string|null The bulk element operation key that the resulting elements were involved in.
+     *
+     * @used-by ElementQuery::inBulkOp()
+     * @since 5.0.0
+     */
+    public ?string $inBulkOp = null;
 
     /**
      * @var mixed The reference code(s) used to identify the element(s).
@@ -1077,6 +1088,16 @@ class ElementQuery extends Query implements ElementQueryInterface
 
     /**
      * @inheritdoc
+     * @uses $inBulkOp
+     */
+    public function inBulkOp(?string $value): static
+    {
+        $this->inBulkOp = $value;
+        return $this;
+    }
+
+    /**
+     * @inheritdoc
      * @uses $ref
      */
     public function ref($value): static
@@ -1531,6 +1552,7 @@ class ElementQuery extends Query implements ElementQueryInterface
         $this->_applyStructureParams($class);
         $this->_applyRevisionParams();
         $this->_applySearchParam($db);
+        $this->_applyInBulkOpParam();
         $this->_applyOrderByParams($db);
         $this->_applySelectParam();
         $this->_applyJoinParams();
@@ -2840,6 +2862,18 @@ class ElementQuery extends Query implements ElementQueryInterface
             $this->_searchResults = $searchResults;
 
             $this->subQuery->andWhere(['elements.id' => array_keys($searchResults)]);
+        }
+    }
+
+    /**
+     * Applies the 'inBulkOp' param to the query being prepared.
+     */
+    private function _applyInBulkOpParam(): void
+    {
+        if ($this->inBulkOp) {
+            $this->subQuery
+                ->innerJoin(['elements_bulkops' => Table::ELEMENTS_BULKOPS], '[[elements_bulkops.elementId]] = [[elements.id]]')
+                ->andWhere(['elements_bulkops.key' => $this->inBulkOp]);
         }
     }
 
