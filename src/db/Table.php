@@ -46,6 +46,8 @@ abstract class Table
     public const ELEMENTACTIVITY = '{{%elementactivity}}';
     public const ELEMENTS = '{{%elements}}';
     /** @since 5.0.0 */
+    public const ELEMENTS_BULKOPS = '{{%elements_bulkops}}';
+    /** @since 5.0.0 */
     public const ELEMENTS_OWNERS = '{{%elements_owners}}';
     public const ELEMENTS_SITES = '{{%elements_sites}}';
     public const RESOURCEPATHS = '{{%resourcepaths}}';
