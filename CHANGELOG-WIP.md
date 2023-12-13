@@ -108,6 +108,7 @@
 - Added `craft\base\ElementTrait::$eagerLoadInfo`.
 - Added `craft\base\ElementTrait::$elementQueryResult`.
 - Added `craft\base\ElementTrait::$forceSave`.
+- Added `craft\base\ElementTrait::$propagatingFrom`.
 - Added `craft\base\Field::valueSql()`.
 - Added `craft\base\FieldInterface::dbType()`, which defines the type(s) of values the field will store in the `elements_sites.content` column (if any).
 - Added `craft\base\FieldInterface::getValueSql()`.
@@ -226,6 +227,8 @@
 - Added `craft\models\FieldLayout::getThumbField()`.
 - Added `craft\models\FsListing::getAdjustedUri()`.
 - Added `craft\models\Section::getCpEditUrl()`.
+- Added `craft\models\Volume::$altTranslationKeyFormat`.
+- Added `craft\models\Volume::$altTranslationMethod`.
 - Added `craft\models\Volume::getSubpath()`.
 - Added `craft\models\Volume::setSubpath()`.
 - Added `craft\queue\BaseBatchedElementJob`. ([#14032](https://github.com/craftcms/cms/pull/14032))
