@@ -7,8 +7,13 @@ Copy content fields, fetched via XHR by the "Copy content from site" tooltip
 {{ csrfInput() }}
 {{ actionInput('elements/copy-field-values-from-site') }}
 
-{{ hiddenInput('elementId', element.canonicalId) }}
+{{ hiddenInput('elementId', elementId) }}
+{{ hiddenInput('provisional', provisional ?? false) }}
 {{ hiddenInput('copyFieldHandle', copyFieldHandle ?? null) }}
+
+{% if draftId ?? false %}
+    {{ hiddenInput('draftId', draftId) }}
+{% endif %}
 
 <div class="fullwidth">
     {{ forms.selectField({

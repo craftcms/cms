@@ -642,7 +642,9 @@ class ElementsController extends Controller
             'viewMode' => $viewMode,
             'siteOptions' => $siteOptions,
             'copyFieldHandle' => $copyFieldHandle,
-            'element' => $element,
+            'elementId' => $element->id,
+            'draftId' => $this->_draftId,
+            'provisional' => $this->_provisional,
         ]);
 
         return $this->asJson([
