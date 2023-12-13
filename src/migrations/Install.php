@@ -307,6 +307,12 @@ class Install extends Migration
             'timestamp' => $this->dateTime(),
             'PRIMARY KEY([[elementId]], [[userId]], [[type]])',
         ]);
+        $this->createTable(Table::ELEMENTBULKOPS, [
+            'elementId' => $this->integer(),
+            'key' => $this->char(10)->notNull(),
+            'timestamp' => $this->dateTime()->notNull(),
+            'PRIMARY KEY([[elementId]], [[key]])',
+        ]);
         $this->createTable(Table::ELEMENTS, [
             'id' => $this->primaryKey(),
             'canonicalId' => $this->integer(),
@@ -803,6 +809,7 @@ class Install extends Migration
         $this->createIndex(null, Table::DRAFTS, ['creatorId', 'provisional'], false);
         $this->createIndex(null, Table::DRAFTS, ['saved'], false);
         $this->createIndex(null, Table::ELEMENTACTIVITY, ['elementId', 'timestamp', 'userId'], false);
+        $this->createIndex(null, Table::ELEMENTBULKOPS, ['timestamp'], false);
         $this->createIndex(null, Table::ELEMENTS, ['dateDeleted'], false);
         $this->createIndex(null, Table::ELEMENTS, ['fieldLayoutId'], false);
         $this->createIndex(null, Table::ELEMENTS, ['type'], false);
@@ -982,6 +989,7 @@ class Install extends Migration
         $this->addForeignKey(null, Table::ELEMENTACTIVITY, ['userId'], Table::USERS, ['id'], 'CASCADE', null);
         $this->addForeignKey(null, Table::ELEMENTACTIVITY, ['siteId'], Table::SITES, ['id'], 'CASCADE', null);
         $this->addForeignKey(null, Table::ELEMENTACTIVITY, ['draftId'], Table::DRAFTS, ['id'], 'CASCADE', null);
+        $this->addForeignKey(null, Table::ELEMENTBULKOPS, ['elementId'], Table::ELEMENTS, ['id'], 'CASCADE', null);
         $this->addForeignKey(null, Table::ELEMENTS, ['canonicalId'], Table::ELEMENTS, ['id'], 'SET NULL');
         $this->addForeignKey(null, Table::ELEMENTS, ['draftId'], Table::DRAFTS, ['id'], 'CASCADE', null);
         $this->addForeignKey(null, Table::ELEMENTS, ['revisionId'], Table::REVISIONS, ['id'], 'CASCADE', null);
