@@ -208,6 +208,8 @@
 - Added `craft\helpers\Cp::elementCardHtml()`.
 - Added `craft\helpers\Cp::elementChipHtml()`.
 - Added `craft\helpers\Cp::elementIndexHtml()`.
+- Added `craft\helpers\Cp::moneyFieldHtml()`.
+- Added `craft\helpers\Cp::moneyInputHtml()`.
 - Added `craft\helpers\Cp::normalizeMenuItems()`.
 - Added `craft\helpers\Cp::siteMenuItems()`.
 - Added `craft\helpers\Db::defaultCollation()`.

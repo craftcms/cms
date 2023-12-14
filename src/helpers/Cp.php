@@ -1462,6 +1462,33 @@ JS, [
     }
 
     /**
+     * Renders a money input’s HTML.
+     *
+     * @param array $config
+     * @return string
+     * @throws TemplateLoaderException
+     * @since 5.0.0
+     */
+    public static function moneyInputHtml(array $config): string
+    {
+        return static::renderTemplate('_includes/forms/money.twig', $config);
+    }
+
+    /**
+     * Renders a money field’s HTML.
+     *
+     * @param array $config
+     * @return string
+     * @throws TemplateLoaderException
+     * @since 5.0.0
+     */
+    public static function moneyFieldHtml(array $config): string
+    {
+        $config['id'] = $config['id'] ?? 'money' . mt_rand();
+        return static::fieldHtml('template:_includes/forms/money.twig', $config);
+    }
+
+    /**
      * Renders a select input.
      *
      * @param array $config
