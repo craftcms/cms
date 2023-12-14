@@ -1,5 +1,7 @@
 # Release Notes for Craft CMS 4
 
+- Fixed a bug where `{% namespace %}` tags weren’t respecting namespaces set to `0`. ([#13943](https://github.com/craftcms/cms/issues/13943)
+
 ## 4.5.12 - 2023-12-12
 
 - It’s no longer possible to dismiss asset conflict resolution modals by pressing <kbd>Esc</kbd> or clicking outside of the modal. ([#14002](https://github.com/craftcms/cms/issues/14002))
