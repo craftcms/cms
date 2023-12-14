@@ -277,6 +277,8 @@ class Money extends Field implements InlineEditableFieldInterface, SortableField
 
         return Cp::moneyInputHtml([
             'id' => $this->getInputId(),
+            'name' => $this->handle,
+            'size' => $this->size,
             'currency' => $this->currency,
             'currencyLabel' => $currencyLabel,
             'showCurrency' => $this->showCurrency,
