@@ -1,5 +1,7 @@
 # Release Notes for Craft CMS 4
 
+- Fixed a bug where `{% namespace %}` tags weren’t respecting namespaces set to `0`. ([#13943](https://github.com/craftcms/cms/issues/13943)
+
 ## 4.5.12 - 2023-12-12
 
 - It’s no longer possible to dismiss asset conflict resolution modals by pressing <kbd>Esc</kbd> or clicking outside of the modal. ([#14002](https://github.com/craftcms/cms/issues/14002))
@@ -14,7 +16,7 @@
 - Fixed a bug where WebP image transforms weren’t respecting transform quality settings. ([#13998](https://github.com/craftcms/cms/issues/13998))
 - Fixed a bug where `craft\base\ApplicationTrait::onAfterRequest()` callbacks weren’t necessarily triggered if an `EVENT_AFTER_REQUEST` handler got in the way.
 - Fixed a bug where keyboard shortcuts could stop working. ([#14011](https://github.com/craftcms/cms/issues/14011))
-- Fixed a bug where the `craft\services\Elements::EVENT_AUTHORIZE_VIEW` event wasn’t always triggered when editing elements. ([#13981](https://github.com/craftcms/cms/issues/13981)))
+- Fixed a bug where the `craft\services\Elements::EVENT_AUTHORIZE_VIEW` event wasn’t always triggered when editing elements. ([#13981](https://github.com/craftcms/cms/issues/13981))
 - Fixed a bug that prevented Live Preview from opening for edited entries, when the `autosaveDrafts` config setting was disabled. ([#13921](https://github.com/craftcms/cms/issues/13921))
 - Fixed a bug where JavaScript-based slug generation wasn’t working consistently with PHP. ([#13971](https://github.com/craftcms/cms/pull/13971))
 - Fixed a bug where asset upload failure notifications could be ambiguous if a server connection issue occurred. ([#14003](https://github.com/craftcms/cms/issues/14003))
