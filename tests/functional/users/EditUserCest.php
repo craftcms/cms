@@ -54,7 +54,7 @@ class EditUserCest
 
         $I->see('My Account');
 
-        $I->submitForm('#userform', [
+        $I->submitForm('#main-form', [
             'fullName' => 'IM A CHANGED FULLNAME',
         ]);
 

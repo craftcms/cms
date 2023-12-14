@@ -13,6 +13,7 @@ use craft\base\FieldInterface;
 use craft\fields\MissingField;
 use craft\fields\PlainText;
 use craft\helpers\ArrayHelper;
+use craft\helpers\Html;
 use craft\helpers\UrlHelper;
 use craft\models\FieldLayoutTab;
 use craft\web\assets\fieldsettings\FieldSettingsAsset;
@@ -234,7 +235,7 @@ JS;
             'searchable' => (bool)$this->request->getBodyParam('searchable', true),
             'translationMethod' => $this->request->getBodyParam('translationMethod', Field::TRANSLATION_METHOD_NONE),
             'translationKeyFormat' => $this->request->getBodyParam('translationKeyFormat'),
-            'settings' => $this->request->getBodyParam('types.' . $type),
+            'settings' => $this->request->getBodyParam(sprintf('types.%s', Html::id($type))),
         ]);
 
         if (!$fieldsService->saveField($field)) {

@@ -12,11 +12,11 @@ Craft.ImageUpload = Garnish.Base.extend(
 
     init: function (settings) {
       this.setSettings(settings, Craft.ImageUpload.defaults);
+      this.$container = $(this.settings.containerSelector);
       this.initImageUpload();
     },
 
     initImageUpload: function () {
-      this.$container = $(this.settings.containerSelector);
       this.progressBar = new Craft.ProgressBar(
         $('<div class="progress-shade"></div>').appendTo(this.$container)
       );
@@ -79,10 +79,9 @@ Craft.ImageUpload = Garnish.Base.extend(
     },
 
     refreshImage: function (response) {
-      const $container = $(response.html);
-      $(this.settings.containerSelector).replaceWith($container);
+      this.$container.replaceWith((this.$container = $(response.html)));
       this.settings.onAfterRefreshImage(response);
-      Craft.cp.elementThumbLoader.load($container);
+      Craft.cp.elementThumbLoader.load(this.$container);
       this.initImageUpload();
     },
 
@@ -111,7 +110,6 @@ Craft.ImageUpload = Garnish.Base.extend(
      * On a file being uploaded.
      */
     _onUploadComplete: function (event, data) {
-      var html = $(data.result.html);
       this.refreshImage(data.result);
 
       // Last file
@@ -125,6 +123,8 @@ Craft.ImageUpload = Garnish.Base.extend(
      * On Upload Failure.
      */
     _onUploadFailure: function (event, data) {
+      const file = data.data.getAll('photo');
+      const backupFilename = file[0].name;
       const response = data.response();
       let {
         message,
@@ -134,6 +134,9 @@ Craft.ImageUpload = Garnish.Base.extend(
       let errorMessages = errors ? Object.values(errors).flat() : [];
 
       if (!message) {
+        if (!filename) {
+          filename = backupFilename;
+        }
         if (errorMessages.length) {
           message = errorMessages.join('\n');
         } else if (filename) {

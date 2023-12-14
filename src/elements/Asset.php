@@ -1285,13 +1285,16 @@ class Asset extends Element
                 'url' => UrlHelper::cpUrl('assets'),
             ],
             [
-                'menu' => Collection::make(Craft::$app->getVolumes()->getViewableVolumes())
-                    ->map(fn(Volume $v) => [
-                        'label' => Craft::t('site', $v->name),
-                        'url' => "assets/$v->handle",
-                        'selected' => $v->id === $volume->id,
-                    ])
-                    ->all(),
+                'menu' => [
+                    'label' => Craft::t('app', 'Select volume'),
+                    'items' => Collection::make(Craft::$app->getVolumes()->getViewableVolumes())
+                        ->map(fn(Volume $v) => [
+                            'label' => Craft::t('site', $v->name),
+                            'url' => "assets/$v->handle",
+                            'selected' => $v->id === $volume->id,
+                        ])
+                        ->all(),
+                ],
             ],
         ];
 
@@ -1543,6 +1546,9 @@ $('#' + $id).on('click', () => {
         }
       },
       fileuploadfail: (event, data) => {
+        const file = data.data.getAll('replaceFile');
+        const backupFilename = file[0].name;
+
         const response = event instanceof Event
           ? event.detail
           : data?.jqXHR?.responseJSON;
@@ -1550,6 +1556,9 @@ $('#' + $id).on('click', () => {
         let {message, filename} = response || {};
 
         if (!message) {
+          if (!filename) {
+            filename = backupFilename;
+          }
           message = filename
             ? Craft.t('app', 'Replace file failed for “{filename}”.', {filename})
             : Craft.t('app', 'Replace file failed.');
@@ -1815,6 +1824,18 @@ JS,[
     {
         $type = $this->getVolume();
         return ElementHelper::translationKey($this, $type->titleTranslationMethod, $type->titleTranslationKeyFormat);
+    }
+
+    /**
+     * Returns the Alternative Text field’s translation key.
+     *
+     * @return string
+     * @since 5.0.0
+     */
+    public function getAltTranslationKey(): string
+    {
+        $volume = $this->getVolume();
+        return ElementHelper::translationKey($this, $volume->altTranslationMethod, $volume->altTranslationKeyFormat);
     }
 
     /**
@@ -2894,11 +2915,14 @@ JS;
             $record->folderId = (int)$this->folderId;
             $record->uploaderId = (int)$this->uploaderId ?: null;
             $record->kind = $this->kind;
-            $record->alt = $this->alt;
             $record->size = (int)$this->size ?: null;
             $record->width = (int)$this->_width ?: $fallbackWidth;
             $record->height = (int)$this->_height ?: $fallbackHeight;
             $record->dateModified = Db::prepareDateForDb($this->dateModified);
+
+            if ($record->alt === null) {
+                $record->alt = $this->alt;
+            }
 
             if ($this->getHasFocalPoint()) {
                 $focal = $this->getFocalPoint();
@@ -2909,6 +2933,28 @@ JS;
 
             $record->save(false);
         }
+
+        if (
+            $this->propagating &&
+            $this->propagatingFrom &&
+            !$isNew
+        ) {
+            /** @var self $from */
+            $from = $this->propagatingFrom;
+
+            if (
+                $this->alt !== $from->alt &&
+                $this->getAltTranslationKey() === $from->getAltTranslationKey()
+            ) {
+                $this->alt = $from->alt;
+            }
+        }
+
+        Db::upsert(Table::ASSETS_SITES, [
+            'assetId' => $this->id,
+            'siteId' => $this->siteId,
+            'alt' => $this->alt,
+        ]);
 
         parent::afterSave($isNew);
     }
