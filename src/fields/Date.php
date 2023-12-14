@@ -15,7 +15,6 @@ use craft\base\SortableFieldInterface;
 use craft\fields\conditions\DateFieldConditionRule;
 use craft\gql\directives\FormatDateTime;
 use craft\gql\types\DateTime as DateTimeType;
-use craft\helpers\ArrayHelper;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
 use craft\helpers\Gql;
@@ -367,9 +366,10 @@ class Date extends Field implements InlineEditableFieldInterface, SortableFieldI
             return $value;
         }
 
-        // tz => timezone
+        // Is this coming from the DB?
         if (is_array($value) && array_key_exists('tz', $value)) {
-            $value['timezone'] = ArrayHelper::remove($value, 'tz');
+            $timeZone = $value['tz'];
+            $value = $value['date'];
         }
 
         if (
@@ -385,8 +385,8 @@ class Date extends Field implements InlineEditableFieldInterface, SortableFieldI
             return null;
         }
 
-        if ($this->showTimeZone && is_array($value) && !empty($value['timezone'])) {
-            $date->setTimezone(new DateTimeZone($value['timezone']));
+        if ($this->showTimeZone && (isset($timeZone) || (is_array($value) && !empty($value['timezone'])))) {
+            $date->setTimezone(new DateTimeZone($timeZone ?? $value['timezone']));
         }
 
         return $date;
