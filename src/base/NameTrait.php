@@ -108,8 +108,10 @@ trait NameTrait
     {
         if ($this->fullName !== null) {
             $parsedName = $this->getParsedName();
-            $this->firstName = $parsedName['firstName'];
-            $this->lastName = $parsedName['lastName'];
+            if ($this->fullName === trim($parsedName['firstName'] . ' ' . $parsedName['lastName'])) {
+                $this->firstName = $parsedName['firstName'];
+                $this->lastName = $parsedName['lastName'];
+            }
         } elseif ($this->firstName !== null || $this->lastName !== null) {
             $this->fullName = trim("$this->firstName $this->lastName") ?: null;
         }

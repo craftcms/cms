@@ -1453,6 +1453,11 @@ JS, [
 
             $this->_applyParamsToElement($element);
 
+            // for editing names in the slideout
+            if ($element instanceof User || $element instanceof Address) {
+                $element->populateNameAttributes();
+            }
+
             // Make sure nothing just changed that would prevent the user from saving
             if (!$this->_canSave($element, $user)) {
                 throw new ForbiddenHttpException('User not authorized to save this element.');
@@ -1582,6 +1587,12 @@ JS, [
         $this->element = $element;
 
         $this->_applyParamsToElement($element);
+
+        // for editing names in the slideout
+        if ($element instanceof User || $element instanceof Address) {
+            $element->populateNameAttributes();
+        }
+
         $user = static::currentUser();
 
         if (!$elementsService->canSave($element, $user)) {

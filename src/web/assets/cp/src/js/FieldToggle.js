@@ -57,8 +57,15 @@ Craft.FieldToggle = Garnish.Base.extend({
   },
 
   normalizeTargetSelector: function (selector) {
-    if (selector && !selector.match(/^[#\.]/)) {
-      selector = '#' + selector;
+    if (selector) {
+      let parts = selector.split(',');
+      for (let i = 0; i < parts.length; i++) {
+        parts[i] = parts[i].trim();
+        if (parts[i] && !parts[i].match(/^[#\.]/) && !parts[i].match(/^\[/)) {
+          parts[i] = '#' + parts[i];
+        }
+      }
+      selector = parts.join(',');
     }
 
     return selector;
