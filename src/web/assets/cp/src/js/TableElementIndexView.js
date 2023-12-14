@@ -238,7 +238,10 @@ Craft.TableElementIndexView = Craft.BaseElementIndexView.extend({
       .children()
       .toArray()
       .map(
-        (e) => `${this.elementIndex.nestedInputNamespace}[${$(e).data('id')}]`
+        (e) =>
+          `${this.elementIndex.nestedInputNamespace}[element-${$(e).data(
+            'id'
+          )}]`
       );
     return Craft.findDeltaData(
       this.initialSerializedValue,

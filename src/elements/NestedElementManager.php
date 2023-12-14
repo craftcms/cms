@@ -164,7 +164,7 @@ class NestedElementManager extends Component
             $query = $this->nestedElementQuery($owner);
         }
 
-        if ($fetchAll && !$query->getCachedResult()) {
+        if ($fetchAll && $query->getCachedResult() === null) {
             $query
                 ->drafts(null)
                 ->status(null)

@@ -1933,7 +1933,7 @@ JS, [
             return null;
         }
 
-        if (!$element->canView(static::currentUser())) {
+        if (!$elementsService->canView($element, static::currentUser())) {
             throw new ForbiddenHttpException('User not authorized to edit this element.');
         }
 
