@@ -11,7 +11,6 @@ Craft.AssetSelectInput = Craft.BaseElementSelectInput.extend({
 
   init: function () {
     this.base.apply(this, arguments);
-
     if (this.settings.canUpload) {
       this._attachUploader();
     }
@@ -38,23 +37,6 @@ Craft.AssetSelectInput = Craft.BaseElementSelectInput.extend({
     }
   },
 
-  onAddElements: function () {
-    this.$elements
-      .find('.elementthumb')
-      .addClass('open-preview')
-      .on('click', (ev) => {
-        this.clearOpenPreviewTimeout();
-        this.openPreviewTimeout = setTimeout(() => {
-          this.openPreview();
-          this.openPreviewTimeout = null;
-        }, 500);
-      })
-      .on('dblclick', (ev) => {
-        this.clearOpenPreviewTimeout();
-      });
-    this.base();
-  },
-
   clearOpenPreviewTimeout: function () {
     if (this.openPreviewTimeout) {
       clearTimeout(this.openPreviewTimeout);
@@ -62,11 +44,13 @@ Craft.AssetSelectInput = Craft.BaseElementSelectInput.extend({
     }
   },
 
-  openPreview: function () {
+  openPreview: function ($element) {
     if (Craft.PreviewFileModal.openInstance) {
       Craft.PreviewFileModal.openInstance.selfDestruct();
     } else {
-      var $element = this.elementSelect.$focusedItem;
+      if (!$element) {
+        $element = this.elementSelect.$focusedItem;
+      }
 
       if ($element.length) {
         this._loadPreview($element);
@@ -210,19 +194,6 @@ Craft.AssetSelectInput = Craft.BaseElementSelectInput.extend({
 
     var $newElement = element.$element;
 
-    // Make a couple tweaks
-    $newElement.addClass('removable');
-    $newElement.prepend(
-      '<input type="hidden" name="' +
-        this.settings.name +
-        '[]" value="' +
-        element.id +
-        '">' +
-        '<a class="delete icon" title="' +
-        Craft.t('app', 'Remove') +
-        '"></a>'
-    );
-
     $newElement.appendTo(this.$elementsContainer);
 
     var margin = -($newElement.outerWidth() + 10);
@@ -267,19 +238,34 @@ Craft.AssetSelectInput = Craft.BaseElementSelectInput.extend({
   _onUploadComplete: function (event, data) {
     const result = event instanceof CustomEvent ? event.detail : data.result;
 
-    const parameters = {
-      elementId: result.assetId,
-      siteId: this.settings.criteria.siteId,
-      thumbSize: this.settings.viewMode,
-    };
-
-    Craft.sendActionRequest('POST', 'elements/get-element-html', {
-      data: parameters,
+    Craft.sendActionRequest('POST', 'app/render-elements', {
+      data: {
+        elements: [
+          {
+            type: 'craft\\elements\\Asset',
+            id: result.assetId,
+            siteId: this.settings.criteria.siteId,
+            instances: [
+              {
+                context: 'field',
+                ui: ['list', 'large'].includes(this.settings.viewMode)
+                  ? 'chip'
+                  : 'card',
+                size: this.settings.viewMode === 'large' ? 'large' : 'small',
+              },
+            ],
+          },
+        ],
+      },
     })
-      .then((response) => {
-        var html = $(response.data.html);
-        Craft.appendHeadHtml(response.data.headHtml);
-        this.selectUploadedFile(Craft.getElementInfo(html));
+      .then(({data}) => {
+        const elementInfo = Craft.getElementInfo(
+          data.elements[result.assetId][0]
+        );
+        this.selectElements([elementInfo]);
+
+        Craft.appendHeadHtml(data.headHtml);
+        Craft.appendBodyHtml(data.bodyHtml);
 
         // Last file
         if (this.uploader.isLastUpload()) {
@@ -288,8 +274,13 @@ Craft.AssetSelectInput = Craft.BaseElementSelectInput.extend({
           this.$container.trigger('change');
         }
       })
-      .catch(({response}) => {
-        Craft.cp.displayError(response.data.message);
+      .catch((error) => {
+        if (error && error.response) {
+          Craft.cp.displayError(response.data.message);
+        } else {
+          Craft.cp.displayError();
+          throw error;
+        }
       });
 
     Craft.cp.runQueue();
@@ -304,15 +295,21 @@ Craft.AssetSelectInput = Craft.BaseElementSelectInput.extend({
     const response =
       event instanceof CustomEvent ? event.detail : data?.jqXHR?.responseJSON;
 
-    let {message, filename} = response || {};
+    let {message, filename, errors} = response || {};
+
+    let errorMessages = errors ? Object.values(errors).flat() : [];
 
     if (!message) {
       if (!filename) {
         filename = backupFilename;
       }
-      message = filename
-        ? Craft.t('app', 'Upload failed for “{filename}”.', {filename})
-        : Craft.t('app', 'Upload failed.');
+      if (errorMessages.length) {
+        message = errorMessages.join('\n');
+      } else if (filename) {
+        message = Craft.t('app', 'Upload failed for “{filename}”.', {filename});
+      } else {
+        message = Craft.t('app', 'Upload failed.');
+      }
     }
 
     Craft.cp.displayError(message);

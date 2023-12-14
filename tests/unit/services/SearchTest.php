@@ -101,7 +101,7 @@ class SearchTest extends TestCase
      *
      * @return array
      */
-    public function searchElementsDataProvider(): array
+    public static function searchElementsDataProvider(): array
     {
         return [
             [['user1'], ['user1', 'user2', 'user3', 'user4'], 'user1@crafttest.com'],

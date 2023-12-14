@@ -13,6 +13,7 @@ use craft\base\Element;
 use craft\elements\db\EntryQuery;
 use craft\elements\Entry;
 use craft\gql\resolvers\mutations\Entry as EntryMutationResolver;
+use craft\models\EntryType;
 use craft\services\Elements;
 use craft\test\TestCase;
 use GraphQL\Type\Definition\ResolveInfo;
@@ -30,7 +31,9 @@ class EntryMutationResolverTest extends TestCase
      */
     public function testSavingDraftOrEntrySetsRelevantScenario(array $arguments, string $scenario): void
     {
-        $entry = new Entry();
+        $entry = $this->make(Entry::class, [
+            'getType' => new EntryType(),
+        ]);
 
         $resolver = $this->make(EntryMutationResolver::class, [
             'getEntryElement' => $entry,
@@ -45,7 +48,7 @@ class EntryMutationResolverTest extends TestCase
         ]));
 
         $resolver->saveEntry(null, $arguments, null, $this->make(ResolveInfo::class));
-        $this->assertSame($scenario, $entry->scenario);
+        self::assertSame($scenario, $entry->scenario);
     }
 
     /**
@@ -58,7 +61,10 @@ class EntryMutationResolverTest extends TestCase
      */
     public function testSavingNewEntryDoesNotSearchForIt(array $arguments, bool $identifyCalled): void
     {
-        $entry = new Entry();
+        $entry = $this->make(Entry::class, [
+            'getType' => new EntryType(),
+        ]);
+
         $query = $this->make(EntryQuery::class, [
             'one' => $entry,
         ]);
@@ -75,10 +81,10 @@ class EntryMutationResolverTest extends TestCase
         ]));
 
         $entry = $resolver->saveEntry(null, $arguments, null, $this->make(ResolveInfo::class));
-        $this->assertIsObject($entry);
+        self::assertIsObject($entry);
     }
 
-    public function saveEntryDataProvider(): array
+    public static function saveEntryDataProvider(): array
     {
         return [
             [['draftId' => 5], Element::SCENARIO_ESSENTIALS],
@@ -87,7 +93,7 @@ class EntryMutationResolverTest extends TestCase
         ];
     }
 
-    public function saveNewEntryDataProvider(): array
+    public static function saveNewEntryDataProvider(): array
     {
         return [
             [['draftId' => 5], true],

@@ -24,6 +24,14 @@ abstract class BaseUiElement extends FieldLayoutElement
     /**
      * @inheritdoc
      */
+    public function isMultiInstance(): bool
+    {
+        return true;
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function selectorHtml(): string
     {
         $label = $this->selectorLabel();

@@ -38,6 +38,7 @@ use Twig\Template as TwigTemplate;
 use Twig\TemplateWrapper;
 use yii\base\Arrayable;
 use yii\base\Exception;
+use yii\base\InvalidArgumentException;
 use yii\base\Model;
 use yii\base\NotSupportedException;
 use yii\web\AssetBundle as YiiAssetBundle;
@@ -341,7 +342,7 @@ class View extends \yii\web\View
         }
 
         // Register the control panel hooks
-        $this->hook('cp.elements.element', [$this, '_getCpElementHtml']);
+        $this->hook('cp.elements.element', [$this, '_elementChipHtml']);
     }
 
     /**
@@ -1438,6 +1439,13 @@ JS;
      */
     public function setNamespace(?string $namespace): void
     {
+        if (
+            $namespace !== null &&
+            !preg_match('/^(__.+__|[A-Za-z][A-Za-z0-9\-_:.]*(\[[A-Za-z][A-Za-z0-9\-_:.]*])*)$/', $namespace)
+        ) {
+            throw new InvalidArgumentException(sprintf('Invalid namespace ("%s"). Namespaces must begin with a letter, and may be followed by letters, numbers, hyphens, underscores, colons, and periods (possibly followed by sets of correctly-formatted strings wrapped in square brackets).', $namespace));
+        }
+
         $this->_namespace = $namespace;
     }
 
@@ -2281,13 +2289,15 @@ JS;
     }
 
     /**
-     * Returns the HTML for an element in the control panel.
+     * Renders an element’s chip HTML.
      *
      * @param array $context
      * @return string|null
      */
-    private function _getCpElementHtml(array $context): ?string
+    private function _elementChipHtml(array $context): ?string
     {
+        Craft::$app->getDeprecator()->log('hook:cp.elements.element', 'The `_elements/element.twig` template and `cp.elements.element` template hook are deprecated. The `elementChip()` function should be used instead.');
+
         if (!isset($context['element'])) {
             return null;
         }
@@ -2300,15 +2310,11 @@ JS;
 
         return Cp::elementHtml(
             $context['element'],
-            $context['context'] ?? 'index',
-            $size,
-            $context['name'] ?? null,
-            true,
-            true,
-            true,
-            true,
-            $context['single'] ?? false,
-            $context['autoReload'] ?? true,
+            context: $context['context'] ?? 'index',
+            size: $size,
+            inputName: $context['name'] ?? null,
+            single: $context['single'] ?? false,
+            autoReload: $context['autoReload'] ?? true,
         );
     }
 }

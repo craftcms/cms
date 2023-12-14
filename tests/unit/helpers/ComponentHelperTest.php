@@ -128,7 +128,7 @@ class ComponentHelperTest extends TestCase
     /**
      * @return array
      */
-    public function validateComponentClassDataProvider(): array
+    public static function validateComponentClassDataProvider(): array
     {
         return [
             [true, PlainText::class],
@@ -146,7 +146,7 @@ class ComponentHelperTest extends TestCase
     /**
      * @return array
      */
-    public function successfulComponentCreationDataProvider(): array
+    public static function successfulComponentCreationDataProvider(): array
     {
         return [
             'string-to-class-conversion' => [
@@ -173,9 +173,9 @@ class ComponentHelperTest extends TestCase
                         ],
                     ]);
 
-                    $this->assertEquals('value1', $component->dependency1);
-                    $this->assertEquals('value2', $component->dependency2);
-                    $this->assertEquals('value', $component->settingsdependency1);
+                    self::assertEquals('value1', $component->dependency1);
+                    self::assertEquals('value2', $component->dependency2);
+                    self::assertEquals('value', $component->settingsdependency1);
                     return $component;
                 },
             ],
@@ -188,7 +188,7 @@ class ComponentHelperTest extends TestCase
      *
      * @return array
      */
-    public function failingComponentCreationDataProvider(): array
+    public static function failingComponentCreationDataProvider(): array
     {
         return [
             'invalid-required-parent-class' => [
@@ -234,7 +234,7 @@ class ComponentHelperTest extends TestCase
     /**
      * @return array
      */
-    public function mergeSettingsDataProvider(): array
+    public static function mergeSettingsDataProvider(): array
     {
         $mergedComponentArray = [
             'name' => 'Component',
@@ -303,7 +303,7 @@ class ComponentHelperTest extends TestCase
     /**
      * @return array
      */
-    public function iconSvgDataProvider(): array
+    public static function iconSvgDataProvider(): array
     {
         return [
             'default' => ['<title>Default</title>', null, 'Default'],
@@ -318,7 +318,7 @@ class ComponentHelperTest extends TestCase
     /**
      * @return array
      */
-    public function cleanseConfigDataProvider(): array
+    public static function cleanseConfigDataProvider(): array
     {
         return [
             [

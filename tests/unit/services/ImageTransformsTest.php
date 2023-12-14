@@ -38,7 +38,7 @@ class ImageTransformsTest extends TestCase
         self::assertNotSame($extendedTransform, $transform);
     }
 
-    public function extendTransformDataProvider(): array
+    public static function extendTransformDataProvider(): array
     {
         return [
             [

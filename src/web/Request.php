@@ -845,6 +845,15 @@ class Request extends \yii\web\Request
     }
 
     /**
+     * @inheritdoc
+     */
+    public function setBodyParams($values)
+    {
+        parent::setBodyParams($values);
+        $this->_setBodyParams = false;
+    }
+
+    /**
      * Returns the named request body parameter value.
      *
      * If the parameter does not exist, the second argument passed to this method will be returned.
@@ -966,6 +975,23 @@ class Request extends \yii\web\Request
         }
 
         return parent::getQueryParams();
+    }
+
+    /**
+     * Returns the named GET parameters, without the path parameter.
+     *
+     * @return array
+     * @since 5.0.0
+     */
+    public function getQueryParamsWithoutPath(): array
+    {
+        $params = $this->getQueryParams();
+
+        if ($this->generalConfig->pathParam) {
+            unset($params[$this->generalConfig->pathParam]);
+        }
+
+        return $params;
     }
 
     /**

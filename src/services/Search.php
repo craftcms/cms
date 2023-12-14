@@ -19,6 +19,7 @@ use craft\events\IndexKeywordsEvent;
 use craft\events\SearchEvent;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Db;
+use craft\helpers\ElementHelper;
 use craft\helpers\Search as SearchHelper;
 use craft\helpers\StringHelper;
 use craft\models\Site;
@@ -150,7 +151,8 @@ class Search extends Component
         $updateFields = [];
         /** @var string[] $ignoreFieldIds */
         $ignoreFieldIds = [];
-        if ($element::hasContent() && ($fieldLayout = $element->getFieldLayout()) !== null) {
+        $fieldLayout = $element->getFieldLayout();
+        if ($fieldLayout !== null) {
             if ($fieldHandles !== null) {
                 $fieldHandles = array_flip($fieldHandles);
             }
@@ -178,12 +180,7 @@ class Search extends Component
         Db::delete(Table::SEARCHINDEX, $deleteCondition);
 
         // Update the element attributes' keywords
-        $searchableAttributes = array_flip($element::searchableAttributes());
-        $searchableAttributes['slug'] = true;
-        if ($element::hasTitles()) {
-            $searchableAttributes['title'] = true;
-        }
-        foreach (array_keys($searchableAttributes) as $attribute) {
+        foreach (ElementHelper::searchableAttributes($element) as $attribute) {
             $value = $element->getSearchKeywords($attribute);
             $this->_indexKeywords($element, $value, attribute: $attribute);
         }

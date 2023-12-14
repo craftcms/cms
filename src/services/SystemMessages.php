@@ -52,7 +52,7 @@ class SystemMessages extends Component
         $language = Craft::$app->language;
         $i18n = Craft::$app->getI18n();
         if (!in_array($language, $i18n->getSiteLocaleIds())) {
-            Craft::$app->language = $i18n->getPrimarySiteLocaleId();
+            Craft::$app->language = Craft::$app->getSites()->getPrimarySite()->language;
         }
 
         $messages = [

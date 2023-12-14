@@ -89,7 +89,7 @@ class ColorValidatorTest extends TestCase
     /**
      * @return array
      */
-    public function normalizeColorDataProvider(): array
+    public static function normalizeColorDataProvider(): array
     {
         return [
             ['#ffc10e', 'ffc10e'],
@@ -106,7 +106,7 @@ class ColorValidatorTest extends TestCase
     /**
      * @return array
      */
-    public function colorValidatorAttributesDataProvider(): array
+    public static function colorValidatorAttributesDataProvider(): array
     {
         return [
             ['#ffc', true],

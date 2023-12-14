@@ -22,6 +22,7 @@ use craft\helpers\UrlHelper;
 use craft\i18n\Locale;
 use craft\models\Section;
 use craft\services\Sites;
+use craft\validators\UserPasswordValidator;
 use craft\web\AssetBundle;
 use craft\web\assets\axios\AxiosAsset;
 use craft\web\assets\d3\D3Asset;
@@ -126,7 +127,6 @@ JS;
             'Apply',
             'Are you sure you want to close the editor? Any changes will be lost.',
             'Are you sure you want to close this screen? Any changes will be lost.',
-            'Are you sure you want to delete this address?',
             'Are you sure you want to delete this image?',
             'Are you sure you want to delete “{name}”?',
             'Are you sure you want to discard your changes?',
@@ -136,6 +136,9 @@ JS;
             'Breadcrumbs',
             'Buy {name}',
             'Cancel',
+            'Changes saved.',
+            'Check your email for instructions to reset your password.',
+            'Choose a page',
             'Choose a user',
             'Choose which sites this source should be visible for.',
             'Choose which table columns should be visible for this source by default.',
@@ -145,11 +148,13 @@ JS;
             'Close',
             'Color hex value',
             'Color picker',
+            'Content',
             'Continue',
             'Copied to clipboard.',
             'Copy the URL',
             'Copy the reference tag',
             'Copy to clipboard',
+            'Could not save due to validation errors.',
             'Couldn’t delete “{name}”.',
             'Couldn’t save new order.',
             'Create',
@@ -175,6 +180,7 @@ JS;
             'Done',
             'Draft Name',
             'Edit draft settings',
+            'Edit {type}',
             'Edit',
             'Edited',
             'Element',
@@ -182,7 +188,6 @@ JS;
             'Enabled for all sites',
             'Enabled',
             'Enter the name of the folder',
-            'Enter your password to continue.',
             'Enter your password to log back in.',
             'Error',
             'Export Type',
@@ -204,12 +209,14 @@ JS;
             'Handle',
             'Heading',
             'Height unit',
-            'Hide nested sources',
             'Hide sidebar',
             'Hide',
+            'Include this field in element cards',
             'Incorrect password.',
             'Information',
             'Instructions',
+            'Invalid email.',
+            'Invalid username or email.',
             'Keep both',
             'Keep me signed in',
             'Keep them',
@@ -221,7 +228,6 @@ JS;
             'Loading',
             'Make not required',
             'Make required',
-            'Matrix block could not be added. Maximum number of blocks reached.',
             'Merge the folder (any conflicting files will be replaced)',
             'Missing or empty {items}',
             'Missing {items}',
@@ -248,6 +254,7 @@ JS;
             'New entry, choose a section',
             'New heading',
             'New order saved.',
+            'New position saved.',
             'New position saved.',
             'New subfolder',
             'New {group} category',
@@ -306,7 +313,6 @@ JS;
             'Show',
             'Show/hide children',
             'Showing your unsaved changes.',
-            'Sign in',
             'Sign out now',
             'Sites',
             'Skip to {title}',
@@ -343,6 +349,7 @@ JS;
             'Top of preview',
             'Transfer it to:',
             'Try again',
+            'Try another way',
             'Undo',
             'Unread announcements',
             'Update {type}',
@@ -351,7 +358,9 @@ JS;
             'Upload failed.',
             'Upload files',
             'Use defaults',
+            'Use this field’s values for element thumbnails',
             'User Groups',
+            'View in a new tab',
             'View',
             'Volume path',
             'Warning',
@@ -361,7 +370,6 @@ JS;
             'You must specify a tab name.',
             'Your changes could not be stored.',
             'Your changes have been stored.',
-            'Your session has ended.',
             'Your session will expire in {time}.',
             'by {creator}',
             'day',
@@ -394,6 +402,11 @@ JS;
             '{type} saved.',
             '“{name}” deleted.',
         ]);
+
+        $view->registerTranslations('yii', [
+            '{attribute} should contain at least {min, number} {min, plural, one{character} other{characters}}.',
+            '{attribute} should contain at most {max, number} {max, plural, one{character} other{characters}}.',
+        ]);
     }
 
     private function _craftData(): array
@@ -410,6 +423,8 @@ JS;
         $primarySite = $upToDate ? $sitesService->getPrimarySite() : null;
 
         $data = [
+            'Pro' => Craft::Pro,
+            'Solo' => Craft::Solo,
             'actionTrigger' => $generalConfig->actionTrigger,
             'actionUrl' => UrlHelper::actionUrl(),
             'announcements' => $upToDate ? Craft::$app->getAnnouncements()->get() : [],
@@ -425,24 +440,25 @@ JS;
             'fileKinds' => Assets::getFileKinds(),
             'language' => Craft::$app->language,
             'left' => $orientation === 'ltr' ? 'left' : 'right',
+            'maxPasswordLength' => UserPasswordValidator::MAX_PASSWORD_LENGTH,
+            'minPasswordLength' => UserPasswordValidator::MIN_PASSWORD_LENGTH,
             'omitScriptNameInUrls' => $generalConfig->omitScriptNameInUrls,
             'orientation' => $orientation,
             'pageNum' => $request->getPageNum(),
             'pageTrigger' => 'p',
             'path' => $request->getPathInfo(),
             'pathParam' => $generalConfig->pathParam,
-            'Pro' => Craft::Pro,
             'registeredAssetBundles' => [], // force encode as JS object
             'registeredJsFiles' => [], // force encode as JS object
             'resourceBaseUrl' => Craft::$app->getAssetManager()->baseUrl,
             'right' => $orientation === 'ltr' ? 'right' : 'left',
             'scriptName' => basename($request->getScriptFile()),
-            'Solo' => Craft::Solo,
             'systemUid' => Craft::$app->getSystemUid(),
             'timepickerOptions' => $this->_timepickerOptions($formattingLocale, $orientation),
             'timezone' => Craft::$app->getTimeZone(),
             'tokenParam' => $generalConfig->tokenParam,
             'translations' => ['' => ''], // force encode as JS object
+            'useEmailAsUsername' => $generalConfig->useEmailAsUsername,
             'usePathInfo' => $generalConfig->usePathInfo,
         ];
 
@@ -481,6 +497,7 @@ JS;
             'editableCategoryGroups' => $upToDate ? $this->_editableCategoryGroups() : [],
             'edition' => Craft::$app->getEdition(),
             'elementTypeNames' => $elementTypeNames,
+            'elevatedSessionDuration' => $generalConfig->elevatedSessionDuration,
             'fieldsWithoutContent' => array_map(fn(FieldInterface $field) => $field->handle, Craft::$app->getFields()->getFieldsWithoutContent(false)),
             'handleCasing' => $generalConfig->handleCasing,
             'httpProxy' => $this->_httpProxy($generalConfig),
@@ -499,6 +516,8 @@ JS;
             'sites' => $this->_sites($sitesService),
             'siteToken' => $generalConfig->siteToken,
             'slugWordSeparator' => $generalConfig->slugWordSeparator,
+            'userEmail' => $currentUser->email,
+            'userHasPasskeys' => Craft::$app->getAuth()->hasPasskeys($currentUser),
             'userIsAdmin' => $currentUser->admin,
             'username' => $currentUser->username,
         ];
@@ -594,7 +613,7 @@ JS;
     {
         $sections = [];
 
-        foreach (Craft::$app->getSections()->getEditableSections() as $section) {
+        foreach (Craft::$app->getEntries()->getEditableSections() as $section) {
             if ($section->type !== Section::TYPE_SINGLE && $currentUser->can("createEntries:$section->uid")) {
                 $sections[] = [
                     'entryTypes' => $this->_entryTypes($section),

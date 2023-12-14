@@ -44,7 +44,7 @@
     {% set isCurrent = (fsType == className(filesystem)) %}
 
     <div id="{{ fsType|id }}"{% if not isCurrent %} class="hidden"{% endif %}>
-        {% namespace 'types['~fsType~']' %}
+        {% namespace 'types['~fsType|id~']' %}
             {% if isCurrent %}
                 {{ _self.fsUrlFields(filesystem) }}
                 {{ filesystem.getSettingsHtml()|raw }}

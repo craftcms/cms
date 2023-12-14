@@ -10,6 +10,7 @@ namespace craft\controllers;
 use Craft;
 use craft\base\Element;
 use craft\elements\Entry;
+use craft\enums\PropagationMethod;
 use craft\errors\InvalidElementException;
 use craft\errors\MutexException;
 use craft\errors\UnsupportedSiteException;
@@ -53,7 +54,7 @@ class EntriesController extends BaseEntriesController
             $sectionHandle = $this->request->getRequiredBodyParam('section');
         }
 
-        $section = Craft::$app->getSections()->getSectionByHandle($sectionHandle);
+        $section = Craft::$app->getEntries()->getSectionByHandle($sectionHandle);
         if (!$section) {
             throw new BadRequestHttpException("Invalid section handle: $sectionHandle");
         }
@@ -77,7 +78,7 @@ class EntriesController extends BaseEntriesController
 
         if (!in_array($site->id, $editableSiteIds)) {
             // If there’s more than one possibility and entries doesn’t propagate to all sites, let the user choose
-            if (count($editableSiteIds) > 1 && $section->propagationMethod !== Section::PROPAGATION_METHOD_ALL) {
+            if (count($editableSiteIds) > 1 && $section->propagationMethod !== PropagationMethod::All) {
                 return $this->renderTemplate('_special/sitepicker.twig', [
                     'siteIds' => $editableSiteIds,
                     'baseUrl' => "entries/$section->handle/new",
@@ -367,7 +368,7 @@ class EntriesController extends BaseEntriesController
             $data['postDate'] = ($entry->postDate ? DateTimeHelper::toIso8601($entry->postDate) : null);
 
             if ($this->request->getIsCpRequest()) {
-                $data['elementHtml'] = Cp::elementHtml($entry);
+                $data['elementHtml'] = Cp::elementChipHtml($entry);
             }
         }
 

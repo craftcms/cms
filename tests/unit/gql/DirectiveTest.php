@@ -79,7 +79,7 @@ class DirectiveTest extends TestCase
         /** @var GqlAssetType $type */
         $type = $this->make(GqlAssetType::class);
 
-        $fieldNodes = new \ArrayObject([Json::decode('{"directives":[' . $this->_buildDirective(Transform::class, ['width' => 200]) . ']}', false)]);
+        $fieldNodes = new \ArrayObject([Json::decode('{"directives":[' . self::_buildDirective(Transform::class, ['width' => 200]) . ']}', false)]);
 
         $resolveInfo = $this->make(ResolveInfo::class, [
             'fieldName' => 'filename',
@@ -89,7 +89,7 @@ class DirectiveTest extends TestCase
         self::assertEquals($asset->getFilename(), $type->resolveWithDirectives($asset, [], null, $resolveInfo));
     }
 
-    public function directiveDataProvider(): array
+    public static function directiveDataProvider(): array
     {
         $mockDirective = MockDirective::class;
         $formatDateTime = FormatDateTime::class;
@@ -119,36 +119,36 @@ class DirectiveTest extends TestCase
 
         return [
             // Mock directive
-            ['TestString', $mockDirective, [$this->_buildDirective($mockDirective, ['prefix' => 'Foo'])], 'FooTestString'],
-            ['TestString', $mockDirective, [$this->_buildDirective($mockDirective, ['prefix' => 'Bar']), $this->_buildDirective($mockDirective, ['prefix' => 'Foo'])], 'FooBarTestString'],
+            ['TestString', $mockDirective, [self::_buildDirective($mockDirective, ['prefix' => 'Foo'])], 'FooTestString'],
+            ['TestString', $mockDirective, [self::_buildDirective($mockDirective, ['prefix' => 'Bar']), self::_buildDirective($mockDirective, ['prefix' => 'Foo'])], 'FooBarTestString'],
 
             // format date time (not as handy as for transform parameters, but still better than duplicating formats.
-            [$dateTime, $formatDateTime, [$this->_buildDirective($formatDateTime, $dateTimeParameters[0])], $dateTime->setTimezone(new DateTimeZone($dateTimeParameters[0]['timezone']))->format($dateTimeParameters[0]['format'])],
-            [$dateTime, $formatDateTime, [$this->_buildDirective($formatDateTime, $dateTimeParameters[1])], $dateTime->setTimezone(new DateTimeZone($dateTimeParameters[1]['timezone']))->format($dateTimeParameters[1]['format'])],
-            [$dateTime, $formatDateTime, [$this->_buildDirective($formatDateTime, $dateTimeParameters[2])], $dateTime->setTimezone(new DateTimeZone($dateTimeParameters[2]['timezone']))->format($dateTimeParameters[2]['format'])],
-            [$dateTime, $formatDateTime, [$this->_buildDirective($formatDateTime, $dateTimeParameters[3])], $dateTime->setTimezone(new DateTimeZone($dateTimeParameters[3]['timezone']))->format($dateTimeParameters[3]['format'])],
-            ['what time is it?', $formatDateTime, [$this->_buildDirective($formatDateTime, $dateTimeParameters[2])], 'what time is it?'],
+            [$dateTime, $formatDateTime, [self::_buildDirective($formatDateTime, $dateTimeParameters[0])], $dateTime->setTimezone(new DateTimeZone($dateTimeParameters[0]['timezone']))->format($dateTimeParameters[0]['format'])],
+            [$dateTime, $formatDateTime, [self::_buildDirective($formatDateTime, $dateTimeParameters[1])], $dateTime->setTimezone(new DateTimeZone($dateTimeParameters[1]['timezone']))->format($dateTimeParameters[1]['format'])],
+            [$dateTime, $formatDateTime, [self::_buildDirective($formatDateTime, $dateTimeParameters[2])], $dateTime->setTimezone(new DateTimeZone($dateTimeParameters[2]['timezone']))->format($dateTimeParameters[2]['format'])],
+            [$dateTime, $formatDateTime, [self::_buildDirective($formatDateTime, $dateTimeParameters[3])], $dateTime->setTimezone(new DateTimeZone($dateTimeParameters[3]['timezone']))->format($dateTimeParameters[3]['format'])],
+            ['what time is it?', $formatDateTime, [self::_buildDirective($formatDateTime, $dateTimeParameters[2])], 'what time is it?'],
 
             // Markdown
-            ['Some *string*', $markDownDirective, [$this->_buildDirective($markDownDirective, [])], "<p>Some <em>string</em></p>\n"],
+            ['Some *string*', $markDownDirective, [self::_buildDirective($markDownDirective, [])], "<p>Some <em>string</em></p>\n"],
 
             // Money
-            'money-number' => [$money, $moneyDirective, [$this->_buildDirective($moneyDirective, $moneyParameters[0])], '1,234.56'],
-            'money-number-locale' => [$money, $moneyDirective, [$this->_buildDirective($moneyDirective, $moneyParameters[1])], '1.234,56'],
-            'money-decimal' => [$money, $moneyDirective, [$this->_buildDirective($moneyDirective, $moneyParameters[2])], '1234.56'],
-            'money-string' => [$money, $moneyDirective, [$this->_buildDirective($moneyDirective, $moneyParameters[3])], '$1,234.56'],
-            'money-amount' => [$money, $moneyDirective, [$this->_buildDirective($moneyDirective, $moneyParameters[4])], '123456'],
+            'money-number' => [$money, $moneyDirective, [self::_buildDirective($moneyDirective, $moneyParameters[0])], '1,234.56'],
+            'money-number-locale' => [$money, $moneyDirective, [self::_buildDirective($moneyDirective, $moneyParameters[1])], '1.234,56'],
+            'money-decimal' => [$money, $moneyDirective, [self::_buildDirective($moneyDirective, $moneyParameters[2])], '1234.56'],
+            'money-string' => [$money, $moneyDirective, [self::_buildDirective($moneyDirective, $moneyParameters[3])], '$1,234.56'],
+            'money-amount' => [$money, $moneyDirective, [self::_buildDirective($moneyDirective, $moneyParameters[4])], '123456'],
 
             // Strip tags
-            'strip-tags' => ['<p>foo<br>bar</p>', $stripTagsDirective, [$this->_buildDirective($stripTagsDirective)], 'foobar'],
-            'strip-tags-with-allowed' => ['<p>foo<br>bar</p>', $stripTagsDirective, [$this->_buildDirective($stripTagsDirective, ['allowed' => ['br']])], 'foo<br>bar'],
+            'strip-tags' => ['<p>foo<br>bar</p>', $stripTagsDirective, [self::_buildDirective($stripTagsDirective)], 'foobar'],
+            'strip-tags-with-allowed' => ['<p>foo<br>bar</p>', $stripTagsDirective, [self::_buildDirective($stripTagsDirective, ['allowed' => ['br']])], 'foo<br>bar'],
 
             // Trim
-            'trim' => [" \tfoo bar\r\n", $trimDirective, [$this->_buildDirective($trimDirective)], 'foo bar'],
+            'trim' => [" \tfoo bar\r\n", $trimDirective, [self::_buildDirective($trimDirective)], 'foo bar'],
         ];
     }
 
-    public function assetTransformDirectiveDataProvider(): array
+    public static function assetTransformDirectiveDataProvider(): array
     {
         $assetTransform = Transform::class;
 
@@ -161,10 +161,10 @@ class DirectiveTest extends TestCase
 
         // asset transform
         return [
-            [$assetTransform, [$this->_buildDirective($assetTransform, $transformParameters[0])], $transformParameters[0]],
-            [$assetTransform, [$this->_buildDirective($assetTransform, $transformParameters[1])], $transformParameters[1]],
-            [$assetTransform, [$this->_buildDirective($assetTransform, $transformParameters[2])], $transformParameters[2]],
-            [$assetTransform, [$this->_buildDirective($assetTransform, $transformParameters[3])], $transformParameters[3]],
+            [$assetTransform, [self::_buildDirective($assetTransform, $transformParameters[0])], $transformParameters[0]],
+            [$assetTransform, [self::_buildDirective($assetTransform, $transformParameters[1])], $transformParameters[1]],
+            [$assetTransform, [self::_buildDirective($assetTransform, $transformParameters[2])], $transformParameters[2]],
+            [$assetTransform, [self::_buildDirective($assetTransform, $transformParameters[3])], $transformParameters[3]],
         ];
     }
 
@@ -176,7 +176,7 @@ class DirectiveTest extends TestCase
      * @param array $arguments
      * @return string
      */
-    private function _buildDirective(string $className, array $arguments = []): string
+    private static function _buildDirective(string $className, array $arguments = []): string
     {
         $directiveTemplate = '{"name": {"value": "%s"}, "arguments": [%s]}';
         $argumentTemplate = '{"name": {"value":"%s"}, "value": {"value": %s}}';

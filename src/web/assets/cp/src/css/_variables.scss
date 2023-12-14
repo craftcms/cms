@@ -23,13 +23,13 @@
   --font-weight-bold: 700;
 
   // menu colors
-  --menu-option-color: var(--text-color);
-  --menu-option-active-color: var(--white);
-  --menu-option-active-background-color: var(--dark-sel-color);
+  --menu-item-color: var(--text-color);
+  --menu-item-active-color: var(--white);
+  --menu-item-active-background-color: var(--dark-sel-color);
 
   // hairline colors
   --hairline-color: #{transparentize(hsl(209, 20%, 25%), 0.9)};
-  --medium-hairline-color: #{transparentize(hsl(209, 14%, 37%), 0.75)};
+  --medium-hairline-color: #cfd8e3; // matches shadow below global header;
   --dark-hairline-color: #{transparentize(hsl(210, 10%, 53%), 0.5)};
 
   // focus colors
@@ -62,7 +62,7 @@
 
   // misc colors
   --indicator-border-color: var(--yellow-700);
-  --indicator-icon-color: var(--yellow-750);
+  --indicator-icon-color: var(--yellow-700);
 
   // UI element styles
   --small-border-radius: 3px;

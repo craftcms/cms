@@ -9,10 +9,10 @@ namespace craft\gql\resolvers\elements;
 
 use Craft;
 use craft\elements\db\ElementQuery;
+use craft\elements\ElementCollection;
 use craft\elements\Entry as EntryElement;
 use craft\gql\base\ElementResolver;
 use craft\helpers\Gql as GqlHelper;
-use Illuminate\Support\Collection;
 use yii\base\UnknownMethodException;
 
 /**
@@ -31,6 +31,25 @@ class Entry extends ElementResolver
         // If this is the beginning of a resolver chain, start fresh
         if ($source === null) {
             $query = EntryElement::find();
+
+
+            $pairs = GqlHelper::extractAllowedEntitiesFromSchema('read');
+
+            if (!isset($pairs['sections'])) {
+                return ElementCollection::empty();
+            }
+
+            $sectionUids = array_flip($pairs['sections']);
+            $sectionIds = [];
+
+            foreach (Craft::$app->getEntries()->getAllSections() as $section) {
+                if (isset($sectionUids[$section->uid])) {
+                    $sectionIds[] = $section->id;
+                }
+            }
+
+            $query->andWhere(['in', 'entries.sectionId', $sectionIds]);
+
         // If not, get the prepared element query
         } else {
             $query = $source->$fieldName;
@@ -50,25 +69,6 @@ class Entry extends ElementResolver
                 }
             }
         }
-
-        $pairs = GqlHelper::extractAllowedEntitiesFromSchema('read');
-
-        if (!GqlHelper::canQueryEntries()) {
-            return Collection::empty();
-        }
-
-        $sectionsService = Craft::$app->getSections();
-        $sectionIds = array_filter(array_map(function(string $uid) use ($sectionsService) {
-            $section = $sectionsService->getSectionByUid($uid);
-            return $section->id ?? null;
-        }, $pairs['sections']));
-        $entryTypeIds = array_filter(array_map(function(string $uid) use ($sectionsService) {
-            $entryType = $sectionsService->getEntryTypeByUid($uid);
-            return $entryType->id ?? null;
-        }, $pairs['entrytypes']));
-
-        $query->andWhere(['in', 'entries.sectionId', $sectionIds]);
-        $query->andWhere(['in', 'entries.typeId', $entryTypeIds]);
 
         return $query;
     }

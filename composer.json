@@ -19,11 +19,11 @@
     "issues": "https://github.com/craftcms/cms/issues?state=open",
     "forum": "https://craftcms.stackexchange.com/",
     "source": "https://github.com/craftcms/cms",
-    "docs": "https://craftcms.com/docs/4.x/",
+    "docs": "https://craftcms.com/docs/5.x/",
     "rss": "https://github.com/craftcms/cms/releases.atom"
   },
   "require": {
-    "php": "^8.0.2",
+    "php": "^8.2",
     "ext-bcmath": "*",
     "ext-curl": "*",
     "ext-dom": "*",
@@ -34,10 +34,11 @@
     "ext-pcre": "*",
     "ext-pdo": "*",
     "ext-zip": "*",
+    "bacon/bacon-qr-code": "^2.0",
     "commerceguys/addressing": "^1.2",
-    "composer/composer": "^2.2.19",
+    "composer/semver": "^3.3.2",
     "craftcms/plugin-installer": "~1.6.0",
-    "craftcms/server-check": "~2.1.2",
+    "craftcms/server-check": "~5.0.0",
     "creocoder/yii2-nested-sets": "~0.9.0",
     "elvanto/litemoji": "~4.3.0",
     "enshrined/svg-sanitize": "~0.16.0",
@@ -47,14 +48,18 @@
     "moneyphp/money": "^4.0",
     "monolog/monolog": "^2.3",
     "pixelandtonic/imagine": "~1.3.3.1",
+    "pragmarx/google2fa": "^8.0",
+    "pragmarx/recovery": "^0.2.1",
     "samdark/yii2-psr-log-target": "^1.1.3",
     "seld/cli-prompt": "^1.0.4",
+    "symfony/filesystem": "^6.3",
     "symfony/http-client": "^6.0.3",
     "symfony/var-dumper": "^5.0|^6.0",
     "symfony/yaml": "^5.2.3",
     "theiconic/name-parser": "^1.2",
     "twig/twig": "~3.4.3",
     "voku/stringy": "^6.4.0",
+    "web-auth/webauthn-lib": "^3.3",
     "webonyx/graphql-php": "~14.11.5",
     "yiisoft/yii2": "~2.0.48.1",
     "yiisoft/yii2-debug": "~2.1.22.0",
@@ -62,12 +67,12 @@
     "yiisoft/yii2-symfonymailer": "^2.0.0"
   },
   "require-dev": {
-    "codeception/codeception": "^4.1.29",
-    "codeception/module-asserts": "^1.3.1",
-    "codeception/module-datafactory": "^1.1.0",
-    "codeception/module-phpbrowser": "^1.0.2",
-    "codeception/module-rest": "^1.4.2",
-    "codeception/module-yii2": "^1.1.5",
+    "codeception/codeception": "^5.0.11",
+    "codeception/module-asserts": "^3.0.0",
+    "codeception/module-datafactory": "^3.0.0",
+    "codeception/module-phpbrowser": "^3.0.0",
+    "codeception/module-rest": "^3.3.2",
+    "codeception/module-yii2": "^1.1.9",
     "craftcms/ecs": "dev-main",
     "fakerphp/faker": "^1.19.0",
     "league/factory-muffin": "^3.3.0",
@@ -110,8 +115,9 @@
   "config": {
     "sort-packages": true,
     "platform": {
-      "php": "8.0.2"
+      "php": "8.2"
     },
+    "platform-check": false,
     "allow-plugins": {
       "yiisoft/yii2-composer": true,
       "craftcms/plugin-installer": true

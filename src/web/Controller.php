@@ -18,6 +18,7 @@ use yii\base\Model;
 use yii\web\BadRequestHttpException;
 use yii\web\ForbiddenHttpException;
 use yii\web\JsonResponseFormatter;
+use yii\web\MethodNotAllowedHttpException;
 use yii\web\Response as YiiResponse;
 use yii\web\UnauthorizedHttpException;
 
@@ -84,7 +85,7 @@ abstract class Controller extends \yii\web\Controller
     /**
      * @inheritdoc
      */
-    public function behaviors()
+    public function behaviors(): array
     {
         $behaviors = $this->defineBehaviors();
 
@@ -268,6 +269,10 @@ abstract class Controller extends \yii\web\Controller
      */
     public function asCpScreen(): Response
     {
+        if ($this->response->getBehavior(CpScreenResponseBehavior::NAME)) {
+            return $this->response;
+        }
+
         $this->response->attachBehavior(CpScreenResponseBehavior::NAME, CpScreenResponseBehavior::class);
         $this->response->formatters[CpScreenResponseFormatter::FORMAT] = CpScreenResponseFormatter::class;
         $this->response->format = CpScreenResponseFormatter::FORMAT;
@@ -497,12 +502,12 @@ abstract class Controller extends \yii\web\Controller
     /**
      * Throws a 400 error if this isn’t a POST request
      *
-     * @throws BadRequestHttpException if the request is not a post request
+     * @throws MethodNotAllowedHttpException if the request is not a POST request
      */
     public function requirePostRequest(): void
     {
         if (!$this->request->getIsPost()) {
-            throw new BadRequestHttpException('Post request required');
+            throw new MethodNotAllowedHttpException('Post request required');
         }
     }
 

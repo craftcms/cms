@@ -38,13 +38,17 @@ use craft\fieldlayoutelements\assets\AssetTitleField;
 use craft\fieldlayoutelements\entries\EntryTitleField;
 use craft\fieldlayoutelements\FullNameField;
 use craft\fieldlayoutelements\TitleField;
-use craft\fieldlayoutelements\users\AddressesField;
+use craft\fieldlayoutelements\users\EmailField;
+use craft\fieldlayoutelements\users\FullNameField as UserFullNameField;
+use craft\fieldlayoutelements\users\PhotoField;
+use craft\fieldlayoutelements\users\UsernameField;
 use craft\helpers\App;
 use craft\helpers\Db;
 use craft\helpers\Session;
 use craft\i18n\Formatter;
 use craft\i18n\I18N;
 use craft\i18n\Locale;
+use craft\log\Dispatcher;
 use craft\mail\Mailer;
 use craft\markdown\GithubMarkdown;
 use craft\markdown\Markdown;
@@ -57,11 +61,11 @@ use craft\services\Announcements;
 use craft\services\Api;
 use craft\services\AssetIndexer;
 use craft\services\Assets;
+use craft\services\Auth;
 use craft\services\Categories;
 use craft\services\Composer;
 use craft\services\Conditions;
 use craft\services\Config;
-use craft\services\Content;
 use craft\services\Dashboard;
 use craft\services\Deprecator;
 use craft\services\Drafts;
@@ -75,7 +79,6 @@ use craft\services\Globals;
 use craft\services\Gql;
 use craft\services\Images;
 use craft\services\ImageTransforms;
-use craft\services\Matrix;
 use craft\services\Path;
 use craft\services\Plugins;
 use craft\services\PluginStore;
@@ -84,7 +87,6 @@ use craft\services\Relations;
 use craft\services\Revisions;
 use craft\services\Routes;
 use craft\services\Search;
-use craft\services\Sections;
 use craft\services\Security;
 use craft\services\Sites;
 use craft\services\Structures;
@@ -135,12 +137,12 @@ use yii\web\ServerErrorHttpException;
  * @property-read AssetIndexer $assetIndexer The asset indexer service
  * @property-read AssetManager $assetManager The asset manager component
  * @property-read Assets $assets The assets service
+ * @property-read Auth $auth The user authentication service
  * @property-read Categories $categories The categories service
  * @property-read Composer $composer The Composer service
  * @property-read Conditions $conditions The conditions service
  * @property-read Config $config The config service
  * @property-read Connection $db The database connection component
- * @property-read Content $content The content service
  * @property-read Dashboard $dashboard The dashboard service
  * @property-read Deprecator $deprecator The deprecator service
  * @property-read Drafts $drafts The drafts service
@@ -159,7 +161,6 @@ use yii\web\ServerErrorHttpException;
  * @property-read Locale $formattingLocale The Locale object that should be used to define the formatter
  * @property-read Locale $locale The Locale object for the target language
  * @property-read Mailer $mailer The mailer component
- * @property-read Matrix $matrix The matrix service
  * @property-read MigrationManager $contentMigrator The content migration manager
  * @property-read MigrationManager $migrator The application’s migration manager
  * @property-read Mutex $mutex The application’s mutex service
@@ -172,7 +173,6 @@ use yii\web\ServerErrorHttpException;
  * @property-read Revisions $revisions The revisions service
  * @property-read Routes $routes The routes service
  * @property-read Search $search The search service
- * @property-read Sections $sections The sections service
  * @property-read Security $security The security component
  * @property-read Sites $sites The sites service
  * @property-read Structures $structures The structures service
@@ -1009,6 +1009,18 @@ trait ApplicationTrait
     }
 
     /**
+     * Returns the user authentication service.
+     *
+     * @return Auth The Auth service
+     * @since 5.0.0
+     */
+    public function getAuth(): Auth
+    {
+        /** @noinspection PhpIncompatibleReturnTypeInspection */
+        return $this->get('auth');
+    }
+
+    /**
      * Returns the image transforms service.
      *
      * @return ImageTransforms The asset transforms service
@@ -1062,17 +1074,6 @@ trait ApplicationTrait
     {
         /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->get('config');
-    }
-
-    /**
-     * Returns the content service.
-     *
-     * @return Content The content service
-     */
-    public function getContent(): Content
-    {
-        /** @noinspection PhpIncompatibleReturnTypeInspection */
-        return $this->get('content');
     }
 
     /**
@@ -1268,6 +1269,17 @@ trait ApplicationTrait
     }
 
     /**
+     * Returns the log dispatcher component.
+     *
+     * @return Dispatcher the log dispatcher application component.
+     */
+    public function getLog(): Dispatcher
+    {
+        /** @noinspection PhpIncompatibleReturnTypeInspection */
+        return $this->get('log');
+    }
+
+    /**
      * Returns the current mailer.
      *
      * @return Mailer The mailer component
@@ -1276,17 +1288,6 @@ trait ApplicationTrait
     {
         /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->get('mailer');
-    }
-
-    /**
-     * Returns the matrix service.
-     *
-     * @return Matrix The matrix service
-     */
-    public function getMatrix(): Matrix
-    {
-        /** @noinspection PhpIncompatibleReturnTypeInspection */
-        return $this->get('matrix');
     }
 
     /**
@@ -1409,17 +1410,6 @@ trait ApplicationTrait
     {
         /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->get('search');
-    }
-
-    /**
-     * Returns the sections service.
-     *
-     * @return Sections The sections service
-     */
-    public function getSections(): Sections
-    {
-        /** @noinspection PhpIncompatibleReturnTypeInspection */
-        return $this->get('sections');
     }
 
     /**
@@ -1729,7 +1719,12 @@ trait ApplicationTrait
                     $event->fields[] = EntryTitleField::class;
                     break;
                 case User::class:
-                    $event->fields[] = AddressesField::class;
+                    if (!$this->getConfig()->getGeneral()->useEmailAsUsername) {
+                        $event->fields[] = UsernameField::class;
+                    }
+                    $event->fields[] = UserFullNameField::class;
+                    $event->fields[] = PhotoField::class;
+                    $event->fields[] = EmailField::class;
                     break;
             }
         });
@@ -1745,18 +1740,10 @@ trait ApplicationTrait
             ->onAdd(ProjectConfig::PATH_ADDRESS_FIELD_LAYOUTS, $this->_proxy('addresses', 'handleChangedAddressFieldLayout'))
             ->onUpdate(ProjectConfig::PATH_ADDRESS_FIELD_LAYOUTS, $this->_proxy('addresses', 'handleChangedAddressFieldLayout'))
             ->onRemove(ProjectConfig::PATH_ADDRESS_FIELD_LAYOUTS, $this->_proxy('addresses', 'handleChangedAddressFieldLayout'))
-            // Field groups
-            ->onAdd(ProjectConfig::PATH_FIELD_GROUPS . '.{uid}', $this->_proxy('fields', 'handleChangedGroup'))
-            ->onUpdate(ProjectConfig::PATH_FIELD_GROUPS . '.{uid}', $this->_proxy('fields', 'handleChangedGroup'))
-            ->onRemove(ProjectConfig::PATH_FIELD_GROUPS . '.{uid}', $this->_proxy('fields', 'handleDeletedGroup'))
             // Fields
             ->onAdd(ProjectConfig::PATH_FIELDS . '.{uid}', $this->_proxy('fields', 'handleChangedField'))
             ->onUpdate(ProjectConfig::PATH_FIELDS . '.{uid}', $this->_proxy('fields', 'handleChangedField'))
             ->onRemove(ProjectConfig::PATH_FIELDS . '.{uid}', $this->_proxy('fields', 'handleDeletedField'))
-            // Block types
-            ->onAdd(ProjectConfig::PATH_MATRIX_BLOCK_TYPES . '.{uid}', $this->_proxy('matrix', 'handleChangedBlockType'))
-            ->onUpdate(ProjectConfig::PATH_MATRIX_BLOCK_TYPES . '.{uid}', $this->_proxy('matrix', 'handleChangedBlockType'))
-            ->onRemove(ProjectConfig::PATH_MATRIX_BLOCK_TYPES . '.{uid}', $this->_proxy('matrix', 'handleDeletedBlockType'))
             // Volumes
             ->onAdd(ProjectConfig::PATH_VOLUMES . '.{uid}', $this->_proxy('volumes', 'handleChangedVolume'))
             ->onUpdate(ProjectConfig::PATH_VOLUMES . '.{uid}', $this->_proxy('volumes', 'handleChangedVolume'))
@@ -1798,13 +1785,13 @@ trait ApplicationTrait
             ->onUpdate(ProjectConfig::PATH_GLOBAL_SETS . '.{uid}', $this->_proxy('globals', 'handleChangedGlobalSet'))
             ->onRemove(ProjectConfig::PATH_GLOBAL_SETS . '.{uid}', $this->_proxy('globals', 'handleDeletedGlobalSet'))
             // Sections
-            ->onAdd(ProjectConfig::PATH_SECTIONS . '.{uid}', $this->_proxy('sections', 'handleChangedSection'))
-            ->onUpdate(ProjectConfig::PATH_SECTIONS . '.{uid}', $this->_proxy('sections', 'handleChangedSection'))
-            ->onRemove(ProjectConfig::PATH_SECTIONS . '.{uid}', $this->_proxy('sections', 'handleDeletedSection'))
+            ->onAdd(ProjectConfig::PATH_SECTIONS . '.{uid}', $this->_proxy('entries', 'handleChangedSection'))
+            ->onUpdate(ProjectConfig::PATH_SECTIONS . '.{uid}', $this->_proxy('entries', 'handleChangedSection'))
+            ->onRemove(ProjectConfig::PATH_SECTIONS . '.{uid}', $this->_proxy('entries', 'handleDeletedSection'))
             // Entry types
-            ->onAdd(ProjectConfig::PATH_ENTRY_TYPES . '.{uid}', $this->_proxy('sections', 'handleChangedEntryType'))
-            ->onUpdate(ProjectConfig::PATH_ENTRY_TYPES . '.{uid}', $this->_proxy('sections', 'handleChangedEntryType'))
-            ->onRemove(ProjectConfig::PATH_ENTRY_TYPES . '.{uid}', $this->_proxy('sections', 'handleDeletedEntryType'))
+            ->onAdd(ProjectConfig::PATH_ENTRY_TYPES . '.{uid}', $this->_proxy('entries', 'handleChangedEntryType'))
+            ->onUpdate(ProjectConfig::PATH_ENTRY_TYPES . '.{uid}', $this->_proxy('entries', 'handleChangedEntryType'))
+            ->onRemove(ProjectConfig::PATH_ENTRY_TYPES . '.{uid}', $this->_proxy('entries', 'handleDeletedEntryType'))
             // GraphQL schemas
             ->onAdd(ProjectConfig::PATH_GRAPHQL_SCHEMAS . '.{uid}', $this->_proxy('gql', 'handleChangedSchema'))
             ->onUpdate(ProjectConfig::PATH_GRAPHQL_SCHEMAS . '.{uid}', $this->_proxy('gql', 'handleChangedSchema'))
@@ -1818,7 +1805,7 @@ trait ApplicationTrait
             if (!Craft::$app->getProjectConfig()->getIsApplyingExternalChanges()) {
                 $this->getRoutes()->handleDeletedSite($event);
                 $this->getCategories()->pruneDeletedSite($event);
-                $this->getSections()->pruneDeletedSite($event);
+                $this->getEntries()->pruneDeletedSite($event);
             }
         });
     }

@@ -9,6 +9,7 @@ namespace craft\fields;
 
 use Craft;
 use craft\base\ElementInterface;
+use craft\base\ThumbableFieldInterface;
 use craft\elements\Asset;
 use craft\elements\conditions\ElementCondition;
 use craft\elements\db\AssetQuery;
@@ -37,7 +38,6 @@ use craft\services\ElementSources;
 use craft\services\Gql as GqlService;
 use craft\web\UploadedFile;
 use GraphQL\Type\Definition\Type;
-use Illuminate\Support\Collection;
 use Twig\Error\RuntimeError;
 use yii\base\InvalidConfigException;
 
@@ -47,7 +47,7 @@ use yii\base\InvalidConfigException;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
-class Assets extends BaseRelationField
+class Assets extends BaseRelationField implements ThumbableFieldInterface
 {
     /**
      * @since 3.5.11
@@ -92,7 +92,7 @@ class Assets extends BaseRelationField
     /**
      * @inheritdoc
      */
-    public static function valueType(): string
+    public static function phpType(): string
     {
         return sprintf('\\%s|\\%s<\\%s>', AssetQuery::class, ElementCollection::class, Asset::class);
     }
@@ -281,10 +281,10 @@ class Assets extends BaseRelationField
     /**
      * @inheritdoc
      */
-    protected function inputHtml(mixed $value, ?ElementInterface $element = null): string
+    protected function inputHtml(mixed $value, ?ElementInterface $element, bool $inline): string
     {
         try {
-            return parent::inputHtml($value, $element);
+            return parent::inputHtml($value, $element, $inline);
         } catch (InvalidSubpathException) {
             return Html::tag('p', Craft::t('app', 'This field’s target subfolder path is invalid: {path}', [
                 'path' => '<code>' . $this->restrictedLocationSubpath . '</code>',
@@ -388,7 +388,7 @@ class Assets extends BaseRelationField
     /**
      * @inheritdoc
      */
-    public function normalizeValue(mixed $value, ?ElementInterface $element = null): mixed
+    public function normalizeValue(mixed $value, ?ElementInterface $element): mixed
     {
         // If data strings are passed along, make sure the array keys are retained.
         if (is_array($value) && isset($value['data']) && !empty($value['data'])) {
@@ -471,9 +471,25 @@ class Assets extends BaseRelationField
     /**
      * @inheritdoc
      */
-    protected function tableAttributeHtml(Collection $elements): string
+    protected function previewHtml(ElementCollection $elements): string
     {
-        return Cp::elementPreviewHtml($elements->all(), Cp::ELEMENT_SIZE_SMALL, false, true, $this->previewMode === self::PREVIEW_MODE_FULL);
+        return Cp::elementPreviewHtml(
+            $elements->all(),
+            showLabel: $this->previewMode === self::PREVIEW_MODE_FULL,
+        );
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getThumbHtml(mixed $value, ElementInterface $element, int $size): ?string
+    {
+        /** @var AssetQuery|ElementCollection $value */
+        if ($value instanceof AssetQuery) {
+            $value = (clone $value)->eagerly(__METHOD__);
+        }
+
+        return $value->one()?->getThumbHtml($size);
     }
 
     // Events

@@ -98,12 +98,18 @@ class UserElementTest extends TestCase
         // Set invalid value, as it should get cleared when activating user.
         $user->fullName = 'invalid://';
 
-        $activated = Craft::$app->getUsers()->activateUser($user);
-        self::assertFalse($activated);
+        $e = null;
+        try {
+            Craft::$app->getUsers()->activateUser($user);
+        } catch (InvalidElementException $e) {
+        }
+
+        self::assertNotNull($e);
         self::assertFalse($user->hasErrors('fullName'));
         self::assertTrue($user->hasErrors('username'));
         self::assertTrue($user->hasErrors('email'));
 
+        $e = null;
         try {
             Craft::$app->getUsers()->getActivationUrl($user);
         } catch (InvalidElementException $e) {
@@ -334,9 +340,9 @@ class UserElementTest extends TestCase
      */
     public function testAuthenticate(): void
     {
-        $this->assertTrue($this->activeUser->authenticate('password'));
-        $this->assertFalse($this->inactiveUser->authenticate('password'));
-        $this->assertEquals($this->inactiveUser->authError, User::AUTH_INVALID_CREDENTIALS);
+        self::assertTrue($this->activeUser->authenticate('password'));
+        self::assertFalse($this->inactiveUser->authenticate('password'));
+        self::assertEquals($this->inactiveUser->authError, User::AUTH_INVALID_CREDENTIALS);
         $this->inactiveUser->authError = null;
     }
 
@@ -345,8 +351,8 @@ class UserElementTest extends TestCase
      */
     public function testIsCredentialed(): void
     {
-        $this->assertTrue($this->activeUser->getIsCredentialed());
-        $this->assertFalse($this->inactiveUser->getIsCredentialed());
+        self::assertTrue($this->activeUser->getIsCredentialed());
+        self::assertFalse($this->inactiveUser->getIsCredentialed());
     }
 
     /**
