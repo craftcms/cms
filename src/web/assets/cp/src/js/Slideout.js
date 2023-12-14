@@ -10,22 +10,10 @@
       $container: null,
       $shade: null,
       isOpen: false,
+      useMobileStyles: null,
 
       init: function (contents, settings) {
         this.setSettings(settings, Craft.Slideout.defaults);
-
-        if (!Craft.useMobileStyles()) {
-          this.$shade = $('<div class="slideout-shade"/>').appendTo(
-            Garnish.$bod
-          );
-
-          if (this.settings.closeOnShadeClick) {
-            this.addListener(this.$shade, 'click', (ev) => {
-              ev.stopPropagation();
-              this.close();
-            });
-          }
-        }
 
         this.$outerContainer = $('<div/>', {
           class: 'slideout-container hidden',
@@ -41,10 +29,6 @@
           .appendTo(this.$outerContainer);
 
         Garnish.addModalAttributes(this.$outerContainer);
-
-        if (Craft.useMobileStyles()) {
-          this.$container.addClass('so-mobile');
-        }
 
         Craft.trapFocusWithin(this.$container);
 
@@ -62,17 +46,66 @@
 
         this._cancelTransitionListeners();
 
-        // Move the shade + container to the end of <body> so they get the highest sub-z-indexes
-        if (this.$shade) {
+        const activePreview =
+          Craft.Preview.getActive() || Craft.LivePreview.getActive();
+        this.useMobileStyles = activePreview || Craft.useMobileStyles();
+
+        this.$outerContainer.removeClass('so-mobile so-lp');
+        this.$container.removeClass('so-mobile so-lp');
+
+        if (activePreview) {
+          this.$outerContainer.addClass('so-lp');
+          this.$container.addClass('so-lp');
+        } else if (this.useMobileStyles) {
+          this.$container.addClass('so-mobile');
+        }
+
+        if (activePreview || !this.useMobileStyles) {
+          if (!this.$shade) {
+            this.$shade = $('<div class="slideout-shade"/>');
+
+            if (this.settings.closeOnShadeClick) {
+              this.addListener(this.$shade, 'click', (ev) => {
+                ev.stopPropagation();
+                this.close();
+              });
+            }
+          }
+
+          // Keep the shade + container to the end of <body> so they get the highest sub-z-indexes
+          if (activePreview) {
+          }
+
           this.$shade.appendTo(Garnish.$bod).show();
+        } else if (this.$shade) {
+          this.$shade.remove();
+          delete this.$shade;
         }
 
         this.$outerContainer.appendTo(Garnish.$bod).removeClass('hidden');
 
-        if (Craft.useMobileStyles()) {
-          this.$container.css('top', '100vh');
+        if (activePreview) {
+          // keep the width equal to the editp ane width
+          this.updateWidthsForPreviewPane(activePreview);
+          const dragHandler = () => {
+            if (this.isOpen) {
+              this.updateWidthsForPreviewPane(activePreview);
+            }
+          };
+          activePreview.on('drag', dragHandler);
+          activePreview.on('beforeClose', () => {
+            activePreview.off('drag', dragHandler);
+          });
+        }
+
+        if (this.useMobileStyles) {
+          this.$container
+            .css('top', '100vh')
+            .css(Garnish.ltr ? 'left' : 'right', '');
         } else {
-          this.$container.css(Garnish.ltr ? 'left' : 'right', '100vw');
+          this.$container
+            .css('top', '')
+            .css(Garnish.ltr ? 'left' : 'right', '100vw');
         }
 
         this.$container.one('transitionend.slideout', () => {
@@ -99,6 +132,14 @@
 
         this.isOpen = true;
         this.trigger('open');
+      },
+
+      updateWidthsForPreviewPane: function (activePreview) {
+        const width = activePreview.$editorContainer.width() - 1;
+        if (this.$shade) {
+          this.$shade.width(width);
+        }
+        this.$outerContainer.css('width', `calc(${width}px - var(--m) * 2)`);
       },
 
       setTriggerElement: function (trigger) {
@@ -173,7 +214,7 @@
       openPanels: [],
       addPanel: function (panel) {
         Craft.Slideout.openPanels.unshift(panel);
-        if (Craft.useMobileStyles()) {
+        if (panel.useMobileStyles) {
           panel.$container.css('top', 0);
         } else {
           Craft.Slideout.updateStyles();
@@ -183,7 +224,7 @@
         Craft.Slideout.openPanels = Craft.Slideout.openPanels.filter(
           (m) => m !== panel
         );
-        if (Craft.useMobileStyles()) {
+        if (panel.useMobileStyles) {
           panel.$container.css('top', '100vh');
         } else {
           panel.$container.css(Garnish.ltr ? 'left' : 'right', '100vw');

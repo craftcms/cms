@@ -1,4 +1,5 @@
 {% import '_includes/forms.twig' as forms %}
+{% set isCurrentUser = isCurrentUser ?? (user is defined and user.getIsCurrent()) %}
 {% set static = static ?? false %}
 
 {% set parsedName = user.getParsedName() %}
@@ -15,9 +16,9 @@
         name: 'username',
         value: (user is defined ? user.username : null),
         autofocus: true,
-        autocomplete: false,
+        autocomplete: isCurrentUser ? 'username' : false,
         autocapitalize: false,
-        disabled: static or (isNewUser or (currentUser.admin or user.getIsCurrent()) ? false : true),
+        disabled: static or (isNewUser or (currentUser.admin or isCurrentUser) ? false : true),
         errors: (user is defined ? user.getErrors('username') : null),
         inputAttributes: {
             data: {lpignore: 'true'},
@@ -32,7 +33,7 @@
             id: 'fullName',
             name: 'fullName',
             value: user.fullName,
-            autocomplete: false,
+            autocomplete: isCurrentUser ? 'name' : false,
             errors: user.getErrors('fullName'),
             autofocus: craft.app.config.general.useEmailAsUsername,
             inputAttributes: {

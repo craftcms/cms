@@ -1053,7 +1053,7 @@ Craft.ElementEditor = Garnish.Base.extend(
       return this.preview;
     },
 
-    openPreview: function () {
+    openPreview: async function () {
       if (Garnish.hasAttr(this.$previewBtn, 'aria-disabled')) {
         return;
       }
@@ -1061,22 +1061,17 @@ Craft.ElementEditor = Garnish.Base.extend(
       this.$previewBtn.attr('aria-disabled', true);
       this.$previewBtn.addClass('loading');
 
-      this.queue.push(
-        () =>
-          new Promise((resolve, reject) => {
-            this.openingPreview = true;
-            this.ensureIsDraftOrRevision(true)
-              .then(() => {
-                this.scrollY = window.scrollY;
-                this.$previewBtn.removeAttr('aria-disabled');
-                this.$previewBtn.removeClass('loading');
-                this.getPreview().open();
-                this.openingPreview = false;
-                resolve();
-              })
-              .catch(reject);
-          })
-      );
+      try {
+        await this.checkForm();
+        this.openingPreview = true;
+        await this.ensureIsDraftOrRevision(true);
+        this.scrollY = window.scrollY;
+        this.getPreview().open();
+      } finally {
+        this.$previewBtn.removeAttr('aria-disabled');
+        this.$previewBtn.removeClass('loading');
+        this.openingPreview = false;
+      }
     },
 
     ensureIsDraftOrRevision: function (onlyIfChanged) {
@@ -1157,7 +1152,9 @@ Craft.ElementEditor = Garnish.Base.extend(
               typeof this.$container.data('initialSerializedValue') ===
               'undefined'
             ) {
-              this.timeout = setTimeout(this.checkForm.bind(this), 500);
+              setTimeout(() => {
+                this.checkForm(force).then(resolve).catch(reject);
+              }, 500);
               return;
             }
 
@@ -1349,6 +1346,7 @@ Craft.ElementEditor = Garnish.Base.extend(
                   .attr('value', 'elements/apply-draft');
 
                 // Update the editor settings
+                this.settings.elementId = response.data.elementId;
                 this.settings.draftId = response.data.draftId;
                 this.settings.isLive = false;
                 this.previewToken = null;
@@ -2170,6 +2168,7 @@ Craft.ElementEditor = Garnish.Base.extend(
       canCreateDrafts: false,
       canEditMultipleSites: false,
       canSaveCanonical: false,
+      elementId: null,
       canonicalId: null,
       draftId: null,
       draftName: null,

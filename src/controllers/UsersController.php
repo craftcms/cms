@@ -1124,7 +1124,7 @@ class UsersController extends Controller
                 'value' => $locale->id,
                 'data' => [
                     'data' => [
-                        'hint' => $locale->getLanguageID() !== $languageId ? $locale->getDisplayName() : false,
+                        'hint' => $locale->getLanguageID() !== $languageId ? $locale->getDisplayName() : '',
                         'hintLang' => $locale->id,
                     ],
                 ],
@@ -1390,7 +1390,7 @@ JS,
         // Is the site set to use email addresses as usernames?
         if ($generalConfig->useEmailAsUsername) {
             $user->username = $user->email;
-        } else {
+        } elseif ($isNewUser || $currentUser->admin || $isCurrentUser) {
             $user->username = $this->request->getBodyParam('username', ($user->username ?: $user->email));
         }
 

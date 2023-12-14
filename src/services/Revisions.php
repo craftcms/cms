@@ -9,11 +9,11 @@ namespace craft\services;
 
 use Craft;
 use craft\base\ElementInterface;
-use craft\base\FieldInterface;
 use craft\behaviors\RevisionBehavior;
 use craft\db\Query;
 use craft\db\Table;
 use craft\errors\InvalidElementException;
+use craft\errors\MutexException;
 use craft\events\RevisionEvent;
 use craft\helpers\ArrayHelper;
 use craft\helpers\DateTimeHelper;
@@ -22,7 +22,6 @@ use craft\helpers\Queue;
 use craft\queue\jobs\PruneRevisions;
 use Throwable;
 use yii\base\Component;
-use yii\base\Exception;
 use yii\base\InvalidArgumentException;
 
 /**
@@ -78,7 +77,7 @@ class Revisions extends Component
         $lockKey = 'revision:' . $canonical->id;
         $mutex = Craft::$app->getMutex();
         if (!$mutex->acquire($lockKey, 3)) {
-            throw new Exception('Could not acquire a lock to save a revision for element ' . $canonical->id);
+            throw new MutexException($lockKey, sprintf('Could not acquire a lock to save a revision for element %s', $canonical->id));
         }
 
         $db = Craft::$app->getDb();
@@ -223,10 +222,6 @@ class Revisions extends Component
         $newSource = Craft::$app->getElements()->updateCanonicalElement($revision, [
             'revisionCreatorId' => $creatorId,
             'revisionNotes' => Craft::t('app', 'Reverted content from revision {num}.', ['num' => $revision->revisionNum]),
-            'dirtyFields' => array_map(
-                fn(FieldInterface $field) => $field->handle,
-                $revision->getFieldLayout()?->getCustomFields() ?? [],
-            ),
         ]);
 
         // Fire an 'afterRevertToRevision' event

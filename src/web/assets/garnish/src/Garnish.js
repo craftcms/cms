@@ -817,6 +817,16 @@ Garnish = $.extend(Garnish, {
   },
 
   /**
+   * Returns whether a mouse event is for the primary mouse button.
+   *
+   * @param ev The mouse event
+   * @return {boolean}
+   */
+  isPrimaryClick: function (ev) {
+    return ev.which === this.PRIMARY_CLICK && !ev.ctrlKey && !ev.metaKey;
+  },
+
+  /**
    * Returns whether the "Ctrl" key is pressed (or ⌘ if this is a Mac) for a given keyboard event
    *
    * @param ev The keyboard event

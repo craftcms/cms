@@ -462,6 +462,10 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
             {value: 'keepBoth', title: Craft.t('app', 'Keep both')},
             {value: 'replace', title: Craft.t('app', 'Replace it')},
           ],
+          modalSettings: {
+            hideOnEsc: false,
+            hideOnShadeClick: false,
+          },
         };
 
         this.promptHandler.addPrompt(result);
@@ -490,12 +494,17 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
      * On Upload Failure.
      */
     _onUploadFailure: function (event, data) {
+      const file = data.data.getAll('assets-upload');
+      const backupFilename = file[0].name;
       const response =
         event instanceof CustomEvent ? event.detail : data?.jqXHR?.responseJSON;
 
       let {message, filename} = response || {};
 
       if (!message) {
+        if (!filename) {
+          filename = backupFilename;
+        }
         message = filename
           ? Craft.t('app', 'Upload failed for “{filename}”.', {filename})
           : Craft.t('app', 'Upload failed.');

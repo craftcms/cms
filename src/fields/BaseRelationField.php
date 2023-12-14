@@ -26,7 +26,6 @@ use craft\elements\db\ElementRelationParamParser;
 use craft\elements\ElementCollection;
 use craft\errors\SiteNotFoundException;
 use craft\events\ElementCriteriaEvent;
-use craft\events\ElementEvent;
 use craft\fields\conditions\RelationalFieldConditionRule;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Cp;
@@ -103,18 +102,6 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
     {
         return sprintf('\\%s|\\%s<\\%s>', ElementQueryInterface::class, ElementCollection::class, ElementInterface::class);
     }
-
-    /**
-     * @var array Related elements that have been validated
-     * @see _validateRelatedElement()
-     */
-    private static array $_relatedElementValidates = [];
-
-    /**
-     * @var bool Whether we're listening for related element saves yet
-     * @see _validateRelatedElement()
-     */
-    private static bool $_listeningForRelatedElementSave = false;
 
     /**
      * @var string|string[]|null The source keys that this field can relate elements from (used if [[allowMultipleSources]] is set to true)
@@ -439,6 +426,10 @@ JS, [
             /** @var ElementQueryInterface|Collection $value */
             $value = $element->getFieldValue($this->handle);
 
+            if ($value instanceof ElementQueryInterface) {
+                $value = $this->_all($value, $element);
+            }
+
             $arrayValidator = new NumberValidator([
                 'min' => $this->minRelations,
                 'max' => $this->maxRelations,
@@ -466,18 +457,31 @@ JS, [
      */
     public function validateRelatedElements(ElementInterface $element): void
     {
-        // Prevent circular relations from worrying about this element
-        $sourceId = $element->getCanonicalId();
-        $sourceValidates = self::$_relatedElementValidates[$sourceId][$element->siteId] ?? null;
-        self::$_relatedElementValidates[$sourceId][$element->siteId] = true;
+        // Only enforce this when the source element is being saved directly
+        if ($element->validatingRelatedElement) {
+            return;
+        }
 
         /** @var ElementQueryInterface|Collection $value */
         $value = $element->getFieldValue($this->handle);
+
+        if ($value instanceof ElementQueryInterface) {
+            $value
+                ->site('*')
+                ->unique()
+                ->preferSites([$this->targetSiteId($element)]);
+        }
+
+        $sourceId = $element->getCanonicalId();
         $errorCount = 0;
 
         foreach ($value->all() as $i => $related) {
             /** @var Element $related */
-            if ($related->enabled && $related->getEnabledForSite()) {
+            if (
+                $related->enabled &&
+                $related->getEnabledForSite() &&
+                $related->getCanonicalId() !== $sourceId
+            ) {
                 if (!self::_validateRelatedElement($related)) {
                     $element->addModelErrors($related, "$this->handle[$i]");
                     $errorCount++;
@@ -485,19 +489,12 @@ JS, [
             }
         }
 
-        // Reset self::$_relatedElementValidates[$sourceId][$element->siteId] to its original value
-        if ($sourceValidates !== null) {
-            self::$_relatedElementValidates[$sourceId][$element->siteId] = $sourceValidates;
-        } else {
-            unset(self::$_relatedElementValidates[$sourceId][$element->siteId]);
-        }
-
         if ($errorCount) {
             /** @var ElementInterface|string $elementType */
             $elementType = static::elementType();
             $element->addError($this->handle, Craft::t('app', 'Validation errors found in {attribute} {type}; please fix them.', [
                 'type' => $errorCount === 1 ? $elementType::lowerDisplayName() : $elementType::pluralLowerDisplayName(),
-                'attribute' => $this->getAttributeLabel($this->handle),
+                'attribute' => Craft::t('site', $this->name),
             ]));
         }
     }
@@ -510,25 +507,14 @@ JS, [
      */
     private static function _validateRelatedElement(ElementInterface $element): bool
     {
-        if (isset(self::$_relatedElementValidates[$element->id][$element->siteId])) {
-            return self::$_relatedElementValidates[$element->id][$element->siteId];
-        }
-
-        // If this is the first time we are validating a related element,
-        // listen for future element saves so we can clear our cache
-        if (!self::$_listeningForRelatedElementSave) {
-            Event::on(Elements::class, Elements::EVENT_AFTER_SAVE_ELEMENT, function(ElementEvent $e) {
-                $element = $e->element;
-                unset(self::$_relatedElementValidates[$element->id][$element->siteId]);
-            });
-            self::$_listeningForRelatedElementSave = true;
-        }
-
-        // Prevent an infinite loop if there are circular relations
-        self::$_relatedElementValidates[$element->id][$element->siteId] = true;
+        // Prevent relational fields on this element from enforcing related element validation
+        $element->validatingRelatedElement = true;
 
         $element->setScenario(Element::SCENARIO_LIVE);
-        return self::$_relatedElementValidates[$element->id][$element->siteId] = $element->validate();
+        $validates = $element->validate();
+
+        $element->validatingRelatedElement = false;
+        return $validates;
     }
 
     /**
@@ -812,7 +798,7 @@ JS, [
 
         $view = Craft::$app->getView();
         $id = $this->getInputId();
-        $html = "<div id='$id' class='elementselect'>" .
+        $html = "<div id='$id' class='elementselect noteditable'>" .
             "<div class='elements" . ($size === Cp::ELEMENT_SIZE_LARGE ? ' flex-row flex-wrap' : '') . "'>";
 
         foreach ($value as $relatedElement) {

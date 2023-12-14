@@ -19,6 +19,7 @@ use craft\db\Query;
 use craft\db\Table;
 use craft\errors\MissingComponentException;
 use craft\events\ConfigEvent;
+use craft\events\DefineCompatibleFieldTypesEvent;
 use craft\events\FieldEvent;
 use craft\events\FieldGroupEvent;
 use craft\events\FieldLayoutEvent;
@@ -105,6 +106,13 @@ class Fields extends Component
     public const EVENT_REGISTER_FIELD_TYPES = 'registerFieldTypes';
 
     /**
+     * @event DefineCompatibleFieldTypesEvent The event that is triggered when defining the compatible field types for a field.
+     * @see getCompatibleFieldTypes()
+     * @since 4.5.7
+     */
+    public const EVENT_DEFINE_COMPATIBLE_FIELD_TYPES = 'defineCompatibleFieldTypes';
+
+    /**
      * @event FieldGroupEvent The event that is triggered before a field group is saved.
      */
     public const EVENT_BEFORE_SAVE_FIELD_GROUP = 'beforeSaveFieldGroup';
@@ -188,10 +196,16 @@ class Fields extends Component
     private ?MemoizableArray $_groups = null;
 
     /**
-     * @var MemoizableArray<FieldInterface>|null
-     * @see _fields()
+     * @var MemoizableArray<array>|null
+     * @see _fieldConfigs()
      */
-    private ?MemoizableArray $_fields = null;
+    private ?MemoizableArray $_fieldConfigs = null;
+
+    /**
+     * @var FieldInterface[]
+     * @see _field()
+     */
+    private array $_fields = [];
 
     /**
      * @var FieldLayout[]|null[]
@@ -518,55 +532,62 @@ class Fields extends Component
      */
     public function getCompatibleFieldTypes(FieldInterface $field, bool $includeCurrent = true): array
     {
-        if (!$field::hasContentColumn()) {
-            return $includeCurrent ? [get_class($field)] : [];
-        }
-
-        // If the field has any validation errors and has an ID, swap it with the saved field
-        if (!$field->getIsNew() && $field->hasErrors()) {
-            $field = $this->getFieldById($field->id);
-        }
-
-        $fieldColumnType = $field->getContentColumnType();
-
-        if (is_array($fieldColumnType)) {
-            return $includeCurrent ? [get_class($field)] : [];
-        }
-
         $types = [];
 
-        foreach ($this->getAllFieldTypes() as $class) {
-            /** @var string|FieldInterface $class */
-            /** @phpstan-var class-string<FieldInterface>|FieldInterface $class */
-            if ($class === get_class($field)) {
-                if ($includeCurrent) {
-                    $types[] = $class;
+        if ($field::hasContentColumn()) {
+            // If the field has any validation errors and has an ID, swap it with the saved field
+            if (!$field->getIsNew() && $field->hasErrors()) {
+                $field = $this->getFieldById($field->id);
+            }
+
+            $fieldColumnType = $field->getContentColumnType();
+
+            if (is_array($fieldColumnType)) {
+                return $includeCurrent ? [get_class($field)] : [];
+            }
+
+            foreach ($this->getAllFieldTypes() as $class) {
+                /** @var string|FieldInterface $class */
+                /** @phpstan-var class-string<FieldInterface>|FieldInterface $class */
+                if ($class === get_class($field)) {
+                    if ($includeCurrent) {
+                        $types[] = $class;
+                    }
+                    continue;
                 }
-                continue;
+
+                if (!$class::hasContentColumn()) {
+                    continue;
+                }
+
+                /** @var FieldInterface $tempField */
+                $tempField = new $class();
+                $tempFieldColumnType = $tempField->getContentColumnType();
+
+                if (is_array($tempFieldColumnType)) {
+                    continue;
+                }
+
+                if (!Db::areColumnTypesCompatible($fieldColumnType, $tempFieldColumnType)) {
+                    continue;
+                }
+
+                $types[] = $class;
             }
-
-            if (!$class::hasContentColumn()) {
-                continue;
-            }
-
-            /** @var FieldInterface $tempField */
-            $tempField = new $class();
-            $tempFieldColumnType = $tempField->getContentColumnType();
-
-            if (is_array($tempFieldColumnType)) {
-                continue;
-            }
-
-            if (!Db::areColumnTypesCompatible($fieldColumnType, $tempFieldColumnType)) {
-                continue;
-            }
-
-            $types[] = $class;
         }
 
         // Make sure the current field class is in there if it's supposed to be
         if ($includeCurrent && !in_array(get_class($field), $types, true)) {
             $types[] = get_class($field);
+        }
+
+        if ($this->hasEventHandlers(self::EVENT_DEFINE_COMPATIBLE_FIELD_TYPES)) {
+            $event = new DefineCompatibleFieldTypesEvent([
+                'field' => $field,
+                'compatibleTypes' => $types,
+            ]);
+            $this->trigger(self::EVENT_DEFINE_COMPATIBLE_FIELD_TYPES, $event);
+            return $event->compatibleTypes;
         }
 
         return $types;
@@ -605,36 +626,55 @@ class Fields extends Component
     }
 
     /**
-     * Returns a memoizable array of all fields.
+     * Returns a memoizable array of field configs.
      *
      * @param string|string[]|false|null $context The field context(s) to fetch fields from. Defaults to [[\craft\services\Content::$fieldContext]].
      * Set to `false` to get all fields regardless of context.
      *
-     * @return MemoizableArray<FieldInterface>
+     * @return MemoizableArray<array>
      */
-    private function _fields(mixed $context = null): MemoizableArray
+    private function _fieldConfigs(mixed $context = null): MemoizableArray
     {
-        if (!isset($this->_fields)) {
-            $fields = [];
-            foreach ($this->_createFieldQuery()->all() as $result) {
-                $fields[] = $this->createField($result);
-            }
-            $this->_fields = new MemoizableArray($fields);
+        $context ??= Craft::$app->getContent()->fieldContext;
+
+        if (!isset($this->_fieldConfigs)) {
+            $this->_fieldConfigs = new MemoizableArray($this->_createFieldQuery()->all());
         }
 
         if ($context === false) {
-            return $this->_fields;
-        }
-
-        if ($context === null) {
-            $context = Craft::$app->getContent()->fieldContext;
+            return $this->_fieldConfigs;
         }
 
         if (is_array($context)) {
-            return $this->_fields->whereIn('context', $context, true);
+            return $this->_fieldConfigs->whereIn('context', $context, true);
         }
 
-        return $this->_fields->where('context', $context, true);
+        return $this->_fieldConfigs->where('context', $context, true);
+    }
+
+    /**
+     * @param array[] $configs
+     * @return FieldInterface[]
+     */
+    private function _fields(array $configs): array
+    {
+        return array_map(fn(array $config) => $this->_field($config), $configs);
+    }
+
+    /**
+     * @param array|null $config
+     * @return FieldInterface|null
+     */
+    private function _field(?array $config): ?FieldInterface
+    {
+        if ($config === null) {
+            return null;
+        }
+
+        if (!isset($this->_fields[$config['id']])) {
+            $this->_fields[$config['id']] = $this->createField($config);
+        }
+        return $this->_fields[$config['id']];
     }
 
     /**
@@ -646,7 +686,7 @@ class Fields extends Component
      */
     public function getAllFields(mixed $context = null): array
     {
-        return $this->_fields($context)->all();
+        return $this->_fields($this->_fieldConfigs($context)->all());
     }
 
     /**
@@ -705,7 +745,7 @@ class Fields extends Component
      */
     public function getFieldById(int $fieldId): ?FieldInterface
     {
-        return $this->_fields(false)->firstWhere('id', $fieldId);
+        return $this->_field($this->_fieldConfigs(false)->firstWhere('id', $fieldId));
     }
 
     /**
@@ -716,7 +756,7 @@ class Fields extends Component
      */
     public function getFieldByUid(string $fieldUid): ?FieldInterface
     {
-        return $this->_fields(false)->firstWhere('uid', $fieldUid, true);
+        return $this->_field($this->_fieldConfigs(false)->firstWhere('uid', $fieldUid, true));
     }
 
     /**
@@ -739,7 +779,7 @@ class Fields extends Component
      */
     public function getFieldByHandle(string $handle, mixed $context = null): ?FieldInterface
     {
-        return $this->_fields($context)->firstWhere('handle', $handle, true);
+        return $this->_field($this->_fieldConfigs($context)->firstWhere('handle', $handle, true));
     }
 
     /**
@@ -762,7 +802,7 @@ class Fields extends Component
      */
     public function getFieldsByGroupId(int $groupId): array
     {
-        return $this->_fields(false)->where('groupId', $groupId)->all();
+        return $this->_fields($this->_fieldConfigs(false)->where('groupId', $groupId)->all());
     }
 
     /**
@@ -1013,7 +1053,8 @@ class Fields extends Component
         }
 
         // Clear caches
-        $this->_fields = null;
+        $this->_fieldConfigs = null;
+        $this->_fields = [];
 
         // Update the field version
         $this->updateFieldVersion();
@@ -1074,7 +1115,8 @@ class Fields extends Component
      */
     public function refreshFields(): void
     {
-        $this->_fields = null;
+        $this->_fieldConfigs = null;
+        $this->_fields = [];
         $this->updateFieldVersion();
     }
 
@@ -1879,13 +1921,20 @@ class Fields extends Component
             $bakTable = "{{%{$prefix}_bak_$timestamp$suffix}}";
 
             // make sure it's not too long
-            $length = strlen($bakTable);
+            $length = strlen($schema->getRawTableName($bakTable));
             if ($length > $schema->maxObjectNameLength) {
                 $overage = $length - $schema->maxObjectNameLength;
                 $prefixParts = explode('_', $prefix);
-                for ($i = 0; $i < $overage; $i++) {
+                $removed = 0;
+                for ($i = 0; true; $i++) {
                     $partIndex = $i % count($prefixParts);
-                    $prefixParts[$partIndex] = substr($prefixParts[$partIndex], 0, -1);
+                    if (strlen($prefixParts[$partIndex]) > 1) {
+                        $prefixParts[$partIndex] = substr($prefixParts[$partIndex], 0, -1);
+                        $removed++;
+                        if ($removed === $overage) {
+                            break;
+                        }
+                    }
                 }
                 $shortenedPrefix = implode('_', $prefixParts);
                 $bakTable = "{{%{$shortenedPrefix}_bak_$timestamp$suffix}}";

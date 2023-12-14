@@ -101,7 +101,7 @@ class Table extends Field
      */
     public function __construct($config = [])
     {
-        // Config normalization}
+        // Config normalization
         if (array_key_exists('columns', $config)) {
             if (!is_array($config['columns'])) {
                 unset($config['columns']);
@@ -440,6 +440,15 @@ class Table extends Field
 
         $defaults = $this->defaults ?? [];
 
+        // Apply static translations
+        foreach ($defaults as &$row) {
+            foreach ($this->columns as $colId => $col) {
+                if ($col['type'] === 'heading' && isset($row[$colId])) {
+                    $row[$colId] = Craft::t('site', $row[$colId]);
+                }
+            }
+        }
+
         if (is_string($value) && !empty($value)) {
             $value = Json::decodeIfJson($value);
         } elseif ($value === null && $this->isFresh($element)) {
@@ -676,10 +685,15 @@ class Table extends Field
             return '';
         }
 
-        // Translate the column headings
+        // Translate the column headings and dropdown option labels
         foreach ($this->columns as &$column) {
             if (!empty($column['heading'])) {
                 $column['heading'] = Craft::t('site', $column['heading']);
+            }
+            if (!empty($column['options'])) {
+                array_walk($column['options'], function(&$option) {
+                    $option['label'] = Craft::t('site', $option['label']);
+                });
             }
         }
         unset($column);

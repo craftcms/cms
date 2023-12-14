@@ -642,6 +642,58 @@ button {
   }
 }
 
+.revision-notice {
+  display: flex;
+  align-items: center;
+  align-content: stretch;
+  justify-content: center;
+  gap: var(--s);
+  color: var(--gray-600);
+
+  #content-notice & {
+    display: inline-flex;
+    justify-content: flex-start;
+  }
+
+  p {
+    flex: 1;
+    margin: 0;
+  }
+
+  .revision-icon {
+    position: relative;
+    flex-shrink: 0;
+    width: 34px;
+    height: 34px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-radius: 100%;
+    border: 2px solid transparentize($grey800, 0.8);
+    box-sizing: border-box;
+    box-shadow: 0 1px 1px 1px var(--white);
+
+    &:before {
+      position: relative;
+      left: 1px;
+      color: var(--grey-800) !important;
+      font-size: 18px;
+    }
+
+    &:after {
+      content: '';
+      font-size: 0;
+      position: absolute;
+      top: -2px;
+      left: -2px;
+      right: -2px;
+      bottom: -2px;
+      border-radius: 100%;
+      box-shadow: inset 0 2px 0 transparentize($blue900, 0.8);
+    }
+  }
+}
+
 /* toggles */
 button.toggle {
   appearance: none;
@@ -1343,6 +1395,7 @@ ul.icons {
 
 .flex-grow {
   flex: 1;
+  max-width: 100%;
 }
 
 .flex-justify {
@@ -1510,6 +1563,16 @@ ul.icons {
 .disabled,
 .disabled .btn {
   cursor: default;
+}
+
+.noteditable {
+  cursor: not-allowed;
+
+  .element,
+  .lightswitch-container,
+  & + .colorhex {
+    cursor: not-allowed;
+  }
 }
 
 .btn,
@@ -2131,7 +2194,7 @@ div.btn.submit input {
   border-radius: 17px;
   padding: 0;
 
-  &:not(.static) {
+  &:not(.static):not(.noteditable) {
     cursor: pointer;
   }
 
@@ -4007,7 +4070,7 @@ ul.tree,
   display: flex;
   flex-direction: row;
   align-items: center;
-  margin: calc(var(--s) * -1) calc(var(--xl) * -1);
+  margin: calc(var(--s) * -1) calc(var(--padding) * -1);
 
   &:first-child {
     border-radius: var(--large-border-radius) var(--large-border-radius) 0 0;
@@ -4060,7 +4123,7 @@ ul.tree,
         flex-direction: row;
         align-items: center;
         position: relative;
-        padding: 0 24px;
+        padding: 0 var(--padding);
         white-space: nowrap;
         color: var(--tab-label-color);
         height: 50px;
@@ -4574,6 +4637,14 @@ $min2ColWidth: 400px;
   height: -webkit-fill-available; // h/t https://twitter.com/AllThingsSmitty/status/1254151507412496384
   pointer-events: none;
 
+  &.so-lp {
+    position: absolute;
+    top: var(--m);
+    left: var(--m);
+    width: calc(100% - var(--m) * 2);
+    height: calc(100vh - var(--m) * 2);
+  }
+
   body.has-debug-toolbar & {
     height: calc(100vh - 42px);
   }
@@ -4589,22 +4660,30 @@ $min2ColWidth: 400px;
   overflow: hidden;
   padding: 24px var(--padding);
   pointer-events: all;
+  container-type: inline-size;
 
-  &.so-mobile {
-    --padding: 14px;
-    --neg-padding: -14px;
-    width: 100%;
-    height: 100%;
+  &.so-mobile,
+  &.so-lp {
+    width: 100% !important;
+    height: 100% !important;
     left: 0;
     transition: top linear 250ms;
     will-change: top;
   }
 
+  &.so-mobile {
+    --padding: 14px;
+    --neg-padding: -14px;
+  }
+
   &:not(.so-mobile) {
+    border-radius: var(--large-border-radius);
+  }
+
+  &:not(.so-mobile):not(.so-lp) {
     top: 8px;
     width: calc(50% - 8px);
     height: calc(100% - 16px);
-    border-radius: var(--large-border-radius);
 
     @media screen and (prefers-reduced-motion: no-preference) {
       body.ltr & {
@@ -4620,6 +4699,8 @@ $min2ColWidth: 400px;
   }
 
   & > .pane-header {
+    padding-left: var(--padding);
+    padding-right: var(--padding);
     z-index: 2;
 
     & > .so-toolbar {
@@ -4635,11 +4716,6 @@ $min2ColWidth: 400px;
         @include margin-right(0);
       }
     }
-  }
-
-  &.so-mobile > .pane-header {
-    padding-left: 10px;
-    padding-right: 10px;
   }
 
   & > .so-body {
@@ -4739,7 +4815,7 @@ $min2ColWidth: 400px;
   }
 }
 
-@media (min-width: 1536px) {
+@container (width > 700px) {
   .slideout {
     &.has-sidebar {
       .pane-header:not(.so-visible) {
@@ -6114,6 +6190,11 @@ fieldset {
     & + .instructions {
       margin: 5px 0 0;
     }
+
+    input:disabled,
+    textarea:disabled {
+      cursor: not-allowed;
+    }
   }
 
   & > .notice,
@@ -6234,13 +6315,7 @@ div.checkbox {
 
 input.checkbox:disabled + label,
 .disabled div.checkbox {
-  cursor: default;
-}
-
-input.checkbox:disabled + label,
-div.checkbox.disabled:before,
-div.checkbox.disabled + label {
-  opacity: 0.25;
+  cursor: not-allowed;
 }
 
 input.checkbox:checked + label:before,
@@ -6339,7 +6414,7 @@ div.radio {
 
 input.radio:disabled + label,
 .disabled div.radio {
-  cursor: default;
+  cursor: not-allowed;
 }
 
 input.radio + label:empty,
@@ -6378,12 +6453,6 @@ div.radio:after {
   transform: translateY(-50%);
   width: calc(var(--radio-size) - 8px);
   height: calc(var(--radio-size) - 8px);
-}
-
-input.radio:disabled + label,
-div.radio.disabled:before,
-div.radio.disabled + label {
-  opacity: 0.25;
 }
 
 input.radio:checked + label:after,
@@ -6784,11 +6853,29 @@ tr.indexingSession td.progress div.progressContainer div.progressInfo {
 }
 
 /* selectize reset */
+.selectize-control .selectize-input.disabled {
+  opacity: 1;
+  cursor: not-allowed !important;
+
+  * {
+    cursor: not-allowed !important;
+  }
+}
+
 .selectize .selectize-input {
   display: block;
   border-color: inherit;
   box-shadow: none;
   background-color: transparent;
+
+  .item {
+    max-width: 100%;
+
+    span {
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+  }
 }
 
 .selectize.select .selectize-input:after {
@@ -6887,6 +6974,7 @@ body {
     margin-top: 1px;
 
     [data-selectable],
+    .option,
     .optgroup-header {
       @include menu-option-styles;
     }
@@ -6908,7 +6996,8 @@ body {
       padding: 4px 0;
     }
 
-    .active:not(.selected) {
+    .active:not(.selected),
+    .option:hover {
       background-color: var(--gray-100);
     }
 

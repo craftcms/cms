@@ -13,6 +13,7 @@ use craft\base\ElementActionInterface;
 use craft\base\ElementExporterInterface;
 use craft\base\ElementInterface;
 use craft\base\ExpirableElementInterface;
+use craft\base\FieldInterface;
 use craft\behaviors\DraftBehavior;
 use craft\behaviors\RevisionBehavior;
 use craft\db\Query;
@@ -62,7 +63,6 @@ use craft\records\Element_SiteSettings as Element_SiteSettingsRecord;
 use craft\records\StructureElement as StructureElementRecord;
 use craft\validators\HandleValidator;
 use craft\validators\SlugValidator;
-use craft\web\Application;
 use DateTime;
 use Throwable;
 use UnitEnum;
@@ -527,9 +527,9 @@ class Elements extends Component
      * Returns whether we are currently collecting element cache invalidation info.
      *
      * @return bool
-     * @since 4.3.0
      * @see startCollectingCacheInfo()
      * @see stopCollectingCacheInfo()
+     * @since 4.3.0
      */
     public function getIsCollectingCacheInfo(): bool
     {
@@ -1250,9 +1250,17 @@ class Elements extends Component
             $newAttributes['siteAttributes'][$field['siteId']]['dirtyFields'][] = $fieldsService->getFieldById($field['fieldId'])?->handle;
         }
 
+        // if we're working with a revision, ensure we mark element's custom fields as dirty;
+        if ($element->getIsRevision()) {
+            $newAttributes['dirtyFields'] = array_map(
+                fn(FieldInterface $field) => $field->handle,
+                $element->getFieldLayout()?->getCustomFields() ?? [],
+            );
+        }
+
         $updatedCanonical = $this->duplicateElement($element, $newAttributes);
 
-        Craft::$app->on(Application::EVENT_AFTER_REQUEST, function() use ($canonical, $updatedCanonical, $changedAttributes, $changedFields) {
+        Craft::$app->onAfterRequest(function() use ($canonical, $updatedCanonical, $changedAttributes, $changedFields) {
             // Update change tracking for the canonical element
             $timestamp = Db::prepareDateForDb($updatedCanonical->dateUpdated);
 
@@ -3203,11 +3211,23 @@ class Elements extends Component
         }
 
         // Validate
-        if ($runValidation && !$element->validate()) {
-            Craft::info('Element not saved due to validation error: ' . print_r($element->errors, true), __METHOD__);
-            $element->firstSave = $originalFirstSave;
-            $element->propagateAll = $originalPropagateAll;
-            return false;
+        if ($runValidation) {
+            // If we're propagating, only validate changed custom fields
+            if ($element->propagating) {
+                $names = array_map(
+                    fn(string $handle) => "field:$handle",
+                    array_unique(array_merge($element->getDirtyFields(), $element->getModifiedFields()))
+                );
+            } else {
+                $names = null;
+            }
+
+            if (($names === null || !empty($names)) && !$element->validate($names)) {
+                Craft::info('Element not saved due to validation error: ' . print_r($element->errors, true), __METHOD__);
+                $element->firstSave = $originalFirstSave;
+                $element->propagateAll = $originalPropagateAll;
+                return false;
+            }
         }
 
         // Figure out whether we will be updating the search index (and memoize that for nested element saves)
@@ -3380,7 +3400,13 @@ class Elements extends Component
                         // Skip the initial site
                         if ($siteId != $element->siteId) {
                             $siteElement = $siteElements[$siteId] ?? false;
-                            if (!$this->_propagateElement($element, $supportedSites, $siteId, $siteElement, crossSiteValidate: $crossSiteValidate)) {
+                            if (!$this->_propagateElement(
+                                $element,
+                                $supportedSites,
+                                $siteId,
+                                $siteElement,
+                                crossSiteValidate: $runValidation && $crossSiteValidate,
+                            )) {
                                 throw new InvalidConfigException();
                             }
                         }
@@ -3441,7 +3467,11 @@ class Elements extends Component
         }
 
         // Update search index
-        if ($updateSearchIndex && !ElementHelper::isRevision($element)) {
+        if (
+            $updateSearchIndex &&
+            !$element->getIsRevision() &&
+            !ElementHelper::isRevision($element)
+        ) {
             $event = new ElementEvent([
                 'element' => $element,
             ]);
@@ -3560,6 +3590,7 @@ class Elements extends Component
             $siteElement->siteId = $oldSiteElement->siteId;
             $siteElement->contentId = $oldSiteElement->contentId;
             $siteElement->setEnabledForSite($oldSiteElement->getEnabledForSite());
+            $siteElement->uri = $oldSiteElement->uri;
         } else {
             $siteElement->enabled = $element->enabled;
             $siteElement->resaving = $element->resaving;
@@ -3591,7 +3622,25 @@ class Elements extends Component
             $siteElement->slug = $element->slug;
         }
 
-        // Copy the dirty attributes (except title and slug, which may be translatable)
+        // Ensure the uri is properly localized
+        // see https://github.com/craftcms/cms/issues/13812 for more details
+        if (
+            $element::hasUris() &&
+            (
+                $isNewSiteForElement ||
+                in_array('uri', $element->getDirtyAttributes()) ||
+                $element->resaving
+            )
+        ) {
+            // Set a unique URI on the site clone
+            try {
+                ElementHelper::setUniqueUri($siteElement);
+            } catch (OperationAbortedException) {
+                // carry on
+            }
+        }
+
+        // Copy the dirty attributes (except title, slug and uri, which may be translatable)
         $siteElement->setDirtyAttributes(array_filter($element->getDirtyAttributes(), function(string $attribute): bool {
             return $attribute !== 'title' && $attribute !== 'slug';
         }));
@@ -3626,7 +3675,7 @@ class Elements extends Component
 
         $siteElement->propagating = true;
 
-        if ($this->_saveElementInternal($siteElement, true, false, null, $supportedSites, crossSiteValidate: $crossSiteValidate) === false) {
+        if ($this->_saveElementInternal($siteElement, $crossSiteValidate, false, null, $supportedSites) === false) {
             // if the element we're trying to save has validation errors, notify original element about them
             if ($siteElement->hasErrors()) {
                 return $this->_crossSiteValidationErrors($siteElement, $element);
