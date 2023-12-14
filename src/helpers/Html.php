@@ -655,7 +655,9 @@ class Html extends \yii\helpers\Html
      */
     public static function id(string $id = ''): string
     {
-        $id = trim(preg_replace('/[^\w]+/', '-', $id), '-');
+        // IDs must begin with a letter
+        $id = preg_replace('/^[^A-Za-z]+/', '', $id);
+        $id = rtrim(preg_replace('/[^A-Za-z0-9_:.]+/', '-', $id), '-');
         return $id ?: StringHelper::randomString(10);
     }
 

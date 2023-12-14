@@ -4,6 +4,8 @@
 
 - Added `craft\helpers\Cp::moneyFieldHtml()`.
 - Added `craft\helpers\Cp::moneyInputHtml()`.
+- `craft\helpers\Html::id()` and `Craft.formatInputId()` now retain colons and periods, and ensure the string begins with a letter.
+- `craft\web\View::setNamespace()` is no longer strict about namespaces matching HTML `id` attribute rules. ([#13943](https://github.com/craftcms/cms/issues/13943)
 
 ## 5.0.0-alpha.1 - 2023-12-13
 

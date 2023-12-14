@@ -401,7 +401,10 @@ $.extend(Craft, {
    * @returns {string}
    */
   formatInputId: function (inputName) {
-    return this.rtrim(inputName.replace(/[^\w\-]+/g, '-'), '-');
+    // IDs must begin with a letter
+    let id = inputName.replace(/^[^A-Za-z]+/, '');
+    id = this.rtrim(id.replace(/[^A-Za-z0-9_:.]+/g, '-'), '-');
+    return id || this.randomString(10);
   },
 
   /**

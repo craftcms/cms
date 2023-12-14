@@ -38,7 +38,6 @@ use Twig\Template as TwigTemplate;
 use Twig\TemplateWrapper;
 use yii\base\Arrayable;
 use yii\base\Exception;
-use yii\base\InvalidArgumentException;
 use yii\base\Model;
 use yii\base\NotSupportedException;
 use yii\web\AssetBundle as YiiAssetBundle;
@@ -1439,13 +1438,6 @@ JS;
      */
     public function setNamespace(?string $namespace): void
     {
-        if (
-            $namespace !== null &&
-            !preg_match('/^(__.+__|[A-Za-z][A-Za-z0-9\-_:.]*(\[[A-Za-z][A-Za-z0-9\-_:.]*])*)$/', $namespace)
-        ) {
-            throw new InvalidArgumentException(sprintf('Invalid namespace ("%s"). Namespaces must begin with a letter, and may be followed by letters, numbers, hyphens, underscores, colons, and periods (possibly followed by sets of correctly-formatted strings wrapped in square brackets).', $namespace));
-        }
-
         $this->_namespace = $namespace;
     }
 
