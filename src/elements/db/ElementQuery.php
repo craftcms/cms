@@ -2367,38 +2367,43 @@ class ElementQuery extends Query implements ElementQueryInterface
         if (is_array($this->customFields)) {
             $fieldAttributes = $this->getBehavior('customFields');
 
-            // Group the fields by handle
-            /** @var FieldInterface[][] $fieldsByHandle */
+            // Group the fields by handle and field UUID
+            /** @var FieldInterface[][][] $fieldsByHandle */
             $fieldsByHandle = ArrayHelper::index($this->customFields, null, [
                 fn(FieldInterface $field) => $field->handle,
+                fn(FieldInterface $field) => $field->uid,
             ]);
 
-            foreach ($fieldsByHandle as $handle => $instances) {
-                $multipleInstances = count($instances) > 1;
+            foreach ($fieldsByHandle as $handle => $instancesByUid) {
                 // In theory all field handles will be accounted for on the CustomFieldBehavior, but just to be safe...
                 // ($fieldAttributes->$handle will return true even if it's set to null, so can't use isset() alone here)
-                if ($handle !== 'owner' && ($fieldAttributes->$handle ?? null) !== null) {
-                    $conditions = null;
-                    if ($multipleInstances) {
-                        $conditions = ['or'];
-                    }
-                    foreach ($instances as $instance) {
-                        $params = [];
-                        $condition = $instance::queryCondition([$instance], $fieldAttributes->$handle, $params);
+                if ($handle === 'owner' || ($fieldAttributes->$handle ?? null) === null) {
+                    continue;
+                }
 
-                        if ($condition === false) {
-                            throw new QueryAbortedException();
-                        }
+                $conditions = [];
+                $params = [];
 
-                        if ($condition !== null) {
-                            if ($multipleInstances) {
-                                $conditions[] = $condition;
-                            } else {
-                                $conditions = $condition;
-                            }
-                        }
+                foreach ($instancesByUid as $instances) {
+                    $firstInstance = $instances[0];
+                    $condition = $firstInstance::queryCondition($instances, $fieldAttributes->$handle, $params);
+
+                    // aborting?
+                    if ($condition === false) {
+                        throw new QueryAbortedException();
                     }
-                    $this->subQuery->andWhere($conditions);
+
+                    if ($condition !== null) {
+                        $conditions[] = $condition;
+                    }
+                }
+
+                if (!empty($conditions)) {
+                    if (count($conditions) === 1) {
+                        $this->subQuery->andWhere(reset($conditions), $params);
+                    } else {
+                        $this->subQuery->andWhere(['or', ...$conditions], $params);
+                    }
                 }
             }
         }
