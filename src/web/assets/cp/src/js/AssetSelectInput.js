@@ -299,12 +299,17 @@ Craft.AssetSelectInput = Craft.BaseElementSelectInput.extend({
    * On Upload Failure.
    */
   _onUploadFailure: function (event, data) {
+    const file = data.data.getAll('assets-upload');
+    const backupFilename = file[0].name;
     const response =
       event instanceof CustomEvent ? event.detail : data?.jqXHR?.responseJSON;
 
     let {message, filename} = response || {};
 
     if (!message) {
+      if (!filename) {
+        filename = backupFilename;
+      }
       message = filename
         ? Craft.t('app', 'Upload failed for “{filename}”.', {filename})
         : Craft.t('app', 'Upload failed.');

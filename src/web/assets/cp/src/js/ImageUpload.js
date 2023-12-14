@@ -127,10 +127,15 @@ Craft.ImageUpload = Garnish.Base.extend(
      * On Upload Failure.
      */
     _onUploadFailure: function (event, data) {
+      const file = data.data.getAll('photo');
+      const backupFilename = file[0].name;
       const response = data.response();
       let {message, filename} = response?.jqXHR?.responseJSON || {};
 
       if (!message) {
+        if (!filename) {
+          filename = backupFilename;
+        }
         message = filename
           ? Craft.t('app', 'Upload failed for “{filename}”.', {filename})
           : Craft.t('app', 'Upload failed.');

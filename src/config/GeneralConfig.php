@@ -387,9 +387,7 @@ class GeneralConfig extends BaseConfig
     /**
      * @var bool Whether drafts should be saved automatically as they are edited.
      *
-     * ::: warning
-     * Disabling this will also disable Live Preview.
-     * :::
+     * Note that drafts *will* be autosaved while Live Preview is open, regardless of this setting.
      *
      * ::: code
      * ```shell Environment Override
