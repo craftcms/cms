@@ -9,7 +9,10 @@ Copy content fields, fetched via XHR by the "Copy content from site" tooltip
 
 {{ hiddenInput('elementId', elementId) }}
 {{ hiddenInput('provisional', provisional ?? false) }}
-{{ hiddenInput('copyFieldHandle', copyFieldHandle ?? null) }}
+
+{% if copyFieldHandle ?? null %}
+    {{ hiddenInput('copyFieldHandle', copyFieldHandle) }}
+{% endif %}
 
 {% if draftId ?? false %}
     {{ hiddenInput('draftId', draftId) }}
