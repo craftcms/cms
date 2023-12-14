@@ -1,6 +1,7 @@
 # Release Notes for Craft CMS 4
 
 - Fixed a bug where `{% namespace %}` tags weren’t respecting namespaces set to `0`. ([#13943](https://github.com/craftcms/cms/issues/13943)
+- Fixed an error that could occur when using a custom asset uploader. ([#14029](https://github.com/craftcms/cms/pull/14029))
 
 ## 4.5.12 - 2023-12-12
 
