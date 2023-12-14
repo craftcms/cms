@@ -289,18 +289,6 @@ class Address extends Element implements AddressInterface, BlockElementInterface
     }
 
     /**
-     * Whether the address is owned by the current user
-     *
-     */
-    public function getIsOwnAddress(): bool
-    {
-        $userId = Craft::$app->getUser()->getId();
-        $ownerId = $this->ownerId;
-
-        return $ownerId === $userId;
-    }
-
-    /**
      * @inheritdoc
      */
     public function getOwner(): ?ElementInterface
@@ -330,6 +318,18 @@ class Address extends Element implements AddressInterface, BlockElementInterface
     {
         $this->_owner = $owner;
         $this->ownerId = $owner?->id;
+    }
+
+    /**
+     * Returns whether the address belongs to the currently logged-in user.
+     *
+     * @return bool
+     * @since 4.5.13
+     */
+    public function getBelongsToCurrentUser(): bool
+    {
+        $owner = $this->getOwner();
+        return $owner instanceof User && $owner->getIsCurrent();
     }
 
     /**

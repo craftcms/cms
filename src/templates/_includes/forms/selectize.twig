@@ -105,17 +105,6 @@
 
     const $select = $(`#${id}`);
 
-    const allowAutocomplete = () => {
-        const $originalSelectInput = $($select[0]);
-        const autocompleteVal = $originalSelectInput.attr('autocomplete');
-        if (autocompleteVal !== undefined && autocompleteVal !== '') {
-            const selectize = $select.data('selectize');
-            const $controlInput = $(selectize.$control_input[0]);
-            $controlInput.removeAttr('autofill');
-            $controlInput.attr('autocomplete', autocompleteVal);
-        }
-    };
-
     const onChange = () => {
         const selectize = $select.data('selectize');
         const $items = selectize.$wrapper.find('.item');
@@ -234,7 +223,13 @@
             // despite what the documentation says, the "autofill_disable" seems to be ON by default,
             // and there's no "proper" way to disable it
             // more info: https://github.com/selectize/selectize.js/issues/1535
-            allowAutocomplete();
+            const autocomplete = $select.attr('autocomplete');
+            if (autocomplete) {
+                const selectize = $select.data('selectize');
+                selectize.$control_input
+                    .removeAttr('autofill')
+                    .attr('autocomplete', autocomplete);
+            }
         },
         onDropdownOpen: function() {
             positionDropdown();

@@ -1397,49 +1397,6 @@ JS, [
     }
 
     /**
-     * Returns an autocomplete value consistent with Input Purposes for User Interface Components ({@link https://www.w3.org/TR/WCAG21/#input-purposes})
-     *
-     * @param string $attribute
-     * @return string
-     */
-    private static function getInputPurpose(string $attribute): string
-    {
-        return match ($attribute) {
-            'fullName' => 'name',
-            'addressLine1' => 'address-line1',
-            'addressLine2' => 'address-line2',
-            'administrativeArea' => 'address-level1',
-            'locality' => 'address-level2',
-            'dependentLocality' => 'address-level3',
-            'countryCode' => 'country',
-            'postalCode' => 'postal-code',
-            'organization' => 'organization',
-            default => 'on',
-        };
-    }
-
-    /**
-     * Returns true or false based on whether the address is the current user's own address
-     *
-     * @param Address $address
-     * @return boolean
-     */
-    private static function enableAutofill(Address $address): bool
-    {
-        return $address->getIsOwnAddress();
-    }
-
-    /**
-     * Returns a randomized string for the autocomplete value to disable browser autocomplete
-     *
-     * @return string
-     */
-    private static function getBogusAutofillValue(): string
-    {
-        return 'disable-autofill-' . mt_rand();
-    }
-
-    /**
      * Returns address fields’ HTML (sans country) for a given address.
      *
      * @param Address $address
@@ -1453,8 +1410,7 @@ JS, [
         $address->setScenario(Element::SCENARIO_LIVE);
         $activeValidators = $address->getActiveValidators();
         $address->setScenario($scenario);
-        $enableAutofill = self::enableAutofill($address);
-        $fakeAutofillValue = self::getBogusAutofillValue();
+        $belongsToCurrentUser = $address->getBelongsToCurrentUser();
 
         foreach ($activeValidators as $validator) {
             if ($validator instanceof RequiredValidator) {
@@ -1476,26 +1432,27 @@ JS, [
             static::textFieldHtml([
                 'status' => $address->getAttributeStatus('addressLine1'),
                 'label' => $address->getAttributeLabel('addressLine1'),
-                'autocomplete' => $enableAutofill ? self::getInputPurpose('addressLine1') : $fakeAutofillValue,
                 'id' => 'addressLine1',
                 'name' => 'addressLine1',
                 'value' => $address->addressLine1,
+                'autocomplete' => $belongsToCurrentUser ? 'address-line1' : 'off',
                 'required' => isset($requiredFields['addressLine1']),
                 'errors' => $address->getErrors('addressLine1'),
             ]) .
             static::textFieldHtml([
                 'status' => $address->getAttributeStatus('addressLine2'),
                 'label' => $address->getAttributeLabel('addressLine2'),
-                'autocomplete' => $enableAutofill ? self::getInputPurpose('addressLine2') : $fakeAutofillValue,
                 'id' => 'addressLine2',
                 'name' => 'addressLine2',
                 'value' => $address->addressLine2,
+                'autocomplete' => $belongsToCurrentUser ? 'address-line2' : 'off',
                 'required' => isset($requiredFields['addressLine2']),
                 'errors' => $address->getErrors('addressLine2'),
             ]) .
             self::_subdivisionField(
                 $address,
                 'administrativeArea',
+                $belongsToCurrentUser ? 'address-level1' : 'off',
                 isset($visibleFields['administrativeArea']),
                 isset($requiredFields['administrativeArea']),
                 [$address->countryCode],
@@ -1504,6 +1461,7 @@ JS, [
             self::_subdivisionField(
                 $address,
                 'locality',
+                $belongsToCurrentUser ? 'address-level2' : 'off',
                 isset($visibleFields['locality']),
                 isset($requiredFields['locality']),
                 [$address->countryCode, $address->administrativeArea],
@@ -1512,6 +1470,7 @@ JS, [
             self::_subdivisionField(
                 $address,
                 'dependentLocality',
+                $belongsToCurrentUser ? 'address-level3' : 'off',
                 isset($visibleFields['dependentLocality']),
                 isset($requiredFields['dependentLocality']),
                 [$address->countryCode, $address->administrativeArea, $address->locality],
@@ -1524,10 +1483,10 @@ JS, [
                 ]),
                 'status' => $address->getAttributeStatus('postalCode'),
                 'label' => $address->getAttributeLabel('postalCode'),
-                'autocomplete' => $enableAutofill ? self::getInputPurpose('postalCode') : $fakeAutofillValue,
                 'id' => 'postalCode',
                 'name' => 'postalCode',
                 'value' => $address->postalCode,
+                'autocomplete' => $belongsToCurrentUser ? 'postal-code' : 'off',
                 'required' => isset($requiredFields['postalCode']),
                 'errors' => $address->getErrors('postalCode'),
             ]) .
@@ -1549,6 +1508,7 @@ JS, [
     private static function _subdivisionField(
         Address $address,
         string $name,
+        string $autocomplete,
         bool $visible,
         bool $required,
         ?array $parents,
@@ -1557,8 +1517,9 @@ JS, [
         $value = $address->$name;
         $options = Craft::$app->getAddresses()->getSubdivisionRepository()->getList($parents, Craft::$app->language);
 
-        $enableAutofill = self::enableAutofill($address);
-        $fakeAutofillValue = self::getBogusAutofillValue();
+        $belongsToCurrentUser = $address->getBelongsToCurrentUser();
+
+
         if ($options) {
             // Persist invalid values in the UI
             if ($value && !isset($options[$value])) {
@@ -1577,7 +1538,7 @@ JS, [
                         'value' => $value,
                         'options' => $options,
                         'errors' => $errors,
-                        'autocomplete' => $enableAutofill ? self::getInputPurpose($name) : $fakeAutofillValue,
+                        'autocomplete' => $autocomplete,
                     ]) .
                     Html::tag('div', '', [
                         'id' => "$name-spinner",
@@ -1604,7 +1565,7 @@ JS, [
                 'options' => $options,
                 'required' => $required,
                 'errors' => $address->getErrors($name),
-                'autocomplete' => $enableAutofill ? self::getInputPurpose($name) : $fakeAutofillValue,
+                'autocomplete' => $autocomplete,
             ]);
         }
 
@@ -1613,7 +1574,7 @@ JS, [
             'fieldClass' => !$visible ? 'hidden' : null,
             'status' => $address->getAttributeStatus($name),
             'label' => $address->getAttributeLabel($name),
-            'autocomplete' => $enableAutofill ? self::getInputPurpose($name) : $fakeAutofillValue,
+            'autocomplete' => $autocomplete,
             'id' => $name,
             'name' => $name,
             'value' => $value,
