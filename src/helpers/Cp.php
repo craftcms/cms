@@ -1482,7 +1482,7 @@ JS, [
      * @throws TemplateLoaderException
      * @since 5.0.0
      */
-    public static function moneyInputFieldHtml(array $config): string
+    public static function moneyFieldHtml(array $config): string
     {
         $config['id'] = $config['id'] ?? 'money' . mt_rand();
         return static::fieldHtml('template:_includes/forms/money.twig', $config);
