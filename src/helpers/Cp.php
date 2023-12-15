@@ -1517,9 +1517,6 @@ JS, [
         $value = $address->$name;
         $options = Craft::$app->getAddresses()->getSubdivisionRepository()->getList($parents, Craft::$app->language);
 
-        $belongsToCurrentUser = $address->getBelongsToCurrentUser();
-
-
         if ($options) {
             // Persist invalid values in the UI
             if ($value && !isset($options[$value])) {
