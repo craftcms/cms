@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 4
 
-## Unreleased
+## 4.5.13 - 2023-12-15
 
 - Address fields now have the appropriate `autocomplete` values when editing an address that belongs to the current user. ([#13938](https://github.com/craftcms/cms/pull/13938))
 - The `|markdown` and `|md` filters now accept an `encode` argument, which can be set to `true` to HTML-encode the content before parsing it as Markdown.
