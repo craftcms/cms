@@ -58,6 +58,8 @@ abstract class BaseRelationField extends Field implements InlineEditableFieldInt
      */
     public const EVENT_DEFINE_SELECTION_CRITERIA = 'defineSelectionCriteria';
 
+    private static bool $validatingRelatedElements = false;
+
     /**
      * @inheritdoc
      */
@@ -528,8 +530,8 @@ JS, [
      */
     public function validateRelatedElements(ElementInterface $element): void
     {
-        // Only enforce this when the source element is being saved directly
-        if ($element->validatingRelatedElement) {
+        // No recursive related element validation
+        if (self::$validatingRelatedElements) {
             return;
         }
 
@@ -543,20 +545,12 @@ JS, [
                 ->preferSites([$this->targetSiteId($element)]);
         }
 
-        $sourceId = $element->getCanonicalId();
         $errorCount = 0;
 
-        foreach ($value->all() as $i => $related) {
-            /** @var Element $related */
-            if (
-                $related->enabled &&
-                $related->getEnabledForSite() &&
-                $related->getCanonicalId() !== $sourceId
-            ) {
-                if (!self::_validateRelatedElement($related)) {
-                    $element->addModelErrors($related, "$this->handle[$i]");
-                    $errorCount++;
-                }
+        foreach ($value->all() as $i => $target) {
+            if (!self::_validateRelatedElement($element, $target)) {
+                $element->addModelErrors($target, "$this->handle[$i]");
+                $errorCount++;
             }
         }
 
@@ -573,18 +567,28 @@ JS, [
     /**
      * Returns whether a related element validates.
      *
-     * @param ElementInterface $element
+     * @param ElementInterface $source
+     * @param ElementInterface $target
      * @return bool
      */
-    private static function _validateRelatedElement(ElementInterface $element): bool
+    private static function _validateRelatedElement(ElementInterface $source, ElementInterface $target): bool
     {
+        if (
+            self::$validatingRelatedElements ||
+            !$target->enabled ||
+            !$target->getEnabledForSite() ||
+            $target->getCanonicalId() === $source->getCanonicalId()
+        ) {
+            return true;
+        }
+
         // Prevent relational fields on this element from enforcing related element validation
-        $element->validatingRelatedElement = true;
+        self::$validatingRelatedElements = true;
 
-        $element->setScenario(Element::SCENARIO_LIVE);
-        $validates = $element->validate();
+        $target->setScenario(Element::SCENARIO_LIVE);
+        $validates = $target->validate();
 
-        $element->validatingRelatedElement = false;
+        self::$validatingRelatedElements = false;
         return $validates;
     }
 
@@ -1189,13 +1193,10 @@ JS, [
             $value = [];
         }
 
-        if ($this->validateRelatedElements) {
+        if ($this->validateRelatedElements && $element !== null) {
             // Pre-validate related elements
-            foreach ($value as $related) {
-                if ($related->enabled && $related->getEnabledForSite()) {
-                    $related->setScenario(Element::SCENARIO_LIVE);
-                    $related->validate();
-                }
+            foreach ($value as $target) {
+                self::_validateRelatedElement($element, $target);
             }
         }
 

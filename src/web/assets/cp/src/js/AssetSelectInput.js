@@ -225,7 +225,7 @@ Craft.AssetSelectInput = Craft.BaseElementSelectInput.extend({
   /**
    * On upload progress.
    */
-  _onUploadProgress: function (event, data) {
+  _onUploadProgress: function (event, data = null) {
     data = event instanceof CustomEvent ? event.detail : data;
 
     var progress = parseInt(Math.min(data.loaded / data.total, 1) * 100, 10);
@@ -235,7 +235,7 @@ Craft.AssetSelectInput = Craft.BaseElementSelectInput.extend({
   /**
    * On a file being uploaded.
    */
-  _onUploadComplete: function (event, data) {
+  _onUploadComplete: function (event, data = null) {
     const result = event instanceof CustomEvent ? event.detail : data.result;
 
     Craft.sendActionRequest('POST', 'app/render-elements', {
@@ -289,20 +289,17 @@ Craft.AssetSelectInput = Craft.BaseElementSelectInput.extend({
   /**
    * On Upload Failure.
    */
-  _onUploadFailure: function (event, data) {
-    const file = data.data.getAll('assets-upload');
-    const backupFilename = file[0].name;
+  _onUploadFailure: function (event, data = null) {
     const response =
       event instanceof CustomEvent ? event.detail : data?.jqXHR?.responseJSON;
 
     let {message, filename, errors} = response || {};
 
+    filename = filename || data?.files?.[0].name;
+
     let errorMessages = errors ? Object.values(errors).flat() : [];
 
     if (!message) {
-      if (!filename) {
-        filename = backupFilename;
-      }
       if (errorMessages.length) {
         message = errorMessages.join('\n');
       } else if (filename) {

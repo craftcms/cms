@@ -104,6 +104,7 @@ class CountryCodeField extends BaseNativeField
                 'name' => 'countryCode',
                 'options' => Craft::$app->getAddresses()->getCountryRepository()->getList(Craft::$app->language),
                 'value' => $element->countryCode,
+                'autocomplete' => $element->getBelongsToCurrentUser() ? 'country' : 'off',
             ]) .
             Html::tag('div', '', [
                 'id' => 'countryCode-spinner',
