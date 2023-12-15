@@ -2,9 +2,12 @@
 
 ## Unreleased
 
+- The `|markdown` and `|md` filters now accept an `encode` argument, which can be set to `true` to HTML-encode the content before parsing it as Markdown.
+- Added the `pre-encoded` Markdown flavor, which can be used when the content has already been HTML-encoded.
 - Fixed a bug where `{% namespace %}` tags weren’t respecting namespaces set to `0`. ([#13943](https://github.com/craftcms/cms/issues/13943))
 - Fixed an error that could occur when using a custom asset uploader. ([#14029](https://github.com/craftcms/cms/pull/14029))
 - Fixed an error that could occur when saving an asset using `SCENARIO_CREATE`, if `Asset::$tempFilePath` wasn’t set. ([#14041](https://github.com/craftcms/cms/pull/14041))
+- Fixed a bug where some HTML entities within Tip and Warning field layout elements colud get double-encoded. ([#13959](https://github.com/craftcms/cms/issues/13959))
 
 ## 4.5.12 - 2023-12-12
 
