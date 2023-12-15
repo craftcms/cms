@@ -8,6 +8,7 @@
 - Fixed an error that could occur when using a custom asset uploader. ([#14029](https://github.com/craftcms/cms/pull/14029))
 - Fixed an error that could occur when saving an asset using `SCENARIO_CREATE`, if `Asset::$tempFilePath` wasn’t set. ([#14041](https://github.com/craftcms/cms/pull/14041))
 - Fixed a bug where some HTML entities within Tip and Warning field layout elements colud get double-encoded. ([#13959](https://github.com/craftcms/cms/issues/13959))
+- Fixed an infinite recursion bug. ([#14033](https://github.com/craftcms/cms/issues/14033))
 
 ## 4.5.12 - 2023-12-12
 
