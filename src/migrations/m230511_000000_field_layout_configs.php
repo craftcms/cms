@@ -7,15 +7,19 @@ use craft\db\Migration;
 use craft\db\Table;
 
 /**
- * m230606_184054_field_layout_configs migration.
+ * m230511_000000_field_layout_configs migration.
  */
-class m230606_184054_field_layout_configs extends Migration
+class m230511_000000_field_layout_configs extends Migration
 {
     /**
      * @inheritdoc
      */
     public function safeUp(): bool
     {
+        if ($this->db->columnExists(Table::FIELDLAYOUTS, 'config')) {
+            return true;
+        }
+
         // Fetch the field layouts *before* adding the column, so the fields service knows to look in the old tables
         $fieldsService = Craft::$app->getFields();
         $fieldLayouts = $fieldsService->getAllLayouts();
@@ -41,7 +45,7 @@ class m230606_184054_field_layout_configs extends Migration
      */
     public function safeDown(): bool
     {
-        echo "m230606_184054_field_layout_configs cannot be reverted.\n";
+        echo "m230511_000000_field_layout_configs cannot be reverted.\n";
         return false;
     }
 }

@@ -11,6 +11,7 @@
 - Fixed a bug where custom fields’ element query params weren’t getting applied for more than one global field with the referenced handle. ([#13983](https://github.com/craftcms/cms/pull/13983))
 - Fixed a bug where Date fields with “Show Time Zone” enabled weren’t displaying the correct time.
 - Fixed an error that occurred when updating to Craft 5 if there were any soft-deleted entry types. ([#14039](https://github.com/craftcms/cms/issues/14039))
+- Fixed an error that occurred when updating to Craft 5 if there were any entry types with duplicate handles. ([#14043](https://github.com/craftcms/cms/issues/14043))
 
 ## 5.0.0-alpha.1 - 2023-12-13
 
