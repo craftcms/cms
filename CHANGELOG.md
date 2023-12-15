@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 4
 
-## Unreleased (5.x)
+## 5.0.0-alpha.2 - 2023-12-15
 
 - Added `craft\helpers\Cp::moneyFieldHtml()`.
 - Added `craft\helpers\Cp::moneyInputHtml()`.
