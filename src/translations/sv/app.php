@@ -1296,6 +1296,7 @@ return [
     'See all' => 'Se alla',
     'See logs' => 'Se loggar',
     'Select All' => 'Markera alla',
+    'Select a filesystem' => 'Select a filesystem',
     'Select a volume' => 'Välj en volym',
     'Select all' => 'Markera alla',
     'Select element' => 'Välj element',

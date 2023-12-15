@@ -166,6 +166,7 @@ trait ElementTrait
     /**
      * @var bool Whether the element is currently being validated via BaseRelationField::validateRelatedElements()
      * @since 4.5.10
+     * @deprecated in 4.5.13
      */
     public bool $validatingRelatedElement = false;
 
