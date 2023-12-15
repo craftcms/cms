@@ -106,8 +106,7 @@
     const $select = $(`#${id}`);
 
     const allowAutocomplete = () => {
-        const $originalSelectInput = $($select[0]);
-        const autocompleteVal = $originalSelectInput.attr('autocomplete');
+        const autocompleteVal = $($select[0])?.attr('autocomplete');
         if (autocompleteVal !== undefined && autocompleteVal !== '') {
             const selectize = $select.data('selectize');
             const $controlInput = $(selectize.$control_input[0]);
