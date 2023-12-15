@@ -10,6 +10,7 @@
 - `craft\web\View::setNamespace()` is no longer strict about namespaces matching HTML `id` attribute rules. ([#13943](https://github.com/craftcms/cms/issues/13943)
 - Fixed a bug where custom fields’ element query params weren’t getting applied for more than one global field with the referenced handle. ([#13983](https://github.com/craftcms/cms/pull/13983))
 - Fixed a bug where Date fields with “Show Time Zone” enabled weren’t displaying the correct time.
+- Fixed an error that occurred when updating to Craft 5 if there were any soft-deleted entry types. ([#14039](https://github.com/craftcms/cms/issues/14039))
 
 ## 5.0.0-alpha.1 - 2023-12-13
 
