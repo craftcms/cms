@@ -4,6 +4,18 @@
 
 - Added `craft\helpers\AdminTable::moveToPage()`.
 
+## 4.5.13 - 2023-12-15
+
+- Address fields now have the appropriate `autocomplete` values when editing an address that belongs to the current user. ([#13938](https://github.com/craftcms/cms/pull/13938))
+- The `|markdown` and `|md` filters now accept an `encode` argument, which can be set to `true` to HTML-encode the content before parsing it as Markdown.
+- Added the `pre-encoded` Markdown flavor, which can be used when the content has already been HTML-encoded.
+- Added `craft\elements\Address::getBelongsToCurrentUser()`.
+- Fixed a bug where `{% namespace %}` tags weren’t respecting namespaces set to `0`. ([#13943](https://github.com/craftcms/cms/issues/13943))
+- Fixed an error that could occur when using a custom asset uploader. ([#14029](https://github.com/craftcms/cms/pull/14029))
+- Fixed an error that could occur when saving an asset using `SCENARIO_CREATE`, if `Asset::$tempFilePath` wasn’t set. ([#14041](https://github.com/craftcms/cms/pull/14041))
+- Fixed a bug where some HTML entities within Tip and Warning field layout elements colud get double-encoded. ([#13959](https://github.com/craftcms/cms/issues/13959))
+- Fixed an infinite recursion bug. ([#14033](https://github.com/craftcms/cms/issues/14033))
+
 ## 4.5.12 - 2023-12-12
 
 - It’s no longer possible to dismiss asset conflict resolution modals by pressing <kbd>Esc</kbd> or clicking outside of the modal. ([#14002](https://github.com/craftcms/cms/issues/14002))
@@ -18,7 +30,7 @@
 - Fixed a bug where WebP image transforms weren’t respecting transform quality settings. ([#13998](https://github.com/craftcms/cms/issues/13998))
 - Fixed a bug where `craft\base\ApplicationTrait::onAfterRequest()` callbacks weren’t necessarily triggered if an `EVENT_AFTER_REQUEST` handler got in the way.
 - Fixed a bug where keyboard shortcuts could stop working. ([#14011](https://github.com/craftcms/cms/issues/14011))
-- Fixed a bug where the `craft\services\Elements::EVENT_AUTHORIZE_VIEW` event wasn’t always triggered when editing elements. ([#13981](https://github.com/craftcms/cms/issues/13981)))
+- Fixed a bug where the `craft\services\Elements::EVENT_AUTHORIZE_VIEW` event wasn’t always triggered when editing elements. ([#13981](https://github.com/craftcms/cms/issues/13981))
 - Fixed a bug that prevented Live Preview from opening for edited entries, when the `autosaveDrafts` config setting was disabled. ([#13921](https://github.com/craftcms/cms/issues/13921))
 - Fixed a bug where JavaScript-based slug generation wasn’t working consistently with PHP. ([#13971](https://github.com/craftcms/cms/pull/13971))
 - Fixed a bug where asset upload failure notifications could be ambiguous if a server connection issue occurred. ([#14003](https://github.com/craftcms/cms/issues/14003))

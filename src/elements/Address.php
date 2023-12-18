@@ -321,6 +321,18 @@ class Address extends Element implements AddressInterface, BlockElementInterface
     }
 
     /**
+     * Returns whether the address belongs to the currently logged-in user.
+     *
+     * @return bool
+     * @since 4.5.13
+     */
+    public function getBelongsToCurrentUser(): bool
+    {
+        $owner = $this->getOwner();
+        return $owner instanceof User && $owner->getIsCurrent();
+    }
+
+    /**
      * @inheritdoc
      */
     public function canView(User $user): bool
