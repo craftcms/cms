@@ -53,6 +53,7 @@ Craft.VueAdminTable = Garnish.Base.extend(
       columns: [],
       container: null,
       deleteAction: null,
+      footerActions: [],
       reorderAction: null,
       paginatedReorderAction: null,
       moveToPageAction: null,
