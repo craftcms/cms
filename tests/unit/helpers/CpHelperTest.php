@@ -73,7 +73,9 @@ class CpHelperTest extends TestCase
         // errors
         self::assertStringNotContainsString('error', $indexHtml);
         $user->addError('foo', 'bad error');
-        self::assertStringContainsString('error', Cp::elementChipHtml($user));
+        self::assertStringContainsString('error', Cp::elementChipHtml($user, [
+            'context' => 'field',
+        ]));
         $user->clearErrors();
 
         // trashed
@@ -115,7 +117,7 @@ class CpHelperTest extends TestCase
         // errors
         self::assertStringNotContainsString('error', $indexHtml);
         $user->addError('foo', 'bad error');
-        self::assertStringContainsString('error', Cp::elementHtml($user));
+        self::assertStringContainsString('error', Cp::elementHtml($user, 'field'));
         $user->clearErrors();
 
         // trashed

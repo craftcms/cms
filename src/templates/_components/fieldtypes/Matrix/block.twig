@@ -1,12 +1,12 @@
 {% set entryType = entry.getType() %}
 {% set entryTypeName = entryType.name|t('site') %}
-{% set baseInputName = "#{name}[entries][#{entry.uid}]" %}
+{% set baseInputName = "#{name}[entries][uid:#{entry.uid}]" %}
 {% set static = static ?? false %}
 {% set staticEntries = staticEntries ?? false %}
 {% set entryAttributes = {
   class: [
     'matrixblock',
-    not entry.enabled ? 'disabled',
+    not entry.enabled ? 'disabled-entry',
     static ? 'static',
   ]|filter,
   data: {

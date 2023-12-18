@@ -92,7 +92,7 @@ class CountryCodeField extends BaseNativeField
     protected function inputHtml(?ElementInterface $element = null, bool $static = false): ?string
     {
         if (!$element instanceof Address) {
-            throw new InvalidArgumentException('AddressField can only be used in address field layouts.');
+            throw new InvalidArgumentException(sprintf('%s can only be used in address field layouts.', __CLASS__));
         }
 
         return
@@ -104,6 +104,7 @@ class CountryCodeField extends BaseNativeField
                 'name' => 'countryCode',
                 'options' => Craft::$app->getAddresses()->getCountryRepository()->getList(Craft::$app->language),
                 'value' => $element->countryCode,
+                'autocomplete' => $element->getBelongsToCurrentUser() ? 'country' : 'off',
             ]) .
             Html::tag('div', '', [
                 'id' => 'countryCode-spinner',

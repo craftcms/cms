@@ -269,6 +269,10 @@ abstract class Controller extends \yii\web\Controller
      */
     public function asCpScreen(): Response
     {
+        if ($this->response->getBehavior(CpScreenResponseBehavior::NAME)) {
+            return $this->response;
+        }
+
         $this->response->attachBehavior(CpScreenResponseBehavior::NAME, CpScreenResponseBehavior::class);
         $this->response->formatters[CpScreenResponseFormatter::FORMAT] = CpScreenResponseFormatter::class;
         $this->response->format = CpScreenResponseFormatter::FORMAT;

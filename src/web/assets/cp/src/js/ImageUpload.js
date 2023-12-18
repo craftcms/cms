@@ -12,11 +12,11 @@ Craft.ImageUpload = Garnish.Base.extend(
 
     init: function (settings) {
       this.setSettings(settings, Craft.ImageUpload.defaults);
+      this.$container = $(this.settings.containerSelector);
       this.initImageUpload();
     },
 
     initImageUpload: function () {
-      this.$container = $(this.settings.containerSelector);
       this.progressBar = new Craft.ProgressBar(
         $('<div class="progress-shade"></div>').appendTo(this.$container)
       );
@@ -79,10 +79,9 @@ Craft.ImageUpload = Garnish.Base.extend(
     },
 
     refreshImage: function (response) {
-      const $container = $(response.html);
-      $(this.settings.containerSelector).replaceWith($container);
+      this.$container.replaceWith((this.$container = $(response.html)));
       this.settings.onAfterRefreshImage(response);
-      Craft.cp.elementThumbLoader.load($container);
+      Craft.cp.elementThumbLoader.load(this.$container);
       this.initImageUpload();
     },
 
@@ -102,7 +101,7 @@ Craft.ImageUpload = Garnish.Base.extend(
     /**
      * On upload progress.
      */
-    _onUploadProgress: function (event, data) {
+    _onUploadProgress: function (event, data = null) {
       var progress = parseInt((data.loaded / data.total) * 100, 10);
       this.progressBar.setProgressPercentage(progress);
     },
@@ -110,8 +109,7 @@ Craft.ImageUpload = Garnish.Base.extend(
     /**
      * On a file being uploaded.
      */
-    _onUploadComplete: function (event, data) {
-      var html = $(data.result.html);
+    _onUploadComplete: function (event, data = null) {
       this.refreshImage(data.result);
 
       // Last file
@@ -124,13 +122,14 @@ Craft.ImageUpload = Garnish.Base.extend(
     /**
      * On Upload Failure.
      */
-    _onUploadFailure: function (event, data) {
+    _onUploadFailure: function (event, data = null) {
       const response = data.response();
       let {
         message,
         filename,
         errors = {},
       } = response?.jqXHR?.responseJSON || {};
+      filename = filename || data?.files?.[0].name;
       let errorMessages = errors ? Object.values(errors).flat() : [];
 
       if (!message) {

@@ -1000,6 +1000,15 @@ interface ElementQueryInterface extends QueryInterface, Arrayable
     public function search(mixed $value): static;
 
     /**
+     * Narrows the query results to only {elements} that were involved in a bulk element operation.
+     *
+     * @param string|null $value The property value
+     * @return static self reference
+     * @since 5.0.0
+     */
+    public function inBulkOp(?string $value): static;
+
+    /**
      * Narrows the query results based on a reference string.
      *
      * @param mixed $value The property value

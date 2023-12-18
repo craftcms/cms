@@ -9,11 +9,10 @@ namespace craft\elements;
 
 use Craft;
 use craft\base\Element;
-use craft\base\ElementContainerFieldInterface;
-use craft\base\ElementInterface;
 use craft\base\ExpirableElementInterface;
 use craft\base\Field;
 use craft\base\NestedElementInterface;
+use craft\base\NestedElementTrait;
 use craft\behaviors\DraftBehavior;
 use craft\controllers\ElementIndexesController;
 use craft\db\Connection;
@@ -54,13 +53,11 @@ use craft\services\ElementSources;
 use craft\services\Structures;
 use craft\validators\DateCompareValidator;
 use craft\validators\DateTimeValidator;
-use craft\web\CpScreenResponseBehavior;
 use DateTime;
 use Illuminate\Support\Collection;
 use yii\base\Exception;
 use yii\base\InvalidConfigException;
 use yii\db\Expression;
-use yii\web\Response;
 
 /**
  * Entry represents an entry element.
@@ -69,14 +66,14 @@ use yii\web\Response;
  * @property int|null $authorId the entry author’s ID
  * @property EntryType $type the entry type
  * @property Section|null $section the entry’s section
- * @property ElementContainerFieldInterface|null $field the entry’s field
- * @property ElementInterface|null $owner the entry’s owner element
  * @property User|null $author the entry’s author
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
 class Entry extends Element implements NestedElementInterface, ExpirableElementInterface
 {
+    use NestedElementTrait;
+
     public const STATUS_LIVE = 'live';
     public const STATUS_PENDING = 'pending';
     public const STATUS_EXPIRED = 'expired';
@@ -700,30 +697,6 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
     public ?int $sectionId = null;
 
     /**
-     * @var int|null Field ID
-     * @since 5.0.0
-     */
-    public ?int $fieldId = null;
-
-    /**
-     * @var int|null Primary owner ID
-     * @since 5.0.0
-     */
-    public ?int $primaryOwnerId = null;
-
-    /**
-     * @var int|null Owner ID
-     * @since 5.0.0
-     */
-    public ?int $ownerId = null;
-
-    /**
-     * @var int|null Sort order
-     * @since 5.0.0
-     */
-    public ?int $sortOrder = null;
-
-    /**
      * @var bool Collapsed
      * @since 5.0.0
      */
@@ -765,12 +738,6 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
     public bool $deletedWithEntryType = false;
 
     /**
-     * @var bool Whether to save the entry’s row in the `elements_owners` table in [[afterSave()]].
-     * @since 5.0.0
-     */
-    public bool $saveOwnership = true;
-
-    /**
      * @var int|null Author ID
      * @see getAuthorId()
      * @see setAuthorId()
@@ -789,13 +756,6 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
      * @see getType()
      */
     private ?int $_typeId = null;
-
-    /**
-     * @var ElementInterface|null The owner element, or false if [[ownerId]] is invalid
-     * @see getOwner()
-     * @see setOwner()
-     */
-    private ?ElementInterface $_owner = null;
 
     /**
      * @var int|null
@@ -1044,21 +1004,76 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
         }
 
         // Make sure the section is set to have URLs for this site
-        $siteId = Craft::$app->getSites()->getCurrentSite()->id;
-        $sectionSiteSettings = $section->getSiteSettings();
+        $sectionSiteSettings = $section->getSiteSettings()[$this->siteId] ?? null;
 
-        if (!isset($sectionSiteSettings[$siteId]) || !$sectionSiteSettings[$siteId]->hasUrls) {
+        if (!$sectionSiteSettings?->hasUrls) {
             return null;
         }
 
         return [
             'templates/render', [
-                'template' => (string)$sectionSiteSettings[$siteId]->template,
+                'template' => (string)$sectionSiteSettings->template,
                 'variables' => [
                     'entry' => $this,
                 ],
             ],
         ];
+    }
+
+    /**
+     * @inheritdoc
+     */
+    protected function crumbs(): array
+    {
+        $section = $this->getSection();
+
+        if (!$section) {
+            return [];
+        }
+
+        $sections = Collection::make(Craft::$app->getEntries()->getEditableSections());
+        /** @var Collection $sectionOptions */
+        $sectionOptions = $sections
+            ->filter(fn(Section $s) => $s->type !== Section::TYPE_SINGLE)
+            ->map(fn(Section $s) => [
+                'label' => Craft::t('site', $s->name),
+                'url' => "entries/$s->handle",
+                'selected' => $s->id === $section->id,
+            ]);
+
+        if ($sections->contains(fn(Section $s) => $s->type === Section::TYPE_SINGLE)) {
+            $sectionOptions->prepend([
+                'label' => Craft::t('app', 'Singles'),
+                'url' => 'entries/singles',
+                'selected' => $section->type === Section::TYPE_SINGLE,
+            ]);
+        }
+
+        $crumbs = [
+            [
+                'label' => Craft::t('app', 'Entries'),
+                'url' => 'entries',
+            ],
+            [
+                'menu' => [
+                    'label' => Craft::t('app', 'Select section'),
+                    'items' => $sectionOptions->all(),
+                ],
+            ],
+        ];
+
+        if ($section->type === Section::TYPE_STRUCTURE) {
+            $elementsService = Craft::$app->getElements();
+            $user = Craft::$app->getUser()->getIdentity();
+
+            foreach ($this->getAncestors()->all() as $ancestor) {
+                if ($elementsService->canView($ancestor, $user)) {
+                    $crumbs[] = ['html' => Cp::elementChipHtml($ancestor)];
+                }
+            }
+        }
+
+        return $crumbs;
     }
 
     /**
@@ -1247,30 +1262,6 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
     }
 
     /**
-     * @inheritdoc
-     */
-    public function getField(): ?ElementContainerFieldInterface
-    {
-        if (!isset($this->fieldId)) {
-            return null;
-        }
-
-        $field = $this->getOwner()->getFieldLayout()->getFieldById($this->fieldId);
-        if (!$field instanceof ElementContainerFieldInterface) {
-            throw new InvalidConfigException("Invalid field ID: $this->fieldId");
-        }
-        return $field;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getSortOrder(): ?int
-    {
-        return $this->sortOrder;
-    }
-
-    /**
      * Returns the entry type ID.
      *
      * @return int
@@ -1352,39 +1343,6 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
         }
 
         return Craft::$app->getEntries()->getEntryTypeById($this->_typeId);
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getOwner(): ?ElementInterface
-    {
-        if (!isset($this->fieldId)) {
-            return null;
-        }
-
-        if (!isset($this->_owner)) {
-            $ownerId = $this->ownerId ?? $this->primaryOwnerId;
-            if (!$ownerId) {
-                throw new InvalidConfigException('Entry is missing its owner ID');
-            }
-
-            $this->_owner = Craft::$app->getElements()->getElementById($ownerId, null, $this->siteId);
-            if (!isset($this->_owner)) {
-                throw new InvalidConfigException("Invalid owner ID: $ownerId");
-            }
-        }
-
-        return $this->_owner;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function setOwner(?ElementInterface $owner = null): void
-    {
-        $this->_owner = $owner;
-        $this->ownerId = $owner->id ?? null;
     }
 
     /**
@@ -1734,66 +1692,6 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
     protected function cpRevisionsUrl(): ?string
     {
         return sprintf('%s/revisions', $this->cpEditUrl());
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function prepareEditScreen(Response $response, string $containerId): void
-    {
-        if ($this->fieldId) {
-            $crumbs = [];
-            $owner = $this->getOwner();
-
-            do {
-                array_unshift($crumbs, ['html' => Cp::elementChipHtml($owner)]);
-                if (!$owner instanceof NestedElementInterface) {
-                    break;
-                }
-                $owner = $owner->getOwner();
-                if (!$owner) {
-                    break;
-                }
-            } while (true);
-        } else {
-            $section = $this->getSection();
-
-            $crumbs = [
-                [
-                    'label' => Craft::t('app', 'Entries'),
-                    'url' => 'entries',
-                ],
-            ];
-
-            if ($section->type === Section::TYPE_SINGLE) {
-                $crumbs[] = [
-                    'label' => Craft::t('app', 'Singles'),
-                    'url' => 'entries/singles',
-                ];
-            } else {
-                $crumbs[] = [
-                    'label' => Craft::t('site', $section->name),
-                    'url' => "entries/$section->handle",
-                ];
-
-                if ($section->type === Section::TYPE_STRUCTURE) {
-                    $elementsService = Craft::$app->getElements();
-                    $user = Craft::$app->getUser()->getIdentity();
-
-                    foreach ($this->getCanonical()->getAncestors()->all() as $ancestor) {
-                        if ($elementsService->canView($ancestor, $user)) {
-                            $crumbs[] = [
-                                'label' => $ancestor->title,
-                                'url' => $ancestor->getCpEditUrl(),
-                            ];
-                        }
-                    }
-                }
-            }
-        }
-
-        /** @var Response|CpScreenResponseBehavior $response */
-        $response->crumbs($crumbs);
     }
 
     /**

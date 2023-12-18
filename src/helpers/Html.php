@@ -183,6 +183,22 @@ class Html extends \yii\helpers\Html
 
     /**
      * @inheritdoc
+     */
+    public static function tag($name, $content = '', $options = [])
+    {
+        return parent::tag($name, $content, static::normalizeTagAttributes($options));
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function beginTag($name, $options = [])
+    {
+        return parent::beginTag($name, static::normalizeTagAttributes($options));
+    }
+
+    /**
+     * @inheritdoc
      * @since 3.3.0
      */
     public static function a($text, $url = null, $options = []): string
@@ -441,6 +457,7 @@ class Html extends \yii\helpers\Html
 
             switch ($name) {
                 case 'class':
+                case 'removeClass':
                     $normalized[$name] = static::explodeClass($value);
                     break;
                 case 'style':
@@ -457,6 +474,11 @@ class Html extends \yii\helpers\Html
                     }
                     $normalized[$name] = $value;
             }
+        }
+
+        if (isset($normalized['removeClass'])) {
+            $removeClasses = ArrayHelper::remove($normalized, 'removeClass');
+            $normalized['class'] = array_diff($normalized['class'] ?? [], $removeClasses);
         }
 
         return $normalized;
@@ -633,7 +655,9 @@ class Html extends \yii\helpers\Html
      */
     public static function id(string $id = ''): string
     {
-        $id = trim(preg_replace('/[^\w]+/', '-', $id), '-');
+        // IDs must begin with a letter
+        $id = preg_replace('/^[^A-Za-z]+/', '', $id);
+        $id = rtrim(preg_replace('/[^A-Za-z0-9_:.]+/', '-', $id), '-');
         return $id ?: StringHelper::randomString(10);
     }
 
