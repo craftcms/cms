@@ -87,6 +87,10 @@
             @vuetable:loading="loading"
             @vuetable:pagination-data="onPaginationData"
             @vuetable:load-success="onLoadSuccess"
+            @vuetable:cell-clicked="handleCellClicked"
+            @vuetable:cell-dblclicked="handleCellDoubleClicked"
+            @vuetable:row-clicked="handleRowClicked"
+            @vuetable:row-dblclicked="handleRowDoubleClicked"
           >
             <template slot="checkbox" slot-scope="props">
               <admin-table-checkbox
@@ -405,6 +409,18 @@
       onData: {
         default: function () {},
       },
+      onCellClicked: {
+        default: function () {},
+      },
+      onCellDoubleClicked: {
+        default: function () {},
+      },
+      onRowClicked: {
+        default: function () {},
+      },
+      onRowDoubleClicked: {
+        default: function () {},
+      },
       onPagination: {
         default: function () {},
       },
@@ -599,7 +615,11 @@
 
       reload() {
         if (this.$refs.vuetable) {
-          this.$refs.vuetable.gotoPage(1);
+          const reloadToPage =
+            this.$refs.vuetable.currentPage > 1
+              ? this.$refs.vuetable.currentPage
+              : 1;
+          this.$refs.vuetable.gotoPage(reloadToPage);
         }
 
         this.isLoading = true;
