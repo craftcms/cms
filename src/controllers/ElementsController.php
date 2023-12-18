@@ -555,6 +555,7 @@ class ElementsController extends Controller
         // if $fieldHandle is null, we're copying all element fields
         $fieldHandle = $this->request->getBodyParam('fieldHandle', null);
         $copyFromSiteId = $this->request->getRequiredBodyParam('copyFromSiteId');
+        $isFullPage = $this->request->getBodyParam('isFullPage');
 
         if ($fieldHandle === '' || empty($copyFromSiteId)) {
             throw new BadRequestHttpException("Request missing required param");
@@ -592,7 +593,9 @@ class ElementsController extends Controller
 
         $result = $elementsService->copyFieldValuesFromSite($element, $fieldHandle, $copyFromSiteId);
         if ($result['success'] === false) {
-            Craft::$app->session->setError($result['message']);
+            if ($isFullPage) {
+                Craft::$app->session->setError($result['message']);
+            }
 
             return $this->_asFailure($result['element'], $result['message']);
         }
@@ -605,7 +608,9 @@ class ElementsController extends Controller
             ]);
         }
 
-        Craft::$app->session->setNotice($result['message']);
+        if ($isFullPage) {
+            Craft::$app->session->setNotice($result['message']);
+        }
 
         return $this->_asSuccess($result['message'], $result['element']);
     }

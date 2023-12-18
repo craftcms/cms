@@ -778,6 +778,7 @@ Craft.ElementEditor = Garnish.Base.extend(
         elementId: this.settings.canonicalId,
         draftId: this.settings.draftId,
         provisional: this.settings.isProvisionalDraft,
+        isFullPage: this.isFullPage,
       };
 
       if ($form.find('[name="copyFieldHandle"]') != undefined) {
@@ -804,21 +805,25 @@ Craft.ElementEditor = Garnish.Base.extend(
             });
           }
 
-          // window.location.reload() doesn't work
-          window.location.replace(window.location.href);
+          if (this.isFullPage) {
+            window.location.reload();
+            // window.location.replace(window.location.href);
+          } else {
+            this.slideout.close();
+            this.slideout = Craft.createElementEditor(
+              'craft\\elements\\Entry',
+              {
+                siteId: element.siteId,
+                elementId: element.canonicalId,
+              }
+            );
+            Craft.cp.displayNotice(response.data.message);
+          }
         })
         .catch((e) => {
-          let $errorContainer = $form.find('p.error');
-          if ($form.find('p.error').length > 0) {
-            $errorContainer.contents(e.response.data.message);
-          } else {
-            $form.append(
-              '<p class="error">' + e.response.data.message + '</p>'
-            );
-          }
-          /*if (e.response.data.message) {
+          if (e.response.data.message) {
             Craft.cp.displayError(e.response.data.message);
-          }*/
+          }
         });
     },
 

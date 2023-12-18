@@ -8,11 +8,13 @@
 namespace craft\fields;
 
 use Craft;
+use craft\base\CopyableFieldInterface;
 use craft\base\ElementInterface;
 use craft\base\Field;
 use craft\base\InlineEditableFieldInterface;
 use craft\fields\conditions\CountryFieldConditionRule;
 use craft\helpers\Cp;
+use craft\helpers\ElementHelper;
 use yii\db\Schema;
 
 /**
@@ -21,7 +23,7 @@ use yii\db\Schema;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.6.0
  */
-class Country extends Field implements InlineEditableFieldInterface
+class Country extends Field implements InlineEditableFieldInterface, CopyableFieldInterface
 {
     /**
      * @inheritdoc
@@ -89,5 +91,13 @@ class Country extends Field implements InlineEditableFieldInterface
         }
         $list = Craft::$app->getAddresses()->getCountryRepository()->getList(Craft::$app->language);
         return $list[$value] ?? $value;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getIsCopyable(?ElementInterface $element = null): bool
+    {
+        return $this->getIsTranslatable($element) && ElementHelper::supportsFieldCopying($element);
     }
 }
