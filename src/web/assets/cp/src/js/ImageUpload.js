@@ -101,7 +101,7 @@ Craft.ImageUpload = Garnish.Base.extend(
     /**
      * On upload progress.
      */
-    _onUploadProgress: function (event, data) {
+    _onUploadProgress: function (event, data = null) {
       var progress = parseInt((data.loaded / data.total) * 100, 10);
       this.progressBar.setProgressPercentage(progress);
     },
@@ -109,7 +109,7 @@ Craft.ImageUpload = Garnish.Base.extend(
     /**
      * On a file being uploaded.
      */
-    _onUploadComplete: function (event, data) {
+    _onUploadComplete: function (event, data = null) {
       this.refreshImage(data.result);
 
       // Last file
@@ -122,21 +122,17 @@ Craft.ImageUpload = Garnish.Base.extend(
     /**
      * On Upload Failure.
      */
-    _onUploadFailure: function (event, data) {
-      const file = data.data.getAll('photo');
-      const backupFilename = file[0].name;
+    _onUploadFailure: function (event, data = null) {
       const response = data.response();
       let {
         message,
         filename,
         errors = {},
       } = response?.jqXHR?.responseJSON || {};
+      filename = filename || data?.files?.[0].name;
       let errorMessages = errors ? Object.values(errors).flat() : [];
 
       if (!message) {
-        if (!filename) {
-          filename = backupFilename;
-        }
         if (errorMessages.length) {
           message = errorMessages.join('\n');
         } else if (filename) {

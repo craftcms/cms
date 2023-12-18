@@ -53,6 +53,7 @@ use craft\mail\Mailer;
 use craft\markdown\GithubMarkdown;
 use craft\markdown\Markdown;
 use craft\markdown\MarkdownExtra;
+use craft\markdown\PreEncodedMarkdown;
 use craft\models\FieldLayout;
 use craft\models\Info;
 use craft\queue\QueueInterface;
@@ -1601,13 +1602,14 @@ trait ApplicationTrait
         // Use our own Markdown parser classes
         $flavors = [
             'original' => Markdown::class,
+            'pre-encoded' => PreEncodedMarkdown::class,
             'gfm' => GithubMarkdown::class,
             'gfm-comment' => GithubMarkdown::class,
             'extra' => MarkdownExtra::class,
         ];
 
         foreach ($flavors as $flavor => $class) {
-            if (isset(MarkdownHelper::$flavors[$flavor]) && !is_object(MarkdownHelper::$flavors[$flavor])) {
+            if (!isset(MarkdownHelper::$flavors[$flavor]) || !is_object(MarkdownHelper::$flavors[$flavor])) {
                 MarkdownHelper::$flavors[$flavor]['class'] = $class;
             }
         }

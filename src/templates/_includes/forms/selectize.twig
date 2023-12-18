@@ -60,6 +60,7 @@
     class: (class ?? [])|explodeClass|push('selectize')|unique,
     inputAttributes: {
         style: {display: 'none'},
+        autocomplete: (not multi and autocomplete is defined) ? autocomplete : false
     }|merge(inputAttributes ?? [], recursive=true),
 } %}
 
@@ -217,6 +218,18 @@
                 .forEach((attr) => {
                     this.$control_input.attr(attr.name, attr.value);
                 });
+
+            // allow autocomplete;
+            // despite what the documentation says, the "autofill_disable" seems to be ON by default,
+            // and there's no "proper" way to disable it
+            // more info: https://github.com/selectize/selectize.js/issues/1535
+            const autocomplete = $select.attr('autocomplete');
+            if (autocomplete) {
+                const selectize = $select.data('selectize');
+                selectize.$control_input
+                    .removeAttr('autofill')
+                    .attr('autocomplete', autocomplete);
+            }
         },
         onDropdownOpen: function() {
             positionDropdown();

@@ -25,7 +25,6 @@ use Twig\Error\SyntaxError;
 use UnitTester;
 use yii\base\Event;
 use yii\base\Exception;
-use yii\base\InvalidArgumentException;
 
 /**
  * Unit tests for the View class
@@ -306,26 +305,6 @@ class ViewTest extends TestCase
     public function testNamespaceInputId(string $expected, string $string, ?string $namespace = null): void
     {
         self::assertSame($expected, $this->view->namespaceInputId($string, $namespace));
-    }
-
-    /**
-     * @dataProvider setNamespaceDataProvider
-     * @param string|null $namespace
-     * @param bool $isValid
-     */
-    public function testSetNamespace(?string $namespace, bool $isValid): void
-    {
-        $oldNamespace = $this->view->getNamespace();
-
-        if (!$isValid) {
-            self::expectException(InvalidArgumentException::class);
-        }
-
-        $this->view->setNamespace($namespace);
-        self::assertEquals($namespace, $this->view->getNamespace());
-
-        $this->view->setNamespace($oldNamespace);
-        self::assertEquals($oldNamespace, $this->view->getNamespace());
     }
 
     /**
@@ -620,32 +599,6 @@ TWIG;
             ['foo-bar', 'bar', 'foo'],
             ['foo-bar-baz', 'bar[baz]', 'foo'],
             ['foo-bar-baz', 'baz', 'foo[bar]'],
-        ];
-    }
-
-    /**
-     * @return array
-     */
-    public static function setNamespaceDataProvider(): array
-    {
-        return [
-            [null, true],
-            ['foo', true],
-            ['foo[bar]', true],
-            ['foo[bar][baz]', true],
-            ['foo[bar0:baz.1-_]', true],
-            ['', false],
-            ['0', false],
-            ['1', false],
-            ['foo[]', false],
-            ['foo[0]', false],
-            ['foo[1]', false],
-            ['foo[bar][]', false],
-            ['foo[bar][0]', false],
-            ['foo[bar][1]', false],
-            ['foo[bar', false],
-            [' foo', false],
-            ['__FOO__', true],
         ];
     }
 

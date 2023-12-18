@@ -1419,7 +1419,11 @@ class Matrix extends Field implements
 
             // Set the content post location on the entry if we can
             if ($baseEntryFieldNamespace) {
-                $entry->setFieldParamNamespace("$baseEntryFieldNamespace.$entryId.fields");
+                if ($uids) {
+                    $entry->setFieldParamNamespace("$baseEntryFieldNamespace.uid:$entryId.fields");
+                } else {
+                    $entry->setFieldParamNamespace("$baseEntryFieldNamespace.$entryId.fields");
+                }
             }
 
             if (isset($entryData['fields'])) {

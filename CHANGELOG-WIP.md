@@ -208,6 +208,8 @@
 - Added `craft\helpers\Cp::elementCardHtml()`.
 - Added `craft\helpers\Cp::elementChipHtml()`.
 - Added `craft\helpers\Cp::elementIndexHtml()`.
+- Added `craft\helpers\Cp::moneyFieldHtml()`.
+- Added `craft\helpers\Cp::moneyInputHtml()`.
 - Added `craft\helpers\Cp::normalizeMenuItems()`.
 - Added `craft\helpers\Cp::siteMenuItems()`.
 - Added `craft\helpers\Db::defaultCollation()`.
@@ -278,6 +280,8 @@
 - Renamed `craft\fields\Matrix::$maxBlocks` to `$maxEntries`.
 - Renamed `craft\fields\Matrix::$minBlocks` to `$minEntries`.
 - Renamed `craft\helpers\MailerHelper\EVENT_REGISTER_MAILER_TRANSPORT_TYPES` to `EVENT_REGISTER_MAILER_TRANSPORTS`.
+- Renamed `craft\services\Addresses::getLayout()` to `getFieldLayout()`.
+- Renamed `craft\services\Addresses::saveLayout()` to `saveFieldLayout()`.
 - Renamed `craft\services\Utilities::EVENT_REGISTER_UTILITY_TYPES` to `EVENT_REGISTER_UTILITIES`.
 - Renamed `craft\web\CpScreenResponseBehavior::$additionalButtons()` and `additionalButtons()` to `$additionalButtonsHtml` and `additionalButtonsHtml()`. ([#13037](https://github.com/craftcms/cms/pull/13037))
 - Renamed `craft\web\CpScreenResponseBehavior::$content()` and `content()` to `$contentHtml` and `contentHtml()`. ([#13037](https://github.com/craftcms/cms/pull/13037))
@@ -308,6 +312,7 @@
 - `craft\gql\mutations\Entry::createSaveMutations()` now accepts a `$section` argument.
 - `craft\helpers\Cp::fieldHtml()` now supports a `labelExtra` config value.
 - `craft\helpers\Db::parseParam()`, `parseDateParam()`, `parseMoneyParam()`, and `parseNumericParam()` now return `null` instead of an empty string if no condition should be applied.
+- `craft\helpers\Html::id()` and `Craft.formatInputId()` now retain colons and periods, and ensure the string begins with a letter.
 - `craft\helpers\Html::normalizeTagAttributes()` now supports a `removeClass` key.
 - `craft\helpers\Html::tag()` and `beginTag()` now ensure that the passed-in attributes are normalized.
 - `craft\helpers\StringHelper::toString()` now supports backed enums.
@@ -329,7 +334,6 @@
 - `craft\services\Users::unshunMessageForUser()` now has a `void` return type, and throws an `InvalidElementException` in case of failure.
 - `craft\services\Users::unsuspendUser()` now has a `void` return type, and throws an `InvalidElementException` in case of failure.
 - `craft\services\Users::verifyEmailForUser()` now has a `void` return type, and throws an `InvalidElementException` in case of failure.
-- `craft\web\View::setNamespace()` now throws an `InvalidArgumentException` for namespaces that don’t confirm to HTML `id` attribute rules (possibly followed by sets of properly-formatted strings wrapped in square brackets). ([#13943](https://github.com/craftcms/cms/issues/13943))
 - Deprecated the `_elements/element.twig` control panel template. `elementChip()` or `elementCard()` should be used instead.
 - Deprecated the `cp.elements.element` control panel template hook.
 - Deprecated `craft\events\DefineElementInnerHtmlEvent`.

@@ -147,12 +147,16 @@ class HtmlHelperTest extends TestCase
 
     /**
      * @dataProvider idDataProvider
-     * @param string $expected
+     * @param string|null $expected
      * @param string $id
      */
-    public function testId(string $expected, string $id): void
+    public function testId(?string $expected, string $id): void
     {
-        self::assertSame($expected, Html::id($id));
+        if ($expected) {
+            self::assertSame($expected, Html::id($id));
+        } else {
+            self::assertEquals(10, strlen(Html::id($id)));
+        }
     }
 
     /**
@@ -485,6 +489,9 @@ class HtmlHelperTest extends TestCase
             ['foo-bar', 'foo--bar'],
             ['foo-bar-baz', 'foo[bar][baz]'],
             ['foo-bar-baz', 'foo bar baz'],
+            ['foo.bar', 'foo.bar'],
+            ['foo-bar', 'foo bar'],
+            [null, '100'],
         ];
     }
 
