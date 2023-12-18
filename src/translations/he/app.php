@@ -1296,6 +1296,7 @@ return [
     'See all' => 'הצג הכול',
     'See logs' => 'עיין ביומנים',
     'Select All' => 'בחר הכל',
+    'Select a filesystem' => 'Select a filesystem',
     'Select a volume' => 'בחר אמצעי אחסון',
     'Select all' => 'בחר הכל',
     'Select element' => 'בחר פריט',

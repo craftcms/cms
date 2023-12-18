@@ -1296,6 +1296,7 @@ return [
     'See all' => 'Az összes megjelenítése',
     'See logs' => 'Naplók megtekintése',
     'Select All' => 'Összes kiválasztása',
+    'Select a filesystem' => 'Select a filesystem',
     'Select a volume' => 'Kötet kiválasztása',
     'Select all' => 'Összes kiválasztása',
     'Select element' => 'Elem kiválasztása',

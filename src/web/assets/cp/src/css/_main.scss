@@ -6965,6 +6965,7 @@ body {
     margin-top: 1px;
 
     [data-selectable],
+    .option,
     .optgroup-header {
       @include menu-option-styles;
     }
@@ -6986,7 +6987,8 @@ body {
       padding: 4px 0;
     }
 
-    .active:not(.selected) {
+    .active:not(.selected),
+    .option:hover {
       background-color: var(--gray-100);
     }
 
