@@ -45,6 +45,7 @@ Craft.VueAdminTable = Garnish.Base.extend(
   {
     defaults: {
       actions: [],
+      allowMultipleDeletions: false,
       checkboxes: false,
       checkboxStatus: function () {
         return true;

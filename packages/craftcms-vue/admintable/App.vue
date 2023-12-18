@@ -82,6 +82,7 @@
             :per-page="perPage"
             :no-data-template="noDataTemplate"
             :query-params="queryParams"
+            :row-class="rowClass"
             pagination-path="pagination"
             @vuetable:loaded="init"
             @vuetable:loading="loading"
@@ -129,9 +130,15 @@
             <template slot="menu" slot-scope="props">
               <template v-if="props.rowData.menu.showItems">
                 <a :href="props.rowData.menu.url"
-                  >{{ props.rowData.menu.label }} ({{
-                    props.rowData.menu.items.length
-                  }})</a
+                  >{{ props.rowData.menu.label
+                  }}<template
+                    v-if="
+                      props.rowData.menu.showCount ||
+                      props.rowData.menu.showCount === undefined
+                    "
+                  >
+                    ({{ props.rowData.menu.items.length }})</template
+                  ></a
                 >
                 <a class="menubtn" :title="props.rowData.menu.label"></a>
                 <div class="menu">
@@ -208,13 +215,17 @@
             :itemLabels="itemLabels"
             @vuetable-pagination:change-page="onChangePage"
           ></admin-table-pagination>
-          <div v-if="checkboxes && itemActions.length">
+          <div
+            v-if="checkboxes && itemActions.length"
+            :class="{hidden: !checks.length}"
+          >
             <admin-table-action-button
               label=""
               class="vue-admin-table-footer-actions"
               :icon="'settings'"
               :actions="itemActions"
               :allow-multiple="true"
+              menu-btn-class="secondary"
               :ids="checks"
               :enabled="checks.length ? true : false"
               v-on:reload="reload"
@@ -238,6 +249,8 @@
         :reorder-success-message="reorderSuccessMessage"
         :ids="checks"
         v-on:reload="reload"
+        v-on:submit="loading()"
+        v-on:error="loading(false)"
       ></admin-table-move-to-page-hud>
     </div>
   </div>
@@ -315,6 +328,10 @@
         default: () => {
           return [];
         },
+      },
+      allowMultipleDeletions: {
+        type: Boolean,
+        default: false,
       },
       deleteAction: {
         type: String,
@@ -517,9 +534,27 @@
         this.dragging = false;
       },
 
+      rowClass(data, index) {
+        if (!data) {
+          return '';
+        }
+
+        if (!this.checks.length) {
+          return '';
+        }
+
+        if (this.checks.indexOf(data.id) >= 0) {
+          return 'sel';
+        }
+
+        return '';
+      },
+
       handleActionClick(param, value, action, ajax) {
         if (param === 'moveToPage' && value === true) {
           this.$refs['move-to-page-hud'].show();
+        } else if (ajax) {
+          this.loading();
         }
       },
 
@@ -660,6 +695,34 @@
         }
       },
 
+      handleCellClicked(data, field, event) {
+        this.$emit('onCellClicked', data, field, event);
+        if (this.onCellClicked instanceof Function) {
+          this.onCellClicked(data, field, event);
+        }
+      },
+
+      handleCellDoubleClicked(data, field, event) {
+        this.$emit('onCellDoubleClicked', data, field, event);
+        if (this.onCellDoubleClicked instanceof Function) {
+          this.onCellDoubleClicked(data, field, event);
+        }
+      },
+
+      handleRowClicked(data, event) {
+        this.$emit('onRowClicked', data, event);
+        if (this.onRowClicked instanceof Function) {
+          this.onRowClicked(data, event);
+        }
+      },
+
+      handleRowDoubleClicked(data, event) {
+        this.$emit('onRowDoubleClicked', data, event);
+        if (this.onRowDoubleClicked instanceof Function) {
+          this.onRowDoubleClicked(data, event);
+        }
+      },
+
       onPaginationData(paginationData) {
         this.currentPage = paginationData.current_page;
         this.lastPage = paginationData.last_page;
@@ -757,7 +820,8 @@
             action: this.deleteAction,
             error: true,
             ajax: true,
-            separator: true,
+            allowMultiple: this.allowMultipleDeletions,
+            separator: itemActions.length ? true : false,
           });
         }
 

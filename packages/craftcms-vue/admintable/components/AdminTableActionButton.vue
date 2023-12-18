@@ -15,11 +15,7 @@
       :is="isMenuButton ? 'div' : 'button'"
       ref="button"
       class="btn"
-      :class="{
-        menubtn: isMenuButton,
-        error: error,
-        disabled: !enabled || buttonDisabled,
-      }"
+      :class="menuBtnClasses"
       :data-icon="icon"
       :disabled="buttonDisabled"
       :type="enabled && !isMenuButton && !ajax ? 'submit' : null"
@@ -32,6 +28,12 @@
     >
     <div class="menu" v-if="isMenuButton">
       <template v-for="(actList, ind) in actionsList">
+        <hr
+          v-if="
+            actionsList.length > 1 && ind === actionsList.length - 1 && ind != 0
+          "
+          :key="ind"
+        />
         <ul class="padded" :key="ind">
           <li v-for="(act, index) in actList" :key="index">
             <a
@@ -104,6 +106,10 @@
         type: Boolean,
         default: true,
       },
+      menuBtnClass: {
+        type: String,
+        default: '',
+      },
       enabled: Boolean,
       ids: Array,
       label: String,
@@ -130,8 +136,7 @@
         this.$emit('click', param, value, action, ajax);
 
         // Is the action button the one to deal with the click?
-        if (!handleClick) {
-          // If not emit and event to the parent
+        if (handleClick !== undefined && !handleClick) {
           return;
         }
 
@@ -221,6 +226,28 @@
         }
 
         return true;
+      },
+
+      menuBtnClasses() {
+        let menuBtnClasses = [];
+
+        if (this.isMenuButton) {
+          menuBtnClasses.push('menubtn');
+        }
+
+        if (this.error) {
+          menuBtnClasses.push('error');
+        }
+
+        if (!this.enabled || this.buttonDisabled) {
+          menuBtnClasses.push('disabled');
+        }
+
+        if (this.menuBtnClass) {
+          menuBtnClasses.push(this.menuBtnClass);
+        }
+
+        return menuBtnClasses;
       },
     },
 

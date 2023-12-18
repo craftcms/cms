@@ -80,6 +80,7 @@
           perPage: this.perPage,
           id: id,
         };
+        this.$emit('submit');
 
         Craft.sendActionRequest('POST', this.moveToPageAction, {data})
           .then((response) => {
@@ -91,6 +92,10 @@
           })
           .catch((error) => {
             Craft.cp.displayError(Craft.escapeHtml(error.response.data.error));
+            this.$emit('error');
+          })
+          .finally(() => {
+            this.hud.hide();
           });
       },
 
